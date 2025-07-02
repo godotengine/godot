@@ -38,7 +38,7 @@ void Light3D::set_param(Param p_param, real_t p_value) {
 
 	RS::get_singleton()->light_set_param(light, RS::LightParam(p_param), p_value);
 
-	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
+	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE || p_param == PARAM_AREA_WIDTH || p_param == PARAM_AREA_HEIGHT) {
 		update_gizmos();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
@@ -172,6 +172,13 @@ AABB Light3D::get_aabb() const {
 
 		real_t size = Math::sin(cone_angle_rad) * cone_slant_height;
 		return AABB(Vector3(-size, -size, -cone_slant_height), Vector3(2 * size, 2 * size, cone_slant_height));
+	} else if (type == RenderingServer::LIGHT_AREA) {
+		float len = param[PARAM_RANGE];
+
+		float width = param[PARAM_AREA_WIDTH] / 2.0 + len;
+		float height = param[PARAM_AREA_HEIGHT] / 2.0 + len;
+
+		return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 	}
 
 	return AABB();
@@ -459,6 +466,9 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 		case RS::LIGHT_SPOT:
 			light = RenderingServer::get_singleton()->spot_light_create();
 			break;
+		case RS::LIGHT_AREA:
+			light = RenderingServer::get_singleton()->area_light_create();
+			break;
 		default: {
 		};
 	}
@@ -479,6 +489,8 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
+	set_param(PARAM_AREA_WIDTH, 1);
+	set_param(PARAM_AREA_HEIGHT, 1);
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
@@ -637,7 +649,7 @@ void OmniLight3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &OmniLight3D::get_shadow_mode);
 
 	ADD_GROUP("Omni", "omni_");
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "omni_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
 
@@ -680,4 +692,33 @@ SpotLight3D::SpotLight3D() :
 		Light3D(RenderingServer::LIGHT_SPOT) {
 	// Decrease the default shadow bias to better suit most scenes.
 	set_param(PARAM_SHADOW_BIAS, 0.03);
+}
+
+AreaLight3D::AreaLight3D() :
+		Light3D(RenderingServer::LIGHT_AREA) {
+	// Decrease the default shadow bias to better suit most scenes.
+	set_param(PARAM_SHADOW_BIAS, 0.03);
+	set_param(PARAM_SIZE, 0.5);
+}
+
+void AreaLight3D::_bind_methods() {
+	ADD_GROUP("Area", "area_");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_width", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_AREA_WIDTH);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_height", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_AREA_HEIGHT);
+}
+
+PackedStringArray AreaLight3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Light3D::get_configuration_warnings();
+
+	if (!has_shadow() && get_projector().is_valid()) {
+		warnings.push_back(RTR("Projector texture only works with shadows active."));
+	}
+
+	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+	}
+
+	return warnings;
 }

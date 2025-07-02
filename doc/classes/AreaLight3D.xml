@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AreaLight3D" inherits="Light3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="area_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
+		</member>
+		<member name="area_height" type="float" setter="set_param" getter="get_param" default="1.0">
+		</member>
+		<member name="area_range" type="float" setter="set_param" getter="get_param" default="5.0">
+		</member>
+		<member name="area_width" type="float" setter="set_param" getter="get_param" default="1.0">
+		</member>
+		<member name="light_size" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
+		<member name="light_specular" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
+		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
+	</members>
+</class>

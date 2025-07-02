@@ -1819,6 +1819,9 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 				scene_state.spot_light_sort[r_spot_light_count].depth = distance;
 				r_spot_light_count++;
 			} break;
+			case RS::LIGHT_AREA: {
+				// dummy, ignore for now
+			} break;
 		}
 
 		li->last_pass = RSG::rasterizer->get_frame_number();

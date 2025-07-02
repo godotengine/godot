@@ -732,23 +732,23 @@
 			Draws the cluster used by [SpotLight3D] nodes to optimize light rendering.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_DECALS" value="23" enum="DebugDraw">
 			Draws the cluster used by [Decal] nodes to optimize decal rendering.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="24" enum="DebugDraw">
 			Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_OCCLUDERS" value="25" enum="DebugDraw">
 			Draws the buffer used for occlusion culling.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
-		<constant name="DEBUG_DRAW_MOTION_VECTORS" value="25" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_MOTION_VECTORS" value="26" enum="DebugDraw">
 			Draws vector lines over the viewport to indicate the movement of pixels between frames.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="DebugDraw">
+		<constant name="DEBUG_DRAW_INTERNAL_BUFFER" value="27" enum="DebugDraw">
 			Draws the internal resolution buffer of the scene in linear colorspace before tonemapping or post-processing is applied.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>

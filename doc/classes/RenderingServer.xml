@@ -18,6 +18,11 @@
 		<link title="Optimization using Servers">$DOCS_URL/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
+		<method name="area_light_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="bake_render_uv2">
 			<return type="Image[]" />
 			<param index="0" name="base" type="RID" />
@@ -4847,6 +4852,8 @@
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
 			Spot light (see [SpotLight3D]).
 		</constant>
+		<constant name="LIGHT_AREA" value="3" enum="LightType">
+		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy multiplier.
 		</constant>
@@ -4874,42 +4881,42 @@
 		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="8" enum="LightParam">
 			The spotlight's attenuation.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="9" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_MAX_DISTANCE" value="11" enum="LightParam">
 			The maximum distance for shadow splits. Increasing this value will make directional shadows visible from further away, at the cost of lower overall shadow detail and performance (since more objects need to be included in the directional shadow rendering).
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET" value="12" enum="LightParam">
 			Proportion of shadow atlas occupied by the first split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET" value="13" enum="LightParam">
 			Proportion of shadow atlas occupied by the second split.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET" value="14" enum="LightParam">
 			Proportion of shadow atlas occupied by the third split. The fourth split occupies the rest.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="13" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_FADE_START" value="15" enum="LightParam">
 			Proportion of shadow max distance where the shadow will start to fade out.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="14" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_NORMAL_BIAS" value="16" enum="LightParam">
 			Normal bias used to offset shadow lookup by object normal. Can be used to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="15" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BIAS" value="17" enum="LightParam">
 			Bias for the shadow lookup to fix self-shadowing artifacts.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="16" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_PANCAKE_SIZE" value="18" enum="LightParam">
 			Sets the size of the directional shadow pancake. The pancake offsets the start of the shadow's camera frustum to provide a higher effective depth resolution for the shadow. However, a high pancake size can cause artifacts in the shadows of large objects that are close to the edge of the frustum. Reducing the pancake size can help. Setting the size to [code]0[/code] turns off the pancaking effect.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_OPACITY" value="17" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_OPACITY" value="19" enum="LightParam">
 			The light's shadow opacity. Values lower than [code]1.0[/code] make the light appear through shadows. This can be used to fake global illumination at a low performance cost.
 		</constant>
-		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="18" enum="LightParam">
+		<constant name="LIGHT_PARAM_SHADOW_BLUR" value="20" enum="LightParam">
 			Blurs the edges of the shadow. Can be used to hide pixel artifacts in low resolution shadow maps. A high value can make shadows appear grainy and can cause other unwanted artifacts. Try to keep as near default as possible.
 		</constant>
-		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="19" enum="LightParam">
+		<constant name="LIGHT_PARAM_TRANSMITTANCE_BIAS" value="21" enum="LightParam">
 		</constant>
-		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
+		<constant name="LIGHT_PARAM_INTENSITY" value="22" enum="LightParam">
 			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="23" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
@@ -5351,23 +5358,23 @@
 			Draws the [SpotLight3D] cluster. Clustering determines where lights are positioned in screen-space, which allows the engine to only process these portions of the screen for lighting.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="22" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS" value="23" enum="ViewportDebugDraw">
 			Draws the [Decal] cluster. Clustering determines where decals are positioned in screen-space, which allows the engine to only process these portions of the screen for decals.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="24" enum="ViewportDebugDraw">
 			Draws the [ReflectionProbe] cluster. Clustering determines where reflection probes are positioned in screen-space, which allows the engine to only process these portions of the screen for reflection probes.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="24" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_OCCLUDERS" value="25" enum="ViewportDebugDraw">
 			Draws the occlusion culling buffer. This low-resolution occlusion culling buffer is rasterized on the CPU and is used to check whether instances are occluded by other objects.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="25" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_MOTION_VECTORS" value="26" enum="ViewportDebugDraw">
 			Draws the motion vectors buffer. This is used by temporal antialiasing to correct for motion that occurs during gameplay.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
-		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="26" enum="ViewportDebugDraw">
+		<constant name="VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER" value="27" enum="ViewportDebugDraw">
 			Internal buffer is drawn instead of regular scene so you can see the per-pixel output that will be used by post-processing effects.
 			[b]Note:[/b] Only supported when using the Forward+ or Mobile rendering methods.
 		</constant>

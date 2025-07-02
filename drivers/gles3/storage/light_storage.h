@@ -314,6 +314,8 @@ public:
 	virtual void omni_light_initialize(RID p_rid) override;
 	virtual RID spot_light_allocate() override;
 	virtual void spot_light_initialize(RID p_rid) override;
+	virtual RID area_light_allocate() override;
+	virtual void area_light_initialize(RID p_rid) override;
 
 	virtual void light_free(RID p_rid) override;
 
