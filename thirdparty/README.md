@@ -566,7 +566,7 @@ Patches:
 ## libogg
 
 - Upstream: https://www.xiph.org/ogg
-- Version: 1.3.5 (e1774cd77f471443541596e09078e78fdc342e4f, 2021)
+- Version: 1.3.6 (be05b13e98b048f0b5a0f5fa8ce514d56db5f822, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
