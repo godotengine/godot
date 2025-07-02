@@ -143,7 +143,8 @@ public:
 
 	enum LightType {
 		LIGHT_TYPE_OMNI,
-		LIGHT_TYPE_SPOT
+		LIGHT_TYPE_SPOT,
+		LIGHT_TYPE_AREA,
 	};
 
 	enum BoxType {
@@ -154,6 +155,7 @@ public:
 	enum ElementType {
 		ELEMENT_TYPE_OMNI_LIGHT,
 		ELEMENT_TYPE_SPOT_LIGHT,
+		ELEMENT_TYPE_AREA_LIGHT,
 		ELEMENT_TYPE_DECAL,
 		ELEMENT_TYPE_REFLECTION_PROBE,
 		ELEMENT_TYPE_MAX,
@@ -242,11 +244,14 @@ public:
 
 	void begin(const Transform3D &p_view_transform, const Projection &p_cam_projection, bool p_flip_y);
 
-	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) {
+	_FORCE_INLINE_ void add_light(LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture, const Vector2 &p_area_size) {
 		if (p_type == LIGHT_TYPE_OMNI && cluster_count_by_type[ELEMENT_TYPE_OMNI_LIGHT] == max_elements_by_type) {
 			return; // Max number elements reached.
 		}
 		if (p_type == LIGHT_TYPE_SPOT && cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT] == max_elements_by_type) {
+			return; // Max number elements reached.
+		}
+		if (p_type == LIGHT_TYPE_AREA && cluster_count_by_type[ELEMENT_TYPE_AREA_LIGHT] == max_elements_by_type) {
 			return; // Max number elements reached.
 		}
 
@@ -294,7 +299,7 @@ public:
 
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
-		} else /*LIGHT_TYPE_SPOT with no wide angle*/ {
+		} else if (p_type == LIGHT_TYPE_SPOT) { /*LIGHT_TYPE_SPOT with no wide angle*/
 			radius *= shared->cone_overfit; // Overfit cone.
 
 			real_t len = Math::tan(Math::deg_to_rad(p_spot_aperture)) * radius;
@@ -338,6 +343,39 @@ public:
 			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
 
 			cluster_count_by_type[ELEMENT_TYPE_SPOT_LIGHT]++;
+		} else { /* LIGHT_TYPE_AREA */
+			Vector3 scale = Vector3(p_area_size.x / 2.0 + radius, p_area_size.y / 2.0 + radius, radius / 2.0);
+
+			for (uint32_t i = 0; i < 3; i++) {
+				float s = xform.basis.rows[i].length();
+				//scale[i] *= s; // lights ignore scale
+				xform.basis.rows[i] /= s;
+			}
+			xform.origin -= xform.basis.get_column(Vector3::AXIS_Z) * scale.z; // translate center to center of box
+
+			float depth = -xform.origin.z;
+			float box_depth = Math::abs(xform.basis.xform_inv(Vector3(0, 0, -1)).dot(scale));
+
+			if (camera_orthogonal) {
+				e.touches_near = (depth - box_depth) < z_near;
+			} else {
+				// Contains camera inside box.
+				Vector3 inside = xform.xform_inv(Vector3(0, 0, 0)).abs();
+				e.touches_near = inside.x < scale.x && inside.y < scale.y && inside.z < scale.z;
+			}
+
+			e.touches_far = depth + box_depth > z_far;
+
+			e.scale[0] = scale.x;
+			e.scale[1] = scale.y;
+			e.scale[2] = scale.z;
+
+			e.type = ELEMENT_TYPE_AREA_LIGHT;
+			e.original_index = cluster_count_by_type[ELEMENT_TYPE_AREA_LIGHT];
+
+			RendererRD::MaterialStorage::store_transform_transposed_3x4(xform, e.transform_inv);
+
+			cluster_count_by_type[ELEMENT_TYPE_AREA_LIGHT]++;
 		}
 
 		render_element_count++;
