@@ -67,7 +67,7 @@ class GDExtensionMethodBind : public MethodBind {
 #endif
 
 protected:
-	virtual Variant::Type _gen_argument_type(int p_arg) const override {
+	virtual Variant::Type _get_argument_type(int p_arg) const override {
 		if (p_arg < 0) {
 			return return_value_info.type;
 		} else {
