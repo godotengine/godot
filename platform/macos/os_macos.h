@@ -33,6 +33,7 @@
 #include "crash_handler_macos.h"
 
 #include "core/input/input.h"
+#include "core/os/keyboard.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
@@ -125,6 +126,8 @@ public:
 	virtual String get_processor_name() const override;
 
 	virtual String get_model_name() const override;
+
+	virtual Key get_command_keycode() const override { return Key::META; }
 
 	virtual bool is_sandboxed() const override;
 	virtual bool request_permission(const String &p_name) override;

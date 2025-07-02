@@ -52,6 +52,8 @@ class OS_Web : public OS_Unix {
 	bool idb_needs_sync = false;
 	bool pwa_is_waiting = false;
 
+	mutable Key command_key = Key::NONE;
+
 	WASM_EXPORT static void main_loop_callback();
 
 	WASM_EXPORT static void file_access_close_callback(const String &p_file, int p_flags);
@@ -102,6 +104,8 @@ public:
 	void add_frame_delay(bool p_can_draw, bool p_wake_for_events) override;
 
 	void vibrate_handheld(int p_duration_ms, float p_amplitude) override;
+
+	virtual Key get_command_keycode() const override;
 
 	String get_cache_path() const override;
 	String get_config_path() const override;
