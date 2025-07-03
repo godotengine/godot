@@ -43,7 +43,6 @@ void CameraLinux::camera_thread_func(void *p_camera_linux) {
 		CameraLinux *camera_linux = (CameraLinux *)p_camera_linux;
 		camera_linux->_update_devices();
 		camera_linux->activating.clear();
-		camera_linux->emit_signal(SNAME(CameraServer::FEEDS_UPDATED));
 	}
 }
 
@@ -84,6 +83,7 @@ void CameraLinux::_update_devices() {
 
 		usleep(1000000);
 	}
+	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 bool CameraLinux::_has_device(const String &p_device_name) {

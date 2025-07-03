@@ -363,6 +363,7 @@ void CameraMacOS::update_feeds() {
 			add_feed(newfeed);
 		};
 	};
+    emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
@@ -377,7 +378,6 @@ void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 		// Get notified on feed changes.
 		device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
-		emit_signal(SNAME(CameraServer::FEEDS_UPDATED));
 	} else {
 		// Stop monitoring feed changes.
 		device_notifications = nil;
