@@ -493,6 +493,7 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 		return;
 	}
 
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
 		if (cameraManager == nullptr) {
 			cameraManager = ACameraManager_create();
@@ -500,10 +501,10 @@ void CameraAndroid::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 		// Update feeds
 		update_feeds();
+		emit_signal(SNAME(CameraServer::FEEDS_UPDATED));
 	} else {
 		remove_all_feeds();
 	}
-	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 }
 
 CameraAndroid::~CameraAndroid() {

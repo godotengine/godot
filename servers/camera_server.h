@@ -59,6 +59,7 @@ public:
 	};
 
 	typedef CameraServer *(*CreateFunc)();
+	static constexpr const char *FEEDS_UPDATED = "feeds_updated";
 
 private:
 protected:

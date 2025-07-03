@@ -43,7 +43,7 @@ void CameraLinux::camera_thread_func(void *p_camera_linux) {
 		CameraLinux *camera_linux = (CameraLinux *)p_camera_linux;
 		camera_linux->_update_devices();
 		camera_linux->activating.clear();
-		camera_linux->CameraServer::set_monitoring_feeds(true);
+		camera_linux->emit_signal(SNAME(CameraServer::FEEDS_UPDATED));
 	}
 }
 
@@ -169,6 +169,7 @@ inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
 		return;
 	}
 
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
 		if (!activating.is_set()) {
 			activating.set();
