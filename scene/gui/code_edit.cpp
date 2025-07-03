@@ -2936,7 +2936,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "delimiter_comments"), "set_comment_delimiters", "get_comment_delimiters");
 
 	ADD_GROUP("Code Completion", "code_completion_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled"), "set_code_completion_enabled", "is_code_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_code_completion_enabled", "is_code_completion_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_completion_prefixes");
 
 	ADD_GROUP("Indentation", "indent_");
@@ -2946,7 +2946,7 @@ void CodeEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "indent_automatic_prefixes"), "set_auto_indent_prefixes", "get_auto_indent_prefixes");
 
 	ADD_GROUP("Auto Brace Completion", "auto_brace_completion_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled"), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_auto_brace_completion_enabled", "is_auto_brace_completion_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_brace_completion_highlight_matching"), "set_highlight_matching_braces_enabled", "is_highlight_matching_braces_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "auto_brace_completion_pairs", PROPERTY_HINT_TYPE_STRING, "String;String"), "set_auto_brace_completion_pairs", "get_auto_brace_completion_pairs");
 

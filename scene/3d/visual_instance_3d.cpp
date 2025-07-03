@@ -165,12 +165,6 @@ bool VisualInstance3D::is_sorting_use_aabb_center() const {
 	return sorting_use_aabb_center;
 }
 
-void VisualInstance3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center") {
-		p_property.usage = PROPERTY_USAGE_NONE;
-	}
-}
-
 void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance3D::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance3D::get_base);
@@ -188,8 +182,8 @@ void VisualInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
 
 	ADD_GROUP("Sorting", "sorting_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_sorting_offset", "get_sorting_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
 }
 
 void VisualInstance3D::set_base(const RID &p_base) {

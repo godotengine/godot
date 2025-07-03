@@ -435,7 +435,7 @@ void FastNoiseLite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cellular_return_type", PROPERTY_HINT_ENUM, "Cell Value,Distance,Distance2,Distance2Add,Distance2Sub,Distance2Mul,Distance2Div"), "set_cellular_return_type", "get_cellular_return_type");
 
 	ADD_GROUP("Domain Warp", "domain_warp_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "domain_warp_enabled"), "set_domain_warp_enabled", "is_domain_warp_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "domain_warp_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_domain_warp_enabled", "is_domain_warp_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "domain_warp_type", PROPERTY_HINT_ENUM, "Simplex,Simplex Reduced,Basic Grid"), "set_domain_warp_type", "get_domain_warp_type");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_amplitude"), "set_domain_warp_amplitude", "get_domain_warp_amplitude");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "domain_warp_frequency"), "set_domain_warp_frequency", "get_domain_warp_frequency");
@@ -493,11 +493,6 @@ void FastNoiseLite::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "fractal_ping_pong_strength" && get_fractal_type() != FRACTAL_PING_PONG) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-		return;
-	}
-
-	if (p_property.name != "domain_warp_enabled" && p_property.name.begins_with("domain_warp") && !domain_warp_enabled) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		return;
 	}
