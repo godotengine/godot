@@ -863,31 +863,25 @@ void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	connect("deselect_key", callable_mp(editor, &AnimationTrackEditor::_deselect_key), CONNECT_DEFERRED);
 }
 
-void AnimationBezierTrackEdit::_play_position_draw() {
-	if (animation.is_null() || play_position_pos < 0) {
+void AnimationBezierTrackEdit::_play_cursor_draw() {
+	if (animation.is_null() || play_cursor_pos < 0) {
 		return;
 	}
 
-	float scale = timeline->get_zoom_scale();
-	int h = get_size().height;
+	float limit = timeline->get_name_limit();
+	float limit_end = get_size().width - timeline->get_buttons_width();
 
-	int limit = timeline->get_name_limit();
-
-	int px = (-timeline->get_value() + play_position_pos) * scale + limit;
-
-	if (px >= limit && px < (get_size().width)) {
-		const Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
-	}
+	float h = get_size().height;
+	editor->draw_play_cursor(play_cursor, play_cursor_pos, h, limit, limit_end);
 }
 
 void AnimationBezierTrackEdit::set_play_position(real_t p_pos) {
-	play_position_pos = p_pos;
-	play_position->queue_redraw();
+	play_cursor_pos = p_pos;
+	play_cursor->queue_redraw();
 }
 
 void AnimationBezierTrackEdit::update_play_position() {
-	play_position->queue_redraw();
+	play_cursor->queue_redraw();
 }
 
 void AnimationBezierTrackEdit::set_root(Node *p_root) {
@@ -985,7 +979,7 @@ void AnimationBezierTrackEdit::_zoom_vertically(real_t p_minimum_value, real_t p
 
 void AnimationBezierTrackEdit::_zoom_changed() {
 	queue_redraw();
-	play_position->queue_redraw();
+	play_cursor->queue_redraw();
 }
 
 void AnimationBezierTrackEdit::_update_locked_tracks_after(int p_track) {
@@ -2445,11 +2439,11 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	panner.instantiate();
 	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
 
-	play_position = memnew(Control);
-	play_position->set_mouse_filter(MOUSE_FILTER_PASS);
-	add_child(play_position);
-	play_position->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	play_position->connect(SceneStringName(draw), callable_mp(this, &AnimationBezierTrackEdit::_play_position_draw));
+	play_cursor = memnew(Control);
+	play_cursor->set_mouse_filter(MOUSE_FILTER_PASS);
+	add_child(play_cursor);
+	play_cursor->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationBezierTrackEdit::_play_cursor_draw));
 	set_focus_mode(FOCUS_CLICK);
 
 	set_clip_contents(true);

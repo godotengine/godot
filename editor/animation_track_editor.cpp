@@ -1473,7 +1473,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	play_cursor->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_cursor);
 	play_cursor->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationTimelineEdit::_play_position_draw));
+	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationTimelineEdit::_play_cursor_draw));
 
 	add_track_hb = memnew(HBoxContainer);
 	add_child(add_track_hb);
@@ -2124,7 +2124,7 @@ void AnimationTimelineEdit::update_values() {
 	editing = false;
 }
 
-void AnimationTimelineEdit::_play_position_draw() {
+void AnimationTimelineEdit::_play_cursor_draw() {
 	if (animation.is_null()) {
 		return;
 	}
@@ -2132,7 +2132,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 	float limit = get_name_limit();
 	float limit_end = play_cursor->get_size().width - get_buttons_width();
 
-	editor->draw_play_cursor(play_cursor, play_cursor_pos, limit, limit_end);
+	editor->draw_play_cursor_head(play_cursor, play_cursor_pos, limit, limit_end);
 }
 
 double AnimationTimelineEdit::get_timeline_pos(const double p_pos) const {
@@ -2265,7 +2265,7 @@ void AnimationTimelineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_values"), &AnimationTimelineEdit::update_values);
 }
 
-/// KEY EDIT ///
+/// ANIMATION KEY EDIT ///
 
 int AnimationKeyEdit::get_selection_count() const {
 	return selection.size();
@@ -2389,67 +2389,6 @@ bool AnimationKeyEdit::_is_ui_pos_in_current_section(const Point2 &p_pos) {
 
 	return false;
 }
-
-HBoxContainer *AnimationMarkerEdit::_create_hbox_labeled_control(const String &p_text, Control *p_control) const {
-	HBoxContainer *hbox = memnew(HBoxContainer);
-	Label *label = memnew(Label);
-	label->set_text(p_text);
-	hbox->add_child(label);
-	hbox->add_child(p_control);
-	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
-	label->set_h_size_flags(SIZE_EXPAND_FILL);
-	label->set_stretch_ratio(1.0);
-	p_control->set_h_size_flags(SIZE_EXPAND_FILL);
-	p_control->set_stretch_ratio(1.0);
-	return hbox;
-}
-
-void AnimationMarkerEdit::_update_key_edit() {
-	_clear_key_edit();
-
-	if (animation.is_null()) {
-		return;
-	}
-
-	if (get_selection_count() == 1) {
-		RBMap<SelectedKey, KeyInfo>::Iterator E = selection.front();
-		const SelectedKey &sk = E->key;
-		const StringName selected_name = sk.id;
-		const int key_index = editor->get_marker_index(selected_name);
-
-		StringName key_name = get_key_name(key_index);
-
-		key_edit = memnew(AnimationMarkerKeyEdit);
-		key_edit->animation = animation;
-		key_edit->animation_read_only = read_only;
-		key_edit->marker_name = key_name;
-		key_edit->use_fps = timeline->is_using_fps();
-		key_edit->marker_edit = this;
-
-		EditorNode::get_singleton()->push_item(key_edit);
-
-		InspectorDock::get_singleton()->set_info(TTR("Marker name is read-only in the inspector."), TTR("A marker's name can only be changed by right-clicking it in the animation editor and selecting \"Rename Marker\", in order to make sure that marker names are all unique."), true);
-	} else if (get_selection_count() > 1) {
-		multi_key_edit = memnew(AnimationMultiMarkerKeyEdit);
-		multi_key_edit->animation = animation;
-		multi_key_edit->animation_read_only = read_only;
-		multi_key_edit->marker_edit = this;
-
-		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
-			const SelectedKey &sk = E->key;
-			const StringName selected_name = sk.id;
-			const int key_index = editor->get_marker_index(selected_name);
-
-			StringName key_name = get_key_name(key_index);
-
-			multi_key_edit->marker_names.push_back(key_name);
-		}
-
-		EditorNode::get_singleton()->push_item(multi_key_edit);
-	}
-}
-
-/// ANIMATION KEY EDIT ///
 
 bool AnimationKeyEdit::has_valid_track() const {
 	if (animation.is_null()) {
@@ -3014,96 +2953,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 	}
 }
 
-void KeyEdit::draw_timeline(const float p_clip_left, const float p_clip_right) {
-	const int key_count = get_key_count();
-	for (int i = 0; i < key_count; i++) {
-		Rect2 global_rect = get_global_key_rect(i);
-
-		bool selected = is_key_selected(i);
-
-		if (global_rect.position.x > p_clip_right) {
-			bool is_key_moving = selected && editor->is_track_moving_selection();
-			if (is_key_moving) {
-				continue;
-			} else {
-				break;
-			}
-		}
-
-		int next_i = i + 1;
-		if (next_i < key_count) {
-			if (is_linked(i, next_i)) {
-				const Rect2 global_rect_next = get_global_key_rect(next_i);
-
-				if (global_rect.position.x <= p_clip_right && global_rect_next.position.x >= p_clip_left) {
-					draw_key_link(i, global_rect, global_rect_next, p_clip_left, p_clip_right);
-				}
-			}
-		}
-
-		if (global_rect.position.x + global_rect.size.x < p_clip_left) {
-			continue;
-		}
-
-		try_draw_key(i, global_rect, selected, p_clip_left, p_clip_right);
-
-		if (selected) {
-			Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-			editor->_draw_rect_clipped(this, global_rect, accent_color, false, p_clip_left, p_clip_right);
-		}
-	}
-}
-
-void AnimationTrackEditor::draw_play_position(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right) {
-	if (p_time < 0) {
-		return;
-	}
-
-	double time = get_global_time(p_time);
-	if (time >= p_clip_left && time < p_clip_right) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-
-		_draw_vertical_line_clipped(p_canvas_item, Point2(time, 0), p_height, color, 2, p_clip_left, p_clip_right);
-	}
-}
-
-void AnimationTrackEditor::draw_play_cursor(CanvasItem *p_canvas_item, const double p_time, const float p_clip_left, const float p_clip_right) {
-	if (p_time < 0) {
-		return;
-	}
-
-	double time = get_global_time(p_time);
-	if (time >= p_clip_left && time < p_clip_right) {
-		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
-
-		Ref<Texture2D> texture = get_editor_theme_icon(SNAME("TimelineIndicator"));
-
-		Rect2 region;
-		region.size = texture->get_size();
-
-		Rect2 rect = Rect2(time - texture->get_width() * 0.5, 0.0, region.size.x, region.size.y);
-		_draw_texture_region_clipped(p_canvas_item, texture, rect, region, p_clip_left, p_clip_right, color);
-	}
-}
-
-void AnimationTrackEditor::draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right) {
-	marker_edit->draw_marker_section(p_canvas_item, p_clip_left, p_clip_right);
-}
-
-void AnimationTrackEditor::draw_marker_lines(CanvasItem *p_canvas_item, const float p_height, const float p_clip_left, const float p_clip_right) {
-	for (int i = 0; i < get_marker_count(); i++) {
-		double marker_time = marker_edit->get_move_key_time(i);
-		if (marker_time >= 0) {
-			double time = get_global_time(marker_time);
-
-			Color marker_color = get_marker_color(i);
-			marker_color.a = 0.2;
-
-			_draw_vertical_line_clipped(p_canvas_item, Point2(time, 0), p_height, marker_color, 2, p_clip_left, p_clip_right);
-		}
-	}
-}
-
 int AnimationTrackEdit::get_key_count() const {
 	return editor->get_track_key_count(track);
 }
@@ -3231,7 +3080,7 @@ void AnimationTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
 }
 
-void AnimationTrackEdit::_play_position_draw() {
+void AnimationTrackEdit::_play_cursor_draw() {
 	if (!has_valid_track()) {
 		return;
 	}
@@ -3240,7 +3089,7 @@ void AnimationTrackEdit::_play_position_draw() {
 	float limit_end = get_size().width - timeline->get_buttons_width();
 
 	float h = get_size().height;
-	editor->draw_play_position(play_cursor, play_cursor_pos, h, limit, limit_end);
+	editor->draw_play_cursor(play_cursor, play_cursor_pos, h, limit, limit_end);
 }
 
 void AnimationTrackEdit::set_play_position(float p_pos) {
@@ -4015,7 +3864,7 @@ AnimationTrackEdit::AnimationTrackEdit() {
 	key_pivot.y = 0.5;
 	track_alignment = 0.5;
 
-	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEdit::_play_position_draw));
+	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEdit::_play_cursor_draw));
 
 	set_focus_mode(FOCUS_CLICK);
 	set_mouse_filter(MOUSE_FILTER_PASS); // Scroll has to work too for selection.
@@ -4117,7 +3966,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 			//
 
-			editor->draw_play_position(this, timeline->get_play_position(), h, limit, limit_end);
+			editor->draw_play_cursor(this, timeline->get_play_position(), h, limit, limit_end);
 
 		} break;
 	}
@@ -6549,43 +6398,239 @@ void AnimationTrackEditor::_move_selection_cancel() {
 	_redraw_tracks();
 }
 
-/// KEY EDIT ///
+void AnimationTrackEditor::draw_play_cursor(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right) {
+	if (p_time < 0) {
+		return;
+	}
 
-bool KeyEdit::is_moving_selection() const {
-	return moving_selection;
+	double time = get_global_time(p_time);
+	if (time >= p_clip_left && time < p_clip_right) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+
+		_draw_vertical_line_clipped(p_canvas_item, Point2(time, 0), p_height, color, 2, p_clip_left, p_clip_right);
+	}
 }
 
-void KeyEdit::set_moving_selection(bool p_value) {
-	moving_selection = p_value;
+void AnimationTrackEditor::draw_play_cursor_head(CanvasItem *p_canvas_item, const double p_time, const float p_clip_left, const float p_clip_right) {
+	if (p_time < 0) {
+		return;
+	}
+
+	double time = get_global_time(p_time);
+	if (time >= p_clip_left && time < p_clip_right) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+
+		Ref<Texture2D> texture = get_editor_theme_icon(SNAME("TimelineIndicator"));
+
+		Rect2 region;
+		region.size = texture->get_size();
+
+		Rect2 rect = Rect2(time - texture->get_width() * 0.5, 0.0, region.size.x, region.size.y);
+		_draw_texture_region_clipped(p_canvas_item, texture, rect, region, p_clip_left, p_clip_right, color);
+	}
 }
 
-float KeyEdit::get_moving_selection_offset() const {
-	return moving_selection_offset;
+void AnimationTrackEditor::draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right) {
+	marker_edit->draw_marker_section(p_canvas_item, p_clip_left, p_clip_right);
 }
 
-void KeyEdit::set_moving_selection_offset(float p_value) {
-	moving_selection_offset = p_value;
+void AnimationTrackEditor::draw_marker_lines(CanvasItem *p_canvas_item, const float p_height, const float p_clip_left, const float p_clip_right) {
+	for (int i = 0; i < get_marker_count(); i++) {
+		double marker_time = marker_edit->get_move_key_time(i);
+		if (marker_time >= 0) {
+			double time = get_global_time(marker_time);
+
+			Color marker_color = get_marker_color(i);
+			marker_color.a = 0.2;
+
+			_draw_vertical_line_clipped(p_canvas_item, Point2(time, 0), p_height, marker_color, 2, p_clip_left, p_clip_right);
+		}
+	}
 }
 
-void KeyEdit::_update_key_type_icon() {
-	type_icon = _get_key_type_icon();
-	selected_icon = _get_key_type_icon_selected();
+void AnimationTrackEditor::_draw_texture_region_clipped(CanvasItem *p_canvas_item, const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, const float p_clip_left, const float p_clip_right, const Color &p_modulate) {
+	ERR_FAIL_NULL(p_canvas_item);
 
-	queue_redraw();
+	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
+		return;
+	}
+
+	if (p_clip_right < p_rect.position.x) {
+		return;
+	}
+
+	Rect2 rect = p_rect;
+	Rect2 region = p_region;
+
+	if (p_clip_left > rect.position.x) {
+		int rect_pixels = (p_clip_left - rect.position.x);
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.position.x += rect_pixels;
+		rect.size.x -= rect_pixels;
+
+		region.position.x += region_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	if (p_clip_right < rect.position.x + rect.size.x) {
+		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
+		int region_pixels = rect_pixels * region.size.x / rect.size.x;
+
+		rect.size.x -= rect_pixels;
+		region.size.x -= region_pixels;
+	}
+
+	p_canvas_item->draw_texture_rect_region(p_texture, rect, region, p_modulate);
 }
 
-void KeyEdit::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
-	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-	color.a = 0.5;
+void AnimationTrackEditor::_draw_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right) {
+	ERR_FAIL_NULL(p_canvas_item);
 
-	int from_x = MAX(p_global_rect.position.x + p_global_rect.size.x, p_clip_left);
-	int to_x = MIN(p_global_rect_next.position.x, p_clip_right);
-	float yh = get_size().height / 2.0;
+	Point2 from = p_from;
+	Point2 to = p_to;
 
-	editor->_draw_line_clipped(this, Point2(from_x, yh), Point2(to_x, yh), color, 2, p_clip_left, p_clip_right);
+	if (from.x == to.x && from.y == to.y) {
+		return;
+	}
+
+	if (to.x < from.x) {
+		SWAP(to, from);
+	}
+
+	if (to.x < p_clip_left) {
+		return;
+	}
+
+	if (from.x > p_clip_right) {
+		return;
+	}
+
+	if (to.x > p_clip_right) {
+		float c = (p_clip_right - from.x) / (to.x - from.x);
+		to = from.lerp(to, c);
+	}
+
+	if (from.x < p_clip_left) {
+		float c = (p_clip_left - from.x) / (to.x - from.x);
+		from = from.lerp(to, c);
+	}
+
+	p_canvas_item->draw_line(from, to, p_color, Math::round(p_width * EDSCALE), true);
 }
 
-/// ANIMATION TRACK EDITOR ///
+void AnimationTrackEditor::_draw_rect_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, const bool p_filled, const float p_clip_left, const float p_clip_right) {
+	ERR_FAIL_NULL(p_canvas_item);
+
+	Rect2 clipped_rect = p_rect;
+
+	if (clipped_rect.position.x < p_clip_left) {
+		float excess = p_clip_left - clipped_rect.position.x;
+		clipped_rect.position.x = p_clip_left;
+		clipped_rect.size.x -= excess;
+	}
+
+	if (clipped_rect.position.x + clipped_rect.size.x > p_clip_right) {
+		float excess = (clipped_rect.position.x + clipped_rect.size.x) - p_clip_right;
+		clipped_rect.size.x -= excess;
+	}
+
+	if (clipped_rect.size.x <= 0.0f) {
+		return;
+	}
+
+	p_canvas_item->draw_rect(clipped_rect, p_color, p_filled);
+}
+
+void AnimationTrackEditor::_draw_grid_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, const int p_raster_size, const float p_clip_left, const float p_clip_right) {
+	ERR_FAIL_NULL(p_canvas_item);
+	ERR_FAIL_COND_MSG(p_raster_size < 1, "Raster size must be at least 1");
+
+	if (p_rect.position.x + p_rect.size.x < p_clip_left || p_rect.position.x > p_clip_right) {
+		return;
+	}
+
+	Color shadow_color = Color(0.4, 0.4, 0.4);
+	Color highlight_color = Color(0.6, 0.6, 0.6);
+	Color main_color = p_color;
+
+	float cell_width = p_rect.size.x / p_raster_size;
+	float cell_height = p_rect.size.y / p_raster_size;
+
+	for (int y = 0; y < p_raster_size; y++) {
+		for (int x = 0; x < p_raster_size; x++) {
+			Vector2 cell_pos = p_rect.position + Vector2(x * cell_width, y * cell_height);
+			Rect2 cell_rect(cell_pos, Vector2(cell_width, cell_height));
+
+			if (cell_rect.position.x + cell_rect.size.x < p_clip_left || cell_rect.position.x > p_clip_right) {
+				continue;
+			}
+
+			float x_min = cell_rect.position.x;
+			float x_max = cell_rect.position.x + cell_rect.size.x;
+
+			if (x_min < p_clip_left) {
+				x_min = p_clip_left;
+			}
+
+			if (x_max > p_clip_right) {
+				x_max = p_clip_right;
+			}
+
+			if (x_min >= x_max) {
+				continue;
+			}
+
+			Rect2 clipped_cell(Vector2(x_min, cell_rect.position.y), Vector2(x_max - x_min, cell_rect.size.y));
+			Color cell_color = (x + y) % 2 == 0 ? shadow_color : highlight_color;
+			cell_color = cell_color.lerp(main_color, main_color.a);
+
+			p_canvas_item->draw_rect(clipped_cell, cell_color, true);
+		}
+	}
+}
+
+void AnimationTrackEditor::_draw_vertical_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const float p_length, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right) {
+	ERR_FAIL_NULL(p_canvas_item);
+
+	Point2 from = p_from;
+	Point2 to = Point2(p_from.x, p_from.y + p_length);
+
+	if (p_length == 0.0f) {
+		return;
+	}
+
+	if (from.x < p_clip_left - p_width / 2.0f || from.x > p_clip_right + p_width / 2.0f) {
+		return;
+	}
+
+	float clipped_width = p_width;
+	if (from.x - p_width / 2.0f < p_clip_left) {
+		float excess = p_clip_left - (from.x - p_width / 2.0f);
+		clipped_width -= excess;
+	}
+	if (from.x + p_width / 2.0f > p_clip_right) {
+		float excess = (from.x + p_width / 2.0f) - p_clip_right;
+		clipped_width -= excess;
+	}
+
+	if (clipped_width <= 0.0f) {
+		return;
+	}
+
+	p_canvas_item->draw_line(from, to, p_color, Math::round(clipped_width * EDSCALE));
+}
+
+String AnimationTrackEditor::_make_text_clipped(const String &text, const Ref<Font> &font, const int font_size, const float max_width) {
+	String clipped_text = text;
+	if (font->get_string_size(clipped_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
+		while (!clipped_text.is_empty() && font->get_string_size(clipped_text + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
+			clipped_text = clipped_text.substr(0, clipped_text.length() - 1);
+		}
+		clipped_text += "...";
+	}
+	return clipped_text;
+}
 
 bool AnimationTrackEditor::is_track_moving_selection() const {
 	return moving_track_selection;
@@ -8965,6 +9010,82 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 }
 
+/// KEY EDIT ///
+
+bool KeyEdit::is_moving_selection() const {
+	return moving_selection;
+}
+
+void KeyEdit::set_moving_selection(bool p_value) {
+	moving_selection = p_value;
+}
+
+float KeyEdit::get_moving_selection_offset() const {
+	return moving_selection_offset;
+}
+
+void KeyEdit::set_moving_selection_offset(float p_value) {
+	moving_selection_offset = p_value;
+}
+
+void KeyEdit::_update_key_type_icon() {
+	type_icon = _get_key_type_icon();
+	selected_icon = _get_key_type_icon_selected();
+
+	queue_redraw();
+}
+
+void KeyEdit::draw_key_link(const int p_index, const Rect2 &p_global_rect, const Rect2 &p_global_rect_next, const float p_clip_left, const float p_clip_right) {
+	Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
+	color.a = 0.5;
+
+	int from_x = MAX(p_global_rect.position.x + p_global_rect.size.x, p_clip_left);
+	int to_x = MIN(p_global_rect_next.position.x, p_clip_right);
+	float yh = get_size().height / 2.0;
+
+	editor->_draw_line_clipped(this, Point2(from_x, yh), Point2(to_x, yh), color, 2, p_clip_left, p_clip_right);
+}
+
+void KeyEdit::draw_timeline(const float p_clip_left, const float p_clip_right) {
+	const int key_count = get_key_count();
+	for (int i = 0; i < key_count; i++) {
+		Rect2 global_rect = get_global_key_rect(i);
+
+		bool selected = is_key_selected(i);
+
+		if (global_rect.position.x > p_clip_right) {
+			bool is_key_moving = selected && editor->is_track_moving_selection();
+			if (is_key_moving) {
+				continue;
+			} else {
+				break;
+			}
+		}
+
+		int next_i = i + 1;
+		if (next_i < key_count) {
+			if (is_linked(i, next_i)) {
+				const Rect2 global_rect_next = get_global_key_rect(next_i);
+
+				if (global_rect.position.x <= p_clip_right && global_rect_next.position.x >= p_clip_left) {
+					draw_key_link(i, global_rect, global_rect_next, p_clip_left, p_clip_right);
+				}
+			}
+		}
+
+		if (global_rect.position.x + global_rect.size.x < p_clip_left) {
+			continue;
+		}
+
+		try_draw_key(i, global_rect, selected, p_clip_left, p_clip_right);
+
+		if (selected) {
+			Color accent_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+			editor->_draw_rect_clipped(this, global_rect, accent_color, false, p_clip_left, p_clip_right);
+		}
+	}
+}
+
 /// ANIMATION MARKER EDIT ///
 
 AnimationMarkerEdit::AnimationMarkerEdit() {
@@ -8972,7 +9093,7 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	key_pivot.y = 1.0;
 	track_alignment = 1.0;
 
-	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationMarkerEdit::_play_position_draw));
+	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationMarkerEdit::_play_cursor_draw));
 
 	set_focus_mode(FOCUS_CLICK);
 	set_mouse_filter(MOUSE_FILTER_PASS); // Scroll has to work too for selection.
@@ -9047,7 +9168,7 @@ Ref<Texture2D> AnimationMarkerEdit::_get_key_type_icon_selected() const {
 	return get_editor_theme_icon(SNAME("MarkerSelected"));
 }
 
-void AnimationMarkerEdit::_play_position_draw() {
+void AnimationMarkerEdit::_play_cursor_draw() {
 	if (!has_valid_track()) {
 		return;
 	}
@@ -9056,7 +9177,7 @@ void AnimationMarkerEdit::_play_position_draw() {
 	float limit_end = get_size().width - timeline->get_buttons_width();
 
 	float h = get_size().height;
-	editor->draw_play_position(play_cursor, play_cursor_pos, h, limit, limit_end);
+	editor->draw_play_cursor(play_cursor, play_cursor_pos, h, limit, limit_end);
 }
 
 Variant AnimationMarkerEdit::get_key_value(const int p_index) const {
@@ -9776,6 +9897,65 @@ void AnimationMarkerEdit::_marker_rename_new_name_changed(const String &p_text) 
 	marker_rename_confirm->get_ok_button()->set_disabled(p_text.is_empty());
 }
 
+HBoxContainer *AnimationMarkerEdit::_create_hbox_labeled_control(const String &p_text, Control *p_control) const {
+	HBoxContainer *hbox = memnew(HBoxContainer);
+	Label *label = memnew(Label);
+	label->set_text(p_text);
+	hbox->add_child(label);
+	hbox->add_child(p_control);
+	hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+	label->set_h_size_flags(SIZE_EXPAND_FILL);
+	label->set_stretch_ratio(1.0);
+	p_control->set_h_size_flags(SIZE_EXPAND_FILL);
+	p_control->set_stretch_ratio(1.0);
+	return hbox;
+}
+
+void AnimationMarkerEdit::_update_key_edit() {
+	_clear_key_edit();
+
+	if (animation.is_null()) {
+		return;
+	}
+
+	if (get_selection_count() == 1) {
+		RBMap<SelectedKey, KeyInfo>::Iterator E = selection.front();
+		const SelectedKey &sk = E->key;
+		const StringName selected_name = sk.id;
+		const int key_index = editor->get_marker_index(selected_name);
+
+		StringName key_name = get_key_name(key_index);
+
+		key_edit = memnew(AnimationMarkerKeyEdit);
+		key_edit->animation = animation;
+		key_edit->animation_read_only = read_only;
+		key_edit->marker_name = key_name;
+		key_edit->use_fps = timeline->is_using_fps();
+		key_edit->marker_edit = this;
+
+		EditorNode::get_singleton()->push_item(key_edit);
+
+		InspectorDock::get_singleton()->set_info(TTR("Marker name is read-only in the inspector."), TTR("A marker's name can only be changed by right-clicking it in the animation editor and selecting \"Rename Marker\", in order to make sure that marker names are all unique."), true);
+	} else if (get_selection_count() > 1) {
+		multi_key_edit = memnew(AnimationMultiMarkerKeyEdit);
+		multi_key_edit->animation = animation;
+		multi_key_edit->animation_read_only = read_only;
+		multi_key_edit->marker_edit = this;
+
+		for (RBMap<SelectedKey, KeyInfo>::Iterator E = selection.begin(); E != selection.end(); ++E) {
+			const SelectedKey &sk = E->key;
+			const StringName selected_name = sk.id;
+			const int key_index = editor->get_marker_index(selected_name);
+
+			StringName key_name = get_key_name(key_index);
+
+			multi_key_edit->marker_names.push_back(key_name);
+		}
+
+		EditorNode::get_singleton()->push_item(multi_key_edit);
+	}
+}
+
 /// ANIMATION MARKER KEY EDIT ///
 
 float AnimationMarkerKeyEdit::get_time() const {
@@ -9975,190 +10155,4 @@ bool AnimationTrackEditor::is_marker_selection_active() const {
 
 Vector<int> AnimationTrackEditor::get_selected_marker_section() {
 	return marker_edit->get_selected_section();
-}
-
-// Draw
-
-void AnimationTrackEditor::_draw_texture_region_clipped(CanvasItem *p_canvas_item, const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_region, const float p_clip_left, const float p_clip_right, const Color &p_modulate) {
-	ERR_FAIL_NULL(p_canvas_item);
-
-	if (p_clip_left > p_rect.position.x + p_rect.size.x) {
-		return;
-	}
-
-	if (p_clip_right < p_rect.position.x) {
-		return;
-	}
-
-	Rect2 rect = p_rect;
-	Rect2 region = p_region;
-
-	if (p_clip_left > rect.position.x) {
-		int rect_pixels = (p_clip_left - rect.position.x);
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.position.x += rect_pixels;
-		rect.size.x -= rect_pixels;
-
-		region.position.x += region_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	if (p_clip_right < rect.position.x + rect.size.x) {
-		int rect_pixels = rect.position.x + rect.size.x - p_clip_right;
-		int region_pixels = rect_pixels * region.size.x / rect.size.x;
-
-		rect.size.x -= rect_pixels;
-		region.size.x -= region_pixels;
-	}
-
-	p_canvas_item->draw_texture_rect_region(p_texture, rect, region, p_modulate);
-}
-
-void AnimationTrackEditor::_draw_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const Point2 &p_to, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right) {
-	ERR_FAIL_NULL(p_canvas_item);
-
-	Point2 from = p_from;
-	Point2 to = p_to;
-
-	if (from.x == to.x && from.y == to.y) {
-		return;
-	}
-
-	if (to.x < from.x) {
-		SWAP(to, from);
-	}
-
-	if (to.x < p_clip_left) {
-		return;
-	}
-
-	if (from.x > p_clip_right) {
-		return;
-	}
-
-	if (to.x > p_clip_right) {
-		float c = (p_clip_right - from.x) / (to.x - from.x);
-		to = from.lerp(to, c);
-	}
-
-	if (from.x < p_clip_left) {
-		float c = (p_clip_left - from.x) / (to.x - from.x);
-		from = from.lerp(to, c);
-	}
-
-	p_canvas_item->draw_line(from, to, p_color, Math::round(p_width * EDSCALE), true);
-}
-
-void AnimationTrackEditor::_draw_rect_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, const bool p_filled, const float p_clip_left, const float p_clip_right) {
-	ERR_FAIL_NULL(p_canvas_item);
-
-	Rect2 clipped_rect = p_rect;
-
-	if (clipped_rect.position.x < p_clip_left) {
-		float excess = p_clip_left - clipped_rect.position.x;
-		clipped_rect.position.x = p_clip_left;
-		clipped_rect.size.x -= excess;
-	}
-
-	if (clipped_rect.position.x + clipped_rect.size.x > p_clip_right) {
-		float excess = (clipped_rect.position.x + clipped_rect.size.x) - p_clip_right;
-		clipped_rect.size.x -= excess;
-	}
-
-	if (clipped_rect.size.x <= 0.0f) {
-		return;
-	}
-
-	p_canvas_item->draw_rect(clipped_rect, p_color, p_filled);
-}
-
-void AnimationTrackEditor::_draw_grid_clipped(CanvasItem *p_canvas_item, const Rect2 &p_rect, const Color &p_color, const int p_raster_size, const float p_clip_left, const float p_clip_right) {
-	ERR_FAIL_NULL(p_canvas_item);
-	ERR_FAIL_COND_MSG(p_raster_size < 1, "Raster size must be at least 1");
-
-	if (p_rect.position.x + p_rect.size.x < p_clip_left || p_rect.position.x > p_clip_right) {
-		return;
-	}
-
-	Color shadow_color = Color(0.4, 0.4, 0.4);
-	Color highlight_color = Color(0.6, 0.6, 0.6);
-	Color main_color = p_color;
-
-	float cell_width = p_rect.size.x / p_raster_size;
-	float cell_height = p_rect.size.y / p_raster_size;
-
-	for (int y = 0; y < p_raster_size; y++) {
-		for (int x = 0; x < p_raster_size; x++) {
-			Vector2 cell_pos = p_rect.position + Vector2(x * cell_width, y * cell_height);
-			Rect2 cell_rect(cell_pos, Vector2(cell_width, cell_height));
-
-			if (cell_rect.position.x + cell_rect.size.x < p_clip_left || cell_rect.position.x > p_clip_right) {
-				continue;
-			}
-
-			float x_min = cell_rect.position.x;
-			float x_max = cell_rect.position.x + cell_rect.size.x;
-
-			if (x_min < p_clip_left) {
-				x_min = p_clip_left;
-			}
-
-			if (x_max > p_clip_right) {
-				x_max = p_clip_right;
-			}
-
-			if (x_min >= x_max) {
-				continue;
-			}
-
-			Rect2 clipped_cell(Vector2(x_min, cell_rect.position.y), Vector2(x_max - x_min, cell_rect.size.y));
-			Color cell_color = (x + y) % 2 == 0 ? shadow_color : highlight_color;
-			cell_color = cell_color.lerp(main_color, main_color.a);
-
-			p_canvas_item->draw_rect(clipped_cell, cell_color, true);
-		}
-	}
-}
-
-void AnimationTrackEditor::_draw_vertical_line_clipped(CanvasItem *p_canvas_item, const Point2 &p_from, const float p_length, const Color &p_color, const float p_width, const float p_clip_left, const float p_clip_right) {
-	ERR_FAIL_NULL(p_canvas_item);
-
-	Point2 from = p_from;
-	Point2 to = Point2(p_from.x, p_from.y + p_length);
-
-	if (p_length == 0.0f) {
-		return;
-	}
-
-	if (from.x < p_clip_left - p_width / 2.0f || from.x > p_clip_right + p_width / 2.0f) {
-		return;
-	}
-
-	float clipped_width = p_width;
-	if (from.x - p_width / 2.0f < p_clip_left) {
-		float excess = p_clip_left - (from.x - p_width / 2.0f);
-		clipped_width -= excess;
-	}
-	if (from.x + p_width / 2.0f > p_clip_right) {
-		float excess = (from.x + p_width / 2.0f) - p_clip_right;
-		clipped_width -= excess;
-	}
-
-	if (clipped_width <= 0.0f) {
-		return;
-	}
-
-	p_canvas_item->draw_line(from, to, p_color, Math::round(clipped_width * EDSCALE));
-}
-
-String AnimationTrackEditor::_make_text_clipped(const String &text, const Ref<Font> &font, const int font_size, const float max_width) {
-	String clipped_text = text;
-	if (font->get_string_size(clipped_text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
-		while (!clipped_text.is_empty() && font->get_string_size(clipped_text + "...", HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x > max_width) {
-			clipped_text = clipped_text.substr(0, clipped_text.length() - 1);
-		}
-		clipped_text += "...";
-	}
-	return clipped_text;
 }

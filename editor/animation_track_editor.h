@@ -248,7 +248,7 @@ class AnimationTimelineEdit : public Range {
 	void _zoom_changed(double);
 	void _anim_length_changed(double p_new_len);
 	void _anim_loop_pressed();
-	void _play_position_draw();
+	void _play_cursor_draw();
 	void _track_added(int p_track);
 	float _get_zoom_scale(double p_zoom_value) const;
 	void _scroll_to_start();
@@ -505,7 +505,7 @@ protected:
 	// Marker manipulation methods
 	virtual void _clear_selection_for_anim(const Ref<Animation> &p_anim) override;
 	void _zoom_changed();
-	void _play_position_draw();
+	void _play_cursor_draw();
 	void _menu_selected(int p_index);
 	void _insert_marker(float p_ofs);
 	void _rename_marker(const StringName &p_name);
@@ -672,7 +672,7 @@ public:
 	void _zoom_changed();
 	void _menu_selected(int p_index);
 	void _path_submitted(const String &p_text);
-	void _play_position_draw();
+	void _play_cursor_draw();
 	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 	bool _lookup_key(int p_key_idx) const;
 
@@ -979,8 +979,8 @@ public:
 	// Marker drawing methods
 	void draw_marker_section(CanvasItem *p_canvas_item, const float p_clip_left, const float p_clip_right);
 	void draw_marker_lines(CanvasItem *p_canvas_item, const float p_height, float p_clip_left, float p_clip_right);
-	void draw_play_position(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right);
-	void draw_play_cursor(CanvasItem *p_canvas_item, const double p_time, const float p_clip_left, const float p_clip_right);
+	void draw_play_cursor(CanvasItem *p_canvas_item, const double p_time, const float p_height, const float p_clip_left, const float p_clip_right);
+	void draw_play_cursor_head(CanvasItem *p_canvas_item, const double p_time, const float p_clip_left, const float p_clip_right);
 
 	// Editor access and configuration
 	PropertySelector *get_prop_selector() { return prop_selector; }

@@ -114,6 +114,9 @@ protected:
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data) override;
 	virtual void apply_data(const Ref<Resource> resource, const float time) {}
 	virtual void get_key_region_data(Ref<Resource> resource, Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {}
+
+public:
+	AnimationTrackEditClip();
 };
 
 // Class for editing audio clip tracks
