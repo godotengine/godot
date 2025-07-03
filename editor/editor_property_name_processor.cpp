@@ -181,6 +181,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["k2"] = "K2";
 	capitalize_string_remaps["kb"] = "(KB)"; // Unit.
 	capitalize_string_remaps["ldr"] = "LDR";
+	capitalize_string_remaps["licm"] = "LICM";
 	capitalize_string_remaps["lod"] = "LOD";
 	capitalize_string_remaps["lowpass"] = "Low-pass";
 	capitalize_string_remaps["macos"] = "macOS";

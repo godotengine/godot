@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "gdscript_compiler.h"
+#include "gdscript_optimizer.h"
 
 ///////////////////////////
 
@@ -578,6 +579,14 @@ String GDScript::_get_debug_path() const {
 	}
 }
 
+void GDScript::_script_optimizer_set_local_options(GDScriptOptimizer &r_optimizer) const {
+	r_optimizer.local_options.constant_folding = optimization_options[OPTIMIZATION_OPTION_CONSTANT_FOLDING];
+	r_optimizer.local_options.inlining = optimization_options[OPTIMIZATION_OPTION_INLINING];
+	r_optimizer.local_options.licm = optimization_options[OPTIMIZATION_OPTION_LICM];
+	r_optimizer.local_options.remove_unused = optimization_options[OPTIMIZATION_OPTION_DEAD_CODE_ELIMINATION];
+	r_optimizer.local_options.unrolling = optimization_options[OPTIMIZATION_OPTION_LOOP_UNROLLING];
+}
+
 Error GDScript::reload(bool p_keep_state) {
 	GDScriptLanguage::singleton->lock.lock();
 	bool has_instances = instances.size();
@@ -611,6 +620,12 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
+	GDScriptOptimizer optimizer;
+	if (!Engine::get_singleton()->is_editor_hint() && is_optimization_enabled()) {
+		_script_optimizer_set_local_options(optimizer);
+		optimizer.optimize(parser, path, parser.requests_optimization());
+	}
+
 	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool_script();
 
 	GDScriptCompiler compiler;
@@ -622,6 +637,11 @@ Error GDScript::reload(bool p_keep_state) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
+
+			if (!Engine::get_singleton()->is_editor_hint() && is_optimization_enabled()) {
+				optimizer.generate_error_report(parser, parser.requests_optimization());
+			}
+
 			return ERR_COMPILATION_FAILED;
 		} else {
 			return err;
@@ -673,6 +693,7 @@ Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p
 		Map<StringName, GDScriptFunction *>::Element *E = top->member_functions.find(p_method);
 		if (E) {
 			ERR_FAIL_COND_V_MSG(!E->get()->is_static(), Variant(), "Can't call non-static function '" + String(p_method) + "' in script.");
+			ERR_FAIL_COND_V_MSG(E->get()->is_inline() && (top != this), Variant(), "Can't call inline function '" + String(p_method) + "' from a different script.");
 
 			return E->get()->call(nullptr, p_args, p_argcount, r_error);
 		}
@@ -732,7 +753,27 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 
+	BIND_ENUM_CONSTANT(OPTIMIZATION_OPTION_LICM);
+	BIND_ENUM_CONSTANT(OPTIMIZATION_OPTION_CONSTANT_FOLDING);
+	BIND_ENUM_CONSTANT(OPTIMIZATION_OPTION_DEAD_CODE_ELIMINATION);
+	BIND_ENUM_CONSTANT(OPTIMIZATION_OPTION_INLINING);
+	BIND_ENUM_CONSTANT(OPTIMIZATION_OPTION_LOOP_UNROLLING);
+
 	ClassDB::bind_method(D_METHOD("get_as_byte_code"), &GDScript::get_as_byte_code);
+
+	ClassDB::bind_method(D_METHOD("set_optimization_option", "option", "enabled"), &GDScript::set_optimization_option);
+	ClassDB::bind_method(D_METHOD("get_optimization_option", "option"), &GDScript::get_optimization_option);
+
+	ClassDB::bind_method(D_METHOD("set_optimization_enabled", "enabled"), &GDScript::set_optimization_enabled);
+	ClassDB::bind_method(D_METHOD("is_optimization_enabled"), &GDScript::is_optimization_enabled);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "optimize"), "set_optimization_enabled", "is_optimization_enabled");
+	ADD_GROUP("Optimization Options", "optimization_option_");
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "optimization_option_licm"), "set_optimization_option", "get_optimization_option", OPTIMIZATION_OPTION_LICM);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "optimization_option_constant_folding"), "set_optimization_option", "get_optimization_option", OPTIMIZATION_OPTION_CONSTANT_FOLDING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "optimization_option_dead_code_elimination"), "set_optimization_option", "get_optimization_option", OPTIMIZATION_OPTION_DEAD_CODE_ELIMINATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "optimization_option_inlining"), "set_optimization_option", "get_optimization_option", OPTIMIZATION_OPTION_INLINING);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "optimization_option_loop_unrolling"), "set_optimization_option", "get_optimization_option", OPTIMIZATION_OPTION_LOOP_UNROLLING);
 }
 
 Vector<uint8_t> GDScript::get_as_byte_code() const {
@@ -796,11 +837,22 @@ Error GDScript::load_byte_code(const String &p_path) {
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
+	GDScriptOptimizer optimizer;
+	if (!Engine::get_singleton()->is_editor_hint() && is_optimization_enabled()) {
+		_script_optimizer_set_local_options(optimizer);
+		optimizer.optimize(parser, path, parser.requests_optimization());
+	}
+
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this);
 
 	if (err) {
 		_err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
+
+		if (!Engine::get_singleton()->is_editor_hint() && is_optimization_enabled()) {
+			optimizer.generate_error_report(parser, parser.requests_optimization());
+		}
+
 		ERR_FAIL_V(ERR_COMPILATION_FAILED);
 	}
 
@@ -811,6 +863,16 @@ Error GDScript::load_byte_code(const String &p_path) {
 	}
 
 	return OK;
+}
+
+void GDScript::set_optimization_option(OptimizationOption p_option, bool p_enabled) {
+	ERR_FAIL_COND((uint32_t)p_option >= OPTIMIZATION_OPTION_MAX);
+	optimization_options[p_option] = p_enabled;
+}
+
+bool GDScript::get_optimization_option(OptimizationOption p_option) const {
+	ERR_FAIL_COND_V((uint32_t)p_option >= OPTIMIZATION_OPTION_MAX, false);
+	return optimization_options[p_option];
 }
 
 Error GDScript::load_source_code(const String &p_path) {
@@ -924,6 +986,11 @@ GDScript::GDScript() :
 	_base = nullptr;
 	_owner = nullptr;
 	tool = false;
+
+	for (int n = 0; n < OPTIMIZATION_OPTION_MAX; n++) {
+		optimization_options[n] = true;
+	}
+
 #ifdef TOOLS_ENABLED
 	source_changed_cache = false;
 	placeholder_fallback_enabled = false;
@@ -1214,6 +1281,11 @@ Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_arg
 	while (sptr) {
 		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
 		if (E) {
+#ifdef TOOLS_ENABLED
+			// Technically we *can* call inlines from another script, however this would result in inconsistent behaviour
+			// depending on whether the function was inlined or not, so we enforce this.
+			ERR_FAIL_COND_V_MSG(E->get()->is_inline() && (sptr != script.ptr()), Variant(), "Can't call inline function '" + String(p_method) + "' from a different script.");
+#endif
 			return E->get()->call(this, p_args, p_argcount, r_error);
 		}
 		sptr = sptr->_base;
@@ -1798,6 +1870,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"export",
 		"onready",
 		"static",
+		"inline",
+		"unroll",
 		"var",
 		// control flow
 		"break",
@@ -2162,6 +2236,10 @@ GDScriptLanguage::GDScriptLanguage() {
 		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
 	}
 #endif // DEBUG_ENABLED
+
+	GDScriptOptimizer::global_options.optimization = GLOBAL_DEF("application/run/gdscript_optimization", false);
+	GDScriptOptimizer::global_options.logging_level = GLOBAL_DEF("debug/gdscript/optimization/logging_level", 2); // 2 should be default.
+	ProjectSettings::get_singleton()->set_custom_property_info("debug/gdscript/optimization/logging_level", PropertyInfo(Variant::INT, "debug/gdscript/optimization/logging_level", PROPERTY_HINT_RANGE, "0,5,1"));
 }
 
 GDScriptLanguage::~GDScriptLanguage() {
