@@ -49,21 +49,23 @@
 		<member name="monitoring_feeds" type="bool" setter="set_monitoring_feeds" getter="is_monitoring_feeds" default="false">
 			If [code]true[/code], the server is actively monitoring available camera feeds.
 			This has a performance cost, so only set it to [code]true[/code] when you're actively accessing the camera.
-			[b]Note:[/b] After setting this to [code]true[/code], camera feeds will be available a few frames later.
+			[b]Note:[/b] After setting it to [code]true[/code], you can receive updated camera feeds through the update_feeds signal.
 			[codeblocks]
 			[gdscript]
+			func _on_update_feeds():
+				var feeds = CameraServer.feeds()
+
+			CameraServer.update_feeds.connect(_on_update_feeds)
 			CameraServer.monitoring_feeds = true
-			while not CameraServer.monitoring_feeds:
-				await get_tree().process_frame
-			var feeds = CameraServer.feeds()
 			[/gdscript]
 			[csharp]
-			CameraServer.MonitoringFeeds = true
-			while (!CameraServer.MonitoringFeeds)
+			void OnUpdateFeeds()
 			{
-				await GetTree().ProcessFrame;
+				var feeds = CameraServer.Feeds();
 			}
-			var feeds = CameraServer.Feeds();
+
+			CameraServer.UpdateFeeds += OnUpdateFeeds;
+			CameraServer.MonitoringFeeds = true
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -79,6 +81,11 @@
 			<param index="0" name="id" type="int" />
 			<description>
 				Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged).
+			</description>
+		</signal>
+		<signal name="update_feeds">
+			<description>
+				Emitted when camera feeds are updated.
 			</description>
 		</signal>
 	</signals>
