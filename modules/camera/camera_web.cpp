@@ -62,6 +62,7 @@ void CameraFeedWeb::_on_get_pixeldata(void *context, const uint8_t *rawdata, con
 
 	image->initialize_data(p_width, p_height, false, Image::FORMAT_RGBA8, data);
 	feed->set_rgb_image(image);
+	// delete when https://github.com/godotengine/godot/pull/104809 is merged
 	feed->emit_signal(SNAME("frame_changed"));
 }
 
@@ -150,8 +151,9 @@ void CameraWeb::_on_get_cameras_callback(void *context, const Vector<CameraInfo>
 		Ref<CameraFeedWeb> feed = memnew(CameraFeedWeb(info));
 		server->add_feed(feed);
 	}
-	server->CameraServer::set_monitoring_feeds(true);
 	server->activating.clear();
+	// waiting for merge of https://github.com/godotengine/godot/pull/108165
+	// server->emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 void CameraWeb::_update_feeds() {
@@ -172,13 +174,13 @@ void CameraWeb::set_monitoring_feeds(bool p_monitoring_feeds) {
 		return;
 	}
 
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
 		if (camera_driver_web == nullptr) {
 			camera_driver_web = new CameraDriverWeb();
 		}
 		_update_feeds();
 	} else {
-		CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 		_cleanup();
 	}
 }
