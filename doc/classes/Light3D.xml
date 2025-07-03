@@ -162,40 +162,40 @@
 		<constant name="PARAM_SPOT_ATTENUATION" value="8" enum="Param">
 			Constant for accessing [member SpotLight3D.spot_angle_attenuation].
 		</constant>
-		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="11" enum="Param">
+		<constant name="PARAM_SHADOW_MAX_DISTANCE" value="9" enum="Param">
 			Constant for accessing [member DirectionalLight3D.directional_shadow_max_distance].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="12" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_1_OFFSET" value="10" enum="Param">
 			Constant for accessing [member DirectionalLight3D.directional_shadow_split_1].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="13" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_2_OFFSET" value="11" enum="Param">
 			Constant for accessing [member DirectionalLight3D.directional_shadow_split_2].
 		</constant>
-		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="14" enum="Param">
+		<constant name="PARAM_SHADOW_SPLIT_3_OFFSET" value="12" enum="Param">
 			Constant for accessing [member DirectionalLight3D.directional_shadow_split_3].
 		</constant>
-		<constant name="PARAM_SHADOW_FADE_START" value="15" enum="Param">
+		<constant name="PARAM_SHADOW_FADE_START" value="13" enum="Param">
 			Constant for accessing [member DirectionalLight3D.directional_shadow_fade_start].
 		</constant>
-		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="16" enum="Param">
+		<constant name="PARAM_SHADOW_NORMAL_BIAS" value="14" enum="Param">
 			Constant for accessing [member shadow_normal_bias].
 		</constant>
-		<constant name="PARAM_SHADOW_BIAS" value="17" enum="Param">
+		<constant name="PARAM_SHADOW_BIAS" value="15" enum="Param">
 			Constant for accessing [member shadow_bias].
 		</constant>
-		<constant name="PARAM_SHADOW_PANCAKE_SIZE" value="18" enum="Param">
+		<constant name="PARAM_SHADOW_PANCAKE_SIZE" value="16" enum="Param">
 			Constant for accessing [member DirectionalLight3D.directional_shadow_pancake_size].
 		</constant>
-		<constant name="PARAM_SHADOW_OPACITY" value="19" enum="Param">
+		<constant name="PARAM_SHADOW_OPACITY" value="17" enum="Param">
 			Constant for accessing [member shadow_opacity].
 		</constant>
-		<constant name="PARAM_SHADOW_BLUR" value="20" enum="Param">
+		<constant name="PARAM_SHADOW_BLUR" value="18" enum="Param">
 			Constant for accessing [member shadow_blur].
 		</constant>
-		<constant name="PARAM_TRANSMITTANCE_BIAS" value="21" enum="Param">
+		<constant name="PARAM_TRANSMITTANCE_BIAS" value="19" enum="Param">
 			Constant for accessing [member shadow_transmittance_bias].
 		</constant>
-		<constant name="PARAM_INTENSITY" value="22" enum="Param">
+		<constant name="PARAM_INTENSITY" value="20" enum="Param">
 			Constant for accessing [member light_intensity_lumens] and [member light_intensity_lux]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_MAX" value="23" enum="Param">
