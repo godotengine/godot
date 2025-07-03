@@ -65,7 +65,7 @@
 			}
 
 			CameraServer.FeedsUpdated += OnFeedsUpdated;
-			CameraServer.MonitoringFeeds = true
+			CameraServer.MonitoringFeeds = true;
 			[/csharp]
 			[/codeblocks]
 		</member>
