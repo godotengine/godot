@@ -1744,14 +1744,14 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			if (animation.is_null()) {
+				return;
+			}
+
 			float limit = get_name_limit();
 			float limit_end = get_size().width - get_buttons_width();
 
 			float key_range = limit_end - limit;
-
-			if (animation.is_null()) {
-				return;
-			}
 
 			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			const int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
@@ -2130,8 +2130,10 @@ void AnimationTimelineEdit::_play_cursor_draw() {
 	}
 
 	float limit = get_name_limit();
-	float limit_end = play_cursor->get_size().width - get_buttons_width();
+	float limit_end = get_size().width - get_buttons_width();
 
+	float h = get_size().height;
+	editor->draw_play_cursor(play_cursor, play_cursor_pos, h, limit, limit_end);
 	editor->draw_play_cursor_head(play_cursor, play_cursor_pos, limit, limit_end);
 }
 
@@ -2392,10 +2394,6 @@ bool AnimationKeyEdit::_is_ui_pos_in_current_section(const Point2 &p_pos) {
 
 bool AnimationKeyEdit::has_valid_track() const {
 	if (animation.is_null()) {
-		return false;
-	}
-
-	if (get_key_count() == 0) {
 		return false;
 	}
 
@@ -9090,7 +9088,7 @@ void KeyEdit::draw_timeline(const float p_clip_left, const float p_clip_right) {
 
 AnimationMarkerEdit::AnimationMarkerEdit() {
 	key_pivot.x = 0.5;
-	key_pivot.y = 1.0;
+	key_pivot.y = 0.5;
 	track_alignment = 1.0;
 
 	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationMarkerEdit::_play_cursor_draw));
