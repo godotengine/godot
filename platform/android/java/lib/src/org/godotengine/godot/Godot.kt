@@ -204,7 +204,7 @@ class Godot private constructor(val context: Context) {
 	 * @throws IllegalArgumentException exception if the specified expansion pack (if any)
 	 * is invalid.
 	 */
-	fun initEngine(commandLineParams: List<String>, hostPlugins: Set<GodotPlugin>): Boolean {
+	fun initEngine(host: GodotHost?, commandLineParams: List<String>, hostPlugins: Set<GodotPlugin> = Collections.emptySet()): Boolean {
 		if (isNativeInitialized()) {
 			Log.d(TAG, "Engine already initialized")
 			return true
@@ -216,6 +216,8 @@ class Godot private constructor(val context: Context) {
 
 		beginBenchmarkMeasure("Startup", "Godot::initEngine")
 		try {
+			this.primaryHost = host
+
 			Log.v(TAG, "Initializing Godot plugin registry")
 			val runtimePlugins = mutableSetOf<GodotPlugin>(AndroidRuntimePlugin(this))
 			runtimePlugins.addAll(hostPlugins)
