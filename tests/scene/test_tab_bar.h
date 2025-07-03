@@ -51,7 +51,8 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->get_previous_tab() == -1);
 	}
 
-	SUBCASE("[TabBar] add tabs") {
+	SUBCASE("[TabBar] add tabs disallowing deselection") {
+		tab_bar->set_deselect_enabled(false);
 		tab_bar->add_tab("tab0");
 		CHECK(tab_bar->get_tab_count() == 1);
 		CHECK(tab_bar->get_current_tab() == 0);
@@ -90,6 +91,23 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->get_tab_text_direction(2) == Control::TEXT_DIRECTION_INHERITED);
 		CHECK_FALSE(tab_bar->is_tab_disabled(2));
 		CHECK_FALSE(tab_bar->is_tab_hidden(2));
+	}
+
+	SUBCASE("[TabBar] add tabs allowing deselection") {
+		tab_bar->set_deselect_enabled(true);
+		tab_bar->add_tab("tab0");
+		CHECK(tab_bar->get_tab_count() == 1);
+		CHECK(tab_bar->get_current_tab() == -1);
+		CHECK(tab_bar->get_previous_tab() == -1);
+		SIGNAL_CHECK_FALSE("tab_selected");
+		SIGNAL_CHECK_FALSE("tab_changed");
+
+		tab_bar->add_tab("tab1");
+		CHECK(tab_bar->get_tab_count() == 2);
+		CHECK(tab_bar->get_current_tab() == -1);
+		CHECK(tab_bar->get_previous_tab() == -1);
+		SIGNAL_CHECK_FALSE("tab_selected");
+		SIGNAL_CHECK_FALSE("tab_changed");
 	}
 
 	SUBCASE("[TabBar] set tab count") {
@@ -320,7 +338,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		SIGNAL_CHECK("tab_selected", { { -1 } });
 		SIGNAL_CHECK("tab_changed", { { -1 } });
 
-		// Adding a tab will still set the current tab to 0.
+		// Adding first tab will NOT change the current tab. (stays deselected)
 		tab_bar->clear_tabs();
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == -1);
@@ -329,10 +347,10 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		tab_bar->add_tab("tab1");
 		tab_bar->add_tab("tab2");
 		CHECK(tab_bar->get_tab_count() == 3);
-		CHECK(tab_bar->get_current_tab() == 0);
+		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", { { 0 } });
-		SIGNAL_CHECK("tab_changed", { { 0 } });
+		SIGNAL_CHECK_FALSE("tab_selected");
+		SIGNAL_CHECK_FALSE("tab_changed");
 
 		tab_bar->set_current_tab(-1);
 		SIGNAL_DISCARD("tab_selected");
