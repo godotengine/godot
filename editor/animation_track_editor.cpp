@@ -2419,6 +2419,10 @@ bool AnimationKeyEdit::has_valid_key(const int p_index) const {
 /// KEY EDIT ///
 
 KeyEdit::KeyEdit() {
+	key_pivot.x = 0.5;
+	key_pivot.y = 0.5;
+	track_alignment = 0.5;
+
 	play_cursor = memnew(Control);
 	play_cursor->set_mouse_filter(MOUSE_FILTER_PASS);
 	add_child(play_cursor);
@@ -2469,26 +2473,20 @@ Rect2 KeyEdit::get_key_rect(const int p_index) const {
 }
 
 Rect2 KeyEdit::get_global_key_rect(const int p_index, bool p_ignore_moving_selection) const {
-	Rect2 local_rect = get_key_rect(p_index);
-	return _to_global_key_rect(p_index, local_rect, p_ignore_moving_selection);
-}
-
-Rect2 KeyEdit::_to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection) const {
-	Rect2 global_rect = Rect2(p_local_rect);
-
-	global_rect.position.x += get_global_move_key_time(p_index, p_ignore_moving_selection);
+	Rect2 rect = get_key_rect(p_index);
+	rect.position.x += get_global_move_key_time(p_index, p_ignore_moving_selection);
 
 	float track_height = get_size().height;
-	float key_height = p_local_rect.size.y;
+	float key_height = rect.size.y;
 
 	// Calculate normalized CLAMP bounds to keep key within track
 	float min_y = track_height > 0 ? key_height / (2.0 * track_height) : 0.0;
 	float max_y = track_height > 0 ? 1.0 - key_height / (2.0 * track_height) : 1.0;
 
 	// Position key center, adjusted for key height
-	global_rect.position.y += track_height * CLAMP(track_alignment - get_key_y(p_index), min_y, max_y);
+	rect.position.y += track_height * CLAMP(track_alignment - get_key_y(p_index), min_y, max_y);
 
-	return global_rect;
+	return rect;
 }
 
 Color KeyEdit::get_key_color(const int p_index) const {
@@ -3858,10 +3856,6 @@ void AnimationTrackEdit::_bind_methods() {
 }
 
 AnimationTrackEdit::AnimationTrackEdit() {
-	key_pivot.x = 0.5;
-	key_pivot.y = 0.5;
-	track_alignment = 0.5;
-
 	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationTrackEdit::_play_cursor_draw));
 
 	set_focus_mode(FOCUS_CLICK);
@@ -9087,8 +9081,6 @@ void KeyEdit::draw_timeline(const float p_clip_left, const float p_clip_right) {
 /// ANIMATION MARKER EDIT ///
 
 AnimationMarkerEdit::AnimationMarkerEdit() {
-	key_pivot.x = 0.5;
-	key_pivot.y = 0.5;
 	track_alignment = 1.0;
 
 	play_cursor->connect(SceneStringName(draw), callable_mp(this, &AnimationMarkerEdit::_play_cursor_draw));

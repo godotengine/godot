@@ -461,7 +461,6 @@ bool AnimationTrackEditClip::_is_key_region_outside(const Region &region, const 
 
 AnimationTrackEditTypeAudio::AnimationTrackEditTypeAudio() {
 	key_pivot.x = 0.0;
-	key_pivot.y = 0.5;
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAudio::_preview_changed));
 }
 
@@ -542,7 +541,6 @@ String AnimationTrackEditTypeAudio::_get_tooltip(const int p_index) const {
 
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
 	key_pivot.x = 0.0;
-	key_pivot.y = 0.5;
 	AnimationPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditTypeAnimation::_preview_changed));
 }
 
@@ -667,7 +665,6 @@ String AnimationTrackEditTypeAnimation::_get_tooltip(const int p_index) const {
 
 AnimationTrackEditAudio::AnimationTrackEditAudio() {
 	key_pivot.x = 0.0;
-	key_pivot.y = 0.5;
 	AudioStreamPreviewGenerator::get_singleton()->connect("preview_updated", callable_mp(this, &AnimationTrackEditAudio::_preview_changed));
 }
 
@@ -717,7 +714,6 @@ void AnimationTrackEditAudio::_preview_changed(ObjectID p_which) {
 
 AnimationTrackEditSubAnim::AnimationTrackEditSubAnim() {
 	key_pivot.x = 0.0;
-	key_pivot.y = 0.5;
 }
 
 bool AnimationTrackEditSubAnim::has_valid_key(const int p_index) const {
@@ -799,8 +795,6 @@ void AnimationTrackEditSubAnim::_preview_changed(ObjectID p_which) {
 /// ANIMATION TRACK EDIT BOOL ///
 
 AnimationTrackEditBool::AnimationTrackEditBool() {
-	key_pivot.x = 0.5;
-	key_pivot.y = 0.5;
 }
 
 float AnimationTrackEditBool::get_key_width(const int p_index) const {
@@ -830,8 +824,6 @@ void AnimationTrackEditBool::draw_key(const int p_index, const Rect2 &p_global_r
 /// ANIMATION TRACK EDIT TYPE METHOD ///
 
 AnimationTrackEditTypeMethod::AnimationTrackEditTypeMethod() {
-	key_pivot.x = 0.5;
-	key_pivot.y = 0.5;
 }
 
 float AnimationTrackEditTypeMethod::get_key_width(const int p_index) const {
@@ -890,8 +882,6 @@ String AnimationTrackEditTypeMethod::_make_method_text(const Dictionary &d) cons
 /// ANIMATION TRACK EDIT COLOR ///
 
 AnimationTrackEditColor::AnimationTrackEditColor() {
-	key_pivot.x = 0.5;
-	key_pivot.y = 0.5;
 }
 
 float AnimationTrackEditColor::get_key_width(const int p_index) const {
@@ -971,7 +961,6 @@ void AnimationTrackEditColor::draw_key_link(const int p_index, const Rect2 &p_gl
 
 AnimationTrackEditSpriteFrame::AnimationTrackEditSpriteFrame() {
 	key_pivot.x = 0.0;
-	key_pivot.y = 0.5;
 }
 
 void AnimationTrackEditSpriteFrame::set_node(Object *p_object) {
@@ -1117,8 +1106,6 @@ Rect2 AnimationTrackEditSpriteFrame::_create_region_animated_sprite(int p_index,
 /// ANIMATION TRACK EDIT VOLUME DB ///
 
 AnimationTrackEditVolumeDB::AnimationTrackEditVolumeDB() {
-	key_pivot.x = 0.5;
-	key_pivot.y = 0.5;
 }
 
 float AnimationTrackEditVolumeDB::get_key_width(const int p_index) const {

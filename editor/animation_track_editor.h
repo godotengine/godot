@@ -402,7 +402,6 @@ public:
 
 protected:
 	int find_closest_key(const Point2 &p_pos) const;
-	Rect2 _to_global_key_rect(const int p_index, const Rect2 &p_local_rect, bool p_ignore_moving_selection = false) const;
 	void _draw_default_key(const int p_index, const Rect2 &p_global_rect, const bool p_selected, const float p_clip_left, const float p_clip_right);
 
 public:
