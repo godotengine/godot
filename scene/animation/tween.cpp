@@ -875,7 +875,14 @@ void SubtweenTweener::start() {
 
 	// Reset the subtween.
 	subtween->stop();
-	subtween->play();
+
+	// It's possible that a subtween could be killed before it is started;
+	// if so, we just want to skip it entirely.
+	if (subtween->is_valid()) {
+		subtween->play();
+	} else {
+		_finish();
+	}
 }
 
 bool SubtweenTweener::step(double &r_delta) {
