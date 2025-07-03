@@ -2822,6 +2822,12 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
+	// Minimize allocations when picking the most relevant lights per mesh.
+	// We need to track the score and current index of the best N lights.
+	thread_local LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx;
+	omni_score_idx.clear();
+	spot_score_idx.clear();
+
 	Transform3D inv_cam_transform = cull_data.cam_transform.inverse();
 	float z_near = cull_data.camera_matrix->get_z_near();
 
@@ -2933,23 +2939,24 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 					if (geometry_instance_pair_mask & (1 << RS::INSTANCE_LIGHT) && (idata.flags & InstanceData::FLAG_GEOM_LIGHTING_DIRTY)) {
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 						ERR_FAIL_NULL(geom->geometry_instance);
-						// Clear any existing light instances for this mesh and return the max count per-mesh, and total (per-scene).
-						Pair<uint32_t, uint32_t> max_per_mesh_total = geom->geometry_instance->clear_light_instances();
-						if ((max_per_mesh_total.first > 0) && (max_per_mesh_total.second > 0)) {
-							// Run through all M lights, but use a heap to keep track of the best N
-							uint32_t omni_count = 0, spot_count = 0;
-							// Score, index into the light array.
-							LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx;
-							// SortArray has heap functionality in it.
-							SortArray<Pair<float, uint32_t>> heapify;
-							bool omni_needs_heap = true, spot_needs_heap = true;
-							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
-							// Run through all lights in the scene (there might be more than max_renderable_lights).
+						// Clear any existing light instances for this mesh and find the max count per-mesh, and total (per-scene).
+						geom->geometry_instance->clear_light_instances();
+						uint32_t max_lights_per_mesh = geom->geometry_instance->get_max_lights_per_mesh();
+						uint32_t max_lights_total = geom->geometry_instance->get_max_lights_total();
+						if ((max_lights_per_mesh > 0) && (max_lights_total > 0)) {
+							// For the top N lights, track the score and the index into the internal light storage array.
 							uint32_t total_omni_count = 0, total_spot_count = 0;
+							bool omni_needs_heap = true, spot_needs_heap = true;
+							uint32_t omni_count = 0, spot_count = 0;
+							omni_score_idx.clear();
+							spot_score_idx.clear();
+							SortArray<Pair<float, uint32_t>> heapify; // SortArray has heap functions, but no local storage.
+							// Iterate over the lights (possibly > max_renderable_lights), keeping the closest to the mesh center.
+							Vector3 mesh_center = idata.instance->transformed_aabb.get_center();
 							for (const Instance *E : geom->lights) {
 								RS::LightType light_type = RSG::light_storage->light_get_type(E->base);
-								if (((RS::LIGHT_OMNI == light_type) && (total_omni_count++ < max_per_mesh_total.second)) ||
-										((RS::LIGHT_SPOT == light_type) && (total_spot_count++ < max_per_mesh_total.second))) {
+								if (((RS::LIGHT_OMNI == light_type) && (total_omni_count++ < max_lights_total)) ||
+										((RS::LIGHT_SPOT == light_type) && (total_spot_count++ < max_lights_total))) {
 									// Perform culling.
 									if (!(RSG::light_storage->light_get_cull_mask(E->base) & idata.layer_mask)) {
 										continue;
@@ -2968,7 +2975,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 									// Keep the "best" lights on a per-light-type basis.
 									switch (light_type) {
 										case RS::LIGHT_OMNI: {
-											if (omni_count < max_per_mesh_total.first) {
+											if (omni_count < max_lights_per_mesh) {
 												// We have room to just add it, and track the score and where it goes.
 												omni_score_idx.push_back(Pair(light_inst_score, omni_count));
 												geom->geometry_instance->pair_light_instance(light->instance, light_type, omni_count++);
@@ -2986,7 +2993,7 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 											}
 										} break;
 										case RS::LIGHT_SPOT: {
-											if (spot_count < max_per_mesh_total.first) {
+											if (spot_count < max_lights_per_mesh) {
 												// We have room to just add it, and track the score and where it goes.
 												spot_score_idx.push_back(Pair(light_inst_score, spot_count));
 												geom->geometry_instance->pair_light_instance(light->instance, light_type, spot_count++);
