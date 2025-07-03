@@ -49,7 +49,7 @@
 		<member name="monitoring_feeds" type="bool" setter="set_monitoring_feeds" getter="is_monitoring_feeds" default="false">
 			If [code]true[/code], the server is actively monitoring available camera feeds.
 			This has a performance cost, so only set it to [code]true[/code] when you're actively accessing the camera.
-			[b]Note:[/b] After setting it to [code]true[/code], you can receive updated camera feeds through the update_feeds signal.
+			[b]Note:[/b] After setting it to [code]true[/code], you can receive updated camera feeds through the feeds_updated signal.
 			[codeblocks]
 			[gdscript]
 			func _on_feeds_updated():
