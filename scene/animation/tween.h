@@ -112,6 +112,7 @@ private:
 
 	SceneTree *parent_tree = nullptr;
 	LocalVector<List<Ref<Tweener>>> tweeners;
+	LocalVector<Ref<Tween>> subtweens;
 	double total_time = 0;
 	int current_step = -1;
 	int loops = 1;
