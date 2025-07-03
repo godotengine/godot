@@ -57,6 +57,11 @@ JPH::BroadPhaseLayer JoltArea3D::_get_broad_phase_layer() const {
 JPH::ObjectLayer JoltArea3D::_get_object_layer() const {
 	ERR_FAIL_NULL_V(space, 0);
 
+	if (jolt_shape == nullptr || jolt_shape->GetType() == JPH::EShapeType::Empty) {
+		// No point doing collision checks against a shapeless object.
+		return space->map_to_object_layer(_get_broad_phase_layer(), 0, 0);
+	}
+
 	return space->map_to_object_layer(_get_broad_phase_layer(), collision_layer, collision_mask);
 }
 
