@@ -40,6 +40,14 @@
 #include "core/script_language.h"
 #include "gdscript.h"
 
+const char *GDScriptParser::_control_flow_type_strings[] = {
+	"if", "for", "while", "break", "continue", "return", "match"
+};
+
+const char *GDScriptParser::_node_type_strings[] = {
+	"class", "function", "built_in_function", "block", "identifier", "type", "constant", "array", "dictionary", "self", "operator", "control_flow", "local_var", "cast", "assert", "breakpoint", "newline", "inline_block"
+};
+
 template <class T>
 T *GDScriptParser::alloc_node() {
 	T *t = memnew(T);
@@ -3218,7 +3226,24 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				}
 				p_block->statements.push_back(cf_while);
 			} break;
+			case GDScriptTokenizer::TK_PR_UNROLL: {
+				tokenizer->advance();
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_CF_FOR) {
+					_set_error("Expected \"for\".");
+					return;
+				}
+
+				FALLTHROUGH;
+			}
 			case GDScriptTokenizer::TK_CF_FOR: {
+				bool _unroll = false;
+
+				if (tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_UNROLL) {
+					_unroll = true;
+					_requests_optimization = true;
+				}
+
 				tokenizer->advance();
 
 				if (!tokenizer->is_token_literal(0, true)) {
@@ -3339,6 +3364,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				ControlFlowNode *cf_for = alloc_node<ControlFlowNode>();
 
 				cf_for->cf_type = ControlFlowNode::CF_FOR;
+				cf_for->_unroll = _unroll;
 				cf_for->arguments.push_back(id);
 				cf_for->arguments.push_back(container);
 
@@ -3914,8 +3940,14 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				tokenizer->advance(1);
 			} break;
 			*/
+			case GDScriptTokenizer::TK_PR_INLINE:
 			case GDScriptTokenizer::TK_PR_STATIC: {
 				tokenizer->advance();
+
+				if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_INLINE) {
+					tokenizer->advance();
+				}
+
 				if (tokenizer->get_token() != GDScriptTokenizer::TK_PR_FUNCTION) {
 					_set_error("Expected \"func\".");
 					return;
@@ -3925,10 +3957,20 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			}
 			case GDScriptTokenizer::TK_PR_FUNCTION: {
 				bool _static = false;
+				bool _inline_func = false;
 				pending_newline = -1;
 
 				if (tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_STATIC) {
 					_static = true;
+				}
+
+				if (tokenizer->get_token(-1) == GDScriptTokenizer::TK_PR_INLINE) {
+					_inline_func = true;
+					_requests_optimization = true;
+
+					if (tokenizer->get_token(-2) == GDScriptTokenizer::TK_PR_STATIC) {
+						_static = true;
+					}
 				}
 
 				tokenizer->advance();
@@ -4090,6 +4132,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				function->argument_types = argument_types;
 				function->default_values = default_values;
 				function->_static = _static;
+				function->_inline_func = _inline_func;
 				function->line = fnline;
 #ifdef DEBUG_ENABLED
 				function->arguments_usage = arguments_usage;
@@ -5266,6 +5309,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 				subexpr->line = line;
 				constant.expression = subexpr;
+				constant.name = const_id;
 
 				p_class->constant_expressions.insert(const_id, constant);
 

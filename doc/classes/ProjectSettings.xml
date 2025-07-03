@@ -1920,6 +1920,35 @@
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].import/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
 		</member>
+		<member name="scripting/gdscript/debug/logging_level" type="int" setter="" getter="" default="2">
+			Determines the verbosity of logging output during the GDScript optimization phase of compilation.
+			[code]0[/code] produces no logging, [code]5[/code] produces maximum logging.
+		</member>
+		<member name="scripting/gdscript/general/optimization" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], GDScript optimization will be active.
+			[b]Note:[/b] Although GDScript will run faster with optimization, it can be much harder to debug, because the line numbers in the original source code may not match exactly with the optimized instructions.
+			For this reason it is usually best practice to turn off optimization for most of development unless you are working on a bottleneck, then turn it on for final exports.
+		</member>
+		<member name="scripting/gdscript/optimization/LICM" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], loop invariant code motion (LICM) will try to move variables and code outside of loops to minimize the processing on each iteration of a loop.
+		</member>
+		<member name="scripting/gdscript/optimization/constant_folding" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the optimizer will attempt to precalculate constant expressions at compile time so that less processing is done at runtime.
+			For example, the expression [code]3 + (10 * 3)[/code] can be folded to [code]33[/code].
+			[b]Note:[/b] Values declared [code]const[/code] can also be folded.
+		</member>
+		<member name="scripting/gdscript/optimization/inlining" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], functions declared using the [code]inline[/code] keyword will be inlined at calling sites wherever possible. This removes the cost of the function call, and also can allow further optimizations for local variables.
+		</member>
+		<member name="scripting/gdscript/optimization/loop_unrolling" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], [code]for loops[/code] marked with the [code]unroll[/code] keyword will be unrolled (where possible) such that a groups of iterations will be processed together, minimizing the housekeeping processing.
+			This only benefits short loops, and may be slower unless there are a large number of iterations (more than approx 8, although the threshold may vary depending on your code).
+		</member>
+		<member name="scripting/gdscript/optimization/unused" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], the optimizer will attempt to remove redundant instructions.
+			[b]Note:[/b] The optimizer can remove [code]if[/code] branches that branch on a constant that has been declared with the [code]const[/code] keyword.
+			It can also remove branch instructions where the branch can be determined to always be taken at compile time.
+		</member>
 		<member name="world/2d/cell_size" type="int" setter="" getter="" default="100">
 			Cell size used for the 2D hash grid that [VisibilityNotifier2D] uses (in pixels).
 		</member>
