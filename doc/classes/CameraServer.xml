@@ -52,19 +52,19 @@
 			[b]Note:[/b] After setting it to [code]true[/code], you can receive updated camera feeds through the update_feeds signal.
 			[codeblocks]
 			[gdscript]
-			func _on_update_feeds():
+			func _on_feeds_updated():
 				var feeds = CameraServer.feeds()
 
-			CameraServer.update_feeds.connect(_on_update_feeds)
+			CameraServer.feeds_updated.connect(_on_feeds_updated)
 			CameraServer.monitoring_feeds = true
 			[/gdscript]
 			[csharp]
-			void OnUpdateFeeds()
+			void OnFeedsUpdated()
 			{
 				var feeds = CameraServer.Feeds();
 			}
 
-			CameraServer.UpdateFeeds += OnUpdateFeeds;
+			CameraServer.FeedsUpdated += OnFeedsUpdated;
 			CameraServer.MonitoringFeeds = true
 			[/csharp]
 			[/codeblocks]
@@ -83,7 +83,7 @@
 				Emitted when a [CameraFeed] is removed (e.g. a webcam is unplugged).
 			</description>
 		</signal>
-		<signal name="update_feeds">
+		<signal name="feeds_updated">
 			<description>
 				Emitted when camera feeds are updated.
 			</description>

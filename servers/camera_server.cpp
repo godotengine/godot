@@ -53,7 +53,7 @@ void CameraServer::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("camera_feed_added", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
-	ADD_SIGNAL(MethodInfo("update_feeds"));
+	ADD_SIGNAL(MethodInfo("feeds_updated"));
 
 	BIND_ENUM_CONSTANT(FEED_RGBA_IMAGE);
 	BIND_ENUM_CONSTANT(FEED_YCBCR_IMAGE);
@@ -70,7 +70,7 @@ CameraServer *CameraServer::get_singleton() {
 void CameraServer::set_monitoring_feeds(bool p_monitoring_feeds) {
 	monitoring_feeds = p_monitoring_feeds;
 	if (p_monitoring_feeds) {
-		emit_signal(SNAME("update_feeds"));
+		emit_signal(SNAME("feeds_updated"));
 	}
 }
 
