@@ -26,6 +26,8 @@
 // This is the system specific header for the SDL joystick API
 #include "SDL_joystick_c.h"
 
+#include <stdlib.h>
+
 // Set up for C function definitions, even when using C++
 #ifdef __cplusplus
 extern "C" {
