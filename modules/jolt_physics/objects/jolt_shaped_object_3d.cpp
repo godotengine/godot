@@ -167,6 +167,9 @@ void JoltShapedObject3D::_dequeue_needs_optimization() {
 
 void JoltShapedObject3D::_shapes_changed() {
 	commit_shapes(false);
+}
+
+void JoltShapedObject3D::_shapes_committed() {
 	_update_object_layer();
 }
 
