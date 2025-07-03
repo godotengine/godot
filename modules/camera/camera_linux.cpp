@@ -81,9 +81,9 @@ void CameraLinux::_update_devices() {
 			free(devices);
 		}
 
+		emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 		usleep(1000000);
 	}
-	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 bool CameraLinux::_has_device(const String &p_device_name) {
@@ -180,7 +180,6 @@ inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
 		if (camera_thread.is_started()) {
 			camera_thread.wait_to_finish();
 		}
-		CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	}
 }
 
