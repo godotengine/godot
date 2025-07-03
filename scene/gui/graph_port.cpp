@@ -34,65 +34,36 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
 #include "scene/theme/theme_db.h"
-/*
-bool GraphPort::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "enabled") {
-		enabled = p_value;
-	} else if (p_name == "type") {
-		type = p_value;
-	} else if (p_name == "icon") {
-		icon = p_value;
-	} else if (p_name == "color") {
-		color = p_value;
-	} else if (p_name == "direction") {
-		direction = p_value;
-	} else if (p_name == "exclusive") {
-		exclusive = p_value;
-	} else if (p_name == "icon") {
-		icon = p_value;
-	} else {
-		return false;
-	}
 
-	return true;
+void GraphPort::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			Node *parent = get_parent();
+			graph_edit = nullptr;
+			graph_node = nullptr;
+			while (parent) {
+				if (!graph_node) {
+					GraphNode *parent_node = cast_to<GraphNode>(parent);
+					if (parent_node) {
+						graph_node = parent_node;
+					}
+				}
+				GraphEdit *parent_graph = cast_to<GraphEdit>(parent);
+				if (parent_graph) {
+					graph_edit = parent_graph;
+					break;
+				}
+				parent = parent->get_parent();
+			}
+		} break;
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
+	}
 }
 
-bool GraphPort::_get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == "enabled") {
-		r_ret = enabled;
-	} else if (p_name == "type") {
-		r_ret = type;
-	} else if (p_name == "icon") {
-		r_ret = icon;
-	} else if (p_name == "color") {
-		r_ret = color;
-	} else if (p_name == "direction") {
-		r_ret = direction;
-	} else if (p_name == "exclusive") {
-		r_ret = exclusive;
-	} else if (p_name == "icon") {
-		r_ret = icon;
-	} else {
-		return false;
-	}
-
-	return true;
-}
-
-void GraphPort::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::BOOL, "enabled"));
-	p_list->push_back(PropertyInfo(Variant::INT, "type"));
-	p_list->push_back(PropertyInfo(Variant::COLOR, "color"));
-	p_list->push_back(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "exclusive"));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_STORE_IF_NULL));
-	//p_list->push_back(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"));
-}*/
-
-void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
+void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
 	exclusive = p_exclusive;
-	color = p_color;
-	icon = p_icon;
 	set_type(p_type);
 	set_direction(p_direction);
 	set_enabled(p_enabled);
@@ -101,6 +72,7 @@ void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, Col
 
 void GraphPort::enable() {
 	enabled = true;
+	show();
 	notify_property_list_changed();
 	_enabled();
 	_modified();
@@ -108,6 +80,7 @@ void GraphPort::enable() {
 
 void GraphPort::disable() {
 	enabled = false;
+	hide();
 	notify_property_list_changed();
 	_disabled();
 	_modified();
@@ -140,13 +113,14 @@ void GraphPort::set_type(int p_type) {
 }
 
 Color GraphPort::get_color() {
-	return color;
+	Color base_col = selected ? theme_cache.selected_color : theme_cache.color;
+	ERR_FAIL_NULL_V(graph_edit, base_col);
+	const TypedArray<Color> &graph_colors = graph_edit->get_type_colors();
+	return (type > 0 && type < graph_colors.size()) ? Color(graph_colors[type]).blend(base_col) : theme_cache.color;
 }
 
-void GraphPort::set_color(Color p_color) {
-	color = p_color;
-	notify_property_list_changed();
-	_modified();
+Color GraphPort::get_rim_color() {
+	return selected ? theme_cache.selected_rim_color : theme_cache.rim_color;
 }
 
 bool GraphPort::get_exclusive() {
@@ -155,16 +129,6 @@ bool GraphPort::get_exclusive() {
 
 void GraphPort::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
-	notify_property_list_changed();
-	_modified();
-}
-
-Ref<Texture2D> GraphPort::get_icon() {
-	return icon;
-}
-
-void GraphPort::set_icon(Ref<Texture2D> p_icon) {
-	icon = p_icon;
 	notify_property_list_changed();
 	_modified();
 }
@@ -190,27 +154,68 @@ void GraphPort::set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconne
 	_modified();
 }
 
-void GraphPort::set_position(const Vector2 p_position) {
-	position = p_position;
-	_modified();
-}
-
-Vector2 GraphPort::get_position() {
-	return position;
-}
-
 GraphNode *GraphPort::get_graph_node() {
 	return graph_node;
 }
 
+Rect2 GraphPort::get_hotzone() {
+	Vector2 pos = get_position();
+
+	Ref<Texture2D> icon = theme_cache.icon;
+	Vector2 icon_size = Vector2(0.0, 0.0);
+	if (icon != nullptr) {
+		icon_size = Vector2(icon->get_width(), icon->get_height());
+	}
+
+	Vector2 theme_extent;
+	switch (direction) {
+		case GraphPort::PortDirection::INPUT:
+			theme_extent.x = theme_cache.hotzone_extent_h_input;
+			theme_extent.y = theme_cache.hotzone_extent_v_input;
+			break;
+		case GraphPort::PortDirection::OUTPUT:
+			theme_extent.x = theme_cache.hotzone_extent_h_output;
+			theme_extent.y = theme_cache.hotzone_extent_v_output;
+			break;
+		case GraphPort::PortDirection::UNDIRECTED:
+		default:
+			theme_extent.x = theme_cache.hotzone_extent_h_undirected;
+			theme_extent.y = theme_cache.hotzone_extent_v_undirected;
+			break;
+	}
+
+	Vector2 size = icon_size.max(theme_extent);
+	return Rect2(pos.x - theme_cache.hotzone_offset_h * size.x, pos.y - theme_cache.hotzone_offset_v * size.y, size.x, size.y);
+}
+
 int GraphPort::get_index(bool p_include_disabled) {
-	ERR_FAIL_NULL_V(graph_node, -1);
-	return graph_node->index_of_port(this, p_include_disabled);
+	return p_include_disabled ? _index : _enabled_index;
 }
 
 int GraphPort::get_filtered_index(bool p_include_disabled) {
-	ERR_FAIL_NULL_V(graph_node, -1);
-	return graph_node->filtered_index_of_port(this, p_include_disabled);
+	return p_include_disabled ? _filtered_index : _filtered_enabled_index;
+}
+
+void GraphPort::_draw() {
+	if (!enabled || !is_visible()) {
+		return;
+	}
+
+	Ref<Texture2D> port_icon = theme_cache.icon;
+	if (port_icon.is_null()) {
+		return;
+	}
+
+	Size2 port_icon_size = port_icon->get_size();
+	Point2 icon_offset = -port_icon_size * 0.5;
+
+	// Draw "shadow"/outline in the connection rim color.
+	Color rim_color = get_rim_color();
+	int s = theme_cache.rim_size;
+	if (rim_color.a > 0 && s > 0) {
+		draw_texture_rect(port_icon, Rect2(get_position() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
+	}
+	port_icon->draw(get_canvas_item(), get_position() + icon_offset, get_color());
 }
 
 void GraphPort::_enabled() {
@@ -232,9 +237,6 @@ void GraphPort::_modified() {
 }
 
 void GraphPort::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_position", "position"), &GraphPort::set_position);
-	ClassDB::bind_method(D_METHOD("get_position"), &GraphPort::get_position);
-
 	ClassDB::bind_method(D_METHOD("enable"), &GraphPort::enable);
 	ClassDB::bind_method(D_METHOD("disable"), &GraphPort::disable);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &GraphPort::set_enabled);
@@ -243,13 +245,9 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_type", "type"), &GraphPort::set_type);
 	ClassDB::bind_method(D_METHOD("get_type"), &GraphPort::get_type);
 
-	ClassDB::bind_method(D_METHOD("set_icon", "icon"), &GraphPort::set_icon);
-	ClassDB::bind_method(D_METHOD("get_icon"), &GraphPort::get_icon);
-
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &GraphPort::set_exclusive);
 	ClassDB::bind_method(D_METHOD("get_exclusive"), &GraphPort::get_exclusive);
 
-	ClassDB::bind_method(D_METHOD("set_color", "color"), &GraphPort::set_color);
 	ClassDB::bind_method(D_METHOD("get_color"), &GraphPort::get_color);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
@@ -260,9 +258,6 @@ void GraphPort::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_icon", "get_icon");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
@@ -272,23 +267,36 @@ void GraphPort::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected")));
 	ADD_SIGNAL(MethodInfo("changed_type", PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("modified"));
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphPort, icon);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, rim_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, rim_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, selected_rim_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_h_input);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_input);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_h_output);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_output);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_h_undirected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_undirected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_offset_h);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_offset_v);
 }
 
 GraphPort::GraphPort() {
-	icon = Ref<Texture2D>(nullptr);
 }
 
-GraphPort::GraphPort(GraphNode *p_graph_node) {
-	graph_node = p_graph_node;
-	icon = Ref<Texture2D>(nullptr);
-}
-
-GraphPort::GraphPort(GraphNode *p_graph_node, bool p_enabled, bool p_exclusive, int p_type, Color p_color, PortDirection p_direction, Ref<Texture2D> p_icon) {
-	graph_node = p_graph_node;
+GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
 	enabled = p_enabled;
 	exclusive = p_exclusive;
 	type = p_type;
-	color = p_color;
 	direction = p_direction;
-	icon = p_icon;
 }

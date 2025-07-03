@@ -780,6 +780,25 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_end_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("icon_max_width", "PopupMenu", 0);
 
+	// GraphPort
+
+	theme->set_stylebox("panel", "GraphPort", make_empty_stylebox());
+	theme->set_stylebox("panel_selected", "GraphPort", make_empty_stylebox());
+	theme->set_stylebox("panel_focus", "GraphPort", focus);
+	theme->set_icon("icon", "GraphPort", icons["graph_port"]);
+	theme->set_color("color", "GraphPort", Color(1, 1, 1, 1));
+	theme->set_color("selected_color", "GraphPort", Color(1, 1, 1, 1));
+	theme->set_color("rim_color", "GraphPort", style_normal_color);
+	theme->set_color("selected_rim_color", "GraphPort", style_normal_color);
+	theme->set_constant("hotzone_extent_h_input", "GraphPort", Math::round(26 * scale));
+	theme->set_constant("hotzone_extent_v_input", "GraphPort", Math::round(22 * scale));
+	theme->set_constant("hotzone_extent_h_output", "GraphPort", Math::round(26 * scale));
+	theme->set_constant("hotzone_extent_v_output", "GraphPort", Math::round(22 * scale));
+	theme->set_constant("hotzone_extent_h_undirected", "GraphPort", Math::round(26 * scale));
+	theme->set_constant("hotzone_extent_v_undirected", "GraphPort", Math::round(22 * scale));
+	theme->set_constant("hotzone_offset_h", "GraphPort", 0.9);
+	theme->set_constant("hotzone_offset_v", "GraphPort", 0.5);
+
 	// GraphNode
 
 	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 12, 18, 12);
@@ -796,8 +815,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("panel_focus", "GraphNode", focus);
 	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
 	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
-	theme->set_stylebox("port_selected", "GraphNode", focus);
-	theme->set_icon("port", "GraphNode", icons["graph_port"]);
 	theme->set_icon("resizer", "GraphNode", icons["resizer_se"]);
 	theme->set_color("resizer_color", "GraphNode", control_font_color);
 	theme->set_constant("separation", "GraphNode", Math::round(2 * scale));
@@ -1299,9 +1316,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
 
 	// Visual Node Ports
-
-	theme->set_constant("port_hotzone_inner_extent", "GraphEdit", 22 * scale);
-	theme->set_constant("port_hotzone_outer_extent", "GraphEdit", 26 * scale);
 
 	theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0, 0);

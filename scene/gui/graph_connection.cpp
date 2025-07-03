@@ -30,17 +30,18 @@
 
 #include "graph_connection.h"
 
+#include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/graph_node_indexed.h"
 #include "scene/gui/graph_port.h"
 
-Ref<GraphPort> GraphConnection::get_other(Ref<GraphPort> port) {
+GraphPort *GraphConnection::get_other(GraphPort *port) {
 	if (port == first_port) {
 		return second_port;
 	} else if (port == second_port) {
 		return first_port;
 	} else {
-		ERR_FAIL_V_MSG(Ref<GraphPort>(nullptr), "Connection does not contain port");
+		ERR_FAIL_V_MSG(nullptr, "Connection does not contain port");
 	}
 }
 
@@ -52,8 +53,8 @@ Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() {
 }
 
 bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port) {
-	ERR_FAIL_COND_V(first_port.is_null(), false);
-	ERR_FAIL_COND_V(second_port.is_null(), false);
+	ERR_FAIL_NULL_V(first_port, false);
+	ERR_FAIL_NULL_V(second_port, false);
 	ERR_FAIL_NULL_V(first_port->graph_node, false);
 	ERR_FAIL_NULL_V(second_port->graph_node, false);
 	return first_port->get_filtered_index(false) == p_first_port &&
@@ -62,19 +63,19 @@ bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port,
 			String(second_port->graph_node->get_name()) != p_second_node;
 }
 
-void GraphConnection::set_first_port(const Ref<GraphPort> p_port) {
+void GraphConnection::set_first_port(GraphPort *p_port) {
 	first_port = p_port;
 }
 
-Ref<GraphPort> GraphConnection::get_first_port() {
+GraphPort *GraphConnection::get_first_port() {
 	return first_port;
 }
 
-void GraphConnection::set_second_port(const Ref<GraphPort> p_port) {
+void GraphConnection::set_second_port(GraphPort *p_port) {
 	second_port = p_port;
 }
 
-Ref<GraphPort> GraphConnection::get_second_port() {
+GraphPort *GraphConnection::get_second_port() {
 	return second_port;
 }
 
@@ -101,11 +102,9 @@ void GraphConnection::_bind_methods() {
 }
 
 GraphConnection::GraphConnection() {
-	first_port = Ref<GraphPort>(nullptr);
-	second_port = Ref<GraphPort>(nullptr);
 }
 
-GraphConnection::GraphConnection(Ref<GraphPort> p_first_port, Ref<GraphPort> p_second_port, bool p_clear_if_invalid) {
+GraphConnection::GraphConnection(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid) {
 	first_port = p_first_port;
 	second_port = p_second_port;
 	clear_if_invalid = p_clear_if_invalid;

@@ -30,11 +30,12 @@
 
 #pragma once
 
+#include "core/templates/vector.h"
 #include "core/variant/typed_dictionary.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_connection.h"
 #include "scene/gui/graph_frame.h"
-#include "scene/gui/graph_node.h"
+#include "scene/gui/graph_node_indexed.h"
 #include "scene/gui/graph_port.h"
 
 class Button;
@@ -161,9 +162,9 @@ private:
 	bool connecting = false;
 	bool connecting_valid = false;
 	bool connecting_target_valid = false;
-	Ref<GraphPort> connecting_from_port;
+	GraphPort *connecting_from_port;
 	Vector2 connecting_to_point; // In local screen space.
-	Ref<GraphPort> connecting_to_port;
+	GraphPort *connecting_to_port;
 
 	bool just_disconnected = false;
 
@@ -194,7 +195,7 @@ private:
 	bool awaiting_scroll_offset_update = false;
 
 	TypedArray<Ref<GraphConnection>> connections;
-	HashMap<Ref<GraphPort>, TypedArray<Ref<GraphConnection>>> connection_map;
+	HashMap<GraphPort *, TypedArray<Ref<GraphConnection>>> connection_map;
 	Ref<GraphConnection> hovered_connection;
 
 	float lines_thickness = 4.0f;
@@ -248,10 +249,6 @@ private:
 		Ref<Texture2D> grid_toggle;
 		Ref<Texture2D> minimap_toggle;
 		Ref<Texture2D> layout;
-
-		float port_hotzone_input_extent = 0.0;
-		float port_hotzone_output_extent = 0.0;
-		float port_hotzone_undirected_extent = 0.0;
 	} theme_cache;
 
 	// This separates the children in two layers to ensure the order
@@ -262,6 +259,7 @@ private:
 	HashMap<StringName, StringName> linked_parent_map;
 
 	Dictionary type_names;
+	TypedArray<Color> type_colors;
 
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
@@ -276,10 +274,10 @@ private:
 	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
 	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);
-	void _graph_node_port_added(Ref<GraphPort> p_port, Node *p_node);
-	void _graph_node_port_removed(Ref<GraphPort> p_port, Node *p_node);
-	void _graph_node_port_replaced(Ref<GraphPort> p_old_port, Ref<GraphPort> p_new_port, Node *p_node);
-	void _graph_node_port_disabled(Ref<GraphPort> p_port, Node *p_node);
+	void _graph_node_port_added(GraphPort *p_port, Node *p_node);
+	void _graph_node_port_removed(GraphPort *p_port, Node *p_node);
+	void _graph_node_port_replaced(GraphPort *p_old_port, GraphPort *p_new_port, Node *p_node);
+	void _graph_node_port_disabled(GraphPort *p_port, Node *p_node);
 	void _graph_node_rect_changed(GraphNode *p_node);
 
 	void _ensure_node_order_from_root(const StringName &p_node);
@@ -302,18 +300,15 @@ private:
 	void _minimap_draw();
 	void _draw_grid();
 
-	bool is_in_port_hotzone(const Ref<GraphPort> p_port, const Vector2 &p_local_pos);
-	Vector2 get_hotzone_extent(const Ref<GraphPort> p_port);
+	bool is_in_port_hotzone(GraphPort *p_port, const Vector2 &p_local_pos);
 
-	void set_connections(const TypedArray<Ref<GraphConnection>> p_connections);
 	const TypedArray<Ref<GraphConnection>> &_get_connections() const;
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
-	// should be converted to TypedDictionary<Ref<GraphPort>, TypedArray<Ref<GraphConnection>>> once nested container types are implemented
-	TypedDictionary<Ref<GraphPort>, Array> _get_connections_by_node(GraphNode *p_node) const;
+	TypedArray<Ref<GraphConnection>> _get_connections_by_node(GraphNode *p_node) const;
 	Error _add_connection(Ref<GraphConnection> p_connection);
-	bool _is_connection_valid(const Ref<GraphPort> p_port);
-	void _mark_connections_dirty_by_port(const Ref<GraphPort> p_port);
+	bool _is_connection_valid(GraphPort *p_port);
+	void _mark_connections_dirty_by_port(GraphPort *p_port);
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
@@ -352,7 +347,7 @@ protected:
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
 	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
 	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
-	GDVIRTUAL2R(bool, _is_node_hover_valid, Ref<GraphPort>, Ref<GraphPort>);
+	GDVIRTUAL2R(bool, _is_node_hover_valid, GraphPort *, GraphPort *);
 
 public:
 	static void init_shaders();
@@ -367,37 +362,42 @@ public:
 	void _update_graph_frame(GraphFrame *p_frame);
 
 	// Connection related methods.
-	Error connect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port, bool keep_alive = false);
+	Error connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool keep_alive = false);
 	Error connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool keep_alive = false);
 	Error connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool keep_alive = false);
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
 	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
-	void disconnect_all_by_port(const Ref<GraphPort> p_port);
-	void disconnect_nodes(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
-	void move_connections(const Ref<GraphPort> p_from_port, const Ref<GraphPort> p_to_port);
-	bool is_connected(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
-	int get_connection_count(const Ref<GraphPort> p_port);
-	GraphNode *get_connection_target(const Ref<GraphPort> p_port);
-	String get_connections_description(const Ref<GraphPort> p_port);
+	void disconnect_all_by_port(GraphPort *p_port);
+	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
+	bool is_connected(GraphPort *p_first_port, GraphPort *p_second_port);
+	int get_connection_count(GraphPort *p_port);
+	GraphNode *get_connection_target(GraphPort *p_port);
+	String get_connections_description(GraphPort *p_port);
 
-	void force_connection_drag_end();
-	const Ref<GraphConnection> get_connection(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
-	TypedArray<Ref<GraphConnection>> get_connections() const;
-	const TypedArray<Ref<GraphConnection>> &get_connections_by_port(const Ref<GraphPort> p_port) const;
+	void set_connections(const TypedArray<Ref<GraphConnection>> p_connections);
+	const TypedArray<Ref<GraphConnection>> get_connections() const;
+	const TypedArray<Ref<GraphConnection>> get_connections_by_port(GraphPort *p_port) const;
+	const TypedArray<Ref<GraphConnection>> get_connections_by_node(GraphNode *p_node) const;
+	void move_connections(GraphPort *p_from_port, GraphPort *p_to_port);
 	void clear_connections();
+	const Ref<GraphConnection> get_connection(GraphPort *p_first_port, GraphPort *p_second_port);
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
 	Ref<GraphConnection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	void force_connection_drag_end();
 
 	bool is_keyboard_connecting() const { return keyboard_connecting; }
-	void start_connecting(const Ref<GraphPort> p_port, bool is_keyboard);
-	void end_connecting(const Ref<GraphPort> p_port, bool is_keyboard);
+	void start_connecting(GraphPort *p_port, bool is_keyboard);
+	void end_connecting(GraphPort *p_port, bool is_keyboard);
 
 	Dictionary get_type_names() const;
 	void set_type_names(const Dictionary &p_names);
 
-	virtual bool is_node_hover_valid(const Ref<GraphPort> p_first_port, const Ref<GraphPort> p_second_port);
+	const TypedArray<Color> &get_type_colors();
+	void set_type_colors(const TypedArray<Color> &p_type_colors);
+
+	virtual bool is_node_hover_valid(GraphPort *p_first_port, GraphPort *p_second_port);
 
 	void set_connection_activity(Ref<GraphConnection> p_conn, float p_activity);
 	void set_connection_activity_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, float p_activity);

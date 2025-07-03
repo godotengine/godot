@@ -71,9 +71,18 @@ public:
 class VSGraphNode : public GraphNodeIndexed {
 	GDCLASS(VSGraphNode, GraphNodeIndexed);
 
+	virtual void create_slot_and_ports(int p_slot_index, bool draw_stylebox) override;
+};
+
+class VSGraphPort : public GraphPort {
+	GDCLASS(VSGraphPort, GraphPort);
+
 protected:
-	void _draw_port(const Ref<GraphPort> p_port, const Color &p_rim_color);
-	virtual void draw_port(const Ref<GraphPort> p_port) override;
+	virtual void _draw() override;
+
+public:
+	VSGraphPort();
+	VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);
 };
 
 class VSRerouteNode : public VSGraphNode {
@@ -85,8 +94,6 @@ class VSRerouteNode : public VSGraphNode {
 
 protected:
 	void _notification(int p_what);
-
-	virtual void draw_port(const Ref<GraphPort> p_port) override;
 
 public:
 	VSRerouteNode();
@@ -469,8 +476,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _nodes_dragged();
 	bool updating = false;
 
-	void _connection_request(Ref<GraphPort> p_from_port, Ref<GraphPort> p_to_port);
-	void _disconnection_request(Ref<GraphPort> p_from_port, Ref<GraphPort> p_to_port);
+	void _connection_request(GraphPort *p_from_port, GraphPort *p_to_port);
+	void _disconnection_request(GraphPort *p_from_port, GraphPort *p_to_port);
 
 	void _scroll_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);
@@ -510,8 +517,8 @@ class VisualShaderEditor : public ShaderEditor {
 	void _unlink_node_from_parent_frame(int p_node_id);
 
 	void _connection_drag_ended();
-	void _connection_to_empty(Ref<GraphPort> p_from_port, const Vector2 &p_release_position);
-	void _connection_from_empty(Ref<GraphPort> p_to_port, const Vector2 &p_release_position);
+	void _connection_to_empty(GraphPort *p_from_port, const Vector2 &p_release_position);
+	void _connection_from_empty(GraphPort *p_to_port, const Vector2 &p_release_position);
 	bool _check_node_drop_on_connection(const Vector2 &p_position, Ref<GraphConnection> *r_closest_connection, int *r_from_port = nullptr, int *r_to_port = nullptr);
 	void _handle_node_drop_on_connection();
 

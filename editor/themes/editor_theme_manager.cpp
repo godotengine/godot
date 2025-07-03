@@ -1645,7 +1645,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 		}
 
-		// GraphElement, GraphNode & GraphFrame.
+		// GraphElement, GraphPort, GraphNode & GraphFrame.
 		{
 			const int gn_margin_top = 2;
 			const int gn_margin_side = 2;
@@ -1708,6 +1708,31 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			Ref<ImageTexture> resizer_icon = p_theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons));
 			p_theme->set_icon("resizer", "GraphElement", resizer_icon);
 
+			// GraphPort.
+
+			p_theme->set_stylebox("panel", "GraphPort", make_empty_stylebox());
+			p_theme->set_stylebox("panel_selected", "GraphPort", make_empty_stylebox());
+			p_theme->set_stylebox("panel_focus", "GraphPort", p_config.button_style_focus);
+
+			p_theme->set_color("color", "GraphPort", Color(1, 1, 1, 1));
+			p_theme->set_color("selected_color", "GraphPort", Color(1, 1, 1, 1));
+			p_theme->set_color("rim_color", "GraphPort", gn_bg_color);
+			p_theme->set_color("selected_rim_color", "GraphPort", gn_selected_border_color);
+
+			p_theme->set_constant("hotzone_extent_h_input", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_v_input", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_h_output", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_v_output", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_h_undirected", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_v_undirected", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_offset_h", "GraphPort", 0.9);
+			p_theme->set_constant("hotzone_offset_v", "GraphPort", 0.5);
+
+			Ref<ImageTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
+			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
+			port_icon->set_size_override(Size2(12, 12));
+			p_theme->set_icon("icon", "GraphPort", port_icon);
+
 			// GraphNode.
 
 			p_theme->set_stylebox(SceneStringName(panel), "GraphNode", gn_panel_style);
@@ -1715,17 +1740,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox("panel_focus", "GraphNode", p_config.button_style_focus);
 			p_theme->set_stylebox("titlebar", "GraphNode", gn_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "GraphNode", gn_titlebar_selected_style);
-			p_theme->set_stylebox("port_selected", "GraphNode", p_config.button_style_focus);
 
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
 			p_theme->set_constant("port_h_offset", "GraphNode", 1);
 			p_theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
-
-			Ref<ImageTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
-			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
-			port_icon->set_size_override(Size2(12, 12));
-			p_theme->set_icon("port", "GraphNode", port_icon);
 
 			// GraphNode's title Label.
 			p_theme->set_type_variation("GraphNodeTitleLabel", "Label");

@@ -30,21 +30,20 @@
 
 #pragma once
 
-#include "scene/gui/graph_node.h"
-
 #include "core/variant/typed_dictionary.h"
+#include "scene/gui/graph_node.h"
 
 class GraphNodeIndexed : public GraphNode {
 	GDCLASS(GraphNodeIndexed, GraphNode);
 
 protected:
 	struct Slot {
-		Ref<GraphPort> left_port;
-		Ref<GraphPort> right_port;
+		GraphPort *left_port;
+		GraphPort *right_port;
 		bool draw_stylebox = true;
 
 		Slot();
-		Slot(Ref<GraphPort> lp, Ref<GraphPort> rp, bool draw_sb) :
+		Slot(GraphPort *lp, GraphPort *rp, bool draw_sb) :
 				left_port(lp), right_port(rp), draw_stylebox(draw_sb) {}
 	};
 	Vector<Slot> slots;
@@ -89,30 +88,30 @@ protected:
 public:
 	void _notification(int p_what);
 
-	void create_slot(int p_slot_index, Ref<GraphPort> p_left_port, Ref<GraphPort> p_right_port, bool draw_stylebox);
-	void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
+	void create_slot(int p_slot_index, GraphPort *p_left_port, GraphPort *p_right_port, bool draw_stylebox);
+	virtual void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
 
 	void set_slots(TypedArray<Array> p_slots);
 	TypedArray<Array> get_slots();
 
-	void set_slot(int p_slot_index, const Ref<GraphPort> p_left_port, const Ref<GraphPort> p_right_port, bool draw_stylebox);
+	void set_slot(int p_slot_index, GraphPort *p_left_port, GraphPort *p_right_port, bool draw_stylebox);
 	Array get_slot(int p_slot_index);
 
-	void set_slot_properties(int p_slot_index, bool p_input_enabled, bool p_input_type, Color p_input_color, bool p_output_enabled, bool p_output_type, Color p_output_color);
-	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type, Color p_color, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
-	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type, Color p_color, Ref<Texture2D> p_icon = Ref<Texture2D>(nullptr));
+	void set_slot_properties(int p_slot_index, bool p_input_enabled, bool p_input_type, bool p_output_enabled, bool p_output_type);
+	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type);
+	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type);
 
-	void set_input_port(int p_slot_index, const Ref<GraphPort> p_port);
-	void set_output_port(int p_slot_index, const Ref<GraphPort> p_port);
-	Ref<GraphPort> get_input_port(int p_slot_index);
-	Ref<GraphPort> get_output_port(int p_slot_index);
+	void set_input_port(int p_slot_index, GraphPort *p_port);
+	void set_output_port(int p_slot_index, GraphPort *p_port);
+	GraphPort *get_input_port(int p_slot_index);
+	GraphPort *get_output_port(int p_slot_index);
 
 	int get_input_port_count();
 	int get_output_port_count();
 
-	int slot_index_of_port(const Ref<GraphPort> p_port);
-	int index_of_input_port(const Ref<GraphPort> p_port, bool p_include_disabled = true);
-	int index_of_output_port(const Ref<GraphPort> p_port, bool p_include_disabled = true);
+	int slot_index_of_port(GraphPort *p_port);
+	int index_of_input_port(GraphPort *p_port, bool p_include_disabled = true);
+	int index_of_output_port(GraphPort *p_port, bool p_include_disabled = true);
 
 	int port_to_slot_index(int p_port_index, bool p_include_disabled = true);
 	int slot_to_port_index(int p_slot_index, bool p_input, bool p_include_disabled = true);
