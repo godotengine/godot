@@ -217,7 +217,7 @@ xcuserdata/
 *.xcscmblueprint
 *.xccheckout
 *.xcodeproj/*
-!misc/misc/dist/ios_xcode/godot_ios.xcodeproj/project.pbxproj
+!misc/misc/dist/apple_embedded_xcode/godot.xcodeproj/project.pbxproj
 
 # Zed
 .zed/
