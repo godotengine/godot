@@ -105,7 +105,7 @@ bool EditorInspector::_resource_properties_matches(const Ref<Resource> &p_resour
 			continue;
 
 		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
-				(p_filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				(p_filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) || (restrict_to_modified && !EditorPropertyRevert::can_property_revert(object, p.name))) {
 			// Ignore properties that are not supposed to be in the inspector.
 			continue;
 		}
@@ -3779,8 +3779,9 @@ void EditorInspector::update_tree() {
 			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
 			while (N) {
-				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR &&
-						(!filter.is_empty() || !restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				if ((!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR &&
+							(!filter.is_empty() || !restrict_to_basic || N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) ||
+						(restrict_to_modified && !EditorPropertyRevert::can_property_revert(object, p.name))) {
 					break;
 				}
 				// Treat custom categories as second-level ones. Do not skip a normal category if it is followed by a custom one.
@@ -3852,7 +3853,7 @@ void EditorInspector::update_tree() {
 			continue;
 
 		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) ||
-				(filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				(filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) || (restrict_to_modified && !EditorPropertyRevert::can_property_revert(object, p.name))) {
 			// Ignore properties that are not supposed to be in the inspector.
 			continue;
 		}
@@ -5576,6 +5577,11 @@ void EditorInspector::_feature_profile_changed() {
 
 void EditorInspector::set_restrict_to_basic_settings(bool p_restrict) {
 	restrict_to_basic = p_restrict;
+	update_tree();
+}
+
+void EditorInspector::set_restrict_to_modified_settings(bool p_restrict) {
+	restrict_to_modified = p_restrict;
 	update_tree();
 }
 

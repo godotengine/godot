@@ -54,6 +54,7 @@ class EditorSettingsDialog : public AcceptDialog {
 	Control *tab_shortcuts = nullptr;
 
 	LineEdit *search_box = nullptr;
+	CheckButton *show_modified_switch = nullptr;
 	CheckButton *advanced_switch = nullptr;
 	SectionedInspector *inspector = nullptr;
 	EditorEventSearchBar *shortcut_search_bar = nullptr;

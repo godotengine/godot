@@ -247,7 +247,7 @@ void SectionedInspector::update_category_list() {
 		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
 			continue;
 		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) ||
-				(filter_text.is_empty() && restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+				(filter_text.is_empty() && restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) || (restrict_to_modified && !EditorPropertyRevert::can_property_revert(o, pi.name))) {
 			continue;
 		}
 
@@ -319,6 +319,12 @@ void SectionedInspector::register_advanced_toggle(CheckButton *p_toggle) {
 	_advanced_toggled(advanced_toggle->is_pressed());
 }
 
+void SectionedInspector::register_modified_toggle(CheckButton *p_toggle) {
+	modified_toggle = p_toggle;
+	modified_toggle->connect(SceneStringName(toggled), callable_mp(this, &SectionedInspector::_modified_toggled));
+	_modified_toggled(modified_toggle->is_pressed());
+}
+
 void SectionedInspector::_search_changed(const String &p_what) {
 	if (advanced_toggle) {
 		if (p_what.is_empty()) {
@@ -338,6 +344,12 @@ void SectionedInspector::_advanced_toggled(bool p_toggled_on) {
 	restrict_to_basic = !p_toggled_on;
 	update_category_list();
 	inspector->set_restrict_to_basic_settings(restrict_to_basic);
+}
+
+void SectionedInspector::_modified_toggled(bool p_toggled_on) {
+	restrict_to_modified = p_toggled_on;
+	update_category_list();
+	inspector->set_restrict_to_modified_settings(restrict_to_modified);
 }
 
 void SectionedInspector::_notification(int p_notification) {

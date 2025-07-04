@@ -72,6 +72,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	EditorPluginSettings *plugin_settings = nullptr;
 
 	LineEdit *search_box = nullptr;
+	CheckButton *show_modified = nullptr;
 	CheckButton *advanced = nullptr;
 
 	HBoxContainer *custom_properties = nullptr;

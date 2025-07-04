@@ -705,6 +705,7 @@ class EditorInspector : public ScrollContainer {
 	Variant property_clipboard;
 
 	bool restrict_to_basic = false;
+	bool restrict_to_modified = false;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
@@ -827,6 +828,7 @@ public:
 	void set_use_deletable_properties(bool p_enabled);
 
 	void set_restrict_to_basic_settings(bool p_restrict);
+	void set_restrict_to_modified_settings(bool p_restrict);
 	void set_property_clipboard(const Variant &p_value);
 	Variant get_property_clipboard() const;
 
