@@ -522,13 +522,17 @@ Patches:
 ## libjpeg-turbo
 
 - Upstream: https://github.com/libjpeg-turbo/libjpeg-turbo
-- Version: 3.1.0 (20ade4dea9589515a69793e447a6c6220b464535, 2024)
+- Version: 3.1.1 (7723f50f3f66b9da74376e6d8badb6162464212c, 2025)
 - License: BSD-3-Clause and IJG
 
 Files extracted from upstream source:
 
 - `src/*.{c,h}` except for:
   * `cdjpeg.c cjpeg.c djpeg.c example.c jcdiffct.c jclhuff.c jclossls.c jcstest.c jddiffct.c jdlhuff.c jdlossls.c jlossls.h jpegtran.c rdbmp.c rdcolmap.c rdgif.c rdjpgcom.c rdppm.c rdswitch.c rdtarga.c strtest.c tjbench.c tjcomp.c tjdecomp.c tjtran.c tjunittest.c tjutil.c wrbmp.c wrgif.c wrjpgcom.c wrppm.c wrtarga.c`
+- from `src/`:
+  * `jconfig.h.in` as `jconfig.h`
+  * `jconfigint.h.in` as `jconfigint.h`
+  * `jversion.h.in` as `jversion.h`
 - `LICENSE.md`
 - `README.ijg`
 
@@ -537,6 +541,7 @@ Patches:
 - `0001-cmake-generated-headers.patch` (GH-104347)
 - `0002-disable-16bitlossless.patch` (GH-104347)
 - `0003-remove-bmp-ppm-support.patch` (GH-104347)
+- `0004-no-lossless-jpeg.patch` (GH-108222)
 
 
 ## libktx
