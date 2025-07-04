@@ -619,6 +619,8 @@ void FileSystemDock::_notification(int p_what) {
 			}
 
 			overwrite_dialog_scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), "Tree"));
+
+			_update_thumbnail_tooltip();
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
@@ -859,6 +861,7 @@ void FileSystemDock::_tree_thumbnail_done(const String &p_path, const Ref<Textur
 void FileSystemDock::_toggle_file_display() {
 	_set_file_display(file_list_display_mode != FILE_LIST_DISPLAY_LIST);
 	emit_signal(SNAME("display_mode_changed"));
+	file_list_thumbnail_scroll->set_visible(file_list_display_mode == FILE_LIST_DISPLAY_THUMBNAILS);
 }
 
 void FileSystemDock::_set_file_display(bool p_active) {
@@ -4019,6 +4022,16 @@ MenuButton *FileSystemDock::_create_file_menu_button() {
 	return button;
 }
 
+void FileSystemDock::_update_thumbnail_size(int p_thumbnail_size) {
+	thumbnail_size_setting = p_thumbnail_size;
+	_update_thumbnail_tooltip();
+	_update_file_list(true);
+}
+
+void FileSystemDock::_update_thumbnail_tooltip() {
+	file_list_thumbnail_scroll->set_tooltip_text(vformat(TTR("Change Thumbnail Size: %d"), thumbnail_size_setting));
+}
+
 bool FileSystemDock::_can_dock_horizontal() const {
 	return true;
 }
@@ -4052,7 +4065,6 @@ void FileSystemDock::_set_dock_horizontal(bool p_enable) {
 		set_file_list_display_mode(new_file_display_mode);
 		set_custom_minimum_size(Size2(0, 0));
 	}
-
 	button_dock_placement->set_visible(p_enable);
 }
 
@@ -4293,6 +4305,19 @@ FileSystemDock::FileSystemDock() {
 	file_list_search_box->set_clear_button_enabled(true);
 	file_list_search_box->connect(SceneStringName(text_changed), callable_mp(this, &FileSystemDock::_search_changed).bind(file_list_search_box));
 	path_hb->add_child(file_list_search_box);
+
+	file_list_thumbnail_scroll = memnew(HScrollBar);
+	file_list_thumbnail_scroll->set_v_size_flags(SIZE_SHRINK_CENTER);
+	file_list_thumbnail_scroll->set_min(16);
+	file_list_thumbnail_scroll->set_max(128);
+	file_list_thumbnail_scroll->set_step(4);
+	thumbnail_size_setting = EDITOR_GET("docks/filesystem/thumbnail_size");
+	file_list_thumbnail_scroll->set_value(EDITOR_GET("docks/filesystem/thumbnail_size"));
+
+	file_list_thumbnail_scroll->set_custom_minimum_size(Vector2(40, 10) * EDSCALE);
+	file_list_thumbnail_scroll->hide();
+	path_hb->add_child(file_list_thumbnail_scroll);
+	file_list_thumbnail_scroll->connect("value_changed", callable_mp(this, &FileSystemDock::_update_thumbnail_size));
 
 	file_list_button_sort = _create_file_menu_button();
 	path_hb->add_child(file_list_button_sort);
