@@ -1402,7 +1402,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			open_find_in_files_dialog("");
 		} break;
 		case REPLACE_IN_FILES: {
-			_on_replace_in_files_requested("");
+			open_replace_in_files_dialog("");
 		} break;
 		case SEARCH_HELP: {
 			help_search_dialog->popup_dialog();
@@ -2665,7 +2665,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	se->connect("request_save_history", callable_mp(this, &ScriptEditor::_save_history));
 	se->connect("request_save_previous_state", callable_mp(this, &ScriptEditor::_save_previous_state));
 	se->connect("search_in_files_requested", callable_mp(this, &ScriptEditor::open_find_in_files_dialog));
-	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::_on_replace_in_files_requested));
+	se->connect("replace_in_files_requested", callable_mp(this, &ScriptEditor::open_replace_in_files_dialog));
 	se->connect("go_to_method", callable_mp(this, &ScriptEditor::script_goto_method));
 
 	CodeTextEditor *cte = se->get_code_editor();
@@ -2887,6 +2887,13 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 void ScriptEditor::open_find_in_files_dialog(const String &text) {
 	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::SEARCH_MODE);
 	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->popup_centered();
+}
+
+void ScriptEditor::open_replace_in_files_dialog(const String &text) {
+	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
+	find_in_files_dialog->set_search_text(text);
+	find_in_files_dialog->set_replace_text("");
 	find_in_files_dialog->popup_centered();
 }
 
@@ -3785,12 +3792,12 @@ void ScriptEditor::_update_selected_editor_menu() {
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTRC("Find Previous"), KeyModifierMask::SHIFT | Key::F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
 		script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-		script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/replace_in_files"), REPLACE_IN_FILES);
+		script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 		script_search_menu->show();
 	} else {
 		if (tab_container->get_tab_count() == 0) {
 			script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/find_in_files"), SEARCH_IN_FILES);
-			script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/replace_in_files"), REPLACE_IN_FILES);
+			script_search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("editor/replace_in_files"), REPLACE_IN_FILES);
 			script_search_menu->show();
 		} else {
 			script_search_menu->hide();
@@ -3955,13 +3962,6 @@ void ScriptEditor::register_create_script_editor_function(CreateScriptEditorFunc
 
 void ScriptEditor::_script_changed() {
 	NodeDock::get_singleton()->update_lists();
-}
-
-void ScriptEditor::_on_replace_in_files_requested(const String &text) {
-	find_in_files_dialog->set_find_in_files_mode(FindInFilesDialog::REPLACE_MODE);
-	find_in_files_dialog->set_search_text(text);
-	find_in_files_dialog->set_replace_text("");
-	find_in_files_dialog->popup_centered();
 }
 
 void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end) {
@@ -4716,7 +4716,6 @@ void ScriptEditorPlugin::edited_scene_changed() {
 ScriptEditorPlugin::ScriptEditorPlugin() {
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTRC("Reopen Closed Script"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::T);
 	ED_SHORTCUT("script_editor/clear_recent", TTRC("Clear Recent Scripts"));
-	ED_SHORTCUT("script_editor/replace_in_files", TTRC("Replace in Files"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::R);
 
 	ED_SHORTCUT("script_text_editor/convert_to_uppercase", TTRC("Uppercase"), KeyModifierMask::SHIFT | Key::F4);
 	ED_SHORTCUT("script_text_editor/convert_to_lowercase", TTRC("Lowercase"), KeyModifierMask::SHIFT | Key::F5);
