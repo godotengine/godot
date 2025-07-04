@@ -5484,11 +5484,8 @@ void EditorInspector::_notification(int p_what) {
 			if (update_tree_pending) {
 				update_tree();
 				update_tree_pending = false;
-				pending.clear();
-
 			} else {
-				while (pending.size()) {
-					StringName prop = *pending.begin();
+				for (const StringName &prop : pending) {
 					if (editor_property_map.has(prop)) {
 						for (EditorProperty *E : editor_property_map[prop]) {
 							E->update_property();
@@ -5496,13 +5493,14 @@ void EditorInspector::_notification(int p_what) {
 							E->update_cache();
 						}
 					}
-					pending.remove(pending.begin());
 				}
 
 				for (EditorInspectorSection *S : sections) {
 					S->update_property();
 				}
 			}
+
+			pending.clear();
 
 			changing--;
 		} break;
