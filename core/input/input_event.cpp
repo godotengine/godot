@@ -252,20 +252,18 @@ BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
 
 String InputEventWithModifiers::as_text() const {
 	Vector<String> mod_names;
-
 	if (is_ctrl_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::CTRL));
-	}
-	if (is_shift_pressed()) {
-		mod_names.push_back(find_keycode_name(Key::SHIFT));
 	}
 	if (is_alt_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::ALT));
 	}
+	if (is_shift_pressed()) {
+		mod_names.push_back(find_keycode_name(Key::SHIFT));
+	}
 	if (is_meta_pressed()) {
 		mod_names.push_back(find_keycode_name(Key::META));
 	}
-
 	if (!mod_names.is_empty()) {
 		return String("+").join(mod_names);
 	} else {
