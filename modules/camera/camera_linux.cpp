@@ -42,6 +42,7 @@ void CameraLinux::camera_thread_func(void *p_camera_linux) {
 	if (p_camera_linux) {
 		CameraLinux *camera_linux = (CameraLinux *)p_camera_linux;
 		camera_linux->_update_devices();
+		camera_linux->activating.clear();
 	}
 }
 
@@ -80,6 +81,7 @@ void CameraLinux::_update_devices() {
 			free(devices);
 		}
 
+		emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 		usleep(1000000);
 	}
 }
@@ -169,7 +171,10 @@ inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
-		camera_thread.start(CameraLinux::camera_thread_func, this);
+		if (!activating.is_set()) {
+			activating.set();
+			camera_thread.start(CameraLinux::camera_thread_func, this);
+		}
 	} else {
 		exit_flag.set();
 		if (camera_thread.is_started()) {
