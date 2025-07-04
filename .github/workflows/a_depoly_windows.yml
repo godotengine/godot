@@ -1,0 +1,178 @@
+name: 🪟 Windows Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "Version number for the build"
+      platforms:
+        required: true
+        type: string
+        description: "Platforms to build"
+      godot_base_branch:
+        required: true
+        type: string
+        description: "Base branch for Godot"
+      engine_version:
+        required: true
+        type: string
+        description: "Engine version"
+      common_args:
+        required: true
+        type: string
+        description: "Common build arguments"
+      release_args:
+        required: true
+        type: string
+        description: "Release build arguments"
+      editor_args:
+        required: true
+        type: string
+        description: "Editor build arguments"
+      event_name:
+        required: true
+        type: string
+        description: "Event name triggering the build"
+      release_tag:
+        required: false
+        type: string
+        description: "Release tag name"
+    secrets:
+      GH_TOKEN:
+        required: true
+
+env:
+  SCONS_CACHE: "${{github.workspace}}/.scons-cache/"
+  SCONS_CACHE_LIMIT: "10000"
+
+jobs:
+  windows-editor-build:
+    name: 🪟 Windows ${{ matrix.arch }} Editor Build
+    if: contains(inputs.platforms, 'windows') || contains(inputs.platforms, 'all')
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x86_64]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for Windows builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Use arch-specific cache key but allow fallback to other architectures
+          key: windows-${{ matrix.arch }}-editor-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            windows-${{ matrix.arch }}-editor-${{inputs.godot_base_branch}}-
+            windows-${{ matrix.arch }}-editor-
+            windows-editor-${{inputs.godot_base_branch}}-
+            windows-editor-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Build Windows Editor (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=windows target=editor arch=${{ matrix.arch }} ${{ inputs.common_args }} ${{ inputs.editor_args }} use_llvm=yes 
+          platform: windows
+          target: editor
+
+      - name: Compress Windows Editor Build
+        run: Compress-Archive -Path bin/godot.windows.editor.${{ matrix.arch }}.exe -DestinationPath bin/editor-windows-${{ matrix.artifact_suffix }}.zip
+        shell: pwsh
+
+      - name: Upload Windows Editor Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}-editor-${{ inputs.version }}
+          path: bin/editor-windows-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/editor-windows-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows-template-build:
+    name: 🪟 Windows ${{ matrix.arch }} Template Build
+    if: contains(inputs.platforms, 'windows') || contains(inputs.platforms, 'all')
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x86_64]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for Windows builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Use arch-specific cache key but allow fallback to other architectures
+          key: windows-${{ matrix.arch }}-template-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            windows-${{ matrix.arch }}-template-${{inputs.godot_base_branch}}-
+            windows-${{ matrix.arch }}-template-
+            windows-template-${{inputs.godot_base_branch}}-
+            windows-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build debug template first to maximize cache utilization
+      - name: Build Windows Template Debug (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=windows target=template_debug arch=${{ matrix.arch }} ${{ inputs.common_args }} ${{ inputs.release_args }} use_llvm=yes 
+          platform: windows
+          target: template_debug
+
+      - name: Build Windows Template Release (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=windows target=template_release arch=${{ matrix.arch }} ${{ inputs.common_args }} ${{ inputs.release_args }} use_llvm=yes 
+          platform: windows
+          target: template_release
+
+      - name: Compress Windows Template Builds
+        run: |
+          Compress-Archive -Path bin/godot.windows.template_debug.${{ matrix.arch }}.exe,bin/godot.windows.template_release.${{ matrix.arch }}.exe -DestinationPath bin/windows-${{ matrix.artifact_suffix }}.zip
+        shell: pwsh
+
+      - name: Upload Windows Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}-template-${{ inputs.version }}
+          path: bin/windows-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/windows-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}

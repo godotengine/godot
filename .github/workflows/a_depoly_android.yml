@@ -1,0 +1,133 @@
+name: 🤖 Android Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "Version number for the build"
+      platforms:
+        required: true
+        type: string
+        description: "Platforms to build"
+      godot_base_branch:
+        required: true
+        type: string
+        description: "Base branch for Godot"
+      engine_version:
+        required: true
+        type: string
+        description: "Engine version"
+      common_args:
+        required: true
+        type: string
+        description: "Common build arguments"
+      release_args:
+        required: true
+        type: string
+        description: "Release build arguments"
+      event_name:
+        required: true
+        type: string
+        description: "Event name triggering the build"
+      release_tag:
+        required: false
+        type: string
+        description: "Release tag name"
+    secrets:
+      GH_TOKEN:
+        required: true
+
+env:
+  SCONS_CACHE: "${{github.workspace}}/.scons-cache/"
+  SCONS_CACHE_LIMIT: "10000"
+
+jobs:
+  android-build:
+    name: 🤖 Android Release
+    if: contains(inputs.platforms, 'android') || contains(inputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      # Set up shared cache for all Android architectures
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: android-release-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            android-release-${{inputs.godot_base_branch}}-
+            android-release-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build in specific order to maximize cache utilization
+      # First build debug and release versions of the same architecture to reuse compilation cache
+
+      # arm32 builds (debug first, then release)
+      - name: Build Android 32-bit Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_debug arch=arm32 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: android
+          target: template_debug
+
+      - name: Build Android 32-bit Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_release arch=arm32 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: android
+          target: template_release
+
+      # arm64 builds (debug first, then release)
+      - name: Build Android 64-bit Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_debug arch=arm64 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: android
+          target: template_debug
+
+      - name: Build Android 64-bit Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_release arch=arm64 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: android
+          target: template_release
+
+      - name: Generate Final Android Templates
+        run: |
+          cd platform/android/java
+          ./gradlew generateGodotTemplates
+          echo "View generated files:"
+          ls -la ../../..
+          ls -la ../../../bin/
+
+      - name: Prepare Android files for release
+        if: inputs.event_name == 'release'
+        run: |
+          mkdir -p release
+          cp bin/android*.apk release/
+          cp bin/android_source.zip release/
+          zip -j release/android.zip release/*
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/android.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
