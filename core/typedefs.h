@@ -53,6 +53,39 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #include <cstring>
 #include <utility>
 
+#ifndef __has_feature
+#define __has_feature(m_feature) 0
+#endif
+
+#if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
+#define ASAN_ENABLED
+#include <sanitizer/asan_interface.h>
+#endif
+
+#if __has_feature(thread_sanitizer) || defined(__SANITIZE_THREAD__)
+#define TSAN_ENABLED
+#include <sanitizer/tsan_interface.h>
+#endif
+
+#if __has_feature(memory_sanitizer) || defined(__SANITIZE_MEMORY__)
+#define MSAN_ENABLED
+#include <sanitizer/msan_interface.h>
+#endif
+
+#if __has_feature(leak_sanitizer) || defined(__SANITIZE_LEAKS__)
+#define LSAN_ENABLED
+#include <sanitizer/lsan_interface.h>
+#endif
+
+#if __has_feature(undefined_behavior_sanitizer)
+#define UBSAN_ENABLED
+#include <sanitizer/ubsan_interface.h>
+#endif
+
+#if defined(ASAN_ENABLED) || defined(TSAN_ENABLED) || defined(MSAN_ENABLED) || defined(LSAN_ENABLED) || defined(UBSAN_ENABLED)
+#define SANITIZERS_ENABLED
+#endif
+
 // IWYU pragma: end_exports
 
 // Turn argument to string constant:
