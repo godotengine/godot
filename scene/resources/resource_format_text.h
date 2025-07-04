@@ -72,8 +72,6 @@ private:
 	HashMap<String, ExtResource> ext_resources;
 	HashMap<String, Ref<Resource>> int_resources;
 
-	int resources_total = 0;
-	int resource_current = 0;
 	String resource_type;
 	String script_class;
 
@@ -127,8 +125,6 @@ public:
 	Ref<Resource> get_resource();
 	Error load();
 	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);
-	int get_stage() const;
-	int get_stage_count() const;
 	void set_translation_remapped(bool p_remapped);
 
 	void open(Ref<FileAccess> p_f, bool p_skip_first_tag = false);
