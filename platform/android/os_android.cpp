@@ -43,6 +43,7 @@
 #include "core/io/xml_parser.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
+#include "main/profiling/profiling.h"
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
 #include "editor/run/game_view_plugin.h"
@@ -355,6 +356,8 @@ void OS_Android::main_loop_begin() {
 }
 
 bool OS_Android::main_loop_iterate(bool *r_should_swap_buffers) {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_Android::main_loop_iterate");
 	if (!main_loop) {
 		return false;
 	}
