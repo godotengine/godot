@@ -13,7 +13,7 @@
 	</tutorials>
 	<members>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
-			The collision sphere's radius in 3D units.
+			The collision sphere's radius in meters.
 		</member>
 	</members>
 </class>
