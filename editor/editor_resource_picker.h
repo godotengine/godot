@@ -96,6 +96,7 @@ class EditorResourcePicker : public HBoxContainer {
 
 	void _update_menu();
 	void _update_menu_items();
+	void _edit_convert_resource_complete(Ref<Resource> p_new_resource);
 	void _edit_menu_cbk(int p_which);
 
 	void _button_draw();

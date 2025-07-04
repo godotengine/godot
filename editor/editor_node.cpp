@@ -151,6 +151,7 @@
 #include "editor/plugins/material_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/noise_texture_conversion_plugin.h"
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/particle_process_material_editor_plugin.h"
 #include "editor/plugins/plugin_config_dialog.h"
@@ -8643,6 +8644,10 @@ EditorNode::EditorNode() {
 		Ref<VisualShaderConversionPlugin> vshader_convert;
 		vshader_convert.instantiate();
 		resource_conversion_plugins.push_back(vshader_convert);
+
+		Ref<NoiseTextureConversionPlugin> noise_tex_convert;
+		noise_tex_convert.instantiate();
+		resource_conversion_plugins.push_back(noise_tex_convert);
 	}
 
 	update_spinner_step_msec = OS::get_singleton()->get_ticks_msec();

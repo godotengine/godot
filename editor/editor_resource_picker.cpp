@@ -317,6 +317,11 @@ void EditorResourcePicker::_update_menu_items() {
 	}
 }
 
+void EditorResourcePicker::_edit_convert_resource_complete(Ref<Resource> p_new_resource) {
+	edited_resource = p_new_resource;
+	_resource_changed();
+}
+
 void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 	switch (p_which) {
 		case OBJ_MENU_LOAD: {
@@ -475,8 +480,15 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
-				edited_resource = conversions[to_type]->convert(edited_resource);
-				_resource_changed();
+				Ref<Resource> converted_resource = conversions[to_type]->convert(edited_resource);
+				if (!converted_resource.is_null()) {
+					edited_resource = converted_resource;
+					_resource_changed();
+				} else {
+					Callable convert_callback = callable_mp(this, &EditorResourcePicker::_edit_convert_resource_complete);
+					conversions[to_type]->convert_async(edited_resource, convert_callback);
+				}
+
 				break;
 			}
 

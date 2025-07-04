@@ -300,6 +300,7 @@ private:
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm(const String &p_path);
 	void _overwrite_dialog_action(bool p_overwrite);
+	void _convert_async_cbk(Ref<Resource> p_old_res, Ref<Resource> p_new_res);
 	void _convert_dialog_action();
 	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
