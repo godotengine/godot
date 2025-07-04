@@ -549,7 +549,8 @@ class Godot private constructor(val context: Context) {
 						val interpolatedFraction = imeAnimation.interpolatedFraction
 						// Linear interpolation between start and end values.
 						val keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction
-						GodotLib.setVirtualKeyboardHeight(keyboardHeight.toInt())
+						val finalHeight = maxOf(keyboardHeight.toInt() - topView.rootView.paddingBottom, 0)
+						GodotLib.setVirtualKeyboardHeight(finalHeight)
 					}
 					return windowInsets
 				}
