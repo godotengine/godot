@@ -45,6 +45,7 @@ class SceneCreateDialog : public ConfirmationDialog {
 	GDCLASS(SceneCreateDialog, ConfirmationDialog);
 
 	enum {
+		MSG_ID_DIR,
 		MSG_ID_PATH,
 		MSG_ID_ROOT,
 	};
@@ -60,7 +61,6 @@ public:
 	};
 
 private:
-	String directory;
 	String scene_name;
 	String root_name;
 
@@ -74,11 +74,17 @@ private:
 	Button *select_node_button = nullptr;
 	CreateDialog *select_node_dialog = nullptr;
 
+	bool can_edit_directory = false;
+	Label *directory_edit_label = nullptr;
+	LineEdit *directory_edit = nullptr;
+	Button *directory_button = nullptr;
+	HBoxContainer *directory_container = nullptr;
 	LineEdit *scene_name_edit = nullptr;
 	OptionButton *scene_extension_picker = nullptr;
 	LineEdit *root_name_edit = nullptr;
 
 	EditorValidationPanel *validation_panel = nullptr;
+	EditorFileDialog *file_browse = nullptr;
 
 	void accept_create();
 	void browse_types();
@@ -89,10 +95,13 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void config(const String &p_dir);
+	void config(const String &p_dir, const String &p_name = "", bool p_can_edit_dir = false);
 
 	String get_scene_path() const;
 	Node *create_scene_root();
+
+	void _browse_directory();
+	void _dir_selected(const String &p_file);
 
 	SceneCreateDialog();
 };

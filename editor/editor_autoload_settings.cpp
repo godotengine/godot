@@ -66,24 +66,43 @@ void EditorAutoloadSettings::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 			add_autoload->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			add_autoload->get_popup()->clear();
+			add_autoload->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("Script")), TTR("Script..."));
+			add_autoload->get_popup()->add_icon_item(get_editor_theme_icon(SNAME("PackedScene")), TTR("Scene..."));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			FileSystemDock *dock = FileSystemDock::get_singleton();
 
 			if (dock != nullptr) {
-				ScriptCreateDialog *dialog = dock->get_script_create_dialog();
+				ScriptCreateDialog *script_dialog = dock->get_script_create_dialog();
 
-				if (dialog != nullptr) {
+				if (script_dialog != nullptr) {
 					Callable script_created = callable_mp(this, &EditorAutoloadSettings::_script_created);
 
 					if (is_visible_in_tree()) {
-						if (!dialog->is_connected(SNAME("script_created"), script_created)) {
-							dialog->connect("script_created", script_created);
+						if (!script_dialog->is_connected(SNAME("script_created"), script_created)) {
+							script_dialog->connect("script_created", script_created);
 						}
 					} else {
-						if (dialog->is_connected(SNAME("script_created"), script_created)) {
-							dialog->disconnect("script_created", script_created);
+						if (script_dialog->is_connected(SNAME("script_created"), script_created)) {
+							script_dialog->disconnect("script_created", script_created);
+						}
+					}
+				}
+
+				SceneCreateDialog *scene_dialog = dock->get_scene_create_dialog();
+
+				if (scene_dialog != nullptr) {
+					Callable scene_created = callable_mp(this, &EditorAutoloadSettings::_scene_created);
+
+					if (is_visible_in_tree()) {
+						if (!scene_dialog->is_connected(SceneStringName(confirmed), scene_created)) {
+							scene_dialog->connect(SceneStringName(confirmed), scene_created);
+						}
+					} else {
+						if (scene_dialog->is_connected(SceneStringName(confirmed), scene_created)) {
+							scene_dialog->disconnect(SceneStringName(confirmed), scene_created);
 						}
 					}
 				}
@@ -150,23 +169,54 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 	return true;
 }
 
-void EditorAutoloadSettings::_autoload_add() {
-	if (autoload_add_path->get_text().is_empty()) {
-		ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
-		String fpath = path;
-		if (!fpath.ends_with("/")) {
-			fpath = fpath.get_base_dir();
-		}
-		dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text())), false, false);
-		dialog->popup_centered();
-	} else {
-		if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
-			autoload_add_path->set_text("");
-		}
-
-		autoload_add_name->set_text("");
-		add_autoload->set_disabled(true);
+void EditorAutoloadSettings::_autoload_add_pressed() {
+	if (!autoload_add_path->get_text().is_empty()) {
+		add_autoload->get_popup()->hide();
+		_autoload_add();
 	}
+}
+
+void EditorAutoloadSettings::_autoload_add_index_pressed(int p_index) {
+	switch (p_index) {
+		case 0: // Script button
+			_autoload_add_script();
+			break;
+		case 1: // Scene button
+			_autoload_add_scene();
+			break;
+	}
+}
+
+void EditorAutoloadSettings::_autoload_add() {
+	if (autoload_add(autoload_add_name->get_text(), autoload_add_path->get_text())) {
+		autoload_add_path->set_text("");
+	}
+
+	// Although not ideal to clear this on error, it's necessary to avoid
+	//  the Project Settings getting stuck if "Add" is pressed again.
+	// The proper fix would be to just make it so the error dialog is always on top.
+	autoload_add_name->set_text("");
+	add_autoload->set_disabled(true);
+}
+
+void EditorAutoloadSettings::_autoload_add_script() {
+	ScriptCreateDialog *dialog = FileSystemDock::get_singleton()->get_script_create_dialog();
+	String fpath = path;
+	if (!fpath.ends_with("/")) {
+		fpath = fpath.get_base_dir();
+	}
+	dialog->config("Node", fpath.path_join(vformat("%s.gd", autoload_add_name->get_text())), false, false);
+	dialog->popup_centered();
+}
+
+void EditorAutoloadSettings::_autoload_add_scene() {
+	SceneCreateDialog *dialog = FileSystemDock::get_singleton()->get_scene_create_dialog();
+	String fpath = path;
+	if (!fpath.ends_with("/")) {
+		fpath = fpath.get_base_dir();
+	}
+	dialog->config(fpath, vformat("%s", autoload_add_name->get_text()), true);
+	dialog->popup_centered();
 }
 
 void EditorAutoloadSettings::_autoload_selected() {
@@ -607,6 +657,15 @@ void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	_autoload_add();
 }
 
+void EditorAutoloadSettings::_scene_created() {
+	SceneCreateDialog *scene_dialog = FileSystemDock::get_singleton()->get_scene_create_dialog();
+	String file_path = scene_dialog->get_scene_path();
+	path = file_path.get_base_dir();
+	autoload_add_path->set_text(file_path);
+	autoload_add_name->set_text(file_path.get_file().get_basename().to_pascal_case());
+	_autoload_add();
+}
+
 LineEdit *EditorAutoloadSettings::get_path_box() const {
 	return autoload_add_path;
 }
@@ -910,7 +969,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_path->set_accessibility_name(TTRC("Autoload Path"));
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	autoload_add_path->set_clear_button_enabled(true);
-	autoload_add_path->set_placeholder(TTRC("Set path or press \"Add\" to create a script."));
+	autoload_add_path->set_placeholder(TTRC("Script or Scene: Set path or press \"Add\" to create new."));
 	autoload_add_path->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
 
 	browse_button = memnew(Button);
@@ -939,9 +998,10 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	autoload_add_name->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
 	hbc->add_child(autoload_add_name);
 
-	add_autoload = memnew(Button);
+	add_autoload = memnew(MenuButton);
 	add_autoload->set_text(TTRC("Add"));
-	add_autoload->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_autoload_add));
+	add_autoload->connect(SceneStringName(pressed), callable_mp(this, &EditorAutoloadSettings::_autoload_add_pressed));
+	add_autoload->get_popup()->connect("index_pressed", callable_mp(this, &EditorAutoloadSettings::_autoload_add_index_pressed));
 	// The button will be enabled once a valid name is entered (either automatically or manually).
 	add_autoload->set_disabled(true);
 	hbc->add_child(add_autoload);
