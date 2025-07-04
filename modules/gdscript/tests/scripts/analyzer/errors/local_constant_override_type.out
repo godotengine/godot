@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 3: Cannot assign a value of type Node2D to variable "a" with specified type Custom.
