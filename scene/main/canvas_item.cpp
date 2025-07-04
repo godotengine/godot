@@ -1733,7 +1733,7 @@ CanvasItem::CanvasItem() :
 
 CanvasItem::~CanvasItem() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas_item);
+	RenderingServer::get_singleton()->free_rid(canvas_item);
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -1915,5 +1915,5 @@ CanvasTexture::CanvasTexture() {
 }
 CanvasTexture::~CanvasTexture() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RS::get_singleton()->free(canvas_texture);
+	RS::get_singleton()->free_rid(canvas_texture);
 }
