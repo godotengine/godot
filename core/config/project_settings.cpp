@@ -1638,9 +1638,11 @@ ProjectSettings::ProjectSettings() {
 
 #ifndef PHYSICS_2D_DISABLED
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
+	GLOBAL_DEF_RST("physics/2d/run_on_separate_thread.editor", false);
 #endif // PHYSICS_2D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
+	GLOBAL_DEF_RST("physics/3d/run_on_separate_thread.editor", false);
 #endif // PHYSICS_3D_DISABLED
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");

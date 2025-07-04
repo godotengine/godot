@@ -3276,60 +3276,14 @@ void Node3DEditorViewport::_notification(int p_what) {
 				float locked_half_width = locked_label->get_size().width / 2.0f;
 				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 			}
+
+			// If we are NOT using physics/3d/run_on_separate_thread, this function will be called in process for smoother visual feedback.
+			_perform_safe_threaded_physics_actions();
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
-			if (collision_reposition) {
-				Node3D *selected_node = nullptr;
-
-				if (ruler->is_inside_tree()) {
-					if (ruler_start_point->is_visible()) {
-						selected_node = ruler_end_point;
-					} else {
-						selected_node = ruler_start_point;
-					}
-				} else {
-					const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-					if (selection.size() == 1) {
-						selected_node = Object::cast_to<Node3D>(selection.front()->get());
-					}
-				}
-
-				if (selected_node) {
-					if (!ruler->is_inside_tree()) {
-						double snap = EDITOR_GET("interface/inspector/default_float_step");
-						int snap_step_decimals = Math::range_step_decimals(snap);
-						set_message(TTR("Translating:") + " (" + String::num(selected_node->get_global_position().x, snap_step_decimals) + ", " +
-								String::num(selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(selected_node->get_global_position().z, snap_step_decimals) + ")");
-					}
-
-					selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
-
-					if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
-						ruler_end_point->set_global_position(ruler_start_point->get_global_position());
-						ruler_start_point->set_visible(true);
-						ruler_end_point->set_visible(true);
-						ruler_label->set_visible(true);
-					}
-				}
-			}
-
-			if (!update_preview_node) {
-				return;
-			}
-			if (preview_node->is_inside_tree()) {
-				preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
-				double snap = EDITOR_GET("interface/inspector/default_float_step");
-				int snap_step_decimals = Math::range_step_decimals(snap);
-				set_message(TTR("Instantiating:") + " (" + String::num(preview_node_pos.x, snap_step_decimals) + ", " +
-						String::num(preview_node_pos.y, snap_step_decimals) + ", " + String::num(preview_node_pos.z, snap_step_decimals) + ")");
-				Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
-				preview_node->set_global_transform(preview_gl_transform);
-				if (!preview_node->is_visible()) {
-					preview_node->show();
-				}
-			}
-			update_preview_node = false;
+			// If we are using physics/3d/run_on_separate_thread, ensure this function is called in physics_process so Physics will be thread-safe.
+			_perform_safe_threaded_physics_actions();
 		} break;
 
 		case NOTIFICATION_APPLICATION_FOCUS_OUT:
@@ -8251,6 +8205,73 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 			EditorNode::get_singleton()->show_warning(TTR("Couldn't find a solid floor to snap the selection to."));
 		}
 	}
+}
+void Node3DEditorViewport::_perform_safe_threaded_physics_actions() {
+	const bool in_physics_frame = Engine::get_singleton()->is_in_physics_frame();
+
+	if (GLOBAL_GET_CACHED(bool, "physics/3d/run_on_separate_thread")) {
+		// If we are using physics/3d/run_on_separate_thread, ensure the below functionality is called in physics_process so Physics will be thread-safe.
+		if (!in_physics_frame) {
+			return; // Returns if we are in process
+		}
+	} else {
+		// If we are NOT using physics/3d/run_on_separate_thread, the below functionality will be called in process for smoother visual feedback.
+		if (in_physics_frame) {
+			return; // Returns if we are in physics_process
+		}
+	}
+
+	if (collision_reposition) {
+		Node3D *selected_node = nullptr;
+
+		if (ruler->is_inside_tree()) {
+			if (ruler_start_point->is_visible()) {
+				selected_node = ruler_end_point;
+			} else {
+				selected_node = ruler_start_point;
+			}
+		} else {
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			if (selection.size() == 1) {
+				selected_node = Object::cast_to<Node3D>(selection.front()->get());
+			}
+		}
+
+		if (selected_node) {
+			if (!ruler->is_inside_tree()) {
+				double snap = EDITOR_GET("interface/inspector/default_float_step");
+				int snap_step_decimals = Math::range_step_decimals(snap);
+				set_message(TTR("Translating:") + " (" + String::num(selected_node->get_global_position().x, snap_step_decimals) + ", " +
+						String::num(selected_node->get_global_position().y, snap_step_decimals) + ", " + String::num(selected_node->get_global_position().z, snap_step_decimals) + ")");
+			}
+
+			selected_node->set_global_position(spatial_editor->snap_point(_get_instance_position(_edit.mouse_pos, selected_node)));
+
+			if (ruler->is_inside_tree() && !ruler_start_point->is_visible()) {
+				ruler_end_point->set_global_position(ruler_start_point->get_global_position());
+				ruler_start_point->set_visible(true);
+				ruler_end_point->set_visible(true);
+				ruler_label->set_visible(true);
+			}
+		}
+	}
+
+	if (!update_preview_node) {
+		return;
+	}
+	if (preview_node->is_inside_tree()) {
+		preview_node_pos = spatial_editor->snap_point(_get_instance_position(preview_node_viewport_pos, preview_node));
+		double snap = EDITOR_GET("interface/inspector/default_float_step");
+		int snap_step_decimals = Math::range_step_decimals(snap);
+		set_message(TTR("Instantiating:") + " (" + String::num(preview_node_pos.x, snap_step_decimals) + ", " +
+				String::num(preview_node_pos.y, snap_step_decimals) + ", " + String::num(preview_node_pos.z, snap_step_decimals) + ")");
+		Transform3D preview_gl_transform = Transform3D(Basis(), preview_node_pos);
+		preview_node->set_global_transform(preview_gl_transform);
+		if (!preview_node->is_visible()) {
+			preview_node->show();
+		}
+	}
+	update_preview_node = false;
 }
 
 void Node3DEditor::shortcut_input(const Ref<InputEvent> &p_event) {
