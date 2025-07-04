@@ -2368,6 +2368,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 
 		pipeline_key.framebuffer_format_id = framebuffer_format;
 		pipeline_key.wireframe = p_params->force_wireframe;
+		pipeline_key.line_width = line_width;
 		pipeline_key.render_pass = p_params->subpass;
 		pipeline_key.ubershader = 0;
 
@@ -3320,6 +3321,12 @@ void RenderForwardMobile::_update_shader_quality_settings() {
 
 RenderForwardMobile::RenderForwardMobile() {
 	singleton = this;
+
+	line_width = float(GLOBAL_GET("rendering/driver/line_drawing/width"));
+	if (!RD::get_singleton()->has_feature(RD::SUPPORTS_WIDE_LINES) && line_width != 1.0f) {
+		WARN_PRINT_ED("Changing line thickness via 'rendering/driver/line_drawing/width' is not supported on this GPU. Line will be drawn as 1 pixel thick.");
+		line_width = 1.0f;
+	}
 
 	sky.set_texture_format(_render_buffers_get_color_format());
 
