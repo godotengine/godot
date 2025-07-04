@@ -90,6 +90,19 @@ void SoftBodyRenderingServerHandler::close() {
 	write_buffer = nullptr;
 }
 
+void SoftBodyRenderingServerHandler::fti_teleport() {
+	DEV_ASSERT(0);
+	// ToDo, don't copy here.
+	// Make it so that interpolation fraction is 1
+	// after a teleport until the tick after the teleport tick.
+
+	if (buffer_prev->is_empty()) {
+		buffer_prev->resize(buffer_curr->size());
+	}
+	*buffer_prev = *buffer_curr;
+	aabb_prev = aabb_curr;
+}
+
 void SoftBodyRenderingServerHandler::fti_pump() {
 	if (buffer_prev->is_empty()) {
 		buffer_prev->resize(buffer_curr->size());
@@ -99,6 +112,13 @@ void SoftBodyRenderingServerHandler::fti_pump() {
 }
 
 void SoftBodyRenderingServerHandler::commit_changes(real_t p_interpolation_fraction) {
+	// Special case for first frame.
+	if (buffer_prev->size() != buffer_curr->size()) {
+		p_interpolation_fraction = 1;
+	}
+
+	rendering_server_dirty = false;
+
 	real_t f = p_interpolation_fraction;
 	AABB aabb_interp = aabb_curr;
 
@@ -347,17 +367,9 @@ void SoftBody3D::_notification(int p_what) {
 			PhysicsServer3D::get_singleton()->soft_body_set_space(physics_rid, space);
 			_prepare_physics_server();
 		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (is_inside_tree() && is_physics_interpolated_and_enabled()) {
-				_commit_soft_mesh(Engine::get_singleton()->get_physics_interpolation_fraction());
-			}
-		} break;
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (is_inside_tree()) {
-				_update_soft_mesh();
-				if (!is_physics_interpolated_and_enabled()) {
-					_commit_soft_mesh(1);
-				}
+				_tick_update_soft_mesh();
 			}
 		} break;
 		case NOTIFICATION_READY: {
@@ -377,6 +389,13 @@ void SoftBody3D::_notification(int p_what) {
 				return;
 			}
 
+			// This is currently strange behavior.
+			// Jolt expects these transforms to be relative, rather than
+			// absolute, because soft bodies are specified in global space,
+			// and may move off center.
+			// `SoftBody3D` however is sending these as absolute, so if you send the same
+			// set_transform() repeatedly the softbody will keep moving.
+			// ToDo : FixMe to something more sensible.
 			PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
 
 			// Soft body renders mesh in global space.
@@ -387,7 +406,7 @@ void SoftBody3D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
 			if (mesh.is_valid() && rendering_server_handler->is_ready(mesh->get_rid())) {
-				rendering_server_handler->fti_pump();
+				rendering_server_handler->fti_teleport();
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -432,6 +451,9 @@ void SoftBody3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_disable_mode", "mode"), &SoftBody3D::set_disable_mode);
 	ClassDB::bind_method(D_METHOD("get_disable_mode"), &SoftBody3D::get_disable_mode);
+
+	ClassDB::bind_method(D_METHOD("set_pin_mode_process", "mode"), &SoftBody3D::set_pin_mode_process);
+	ClassDB::bind_method(D_METHOD("get_pin_mode_process"), &SoftBody3D::get_pin_mode_process);
 
 	ClassDB::bind_method(D_METHOD("get_collision_exceptions"), &SoftBody3D::get_collision_exceptions);
 	ClassDB::bind_method(D_METHOD("add_collision_exception_with", "body"), &SoftBody3D::add_collision_exception_with);
@@ -487,14 +509,19 @@ void SoftBody3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ray_pickable"), "set_ray_pickable", "is_ray_pickable");
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "disable_mode", PROPERTY_HINT_ENUM, "Remove,KeepActive"), "set_disable_mode", "get_disable_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pin_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_pin_mode_process", "get_pin_mode_process");
 
 	BIND_ENUM_CONSTANT(DISABLE_MODE_REMOVE);
 	BIND_ENUM_CONSTANT(DISABLE_MODE_KEEP_ACTIVE);
+
+	BIND_ENUM_CONSTANT(PIN_MODE_PROCESS_PHYSICS);
+	BIND_ENUM_CONSTANT(PIN_MODE_PROCESS_IDLE);
 }
 
 void SoftBody3D::_physics_interpolated_changed() {
+	_prepare_physics_server();
 	if (mesh.is_valid() && rendering_server_handler->is_ready(mesh->get_rid())) {
-		rendering_server_handler->fti_pump();
+		rendering_server_handler->fti_teleport();
 	}
 	MeshInstance3D::_physics_interpolated_changed();
 }
@@ -509,7 +536,7 @@ PackedStringArray SoftBody3D::get_configuration_warnings() const {
 	return warnings;
 }
 
-void SoftBody3D::_update_physics_server() {
+void SoftBody3D::_update_pinned_points() {
 	_update_cache_pin_points_datas();
 	// Submit bone attachment
 	const int pinned_points_indices_size = pinned_points.size();
@@ -521,11 +548,10 @@ void SoftBody3D::_update_physics_server() {
 	}
 }
 
-void SoftBody3D::_update_soft_mesh() {
+bool SoftBody3D::_ensure_soft_mesh_ready() {
 	if (mesh.is_null()) {
-		return;
+		return false;
 	}
-
 	RID mesh_rid = mesh->get_rid();
 	if (owned_mesh != mesh_rid) {
 		_become_mesh_owner();
@@ -535,25 +561,89 @@ void SoftBody3D::_update_soft_mesh() {
 
 	if (!rendering_server_handler->is_ready(mesh_rid)) {
 		rendering_server_handler->prepare(mesh_rid, 0);
+
+		// Note: This is a hack for the first positioning of the soft body.
+		// It relies on the Node not yet being set to top_level and the xform
+		// still being present on the node.
+		// SoftBody positioning really needs to be re-examined.
 		PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
-		// Soft body renders mesh in global space.
-		set_as_top_level(true);
-		set_transform(Transform3D());
+
+		// Necessary in order to render the mesh correctly (Soft body nodes are in global space)
+		callable_mp((Node3D *)this, &Node3D::set_as_top_level).call_deferred(true);
+		callable_mp((Node3D *)this, &Node3D::set_transform).call_deferred(Transform3D());
+
 		simulation_started = true;
 	}
 
 	if (!simulation_started) {
+		return false;
+	}
+
+	return true;
+}
+
+void SoftBody3D::_draw_soft_mesh() {
+	bool using_fti = is_physics_interpolated_and_enabled();
+
+	// If there have been no ticks since the last render and we aren't
+	// using physics interpolation, there is nothing to update.
+	if (!using_fti && pin_mode_process == PIN_MODE_PROCESS_PHYSICS && !rendering_server_handler->rendering_server_dirty) {
 		return;
 	}
 
-	_update_physics_server();
+	if (!_ensure_soft_mesh_ready()) {
+		return;
+	}
 
+	if (pin_mode_process == PIN_MODE_PROCESS_IDLE) {
+		_update_pinned_points();
+	}
+
+	real_t f = 1;
+
+	if (!using_fti) {
+		rendering_server_handler->open();
+
+		// Note this function is mis-named.
+		// It DOES NOT update the rendering server, it updates
+		// the scene code, the rendering server is not updated until `commit()`.
+		PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, rendering_server_handler);
+		rendering_server_handler->close();
+	} else {
+		f = Engine::get_singleton()->get_physics_interpolation_fraction();
+	}
+
+	rendering_server_handler->commit_changes(f);
+}
+
+void SoftBody3D::_tick_update_soft_mesh() {
+	if (!_ensure_soft_mesh_ready()) {
+		return;
+	}
+
+	// Pinned points can be updated either at idle or on physics tick,
+	// even with FTI off.
+	if (pin_mode_process == PIN_MODE_PROCESS_PHYSICS) {
+		_update_pinned_points();
+	}
+
+	// When using FTI, we need to keep the data pumping
+	// from the physics to the buffers in `rendering_server_handler`.
+	// These buffers will later be interpolated on the frame in `commit()`.
 	if (is_physics_interpolated_and_enabled()) {
 		rendering_server_handler->fti_pump();
+
+		rendering_server_handler->open();
+
+		// Note this function is mis-named.
+		// It DOES NOT update the rendering server, it updates
+		// the scene code, the rendering server is not updated until `commit()`.
+		PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, rendering_server_handler);
+		rendering_server_handler->close();
 	}
-	rendering_server_handler->open();
-	PhysicsServer3D::get_singleton()->soft_body_update_rendering_server(physics_rid, rendering_server_handler);
-	rendering_server_handler->close();
+
+	// Needs a commit on the next render frame.
+	rendering_server_handler->rendering_server_dirty = true;
 }
 
 void SoftBody3D::_commit_soft_mesh(real_t p_interpolation_fraction) {
@@ -575,6 +665,8 @@ void SoftBody3D::_prepare_physics_server() {
 	}
 #endif
 
+	bool connect = false;
+
 	if (mesh.is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
 		RID mesh_rid = mesh->get_rid();
 		if (owned_mesh != mesh_rid) {
@@ -582,11 +674,33 @@ void SoftBody3D::_prepare_physics_server() {
 			mesh_rid = mesh->get_rid();
 		}
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
-		set_process_internal(is_physics_interpolated_and_enabled());
-		set_physics_process_internal(true);
+		connect = true;
 	} else {
 		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
-		set_process_internal(false);
+	}
+
+	Callable draw_call = callable_mp(this, &SoftBody3D::_draw_soft_mesh);
+
+	if (connect) {
+		RS::get_singleton()->connect("frame_pre_draw", draw_call);
+	} else {
+		if (is_connected("frame_pre_draw", draw_call)) {
+			RS::get_singleton()->disconnect("frame_pre_draw", draw_call);
+		}
+	}
+
+	_update_process_mode();
+}
+
+void SoftBody3D::_update_process_mode() {
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	if (mesh.is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
+		set_physics_process_internal(is_physics_interpolated_and_enabled() ? true : pin_mode_process == PIN_MODE_PROCESS_PHYSICS);
+	} else {
 		set_physics_process_internal(false);
 	}
 }
@@ -672,6 +786,11 @@ bool SoftBody3D::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
 	return get_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+void SoftBody3D::set_pin_mode_process(PinModeProcess p_mode) {
+	pin_mode_process = p_mode;
+	_update_process_mode();
 }
 
 void SoftBody3D::set_disable_mode(DisableMode p_mode) {
@@ -867,6 +986,7 @@ void SoftBody3D::_update_cache_pin_points_datas() {
 
 	pinned_points_cache_dirty = false;
 
+	// FixMe : Will this crash if the spatial attachment is deleted before the soft body?
 	PinnedPoint *w = pinned_points.ptrw();
 	for (int i = pinned_points.size() - 1; 0 <= i; --i) {
 		if (!w[i].spatial_attachment_path.is_empty()) {
