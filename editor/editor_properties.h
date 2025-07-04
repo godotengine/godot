@@ -521,8 +521,10 @@ class EditorPropertyQuaternion : public EditorProperty {
 	VBoxContainer *edit_custom_bc = nullptr;
 	EditorSpinSlider *euler[3];
 	Button *edit_button = nullptr;
+	Button *refresh_button = nullptr;
 
 	Vector3 edit_euler;
+	Quaternion edit_quaternion;
 
 	void _value_changed(double p_val, const String &p_name);
 	void _edit_custom_value();
@@ -531,7 +533,10 @@ class EditorPropertyQuaternion : public EditorProperty {
 
 	bool is_grabbing_euler();
 
+	void _refresh_internal_quaternion_from_edit(const String &p_name);
+
 protected:
+	virtual void _refresh_edit_from_internal() override;
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
 
