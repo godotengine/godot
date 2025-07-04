@@ -720,6 +720,8 @@ class EditorPropertyResource : public EditorProperty {
 	void _update_preferred_shader();
 	bool _should_stop_editing() const;
 
+	bool _is_editor_opened_in_sub_properties() const;
+
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);

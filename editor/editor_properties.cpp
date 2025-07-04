@@ -3368,6 +3368,27 @@ bool EditorPropertyResource::_should_stop_editing() const {
 	return !resource_picker->is_toggle_pressed();
 }
 
+bool EditorPropertyResource::_is_editor_opened_in_sub_properties() const {
+	if (sub_inspector) {
+		for (const KeyValue<StringName, List<EditorProperty *>> &F : sub_inspector->editor_property_map) {
+			for (EditorProperty *E : F.value) {
+				EditorPropertyResource *res = Object::cast_to<EditorPropertyResource>(E);
+				if (res) {
+					if (res->opened_editor) {
+						return true;
+					} else {
+						if (res->_is_editor_opened_in_sub_properties()) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 void EditorPropertyResource::_viewport_selected(const NodePath &p_path) {
 	Node *to_node = get_node(p_path);
 	if (!Object::cast_to<Viewport>(to_node)) {
@@ -3485,6 +3506,10 @@ void EditorPropertyResource::update_property() {
 			}
 
 		} else if (sub_inspector) {
+			if (!opened_editor) {
+				opened_editor = _is_editor_opened_in_sub_properties();
+			}
+
 			set_bottom_editor(nullptr);
 			memdelete(sub_inspector);
 			sub_inspector = nullptr;
