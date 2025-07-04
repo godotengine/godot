@@ -48,7 +48,7 @@ public:
 			TypedArray(Array(p_variant)) {
 	}
 	_FORCE_INLINE_ TypedArray(const Array &p_array) {
-		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
+		set_typed(Variant::OBJECT, std::remove_pointer_t<T>::get_class_static(), Variant());
 		if (is_same_typed(p_array)) {
 			Array::operator=(p_array);
 		} else {
@@ -58,7 +58,7 @@ public:
 	_FORCE_INLINE_ TypedArray(std::initializer_list<Variant> p_init) :
 			TypedArray(Array(p_init)) {}
 	_FORCE_INLINE_ TypedArray() {
-		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
+		set_typed(Variant::OBJECT, std::remove_pointer_t<T>::get_class_static(), Variant());
 	}
 };
 
@@ -167,7 +167,7 @@ struct GetTypeInfo<TypedArray<T>> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
+		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, std::remove_pointer_t<T>::get_class_static());
 	}
 };
 
