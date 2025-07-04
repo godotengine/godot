@@ -1937,6 +1937,18 @@ void RenderingDeviceDriverMetal::command_render_draw_indirect_count(CommandBuffe
 	cb->render_draw_indirect_count(p_indirect_buffer, p_offset, p_count_buffer, p_count_buffer_offset, p_max_draw_count, p_stride);
 }
 
+void RenderingDeviceDriverMetal::command_render_dispatch_mesh(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
+	ERR_FAIL_MSG("not implemented");
+}
+
+void RenderingDeviceDriverMetal::command_render_dispatch_mesh_indirect(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, uint32_t p_draw_count, uint32_t p_stride) {
+	ERR_FAIL_MSG("not implemented");
+}
+
+void RenderingDeviceDriverMetal::command_render_dispatch_mesh_indirect_count(CommandBufferID p_cmd_buffer, BufferID p_indirect_buffer, uint64_t p_offset, BufferID p_count_buffer, uint64_t p_count_buffer_offset, uint32_t p_max_draw_count, uint32_t p_stride) {
+	ERR_FAIL_MSG("not implemented");
+}
+
 void RenderingDeviceDriverMetal::command_render_bind_vertex_buffers(CommandBufferID p_cmd_buffer, uint32_t p_binding_count, const BufferID *p_buffers, const uint64_t *p_offsets) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_bind_vertex_buffers(p_binding_count, p_buffers, p_offsets);

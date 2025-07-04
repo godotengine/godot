@@ -1327,6 +1327,9 @@ public:
 	void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 	void draw_list_draw_indirect(DrawListID p_list, bool p_use_indices, RID p_buffer, uint32_t p_offset = 0, uint32_t p_draw_count = 1, uint32_t p_stride = 0);
 
+	void draw_list_dispatch_mesh(DrawListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
+	void draw_list_dispatch_mesh_indirect(DrawListID p_list, RID p_buffer, uint32_t p_offset);
+
 	void draw_list_set_viewport(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	void draw_list_disable_scissor(DrawListID p_list);
