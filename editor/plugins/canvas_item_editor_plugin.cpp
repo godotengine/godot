@@ -5662,7 +5662,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	grid_menu->add_shortcut(ED_SHORTCUT("canvas_item_editor/toggle_grid", TTRC("Toggle Grid"), KeyModifierMask::CMD_OR_CTRL | Key::APOSTROPHE));
 	p->add_submenu_node_item(TTRC("Grid"), grid_menu);
 
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTRC("Show Helpers"), Key::H), SHOW_HELPERS);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTRC("Show Helpers"), KeyModifierMask::SHIFT | Key::H), SHOW_HELPERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTRC("Show Rulers")), SHOW_RULERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTRC("Show Guides"), Key::Y), SHOW_GUIDES);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTRC("Show Origin")), SHOW_ORIGIN);

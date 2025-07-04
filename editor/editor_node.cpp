@@ -420,6 +420,26 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
 			bottom_panel->toggle_last_opened_bottom_panel();
+		} else if (ED_IS_SHORTCUT("editor/toggle_selected_nodes_visibility", p_event)) {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Toggle Selected Node(s) Visibility"));
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+
+			for (Node *E : selection) {
+				Node *node_with_visibility;
+				node_with_visibility = Object::cast_to<CanvasItem>(E);
+				if (!node_with_visibility || !node_with_visibility->is_inside_tree()) {
+					node_with_visibility = Object::cast_to<Node3D>(E);
+					if (!node_with_visibility || !node_with_visibility->is_inside_tree()) {
+						continue;
+					}
+				}
+
+				undo_redo->add_do_method(node_with_visibility, "set_visible", !node_with_visibility->get("visible"));
+				undo_redo->add_undo_method(node_with_visibility, "set_visible", node_with_visibility->get("visible"));
+			}
+
+			undo_redo->commit_action();
 		} else {
 			is_handled = false;
 		}
@@ -7543,6 +7563,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT("editor/unlock_selected_nodes", TTRC("Unlock Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::L);
 	ED_SHORTCUT("editor/group_selected_nodes", TTRC("Group Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | Key::G);
 	ED_SHORTCUT("editor/ungroup_selected_nodes", TTRC("Ungroup Selected Node(s)"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::G);
+	ED_SHORTCUT("editor/toggle_selected_nodes_visibility", TTRC("Toggle Selected Node(s) Visibility"), Key::H);
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
