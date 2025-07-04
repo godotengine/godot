@@ -1568,6 +1568,54 @@ void godotsharp_object_to_string(Object *p_ptr, godot_string *r_str) {
 }
 #endif
 
+int64_t godotsharp_string_size(const String *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_byte_array_size(const PackedByteArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_int32_array_size(const PackedInt32Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_int64_array_size(const PackedInt64Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_float32_array_size(const PackedFloat32Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_float64_array_size(const PackedFloat64Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_string_array_size(const PackedStringArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector2_array_size(const PackedVector2Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector3_array_size(const PackedVector3Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_vector4_array_size(const PackedVector4Array *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_packed_color_array_size(const PackedColorArray *p_self) {
+	return p_self->size();
+}
+
+int64_t godotsharp_array_size(const Array *p_self) {
+	return p_self->size();
+}
+
 // The order in this array must match the declaration order of
 // the methods in 'GodotSharp/Core/NativeInterop/NativeFuncs.cs'.
 static const void *unmanaged_callbacks[]{
@@ -1796,6 +1844,18 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_var_to_str,
 	(void *)godotsharp_err_print_error,
 	(void *)godotsharp_object_to_string,
+	(void *)godotsharp_string_size,
+	(void *)godotsharp_packed_byte_array_size,
+	(void *)godotsharp_packed_int32_array_size,
+	(void *)godotsharp_packed_int64_array_size,
+	(void *)godotsharp_packed_float32_array_size,
+	(void *)godotsharp_packed_float64_array_size,
+	(void *)godotsharp_packed_string_array_size,
+	(void *)godotsharp_packed_vector2_array_size,
+	(void *)godotsharp_packed_vector3_array_size,
+	(void *)godotsharp_packed_vector4_array_size,
+	(void *)godotsharp_packed_color_array_size,
+	(void *)godotsharp_array_size,
 };
 
 const void **godotsharp::get_runtime_interop_funcs(int32_t &r_size) {
