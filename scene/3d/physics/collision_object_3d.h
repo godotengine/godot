@@ -32,6 +32,7 @@
 
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/resources/physics_material.h"
 
 class CollisionObject3D : public Node3D {
 	GDCLASS(CollisionObject3D, Node3D);
@@ -68,6 +69,7 @@ private:
 
 		Vector<ShapeBase> shapes;
 		bool disabled = false;
+		Ref<PhysicsMaterial> material;
 	};
 
 	int total_subshapes = 0;
@@ -154,6 +156,9 @@ public:
 	void shape_owner_set_disabled(uint32_t p_owner, bool p_disabled);
 	bool is_shape_owner_disabled(uint32_t p_owner) const;
 
+	void shape_owner_set_physics_material(uint32_t p_owner, const Ref<PhysicsMaterial> &p_material);
+	Ref<PhysicsMaterial> shape_owner_get_physics_material(uint32_t p_owner) const;
+
 	void shape_owner_add_shape(uint32_t p_owner, const Ref<Shape3D> &p_shape);
 	int shape_owner_get_shape_count(uint32_t p_owner) const;
 	Ref<Shape3D> shape_owner_get_shape(uint32_t p_owner, int p_shape) const;
@@ -171,6 +176,8 @@ public:
 	bool get_capture_input_on_drag() const;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
+
+	_FORCE_INLINE_ bool is_area() const { return area; }
 
 	PackedStringArray get_configuration_warnings() const override;
 
