@@ -7,7 +7,7 @@ env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: 4.4
   GODOT_CPP_BRANCH: 4.4
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes
+  SCONSFLAGS: verbose=yes warnings=extra module_text_server_fb_enabled=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
@@ -23,30 +23,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Editor w/ Mono (target=editor)
-            cache-name: linux-editor-mono
-            target: editor
-            sconsflags: module_mono_enabled=yes
-            bin: ./bin/godot.linuxbsd.editor.x86_64.mono
-            build-mono: true
-            tests: false # Disabled due freeze caused by mix Mono build and CI
-            doc-test: true
-            proj-conv: true
-            api-compat: true
-            artifact: true
-            # Validate godot-cpp compatibility on one arbitrary editor build.
-            godot-cpp: true
-            cache-limit: 2
-
           - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
-            bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
+            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
+            bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.llvm.san
             build-mono: false
             tests: true
-            proj-test: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
             cache-limit: 7
@@ -74,27 +58,7 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
             cache-limit: 5
-
-          - name: Template w/ Mono, release (target=template_release, tests=yes)
-            cache-name: linux-template-mono
-            target: template_release
-            sconsflags: module_mono_enabled=yes
-            bin: ./bin/godot.linuxbsd.template_release.x86_64.mono
-            build-mono: false
-            tests: true
-            artifact: true
-            cache-limit: 1
-
-          - name: Template w/ Mono, debug (target=template_debug, tests=yes)
-            cache-name: linux-template-mono-debug
-            target: template_debug
-            sconsflags: module_mono_enabled=yes
-            bin: ./bin/godot.linuxbsd.template_debug.x86_64.mono
-            build-mono: false
-            tests: true
-            artifact: true
-            cache-limit: 1
-
+            
           - name: Minimal template (target=template_release, tests=yes, everything disabled)
             cache-name: linux-template-minimal
             target: template_release

@@ -450,6 +450,7 @@ class SampleNode {
 		this._onended = null;
 		/** @type {AudioWorkletNode | null} */
 		this._positionWorklet = null;
+		this._positionWorker = null;
 
 		this.setPlaybackRate(options.playbackRate ?? 44100);
 		this._source.buffer = this.getSample().getAudioBuffer();
@@ -617,7 +618,9 @@ class SampleNode {
 	 * If the worklet module is not loaded in, it will be added
 	 */
 	async connectPositionWorklet(start) {
-		await GodotAudio.audioPositionWorkletPromise;
+		if(typeof miniEngine === 'undefined' || !miniEngine){	
+			await GodotAudio.audioPositionWorkletPromise;
+		}
 		if (this.isCanceled) {
 			return;
 		}
@@ -635,19 +638,45 @@ class SampleNode {
 		if (this._positionWorklet != null) {
 			return this._positionWorklet;
 		}
-		this._positionWorklet = new AudioWorkletNode(
-			GodotAudio.ctx,
-			'godot-position-reporting-processor'
-		);
-		this._positionWorklet.port.onmessage = (event) => {
-			switch (event.data['type']) {
-			case 'position':
-				this._playbackPosition = (parseInt(event.data.data, 10) / this.getSample().sampleRate) + this.offset;
-				break;
-			default:
-				// Do nothing.
+		if(typeof miniEngine === 'undefined' || !miniEngine){
+			this._positionWorklet = new AudioWorkletNode(
+				GodotAudio.ctx,
+				'godot-position-reporting-processor'
+			);
+			this._positionWorklet.port.onmessage = (event) => {
+				switch (event.data['type']) {
+				case 'position':
+					this._playbackPosition = (parseInt(event.data.data, 10) / this.getSample().sampleRate) + this.offset;
+					break;
+				default:
+					// Do nothing.
+				}
+			};
+		}else{
+			let scriptProcessorNode = GodotAudio.ctx.createScriptProcessor(2048, 2, 2);
+			if (typeof positionWorker !== 'undefined') {
+				positionWorker.postMessage({type: 'init', currentTime: GodotAudio.ctx.currentTime});
 			}
-		};
+			scriptProcessorNode.onaudioprocess = function (event) {
+				const audiobuffer = event.inputBuffer;
+				if (audiobuffer.numberOfChannels > 0) {
+					const input = audiobuffer.getChannelData(0);
+					if (input.length > 0 && typeof positionWorker !== 'undefined') {
+						positionWorker.postMessage({type: 'process', inputLength: input.length, currentTime: GodotAudio.ctx.currentTime});
+					}
+				}
+			};
+			if (typeof positionWorker !== 'undefined') {
+				positionWorker.onMessage(event => {
+					if (event.type === 'position') {
+						this._playbackPosition = parseInt(event.data, 10) / this.getSample().sampleRate + this.offset;
+					}
+				});
+			}
+			this._positionWorklet = scriptProcessorNode;
+			this._positionWorker = (typeof positionWorker !== 'undefined') ? positionWorker : null;
+			this._positionWorklet.connect(GodotAudio.ctx.destination);
+		}
 		return this._positionWorklet;
 	}
 
@@ -661,7 +690,9 @@ class SampleNode {
 		this.pauseTime = 0;
 
 		if (this._source != null) {
-			this._source.removeEventListener('ended', this._onended);
+			if(typeof miniEngine === 'undefined' || !miniEngine){
+				this._source.removeEventListener('ended', this._onended);
+			}
 			this._onended = null;
 			if (this.isStarted) {
 				this._source.stop();
@@ -677,8 +708,14 @@ class SampleNode {
 
 		if (this._positionWorklet) {
 			this._positionWorklet.disconnect();
-			this._positionWorklet.port.onmessage = null;
-			this._positionWorklet.port.postMessage({ type: 'ended' });
+			if(typeof miniEngine === 'undefined' || !miniEngine){
+				this._positionWorklet.port.onmessage = null;
+				this._positionWorklet.port.postMessage({ type: 'ended' });
+			}else{
+				if (this._positionWorker) {
+					this._positionWorker.postMessage({type: 'ended'});
+				}
+			}
 			this._positionWorklet = null;
 		}
 
@@ -723,7 +760,13 @@ class SampleNode {
 			? this.pauseTime
 			: 0;
 		if (this._positionWorklet != null) {
-			this._positionWorklet.port.postMessage({ type: 'clear' });
+			if(typeof miniEngine === 'undefined' || !miniEngine){
+				this._positionWorklet.port.postMessage({ type: 'clear' });
+			}else{
+				if (this._positionWorker) {
+					this._positionWorker.postMessage({type: 'clear'});
+				}
+			}
 			this._source.connect(this._positionWorklet);
 		}
 		this._source.start(this.startTime, this.offset + pauseTime);
@@ -759,7 +802,9 @@ class SampleNode {
 	 */
 	_addEndedListener() {
 		if (this._onended != null) {
-			this._source.removeEventListener('ended', this._onended);
+			if(typeof miniEngine === 'undefined' || !miniEngine){
+				this._source.removeEventListener('ended', this._onended);
+			}
 		}
 
 		/** @type {SampleNode} */
@@ -788,7 +833,11 @@ class SampleNode {
 				// do nothing
 			}
 		};
-		this._source.addEventListener('ended', this._onended);
+		if(typeof miniEngine === 'undefined' || !miniEngine){
+			this._source.addEventListener('ended', this._onended);
+		}else{
+			this._source.onended = this._onended;
+		}
 	}
 }
 
@@ -842,6 +891,7 @@ class Bus {
 	static getBus(index) {
 		if (index < 0 || index >= GodotAudio.buses.length) {
 			// spxext fix: invalid bus index
+			//console.warn('invalid bus index', index);
 			//throw new ReferenceError(`invalid bus index "${index}"`);
 			index = 0;
 		}
@@ -1235,7 +1285,12 @@ const _GodotAudio = {
 			}
 			// Do not specify, leave 'interactive' for good performance.
 			// opts['latencyHint'] = latency / 1000;
-			const ctx = new (window.AudioContext || window.webkitAudioContext)(opts);
+			let ctx = null;
+			if (typeof miniEngine !== 'undefined' && miniEngine){
+				ctx = miniEngine.createWebAudioContext();
+			}else{
+				ctx = new (window.AudioContext || window.webkitAudioContext)(opts);
+			}
 			GodotAudio.ctx = ctx;
 			ctx.onstatechange = function () {
 				let state = 0;
@@ -1268,8 +1323,10 @@ const _GodotAudio = {
 			}, 1000);
 			GodotOS.atexit(GodotAudio.close_async);
 
-			const path = GodotConfig.locate_file('godot.audio.position.worklet.js');
-			GodotAudio.audioPositionWorkletPromise = ctx.audioWorklet.addModule(path);
+			if(typeof miniEngine === 'undefined' || !miniEngine){
+				const path = GodotConfig.locate_file('godot.audio.position.worklet.js');
+				GodotAudio.audioPositionWorkletPromise = ctx.audioWorklet.addModule(path);
+			}
 
 			return ctx.destination.channelCount;
 		},

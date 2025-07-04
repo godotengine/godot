@@ -990,6 +990,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	bool skip_breakpoints = false;
 	String main_pack;
+	String main_project_data;
 	bool quiet_stdout = false;
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
 
@@ -1650,6 +1651,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (arg == "--main-project-data") {
+			if (N) {
+				main_project_data = N->get();
+				Spx::project_data_path = main_project_data;
+				print_line("setup main project_data ", main_project_data);
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing path to main project data pack file, aborting.\n");
+				goto error;
+			};
 		} else if (arg == "--main-pack") {
 			if (N) {
 				main_pack = N->get();

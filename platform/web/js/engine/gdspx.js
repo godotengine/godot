@@ -6,16 +6,14 @@
 //   "gdspx.js.tmpl" so they can be included in the generated
 //   code.
 //----------------------------------------------------------------------------*/
-function test_go_call_cpp(val) {
-	return GodotEngine.rtenv['_test_go_call_cpp'](val); 
-}
-function gdspx_audio_stop_all() {
+class GdspxFuncs {
+gdspx_audio_stop_all() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_stop_all']; 
 	
 	_gdFuncPtr();
 
 }
-function gdspx_audio_create_audio() {
+gdspx_audio_create_audio() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_create_audio']; 
 	var _retValue = AllocGdObj();
 	_gdFuncPtr(_retValue);
@@ -23,7 +21,7 @@ function gdspx_audio_create_audio() {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_destroy_audio(obj) {
+gdspx_audio_destroy_audio(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_destroy_audio']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -31,7 +29,7 @@ function gdspx_audio_destroy_audio(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_audio_set_pitch(obj,pitch) {
+gdspx_audio_set_pitch(obj,pitch) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_set_pitch']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -41,7 +39,7 @@ function gdspx_audio_set_pitch(obj,pitch) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_audio_get_pitch(obj) {
+gdspx_audio_get_pitch(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_get_pitch']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -51,7 +49,7 @@ function gdspx_audio_get_pitch(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_set_pan(obj,pan) {
+gdspx_audio_set_pan(obj,pan) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_set_pan']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -61,7 +59,7 @@ function gdspx_audio_set_pan(obj,pan) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_audio_get_pan(obj) {
+gdspx_audio_get_pan(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_get_pan']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -71,7 +69,7 @@ function gdspx_audio_get_pan(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_set_volume(obj,volume) {
+gdspx_audio_set_volume(obj,volume) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_set_volume']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -81,7 +79,7 @@ function gdspx_audio_set_volume(obj,volume) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_audio_get_volume(obj) {
+gdspx_audio_get_volume(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_get_volume']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -91,7 +89,7 @@ function gdspx_audio_get_volume(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_play(obj,path) {
+gdspx_audio_play(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_play']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -103,7 +101,7 @@ function gdspx_audio_play(obj,path) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_pause(aid) {
+gdspx_audio_pause(aid) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_pause']; 
 	
 	var _arg0 = ToGdInt(aid);
@@ -111,7 +109,7 @@ function gdspx_audio_pause(aid) {
 	FreeGdInt(_arg0); 
 
 }
-function gdspx_audio_resume(aid) {
+gdspx_audio_resume(aid) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_resume']; 
 	
 	var _arg0 = ToGdInt(aid);
@@ -119,7 +117,7 @@ function gdspx_audio_resume(aid) {
 	FreeGdInt(_arg0); 
 
 }
-function gdspx_audio_stop(aid) {
+gdspx_audio_stop(aid) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_stop']; 
 	
 	var _arg0 = ToGdInt(aid);
@@ -127,7 +125,7 @@ function gdspx_audio_stop(aid) {
 	FreeGdInt(_arg0); 
 
 }
-function gdspx_audio_set_loop(aid,loop) {
+gdspx_audio_set_loop(aid,loop) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_set_loop']; 
 	
 	var _arg0 = ToGdInt(aid);
@@ -137,7 +135,7 @@ function gdspx_audio_set_loop(aid,loop) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_audio_get_loop(aid) {
+gdspx_audio_get_loop(aid) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_get_loop']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdInt(aid);
@@ -147,7 +145,7 @@ function gdspx_audio_get_loop(aid) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_get_timer(aid) {
+gdspx_audio_get_timer(aid) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_get_timer']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdInt(aid);
@@ -157,7 +155,7 @@ function gdspx_audio_get_timer(aid) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_audio_set_timer(aid,time) {
+gdspx_audio_set_timer(aid,time) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_set_timer']; 
 	
 	var _arg0 = ToGdInt(aid);
@@ -167,7 +165,7 @@ function gdspx_audio_set_timer(aid,time) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_audio_is_playing(aid) {
+gdspx_audio_is_playing(aid) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_audio_is_playing']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdInt(aid);
@@ -177,7 +175,7 @@ function gdspx_audio_is_playing(aid) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_camera_get_camera_position() {
+gdspx_camera_get_camera_position() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_camera_get_camera_position']; 
 	var _retValue = AllocGdVec2();
 	_gdFuncPtr(_retValue);
@@ -185,7 +183,7 @@ function gdspx_camera_get_camera_position() {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_camera_set_camera_position(position) {
+gdspx_camera_set_camera_position(position) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_camera_set_camera_position']; 
 	
 	var _arg0 = ToGdVec2(position);
@@ -193,7 +191,7 @@ function gdspx_camera_set_camera_position(position) {
 	FreeGdVec2(_arg0); 
 
 }
-function gdspx_camera_get_camera_zoom() {
+gdspx_camera_get_camera_zoom() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_camera_get_camera_zoom']; 
 	var _retValue = AllocGdVec2();
 	_gdFuncPtr(_retValue);
@@ -201,7 +199,7 @@ function gdspx_camera_get_camera_zoom() {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_camera_set_camera_zoom(size) {
+gdspx_camera_set_camera_zoom(size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_camera_set_camera_zoom']; 
 	
 	var _arg0 = ToGdVec2(size);
@@ -209,7 +207,7 @@ function gdspx_camera_set_camera_zoom(size) {
 	FreeGdVec2(_arg0); 
 
 }
-function gdspx_camera_get_viewport_rect() {
+gdspx_camera_get_viewport_rect() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_camera_get_viewport_rect']; 
 	var _retValue = AllocGdRect2();
 	_gdFuncPtr(_retValue);
@@ -217,7 +215,7 @@ function gdspx_camera_get_viewport_rect() {
 	FreeGdRect2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ext_request_exit(exit_code) {
+gdspx_ext_request_exit(exit_code) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_request_exit']; 
 	
 	var _arg0 = ToGdInt(exit_code);
@@ -225,7 +223,7 @@ function gdspx_ext_request_exit(exit_code) {
 	FreeGdInt(_arg0); 
 
 }
-function gdspx_ext_on_runtime_panic(msg) {
+gdspx_ext_on_runtime_panic(msg) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_on_runtime_panic']; 
 	
 	var _arg0 = ToGdString(msg);
@@ -233,13 +231,13 @@ function gdspx_ext_on_runtime_panic(msg) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_ext_destroy_all_pens() {
+gdspx_ext_destroy_all_pens() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_destroy_all_pens']; 
 	
 	_gdFuncPtr();
 
 }
-function gdspx_ext_create_pen() {
+gdspx_ext_create_pen() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_create_pen']; 
 	var _retValue = AllocGdObj();
 	_gdFuncPtr(_retValue);
@@ -247,7 +245,7 @@ function gdspx_ext_create_pen() {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ext_destroy_pen(obj) {
+gdspx_ext_destroy_pen(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_destroy_pen']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -255,7 +253,7 @@ function gdspx_ext_destroy_pen(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_ext_pen_stamp(obj) {
+gdspx_ext_pen_stamp(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_pen_stamp']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -263,7 +261,7 @@ function gdspx_ext_pen_stamp(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_ext_move_pen_to(obj,position) {
+gdspx_ext_move_pen_to(obj,position) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_move_pen_to']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -273,7 +271,7 @@ function gdspx_ext_move_pen_to(obj,position) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_ext_pen_down(obj,move_by_mouse) {
+gdspx_ext_pen_down(obj,move_by_mouse) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_pen_down']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -283,7 +281,7 @@ function gdspx_ext_pen_down(obj,move_by_mouse) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_ext_pen_up(obj) {
+gdspx_ext_pen_up(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_pen_up']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -291,7 +289,7 @@ function gdspx_ext_pen_up(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_ext_set_pen_color_to(obj,color) {
+gdspx_ext_set_pen_color_to(obj,color) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_set_pen_color_to']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -301,7 +299,7 @@ function gdspx_ext_set_pen_color_to(obj,color) {
 	FreeGdColor(_arg1); 
 
 }
-function gdspx_ext_change_pen_by(obj,property,amount) {
+gdspx_ext_change_pen_by(obj,property,amount) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_change_pen_by']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -313,7 +311,7 @@ function gdspx_ext_change_pen_by(obj,property,amount) {
 	FreeGdFloat(_arg2); 
 
 }
-function gdspx_ext_set_pen_to(obj,property,value) {
+gdspx_ext_set_pen_to(obj,property,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_set_pen_to']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -325,7 +323,7 @@ function gdspx_ext_set_pen_to(obj,property,value) {
 	FreeGdFloat(_arg2); 
 
 }
-function gdspx_ext_change_pen_size_by(obj,amount) {
+gdspx_ext_change_pen_size_by(obj,amount) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_change_pen_size_by']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -335,7 +333,7 @@ function gdspx_ext_change_pen_size_by(obj,amount) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_ext_set_pen_size_to(obj,size) {
+gdspx_ext_set_pen_size_to(obj,size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_set_pen_size_to']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -345,7 +343,7 @@ function gdspx_ext_set_pen_size_to(obj,size) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_ext_set_pen_stamp_texture(obj,texture_path) {
+gdspx_ext_set_pen_stamp_texture(obj,texture_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ext_set_pen_stamp_texture']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -355,7 +353,7 @@ function gdspx_ext_set_pen_stamp_texture(obj,texture_path) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_input_get_mouse_pos() {
+gdspx_input_get_mouse_pos() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_get_mouse_pos']; 
 	var _retValue = AllocGdVec2();
 	_gdFuncPtr(_retValue);
@@ -363,7 +361,7 @@ function gdspx_input_get_mouse_pos() {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_get_key(key) {
+gdspx_input_get_key(key) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_get_key']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdInt(key);
@@ -373,7 +371,7 @@ function gdspx_input_get_key(key) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_get_mouse_state(mouse_id) {
+gdspx_input_get_mouse_state(mouse_id) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_get_mouse_state']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdInt(mouse_id);
@@ -383,7 +381,7 @@ function gdspx_input_get_mouse_state(mouse_id) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_get_key_state(key) {
+gdspx_input_get_key_state(key) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_get_key_state']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdInt(key);
@@ -393,7 +391,7 @@ function gdspx_input_get_key_state(key) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_get_axis(neg_action,pos_action) {
+gdspx_input_get_axis(neg_action,pos_action) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_get_axis']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdString(neg_action);
@@ -405,7 +403,7 @@ function gdspx_input_get_axis(neg_action,pos_action) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_is_action_pressed(action) {
+gdspx_input_is_action_pressed(action) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_is_action_pressed']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdString(action);
@@ -415,7 +413,7 @@ function gdspx_input_is_action_pressed(action) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_is_action_just_pressed(action) {
+gdspx_input_is_action_just_pressed(action) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_is_action_just_pressed']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdString(action);
@@ -425,7 +423,7 @@ function gdspx_input_is_action_just_pressed(action) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_input_is_action_just_released(action) {
+gdspx_input_is_action_just_released(action) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_input_is_action_just_released']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdString(action);
@@ -435,7 +433,7 @@ function gdspx_input_is_action_just_released(action) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_physic_raycast(from,to,collision_mask) {
+gdspx_physic_raycast(from,to,collision_mask) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_physic_raycast']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdVec2(from);
@@ -449,7 +447,7 @@ function gdspx_physic_raycast(from,to,collision_mask) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_physic_check_collision(from,to,collision_mask,collide_with_areas,collide_with_bodies) {
+gdspx_physic_check_collision(from,to,collision_mask,collide_with_areas,collide_with_bodies) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_physic_check_collision']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdVec2(from);
@@ -467,7 +465,7 @@ function gdspx_physic_check_collision(from,to,collision_mask,collide_with_areas,
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_physic_check_touched_camera_boundaries(obj) {
+gdspx_physic_check_touched_camera_boundaries(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_physic_check_touched_camera_boundaries']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -477,7 +475,7 @@ function gdspx_physic_check_touched_camera_boundaries(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_physic_check_touched_camera_boundary(obj,board_type) {
+gdspx_physic_check_touched_camera_boundary(obj,board_type) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_physic_check_touched_camera_boundary']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -489,7 +487,7 @@ function gdspx_physic_check_touched_camera_boundary(obj,board_type) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_physic_set_collision_system_type(is_collision_by_alpha) {
+gdspx_physic_set_collision_system_type(is_collision_by_alpha) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_physic_set_collision_system_type']; 
 	
 	var _arg0 = ToGdBool(is_collision_by_alpha);
@@ -497,7 +495,7 @@ function gdspx_physic_set_collision_system_type(is_collision_by_alpha) {
 	FreeGdBool(_arg0); 
 
 }
-function gdspx_platform_set_window_position(pos) {
+gdspx_platform_set_window_position(pos) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_window_position']; 
 	
 	var _arg0 = ToGdVec2(pos);
@@ -505,7 +503,7 @@ function gdspx_platform_set_window_position(pos) {
 	FreeGdVec2(_arg0); 
 
 }
-function gdspx_platform_get_window_position() {
+gdspx_platform_get_window_position() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_get_window_position']; 
 	var _retValue = AllocGdVec2();
 	_gdFuncPtr(_retValue);
@@ -513,7 +511,7 @@ function gdspx_platform_get_window_position() {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_set_window_size(width,height) {
+gdspx_platform_set_window_size(width,height) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_window_size']; 
 	
 	var _arg0 = ToGdInt(width);
@@ -523,7 +521,7 @@ function gdspx_platform_set_window_size(width,height) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_platform_get_window_size() {
+gdspx_platform_get_window_size() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_get_window_size']; 
 	var _retValue = AllocGdVec2();
 	_gdFuncPtr(_retValue);
@@ -531,7 +529,7 @@ function gdspx_platform_get_window_size() {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_set_window_title(title) {
+gdspx_platform_set_window_title(title) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_window_title']; 
 	
 	var _arg0 = ToGdString(title);
@@ -539,7 +537,7 @@ function gdspx_platform_set_window_title(title) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_platform_get_window_title() {
+gdspx_platform_get_window_title() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_get_window_title']; 
 	var _retValue = AllocGdString();
 	_gdFuncPtr(_retValue);
@@ -547,7 +545,7 @@ function gdspx_platform_get_window_title() {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_set_window_fullscreen(enable) {
+gdspx_platform_set_window_fullscreen(enable) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_window_fullscreen']; 
 	
 	var _arg0 = ToGdBool(enable);
@@ -555,7 +553,7 @@ function gdspx_platform_set_window_fullscreen(enable) {
 	FreeGdBool(_arg0); 
 
 }
-function gdspx_platform_is_window_fullscreen() {
+gdspx_platform_is_window_fullscreen() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_is_window_fullscreen']; 
 	var _retValue = AllocGdBool();
 	_gdFuncPtr(_retValue);
@@ -563,7 +561,7 @@ function gdspx_platform_is_window_fullscreen() {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_set_debug_mode(enable) {
+gdspx_platform_set_debug_mode(enable) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_debug_mode']; 
 	
 	var _arg0 = ToGdBool(enable);
@@ -571,7 +569,7 @@ function gdspx_platform_set_debug_mode(enable) {
 	FreeGdBool(_arg0); 
 
 }
-function gdspx_platform_is_debug_mode() {
+gdspx_platform_is_debug_mode() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_is_debug_mode']; 
 	var _retValue = AllocGdBool();
 	_gdFuncPtr(_retValue);
@@ -579,7 +577,7 @@ function gdspx_platform_is_debug_mode() {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_get_time_scale() {
+gdspx_platform_get_time_scale() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_get_time_scale']; 
 	var _retValue = AllocGdFloat();
 	_gdFuncPtr(_retValue);
@@ -587,7 +585,7 @@ function gdspx_platform_get_time_scale() {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_set_time_scale(time_scale) {
+gdspx_platform_set_time_scale(time_scale) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_time_scale']; 
 	
 	var _arg0 = ToGdFloat(time_scale);
@@ -595,7 +593,7 @@ function gdspx_platform_set_time_scale(time_scale) {
 	FreeGdFloat(_arg0); 
 
 }
-function gdspx_platform_get_persistant_data_dir() {
+gdspx_platform_get_persistant_data_dir() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_get_persistant_data_dir']; 
 	var _retValue = AllocGdString();
 	_gdFuncPtr(_retValue);
@@ -603,7 +601,7 @@ function gdspx_platform_get_persistant_data_dir() {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_platform_set_persistant_data_dir(path) {
+gdspx_platform_set_persistant_data_dir(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_set_persistant_data_dir']; 
 	
 	var _arg0 = ToGdString(path);
@@ -611,7 +609,7 @@ function gdspx_platform_set_persistant_data_dir(path) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_platform_is_in_persistant_data_dir(path) {
+gdspx_platform_is_in_persistant_data_dir(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_platform_is_in_persistant_data_dir']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdString(path);
@@ -621,7 +619,7 @@ function gdspx_platform_is_in_persistant_data_dir(path) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_res_create_animation(sprite_type_name,anim_name,context,fps,is_altas) {
+gdspx_res_create_animation(sprite_type_name,anim_name,context,fps,is_altas) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_create_animation']; 
 	
 	var _arg0 = ToGdString(sprite_type_name);
@@ -637,7 +635,7 @@ function gdspx_res_create_animation(sprite_type_name,anim_name,context,fps,is_al
 	FreeGdBool(_arg4); 
 
 }
-function gdspx_res_set_load_mode(is_direct_mode) {
+gdspx_res_set_load_mode(is_direct_mode) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_set_load_mode']; 
 	
 	var _arg0 = ToGdBool(is_direct_mode);
@@ -645,7 +643,7 @@ function gdspx_res_set_load_mode(is_direct_mode) {
 	FreeGdBool(_arg0); 
 
 }
-function gdspx_res_get_load_mode() {
+gdspx_res_get_load_mode() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_get_load_mode']; 
 	var _retValue = AllocGdBool();
 	_gdFuncPtr(_retValue);
@@ -653,7 +651,7 @@ function gdspx_res_get_load_mode() {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_res_get_bound_from_alpha(p_path) {
+gdspx_res_get_bound_from_alpha(p_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_get_bound_from_alpha']; 
 	var _retValue = AllocGdRect2();
 	var _arg0 = ToGdString(p_path);
@@ -663,7 +661,7 @@ function gdspx_res_get_bound_from_alpha(p_path) {
 	FreeGdRect2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_res_get_image_size(p_path) {
+gdspx_res_get_image_size(p_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_get_image_size']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdString(p_path);
@@ -673,7 +671,7 @@ function gdspx_res_get_image_size(p_path) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_res_read_all_text(p_path) {
+gdspx_res_read_all_text(p_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_read_all_text']; 
 	var _retValue = AllocGdString();
 	var _arg0 = ToGdString(p_path);
@@ -683,7 +681,7 @@ function gdspx_res_read_all_text(p_path) {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_res_has_file(p_path) {
+gdspx_res_has_file(p_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_has_file']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdString(p_path);
@@ -693,7 +691,7 @@ function gdspx_res_has_file(p_path) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_res_reload_texture(path) {
+gdspx_res_reload_texture(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_reload_texture']; 
 	
 	var _arg0 = ToGdString(path);
@@ -701,7 +699,7 @@ function gdspx_res_reload_texture(path) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_res_free_str(str) {
+gdspx_res_free_str(str) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_free_str']; 
 	
 	var _arg0 = ToGdString(str);
@@ -709,7 +707,8 @@ function gdspx_res_free_str(str) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_res_set_default_font(font_path) {
+
+gdspx_res_set_default_font(font_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_res_set_default_font']; 
 	
 	var _arg0 = ToGdString(font_path);
@@ -717,7 +716,7 @@ function gdspx_res_set_default_font(font_path) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_scene_change_scene_to_file(path) {
+gdspx_scene_change_scene_to_file(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_scene_change_scene_to_file']; 
 	
 	var _arg0 = ToGdString(path);
@@ -725,13 +724,13 @@ function gdspx_scene_change_scene_to_file(path) {
 	FreeGdString(_arg0); 
 
 }
-function gdspx_scene_destroy_all_sprites() {
+gdspx_scene_destroy_all_sprites() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_scene_destroy_all_sprites']; 
 	
 	_gdFuncPtr();
 
 }
-function gdspx_scene_reload_current_scene() {
+gdspx_scene_reload_current_scene() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_scene_reload_current_scene']; 
 	var _retValue = AllocGdInt();
 	_gdFuncPtr(_retValue);
@@ -739,13 +738,13 @@ function gdspx_scene_reload_current_scene() {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_scene_unload_current_scene() {
+gdspx_scene_unload_current_scene() {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_scene_unload_current_scene']; 
 	
 	_gdFuncPtr();
 
 }
-function gdspx_sprite_set_dont_destroy_on_load(obj) {
+gdspx_sprite_set_dont_destroy_on_load(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_dont_destroy_on_load']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -753,7 +752,7 @@ function gdspx_sprite_set_dont_destroy_on_load(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_sprite_set_process(obj,is_on) {
+gdspx_sprite_set_process(obj,is_on) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_process']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -763,7 +762,7 @@ function gdspx_sprite_set_process(obj,is_on) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_set_physic_process(obj,is_on) {
+gdspx_sprite_set_physic_process(obj,is_on) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_physic_process']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -773,7 +772,7 @@ function gdspx_sprite_set_physic_process(obj,is_on) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_set_type_name(obj,type_name) {
+gdspx_sprite_set_type_name(obj,type_name) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_type_name']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -783,7 +782,7 @@ function gdspx_sprite_set_type_name(obj,type_name) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_sprite_set_child_position(obj,path,pos) {
+gdspx_sprite_set_child_position(obj,path,pos) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_child_position']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -795,7 +794,7 @@ function gdspx_sprite_set_child_position(obj,path,pos) {
 	FreeGdVec2(_arg2); 
 
 }
-function gdspx_sprite_get_child_position(obj,path) {
+gdspx_sprite_get_child_position(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_child_position']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -807,7 +806,7 @@ function gdspx_sprite_get_child_position(obj,path) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_child_rotation(obj,path,rot) {
+gdspx_sprite_set_child_rotation(obj,path,rot) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_child_rotation']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -819,7 +818,7 @@ function gdspx_sprite_set_child_rotation(obj,path,rot) {
 	FreeGdFloat(_arg2); 
 
 }
-function gdspx_sprite_get_child_rotation(obj,path) {
+gdspx_sprite_get_child_rotation(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_child_rotation']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -831,7 +830,7 @@ function gdspx_sprite_get_child_rotation(obj,path) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_child_scale(obj,path,scale) {
+gdspx_sprite_set_child_scale(obj,path,scale) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_child_scale']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -843,7 +842,7 @@ function gdspx_sprite_set_child_scale(obj,path,scale) {
 	FreeGdVec2(_arg2); 
 
 }
-function gdspx_sprite_get_child_scale(obj,path) {
+gdspx_sprite_get_child_scale(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_child_scale']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -855,7 +854,7 @@ function gdspx_sprite_get_child_scale(obj,path) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_check_collision(obj,target,is_src_trigger,is_dst_trigger) {
+gdspx_sprite_check_collision(obj,target,is_src_trigger,is_dst_trigger) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_check_collision']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -871,7 +870,7 @@ function gdspx_sprite_check_collision(obj,target,is_src_trigger,is_dst_trigger) 
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_check_collision_with_point(obj,point,is_trigger) {
+gdspx_sprite_check_collision_with_point(obj,point,is_trigger) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_check_collision_with_point']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -885,7 +884,7 @@ function gdspx_sprite_check_collision_with_point(obj,point,is_trigger) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_create_backdrop(path) {
+gdspx_sprite_create_backdrop(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_create_backdrop']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -895,7 +894,7 @@ function gdspx_sprite_create_backdrop(path) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_create_sprite(path) {
+gdspx_sprite_create_sprite(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_create_sprite']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -905,7 +904,7 @@ function gdspx_sprite_create_sprite(path) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_clone_sprite(obj) {
+gdspx_sprite_clone_sprite(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_clone_sprite']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdObj(obj);
@@ -915,7 +914,7 @@ function gdspx_sprite_clone_sprite(obj) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_destroy_sprite(obj) {
+gdspx_sprite_destroy_sprite(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_destroy_sprite']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -925,7 +924,7 @@ function gdspx_sprite_destroy_sprite(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_sprite_alive(obj) {
+gdspx_sprite_is_sprite_alive(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_sprite_alive']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -935,7 +934,7 @@ function gdspx_sprite_is_sprite_alive(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_position(obj,pos) {
+gdspx_sprite_set_position(obj,pos) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_position']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -945,7 +944,7 @@ function gdspx_sprite_set_position(obj,pos) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_get_position(obj) {
+gdspx_sprite_get_position(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_position']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -955,7 +954,7 @@ function gdspx_sprite_get_position(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_rotation(obj,rot) {
+gdspx_sprite_set_rotation(obj,rot) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_rotation']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -965,7 +964,7 @@ function gdspx_sprite_set_rotation(obj,rot) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_sprite_get_rotation(obj) {
+gdspx_sprite_get_rotation(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_rotation']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -975,7 +974,7 @@ function gdspx_sprite_get_rotation(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_scale(obj,scale) {
+gdspx_sprite_set_scale(obj,scale) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_scale']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -985,7 +984,7 @@ function gdspx_sprite_set_scale(obj,scale) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_get_scale(obj) {
+gdspx_sprite_get_scale(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_scale']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -995,7 +994,7 @@ function gdspx_sprite_get_scale(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_render_scale(obj,scale) {
+gdspx_sprite_set_render_scale(obj,scale) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_render_scale']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1005,7 +1004,7 @@ function gdspx_sprite_set_render_scale(obj,scale) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_get_render_scale(obj) {
+gdspx_sprite_get_render_scale(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_render_scale']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1015,7 +1014,7 @@ function gdspx_sprite_get_render_scale(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_color(obj,color) {
+gdspx_sprite_set_color(obj,color) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_color']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1025,7 +1024,7 @@ function gdspx_sprite_set_color(obj,color) {
 	FreeGdColor(_arg1); 
 
 }
-function gdspx_sprite_get_color(obj) {
+gdspx_sprite_get_color(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_color']; 
 	var _retValue = AllocGdColor();
 	var _arg0 = ToGdObj(obj);
@@ -1035,7 +1034,7 @@ function gdspx_sprite_get_color(obj) {
 	FreeGdColor(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_material_shader(obj,path) {
+gdspx_sprite_set_material_shader(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_material_shader']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1045,7 +1044,7 @@ function gdspx_sprite_set_material_shader(obj,path) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_sprite_get_material_shader(obj) {
+gdspx_sprite_get_material_shader(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_material_shader']; 
 	var _retValue = AllocGdString();
 	var _arg0 = ToGdObj(obj);
@@ -1055,7 +1054,7 @@ function gdspx_sprite_get_material_shader(obj) {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_material_params(obj,effect,amount) {
+gdspx_sprite_set_material_params(obj,effect,amount) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_material_params']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1067,7 +1066,7 @@ function gdspx_sprite_set_material_params(obj,effect,amount) {
 	FreeGdFloat(_arg2); 
 
 }
-function gdspx_sprite_get_material_params(obj,effect) {
+gdspx_sprite_get_material_params(obj,effect) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_material_params']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -1079,7 +1078,7 @@ function gdspx_sprite_get_material_params(obj,effect) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_material_params_vec(obj,effect,x,y,z,w) {
+gdspx_sprite_set_material_params_vec(obj,effect,x,y,z,w) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_material_params_vec']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1097,7 +1096,7 @@ function gdspx_sprite_set_material_params_vec(obj,effect,x,y,z,w) {
 	FreeGdFloat(_arg5); 
 
 }
-function gdspx_sprite_set_material_params_vec4(obj,effect,vec4) {
+gdspx_sprite_set_material_params_vec4(obj,effect,vec4) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_material_params_vec4']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1109,7 +1108,7 @@ function gdspx_sprite_set_material_params_vec4(obj,effect,vec4) {
 	FreeGdVec4(_arg2); 
 
 }
-function gdspx_sprite_get_material_params_vec4(obj,effect) {
+gdspx_sprite_get_material_params_vec4(obj,effect) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_material_params_vec4']; 
 	var _retValue = AllocGdVec4();
 	var _arg0 = ToGdObj(obj);
@@ -1121,7 +1120,7 @@ function gdspx_sprite_get_material_params_vec4(obj,effect) {
 	FreeGdVec4(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_material_params_color(obj,effect,color) {
+gdspx_sprite_set_material_params_color(obj,effect,color) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_material_params_color']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1133,7 +1132,7 @@ function gdspx_sprite_set_material_params_color(obj,effect,color) {
 	FreeGdColor(_arg2); 
 
 }
-function gdspx_sprite_get_material_params_color(obj,effect) {
+gdspx_sprite_get_material_params_color(obj,effect) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_material_params_color']; 
 	var _retValue = AllocGdColor();
 	var _arg0 = ToGdObj(obj);
@@ -1145,7 +1144,7 @@ function gdspx_sprite_get_material_params_color(obj,effect) {
 	FreeGdColor(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_texture_altas(obj,path,rect2) {
+gdspx_sprite_set_texture_altas(obj,path,rect2) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_texture_altas']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1157,7 +1156,7 @@ function gdspx_sprite_set_texture_altas(obj,path,rect2) {
 	FreeGdRect2(_arg2); 
 
 }
-function gdspx_sprite_set_texture(obj,path) {
+gdspx_sprite_set_texture(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_texture']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1167,7 +1166,7 @@ function gdspx_sprite_set_texture(obj,path) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_sprite_set_texture_altas_direct(obj,path,rect2) {
+gdspx_sprite_set_texture_altas_direct(obj,path,rect2) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_texture_altas_direct']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1179,7 +1178,7 @@ function gdspx_sprite_set_texture_altas_direct(obj,path,rect2) {
 	FreeGdRect2(_arg2); 
 
 }
-function gdspx_sprite_set_texture_direct(obj,path) {
+gdspx_sprite_set_texture_direct(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_texture_direct']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1189,7 +1188,7 @@ function gdspx_sprite_set_texture_direct(obj,path) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_sprite_get_texture(obj) {
+gdspx_sprite_get_texture(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_texture']; 
 	var _retValue = AllocGdString();
 	var _arg0 = ToGdObj(obj);
@@ -1199,7 +1198,7 @@ function gdspx_sprite_get_texture(obj) {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_visible(obj,visible) {
+gdspx_sprite_set_visible(obj,visible) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_visible']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1209,7 +1208,7 @@ function gdspx_sprite_set_visible(obj,visible) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_get_visible(obj) {
+gdspx_sprite_get_visible(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_visible']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1219,7 +1218,7 @@ function gdspx_sprite_get_visible(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_z_index(obj) {
+gdspx_sprite_get_z_index(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_z_index']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1229,7 +1228,7 @@ function gdspx_sprite_get_z_index(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_z_index(obj,z) {
+gdspx_sprite_set_z_index(obj,z) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_z_index']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1239,7 +1238,7 @@ function gdspx_sprite_set_z_index(obj,z) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_sprite_play_anim(obj,p_name,p_speed,isLoop,p_revert) {
+gdspx_sprite_play_anim(obj,p_name,p_speed,isLoop,p_revert) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_play_anim']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1255,7 +1254,7 @@ function gdspx_sprite_play_anim(obj,p_name,p_speed,isLoop,p_revert) {
 	FreeGdBool(_arg4); 
 
 }
-function gdspx_sprite_play_backwards_anim(obj,p_name) {
+gdspx_sprite_play_backwards_anim(obj,p_name) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_play_backwards_anim']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1265,7 +1264,7 @@ function gdspx_sprite_play_backwards_anim(obj,p_name) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_sprite_pause_anim(obj) {
+gdspx_sprite_pause_anim(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_pause_anim']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1273,7 +1272,7 @@ function gdspx_sprite_pause_anim(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_sprite_stop_anim(obj) {
+gdspx_sprite_stop_anim(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_stop_anim']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1281,7 +1280,7 @@ function gdspx_sprite_stop_anim(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_sprite_is_playing_anim(obj) {
+gdspx_sprite_is_playing_anim(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_playing_anim']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1291,7 +1290,7 @@ function gdspx_sprite_is_playing_anim(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim(obj,p_name) {
+gdspx_sprite_set_anim(obj,p_name) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1301,7 +1300,7 @@ function gdspx_sprite_set_anim(obj,p_name) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_sprite_get_anim(obj) {
+gdspx_sprite_get_anim(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_anim']; 
 	var _retValue = AllocGdString();
 	var _arg0 = ToGdObj(obj);
@@ -1311,7 +1310,7 @@ function gdspx_sprite_get_anim(obj) {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim_frame(obj,p_frame) {
+gdspx_sprite_set_anim_frame(obj,p_frame) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim_frame']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1321,7 +1320,7 @@ function gdspx_sprite_set_anim_frame(obj,p_frame) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_sprite_get_anim_frame(obj) {
+gdspx_sprite_get_anim_frame(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_anim_frame']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1331,7 +1330,7 @@ function gdspx_sprite_get_anim_frame(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim_speed_scale(obj,p_speed_scale) {
+gdspx_sprite_set_anim_speed_scale(obj,p_speed_scale) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim_speed_scale']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1341,7 +1340,7 @@ function gdspx_sprite_set_anim_speed_scale(obj,p_speed_scale) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_sprite_get_anim_speed_scale(obj) {
+gdspx_sprite_get_anim_speed_scale(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_anim_speed_scale']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -1351,7 +1350,7 @@ function gdspx_sprite_get_anim_speed_scale(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_anim_playing_speed(obj) {
+gdspx_sprite_get_anim_playing_speed(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_anim_playing_speed']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -1361,7 +1360,7 @@ function gdspx_sprite_get_anim_playing_speed(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim_centered(obj,p_center) {
+gdspx_sprite_set_anim_centered(obj,p_center) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim_centered']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1371,7 +1370,7 @@ function gdspx_sprite_set_anim_centered(obj,p_center) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_is_anim_centered(obj) {
+gdspx_sprite_is_anim_centered(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_anim_centered']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1381,7 +1380,7 @@ function gdspx_sprite_is_anim_centered(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim_offset(obj,p_offset) {
+gdspx_sprite_set_anim_offset(obj,p_offset) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim_offset']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1391,7 +1390,7 @@ function gdspx_sprite_set_anim_offset(obj,p_offset) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_get_anim_offset(obj) {
+gdspx_sprite_get_anim_offset(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_anim_offset']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1401,7 +1400,7 @@ function gdspx_sprite_get_anim_offset(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim_flip_h(obj,p_flip) {
+gdspx_sprite_set_anim_flip_h(obj,p_flip) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim_flip_h']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1411,7 +1410,7 @@ function gdspx_sprite_set_anim_flip_h(obj,p_flip) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_is_anim_flipped_h(obj) {
+gdspx_sprite_is_anim_flipped_h(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_anim_flipped_h']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1421,7 +1420,7 @@ function gdspx_sprite_is_anim_flipped_h(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_anim_flip_v(obj,p_flip) {
+gdspx_sprite_set_anim_flip_v(obj,p_flip) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_anim_flip_v']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1431,7 +1430,7 @@ function gdspx_sprite_set_anim_flip_v(obj,p_flip) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_is_anim_flipped_v(obj) {
+gdspx_sprite_is_anim_flipped_v(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_anim_flipped_v']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1441,7 +1440,7 @@ function gdspx_sprite_is_anim_flipped_v(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_velocity(obj,velocity) {
+gdspx_sprite_set_velocity(obj,velocity) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_velocity']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1451,7 +1450,7 @@ function gdspx_sprite_set_velocity(obj,velocity) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_get_velocity(obj) {
+gdspx_sprite_get_velocity(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_velocity']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1461,7 +1460,7 @@ function gdspx_sprite_get_velocity(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_on_floor(obj) {
+gdspx_sprite_is_on_floor(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_on_floor']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1471,7 +1470,7 @@ function gdspx_sprite_is_on_floor(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_on_floor_only(obj) {
+gdspx_sprite_is_on_floor_only(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_on_floor_only']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1481,7 +1480,7 @@ function gdspx_sprite_is_on_floor_only(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_on_wall(obj) {
+gdspx_sprite_is_on_wall(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_on_wall']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1491,7 +1490,7 @@ function gdspx_sprite_is_on_wall(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_on_wall_only(obj) {
+gdspx_sprite_is_on_wall_only(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_on_wall_only']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1501,7 +1500,7 @@ function gdspx_sprite_is_on_wall_only(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_on_ceiling(obj) {
+gdspx_sprite_is_on_ceiling(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_on_ceiling']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1511,7 +1510,7 @@ function gdspx_sprite_is_on_ceiling(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_is_on_ceiling_only(obj) {
+gdspx_sprite_is_on_ceiling_only(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_on_ceiling_only']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1521,7 +1520,7 @@ function gdspx_sprite_is_on_ceiling_only(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_last_motion(obj) {
+gdspx_sprite_get_last_motion(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_last_motion']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1531,7 +1530,7 @@ function gdspx_sprite_get_last_motion(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_position_delta(obj) {
+gdspx_sprite_get_position_delta(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_position_delta']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1541,7 +1540,7 @@ function gdspx_sprite_get_position_delta(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_floor_normal(obj) {
+gdspx_sprite_get_floor_normal(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_floor_normal']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1551,7 +1550,7 @@ function gdspx_sprite_get_floor_normal(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_wall_normal(obj) {
+gdspx_sprite_get_wall_normal(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_wall_normal']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1561,7 +1560,7 @@ function gdspx_sprite_get_wall_normal(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_get_real_velocity(obj) {
+gdspx_sprite_get_real_velocity(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_real_velocity']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -1571,7 +1570,7 @@ function gdspx_sprite_get_real_velocity(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_move_and_slide(obj) {
+gdspx_sprite_move_and_slide(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_move_and_slide']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1579,7 +1578,7 @@ function gdspx_sprite_move_and_slide(obj) {
 	FreeGdObj(_arg0); 
 
 }
-function gdspx_sprite_set_gravity(obj,gravity) {
+gdspx_sprite_set_gravity(obj,gravity) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_gravity']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1589,7 +1588,7 @@ function gdspx_sprite_set_gravity(obj,gravity) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_sprite_get_gravity(obj) {
+gdspx_sprite_get_gravity(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_gravity']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -1599,7 +1598,7 @@ function gdspx_sprite_get_gravity(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_mass(obj,mass) {
+gdspx_sprite_set_mass(obj,mass) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_mass']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1609,7 +1608,7 @@ function gdspx_sprite_set_mass(obj,mass) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_sprite_get_mass(obj) {
+gdspx_sprite_get_mass(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_mass']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -1619,7 +1618,7 @@ function gdspx_sprite_get_mass(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_add_force(obj,force) {
+gdspx_sprite_add_force(obj,force) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_add_force']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1629,7 +1628,7 @@ function gdspx_sprite_add_force(obj,force) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_add_impulse(obj,impulse) {
+gdspx_sprite_add_impulse(obj,impulse) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_add_impulse']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1639,7 +1638,7 @@ function gdspx_sprite_add_impulse(obj,impulse) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_sprite_set_collision_layer(obj,layer) {
+gdspx_sprite_set_collision_layer(obj,layer) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_collision_layer']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1649,7 +1648,7 @@ function gdspx_sprite_set_collision_layer(obj,layer) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_sprite_get_collision_layer(obj) {
+gdspx_sprite_get_collision_layer(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_collision_layer']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1659,7 +1658,7 @@ function gdspx_sprite_get_collision_layer(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_collision_mask(obj,mask) {
+gdspx_sprite_set_collision_mask(obj,mask) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_collision_mask']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1669,7 +1668,7 @@ function gdspx_sprite_set_collision_mask(obj,mask) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_sprite_get_collision_mask(obj) {
+gdspx_sprite_get_collision_mask(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_collision_mask']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1679,7 +1678,7 @@ function gdspx_sprite_get_collision_mask(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_trigger_layer(obj,layer) {
+gdspx_sprite_set_trigger_layer(obj,layer) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_trigger_layer']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1689,7 +1688,7 @@ function gdspx_sprite_set_trigger_layer(obj,layer) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_sprite_get_trigger_layer(obj) {
+gdspx_sprite_get_trigger_layer(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_trigger_layer']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1699,7 +1698,7 @@ function gdspx_sprite_get_trigger_layer(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_trigger_mask(obj,mask) {
+gdspx_sprite_set_trigger_mask(obj,mask) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_trigger_mask']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1709,7 +1708,7 @@ function gdspx_sprite_set_trigger_mask(obj,mask) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_sprite_get_trigger_mask(obj) {
+gdspx_sprite_get_trigger_mask(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_get_trigger_mask']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1719,7 +1718,7 @@ function gdspx_sprite_get_trigger_mask(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_collider_rect(obj,center,size) {
+gdspx_sprite_set_collider_rect(obj,center,size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_collider_rect']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1731,7 +1730,7 @@ function gdspx_sprite_set_collider_rect(obj,center,size) {
 	FreeGdVec2(_arg2); 
 
 }
-function gdspx_sprite_set_collider_circle(obj,center,radius) {
+gdspx_sprite_set_collider_circle(obj,center,radius) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_collider_circle']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1743,7 +1742,7 @@ function gdspx_sprite_set_collider_circle(obj,center,radius) {
 	FreeGdFloat(_arg2); 
 
 }
-function gdspx_sprite_set_collider_capsule(obj,center,size) {
+gdspx_sprite_set_collider_capsule(obj,center,size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_collider_capsule']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1755,7 +1754,7 @@ function gdspx_sprite_set_collider_capsule(obj,center,size) {
 	FreeGdVec2(_arg2); 
 
 }
-function gdspx_sprite_set_collision_enabled(obj,enabled) {
+gdspx_sprite_set_collision_enabled(obj,enabled) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_collision_enabled']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1765,7 +1764,7 @@ function gdspx_sprite_set_collision_enabled(obj,enabled) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_is_collision_enabled(obj) {
+gdspx_sprite_is_collision_enabled(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_collision_enabled']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1775,7 +1774,7 @@ function gdspx_sprite_is_collision_enabled(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_set_trigger_rect(obj,center,size) {
+gdspx_sprite_set_trigger_rect(obj,center,size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_trigger_rect']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1787,7 +1786,7 @@ function gdspx_sprite_set_trigger_rect(obj,center,size) {
 	FreeGdVec2(_arg2); 
 
 }
-function gdspx_sprite_set_trigger_circle(obj,center,radius) {
+gdspx_sprite_set_trigger_circle(obj,center,radius) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_trigger_circle']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1799,7 +1798,7 @@ function gdspx_sprite_set_trigger_circle(obj,center,radius) {
 	FreeGdFloat(_arg2); 
 
 }
-function gdspx_sprite_set_trigger_capsule(obj,center,size) {
+gdspx_sprite_set_trigger_capsule(obj,center,size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_trigger_capsule']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1811,7 +1810,7 @@ function gdspx_sprite_set_trigger_capsule(obj,center,size) {
 	FreeGdVec2(_arg2); 
 
 }
-function gdspx_sprite_set_trigger_enabled(obj,trigger) {
+gdspx_sprite_set_trigger_enabled(obj,trigger) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_set_trigger_enabled']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1821,7 +1820,7 @@ function gdspx_sprite_set_trigger_enabled(obj,trigger) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_sprite_is_trigger_enabled(obj) {
+gdspx_sprite_is_trigger_enabled(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_is_trigger_enabled']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1831,7 +1830,7 @@ function gdspx_sprite_is_trigger_enabled(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_check_collision_by_color(obj,color,color_threshold,alpha_threshold) {
+gdspx_sprite_check_collision_by_color(obj,color,color_threshold,alpha_threshold) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_check_collision_by_color']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1847,7 +1846,7 @@ function gdspx_sprite_check_collision_by_color(obj,color,color_threshold,alpha_t
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_check_collision_by_alpha(obj,alpha_threshold) {
+gdspx_sprite_check_collision_by_alpha(obj,alpha_threshold) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_check_collision_by_alpha']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1859,7 +1858,7 @@ function gdspx_sprite_check_collision_by_alpha(obj,alpha_threshold) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_sprite_check_collision_with_sprite_by_alpha(obj,obj_b,alpha_threshold) {
+gdspx_sprite_check_collision_with_sprite_by_alpha(obj,obj_b,alpha_threshold) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_sprite_check_collision_with_sprite_by_alpha']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1873,7 +1872,7 @@ function gdspx_sprite_check_collision_with_sprite_by_alpha(obj,obj_b,alpha_thres
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_bind_node(obj,rel_path) {
+gdspx_ui_bind_node(obj,rel_path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_bind_node']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdObj(obj);
@@ -1885,7 +1884,7 @@ function gdspx_ui_bind_node(obj,rel_path) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_node(path) {
+gdspx_ui_create_node(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_node']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1895,7 +1894,7 @@ function gdspx_ui_create_node(path) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_button(path,text) {
+gdspx_ui_create_button(path,text) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_button']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1907,7 +1906,7 @@ function gdspx_ui_create_button(path,text) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_label(path,text) {
+gdspx_ui_create_label(path,text) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_label']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1919,7 +1918,7 @@ function gdspx_ui_create_label(path,text) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_image(path) {
+gdspx_ui_create_image(path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_image']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1929,7 +1928,7 @@ function gdspx_ui_create_image(path) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_toggle(path,value) {
+gdspx_ui_create_toggle(path,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_toggle']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1941,7 +1940,7 @@ function gdspx_ui_create_toggle(path,value) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_slider(path,value) {
+gdspx_ui_create_slider(path,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_slider']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1953,7 +1952,7 @@ function gdspx_ui_create_slider(path,value) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_create_input(path,text) {
+gdspx_ui_create_input(path,text) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_create_input']; 
 	var _retValue = AllocGdObj();
 	var _arg0 = ToGdString(path);
@@ -1965,7 +1964,7 @@ function gdspx_ui_create_input(path,text) {
 	FreeGdObj(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_destroy_node(obj) {
+gdspx_ui_destroy_node(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_destroy_node']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -1975,7 +1974,7 @@ function gdspx_ui_destroy_node(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_get_type(obj) {
+gdspx_ui_get_type(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_type']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -1985,7 +1984,7 @@ function gdspx_ui_get_type(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_text(obj,text) {
+gdspx_ui_set_text(obj,text) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_text']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -1995,7 +1994,7 @@ function gdspx_ui_set_text(obj,text) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_ui_get_text(obj) {
+gdspx_ui_get_text(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_text']; 
 	var _retValue = AllocGdString();
 	var _arg0 = ToGdObj(obj);
@@ -2005,7 +2004,7 @@ function gdspx_ui_get_text(obj) {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_texture(obj,path) {
+gdspx_ui_set_texture(obj,path) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_texture']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2015,7 +2014,7 @@ function gdspx_ui_set_texture(obj,path) {
 	FreeGdString(_arg1); 
 
 }
-function gdspx_ui_get_texture(obj) {
+gdspx_ui_get_texture(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_texture']; 
 	var _retValue = AllocGdString();
 	var _arg0 = ToGdObj(obj);
@@ -2025,7 +2024,7 @@ function gdspx_ui_get_texture(obj) {
 	FreeGdString(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_color(obj,color) {
+gdspx_ui_set_color(obj,color) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_color']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2035,7 +2034,7 @@ function gdspx_ui_set_color(obj,color) {
 	FreeGdColor(_arg1); 
 
 }
-function gdspx_ui_get_color(obj) {
+gdspx_ui_get_color(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_color']; 
 	var _retValue = AllocGdColor();
 	var _arg0 = ToGdObj(obj);
@@ -2045,7 +2044,7 @@ function gdspx_ui_get_color(obj) {
 	FreeGdColor(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_font_size(obj,size) {
+gdspx_ui_set_font_size(obj,size) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_font_size']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2055,7 +2054,7 @@ function gdspx_ui_set_font_size(obj,size) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_ui_get_font_size(obj) {
+gdspx_ui_get_font_size(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_font_size']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -2065,7 +2064,7 @@ function gdspx_ui_get_font_size(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_visible(obj,visible) {
+gdspx_ui_set_visible(obj,visible) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_visible']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2075,7 +2074,7 @@ function gdspx_ui_set_visible(obj,visible) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_ui_get_visible(obj) {
+gdspx_ui_get_visible(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_visible']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -2085,7 +2084,7 @@ function gdspx_ui_get_visible(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_interactable(obj,interactable) {
+gdspx_ui_set_interactable(obj,interactable) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_interactable']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2095,7 +2094,7 @@ function gdspx_ui_set_interactable(obj,interactable) {
 	FreeGdBool(_arg1); 
 
 }
-function gdspx_ui_get_interactable(obj) {
+gdspx_ui_get_interactable(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_interactable']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -2105,7 +2104,7 @@ function gdspx_ui_get_interactable(obj) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_rect(obj,rect) {
+gdspx_ui_set_rect(obj,rect) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_rect']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2115,7 +2114,7 @@ function gdspx_ui_set_rect(obj,rect) {
 	FreeGdRect2(_arg1); 
 
 }
-function gdspx_ui_get_rect(obj) {
+gdspx_ui_get_rect(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_rect']; 
 	var _retValue = AllocGdRect2();
 	var _arg0 = ToGdObj(obj);
@@ -2125,7 +2124,7 @@ function gdspx_ui_get_rect(obj) {
 	FreeGdRect2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_get_layout_direction(obj) {
+gdspx_ui_get_layout_direction(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_layout_direction']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -2135,7 +2134,7 @@ function gdspx_ui_get_layout_direction(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_layout_direction(obj,value) {
+gdspx_ui_set_layout_direction(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_layout_direction']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2145,7 +2144,7 @@ function gdspx_ui_set_layout_direction(obj,value) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_ui_get_layout_mode(obj) {
+gdspx_ui_get_layout_mode(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_layout_mode']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -2155,7 +2154,7 @@ function gdspx_ui_get_layout_mode(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_layout_mode(obj,value) {
+gdspx_ui_set_layout_mode(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_layout_mode']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2165,7 +2164,7 @@ function gdspx_ui_set_layout_mode(obj,value) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_ui_get_anchors_preset(obj) {
+gdspx_ui_get_anchors_preset(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_anchors_preset']; 
 	var _retValue = AllocGdInt();
 	var _arg0 = ToGdObj(obj);
@@ -2175,7 +2174,7 @@ function gdspx_ui_get_anchors_preset(obj) {
 	FreeGdInt(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_anchors_preset(obj,value) {
+gdspx_ui_set_anchors_preset(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_anchors_preset']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2185,7 +2184,7 @@ function gdspx_ui_set_anchors_preset(obj,value) {
 	FreeGdInt(_arg1); 
 
 }
-function gdspx_ui_get_scale(obj) {
+gdspx_ui_get_scale(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_scale']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -2195,7 +2194,7 @@ function gdspx_ui_get_scale(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_scale(obj,value) {
+gdspx_ui_set_scale(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_scale']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2205,7 +2204,7 @@ function gdspx_ui_set_scale(obj,value) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_ui_get_position(obj) {
+gdspx_ui_get_position(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_position']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -2215,7 +2214,7 @@ function gdspx_ui_get_position(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_position(obj,value) {
+gdspx_ui_set_position(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_position']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2225,7 +2224,7 @@ function gdspx_ui_set_position(obj,value) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_ui_get_size(obj) {
+gdspx_ui_get_size(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_size']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -2235,7 +2234,7 @@ function gdspx_ui_get_size(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_size(obj,value) {
+gdspx_ui_set_size(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_size']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2245,7 +2244,7 @@ function gdspx_ui_set_size(obj,value) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_ui_get_global_position(obj) {
+gdspx_ui_get_global_position(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_global_position']; 
 	var _retValue = AllocGdVec2();
 	var _arg0 = ToGdObj(obj);
@@ -2255,7 +2254,7 @@ function gdspx_ui_get_global_position(obj) {
 	FreeGdVec2(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_global_position(obj,value) {
+gdspx_ui_set_global_position(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_global_position']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2265,7 +2264,7 @@ function gdspx_ui_set_global_position(obj,value) {
 	FreeGdVec2(_arg1); 
 
 }
-function gdspx_ui_get_rotation(obj) {
+gdspx_ui_get_rotation(obj) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_rotation']; 
 	var _retValue = AllocGdFloat();
 	var _arg0 = ToGdObj(obj);
@@ -2275,7 +2274,7 @@ function gdspx_ui_get_rotation(obj) {
 	FreeGdFloat(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_rotation(obj,value) {
+gdspx_ui_set_rotation(obj,value) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_rotation']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2285,7 +2284,7 @@ function gdspx_ui_set_rotation(obj,value) {
 	FreeGdFloat(_arg1); 
 
 }
-function gdspx_ui_get_flip(obj,horizontal) {
+gdspx_ui_get_flip(obj,horizontal) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_get_flip']; 
 	var _retValue = AllocGdBool();
 	var _arg0 = ToGdObj(obj);
@@ -2297,7 +2296,7 @@ function gdspx_ui_get_flip(obj,horizontal) {
 	FreeGdBool(_retValue); 
 	return _finalRetValue
 }
-function gdspx_ui_set_flip(obj,horizontal,is_flip) {
+gdspx_ui_set_flip(obj,horizontal,is_flip) {
 	var _gdFuncPtr =  GodotEngine.rtenv['_gdspx_ui_set_flip']; 
 	
 	var _arg0 = ToGdObj(obj);
@@ -2308,4 +2307,4 @@ function gdspx_ui_set_flip(obj,horizontal,is_flip) {
 	FreeGdBool(_arg1); 
 	FreeGdBool(_arg2); 
 
-}
+}}

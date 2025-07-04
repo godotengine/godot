@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -euo pipefail
 IFS=$'\n\t'
@@ -22,48 +22,23 @@ if command -v jq 2>&1 >/dev/null; then
 			fi
 		fi
 	done
+else
+	echo 'Error: Could not find 'jq' command. Is jq installed? Try running "brew install jq" or "port install jq" and rerunning this script.'
+	exit 1
 fi
 
 # Download and install the Vulkan SDK.
 curl -L "https://sdk.lunarg.com/sdk/download/latest/mac/vulkan-sdk.zip" -o /tmp/vulkan-sdk.zip
 unzip /tmp/vulkan-sdk.zip -d /tmp
 
-if [ -d "/tmp/InstallVulkan-$new_ver_full.app" ]; then
-	/tmp/InstallVulkan-$new_ver_full.app/Contents/MacOS/InstallVulkan-$new_ver_full  --accept-licenses --default-answer --confirm-command install
-	rm -rf /tmp/InstallVulkan-$new_ver_full.app
-elif [ -d "/tmp/InstallVulkan.app" ]; then
-	/tmp/InstallVulkan.app/Contents/MacOS/InstallVulkan --accept-licenses --default-answer --confirm-command install
-	rm -rf /tmp/InstallVulkan.app
+if [ -d "/tmp/vulkansdk-macOS-$new_ver_full.app" ]; then
+	/tmp/vulkansdk-macOS-$new_ver_full.app/Contents/MacOS/vulkansdk-macOS-$new_ver_full --accept-licenses --default-answer --confirm-command install
+	rm -rf /tmp/vulkansdk-macOS-$new_ver_full.app
+else
+	echo "Couldn't install the Vulkan SDK, the unzipped contents may no longer match what this script expects."
+	exit 1
 fi
 
 rm -f /tmp/vulkan-sdk.zip
 
-# Find the installer app
-INSTALLER_APP=$(find /tmp/vulkan-sdk-extracted -maxdepth 1 -name "*.app" | head -1)
-echo "Found installer: $INSTALLER_APP"
-
-# Find the installer executable
-INSTALLER_BIN=$(find "$INSTALLER_APP/Contents/MacOS" -type f -name "*ulkan*" | head -1)
-echo "Found installer executable: $INSTALLER_BIN"
-
-# Run the installer
-echo "Running installer..."
-"$INSTALLER_BIN" --accept-licenses --default-answer --confirm-command install
-
-# Clean up temporary files
-rm -rf /tmp/vulkan-sdk.dmg /tmp/vulkan-sdk-extracted
-
-# Get installed version
-SDK_VERSION=$(ls -1 "$INSTALL_DIR" | sort -V | tail -1)
-echo "Vulkan SDK version $SDK_VERSION installed to $INSTALL_DIR/$SDK_VERSION"
-
-# Set environment variable
-if ! grep -q "VULKAN_SDK" ~/.zshrc; then
-    echo "Setting VULKAN_SDK environment variable..."
-    echo "export VULKAN_SDK=\"$INSTALL_DIR/$SDK_VERSION\"" >> ~/.zshrc
-    echo "Environment variable added to ~/.zshrc, please run 'source ~/.zshrc' to apply."
-else
-    echo "VULKAN_SDK environment variable already exists, you may need to manually update it to new version path: $INSTALL_DIR/$SDK_VERSION"
-fi
-
-echo "Vulkan SDK installation successful! You can now run 'source ~/.zshrc' to update environment variables, then build Godot with 'scons platform=macos vulkan=yes'."
+echo 'Vulkan SDK installed successfully! You can now build Godot by running "scons".'

@@ -619,12 +619,18 @@ const GodotDisplay = {
 	godot_js_display_window_title_set__proxy: 'sync',
 	godot_js_display_window_title_set__sig: 'vi',
 	godot_js_display_window_title_set: function (p_data) {
+		if (typeof miniEngine !== 'undefined' && miniEngine){
+			return;
+		}
 		document.title = GodotRuntime.parseString(p_data);
 	},
 
 	godot_js_display_window_icon_set__proxy: 'sync',
 	godot_js_display_window_icon_set__sig: 'vii',
 	godot_js_display_window_icon_set: function (p_ptr, p_len) {
+		if (typeof miniEngine !== 'undefined' && miniEngine){
+			return;
+		}
 		let link = document.getElementById('-gd-engine-icon');
 		const old_icon = GodotDisplay.window_icon;
 		if (p_ptr) {

@@ -309,8 +309,6 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 					return `${loadPath}.audio.position.worklet.js`;
 				} else if (path.endsWith('.js')) {
 					return `${loadPath}.js`;
-				} else if (path in gdext) {
-					return path;
 				} else if (path.endsWith('.side.wasm')) {
 					return `${loadPath}.side.wasm`;
 				} else if (path.endsWith('.wasm')) {
@@ -327,14 +325,16 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 	 */
 	Config.prototype.getGodotConfig = function (cleanup) {
 		// Try to find a canvas
-		if (!(this.canvas instanceof HTMLCanvasElement)) {
-			const nodes = document.getElementsByTagName('canvas');
-			if (nodes.length && nodes[0] instanceof HTMLCanvasElement) {
-				const first = nodes[0];
-				this.canvas = /** @type {!HTMLCanvasElement} */ (first);
-			}
-			if (!this.canvas) {
-				throw new Error('No canvas found in page');
+		if (typeof miniEngine === 'undefined' || !miniEngine){
+			if (!(this.canvas instanceof HTMLCanvasElement)) {
+				const nodes = document.getElementsByTagName('canvas');
+				if (nodes.length && nodes[0] instanceof HTMLCanvasElement) {
+					const first = nodes[0];
+					this.canvas = /** @type {!HTMLCanvasElement} */ (first);
+				}
+				if (!this.canvas) {
+					throw new Error('No canvas found in page');
+				}
 			}
 		}
 		// Canvas can grab focus on click, or key events won't work.

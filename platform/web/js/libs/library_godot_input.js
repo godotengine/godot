@@ -151,7 +151,10 @@ const GodotIME = {
 				GodotIME.active = false;
 			};
 
-			GodotConfig.canvas.parentElement.appendChild(ime);
+			if (typeof miniEngine === 'undefined' || !miniEngine){
+				// wx mini game not support modify document && canvas
+				GodotConfig.canvas.parentElement.appendChild(ime);
+			}
 			GodotIME.ime = ime;
 		},
 
@@ -489,9 +492,15 @@ const GodotInput = {
 			const canvas = GodotConfig.canvas;
 			const rw = canvas.width / rect.width;
 			const rh = canvas.height / rect.height;
-			const x = (evt.clientX - rect.x) * rw;
-			const y = (evt.clientY - rect.y) * rh;
-			return [x, y];
+			if (typeof miniEngine !== 'undefined' && miniEngine){
+				const x = evt.clientX * rw;
+                const y = evt.clientY * rh;
+				return [x, y];
+			}else{
+				const x = (evt.clientX - rect.x) * rw;
+				const y = (evt.clientY - rect.y) * rh;
+				return [x, y];
+			}
 		},
 	},
 
