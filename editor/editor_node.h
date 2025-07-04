@@ -785,6 +785,7 @@ public:
 	bool has_previous_closed_scenes() const;
 
 	void new_inherited_scene() { _menu_option_confirm(SCENE_NEW_INHERITED_SCENE, false); }
+	void make_unique_inheritance(Node *p_node);
 
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
