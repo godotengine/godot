@@ -1131,6 +1131,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "oneshot", "one_shot" }, // AnimatedTexture
 	{ "out_of_range_mode", "max_polyphony" }, // AudioStreamPlayer3D
 	{ "pause_mode", "process_mode" }, // Node
+	{ "playback_speed", "speed_scale" }, // AnimationPlayer
 	{ "physical_scancode", "physical_keycode" }, // InputEventKey
 	{ "polygon_verts_per_poly", "polygon_vertices_per_polyon" }, // NavigationMesh
 	{ "popup_exclusive", "exclusive" }, // Window
@@ -1163,6 +1164,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "table_hseparation", "table_h_separation" }, // Theme
 	{ "table_vseparation", "table_v_separation" }, // Theme
 	{ "tangent", "orthogonal" }, // Vector2
+	{ "target_fps", "max_fps" }, // Engine
 	{ "target_location", "target_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "toplevel", "top_level" }, // Node
 	{ "translation", "position" }, // Node3D
@@ -1229,6 +1231,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "Oneshot", "OneShot" }, // AnimatedTexture
 	{ "OutOfRangeMode", "MaxPolyphony" }, // AudioStreamPlayer3D
 	{ "PauseMode", "ProcessMode" }, // Node
+	{ "PlaybackSpeed", "SpeedScale" }, // AnimationPlayer
 	{ "Perpendicular", "Orthogonal" }, // Vector2 - Only exists in C#
 	{ "PhysicalScancode", "PhysicalKeycode" }, // InputEventKey
 	{ "PopupExclusive", "Exclusive" }, // Window
@@ -1261,6 +1264,7 @@ const char *RenamesMap3To4::csharp_properties_renames[][2] = {
 	{ "TableHseparation", "TableHSeparation" }, // Theme
 	{ "TableVseparation", "TableVSeparation" }, // Theme
 	{ "Tangent", "Orthogonal" }, // Vector2
+	{ "TargetFps", "MaxFps" }, // Engine
 	{ "TargetLocation", "TargetPosition" }, // NavigationAgent2D, NavigationAgent3D
 	{ "Toplevel", "TopLevel" }, // Node
 	{ "Translation", "Position" }, // Node3D
