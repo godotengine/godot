@@ -337,6 +337,11 @@ Comment: International Components for Unicode
 Copyright: 2016-2024, Unicode, Inc.
 License: Unicode
 
+Files: thirdparty/isteamdualsense/isteamdualsense.h
+Comment: Sony PlayStation 5 SDK for Dualsense Adaptive Triggers
+Copyright: 2019, Sony Interactive Entertainment Inc.
+License: Unknown
+
 Files: thirdparty/jolt_physics/*
 Comment: Jolt Physics
 Copyright: 2021, Jorrit Rouwe
