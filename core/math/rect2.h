@@ -38,6 +38,11 @@ struct Rect2i;
 struct Transform2D;
 
 struct [[nodiscard]] Rect2 {
+	static const Rect2 ZERO;
+	static const Rect2 ONE;
+	static const Rect2 INF;
+	static const Rect2 NaN;
+
 	Point2 position;
 	Size2 size;
 
@@ -371,6 +376,11 @@ struct [[nodiscard]] Rect2 {
 			size(p_size) {
 	}
 };
+
+inline constexpr Rect2 Rect2::ZERO = { Vector2::ZERO, Vector2::ZERO };
+inline constexpr Rect2 Rect2::ONE = { Vector2::ONE, Vector2::ONE };
+inline constexpr Rect2 Rect2::INF = { Vector2::INF, Vector2::INF };
+inline constexpr Rect2 Rect2::NaN = { Vector2::NaN, Vector2::NaN };
 
 template <>
 struct is_zero_constructible<Rect2> : std::true_type {};

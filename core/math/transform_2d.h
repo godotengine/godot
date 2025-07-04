@@ -52,6 +52,14 @@ struct [[nodiscard]] Transform2D {
 	// WARNING: Be aware that unlike 3D code, 2D code uses a left-handed coordinate system:
 	// Y-axis points down, and angle is measure from +X to +Y in a clockwise-fashion.
 
+	static const Transform2D ZERO;
+	static const Transform2D ONE;
+	static const Transform2D INF;
+	static const Transform2D NaN;
+	static const Transform2D IDENTITY;
+	static const Transform2D FLIP_X;
+	static const Transform2D FLIP_Y;
+
 	Vector2 columns[3] = {
 		{ 1, 0 },
 		{ 0, 1 },
@@ -148,6 +156,14 @@ struct [[nodiscard]] Transform2D {
 
 	Transform2D() = default;
 };
+
+inline constexpr Transform2D Transform2D::ZERO = { Vector2::ZERO, Vector2::ZERO, Vector2::ZERO };
+inline constexpr Transform2D Transform2D::ONE = { Vector2::ONE, Vector2::ONE, Vector2::ONE };
+inline constexpr Transform2D Transform2D::INF = { Vector2::INF, Vector2::INF, Vector2::INF };
+inline constexpr Transform2D Transform2D::NaN = { Vector2::NaN, Vector2::NaN, Vector2::NaN };
+inline constexpr Transform2D Transform2D::IDENTITY = { { 1, 0 }, { 0, 1 }, Vector2::ZERO };
+inline constexpr Transform2D Transform2D::FLIP_X = { { -1, 0 }, { 0, 1 }, Vector2::ZERO };
+inline constexpr Transform2D Transform2D::FLIP_Y = { { 1, 0 }, { 0, -1 }, Vector2::ZERO };
 
 constexpr bool Transform2D::operator==(const Transform2D &p_transform) const {
 	for (int i = 0; i < 3; i++) {

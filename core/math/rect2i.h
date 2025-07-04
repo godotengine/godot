@@ -36,7 +36,15 @@
 class String;
 struct Rect2;
 
+#undef MIN
+#undef MAX
+
 struct [[nodiscard]] Rect2i {
+	static const Rect2i ZERO;
+	static const Rect2i ONE;
+	static const Rect2i MIN;
+	static const Rect2i MAX;
+
 	Point2i position;
 	Size2i size;
 
@@ -236,6 +244,11 @@ struct [[nodiscard]] Rect2i {
 			size(p_size) {
 	}
 };
+
+inline constexpr Rect2i Rect2i::ZERO = { Vector2i::ZERO, Vector2i::ZERO };
+inline constexpr Rect2i Rect2i::ONE = { Vector2i::ONE, Vector2i::ONE };
+inline constexpr Rect2i Rect2i::MIN = { Vector2i::MIN, Vector2i::MIN };
+inline constexpr Rect2i Rect2i::MAX = { Vector2i::MAX, Vector2i::MAX };
 
 template <>
 struct is_zero_constructible<Rect2i> : std::true_type {};
