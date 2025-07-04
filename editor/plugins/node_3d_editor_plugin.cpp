@@ -2628,6 +2628,8 @@ void Node3DEditorViewport::_nav_zoom(Ref<InputEventWithModifiers> p_event, const
 	}
 
 	NavigationZoomStyle zoom_style = (NavigationZoomStyle)EDITOR_GET("editors/3d/navigation/zoom_style").operator int();
+	const float zoom_direction = EDITOR_GET("editors/3d/navigation/invert_zoom_direction").operator bool() ? -1 : 1;
+	zoom_speed = zoom_speed * zoom_direction;
 	if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
 		if (p_relative.x > 0) {
 			scale_cursor_distance(1 - p_relative.x * zoom_speed);
