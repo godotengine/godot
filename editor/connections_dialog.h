@@ -164,6 +164,8 @@ private:
 	void _update_ok_enabled();
 	void _update_warning_label();
 
+	void _tree_gui_input(const Ref<InputEvent> &p_event);
+
 protected:
 	virtual void _post_popup() override;
 	void _notification(int p_what);

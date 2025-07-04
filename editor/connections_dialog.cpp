@@ -737,6 +737,16 @@ void ConnectDialog::_advanced_pressed() {
 	popup_centered();
 }
 
+void ConnectDialog::_tree_gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click() && mb->is_pressed()) {
+		Tree *scene_tree = tree->get_scene_tree();
+		if (scene_tree->get_pressed_button() != -1) {
+			scene_tree->emit_signal(SNAME("item_activated"));
+		}
+	}
+}
+
 ConnectDialog::ConnectDialog() {
 	set_min_size(Size2(0, 500) * EDSCALE);
 
@@ -759,6 +769,7 @@ ConnectDialog::ConnectDialog() {
 	tree->set_show_enabled_subscene(true);
 	tree->set_v_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
+	tree->get_scene_tree()->connect("gui_input", callable_mp(this, &ConnectDialog::_tree_gui_input));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
 
