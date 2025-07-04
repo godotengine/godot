@@ -146,6 +146,9 @@ if env["builtin_zstd"]:
     if env["platform"] in ["android", "ios", "linuxbsd", "macos"] and env["arch"] == "x86_64":
         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
+    elif env["arch"] == "arm64":
+        # Disable assembly for ARM64 as zstd only has x86_64 assembly implementations
+        env_thirdparty.Append(CPPDEFINES=["ZSTD_DISABLE_ASM"])
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
