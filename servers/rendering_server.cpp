@@ -2889,6 +2889,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR2);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_SGSR1);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
@@ -3698,20 +3699,10 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/quality/smaa_edge_detection_threshold", PROPERTY_HINT_RANGE, "0.01,0.2,0.01"), 0.05);
 
 	{
-		String mode_hints;
-		String mode_hints_metal;
-		{
-			Vector<String> mode_hints_arr = { "Bilinear (Fastest)", "FSR 1.0 (Fast)", "FSR 2.2 (Slow)" };
-			mode_hints = String(",").join(mode_hints_arr);
-
-			mode_hints_arr.push_back("MetalFX (Spatial)");
-			mode_hints_arr.push_back("MetalFX (Temporal)");
-			mode_hints_metal = String(",").join(mode_hints_arr);
-		}
-
+		String mode_hints = "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow),MetalFX (Spatial),MetalFX (Temporal),SGSR 1.0 (Fast)";
 		GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, mode_hints), 0);
-		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.ios", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
-		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.macos", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.ios", PROPERTY_HINT_ENUM, mode_hints), 0);
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.macos", PROPERTY_HINT_ENUM, mode_hints), 0);
 	}
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), 1.0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
