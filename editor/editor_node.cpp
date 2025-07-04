@@ -419,7 +419,7 @@ void EditorNode::shortcut_input(const Ref<InputEvent> &p_event) {
 		} else if (ED_IS_SHORTCUT("editor/command_palette", p_event)) {
 			_open_command_palette();
 		} else if (ED_IS_SHORTCUT("editor/toggle_last_opened_bottom_panel", p_event)) {
-			bottom_panel->toggle_last_opened_bottom_panel();
+			bottom_panel->show_last_opened_bottom_panel(true);
 		} else {
 			is_handled = false;
 		}
@@ -5004,11 +5004,15 @@ void EditorNode::_project_run_started() {
 		log->clear();
 	}
 
+	bottom_panel_was_visible_on_project_run = bottom_panel->is_any_bottom_panel_visible();
+
 	int action_on_play = EDITOR_GET("run/bottom_panel/action_on_play");
 	if (action_on_play == ACTION_ON_PLAY_OPEN_OUTPUT) {
 		bottom_panel->make_item_visible(log);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
 		bottom_panel->make_item_visible(EditorDebuggerNode::get_singleton());
+	} else if (action_on_play == ACTION_ON_PLAY_CLOSE_BOTTOM_PANEL) {
+		bottom_panel->hide_bottom_panel();
 	}
 }
 
@@ -5016,6 +5020,10 @@ void EditorNode::_project_run_stopped() {
 	int action_on_stop = EDITOR_GET("run/bottom_panel/action_on_stop");
 	if (action_on_stop == ACTION_ON_STOP_CLOSE_BUTTOM_PANEL) {
 		bottom_panel->hide_bottom_panel();
+	} else if (action_on_stop == ACTION_ON_STOP_RESTORE_LAST_USED_BUTTOM_PANEL) {
+		if (bottom_panel_was_visible_on_project_run) {
+			bottom_panel->show_last_opened_bottom_panel();
+		}
 	}
 }
 
@@ -5027,8 +5035,8 @@ void EditorNode::add_io_error(const String &p_error) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 	singleton->load_errors->add_image(singleton->theme->get_icon(SNAME("Error"), EditorStringName(EditorIcons)));
 	singleton->load_errors->add_text(p_error + "\n");
-	// When a progress dialog is displayed, we will wait for it ot close before displaying
-	// the io errors to prevent the io popup to set it's parent to the progress dialog.
+	// When a progress dialog is displayed, we will wait for it to close before displaying
+	// the io errors to prevent the io popup to set its parent to the progress dialog.
 	if (singleton->progress_dialog->is_visible()) {
 		singleton->load_errors_queued_to_display = true;
 	} else {
@@ -5040,8 +5048,8 @@ void EditorNode::add_io_warning(const String &p_warning) {
 	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 	singleton->load_errors->add_image(singleton->theme->get_icon(SNAME("Warning"), EditorStringName(EditorIcons)));
 	singleton->load_errors->add_text(p_warning + "\n");
-	// When a progress dialog is displayed, we will wait for it ot close before displaying
-	// the io errors to prevent the io popup to set it's parent to the progress dialog.
+	// When a progress dialog is displayed, we will wait for it to close before displaying
+	// the io errors to prevent the io popup to set its parent to the progress dialog.
 	if (singleton->progress_dialog->is_visible()) {
 		singleton->load_errors_queued_to_display = true;
 	} else {
