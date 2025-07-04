@@ -263,6 +263,7 @@ public:
 	virtual void trim_trailing_whitespace() override;
 	virtual void trim_final_newlines() override;
 	virtual void insert_final_newline() override;
+	virtual void format_ints() override;
 	virtual void convert_indent() override;
 	virtual void tag_saved_version() override;
 

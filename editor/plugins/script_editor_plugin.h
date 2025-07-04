@@ -221,6 +221,7 @@ public:
 	virtual void trim_trailing_whitespace() = 0;
 	virtual void trim_final_newlines() = 0;
 	virtual void insert_final_newline() = 0;
+	virtual void format_ints() = 0;
 	virtual void convert_indent() = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
@@ -460,6 +461,7 @@ class ScriptEditor : public PanelContainer {
 	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool trim_final_newlines_on_save;
+	bool JSON_truncate_integers;
 	bool convert_indent_on_save;
 	bool external_editor_active;
 
