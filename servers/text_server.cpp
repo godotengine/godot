@@ -1632,7 +1632,7 @@ Vector2 TextServer::shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t
 	real_t off = 0.0f;
 	for (int i = 0; i < v_size; i++) {
 		if ((glyphs[i].count > 0) && ((glyphs[i].index != 0) || ((glyphs[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE))) {
-			if (glyphs[i].start <= p_pos && glyphs[i].end >= p_pos) {
+			if (glyphs[i].start <= p_pos && glyphs[i].end > p_pos) {
 				real_t advance = 0.f;
 				for (int j = 0; j < glyphs[i].count; j++) {
 					advance += glyphs[i + j].advance;
