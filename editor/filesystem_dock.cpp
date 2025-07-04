@@ -2706,6 +2706,10 @@ void FileSystemDock::_resource_created() {
 		make_shader_dialog->config(fpath.path_join("new_shader_include"), false, false, 2);
 		make_shader_dialog->popup_centered();
 		return;
+	} else if (ClassDB::is_parent_class(type_name, "Script")) {
+		make_script_dialog->config("Node", fpath.path_join("new_script"), false, false);
+		make_script_dialog->popup_centered();
+		return;
 	}
 
 	Variant c = new_resource_dialog->instantiate_selected();
