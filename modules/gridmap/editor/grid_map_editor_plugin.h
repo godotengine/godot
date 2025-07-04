@@ -197,6 +197,8 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_SELECTION_CUT,
 		MENU_OPTION_SELECTION_CLEAR,
 		MENU_OPTION_SELECTION_FILL,
+		MENU_OPTION_CLEAR_ALL_CELLS,
+		MENU_OPTION_FIX_INVALID_CELLS,
 		MENU_OPTION_GRIDMAP_SETTINGS
 
 	};
@@ -247,6 +249,8 @@ class GridMapEditor : public VBoxContainer {
 
 	void _delete_selection();
 	void _fill_selection();
+	void _clear_all_cells();
+	void _fix_invalid_cells();
 
 	bool do_input_action(Camera3D *p_camera, const Point2 &p_point, bool p_click);
 
