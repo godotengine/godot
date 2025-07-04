@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
+#include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
@@ -51,6 +52,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/2d/audio_stream_player_2d.h"
+#include "scene/2d/marker_2d.h"
 #include "scene/2d/physics/touch_screen_button.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
@@ -4875,14 +4877,25 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case SKELETON_MAKE_BONES: {
 			HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 			Node *editor_root = get_tree()->get_edited_scene_root();
+			Vector<Node2D *> selected_nodes;
 
 			if (!editor_root || selection.is_empty()) {
 				return;
 			}
 
-			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
+			// Store the objects from `get_selection()` because otherwise the references
+			// to the selected objects would disappear, because we're repeatedly
+			// reparenting them.
 			for (const KeyValue<Node *, Object *> &E : selection) {
 				Node2D *n2d = Object::cast_to<Node2D>(E.key);
+				selected_nodes.push_back(n2d);
+			}
+
+			undo_redo->create_action(TTR("Create Custom Bone2D(s) from Node(s)"));
+			for (int i = 0; i < selected_nodes.size(); i++) {
+				undo_redo->create_action(TTR("Create Custom Bone2D from Node"));
+
+				Node2D *n2d = selected_nodes[i];
 				if (!n2d) {
 					continue;
 				}
@@ -4899,18 +4912,71 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				}
 
 				undo_redo->add_do_method(n2d_parent, "add_child", new_bone);
+				undo_redo->add_do_reference(new_bone);
+
 				undo_redo->add_do_method(n2d_parent, "remove_child", n2d);
 				undo_redo->add_do_method(new_bone, "add_child", n2d);
 				undo_redo->add_do_method(n2d, "set_transform", Transform2D());
-				undo_redo->add_do_method(this, "_set_owner_for_node_and_children", new_bone, editor_root);
-				undo_redo->add_do_reference(new_bone);
+
+				TypedArray<Node> n2d_children = n2d->get_children();
+				for (const Variant &n2d_child_variant : n2d_children) {
+					Node *n2d_child = Object::cast_to<Node>(n2d_child_variant);
+					undo_redo->add_do_method(n2d, "remove_child", n2d_child);
+					undo_redo->add_do_method(new_bone, "add_child", n2d_child);
+
+					undo_redo->add_undo_method(new_bone, "remove_child", n2d_child);
+					undo_redo->add_undo_method(n2d, "add_child", n2d_child);
+				}
+
+				undo_redo->add_do_method(this, "_set_owner_for_node_and_children", new_bone,
+						editor_root);
 
 				undo_redo->add_undo_method(new_bone, "remove_child", n2d);
 				undo_redo->add_undo_method(n2d_parent, "add_child", n2d);
 				undo_redo->add_undo_method(n2d_parent, "remove_child", new_bone);
 				undo_redo->add_undo_method(n2d, "set_transform", new_bone->get_transform());
-				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
+				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d,
+						editor_root);
+
+				undo_redo->commit_action();
 			}
+
+			// Automatically adjust the angle and length of a Bone2D to a Marker2D if:
+			// 1. The Bone2D has one Marker2D child
+			// 2. The Bone2D does not have Bone2D children
+			// Otherwise leave it to the default bone2D behavior.
+			// Bone2D without Bone2D children in a chain need their angle and length manually adjusted,
+			// `SKELETON_MAKE_BONES` should reduce manual input to create a chain.
+			undo_redo->create_action(TTR("Connect bones to Marker2D end"));
+			TypedArray<Marker2D> new_bone_children_marker2d = selected_nodes[0]->find_children("", "Marker2D", true, true);
+			for (int k = 0; k < selected_nodes.size(); k++) {
+				Node2D *n2d = selected_nodes[k];
+				if (!n2d) {
+					continue;
+				}
+				Bone2D *parent_bone2d = Object::cast_to<Bone2D>(n2d->get_parent());
+
+				TypedArray<Marker2D> marker2d_siblings = parent_bone2d->find_children("", "Marker2D", false, true);
+				TypedArray<Bone2D> bone2d_siblings = parent_bone2d->find_children("", "Bone2D", false, true);
+
+				if (marker2d_siblings.size() != 1 || bone2d_siblings.size() > 0) {
+					continue;
+				}
+
+				Marker2D *end_marker2d = Object::cast_to<Marker2D>(marker2d_siblings[0]);
+
+				Vector2 parent_bone2d_global_position = parent_bone2d->get_global_position();
+				Vector2 end_marker2d_global_position = end_marker2d->get_global_position();
+				float distance_between_bone_and_marker2d = parent_bone2d_global_position.distance_to(end_marker2d_global_position);
+				float angle_between_bone_and_marker2d = Math::rad_to_deg(parent_bone2d_global_position.angle_to_point(end_marker2d_global_position));
+				undo_redo->add_do_property(parent_bone2d, "length", distance_between_bone_and_marker2d);
+				undo_redo->add_do_property(parent_bone2d, "bone_angle", angle_between_bone_and_marker2d);
+
+				undo_redo->add_undo_property(parent_bone2d, "length", 16);
+				undo_redo->add_undo_property(parent_bone2d, "bone_angle", 0);
+			}
+			undo_redo->commit_action();
+
 			undo_redo->commit_action();
 
 		} break;
