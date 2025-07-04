@@ -92,6 +92,7 @@ void EditorSettingsDialog::update_navigation_preset() {
 	Node3DEditorViewport::ViewportNavMouseButton set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
 	Node3DEditorViewport::ViewportNavMouseButton set_pan_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
 	Node3DEditorViewport::ViewportNavMouseButton set_zoom_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
+	Node3DEditorViewport::NavigationZoomStyle zoom_style = Node3DEditorViewport::NAVIGATION_ZOOM_VERTICAL;
 	bool set_3_button_mouse = false;
 	Ref<InputEventKey> orbit_mod_key_1;
 	Ref<InputEventKey> orbit_mod_key_2;
@@ -125,6 +126,7 @@ void EditorSettingsDialog::update_navigation_preset() {
 		pan_mod_key_2 = InputEventKey::create_reference(Key::NONE);
 		zoom_mod_key_1 = InputEventKey::create_reference(Key::ALT);
 		zoom_mod_key_2 = InputEventKey::create_reference(Key::NONE);
+		zoom_style = Node3DEditorViewport::NAVIGATION_ZOOM_REVERSED_VERTICAL;
 	} else if (nav_scheme == Node3DEditorViewport::NAVIGATION_MODO) {
 		set_preset = true;
 		set_orbit_mouse_button = Node3DEditorViewport::NAVIGATION_LEFT_MOUSE;
@@ -156,6 +158,7 @@ void EditorSettingsDialog::update_navigation_preset() {
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/pan_mouse_button", (int)set_pan_mouse_button);
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/zoom_mouse_button", (int)set_zoom_mouse_button);
 		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/emulate_3_button_mouse", set_3_button_mouse);
+		EditorSettings::get_singleton()->set_manually("editors/3d/navigation/zoom_style", zoom_style);
 		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_1", orbit_mod_key_1);
 		_set_shortcut_input("spatial_editor/viewport_orbit_modifier_2", orbit_mod_key_2);
 		_set_shortcut_input("spatial_editor/viewport_pan_modifier_1", pan_mod_key_1);
