@@ -1000,6 +1000,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("editors/animation/onion_layers_past_color", Color(1, 0, 0));
 	_initial_set("editors/animation/onion_layers_future_color", Color(0, 1, 0));
 
+	// SpriteFrames
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/spriteframes/default_animation_speed", 5.0, "0,60,0.1");
+
 	// Shader editor
 	_initial_set("editors/shader_editor/behavior/files/restore_shaders_on_load", true, true);
 
