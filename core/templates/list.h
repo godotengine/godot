@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/sort_list.h"
+#include "core/templates/typed_static_block_allocator.h"
 
 #include <initializer_list>
 
@@ -221,6 +222,7 @@ public:
 #endif
 private:
 	struct _Data {
+		TypedStaticBlockAllocator<Element> a;
 		Element *first = nullptr;
 		Element *last = nullptr;
 		int size_cache = 0;
@@ -245,7 +247,7 @@ private:
 				p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 			}
 
-			memdelete_allocator<Element, A>(p_I);
+			a.delete_allocation(p_I);
 			size_cache--;
 
 			return true;
@@ -294,7 +296,7 @@ public:
 			_data->size_cache = 0;
 		}
 
-		Element *n = memnew_allocator(Element, A);
+		Element *n = _data->a.new_allocation();
 		n->value = (T &)value;
 
 		n->prev_ptr = _data->last;
@@ -333,7 +335,7 @@ public:
 			_data->size_cache = 0;
 		}
 
-		Element *n = memnew_allocator(Element, A);
+		Element *n = _data->a.new_allocation();
 		n->value = (T &)value;
 		n->prev_ptr = nullptr;
 		n->next_ptr = _data->first;
@@ -367,7 +369,7 @@ public:
 			return push_back(p_value);
 		}
 
-		Element *n = memnew_allocator(Element, A);
+		Element *n = _data->a.new_allocation();
 		n->value = (T &)p_value;
 		n->prev_ptr = p_element;
 		n->next_ptr = p_element->next_ptr;
@@ -393,7 +395,7 @@ public:
 			return push_back(p_value);
 		}
 
-		Element *n = memnew_allocator(Element, A);
+		Element *n = _data->a.new_allocation();
 		n->value = (T &)p_value;
 		n->prev_ptr = p_element->prev_ptr;
 		n->next_ptr = p_element;
