@@ -1407,6 +1407,9 @@
 		<member name="text_editor/completion/idle_parse_delay_with_errors_found" type="float" setter="" getter="">
 			The delay used instead of [member text_editor/completion/idle_parse_delay], when the parser has found errors. A lower value should feel more responsive while fixing code, but may cause notable stuttering and increase CPU usage.
 		</member>
+		<member name="text_editor/completion/idle_parse_enabled" type="bool" setter="" getter="">
+			Whether or not scripts should periodically be parsed when the user stops typing. If enabled, the idle delay is determined by [member text_editor/completion/idle_parse_delay] and [member text_editor/completion/idle_parse_delay_with_errors_found]. Parsing is always performed when the script is saved.
+		</member>
 		<member name="text_editor/completion/put_callhint_tooltip_below_current_line" type="bool" setter="" getter="">
 			If [code]true[/code], the code completion tooltip will appear below the current line unless there is no space on screen below the current line. If [code]false[/code], the code completion tooltip will appear above the current line.
 		</member>
