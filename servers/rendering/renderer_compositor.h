@@ -71,6 +71,7 @@ private:
 protected:
 	static RendererCompositor *(*_create_func)();
 	bool back_end = false;
+	bool use_debanding = false;
 	static bool low_end;
 
 public:
@@ -105,6 +106,8 @@ public:
 
 	static bool is_low_end() { return low_end; }
 	virtual bool is_xr_enabled() const;
+	virtual void set_use_debanding(bool value);
+	virtual bool get_use_debanding() const;
 
 	static RendererCompositor *get_singleton() { return singleton; }
 	RendererCompositor();
