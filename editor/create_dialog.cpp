@@ -58,7 +58,7 @@ void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const St
 
 	if (p_replace_mode) {
 		set_title(vformat(TTR("Change Type of \"%s\""), p_current_name));
-		set_ok_button_text(TTR("Change"));
+		set_ok_button_text(TTR("OK"));
 	} else {
 		set_title(vformat(TTR("Create New %s"), base_type));
 		set_ok_button_text(TTR("Create"));
