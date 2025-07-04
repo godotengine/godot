@@ -81,7 +81,7 @@ const Engine = (function () {
 					return Promise.resolve();
 				}
 				loadPath = this.config.executable;
-				if(miniEngine){
+				if(typeof miniEngine !== 'undefined' && miniEngine){
 					loadPath = "js/"+loadPath;
 				}
 				GodotEngine = this;
@@ -96,7 +96,7 @@ const Engine = (function () {
 						Godot(gdmodule).then(function (module) {
 							GodotModule = gdmodule
 							const paths = me.config.persistentPaths;
-							if (!miniEngine){
+							if (typeof miniEngine === 'undefined' || !miniEngine){
 								module['initFS'](paths).then(function (err) {
 									me.rtenv = module;
 									if (me.config.unloadAfterInit) {
@@ -187,6 +187,7 @@ const Engine = (function () {
 						return Promise.reject(new Error('GDExtension libraries are not supported by this engine version. '
 							+ 'Enable "Extensions Support" for your export preset and/or build your custom template with "dlink_enabled=yes".'));
 					}
+					let libs = [];
 					me.config.gdextensionLibs.forEach(function (lib) {
 						// gdspx is special, it must be loaded before the others.
 						if(lib.startsWith('gdspx')) {

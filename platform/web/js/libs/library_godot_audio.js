@@ -618,7 +618,7 @@ class SampleNode {
 	 * If the worklet module is not loaded in, it will be added
 	 */
 	async connectPositionWorklet(start) {
-		if(!miniEngine){	
+		if(typeof miniEngine === 'undefined' || !miniEngine){	
 			await GodotAudio.audioPositionWorkletPromise;
 		}
 		if (this.isCanceled) {
@@ -638,7 +638,7 @@ class SampleNode {
 		if (this._positionWorklet != null) {
 			return this._positionWorklet;
 		}
-		if(!miniEngine){
+		if(typeof miniEngine === 'undefined' || !miniEngine){
 			this._positionWorklet = new AudioWorkletNode(
 				GodotAudio.ctx,
 				'godot-position-reporting-processor'
@@ -654,23 +654,27 @@ class SampleNode {
 			};
 		}else{
 			let scriptProcessorNode = GodotAudio.ctx.createScriptProcessor(2048, 2, 2);
-			positionWorker.postMessage({type: 'init', currentTime: GodotAudio.ctx.currentTime});
+			if (typeof positionWorker !== 'undefined') {
+				positionWorker.postMessage({type: 'init', currentTime: GodotAudio.ctx.currentTime});
+			}
 			scriptProcessorNode.onaudioprocess = function (event) {
 				const audiobuffer = event.inputBuffer;
 				if (audiobuffer.numberOfChannels > 0) {
 					const input = audiobuffer.getChannelData(0);
-					if (input.length > 0) {
+					if (input.length > 0 && typeof positionWorker !== 'undefined') {
 						positionWorker.postMessage({type: 'process', inputLength: input.length, currentTime: GodotAudio.ctx.currentTime});
 					}
 				}
 			};
-			positionWorker.onMessage(event => {
-				if (event.type === 'position') {
-					this._playbackPosition = parseInt(event.data, 10) / this.getSample().sampleRate + this.offset;
-				}
-			});
+			if (typeof positionWorker !== 'undefined') {
+				positionWorker.onMessage(event => {
+					if (event.type === 'position') {
+						this._playbackPosition = parseInt(event.data, 10) / this.getSample().sampleRate + this.offset;
+					}
+				});
+			}
 			this._positionWorklet = scriptProcessorNode;
-			this._positionWorker = positionWorker;
+			this._positionWorker = (typeof positionWorker !== 'undefined') ? positionWorker : null;
 			this._positionWorklet.connect(GodotAudio.ctx.destination);
 		}
 		return this._positionWorklet;
@@ -686,7 +690,7 @@ class SampleNode {
 		this.pauseTime = 0;
 
 		if (this._source != null) {
-			if(!miniEngine){
+			if(typeof miniEngine === 'undefined' || !miniEngine){
 				this._source.removeEventListener('ended', this._onended);
 			}
 			this._onended = null;
@@ -704,11 +708,13 @@ class SampleNode {
 
 		if (this._positionWorklet) {
 			this._positionWorklet.disconnect();
-			if(!miniEngine){
+			if(typeof miniEngine === 'undefined' || !miniEngine){
 				this._positionWorklet.port.onmessage = null;
 				this._positionWorklet.port.postMessage({ type: 'ended' });
 			}else{
-				this._positionWorker.postMessage({type: 'ended'});
+				if (this._positionWorker) {
+					this._positionWorker.postMessage({type: 'ended'});
+				}
 			}
 			this._positionWorklet = null;
 		}
@@ -754,10 +760,12 @@ class SampleNode {
 			? this.pauseTime
 			: 0;
 		if (this._positionWorklet != null) {
-			if(!miniEngine){
+			if(typeof miniEngine === 'undefined' || !miniEngine){
 				this._positionWorklet.port.postMessage({ type: 'clear' });
 			}else{
-				this._positionWorker.postMessage({type: 'clear'});
+				if (this._positionWorker) {
+					this._positionWorker.postMessage({type: 'clear'});
+				}
 			}
 			this._source.connect(this._positionWorklet);
 		}
@@ -794,7 +802,7 @@ class SampleNode {
 	 */
 	_addEndedListener() {
 		if (this._onended != null) {
-			if(!miniEngine){
+			if(typeof miniEngine === 'undefined' || !miniEngine){
 				this._source.removeEventListener('ended', this._onended);
 			}
 		}
@@ -825,7 +833,7 @@ class SampleNode {
 				// do nothing
 			}
 		};
-		if(!miniEngine){
+		if(typeof miniEngine === 'undefined' || !miniEngine){
 			this._source.addEventListener('ended', this._onended);
 		}else{
 			this._source.onended = this._onended;
@@ -1278,7 +1286,7 @@ const _GodotAudio = {
 			// Do not specify, leave 'interactive' for good performance.
 			// opts['latencyHint'] = latency / 1000;
 			let ctx = null;
-			if (miniEngine){
+			if (typeof miniEngine !== 'undefined' && miniEngine){
 				ctx = miniEngine.createWebAudioContext();
 			}else{
 				ctx = new (window.AudioContext || window.webkitAudioContext)(opts);
@@ -1315,7 +1323,7 @@ const _GodotAudio = {
 			}, 1000);
 			GodotOS.atexit(GodotAudio.close_async);
 
-			if(!miniEngine){
+			if(typeof miniEngine === 'undefined' || !miniEngine){
 				const path = GodotConfig.locate_file('godot.audio.position.worklet.js');
 				GodotAudio.audioPositionWorkletPromise = ctx.audioWorklet.addModule(path);
 			}

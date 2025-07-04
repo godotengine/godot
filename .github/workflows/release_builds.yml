@@ -1,0 +1,914 @@
+name: 🚀 Release Build
+on:
+  release:
+    types: [created, edited]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release version (e.g. v2.0.1)'
+        required: true
+        default: 'v2.0.1'
+      platforms:
+        description: 'Platforms to build (comma-separated: android,ios,web,linux,macos,windows,all)'
+        required: true
+        default: 'android,ios,linux,macos,windows,web'
+
+concurrency:
+  group: ci-${{github.actor}}-${{github.head_ref || github.run_number}}-${{github.ref}}-release
+  cancel-in-progress: true
+
+env:
+  ENGINE_VERSION: 4.4.1.stable
+  # SCons cache settings to ensure efficient cache utilization
+  SCONS_CACHE: "${{github.workspace}}/.scons-cache/"
+  SCONS_CACHE_LIMIT: "10000"
+  VERSION: 2.0.1
+  GODOT_BASE_BRANCH: master
+  RELEASE_ARGS: >-
+    debug_symbols=false
+    disable_3d=true
+  EDITOR_ARGS: >-
+    debug_symbols=true
+  COMMON_ARGS: >-
+    optimize=size
+    use_volk=no 
+    deprecated=no 
+    minizip=yes  
+    openxr=false 
+    vulkan=false 
+    graphite=false 
+    disable_3d_physics=true 
+    disable_navigation=true 
+    module_msdfgen_enabled=false 
+    module_text_server_adv_enabled=false 
+    module_text_server_fb_enabled=true 
+    modules_enabled_by_default=true 
+    module_gdscript_enabled=true 
+    module_freetype_enabled=true 
+    module_minimp3_enabled=true 
+    module_svg_enabled=true 
+    module_jpg_enabled=true 
+    module_ogg_enabled=true 
+    module_regex_enabled=true 
+    module_godot_physics_2d_enabled=true 
+
+
+jobs:
+  setup:
+    name: 📋 Prepare Build Environment
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.set-version.outputs.version }}
+      platforms: ${{ steps.set-platforms.outputs.platforms }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set Version Number
+        id: set-version
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+          else
+            VERSION="${{ github.event.inputs.release_tag }}"
+          fi
+          VERSION="${VERSION#v}"  # Remove 'v' prefix (if present)
+          echo "VERSION=$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Set Build Platforms
+        id: set-platforms
+        run: |
+          if [ "${{ github.event_name }}" == "release" ]; then
+            PLATFORMS="all"
+          else
+            PLATFORMS="${{ github.event.inputs.platforms }}"
+          fi
+          
+          if [ "$PLATFORMS" == "all" ]; then
+            PLATFORMS="android,ios,web,linux,macos,windows"
+          fi
+          
+          echo "PLATFORMS=$PLATFORMS"
+          echo "platforms=$PLATFORMS" >> $GITHUB_OUTPUT
+
+  android-build:
+    name: 🤖 Android Release
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'android') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: 17
+
+      # Set up shared cache for all Android architectures
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: android-release-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            android-release-${{env.GODOT_BASE_BRANCH}}-
+            android-release-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build in specific order to maximize cache utilization
+      # First build debug and release versions of the same architecture to reuse compilation cache
+
+      # arm32 builds (debug first, then release)
+      - name: Build Android 32-bit Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_debug arch=arm32 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: android
+          target: template_debug
+
+      - name: Build Android 32-bit Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_release arch=arm32 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: android
+          target: template_release
+
+      # arm64 builds (debug first, then release)
+      - name: Build Android 64-bit Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_debug arch=arm64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: android
+          target: template_debug
+
+      - name: Build Android 64-bit Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=android target=template_release arch=arm64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: android
+          target: template_release
+
+      - name: Generate Final Android Templates
+        run: |
+          cd platform/android/java
+          ./gradlew generateGodotTemplates
+          echo "View generated files:"
+          ls -la ../../..
+          ls -la ../../../bin/
+
+      - name: Prepare Android files for release
+        if: github.event_name == 'release'
+        run: |
+          mkdir -p release
+          cp bin/android*.apk release/
+          cp bin/android_source.zip release/
+          zip -j release/android.zip release/*
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/android.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ios-build:
+    name: 🍏 iOS Release
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'ios') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for all iOS builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: ios-release-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            ios-release-${{env.GODOT_BASE_BRANCH}}-
+            ios-release-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build in specific order to maximize cache utilization
+      # Group by architecture, debug first then release
+
+      # iOS Simulator arm64 builds
+      - name: Build iOS Simulator (arm64) Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_debug ios_simulator=yes arch=arm64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: ios
+          target: template_debug
+
+      - name: Build iOS Simulator (arm64) Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_release ios_simulator=yes arch=arm64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: ios
+          target: template_release
+
+      # iOS Simulator x86_64 builds
+      - name: Build iOS Simulator (x86_64) Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_debug ios_simulator=yes arch=x86_64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: ios
+          target: template_debug
+
+      - name: Build iOS Simulator (x86_64) Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_release ios_simulator=yes arch=x86_64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }} generate_bundle=yes
+          platform: ios
+          target: template_release
+
+      # iOS Device builds
+      - name: Build iOS Device Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_debug ios_simulator=no
+          platform: ios
+          target: template_debug
+
+      - name: Build iOS Device Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_release ios_simulator=no generate_bundle=yes
+          platform: ios
+          target: template_release
+
+      - name: Upload iOS Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ needs.setup.outputs.version }}
+          path: bin/godot_ios.zip
+          retention-days: 14
+
+      - name: Prepare iOS files for release
+        if: github.event_name == 'release'
+        run: |
+          cp bin/godot_ios.zip bin/ios.zip
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/ios.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows-editor-build:
+    name: 🪟 Windows ${{ matrix.arch }} Editor Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'windows') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x86_64, x86_32]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+          - arch: x86_32
+            artifact_suffix: x86_32
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for Windows builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Use arch-specific cache key but allow fallback to other architectures
+          key: windows-${{ matrix.arch }}-editor-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            windows-${{ matrix.arch }}-editor-${{env.GODOT_BASE_BRANCH}}-
+            windows-${{ matrix.arch }}-editor-
+            windows-editor-${{env.GODOT_BASE_BRANCH}}-
+            windows-editor-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Build Windows Editor (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=windows target=editor arch=${{ matrix.arch }} ${{ env.COMMON_ARGS }} ${{ env.EDITOR_ARGS }}
+          platform: windows
+          target: editor
+
+      - name: Compress Windows Editor Build
+        run: Compress-Archive -Path bin/godot.windows.editor.${{ matrix.arch }}.exe -DestinationPath bin/editor-windows-${{ matrix.artifact_suffix }}.zip
+        shell: pwsh
+
+      - name: Upload Windows Editor Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}-editor-${{ needs.setup.outputs.version }}
+          path: bin/editor-windows-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/editor-windows-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  windows-template-build:
+    name: 🪟 Windows ${{ matrix.arch }} Template Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'windows') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [x86_64, x86_32]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+          - arch: x86_32
+            artifact_suffix: x86_32
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for Windows builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Use arch-specific cache key but allow fallback to other architectures
+          key: windows-${{ matrix.arch }}-template-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            windows-${{ matrix.arch }}-template-${{env.GODOT_BASE_BRANCH}}-
+            windows-${{ matrix.arch }}-template-
+            windows-template-${{env.GODOT_BASE_BRANCH}}-
+            windows-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build debug template first to maximize cache utilization
+      - name: Build Windows Template Debug (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=windows target=template_debug arch=${{ matrix.arch }} ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: windows
+          target: template_debug
+
+      - name: Build Windows Template Release (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=windows target=template_release arch=${{ matrix.arch }} ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: windows
+          target: template_release
+
+      - name: Compress Windows Template Builds
+        run: |
+          Compress-Archive -Path bin/godot.windows.template_debug.${{ matrix.arch }}.exe,bin/godot.windows.template_release.${{ matrix.arch }}.exe -DestinationPath bin/windows-${{ matrix.artifact_suffix }}.zip
+        shell: pwsh
+
+      - name: Upload Windows Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-${{ matrix.arch }}-template-${{ needs.setup.outputs.version }}
+          path: bin/windows-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/windows-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  linux-editor-build:
+    name: 🐧 Linux ${{ matrix.arch }} Editor Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'linux') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+          - arch: arm64
+            artifact_suffix: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for Linux builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Use arch-specific cache key but allow fallback to other architectures
+          key: linux-${{ matrix.arch }}-editor-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            linux-${{ matrix.arch }}-editor-${{env.GODOT_BASE_BRANCH}}-
+            linux-${{ matrix.arch }}-editor-
+            linux-editor-${{env.GODOT_BASE_BRANCH}}-
+            linux-editor-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Linux editor build, no debug symbols
+      - name: Build Linux Editor (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=linuxbsd target=editor ${{ env.COMMON_ARGS }} arch=${{ matrix.arch }}
+          platform: linuxbsd
+          target: editor
+
+      - name: Compress Linux Editor Build
+        run: |
+          chmod +x bin/godot.linuxbsd.editor.${{ matrix.arch }}
+          zip -j bin/editor-linux-${{ matrix.artifact_suffix }}.zip bin/godot.linuxbsd.editor.${{ matrix.arch }}
+
+      - name: Upload Linux Editor Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}-editor-${{ needs.setup.outputs.version }}
+          path: bin/editor-linux-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/editor-linux-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  linux-template-build:
+    name: 🐧 Linux ${{ matrix.arch }} Template Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'linux') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+          - arch: arm64
+            artifact_suffix: arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for Linux builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Use arch-specific cache key but allow fallback to other architectures
+          key: linux-${{ matrix.arch }}-template-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            linux-${{ matrix.arch }}-template-${{env.GODOT_BASE_BRANCH}}-
+            linux-${{ matrix.arch }}-template-
+            linux-template-${{env.GODOT_BASE_BRANCH}}-
+            linux-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build debug template first to maximize cache utilization
+      - name: Build Linux Template Debug (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=linuxbsd target=template_debug ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }} arch=${{ matrix.arch }}
+          platform: linuxbsd
+          target: template_debug
+
+      - name: Build Linux Template Release (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=linuxbsd target=template_release ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }} arch=${{ matrix.arch }}
+          platform: linuxbsd
+          target: template_release
+
+      - name: Compress Linux Template Builds
+        run: |
+          chmod +x bin/godot.linuxbsd.template_debug.${{ matrix.arch }}
+          chmod +x bin/godot.linuxbsd.template_release.${{ matrix.arch }}
+          zip -j bin/linux-${{ matrix.artifact_suffix }}.zip bin/godot.linuxbsd.template_debug.${{ matrix.arch }} bin/godot.linuxbsd.template_release.${{ matrix.arch }}
+
+      - name: Upload Linux Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}-template-${{ needs.setup.outputs.version }}
+          path: bin/linux-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/linux-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  macos-editor-build:
+    name: 🍎 macOS ${{ matrix.arch }} Editor Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'macos') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+          - arch: arm64
+            artifact_suffix: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for macOS builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: macos-editor-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            macos-editor-${{env.GODOT_BASE_BRANCH}}-
+            macos-editor-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build macOS Editor for specific architecture
+      - name: Build macOS Editor (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=editor arch=${{ matrix.arch }} ${{ env.COMMON_ARGS }} ${{ env.EDITOR_ARGS }}
+          platform: macos
+          target: editor
+
+      - name: Compress macOS Editor Build
+        run: |
+          chmod +x bin/godot.macos.editor.${{ matrix.arch }}
+          zip -j bin/editor-macos-${{ matrix.artifact_suffix }}.zip bin/godot.macos.editor.${{ matrix.arch }}
+
+      - name: Upload macOS Editor Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}-editor-${{ needs.setup.outputs.version }}
+          path: bin/editor-macos-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/editor-macos-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  macos-template-build:
+    name: 🍎 macOS ${{ matrix.arch }} Template Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'macos') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        arch: [x86_64, arm64]
+        include:
+          - arch: x86_64
+            artifact_suffix: x86_64
+          - arch: arm64
+            artifact_suffix: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for macOS builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: macos-template-bin-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            macos-template-bin-${{env.GODOT_BASE_BRANCH}}-
+            macos-template-bin-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build macOS Template for specific architecture
+      - name: Build macOS Template Release (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=template_release ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }} arch=${{ matrix.arch }}
+          platform: macos
+          target: template_release
+          
+      - name: Build macOS Template Debug (${{ matrix.arch }})
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=template_debug ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }} arch=${{ matrix.arch }}
+          platform: macos
+          target: template_debug
+
+      - name: Compress macOS Template Builds
+        run: |
+          chmod +x bin/godot.macos.template_debug.${{ matrix.arch }}
+          chmod +x bin/godot.macos.template_release.${{ matrix.arch }}
+          zip -j bin/macos-${{ matrix.artifact_suffix }}.zip bin/godot.macos.template_debug.${{ matrix.arch }} bin/godot.macos.template_release.${{ matrix.arch }}
+
+      - name: Upload macOS Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}-template-${{ needs.setup.outputs.version }}
+          path: bin/macos-${{ matrix.artifact_suffix }}.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/macos-${{ matrix.artifact_suffix }}.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+  macos-template-app-build:
+    name: 🍎 macOS Template App Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'macos') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for macOS builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          key: macos-template-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            macos-template-${{env.GODOT_BASE_BRANCH}}-
+            macos-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build x86_64 templates
+      - name: Build macOS Template Release (x86_64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=template_release arch=x86_64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: macos
+          target: template_release
+
+      - name: Build macOS Template Debug (x86_64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=template_debug arch=x86_64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: macos
+          target: template_debug
+
+      # Build arm64 templates
+      - name: Build macOS Template Release (arm64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=template_release arch=arm64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: macos
+          target: template_release
+
+      - name: Build macOS Template Debug (arm64)
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=macos target=template_debug arch=arm64 ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: macos
+          target: template_debug
+
+      # Create Universal Binaries
+      - name: Create Universal Template Binaries
+        run: |
+          # Create universal binaries using lipo
+          lipo -create bin/godot.macos.template_release.x86_64 bin/godot.macos.template_release.arm64 -output bin/godot.macos.template_release.universal
+          lipo -create bin/godot.macos.template_debug.x86_64 bin/godot.macos.template_debug.arm64 -output bin/godot.macos.template_debug.universal
+          
+          # Create app bundle structure
+          cp -r misc/dist/macos_template.app .
+          mkdir -p macos_template.app/Contents/MacOS
+          mkdir -p macos_template.app/Contents/Frameworks
+          
+          # Copy binaries to app bundle
+          cp bin/godot.macos.template_release.universal macos_template.app/Contents/MacOS/godot_macos_release.universal
+          cp bin/godot.macos.template_debug.universal macos_template.app/Contents/MacOS/godot_macos_debug.universal
+          
+          # Set executable permissions
+          chmod +x macos_template.app/Contents/MacOS/godot_macos*
+          
+          # Create final zip
+          zip -q -9 -r bin/macos.zip macos_template.app
+
+      - name: Upload macOS Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-template-${{ needs.setup.outputs.version }}
+          path: bin/macos.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/macos.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  web-editor-build:
+    name: 🌐 Web Editor Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'web') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    env:
+      EM_VERSION: 3.1.39
+      EM_CACHE_FOLDER: "emsdk-cache"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup Emscripten
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+          cache-key: emsdk-web-editor-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+      
+      - name: Verify Emscripten Installation
+        run: |
+          emcc -v
+
+      # Set up shared cache for Web Editor builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: web-editor-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            web-editor-${{env.GODOT_BASE_BRANCH}}-
+            web-editor-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build Web Editor
+      - name: Build Web Editor
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=web target=editor ${{ env.COMMON_ARGS }} ${{ env.EDITOR_ARGS }}
+          platform: web
+          target: editor
+
+      - name: Prepare Files
+        run: |
+          mkdir -p artifacts
+          cp bin/godot.web.editor.wasm32.zip artifacts/editor-web.zip
+
+      - name: Upload Web Editor Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-editor-${{ needs.setup.outputs.version }}
+          path: artifacts/editor-web.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/editor-web.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  web-template-build:
+    name: 🌐 Web Template Build
+    needs: setup
+    if: contains(needs.setup.outputs.platforms, 'web') || contains(needs.setup.outputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    env:
+      EM_VERSION: 3.1.39
+      EM_CACHE_FOLDER: "emsdk-cache"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup Emscripten
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+          cache-key: emsdk-web-template-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+      
+      - name: Verify Emscripten Installation
+        run: |
+          emcc -v
+
+      # Set up shared cache for Web Template builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: web-template-${{env.GODOT_BASE_BRANCH}}-${{github.ref}}
+          restore-keys: |
+            web-template-${{env.GODOT_BASE_BRANCH}}-
+            web-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build Web template_release
+      - name: Build Web Template Release
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=web target=template_release threads=no ${{ env.COMMON_ARGS }} ${{ env.RELEASE_ARGS }}
+          platform: web
+          target: template_release
+
+      - name: Prepare Files
+        run: |
+          mkdir -p artifacts
+          cp bin/godot.web.template_release.wasm32.zip artifacts/web.zip
+
+      - name: Upload Web Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-template-${{ needs.setup.outputs.version }}
+          path: artifacts/web.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/web.zip
+          tag_name: ${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

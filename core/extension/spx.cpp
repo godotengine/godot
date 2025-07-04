@@ -37,7 +37,10 @@
 #include "spx_sprite.h"
 #include "spx_ui.h"
 #include "core/io/dir_access.h"
+
+#ifdef MINIZIP_ENABLED
 #include "modules/zip/zip_reader.h"
+#endif
  
 #define SPX_ENGINE SpxEngine::get_singleton()
 bool Spx::initialed = false;
@@ -51,6 +54,7 @@ void Spx::register_types() {
 
 void Spx::on_start(void *p_tree) {
 	if (!project_data_path.is_empty()) {
+#ifdef MINIZIP_ENABLED
 		Ref<ZIPReader> zip = memnew(ZIPReader);
 		if (zip->open(project_data_path) == OK) {
 			String target_dir = project_data_path.get_base_dir();
@@ -73,6 +77,9 @@ void Spx::on_start(void *p_tree) {
 		} else {
 			print_line("Failed to open project data zip file: " + project_data_path);
 		}
+#else
+		print_line("Minizip is not enabled, project data zip is not supported");
+#endif
 	}else{
 		print_line("Spx::on_start, project_data_path is empty");
 	}

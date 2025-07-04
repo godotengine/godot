@@ -165,7 +165,7 @@ function AllocGdString() {
     return GodotEngine.rtenv['_gdspx_alloc_string']();
 }
 function PrintGdString(ptr) {
-    console.log(_toJsString(gdstrPtr,false));
+    console.log(_toJsString(ptr,false));
 }
 
 function FreeGdString(ptr) {

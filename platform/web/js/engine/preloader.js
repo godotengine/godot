@@ -36,7 +36,7 @@ const Preloader = /** @constructor */ function () { // eslint-disable-line no-un
 			if (!response.ok) {
 				return Promise.reject(new Error(`Failed loading file '${file}'`));
 			}
-			if (miniEngine){
+			if (typeof miniEngine !== 'undefined' && miniEngine){
 				return new Promise((resolve, reject) => {
 					const fs = miniEngine.getFileSystemManager();
 					fs.readFile({

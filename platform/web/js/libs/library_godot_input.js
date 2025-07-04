@@ -151,7 +151,7 @@ const GodotIME = {
 				GodotIME.active = false;
 			};
 
-			if (!miniEngine){
+			if (typeof miniEngine === 'undefined' || !miniEngine){
 				// wx mini game not support modify document && canvas
 				GodotConfig.canvas.parentElement.appendChild(ime);
 			}
@@ -492,7 +492,7 @@ const GodotInput = {
 			const canvas = GodotConfig.canvas;
 			const rw = canvas.width / rect.width;
 			const rh = canvas.height / rect.height;
-			if (miniEngine){
+			if (typeof miniEngine !== 'undefined' && miniEngine){
 				const x = evt.clientX * rw;
                 const y = evt.clientY * rh;
 				return [x, y];
