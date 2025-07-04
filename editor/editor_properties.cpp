@@ -2742,12 +2742,34 @@ void EditorPropertyColor::_popup_opening() {
 	EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
 	last_color = picker->get_pick_color();
 	was_checked = !is_checkable() || is_checked();
+
+	PopupPanel *popup = picker->get_popup();
+	if (popup->get_mode() == Window::MODE_MINIMIZED) {
+		popup->set_mode(Window::MODE_WINDOWED);
+	}
+
+	if (!was_setup) {
+		popup->set_flag(Window::FLAG_BORDERLESS, false);
+		popup->connect("visibility_changed", callable_mp(this, &EditorPropertyColor::_popup_visibility_changed));
+	}
+	was_setup = true;
 }
 
 void EditorPropertyColor::_popup_closed() {
 	get_edited_object()->set(get_edited_property(), was_checked ? Variant(last_color) : Variant());
 	if (!picker->get_pick_color().is_equal_approx(last_color)) {
 		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
+	}
+}
+
+void EditorPropertyColor::_popup_visibility_changed() {
+	PopupPanel *popup = picker->get_popup();
+	// Shift popup so it doesn't cover the button.
+	if (popup && popup->is_visible()) {
+		Point2 pos = popup->get_position();
+		int title_size = pos.y - popup->get_position_with_decorations().y;
+		bool below = (picker->get_screen_position().y <= pos.y);
+		popup->set_position(Point2(pos.x, MAX(title_size, pos.y + (below ? title_size : 0))));
 	}
 }
 
