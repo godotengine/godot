@@ -803,7 +803,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 	}
 
 	properties = p_properties;
-	List<StringName> to_remove;
+	LocalVector<StringName> to_remove;
 
 	for (KeyValue<StringName, Variant> &E : values) {
 		if (!new_values.has(E.key)) {
@@ -819,10 +819,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		}
 	}
 
-	while (to_remove.size()) {
-		values.erase(to_remove.front()->get());
-		to_remove.pop_front();
+	for (const StringName &key : to_remove) {
+		values.erase(key);
 	}
+	to_remove.clear();
 
 	if (owner && owner->get_script_instance() == this) {
 		owner->notify_property_list_changed();

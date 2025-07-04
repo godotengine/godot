@@ -1252,7 +1252,7 @@ Error DocTools::erase_classes(const String &p_dir) {
 		return err;
 	}
 
-	List<String> to_erase;
+	LocalVector<String> to_erase;
 
 	da->list_dir_begin();
 	String path;
@@ -1265,9 +1265,8 @@ Error DocTools::erase_classes(const String &p_dir) {
 	}
 	da->list_dir_end();
 
-	while (to_erase.size()) {
-		da->remove(to_erase.front()->get());
-		to_erase.pop_front();
+	for (const String &file : to_erase) {
+		da->remove(file);
 	}
 
 	return OK;

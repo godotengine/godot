@@ -94,7 +94,7 @@ bool DebuggerMarshalls::ScriptStackVariable::deserialize(const Array &p_arr) {
 	return true;
 }
 
-Array DebuggerMarshalls::OutputError::serialize() {
+Array DebuggerMarshalls::OutputError::serialize() const {
 	unsigned int size = callstack.size();
 	Array arr = {
 		hr,

@@ -894,7 +894,7 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 	_animation_set_cache_update();
 
 	// Erase blends if needed
-	List<BlendKey> to_erase;
+	LocalVector<BlendKey> to_erase;
 	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
 		if (bk.from == name || bk.to == name) {
@@ -902,9 +902,8 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 		}
 	}
 
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (const BlendKey &bk : to_erase) {
+		blend_times.erase(bk);
 	}
 }
 
@@ -912,7 +911,7 @@ void AnimationPlayer::_rename_animation(const StringName &p_from_name, const Str
 	AnimationMixer::_rename_animation(p_from_name, p_to_name);
 
 	// Rename autoplay or blends if needed.
-	List<BlendKey> to_erase;
+	LocalVector<BlendKey> to_erase;
 	HashMap<BlendKey, double, BlendKey> to_insert;
 	for (const KeyValue<BlendKey, double> &E : blend_times) {
 		BlendKey bk = E.key;
@@ -933,10 +932,10 @@ void AnimationPlayer::_rename_animation(const StringName &p_from_name, const Str
 		}
 	}
 
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
+	for (const BlendKey &bk : to_erase) {
+		blend_times.erase(bk);
 	}
+	to_erase.clear();
 
 	while (to_insert.size()) {
 		blend_times[to_insert.begin()->key] = to_insert.begin()->value;
