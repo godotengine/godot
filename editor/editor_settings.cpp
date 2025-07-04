@@ -1093,8 +1093,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Version control (VersionControlEditorPlugin)
 	_initial_set("version_control/username", "", true);
-	_initial_set("version_control/ssh_public_key_path", "");
-	_initial_set("version_control/ssh_private_key_path", "");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_PLACEHOLDER_TEXT, "version_control/ssh_public_key_path", "", "~/.ssh/id_rsa.pub");
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_PLACEHOLDER_TEXT, "version_control/ssh_private_key_path", "", "~/.ssh/id_rsa");
 
 	/* Extra config */
 
