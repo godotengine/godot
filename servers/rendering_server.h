@@ -979,7 +979,8 @@ public:
 	}
 
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
-	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
+	virtual void viewport_set_layer_count(RID p_viewport, uint32_t p_layer_count) = 0;
+	virtual void viewport_set_size(RID p_viewport, uint32_t p_layer, int p_width, int p_height, int p_view_count) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;
 	virtual void viewport_set_parent_viewport(RID p_viewport, RID p_parent_viewport) = 0;
 	virtual void viewport_set_canvas_cull_mask(RID p_viewport, uint32_t p_canvas_cull_mask) = 0;
@@ -1012,8 +1013,8 @@ public:
 
 	virtual void viewport_set_clear_mode(RID p_viewport, ViewportClearMode p_clear_mode) = 0;
 
-	virtual RID viewport_get_render_target(RID p_viewport) const = 0;
-	virtual RID viewport_get_texture(RID p_viewport) const = 0;
+	virtual RID viewport_get_render_target(RID p_viewport, uint32_t p_layer = 0) const = 0;
+	virtual RID viewport_get_texture(RID p_viewport, uint32_t p_layer = 0) const = 0;
 
 	enum ViewportEnvironmentMode {
 		VIEWPORT_ENVIRONMENT_DISABLED,

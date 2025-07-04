@@ -691,7 +691,8 @@ public:
 	FUNCRIDSPLIT(viewport)
 
 	FUNC2(viewport_set_use_xr, RID, bool)
-	FUNC3(viewport_set_size, RID, int, int)
+	FUNC2(viewport_set_layer_count, RID, uint32_t)
+	FUNC5(viewport_set_size, RID, uint32_t, int, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
 	FUNC2(viewport_set_parent_viewport, RID, RID)
@@ -710,8 +711,8 @@ public:
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
 	FUNC1RC(ViewportUpdateMode, viewport_get_update_mode, RID)
 
-	FUNC1RC(RID, viewport_get_render_target, RID)
-	FUNC1RC(RID, viewport_get_texture, RID)
+	FUNC2RC(RID, viewport_get_render_target, RID, uint32_t)
+	FUNC2RC(RID, viewport_get_texture, RID, uint32_t)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)
 	FUNC2(viewport_set_environment_mode, RID, ViewportEnvironmentMode)
