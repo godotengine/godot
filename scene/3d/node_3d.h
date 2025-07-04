@@ -157,6 +157,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 		Vector<Ref<Node3DGizmo>> gizmos;
+		bool gizmos_requested : 1;
 		bool gizmos_disabled : 1;
 		bool gizmos_dirty : 1;
 		bool transform_gizmo_visible : 1;
