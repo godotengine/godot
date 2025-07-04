@@ -61,6 +61,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
 
 	float mass = 0.0f;
+	float point_radius = 0.01f;
 	float pressure = 0.0f;
 	float linear_damping = 0.01f;
 	float stiffness_coefficient = 0.5f;
@@ -89,6 +90,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	void _mesh_changed();
 	void _simulation_precision_changed();
+	void _point_radius_changed();
 	void _mass_changed();
 	void _pressure_changed();
 	void _damping_changed();
@@ -133,6 +135,9 @@ public:
 
 	int get_simulation_precision() const { return simulation_precision; }
 	void set_simulation_precision(int p_precision);
+
+	float get_point_radius() const { return point_radius; }
+	void set_point_radius(float p_radius);
 
 	float get_mass() const { return mass; }
 	void set_mass(float p_mass);
