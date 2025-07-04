@@ -1,4 +1,4 @@
-partial class ExportedFields
+partial class @ExportedFields
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
 #if TOOLS

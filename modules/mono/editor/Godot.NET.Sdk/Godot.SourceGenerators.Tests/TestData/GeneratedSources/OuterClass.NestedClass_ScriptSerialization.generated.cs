@@ -1,9 +1,9 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial struct OuterClass
+partial struct @OuterClass
 {
-partial class NestedClass
+partial class @NestedClass
 {
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
