@@ -35,18 +35,16 @@
 
 class [[nodiscard]] NodePath {
 	struct Data {
-		SafeRefCount refcount;
 		Vector<StringName> path;
 		Vector<StringName> subpath;
-		StringName concatenated_path;
-		StringName concatenated_subpath;
+		mutable StringName concatenated_path;
+		mutable StringName concatenated_subpath;
 		bool absolute;
 		mutable bool hash_cache_valid;
 		mutable uint32_t hash_cache;
 	};
 
-	mutable Data *data = nullptr;
-	void unref();
+	SharedPtr<Data> data;
 
 	void _update_hash_cache() const;
 
