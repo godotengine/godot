@@ -776,6 +776,11 @@ void SceneDebuggerObject::_parse_script_properties(Script *p_script, ScriptInsta
 	// Members
 	for (KeyValue<const Script *, HashSet<StringName>> sm : members) {
 		for (const StringName &E : sm.value) {
+			// Skip groups.
+			if (String(E).begins_with("@")) {
+				continue;
+			}
+
 			Variant m;
 			if (p_instance->get(E, m)) {
 				String script_path = sm.key == p_script ? "" : sm.key->get_path().get_file() + "/";
