@@ -23,13 +23,13 @@
 				Return the current value of a playback parameter by name (see [method AudioStream._get_parameter_list]).
 			</description>
 		</method>
-		<method name="_get_playback_position" qualifiers="virtual const">
+		<method name="_get_playback_position" qualifiers="virtual required const">
 			<return type="float" />
 			<description>
 				Overridable method. Should return the current progress along the audio stream, in seconds.
 			</description>
 		</method>
-		<method name="_is_playing" qualifiers="virtual const">
+		<method name="_is_playing" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 				Overridable method. Should return [code]true[/code] if this playback is active and playing its audio stream.
@@ -60,14 +60,14 @@
 				Set the current value of a playback parameter by name (see [method AudioStream._get_parameter_list]).
 			</description>
 		</method>
-		<method name="_start" qualifiers="virtual">
+		<method name="_start" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="from_pos" type="float" />
 			<description>
 				Override this method to customize what happens when the playback starts at the given position, such as by calling [method AudioStreamPlayer.play].
 			</description>
 		</method>
-		<method name="_stop" qualifiers="virtual">
+		<method name="_stop" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 				Override this method to customize what happens when the playback is stopped, such as by calling [method AudioStreamPlayer.stop].
