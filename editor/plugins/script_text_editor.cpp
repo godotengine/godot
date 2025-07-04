@@ -2348,11 +2348,13 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	}
 
 	if (type == "obj_property") {
-		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
-		text_to_drop = add_literal ? "^" : "";
-		// It is unclear whether properties may contain single or double quotes.
-		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
-		text_to_drop += _quote_drop_data(String(d["property"]));
+		text_to_drop = String(d["property"]);
+		if (!drop_modifier_pressed) {
+			bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
+			// It is unclear whether properties may contain single or double quotes.
+			// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
+			text_to_drop = (add_literal ? "^" : "") + _quote_drop_data(text_to_drop);
+		}
 	}
 
 	if (text_to_drop.is_empty()) {
