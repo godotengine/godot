@@ -441,8 +441,7 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 		int item_index = 0;
 		if (scene.is_valid()) {
 			item_index = scene_tiles_list->add_item(vformat("%s (Path: %s, ID: %d)", scene->get_path().get_file().get_basename(), scene->get_path(), scene_id));
-			Variant udata = i;
-			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, this, "_scene_thumbnail_done", udata);
+			EditorResourcePreview::get_singleton()->queue_edited_resource_preview(scene, callable_mp(this, &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done).bind(i));
 		} else {
 			item_index = scene_tiles_list->add_item(TTR("Tile with Invalid Scene"), tiles_bottom_panel->get_editor_theme_icon(SNAME("PackedScene")));
 		}
@@ -463,11 +462,9 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
 }
 
-void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud) {
-	int index = p_ud;
-
-	if (index >= 0 && index < scene_tiles_list->get_item_count()) {
-		scene_tiles_list->set_item_icon(index, p_preview);
+void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, int p_index) {
+	if (p_index >= 0 && p_index < scene_tiles_list->get_item_count()) {
+		scene_tiles_list->set_item_icon(p_index, p_preview);
 	}
 }
 
@@ -2112,7 +2109,6 @@ void TileMapLayerEditorTilesPlugin::_set_source_sort(int p_sort) {
 }
 
 void TileMapLayerEditorTilesPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_scene_thumbnail_done"), &TileMapLayerEditorTilesPlugin::_scene_thumbnail_done);
 	ClassDB::bind_method(D_METHOD("_set_tile_map_selection", "selection"), &TileMapLayerEditorTilesPlugin::_set_tile_map_selection);
 	ClassDB::bind_method(D_METHOD("_get_tile_map_selection"), &TileMapLayerEditorTilesPlugin::_get_tile_map_selection);
 }
