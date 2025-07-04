@@ -3966,9 +3966,11 @@ void EditorInspector::update_tree() {
 			}
 		}
 
-		// Don't localize script variables.
 		EditorPropertyNameProcessor::Style name_style = property_name_style;
-		if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+		if (p.hint == PROPERTY_HINT_RAW_NAME) {
+			name_style = EditorPropertyNameProcessor::STYLE_RAW;
+		} else if ((p.usage & PROPERTY_USAGE_SCRIPT_VARIABLE) && name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+			// Don't localize script variables.
 			name_style = EditorPropertyNameProcessor::STYLE_CAPITALIZED;
 		}
 		const String property_label_string = EditorPropertyNameProcessor::get_singleton()->process_name(name_override, name_style, p.name, doc_name) + feature_tag;
