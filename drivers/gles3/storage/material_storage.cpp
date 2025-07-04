@@ -1485,6 +1485,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["EYEDIR"] = "cube_normal";
 		actions.renames["POSITION"] = "position";
+		actions.renames["FORWARD"] = "forward";
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["TIME"] = "time";
@@ -2764,6 +2765,7 @@ void SkyShaderData::set_code(const String &p_code) {
 
 	uses_time = false;
 	uses_position = false;
+	uses_forward = false;
 	uses_half_res = false;
 	uses_quarter_res = false;
 	uses_light = false;
@@ -2782,6 +2784,7 @@ void SkyShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["POSITION"] = &uses_position;
+	actions.usage_flag_pointers["FORWARD"] = &uses_forward;
 	actions.usage_flag_pointers["LIGHT0_ENABLED"] = &uses_light;
 	actions.usage_flag_pointers["LIGHT0_ENERGY"] = &uses_light;
 	actions.usage_flag_pointers["LIGHT0_DIRECTION"] = &uses_light;

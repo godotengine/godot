@@ -210,6 +210,7 @@ struct SkyShaderData : public ShaderData {
 
 	bool uses_time;
 	bool uses_position;
+	bool uses_forward;
 	bool uses_half_res;
 	bool uses_quarter_res;
 	bool uses_light;

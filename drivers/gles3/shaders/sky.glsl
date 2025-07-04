@@ -101,6 +101,7 @@ layout(std140) uniform MaterialUniforms{ //ubo:3
 uniform mat4 orientation;
 uniform vec4 projection;
 uniform vec3 position;
+uniform vec3 forward;
 uniform float time;
 uniform float sky_energy_multiplier;
 uniform float luminance_multiplier;

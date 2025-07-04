@@ -71,6 +71,7 @@ void SkyRD::SkyShaderData::set_code(const String &p_code) {
 	uses_half_res = false;
 	uses_quarter_res = false;
 	uses_position = false;
+	uses_forward = false;
 	uses_light = false;
 
 	actions.render_mode_flags["use_half_res_pass"] = &uses_half_res;
@@ -78,6 +79,7 @@ void SkyRD::SkyShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["POSITION"] = &uses_position;
+	actions.usage_flag_pointers["FORWARD"] = &uses_forward;
 	actions.usage_flag_pointers["LIGHT0_ENABLED"] = &uses_light;
 	actions.usage_flag_pointers["LIGHT0_ENERGY"] = &uses_light;
 	actions.usage_flag_pointers["LIGHT0_DIRECTION"] = &uses_light;
@@ -215,7 +217,7 @@ static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_ar
 	p_array[11] = 0;
 }
 
-void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_multiplier) {
+void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, const Vector3 &p_forward, float p_luminance_multiplier, float p_brightness_multiplier) {
 	SkyPushConstant sky_push_constant;
 
 	memset(&sky_push_constant, 0, sizeof(SkyPushConstant));
@@ -229,6 +231,9 @@ void SkyRD::_render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineC
 	sky_push_constant.position[0] = p_position.x;
 	sky_push_constant.position[1] = p_position.y;
 	sky_push_constant.position[2] = p_position.z;
+	sky_push_constant.forward[0] = p_forward.x;
+	sky_push_constant.forward[1] = p_forward.y;
+	sky_push_constant.forward[2] = p_forward.z;
 	sky_push_constant.time = p_time;
 	sky_push_constant.luminance_multiplier = p_luminance_multiplier;
 	sky_push_constant.brightness_multiplier = p_brightness_multiplier;
@@ -778,6 +783,7 @@ void SkyRD::init() {
 		actions.renames["ALPHA"] = "alpha";
 		actions.renames["EYEDIR"] = "cube_normal";
 		actions.renames["POSITION"] = "params.position";
+		actions.renames["FORWARD"] = "params.forward";
 		actions.renames["SKY_COORDS"] = "panorama_coords";
 		actions.renames["SCREEN_UV"] = "uv";
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
@@ -1336,7 +1342,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 				RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES, sky_shader.default_shader_rd, p_render_buffers);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[2].framebuffers[i]);
-				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier, p_brightness_multiplier);
+				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[2].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, view_normals[i], p_luminance_multiplier, p_brightness_multiplier);
 				RD::get_singleton()->draw_list_end();
 			}
 			RD::get_singleton()->draw_command_end_label();
@@ -1357,7 +1363,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 				RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP_HALF_RES, sky_shader.default_shader_rd, p_render_buffers);
 
 				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[1].framebuffers[i]);
-				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier, p_brightness_multiplier);
+				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[1].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, view_normals[i], p_luminance_multiplier, p_brightness_multiplier);
 				RD::get_singleton()->draw_list_end();
 			}
 			RD::get_singleton()->draw_command_end_label();
@@ -1374,7 +1380,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP, sky_shader.default_shader_rd, p_render_buffers);
 
 			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::DRAW_DEFAULT_ALL, Vector<Color>(), 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::SKY_PASS | uint32_t(i));
-			_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier, p_brightness_multiplier);
+			_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, view_normals[i], p_luminance_multiplier, p_brightness_multiplier);
 			RD::get_singleton()->draw_list_end();
 		}
 		RD::get_singleton()->draw_command_end_label();
@@ -1469,6 +1475,7 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 
 	// Camera
 	Projection projection = sky_scene_state.cam_projection;
+	Vector3 cam_forward = sky_scene_state.cam_transform.basis.xform(Vector3(0, 0, -1)).normalized();
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
 
@@ -1487,7 +1494,7 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 		clear_colors.push_back(Color(0.0, 0.0, 0.0));
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_CLEAR_ALL, clear_colors);
-		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier);
+		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, cam_forward, p_luminance_multiplier, p_brightness_multiplier);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -1506,7 +1513,7 @@ void SkyRD::update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p
 		clear_colors.push_back(Color(0.0, 0.0, 0.0));
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, RD::DRAW_CLEAR_ALL, clear_colors);
-		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier);
+		_render_sky(draw_list, p_time, framebuffer, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, cam_forward, p_luminance_multiplier, p_brightness_multiplier);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -1559,6 +1566,7 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 
 	// Camera
 	Projection projection = sky_scene_state.cam_projection;
+	Vector3 cam_forward = sky_scene_state.cam_transform.basis.xform(Vector3(0, 0, -1)).normalized();
 
 	sky_transform = sky_transform * sky_scene_state.cam_transform.basis;
 
@@ -1571,7 +1579,7 @@ void SkyRD::draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_ren
 		texture_uniform_set = sky_scene_state.fog_only_texture_uniform_set;
 	}
 
-	_render_sky(p_draw_list, p_time, p_fb, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, p_luminance_multiplier, p_brightness_multiplier);
+	_render_sky(p_draw_list, p_time, p_fb, pipeline, material->uniform_set, texture_uniform_set, projection, sky_transform, sky_scene_state.cam_transform.origin, cam_forward, p_luminance_multiplier, p_brightness_multiplier);
 }
 
 void SkyRD::invalidate_sky(Sky *p_sky) {
