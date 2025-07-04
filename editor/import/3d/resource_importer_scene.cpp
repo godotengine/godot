@@ -1618,6 +1618,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						}
 						if (!mat_id.is_empty() && p_material_data.has(mat_id)) {
 							Dictionary matdata = p_material_data[mat_id];
+							// Old style material, keep for compatibility.
 							if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
 								String path = matdata["use_external/path"];
 								Ref<Material> external_mat = ResourceLoader::load(path);
@@ -1641,6 +1642,13 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 										}
 									}
 									matdata["use_external/fallback_path"] = external_mat->get_path();
+								}
+							}
+							// New style custom material
+							if (matdata.has("custom")) {
+								Ref<Material> external_mat = matdata["custom"];
+								if (external_mat.is_valid()) {
+									m->set_surface_material(i, external_mat);
 								}
 							}
 						}
@@ -2169,9 +2177,11 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "lods/normal_merge_angle", PROPERTY_HINT_RANGE, "0,180,1,degrees"), 20.0f));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres"), ""));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
+			// Compatibility (hidden) settings.
+			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres", PROPERTY_USAGE_NONE), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "custom", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), Ref<Material>()));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
