@@ -2932,6 +2932,16 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
+		} else if (tag.begins_with("icon ")) {
+			const int tag_end = tag.find_char(' ');
+			const String icon_target = tag.substr(tag_end + 1).lstrip(" ");
+
+			Ref<Texture2D> editor_icon = p_owner_node->get_editor_theme_icon(icon_target);
+			if (editor_icon.is_valid()) {
+				p_rt->add_image(editor_icon, editor_icon->get_width(), editor_icon->get_height());
+			}
+
+			pos = brk_end + 1;
 		} else {
 			p_rt->add_text("["); // Ignore.
 			pos = brk_pos + 1;

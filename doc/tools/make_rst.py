@@ -2281,6 +2281,10 @@ def format_text_block(
                     pos = len(pre_text) + len(tag_text)
                     continue
 
+            # TODO: Add support for icon tag (of the format [icon NodeWarning]) for editor icons.
+            elif is_in_tagset(tag_state.name, ["icon"]):
+                tag_text = ""
+
             elif tag_state.name == "br":
                 # Make a new paragraph instead of a linebreak, rst is not so linebreak friendly
                 tag_text = "\n\n"
