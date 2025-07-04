@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/templates/list.h"
 #include "editor/create_dialog.h"
+#include "editor/dependency_editor.h"
 #include "editor/directory_create_dialog.h"
 #include "editor/editor_dock_manager.h"
 #include "editor/editor_feature_profile.h"
