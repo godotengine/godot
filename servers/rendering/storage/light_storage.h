@@ -48,6 +48,9 @@ public:
 	virtual RID spot_light_allocate() = 0;
 	virtual void spot_light_initialize(RID p_rid) = 0;
 
+	virtual RID area_light_allocate() = 0;
+	virtual void area_light_initialize(RID p_rid) = 0;
+
 	virtual void light_free(RID p_rid) = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;

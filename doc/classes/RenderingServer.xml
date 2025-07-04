@@ -18,6 +18,11 @@
 		<link title="Optimization using Servers">$DOCS_URL/tutorials/performance/using_servers.html</link>
 	</tutorials>
 	<methods>
+		<method name="area_light_create">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="bake_render_uv2">
 			<return type="Image[]" />
 			<param index="0" name="base" type="RID" />
@@ -4787,6 +4792,8 @@
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
 			Spot light (see [SpotLight3D]).
 		</constant>
+		<constant name="LIGHT_AREA" value="3" enum="LightType">
+		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy multiplier.
 		</constant>
@@ -4849,7 +4856,7 @@
 		<constant name="LIGHT_PARAM_INTENSITY" value="20" enum="LightParam">
 			Constant representing the intensity of the light, measured in Lumens when dealing with a [SpotLight3D] or [OmniLight3D], or measured in Lux with a [DirectionalLight3D]. Only used when [member ProjectSettings.rendering/lights_and_shadows/use_physical_light_units] is [code]true[/code].
 		</constant>
-		<constant name="LIGHT_PARAM_MAX" value="21" enum="LightParam">
+		<constant name="LIGHT_PARAM_MAX" value="23" enum="LightParam">
 			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_BAKE_DISABLED" value="0" enum="LightBakeMode">
