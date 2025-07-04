@@ -439,4 +439,22 @@
 			If set, our angular velocity data is valid, otherwise, the angular velocity data is unreliable and should not be used.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="Hand">
+		</enum>
+		<enum name="HandJointFlags">
+		</enum>
+		<enum name="HandJoints">
+		</enum>
+		<enum name="HandMotionRange">
+		</enum>
+		<enum name="HandTrackedSource">
+		</enum>
+		<enum name="PerfSettingsLevel">
+		</enum>
+		<enum name="PerfSettingsNotificationLevel">
+		</enum>
+		<enum name="PerfSettingsSubDomain">
+		</enum>
+	</enums>
 </class>

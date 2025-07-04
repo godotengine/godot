@@ -399,4 +399,8 @@
 			The rotation is edited using a [Basis]. In this mode, the raw [member basis]'s axes can be freely modified, but the [member scale] property is not available.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="RotationEditMode">
+		</enum>
+	</enums>
 </class>

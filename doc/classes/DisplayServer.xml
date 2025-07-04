@@ -3237,4 +3237,42 @@
 			Utterance reached a word or sentence boundary.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="AccessibilityAction">
+		</enum>
+		<enum name="AccessibilityFlags">
+		</enum>
+		<enum name="AccessibilityLiveMode">
+		</enum>
+		<enum name="AccessibilityPopupType">
+		</enum>
+		<enum name="AccessibilityRole">
+		</enum>
+		<enum name="CursorShape">
+		</enum>
+		<enum name="Feature">
+		</enum>
+		<enum name="FileDialogMode">
+		</enum>
+		<enum name="HandleType">
+		</enum>
+		<enum name="MouseMode">
+		</enum>
+		<enum name="ScreenOrientation">
+		</enum>
+		<enum name="TTSUtteranceEvent">
+		</enum>
+		<enum name="VSyncMode">
+		</enum>
+		<enum name="VirtualKeyboardType">
+		</enum>
+		<enum name="WindowEvent">
+		</enum>
+		<enum name="WindowFlags">
+		</enum>
+		<enum name="WindowMode">
+		</enum>
+		<enum name="WindowResizeEdge">
+		</enum>
+	</enums>
 </class>

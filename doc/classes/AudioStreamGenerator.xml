@@ -94,4 +94,8 @@
 			Maximum value for the mixing rate mode enum.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="AudioStreamGeneratorMixRate">
+		</enum>
+	</enums>
 </class>

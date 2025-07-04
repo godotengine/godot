@@ -303,4 +303,8 @@
 			Represents the size of the [enum Monitor] enum.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="Monitor">
+		</enum>
+	</enums>
 </class>

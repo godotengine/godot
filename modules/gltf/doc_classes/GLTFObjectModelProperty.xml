@@ -111,4 +111,8 @@
 			Object model type "int". Represented in the glTF JSON as a number, and encoded in a [GLTFAccessor] as "SCALAR". The range of values is limited to signed integers. For [code]KHR_interactivity[/code], only 32-bit integers are supported.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="GLTFObjectModelType">
+		</enum>
+	</enums>
 </class>

@@ -1253,4 +1253,8 @@
 			Constant to get the number of active navigation obstacles.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="ProcessInfo">
+		</enum>
+	</enums>
 </class>

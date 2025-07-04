@@ -90,4 +90,10 @@
 			Start a file with the best Deflate compression level ([code]9[/code]). This is slow to compress, but results in smaller file sizes than [constant COMPRESSION_DEFAULT]. Decompression speed is generally unaffected by the chosen compression level.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="CompressionLevel">
+		</enum>
+		<enum name="ZipAppend">
+		</enum>
+	</enums>
 </class>

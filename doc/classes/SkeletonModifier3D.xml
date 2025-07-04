@@ -86,4 +86,8 @@
 			Enumerated value for the -Z axis.
 		</constant>
 	</constants>
+	<enums>
+		<enum name="BoneAxis">
+		</enum>
+	</enums>
 </class>
