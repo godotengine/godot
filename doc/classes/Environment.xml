@@ -447,6 +447,9 @@
 		<constant name="GLOW_BLEND_MODE_MIX" value="4" enum="GlowBlendMode">
 			Mixes the glow with the underlying color to avoid increasing brightness as much while still maintaining a glow effect.
 		</constant>
+		<constant name="GLOW_BLEND_MODE_PRE_ADDITIVE" value="5" enum="GlowBlendMode">
+			Similar to [constant GLOW_BLEND_MODE_ADDITIVE], but performs glow [i]before[/i] tonemapping (instead of after tonemapping). This provides a more natural appearance with tonemappers that desaturate bright highlights like [constant TONE_MAPPER_ACES] and [constant TONE_MAPPER_AGX].
+		</constant>
 		<constant name="FOG_MODE_EXPONENTIAL" value="0" enum="FogMode">
 			Use a physically-based fog model defined primarily by fog density.
 		</constant>
