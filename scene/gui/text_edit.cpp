@@ -8193,7 +8193,7 @@ void TextEdit::_caret_changed(int p_caret) {
 		return;
 	}
 
-	if (is_inside_tree()) {
+	if (is_inside_tree() && !is_blocking_signals()) {
 		callable_mp(this, &TextEdit::_emit_caret_changed).call_deferred();
 	}
 	caret_pos_dirty = true;
