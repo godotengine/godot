@@ -157,9 +157,6 @@ class ResourceImporterScene : public ResourceImporter {
 	static Vector<Ref<EditorSceneFormatImporter>> scene_importers;
 	static Vector<Ref<EditorScenePostImportPlugin>> post_importer_plugins;
 
-	static ResourceImporterScene *scene_singleton;
-	static ResourceImporterScene *animation_singleton;
-
 	enum LightBakeMode {
 		LIGHT_BAKE_DISABLED,
 		LIGHT_BAKE_STATIC,
@@ -238,8 +235,6 @@ class ResourceImporterScene : public ResourceImporter {
 
 public:
 	static const String material_extension[3];
-	static ResourceImporterScene *get_scene_singleton() { return scene_singleton; }
-	static ResourceImporterScene *get_animation_singleton() { return animation_singleton; }
 
 	static void add_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin, bool p_first_priority = false);
 	static void remove_post_importer_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin);
@@ -296,14 +291,17 @@ public:
 	void _optimize_animations(AnimationPlayer *anim, float p_max_vel_error, float p_max_ang_error, int p_prc_error);
 	void _compress_animations(AnimationPlayer *anim, int p_page_size_kb);
 
+	Error _save_scene_as_mesh_library(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags);
+	Error _save_scene_as_single_mesh(const String &p_source_file, const String &p_save_path, Node *p_godot_scene, const HashMap<StringName, Variant> &p_options, int p_flags);
+
 	Node *pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options);
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
 	virtual bool has_advanced_options() const override;
 	virtual void show_advanced_options(const String &p_path) override;
 
-	ResourceImporterScene(const String &p_scene_import_type = "PackedScene", bool p_singleton = false);
-	~ResourceImporterScene();
+	ResourceImporterScene(const String &p_scene_import_type = "PackedScene");
+	~ResourceImporterScene() {}
 
 	template <typename M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
