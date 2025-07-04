@@ -55,7 +55,7 @@ static inline void setup_http_request(HTTPRequest *request) {
 	request->set_https_proxy(proxy_host, proxy_port);
 }
 
-void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
+void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, const String &p_icon_url, bool p_template_only) {
 	title_text = p_title;
 	title->set_text(title_text);
 	title->set_tooltip_text(title_text);
@@ -65,6 +65,9 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	author->set_text(p_author);
 	author_id = p_author_id;
 	price->set_text(p_cost);
+	icon_url = p_icon_url;
+	template_only = p_template_only;
+	_update_favorite();
 }
 
 // TODO: Refactor this method to use the TextServer.
@@ -95,6 +98,8 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 			category->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
 			author->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
 			price->add_theme_color_override(SceneStringName(font_color), Color(0.5, 0.5, 0.5));
+			favorite->add_theme_icon_override(SNAME("checked"), get_editor_theme_icon(SNAME("Favorites")));
+			favorite->add_theme_icon_override(SNAME("unchecked"), get_editor_theme_icon(SNAME("NonFavorite")));
 
 			if (author->get_default_cursor_shape() == CURSOR_ARROW) {
 				// Disable visible feedback if author link isn't clickable.
@@ -115,6 +120,43 @@ void EditorAssetLibraryItem::_category_clicked() {
 
 void EditorAssetLibraryItem::_author_clicked() {
 	emit_signal(SNAME("author_selected"), author->get_text());
+}
+
+void EditorAssetLibraryItem::_favorite_toggled(bool p_toggled) {
+	Dictionary favorites = EDITOR_GET("asset_library/favorites");
+	if (favorites.has(asset_id)) {
+		favorites.erase(asset_id);
+	} else {
+		Dictionary item;
+		item["asset_id"] = asset_id;
+		item["category_id"] = category_id;
+		item["author_id"] = author_id;
+		item["title_text"] = title_text;
+		item["category"] = category->get_text();
+		item["author"] = author->get_text();
+		item["price"] = price->get_text();
+		item["icon_url"] = icon_url;
+		item["template_only"] = template_only;
+		favorites[asset_id] = item;
+	}
+	//EditorSettings::get_singleton()->set_setting("asset_library/favorites", favorites);
+	EditorSettings::get_singleton()->mark_setting_changed("asset_library/favorites");
+	EditorSettings::get_singleton()->emit_signal(SNAME("settings_changed"));
+}
+
+void EditorAssetLibraryItem::_update_favorite() {
+	Dictionary favorites = EDITOR_GET("asset_library/favorites");
+	favorite->set_pressed_no_signal(favorites.has(asset_id));
+}
+
+void EditorAssetLibraryItem::_editor_settings_changed() {
+	PackedStringArray changed_settings = EditorSettings::get_singleton()->get_changed_settings();
+	for (String setting : changed_settings) {
+		if (setting == "asset_library/favorites") {
+			_update_favorite();
+			break;
+		}
+	}
 }
 
 void EditorAssetLibraryItem::_bind_methods() {
@@ -144,6 +186,11 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	hb->add_child(vb);
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+	favorite = memnew(CheckButton);
+	favorite->connect("toggled", callable_mp(this, &EditorAssetLibraryItem::_favorite_toggled));
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorAssetLibraryItem::_editor_settings_changed));
+	hb->add_child(favorite);
 
 	title = memnew(LinkButton);
 	title->set_accessibility_name(TTRC("Title"));
@@ -278,12 +325,12 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_icon_url, const String &p_sha256_hash, bool p_template_only) {
 	asset_id = p_asset_id;
 	title = p_title;
 	download_url = p_download_url;
 	sha256 = p_sha256_hash;
-	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_cost);
+	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_cost, p_icon_url, p_template_only);
 	description->clear();
 	description->add_text(TTR("Version:") + " " + p_version_string + "\n");
 	description->add_text(TTR("Contents:") + " ");
@@ -1397,7 +1444,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem(true));
 				asset_items->add_child(item);
-				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
+				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r.get("icon_url", ""), templates_only);
 				item->clamp_width(asset_items_column_width);
 				item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
 				item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
@@ -1437,7 +1484,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			add_child(description);
 			description->connect(SceneStringName(confirmed), callable_mp(this, &EditorAssetLibrary::_install_asset));
 
-			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
+			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r.get("icon_url", ""), r["download_hash"], templates_only);
 
 			EditorAssetLibraryItemDownload *download_item = _get_asset_in_progress(description->get_asset_id());
 			if (download_item) {
@@ -1507,6 +1554,56 @@ void EditorAssetLibrary::_asset_open() {
 	asset_open->popup_file_dialog();
 }
 
+void EditorAssetLibrary::_favorites_open() {
+	for (Variant &c : favorites_vbox->get_children()) {
+		Node *child = Object::cast_to<Node>(c);
+		child->queue_free();
+	}
+
+	Dictionary items = EDITOR_GET("asset_library/favorites");
+	for (Variant key : items.keys()) {
+		ERR_CONTINUE(key.get_type() != Variant::Type::INT);
+
+		Variant item = items[key];
+		if (item.get_type() == Variant::Type::DICTIONARY) {
+			Dictionary d = item;
+
+			ERR_CONTINUE(!d.has("title_text"));
+			ERR_CONTINUE(!d.has("asset_id"));
+			ERR_CONTINUE(!d.has("category"));
+			ERR_CONTINUE(!d.has("category_id"));
+			ERR_CONTINUE(!d.has("author"));
+			ERR_CONTINUE(!d.has("author_id"));
+			ERR_CONTINUE(!d.has("price"));
+			ERR_CONTINUE(!d.has("template_only"));
+
+			if ((bool)d["template_only"] != templates_only) {
+				continue;
+			}
+
+			EditorAssetLibraryItem *asset_item = memnew(EditorAssetLibraryItem(true));
+			asset_item->configure(
+					d["title_text"],
+					d["asset_id"],
+					d["category"],
+					d["category_id"],
+					d["author"],
+					d["author_id"],
+					d["price"],
+					d.get("icon_url", ""),
+					d["template_only"]);
+			asset_item->connect("asset_selected", callable_mp(this, &EditorAssetLibrary::_select_asset));
+			asset_item->connect("author_selected", callable_mp(this, &EditorAssetLibrary::_select_author));
+			asset_item->connect("category_selected", callable_mp(this, &EditorAssetLibrary::_select_category));
+			favorites_vbox->add_child(asset_item);
+
+			ERR_CONTINUE(!d.has("icon_url"));
+			_request_image(asset_item->get_instance_id(), key, d["icon_url"], ImageType::IMAGE_QUEUE_ICON, 0);
+		}
+	}
+	favorites_dialog->popup_centered(Size2i(200, 200));
+}
+
 void EditorAssetLibrary::_manage_plugins() {
 	ProjectSettingsEditor::get_singleton()->popup_project_settings(true);
 	ProjectSettingsEditor::get_singleton()->set_plugins_page();
@@ -1528,7 +1625,7 @@ void EditorAssetLibrary::_install_external_asset(String p_zip_path, String p_tit
 }
 
 void EditorAssetLibrary::_update_asset_items_columns() {
-	int new_columns = get_size().x / (450.0 * EDSCALE);
+	int new_columns = get_size().x / (482.0 * EDSCALE);
 	new_columns = MAX(1, new_columns);
 
 	if (new_columns != asset_items->get_columns()) {
@@ -1632,6 +1729,28 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	plugins->set_text(TTRC("Plugins..."));
 	search_hb->add_child(plugins);
 	plugins->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_manage_plugins));
+
+	Button *favorites = memnew(Button);
+	favorites->set_text(TTR("Favorites..."));
+	search_hb->add_child(favorites);
+	favorites->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_favorites_open));
+
+	favorites_dialog = memnew(AcceptDialog);
+	favorites_dialog->set_title(TTR("Favorite Assets"));
+	add_child(favorites_dialog);
+
+	Panel *panel = memnew(Panel);
+	favorites_dialog->add_child(panel);
+
+	ScrollContainer *f_scroll = memnew(ScrollContainer);
+	f_scroll->set_custom_minimum_size(Size2(400, 400));
+	f_scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	f_scroll->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	favorites_dialog->add_child(f_scroll);
+
+	favorites_vbox = memnew(VBoxContainer);
+	favorites_vbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	f_scroll->add_child(favorites_vbox);
 
 	if (p_templates_only) {
 		open_asset->hide();

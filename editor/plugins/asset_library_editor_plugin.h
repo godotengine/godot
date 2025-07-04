@@ -33,6 +33,8 @@
 #include "editor/editor_asset_installer.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/check_button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
@@ -57,15 +59,21 @@ class EditorAssetLibraryItem : public PanelContainer {
 	LinkButton *category = nullptr;
 	LinkButton *author = nullptr;
 	Label *price = nullptr;
+	CheckButton *favorite = nullptr;
 
 	String title_text;
+	String icon_url;
 	int asset_id = 0;
 	int category_id = 0;
 	int author_id = 0;
+	bool template_only = false;
 
 	void _asset_clicked();
 	void _category_clicked();
 	void _author_clicked();
+	void _favorite_toggled(bool p_toggled);
+	void _update_favorite();
+	void _editor_settings_changed();
 
 	void set_image(int p_type, int p_index, const Ref<Texture2D> &p_image);
 
@@ -74,7 +82,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost);
+	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, const String &p_icon_url, bool p_template_only);
 
 	void clamp_width(int p_max_width);
 
@@ -118,7 +126,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash);
+	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_icon_url, const String &p_sha256_hash, bool p_template_only);
 	void add_preview(int p_id, bool p_video, const String &p_url);
 
 	String get_title() { return title; }
@@ -180,8 +188,11 @@ class EditorAssetLibrary : public PanelContainer {
 
 	EditorFileDialog *asset_open = nullptr;
 	EditorAssetInstaller *asset_installer = nullptr;
+	AcceptDialog *favorites_dialog = nullptr;
+	VBoxContainer *favorites_vbox = nullptr;
 
 	void _asset_open();
+	void _favorites_open();
 	void _asset_file_selected(const String &p_file);
 	void _update_repository_options();
 
