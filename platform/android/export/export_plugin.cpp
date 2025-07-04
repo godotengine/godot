@@ -2198,6 +2198,12 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		return true;
 	}
 
+	if (p_option == "gradle_build/export_format" ||
+			p_option == "gradle_build/min_sdk" ||
+			p_option == "gradle_build/target_sdk") {
+		return p_preset->get("gradle_build/use_gradle_build").operator bool();
+	}
+
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option == "graphics/opengl_debug" ||
 			p_option == "gradle_build/custom_theme_attributes" ||
@@ -2252,9 +2258,16 @@ bool EditorExportPlatformAndroid::should_update_export_options() {
 	if (android_plugins_changed.is_set()) {
 		// don't clear unless we're reporting true, to avoid race
 		android_plugins_changed.clear();
+		_should_update_export_options = false;
 		return true;
 	}
 #endif // DISABLE_DEPRECATED
+
+	if (_should_update_export_options) {
+		_should_update_export_options = false;
+		return true;
+	}
+
 	return false;
 }
 
