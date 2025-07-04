@@ -92,6 +92,14 @@
 				Returns the translation domain with the specified name. An empty translation domain will be created and added if it does not exist.
 			</description>
 		</method>
+		<method name="get_all_domains" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="include_internal" type="bool" />
+			<description>
+				Returns array of known domains created by [method get_or_add_domain].
+				[b]Note:[/b] It will only return custom domains, excluding the main domain.
+			</description>
+		</method>
 		<method name="get_script_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="script" type="String" />
