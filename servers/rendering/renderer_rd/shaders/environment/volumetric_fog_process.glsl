@@ -2,6 +2,8 @@
 
 #version 450
 
+#pragma use_vulkan_memory_model
+
 #VERSION_DEFINES
 
 #ifdef MODE_DENSITY

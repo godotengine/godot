@@ -309,9 +309,23 @@ public:
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDCommandBuffer {
 private:
+#pragma mark - Common State
+
+	// From RenderingDevice
+	static constexpr uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
+
 	RenderingDeviceDriverMetal *device_driver = nullptr;
 	id<MTLCommandQueue> queue = nil;
 	id<MTLCommandBuffer> commandBuffer = nil;
+	bool state_begin = false;
+
+	_FORCE_INLINE_ id<MTLCommandBuffer> command_buffer() {
+		DEV_ASSERT(state_begin);
+		if (commandBuffer == nil) {
+			commandBuffer = queue.commandBuffer;
+		}
+		return commandBuffer;
+	}
 
 	void _end_compute_dispatch();
 	void _end_blit();
@@ -325,6 +339,11 @@ private:
 	uint32_t _populate_vertices(simd::float4 *p_vertices, uint32_t p_index, Rect2i const &p_rect, Size2i p_fb_size);
 	void _end_render_pass();
 	void _render_clear_render_area();
+
+#pragma mark - Compute
+
+	void _compute_set_dirty_state();
+	void _compute_bind_uniform_sets();
 
 public:
 	MDCommandBufferStateType type = MDCommandBufferStateType::None;
@@ -349,18 +368,18 @@ public:
 		LocalVector<NSUInteger> vertex_offsets;
 		ResourceUsageMap resource_usage;
 		// clang-format off
-		enum DirtyFlag: uint8_t {
-			DIRTY_NONE     = 0b0000'0000,
-			DIRTY_PIPELINE = 0b0000'0001, //! pipeline state
-			DIRTY_UNIFORMS = 0b0000'0010, //! uniform sets
-			DIRTY_DEPTH    = 0b0000'0100, //! depth / stencil state
-			DIRTY_VERTEX   = 0b0000'1000, //! vertex buffers
-			DIRTY_VIEWPORT = 0b0001'0000, //! viewport rectangles
-			DIRTY_SCISSOR  = 0b0010'0000, //! scissor rectangles
-			DIRTY_BLEND    = 0b0100'0000, //! blend state
-			DIRTY_RASTER   = 0b1000'0000, //! encoder state like cull mode
-
-			DIRTY_ALL      = 0xff,
+		enum DirtyFlag: uint16_t {
+			DIRTY_NONE     = 0,
+			DIRTY_PIPELINE = 1 << 0, //! pipeline state
+			DIRTY_UNIFORMS = 1 << 1, //! uniform sets
+			DIRTY_PUSH     = 1 << 2, //! push constants
+			DIRTY_DEPTH    = 1 << 3, //! depth / stencil state
+			DIRTY_VERTEX   = 1 << 4, //! vertex buffers
+			DIRTY_VIEWPORT = 1 << 5, //! viewport rectangles
+			DIRTY_SCISSOR  = 1 << 6, //! scissor rectangles
+			DIRTY_BLEND    = 1 << 7, //! blend state
+			DIRTY_RASTER   = 1 << 8, //! encoder state like cull mode
+			DIRTY_ALL      = (1 << 9) - 1,
 		};
 		// clang-format on
 		BitField<DirtyFlag> dirty = DIRTY_NONE;
@@ -368,6 +387,9 @@ public:
 		LocalVector<MDUniformSet *> uniform_sets;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
+		uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
+		uint32_t push_constant_data_len = 0;
+		uint32_t push_constant_bindings[2] = { 0 };
 
 		_FORCE_INLINE_ void reset();
 		void end_encoding();
@@ -422,6 +444,13 @@ public:
 			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
 		}
 
+		_FORCE_INLINE_ void mark_push_constants_dirty() {
+			if (push_constant_data_len == 0) {
+				return;
+			}
+			dirty.set_flag(DirtyFlag::DIRTY_PUSH);
+		}
+
 		_FORCE_INLINE_ void mark_blend_dirty() {
 			if (!blend_constants.has_value()) {
 				return;
@@ -464,16 +493,46 @@ public:
 		MDComputePipeline *pipeline = nullptr;
 		id<MTLComputeCommandEncoder> encoder = nil;
 		ResourceUsageMap resource_usage;
-		_FORCE_INLINE_ void reset() {
-			pipeline = nil;
-			encoder = nil;
-			// Keep the keys, as they are likely to be used again.
-			for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
-				kv.value.clear();
+		// clang-format off
+		enum DirtyFlag: uint16_t {
+			DIRTY_NONE     = 0,
+			DIRTY_PIPELINE = 1 << 0, //! pipeline state
+			DIRTY_UNIFORMS = 1 << 1, //! uniform sets
+			DIRTY_PUSH     = 1 << 2, //! push constants
+			DIRTY_ALL      = (1 << 3) - 1,
+		};
+		// clang-format on
+		BitField<DirtyFlag> dirty = DIRTY_NONE;
+
+		LocalVector<MDUniformSet *> uniform_sets;
+		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
+		uint64_t uniform_set_mask = 0;
+		uint8_t push_constant_data[MAX_PUSH_CONSTANT_SIZE];
+		uint32_t push_constant_data_len = 0;
+		uint32_t push_constant_bindings[1] = { 0 };
+
+		_FORCE_INLINE_ void reset();
+		void end_encoding();
+
+		_FORCE_INLINE_ void mark_uniforms_dirty(void) {
+			if (uniform_sets.is_empty()) {
+				return;
 			}
+			for (uint32_t i = 0; i < uniform_sets.size(); i++) {
+				if (uniform_sets[i] != nullptr) {
+					uniform_set_mask |= 1 << i;
+				}
+			}
+			dirty.set_flag(DirtyFlag::DIRTY_UNIFORMS);
 		}
 
-		void end_encoding();
+		_FORCE_INLINE_ void mark_push_constants_dirty() {
+			if (push_constant_data_len == 0) {
+				return;
+			}
+			dirty.set_flag(DirtyFlag::DIRTY_PUSH);
+		}
+
 	} compute;
 
 	// State specific to a blit pass.
@@ -496,6 +555,7 @@ public:
 	void encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDescriptor *p_desc, NSString *p_label);
 
 	void bind_pipeline(RDD::PipelineID p_pipeline);
+	void encode_push_constant_data(RDD::ShaderID p_shader, VectorView<uint32_t> p_data);
 
 #pragma mark - Render Commands
 
@@ -661,8 +721,6 @@ public:
 	Vector<UniformSet> sets;
 	bool uses_argument_buffers = true;
 
-	virtual void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) = 0;
-
 	MDShader(CharString p_name, Vector<UniformSet> p_sets, bool p_uses_argument_buffers) :
 			name(p_name), sets(p_sets), uses_argument_buffers(p_uses_argument_buffers) {}
 	virtual ~MDShader() = default;
@@ -671,14 +729,12 @@ public:
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDComputeShader final : public MDShader {
 public:
 	struct {
-		uint32_t binding = -1;
+		int32_t binding = -1;
 		uint32_t size = 0;
 	} push_constants;
 	MTLSize local = {};
 
 	MDLibrary *kernel;
-
-	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
 	MDComputeShader(CharString p_name, Vector<UniformSet> p_sets, bool p_uses_argument_buffers, MDLibrary *p_kernel);
 };
@@ -699,8 +755,6 @@ public:
 
 	MDLibrary *vert;
 	MDLibrary *frag;
-
-	void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) final;
 
 	MDRenderShader(CharString p_name,
 			Vector<UniformSet> p_sets,
