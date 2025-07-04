@@ -806,7 +806,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
-	Vector2 mpos = edited_layer->get_local_mouse_position();
+	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	bool drawing_rect = false;
 
@@ -3129,7 +3129,7 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 	Ref<TileSet> tile_set = edited_layer->get_tile_set();
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
-	Vector2 mpos = edited_layer->get_local_mouse_position();
+	Vector2 mpos = xform.affine_inverse().xform(CanvasItemEditor::get_singleton()->get_viewport_control()->get_local_mouse_position());
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	bool drawing_rect = false;
 

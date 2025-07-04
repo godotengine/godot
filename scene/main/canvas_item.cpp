@@ -162,7 +162,7 @@ void CanvasItem::_redraw_callback() {
 Transform2D CanvasItem::get_global_transform_with_canvas() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (canvas_layer) {
-		return canvas_layer->get_final_transform() * get_global_transform();
+		return canvas_layer->get_transform() * get_global_transform();
 	} else if (is_inside_tree()) {
 		return get_viewport()->get_canvas_transform() * get_global_transform();
 	} else {
