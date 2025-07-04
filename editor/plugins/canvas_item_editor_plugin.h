@@ -358,6 +358,7 @@ private:
 	Point2 drag_from;
 	Point2 drag_to;
 	Point2 drag_rotation_center;
+	BitField<int> handles_in_range = 0;
 	List<CanvasItem *> drag_selection;
 	int dragged_guide_index = -1;
 	Point2 dragged_guide_pos;
