@@ -517,6 +517,9 @@ private:
 	}
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path, const Callable &p_callback);
+	void _file_dialog_thumbnail_callback(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata);
+
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
 	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
