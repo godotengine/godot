@@ -303,6 +303,7 @@
 		<member name="ssr_enabled" type="bool" setter="set_ssr_enabled" getter="is_ssr_enabled" default="false">
 			If [code]true[/code], screen-space reflections are enabled. Screen-space reflections are more accurate than reflections from [VoxelGI]s or [ReflectionProbe]s, but are slower and can't reflect surfaces occluded by others.
 			[b]Note:[/b] SSR is only supported in the Forward+ rendering method, not Mobile or Compatibility.
+			[b]Note:[/b] SSR is not supported on viewports that have a transparent background (where [member Viewport.transparent_bg] is [code]true[/code]).
 		</member>
 		<member name="ssr_fade_in" type="float" setter="set_ssr_fade_in" getter="get_ssr_fade_in" default="0.15">
 			The fade-in distance for screen-space reflections. Affects the area from the reflected material to the screen-space reflection. Only positive values are valid (negative values will be clamped to [code]0.0[/code]).
