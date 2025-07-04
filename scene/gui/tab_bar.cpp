@@ -750,7 +750,7 @@ void TabBar::set_tab_count(int p_count) {
 
 		_update_cache();
 		_ensure_no_over_offset();
-		if (scroll_to_selected) {
+		if (scroll_to_selected && (get_scroll_on_tab_close() || !get_is_closing_tab())) {
 			ensure_tab_visible(current);
 		}
 	}
@@ -795,7 +795,7 @@ void TabBar::set_current_tab(int p_current) {
 	emit_signal(SNAME("tab_selected"), current);
 
 	_update_cache();
-	if (scroll_to_selected) {
+	if (scroll_to_selected && (get_scroll_on_tab_close() || !get_is_closing_tab())) {
 		ensure_tab_visible(current);
 	}
 	queue_accessibility_update();
@@ -889,7 +889,7 @@ void TabBar::set_tab_title(int p_tab, const String &p_title) {
 	_shape(p_tab);
 	_update_cache();
 	_ensure_no_over_offset();
-	if (scroll_to_selected) {
+	if (scroll_to_selected && (get_scroll_on_tab_close() || !get_is_closing_tab())) {
 		ensure_tab_visible(current);
 	}
 	queue_accessibility_update();
@@ -1546,6 +1546,14 @@ void TabBar::_move_tab_from(TabBar *p_from_tabbar, int p_from_index, int p_to_in
 	update_minimum_size();
 }
 
+bool TabBar::get_is_closing_tab() const {
+	return is_closing_tab;
+}
+
+void TabBar::set_is_closing_tab(bool closing) {
+	is_closing_tab = closing;
+}
+
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	if (tabs.is_empty()) {
 		return -1;
@@ -1937,6 +1945,14 @@ bool TabBar::get_scroll_to_selected() const {
 	return scroll_to_selected;
 }
 
+void TabBar::set_scroll_on_tab_close(bool p_enabled) {
+	scroll_on_tab_close = p_enabled;
+}
+
+bool TabBar::get_scroll_on_tab_close() const {
+	return scroll_on_tab_close;
+}
+
 void TabBar::set_select_with_rmb(bool p_enabled) {
 	select_with_rmb = p_enabled;
 }
@@ -2013,6 +2029,10 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabBar::get_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("set_scroll_to_selected", "enabled"), &TabBar::set_scroll_to_selected);
 	ClassDB::bind_method(D_METHOD("get_scroll_to_selected"), &TabBar::get_scroll_to_selected);
+	ClassDB::bind_method(D_METHOD("set_scroll_on_tab_close", "enabled"), &TabBar::set_scroll_on_tab_close);
+	ClassDB::bind_method(D_METHOD("get_scroll_on_tab_close"), &TabBar::get_scroll_on_tab_close);
+	ClassDB::bind_method(D_METHOD("set_is_closing_tab", "enabled"), &TabBar::set_is_closing_tab);
+	ClassDB::bind_method(D_METHOD("get_is_closing_tab"), &TabBar::get_is_closing_tab);
 	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &TabBar::set_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("set_deselect_enabled", "enabled"), &TabBar::set_deselect_enabled);
@@ -2038,6 +2058,8 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_on_tab_close"), "set_scroll_on_tab_close", "get_scroll_on_tab_close");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_closing_tab"), "set_is_closing_tab", "get_is_closing_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
 
@@ -2099,6 +2121,8 @@ TabBar::TabBar() {
 	set_focus_mode(FOCUS_ACCESSIBILITY);
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	set_focus_mode(FOCUS_ALL);
+	set_scroll_on_tab_close(true);
+	set_is_closing_tab(false);
 	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
 
 	property_helper.setup_for_instance(base_property_helper, this);

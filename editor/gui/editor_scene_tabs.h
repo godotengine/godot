@@ -102,6 +102,7 @@ public:
 	int get_current_tab() const;
 
 	void update_scene_tabs();
+	void set_is_closing_tab(bool closing);
 
 	EditorSceneTabs();
 };
