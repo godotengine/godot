@@ -32,8 +32,9 @@
 
 #include "core/variant/typed_array.h"
 
-void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByteArray> &p_data) {
-	Vector<PackedByteArray> data_stored;
+void OggPacketSequence::push_page(int64_t p_granule_pos, const LocalVector<PackedByteArray, int64_t> &p_data) {
+	LocalVector<PackedByteArray, int64_t> data_stored;
+	data_stored.reserve(p_data.size());
 	for (int i = 0; i < p_data.size(); i++) {
 		data_stored.push_back(p_data[i]);
 	}
@@ -44,42 +45,45 @@ void OggPacketSequence::push_page(int64_t p_granule_pos, const Vector<PackedByte
 
 void OggPacketSequence::set_packet_data(const TypedArray<Array> &p_data) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
-	page_data.clear();
+	page_data.resize(p_data.size());
 	for (int page_idx = 0; page_idx < p_data.size(); page_idx++) {
-		// Push a new page. We cleared the vector so this will be at index `page_idx`.
-		page_data.push_back(Vector<PackedByteArray>());
 		TypedArray<PackedByteArray> this_page_data = p_data[page_idx];
+		page_data[page_idx].resize(this_page_data.size());
 		for (int packet = 0; packet < this_page_data.size(); packet++) {
-			page_data.write[page_idx].push_back(this_page_data[packet]);
+			page_data[page_idx][packet] = this_page_data[packet];
 		}
 	}
 }
 
 TypedArray<Array> OggPacketSequence::get_packet_data() const {
 	TypedArray<Array> ret;
-	for (const Vector<PackedByteArray> &page : page_data) {
+	ERR_FAIL_COND_V(ret.resize(page_data.size()), ret);
+	for (uint32_t i = 0; i < page_data.size(); i++) {
+		const LocalVector<PackedByteArray, int64_t> &page = page_data[i];
 		Array page_variant;
-		for (const PackedByteArray &packet : page) {
-			page_variant.push_back(packet);
+		ERR_FAIL_COND_V(page_variant.resize(page.size()), TypedArray<Array>());
+		for (int j = 0; j < page.size(); j++) {
+			page_variant[j] = page[j];
 		}
-		ret.push_back(page_variant);
+		ret[i] = page_variant;
 	}
 	return ret;
 }
 
 void OggPacketSequence::set_packet_granule_positions(const PackedInt64Array &p_granule_positions) {
 	data_version++; // Update the data version so old playbacks know that they can't rely on us anymore.
-	page_granule_positions.clear();
+	page_granule_positions.resize(p_granule_positions.size());
 	for (int page_idx = 0; page_idx < p_granule_positions.size(); page_idx++) {
 		int64_t granule_pos = p_granule_positions[page_idx];
-		page_granule_positions.push_back(granule_pos);
+		page_granule_positions[page_idx] = granule_pos;
 	}
 }
 
 PackedInt64Array OggPacketSequence::get_packet_granule_positions() const {
 	PackedInt64Array ret;
-	for (int64_t granule_pos : page_granule_positions) {
-		ret.push_back(granule_pos);
+	ERR_FAIL_COND_V(ret.resize(page_granule_positions.size()), ret);
+	for (int i = 0; i < page_granule_positions.size(); i++) {
+		ret.write[i] = page_granule_positions[i];
 	}
 	return ret;
 }
