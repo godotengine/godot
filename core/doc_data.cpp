@@ -155,6 +155,10 @@ void DocData::method_doc_from_methodinfo(DocData::MethodDoc &p_method, const Met
 		p_method.qualifiers += "static";
 	}
 
+	if (p_methodinfo.flags & METHOD_FLAG_ACCEPTS_TYPE) {
+		p_method.qualifiers += "typed";
+	}
+
 	return_doc_from_retinfo(p_method, p_methodinfo.return_val);
 
 	for (int64_t i = 0; i < p_methodinfo.arguments.size(); ++i) {

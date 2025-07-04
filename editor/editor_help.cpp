@@ -156,6 +156,8 @@ static void _add_qualifiers_to_rt(const String &p_qualifiers, RichTextLabel *p_r
 			hint = TTR("This method does not need an instance to be called.\nIt can be called directly using the class name.");
 		} else if (qualifier == "abstract") {
 			hint = TTR("This method must be implemented to complete the abstract class.");
+		} else if (qualifier == "typed") {
+			hint = TTR("This method can receive a type.");
 		}
 
 		p_rt->add_text(" ");
@@ -543,6 +545,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	const bool is_vararg = p_method.qualifiers.contains("vararg");
+	const bool is_typed_container_constructor = p_method.qualifiers.contains("typed");
 
 	if (p_overview) {
 		class_desc->push_cell();
@@ -552,6 +555,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	_add_type(p_method.return_type, p_method.return_enum, p_method.return_is_bitfield);
+	if (is_typed_container_constructor) {
+		class_desc->push_hint(TTR("Returns a typed Array."));
+		class_desc->add_text("[Variant]");
+		class_desc->pop();
+	}
 
 	if (p_overview) {
 		class_desc->pop(); // paragraph
@@ -568,8 +576,13 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	class_desc->push_color(theme_cache.headline_color);
-	class_desc->add_text(p_method.name);
-	class_desc->pop(); // color
+	_add_text(p_method.name);
+	class_desc->pop();
+	if (is_typed_container_constructor) {
+		class_desc->push_hint(TTR("Converts `base` array to a new typed array."));
+		class_desc->add_text("[Variant]");
+		class_desc->pop();
+	}
 
 	if (p_overview && is_documented) {
 		class_desc->pop(); // meta

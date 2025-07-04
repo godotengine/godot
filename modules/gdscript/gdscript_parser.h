@@ -503,6 +503,7 @@ public:
 		StringName function_name;
 		bool is_super = false;
 		bool is_static = false;
+		TypeNode *typed_array_conversion_type = nullptr;
 
 		CallNode() {
 			type = CALL;
