@@ -3712,7 +3712,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::INT: {
 			if (p_hint == PROPERTY_HINT_ENUM) {
 				EditorPropertyEnum *editor = memnew(EditorPropertyEnum);
-				Vector<String> options = p_hint_text.split(",");
+				Vector<String> options;
+				if (p_hint_text.begins_with("*")) {
+					options = ClassDB::get_enum_display_names(p_object->get_class_name(), p_hint_text.substr(1));
+				} else {
+					options = p_hint_text.split(",", false);
+				}
 				editor->setup(options);
 				return editor;
 
@@ -3803,7 +3808,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::STRING: {
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",", false);
+				Vector<String> options;
+				if (p_hint_text.begins_with("*")) {
+					options = ClassDB::get_enum_display_names(p_object->get_class_name(), p_hint_text.substr(1));
+				} else {
+					options = p_hint_text.split(",", false);
+				}
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
@@ -3958,7 +3968,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::STRING_NAME: {
 			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
-				Vector<String> options = p_hint_text.split(",", false);
+				Vector<String> options;
+				if (p_hint_text.begins_with("*")) {
+					options = ClassDB::get_enum_display_names(p_object->get_class_name(), p_hint_text.substr(1));
+				} else {
+					options = p_hint_text.split(",", false);
+				}
 				editor->setup(options, true, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_INPUT_NAME) {
