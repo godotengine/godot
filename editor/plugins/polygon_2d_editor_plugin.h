@@ -135,6 +135,7 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	int point_drag_index = -1;
 	bool is_dragging = false;
 	bool is_creating = false;
+	int hovered_point = -1;
 	Vector<int> polygon_create;
 	Action current_action = ACTION_CREATE;
 	Vector2 drag_from;
