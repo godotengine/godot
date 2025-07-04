@@ -38,7 +38,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 static const char *token_names[] = {

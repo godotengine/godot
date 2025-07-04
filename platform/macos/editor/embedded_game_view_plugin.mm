@@ -33,7 +33,7 @@
 #include "embedded_process_macos.h"
 
 #include "editor/editor_node.h"
-#include "editor/window_wrapper.h"
+#include "editor/gui/window_wrapper.h"
 
 HashMap<String, GameViewDebuggerMacOS::ParseMessageFunc> GameViewDebuggerMacOS::parse_message_handlers;
 
