@@ -642,6 +642,7 @@ public:
 
 	virtual WindowID get_focused_window() const override;
 
+	virtual bool _window_presentation_occluded(WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual bool window_can_draw(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual bool can_any_window_draw() const override;
