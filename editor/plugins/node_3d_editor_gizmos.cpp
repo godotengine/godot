@@ -821,7 +821,7 @@ void EditorNode3DGizmo::transform() {
 	_update_bvh();
 }
 
-void EditorNode3DGizmo::free() {
+void EditorNode3DGizmo::free_gizmo() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	ERR_FAIL_NULL(spatial_node);
 	ERR_FAIL_COND(!valid);

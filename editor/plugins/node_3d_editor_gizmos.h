@@ -134,7 +134,7 @@ public:
 	virtual void create() override;
 	virtual void transform() override;
 	virtual void redraw() override;
-	virtual void free() override;
+	virtual void free_gizmo() override;
 
 	virtual bool is_editable() const;
 
