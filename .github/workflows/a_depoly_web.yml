@@ -54,6 +54,7 @@ jobs:
     name: 🌐 Web Editor Build
     if: contains(inputs.platforms, 'web') || contains(inputs.platforms, 'all')
     runs-on: ubuntu-22.04
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,14 +91,14 @@ jobs:
       - name: Build Web Editor
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: platform=web target=editor ${{ inputs.common_args }} ${{ inputs.editor_args }}
+          sconsflags: platform=web target=editor threads=no ${{ inputs.common_args }} ${{ inputs.editor_args }}
           platform: web
           target: editor
 
       - name: Prepare Files
         run: |
           mkdir -p artifacts
-          cp bin/godot.web.editor.wasm32.zip artifacts/editor-web.zip
+          cp bin/godot.web.editor.wasm32.nothreads.zip artifacts/editor-web.zip
 
       - name: Upload Web Editor Build Results
         uses: actions/upload-artifact@v4
@@ -119,6 +120,7 @@ jobs:
     name: 🌐 Web Template Build
     if: contains(inputs.platforms, 'web') || contains(inputs.platforms, 'all')
     runs-on: ubuntu-22.04
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -184,6 +186,7 @@ jobs:
     name: 🌐 Web Template Build (threads)
     if: contains(inputs.platforms, 'web') || contains(inputs.platforms, 'all')
     runs-on: ubuntu-22.04
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -220,7 +223,7 @@ jobs:
       - name: Build Web Template Release
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: platform=web target=template_release ${{ inputs.common_args }} ${{ inputs.release_args }}
+          sconsflags: platform=web target=template_release threads=yes ${{ inputs.common_args }} ${{ inputs.release_args }}
           platform: web
           target: template_release
 
@@ -232,7 +235,7 @@ jobs:
       - name: Upload Web Template Build Results
         uses: actions/upload-artifact@v4
         with:
-          name: web-template-${{ inputs.version }}
+          name: web-template-threads-${{ inputs.version }}
           path: artifacts/web-threads.zip
           retention-days: 14
 

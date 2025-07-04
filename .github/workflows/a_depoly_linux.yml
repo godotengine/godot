@@ -50,12 +50,10 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        arch: [x86_64, arm64]
+        arch: [x86_64]
         include:
           - arch: x86_64
             artifact_suffix: x86_64
-          - arch: arm64
-            artifact_suffix: arm64
 
     steps:
       - name: Checkout
@@ -114,12 +112,10 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        arch: [x86_64, arm64]
+        arch: [x86_64]
         include:
           - arch: x86_64
             artifact_suffix: x86_64
-          - arch: arm64
-            artifact_suffix: arm64
 
     steps:
       - name: Checkout
