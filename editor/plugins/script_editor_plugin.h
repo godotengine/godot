@@ -334,6 +334,7 @@ class ScriptEditor : public PanelContainer {
 	PopupMenu *recent_scripts = nullptr;
 	PopupMenu *theme_submenu = nullptr;
 
+	Button *resize_handle = nullptr;
 	Button *help_search = nullptr;
 	Button *site_search = nullptr;
 	Button *make_floating = nullptr;
@@ -419,6 +420,7 @@ class ScriptEditor : public PanelContainer {
 	void _add_recent_script(const String &p_path);
 	void _update_recent_scripts();
 	void _open_recent_script(int p_idx);
+	void _on_resize_handle_gui_input(InputEvent *event);
 
 	void _show_error_dialog(const String &p_path);
 
@@ -601,6 +603,7 @@ public:
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
+	void set_resize_handle_visible(bool p_visible) { resize_handle->set_visible(p_visible); }
 
 	void set_scene_root_script(Ref<Script> p_script);
 	Vector<Ref<Script>> get_open_scripts() const;

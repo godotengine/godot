@@ -76,7 +76,7 @@ public:
 	void select_next();
 	void select_prev();
 	void select_by_name(const String &p_name);
-	void select(int p_index);
+	void select(int p_index, bool force = false);
 	int get_selected_index() const;
 	int get_plugin_index(EditorPlugin *p_editor) const;
 	EditorPlugin *get_selected_plugin() const;
@@ -89,4 +89,10 @@ public:
 	void remove_main_plugin(EditorPlugin *p_editor);
 
 	EditorMainScreen();
+
+private:
+	Vector2 script_editor_size;
+	void on_main_screen_vbox_ready();
+	void on_script_editor_resize(InputEvent *event);
+	void resize_combine_editor();
 };
