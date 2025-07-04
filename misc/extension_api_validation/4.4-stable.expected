@@ -321,3 +321,10 @@ Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/a
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments': size changed value in new API, from 11 to 12.
 
 Optional argument added. Compatibility methods registered.
+
+
+GH-80519
+--------
+Validate extension JSON: Error: Field 'classes/EditorPlugin/methods/add_autoload_singleton/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument. Compatibility method registered.

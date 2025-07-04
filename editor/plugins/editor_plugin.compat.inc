@@ -38,9 +38,15 @@ void EditorPlugin::_add_control_to_dock_compat_88081(DockSlot p_slot, Control *p
 	return add_control_to_dock(p_slot, p_control, nullptr);
 }
 
+void EditorPlugin::_add_autoload_singleton_compat_80519(const String &p_name, const String &p_path) {
+	add_autoload_singleton(p_name, p_path);
+}
+
 void EditorPlugin::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_bottom_panel", "control", "title"), &EditorPlugin::_add_control_to_bottom_panel_compat_88081);
 	ClassDB::bind_compatibility_method(D_METHOD("add_control_to_dock", "slot", "control"), &EditorPlugin::_add_control_to_dock_compat_88081);
+
+	ClassDB::bind_compatibility_method(D_METHOD("add_autoload_singleton", "name", "path"), &EditorPlugin::_add_autoload_singleton_compat_80519);
 }
 
 #endif
