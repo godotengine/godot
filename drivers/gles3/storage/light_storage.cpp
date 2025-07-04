@@ -1032,6 +1032,7 @@ GLuint LightStorage::reflection_probe_instance_get_texture(RID p_instance) {
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
+	ERR_FAIL_COND_V(rpi->atlas_index < 0, 0);
 
 	return atlas->reflections[rpi->atlas_index].radiance;
 }
@@ -1043,6 +1044,8 @@ GLuint LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, i
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, 0);
+	ERR_FAIL_COND_V(rpi->atlas_index < 0, 0);
+
 	return atlas->reflections[rpi->atlas_index].fbos[p_index];
 }
 
