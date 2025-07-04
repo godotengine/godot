@@ -116,5 +116,18 @@
 				Clears all [InputEventAction] in the [InputMap] and load it anew from [ProjectSettings].
 			</description>
 		</method>
+		<method name="load_default">
+			<return type="void" />
+			<description>
+				Clears all [InputEventAction] in the [InputMap] and load it anew from default settings.
+			</description>
+		</method>
 	</methods>
+	<signals>
+		<signal name="default_loaded">
+			<description>
+				Emitted when the default [InputMap] has been loaded.
+			</description>
+		</signal>
+	</signals>
 </class>

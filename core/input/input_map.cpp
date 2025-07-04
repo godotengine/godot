@@ -54,6 +54,9 @@ void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("action_get_events", "action"), &InputMap::_action_get_events);
 	ClassDB::bind_method(D_METHOD("event_is_action", "event", "action", "exact_match"), &InputMap::event_is_action, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("load_from_project_settings"), &InputMap::load_from_project_settings);
+	ClassDB::bind_method(D_METHOD("load_default"), &InputMap::load_default);
+
+	ADD_SIGNAL(MethodInfo("default_loaded"));
 }
 
 /**
@@ -297,7 +300,18 @@ const HashMap<StringName, InputMap::Action> &InputMap::get_action_map() const {
 }
 
 void InputMap::load_from_project_settings() {
-	input_map.clear();
+	List<StringName> actions = get_actions();
+	for (const StringName &action : actions) {
+		Input::get_singleton()->action_release(action);
+	}
+
+
+	emit_signal("project_settings_loaded");
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()){
+		load_default();
+	}
+#endif
 
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
@@ -313,7 +327,11 @@ void InputMap::load_from_project_settings() {
 		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
 		Array events = action["events"];
 
+		if(has_action(name)){
+			erase_action(name);
+		}
 		add_action(name, deadzone);
+
 		for (int i = 0; i < events.size(); i++) {
 			Ref<InputEvent> event = events[i];
 			if (event.is_null()) {
@@ -876,6 +894,13 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins_with_featur
 }
 
 void InputMap::load_default() {
+	List<StringName> actions = get_actions();
+	for (const StringName &action : actions) {
+		Input::get_singleton()->action_release(action);
+	}
+
+	input_map.clear();
+
 	HashMap<String, List<Ref<InputEvent>>> builtins = get_builtins_with_feature_overrides_applied();
 
 	for (const KeyValue<String, List<Ref<InputEvent>>> &E : builtins) {
@@ -893,6 +918,8 @@ void InputMap::load_default() {
 			}
 		}
 	}
+
+	emit_signal("default_loaded");
 }
 
 InputMap::InputMap() {
