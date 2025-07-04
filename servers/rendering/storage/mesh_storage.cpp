@@ -49,6 +49,7 @@ void RendererMeshStorage::multimesh_free(RID p_rid) {
 }
 
 void RendererMeshStorage::multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data, bool p_use_indirect) {
+	ERR_FAIL_COND(p_instances < 0);
 	MultiMeshInterpolator *mmi = _multimesh_get_interpolator(p_multimesh);
 	if (mmi) {
 		mmi->_transform_format = p_transform_format;
