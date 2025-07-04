@@ -2777,8 +2777,31 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	int cpos = -1;
 	if (p_update_file_system) {
 		bool found = _find_file(p_file, &fs, cpos);
-		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, vformat("Can't find file '%s' during file reimport.", p_file));
+		ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, vformat("Can't find file \"%s\" during file reimport.", p_file));
 	}
+
+	// Perform checks in advance for contents that will never be valid resources,
+	// and give user-friendly error messages.
+	ERR_FAIL_COND_V_MSG(FileAccess::get_size(p_file) == 0, ERR_FILE_CORRUPT,
+			vformat("Cannot import \"%s\" as a Resource since the source file is empty (0 bytes).", p_file));
+
+	Error fa_err;
+	Ref<FileAccess> file = FileAccess::open(p_file, FileAccess::READ, &fa_err);
+	ERR_FAIL_COND_V_MSG(fa_err != OK, fa_err,
+			vformat("Can't open resource file: %s", p_file));
+
+	// Handle Git LFS pointer files that haven't been replaced
+	// with the actual file by running `git lfs pull` yet.
+	// Don't use `get_line()` as it'll print Unicode errors when reading a binary file
+	// (we don't know whether the file is text or binary).
+	const char *sample = "version https://git-lfs";
+	const PackedByteArray buffer = file->get_buffer(strlen(sample));
+	bool match = false;
+	if (strcmp(sample, (const char*)buffer.ptr()) == 0) {
+		match = true;
+	}
+	ERR_FAIL_COND_V_MSG(match, ERR_FILE_UNRECOGNIZED,
+			vformat("Can't import resource file as it's a Git LFS pointer (run `git lfs pull` to fetch it): %s", p_file));
 
 	//try to obtain existing params
 
