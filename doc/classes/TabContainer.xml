@@ -223,6 +223,12 @@
 		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
+		<member name="navigation_buttons_always_visible" type="bool" setter="set_navigation_buttons_always_visible" getter="get_navigation_buttons_always_visible" default="false">
+			If [code]true[/code], navigation buttons will be visible even when there's enough space for all tabs.
+		</member>
+		<member name="navigation_buttons_switch_tabs" type="bool" setter="set_navigation_buttons_switch_tabs" getter="get_navigation_buttons_switch_tabs" default="false">
+			If [code]true[/code], navigation buttons will switch tabs instead of scrolling through them.
+		</member>
 		<member name="tab_alignment" type="int" setter="set_tab_alignment" getter="get_tab_alignment" enum="TabBar.AlignmentMode" default="0">
 			The position at which tabs will be placed.
 		</member>
