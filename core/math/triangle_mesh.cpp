@@ -183,118 +183,15 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 }
 
 bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index) const {
-	if (!valid) {
+	Vector3 segment = p_end - p_begin;
+	real_t distance = segment.length();
+	if (unlikely(distance == 0)) { // p_from and p_to are strictly identical.
 		return false;
 	}
-
-	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
-
-	enum {
-		TEST_AABB_BIT = 0,
-		VISIT_LEFT_BIT = 1,
-		VISIT_RIGHT_BIT = 2,
-		VISIT_DONE_BIT = 3,
-		VISITED_BIT_SHIFT = 29,
-		NODE_IDX_MASK = (1 << VISITED_BIT_SHIFT) - 1,
-		VISITED_BIT_MASK = ~NODE_IDX_MASK,
-
-	};
-
-	Vector3 n = (p_end - p_begin).normalized();
-	real_t d = 1e10;
-	bool inters = false;
-
-	int level = 0;
-
-	const Triangle *triangleptr = triangles.ptr();
-	const Vector3 *vertexptr = vertices.ptr();
-	const BVH *bvhptr = bvh.ptr();
-
-	int pos = bvh.size() - 1;
-
-	stack[0] = pos;
-	while (true) {
-		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
-		bool done = false;
-
-		switch (stack[level] >> VISITED_BIT_SHIFT) {
-			case TEST_AABB_BIT: {
-				if (!b.aabb.intersects_segment(p_begin, p_end)) {
-					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				} else {
-					if (b.face_index >= 0) {
-						const Triangle &s = triangleptr[b.face_index];
-						Face3 f3(vertexptr[s.indices[0]], vertexptr[s.indices[1]], vertexptr[s.indices[2]]);
-
-						Vector3 res;
-
-						if (f3.intersects_segment(p_begin, p_end, &res)) {
-							real_t nd = n.dot(res);
-							if (nd < d) {
-								d = nd;
-								r_point = res;
-								r_normal = f3.get_plane().get_normal();
-								if (r_surf_index) {
-									*r_surf_index = s.surface_index;
-								}
-								if (r_face_index) {
-									*r_face_index = b.face_index;
-								}
-								inters = true;
-							}
-						}
-
-						stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-
-					} else {
-						stack[level] = (VISIT_LEFT_BIT << VISITED_BIT_SHIFT) | node;
-					}
-				}
-				continue;
-			}
-			case VISIT_LEFT_BIT: {
-				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				level++;
-				stack[level] = b.left | TEST_AABB_BIT;
-				continue;
-			}
-			case VISIT_RIGHT_BIT: {
-				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				level++;
-				stack[level] = b.right | TEST_AABB_BIT;
-				continue;
-			}
-			case VISIT_DONE_BIT: {
-				if (level == 0) {
-					done = true;
-					break;
-				} else {
-					level--;
-				}
-				continue;
-			}
-		}
-
-		if (done) {
-			break;
-		}
-	}
-
-	if (inters) {
-		if (n.dot(r_normal) > 0) {
-			r_normal = -r_normal;
-		}
-	}
-
-	return inters;
+	return intersect_ray(p_begin, segment / distance, r_point, r_normal, r_surf_index, r_face_index, distance);
 }
 
-bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index) const {
-	if (!valid) {
-		return false;
-	}
-
+bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int32_t *r_face_index, real_t p_dist) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -309,7 +206,7 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 	};
 
 	Vector3 n = p_dir;
-	real_t d = 1e20;
+	real_t d = INFINITY;
 	bool inters = false;
 
 	int level = 0;
@@ -328,7 +225,8 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
-				if (!b.aabb.intersects_ray(p_begin, p_dir)) {
+				bool inside = false;
+				if (!b.aabb.find_intersects_ray(p_begin, p_dir, inside, nullptr, nullptr, p_dist)) {
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 				} else {
 					if (b.face_index >= 0) {
@@ -337,7 +235,7 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 
 						Vector3 res;
 
-						if (f3.intersects_ray(p_begin, p_dir, &res)) {
+						if (f3.intersects_ray(p_begin, p_dir, &res, p_dist)) {
 							real_t nd = n.dot(res);
 							if (nd < d) {
 								d = nd;
