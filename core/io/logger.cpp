@@ -177,6 +177,24 @@ RotatedFileLogger::RotatedFileLogger(const String &p_base_path, int p_max_files)
 #endif // MODULE_REGEX_ENABLED
 }
 
+bool RotatedFileLogger::_log_timestamps = true;
+
+void RotatedFileLogger::set_log_timestamps(bool value) {
+	_log_timestamps = value;
+}
+
+void RotatedFileLogger::store_to_log(const Ref<FileAccess> p_file, const uint8_t *p_buf, int p_len) {
+#ifdef MODULE_REGEX_ENABLED
+	// Strip ANSI escape codes (such as those inserted by `print_rich()`)
+	// before writing to file, as text editors cannot display those
+	// correctly.
+	// FIXME: How to convert uint8_t* to String?
+	p_file->store_string(strip_ansi_regex->sub(p_buf, "", true));
+#else
+	p_file->store_buffer(p_buf, p_len);
+#endif // MODULE_REGEX_ENABLED
+}
+
 void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {
 		return;
@@ -185,7 +203,9 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (file.is_valid()) {
 		const int static_buf_size = 512;
 		char static_buf[static_buf_size];
+
 		char *buf = static_buf;
+
 		va_list list_copy;
 		va_copy(list_copy, p_list);
 		int len = vsnprintf(buf, static_buf_size, p_format, p_list);
@@ -195,14 +215,37 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 		}
 		va_end(list_copy);
 
-#ifdef MODULE_REGEX_ENABLED
-		// Strip ANSI escape codes (such as those inserted by `print_rich()`)
-		// before writing to file, as text editors cannot display those
-		// correctly.
-		file->store_string(strip_ansi_regex->sub(String::utf8(buf), "", true));
-#else
-		file->store_buffer((uint8_t *)buf, len);
-#endif // MODULE_REGEX_ENABLED
+		const String string_buf = String(buf);
+		if (_log_timestamps) {
+			const String timestamp = Time::get_singleton()->get_datetime_string_from_system() + Time::get_singleton()->get_offset_string_from_offset_minutes(Time::get_singleton()->get_time_zone_from_system()["bias"]) + " | ";
+			if (string_buf.ends_with("\n")) {
+				// Handle multiline strings by displaying the timestamp on each line.
+				const PackedStringArray line_contents = string_buf.split("\n");
+				for (int i = 0; i < line_contents.size(); i++) {
+					if (i < line_contents.size() - 1) {
+						const PackedByteArray array = (timestamp + line_contents[i] + "\n").to_utf8_buffer();
+						const uint8_t *buf_ts = array.ptr();
+						const int buf_ts_size = array.size();
+						store_to_log(file, buf_ts, buf_ts_size);
+					} else if (!line_contents[i].is_empty()) {
+						// Last line, so don't add an extraneous newline.
+						const PackedByteArray array = (timestamp + line_contents[i]).to_utf8_buffer();
+						const uint8_t *buf_ts = array.ptr();
+						const int buf_ts_size = array.size();
+						store_to_log(file, buf_ts, buf_ts_size);
+					}
+				}
+			} else {
+				// Force `printraw()` to have a newline at end of print to prevent
+				// timestamps from looking broken.
+				const PackedByteArray array = (timestamp + string_buf + "\n").to_utf8_buffer();
+				const uint8_t *buf_ts = array.ptr();
+				const int buf_ts_size = array.size();
+				store_to_log(file, buf_ts, buf_ts_size);
+			}
+		} else {
+			store_to_log(file, buf, len);
+		}
 
 		if (len >= static_buf_size) {
 			Memory::free_static(buf);
@@ -216,14 +259,27 @@ void RotatedFileLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
+bool StdLogger::_print_timestamps = false;
+
+void StdLogger::set_print_timestamps(bool value) {
+	_print_timestamps = value;
+}
+
 void StdLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (!should_log(p_err)) {
 		return;
 	}
 
+	const char *timestamp = "";
+	if (_print_timestamps) {
+		timestamp = (Time::get_singleton()->get_datetime_string_from_system() + Time::get_singleton()->get_offset_string_from_offset_minutes(Time::get_singleton()->get_time_zone_from_system()["bias"]) + " | ").utf8().ptr();
+	}
+
 	if (p_err) {
+		fprintf(stderr, "%s", timestamp);
 		vfprintf(stderr, p_format, p_list);
 	} else {
+		printf("%s", timestamp);
 		vprintf(p_format, p_list);
 		if (_flush_stdout_on_print) {
 			// Don't always flush when printing stdout to avoid performance
