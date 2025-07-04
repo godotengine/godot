@@ -1181,8 +1181,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					dictionary[String(element.identifier->name)] = element.value;
 
 #ifdef DEBUG_ENABLED
-					// Named enum identifiers do not shadow anything since you can only access them with `NamedEnum.ENUM_VALUE`.
+					// Named enum members do not shadow anything since you can only access them with `NamedEnum.MEMBER`.
 					if (member.m_enum->identifier->name == StringName()) {
+						// TODO: Unreachable code? Unnamed enums are checked in switch-case ENUM_VALUE.
 						is_shadowing(element.identifier, "enum member", false);
 					}
 #endif // DEBUG_ENABLED
@@ -1199,6 +1200,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					resolve_annotation(E);
 					E->apply(parser, member.m_enum, p_class);
 				}
+
+#ifdef DEBUG_ENABLED
+				// Allow named enum classes to shadow global constants.
+				is_shadowing(member.m_enum->identifier, "enum class", false);
+#endif // DEBUG_ENABLED
 			} break;
 			case GDScriptParser::ClassNode::Member::FUNCTION:
 				for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
@@ -1243,6 +1249,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				member.enum_value.parent_enum->values.set(member.enum_value.index, member.enum_value);
 
 				member.enum_value.identifier->set_datatype(make_class_enum_type(UNNAMED_ENUM, p_class, parser->script_path, false));
+
+#ifdef DEBUG_ENABLED
+				// Allow unnamed enum members to shadow global constants.
+				is_shadowing(member.enum_value.identifier, "enum member", false);
+#endif // DEBUG_ENABLED
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
 				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
@@ -1964,6 +1975,12 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	}
 
 #ifdef DEBUG_ENABLED
+	// Named lambdas do not override anything since you cannot access them by name.
+	if (!p_is_lambda && p_function->identifier != nullptr) {
+		// Allow local functions to shadow global constants.
+		is_shadowing(p_function->identifier, "function", false);
+	}
+
 	if (p_function->return_type == nullptr) {
 		parser->push_warning(p_function, GDScriptWarning::UNTYPED_DECLARATION, "Function", function_visible_name);
 	}
@@ -5999,6 +6016,18 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 			return;
 		} else if (GDScriptParser::get_builtin_type(name) < Variant::VARIANT_MAX) {
 			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in type");
+			return;
+		} else if (name == "PI" || name == "TAU" || name == "INF" || name == "NAN") {
+			// @GDScript constants
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in constant");
+			return;
+		} else if (CoreConstants::is_global_constant(name)) {
+			// @GlobalScope enum/flag members
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in enum member");
+			return;
+		} else if (CoreConstants::is_global_enum(name)) {
+			// @GlobalScope enum/flag classes
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_GLOBAL_IDENTIFIER, p_context, name, "built-in enum class");
 			return;
 		}
 	}

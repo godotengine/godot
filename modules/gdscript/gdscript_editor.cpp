@@ -4228,24 +4228,15 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		return OK;
 	}
 
-	if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
-		r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-		r_result.class_name = "@GDScript";
-		r_result.class_member = p_symbol;
-		return OK;
-	}
-
 	GDScriptParser parser;
 	parser.parse(p_code, p_path, true);
 
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
 	context.base = p_owner;
 
-	// Allows class functions with the names like built-ins to be handled properly.
 	if (context.type != GDScriptParser::COMPLETION_ATTRIBUTE) {
-		// Need special checks for `assert` and `preload` as they are technically
-		// keywords, so are not registered in `GDScriptUtilityFunctions`.
-		if (GDScriptUtilityFunctions::function_exists(p_symbol) || p_symbol == "assert" || p_symbol == "preload") {
+		// Need special checks for `assert` and `preload` as they are reserved keywords.
+		if (p_symbol == "assert" || p_symbol == "preload") {
 			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
 			r_result.class_name = "@GDScript";
 			r_result.class_member = p_symbol;
@@ -4384,10 +4375,6 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				}
 			}
 
-			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
-				return OK;
-			}
-
 			if (!is_function) {
 				if (ProjectSettings::get_singleton()->has_autoload(p_symbol)) {
 					const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(p_symbol);
@@ -4461,6 +4448,17 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 					r_result.class_member = p_symbol;
 					return OK;
 				}
+
+				if (GDScriptUtilityFunctions::function_exists(p_symbol)) {
+					r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD;
+					r_result.class_name = "@GDScript";
+					r_result.class_member = p_symbol;
+					return OK;
+				}
+			}
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
 			}
 		} break;
 		case GDScriptParser::COMPLETION_ATTRIBUTE_METHOD:
@@ -4536,6 +4534,18 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			}
 		} break;
 		default: {
+		}
+	}
+
+	// TODO: Change this to (context.type != GDScriptParser::COMPLETION_DECLARATION) in the future.
+	// Do not return @GDScript info in local declarations.
+	if (context.type != GDScriptParser::COMPLETION_NONE && context.type != GDScriptParser::COMPLETION_OVERRIDE_METHOD) {
+		// Allow local variables to shadow global constants.
+		if (p_symbol == "PI" || p_symbol == "TAU" || p_symbol == "INF" || p_symbol == "NAN") {
+			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
+			r_result.class_name = "@GDScript";
+			r_result.class_member = p_symbol;
+			return OK;
 		}
 	}
 
