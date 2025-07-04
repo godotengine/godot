@@ -1725,8 +1725,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("hotzone_extent_v_output", "GraphPort", 2 * EDSCALE);
 			p_theme->set_constant("hotzone_extent_h_undirected", "GraphPort", 2 * EDSCALE);
 			p_theme->set_constant("hotzone_extent_v_undirected", "GraphPort", 2 * EDSCALE);
-			p_theme->set_constant("hotzone_offset_h", "GraphPort", 0.9);
-			p_theme->set_constant("hotzone_offset_v", "GraphPort", 0.5);
+			p_theme->set_constant("hotzone_offset_h", "GraphPort", -7);
+			p_theme->set_constant("hotzone_offset_v", "GraphPort", 0);
 
 			Ref<ImageTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
@@ -1800,6 +1800,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		// VisualShader reroute node.
 		{
+			// Reroute node
+
 			Ref<StyleBox> vs_reroute_panel_style = make_empty_stylebox();
 			Ref<StyleBox> vs_reroute_titlebar_style = vs_reroute_panel_style->duplicate();
 			vs_reroute_titlebar_style->set_content_margin_all(16 * EDSCALE);
@@ -1811,6 +1813,17 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			p_theme->set_color("drag_background", "VSRerouteNode", p_config.dark_theme ? Color(0.19, 0.21, 0.24) : Color(0.8, 0.8, 0.8));
 			p_theme->set_color("selected_rim_color", "VSRerouteNode", p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0));
+
+			// Visual Node Ports
+
+			p_theme->set_constant("hotzone_extent_h_input", "VSGraphPort", Math::round(26 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_v_input", "VSGraphPort", Math::round(22 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_h_output", "VSGraphPort", Math::round(26 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_v_output", "VSGraphPort", Math::round(22 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_h_undirected", "VSGraphPort", Math::round(26 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_v_undirected", "VSGraphPort", Math::round(22 * EDSCALE));
+			p_theme->set_constant("hotzone_offset_h", "VSGraphPort", -7);
+			p_theme->set_constant("hotzone_offset_v", "VSGraphPort", 0);
 		}
 	}
 

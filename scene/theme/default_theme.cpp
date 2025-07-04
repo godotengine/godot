@@ -796,8 +796,8 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hotzone_extent_v_output", "GraphPort", Math::round(22 * scale));
 	theme->set_constant("hotzone_extent_h_undirected", "GraphPort", Math::round(26 * scale));
 	theme->set_constant("hotzone_extent_v_undirected", "GraphPort", Math::round(22 * scale));
-	theme->set_constant("hotzone_offset_h", "GraphPort", 0.9);
-	theme->set_constant("hotzone_offset_v", "GraphPort", 0.5);
+	theme->set_constant("hotzone_offset_h", "GraphPort", -7);
+	theme->set_constant("hotzone_offset_v", "GraphPort", 0);
 
 	// GraphNode
 
@@ -1316,6 +1316,17 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
 
 	// Visual Node Ports
+
+	theme->set_constant("hotzone_extent_h_input", "VSGraphPort", Math::round(26 * scale));
+	theme->set_constant("hotzone_extent_v_input", "VSGraphPort", Math::round(22 * scale));
+	theme->set_constant("hotzone_extent_h_output", "VSGraphPort", Math::round(26 * scale));
+	theme->set_constant("hotzone_extent_v_output", "VSGraphPort", Math::round(22 * scale));
+	theme->set_constant("hotzone_extent_h_undirected", "VSGraphPort", Math::round(26 * scale));
+	theme->set_constant("hotzone_extent_v_undirected", "VSGraphPort", Math::round(22 * scale));
+	theme->set_constant("hotzone_offset_h", "VSGraphPort", -7);
+	theme->set_constant("hotzone_offset_v", "VSGraphPort", 0);
+
+	// GraphEditMinimap
 
 	theme->set_stylebox(SceneStringName(panel), "GraphEditMinimap", make_flat_stylebox(Color(0.24, 0.24, 0.24), 0, 0, 0, 0));
 	Ref<StyleBoxFlat> style_minimap_camera = make_flat_stylebox(Color(0.65, 0.65, 0.65, 0.2), 0, 0, 0, 0, 0);

@@ -185,7 +185,7 @@ Rect2 GraphPort::get_hotzone() {
 	}
 
 	Vector2 size = icon_size.max(theme_extent);
-	return Rect2(pos.x - theme_cache.hotzone_offset_h * size.x, pos.y - theme_cache.hotzone_offset_v * size.y, size.x, size.y);
+	return Rect2(pos.x + theme_cache.hotzone_offset_h - size.x / 2, pos.y + theme_cache.hotzone_offset_v - size.y / 2, size.x, size.y);
 }
 
 int GraphPort::get_index(bool p_include_disabled) {

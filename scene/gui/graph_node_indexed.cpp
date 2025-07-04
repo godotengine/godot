@@ -157,6 +157,7 @@ void GraphNodeIndexed::_notification(int p_what) {
 
 void GraphNodeIndexed::create_slot(int p_slot_index, GraphPort *p_left_port, GraphPort *p_right_port, bool draw_stylebox) {
 	Slot new_slot = { p_left_port, p_right_port, true };
+	p_right_port->add_theme_constant_override("hotzone_offset_h", -p_right_port->get_theme_constant("hotzone_offset_h"));
 	_insert_slot(p_slot_index, new_slot);
 }
 
