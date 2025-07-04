@@ -133,5 +133,6 @@ void WorldBoundaryShape3D::_bind_methods() {
 
 WorldBoundaryShape3D::WorldBoundaryShape3D() :
 		Shape3D(PhysicsServer3D::get_singleton()->shape_create(PhysicsServer3D::SHAPE_WORLD_BOUNDARY)) {
+	set_use_shared_copy(false);
 	set_plane(Plane(0, 1, 0, 0));
 }
