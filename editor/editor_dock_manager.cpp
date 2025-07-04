@@ -680,11 +680,13 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 	for (int i = 0; i < vsplits.size(); i++) {
 		if (vsplits[i]->is_visible_in_tree()) {
 			p_layout->set_value(p_section, "dock_split_" + itos(i + 1), vsplits[i]->get_split_offset());
+			p_layout->set_value(p_section, "dock_split_snap_" + itos(i + 1), (int)vsplits[i]->get_snap_state());
 		}
 	}
 
 	for (int i = 0; i < hsplits.size(); i++) {
 		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
+		p_layout->set_value(p_section, "dock_hsplit_snap_" + itos(i + 1), (int)hsplits[i]->get_snap_state());
 	}
 }
 
@@ -773,6 +775,11 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		}
 		int ofs = p_layout->get_value(p_section, "dock_split_" + itos(i + 1));
 		vsplits[i]->set_split_offset(ofs);
+		if (!p_layout->has_section_key(p_section, "dock_split_snap_" + itos(i + 1))) {
+			continue;
+		}
+		SplitContainer::Snap snap = (SplitContainer::Snap)p_layout->get_value(p_section, "dock_split_snap_" + itos(i + 1));
+		vsplits[i]->set_snap_state(snap);
 	}
 
 	for (int i = 0; i < hsplits.size(); i++) {
@@ -781,6 +788,11 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		}
 		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
 		hsplits[i]->set_split_offset(ofs * EDSCALE);
+		if (!p_layout->has_section_key(p_section, "dock_hsplit_snap_" + itos(i + 1))) {
+			continue;
+		}
+		SplitContainer::Snap snap = (SplitContainer::Snap)p_layout->get_value(p_section, "dock_hsplit_snap_" + itos(i + 1));
+		hsplits[i]->set_snap_state(snap);
 	}
 	update_docks_menu();
 }

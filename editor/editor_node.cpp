@@ -8373,11 +8373,16 @@ EditorNode::EditorNode() {
 	// There are 4 vsplits and 4 hsplits.
 	for (int i = 0; i < editor_dock_manager->get_vsplit_count(); i++) {
 		default_layout->set_value(docks_section, "dock_split_" + itos(i + 1), 0);
+		default_layout->set_value(docks_section, "dock_split_snap_" + itos(i + 1), 0);
 	}
 	default_layout->set_value(docks_section, "dock_hsplit_1", 0);
 	default_layout->set_value(docks_section, "dock_hsplit_2", 270);
 	default_layout->set_value(docks_section, "dock_hsplit_3", -270);
 	default_layout->set_value(docks_section, "dock_hsplit_4", 0);
+	default_layout->set_value(docks_section, "dock_hsplit_snap_1", 0);
+	default_layout->set_value(docks_section, "dock_hsplit_snap_2", 0);
+	default_layout->set_value(docks_section, "dock_hsplit_snap_3", 0);
+	default_layout->set_value(docks_section, "dock_hsplit_snap_4", 0);
 
 	_update_layouts_menu();
 

@@ -29,6 +29,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="auto_snap" type="int" setter="set_auto_snap" getter="get_auto_snap" enum="SplitContainer.Snap" default="3">
+			Determines the edges on which the dragger will auto-snap. See [enum Snap] for details.
+		</member>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed" default="false">
 			If [code]true[/code], the dragger will be disabled and the children will be sized as if the [member split_offset] was [code]0[/code].
 		</member>
@@ -49,6 +52,9 @@
 		</member>
 		<member name="dragging_enabled" type="bool" setter="set_dragging_enabled" getter="is_dragging_enabled" default="true">
 			Enables or disables split dragging.
+		</member>
+		<member name="snap_state" type="int" setter="set_snap_state" getter="get_snap_state" enum="SplitContainer.Snap" default="0">
+			The current snap state. If [constant SNAP_NONE] the dragger is not snapped. If [constant SNAP_FIRST] or [constant SNAP_SECOND] the dragger is snapped to the edge where the first or second child lies on.
 		</member>
 		<member name="split_offset" type="int" setter="set_split_offset" getter="get_split_offset" default="0">
 			The initial offset of the splitting between the two [Control]s, with [code]0[/code] being at the end of the first [Control].
@@ -78,6 +84,11 @@
 				Emitted when the dragger is dragged by user.
 			</description>
 		</signal>
+		<signal name="snap_state_changed">
+			<description>
+				Wmitted when the snap state changes.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="DRAGGER_VISIBLE" value="0" enum="DraggerVisibility">
@@ -91,6 +102,18 @@
 		</constant>
 		<constant name="DRAGGER_HIDDEN_COLLAPSED" value="2" enum="DraggerVisibility">
 			The split dragger icon is not visible, and the split bar is collapsed to zero thickness.
+		</constant>
+		<constant name="SNAP_NONE" value="0" enum="Snap">
+			The dragger will never snap automatically to any of the container's edges.
+		</constant>
+		<constant name="SNAP_FIRST" value="1" enum="Snap">
+			The dragger will snap automatically to the edge on which the first child lies when the user attempts to resize the child less than a third of its minimum size. If [member vertical] is [code]true[/code], this is the top edge. Otherwise it is the left edge.
+		</constant>
+		<constant name="SNAP_SECOND" value="2" enum="Snap">
+			The dragger will snap automatically to the edge on which the second child lies when the user attempts to resize the child less than a third of the its minimum size. If [member vertical] is [code]true[/code], this is the bottom edge. Otherwise it is the right edge.
+		</constant>
+		<constant name="SNAP_BOTH" value="3" enum="Snap">
+			Equivalent to setting both [constant SNAP_FIRST] and [constant SNAP_SECOND]. This is the default value for [member auto_snap].
 		</constant>
 	</constants>
 	<theme_items>
