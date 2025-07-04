@@ -83,6 +83,7 @@ private:
 	void _source_add_id_pressed(int p_id_pressed);
 	void _sources_advanced_menu_id_pressed(int p_id_pressed);
 	void _set_source_sort(int p_sort);
+	void _sources_list_gui_input(const Ref<InputEvent> &p_event);
 
 	EditorFileDialog *texture_file_dialog = nullptr;
 	AtlasMergingDialog *atlas_merging_dialog = nullptr;

@@ -451,6 +451,16 @@ void TileSetEditor::_update_patterns_list() {
 	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
 }
 
+void TileSetEditor::_sources_list_gui_input(const Ref<InputEvent> &p_event) {
+	if (sources_list->get_item_count() < 1) {
+		return;
+	}
+	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+		_source_delete_pressed();
+		sources_list->accept_event();
+	}
+}
+
 void TileSetEditor::_tile_set_changed() {
 	tile_set_changed_needs_update = true;
 }
@@ -866,6 +876,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
+	sources_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_sources_list_gui_input));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	SET_DRAG_FORWARDING_CDU(sources_list, TileSetEditor);
 	split_container_left_side->add_child(sources_list);

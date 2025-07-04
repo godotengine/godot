@@ -237,6 +237,16 @@ void TileSetScenesCollectionSourceEditor::_scenes_list_item_activated(int p_inde
 	}
 }
 
+void TileSetScenesCollectionSourceEditor::_scene_tiles_list_gui_input(const Ref<InputEvent> &p_event) {
+	if (scene_tiles_list->get_item_count() < 1) {
+		return;
+	}
+	if (ED_IS_SHORTCUT("tiles_editor/delete", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+		_source_delete_pressed();
+		scene_tiles_list->accept_event();
+	}
+}
+
 void TileSetScenesCollectionSourceEditor::_source_add_pressed() {
 	if (!scene_select_dialog) {
 		scene_select_dialog = memnew(EditorFileDialog);
@@ -565,6 +575,7 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_tile_inspector).unbind(1));
 	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_action_buttons).unbind(1));
 	scene_tiles_list->connect("item_activated", callable_mp(this, &TileSetScenesCollectionSourceEditor::_scenes_list_item_activated));
+	scene_tiles_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetScenesCollectionSourceEditor::_scene_tiles_list_gui_input));
 	scene_tiles_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	right_vbox_container->add_child(scene_tiles_list);
 

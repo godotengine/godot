@@ -42,6 +42,10 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
 	}
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+		center_container->grab_focus();
+	}
 }
 
 void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {

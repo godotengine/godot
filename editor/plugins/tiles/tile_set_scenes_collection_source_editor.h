@@ -120,6 +120,7 @@ private:
 	void _scenes_collection_source_proxy_object_changed(const String &p_what);
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud);
 	void _scenes_list_item_activated(int p_index);
+	void _scene_tiles_list_gui_input(const Ref<InputEvent> &p_event);
 
 	void _source_add_pressed();
 	void _scene_file_selected(const String &p_path);
