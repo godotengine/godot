@@ -1311,6 +1311,15 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_animation_list_gui_input(const Ref<InputEvent> &p_event) {
+	if (ED_IS_SHORTCUT("sprite_frames/rename_animation", p_event) && p_event->is_pressed() && !p_event->is_echo()) {
+		if (animations->get_selected()) {
+			animations->edit_selected();
+			accept_event();
+		}
+	}
+}
+
 void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mb = p_event;
 
@@ -2030,6 +2039,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	// HACK: The cell_selected signal is emitted before the FPS spinbox loses focus and applies the change.
 	animations->connect("cell_selected", callable_mp(this, &SpriteFramesEditor::_animation_selected), CONNECT_DEFERRED);
 	animations->connect("item_edited", callable_mp(this, &SpriteFramesEditor::_animation_name_edited));
+	animations->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_animation_list_gui_input));
 	animations->set_theme_type_variation("TreeSecondary");
 	animations->set_allow_reselect(true);
 
@@ -2039,6 +2049,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTRC("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTRC("Delete Animation"), Key::KEY_DELETE));
+	rename_anim = ED_SHORTCUT("sprite_frames/rename_animation", TTRC("Rename Animation"), Key::F2);
 
 	missing_anim_label = memnew(Label);
 	missing_anim_label->set_focus_mode(FOCUS_ACCESSIBILITY);

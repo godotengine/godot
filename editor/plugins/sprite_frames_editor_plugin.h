@@ -126,6 +126,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Button *add_anim = nullptr;
 	Button *duplicate_anim = nullptr;
 	Button *delete_anim = nullptr;
+	Ref<Shortcut> rename_anim;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
 
@@ -223,6 +224,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_loop_changed();
 	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
+	void _animation_list_gui_input(const Ref<InputEvent> &p_event);
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
 	void _frame_list_item_selected(int p_index, bool p_selected);
