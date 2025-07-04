@@ -58,9 +58,9 @@
 		<member name="process_callback" type="int" setter="set_timer_process_callback" getter="get_timer_process_callback" enum="Timer.TimerProcessCallback" default="1">
 			Specifies when the timer is updated during the main loop.
 		</member>
-		<member name="time_left" type="float" setter="" getter="get_time_left">
-			The timer's remaining time in seconds. This is always [code]0[/code] if the timer is stopped.
-			[b]Note:[/b] This property is read-only and cannot be modified. It is based on [member wait_time].
+		<member name="time_left" type="float" setter="set_time_left" getter="get_time_left" default="0.0">
+			The timer's remaining time in seconds. Getter always returns [code]0[/code] if the timer is stopped.
+			[b]Note:[/b] Setting this property when the timer is stopped pushes an error message.
 		</member>
 		<member name="wait_time" type="float" setter="set_wait_time" getter="get_wait_time" default="1.0">
 			The time required for the timer to end, in seconds. This property can also be set every time [method start] is called.
