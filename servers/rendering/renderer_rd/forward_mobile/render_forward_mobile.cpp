@@ -2566,11 +2566,11 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 	return ((1 << RS::INSTANCE_LIGHT) + (1 << RS::INSTANCE_REFLECTION_PROBE) + (1 << RS::INSTANCE_DECAL));
 }
 
-uint32_t RenderForwardMobile::GeometryInstanceForwardMobile::get_max_lights_total() {
+uint32_t RenderForwardMobile::get_max_lights_total() {
     return (uint32_t)get_singleton()->get_max_elements();
 }
 
-uint32_t RenderForwardMobile::GeometryInstanceForwardMobile::get_max_lights_per_mesh() {
+uint32_t RenderForwardMobile::get_max_lights_per_mesh() {
     return (uint32_t)MAX_RDL_CULL;
 }
 

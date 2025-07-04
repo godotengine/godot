@@ -537,8 +537,6 @@ protected:
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
-		virtual uint32_t get_max_lights_total() override;
-		virtual uint32_t get_max_lights_per_mesh() override;
 		virtual void clear_light_instances() override;
 		virtual void pair_light_instance(const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) override;
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override;
@@ -547,6 +545,9 @@ protected:
 
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override;
 	};
+
+	virtual uint32_t get_max_lights_total() override;
+	virtual uint32_t get_max_lights_per_mesh() override;
 
 	/* Rendering */
 

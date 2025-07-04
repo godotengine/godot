@@ -574,8 +574,6 @@ private:
 		virtual void set_use_lightmap(RID p_lightmap_instance, const Rect2 &p_lightmap_uv_scale, int p_lightmap_slice_index) override;
 		virtual void set_lightmap_capture(const Color *p_sh9) override;
 
-		virtual uint32_t get_max_lights_total() override { return 0; }
-		virtual uint32_t get_max_lights_per_mesh() override { return 0; }
 		virtual void clear_light_instances() override {}
 		virtual void pair_light_instance(const RID p_light_instance, RS::LightType light_type, uint32_t placement_idx) override {}
 		virtual void pair_reflection_probe_instances(const RID *p_reflection_probe_instances, uint32_t p_reflection_probe_instance_count) override {}
@@ -584,6 +582,10 @@ private:
 
 		virtual void set_softshadow_projector_pairing(bool p_softshadow, bool p_projector) override;
 	};
+
+	// These are not used in the Forward+ path, it has different light clustering tech.
+	virtual uint32_t get_max_lights_total() override { return 0; }
+	virtual uint32_t get_max_lights_per_mesh() override { return 0; }
 
 	static void _geometry_instance_dependency_changed(Dependency::DependencyChangedNotification p_notification, DependencyTracker *p_tracker);
 	static void _geometry_instance_dependency_deleted(const RID &p_dependency, DependencyTracker *p_tracker);

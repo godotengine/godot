@@ -2827,6 +2827,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	thread_local LocalVector<Pair<float, uint32_t>> omni_score_idx, spot_score_idx;
 	omni_score_idx.clear();
 	spot_score_idx.clear();
+	uint32_t max_lights_per_mesh = scene_render->get_max_lights_per_mesh();
+	uint32_t max_lights_total = scene_render->get_max_lights_total();
 
 	Transform3D inv_cam_transform = cull_data.cam_transform.inverse();
 	float z_near = cull_data.camera_matrix->get_z_near();
@@ -2941,8 +2943,6 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						ERR_FAIL_NULL(geom->geometry_instance);
 						// Clear any existing light instances for this mesh and find the max count per-mesh, and total (per-scene).
 						geom->geometry_instance->clear_light_instances();
-						uint32_t max_lights_per_mesh = geom->geometry_instance->get_max_lights_per_mesh();
-						uint32_t max_lights_total = geom->geometry_instance->get_max_lights_total();
 						if ((max_lights_per_mesh > 0) && (max_lights_total > 0)) {
 							// For the top N lights, track the score and the index into the internal light storage array.
 							uint32_t total_omni_count = 0, total_spot_count = 0;
