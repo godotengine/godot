@@ -157,13 +157,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 	}
 
 	String exec = OS::get_singleton()->get_executable_path();
-	int instance_count = RunInstancesDialog::get_singleton()->get_instance_count();
-	for (int i = 0; i < instance_count; i++) {
+	LocalVector<int> enabled_instances = RunInstancesDialog::get_singleton()->get_enabled_instances_indices();
+	for (const int &instance_idx : enabled_instances) {
 		List<String> instance_args(args);
-		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(i, instance_args);
-		RunInstancesDialog::get_singleton()->apply_custom_features(i);
+		RunInstancesDialog::get_singleton()->get_argument_list_for_instance(instance_idx, instance_args);
+		RunInstancesDialog::get_singleton()->apply_custom_features(instance_idx);
 		if (instance_starting_callback) {
-			instance_starting_callback(i, instance_args);
+			instance_starting_callback(instance_idx, instance_args);
 		}
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
