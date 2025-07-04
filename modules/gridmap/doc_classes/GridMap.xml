@@ -204,6 +204,9 @@
 			The dimensions of the grid's cells.
 			This does not affect the size of the meshes. See [member cell_scale].
 		</member>
+		<member name="collision_debug" type="bool" setter="set_debug_collisions" getter="is_debug_collisions" default="false">
+			If [code]true[/code], the GridMap will display collision shapes in the editor.
+		</member>
 		<member name="collision_layer" type="int" setter="set_collision_layer" getter="get_collision_layer" default="1">
 			The physics layers this GridMap is in.
 			GridMaps act as static bodies, meaning they aren't affected by gravity or other forces. They only affect other physics bodies that collide with them.
