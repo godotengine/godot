@@ -48,10 +48,12 @@
 #define SpvBuilder_H
 
 #include "Logger.h"
+#define SPV_ENABLE_UTILITY_CODE
 #include "spirv.hpp"
 #include "spvIR.h"
 namespace spv {
     #include "GLSL.ext.KHR.h"
+    #include "GLSL.ext.EXT.h"
     #include "NonSemanticShaderDebugInfo100.h"
 }
 
@@ -63,6 +65,7 @@ namespace spv {
 #include <sstream>
 #include <stack>
 #include <unordered_map>
+#include <unordered_set>
 #include <map>
 
 namespace spv {
@@ -74,6 +77,7 @@ typedef enum {
     Spv_1_3 = (1 << 16) | (3 << 8),
     Spv_1_4 = (1 << 16) | (4 << 8),
     Spv_1_5 = (1 << 16) | (5 << 8),
+    Spv_1_6 = (1 << 16) | (6 << 8),
 } SpvVersion;
 
 class Builder {
@@ -108,7 +112,7 @@ public:
     spv::Id getMainFileId() const { return mainFileId; }
 
     // Initialize the main source file name
-    void setDebugSourceFile(const std::string& file)
+    void setDebugMainSourceFile(const std::string& file)
     {
         if (trackDebugInfo) {
             dirtyLineTracker = true;
@@ -202,6 +206,7 @@ public:
     Id makeIntType(int width) { return makeIntegerType(width, true); }
     Id makeUintType(int width) { return makeIntegerType(width, false); }
     Id makeFloatType(int width);
+    Id makeBFloat16Type();
     Id makeStructType(const std::vector<Id>& members, const char* name, bool const compilerGenerated = true);
     Id makeStructResultType(Id type0, Id type1);
     Id makeVectorType(Id component, int size);
@@ -215,6 +220,7 @@ public:
     Id makeCooperativeMatrixTypeKHR(Id component, Id scope, Id rows, Id cols, Id use);
     Id makeCooperativeMatrixTypeNV(Id component, Id scope, Id rows, Id cols);
     Id makeCooperativeMatrixTypeWithSameShape(Id component, Id otherType);
+    Id makeCooperativeVectorTypeNV(Id componentType, Id components);
     Id makeGenericType(spv::Op opcode, std::vector<spv::IdImmediate>& operands);
 
     // SPIR-V NonSemantic Shader DebugInfo Instructions
@@ -236,6 +242,7 @@ public:
     Id makeCompositeDebugType(std::vector<Id> const& memberTypes, char const*const name,
         NonSemanticShaderDebugInfo100DebugCompositeType const tag, bool const isOpaqueType = false);
     Id makePointerDebugType(StorageClass storageClass, Id const baseType);
+    Id makeForwardPointerDebugType(StorageClass storageClass);
     Id makeDebugSource(const Id fileName);
     Id makeDebugCompilationUnit();
     Id createDebugGlobalVariable(Id const type, char const*const name, Id const variable);
@@ -245,11 +252,14 @@ public:
     Id makeDebugValue(Id const debugLocalVariable, Id const value);
     Id makeDebugFunctionType(Id returnType, const std::vector<Id>& paramTypes);
     Id makeDebugFunction(Function* function, Id nameId, Id funcTypeId);
-    Id makeDebugLexicalBlock(uint32_t line);
+    Id makeDebugLexicalBlock(uint32_t line, uint32_t column);
     std::string unmangleFunctionName(std::string const& name) const;
-    void setupDebugFunctionEntry(Function* function, const char* name, int line, 
-                                 const std::vector<Id>& paramTypes,
-                                 const std::vector<char const*>& paramNames);
+
+    // Initialize non-semantic debug information for a function, including those of:
+    // - The function definition
+    // - The function parameters
+    void setupFunctionDebugInfo(Function* function, const char* name, const std::vector<Id>& paramTypes,
+                                const std::vector<char const*>& paramNames);
 
     // accelerationStructureNV type
     Id makeAccelerationStructureType();
@@ -264,9 +274,9 @@ public:
     Op getOpCode(Id id) const { return module.getInstruction(id)->getOpCode(); }
     Op getTypeClass(Id typeId) const { return getOpCode(typeId); }
     Op getMostBasicTypeClass(Id typeId) const;
-    int getNumComponents(Id resultId) const { return getNumTypeComponents(getTypeId(resultId)); }
-    int getNumTypeConstituents(Id typeId) const;
-    int getNumTypeComponents(Id typeId) const { return getNumTypeConstituents(typeId); }
+    unsigned int getNumComponents(Id resultId) const { return getNumTypeComponents(getTypeId(resultId)); }
+    unsigned int getNumTypeConstituents(Id typeId) const;
+    unsigned int getNumTypeComponents(Id typeId) const { return getNumTypeConstituents(typeId); }
     Id getScalarTypeId(Id typeId) const;
     Id getContainedTypeId(Id typeId) const;
     Id getContainedTypeId(Id typeId, int) const;
@@ -275,14 +285,17 @@ public:
         { return (ImageFormat)module.getInstruction(typeId)->getImmediateOperand(6); }
     Id getResultingAccessChainType() const;
     Id getIdOperand(Id resultId, int idx) { return module.getInstruction(resultId)->getIdOperand(idx); }
+    Id getCooperativeVectorNumComponents(Id typeId) const { return module.getInstruction(typeId)->getIdOperand(1); }
 
     bool isPointer(Id resultId)      const { return isPointerType(getTypeId(resultId)); }
     bool isScalar(Id resultId)       const { return isScalarType(getTypeId(resultId)); }
     bool isVector(Id resultId)       const { return isVectorType(getTypeId(resultId)); }
     bool isMatrix(Id resultId)       const { return isMatrixType(getTypeId(resultId)); }
     bool isCooperativeMatrix(Id resultId)const { return isCooperativeMatrixType(getTypeId(resultId)); }
+    bool isCooperativeVector(Id resultId)const { return isCooperativeVectorType(getTypeId(resultId)); }
     bool isAggregate(Id resultId)    const { return isAggregateType(getTypeId(resultId)); }
     bool isSampledImage(Id resultId) const { return isSampledImageType(getTypeId(resultId)); }
+    bool isTensorView(Id resultId)const { return isTensorViewType(getTypeId(resultId)); }
 
     bool isBoolType(Id typeId)
         { return groupedTypes[OpTypeBool].size() > 0 && typeId == groupedTypes[OpTypeBool].back()->getResultId(); }
@@ -303,6 +316,8 @@ public:
     {
         return getTypeClass(typeId) == OpTypeCooperativeMatrixKHR || getTypeClass(typeId) == OpTypeCooperativeMatrixNV;
     }
+    bool isTensorViewType(Id typeId)   const { return getTypeClass(typeId) == OpTypeTensorViewNV; }
+    bool isCooperativeVectorType(Id typeId)const { return getTypeClass(typeId) == OpTypeCooperativeVectorNV; }
     bool isAggregateType(Id typeId)    const
         { return isArrayType(typeId) || isStructType(typeId) || isCooperativeMatrixType(typeId); }
     bool isImageType(Id typeId)        const { return getTypeClass(typeId) == OpTypeImage; }
@@ -334,18 +349,18 @@ public:
         return module.getInstruction(scalarTypeId)->getImmediateOperand(0);
     }
 
-    int getTypeNumColumns(Id typeId) const
+    unsigned int getTypeNumColumns(Id typeId) const
     {
         assert(isMatrixType(typeId));
         return getNumTypeConstituents(typeId);
     }
-    int getNumColumns(Id resultId) const { return getTypeNumColumns(getTypeId(resultId)); }
-    int getTypeNumRows(Id typeId) const
+    unsigned int getNumColumns(Id resultId) const { return getTypeNumColumns(getTypeId(resultId)); }
+    unsigned int getTypeNumRows(Id typeId) const
     {
         assert(isMatrixType(typeId));
         return getNumTypeComponents(getContainedTypeId(typeId));
     }
-    int getNumRows(Id resultId) const { return getTypeNumRows(getTypeId(resultId)); }
+    unsigned int getNumRows(Id resultId) const { return getTypeNumRows(getTypeId(resultId)); }
 
     Dim getTypeDimensionality(Id typeId) const
     {
@@ -367,6 +382,8 @@ public:
     // For making new constants (will return old constant if the requested one was already made).
     Id makeNullConstant(Id typeId);
     Id makeBoolConstant(bool b, bool specConstant = false);
+    Id makeIntConstant(Id typeId, unsigned value, bool specConstant);
+    Id makeInt64Constant(Id typeId, unsigned long long value, bool specConstant);
     Id makeInt8Constant(int i, bool specConstant = false)
         { return makeIntConstant(makeIntType(8),  (unsigned)i, specConstant); }
     Id makeUint8Constant(unsigned u, bool specConstant = false)
@@ -386,6 +403,7 @@ public:
     Id makeFloatConstant(float f, bool specConstant = false);
     Id makeDoubleConstant(double d, bool specConstant = false);
     Id makeFloat16Constant(float f16, bool specConstant = false);
+    Id makeBFloat16Constant(float bf16, bool specConstant = false);
     Id makeFpConstant(Id type, double d, bool specConstant = false);
 
     Id importNonSemanticShaderDebugInfoInstructions();
@@ -416,8 +434,7 @@ public:
     // Also reset current last DebugScope and current source line to unknown
     void setBuildPoint(Block* bp) {
         buildPoint = bp;
-        // TODO: Technically, change of build point should set line tracker dirty. But we'll have bad line info for
-        //       branch instructions. Commenting this for now because at least this matches the old behavior.
+        dirtyLineTracker = true;
         dirtyScopeTracker = true;
     }
     Block* getBuildPoint() const { return buildPoint; }
@@ -425,6 +442,11 @@ public:
     // Append an instruction to the end of the current build point.
     // Optionally, additional debug info instructions may also be prepended.
     void addInstruction(std::unique_ptr<Instruction> inst);
+
+    // Append an instruction to the end of the current build point without prepending any debug instructions.
+    // This is useful for insertion of some debug info instructions themselves or some control flow instructions
+    // that are attached to its predecessor instruction.
+    void addInstructionNoDebugInfo(std::unique_ptr<Instruction> inst);
 
     // Make the entry-point function. The returned pointer is only valid
     // for the lifetime of this builder.
@@ -442,7 +464,7 @@ public:
     void makeReturn(bool implicit, Id retVal = 0);
 
     // Initialize state and generate instructions for new lexical scope
-    void enterLexicalBlock(uint32_t line);
+    void enterLexicalBlock(uint32_t line, uint32_t column);
 
     // Set state and generate instructions to exit current lexical scope
     void leaveLexicalBlock();
@@ -573,6 +595,7 @@ public:
         Id coarse;
         bool nonprivate;
         bool volatil;
+        bool nontemporal;
     };
 
     // Select the correct texture operation based on all inputs, and emit the correct instruction
@@ -599,6 +622,11 @@ public:
 
     // matrix constructor
     Id createMatrixConstructor(Decoration precision, const std::vector<Id>& sources, Id constructee);
+
+    // coopmat conversion
+    Id createCooperativeMatrixConversion(Id typeId, Id source);
+    Id createCooperativeMatrixReduce(Op opcode, Id typeId, Id source, unsigned int mask, Id func);
+    Id createCooperativeMatrixPerElementOp(Id typeId, const std::vector<Id>& operands);
 
     // Helper to use for building nested control flow with if-then-else.
     class If {
@@ -639,7 +667,7 @@ public:
                     const std::vector<int>& valueToSegment, int defaultSegment, std::vector<Block*>& segmentBB);
 
     // Add a branch to the innermost switch's merge block.
-    void addSwitchBreak();
+    void addSwitchBreak(bool implicit);
 
     // Move to the next code segment, passing in the return argument in makeSwitch()
     void nextSwitchSegment(std::vector<Block*>& segmentBB, int segment);
@@ -736,6 +764,7 @@ public:
             unsigned shadercallcoherent : 1;
             unsigned nonprivate : 1;
             unsigned volatil : 1;
+            unsigned nontemporal : 1;
             unsigned isImage : 1;
             unsigned nonUniform : 1;
 
@@ -748,6 +777,7 @@ public:
                 shadercallcoherent = 0;
                 nonprivate = 0;
                 volatil = 0;
+                nontemporal = 0;
                 isImage = 0;
                 nonUniform = 0;
             }
@@ -761,6 +791,7 @@ public:
                 shadercallcoherent |= other.shadercallcoherent;
                 nonprivate |= other.nonprivate;
                 volatil |= other.volatil;
+                nontemporal = other.nontemporal;
                 isImage |= other.isImage;
                 nonUniform |= other.nonUniform;
                 return *this;
@@ -856,10 +887,14 @@ public:
     void postProcess(Instruction&);
     // Hook to visit each non-32-bit sized float/int operation in a block.
     void postProcessType(const Instruction&, spv::Id typeId);
+    // move OpSampledImage instructions to be next to their users.
+    void postProcessSamplers();
 
     void dump(std::vector<unsigned int>&) const;
 
-    void createBranch(Block* block);
+    // Add a branch to the target block.
+    // If set implicit, the branch instruction shouldn't have debug source location.
+    void createBranch(bool implicit, Block* block);
     void createConditionalBranch(Id condition, Block* thenBlock, Block* elseBlock);
     void createLoopMerge(Block* mergeBlock, Block* continueBlock, unsigned int control,
         const std::vector<unsigned int>& operands);
@@ -871,12 +906,12 @@ public:
     // Check if the builder is generating code for spec constants.
     bool isInSpecConstCodeGenMode() { return generatingOpCodeForSpecConst; }
 
+    void setUseReplicatedComposites(bool use) { useReplicatedComposites = use; }
+
  protected:
-    Id makeIntConstant(Id typeId, unsigned value, bool specConstant);
-    Id makeInt64Constant(Id typeId, unsigned long long value, bool specConstant);
     Id findScalarConstant(Op typeClass, Op opcode, Id typeId, unsigned value);
     Id findScalarConstant(Op typeClass, Op opcode, Id typeId, unsigned v1, unsigned v2);
-    Id findCompositeConstant(Op typeClass, Id typeId, const std::vector<Id>& comps);
+    Id findCompositeConstant(Op typeClass, Op opcode, Id typeId, const std::vector<Id>& comps, size_t numMembers);
     Id findStructConstant(Id typeId, const std::vector<Id>& comps);
     Id collapseAccessChain();
     void remapDynamicSwizzle();
@@ -886,10 +921,13 @@ public:
     void createSelectionMerge(Block* mergeBlock, unsigned int control);
     void dumpSourceInstructions(std::vector<unsigned int>&) const;
     void dumpSourceInstructions(const spv::Id fileId, const std::string& text, std::vector<unsigned int>&) const;
-    void dumpInstructions(std::vector<unsigned int>&, const std::vector<std::unique_ptr<Instruction> >&) const;
+    template <class Range> void dumpInstructions(std::vector<unsigned int>& out, const Range& instructions) const;
     void dumpModuleProcesses(std::vector<unsigned int>&) const;
     spv::MemoryAccessMask sanitizeMemoryAccessForStorageClass(spv::MemoryAccessMask memoryAccess, StorageClass sc)
         const;
+    struct DecorationInstructionLessThan {
+        bool operator()(const std::unique_ptr<Instruction>& lhs, const std::unique_ptr<Instruction>& rhs) const;
+    };
 
     unsigned int spvVersion;     // the version of SPIR-V to emit in the header
     SourceLanguage sourceLang;
@@ -937,6 +975,7 @@ public:
     Id uniqueId;
     Function* entryPointFunction;
     bool generatingOpCodeForSpecConst;
+    bool useReplicatedComposites { false };
     AccessChain accessChain;
 
     // special blocks of instructions for output
@@ -945,7 +984,7 @@ public:
     std::vector<std::unique_ptr<Instruction> > entryPoints;
     std::vector<std::unique_ptr<Instruction> > executionModes;
     std::vector<std::unique_ptr<Instruction> > names;
-    std::vector<std::unique_ptr<Instruction> > decorations;
+    std::set<std::unique_ptr<Instruction>, DecorationInstructionLessThan> decorations;
     std::vector<std::unique_ptr<Instruction> > constantsTypesGlobals;
     std::vector<std::unique_ptr<Instruction> > externals;
     std::vector<std::unique_ptr<Function> > functions;
@@ -962,6 +1001,10 @@ public:
     std::unordered_map<unsigned int, std::vector<Instruction*>> groupedDebugTypes;
     // list of OpConstantNull instructions
     std::vector<Instruction*> nullConstants;
+
+    // Track which types have explicit layouts, to avoid reusing in storage classes without layout.
+    // Currently only tracks array types.
+    std::unordered_set<unsigned int> explicitlyLaidOut;
 
     // stack of switches
     std::stack<Block*> switchMerges;
@@ -985,6 +1028,6 @@ public:
     SpvBuildLogger* logger;
 };  // end Builder class
 
-};  // end spv namespace
+} // end spv namespace
 
 #endif // SpvBuilder_H

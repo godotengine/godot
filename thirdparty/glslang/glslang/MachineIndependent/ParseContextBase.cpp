@@ -59,7 +59,7 @@ void TParseContextBase::outputMessage(const TSourceLoc& loc, const char* szReaso
     safe_vsprintf(szExtraInfo, maxSize, szExtraInfoFormat, args);
 
     infoSink.info.prefix(prefix);
-    infoSink.info.location(loc, messages & EShMsgAbsolutePath);
+    infoSink.info.location(loc, messages & EShMsgAbsolutePath, messages & EShMsgDisplayErrorColumn);
     infoSink.info << "'" << szToken <<  "' : " << szReason << " " << szExtraInfo << "\n";
 
     if (prefix == EPrefixError) {
@@ -304,6 +304,11 @@ void TParseContextBase::checkIndex(const TSourceLoc& loc, const TType& type, int
         if (index >= type.getMatrixCols()) {
             error(loc, "", "[", "matrix index out of range '%d'", index);
             index = type.getMatrixCols() - 1;
+        }
+    } else if (type.isCoopVecNV()) {
+        if (index >= type.computeNumComponents()) {
+            error(loc, "", "[", "cooperative vector index out of range '%d'", index);
+            index = type.computeNumComponents() - 1;
         }
     }
 }

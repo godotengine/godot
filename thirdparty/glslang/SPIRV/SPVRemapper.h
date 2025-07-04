@@ -41,6 +41,21 @@
 #include <cstdlib>
 #include <exception>
 
+#ifdef GLSLANG_IS_SHARED_LIBRARY
+    #ifdef _WIN32
+        #ifdef GLSLANG_EXPORTING
+            #define GLSLANG_EXPORT __declspec(dllexport)
+        #else
+            #define GLSLANG_EXPORT __declspec(dllimport)
+        #endif
+    #elif __GNUC__ >= 4
+        #define GLSLANG_EXPORT __attribute__((visibility("default")))
+    #endif
+#endif // GLSLANG_IS_SHARED_LIBRARY
+#ifndef GLSLANG_EXPORT
+#define GLSLANG_EXPORT
+#endif
+
 namespace spv {
 
 class spirvbin_base_t
@@ -79,10 +94,11 @@ public:
 #include "spirv.hpp"
 
 namespace spv {
-const Id NoResult = 0;
+
+static inline constexpr Id NoResult = 0;
 
 // class to hold SPIR-V binary data for remapping, DCE, and debug stripping
-class spirvbin_t : public spirvbin_base_t
+class GLSLANG_EXPORT spirvbin_t : public spirvbin_base_t
 {
 public:
    spirvbin_t(int verbose = 0) : entryPoint(spv::NoResult), largestNewId(0), verbose(verbose), errorLatch(false)

@@ -393,7 +393,9 @@ typedef struct SpvReflectTypeDescription {
   const char*                       type_name;
   // Non-NULL if type is member of a struct
   const char*                       struct_member_name;
-  SpvStorageClass                   storage_class;
+
+  // The storage class (SpvStorageClass) if the type, and -1 if it does not have a storage class.
+  int                               storage_class;
   SpvReflectTypeFlags               type_flags;
   SpvReflectDecorationFlags         decoration_flags;
 
@@ -429,7 +431,9 @@ typedef struct SpvReflectInterfaceVariable {
   SpvStorageClass                     storage_class;
   const char*                         semantic;
   SpvReflectDecorationFlags           decoration_flags;
-  SpvBuiltIn                          built_in;
+
+  // The builtin id (SpvBuiltIn) if the variable is a builtin, and -1 otherwise.
+  int                                 built_in;
   SpvReflectNumericTraits             numeric;
   SpvReflectArrayTraits               array;
 
@@ -1815,9 +1819,9 @@ inline const char* ShaderModule::GetEntryPointName() const {
   return this->GetEntryPointName(0);
 }
 
-/*! @fn GetEntryPoint
+/*! @fn GetSourceFile
 
-  @return Returns entry point
+  @return Returns source file
 
 */
 inline const char* ShaderModule::GetSourceFile() const {
