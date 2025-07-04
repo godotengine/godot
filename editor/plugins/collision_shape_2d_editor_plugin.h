@@ -61,7 +61,7 @@ class CollisionShape2DEditor : public Control {
 	};
 
 	CanvasItemEditor *canvas_item_editor = nullptr;
-	CollisionShape2D *node = nullptr;
+	Node2D *node = nullptr;
 
 	Vector<Point2> handles;
 
@@ -76,21 +76,24 @@ class CollisionShape2DEditor : public Control {
 	Vector2 original_mouse_pos;
 
 	Ref<Shape2D> current_shape;
+	bool shape_visible = false;
+	bool shape_centered = false;
 
 	Variant get_handle_value(int idx) const;
-	void set_handle(int idx, Point2 &p_point);
+	void set_handle(int idx, const Point2 &p_point);
 	void commit_handle(int idx, Variant &p_org);
 
+	Ref<Shape2D> _get_shape() const;
+	Vector2 _get_shape_center() const;
 	void _shape_changed();
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
 
 public:
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
-	void edit(Node *p_node);
+	void edit(Node2D *p_node);
 
 	CollisionShape2DEditor();
 };
