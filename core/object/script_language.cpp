@@ -34,6 +34,7 @@
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
+#include "core/templates/fixed_vector.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
 int ScriptServer::_language_count = 0;
@@ -565,41 +566,44 @@ Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_incl
 
 ////////////////////
 
-void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
-	p_core_type_words->push_back("String");
-	p_core_type_words->push_back("Vector2");
-	p_core_type_words->push_back("Vector2i");
-	p_core_type_words->push_back("Rect2");
-	p_core_type_words->push_back("Rect2i");
-	p_core_type_words->push_back("Vector3");
-	p_core_type_words->push_back("Vector3i");
-	p_core_type_words->push_back("Transform2D");
-	p_core_type_words->push_back("Vector4");
-	p_core_type_words->push_back("Vector4i");
-	p_core_type_words->push_back("Plane");
-	p_core_type_words->push_back("Quaternion");
-	p_core_type_words->push_back("AABB");
-	p_core_type_words->push_back("Basis");
-	p_core_type_words->push_back("Transform3D");
-	p_core_type_words->push_back("Projection");
-	p_core_type_words->push_back("Color");
-	p_core_type_words->push_back("StringName");
-	p_core_type_words->push_back("NodePath");
-	p_core_type_words->push_back("RID");
-	p_core_type_words->push_back("Callable");
-	p_core_type_words->push_back("Signal");
-	p_core_type_words->push_back("Dictionary");
-	p_core_type_words->push_back("Array");
-	p_core_type_words->push_back("PackedByteArray");
-	p_core_type_words->push_back("PackedInt32Array");
-	p_core_type_words->push_back("PackedInt64Array");
-	p_core_type_words->push_back("PackedFloat32Array");
-	p_core_type_words->push_back("PackedFloat64Array");
-	p_core_type_words->push_back("PackedStringArray");
-	p_core_type_words->push_back("PackedVector2Array");
-	p_core_type_words->push_back("PackedVector3Array");
-	p_core_type_words->push_back("PackedColorArray");
-	p_core_type_words->push_back("PackedVector4Array");
+const Span<String> ScriptLanguage::get_core_type_words() const {
+	static const FixedVector<String, 34> core_type_words = {
+		"String",
+		"Vector2",
+		"Vector2i",
+		"Rect2",
+		"Rect2i",
+		"Vector3",
+		"Vector3i",
+		"Transform2D",
+		"Vector4",
+		"Vector4i",
+		"Plane",
+		"Quaternion",
+		"AABB",
+		"Basis",
+		"Transform3D",
+		"Projection",
+		"Color",
+		"StringName",
+		"NodePath",
+		"RID",
+		"Callable",
+		"Signal",
+		"Dictionary",
+		"Array",
+		"PackedByteArray",
+		"PackedInt32Array",
+		"PackedInt64Array",
+		"PackedFloat32Array",
+		"PackedFloat64Array",
+		"PackedStringArray",
+		"PackedVector2Array",
+		"PackedVector3Array",
+		"PackedColorArray",
+		"PackedVector4Array",
+	};
+	return core_type_words.span();
 }
 
 void ScriptLanguage::frame() {

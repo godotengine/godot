@@ -750,10 +750,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 
 	/* Core types. */
 	const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
-	List<String> core_types;
-	gdscript->get_core_type_words(&core_types);
-	for (const String &E : core_types) {
-		class_names[StringName(E)] = basetype_color;
+	for (const String &keyword : gdscript->get_core_type_words()) {
+		class_names[StringName(keyword)] = basetype_color;
 	}
 	class_names[SNAME("Variant")] = basetype_color;
 	class_names[SNAME("void")] = basetype_color;

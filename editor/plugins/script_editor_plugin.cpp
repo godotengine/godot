@@ -162,10 +162,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 	if (scr_lang != nullptr) {
 		/* Core types. */
 		const Color basetype_color = EDITOR_GET("text_editor/theme/highlighting/base_type_color");
-		List<String> core_types;
-		scr_lang->get_core_type_words(&core_types);
-		for (const String &E : core_types) {
-			highlighter->add_keyword_color(E, basetype_color);
+		for (const String &keyword : scr_lang->get_core_type_words()) {
+			highlighter->add_keyword_color(keyword, basetype_color);
 		}
 
 		/* Reserved words. */
