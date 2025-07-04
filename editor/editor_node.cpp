@@ -136,6 +136,7 @@
 #include "editor/import/resource_importer_wav.h"
 #include "editor/import_dock.h"
 #include "editor/inspector_dock.h"
+#include "editor/license_integration_tool.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -1371,6 +1372,11 @@ void EditorNode::_sources_changed(bool p_exist) {
 		if (!singleton->cmdline_mode) {
 			EditorResourcePreview::get_singleton()->start();
 		}
+
+		if (license_integration_dialog->should_prompt()) {
+			license_integration_dialog->popup_on_demand();
+		}
+
 		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
 	}
 }
@@ -3638,6 +3644,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		} break;
 		case TOOLS_PROJECT_UPGRADE: {
 			project_upgrade_tool->popup_dialog();
+		} break;
+		case TOOLS_LICENSE_INTEGRATION: {
+			license_integration_dialog->popup_on_demand();
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -8117,6 +8126,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files...")), TOOLS_PROJECT_UPGRADE);
+	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/integrate_license_notices", TTRC("Integrate License Notices...")), TOOLS_LICENSE_INTEGRATION);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
@@ -8398,6 +8408,9 @@ EditorNode::EditorNode() {
 
 	orphan_resources = memnew(OrphanResourcesDialog);
 	gui_base->add_child(orphan_resources);
+
+	license_integration_dialog = memnew(LicenseIntegrationDialog);
+	gui_base->add_child(license_integration_dialog);
 
 	confirmation = memnew(ConfirmationDialog);
 	confirmation_button = confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
