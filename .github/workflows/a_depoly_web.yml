@@ -1,0 +1,247 @@
+name: 🌐 Web Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "Version number for the build"
+      platforms:
+        required: true
+        type: string
+        description: "Platforms to build"
+      godot_base_branch:
+        required: true
+        type: string
+        description: "Base branch for Godot"
+      engine_version:
+        required: true
+        type: string
+        description: "Engine version"
+      common_args:
+        required: true
+        type: string
+        description: "Common build arguments"
+      release_args:
+        required: true
+        type: string
+        description: "Release build arguments"
+      editor_args:
+        required: true
+        type: string
+        description: "Editor build arguments"
+      event_name:
+        required: true
+        type: string
+        description: "Event name triggering the build"
+      release_tag:
+        required: false
+        type: string
+        description: "Release tag name"
+    secrets:
+      GH_TOKEN:
+        required: true
+
+env:
+  SCONS_CACHE: "${{github.workspace}}/.scons-cache/"
+  SCONS_CACHE_LIMIT: "10000"
+  EM_VERSION: 3.1.62
+  EM_CACHE_FOLDER: "emsdk-cache"
+
+jobs:
+  web-editor-build:
+    name: 🌐 Web Editor Build
+    if: contains(inputs.platforms, 'web') || contains(inputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup Emscripten
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+          cache-key: emsdk-web-editor-${{inputs.godot_base_branch}}-${{github.ref}}
+      
+      - name: Verify Emscripten Installation
+        run: |
+          emcc -v
+
+      # Set up shared cache for Web Editor builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: web-editor-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            web-editor-${{inputs.godot_base_branch}}-
+            web-editor-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build Web Editor
+      - name: Build Web Editor
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=web target=editor ${{ inputs.common_args }} ${{ inputs.editor_args }}
+          platform: web
+          target: editor
+
+      - name: Prepare Files
+        run: |
+          mkdir -p artifacts
+          cp bin/godot.web.editor.wasm32.zip artifacts/editor-web.zip
+
+      - name: Upload Web Editor Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-editor-${{ inputs.version }}
+          path: artifacts/editor-web.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/editor-web.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  web-template-build:
+    name: 🌐 Web Template Build
+    if: contains(inputs.platforms, 'web') || contains(inputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup Emscripten
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+          cache-key: emsdk-web-template-${{inputs.godot_base_branch}}-${{github.ref}}
+      
+      - name: Verify Emscripten Installation
+        run: |
+          emcc -v
+
+      # Set up shared cache for Web Template builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: web-template-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            web-template-${{inputs.godot_base_branch}}-
+            web-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build Web template_release
+      - name: Build Web Template Release
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=web target=template_release threads=no ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: web
+          target: template_release
+
+      - name: Prepare Files
+        run: |
+          mkdir -p artifacts
+          cp bin/godot.web.template_release.wasm32.nothreads.zip artifacts/web.zip
+
+      - name: Upload Web Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-template-${{ inputs.version }}
+          path: artifacts/web.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/web.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          
+  web-template-build-threads:
+    name: 🌐 Web Template Build (threads)
+    if: contains(inputs.platforms, 'web') || contains(inputs.platforms, 'all')
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Setup Emscripten
+      - name: Setup Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+          cache-key: emsdk-web-template-${{inputs.godot_base_branch}}-${{github.ref}}
+      
+      - name: Verify Emscripten Installation
+        run: |
+          emcc -v
+
+      # Set up shared cache for Web Template builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: web-template-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            web-template-${{inputs.godot_base_branch}}-
+            web-template-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build Web template_release
+      - name: Build Web Template Release
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=web target=template_release ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: web
+          target: template_release
+
+      - name: Prepare Files
+        run: |
+          mkdir -p artifacts
+          cp bin/godot.web.template_release.wasm32.zip artifacts/web-threads.zip
+
+      - name: Upload Web Template Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-template-${{ inputs.version }}
+          path: artifacts/web-threads.zip
+          retention-days: 14
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/web-threads.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          

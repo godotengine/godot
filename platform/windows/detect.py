@@ -360,7 +360,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         env["AR"] = "llvm-lib"
 
         env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env.extra_suffix = env.extra_suffix
 
         # Ensure intellisense tools like `compile_commands.json` play nice with MSVC syntax.
         env["CPPDEFPREFIX"] = "-D"
@@ -743,7 +743,7 @@ def configure_mingw(env: "SConsEnvironment"):
         env["AR"] = get_detected(env, "ar")
         env["RANLIB"] = get_detected(env, "ranlib")
         env.Append(ASFLAGS=["-c"])
-        env.extra_suffix = ".llvm" + env.extra_suffix
+        env.extra_suffix =  env.extra_suffix
     else:
         env["CC"] = get_detected(env, "gcc")
         env["CXX"] = get_detected(env, "g++")

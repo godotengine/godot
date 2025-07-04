@@ -25,7 +25,7 @@ jobs:
             target: editor
             tests: true
             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
-            bin: ./bin/godot.windows.editor.x86_64.llvm.exe
+            bin: ./bin/godot.windows.editor.x86_64.exe
             compiler: clang
             cache-limit: 1
 
@@ -34,7 +34,7 @@ jobs:
             target: template_release
             tests: true
             sconsflags: debug_symbols=no use_llvm=yes
-            bin: ./bin/godot.windows.template_release.x86_64.llvm.console.exe
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: clang
             cache-limit: 2
 

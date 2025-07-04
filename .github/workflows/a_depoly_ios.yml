@@ -1,0 +1,138 @@
+name: 🍏 iOS Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: true
+        type: string
+        description: "Version number for the build"
+      platforms:
+        required: true
+        type: string
+        description: "Platforms to build"
+      godot_base_branch:
+        required: true
+        type: string
+        description: "Base branch for Godot"
+      engine_version:
+        required: true
+        type: string
+        description: "Engine version"
+      common_args:
+        required: true
+        type: string
+        description: "Common build arguments"
+      release_args:
+        required: true
+        type: string
+        description: "Release build arguments"
+      event_name:
+        required: true
+        type: string
+        description: "Event name triggering the build"
+      release_tag:
+        required: false
+        type: string
+        description: "Release tag name"
+    secrets:
+      GH_TOKEN:
+        required: true
+
+env:
+  SCONS_CACHE: "${{github.workspace}}/.scons-cache/"
+  SCONS_CACHE_LIMIT: "10000"
+
+jobs:
+  ios-build:
+    name: 🍏 iOS Release
+    if: contains(inputs.platforms, 'ios') || contains(inputs.platforms, 'all')
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Set up shared cache for all iOS builds
+      - name: Set up build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{github.workspace}}/.scons-cache/
+          # Do not use SHA in cache key to allow cache reuse across commits
+          key: ios-release-${{inputs.godot_base_branch}}-${{github.ref}}
+          restore-keys: |
+            ios-release-${{inputs.godot_base_branch}}-
+            ios-release-
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      # Build in specific order to maximize cache utilization
+      # Group by architecture, debug first then release
+
+      # iOS Simulator arm64 builds
+      - name: Build iOS Simulator (arm64) Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_debug ios_simulator=yes arch=arm64 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: ios
+          target: template_debug
+
+      - name: Build iOS Simulator (arm64) Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_release ios_simulator=yes arch=arm64 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: ios
+          target: template_release
+
+      # iOS Simulator x86_64 builds
+      - name: Build iOS Simulator (x86_64) Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_debug ios_simulator=yes arch=x86_64 ${{ inputs.common_args }} ${{ inputs.release_args }}
+          platform: ios
+          target: template_debug
+
+      - name: Build iOS Simulator (x86_64) Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_release ios_simulator=yes arch=x86_64 ${{ inputs.common_args }} ${{ inputs.release_args }} generate_bundle=yes
+          platform: ios
+          target: template_release
+
+      # iOS Device builds
+      - name: Build iOS Device Debug Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_debug ios_simulator=no
+          platform: ios
+          target: template_debug
+
+      - name: Build iOS Device Release Template
+        uses: ./.github/actions/godot-build
+        with:
+          sconsflags: platform=ios target=template_release ios_simulator=no generate_bundle=yes
+          platform: ios
+          target: template_release
+
+      - name: Upload iOS Build Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ inputs.version }}
+          path: bin/godot_ios.zip
+          retention-days: 14
+
+      - name: Prepare iOS files for release
+        if: inputs.event_name == 'release'
+        run: |
+          cp bin/godot_ios.zip bin/ios.zip
+
+      - name: Publish to GitHub Release
+        if: inputs.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: bin/ios.zip
+          tag_name: ${{ inputs.release_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }} 
