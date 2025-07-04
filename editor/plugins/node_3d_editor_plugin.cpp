@@ -5571,8 +5571,8 @@ void Node3DEditorViewport::finish_transform() {
 }
 
 // Register a shortcut and also add it as an input action with the same events.
-void Node3DEditorViewport::register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical) {
-	Ref<Shortcut> sc = ED_SHORTCUT(p_path, p_name, p_keycode, p_physical);
+void Node3DEditorViewport::register_shortcut_action(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, bool p_physical) {
+	Ref<Shortcut> sc = ED_SHORTCUT_ARRAY(p_path, p_name, p_keycodes, p_physical);
 	shortcut_changed_callback(sc, p_path);
 	// Connect to the change event on the shortcut so the input binding can be updated.
 	sc->connect_changed(callable_mp(this, &Node3DEditorViewport::shortcut_changed_callback).bind(sc, p_path));
@@ -5782,21 +5782,21 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->set_disable_shortcuts(true);
 
 	// Registering with Key::NONE intentionally creates an empty Array.
-	register_shortcut_action("spatial_editor/viewport_orbit_modifier_1", TTRC("Viewport Orbit Modifier 1"), Key::NONE);
-	register_shortcut_action("spatial_editor/viewport_orbit_modifier_2", TTRC("Viewport Orbit Modifier 2"), Key::NONE);
-	register_shortcut_action("spatial_editor/viewport_pan_modifier_1", TTRC("Viewport Pan Modifier 1"), Key::SHIFT);
-	register_shortcut_action("spatial_editor/viewport_pan_modifier_2", TTRC("Viewport Pan Modifier 2"), Key::NONE);
-	register_shortcut_action("spatial_editor/viewport_zoom_modifier_1", TTRC("Viewport Zoom Modifier 1"), Key::SHIFT);
-	register_shortcut_action("spatial_editor/viewport_zoom_modifier_2", TTRC("Viewport Zoom Modifier 2"), Key::CTRL);
+	register_shortcut_action("spatial_editor/viewport_orbit_modifier_1", TTRC("Viewport Orbit Modifier 1"), { int32_t(Key::NONE) });
+	register_shortcut_action("spatial_editor/viewport_orbit_modifier_2", TTRC("Viewport Orbit Modifier 2"), { int32_t(Key::NONE) });
+	register_shortcut_action("spatial_editor/viewport_pan_modifier_1", TTRC("Viewport Pan Modifier 1"), { int32_t(Key::SHIFT) });
+	register_shortcut_action("spatial_editor/viewport_pan_modifier_2", TTRC("Viewport Pan Modifier 2"), { int32_t(Key::NONE) });
+	register_shortcut_action("spatial_editor/viewport_zoom_modifier_1", TTRC("Viewport Zoom Modifier 1"), { int32_t(Key::SHIFT) });
+	register_shortcut_action("spatial_editor/viewport_zoom_modifier_2", TTRC("Viewport Zoom Modifier 2"), { int32_t(Key::CTRL) });
 
-	register_shortcut_action("spatial_editor/freelook_left", TTRC("Freelook Left"), Key::A, true);
-	register_shortcut_action("spatial_editor/freelook_right", TTRC("Freelook Right"), Key::D, true);
-	register_shortcut_action("spatial_editor/freelook_forward", TTRC("Freelook Forward"), Key::W, true);
-	register_shortcut_action("spatial_editor/freelook_backwards", TTRC("Freelook Backwards"), Key::S, true);
-	register_shortcut_action("spatial_editor/freelook_up", TTRC("Freelook Up"), Key::E, true);
-	register_shortcut_action("spatial_editor/freelook_down", TTRC("Freelook Down"), Key::Q, true);
-	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTRC("Freelook Speed Modifier"), Key::SHIFT);
-	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTRC("Freelook Slow Modifier"), Key::ALT);
+	register_shortcut_action("spatial_editor/freelook_left", TTRC("Freelook Left"), { int32_t(Key::A), int32_t(Key::LEFT) }, true);
+	register_shortcut_action("spatial_editor/freelook_right", TTRC("Freelook Right"), { int32_t(Key::D), int32_t(Key::RIGHT) }, true);
+	register_shortcut_action("spatial_editor/freelook_forward", TTRC("Freelook Forward"), { int32_t(Key::W), int32_t(Key::UP) }, true);
+	register_shortcut_action("spatial_editor/freelook_backwards", TTRC("Freelook Backwards"), { int32_t(Key::S), int32_t(Key::DOWN) }, true);
+	register_shortcut_action("spatial_editor/freelook_up", TTRC("Freelook Up"), { int32_t(Key::E), int32_t(Key::SPACE) }, true);
+	register_shortcut_action("spatial_editor/freelook_down", TTRC("Freelook Down"), { int32_t(Key::Q), int32_t(Key::CMD_OR_CTRL) }, true);
+	register_shortcut_action("spatial_editor/freelook_speed_modifier", TTRC("Freelook Speed Modifier"), { int32_t(Key::SHIFT) });
+	register_shortcut_action("spatial_editor/freelook_slow_modifier", TTRC("Freelook Slow Modifier"), { int32_t(Key::ALT) });
 
 	ED_SHORTCUT("spatial_editor/lock_transform_x", TTRC("Lock Transformation to X axis"), Key::X);
 	ED_SHORTCUT("spatial_editor/lock_transform_y", TTRC("Lock Transformation to Y axis"), Key::Y);
