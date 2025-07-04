@@ -1595,6 +1595,14 @@ bool GodotPhysicsServer3D::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axi
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
+void GodotPhysicsServer3D::joint_make_distance(RID p_joint, RID p_body_a, const Vector3 &p_local_a, RID p_body_b, const Vector3 &p_local_b) {
+	ERR_FAIL_MSG("GodotPhysicsServer3D does not support distance constraint.");
+}
+
+void GodotPhysicsServer3D::distance_joint_set_param(RID p_joint, DistanceJointParam p_param, real_t p_value) {
+	ERR_FAIL_MSG("GodotPhysicsServer3D does not support distance constraint.");
+}
+
 void GodotPhysicsServer3D::free(RID p_rid) {
 	_update_shapes(); //just in case
 
