@@ -321,7 +321,7 @@ struct GDScriptUtilityFunctionsDefinitions {
 
 		for (KeyValue<StringName, GDScript::MemberInfo> &E : gd_ref->member_indices) {
 			if (d.has(E.key)) {
-				inst->members.write[E.value.index] = d[E.key];
+				inst->members[E.value.index] = d[E.key];
 			}
 		}
 	}
