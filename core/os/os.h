@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
+#include "core/os/keyboard.h"
 #include "core/os/time_enums.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
@@ -182,6 +183,8 @@ public:
 
 	void set_delta_smoothing(bool p_enabled);
 	bool is_delta_smoothing_enabled() const;
+
+	virtual Key get_command_key() const;
 
 	virtual Vector<String> get_system_fonts() const { return Vector<String>(); }
 	virtual String get_system_font_path(const String &p_font_name, int p_weight = 400, int p_stretch = 100, bool p_italic = false) const { return String(); }

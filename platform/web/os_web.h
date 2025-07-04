@@ -52,6 +52,8 @@ class OS_Web : public OS_Unix {
 	bool idb_needs_sync = false;
 	bool pwa_is_waiting = false;
 
+	mutable Key command_key = Key::NONE;
+
 	WASM_EXPORT static void main_loop_callback();
 
 	WASM_EXPORT static void file_access_close_callback(const String &p_file, int p_flags);
@@ -109,6 +111,8 @@ public:
 	String get_user_data_dir(const String &p_user_dir) const override;
 
 	bool is_userfs_persistent() const override;
+
+	Key get_command_key() const override;
 
 	void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
