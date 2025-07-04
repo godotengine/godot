@@ -5482,9 +5482,11 @@ void EditorInspector::_notification(int p_what) {
 			changing++;
 
 			if (update_tree_pending) {
-				update_tree();
-				update_tree_pending = false;
-				pending.clear();
+				if (!update_tree_paused) {
+					update_tree();
+					update_tree_pending = false;
+					pending.clear();
+				}
 
 			} else {
 				while (pending.size()) {
@@ -5585,6 +5587,10 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 
 Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
+}
+
+void EditorInspector::set_update_tree_paused(bool p_paused) {
+	update_tree_paused = p_paused;
 }
 
 void EditorInspector::_show_add_meta_dialog() {
