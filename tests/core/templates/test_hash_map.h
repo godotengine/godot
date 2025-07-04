@@ -122,6 +122,33 @@ TEST_CASE("[HashMap] Iteration") {
 	}
 }
 
+TEST_CASE("[HashMap] Insertion order") {
+	HashMap<int, int> map;
+	map.insert(42, 84);
+	map.insert(123, 12385);
+	map.insert(0, 12934);
+	map.insert(123485, 1238888);
+	map.insert(123, 111111);
+
+	CHECK(*map.last() == KeyValue<int, int>(123485, 1238888));
+	CHECK(*map.renew_key(0) == 12934);
+	CHECK(*map.last() == KeyValue<int, int>(0, 12934));
+	CHECK(*map.renew_key(42) == 84);
+	CHECK(*map.last() == KeyValue<int, int>(42, 84));
+
+	Vector<Pair<int, int>> expected;
+	expected.push_back(Pair<int, int>(123, 111111));
+	expected.push_back(Pair<int, int>(123485, 1238888));
+	expected.push_back(Pair<int, int>(0, 12934));
+	expected.push_back(Pair<int, int>(42, 84));
+
+	int idx = 0;
+	for (const KeyValue<int, int> &E : map) {
+		CHECK(expected[idx] == Pair<int, int>(E.key, E.value));
+		++idx;
+	}
+}
+
 TEST_CASE("[HashMap] Const iteration") {
 	HashMap<int, int> map;
 	map.insert(42, 84);
