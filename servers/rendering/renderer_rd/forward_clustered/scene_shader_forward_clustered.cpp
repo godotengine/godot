@@ -359,8 +359,9 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 		}
 	}
 
-	depth_stencil_state.enable_stencil = stencil_enabled;
-	if (stencil_enabled) {
+	bool use_stencil = stencil_enabled && p_pipeline_key.version == PIPELINE_VERSION_COLOR_PASS;
+	depth_stencil_state.enable_stencil = use_stencil;
+	if (use_stencil) {
 		static const RD::CompareOperator stencil_compare_rd_table[STENCIL_COMPARE_MAX] = {
 			RD::COMPARE_OP_LESS,
 			RD::COMPARE_OP_EQUAL,

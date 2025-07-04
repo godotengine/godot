@@ -289,6 +289,7 @@ private:
 		bool used_screen_texture = false;
 		bool used_depth_texture = false;
 		bool used_lightmap = false;
+		bool used_opaque_stencil = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -336,6 +337,22 @@ private:
 		void sort_by_key_range(uint32_t p_from, uint32_t p_size) {
 			SortArray<GeometryInstanceSurfaceDataCache *, SortByKey> sorter;
 			sorter.sort(elements.ptr() + p_from, p_size);
+		}
+
+		struct SortByKeyAndStencil {
+			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurfaceDataCache *A, const GeometryInstanceSurfaceDataCache *B) const {
+				bool a_stencil = A->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL;
+				bool b_stencil = B->flags & GeometryInstanceSurfaceDataCache::FLAG_USES_STENCIL;
+				if (a_stencil != b_stencil) {
+					return a_stencil < b_stencil;
+				}
+				return (A->sort.sort_key2 == B->sort.sort_key2) ? (A->sort.sort_key1 < B->sort.sort_key1) : (A->sort.sort_key2 < B->sort.sort_key2);
+			}
+		};
+
+		void sort_by_key_and_stencil() {
+			SortArray<GeometryInstanceSurfaceDataCache *, SortByKeyAndStencil> sorter;
+			sorter.sort(elements.ptr(), elements.size());
 		}
 
 		struct SortByDepth {
@@ -448,6 +465,7 @@ protected:
 			FLAG_USES_NORMAL_TEXTURE = 16384,
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
 			FLAG_USES_PARTICLE_TRAILS = 65536,
+			FLAG_USES_STENCIL = 131072,
 		};
 
 		union {
