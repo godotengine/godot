@@ -4104,6 +4104,10 @@ void CanvasItemEditor::set_current_tool(Tool p_tool) {
 	_button_tool_select(p_tool);
 }
 
+void CanvasItemEditor::update_tool() {
+	get_singleton()->set_current_tool(TOOL_SELECT);
+}
+
 void CanvasItemEditor::_update_editor_settings() {
 	button_center_view->set_button_icon(get_editor_theme_icon(SNAME("CenterView")));
 	select_button->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
