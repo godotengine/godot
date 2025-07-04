@@ -36,6 +36,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/button.h"
@@ -133,9 +134,9 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 		for (int i = 0; i < points.size(); i++) {
 			if (Math::abs(float(points[i] - mb->get_position().x)) < 10 * EDSCALE) {
 				selected_point = i;
-
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
-				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+				current_blend_point_editor->setup(blend_space, selected_point, node);
+				InspectorDock::get_inspector_singleton()->edit(current_blend_point_editor.ptr());
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
 				_update_tool_erase();
@@ -336,6 +337,8 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 
 	sync->set_pressed(blend_space->is_using_sync());
 	interpolation->select(blend_space->get_blend_mode());
+	use_velocity_limit->set_pressed(blend_space->get_use_velocity_limit());
+	default_velocity_limit->set_value(blend_space->get_velocity_limit());
 
 	label_value->set_text(blend_space->get_value_label());
 
@@ -364,6 +367,11 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
+	blending_hb->set_visible(sync->is_pressed());
+	undo_redo->add_do_method(blend_space.ptr(), "set_use_velocity_limit", use_velocity_limit->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_velocity_limit", blend_space->get_use_velocity_limit());
+	undo_redo->add_do_method(blend_space.ptr(), "set_velocity_limit", default_velocity_limit->get_value());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_velocity_limit", blend_space->get_velocity_limit());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -616,6 +624,82 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 		} break;
 	}
 }
+void BlendPointEditor1D::setup(Ref<AnimationNodeBlendSpace1D> p_blend_space, int p_idx, Ref<AnimationNode> p_anim_node) {
+	blend_space = p_blend_space;
+	selected_point = p_idx;
+	anim_node = p_anim_node;
+}
+
+void BlendPointEditor1D::set_velocity_limit(float p_value) {
+	if (blend_space.is_valid()) {
+		if (updating) {
+			return;
+		}
+		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Node Velocity Limit"));
+		undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_vl", selected_point, p_value);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_vl", selected_point, blend_space->get_blend_point_vl(selected_point));
+		undo_redo->commit_action();
+		updating = false;
+	}
+}
+double BlendPointEditor1D::get_velocity_limit() const {
+	return (blend_space.is_valid()) ? blend_space->get_blend_point_vl(selected_point) : 0.0;
+}
+
+Ref<AnimationNode> BlendPointEditor1D::get_anim_node() const {
+	return anim_node;
+}
+void BlendPointEditor1D::set_velocity_limit_ease(float const p_ease) {
+	if (blend_space.is_valid()) {
+		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Blendspace Velocity Limit Ease"));
+		undo_redo->add_do_method(blend_space.ptr(), "set_velocity_limit_ease", p_ease);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_velocity_limit_ease", blend_space->get_velocity_limit_ease());
+		undo_redo->commit_action();
+		updating = false;
+	}
+}
+float BlendPointEditor1D::get_velocity_limit_ease() const {
+	return (blend_space.is_valid()) ? blend_space->get_velocity_limit_ease() : 1.0;
+}
+
+void BlendPointEditor1D::set_override_velocity_limit(bool const p_ovl) {
+	if (blend_space.is_valid()) {
+		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Node Override Velocity Limit"));
+		undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_ovl", selected_point, p_ovl);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_ovl", selected_point, blend_space->get_blend_point_ovl(selected_point));
+		undo_redo->commit_action();
+		updating = false;
+	}
+}
+bool BlendPointEditor1D::get_override_velocity_limit() const {
+	return (blend_space.is_valid()) ? blend_space->get_blend_point_ovl(selected_point) : false;
+}
+
+void BlendPointEditor1D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_velocity_limit", "value"), &BlendPointEditor1D::set_velocity_limit);
+	ClassDB::bind_method(D_METHOD("get_velocity_limit"), &BlendPointEditor1D::get_velocity_limit);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &BlendPointEditor1D::_dont_undo_redo);
+	ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &BlendPointEditor1D::_hide_script_from_inspector);
+	ClassDB::bind_method(D_METHOD("_hide_metadata_from_inspector"), &BlendPointEditor1D::_hide_metadata_from_inspector);
+
+	ClassDB::bind_method(D_METHOD("get_velocity_limit_ease"), &BlendPointEditor1D::get_velocity_limit_ease);
+	ClassDB::bind_method(D_METHOD("set_velocity_limit_ease"), &BlendPointEditor1D::set_velocity_limit_ease);
+
+	ClassDB::bind_method(D_METHOD("set_override_velocity_limit"), &BlendPointEditor1D::set_override_velocity_limit);
+	ClassDB::bind_method(D_METHOD("get_override_velocity_limit"), &BlendPointEditor1D::get_override_velocity_limit);
+
+	ClassDB::bind_method(D_METHOD("get_anim_node"), &BlendPointEditor1D::get_anim_node);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "velocity_limit_ease", PROPERTY_HINT_EXP_EASING), "set_velocity_limit_ease", "get_velocity_limit_ease");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_velocity_limit", PROPERTY_HINT_NONE), "set_override_velocity_limit", "get_override_velocity_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "velocity_limit", PROPERTY_HINT_NONE, "0,60,0.01,or_greater,suffix:/s"), "set_velocity_limit", "get_velocity_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode"), "", "get_anim_node");
+}
 
 void AnimationNodeBlendSpace1DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_space", &AnimationNodeBlendSpace1DEditor::_update_space);
@@ -645,6 +729,8 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	min_value->set_editable(!read_only);
 	max_value->set_editable(!read_only);
 	sync->set_disabled(read_only);
+	default_velocity_limit->set_editable(!read_only);
+	use_velocity_limit->set_disabled(read_only);
 	interpolation->set_disabled(read_only);
 }
 
@@ -721,6 +807,26 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	interpolation = memnew(OptionButton);
 	top_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+
+	blending_hb = memnew(HBoxContainer);
+	top_hb->add_child(blending_hb);
+	blending_hb->add_child(memnew(VSeparator));
+
+	blending_hb->add_child(memnew(Label(TTR("Use Velocity Limit:"))));
+	use_velocity_limit = memnew(CheckBox);
+	blending_hb->add_child(use_velocity_limit);
+	use_velocity_limit->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+
+	blending_hb->add_child(memnew(Label(TTR("Default Velocity limit:"))));
+	default_velocity_limit = memnew(SpinBox);
+	blending_hb->add_child(default_velocity_limit);
+	default_velocity_limit->set_min(0.0);
+	default_velocity_limit->set_step(0.01);
+	default_velocity_limit->set_max(60.0);
+	default_velocity_limit->set_suffix("/s");
+	default_velocity_limit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+
+	current_blend_point_editor.instantiate();
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
