@@ -313,6 +313,8 @@ public:
 	void remove_logger(const Ref<Logger> &p_logger);
 	void remove_script_loggers(const ScriptLanguage *p_script);
 
+	void disable_default_crash_handler();
+
 	static OS *get_singleton() { return singleton; }
 
 	OS();
