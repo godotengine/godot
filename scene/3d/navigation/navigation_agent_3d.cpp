@@ -915,7 +915,16 @@ void NavigationAgent3D::_move_to_next_waypoint() {
 bool NavigationAgent3D::_is_within_waypoint_distance(const Vector3 &p_origin) const {
 	const Vector<Vector3> &navigation_path = navigation_result->get_path();
 	Vector3 waypoint = navigation_path[navigation_path_index] - Vector3(0, path_height_offset, 0);
-	return p_origin.distance_to(waypoint) < path_desired_distance;
+	// If this is the last waypoint, and the target_desired_distance is smaller
+	// than the path_desired_distance, use the target_desired_distance.  This
+	// allows the agent to finish navigation closer to the last waypoint when
+	// the target_desired_distance is lower.
+	// More details here: https://github.com/godotengine/godot/issues/108261
+	float distance = path_desired_distance;
+	if (_is_last_waypoint() && target_desired_distance < distance) {
+		distance = target_desired_distance;
+	}
+	return p_origin.distance_to(waypoint) < distance;
 }
 
 bool NavigationAgent3D::_is_within_target_distance(const Vector3 &p_origin) const {
