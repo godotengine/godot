@@ -908,6 +908,18 @@ String OS_LinuxBSD::get_data_path() const {
 	}
 }
 
+Vector<String> OS_LinuxBSD::get_data_search_paths() const {
+	Vector<String> paths = OS_Unix::get_data_search_paths();
+
+	if (has_environment("XDG_DATA_DIRS")) {
+		paths.append_array(get_environment("XDG_DATA_DIRS").split(":", false));
+	} else {
+		paths.push_back("/usr/local/share/");
+		paths.push_back("/usr/share/");
+	}
+	return paths;
+}
+
 String OS_LinuxBSD::get_cache_path() const {
 	if (has_environment("XDG_CACHE_HOME")) {
 		if (get_environment("XDG_CACHE_HOME").is_absolute_path()) {

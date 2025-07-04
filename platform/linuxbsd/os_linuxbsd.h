@@ -114,6 +114,7 @@ public:
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
+	virtual Vector<String> get_data_search_paths() const override;
 	virtual String get_cache_path() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
