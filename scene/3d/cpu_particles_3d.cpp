@@ -39,6 +39,10 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/particle_process_material.h"
 
+RID CPUParticles3D::get_multimesh_rid() const {
+	return multimesh;
+}
+
 AABB CPUParticles3D::get_aabb() const {
 	return AABB();
 }
@@ -1516,6 +1520,7 @@ void CPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &CPUParticles3D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &CPUParticles3D::set_speed_scale);
 
+	ClassDB::bind_method(D_METHOD("get_multimesh_rid"), &CPUParticles3D::get_multimesh_rid);
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles3D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles3D::get_amount);
 	ClassDB::bind_method(D_METHOD("get_lifetime"), &CPUParticles3D::get_lifetime);
