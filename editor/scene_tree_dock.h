@@ -135,6 +135,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
+	List<Node *> node_previous_selection;
 
 	List<Node *> node_clipboard;
 	HashSet<Node *> node_clipboard_edited_scene_owned;
