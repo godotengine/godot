@@ -31,24 +31,71 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/templates/rb_set.h"
+#include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
 struct ContainerType {
 	Variant::Type builtin_type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
+	Vector<ContainerType> nested_types;
 };
 
 struct ContainerTypeValidate {
+	static constexpr int MAX_NESTING_DEPTH = 8;
+
 	Variant::Type type = Variant::NIL;
 	StringName class_name;
 	Ref<Script> script;
 	const char *where = "container";
+	Vector<ContainerTypeValidate> nested_types;
 
-	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
+	_FORCE_INLINE_ bool is_nested() const {
+		return !nested_types.is_empty();
+	}
+
+	_FORCE_INLINE_ int get_depth() const {
+		RBSet<const ContainerTypeValidate *> visited;
+		return get_depth_internal(visited);
+	}
+
+private:
+	_FORCE_INLINE_ int get_depth_internal(RBSet<const ContainerTypeValidate *> &visited) const {
+		if (visited.has(this)) {
+			return MAX_NESTING_DEPTH + 1; // Force depth validation to fail
+		}
+		visited.insert(this);
+
+		int depth = 0;
+		for (const ContainerTypeValidate &nested : nested_types) {
+			depth = MAX(depth, nested.get_depth_internal(visited));
+		}
+
+		visited.erase(this);
+		return depth + 1; // +1 for the current level
+	}
+
+public:
+	_FORCE_INLINE_ bool is_depth_valid() const {
+		return get_depth() <= MAX_NESTING_DEPTH;
+	}
+
+	bool can_reference(const ContainerTypeValidate &p_type) const {
 		if (type != p_type.type) {
 			return false;
 		} else if (type != Variant::OBJECT) {
+			// For non-object types, check nested compatibility if both have nested types
+			if (!nested_types.is_empty() && !p_type.nested_types.is_empty()) {
+				if (nested_types.size() != p_type.nested_types.size()) {
+					return false;
+				}
+				for (int i = 0; i < nested_types.size(); i++) {
+					if (!nested_types[i].can_reference(p_type.nested_types[i])) {
+						return false;
+					}
+				}
+			}
 			return true;
 		}
 
@@ -72,10 +119,10 @@ struct ContainerTypeValidate {
 	}
 
 	_FORCE_INLINE_ bool operator==(const ContainerTypeValidate &p_type) const {
-		return type == p_type.type && class_name == p_type.class_name && script == p_type.script;
+		return type == p_type.type && class_name == p_type.class_name && script == p_type.script && nested_types == p_type.nested_types;
 	}
 	_FORCE_INLINE_ bool operator!=(const ContainerTypeValidate &p_type) const {
-		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
+		return type != p_type.type || class_name != p_type.class_name || script != p_type.script || nested_types != p_type.nested_types;
 	}
 
 	// Coerces String and StringName into each other and int into float when needed.
@@ -109,6 +156,7 @@ struct ContainerTypeValidate {
 		return validate_object(inout_variant, p_operation);
 	}
 
+	// Original validate_object method (unchanged)
 	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") const {
 		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
 
