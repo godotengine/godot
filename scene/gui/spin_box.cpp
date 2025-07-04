@@ -84,6 +84,25 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
+void SpinBox::_update_prefix_suffix() {
+	if (prefix_auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS) {
+		xl_prefix = tr(prefix);
+	} else if (prefix_auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+		xl_prefix = atr(prefix);
+	} else {
+		xl_prefix = prefix;
+	}
+
+	if (suffix_auto_translate_mode == AUTO_TRANSLATE_MODE_ALWAYS) {
+		xl_suffix = tr(suffix);
+	} else if (suffix_auto_translate_mode == AUTO_TRANSLATE_MODE_INHERIT) {
+		xl_suffix = atr(suffix);
+	} else {
+		xl_suffix = suffix;
+	}
+	_update_text();
+}
+
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	double step = get_step();
 	String value = String::num(get_value(), Math::range_step_decimals(step));
@@ -97,11 +116,11 @@ void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	last_text_value = value;
 
 	if (!line_edit->is_editing()) {
-		if (!prefix.is_empty()) {
-			value = prefix + " " + value;
+		if (!xl_prefix.is_empty()) {
+			value = xl_prefix + " " + value;
 		}
-		if (!suffix.is_empty()) {
-			value += " " + suffix;
+		if (!xl_suffix.is_empty()) {
+			value += " " + xl_suffix;
 		}
 	}
 
@@ -150,7 +169,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
 		text = TS->parse_number(text);
-		text = text.trim_prefix(prefix + " ").trim_suffix(" " + suffix);
+		text = text.trim_prefix(xl_prefix + " ").trim_suffix(" " + xl_suffix);
 
 		err = expr->parse(text);
 		if (err != OK) {
@@ -505,6 +524,9 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (prefix_auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED || suffix_auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				_update_prefix_suffix();
+			}
 			queue_redraw();
 		} break;
 
@@ -531,26 +553,40 @@ void SpinBox::set_suffix(const String &p_suffix) {
 	if (suffix == p_suffix) {
 		return;
 	}
-
 	suffix = p_suffix;
-	_update_text();
+	_update_prefix_suffix();
 }
 
 String SpinBox::get_suffix() const {
 	return suffix;
 }
 
+void SpinBox::set_suffix_auto_translate_mode(AutoTranslateMode p_mode) {
+	if (suffix_auto_translate_mode == p_mode) {
+		return;
+	}
+	suffix_auto_translate_mode = p_mode;
+	_update_prefix_suffix();
+}
+
 void SpinBox::set_prefix(const String &p_prefix) {
 	if (prefix == p_prefix) {
 		return;
 	}
-
 	prefix = p_prefix;
-	_update_text();
+	_update_prefix_suffix();
 }
 
 String SpinBox::get_prefix() const {
 	return prefix;
+}
+
+void SpinBox::set_prefix_auto_translate_mode(AutoTranslateMode p_mode) {
+	if (prefix_auto_translate_mode == p_mode) {
+		return;
+	}
+	prefix_auto_translate_mode = p_mode;
+	_update_prefix_suffix();
 }
 
 void SpinBox::set_update_on_text_changed(bool p_enabled) {
@@ -627,8 +663,12 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
+	ClassDB::bind_method(D_METHOD("set_suffix_auto_translate_mode", "mode"), &SpinBox::set_suffix_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_suffix_auto_translate_mode"), &SpinBox::get_suffix_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
+	ClassDB::bind_method(D_METHOD("set_prefix_auto_translate_mode", "mode"), &SpinBox::set_prefix_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_prefix_auto_translate_mode"), &SpinBox::get_prefix_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
@@ -644,7 +684,9 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "prefix_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_prefix_auto_translate_mode", "get_prefix_auto_translate_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "suffix_auto_translate_mode", PROPERTY_HINT_ENUM, "Inherit,Always,Disabled"), "set_suffix_auto_translate_mode", "get_suffix_auto_translate_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
