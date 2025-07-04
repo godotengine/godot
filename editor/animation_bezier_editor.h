@@ -55,8 +55,8 @@ class AnimationBezierTrackEdit : public Control {
 
 	AnimationTimelineEdit *timeline = nullptr;
 	Node *root = nullptr;
-	Control *play_position = nullptr; //separate control used to draw so updates for only position changed are much faster
-	real_t play_position_pos = 0;
+	Control *play_cursor = nullptr; //separate control used to draw so updates for only position changed are much faster
+	real_t play_cursor_pos = 0;
 
 	Ref<Animation> animation;
 	bool read_only = false;
@@ -99,7 +99,7 @@ class AnimationBezierTrackEdit : public Control {
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _menu_selected(int p_index);
 
-	void _play_position_draw();
+	void _play_cursor_draw();
 	bool _is_track_displayed(int p_track_index);
 	bool _is_track_curves_displayed(int p_track_index);
 

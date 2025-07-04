@@ -8,6 +8,13 @@ Add new entries at the end of the file.
 
 ## Changes between 4.4-stable and 4.5-stable
 
+GH-106882
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/animation_track_insert_key/arguments': size changed value in new API, from 3 to 5.
+
+Optional argument added. Compatibility methods registered.
+
+
 GH-98194
 --------
 Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_show/arguments': size changed value in new API, from 7 to 8.

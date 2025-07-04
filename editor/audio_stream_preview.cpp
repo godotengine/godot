@@ -177,8 +177,6 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 		return previews[p_stream->get_instance_id()].preview;
 	}
 
-	//no preview exists
-
 	previews[p_stream->get_instance_id()] = Preview();
 
 	Preview *preview = &previews[p_stream->get_instance_id()];
@@ -187,20 +185,17 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->generating.set();
 	preview->id = p_stream->get_instance_id();
 
-	float len_s = preview->base_stream->get_length();
-	if (len_s == 0) {
-		len_s = 60 * 5; //five minutes
-	}
-
-	int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
-
 	Vector<uint8_t> maxmin;
-	int pw = frames / 20;
-	maxmin.resize(pw * 2);
-	{
-		uint8_t *ptr = maxmin.ptrw();
-		for (int i = 0; i < pw * 2; i++) {
-			ptr[i] = 127;
+	float len_s = preview->base_stream->get_length();
+	if (len_s != 0) {
+		int frames = AudioServer::get_singleton()->get_mix_rate() * len_s;
+		int pw = frames / 20;
+		maxmin.resize(pw * 2);
+		{
+			uint8_t *ptr = maxmin.ptrw();
+			for (int i = 0; i < pw * 2; i++) {
+				ptr[i] = 127;
+			}
 		}
 	}
 
@@ -214,6 +209,31 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	}
 
 	return preview->preview;
+}
+
+void AudioStreamPreview::create_key_region_data(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs) {
+	float preview_len = get_length();
+	float pixel_begin = rect.position.x;
+
+	float from_x = rect.position.x;
+
+	float pixel_len = preview_len * p_pixels_sec;
+
+	for (int i = 0; i < points.size(); i++) {
+		int pixel_idx = i / 2;
+		bool is_min = (i % 2 == 0);
+
+		float pixel_x = from_x + pixel_idx;
+		float ofs = (pixel_x - pixel_begin) * preview_len / pixel_len;
+		float ofs_n = (pixel_x + 1 - pixel_begin) * preview_len / pixel_len;
+		ofs += start_ofs;
+		ofs_n += start_ofs;
+
+		float value = is_min ? get_min(ofs, ofs_n) : get_max(ofs, ofs_n);
+		value = value * 0.5f + 0.5f;
+
+		points.write[i] = Vector2(pixel_x, rect.position.y + value * rect.size.y);
+	}
 }
 
 void AudioStreamPreviewGenerator::_bind_methods() {

@@ -30,6 +30,10 @@
 
 #ifndef DISABLE_DEPRECATED
 
+int Animation::_animation_track_insert_key_bind_compat_106882(int p_track, double p_time, const StringName &p_animation) {
+	return animation_track_insert_key(p_track, p_time, p_animation, 0, 0);
+}
+
 Vector3 Animation::_position_track_interpolate_bind_compat_86629(int p_track, double p_time) const {
 	return position_track_interpolate(p_track, p_time, false);
 }
@@ -55,6 +59,7 @@ int Animation::_track_find_key_bind_compat_92861(int p_track, double p_time, Fin
 }
 
 void Animation::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation"), &Animation::_animation_track_insert_key_bind_compat_106882);
 	ClassDB::bind_compatibility_method(D_METHOD("position_track_interpolate", "track_idx", "time_sec"), &Animation::_position_track_interpolate_bind_compat_86629);
 	ClassDB::bind_compatibility_method(D_METHOD("rotation_track_interpolate", "track_idx", "time_sec"), &Animation::_rotation_track_interpolate_bind_compat_86629);
 	ClassDB::bind_compatibility_method(D_METHOD("scale_track_interpolate", "track_idx", "time_sec"), &Animation::_scale_track_interpolate_bind_compat_86629);

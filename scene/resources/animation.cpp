@@ -146,6 +146,8 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "use_blend") {
 			if (track_get_type(track) == TYPE_AUDIO) {
 				audio_track_set_use_blend(track, p_value);
+			} else if (track_get_type(track) == TYPE_ANIMATION) {
+				animation_track_set_use_blend(track, p_value);
 			}
 		} else if (what == "interp") {
 			track_set_interpolation_type(track, InterpolationType(p_value.operator int()));
@@ -421,7 +423,7 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				ERR_FAIL_COND_V(!d.has("clips"), false);
 
 				Vector<real_t> times = d["times"];
-				Vector<String> clips = d["clips"];
+				Array clips = d["clips"];
 
 				ERR_FAIL_COND_V(clips.size() != times.size(), false);
 
@@ -429,15 +431,28 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 					int valcount = times.size();
 
 					const real_t *rt = times.ptr();
-					const String *rc = clips.ptr();
 
-					an->values.resize(valcount);
+					an->values.clear();
 
 					for (int i = 0; i < valcount; i++) {
-						TKey<StringName> ak;
+						Dictionary d2 = clips[i];
+						if (!d2.has("start_offset")) {
+							continue;
+						}
+						if (!d2.has("end_offset")) {
+							continue;
+						}
+						if (!d2.has("animation")) {
+							continue;
+						}
+
+						TKey<AnimationKey> ak;
 						ak.time = rt[i];
-						ak.value = rc[i];
-						an->values.write[i] = ak;
+						ak.value.start_offset = d2["start_offset"];
+						ak.value.end_offset = d2["end_offset"];
+						ak.value.animation = d2["animation"];
+
+						an->values.push_back(ak);
 					}
 				}
 
@@ -575,6 +590,8 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "use_blend") {
 			if (track_get_type(track) == TYPE_AUDIO) {
 				r_ret = audio_track_is_use_blend(track);
+			} else if (track_get_type(track) == TYPE_ANIMATION) {
+				r_ret = animation_track_is_use_blend(track);
 			}
 		} else if (what == "interp") {
 			r_ret = track_get_interpolation_type(track);
@@ -831,21 +848,26 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 				Dictionary d;
 
 				Vector<real_t> key_times;
-				Vector<String> clips;
+				Array clips;
 
 				int kk = an->values.size();
 
 				key_times.resize(kk);
-				clips.resize(kk);
 
 				real_t *wti = key_times.ptrw();
-				String *wcl = clips.ptrw();
 
-				const TKey<StringName> *vls = an->values.ptr();
+				int idx = 0;
+
+				const TKey<AnimationKey> *vls = an->values.ptr();
 
 				for (int i = 0; i < kk; i++) {
-					wti[i] = vls[i].time;
-					wcl[i] = vls[i].value;
+					wti[idx] = vls[i].time;
+					Dictionary clip;
+					clip["start_offset"] = vls[i].value.start_offset;
+					clip["end_offset"] = vls[i].value.end_offset;
+					clip["animation"] = vls[i].value.animation;
+					clips.push_back(clip);
+					idx++;
 				}
 
 				d["times"] = key_times;
@@ -882,7 +904,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
-		if (track_get_type(i) == TYPE_AUDIO) {
+		if (track_get_type(i) == TYPE_AUDIO || track_get_type(i) == TYPE_ANIMATION) {
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/use_blend", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
@@ -1824,10 +1846,16 @@ int Animation::track_insert_key(int p_track, double p_time, const Variant &p_key
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 
-			TKey<StringName> ak;
-			ak.time = p_time;
-			ak.value = p_key;
+			Dictionary k = p_key;
+			ERR_FAIL_COND_V(!k.has("start_offset"), -1);
+			ERR_FAIL_COND_V(!k.has("end_offset"), -1);
+			ERR_FAIL_COND_V(!k.has("animation"), -1);
 
+			TKey<AnimationKey> ak;
+			ak.time = p_time;
+			ak.value.start_offset = k["start_offset"];
+			ak.value.end_offset = k["end_offset"];
+			ak.value.animation = k["animation"];
 			ret = _insert(p_time, at->values, ak);
 
 		} break;
@@ -1966,7 +1994,11 @@ Variant Animation::track_get_key_value(int p_track, int p_key_idx) const {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_INDEX_V(p_key_idx, at->values.size(), Variant());
 
-			return at->values[p_key_idx].value;
+			Dictionary k;
+			k["start_offset"] = at->values[p_key_idx].value.start_offset;
+			k["end_offset"] = at->values[p_key_idx].value.end_offset;
+			k["animation"] = at->values[p_key_idx].value.animation;
+			return k;
 
 		} break;
 	}
@@ -2146,7 +2178,7 @@ void Animation::track_set_key_time(int p_track, int p_key_idx, double p_time) {
 		case TYPE_ANIMATION: {
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
-			TKey<StringName> key = at->values[p_key_idx];
+			TKey<AnimationKey> key = at->values[p_key_idx];
 			key.time = p_time;
 			at->values.remove_at(p_key_idx);
 			_insert(p_time, at->values, key);
@@ -2341,7 +2373,14 @@ void Animation::track_set_key_value(int p_track, int p_key_idx, const Variant &p
 			AnimationTrack *at = static_cast<AnimationTrack *>(t);
 			ERR_FAIL_INDEX(p_key_idx, at->values.size());
 
-			at->values.write[p_key_idx].value = p_value;
+			Dictionary k = p_value;
+			ERR_FAIL_COND(!k.has("start_offset"));
+			ERR_FAIL_COND(!k.has("end_offset"));
+			ERR_FAIL_COND(!k.has("animation"));
+
+			at->values.write[p_key_idx].value.start_offset = k["start_offset"];
+			at->values.write[p_key_idx].value.end_offset = k["end_offset"];
+			at->values.write[p_key_idx].value.animation = k["animation"];
 
 		} break;
 	}
@@ -3800,16 +3839,24 @@ bool Animation::audio_track_is_use_blend(int p_track) const {
 
 //
 
-int Animation::animation_track_insert_key(int p_track, double p_time, const StringName &p_animation) {
+int Animation::animation_track_insert_key(int p_track, double p_time, const StringName &p_animation, real_t p_start_offset, real_t p_end_offset) {
 	ERR_FAIL_INDEX_V(p_track, tracks.size(), -1);
 	Track *t = tracks[p_track];
 	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, -1);
 
 	AnimationTrack *at = static_cast<AnimationTrack *>(t);
 
-	TKey<StringName> k;
+	TKey<AnimationKey> k;
 	k.time = p_time;
-	k.value = p_animation;
+	k.value.animation = p_animation;
+	k.value.start_offset = p_start_offset;
+	if (k.value.start_offset < 0) {
+		k.value.start_offset = 0;
+	}
+	k.value.end_offset = p_end_offset;
+	if (k.value.end_offset < 0) {
+		k.value.end_offset = 0;
+	}
 
 	int key = _insert(p_time, at->values, k);
 
@@ -3827,7 +3874,42 @@ void Animation::animation_track_set_key_animation(int p_track, int p_key, const 
 
 	ERR_FAIL_INDEX(p_key, at->values.size());
 
-	at->values.write[p_key].value = p_animation;
+	at->values.write[p_key].value.animation = p_animation;
+
+	emit_changed();
+}
+
+void Animation::animation_track_set_key_start_offset(int p_track, int p_key, real_t p_offset) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_ANIMATION);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+
+	ERR_FAIL_INDEX(p_key, at->values.size());
+
+	if (p_offset < 0) {
+		p_offset = 0;
+	}
+
+	at->values.write[p_key].value.start_offset = p_offset;
+
+	emit_changed();
+}
+
+void Animation::animation_track_set_key_end_offset(int p_track, int p_key, real_t p_offset) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_ANIMATION);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+	ERR_FAIL_INDEX(p_key, at->values.size());
+
+	if (p_offset < 0) {
+		p_offset = 0;
+	}
+
+	at->values.write[p_key].value.end_offset = p_offset;
 
 	emit_changed();
 }
@@ -3841,7 +3923,52 @@ StringName Animation::animation_track_get_key_animation(int p_track, int p_key) 
 
 	ERR_FAIL_INDEX_V(p_key, at->values.size(), StringName());
 
-	return at->values[p_key].value;
+	return at->values[p_key].value.animation;
+}
+
+real_t Animation::animation_track_get_key_start_offset(int p_track, int p_key) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0.0);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, 0.0);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+
+	ERR_FAIL_INDEX_V(p_key, at->values.size(), 0);
+
+	return at->values[p_key].value.start_offset;
+}
+
+real_t Animation::animation_track_get_key_end_offset(int p_track, int p_key) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), 0.0);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, 0.0);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+
+	ERR_FAIL_INDEX_V(p_key, at->values.size(), 0);
+
+	return at->values[p_key].value.end_offset;
+}
+
+void Animation::animation_track_set_use_blend(int p_track, bool p_enable) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_ANIMATION);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+
+	at->use_blend = p_enable;
+	emit_changed();
+}
+
+bool Animation::animation_track_is_use_blend(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_ANIMATION, false);
+
+	AnimationTrack *at = static_cast<AnimationTrack *>(t);
+
+	return at->use_blend;
 }
 
 void Animation::set_length(real_t p_length) {
@@ -4038,9 +4165,15 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("audio_track_set_use_blend", "track_idx", "enable"), &Animation::audio_track_set_use_blend);
 	ClassDB::bind_method(D_METHOD("audio_track_is_use_blend", "track_idx"), &Animation::audio_track_is_use_blend);
 
-	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation"), &Animation::animation_track_insert_key);
+	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation", "start_offset", "end_offset"), &Animation::animation_track_insert_key, DEFVAL(0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
+	ClassDB::bind_method(D_METHOD("animation_track_set_key_start_offset", "track_idx", "key_idx", "offset"), &Animation::animation_track_set_key_start_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_set_key_end_offset", "track_idx", "key_idx", "offset"), &Animation::animation_track_set_key_end_offset);
 	ClassDB::bind_method(D_METHOD("animation_track_get_key_animation", "track_idx", "key_idx"), &Animation::animation_track_get_key_animation);
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_start_offset", "track_idx", "key_idx"), &Animation::animation_track_get_key_start_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_get_key_end_offset", "track_idx", "key_idx"), &Animation::animation_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("animation_track_set_use_blend", "track_idx", "enable"), &Animation::animation_track_set_use_blend);
+	ClassDB::bind_method(D_METHOD("animation_track_is_use_blend", "track_idx"), &Animation::animation_track_is_use_blend);
 
 	ClassDB::bind_method(D_METHOD("add_marker", "name", "time"), &Animation::add_marker);
 	ClassDB::bind_method(D_METHOD("remove_marker", "name"), &Animation::remove_marker);

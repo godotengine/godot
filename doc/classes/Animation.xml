@@ -58,13 +58,41 @@
 				Returns the animation name at the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
 			</description>
 		</method>
+		<method name="animation_track_get_key_end_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the end offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
+				End offset is the number of seconds cut off at the ending of the animation.
+			</description>
+		</method>
+		<method name="animation_track_get_key_start_offset" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the start offset of the key identified by [param key_idx]. The [param track_idx] must be the index of an Animation Track.
+				Start offset is the number of seconds cut off at the beginning of the animation.
+			</description>
+		</method>
 		<method name="animation_track_insert_key">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time" type="float" />
 			<param index="2" name="animation" type="StringName" />
+			<param index="3" name="start_offset" type="float" default="0" />
+			<param index="4" name="end_offset" type="float" default="0" />
 			<description>
 				Inserts a key with value [param animation] at the given [param time] (in seconds). The [param track_idx] must be the index of an Animation Track.
+				[param animation] is the [Animation] resource to play. [param start_offset] is the number of seconds cut off at the beginning of the animation, while [param end_offset] is at the ending.
+			</description>
+		</method>
+		<method name="animation_track_is_use_blend" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at [param track_idx] will be blended with other animations.
 			</description>
 		</method>
 		<method name="animation_track_set_key_animation">
@@ -74,6 +102,32 @@
 			<param index="2" name="animation" type="StringName" />
 			<description>
 				Sets the key identified by [param key_idx] to value [param animation]. The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="animation_track_set_key_end_offset">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
+			<description>
+				Sets the end offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="animation_track_set_key_start_offset">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<param index="2" name="offset" type="float" />
+			<description>
+				Sets the start offset of the key identified by [param key_idx] to value [param offset]. The [param track_idx] must be the index of an Animation Track.
+			</description>
+		</method>
+		<method name="animation_track_set_use_blend">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets whether the track will be blended with other animations. If [code]true[/code], the animation changes depending on the blend value.
 			</description>
 		</method>
 		<method name="audio_track_get_key_end_offset" qualifiers="const">

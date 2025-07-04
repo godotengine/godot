@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  audio_stream_preview.h                                                */
+/*  animation_preview.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,58 +30,70 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/main/node.h"
-#include "servers/audio/audio_stream.h"
+#include "scene/resources/animation.h"
 
-class AudioStreamPreview : public RefCounted {
-	GDCLASS(AudioStreamPreview, RefCounted);
-	friend class AudioStream;
-	Vector<uint8_t> preview;
+struct TrackKeyTime {
+	int track_index;
+	float time;
+	bool operator<(const TrackKeyTime &p_other) const {
+		return time < p_other.time;
+	}
+};
+
+class AnimationPreview : public RefCounted {
+	GDCLASS(AnimationPreview, RefCounted);
+	friend class Preview;
+
+private:
+	Vector<float> key_times;
+	Vector<TrackKeyTime> track_key_times;
 	float length;
+	int track_count;
 
-	friend class AudioStreamPreviewGenerator;
+	friend class AnimationPreviewGenerator;
 	uint64_t version = 1;
 
 public:
 	uint64_t get_version() const { return version; }
-	float get_length() const;
-	float get_max(float p_time, float p_time_next) const;
-	float get_min(float p_time, float p_time_next) const;
+	float get_length() const { return length; }
+	Vector<float> get_key_times() const { return key_times; }
+	Vector<TrackKeyTime> get_key_times_with_tracks() const { return track_key_times; }
+
+	int get_track_count() const { return track_count; }
 
 	void create_key_region_data(Vector<Vector2> &points, const Rect2 &rect, const float p_pixels_sec, float start_ofs);
 
-	AudioStreamPreview();
+	AnimationPreview();
 };
 
-class AudioStreamPreviewGenerator : public Node {
-	GDCLASS(AudioStreamPreviewGenerator, Node);
+class AnimationPreviewGenerator : public Node {
+	GDCLASS(AnimationPreviewGenerator, Node);
 
-	static AudioStreamPreviewGenerator *singleton;
+	static AnimationPreviewGenerator *singleton;
 
+public:
 	struct Preview {
-		Ref<AudioStreamPreview> preview;
-		Ref<AudioStream> base_stream;
-		Ref<AudioStreamPlayback> playback;
+		Ref<Animation> base_anim;
+		Ref<AnimationPreview> preview;
 		SafeFlag generating;
 		ObjectID id;
 		Thread *thread = nullptr;
 
-		// Needed for the bookkeeping of the Map
 		void operator=(const Preview &p_rhs) {
+			base_anim = p_rhs.base_anim;
 			preview = p_rhs.preview;
-			base_stream = p_rhs.base_stream;
-			playback = p_rhs.playback;
-			generating.set_to(generating.is_set());
+			generating.set_to(p_rhs.generating.is_set());
 			id = p_rhs.id;
 			thread = p_rhs.thread;
 		}
 		Preview(const Preview &p_rhs) {
+			base_anim = p_rhs.base_anim;
 			preview = p_rhs.preview;
-			base_stream = p_rhs.base_stream;
-			playback = p_rhs.playback;
-			generating.set_to(generating.is_set());
+			generating.set_to(p_rhs.generating.is_set());
 			id = p_rhs.id;
 			thread = p_rhs.thread;
 		}
@@ -100,9 +112,12 @@ protected:
 	static void _bind_methods();
 
 public:
-	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
+	static AnimationPreviewGenerator *get_singleton() { return singleton; }
 
-	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
+	Ref<AnimationPreview> generate_preview(const Ref<Animation> &p_animation);
 
-	AudioStreamPreviewGenerator();
+	void clear_cache();
+	void invalidate_cache(const Ref<Animation> &p_animation);
+
+	AnimationPreviewGenerator();
 };

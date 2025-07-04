@@ -156,7 +156,7 @@ void AnimationPlayer::_notification(int p_what) {
 	}
 }
 
-void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current) {
+void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current, bool p_ignore_loop) {
 	double speed = speed_scale * cd.speed_scale;
 	bool backwards = std::signbit(speed); // Negative zero means playing backwards too.
 	double delta = p_started ? 0 : p_delta * speed;
@@ -167,7 +167,12 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 
 	Animation::LoopedFlag looped_flag = Animation::LOOPED_FLAG_NONE;
 
-	switch (cd.from->animation->get_loop_mode()) {
+	Animation::LoopMode loop_mode = cd.from->animation->get_loop_mode();
+	if (p_ignore_loop) {
+		loop_mode = Animation::LOOP_NONE;
+	}
+
+	switch (loop_mode) {
 		case Animation::LOOP_NONE: {
 			if (Animation::is_less_approx(next_pos, start)) {
 				next_pos = start;
@@ -207,7 +212,7 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 
 	// End detection.
 	if (p_is_current) {
-		if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
+		if (loop_mode == Animation::LOOP_NONE) {
 			if (!backwards && Animation::is_less_or_equal_approx(prev_pos, end) && Math::is_equal_approx(next_pos, end)) {
 				// Playback finished.
 				next_pos = end; // Snap to the edge.
