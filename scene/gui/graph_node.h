@@ -98,6 +98,12 @@ protected:
 	void _set_ports(const Vector<GraphPort *> &p_ports);
 	const Vector<GraphPort *> &_get_ports();
 
+	void _add_port(GraphPort *p_port);
+	void _insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	void _remove_port(int p_port_index, bool p_include_disabled = true);
+	void _set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	void _remove_all_ports();
+
 	virtual void _port_pos_update();
 	virtual void _port_rebuild_cache();
 	void _port_modified();

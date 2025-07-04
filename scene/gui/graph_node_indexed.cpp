@@ -111,6 +111,15 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 
 void GraphNodeIndexed::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (theme_cache.slot.is_valid()) {
+				Size2 min_slot_s = theme_cache.slot->get_minimum_size();
+				if (theme_cache.slot_selected.is_valid()) {
+					min_slot_s = min_slot_s.max(theme_cache.slot_selected->get_minimum_size());
+				}
+				port_container->set_custom_minimum_size(min_slot_s);
+			}
+		} break;
 		case NOTIFICATION_DRAW: {
 			// Used for layout calculations.
 			Ref<StyleBox> sb_panel = theme_cache.panel;
@@ -285,10 +294,10 @@ void GraphNodeIndexed::set_slot(int p_slot_index, GraphPort *p_left_port, GraphP
 }
 
 void GraphNodeIndexed::_port_pos_update() {
-	int edgeofs = -theme_cache.port_h_offset;
+	int edgeofs = theme_cache.port_h_offset;
 
-	Point2 container_pos = port_container->get_position();
 	Size2 node_size = get_size() / 2; // Don't ask me why this needs to be halved. I don't know. lol
+	Point2 port_container_size = port_container->get_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
@@ -296,17 +305,17 @@ void GraphNodeIndexed::_port_pos_update() {
 			continue;
 		}
 
-		Size2i size = child->get_rect().size / 2; // Same goes for this. In total, it's getting divided by 4. Again, no idea.
+		Size2i size = child->get_size() / 2; // Same goes for this. In total, it's getting divided by 4. Again, no idea.
 		Point2 pos = child->get_position();
 
 		if (_slot_node_map_cache.has(child->get_name())) {
 			int slot_index = _slot_node_map_cache[child->get_name()];
 			const Slot &slot = slots[slot_index];
 			if (slot.left_port) {
-				slot.left_port->set_position(Point2(edgeofs, pos.y + size.height / 2) - container_pos);
+				slot.left_port->set_position(Point2(pos.x - edgeofs, pos.y + size.height / 2));
 			}
 			if (slot.right_port) {
-				slot.right_port->set_position(Point2(node_size.width - edgeofs, pos.y + size.height / 2) - container_pos);
+				slot.right_port->set_position(Point2(pos.x + node_size.width + port_container_size.width + edgeofs, pos.y + size.height / 2));
 			}
 		}
 	}
@@ -533,6 +542,14 @@ void GraphNodeIndexed::_bind_methods() {
 }
 
 GraphNodeIndexed::GraphNodeIndexed() {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	if (theme_cache.slot.is_valid()) {
+		Size2 min_slot_s = theme_cache.slot->get_minimum_size();
+		if (theme_cache.slot_selected.is_valid()) {
+			min_slot_s = min_slot_s.max(theme_cache.slot_selected->get_minimum_size());
+		}
+		port_container->set_custom_minimum_size(min_slot_s);
+	}
 }
 
 GraphNodeIndexed::Slot::Slot() {

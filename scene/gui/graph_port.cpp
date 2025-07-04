@@ -56,6 +56,11 @@ void GraphPort::_notification(int p_what) {
 				parent = parent->get_parent();
 			}
 		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			graph_edit->disconnect_all_by_port(this);
+			graph_edit = nullptr;
+			graph_node = nullptr;
+		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
 		} break;
@@ -196,6 +201,36 @@ int GraphPort::get_filtered_index(bool p_include_disabled) {
 	return p_include_disabled ? _filtered_index : _filtered_enabled_index;
 }
 
+void GraphPort::disconnect_all() {
+	ERR_FAIL_NULL(graph_edit);
+	switch (on_disabled_behaviour) {
+		case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
+			int prev_port_idx = get_index() - 1;
+			if (prev_port_idx >= 0) {
+				GraphPort *prev_port = graph_node->get_port(prev_port_idx);
+				if (prev_port) {
+					graph_edit->move_connections(this, prev_port);
+					break;
+				}
+			}
+		} break;
+		case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
+			int next_port_idx = get_index() + 1;
+			if (next_port_idx < graph_node->get_port_count()) {
+				GraphPort *next_port = graph_node->get_port(next_port_idx);
+				if (next_port) {
+					graph_edit->move_connections(this, next_port);
+					break;
+				}
+			}
+		} break;
+		case GraphPort::DisconnectBehaviour::DISCONNECT_ALL:
+		default:
+			break;
+	}
+	graph_edit->disconnect_all_by_port(this);
+}
+
 void GraphPort::_draw() {
 	if (!enabled || !is_visible()) {
 		return;
@@ -292,9 +327,11 @@ void GraphPort::_bind_methods() {
 }
 
 GraphPort::GraphPort() {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 }
 
 GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	enabled = p_enabled;
 	exclusive = p_exclusive;
 	type = p_type;

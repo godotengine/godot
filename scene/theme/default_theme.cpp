@@ -796,7 +796,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hotzone_extent_v_output", "GraphPort", Math::round(22 * scale));
 	theme->set_constant("hotzone_extent_h_undirected", "GraphPort", Math::round(26 * scale));
 	theme->set_constant("hotzone_extent_v_undirected", "GraphPort", Math::round(22 * scale));
-	theme->set_constant("hotzone_offset_h", "GraphPort", -7);
+	theme->set_constant("hotzone_offset_h", "GraphPort", 7);
 	theme->set_constant("hotzone_offset_v", "GraphPort", 0);
 
 	// GraphNode
@@ -1315,7 +1315,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("outline_size", "FoldableContainer", 0);
 	theme->set_constant("h_separation", "FoldableContainer", Math::round(2 * scale));
 
-	// Visual Node Ports
+	// VSGraphPort
 
 	theme->set_constant("hotzone_extent_h_input", "VSGraphPort", Math::round(26 * scale));
 	theme->set_constant("hotzone_extent_v_input", "VSGraphPort", Math::round(22 * scale));
@@ -1323,8 +1323,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hotzone_extent_v_output", "VSGraphPort", Math::round(22 * scale));
 	theme->set_constant("hotzone_extent_h_undirected", "VSGraphPort", Math::round(26 * scale));
 	theme->set_constant("hotzone_extent_v_undirected", "VSGraphPort", Math::round(22 * scale));
-	theme->set_constant("hotzone_offset_h", "VSGraphPort", -7);
+	theme->set_constant("hotzone_offset_h", "VSGraphPort", 7);
 	theme->set_constant("hotzone_offset_v", "VSGraphPort", 0);
+
+	// VSGraphNode
+
+	theme->set_stylebox("slot", "VSGraphNode", graphnode_slot);
+	theme->set_stylebox("slot_selected", "VSGraphNode", focus);
 
 	// GraphEditMinimap
 

@@ -229,6 +229,8 @@ class VisualShaderEditor : public ShaderEditor {
 	Button *shader_preview_button = nullptr;
 	Control *toolbar = nullptr;
 
+	LocalVector<Color> category_color;
+
 	int last_to_node = -1;
 	int last_to_port = -1;
 	Label *info_label = nullptr;

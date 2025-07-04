@@ -274,10 +274,7 @@ private:
 	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
 	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);
-	void _graph_node_port_added(GraphPort *p_port, Node *p_node);
-	void _graph_node_port_removed(GraphPort *p_port, Node *p_node);
-	void _graph_node_port_replaced(GraphPort *p_old_port, GraphPort *p_new_port, Node *p_node);
-	void _graph_node_port_disabled(GraphPort *p_port, Node *p_node);
+	void _graph_node_ports_updated(GraphNode *p_node);
 	void _graph_node_rect_changed(GraphNode *p_node);
 
 	void _ensure_node_order_from_root(const StringName &p_node);

@@ -135,6 +135,8 @@ public:
 	int get_index(bool p_include_disabled = true);
 	int get_filtered_index(bool p_include_disabled = true);
 
+	void disconnect_all();
+
 	GraphPort();
 	GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);
 };

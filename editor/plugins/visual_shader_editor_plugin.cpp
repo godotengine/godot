@@ -137,9 +137,11 @@ void VSGraphPort::_draw() {
 }
 
 VSGraphPort::VSGraphPort() {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 }
 
 VSGraphPort::VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	enabled = p_enabled;
 	exclusive = p_exclusive;
 	type = p_type;
@@ -265,7 +267,7 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 
 		if (p_port_id != -1 && link.output_ports[p_port_id].preview_button != nullptr) {
 			if (is_dirty) {
-				link.preview_pos = link.graph_element->get_child_count();
+				link.preview_pos = link.graph_element->get_child_count(false);
 			}
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
@@ -640,37 +642,10 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	}
 	Shader::Mode mode = visual_shader->get_mode();
 
-	Control *offset;
-
-	const Color type_color[] = {
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector2_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector3_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector4_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/boolean_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/transform_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
-	};
-
-	// Keep in sync with VisualShaderNode::Category.
-	const Color category_color[VisualShaderNode::Category::CATEGORY_MAX] = {
-		Color(0.0, 0.0, 0.0), // None (default, not used)
-		EDITOR_GET("editors/visual_editors/category_colors/output_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/color_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/conditional_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/input_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/textures_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/transform_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/utility_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/vector_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/special_color"),
-		EDITOR_GET("editors/visual_editors/category_colors/particle_color"),
-	};
-
+	const TypedArray<Color> &type_color = graph->get_type_colors();
 	static const String vector_expanded_name[4] = { "red", "green", "blue", "alpha" };
+
+	Control *offset;
 
 	Ref<VisualShaderNode> vsnode = visual_shader->get_node(p_type, p_id);
 	ERR_FAIL_COND(vsnode.is_null());
@@ -724,11 +699,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	// Set the node's titlebar color based on its category.
 	if (vsnode->get_category() != VisualShaderNode::CATEGORY_NONE && !is_frame && !is_reroute) {
 		Ref<StyleBoxFlat> sb_colored = editor->get_theme_stylebox("titlebar", "GraphNode")->duplicate();
-		sb_colored->set_bg_color(category_color[vsnode->get_category()]);
+		sb_colored->set_bg_color(editor->category_color[vsnode->get_category()]);
 		node->add_theme_style_override("titlebar", sb_colored);
 
 		Ref<StyleBoxFlat> sb_colored_selected = editor->get_theme_stylebox("titlebar_selected", "GraphNode")->duplicate();
-		sb_colored_selected->set_bg_color(category_color[vsnode->get_category()].lightened(0.2));
+		sb_colored_selected->set_bg_color(editor->category_color[vsnode->get_category()].lightened(0.2));
 		node->add_theme_style_override("titlebar_selected", sb_colored_selected);
 	}
 
@@ -1050,6 +1025,8 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	VisualShaderNode::PortType expanded_type = VisualShaderNode::PORT_TYPE_SCALAR;
 	int expanded_port_counter = 0;
 
+	// i: index in output ports, including expanded ports (sorta)
+	// j: index in input ports
 	for (int i = 0, j = 0; i < max_ports; i++, j++) {
 		switch (expanded_type) {
 			case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
@@ -1280,7 +1257,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			idx = 0;
 		}
 		if (!is_frame) {
-			GraphNodeIndexed *graph_node = Object::cast_to<GraphNodeIndexed>(node);
+			VSGraphNode *graph_node = Object::cast_to<VSGraphNode>(node);
 
 			graph_node->set_slot_properties(idx, valid_left, port_type_left, valid_right, port_type_right);
 
@@ -1314,6 +1291,17 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 	}
+	/*
+	if (!is_frame && !is_reroute) {
+		VSGraphNode *gnode = cast_to<VSGraphNode>(node);
+		for (const Ref<GraphConnection> &conn : graph->get_connections()) {
+			if (E.to_node == p_id && E.to_port == j) {
+				port_left_used = true;
+				break;
+			}
+			gnode->get_input_port(j);
+		}
+	}*/
 
 	bool has_relative_parameter_instances = false;
 	if (vsnode->get_output_port_for_preview() >= 0) {
@@ -2545,6 +2533,21 @@ void VisualShaderEditor::_update_graph() {
 		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
 	};
 	graph->set_type_colors(type_color);
+
+	category_color = LocalVector<Color>({
+			Color(0.0, 0.0, 0.0), // None (default, not used)
+			EDITOR_GET("editors/visual_editors/category_colors/output_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/color_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/conditional_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/input_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/scalar_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/textures_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/transform_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/utility_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/vector_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/special_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/particle_color"),
+	});
 
 	if (visual_shader.is_null()) {
 		return;
@@ -6415,6 +6418,21 @@ VisualShaderEditor::VisualShaderEditor() {
 	EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &VisualShaderEditor::_resource_saved));
 	FileSystemDock::get_singleton()->get_script_create_dialog()->connect("script_created", callable_mp(this, &VisualShaderEditor::_script_created));
 	FileSystemDock::get_singleton()->connect("resource_removed", callable_mp(this, &VisualShaderEditor::_resource_removed));
+
+	category_color = LocalVector<Color>({
+			Color(0.0, 0.0, 0.0), // None (default, not used)
+			EDITOR_GET("editors/visual_editors/category_colors/output_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/color_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/conditional_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/input_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/scalar_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/textures_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/transform_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/utility_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/vector_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/special_color"),
+			EDITOR_GET("editors/visual_editors/category_colors/particle_color"),
+	});
 
 	HSplitContainer *main_box = memnew(HSplitContainer);
 	main_box->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);

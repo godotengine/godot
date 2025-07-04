@@ -36,18 +36,6 @@
 #include "scene/gui/label.h"
 #include "scene/theme/theme_db.h"
 
-void GraphNode::_set_ports(const Vector<GraphPort *> &p_ports) {
-	remove_all_ports();
-
-	for (GraphPort *port : ports) {
-		add_port(port);
-	}
-}
-
-const Vector<GraphPort *> &GraphNode::_get_ports() {
-	return ports;
-}
-
 void GraphNode::_resort() {
 	Size2 new_size = get_size();
 	Ref<StyleBox> sb_panel = theme_cache.panel;
@@ -400,20 +388,28 @@ void GraphNode::_notification(int p_what) {
 	}
 }
 
-void GraphNode::add_port(GraphPort *p_port) {
+void GraphNode::_set_ports(const Vector<GraphPort *> &p_ports) {
+	_remove_all_ports();
+	for (GraphPort *port : ports) {
+		_add_port(port);
+	}
+	_port_modified();
+}
+
+const Vector<GraphPort *> &GraphNode::_get_ports() {
+	return ports;
+}
+
+void GraphNode::_add_port(GraphPort *p_port) {
 	ports.push_back(p_port);
 
 	if (p_port) {
 		p_port->graph_node = this;
 		p_port->connect("modified", callable_mp(this, &GraphNode::_port_modified));
 	}
-
-	_port_modified();
-
-	emit_signal(SNAME("port_added"), p_port);
 }
 
-void GraphNode::insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+void GraphNode::_insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
 	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled) + 1);
 
 	int idx = p_port_index;
@@ -428,13 +424,26 @@ void GraphNode::insert_port(int p_port_index, GraphPort *p_port, bool p_include_
 		p_port->graph_node = this;
 		p_port->connect("modified", callable_mp(this, &GraphNode::_port_modified));
 	}
-
-	_port_modified();
-
-	emit_signal(SNAME("port_added"), p_port);
 }
 
-void GraphNode::set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+void GraphNode::_remove_port(int p_port_index, bool p_include_disabled) {
+	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled));
+
+	int idx = p_port_index;
+	if (!p_include_disabled) {
+		idx = enabled_index_to_port_index(p_port_index);
+		ERR_FAIL_COND_MSG(idx == -1, "port index out of bounds - fewer than p_port_index ports are enabled.");
+	}
+
+	GraphPort *old_port = ports[idx];
+	ports.remove_at(idx);
+
+	if (old_port) {
+		old_port->disconnect("modified", callable_mp(this, &GraphNode::_port_modified));
+	}
+}
+
+void GraphNode::_set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
 	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled));
 
 	int idx = p_port_index;
@@ -453,44 +462,15 @@ void GraphNode::set_port(int p_port_index, GraphPort *p_port, bool p_include_dis
 		p_port->graph_node = this;
 		p_port->connect("modified", callable_mp(this, &GraphNode::_port_modified));
 	}
-
-	_port_modified();
-
-	emit_signal(SNAME("port_replaced"), old_port, p_port);
 }
 
-void GraphNode::remove_port(int p_port_index, bool p_include_disabled) {
-	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled));
-
-	int idx = p_port_index;
-	if (!p_include_disabled) {
-		idx = enabled_index_to_port_index(p_port_index);
-		ERR_FAIL_COND_MSG(idx == -1, "port index out of bounds - fewer than p_port_index ports are enabled.");
-	}
-
-	GraphPort *old_port = ports[idx];
-	ports.remove_at(idx);
-
-	if (old_port) {
-		old_port->disconnect("modified", callable_mp(this, &GraphNode::_port_modified));
-	}
-
-	_port_modified();
-
-	emit_signal(SNAME("port_removed"), old_port);
-}
-
-void GraphNode::remove_all_ports() {
+void GraphNode::_remove_all_ports() {
 	if (ports.is_empty()) {
 		return;
 	}
-	TypedArray<GraphPort> old_ports;
 	for (int i = port_count - 1; i >= 0; i--) {
-		old_ports.append(get_port(i));
-		remove_port(i);
+		_remove_port(i);
 	}
-
-	emit_signal(SNAME("ports_cleared"), old_ports);
 }
 
 void GraphNode::_port_modified() {
@@ -499,6 +479,32 @@ void GraphNode::_port_modified() {
 	_port_rebuild_cache();
 	port_pos_dirty = true;
 	notify_property_list_changed();
+	emit_signal(SNAME("ports_updated"), this);
+}
+
+void GraphNode::add_port(GraphPort *p_port) {
+	_add_port(p_port);
+	_port_modified();
+}
+
+void GraphNode::insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	_insert_port(p_port_index, p_port, p_include_disabled);
+	_port_modified();
+}
+
+void GraphNode::set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	_set_port(p_port_index, p_port, p_include_disabled);
+	_port_modified();
+}
+
+void GraphNode::remove_port(int p_port_index, bool p_include_disabled) {
+	_remove_port(p_port_index, p_include_disabled);
+	_port_modified();
+}
+
+void GraphNode::remove_all_ports() {
+	_remove_all_ports();
+	_port_modified();
 }
 
 void GraphNode::set_ignore_invalid_connection_type(bool p_ignore) {
@@ -535,11 +541,11 @@ GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection
 }
 
 void GraphNode::set_ports(TypedArray<GraphPort> p_ports) {
-	remove_all_ports();
-
+	_remove_all_ports();
 	for (Variant port : p_ports) {
-		add_port(cast_to<GraphPort>(port));
+		_add_port(cast_to<GraphPort>(port));
 	}
+	_port_modified();
 }
 
 TypedArray<GraphPort> GraphNode::get_ports() {
@@ -765,10 +771,7 @@ void GraphNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_ARRAY_TYPE, MAKE_NODE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
 
-	ADD_SIGNAL(MethodInfo("port_added", PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_NODE_TYPE, "GraphPort")));
-	ADD_SIGNAL(MethodInfo("port_removed", PropertyInfo(Variant::OBJECT, "port", PROPERTY_HINT_NODE_TYPE, "GraphPort")));
-	ADD_SIGNAL(MethodInfo("port_replaced", PropertyInfo(Variant::OBJECT, "old_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "new_port", PROPERTY_HINT_NODE_TYPE, "GraphPort")));
-	ADD_SIGNAL(MethodInfo("ports_cleared", PropertyInfo(Variant::ARRAY, "old_ports", PROPERTY_HINT_ARRAY_TYPE, MAKE_NODE_TYPE_HINT("GraphPort"))));
+	ADD_SIGNAL(MethodInfo("ports_updated", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NODE_TYPE, "GraphNode")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNode, panel_selected);
@@ -797,10 +800,8 @@ GraphNode::GraphNode() {
 	port_container = memnew(Container);
 	port_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	port_container->set_focus_mode(Control::FOCUS_NONE);
-	add_child(port_container, false, INTERNAL_MODE_FRONT);
+	add_child(port_container, false, INTERNAL_MODE_BACK);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_focus_mode(FOCUS_ACCESSIBILITY);
-
-	//property_helper.setup_for_instance(base_property_helper, this);
 }
