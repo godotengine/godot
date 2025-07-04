@@ -1206,20 +1206,17 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 		err_details = p_code;
 	}
 
-	// Disable color codes if stdout is not a TTY.
-	// This prevents Godot from writing ANSI escape codes when redirecting
-	// stdout and stderr to a file.
-	const bool tty = isatty(fileno(stdout));
-	const char *gray = tty ? "\E[0;90m" : "";
-	const char *red = tty ? "\E[0;91m" : "";
-	const char *red_bold = tty ? "\E[1;31m" : "";
-	const char *yellow = tty ? "\E[0;93m" : "";
-	const char *yellow_bold = tty ? "\E[1;33m" : "";
-	const char *magenta = tty ? "\E[0;95m" : "";
-	const char *magenta_bold = tty ? "\E[1;35m" : "";
-	const char *cyan = tty ? "\E[0;96m" : "";
-	const char *cyan_bold = tty ? "\E[1;36m" : "";
-	const char *reset = tty ? "\E[0m" : "";
+	const bool should_color = Engine::get_singleton() ? Engine::get_singleton()->is_coloring_standard_output() : false;
+	const char *gray = should_color ? "\E[0;90m" : "";
+	const char *red = should_color ? "\E[0;91m" : "";
+	const char *red_bold = should_color ? "\E[1;31m" : "";
+	const char *yellow = should_color ? "\E[0;93m" : "";
+	const char *yellow_bold = should_color ? "\E[1;33m" : "";
+	const char *magenta = should_color ? "\E[0;95m" : "";
+	const char *magenta_bold = should_color ? "\E[1;35m" : "";
+	const char *cyan = should_color ? "\E[0;96m" : "";
+	const char *cyan_bold = should_color ? "\E[1;36m" : "";
+	const char *reset = should_color ? "\E[0m" : "";
 
 	const char *bold_color;
 	const char *normal_color;
