@@ -663,6 +663,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	PropertySelector *prop_selector = nullptr;
 	PropertySelector *method_selector = nullptr;
+	PropertySelector *signal_selector = nullptr;
 	SceneTreeDialog *pick_track = nullptr;
 	int adding_track_type = 0;
 	NodePath adding_track_path;
@@ -719,6 +720,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	int insert_key_from_track_call_track = 0;
 	void _insert_key_from_track(float p_ofs, int p_track);
 	void _add_method_key(const String &p_method);
+	void _add_signal_key(const String &p_method);
 
 	void _fetch_value_track_options(const NodePath &p_path, Animation::UpdateMode *r_update_mode, Animation::InterpolationType *r_interpolation_type, bool *r_loop_wrap);
 

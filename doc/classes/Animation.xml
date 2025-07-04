@@ -434,6 +434,22 @@
 				Sets the given marker's color.
 			</description>
 		</method>
+		<method name="signal_track_get_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the method name of a method track.
+			</description>
+		</method>
+		<method name="signal_track_get_params" qualifiers="const">
+			<return type="Array" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="key_idx" type="int" />
+			<description>
+				Returns the arguments values to be called on a method track for a given key in a given track.
+			</description>
+		</method>
 		<method name="track_find_key" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
@@ -712,13 +728,16 @@
 		<constant name="TYPE_METHOD" value="5" enum="TrackType">
 			Method tracks call functions with given arguments per key.
 		</constant>
-		<constant name="TYPE_BEZIER" value="6" enum="TrackType">
+		<constant name="TYPE_SIGNAL" value="6" enum="TrackType">
+			Signal tracks emit signals with given arguments per key.
+		</constant>
+		<constant name="TYPE_BEZIER" value="7" enum="TrackType">
 			Bezier tracks are used to interpolate a value using custom curves. They can also be used to animate sub-properties of vectors and colors (e.g. alpha value of a [Color]).
 		</constant>
-		<constant name="TYPE_AUDIO" value="7" enum="TrackType">
+		<constant name="TYPE_AUDIO" value="8" enum="TrackType">
 			Audio tracks are used to play an audio stream with either type of [AudioStreamPlayer]. The stream can be trimmed and previewed in the animation.
 		</constant>
-		<constant name="TYPE_ANIMATION" value="8" enum="TrackType">
+		<constant name="TYPE_ANIMATION" value="9" enum="TrackType">
 			Animation tracks play animations in other [AnimationPlayer] nodes.
 		</constant>
 		<constant name="INTERPOLATION_NEAREST" value="0" enum="InterpolationType">

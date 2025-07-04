@@ -865,6 +865,18 @@ bool AnimationMixer::_update_caches() {
 						track = track_method;
 
 					} break;
+					case Animation::TYPE_SIGNAL: {
+						TrackCacheSignal *track_signal = memnew(TrackCacheSignal);
+
+						if (resource.is_valid()) {
+							track_signal->object_id = resource->get_instance_id();
+						} else {
+							track_signal->object_id = child->get_instance_id();
+						}
+
+						track = track_signal;
+
+					} break;
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *track_audio = memnew(TrackCacheAudio);
 
@@ -1660,6 +1672,34 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							StringName method = a->method_track_get_name(i, F);
 							Vector<Variant> params = a->method_track_get_params(i, F);
 							_call_object(t->object_id, method, params, callback_mode_method == ANIMATION_CALLBACK_MODE_METHOD_DEFERRED);
+						}
+					}
+				} break;
+				case Animation::TYPE_SIGNAL: {
+#ifdef TOOLS_ENABLED
+					if (!can_call) {
+						continue;
+					}
+#endif // TOOLS_ENABLED
+					if (p_update_only || Math::is_zero_approx(blend)) {
+						continue;
+					}
+					TrackCacheSignal *t = static_cast<TrackCacheSignal *>(track);
+					if (seeked) {
+						int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT, true);
+						if (idx < 0) {
+							continue;
+						}
+						StringName signal = a->signal_track_get_name(i, idx);
+						Vector<Variant> params = a->signal_track_get_params(i, idx);
+						a->emit_signal_from_object(t->object_id, signal, params);
+					} else {
+						List<int> indices;
+						a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
+						for (int &F : indices) {
+							StringName signal = a->signal_track_get_name(i, F);
+							Vector<Variant> params = a->signal_track_get_params(i, F);
+							a->emit_signal_from_object(t->object_id, signal, params);
 						}
 					}
 				} break;
@@ -2551,6 +2591,7 @@ AnimationMixer::TrackCache *AnimatedValuesBackup::get_cache_copy(AnimationMixer:
 		}
 
 		case Animation::TYPE_METHOD:
+		case Animation::TYPE_SIGNAL:
 		case Animation::TYPE_ANIMATION: {
 			// Nothing to do here.
 		} break;

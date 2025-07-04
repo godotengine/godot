@@ -52,6 +52,7 @@ public:
 		TYPE_SCALE_3D, // Scale 3D track, can be compressed.
 		TYPE_BLEND_SHAPE, // Blend Shape track, can be compressed.
 		TYPE_METHOD, // Call any method on a specific node.
+		TYPE_SIGNAL, // Emit any signal on a specific node.
 		TYPE_BEZIER, // Bezier curve.
 		TYPE_AUDIO,
 		TYPE_ANIMATION,
@@ -186,6 +187,18 @@ private:
 	struct MethodTrack : public Track {
 		Vector<MethodKey> methods;
 		MethodTrack() { type = TYPE_METHOD; }
+	};
+
+	/* SIGNAL TRACK */
+
+	struct SignalKey : public Key {
+		StringName signal;
+		Vector<Variant> params;
+	};
+
+	struct SignalTrack : public Track {
+		Vector<SignalKey> signals;
+		SignalTrack() { type = TYPE_SIGNAL; }
 	};
 
 	/* BEZIER TRACK */
@@ -510,6 +523,10 @@ public:
 
 	Vector<Variant> method_track_get_params(int p_track, int p_key_idx) const;
 	StringName method_track_get_name(int p_track, int p_key_idx) const;
+
+	Vector<Variant> signal_track_get_params(int p_track, int p_key_idx) const;
+	StringName signal_track_get_name(int p_track, int p_key_idx) const;
+	void emit_signal_from_object(ObjectID object_id, const StringName &signal, const Vector<Variant> &params);
 
 	void copy_track(int p_track, Ref<Animation> p_to_animation);
 
