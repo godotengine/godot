@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorScriptPreCreationPlugin" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Plugin to control and modifying the process of creating a script.
+	</brief_description>
+	<description>
+		This plugin type exists to modify the process of creating scripts, allowing to change the source code for more complex post processing.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_pre_creation" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="script" type="Script" />
+			<description>
+				Post process the script. This function is called before the script is created.
+			</description>
+		</method>
+	</methods>
+</class>

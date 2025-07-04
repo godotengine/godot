@@ -487,6 +487,14 @@ void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImpo
 	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
 }
 
+void EditorPlugin::add_script_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin, bool p_first_priority) {
+	get_script_create_dialog()->add_pre_creation_plugin(p_plugin, p_first_priority);
+}
+
+void EditorPlugin::remove_script_pre_creation_plugin(const Ref<EditorScriptPreCreationPlugin> &p_plugin) {
+	get_script_create_dialog()->remove_pre_creation_plugin(p_plugin);
+}
+
 void EditorPlugin::add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
 	EditorContextMenuPluginManager::get_singleton()->add_plugin(p_slot, p_plugin);
 }
@@ -622,6 +630,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
 	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_script_pre_creation_plugin", "script_creation_plugin", "first_priority"), &EditorPlugin::add_script_pre_creation_plugin, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_script_pre_creation_plugin", "script_creation_plugin"), &EditorPlugin::remove_script_pre_creation_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_platform", "platform"), &EditorPlugin::add_export_platform);
