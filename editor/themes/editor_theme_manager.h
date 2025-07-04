@@ -112,6 +112,12 @@ class EditorThemeManager {
 		Color font_placeholder_color;
 		Color font_outline_color;
 
+		Color font_dark_background_color;
+		Color font_dark_background_focus_color;
+		Color font_dark_background_hover_color;
+		Color font_dark_background_pressed_color;
+		Color font_dark_background_hover_pressed_color;
+
 		Color icon_normal_color;
 		Color icon_focus_color;
 		Color icon_hover_color;
