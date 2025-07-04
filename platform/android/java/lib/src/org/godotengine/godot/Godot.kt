@@ -38,6 +38,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
@@ -357,16 +358,29 @@ class Godot private constructor(val context: Context) {
 		if (enabled) {
 			ViewCompat.setOnApplyWindowInsetsListener(rootView, null)
 			rootView.setPadding(0, 0, 0, 0)
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+				window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+				window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+			}
 		} else {
 			if (rootView.rootWindowInsets != null) {
-				val windowInsets = WindowInsetsCompat.toWindowInsetsCompat(rootView.rootWindowInsets)
-				val insets = windowInsets.getInsets(getInsetType())
-				rootView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+				if (!useImmersive.get() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
+					val windowInsets = WindowInsetsCompat.toWindowInsetsCompat(rootView.rootWindowInsets)
+					val insets = windowInsets.getInsets(getInsetType())
+					rootView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+				}
 			}
 
 			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-				val windowInsets = insets.getInsets(getInsetType())
-				v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
+				v.post {
+					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+						// Fixes issue where padding remained visible in immersive mode on some devices.
+						v.setPadding(0, 0, 0, 0)
+					} else {
+						val windowInsets = insets.getInsets(getInsetType())
+						v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
+					}
+				}
 				WindowInsetsCompat.CONSUMED
 			}
 		}
@@ -531,12 +545,18 @@ class Godot private constructor(val context: Context) {
 					startBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
 				}
 
-				override fun onStart(animation: WindowInsetsAnimationCompat, bounds: WindowInsetsAnimationCompat.BoundsCompat): WindowInsetsAnimationCompat.BoundsCompat {
+				override fun onStart(
+					animation: WindowInsetsAnimationCompat,
+					bounds: WindowInsetsAnimationCompat.BoundsCompat
+				): WindowInsetsAnimationCompat.BoundsCompat {
 					endBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
 					return bounds
 				}
 
-				override fun onProgress(windowInsets: WindowInsetsCompat, animationsList: List<WindowInsetsAnimationCompat>): WindowInsetsCompat {
+				override fun onProgress(
+					windowInsets: WindowInsetsCompat,
+					animationsList: List<WindowInsetsAnimationCompat>
+				): WindowInsetsCompat {
 					// Find the IME animation.
 					var imeAnimation: WindowInsetsAnimationCompat? = null
 					for (animation in animationsList) {
@@ -551,12 +571,20 @@ class Godot private constructor(val context: Context) {
 						val interpolatedFraction = imeAnimation.interpolatedFraction
 						// Linear interpolation between start and end values.
 						val keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction
-						GodotLib.setVirtualKeyboardHeight(keyboardHeight.toInt())
+						val finalHeight = maxOf(keyboardHeight.toInt() - topView.rootView.paddingBottom, 0)
+						GodotLib.setVirtualKeyboardHeight(finalHeight)
 					}
 					return windowInsets
 				}
 
-				override fun onEnd(animation: WindowInsetsAnimationCompat) {}
+				override fun onEnd(animation: WindowInsetsAnimationCompat) {
+					// Fixes issue on Android 7 and 8 where immersive mode gets auto disabled after the keyboard is hidden.
+					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+						runOnHostThread {
+							enableImmersiveMode(true, true)
+						}
+					}
+				}
 			})
 
 			renderView?.queueOnRenderThread {
