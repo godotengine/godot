@@ -30,6 +30,7 @@
 
 #include "path_3d_editor_plugin.h"
 
+#include "core/config/project_settings.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
 #include "core/os/keyboard.h"
@@ -114,6 +115,22 @@ void Path3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, con
 		Vector3 inters;
 		// Special case for primary handle, the handle id equals control point id.
 		const int idx = p_id;
+		if (Path3DEditorPlugin::singleton->snap_to_collider) {
+			PhysicsDirectSpaceState3D *ss = p_camera->get_world_3d()->get_direct_space_state();
+
+			ERR_FAIL_NULL_EDMSG(ss, TTR("Can't have snap colliders with 3D Physics Running on Separate Thread enabled. Disable it and restart the editor."));
+
+			PhysicsDirectSpaceState3D::RayParameters ray_params;
+			ray_params.from = ray_from;
+			ray_params.to = ray_from + ray_dir * p_camera->get_far();
+			PhysicsDirectSpaceState3D::RayResult result;
+			if (ss->intersect_ray(ray_params, result)) {
+				Vector3 local = gi.xform(result.position);
+				c->set_point_position(idx, local);
+				return;
+			}
+			// Will continue and do the plane intersect_ray if doesn't hit anything.
+		}
 		if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 			if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 				float snap = Node3DEditor::get_singleton()->get_translate_snap();
@@ -668,9 +685,28 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				} else {
 					origin = gt.xform(c->get_point_position(c->get_point_count() - 1));
 				}
-				Plane p(p_camera->get_transform().basis.get_column(2), origin);
+
 				Vector3 ray_from = viewport->get_ray_pos(mbpos);
 				Vector3 ray_dir = viewport->get_ray(mbpos);
+
+				if (snap_to_collider) {
+					PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
+					if (ss) {
+						PhysicsDirectSpaceState3D::RayParameters ray_params;
+						PhysicsDirectSpaceState3D::RayResult result;
+						ray_params.from = ray_from;
+						ray_params.to = ray_from + ray_dir * p_camera->get_far();
+						if (ss->intersect_ray(ray_params, result)) {
+							ur->create_action(TTR("Add Point to Curve"));
+							ur->add_do_method(c.ptr(), "add_point", it.xform(result.position), Vector3(), Vector3(), -1);
+							ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+							ur->commit_action();
+							return EditorPlugin::AFTER_GUI_INPUT_STOP;
+						}
+					}
+				}
+
+				Plane p(p_camera->get_transform().basis.get_column(2), origin);
 
 				Vector3 inters;
 				if (p.intersects_ray(ray_from, ray_dir, &inters)) {
@@ -810,6 +846,11 @@ void Path3DEditorPlugin::_handle_option_pressed(int p_option) {
 			bool is_checked = pm->is_item_checked(HANDLE_OPTION_LENGTH);
 			mirror_handle_length = !is_checked;
 			pm->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+		} break;
+		case HANDLE_OPTION_SNAP_COLLIDER: {
+			bool is_checked = pm->is_item_checked(HANDLE_OPTION_SNAP_COLLIDER);
+			snap_to_collider = !is_checked;
+			pm->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 		} break;
 	}
 }
@@ -994,6 +1035,14 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	menu->set_item_checked(HANDLE_OPTION_ANGLE, mirror_handle_angle);
 	menu->add_check_item(TTR("Mirror Handle Lengths"));
 	menu->set_item_checked(HANDLE_OPTION_LENGTH, mirror_handle_length);
+	menu->add_check_item(TTR("Snap to Colliders"));
+	bool is_physics_running_threads = GLOBAL_GET("physics/3d/run_on_separate_thread");
+	if (is_physics_running_threads) {
+		menu->set_item_disabled(HANDLE_OPTION_SNAP_COLLIDER, true);
+		snap_to_collider = false;
+		menu->set_item_tooltip(HANDLE_OPTION_SNAP_COLLIDER, TTR("Can't have snap colliders with 3D Physics Running on Separate Thread enabled. Disable it and restart the editor."));
+	}
+	menu->set_item_checked(HANDLE_OPTION_SNAP_COLLIDER, snap_to_collider);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &Path3DEditorPlugin::_handle_option_pressed));
 
 	curve_edit->set_pressed_no_signal(true);
