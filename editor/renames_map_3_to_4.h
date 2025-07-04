@@ -34,6 +34,7 @@
 
 struct RenamesMap3To4 {
 	static const char *enum_renames[][2];
+	static const char *joypad_enum_renames[][2];
 	static const char *gdscript_function_renames[][2];
 	static const char *csharp_function_renames[][2];
 	static const char *gdscript_properties_renames[][2];
