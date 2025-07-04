@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -797,25 +798,27 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	name = "autoload/" + name;
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (!EditorFileSystem::get_singleton()->doing_first_scan()) {
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
-	undo_redo->create_action(TTR("Add Autoload"));
-	// Singleton autoloads are represented with a leading "*" in their path.
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + p_path);
+		undo_redo->create_action(TTR("Add Autoload"));
+		// Singleton autoloads are represented with a leading "*" in their path.
+		undo_redo->add_do_property(ProjectSettings::get_singleton(), name, "*" + p_path);
 
-	if (ProjectSettings::get_singleton()->has_setting(name)) {
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
-	} else {
-		undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
+		if (ProjectSettings::get_singleton()->has_setting(name)) {
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, GLOBAL_GET(name));
+		} else {
+			undo_redo->add_undo_property(ProjectSettings::get_singleton(), name, Variant());
+		}
+
+		undo_redo->add_do_method(this, "update_autoload");
+		undo_redo->add_undo_method(this, "update_autoload");
+
+		undo_redo->add_do_method(this, "emit_signal", autoload_changed);
+		undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
+
+		undo_redo->commit_action();
 	}
-
-	undo_redo->add_do_method(this, "update_autoload");
-	undo_redo->add_undo_method(this, "update_autoload");
-
-	undo_redo->add_do_method(this, "emit_signal", autoload_changed);
-	undo_redo->add_undo_method(this, "emit_signal", autoload_changed);
-
-	undo_redo->commit_action();
 
 	return true;
 }
