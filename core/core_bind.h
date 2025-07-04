@@ -600,6 +600,7 @@ public:
 	MainLoop *get_main_loop() const;
 
 	Dictionary get_version_info() const;
+	Dictionary get_build_system_info() const;
 	Dictionary get_author_info() const;
 	TypedArray<Dictionary> get_copyright_info() const;
 	Dictionary get_donor_info() const;
