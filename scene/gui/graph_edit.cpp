@@ -779,7 +779,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		if (graph_node) {
 			graph_node->connect("ports_updated", callable_mp(this, &GraphEdit::_graph_node_ports_updated));
 			graph_node->connect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_node_rect_changed).bind(graph_node));
-			callable_mp(this, &GraphEdit::_ensure_node_order_from).bind(graph_node).call_deferred();
+			callable_mp(this, &GraphEdit::_ensure_node_order_from).call_deferred(graph_node);
 
 			GraphNodeIndexed *graph_node_indexed = Object::cast_to<GraphNodeIndexed>(graph_element);
 			if (graph_node_indexed) {
@@ -1514,7 +1514,7 @@ void GraphEdit::_update_connections() {
 		conn->_cache.line->set_gradient(line_gradient);
 	}
 
-	for (const Ref<GraphConnection> dead_conn : dead_connections) {
+	for (const Ref<GraphConnection> &dead_conn : dead_connections) {
 		if (dead_conn->first_port) {
 			connection_map.erase(dead_conn->first_port);
 		}
@@ -2202,6 +2202,8 @@ void GraphEdit::force_connection_drag_end() {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_COND_MSG(!connecting, "Drag end requested without active drag!");
 
+	connecting_from_port = nullptr;
+	connecting_to_port = nullptr;
 	connecting = false;
 	connecting_valid = false;
 	keyboard_connecting = false;

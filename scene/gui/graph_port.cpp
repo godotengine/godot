@@ -121,7 +121,7 @@ Color GraphPort::get_color() {
 	Color base_col = selected ? theme_cache.selected_color : theme_cache.color;
 	ERR_FAIL_NULL_V(graph_edit, base_col);
 	const TypedArray<Color> &graph_colors = graph_edit->get_type_colors();
-	return (type > 0 && type < graph_colors.size()) ? Color(graph_colors[type]).blend(base_col) : theme_cache.color;
+	return (type > 0 && type < graph_colors.size()) ? Color(graph_colors[type]) : base_col;
 }
 
 Color GraphPort::get_rim_color() {

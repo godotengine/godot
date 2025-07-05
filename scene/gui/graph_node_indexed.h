@@ -101,7 +101,7 @@ public:
 	void set_slot(int p_slot_index, GraphPort *p_left_port, GraphPort *p_right_port, bool draw_stylebox);
 	Array get_slot(int p_slot_index);
 
-	void set_slot_properties(int p_slot_index, bool p_input_enabled, bool p_input_type, bool p_output_enabled, bool p_output_type);
+	void set_slot_properties(int p_slot_index, bool p_input_enabled, int p_input_type, bool p_output_enabled, int p_output_type);
 	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type);
 	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type);
 

@@ -162,9 +162,9 @@ private:
 	bool connecting = false;
 	bool connecting_valid = false;
 	bool connecting_target_valid = false;
-	GraphPort *connecting_from_port;
+	GraphPort *connecting_from_port = nullptr;
 	Vector2 connecting_to_point; // In local screen space.
-	GraphPort *connecting_to_port;
+	GraphPort *connecting_to_port = nullptr;
 
 	bool just_disconnected = false;
 

@@ -352,7 +352,7 @@ int GraphNodeIndexed::index_of_output_port(GraphPort *p_port, bool p_include_dis
 	return filtered_index_of_port(p_port, p_include_disabled);
 }
 
-void GraphNodeIndexed::set_slot_properties(int p_slot_index, bool p_input_enabled, bool p_input_type, bool p_output_enabled, bool p_output_type) {
+void GraphNodeIndexed::set_slot_properties(int p_slot_index, bool p_input_enabled, int p_input_type, bool p_output_enabled, int p_output_type) {
 	set_input_port_properties(p_slot_index, p_input_enabled, p_input_type);
 	set_output_port_properties(p_slot_index, p_output_enabled, p_output_type);
 }
