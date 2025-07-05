@@ -74,17 +74,15 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 	int new_index = p_child->get_index(false);
 	int old_index = _slot_node_map_cache[node_name];
 
-	Slot swap_buffer = slots[new_index];
-
 	if (old_index < new_index) {
 		Slot swap_buffer = slots[old_index];
-		for (size_t i = old_index; i < new_index; i++) {
+		for (int i = old_index; i < new_index; i++) {
 			_set_slot(i, slots[i + 1]);
 		}
 		_set_slot(new_index, swap_buffer);
 	} else {
 		Slot swap_buffer = slots[new_index];
-		for (size_t i = new_index; i < old_index; i++) {
+		for (int i = new_index; i < old_index; i++) {
 			_set_slot(i, slots[i - 1]);
 		}
 		_set_slot(old_index, swap_buffer);
@@ -127,7 +125,7 @@ void GraphNodeIndexed::_notification(int p_what) {
 			Ref<StyleBox> sb_slot = theme_cache.slot;
 			Ref<StyleBox> sb_slot_selected = theme_cache.slot_selected;
 
-			int port_h_offset = theme_cache.port_h_offset;
+			//int port_h_offset = theme_cache.port_h_offset;
 
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
@@ -245,7 +243,7 @@ void GraphNodeIndexed::_remove_slot(int p_slot_index, bool p_with_ports) {
 
 	slots.remove_at(p_slot_index);
 
-	for (const KeyValue<StringName, int> kv_pair : _slot_node_map_cache) {
+	for (const KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
 		if (kv_pair.value == p_slot_index) {
 			_slot_node_map_cache.erase(kv_pair.key);
 			break;

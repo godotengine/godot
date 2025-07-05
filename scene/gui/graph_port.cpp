@@ -168,7 +168,7 @@ Rect2 GraphPort::get_hotzone() {
 
 	Ref<Texture2D> icon = theme_cache.icon;
 	Vector2 icon_size = Vector2(0.0, 0.0);
-	if (icon != nullptr) {
+	if (icon.is_valid()) {
 		icon_size = Vector2(icon->get_width(), icon->get_height());
 	}
 

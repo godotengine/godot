@@ -364,7 +364,7 @@ void GraphNode::_notification(int p_what) {
 			// Draw title bar stylebox above.
 			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
 
-			int width = get_size().width - sb_panel->get_minimum_size().x;
+			//int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			// Take ports into account
 			if (port_pos_dirty) {
@@ -531,7 +531,7 @@ GraphPort *GraphNode::get_port(int p_port_idx, bool p_include_disabled) {
 	ERR_FAIL_INDEX_V(p_port_idx, get_port_count(p_include_disabled), nullptr);
 	int idx = p_port_idx;
 	if (!p_include_disabled) {
-		int idx = enabled_index_to_port_index(p_port_idx);
+		idx = enabled_index_to_port_index(p_port_idx);
 		ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "port index out of bounds - fewer than p_port_index ports are enabled.");
 	}
 	return ports[idx];

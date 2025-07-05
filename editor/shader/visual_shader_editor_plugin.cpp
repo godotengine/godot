@@ -639,7 +639,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	}
 	Shader::Mode mode = visual_shader->get_mode();
 
-	const TypedArray<Color> &type_color = graph->get_type_colors();
 	static const String vector_expanded_name[4] = { "red", "green", "blue", "alpha" };
 
 	Control *offset;
@@ -1281,7 +1280,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					default:
 						break;
 				}
-				for (size_t p = 0; p < p_cnt; p++) {
+				for (int p = 0; p < p_cnt; p++) {
 					port_offset++;
 					valid_left = (i + p + 1) < vsnode->get_input_port_count();
 					port_type_left = VisualShaderNode::PORT_TYPE_SCALAR;
@@ -3846,7 +3845,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 			int _to_slot = 0;
 
 			if (!created_expression_port) {
-				int _to_slot = -1;
+				_to_slot = -1;
 
 				// Attempting to connect to the default input port or to the first correct port (if it's not found).
 				for (int i = 0; i < vsnode->get_input_port_count(); i++) {
@@ -3950,7 +3949,6 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, cons
 			}
 
 			if (_from_slot >= 0) {
-				GraphPort *_from_port = Object::cast_to<GraphNodeIndexed>(*visual_shader->get_node(type, id_to_use))->get_output_port(_from_slot);
 				undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_undo_method(visual_shader.ptr(), "disconnect_nodes", type, _from_node, _from_slot, to_node, to_slot);
 				undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, _from_node, _from_slot, to_node, to_slot);
@@ -6106,7 +6104,7 @@ void VisualShaderEditor::_node_menu_id_pressed(int p_idx) {
 }
 
 void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
-	ERR_FAIL_NULL(clicked_connection);
+	ERR_FAIL_COND(clicked_connection.is_null());
 	Pair<Pair<String, int>, Pair<String, int>> conn = clicked_connection->_to_legacy_data();
 	int _from_node = conn.first.first.to_int();
 	int _from_slot = conn.first.second;
