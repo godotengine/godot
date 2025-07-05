@@ -3152,7 +3152,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			_update_centered_labels();
 			message_time = MIN(message_time, 0.001); // Make it disappear.
 
-			Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+			Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 			preview_material_label_desc->set_text(vformat(TTR("Drag and drop to override the material of any geometry node.\nHold %s when dropping to override a specific surface."), find_keycode_name(key)));
 
 			const int item_count = display_submenu->get_item_count();
