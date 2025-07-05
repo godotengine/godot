@@ -2229,7 +2229,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
-	Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+	Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 	picker_button->set_tooltip_text(vformat(TTR("Alternatively hold %s with other tools to pick tile."), find_keycode_name(key)));
 	picker_button->connect(SceneStringName(pressed), callable_mp(CanvasItemEditor::get_singleton(), &CanvasItemEditor::update_viewport));
 	picker_button->set_accessibility_name(TTRC("Pick"));

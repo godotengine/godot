@@ -41,7 +41,7 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 	String value = get_text_value() + suffix;
 	if (!read_only && grabber->is_visible()) {
 		String tooltip = value;
-		Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
+		Key key = OS::prefer_meta_over_ctrl() ? Key::META : Key::CTRL;
 		if (!editing_integer) {
 			tooltip += "\n\n" + vformat(TTR("Hold %s to round to integers."), find_keycode_name(key));
 		}
