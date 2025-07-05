@@ -1646,7 +1646,9 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_color("resizer_color", "GraphEditMinimap", minimap_resizer_color);
 		}
 
-		// GraphElement, GraphNode & GraphFrame.
+		Ref<StyleBoxEmpty> gn_slot_style = make_empty_stylebox(12, 0, 12, 0);
+
+		// GraphElement, GraphPort, GraphNode & GraphFrame.
 		{
 			const int gn_margin_top = 2;
 			const int gn_margin_side = 2;
@@ -1706,29 +1708,46 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_stylebox("titlebar_selected", "GraphElement", gn_titlebar_selected_style);
 
 			p_theme->set_color("resizer_color", "GraphElement", gn_decoration_color);
-			p_theme->set_icon("resizer", "GraphElement", p_theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons)));
+			Ref<ImageTexture> resizer_icon = p_theme->get_icon(SNAME("GuiResizer"), EditorStringName(EditorIcons));
+			p_theme->set_icon("resizer", "GraphElement", resizer_icon);
+
+			// GraphPort.
+
+			p_theme->set_stylebox("panel", "GraphPort", make_empty_stylebox());
+			p_theme->set_stylebox("panel_selected", "GraphPort", make_empty_stylebox());
+			p_theme->set_stylebox("panel_focus", "GraphPort", p_config.button_style_focus);
+
+			p_theme->set_color("color", "GraphPort", Color(1, 1, 1, 1));
+			p_theme->set_color("selected_color", "GraphPort", Color(1, 1, 1, 1));
+			p_theme->set_color("rim_color", "GraphPort", gn_bg_color);
+			p_theme->set_color("selected_rim_color", "GraphPort", gn_selected_border_color);
+
+			p_theme->set_constant("hotzone_extent_h_input", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_v_input", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_h_output", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_v_output", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_h_undirected", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_extent_v_undirected", "GraphPort", 2 * EDSCALE);
+			p_theme->set_constant("hotzone_offset_h", "GraphPort", 7);
+			p_theme->set_constant("hotzone_offset_v", "GraphPort", 0);
+
+			Ref<SVGTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
+			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
+			port_icon->set_size_override(Size2(12, 12));
+			p_theme->set_icon("icon", "GraphPort", port_icon);
 
 			// GraphNode.
-
-			Ref<StyleBoxEmpty> gn_slot_style = make_empty_stylebox(12, 0, 12, 0);
 
 			p_theme->set_stylebox(SceneStringName(panel), "GraphNode", gn_panel_style);
 			p_theme->set_stylebox("panel_selected", "GraphNode", gn_panel_selected_style);
 			p_theme->set_stylebox("panel_focus", "GraphNode", p_config.button_style_focus);
 			p_theme->set_stylebox("titlebar", "GraphNode", gn_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "GraphNode", gn_titlebar_selected_style);
-			p_theme->set_stylebox("slot", "GraphNode", gn_slot_style);
-			p_theme->set_stylebox("slot_selected", "GraphNode", p_config.button_style_focus);
 
 			p_theme->set_color("resizer_color", "GraphNode", gn_decoration_color);
 
 			p_theme->set_constant("port_h_offset", "GraphNode", 1);
 			p_theme->set_constant("separation", "GraphNode", 1 * EDSCALE);
-
-			Ref<SVGTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
-			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
-			port_icon->set_size_override(Size2(12, 12));
-			p_theme->set_icon("port", "GraphNode", port_icon);
 
 			// GraphNode's title Label.
 			p_theme->set_type_variation("GraphNodeTitleLabel", "Label");
@@ -1738,6 +1757,11 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("shadow_offset_x", "GraphNodeTitleLabel", 0);
 			p_theme->set_constant("shadow_offset_y", "GraphNodeTitleLabel", 1);
 			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
+
+			// GraphNodeIndexed
+
+			p_theme->set_stylebox("slot", "GraphNodeIndexed", gn_slot_style);
+			p_theme->set_stylebox("slot_selected", "GraphNodeIndexed", p_config.button_style_focus);
 
 			// GraphFrame.
 
@@ -1775,8 +1799,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("line_spacing", "GraphFrameTitleLabel", 3 * EDSCALE);
 		}
 
-		// VisualShader reroute node.
+		// VisualShader
 		{
+			// Reroute node
+
 			Ref<StyleBox> vs_reroute_panel_style = make_empty_stylebox();
 			Ref<StyleBox> vs_reroute_titlebar_style = vs_reroute_panel_style->duplicate();
 			vs_reroute_titlebar_style->set_content_margin_all(16 * EDSCALE);
@@ -1788,6 +1814,22 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			p_theme->set_color("drag_background", "VSRerouteNode", p_config.dark_theme ? Color(0.19, 0.21, 0.24) : Color(0.8, 0.8, 0.8));
 			p_theme->set_color("selected_rim_color", "VSRerouteNode", p_config.dark_theme ? Color(1, 1, 1) : Color(0, 0, 0));
+
+			// VSGraphPort
+
+			p_theme->set_constant("hotzone_extent_h_input", "VSGraphPort", Math::round(26 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_v_input", "VSGraphPort", Math::round(22 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_h_output", "VSGraphPort", Math::round(26 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_v_output", "VSGraphPort", Math::round(22 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_h_undirected", "VSGraphPort", Math::round(26 * EDSCALE));
+			p_theme->set_constant("hotzone_extent_v_undirected", "VSGraphPort", Math::round(22 * EDSCALE));
+			p_theme->set_constant("hotzone_offset_h", "VSGraphPort", 7);
+			p_theme->set_constant("hotzone_offset_v", "VSGraphPort", 0);
+
+			// VSGraphNode
+
+			p_theme->set_stylebox("slot", "VSGraphNode", gn_slot_style);
+			p_theme->set_stylebox("slot_selected", "VSGraphNode", p_config.button_style_focus);
 		}
 	}
 

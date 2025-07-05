@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  graph_edit_arranger.h                                                 */
+/*  graph_connection.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,36 +30,75 @@
 
 #pragma once
 
-#include "core/object/ref_counted.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/hash_set.h"
+#include "core/io/resource.h"
+#include "scene/2d/line_2d.h"
 
 class GraphEdit;
-class GraphConnection;
+class GraphPort;
+class GraphNode;
 
-class GraphEditArranger : public RefCounted {
-	enum SET_OPERATIONS {
-		IS_EQUAL,
-		IS_SUBSET,
-		DIFFERENCE,
-		UNION,
-	};
+class GraphConnection : public Resource {
+	GDCLASS(GraphConnection, Resource);
 
-	GraphEdit *graph_edit = nullptr;
-	bool arranging_graph = false;
-
-	int _set_operations(SET_OPERATIONS p_operation, HashSet<StringName> &r_u, const HashSet<StringName> &r_v);
-	HashMap<int, Vector<StringName>> _layering(const HashSet<StringName> &r_selected_nodes, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
-	Vector<StringName> _split(const Vector<StringName> &r_layer, const HashMap<StringName, Dictionary> &r_crossings);
-	void _horizontal_alignment(Dictionary &r_root, Dictionary &r_align, const HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours, const HashSet<StringName> &r_selected_nodes);
-	void _crossing_minimisation(HashMap<int, Vector<StringName>> &r_layers, const HashMap<StringName, HashSet<StringName>> &r_upper_neighbours);
-	void _calculate_inner_shifts(Dictionary &r_inner_shifts, const Dictionary &r_root, const Dictionary &r_align, const HashSet<StringName> &r_block_heads, const HashMap<StringName, Ref<GraphConnection>> &r_connection_map);
-	float _calculate_threshold(const StringName &p_v, const StringName &p_w, const Dictionary &r_node_names, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_inner_shift, real_t p_current_threshold, const HashMap<StringName, Vector2> &r_node_positions);
-	void _place_block(const StringName &p_v, float p_delta, const HashMap<int, Vector<StringName>> &r_layers, const Dictionary &r_root, const Dictionary &r_align, const Dictionary &r_node_name, const Dictionary &r_inner_shift, Dictionary &r_sink, Dictionary &r_shift, HashMap<StringName, Vector2> &r_node_positions);
+	friend GraphEdit;
+	friend GraphPort;
+	friend GraphNode;
 
 public:
-	void arrange_nodes();
+	GraphPort *first_port = nullptr;
+	GraphPort *second_port = nullptr;
+	bool clear_if_invalid = true;
 
-	GraphEditArranger(GraphEdit *p_graph_edit) :
-			graph_edit(p_graph_edit) {}
+	GraphPort *get_other(GraphPort *port);
+	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data();
+	bool matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
+
+	struct ConnectionType {
+		union {
+			uint64_t key = 0;
+			struct {
+				uint32_t type_a;
+				uint32_t type_b;
+			};
+		};
+
+		static uint32_t hash(const ConnectionType &p_conn) {
+			return hash_one_uint64(p_conn.key);
+		}
+		bool operator==(const ConnectionType &p_type) const {
+			return key == p_type.key;
+		}
+
+		ConnectionType(uint32_t a = 0, uint32_t b = 0) {
+			type_a = a;
+			type_b = b;
+		}
+	};
+
+	GraphConnection();
+	GraphConnection(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid);
+
+protected:
+	float activity = 0.0; // why is this used?
+
+	struct Cache {
+		bool dirty = true;
+		Vector2 from_pos; // In graph space.
+		Vector2 to_pos; // In graph space.
+		Color from_color;
+		Color to_color;
+		Rect2 aabb; // In local screen space.
+		Line2D *line = nullptr; // In local screen space.
+	} _cache;
+
+	void set_first_port(GraphPort *p_port);
+	GraphPort *get_first_port();
+
+	void set_second_port(GraphPort *p_port);
+	GraphPort *get_second_port();
+
+	void set_clear_if_invalid(bool p_clear_if_invalid);
+	bool get_clear_if_invalid();
+
+	static void _bind_methods();
 };

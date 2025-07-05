@@ -1,0 +1,339 @@
+/**************************************************************************/
+/*  graph_port.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#include "graph_port.h"
+
+#include "scene/gui/graph_connection.h"
+#include "scene/gui/graph_edit.h"
+#include "scene/gui/graph_node.h"
+#include "scene/theme/theme_db.h"
+
+void GraphPort::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			Node *parent = get_parent();
+			graph_edit = nullptr;
+			graph_node = nullptr;
+			while (parent) {
+				if (!graph_node) {
+					GraphNode *parent_node = cast_to<GraphNode>(parent);
+					if (parent_node) {
+						graph_node = parent_node;
+					}
+				}
+				GraphEdit *parent_graph = cast_to<GraphEdit>(parent);
+				if (parent_graph) {
+					graph_edit = parent_graph;
+					break;
+				}
+				parent = parent->get_parent();
+			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			graph_edit->disconnect_all_by_port(this);
+			graph_edit = nullptr;
+			graph_node = nullptr;
+		} break;
+		case NOTIFICATION_DRAW: {
+			_draw();
+		} break;
+	}
+}
+
+void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
+	exclusive = p_exclusive;
+	set_type(p_type);
+	set_direction(p_direction);
+	set_enabled(p_enabled);
+	notify_property_list_changed();
+}
+
+void GraphPort::enable() {
+	enabled = true;
+	show();
+	notify_property_list_changed();
+	_enabled();
+	_modified();
+}
+
+void GraphPort::disable() {
+	enabled = false;
+	hide();
+	notify_property_list_changed();
+	_disabled();
+	_modified();
+}
+
+void GraphPort::set_enabled(bool p_enabled) {
+	if (enabled == p_enabled) {
+		return;
+	}
+	if (p_enabled) {
+		enable();
+	} else {
+		disable();
+	}
+}
+
+bool GraphPort::get_enabled() {
+	return enabled;
+}
+
+int GraphPort::get_type() {
+	return type;
+}
+
+void GraphPort::set_type(int p_type) {
+	type = p_type;
+	notify_property_list_changed();
+	_changed_type(p_type);
+	_modified();
+}
+
+Color GraphPort::get_color() {
+	Color base_col = selected ? theme_cache.selected_color : theme_cache.color;
+	ERR_FAIL_NULL_V(graph_edit, base_col);
+	const TypedArray<Color> &graph_colors = graph_edit->get_type_colors();
+	return (type > 0 && type < graph_colors.size()) ? Color(graph_colors[type]) : base_col;
+}
+
+Color GraphPort::get_rim_color() {
+	return selected ? theme_cache.selected_rim_color : theme_cache.rim_color;
+}
+
+bool GraphPort::get_exclusive() {
+	return exclusive;
+}
+
+void GraphPort::set_exclusive(bool p_exclusive) {
+	exclusive = p_exclusive;
+	notify_property_list_changed();
+	_modified();
+}
+
+GraphPort::PortDirection GraphPort::get_direction() const {
+	return direction;
+}
+
+void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
+	direction = p_direction;
+	notify_property_list_changed();
+	_changed_direction(p_direction);
+	_modified();
+}
+
+GraphPort::DisconnectBehaviour GraphPort::get_disabled_behaviour() const {
+	return on_disabled_behaviour;
+}
+
+void GraphPort::set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconnect_behaviour) {
+	on_disabled_behaviour = p_disconnect_behaviour;
+	notify_property_list_changed();
+	_modified();
+}
+
+GraphNode *GraphPort::get_graph_node() {
+	return graph_node;
+}
+
+Rect2 GraphPort::get_hotzone() {
+	Vector2 pos = get_position();
+
+	Ref<Texture2D> icon = theme_cache.icon;
+	Vector2 icon_size = Vector2(0.0, 0.0);
+	if (icon.is_valid()) {
+		icon_size = Vector2(icon->get_width(), icon->get_height());
+	}
+
+	Vector2 theme_extent;
+	switch (direction) {
+		case GraphPort::PortDirection::INPUT:
+			theme_extent.x = theme_cache.hotzone_extent_h_input;
+			theme_extent.y = theme_cache.hotzone_extent_v_input;
+			break;
+		case GraphPort::PortDirection::OUTPUT:
+			theme_extent.x = theme_cache.hotzone_extent_h_output;
+			theme_extent.y = theme_cache.hotzone_extent_v_output;
+			break;
+		case GraphPort::PortDirection::UNDIRECTED:
+		default:
+			theme_extent.x = theme_cache.hotzone_extent_h_undirected;
+			theme_extent.y = theme_cache.hotzone_extent_v_undirected;
+			break;
+	}
+
+	Vector2 size = icon_size.max(theme_extent);
+	return Rect2(pos.x + theme_cache.hotzone_offset_h - size.x / 2, pos.y + theme_cache.hotzone_offset_v - size.y / 2, size.x, size.y);
+}
+
+int GraphPort::get_index(bool p_include_disabled) {
+	return p_include_disabled ? _index : _enabled_index;
+}
+
+int GraphPort::get_filtered_index(bool p_include_disabled) {
+	return p_include_disabled ? _filtered_index : _filtered_enabled_index;
+}
+
+void GraphPort::disconnect_all() {
+	ERR_FAIL_NULL(graph_edit);
+	switch (on_disabled_behaviour) {
+		case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
+			int prev_port_idx = get_index() - 1;
+			if (prev_port_idx >= 0) {
+				GraphPort *prev_port = graph_node->get_port(prev_port_idx);
+				if (prev_port) {
+					graph_edit->move_connections(this, prev_port);
+					break;
+				}
+			}
+		} break;
+		case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
+			int next_port_idx = get_index() + 1;
+			if (next_port_idx < graph_node->get_port_count()) {
+				GraphPort *next_port = graph_node->get_port(next_port_idx);
+				if (next_port) {
+					graph_edit->move_connections(this, next_port);
+					break;
+				}
+			}
+		} break;
+		case GraphPort::DisconnectBehaviour::DISCONNECT_ALL:
+		default:
+			break;
+	}
+	graph_edit->disconnect_all_by_port(this);
+}
+
+void GraphPort::_draw() {
+	if (!enabled || !is_visible()) {
+		return;
+	}
+
+	Ref<Texture2D> port_icon = theme_cache.icon;
+	if (port_icon.is_null()) {
+		return;
+	}
+
+	Size2 port_icon_size = port_icon->get_size();
+	Point2 icon_offset = -port_icon_size * 0.5;
+
+	// Draw "shadow"/outline in the connection rim color.
+	Color rim_color = get_rim_color();
+	int s = theme_cache.rim_size;
+	if (rim_color.a > 0 && s > 0) {
+		draw_texture_rect(port_icon, Rect2(get_position() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
+	}
+	port_icon->draw(get_canvas_item(), get_position() + icon_offset, get_color());
+}
+
+void GraphPort::_enabled() {
+	emit_signal(SNAME("enabled"), this);
+}
+
+void GraphPort::_disabled() {
+	emit_signal(SNAME("disabled"), this);
+}
+
+void GraphPort::_changed_direction(const PortDirection p_direction) {
+	emit_signal(SNAME("changed_direction"), p_direction);
+}
+void GraphPort::_changed_type(const int p_type) {
+	emit_signal(SNAME("changed_type"), p_type);
+}
+void GraphPort::_modified() {
+	emit_signal(SNAME("modified"));
+}
+
+void GraphPort::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("enable"), &GraphPort::enable);
+	ClassDB::bind_method(D_METHOD("disable"), &GraphPort::disable);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &GraphPort::set_enabled);
+	ClassDB::bind_method(D_METHOD("get_enabled"), &GraphPort::get_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_type", "type"), &GraphPort::set_type);
+	ClassDB::bind_method(D_METHOD("get_type"), &GraphPort::get_type);
+
+	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &GraphPort::set_exclusive);
+	ClassDB::bind_method(D_METHOD("get_exclusive"), &GraphPort::get_exclusive);
+
+	ClassDB::bind_method(D_METHOD("get_color"), &GraphPort::get_color);
+
+	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);
+
+	ClassDB::bind_method(D_METHOD("set_disabled_behaviour", "on_disabled_behaviour"), &GraphPort::set_disabled_behaviour);
+	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
+
+	ADD_SIGNAL(MethodInfo("enabled"));
+	ADD_SIGNAL(MethodInfo("disabled"));
+	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected")));
+	ADD_SIGNAL(MethodInfo("changed_type", PropertyInfo(Variant::INT, "type")));
+	ADD_SIGNAL(MethodInfo("modified"));
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_focus);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphPort, icon);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, rim_size);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, selected_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, rim_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, GraphPort, selected_rim_color);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_h_input);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_input);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_h_output);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_output);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_h_undirected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_undirected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_offset_h);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_offset_v);
+}
+
+GraphPort::GraphPort() {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+}
+
+GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
+	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	enabled = p_enabled;
+	exclusive = p_exclusive;
+	type = p_type;
+	direction = p_direction;
+}
