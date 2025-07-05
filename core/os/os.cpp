@@ -55,6 +55,10 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
+bool OS::prefer_meta_over_ctrl() {
+	return singleton->has_feature("macos") || singleton->has_feature("web_macos") || singleton->has_feature("web_ios");
+}
+
 uint64_t OS::get_ticks_msec() const {
 	return get_ticks_usec() / 1000ULL;
 }
