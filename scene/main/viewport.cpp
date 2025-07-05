@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/object/callable_method_pointer.h"
+#include "core/string/print_string.h"
 #include "core/templates/pair.h"
 #include "core/templates/sort_array.h"
 #include "scene/2d/audio_listener_2d.h"
@@ -42,11 +44,14 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
+#include "scene/main/node.h"
+#include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/svg_texture.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
+#include "scene/scene_string_names.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
@@ -103,6 +108,8 @@ void ViewportTexture::reset_local_to_scene() {
 	if (proxy.is_valid() && proxy_ph.is_null()) {
 		proxy_ph = RS::get_singleton()->texture_2d_placeholder_create();
 		RS::get_singleton()->texture_proxy_update(proxy, proxy_ph);
+	} else {
+		callable_mp(this, &ViewportTexture::setup_local_to_scene).call_deferred();
 	}
 }
 
