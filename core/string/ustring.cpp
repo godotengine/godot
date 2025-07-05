@@ -2955,6 +2955,106 @@ String String::remove_char(char32_t p_char) const {
 	return new_string;
 }
 
+String String::remove_string(const String &p_what) const {
+	if (p_what.is_empty() || is_empty()) {
+		return *this;
+	}
+
+	const int what_length = p_what.length();
+
+	int search_from = 0;
+	int result = 0;
+
+	LocalVector<int> found;
+
+	while ((result = find(p_what, search_from)) >= 0) {
+		found.push_back(result);
+		search_from = result + what_length;
+	}
+
+	if (found.is_empty()) {
+		return *this;
+	}
+
+	String new_string;
+
+	const int old_length = length();
+
+	new_string.resize_uninitialized(old_length - (found.size() * what_length) + 1);
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = ptr();
+
+	int last_pos = 0;
+
+	for (const int &pos : found) {
+		if (last_pos != pos) {
+			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			new_ptrw += (pos - last_pos);
+		}
+		last_pos = pos + what_length;
+	}
+
+	if (last_pos != old_length) {
+		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		new_ptrw += old_length - last_pos;
+	}
+
+	*new_ptrw = 0;
+
+	return new_string;
+}
+
+String String::remove_string(const char *p_what) const {
+	const int what_length = strlen(p_what);
+
+	if (what_length == 0 || is_empty()) {
+		return *this;
+	}
+
+	int search_from = 0;
+	int result = 0;
+
+	LocalVector<int> found;
+
+	while ((result = find(p_what, search_from)) >= 0) {
+		found.push_back(result);
+		search_from = result + what_length;
+	}
+
+	if (found.is_empty()) {
+		return *this;
+	}
+
+	String new_string;
+
+	const int old_length = length();
+
+	new_string.resize_uninitialized(old_length - (found.size() * what_length) + 1);
+
+	char32_t *new_ptrw = new_string.ptrw();
+	const char32_t *old_ptr = ptr();
+
+	int last_pos = 0;
+
+	for (const int &pos : found) {
+		if (last_pos != pos) {
+			memcpy(new_ptrw, old_ptr + last_pos, (pos - last_pos) * sizeof(char32_t));
+			new_ptrw += (pos - last_pos);
+		}
+		last_pos = pos + what_length;
+	}
+
+	if (last_pos != old_length) {
+		memcpy(new_ptrw, old_ptr + last_pos, (old_length - last_pos) * sizeof(char32_t));
+		new_ptrw += old_length - last_pos;
+	}
+
+	*new_ptrw = 0;
+
+	return new_string;
+}
+
 template <class T>
 static String _remove_chars_common(const String &p_this, const T *p_chars, int p_chars_len) {
 	// Delegate if p_chars has a single element.
