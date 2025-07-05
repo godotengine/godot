@@ -4325,6 +4325,12 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			GDScriptParser::DataType base_type;
 			if (context.current_class) {
 				if (context.type != GDScriptParser::COMPLETION_SUPER_METHOD) {
+					if (context.current_function && p_symbol == "super") {
+						if (_lookup_symbol_from_base(context.current_class->base_type, context.current_function->info.name, r_result) == OK) {
+							return OK;
+						}
+						break;
+					}
 					base_type = context.current_class->get_datatype();
 				} else {
 					base_type = context.current_class->base_type;
