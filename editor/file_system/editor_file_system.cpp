@@ -3388,24 +3388,17 @@ Ref<Resource> EditorFileSystem::_load_resource_on_startup(ResourceFormatImporter
 		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed loading resource: %s. The file doesn't seem to exist.", p_path));
 	}
 
-	Ref<Resource> res;
-	bool can_retry = true;
-	bool retry = true;
-	while (retry) {
-		retry = false;
-
-		res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, can_retry);
-
-		if (res.is_null() && can_retry) {
-			can_retry = false;
-			Error err = singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false);
-			if (err == OK) {
-				retry = true;
-			}
-		}
+	// Fail silently. Hopefully the resource is not yet imported.
+	Ref<Resource> res = p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, true);
+	if (res.is_valid()) {
+		return res;
 	}
 
-	return res;
+	// Retry after importing the resource.
+	if (singleton->_reimport_file(p_path, HashMap<StringName, Variant>(), "", nullptr, false) != OK) {
+		return Ref<Resource>();
+	}
+	return p_importer->load_internal(p_path, r_error, p_use_sub_threads, r_progress, p_cache_mode, false);
 }
 
 bool EditorFileSystem::_should_skip_directory(const String &p_path) {
