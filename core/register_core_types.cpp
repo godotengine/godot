@@ -79,6 +79,7 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/translation.h"
 #include "core/string/translation_server.h"
+#include "core/variant/stack.h"
 #ifndef DISABLE_DEPRECATED
 #include "core/io/packed_data_container.h"
 #endif
@@ -271,6 +272,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(AStarGrid2D);
 	GDREGISTER_CLASS(EncodedObjectAsID);
 	GDREGISTER_CLASS(RandomNumberGenerator);
+	GDREGISTER_CLASS(Stack);
 #ifndef DISABLE_DEPRECATED
 	GDREGISTER_CLASS(PackedDataContainer);
 	GDREGISTER_ABSTRACT_CLASS(PackedDataContainerRef);
