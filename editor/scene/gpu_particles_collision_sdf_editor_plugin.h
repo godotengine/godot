@@ -30,6 +30,8 @@
 
 #pragma once
 
+#ifndef _3D_DISABLED
+
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
@@ -68,3 +70,5 @@ public:
 
 	GPUParticlesCollisionSDF3DEditorPlugin();
 };
+
+#endif // _3D_DISABLED

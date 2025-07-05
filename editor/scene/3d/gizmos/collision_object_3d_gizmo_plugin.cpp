@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "collision_object_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/collision_object_3d.h"
@@ -82,3 +84,5 @@ void CollisionObject3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 }
+
+#endif // PHYSICS_3D_DISABLED

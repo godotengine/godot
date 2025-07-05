@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef PHYSICS_3D_DISABLED
+
 #include "shape_cast_3d_gizmo_plugin.h"
 
 #include "scene/3d/physics/shape_cast_3d.h"
@@ -67,3 +69,5 @@ void ShapeCast3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	p_gizmo->add_collision_segments(shapecast->get_debug_line_vertices());
 }
+
+#endif // PHYSICS_3D_DISABLED
