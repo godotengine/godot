@@ -2567,11 +2567,11 @@ uint32_t RenderForwardMobile::geometry_instance_get_pair_mask() {
 }
 
 uint32_t RenderForwardMobile::get_max_lights_total() {
-    return (uint32_t)get_singleton()->get_max_elements();
+	return (uint32_t)get_singleton()->get_max_elements();
 }
 
 uint32_t RenderForwardMobile::get_max_lights_per_mesh() {
-    return (uint32_t)MAX_RDL_CULL;
+	return (uint32_t)MAX_RDL_CULL;
 }
 
 void RenderForwardMobile::GeometryInstanceForwardMobile::clear_light_instances() {

@@ -73,11 +73,11 @@ uint32_t RasterizerSceneGLES3::geometry_instance_get_pair_mask() {
 }
 
 uint32_t RasterizerSceneGLES3::get_max_lights_total() {
-    return (uint32_t)GLES3::Config::get_singleton()->max_renderable_lights;
+	return (uint32_t)GLES3::Config::get_singleton()->max_renderable_lights;
 }
 
 uint32_t RasterizerSceneGLES3::get_max_lights_per_mesh() {
-    return (uint32_t)GLES3::Config::get_singleton()->max_lights_per_object;
+	return (uint32_t)GLES3::Config::get_singleton()->max_lights_per_object;
 }
 
 void RasterizerSceneGLES3::GeometryInstanceGLES3::clear_light_instances() {
