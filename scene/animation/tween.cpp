@@ -200,6 +200,16 @@ void Tween::kill() {
 	running = false; // For the sake of is_running().
 	valid = false;
 	dead = true;
+
+	// Kill all subtweens of this tween.
+	for (List<Ref<Tweener>> &tweener : tweeners) {
+		for (Ref<Tweener> &indiv_tweener : tweener) {
+			SubtweenTweener *as_subtween_tweener = Object::cast_to<SubtweenTweener>(indiv_tweener.ptr());
+			if (as_subtween_tweener) {
+				as_subtween_tweener->subtween->kill();
+			}
+		}
+	}
 }
 
 bool Tween::is_running() {
