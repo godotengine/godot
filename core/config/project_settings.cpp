@@ -48,10 +48,6 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 #endif // TOOLS_ENABLED
 
-const String ProjectSettings::PROJECT_DATA_DIR_NAME_SUFFIX = "godot";
-
-ProjectSettings *ProjectSettings::singleton = nullptr;
-
 ProjectSettings *ProjectSettings::get_singleton() {
 	return singleton;
 }
@@ -236,18 +232,18 @@ void ProjectSettings::set_as_internal(const String &p_name, bool p_internal) {
 
 void ProjectSettings::set_ignore_value_in_docs(const String &p_name, bool p_ignore) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	props[p_name].ignore_value_in_docs = p_ignore;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 bool ProjectSettings::get_ignore_value_in_docs(const String &p_name) const {
 	ERR_FAIL_COND_V_MSG(!props.has(p_name), false, vformat("Request for nonexistent project setting: '%s'.", p_name));
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	return props[p_name].ignore_value_in_docs;
 #else
 	return false;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void ProjectSettings::add_hidden_prefix(const String &p_prefix) {
@@ -300,6 +296,8 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 				custom_features.insert(custom_feature_array[i]);
 			}
+
+			_version++;
 			_queue_changed();
 			return true;
 		}
@@ -345,6 +343,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
+	_version++;
 	_queue_changed();
 	return true;
 }
@@ -422,6 +421,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
+	HashMap<String, LocalVector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -462,23 +462,60 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (v->restart_if_changed) {
 			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
-		vclist.insert(vc);
+
+		int dot = vc.name.rfind_char('.');
+		if (dot != -1) {
+			StringName n = vc.name.substr(0, dot);
+			if (props.has(n)) {
+				// Property is an override.
+				setting_overrides[n].push_back(vc);
+			} else {
+				vclist.insert(vc);
+			}
+		} else {
+			vclist.insert(vc);
+		}
 	}
 
-	for (const _VCSort &E : vclist) {
-		String prop_info_name = E.name;
-		int dot = prop_info_name.find_char('.');
-		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
-			prop_info_name = prop_info_name.substr(0, dot);
+	for (const _VCSort &base : vclist) {
+		if (custom_prop_info.has(base.name)) {
+			PropertyInfo pi = custom_prop_info[base.name];
+			pi.name = base.name;
+			pi.usage = base.flags;
+			p_list->push_back(pi);
+#ifdef TOOLS_ENABLED
+		} else if (base.name.begins_with(EDITOR_SETTING_OVERRIDE_PREFIX)) {
+			PropertyInfo info(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags);
+
+			const PropertyInfo *pi = editor_settings_info.getptr(base.name.trim_prefix(EDITOR_SETTING_OVERRIDE_PREFIX));
+			if (pi) {
+				info.usage = pi->usage;
+				info.hint = pi->hint;
+				info.hint_string = pi->hint_string;
+			}
+			p_list->push_back(info);
+#endif
+		} else {
+			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
 		}
 
-		if (custom_prop_info.has(prop_info_name)) {
-			PropertyInfo pi = custom_prop_info[prop_info_name];
-			pi.name = E.name;
-			pi.usage = E.flags;
-			p_list->push_back(pi);
-		} else {
-			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
+		if (setting_overrides.has(base.name)) {
+			for (const _VCSort &over : setting_overrides.get(base.name)) {
+				if (custom_prop_info.has(over.name)) {
+					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else if (custom_prop_info.has(base.name)) {
+					// Fallback to base property info.
+					PropertyInfo pi = custom_prop_info[base.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else {
+					p_list->push_back(PropertyInfo(over.type, over.name, PROPERTY_HINT_NONE, "", over.flags));
+				}
+			}
 		}
 	}
 }
@@ -577,6 +614,8 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
  *    o PCK with the same basename as the binary in the current working directory.
  *      Same as above for the two possible PCK file names.
+ *  - On Android, look for 'assets.sparsepck' and try loading it, if it doesn't work,
+ *    proceed to the next step.
  *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
@@ -663,6 +702,11 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			return err;
 		}
 	}
+
+#ifdef ANDROID_ENABLED
+	// Attempt to load sparse PCK assets.
+	_load_resource_pack("res://assets.sparsepck", false, 0, true);
+#endif
 
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
@@ -794,7 +838,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	for (uint32_t i = 0; i < count; i++) {
 		uint32_t slen = f->get_32();
 		CharString cs;
-		cs.resize(slen + 1);
+		cs.resize_uninitialized(slen + 1);
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
 		String key = String::utf8(cs.ptr(), slen);
@@ -1203,8 +1247,12 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 }
 
 void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
-	ERR_FAIL_COND(!p_info.has("name"));
-	ERR_FAIL_COND(!p_info.has("type"));
+	ERR_FAIL_COND_MSG(!p_info.has("name"), "Property info is missing \"name\" field.");
+	ERR_FAIL_COND_MSG(!p_info.has("type"), "Property info is missing \"type\" field.");
+
+	if (p_info.has("usage")) {
+		WARN_PRINT("\"usage\" is not supported in add_property_info().");
+	}
 
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
@@ -1241,7 +1289,7 @@ bool ProjectSettings::is_project_loaded() const {
 }
 
 bool ProjectSettings::_property_can_revert(const StringName &p_name) const {
-	return props.has(p_name);
+	return props.has(p_name) && !String(p_name).begins_with(EDITOR_SETTING_OVERRIDE_PREFIX);
 }
 
 bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
@@ -1391,8 +1439,7 @@ void ProjectSettings::load_scene_groups_cache() {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(get_scene_groups_cache_path()) == OK) {
-		List<String> scene_paths;
-		cf->get_sections(&scene_paths);
+		Vector<String> scene_paths = cf->get_sections();
 		for (const String &E : scene_paths) {
 			Array scene_groups = cf->get_value(E, "groups", Array());
 			HashSet<StringName> cache;
@@ -1427,6 +1474,18 @@ void ProjectSettings::get_argument_options(const StringName &p_function, int p_i
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
 #endif
+
+void ProjectSettings::set_editor_setting_override(const String &p_setting, const Variant &p_value) {
+	set_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting, p_value);
+}
+
+bool ProjectSettings::has_editor_setting_override(const String &p_setting) const {
+	return has_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting);
+}
+
+Variant ProjectSettings::get_editor_setting_override(const String &p_setting) const {
+	return get_setting(EDITOR_SETTING_OVERRIDE_PREFIX + p_setting);
+}
 
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
@@ -1651,6 +1710,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
 	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
+	GLOBAL_DEF_BASIC("input_devices/pointing/android/disable_scroll_deadzone", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
@@ -1661,6 +1721,7 @@ ProjectSettings::ProjectSettings() {
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
+	GLOBAL_DEF("navigation/world/region_use_async_iterations", true);
 
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);

@@ -44,6 +44,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio_server.h"
@@ -193,9 +194,9 @@ void ViewportTexture::_setup_local_to_scene(const Node *p_loc_scene) {
 	vp_pending = false;
 
 	Node *vpn = p_loc_scene->get_node_or_null(path);
-	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + path + "'.");
+	ERR_FAIL_NULL_MSG(vpn, "Path to node is invalid: '" + String(path) + "'.");
 	vp = Object::cast_to<Viewport>(vpn);
-	ERR_FAIL_NULL_MSG(vp, "Path to node does not point to a viewport: '" + path + "'.");
+	ERR_FAIL_NULL_MSG(vp, "Path to node does not point to a viewport: '" + String(path) + "'.");
 
 	vp->viewport_textures.insert(this);
 
@@ -336,7 +337,7 @@ void Viewport::_sub_window_update(Window *p_window) {
 	sw.pending_window_update = false;
 
 	RS::get_singleton()->canvas_item_clear(sw.canvas_item);
-	Rect2i r = Rect2i(p_window->get_position(), p_window->get_size());
+	const Rect2i r = Rect2i(p_window->get_position(), p_window->get_size());
 
 	if (!p_window->get_flag(Window::FLAG_BORDERLESS)) {
 		Ref<StyleBox> panel = gui.subwindow_focused == p_window ? p_window->theme_cache.embedded_border : p_window->theme_cache.embedded_unfocused_border;
@@ -350,18 +351,21 @@ void Viewport::_sub_window_update(Window *p_window) {
 		int close_h_ofs = p_window->theme_cache.close_h_offset;
 		int close_v_ofs = p_window->theme_cache.close_v_offset;
 
-		TextLine title_text = TextLine(p_window->get_translated_title(), title_font, font_size);
-		title_text.set_width(r.size.width - panel->get_minimum_size().x - close_h_ofs);
-		title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
-		int x = (r.size.width - title_text.get_size().x) / 2;
-		int y = (-title_height - title_text.get_size().y) / 2;
+		const real_t title_space = r.size.width - panel->get_minimum_size().x - close_h_ofs;
+		if (title_space > 0) {
+			TextLine title_text = TextLine(p_window->get_displayed_title(), title_font, font_size);
+			title_text.set_width(title_space);
+			title_text.set_direction(p_window->is_layout_rtl() ? TextServer::DIRECTION_RTL : TextServer::DIRECTION_LTR);
+			int x = (r.size.width - title_text.get_size().x) / 2;
+			int y = (-title_height - title_text.get_size().y) / 2;
 
-		Color font_outline_color = p_window->theme_cache.title_outline_modulate;
-		int outline_size = p_window->theme_cache.title_outline_size;
-		if (outline_size > 0 && font_outline_color.a > 0) {
-			title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
+			Color font_outline_color = p_window->theme_cache.title_outline_modulate;
+			int outline_size = p_window->theme_cache.title_outline_size;
+			if (outline_size > 0 && font_outline_color.a > 0) {
+				title_text.draw_outline(sw.canvas_item, r.position + Point2(x, y), outline_size, font_outline_color);
+			}
+			title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 		}
-		title_text.draw(sw.canvas_item, r.position + Point2(x, y), title_color);
 
 		bool pressed = gui.subwindow_focused == sw.window && gui.subwindow_drag == SUB_WINDOW_DRAG_CLOSE && gui.subwindow_drag_close_inside;
 		Ref<Texture2D> close_icon = pressed ? p_window->theme_cache.close_pressed : p_window->theme_cache.close;
@@ -750,7 +754,7 @@ void Viewport::_process_picking() {
 #endif // PHYSICS_2D_DISABLED
 
 	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
-	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_IGNORE);
+	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter_with_override() == Control::MOUSE_FILTER_IGNORE);
 	bool create_passive_hover_event = true;
 	if (gui.mouse_over || parent_ignore_mouse) {
 		// When the mouse is over a Control node, passive hovering would cause input events for Colliders, that are behind Control nodes.
@@ -895,7 +899,7 @@ void Viewport::_process_picking() {
 										send_event = false;
 									}
 								}
-								HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>>::Iterator SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
+								HashMap<Pair<ObjectID, int>, uint64_t>::Iterator SF = physics_2d_shape_mouseover.find(Pair(res[i].collider_id, res[i].shape));
 								if (!SF) {
 									physics_2d_shape_mouseover.insert(Pair(res[i].collider_id, res[i].shape), frame);
 									co->_mouse_shape_enter(res[i].shape);
@@ -1029,22 +1033,72 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
+void Viewport::set_use_oversampling(bool p_oversampling) {
+	ERR_MAIN_THREAD_GUARD;
+	if (use_font_oversampling == p_oversampling) {
+		return;
+	}
+	use_font_oversampling = p_oversampling;
+	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+}
+
+bool Viewport::is_using_oversampling() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return use_font_oversampling;
+}
+
+void Viewport::set_oversampling_override(float p_oversampling) {
+	ERR_MAIN_THREAD_GUARD;
+	if (font_oversampling_override == p_oversampling) {
+		return;
+	}
+	font_oversampling_override = p_oversampling;
+	_set_size(_get_size(), _get_size_2d_override(), _is_size_allocated());
+}
+
+float Viewport::get_oversampling_override() const {
+	ERR_READ_THREAD_GUARD_V(0.0);
+	return font_oversampling_override;
+}
+
 bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
+	float new_font_oversampling = 1.0;
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
 		Size2 scale = Size2(p_size) / p_size_2d_override;
 		stretch_transform_new.scale(scale);
+
+		if (use_font_oversampling) {
+			if (font_oversampling_override <= 0.0) {
+				new_font_oversampling = MAX(scale.x, scale.y);
+			} else {
+				new_font_oversampling = font_oversampling_override;
+			}
+		} else {
+			new_font_oversampling = 1.0;
+		}
+	} else if (use_font_oversampling && font_oversampling_override > 0.0) {
+		new_font_oversampling = font_oversampling_override;
 	}
 
 	Size2i new_size = p_size.maxi(2);
-	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
+	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && new_font_oversampling == font_oversampling) {
 		return false;
+	}
+
+	if (new_font_oversampling != font_oversampling) {
+		TS->reference_oversampling_level(new_font_oversampling);
+		TS->unreference_oversampling_level(font_oversampling);
+
+		SVGTexture::reference_scaling_level(new_font_oversampling);
+		SVGTexture::unreference_scaling_level(font_oversampling);
 	}
 
 	size = new_size;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;
+	font_oversampling = new_font_oversampling;
 
 #ifndef _3D_DISABLED
 	if (!use_xr) {
@@ -1499,7 +1553,7 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 
 		// Otherwise, we check parent controls unless some conditions prevent it.
 
-		if (p_control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+		if (p_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 			break;
 		}
 		if (p_control->is_set_as_top_level()) {
@@ -1610,7 +1664,7 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	}
 	Size2 scale = get_popup_base_transform().get_scale();
 	real_t popup_scale = MIN(scale.x, scale.y);
-	Point2 tooltip_offset = GLOBAL_GET("display/mouse_cursor/tooltip_position_offset");
+	Point2 tooltip_offset = GLOBAL_GET_CACHED(Point2, "display/mouse_cursor/tooltip_position_offset");
 	tooltip_offset *= popup_scale;
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 	Rect2i vr;
@@ -1670,14 +1724,14 @@ void Viewport::_gui_call_input(Control *p_control, const Ref<InputEvent> &p_inpu
 	while (ci) {
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+			if (control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
 				control->_call_gui_input(ev);
 			}
 
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
-			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP && is_pointer_event && !(is_scroll_event && control->data.force_pass_scroll_events)) {
+			if (control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP && is_pointer_event && !(is_scroll_event && control->data.force_pass_scroll_events)) {
 				// Mouse, ScreenDrag and ScreenTouch events are stopped by default with MOUSE_FILTER_STOP, unless we have a scroll event and force_pass_scroll_events set to true
 				set_input_as_handled();
 				break;
@@ -1703,7 +1757,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 	while (ci) {
 		Control *control = Object::cast_to<Control>(ci);
 		if (control) {
-			if (control->data.mouse_filter != Control::MOUSE_FILTER_IGNORE) {
+			if (control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
 				control->notification(p_what);
 			}
 
@@ -1714,7 +1768,7 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 			if (!control->is_inside_tree() || control->is_set_as_top_level()) {
 				break;
 			}
-			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+			if (control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 				break;
 			}
 		}
@@ -1784,7 +1838,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 		}
 	}
 
-	if (!c || c->data.mouse_filter == Control::MOUSE_FILTER_IGNORE) {
+	if (!c || c->get_mouse_filter_with_override() == Control::MOUSE_FILTER_IGNORE) {
 		return nullptr;
 	}
 
@@ -1816,7 +1870,7 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 				return true;
 			}
 
-			if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+			if (control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 				break;
 			}
 		}
@@ -1882,7 +1936,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				while (ci) {
 					Control *control = Object::cast_to<Control>(ci);
 					if (control) {
-						if (control->get_focus_mode_with_recursive() != Control::FOCUS_NONE) {
+						if (control->_is_focusable()) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
 							if (control != gui.key_focus && gui.mouse_over_hierarchy.has(control)) {
@@ -1891,7 +1945,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							break;
 						}
 
-						if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+						if (control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 							break;
 						}
 					}
@@ -1977,7 +2031,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								section_root->gui.global_dragging = false;
 							}
 
-							if (control->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+							if (control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 								break;
 							}
 						}
@@ -2069,7 +2123,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					if (cursor_shape != Control::CURSOR_ARROW) {
 						break;
 					}
-					if (c->data.mouse_filter == Control::MOUSE_FILTER_STOP) {
+					if (c->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 						break;
 					}
 					if (c->is_set_as_top_level()) {
@@ -2503,7 +2557,7 @@ void Viewport::_gui_update_mouse_over() {
 			int found = gui.mouse_over_hierarchy.find(ancestor_control);
 			if (found >= 0) {
 				// Remove the node if the propagation chain has been broken or it is now MOUSE_FILTER_IGNORE.
-				if (removing || ancestor_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_IGNORE) {
+				if (removing || ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_IGNORE) {
 					needs_exit.push_back(found);
 				}
 			}
@@ -2514,14 +2568,14 @@ void Viewport::_gui_update_mouse_over() {
 				}
 				reached_top = true;
 			}
-			if (!removing && ancestor_control->get_mouse_filter_with_recursive() != Control::MOUSE_FILTER_IGNORE) {
+			if (!removing && ancestor_control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
 				new_mouse_over_hierarchy.push_back(ancestor_control);
 				// Add the node if it was not found and it is now not MOUSE_FILTER_IGNORE.
 				if (found < 0) {
 					needs_enter.push_back(ancestor_control);
 				}
 			}
-			if (ancestor_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
+			if (ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 				// MOUSE_FILTER_STOP breaks the propagation chain.
 				if (reached_top) {
 					break;
@@ -3182,7 +3236,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			while (ancestor) {
 				Control *ancestor_control = Object::cast_to<Control>(ancestor);
 				if (ancestor_control) {
-					if (ancestor_control->get_mouse_filter_with_recursive() != Control::MOUSE_FILTER_IGNORE) {
+					if (ancestor_control->get_mouse_filter_with_override() != Control::MOUSE_FILTER_IGNORE) {
 						int found = gui.mouse_over_hierarchy.find(ancestor_control);
 						if (found >= 0) {
 							common_ancestor = gui.mouse_over_hierarchy[found];
@@ -3190,7 +3244,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 						}
 						over_ancestors.push_back(ancestor_control);
 					}
-					if (ancestor_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
+					if (ancestor_control->get_mouse_filter_with_override() == Control::MOUSE_FILTER_STOP) {
 						// MOUSE_FILTER_STOP breaks the propagation chain.
 						break;
 					}
@@ -4912,6 +4966,14 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
 
+	ClassDB::bind_method(D_METHOD("set_use_oversampling", "enable"), &Viewport::set_use_oversampling);
+	ClassDB::bind_method(D_METHOD("is_using_oversampling"), &Viewport::is_using_oversampling);
+
+	ClassDB::bind_method(D_METHOD("set_oversampling_override", "oversampling"), &Viewport::set_oversampling_override);
+	ClassDB::bind_method(D_METHOD("get_oversampling_override"), &Viewport::get_oversampling_override);
+
+	ClassDB::bind_method(D_METHOD("get_oversampling"), &Viewport::get_oversampling);
+
 	ClassDB::bind_method(D_METHOD("get_render_info", "type", "info"), &Viewport::get_render_info);
 
 	ClassDB::bind_method(D_METHOD("get_texture"), &Viewport::get_texture);
@@ -5068,7 +5130,7 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_2d", "get_msaa_2d");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), "set_msaa_3d", "get_msaa_3d");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), "set_screen_space_aa", "get_screen_space_aa");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast),SMAA (Average)"), "set_screen_space_aa", "get_screen_space_aa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_taa"), "set_use_taa", "is_using_taa");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_debanding"), "set_use_debanding", "is_using_debanding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_occlusion_culling"), "set_use_occlusion_culling", "is_using_occlusion_culling");
@@ -5120,6 +5182,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_canvas_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_canvas_transform", "get_global_canvas_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "canvas_cull_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_canvas_cull_mask", "get_canvas_cull_mask");
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "oversampling"), "set_use_oversampling", "is_using_oversampling");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override"), "set_oversampling_override", "get_oversampling_override");
+
 	ADD_SIGNAL(MethodInfo("size_changed"));
 	ADD_SIGNAL(MethodInfo("gui_focus_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Control")));
 
@@ -5154,6 +5219,7 @@ void Viewport::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_DISABLED);
 	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_FXAA);
+	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_SMAA);
 	BIND_ENUM_CONSTANT(SCREEN_SPACE_AA_MAX);
 
 	BIND_ENUM_CONSTANT(RENDER_INFO_OBJECTS_IN_FRAME);
@@ -5228,6 +5294,9 @@ void Viewport::_bind_methods() {
 }
 
 void Viewport::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (vrs_mode != VRS_TEXTURE && (p_property.name == "vrs_texture")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -5489,6 +5558,9 @@ void SubViewport::_bind_methods() {
 }
 
 void SubViewport::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "size") {
 		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 		if (parent_svc && parent_svc->is_stretch_enabled()) {
@@ -5502,5 +5574,3 @@ void SubViewport::_validate_property(PropertyInfo &p_property) const {
 SubViewport::SubViewport() {
 	RS::get_singleton()->viewport_set_size(get_viewport_rid(), get_size().width, get_size().height);
 }
-
-SubViewport::~SubViewport() {}

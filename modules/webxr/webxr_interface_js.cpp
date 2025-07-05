@@ -45,7 +45,7 @@
 #include "servers/xr/xr_hand_tracker.h"
 
 #include <emscripten.h>
-#include <stdlib.h>
+#include <cstdlib>
 
 void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -291,10 +291,17 @@ bool WebXRInterfaceJS::initialize() {
 
 	if (!initialized) {
 		if (!godot_webxr_is_supported()) {
+			emit_signal("session_failed", "WebXR is unsupported by this web browser.");
+			return false;
+		}
+
+		if (session_mode == "immersive-vr" && !GLES3::Config::get_singleton()->multiview_supported) {
+			emit_signal("session_failed", "Stereo rendering in Godot requires multiview, but this web browser doesn't support it.");
 			return false;
 		}
 
 		if (requested_reference_space_types.is_empty()) {
+			emit_signal("session_failed", "No reference spaces were requested.");
 			return false;
 		}
 
@@ -728,7 +735,7 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 				Vector2 delta = position - touches[touch_index].position;
 
 				// If position has changed by at least 1 pixel, generate a drag event.
-				if (abs(delta.x) >= 1.0 || abs(delta.y) >= 1.0) {
+				if (std::abs(delta.x) >= 1.0 || std::abs(delta.y) >= 1.0) {
 					Ref<InputEventScreenDrag> event;
 					event.instantiate();
 					event->set_index(touch_index);

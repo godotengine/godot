@@ -88,12 +88,12 @@ def parse_unicode_data() -> None:
 
 
 def make_array(array_name: str, range_list: List[Tuple[int, int]]) -> str:
-    result: str = f"constexpr inline CharRange {array_name}[] = {{\n"
+    result: str = f"\n\nconstexpr inline CharRange {array_name}[] = {{\n"
 
     for start, end in range_list:
         result += f"\t{{ 0x{start:x}, 0x{end:x} }},\n"
 
-    result += "};\n\n"
+    result += "};"
 
     return result
 
@@ -116,13 +116,15 @@ def generate_char_range_inc() -> None:
 struct CharRange {{
 \tchar32_t start;
 \tchar32_t end;
-}};\n\n"""
+}};"""
 
     source += make_array("xid_start", xid_start)
     source += make_array("xid_continue", xid_continue)
     source += make_array("uppercase_letter", uppercase_letter)
     source += make_array("lowercase_letter", lowercase_letter)
     source += make_array("unicode_letter", unicode_letter)
+
+    source += "\n"
 
     char_range_path: str = os.path.join(os.path.dirname(__file__), "../../core/string/char_range.inc")
     with open(char_range_path, "w", newline="\n") as f:

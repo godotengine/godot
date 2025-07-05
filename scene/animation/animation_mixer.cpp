@@ -107,20 +107,12 @@ bool AnimationMixer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AnimationMixer::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<PropertyInfo> anim_names;
-	anim_names.push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries")));
-	for (const PropertyInfo &E : anim_names) {
-		p_list->push_back(E);
-	}
-
-	for (PropertyInfo &E : *p_list) {
-		_validate_property(E);
-	}
+	p_list->push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries"), PROPERTY_HINT_DICTIONARY_TYPE, "StringName;AnimationLibrary"));
 }
 
 void AnimationMixer::_validate_property(PropertyInfo &p_property) const {
-#ifdef TOOLS_ENABLED
-	if (editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
+#ifdef TOOLS_ENABLED // `editing` is surrounded by TOOLS_ENABLED so this should also be.
+	if (Engine::get_singleton()->is_editor_hint() && editing && (p_property.name == "active" || p_property.name == "deterministic" || p_property.name == "root_motion_track")) {
 		p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 	}
 #endif // TOOLS_ENABLED
@@ -611,7 +603,11 @@ void AnimationMixer::_init_root_motion_cache() {
 }
 
 void AnimationMixer::_create_track_num_to_track_cache_for_animation(Ref<Animation> &p_animation) {
-	ERR_FAIL_COND(animation_track_num_to_track_cache.has(p_animation));
+	if (animation_track_num_to_track_cache.has(p_animation)) {
+		// In AnimationMixer::_update_caches, it retrieves all animations via AnimationMixer::get_animation_list
+		// Since multiple AnimationLibraries can share the same Animation, it is possible that the cache is already created.
+		return;
+	}
 	LocalVector<TrackCache *> &track_num_to_track_cache = animation_track_num_to_track_cache.insert_new(p_animation, LocalVector<TrackCache *>())->value;
 	const Vector<Animation::Track *> &tracks = p_animation->get_tracks();
 
@@ -636,8 +632,8 @@ bool AnimationMixer::_update_caches() {
 	List<StringName> sname_list;
 	get_animation_list(&sname_list);
 
-	bool check_path = GLOBAL_GET("animation/warnings/check_invalid_track_paths");
-	bool check_angle_interpolation = GLOBAL_GET("animation/warnings/check_angle_interpolation_type_conflicting");
+	bool check_path = GLOBAL_GET_CACHED(bool, "animation/warnings/check_invalid_track_paths");
+	bool check_angle_interpolation = GLOBAL_GET_CACHED(bool, "animation/warnings/check_angle_interpolation_type_conflicting");
 
 	Node *parent = get_node_or_null(root_node);
 	if (!parent) {
@@ -1178,8 +1174,8 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 		real_t weight = ai.playback_info.weight;
 		const real_t *track_weights_ptr = ai.playback_info.track_weights.ptr();
 		int track_weights_count = ai.playback_info.track_weights.size();
-		bool backward = signbit(delta); // This flag is used by the root motion calculates or detecting the end of audio stream.
-		bool seeked_backward = signbit(p_delta);
+		bool backward = std::signbit(delta); // This flag is used by the root motion calculates or detecting the end of audio stream.
+		bool seeked_backward = std::signbit(p_delta);
 #ifndef _3D_DISABLED
 		bool calc_root = !seeked || is_external_seeking;
 #endif // _3D_DISABLED
@@ -1589,17 +1585,17 @@ void AnimationMixer::_blend_process(double p_delta, bool p_update_only) {
 							float rot_a = t->value;
 							float rot_b = value;
 							float rot_init = t->init_value;
-							rot_a = Math::fposmod(rot_a, (float)Math_TAU);
-							rot_b = Math::fposmod(rot_b, (float)Math_TAU);
-							rot_init = Math::fposmod(rot_init, (float)Math_TAU);
-							if (rot_init < Math_PI) {
-								rot_a = rot_a > rot_init + Math_PI ? rot_a - Math_TAU : rot_a;
-								rot_b = rot_b > rot_init + Math_PI ? rot_b - Math_TAU : rot_b;
+							rot_a = Math::fposmod(rot_a, (float)Math::TAU);
+							rot_b = Math::fposmod(rot_b, (float)Math::TAU);
+							rot_init = Math::fposmod(rot_init, (float)Math::TAU);
+							if (rot_init < Math::PI) {
+								rot_a = rot_a > rot_init + Math::PI ? rot_a - Math::TAU : rot_a;
+								rot_b = rot_b > rot_init + Math::PI ? rot_b - Math::TAU : rot_b;
 							} else {
-								rot_a = rot_a < rot_init - Math_PI ? rot_a + Math_TAU : rot_a;
-								rot_b = rot_b < rot_init - Math_PI ? rot_b + Math_TAU : rot_b;
+								rot_a = rot_a < rot_init - Math::PI ? rot_a + Math::TAU : rot_a;
+								rot_b = rot_b < rot_init - Math::PI ? rot_b + Math::TAU : rot_b;
 							}
-							t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math_TAU);
+							t->value = Math::fposmod(rot_a + (rot_b - rot_init) * (float)blend, (float)Math::TAU);
 						} else {
 							value = Animation::cast_to_blendwise(value);
 							if (t->init_value.is_array()) {

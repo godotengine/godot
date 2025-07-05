@@ -55,7 +55,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native boolean initialize(Activity activity,
+	public static native boolean initialize(
 			Godot p_instance,
 			AssetManager p_asset_manager,
 			GodotIO godotIO,

@@ -34,7 +34,7 @@
 
 #include "Jolt/Physics/Collision/BroadPhase/BroadPhaseLayer.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace JoltBroadPhaseLayer {
 

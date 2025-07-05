@@ -33,11 +33,11 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/object/script_language.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/project_settings_editor.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/grid_container.h"
 
@@ -224,7 +224,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_edit = memnew(LineEdit);
 	name_edit->set_placeholder("MyPlugin");
 	name_edit->set_tooltip_text(TTR("Required. This name will be displayed in the list of plugins."));
-	name_edit->set_accessibility_name(TTRC("Name"));
+	name_edit->set_accessibility_name(TTRC("Plugin Name:"));
 	name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(name_edit);
 
@@ -238,7 +238,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	subfolder_edit = memnew(LineEdit);
 	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
 	subfolder_edit->set_tooltip_text(TTR("Optional. The folder name should generally use `snake_case` naming (avoid spaces and special characters).\nIf left empty, the folder will be named after the plugin name converted to `snake_case`."));
-	subfolder_edit->set_accessibility_name(TTRC("Subfolder"));
+	subfolder_edit->set_accessibility_name(TTRC("Subfolder:"));
 	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(subfolder_edit);
 	plugin_edit_hidden_controls.push_back(subfolder_edit);
@@ -251,7 +251,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_tooltip_text(TTR("Optional. This description should be kept relatively short (up to 5 lines).\nIt will display when hovering the plugin in the list of plugins."));
-	desc_edit->set_accessibility_name(TTRC("Description"));
+	desc_edit->set_accessibility_name(TTRC("Description:"));
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
 	desc_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
 	desc_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -266,7 +266,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	author_edit = memnew(LineEdit);
 	author_edit->set_placeholder("Godette");
-	author_edit->set_accessibility_name(TTRC("Author"));
+	author_edit->set_accessibility_name(TTRC("Author:"));
 	author_edit->set_tooltip_text(TTR("Optional. The author's username, full name, or organization name."));
 	author_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(author_edit);
@@ -280,7 +280,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	version_edit = memnew(LineEdit);
 	version_edit->set_tooltip_text(TTR("Optional. A human-readable version identifier used for informational purposes only."));
 	version_edit->set_placeholder("1.0");
-	version_edit->set_accessibility_name(TTRC("Version"));
+	version_edit->set_accessibility_name(TTRC("Version:"));
 	version_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(version_edit);
 
@@ -292,7 +292,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	script_option_edit = memnew(OptionButton);
 	script_option_edit->set_tooltip_text(TTR("Required. The scripting language to use for the script.\nNote that a plugin may use several languages at once by adding more scripts to the plugin."));
-	script_option_edit->set_accessibility_name(TTRC("Scripting Language"));
+	script_option_edit->set_accessibility_name(TTRC("Language:"));
 	int default_lang = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptLanguage *lang = ScriptServer::get_language(i);
@@ -313,7 +313,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_edit = memnew(LineEdit);
 	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
-	script_edit->set_accessibility_name(TTRC("Script"));
+	script_edit->set_accessibility_name(TTRC("Script Name:"));
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
 
@@ -326,7 +326,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	active_edit = memnew(CheckBox);
 	active_edit->set_pressed(true);
-	active_edit->set_accessibility_name(TTRC("Active"));
+	active_edit->set_accessibility_name(TTRC("Activate now?"));
 	grid->add_child(active_edit);
 	plugin_edit_hidden_controls.push_back(active_edit);
 

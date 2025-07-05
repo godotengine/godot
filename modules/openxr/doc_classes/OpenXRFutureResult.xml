@@ -21,10 +21,24 @@
 				Return the [code]XrFutureEXT[/code] value this result relates to.
 			</description>
 		</method>
+		<method name="get_result_value" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns the result value of our asynchronous function (if set by the extension). The type of this result value depends on the function being called. Consult the documentation of the relevant function.
+			</description>
+		</method>
 		<method name="get_status" qualifiers="const">
 			<return type="int" enum="OpenXRFutureResult.ResultStatus" />
 			<description>
 				Returns the status of this result.
+			</description>
+		</method>
+		<method name="set_result_value">
+			<return type="void" />
+			<param index="0" name="result_value" type="Variant" />
+			<description>
+				Stores the result value we expose to the user.
+				[b]Note:[/b] This method should only be called by an OpenXR extension that implements an asynchronous function.
 			</description>
 		</method>
 	</methods>

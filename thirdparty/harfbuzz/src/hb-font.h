@@ -486,7 +486,7 @@ typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *
 							 void *user_data);
 
 /**
- * hb_font_draw_glyph_func_t:
+ * hb_font_draw_glyph_or_fail_func_t:
  * @font: #hb_font_t to work upon
  * @font_data: @font user data pointer
  * @glyph: The glyph ID to query
@@ -496,16 +496,17 @@ typedef hb_bool_t (*hb_font_get_glyph_from_name_func_t) (hb_font_t *font, void *
  *
  * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
  *
- * Since: 7.0.0
+ * Return value: `true` if glyph was drawn, `false` otherwise
  *
+ * XSince: REPLACEME
  **/
-typedef void (*hb_font_draw_glyph_func_t) (hb_font_t *font, void *font_data,
-                                           hb_codepoint_t glyph,
-                                           hb_draw_funcs_t *draw_funcs, void *draw_data,
-                                           void *user_data);
+typedef hb_bool_t (*hb_font_draw_glyph_or_fail_func_t) (hb_font_t *font, void *font_data,
+							hb_codepoint_t glyph,
+							hb_draw_funcs_t *draw_funcs, void *draw_data,
+							void *user_data);
 
 /**
- * hb_font_paint_glyph_func_t:
+ * hb_font_paint_glyph_or_fail_func_t:
  * @font: #hb_font_t to work upon
  * @font_data: @font user data pointer
  * @glyph: The glyph ID to query
@@ -517,14 +518,16 @@ typedef void (*hb_font_draw_glyph_func_t) (hb_font_t *font, void *font_data,
  *
  * A virtual method for the #hb_font_funcs_t of an #hb_font_t object.
  *
- * Since: 7.0.0
+ * Return value: `true` if glyph was painted, `false` otherwise
+ *
+ * XSince: REPLACEME
  */
-typedef void (*hb_font_paint_glyph_func_t) (hb_font_t *font, void *font_data,
-                                            hb_codepoint_t glyph,
-                                            hb_paint_funcs_t *paint_funcs, void *paint_data,
-                                            unsigned int palette_index,
-                                            hb_color_t foreground,
-                                            void *user_data);
+typedef hb_bool_t (*hb_font_paint_glyph_or_fail_func_t) (hb_font_t *font, void *font_data,
+							 hb_codepoint_t glyph,
+							 hb_paint_funcs_t *paint_funcs, void *paint_data,
+							 unsigned int palette_index,
+							 hb_color_t foreground,
+							 void *user_data);
 
 /* func setters */
 
@@ -785,36 +788,36 @@ hb_font_funcs_set_glyph_from_name_func (hb_font_funcs_t *ffuncs,
 					void *user_data, hb_destroy_func_t destroy);
 
 /**
- * hb_font_funcs_set_draw_glyph_func:
+ * hb_font_funcs_set_draw_glyph_or_fail_func:
  * @ffuncs: A font-function structure
  * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
  * @user_data: Data to pass to @func
  * @destroy: (nullable): The function to call when @user_data is not needed anymore
  *
- * Sets the implementation function for #hb_font_draw_glyph_func_t.
+ * Sets the implementation function for #hb_font_draw_glyph_or_fail_func_t.
  *
- * Since: 7.0.0
+ * XSince: REPLACEME
  **/
 HB_EXTERN void
-hb_font_funcs_set_draw_glyph_func (hb_font_funcs_t *ffuncs,
-                                   hb_font_draw_glyph_func_t func,
-                                   void *user_data, hb_destroy_func_t destroy);
+hb_font_funcs_set_draw_glyph_or_fail_func (hb_font_funcs_t *ffuncs,
+					   hb_font_draw_glyph_or_fail_func_t func,
+					   void *user_data, hb_destroy_func_t destroy);
 
 /**
- * hb_font_funcs_set_paint_glyph_func:
+ * hb_font_funcs_set_paint_glyph_or_fail_func:
  * @ffuncs: A font-function structure
  * @func: (closure user_data) (destroy destroy) (scope notified): The callback function to assign
  * @user_data: Data to pass to @func
  * @destroy: (nullable): The function to call when @user_data is no longer needed
  *
- * Sets the implementation function for #hb_font_paint_glyph_func_t.
+ * Sets the implementation function for #hb_font_paint_glyph_or_fail_func_t.
  *
- * Since: 7.0.0
+ * XSince: REPLACEME
  */
 HB_EXTERN void
-hb_font_funcs_set_paint_glyph_func (hb_font_funcs_t *ffuncs,
-                                    hb_font_paint_glyph_func_t func,
-                                    void *user_data, hb_destroy_func_t destroy);
+hb_font_funcs_set_paint_glyph_or_fail_func (hb_font_funcs_t *ffuncs,
+					    hb_font_paint_glyph_or_fail_func_t func,
+					    void *user_data, hb_destroy_func_t destroy);
 
 /* func dispatch */
 
@@ -896,17 +899,17 @@ hb_font_get_glyph_from_name (hb_font_t *font,
 			     const char *name, int len, /* -1 means nul-terminated */
 			     hb_codepoint_t *glyph);
 
-HB_EXTERN void
-hb_font_draw_glyph (hb_font_t *font,
-                    hb_codepoint_t glyph,
-                    hb_draw_funcs_t *dfuncs, void *draw_data);
+HB_EXTERN hb_bool_t
+hb_font_draw_glyph_or_fail (hb_font_t *font,
+			    hb_codepoint_t glyph,
+			    hb_draw_funcs_t *dfuncs, void *draw_data);
 
-HB_EXTERN void
-hb_font_paint_glyph (hb_font_t *font,
-                     hb_codepoint_t glyph,
-                     hb_paint_funcs_t *pfuncs, void *paint_data,
-                     unsigned int palette_index,
-                     hb_color_t foreground);
+HB_EXTERN hb_bool_t
+hb_font_paint_glyph_or_fail (hb_font_t *font,
+			     hb_codepoint_t glyph,
+			     hb_paint_funcs_t *pfuncs, void *paint_data,
+			     unsigned int palette_index,
+			     hb_color_t foreground);
 
 /* high-level funcs, with fallback */
 
@@ -979,6 +982,19 @@ hb_font_glyph_from_string (hb_font_t *font,
 			   const char *s, int len, /* -1 means nul-terminated */
 			   hb_codepoint_t *glyph);
 
+/* Older alias for hb_font_draw_glyph_or_fail() with no return value. */
+HB_EXTERN void
+hb_font_draw_glyph (hb_font_t *font,
+		    hb_codepoint_t glyph,
+		    hb_draw_funcs_t *dfuncs, void *draw_data);
+
+/* Paints color glyph; if failed, draws outline glyph. */
+HB_EXTERN void
+hb_font_paint_glyph (hb_font_t *font,
+		     hb_codepoint_t glyph,
+		     hb_paint_funcs_t *pfuncs, void *paint_data,
+		     unsigned int palette_index,
+		     hb_color_t foreground);
 
 /*
  * hb_font_t
@@ -1052,6 +1068,12 @@ hb_font_set_funcs_data (hb_font_t         *font,
 			void              *font_data,
 			hb_destroy_func_t  destroy);
 
+HB_EXTERN hb_bool_t
+hb_font_set_funcs_using (hb_font_t  *font,
+			 const char *name);
+
+HB_EXTERN const char **
+hb_font_list_funcs (void);
 
 HB_EXTERN void
 hb_font_set_scale (hb_font_t *font,
@@ -1085,6 +1107,9 @@ hb_font_set_ptem (hb_font_t *font, float ptem);
 
 HB_EXTERN float
 hb_font_get_ptem (hb_font_t *font);
+
+HB_EXTERN hb_bool_t
+hb_font_is_synthetic (hb_font_t *font);
 
 HB_EXTERN void
 hb_font_set_synthetic_bold (hb_font_t *font,

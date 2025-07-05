@@ -209,29 +209,6 @@ inline StringName __constant_get_enum_name(T param, const String &p_constant) {
 	return GetTypeInfo<T>::get_class_info().class_name;
 }
 
-template <typename T>
-class BitField {
-	int64_t value = 0;
-
-public:
-	_FORCE_INLINE_ BitField<T> &set_flag(T p_flag) {
-		value |= (int64_t)p_flag;
-		return *this;
-	}
-	_FORCE_INLINE_ bool has_flag(T p_flag) const { return value & (int64_t)p_flag; }
-	_FORCE_INLINE_ bool is_empty() const { return value == 0; }
-	_FORCE_INLINE_ void clear_flag(T p_flag) { value &= ~(int64_t)p_flag; }
-	_FORCE_INLINE_ void clear() { value = 0; }
-	_FORCE_INLINE_ constexpr BitField() = default;
-	_FORCE_INLINE_ constexpr BitField(int64_t p_value) { value = p_value; }
-	_FORCE_INLINE_ constexpr BitField(T p_value) { value = (int64_t)p_value; }
-	_FORCE_INLINE_ operator int64_t() const { return value; }
-	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
-};
-
-template <typename T>
-struct is_zero_constructible<BitField<T>> : std::true_type {};
-
 #define MAKE_BITFIELD_TYPE_INFO(m_enum)                                                                                                          \
 	template <>                                                                                                                                  \
 	struct GetTypeInfo<m_enum> {                                                                                                                 \

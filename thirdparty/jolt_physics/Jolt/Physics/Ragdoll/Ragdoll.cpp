@@ -38,12 +38,12 @@ JPH_IMPLEMENT_SERIALIZABLE_NON_VIRTUAL(RagdollSettings)
 	JPH_ADD_ATTRIBUTE(RagdollSettings, mAdditionalConstraints)
 }
 
-static inline BodyInterface &sGetBodyInterface(PhysicsSystem *inSystem, bool inLockBodies)
+static inline BodyInterface &sRagdollGetBodyInterface(PhysicsSystem *inSystem, bool inLockBodies)
 {
 	return inLockBodies? inSystem->GetBodyInterface() : inSystem->GetBodyInterfaceNoLock();
 }
 
-static inline const BodyLockInterface &sGetBodyLockInterface(const PhysicsSystem *inSystem, bool inLockBodies)
+static inline const BodyLockInterface &sRagdollGetBodyLockInterface(const PhysicsSystem *inSystem, bool inLockBodies)
 {
 	return inLockBodies? static_cast<const BodyLockInterface &>(inSystem->GetBodyLockInterface()) : static_cast<const BodyLockInterface &>(inSystem->GetBodyLockInterfaceNoLock());
 }
@@ -476,7 +476,7 @@ void Ragdoll::AddToPhysicsSystem(EActivation inActivationMode, bool inLockBodies
 		memcpy(bodies, mBodyIDs.data(), num_bodies * sizeof(BodyID));
 
 		// Insert bodies as a batch
-		BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+		BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 		BodyInterface::AddState add_state = bi.AddBodiesPrepare(bodies, num_bodies);
 		bi.AddBodiesFinalize(bodies, num_bodies, add_state, inActivationMode);
 	}
@@ -498,20 +498,20 @@ void Ragdoll::RemoveFromPhysicsSystem(bool inLockBodies)
 		memcpy(bodies, mBodyIDs.data(), num_bodies * sizeof(BodyID));
 
 		// Remove all bodies as a batch
-		sGetBodyInterface(mSystem, inLockBodies).RemoveBodies(bodies, num_bodies);
+		sRagdollGetBodyInterface(mSystem, inLockBodies).RemoveBodies(bodies, num_bodies);
 	}
 }
 
 void Ragdoll::Activate(bool inLockBodies)
 {
-	sGetBodyInterface(mSystem, inLockBodies).ActivateBodies(mBodyIDs.data(), (int)mBodyIDs.size());
+	sRagdollGetBodyInterface(mSystem, inLockBodies).ActivateBodies(mBodyIDs.data(), (int)mBodyIDs.size());
 }
 
 bool Ragdoll::IsActive(bool inLockBodies) const
 {
 	// Lock the bodies
 	int body_count = (int)mBodyIDs.size();
-	BodyLockMultiRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
+	BodyLockMultiRead lock(sRagdollGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
 
 	// Test if any body is active
 	for (int b = 0; b < body_count; ++b)
@@ -528,7 +528,7 @@ void Ragdoll::SetGroupID(CollisionGroup::GroupID inGroupID, bool inLockBodies)
 {
 	// Lock the bodies
 	int body_count = (int)mBodyIDs.size();
-	BodyLockMultiWrite lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
+	BodyLockMultiWrite lock(sRagdollGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
 
 	// Update group ID
 	for (int b = 0; b < body_count; ++b)
@@ -548,7 +548,7 @@ void Ragdoll::SetPose(const SkeletonPose &inPose, bool inLockBodies)
 void Ragdoll::SetPose(RVec3Arg inRootOffset, const Mat44 *inJointMatrices, bool inLockBodies)
 {
 	// Move bodies instantly into the correct position
-	BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+	BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 	for (int i = 0; i < (int)mBodyIDs.size(); ++i)
 	{
 		const Mat44 &joint = inJointMatrices[i];
@@ -571,7 +571,7 @@ void Ragdoll::GetPose(RVec3 &outRootOffset, Mat44 *outJointMatrices, bool inLock
 	int body_count = (int)mBodyIDs.size();
 	if (body_count == 0)
 		return;
-	BodyLockMultiRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
+	BodyLockMultiRead lock(sRagdollGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
 
 	// Get root matrix
 	const Body *root = lock.GetBody(0);
@@ -604,7 +604,7 @@ void Ragdoll::DriveToPoseUsingKinematics(const SkeletonPose &inPose, float inDel
 void Ragdoll::DriveToPoseUsingKinematics(RVec3Arg inRootOffset, const Mat44 *inJointMatrices, float inDeltaTime, bool inLockBodies)
 {
 	// Move bodies into the correct position using kinematics
-	BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+	BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 	for (int i = 0; i < (int)mBodyIDs.size(); ++i)
 	{
 		const Mat44 &joint = inJointMatrices[i];
@@ -643,35 +643,35 @@ void Ragdoll::DriveToPoseUsingMotors(const SkeletonPose &inPose)
 
 void Ragdoll::SetLinearAndAngularVelocity(Vec3Arg inLinearVelocity, Vec3Arg inAngularVelocity, bool inLockBodies)
 {
-	BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+	BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 	for (BodyID body_id : mBodyIDs)
 		bi.SetLinearAndAngularVelocity(body_id, inLinearVelocity, inAngularVelocity);
 }
 
 void Ragdoll::SetLinearVelocity(Vec3Arg inLinearVelocity, bool inLockBodies)
 {
-	BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+	BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 	for (BodyID body_id : mBodyIDs)
 		bi.SetLinearVelocity(body_id, inLinearVelocity);
 }
 
 void Ragdoll::AddLinearVelocity(Vec3Arg inLinearVelocity, bool inLockBodies)
 {
-	BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+	BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 	for (BodyID body_id : mBodyIDs)
 		bi.AddLinearVelocity(body_id, inLinearVelocity);
 }
 
 void Ragdoll::AddImpulse(Vec3Arg inImpulse, bool inLockBodies)
 {
-	BodyInterface &bi = sGetBodyInterface(mSystem, inLockBodies);
+	BodyInterface &bi = sRagdollGetBodyInterface(mSystem, inLockBodies);
 	for (BodyID body_id : mBodyIDs)
 		bi.AddImpulse(body_id, inImpulse);
 }
 
 void Ragdoll::GetRootTransform(RVec3 &outPosition, Quat &outRotation, bool inLockBodies) const
 {
-	BodyLockRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs[0]);
+	BodyLockRead lock(sRagdollGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs[0]);
 	if (lock.Succeeded())
 	{
 		const Body &body = lock.GetBody();
@@ -689,7 +689,7 @@ AABox Ragdoll::GetWorldSpaceBounds(bool inLockBodies) const
 {
 	// Lock the bodies
 	int body_count = (int)mBodyIDs.size();
-	BodyLockMultiRead lock(sGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
+	BodyLockMultiRead lock(sRagdollGetBodyLockInterface(mSystem, inLockBodies), mBodyIDs.data(), body_count);
 
 	// Encapsulate all bodies
 	AABox bounds;

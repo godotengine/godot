@@ -382,7 +382,7 @@ void NavigationObstacle2D::navmesh_parse_source_geometry(const Ref<NavigationPol
 
 		obstruction_circle_vertices.resize(circle_points);
 		Vector2 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
-		const real_t circle_point_step = Math_TAU / circle_points;
+		const real_t circle_point_step = Math::TAU / circle_points;
 
 		for (int i = 0; i < circle_points; i++) {
 			const float angle = i * circle_point_step;

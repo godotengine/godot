@@ -56,8 +56,9 @@
 			<param index="2" name="char" type="String" />
 			<param index="3" name="font_size" type="int" default="16" />
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="5" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character using a custom font.
+				Draws a string first character using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_char_outline" qualifiers="const">
@@ -68,8 +69,9 @@
 			<param index="3" name="font_size" type="int" default="16" />
 			<param index="4" name="size" type="int" default="-1" />
 			<param index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
+			<param index="6" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws a string first character outline using a custom font.
+				Draws a string first character outline using a custom font. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_circle">
@@ -171,7 +173,7 @@
 			<param index="5" name="pixel_range" type="float" default="4.0" />
 			<param index="6" name="scale" type="float" default="1.0" />
 			<description>
-				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
+				Draws a textured rectangle region of the multichannel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
 				Value of the [param pixel_range] should the same that was used during distance field texture generation.
 			</description>
@@ -214,8 +216,9 @@
 			<param index="9" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="10" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="11" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="12" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Breaks [param text] into lines and draws it using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multiline_string_outline" qualifiers="const">
@@ -233,8 +236,9 @@
 			<param index="10" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="11" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="12" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="13" name="oversampling" type="float" default="0.0" />
 			<description>
-				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Breaks [param text] to the lines and draws text outline using the specified [param font] at the [param pos] (top-left corner). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_multimesh">
@@ -332,8 +336,9 @@
 			<param index="7" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="8" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="9" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="10" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [param text] using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 				[b]Example:[/b] Draw "Hello world", using the project's default font:
 				[codeblocks]
 				[gdscript]
@@ -369,8 +374,9 @@
 			<param index="8" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="3" />
 			<param index="9" name="direction" type="int" enum="TextServer.Direction" default="0" />
 			<param index="10" name="orientation" type="int" enum="TextServer.Orientation" default="0" />
+			<param index="11" name="oversampling" type="float" default="0.0" />
 			<description>
-				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width.
+				Draws [param text] outline using the specified [param font] at the [param pos] (bottom-left corner using the baseline of the font). The text will have its color multiplied by [param modulate]. If [param width] is greater than or equal to 0, the text will be clipped if it exceeds the specified width. If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
 			</description>
 		</method>
 		<method name="draw_style_box">
@@ -638,7 +644,8 @@
 			The filtering mode used to render this [CanvasItem]'s texture(s).
 		</member>
 		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="CanvasItem.TextureRepeat" default="0">
-			The repeating mode used to render this [CanvasItem]'s texture(s).
+			The repeating mode used to render this [CanvasItem]'s texture(s). It affects what happens when the texture is sampled outside its extents, for example by setting a [member Sprite2D.region_rect] that is larger than the texture or assigning [Polygon2D] UV points outside the texture.
+			[b]Note:[/b] [TextureRect] is not affected by [member texture_repeat], as it uses its own texture repeating implementation.
 		</member>
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], this [CanvasItem] will [i]not[/i] inherit its transform from parent [CanvasItem]s. Its draw order will also be changed to make it draw on top of other [CanvasItem]s that do not have [member top_level] set to [code]true[/code]. The [CanvasItem] will effectively act as if it was placed as a child of a bare [Node].
@@ -748,7 +755,7 @@
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
-			The texture does not repeat.
+			The texture does not repeat. Sampling the texture outside its extents will result in "stretching" of the edge pixels. You can avoid this by ensuring a 1-pixel fully transparent border on each side of the texture.
 		</constant>
 		<constant name="TEXTURE_REPEAT_ENABLED" value="2" enum="TextureRepeat">
 			The texture repeats when exceeding the texture's size.

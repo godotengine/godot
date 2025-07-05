@@ -186,7 +186,7 @@ struct [[nodiscard]] Vector3 {
 	constexpr bool operator>(const Vector3 &p_v) const;
 	constexpr bool operator>=(const Vector3 &p_v) const;
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector3i() const;
 
 	constexpr Vector3() :

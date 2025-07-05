@@ -14,7 +14,7 @@
 			<param index="0" name="filter" type="String" />
 			<param index="1" name="description" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a comma-delimited file name [param filter] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
+				Adds a comma-separated file name [param filter] option to the [FileDialog] with an optional [param description], which restricts what files can be picked.
 				A [param filter] should be of the form [code]"filename.extension"[/code], where filename and extension can be [code]*[/code] to match any string. Filters starting with [code].[/code] (i.e. empty filenames) are not allowed.
 				For example, a [param filter] of [code]"*.png, *.jpg"[/code] and a [param description] of [code]"Images"[/code] results in filter text "Images (*.png, *.jpg)".
 			</description>
@@ -96,6 +96,21 @@
 				[b]Note:[/b] This method does nothing on native file dialogs.
 			</description>
 		</method>
+		<method name="is_customization_flag_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
+			<description>
+				Returns [code]true[/code] if the provided [param flag] is enabled.
+			</description>
+		</method>
+		<method name="set_customization_flag_enabled">
+			<return type="void" />
+			<param index="0" name="flag" type="int" enum="FileDialog.Customization" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				Toggles the specified customization [param flag], allowing to customize features available in this [FileDialog]. See [enum Customization] for options.
+			</description>
+		</method>
 		<method name="set_option_default">
 			<return type="void" />
 			<param index="0" name="option" type="int" />
@@ -123,7 +138,7 @@
 	</methods>
 	<members>
 		<member name="access" type="int" setter="set_access" getter="get_access" enum="FileDialog.Access" default="0">
-			The file system access scope. See [enum Access] constants.
+			The file system access scope.
 			[b]Warning:[/b] In Web builds, FileDialog cannot access the host file system. In sandboxed Linux and macOS environments, [member use_native_dialog] is automatically used to allow limited access to host file system.
 		</member>
 		<member name="current_dir" type="String" setter="set_current_dir" getter="get_current_dir">
@@ -137,8 +152,20 @@
 			The currently selected file path of the file dialog.
 		</member>
 		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" overrides="AcceptDialog" default="false" />
+		<member name="display_mode" type="int" setter="set_display_mode" getter="get_display_mode" enum="FileDialog.DisplayMode" default="0">
+			Display mode of the dialog's file list.
+		</member>
+		<member name="favorites_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the toggle favorite button and favorite list on the left side of the dialog.
+		</member>
+		<member name="file_filter_toggle_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the toggle file filter button.
+		</member>
 		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="FileDialog.FileMode" default="4">
-			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
+			The dialog's open or save mode, which affects the selection behavior.
+		</member>
+		<member name="file_sort_options_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the file sorting options button.
 		</member>
 		<member name="filename_filter" type="String" setter="set_filename_filter" getter="get_filename_filter" default="&quot;&quot;">
 			The filter for file names (case-insensitive). When set to a non-empty string, only files that contains the substring will be shown. [member filename_filter] can be edited by the user with the filter button at the top of the file dialog.
@@ -148,12 +175,23 @@
 			The available file type filters. Each filter string in the array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. Both file extensions and MIME type should be always set.
 			[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 		</member>
+		<member name="folder_creation_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]).
+		</member>
+		<member name="hidden_files_toggle_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the toggle hidden files button.
+		</member>
+		<member name="layout_toggle_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the layout switch buttons (list/thumbnails).
+		</member>
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
 			If [code]true[/code], changing the [member file_mode] property will set the window title accordingly (e.g. setting [member file_mode] to [constant FILE_MODE_OPEN_FILE] will change the window title to "Open a File").
 		</member>
-		<member name="ok_button_text" type="String" setter="set_ok_button_text" getter="get_ok_button_text" overrides="AcceptDialog" default="&quot;Save&quot;" />
 		<member name="option_count" type="int" setter="set_option_count" getter="get_option_count" default="0">
 			The number of additional [OptionButton]s and [CheckBox]es in the dialog.
+		</member>
+		<member name="recent_list_enabled" type="bool" setter="set_customization_flag_enabled" getter="is_customization_flag_enabled" default="true">
+			If [code]true[/code], shows the recent directories list on the left side of the dialog.
 		</member>
 		<member name="root_subfolder" type="String" setter="set_root_subfolder" getter="get_root_subfolder" default="&quot;&quot;">
 			If non-empty, the given sub-folder will be "root" of this [FileDialog], i.e. user won't be able to go to its parent directory.
@@ -167,7 +205,7 @@
 		<member name="title" type="String" setter="set_title" getter="get_title" overrides="Window" default="&quot;Save a File&quot;" />
 		<member name="use_native_dialog" type="bool" setter="set_use_native_dialog" getter="get_use_native_dialog" default="false">
 			If [code]true[/code], and if supported by the current [DisplayServer], OS native dialog will be used instead of custom one.
-			[b]Note:[/b] On Android, it is only supported when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
+			[b]Note:[/b] On Android, it is only supported for Android 10+ devices and when using [constant ACCESS_FILESYSTEM]. For access mode [constant ACCESS_RESOURCES] and [constant ACCESS_USERDATA], the system will fall back to custom FileDialog.
 			[b]Note:[/b] On Linux and macOS, sandboxed apps always use native dialogs to access the host file system.
 			[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			[b]Note:[/b] Native dialogs are isolated from the base process, file dialog properties can't be modified once the dialog is shown.
@@ -224,6 +262,40 @@
 		<constant name="ACCESS_FILESYSTEM" value="2" enum="Access">
 			The dialog allows accessing files on the whole file system.
 		</constant>
+		<constant name="DISPLAY_THUMBNAILS" value="0" enum="DisplayMode">
+			The dialog displays files as a grid of thumbnails. Use [theme_item thumbnail_size] to adjust their size.
+		</constant>
+		<constant name="DISPLAY_LIST" value="1" enum="DisplayMode">
+			The dialog displays files as a list of filenames.
+		</constant>
+		<constant name="CUSTOMIZATION_HIDDEN_FILES" value="0" enum="Customization">
+			Toggles visibility of the favorite button, and the favorite list on the left side of the dialog.
+			Equivalent to [member hidden_files_toggle_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_CREATE_FOLDER" value="1" enum="Customization">
+			If enabled, shows the button for creating new directories (when using [constant FILE_MODE_OPEN_DIR], [constant FILE_MODE_OPEN_ANY], or [constant FILE_MODE_SAVE_FILE]).
+			Equivalent to [member folder_creation_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_FILE_FILTER" value="2" enum="Customization">
+			If enabled, shows the toggle file filter button.
+			Equivalent to [member file_filter_toggle_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_FILE_SORT" value="3" enum="Customization">
+			If enabled, shows the file sorting options button.
+			Equivalent to [member file_sort_options_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_FAVORITES" value="4" enum="Customization">
+			If enabled, shows the toggle favorite button and favorite list on the left side of the dialog.
+			Equivalent to [member favorites_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_RECENT" value="5" enum="Customization">
+			If enabled, shows the recent directories list on the left side of the dialog.
+			Equivalent to [member recent_list_enabled].
+		</constant>
+		<constant name="CUSTOMIZATION_LAYOUT" value="6" enum="Customization">
+			If enabled, shows the layout switch buttons (list/thumbnails).
+			Equivalent to [member layout_toggle_enabled].
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="file_disabled_color" data_type="color" type="Color" default="Color(1, 1, 1, 0.25)">
@@ -235,26 +307,53 @@
 		<theme_item name="folder_icon_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 			The color modulation applied to the folder icon.
 		</theme_item>
+		<theme_item name="thumbnail_size" data_type="constant" type="int" default="64">
+			The size of thumbnail icons when [constant DISPLAY_THUMBNAILS] is enabled.
+		</theme_item>
 		<theme_item name="back_folder" data_type="icon" type="Texture2D">
 			Custom icon for the back arrow.
 		</theme_item>
 		<theme_item name="create_folder" data_type="icon" type="Texture2D">
 			Custom icon for the create folder button.
 		</theme_item>
+		<theme_item name="favorite" data_type="icon" type="Texture2D">
+			Custom icon for favorite folder button.
+		</theme_item>
+		<theme_item name="favorite_down" data_type="icon" type="Texture2D">
+			Custom icon for button to move down a favorite entry.
+		</theme_item>
+		<theme_item name="favorite_up" data_type="icon" type="Texture2D">
+			Custom icon for button to move up a favorite entry.
+		</theme_item>
 		<theme_item name="file" data_type="icon" type="Texture2D">
 			Custom icon for files.
+		</theme_item>
+		<theme_item name="file_thumbnail" data_type="icon" type="Texture2D">
+			Icon for files when in thumbnail mode.
 		</theme_item>
 		<theme_item name="folder" data_type="icon" type="Texture2D">
 			Custom icon for folders.
 		</theme_item>
+		<theme_item name="folder_thumbnail" data_type="icon" type="Texture2D">
+			Icon for folders when in thumbnail mode.
+		</theme_item>
 		<theme_item name="forward_folder" data_type="icon" type="Texture2D">
 			Custom icon for the forward arrow.
+		</theme_item>
+		<theme_item name="list_mode" data_type="icon" type="Texture2D">
+			Icon for the button that enables list mode.
 		</theme_item>
 		<theme_item name="parent_folder" data_type="icon" type="Texture2D">
 			Custom icon for the parent folder arrow.
 		</theme_item>
 		<theme_item name="reload" data_type="icon" type="Texture2D">
 			Custom icon for the reload button.
+		</theme_item>
+		<theme_item name="sort" data_type="icon" type="Texture2D">
+			Custom icon for the sorting options menu.
+		</theme_item>
+		<theme_item name="thumbnail_mode" data_type="icon" type="Texture2D">
+			Icon for the button that enables thumbnail mode.
 		</theme_item>
 		<theme_item name="toggle_filename_filter" data_type="icon" type="Texture2D">
 			Custom icon for the toggle button for the filter for file names.

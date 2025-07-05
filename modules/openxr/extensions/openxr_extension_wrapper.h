@@ -120,6 +120,7 @@ public:
 	// this happens right before physics process and normal processing is run.
 	// This is when controller data is queried and made available to game logic.
 	virtual void on_process();
+	virtual void on_sync_actions(); // `on_sync_actions` is called right after we sync our action sets.
 	virtual void on_pre_render(); // `on_pre_render` is called right before we start rendering our XR viewports.
 	virtual void on_main_swapchains_created(); // `on_main_swapchains_created` is called right after our main swapchains are (re)created.
 	virtual void on_pre_draw_viewport(RID p_render_target); // `on_pre_draw_viewport` is called right before we start rendering this viewport
@@ -131,6 +132,7 @@ public:
 	GDVIRTUAL0(_on_instance_destroyed);
 	GDVIRTUAL1(_on_session_created, uint64_t);
 	GDVIRTUAL0(_on_process);
+	GDVIRTUAL0(_on_sync_actions);
 	GDVIRTUAL0(_on_pre_render);
 	GDVIRTUAL0(_on_main_swapchains_created);
 	GDVIRTUAL0(_on_session_destroyed);
@@ -192,4 +194,5 @@ public:
 	virtual void cleanup_swapchain_graphics_data(void **p_swapchain_graphics_data) = 0; // `cleanup_swapchain_graphics_data` cleans up the data held in our implementation dependent data structure and should free up its memory.
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) = 0; // `create_projection_fov` creates a proper projection matrix based on asymmetric FOV data provided by OpenXR.
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) = 0; // `get_texture` returns a Godot texture RID for the current active texture in our swapchain.
+	virtual RID get_density_map(void *p_swapchain_graphics_data, int p_image_index) = 0; // `get_density_map` returns a Godot texture RID for the current active density map in our swapchain (if any).
 };

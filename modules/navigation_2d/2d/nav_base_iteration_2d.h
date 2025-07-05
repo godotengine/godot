@@ -32,10 +32,13 @@
 
 #include "../nav_utils_2d.h"
 
+#include "core/object/ref_counted.h"
 #include "servers/navigation/navigation_utilities.h"
 
-struct NavBaseIteration2D {
-	uint32_t id = UINT32_MAX;
+class NavBaseIteration2D : public RefCounted {
+	GDCLASS(NavBaseIteration2D, RefCounted);
+
+public:
 	bool enabled = true;
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
@@ -44,7 +47,8 @@ struct NavBaseIteration2D {
 	ObjectID owner_object_id;
 	RID owner_rid;
 	bool owner_use_edge_connections = false;
-	LocalVector<nav_2d::Polygon> navmesh_polygons;
+	LocalVector<Nav2D::Polygon> navmesh_polygons;
+	LocalVector<LocalVector<Nav2D::Connection>> internal_connections;
 
 	bool get_enabled() const { return enabled; }
 	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
@@ -54,5 +58,11 @@ struct NavBaseIteration2D {
 	real_t get_enter_cost() const { return enter_cost; }
 	real_t get_travel_cost() const { return travel_cost; }
 	bool get_use_edge_connections() const { return owner_use_edge_connections; }
-	const LocalVector<nav_2d::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
+	const LocalVector<Nav2D::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
+	const LocalVector<LocalVector<Nav2D::Connection>> &get_internal_connections() const { return internal_connections; }
+
+	virtual ~NavBaseIteration2D() {
+		navmesh_polygons.clear();
+		internal_connections.clear();
+	}
 };

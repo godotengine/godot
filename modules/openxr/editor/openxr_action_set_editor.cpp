@@ -31,8 +31,14 @@
 #include "openxr_action_set_editor.h"
 
 #include "editor/editor_string_names.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"
 #include "openxr_action_editor.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/panel_container.h"
+#include "scene/gui/text_edit.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionSetEditor::_do_set_name);
@@ -61,7 +67,6 @@ void OpenXRActionSetEditor::_theme_changed() {
 
 void OpenXRActionSetEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_theme_changed();
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")));
@@ -127,8 +132,8 @@ void OpenXRActionSetEditor::_do_set_localized_name(const String p_new_text) {
 	action_set_localized_name->set_text(p_new_text);
 }
 
-void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_text) {
-	int64_t value = p_new_text.to_int();
+void OpenXRActionSetEditor::_on_action_set_priority_changed(const double p_new_value) {
+	int64_t value = (int64_t)p_new_value;
 
 	if (action_set->get_priority() != value) {
 		undo_redo->create_action(TTR("Change Action Sets priority"));
@@ -143,7 +148,7 @@ void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_t
 
 void OpenXRActionSetEditor::_do_set_priority(int64_t p_value) {
 	action_set->set_priority(p_value);
-	action_set_priority->set_text(itos(p_value));
+	action_set_priority->set_value_no_signal(p_value);
 }
 
 void OpenXRActionSetEditor::_on_add_action() {
@@ -260,25 +265,26 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	action_set_localized_name->set_accessibility_name(TTRC("Action Set Localized Name"));
 	action_set_hb->add_child(action_set_localized_name);
 
-	action_set_priority = memnew(TextEdit);
-	action_set_priority->set_text(itos(action_set->get_priority()));
+	action_set_priority = memnew(EditorSpinSlider);
 	action_set_priority->set_tooltip_text(TTR("Priority of the action set. If multiple action sets bind to the same input, the action set with the highest priority will be updated."));
-	action_set_priority->set_custom_minimum_size(Size2(50.0 * EDSCALE, 0.0));
-	action_set_priority->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
+	action_set_priority->set_editing_integer(true);
+	action_set_priority->set_min(2147483647.0);
+	action_set_priority->set_min(-2147483648.0);
+	action_set_priority->set_value_no_signal(action_set->get_priority());
+	action_set_priority->set_custom_minimum_size(Size2(75.0 * EDSCALE, 0.0));
+	action_set_priority->connect(SceneStringName(value_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
 	action_set_priority->set_accessibility_name(TTRC("Action Set Priority"));
 	action_set_hb->add_child(action_set_priority);
 
 	add_action = memnew(Button);
 	add_action->set_tooltip_text(TTR("Add action."));
 	add_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_add_action));
-	add_action->set_accessibility_name(TTRC("Add"));
 	add_action->set_flat(true);
 	action_set_hb->add_child(add_action);
 
 	rem_action_set = memnew(Button);
 	rem_action_set->set_tooltip_text(TTR("Remove action set."));
 	rem_action_set->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionSetEditor::_on_remove_action_set));
-	rem_action_set->set_accessibility_name(TTRC("Remove"));
 	rem_action_set->set_flat(true);
 	action_set_hb->add_child(rem_action_set);
 

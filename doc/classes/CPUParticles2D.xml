@@ -43,7 +43,7 @@
 			<return type="bool" />
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<description>
-				Returns the enabled state of the given particle flag (see [enum ParticleFlags] for options).
+				Returns the enabled state of the given particle flag.
 			</description>
 		</method>
 		<method name="request_particles_process">
@@ -91,7 +91,7 @@
 			<param index="0" name="particle_flag" type="int" enum="CPUParticles2D.ParticleFlags" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				Enables or disables the given flag (see [enum ParticleFlags] for options).
+				Enables or disables the given particle flag.
 			</description>
 		</method>
 	</methods>
@@ -158,7 +158,7 @@
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles2D.DrawOrder" default="0">
-			Particle draw order. Uses [enum DrawOrder] values.
+			Particle draw order.
 		</member>
 		<member name="emission_colors" type="PackedColorArray" setter="set_emission_colors" getter="get_emission_colors">
 			Sets the [Color]s to modulate particles by when using [constant EMISSION_SHAPE_POINTS] or [constant EMISSION_SHAPE_DIRECTED_POINTS].
@@ -173,7 +173,7 @@
 			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles2D.EmissionShape" default="0">
-			Particles will be emitted inside this region. See [enum EmissionShape] for possible values.
+			Particles will be emitted inside this region.
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
 			The sphere's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_SPHERE].

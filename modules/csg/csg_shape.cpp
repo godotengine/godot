@@ -36,6 +36,7 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/surface_tool.h"
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
 #endif // NAVIGATION_3D_DISABLED
@@ -576,7 +577,7 @@ void CSGShape3D::update_shape() {
 	CSGBrush *n = _get_brush();
 	ERR_FAIL_NULL_MSG(n, "Cannot get CSGBrush.");
 
-	OAHashMap<Vector3, Vector3> vec_map;
+	AHashMap<Vector3, Vector3> vec_map;
 
 	Vector<int> face_count;
 	face_count.resize(n->materials.size() + 1);
@@ -594,13 +595,12 @@ void CSGShape3D::update_shape() {
 
 			for (int j = 0; j < 3; j++) {
 				Vector3 v = n->faces[i].vertices[j];
-				Vector3 add;
-				if (vec_map.lookup(v, add)) {
-					add += p.normal;
+				Vector3 *vec = vec_map.getptr(v);
+				if (vec) {
+					*vec += p.normal;
 				} else {
-					add = p.normal;
+					vec_map.insert(v, p.normal);
 				}
-				vec_map.set(v, add);
 			}
 		}
 
@@ -655,8 +655,11 @@ void CSGShape3D::update_shape() {
 
 				Vector3 normal = p.normal;
 
-				if (n->faces[i].smooth && vec_map.lookup(v, normal)) {
-					normal.normalize();
+				if (n->faces[i].smooth) {
+					Vector3 *ptr = vec_map.getptr(v);
+					if (ptr) {
+						normal = ptr->normalized();
+					}
 				}
 
 				if (n->faces[i].invert) {
@@ -734,7 +737,19 @@ void CSGShape3D::update_shape() {
 Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
 	Ref<ArrayMesh> baked_mesh;
 	if (is_root_shape() && root_mesh.is_valid()) {
-		baked_mesh = root_mesh;
+		Ref<SurfaceTool> st;
+		st.instantiate();
+
+		int surface_count = root_mesh->get_surface_count();
+		for (int i = 0; i < surface_count; i++) {
+			st->append_from(root_mesh, i, Transform3D());
+		}
+		st->generate_normals();
+		st->generate_tangents();
+		st->index();
+		st->optimize_indices_for_cache();
+
+		baked_mesh = st->commit();
 	}
 	return baked_mesh;
 }
@@ -948,6 +963,9 @@ bool CSGShape3D::is_calculating_tangents() const {
 }
 
 void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	bool is_collision_prefixed = p_property.name.begins_with("collision_");
 	if ((is_collision_prefixed || p_property.name.begins_with("use_collision")) && is_inside_tree() && !is_root_shape()) {
 		//hide collision if not root
@@ -1348,14 +1366,14 @@ CSGBrush *CSGSphere3D::_build_brush() {
 
 		// We want to follow an order that's convenient for UVs.
 		// For latitude step we start at the top and move down like in an image.
-		const double latitude_step = -Math_PI / rings;
-		const double longitude_step = Math_TAU / radial_segments;
+		const double latitude_step = -Math::PI / rings;
+		const double longitude_step = Math::TAU / radial_segments;
 		int face = 0;
 		for (int i = 0; i < rings; i++) {
 			double cos0 = 0;
 			double sin0 = 1;
 			if (i > 0) {
-				double latitude0 = latitude_step * i + Math_TAU / 4;
+				double latitude0 = latitude_step * i + Math::TAU / 4;
 				cos0 = Math::cos(latitude0);
 				sin0 = Math::sin(latitude0);
 			}
@@ -1364,7 +1382,7 @@ CSGBrush *CSGSphere3D::_build_brush() {
 			double cos1 = 0;
 			double sin1 = -1;
 			if (i < rings - 1) {
-				double latitude1 = latitude_step * (i + 1) + Math_TAU / 4;
+				double latitude1 = latitude_step * (i + 1) + Math::TAU / 4;
 				cos1 = Math::cos(latitude1);
 				sin1 = Math::sin(latitude1);
 			}
@@ -1727,8 +1745,8 @@ CSGBrush *CSGCylinder3D::_build_brush() {
 					inc_n = 0;
 				}
 
-				float ang = inc * Math_TAU;
-				float ang_n = inc_n * Math_TAU;
+				float ang = inc * Math::TAU;
+				float ang_n = inc_n * Math::TAU;
 
 				Vector3 face_base(Math::cos(ang), 0, Math::sin(ang));
 				Vector3 face_base_n(Math::cos(ang_n), 0, Math::sin(ang_n));
@@ -1970,8 +1988,8 @@ CSGBrush *CSGTorus3D::_build_brush() {
 					inci_n = 0;
 				}
 
-				float angi = inci * Math_TAU;
-				float angi_n = inci_n * Math_TAU;
+				float angi = inci * Math::TAU;
+				float angi_n = inci_n * Math::TAU;
 
 				Vector3 normali = Vector3(Math::cos(angi), 0, Math::sin(angi));
 				Vector3 normali_n = Vector3(Math::cos(angi_n), 0, Math::sin(angi_n));
@@ -1983,8 +2001,8 @@ CSGBrush *CSGTorus3D::_build_brush() {
 						incj_n = 0;
 					}
 
-					float angj = incj * Math_TAU;
-					float angj_n = incj_n * Math_TAU;
+					float angj = incj * Math::TAU;
+					float angj_n = incj_n * Math::TAU;
 
 					Vector2 normalj = Vector2(Math::cos(angj), Math::sin(angj)) * radius + Vector2(min_radius + radius, 0);
 					Vector2 normalj_n = Vector2(Math::cos(angj_n), Math::sin(angj_n)) * radius + Vector2(min_radius + radius, 0);

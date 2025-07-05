@@ -83,6 +83,9 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result", "callback"), &NavigationServer3D::query_path, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
+	ClassDB::bind_method(D_METHOD("region_get_iteration_id", "region"), &NavigationServer3D::region_get_iteration_id);
+	ClassDB::bind_method(D_METHOD("region_set_use_async_iterations", "region", "enabled"), &NavigationServer3D::region_set_use_async_iterations);
+	ClassDB::bind_method(D_METHOD("region_get_use_async_iterations", "region"), &NavigationServer3D::region_get_use_async_iterations);
 	ClassDB::bind_method(D_METHOD("region_set_enabled", "region", "enabled"), &NavigationServer3D::region_set_enabled);
 	ClassDB::bind_method(D_METHOD("region_get_enabled", "region"), &NavigationServer3D::region_get_enabled);
 	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer3D::region_set_use_edge_connections);
@@ -114,6 +117,7 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer3D::region_get_bounds);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
+	ClassDB::bind_method(D_METHOD("link_get_iteration_id", "link"), &NavigationServer3D::link_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer3D::link_set_map);
 	ClassDB::bind_method(D_METHOD("link_get_map", "link"), &NavigationServer3D::link_get_map);
 	ClassDB::bind_method(D_METHOD("link_set_enabled", "link", "enabled"), &NavigationServer3D::link_set_enabled);
@@ -240,13 +244,13 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::navmesh_cell_size_hint), NavigationDefaults3D::navmesh_cell_size);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), NavigationDefaults3D::navmesh_cell_height);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults3D::NAV_MESH_CELL_SIZE);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), NavigationDefaults3D::NAV_MESH_CELL_HEIGHT);
 	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/3d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::edge_connection_margin);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::link_connection_radius);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::EDGE_CONNECTION_MARGIN);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::LINK_CONNECTION_RADIUS);
 
 #ifdef DEBUG_ENABLED
 #ifndef DISABLE_DEPRECATED

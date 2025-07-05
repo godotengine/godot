@@ -75,16 +75,16 @@ void Font::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_string_size", "text", "alignment", "width", "font_size", "justification_flags", "direction", "orientation"), &Font::get_string_size, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 	ClassDB::bind_method(D_METHOD("get_multiline_string_size", "text", "alignment", "width", "font_size", "max_lines", "brk_flags", "justification_flags", "direction", "orientation"), &Font::get_multiline_string_size, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 
-	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "alignment", "width", "font_size", "modulate", "justification_flags", "direction", "orientation"), &Font::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "brk_flags", "justification_flags", "direction", "orientation"), &Font::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("draw_string", "canvas_item", "pos", "text", "alignment", "width", "font_size", "modulate", "justification_flags", "direction", "orientation", "oversampling"), &Font::draw_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "brk_flags", "justification_flags", "direction", "orientation", "oversampling"), &Font::draw_multiline_string, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
 
-	ClassDB::bind_method(D_METHOD("draw_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "size", "modulate", "justification_flags", "direction", "orientation"), &Font::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
-	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "brk_flags", "justification_flags", "direction", "orientation"), &Font::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
+	ClassDB::bind_method(D_METHOD("draw_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "size", "modulate", "justification_flags", "direction", "orientation", "oversampling"), &Font::draw_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_multiline_string_outline", "canvas_item", "pos", "text", "alignment", "width", "font_size", "max_lines", "size", "modulate", "brk_flags", "justification_flags", "direction", "orientation", "oversampling"), &Font::draw_multiline_string_outline, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL), DEFVAL(0.0));
 
 	// Drawing char.
 	ClassDB::bind_method(D_METHOD("get_char_size", "char", "font_size"), &Font::get_char_size);
-	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "font_size", "modulate"), &Font::draw_char, DEFVAL(Color(1.0, 1.0, 1.0)));
-	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "font_size", "size", "modulate"), &Font::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)));
+	ClassDB::bind_method(D_METHOD("draw_char", "canvas_item", "pos", "char", "font_size", "modulate", "oversampling"), &Font::draw_char, DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("draw_char_outline", "canvas_item", "pos", "char", "font_size", "size", "modulate", "oversampling"), &Font::draw_char_outline, DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(0.0));
 
 	// Helper functions.
 	ClassDB::bind_method(D_METHOD("has_char", "char"), &Font::has_char);
@@ -298,7 +298,7 @@ void Font::set_cache_capacity(int p_single_line, int p_multi_line) {
 
 Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
 	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
-	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : BitField(TextServer::JUSTIFICATION_NONE), TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
 	if (cache.has(key)) {
@@ -345,9 +345,9 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 	return lines_buffer->get_size();
 }
 
-void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
-	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : BitField(TextServer::JUSTIFICATION_NONE), TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
 	if (cache.has(key)) {
@@ -374,10 +374,10 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 		buffer->set_flags(p_jst_flags);
 	}
 
-	buffer->draw(p_canvas_item, ofs, p_modulate);
+	buffer->draw(p_canvas_item, ofs, p_modulate, p_oversampling);
 }
 
-void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, p_width, p_jst_flags, p_brk_flags, p_direction, p_orientation);
 
 	Ref<TextParagraph> lines_buffer;
@@ -405,12 +405,12 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 	lines_buffer->set_alignment(p_alignment);
 	lines_buffer->set_max_lines_visible(p_max_lines);
 
-	lines_buffer->draw(p_canvas_item, ofs, p_modulate);
+	lines_buffer->draw(p_canvas_item, ofs, p_modulate, p_modulate, p_oversampling);
 }
 
-void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
-	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : BitField(TextServer::JUSTIFICATION_NONE), TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
 	if (cache.has(key)) {
@@ -437,10 +437,10 @@ void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const Str
 		buffer->set_flags(p_jst_flags);
 	}
 
-	buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate);
+	buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate, p_oversampling);
 }
 
-void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
+void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation, float p_oversampling) const {
 	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, p_width, p_jst_flags, p_brk_flags, p_direction, p_orientation);
 
 	Ref<TextParagraph> lines_buffer;
@@ -468,7 +468,7 @@ void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos,
 	lines_buffer->set_alignment(p_alignment);
 	lines_buffer->set_max_lines_visible(p_max_lines);
 
-	lines_buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate);
+	lines_buffer->draw_outline(p_canvas_item, ofs, p_size, p_modulate, p_modulate, p_oversampling);
 }
 
 // Drawing char.
@@ -485,28 +485,28 @@ Size2 Font::get_char_size(char32_t p_char, int p_font_size) const {
 	return Size2();
 }
 
-real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size, const Color &p_modulate) const {
+real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size, const Color &p_modulate, float p_oversampling) const {
 	if (dirty_rids) {
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids.get(i), p_char)) {
 			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
-			TS->font_draw_glyph(rids.get(i), p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
+			TS->font_draw_glyph(rids.get(i), p_canvas_item, p_font_size, p_pos, glyph, p_modulate, p_oversampling);
 			return TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x;
 		}
 	}
 	return 0.f;
 }
 
-real_t Font::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size, int p_size, const Color &p_modulate) const {
+real_t Font::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size, int p_size, const Color &p_modulate, float p_oversampling) const {
 	if (dirty_rids) {
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
 		if (TS->font_has_char(rids.get(i), p_char)) {
 			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
-			TS->font_draw_glyph_outline(rids.get(i), p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
+			TS->font_draw_glyph_outline(rids.get(i), p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate, p_oversampling);
 			return TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x;
 		}
 	}
@@ -607,7 +607,7 @@ _FORCE_INLINE_ void FontFile::_ensure_rid(int p_cache_index, int p_make_linked_f
 			TS->font_set_hinting(cache[p_cache_index], hinting);
 			TS->font_set_subpixel_positioning(cache[p_cache_index], subpixel_positioning);
 			TS->font_set_keep_rounding_remainders(cache[p_cache_index], keep_rounding_remainders);
-			TS->font_set_oversampling(cache[p_cache_index], oversampling);
+			TS->font_set_oversampling(cache[p_cache_index], oversampling_override);
 		}
 	}
 }
@@ -1060,13 +1060,16 @@ void FontFile::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "force_autohinter", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_force_autohinter", "is_force_autohinter");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "modulate_color_glyphs", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_modulate_color_glyphs", "is_modulate_color_glyphs");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal", PROPERTY_USAGE_STORAGE), "set_hinting", "get_hinting");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size", "get_fixed_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_size_scale_mode", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_fixed_size_scale_mode", "get_fixed_size_scale_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "opentype_feature_overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_opentype_feature_overrides", "get_opentype_feature_overrides");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_oversampling", "get_oversampling");
 }
 
 void FontFile::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "fallbacks") {
 		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
 	}
@@ -1079,8 +1082,6 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 	if (tokens.size() == 1 && tokens[0] == "font_path") {
 		// Compatibility, DynamicFontData.
 		load_dynamic_font(p_value);
-	} else if (tokens.size() == 1 && tokens[0] == "override_oversampling") {
-		set_oversampling(p_value);
 	}
 	if (tokens.size() == 1 && tokens[0] == "font_data") {
 		// Compatibility, DynamicFont.
@@ -1359,7 +1360,7 @@ void FontFile::_get_property_list(List<PropertyInfo> *p_list) const {
 		String prefix = "cache/" + itos(i) + "/";
 		TypedArray<Vector2i> sizes = get_size_cache_list(i);
 		p_list->push_back(PropertyInfo(Variant::DICTIONARY, prefix + "variation_coordinates", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
-		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
+		p_list->push_back(PropertyInfo(Variant::INT, prefix + "face_index", PROPERTY_HINT_RANGE, "0,32767,1", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::FLOAT, prefix + "embolden", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM2D, prefix + "transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
 		p_list->push_back(PropertyInfo(Variant::INT, prefix + "spacing_top", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE));
@@ -1423,11 +1424,11 @@ void FontFile::reset_state() {
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
+	oversampling_override = 0.0;
 	msdf_pixel_range = 14;
 	msdf_size = 128;
 	fixed_size = 0;
 	fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
-	oversampling = 0.f;
 
 	Font::reset_state();
 }
@@ -1462,7 +1463,6 @@ Error FontFile::_load_bitmap_font(const String &p_path, List<String> *r_image_fi
 	modulate_color_glyphs = false;
 	allow_system_fallback = true;
 	hinting = TextServer::HINTING_NONE;
-	oversampling = 1.0f;
 
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_CREATE, vformat("Cannot open font from file: %s.", p_path));
@@ -2339,18 +2339,18 @@ bool FontFile::get_keep_rounding_remainders() const {
 }
 
 void FontFile::set_oversampling(real_t p_oversampling) {
-	if (oversampling != p_oversampling) {
-		oversampling = p_oversampling;
+	if (oversampling_override != p_oversampling) {
+		oversampling_override = p_oversampling;
 		for (int i = 0; i < cache.size(); i++) {
 			_ensure_rid(i);
-			TS->font_set_oversampling(cache[i], oversampling);
+			TS->font_set_oversampling(cache[i], oversampling_override);
 		}
 		emit_changed();
 	}
 }
 
 real_t FontFile::get_oversampling() const {
-	return oversampling;
+	return oversampling_override;
 }
 
 RID FontFile::find_variation(const Dictionary &p_variation_coordinates, int p_face_index, float p_strength, Transform2D p_transform, int p_spacing_top, int p_spacing_bottom, int p_spacing_space, int p_spacing_glyph, float p_baseline_offset) const {
@@ -2866,7 +2866,7 @@ void FontVariation::_bind_methods() {
 
 	ADD_GROUP("Variation", "variation_");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "variation_opentype"), "set_variation_opentype", "get_variation_opentype");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "variation_face_index"), "set_variation_face_index", "get_variation_face_index");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "variation_face_index", PROPERTY_HINT_RANGE, "0,32767,1"), "set_variation_face_index", "get_variation_face_index");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "variation_embolden", PROPERTY_HINT_RANGE, "-2,2,0.01"), "set_variation_embolden", "get_variation_embolden");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "variation_transform", PROPERTY_HINT_NONE, "suffix:px"), "set_variation_transform", "get_variation_transform");
 
@@ -3170,7 +3170,7 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling"), "set_oversampling", "get_oversampling");
 }
 
 void SystemFont::_update_rids() const {
@@ -3274,10 +3274,10 @@ void SystemFont::_update_base_font() {
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_keep_rounding_remainders(keep_rounding_remainders);
+		file->set_oversampling(oversampling_override);
 		file->set_multichannel_signed_distance_field(msdf);
 		file->set_msdf_pixel_range(msdf_pixel_range);
 		file->set_msdf_size(msdf_size);
-		file->set_oversampling(oversampling);
 
 		base_font = file;
 
@@ -3319,7 +3319,7 @@ void SystemFont::reset_state() {
 	hinting = TextServer::HINTING_LIGHT;
 	subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	keep_rounding_remainders = true;
-	oversampling = 0.f;
+	oversampling_override = 0.0;
 	msdf = false;
 
 	Font::reset_state();
@@ -3500,6 +3500,20 @@ bool SystemFont::get_keep_rounding_remainders() const {
 	return keep_rounding_remainders;
 }
 
+void SystemFont::set_oversampling(real_t p_oversampling) {
+	if (oversampling_override != p_oversampling) {
+		oversampling_override = p_oversampling;
+		if (base_font.is_valid()) {
+			base_font->set_oversampling(oversampling_override);
+		}
+		emit_changed();
+	}
+}
+
+real_t SystemFont::get_oversampling() const {
+	return oversampling_override;
+}
+
 void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
 	if (msdf != p_msdf) {
 		msdf = p_msdf;
@@ -3540,20 +3554,6 @@ void SystemFont::set_msdf_size(int p_msdf_size) {
 
 int SystemFont::get_msdf_size() const {
 	return msdf_size;
-}
-
-void SystemFont::set_oversampling(real_t p_oversampling) {
-	if (oversampling != p_oversampling) {
-		oversampling = p_oversampling;
-		if (base_font.is_valid()) {
-			base_font->set_oversampling(oversampling);
-		}
-		emit_changed();
-	}
-}
-
-real_t SystemFont::get_oversampling() const {
-	return oversampling;
 }
 
 void SystemFont::set_font_names(const PackedStringArray &p_names) {

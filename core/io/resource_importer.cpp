@@ -36,8 +36,6 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
-ResourceFormatImporterLoadOnStartup ResourceImporter::load_on_startup = nullptr;
-
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
 }
@@ -121,6 +119,12 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		} else if (next_tag.name != "remap") {
 			break;
 		}
+	}
+
+	if (p_load && !path_found && decomp_path_found) {
+		print_verbose(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
+		r_path_and_type.path = decomp_path;
+		return OK;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -430,6 +434,7 @@ Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) cons
 
 	return pat.metadata;
 }
+
 void ResourceFormatImporter::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
@@ -450,6 +455,18 @@ void ResourceFormatImporter::get_dependencies(const String &p_path, List<String>
 	}
 
 	ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
+}
+
+void ResourceFormatImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	if (!exists(p_path)) {
+		return;
+	}
+
+	List<Ref<ResourceImporter>> valid_importers;
+	get_importers_for_file(p_path, &valid_importers);
+	for (Ref<ResourceImporter> importer : valid_importers) {
+		importer->get_build_dependencies(p_path, r_dependencies);
+	}
 }
 
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) const {
@@ -545,17 +562,27 @@ String ResourceFormatImporter::get_import_settings_hash() const {
 	return hash.md5_text();
 }
 
-ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
-
 ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;
 }
 
 //////////////
 
+void ResourceImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	Vector<String> ret;
+	if (GDVIRTUAL_CALL(_get_build_dependencies, p_path, ret)) {
+		for (int i = 0; i < ret.size(); i++) {
+			r_dependencies->insert(ret[i]);
+		}
+		return;
+	}
+}
+
 void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
+
+	GDVIRTUAL_BIND(_get_build_dependencies, "path");
 }
 
 /////

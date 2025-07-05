@@ -40,6 +40,7 @@
 #include <unistd.h>
 
 class DirAccessUnix : public DirAccess {
+	GDSOFTCLASS(DirAccessUnix, DirAccess);
 	DIR *dir_stream = nullptr;
 
 	bool _cisdir = false;

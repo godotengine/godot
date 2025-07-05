@@ -56,7 +56,7 @@
 #endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 #include <android/asset_manager_jni.h>
@@ -140,12 +140,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHei
 	}
 }
 
-JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_activity, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jclass clazz, jobject p_godot_instance, jobject p_asset_manager, jobject p_godot_io, jobject p_net_utils, jobject p_directory_access_handler, jobject p_file_access_handler, jboolean p_use_apk_expansion) {
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
 	// create our wrapper classes
-	godot_java = new GodotJavaWrapper(env, p_activity, p_godot_instance);
+	godot_java = new GodotJavaWrapper(env, p_godot_instance);
 	godot_io_java = new GodotIOJavaWrapper(env, p_godot_io);
 
 	init_thread_jandroid(jvm, env);
@@ -276,7 +276,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
 		// so we skip this step if xr is enabled.
 		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
-			xr_enabled = GLOBAL_GET("xr/shaders/enabled");
+			xr_enabled = GLOBAL_GET_CACHED(bool, "xr/shaders/enabled");
 		} else {
 			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 		}
@@ -398,7 +398,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = AndroidInputHandler::JOY_EVENT_HAT;
-	BitField<HatMask> hat;
+	BitField<HatMask> hat = HatMask::CENTER;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0) {
 			hat.set_flag(HatMask::LEFT);

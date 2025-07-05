@@ -36,7 +36,6 @@ void JoltProjectSettings::register_settings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/jolt_physics_3d/simulation/velocity_steps", PROPERTY_HINT_RANGE, U"2,16,or_greater"), 10);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "physics/jolt_physics_3d/simulation/position_steps", PROPERTY_HINT_RANGE, U"1,16,or_greater"), 2);
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/jolt_physics_3d/simulation/use_enhanced_internal_edge_removal"), true);
-	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/jolt_physics_3d/simulation/areas_detect_static_bodies"), false);
 	GLOBAL_DEF(PropertyInfo(Variant::BOOL, "physics/jolt_physics_3d/simulation/generate_all_kinematic_contacts"), false);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/jolt_physics_3d/simulation/penetration_slop", PROPERTY_HINT_RANGE, U"0,1,0.00001,or_greater,suffix:m"), 0.02f);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/jolt_physics_3d/simulation/speculative_contact_distance", PROPERTY_HINT_RANGE, U"0,1,0.00001,or_greater,suffix:m"), 0.02f);
@@ -81,7 +80,6 @@ void JoltProjectSettings::read_settings() {
 	simulation_velocity_steps = GLOBAL_GET("physics/jolt_physics_3d/simulation/velocity_steps");
 	simulation_position_steps = GLOBAL_GET("physics/jolt_physics_3d/simulation/position_steps");
 	use_enhanced_internal_edge_removal_for_bodies = GLOBAL_GET("physics/jolt_physics_3d/simulation/use_enhanced_internal_edge_removal");
-	areas_detect_static_bodies = GLOBAL_GET("physics/jolt_physics_3d/simulation/areas_detect_static_bodies");
 	generate_all_kinematic_contacts = GLOBAL_GET("physics/jolt_physics_3d/simulation/generate_all_kinematic_contacts");
 	penetration_slop = GLOBAL_GET("physics/jolt_physics_3d/simulation/penetration_slop");
 	speculative_contact_distance = GLOBAL_GET("physics/jolt_physics_3d/simulation/speculative_contact_distance");

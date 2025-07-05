@@ -352,7 +352,7 @@ void PopupMenu::_activate_submenu(int p_over, bool p_by_keyboard) {
 	const float win_scale = get_content_scale_factor();
 
 	const Point2 panel_ofs_start = Point2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * win_scale;
-	const Point2 panel_ofs_end = Point2(panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_BOTTOM)).abs() * win_scale;
+	const Point2 panel_ofs_end = Point2(-panel->get_offset(SIDE_RIGHT), -panel->get_offset(SIDE_BOTTOM)) * win_scale;
 
 	const Point2 this_pos = get_position() + Point2(0, panel_ofs_start.y + theme_cache.panel_style->get_margin(SIDE_TOP) * win_scale);
 	Rect2 this_rect(this_pos, get_size());
@@ -715,7 +715,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	if (allow_search && k.is_valid() && k->get_unicode() && k->is_pressed()) {
 		uint64_t now = OS::get_singleton()->get_ticks_msec();
 		uint64_t diff = now - search_time_msec;
-		uint64_t max_interval = uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"));
+		uint64_t max_interval = uint64_t(GLOBAL_GET_CACHED(uint64_t, "gui/timers/incremental_search_max_interval_msec"));
 		search_time_msec = now;
 
 		if (diff > max_interval) {
@@ -1045,14 +1045,14 @@ void PopupMenu::_update_shadow_offsets() const {
 	// Offset the background panel so it leaves space inside the window for the shadows to be drawn.
 	const Point2 shadow_offset = sb->get_shadow_offset();
 	if (is_layout_rtl()) {
-		panel->set_offset(SIDE_LEFT, shadow_size + shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size + shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size + shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size + shadow_offset.x));
 	} else {
-		panel->set_offset(SIDE_LEFT, shadow_size - shadow_offset.x);
-		panel->set_offset(SIDE_RIGHT, -shadow_size - shadow_offset.x);
+		panel->set_offset(SIDE_LEFT, MAX(0, shadow_size - shadow_offset.x));
+		panel->set_offset(SIDE_RIGHT, MIN(0, -shadow_size - shadow_offset.x));
 	}
-	panel->set_offset(SIDE_TOP, shadow_size - shadow_offset.y);
-	panel->set_offset(SIDE_BOTTOM, -shadow_size - shadow_offset.y);
+	panel->set_offset(SIDE_TOP, MAX(0, shadow_size - shadow_offset.y));
+	panel->set_offset(SIDE_BOTTOM, MIN(0, -shadow_size - shadow_offset.y));
 }
 
 Rect2i PopupMenu::_popup_adjust_rect() const {
@@ -1066,7 +1066,7 @@ Rect2i PopupMenu::_popup_adjust_rect() const {
 	_update_shadow_offsets();
 
 	if (is_layout_rtl()) {
-		current.position -= Vector2(Math::abs(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
+		current.position -= Vector2(-panel->get_offset(SIDE_RIGHT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	} else {
 		current.position -= Vector2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	}
@@ -2905,7 +2905,7 @@ String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 PackedStringArray PopupMenu::get_configuration_warnings() const {
 	PackedStringArray warnings = Popup::get_configuration_warnings();
 
-	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET("display/window/subwindows/embed_subwindows")) {
+	if (!DisplayServer::get_singleton()->is_window_transparency_available() && !GLOBAL_GET_CACHED(bool, "display/window/subwindows/embed_subwindows")) {
 		Ref<StyleBoxFlat> sb = theme_cache.panel_style;
 		if (sb.is_valid() && (sb->get_shadow_size() > 0 || sb->get_corner_radius(CORNER_TOP_LEFT) > 0 || sb->get_corner_radius(CORNER_TOP_RIGHT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_LEFT) > 0 || sb->get_corner_radius(CORNER_BOTTOM_RIGHT) > 0)) {
 			warnings.push_back(RTR("The current theme style has shadows and/or rounded corners for popups, but those won't display correctly if \"display/window/per_pixel_transparency/allowed\" isn't enabled in the Project Settings, nor if it isn't supported."));
@@ -3211,19 +3211,22 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		moved = Vector2();
 		popup_time_msec = OS::get_singleton()->get_ticks_msec();
 
-		Size2 scale = get_parent_viewport()->get_popup_base_transform().get_scale();
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
-		if (c) {
-			scale *= c->get_global_transform_with_canvas().get_scale();
-		}
-		real_t popup_scale = MIN(scale.x, scale.y);
-		set_content_scale_factor(popup_scale);
-		Size2 minsize = get_contents_minimum_size() * popup_scale;
-		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		set_size(Vector2(0, 0)); // Shrinkwraps to min size.
 		Popup::popup(p_bounds);
 	}
+}
+
+void PopupMenu::_pre_popup() {
+	Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
+	CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
+	if (c) {
+		scale *= c->get_global_transform_with_canvas().get_scale();
+	}
+	real_t popup_scale = MIN(scale.x, scale.y);
+	set_content_scale_factor(popup_scale);
+	Size2 minsize = get_contents_minimum_size() * popup_scale;
+	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+	reset_size(); // Shrinkwraps to min size.
 }
 
 void PopupMenu::set_visible(bool p_visible) {

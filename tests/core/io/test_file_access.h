@@ -207,7 +207,7 @@ TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
 
 		// Data should be empty.
 		PackedByteArray reference;
-		reference.resize_zeroed(4096);
+		reference.resize_initialized(4096);
 		CHECK(reference == full_data);
 
 		f->seek(0);
@@ -215,7 +215,7 @@ TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
 		CHECK(partial_data.size() == 4095);
 		CHECK(!f->eof_reached());
 
-		reference.resize_zeroed(4095);
+		reference.resize_initialized(4095);
 		CHECK(reference == partial_data);
 	}
 }

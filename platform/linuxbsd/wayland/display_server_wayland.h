@@ -61,13 +61,14 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#include <limits.h>
-#include <stdio.h>
+#include <climits>
+#include <cstdio>
 
 #undef CursorShape
 
 class DisplayServerWayland : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWayland, DisplayServer);
+
 	struct WindowData {
 		WindowID id = INVALID_WINDOW_ID;
 
@@ -143,7 +144,7 @@ class DisplayServerWayland : public DisplayServer {
 	// are the "take all input thx" windows while the `popup_stack` variable keeps
 	// track of all the generic floating window concept.
 	List<WindowID> popup_menu_list;
-	BitField<MouseButtonMask> last_mouse_monitor_mask;
+	BitField<MouseButtonMask> last_mouse_monitor_mask = MouseButtonMask::NONE;
 
 	String ime_text;
 	Vector2i ime_selection;

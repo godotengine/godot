@@ -43,8 +43,6 @@
 #include "core/variant/variant.h"
 #include "core/version.h"
 
-#include <string.h>
-
 class CallableCustomExtension : public CallableCustom {
 	void *userdata;
 	void *token;
@@ -904,8 +902,9 @@ static void gdextension_string_new_with_wide_chars(GDExtensionUninitializedStrin
 }
 
 static void gdextension_string_new_with_latin1_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
+	const size_t string_length = p_contents ? (p_size < 0 ? strlen(p_contents) : strnlen(p_contents, p_size)) : 0;
 	String *dest = memnew_placement(r_dest, String);
-	dest->append_latin1(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_size) : 0));
+	dest->append_latin1(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_utf8_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char *p_contents, GDExtensionInt p_size) {
@@ -929,8 +928,9 @@ static GDExtensionInt gdextension_string_new_with_utf16_chars_and_len2(GDExtensi
 }
 
 static void gdextension_string_new_with_utf32_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const char32_t *p_contents, GDExtensionInt p_char_count) {
+	const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen(p_contents, p_char_count)) : 0;
 	String *string = memnew_placement(r_dest, String);
-	string->append_utf32(Span(p_contents, p_contents ? _strlen_clipped(p_contents, p_char_count) : 0));
+	string->append_utf32(Span(p_contents, string_length));
 }
 
 static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitializedStringPtr r_dest, const wchar_t *p_contents, GDExtensionInt p_char_count) {
@@ -940,8 +940,9 @@ static void gdextension_string_new_with_wide_chars_and_len(GDExtensionUninitiali
 		dest->append_utf16((const char16_t *)p_contents, p_char_count);
 	} else {
 		// wchar_t is 32 bit (UTF-32).
+		const size_t string_length = p_contents ? (p_char_count < 0 ? strlen(p_contents) : strnlen((const char32_t *)p_contents, p_char_count)) : 0;
 		String *string = memnew_placement(r_dest, String);
-		string->append_utf32(Span((const char32_t *)p_contents, p_contents ? _strlen_clipped((const char32_t *)p_contents, p_char_count) : 0));
+		string->append_utf32(Span((const char32_t *)p_contents, string_length));
 	}
 }
 
@@ -1044,7 +1045,7 @@ static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_se
 
 static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDExtensionInt p_length) {
 	String *self = (String *)p_self;
-	return (*self).resize(p_length);
+	return (*self).resize_uninitialized(p_length);
 }
 
 static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
@@ -1276,11 +1277,13 @@ static GDExtensionVariantPtr gdextension_array_operator_index_const(GDExtensionC
 	return (GDExtensionVariantPtr)&self->operator[](p_index);
 }
 
+#ifndef DISABLE_DEPRECATED
 void gdextension_array_ref(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_from) {
 	Array *self = (Array *)p_self;
 	const Array *from = (const Array *)p_from;
-	self->_ref(*from);
+	self->Array::operator=(*from);
 }
+#endif // DISABLE_DEPRECATED
 
 void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
 	Array *self = reinterpret_cast<Array *>(p_self);
@@ -1797,7 +1800,9 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(packed_vector4_array_operator_index_const);
 	REGISTER_INTERFACE_FUNC(array_operator_index);
 	REGISTER_INTERFACE_FUNC(array_operator_index_const);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_ref);
+#endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(array_set_typed);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index);
 	REGISTER_INTERFACE_FUNC(dictionary_operator_index_const);

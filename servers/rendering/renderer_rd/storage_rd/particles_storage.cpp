@@ -80,9 +80,9 @@ ParticlesStorage::ParticlesStorage() {
 		}
 		actions.renames["TRANSFORM"] = "PARTICLE.xform";
 		actions.renames["TIME"] = "frame_history.data[0].time";
-		actions.renames["PI"] = _MKSTR(Math_PI);
-		actions.renames["TAU"] = _MKSTR(Math_TAU);
-		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
 		actions.renames["LIFETIME"] = "params.lifetime";
 		actions.renames["DELTA"] = "local_delta";
 		actions.renames["NUMBER"] = "particle_number";
@@ -439,7 +439,7 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
-	ERR_FAIL_COND(p_length < 0.01);
+	ERR_FAIL_COND(p_length < 0.01 - CMP_EPSILON);
 	p_length = MIN(10.0, p_length);
 
 	particles->trails_enabled = p_enable;
@@ -1379,7 +1379,7 @@ void ParticlesStorage::_particles_update_buffers(Particles *particles) {
 			particles->instance_motion_vectors_enabled = true;
 		}
 
-		data.resize_zeroed(particle_instance_buffer_size);
+		data.resize_initialized(particle_instance_buffer_size);
 
 		particles->particle_instance_buffer = RD::get_singleton()->storage_buffer_create(particle_instance_buffer_size, data);
 
@@ -1748,6 +1748,10 @@ RS::ShaderNativeSourceCode ParticlesStorage::ParticlesShaderData::get_native_sou
 	return ParticlesStorage::get_singleton()->particles_shader.shader.version_get_native_source_code(version);
 }
 
+Pair<ShaderRD *, RID> ParticlesStorage::ParticlesShaderData::get_native_shader_and_version() const {
+	return { &ParticlesStorage::get_singleton()->particles_shader.shader, version };
+}
+
 ParticlesStorage::ParticlesShaderData::~ParticlesShaderData() {
 	//pipeline variants will clear themselves if shader is gone
 	if (version.is_valid()) {
@@ -1850,6 +1854,13 @@ void ParticlesStorage::particles_collision_set_cull_mask(RID p_particles_collisi
 	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
 	ERR_FAIL_NULL(particles_collision);
 	particles_collision->cull_mask = p_cull_mask;
+	particles_collision->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
+}
+
+uint32_t ParticlesStorage::particles_collision_get_cull_mask(RID p_particles_collision) const {
+	ParticlesCollision *particles_collision = particles_collision_owner.get_or_null(p_particles_collision);
+	ERR_FAIL_NULL_V(particles_collision, 0);
+	return particles_collision->cull_mask;
 }
 
 uint32_t ParticlesStorage::particles_collision_get_height_field_mask(RID p_particles_collision) const {

@@ -96,17 +96,11 @@ bool Polygon2D::_edit_use_rect() const {
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector<Vector2> polygon2d = Variant(polygon);
 	if (internal_vertices > 0) {
-		polygon2d.resize(polygon2d.size() - internal_vertices);
+		polygon2d.resize(MAX(polygon2d.size() - internal_vertices, 0));
 	}
 	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
 #endif // DEBUG_ENABLED
-
-void Polygon2D::_validate_property(PropertyInfo &p_property) const {
-	if (!invert && p_property.name == "invert_border") {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-}
 
 void Polygon2D::_skeleton_bone_setup_changed() {
 	queue_redraw();
@@ -505,7 +499,6 @@ Size2 Polygon2D::get_texture_scale() const {
 void Polygon2D::set_invert(bool p_invert) {
 	invert = p_invert;
 	queue_redraw();
-	notify_property_list_changed();
 }
 
 bool Polygon2D::get_invert() const {
@@ -718,14 +711,14 @@ void Polygon2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton2D"), "set_skeleton", "get_skeleton");
 
 	ADD_GROUP("Invert", "invert_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled"), "set_invert_enabled", "get_invert_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_invert_enabled", "get_invert_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "invert_border", PROPERTY_HINT_RANGE, "0.1,16384,0.1,suffix:px"), "set_invert_border", "get_invert_border");
 
 	ADD_GROUP("Data", "");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "polygon"), "set_polygon", "get_polygon");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "uv"), "set_uv", "get_uv");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_COLOR_ARRAY, "vertex_colors"), "set_vertex_colors", "get_vertex_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons"), "set_polygons", "get_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_TYPE_STRING, "PackedInt32Array"), "set_polygons", "get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "bones", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_bones", "_get_bones");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "internal_vertex_count", PROPERTY_HINT_RANGE, "0,1000"), "set_internal_vertex_count", "get_internal_vertex_count");
 }

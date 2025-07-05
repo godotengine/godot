@@ -41,10 +41,25 @@ if env["use_pix"]:
     env_d3d12_rdd.Append(CPPEXTPATH=[env["pix_path"] + "/Include"])
 
 
+# Direct composition.
+
+if "dcomp" in env.get("supported", []):
+    env_d3d12_rdd.Append(CPPDEFINES=["DCOMP_ENABLED"])
+    env.Append(CPPDEFINES=["DCOMP_ENABLED"])  # Used in header included in platform.
+
+
 # Mesa (SPIR-V to DXIL functionality).
 
-mesa_dir = (env["mesa_libs"] + "/godot-mesa").replace("\\", "/")
-mesa_gen_dir = (env["mesa_libs"] + "/godot-mesa/generated").replace("\\", "/")
+mesa_libs = env["mesa_libs"]
+if env.msvc and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-msvc"):
+    mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-msvc"
+elif env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-llvm"):
+    mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-llvm"
+elif not env["use_llvm"] and os.path.exists(env["mesa_libs"] + "-" + env["arch"] + "-gcc"):
+    mesa_libs = env["mesa_libs"] + "-" + env["arch"] + "-gcc"
+
+mesa_dir = (mesa_libs + "/godot-mesa").replace("\\", "/")
+mesa_gen_dir = (mesa_libs + "/godot-mesa/generated").replace("\\", "/")
 mesa_absdir = Dir(mesa_dir).abspath
 mesa_gen_absdir = Dir(mesa_dir + "/generated").abspath
 

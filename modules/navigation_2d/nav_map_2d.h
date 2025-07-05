@@ -50,7 +50,7 @@ class NavObstacle2D;
 class NavMap2D : public NavRid2D {
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size.
-	real_t cell_size = NavigationDefaults2D::navmesh_cell_size;
+	real_t cell_size = NavigationDefaults2D::NAV_MESH_CELL_SIZE;
 
 	// For the inter-region merging to work, internal rasterization is performed.
 	Vector2 merge_rasterizer_cell_size = Vector2(cell_size, cell_size);
@@ -60,10 +60,10 @@ class NavMap2D : public NavRid2D {
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = NavigationDefaults2D::edge_connection_margin;
+	real_t edge_connection_margin = NavigationDefaults2D::EDGE_CONNECTION_MARGIN;
 
 	/// This value is used to limit how far links search to find polygons to connect to.
-	real_t link_connection_radius = NavigationDefaults2D::link_connection_radius;
+	real_t link_connection_radius = NavigationDefaults2D::LINK_CONNECTION_RADIUS;
 
 	bool map_settings_dirty = true;
 
@@ -99,14 +99,33 @@ class NavMap2D : public NavRid2D {
 	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
-	nav_2d::PerformanceData performance_data;
+	Nav2D::PerformanceData performance_data;
 
 	struct {
-		SelfList<NavRegion2D>::List regions;
-		SelfList<NavLink2D>::List links;
-		SelfList<NavAgent2D>::List agents;
-		SelfList<NavObstacle2D>::List obstacles;
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion2D>::List list;
+		} regions;
+		struct {
+			RWLock rwlock;
+			SelfList<NavLink2D>::List list;
+		} links;
+		struct {
+			RWLock rwlock;
+			SelfList<NavAgent2D>::List list;
+		} agents;
+		struct {
+			RWLock rwlock;
+			SelfList<NavObstacle2D>::List list;
+		} obstacles;
 	} sync_dirty_requests;
+
+	struct {
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion2D>::List list;
+		} regions;
+	} async_dirty_requests;
 
 	int path_query_slots_max = 4;
 
@@ -117,7 +136,6 @@ class NavMap2D : public NavRid2D {
 	mutable RWLock iteration_slot_rwlock;
 
 	NavMapIterationBuild2D iteration_build;
-	bool iteration_build_use_threads = false;
 	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	static void _build_iteration_threaded(void *p_arg);
 
@@ -159,13 +177,13 @@ public:
 		return link_connection_radius;
 	}
 
-	nav_2d::PointKey get_point_key(const Vector2 &p_pos) const;
-	Vector2 get_merge_rasterizer_cell_size() const;
+	Nav2D::PointKey get_point_key(const Vector2 &p_pos) const;
+	const Vector2 &get_merge_rasterizer_cell_size() const;
 
 	void query_path(NavMeshQueries2D::NavMeshPathQueryTask2D &p_query_task);
 
 	Vector2 get_closest_point(const Vector2 &p_point) const;
-	nav_2d::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
+	Nav2D::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
 	RID get_closest_point_owner(const Vector2 &p_point) const;
 
 	void add_region(NavRegion2D *p_region);
@@ -218,6 +236,9 @@ public:
 	Vector2 get_region_connection_pathway_start(NavRegion2D *p_region, int p_connection_id) const;
 	Vector2 get_region_connection_pathway_end(NavRegion2D *p_region, int p_connection_id) const;
 
+	void add_region_async_thread_join_request(SelfList<NavRegion2D> *p_async_request);
+	void remove_region_async_thread_join_request(SelfList<NavRegion2D> *p_async_request);
+
 	void add_region_sync_dirty_request(SelfList<NavRegion2D> *p_sync_request);
 	void add_link_sync_dirty_request(SelfList<NavLink2D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent2D> *p_sync_request);
@@ -234,6 +255,7 @@ public:
 private:
 	void _sync_dirty_map_update_requests();
 	void _sync_dirty_avoidance_update_requests();
+	void _sync_async_tasks();
 
 	void compute_single_step(uint32_t p_index, NavAgent2D **p_agent);
 

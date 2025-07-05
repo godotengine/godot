@@ -33,8 +33,8 @@
 #include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
-#include "editor/editor_folding.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/settings/editor_folding.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -45,6 +45,7 @@ class ColorPicker;
 class ConfirmationDialog;
 class Control;
 class FileDialog;
+class HBoxContainer;
 class MenuBar;
 class MenuButton;
 class OptionButton;
@@ -53,6 +54,7 @@ class PanelContainer;
 class RichTextLabel;
 class SubViewport;
 class TextureProgressBar;
+class Translation;
 class Tree;
 class VBoxContainer;
 class VSplitContainer;
@@ -99,6 +101,10 @@ class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
 class ProjectUpgradeTool;
 
+#ifdef ANDROID_ENABLED
+class TouchActionsPanel;
+#endif
+
 struct EditorProgress {
 	String task;
 	bool force_background = false;
@@ -117,6 +123,7 @@ public:
 		SCENE_NAME_CASING_PASCAL_CASE,
 		SCENE_NAME_CASING_SNAKE_CASE,
 		SCENE_NAME_CASING_KEBAB_CASE,
+		SCENE_NAME_CASING_CAMEL_CASE,
 	};
 
 	enum ActionOnPlay {
@@ -132,28 +139,29 @@ public:
 
 	enum MenuOptions {
 		// Scene menu.
-		FILE_NEW_SCENE,
-		FILE_NEW_INHERITED_SCENE,
-		FILE_OPEN_SCENE,
-		FILE_OPEN_PREV,
-		FILE_OPEN_RECENT,
-		FILE_SAVE_SCENE,
-		FILE_SAVE_AS_SCENE,
-		FILE_SAVE_ALL_SCENES,
-		FILE_MULTI_SAVE_AS_SCENE,
-		FILE_QUICK_OPEN,
-		FILE_QUICK_OPEN_SCENE,
-		FILE_QUICK_OPEN_SCRIPT,
-		FILE_UNDO,
-		FILE_REDO,
-		FILE_RELOAD_SAVED_SCENE,
-		FILE_CLOSE,
-		FILE_QUIT,
+		SCENE_NEW_SCENE,
+		SCENE_NEW_INHERITED_SCENE,
+		SCENE_OPEN_SCENE,
+		SCENE_OPEN_PREV,
+		SCENE_OPEN_RECENT,
+		SCENE_SAVE_SCENE,
+		SCENE_SAVE_AS_SCENE,
+		SCENE_SAVE_ALL_SCENES,
+		SCENE_MULTI_SAVE_AS_SCENE,
+		SCENE_QUICK_OPEN,
+		SCENE_QUICK_OPEN_SCENE,
+		SCENE_QUICK_OPEN_SCRIPT,
+		SCENE_UNDO,
+		SCENE_REDO,
+		SCENE_RELOAD_SAVED_SCENE,
+		SCENE_CLOSE,
+		SCENE_QUIT,
 
 		FILE_EXPORT_MESH_LIBRARY,
 
 		// Project menu.
 		PROJECT_OPEN_SETTINGS,
+		PROJECT_FIND_IN_FILES,
 		PROJECT_VERSION_CONTROL,
 		PROJECT_EXPORT,
 		PROJECT_PACK_AS_ZIP,
@@ -204,8 +212,8 @@ public:
 
 		// Non-menu options.
 		SCENE_TAB_CLOSE,
-		FILE_SAVE_AND_RUN,
-		FILE_SAVE_AND_RUN_MAIN_SCENE,
+		SAVE_AND_RUN,
+		SAVE_AND_RUN_MAIN_SCENE,
 		RESOURCE_SAVE,
 		RESOURCE_SAVE_AS,
 		SETTINGS_PICK_MAIN_SCENE,
@@ -275,6 +283,13 @@ private:
 	VBoxContainer *main_vbox = nullptr;
 	OptionButton *renderer = nullptr;
 
+#ifdef ANDROID_ENABLED
+	VBoxContainer *base_vbox = nullptr; // It only contains the title_bar and main_hbox.
+	HBoxContainer *main_hbox = nullptr; // It only contains the touch_actions_panel and main_vbox.
+	TouchActionsPanel *touch_actions_panel = nullptr;
+	void _touch_actions_panel_mode_changed();
+#endif
+
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
 	int renderer_current = 0;
@@ -312,7 +327,16 @@ private:
 	Control *right_menu_spacer = nullptr;
 	EditorTitleBar *title_bar = nullptr;
 	EditorRunBar *project_run_bar = nullptr;
-	MenuBar *main_menu = nullptr;
+	HBoxContainer *right_menu_hb = nullptr;
+
+	// Spacers to center 2D / 3D / Script buttons.
+	HBoxContainer *left_spacer = nullptr;
+	Control *right_spacer = nullptr;
+
+	Control *menu_btn_spacer = nullptr;
+	MenuButton *main_menu_button = nullptr;
+	MenuBar *main_menu_bar = nullptr;
+
 	PopupMenu *apple_menu = nullptr;
 	PopupMenu *file_menu = nullptr;
 	PopupMenu *project_menu = nullptr;
@@ -412,6 +436,8 @@ private:
 	EditorBottomPanel *bottom_panel = nullptr;
 
 	Tree *disk_changed_list = nullptr;
+	LocalVector<String> disk_changed_scenes;
+	bool disk_changed_project = false;
 	ConfirmationDialog *disk_changed = nullptr;
 	ConfirmationDialog *project_data_missing = nullptr;
 
@@ -423,11 +449,15 @@ private:
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool restoring_scenes = false;
+	bool settings_overrides_changed = false;
 	bool unsaved_cache = true;
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
+
+	HashSet<Ref<Translation>> tracked_translations;
+	bool pending_translation_notification = false;
 
 	int current_menu_option = 0;
 
@@ -459,6 +489,7 @@ private:
 	PrintHandlerList print_handler;
 
 	HashMap<String, Ref<Texture2D>> icon_type_cache;
+	HashMap<Pair<String, String>, Ref<Texture2D>> class_icon_cache;
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
@@ -521,7 +552,8 @@ private:
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
-	void _save_screenshot(NodePath p_path);
+	void _save_screenshot(const String &p_path);
+	void _save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path);
 
 	void _check_system_theme_changed();
 
@@ -544,6 +576,7 @@ private:
 	void _save_editor_states(const String &p_file, int p_idx = -1);
 	void _load_editor_plugin_states_from_config(const Ref<ConfigFile> &p_config_file);
 	void _update_title();
+	void _update_unsaved_cache();
 	void _version_control_menu_option(int p_idx);
 	void _close_messages();
 	void _show_messages();
@@ -589,6 +622,10 @@ private:
 	void _update_vsync_mode();
 	void _update_from_settings();
 	void _gdextensions_reloaded();
+	void _update_translations();
+	void _translation_resources_changed();
+	void _queue_translation_notification();
+	void _propagate_translation_notification();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();
@@ -651,7 +688,7 @@ private:
 	void _scan_external_changes();
 	void _reload_modified_scenes();
 	void _reload_project_settings();
-	void _resave_scenes(String p_str);
+	void _resave_externally_modified_scenes(String p_str);
 
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
@@ -675,6 +712,9 @@ private:
 	void _execute_upgrades();
 
 	bool _is_project_data_missing();
+
+	void _update_main_menu_type();
+	void _add_to_main_menu(const String &p_name, PopupMenu *p_menu);
 
 protected:
 	friend class FileSystemDock;
@@ -744,7 +784,7 @@ public:
 	void trigger_menu_option(int p_option, bool p_confirmed);
 	bool has_previous_closed_scenes() const;
 
-	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
+	void new_inherited_scene() { _menu_option_confirm(SCENE_NEW_INHERITED_SCENE, false); }
 
 	void update_distraction_free_mode();
 	void set_distraction_free_mode(bool p_enter);
@@ -789,6 +829,9 @@ public:
 	void set_edited_scene(Node *p_scene);
 	void set_edited_scene_root(Node *p_scene, bool p_auto_add);
 	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
+
+	String get_preview_locale() const;
+	void set_preview_locale(const String &p_locale);
 
 	void fix_dependencies(const String &p_for_file);
 	int new_scene();
@@ -909,6 +952,8 @@ public:
 		}
 	}
 
+	bool close_scene();
+
 	bool is_scene_in_use(const String &p_path);
 
 	void save_editor_layout_delayed();
@@ -943,6 +988,9 @@ public:
 	void restart_editor(bool p_goto_project_manager = false);
 	void unload_editor_addons();
 
+	void open_setting_override(const String &p_property);
+	void notify_settings_overrides_changed();
+
 	void dim_editor(bool p_dimming);
 	bool is_editor_dimmed() const;
 
@@ -965,6 +1013,7 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 	bool validate_custom_directory();
+	void run_editor_script(const Ref<Script> &p_script);
 };
 
 class EditorPluginList : public Object {

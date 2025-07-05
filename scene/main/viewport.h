@@ -136,6 +136,7 @@ public:
 	enum ScreenSpaceAA {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
+		SCREEN_SPACE_AA_SMAA,
 		SCREEN_SPACE_AA_MAX
 	};
 
@@ -238,6 +239,10 @@ private:
 	Viewport *gui_parent = nullptr; // Whose gui.tooltip_popup it is.
 
 	HashSet<CanvasLayer *> canvas_layers;
+
+	bool use_font_oversampling = true;
+	float font_oversampling = 1.0;
+	float font_oversampling_override = 0.0;
 
 	RID viewport;
 	RID current_canvas;
@@ -367,7 +372,7 @@ private:
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		BitField<MouseButtonMask> mouse_focus_mask;
+		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
@@ -574,6 +579,14 @@ public:
 	void set_use_taa(bool p_use_taa);
 	bool is_using_taa() const;
 
+	void set_use_oversampling(bool p_oversampling);
+	bool is_using_oversampling() const;
+
+	void set_oversampling_override(float p_oversampling);
+	float get_oversampling_override() const;
+
+	float get_oversampling() const { return font_oversampling; }
+
 	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
 	Scaling3DMode get_scaling_3d_mode() const;
 
@@ -717,6 +730,7 @@ public:
 
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
+	virtual Transform2D get_popup_base_transform_native() const { return Transform2D(); }
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 	virtual Viewport *get_section_root_viewport() const { return nullptr; }
 	virtual bool is_attached_in_viewport() const { return false; }
@@ -739,7 +753,7 @@ private:
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
-	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
+	HashMap<Pair<ObjectID, int>, uint64_t> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
 #endif // PHYSICS_2D_DISABLED
@@ -897,7 +911,6 @@ public:
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
-	~SubViewport();
 };
 VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);

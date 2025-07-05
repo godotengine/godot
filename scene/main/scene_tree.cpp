@@ -114,8 +114,6 @@ void SceneTreeTimer::release_connections() {
 	}
 }
 
-SceneTreeTimer::SceneTreeTimer() {}
-
 #ifndef _3D_DISABLED
 // This should be called once per physics tick, to make sure the transform previous and current
 // is kept up to date on the few Node3Ds that are using client side physics interpolation.
@@ -138,6 +136,9 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 	}
 }
 #endif // _3D_DISABLED
+
+bool SceneTree::_physics_interpolation_enabled = false;
+bool SceneTree::_physics_interpolation_enabled_in_project = false;
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -188,14 +189,6 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	}
 }
 
-void SceneTree::make_group_changed(const StringName &p_group) {
-	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (E) {
-		E->value.changed = true;
-	}
-}
-
 void SceneTree::flush_transform_notifications() {
 	_THREAD_SAFE_METHOD_
 
@@ -215,8 +208,8 @@ bool SceneTree::is_accessibility_enabled() const {
 	}
 
 	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
-	int screen_reader_acvite = DisplayServer::get_singleton()->accessibility_screen_reader_active();
-	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_acvite == 0))) {
+	int screen_reader_active = DisplayServer::get_singleton()->accessibility_screen_reader_active();
+	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_active != 1))) {
 		return false;
 	}
 	return true;
@@ -576,6 +569,9 @@ void SceneTree::initialize() {
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// This version is for use in editor.
+	_physics_interpolation_enabled_in_project = p_enabled;
+
 	// We never want interpolation in the editor.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_enabled = false;
@@ -588,14 +584,12 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	_physics_interpolation_enabled = p_enabled;
 	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
 
+	get_scene_tree_fti().set_enabled(get_root(), p_enabled);
+
 	// Perform an auto reset on the root node for convenience for the user.
 	if (root) {
 		root->reset_physics_interpolation();
 	}
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
 }
 
 #ifndef _3D_DISABLED
@@ -615,6 +609,7 @@ void SceneTree::iteration_prepare() {
 		// Make sure any pending transforms from the last tick / frame
 		// are flushed before pumping the interpolation prev and currents.
 		flush_transform_notifications();
+		get_scene_tree_fti().tick_update();
 		RenderingServer::get_singleton()->tick();
 	}
 }
@@ -669,6 +664,17 @@ void SceneTree::iteration_end() {
 }
 
 bool SceneTree::process(double p_time) {
+	// First pass of scene tree fixed timestep interpolation.
+	if (get_scene_tree_fti().is_enabled()) {
+		// Special, we need to ensure RenderingServer is up to date
+		// with *all* the pending xforms *before* updating it during
+		// the FTI update.
+		// If this is not done, we can end up with a deferred `set_transform()`
+		// overwriting the interpolated xform in the server.
+		flush_transform_notifications();
+		get_scene_tree_fti().frame_update(get_root(), true);
+	}
+
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -713,7 +719,7 @@ bool SceneTree::process(double p_time) {
 #ifdef TOOLS_ENABLED
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET("rendering/environment/defaults/default_environment");
 		env_path = env_path.strip_edges(); // User may have added a space or two.
 
 		bool can_load = true;
@@ -749,6 +755,11 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
+
+	// Second pass of scene tree fixed timestep interpolation.
+	// ToDo: Possibly needs another flush_transform_notifications here
+	// depending on whether there are side effects to _call_idle_callbacks().
+	get_scene_tree_fti().frame_update(get_root(), false);
 
 	if (_physics_interpolation_enabled) {
 		RenderingServer::get_singleton()->pre_draw(true);
@@ -1808,7 +1819,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 						break;
 					}
 				}
-				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
+				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + String(p_root_path) + "' in '" + String(E.key) + "'.");
 			}
 		}
 		if (p_multiplayer.is_valid()) {
@@ -1953,12 +1964,26 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
 	bool add_options = false;
 	if (p_idx == 0) {
-		add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
+		static const Vector<StringName> names = {
+			StringName("add_to_group", true),
+			StringName("call_group", true),
+			StringName("get_first_node_in_group", true),
+			StringName("get_node_count_in_group", true),
+			StringName("get_nodes_in_group", true),
+			StringName("has_group", true),
+			StringName("notify_group", true),
+			StringName("set_group", true),
+		};
+		add_options = names.has(p_function);
 	} else if (p_idx == 1) {
-		add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
+		static const Vector<StringName> names = {
+			StringName("call_group_flags", true),
+			StringName("notify_group_flags", true),
+			StringName("set_group_flags", true),
+		};
+		add_options = names.has(p_function);
 	}
 	if (add_options) {
 		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
@@ -1995,13 +2020,17 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
-	root->set_title(GLOBAL_GET("application/config/name"));
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		root->set_wrap_controls(true);
+		root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	} else {
+		root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	}
+
+	// Set after auto translate mode to avoid changing the displayed title back and forth.
+	root->set_title(GLOBAL_GET("application/config/name"));
 
 #ifndef _3D_DISABLED
 	if (root->get_world_3d().is_null()) {
@@ -2037,7 +2066,7 @@ SceneTree::SceneTree() {
 	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	root->set_use_hdr_2d(use_hdr_2d);
 
-	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);
+	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast),SMAA (Average)"), 0);
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);

@@ -293,10 +293,20 @@ void GraphNodeIndexed::set_slot(int p_slot_index, GraphPort *p_left_port, GraphP
 	_set_slot(p_slot_index, Slot({ p_left_port, p_right_port, draw_stylebox }));
 }
 
+void GraphNodeIndexed::_resort() {
+	GraphNode::_resort();
+	emit_signal(SNAME("slot_sizes_changed"), this);
+}
+
+// I have absolutely no idea why so many things in this function need to be divided in half to align ports properly, but here we are
 void GraphNodeIndexed::_port_pos_update() {
 	int edgeofs = theme_cache.port_h_offset;
+	int separation = theme_cache.separation;
 
-	Size2 node_size = get_size() / 2; // Don't ask me why this needs to be halved. I don't know. lol
+	// This helps to immediately achieve the initial y "original point" of the slots, which the sum of the titlebar height and the top margin of the panel.
+	int vertical_ofs = titlebar_hbox->get_size().height / 2 + theme_cache.titlebar->get_minimum_size().height / 2 + theme_cache.panel->get_margin(SIDE_TOP);
+
+	Size2 node_size = get_size() / 2;
 	Point2 port_container_size = port_container->get_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
@@ -305,19 +315,21 @@ void GraphNodeIndexed::_port_pos_update() {
 			continue;
 		}
 
-		Size2i size = child->get_size() / 2; // Same goes for this. In total, it's getting divided by 4. Again, no idea.
-		Point2 pos = child->get_position();
+		Size2i size = child->get_size() / 2;
+		int port_y = vertical_ofs + size.height / 2;
 
 		if (_slot_node_map_cache.has(child->get_name())) {
 			int slot_index = _slot_node_map_cache[child->get_name()];
 			const Slot &slot = slots[slot_index];
 			if (slot.left_port) {
-				slot.left_port->set_position(Point2(pos.x - edgeofs, pos.y + size.height / 2));
+				slot.left_port->set_position(Point2(edgeofs, port_y));
 			}
 			if (slot.right_port) {
-				slot.right_port->set_position(Point2(pos.x + node_size.width + port_container_size.width + edgeofs, pos.y + size.height / 2));
+				slot.right_port->set_position(Point2(node_size.width + port_container_size.width - edgeofs, port_y));
 			}
 		}
+
+		vertical_ofs += size.height + separation;
 	}
 
 	GraphNode::_port_pos_update();
@@ -459,6 +471,23 @@ void GraphNodeIndexed::set_slot_draw_stylebox(int p_slot_index, bool p_draw_styl
 	notify_property_list_changed();
 }
 
+void GraphNodeIndexed::set_slot_focus_mode(Control::FocusMode p_focus_mode) {
+	if (slot_focus_mode == p_focus_mode) {
+		return;
+	}
+	ERR_FAIL_COND((int)p_focus_mode < 1 || (int)p_focus_mode > 3);
+
+	slot_focus_mode = p_focus_mode;
+	if (slot_focus_mode == Control::FOCUS_CLICK && selected_slot > -1) {
+		selected_slot = -1;
+		queue_redraw();
+	}
+}
+
+Control::FocusMode GraphNodeIndexed::get_slot_focus_mode() const {
+	return slot_focus_mode;
+}
+
 Size2 GraphNodeIndexed::get_minimum_size() const {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
@@ -521,7 +550,13 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("input_port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::input_port_to_slot_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("output_port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::output_port_to_slot_index, DEFVAL(true));
 
+	ClassDB::bind_method(D_METHOD("set_slot_focus_mode", "focus_mode"), &GraphNodeIndexed::set_slot_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_slot_focus_mode"), &GraphNodeIndexed::get_slot_focus_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_slots", "get_slots");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "slot_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slot_focus_mode", "get_slot_focus_mode");
+
+	ADD_SIGNAL(MethodInfo("slot_sizes_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NODE_TYPE, "GraphNodeIndexed")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel_selected);

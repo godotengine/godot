@@ -36,6 +36,7 @@ import org.godotengine.godot.plugin.GodotPlugin;
 import android.app.Activity;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -96,8 +97,9 @@ public interface GodotHost {
 	}
 
 	/**
-	 * Provide access to the Activity hosting the {@link Godot} engine.
+	 * Provide access to the Activity hosting the {@link Godot} engine if any.
 	 */
+	@Nullable
 	Activity getActivity();
 
 	/**
@@ -150,4 +152,18 @@ public interface GodotHost {
 	 * Invoked on the render thread when an editor workspace has been selected.
 	 */
 	default void onEditorWorkspaceSelected(String workspace) {}
+
+	/**
+	 * Runs the specified action on a host provided thread.
+	 */
+	default void runOnHostThread(Runnable action) {
+		if (action == null) {
+			return;
+		}
+
+		Activity activity = getActivity();
+		if (activity != null) {
+			activity.runOnUiThread(action);
+		}
+	}
 }

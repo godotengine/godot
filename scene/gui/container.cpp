@@ -192,8 +192,7 @@ void Container::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED:
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_THEME_CHANGED: {
 			queue_sort();
 		} break;
 

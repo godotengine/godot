@@ -44,8 +44,8 @@ class VisualInstance3D : public Node3D {
 protected:
 	void _update_visibility();
 
-	virtual void _physics_interpolated_changed() override;
 	void set_instance_use_identity_transform(bool p_enable);
+	virtual void fti_update_servers_xform() override;
 
 	void _notification(int p_what);
 	static void _bind_methods();

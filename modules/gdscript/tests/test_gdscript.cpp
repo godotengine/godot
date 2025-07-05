@@ -42,7 +42,7 @@
 #include "core/string/string_builder.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 namespace GDScriptTests {
@@ -64,25 +64,41 @@ static void test_tokenizer(const String &p_code, const Vector<String> &p_lines) 
 		StringBuilder token;
 		token += " --> "; // Padding for line number.
 
+		if (current.start_line != current.end_line) {
+			// Print "vvvvvv" to point at the token.
+			StringBuilder pointer;
+			pointer += "     "; // Padding for line number.
+
+			int line_width = 0;
+			if (current.start_line - 1 >= 0 && current.start_line - 1 < p_lines.size()) {
+				line_width = p_lines[current.start_line - 1].replace("\t", tab).length();
+			}
+
+			const int offset = MAX(0, current.start_column - 1);
+			const int width = MAX(0, line_width - current.start_column + 1);
+			pointer += String::chr(' ').repeat(offset) + String::chr('v').repeat(width);
+
+			print_line(pointer.as_string());
+		}
+
 		for (int l = current.start_line; l <= current.end_line && l <= p_lines.size(); l++) {
 			print_line(vformat("%04d %s", l, p_lines[l - 1]).replace("\t", tab));
 		}
 
 		{
-			// Print carets to point at the token.
+			// Print "^^^^^^" to point at the token.
 			StringBuilder pointer;
 			pointer += "     "; // Padding for line number.
-			int rightmost_column = current.rightmost_column;
-			if (current.end_line > current.start_line) {
-				rightmost_column--; // Don't point to the newline as a column.
+
+			if (current.start_line == current.end_line) {
+				const int offset = MAX(0, current.start_column - 1);
+				const int width = MAX(0, current.end_column - current.start_column);
+				pointer += String::chr(' ').repeat(offset) + String::chr('^').repeat(width);
+			} else {
+				const int width = MAX(0, current.end_column - 1);
+				pointer += String::chr('^').repeat(width);
 			}
-			for (int col = 1; col < rightmost_column; col++) {
-				if (col < current.leftmost_column) {
-					pointer += " ";
-				} else {
-					pointer += "^";
-				}
-			}
+
 			print_line(pointer.as_string());
 		}
 
@@ -190,6 +206,10 @@ static void disassemble_function(const GDScriptFunction *p_func, const Vector<St
 		}
 		arg_string += arg_info.name;
 		is_first_arg = false;
+	}
+	if (p_func->is_vararg()) {
+		// `MethodInfo` does not support the rest parameter name.
+		arg_string += (p_func->get_argument_count() == 0) ? "...args" : ", ...args";
 	}
 
 	print_line(vformat("Function %s(%s)", p_func->get_name(), arg_string));

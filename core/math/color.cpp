@@ -119,7 +119,7 @@ void _append_hex(float p_val, char32_t *string) {
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt.resize(p_alpha ? 9 : 7);
+	txt.resize_uninitialized(p_alpha ? 9 : 7);
 	char32_t *ptr = txt.ptrw();
 
 	_append_hex(r, ptr + 0);
@@ -239,6 +239,19 @@ void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	hsl.s = p_s;
 	hsl.l = p_l;
 	ok_color::RGB rgb = ok_color::okhsl_to_srgb(hsl);
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
+void Color::set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	ok_color::HSV hsv;
+	hsv.h = p_h;
+	hsv.s = p_s;
+	hsv.v = p_v;
+	ok_color::RGB rgb = ok_color::okhsv_to_srgb(hsv);
 	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
 	r = c.r;
 	g = c.g;
@@ -473,6 +486,12 @@ Color::operator String() const {
 Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	Color c;
 	c.set_ok_hsl(p_h, p_s, p_l, p_alpha);
+	return c;
+}
+
+Color Color::from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha) {
+	Color c;
+	c.set_ok_hsv(p_h, p_s, p_l, p_alpha);
 	return c;
 }
 

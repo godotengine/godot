@@ -38,8 +38,6 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
-#include <cmath>
-
 const char *Image::format_names[Image::FORMAT_MAX] = {
 	"Lum8",
 	"LumAlpha8",
@@ -82,32 +80,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ASTC_8x8_HDR",
 };
 
-// External saver function pointers.
-
-SavePNGFunc Image::save_png_func = nullptr;
-SaveJPGFunc Image::save_jpg_func = nullptr;
-SaveEXRFunc Image::save_exr_func = nullptr;
-SaveWebPFunc Image::save_webp_func = nullptr;
-SaveDDSFunc Image::save_dds_func = nullptr;
-
-SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
-SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
-SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
-SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
-SaveDDSBufferFunc Image::save_dds_buffer_func = nullptr;
-
-// External loader function pointers.
-
-ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
-ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
-ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
-
 // External VRAM compression function pointers.
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
@@ -132,7 +104,7 @@ void (*Image::_image_decompress_astc)(Image *) = nullptr;
 Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
 Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
 Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
-Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
+Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels, const BasisUniversalPackerParams &) = nullptr;
 
 Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
 Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
@@ -1143,8 +1115,8 @@ bool Image::is_size_po2() const {
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
-	int w = next_power_of_2(width);
-	int h = next_power_of_2(height);
+	int w = next_power_of_2((uint32_t)width);
+	int h = next_power_of_2((uint32_t)height);
 	if (p_square) {
 		w = h = MAX(w, h);
 	}
@@ -2294,7 +2266,7 @@ void Image::initialize_data(const char **p_xpm) {
 		switch (status) {
 			case READING_HEADER: {
 				String line_str = line_ptr;
-				line_str.replace_char('\t', ' ');
+				line_str = line_str.replace_char('\t', ' ');
 
 				size_width = line_str.get_slicec(' ', 0).to_int();
 				size_height = line_str.get_slicec(' ', 1).to_int();
@@ -2479,22 +2451,22 @@ bool Image::is_invisible() const {
 		} break;
 		case FORMAT_RGBAH: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 8;
 			const uint16_t *pixeldata = reinterpret_cast<const uint16_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFF) != 0) {
 					return false;
 				}
 			}
 		} break;
 		case FORMAT_RGBAF: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 16;
 			const uint32_t *pixeldata = reinterpret_cast<const uint32_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFFFFFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFFFFFF) != 0) {
 					return false;
 				}
 			}
@@ -3492,18 +3464,24 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 
 	UsedChannels used_channels;
 
-	if (!c && !a) {
-		used_channels = USED_CHANNELS_L;
-	} else if (!c && a) {
-		used_channels = USED_CHANNELS_LA;
-	} else if (r && !g && !b && !a) {
-		used_channels = USED_CHANNELS_R;
-	} else if (r && g && !b && !a) {
-		used_channels = USED_CHANNELS_RG;
-	} else if (r && g && b && !a) {
-		used_channels = USED_CHANNELS_RGB;
+	if (!c) {
+		// Uniform RGB (grayscale).
+		if (a) {
+			used_channels = USED_CHANNELS_LA;
+		} else {
+			used_channels = USED_CHANNELS_L;
+		}
 	} else {
-		used_channels = USED_CHANNELS_RGBA;
+		// Colored image.
+		if (a) {
+			used_channels = USED_CHANNELS_RGBA;
+		} else if (b) {
+			used_channels = USED_CHANNELS_RGB;
+		} else if (g) {
+			used_channels = USED_CHANNELS_RG;
+		} else {
+			used_channels = USED_CHANNELS_R;
+		}
 	}
 
 	if (p_source == COMPRESS_SOURCE_SRGB && (used_channels == USED_CHANNELS_R || used_channels == USED_CHANNELS_RG)) {
@@ -4290,7 +4268,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	}
 }
 
-Ref<Resource> Image::duplicate(bool p_subresources) const {
+Ref<Resource> Image::_duplicate(const DuplicateParams &p_params) const {
 	Ref<Image> copy;
 	copy.instantiate();
 	copy->_copy_internals_from(*this);
@@ -4331,10 +4309,10 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	Dictionary result;
-	result["max"] = INFINITY;
-	result["mean"] = INFINITY;
-	result["mean_squared"] = INFINITY;
-	result["root_mean_squared"] = INFINITY;
+	result["max"] = Math::INF;
+	result["mean"] = Math::INF;
+	result["mean_squared"] = Math::INF;
+	result["root_mean_squared"] = Math::INF;
 	result["peak_snr"] = 0.0f;
 
 	ERR_FAIL_COND_V(p_compared_image.is_null(), result);
@@ -4418,12 +4396,12 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	image_metric_mean = CLAMP(sum / total_values, 0.0f, 255.0f);
 	image_metric_mean_squared = CLAMP(sum2 / total_values, 0.0f, 255.0f * 255.0f);
 
-	image_metric_root_mean_squared = sqrt(image_metric_mean_squared);
+	image_metric_root_mean_squared = std::sqrt(image_metric_mean_squared);
 
 	if (!image_metric_root_mean_squared) {
 		image_metric_peak_snr = 1e+10f;
 	} else {
-		image_metric_peak_snr = CLAMP(log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
+		image_metric_peak_snr = CLAMP(std::log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
 	}
 	result["max"] = image_metric_max;
 	result["mean"] = image_metric_mean;

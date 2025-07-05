@@ -68,7 +68,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
             return False
 
         # Add all the gen.cpp files in the SCU directory
-        add_source_files_orig(self, sources, subdir + "scu/scu_*.gen.cpp", True)
+        add_source_files_orig(self, sources, subdir + ".scu/scu_*.gen.cpp", True)
         return True
     return False
 
@@ -609,17 +609,41 @@ def Run(env, function):
     return Action(function, "$GENCOMSTR")
 
 
+def detect_darwin_toolchain_path(env):
+    var_name = "APPLE_TOOLCHAIN_PATH"
+    if not env[var_name]:
+        try:
+            xcode_path = subprocess.check_output(["xcode-select", "-p"]).strip().decode("utf-8")
+            if xcode_path:
+                env[var_name] = xcode_path + "/Toolchains/XcodeDefault.xctoolchain"
+        except (subprocess.CalledProcessError, OSError):
+            print_error("Failed to find SDK path while running 'xcode-select -p'.")
+            raise
+
+
 def detect_darwin_sdk_path(platform, env):
     sdk_name = ""
+
     if platform == "macos":
         sdk_name = "macosx"
         var_name = "MACOS_SDK_PATH"
+
     elif platform == "ios":
         sdk_name = "iphoneos"
         var_name = "IOS_SDK_PATH"
+
     elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
         var_name = "IOS_SDK_PATH"
+
+    elif platform == "visionos":
+        sdk_name = "xros"
+        var_name = "VISIONOS_SDK_PATH"
+
+    elif platform == "visionossimulator":
+        sdk_name = "xrsimulator"
+        var_name = "VISIONOS_SDK_PATH"
+
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")
 
@@ -629,7 +653,7 @@ def detect_darwin_sdk_path(platform, env):
             if sdk_path:
                 env[var_name] = sdk_path
         except (subprocess.CalledProcessError, OSError):
-            print_error("Failed to find SDK path while running xcrun --sdk {} --show-sdk-path.".format(sdk_name))
+            print_error("Failed to find SDK path while running 'xcrun --sdk {} --show-sdk-path'.".format(sdk_name))
             raise
 
 
@@ -641,7 +665,11 @@ def is_apple_clang(env):
     if not using_clang(env):
         return False
     try:
-        version = subprocess.check_output(shlex.split(env.subst(env["CXX"])) + ["--version"]).strip().decode("utf-8")
+        version = (
+            subprocess.check_output(shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"])
+            .strip()
+            .decode("utf-8")
+        )
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return False
@@ -713,7 +741,7 @@ def get_compiler_version(env):
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
         version = subprocess.check_output(
-            shlex.split(env.subst(env["CXX"])) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
+            shlex.split(env.subst(env["CXX"]), posix=False) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
@@ -1265,6 +1293,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
             )
         output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
+        # The modules_enabled.gen.h header containing the defines is only generated on build, and only for the most recently built
+        # platform, which means VS can't properly render code that's inside module-specific ifdefs. This adds those defines to the
+        # platform-specific VS props file, so that VS knows which defines are enabled for the selected platform.
+        env.Append(VSHINT_DEFINES=[f"MODULE_{module.upper()}_ENABLED" for module in env.module_list])
+
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
 
@@ -1274,7 +1307,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         props_template = props_template.replace("%%OUTPUT%%", output)
 
-        proplist = [format_key_value(v) for v in list(env["CPPDEFINES"])]
+        proplist = [format_key_value(j) for j in list(env["CPPDEFINES"])]
         proplist += [format_key_value(j) for j in env.get("VSHINT_DEFINES", [])]
         props_template = props_template.replace("%%DEFINES%%", ";".join(proplist))
 
@@ -1283,9 +1316,9 @@ def generate_vs_project(env, original_args, project_name="godot"):
         proplist += [str(j) for j in get_default_include_paths(env)]
         props_template = props_template.replace("%%INCLUDES%%", ";".join(proplist))
 
-        proplist = env["CCFLAGS"]
-        proplist += [x for x in env["CXXFLAGS"] if not x.startswith("$")]
-        proplist += [str(j) for j in env.get("VSHINT_OPTIONS", [])]
+        proplist = [env.subst("$CCFLAGS")]
+        proplist += [env.subst("$CXXFLAGS")]
+        proplist += [env.subst("$VSHINT_OPTIONS")]
         props_template = props_template.replace("%%OPTIONS%%", " ".join(proplist))
 
         # Windows allows us to have spaces in paths, so we need

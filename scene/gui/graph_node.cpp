@@ -86,10 +86,6 @@ void GraphNode::_resort() {
 		selected_port = -1;
 	}
 
-	if (children_count == 0) {
-		return;
-	}
-
 	int stretch_max = new_size.height - (children_count - 1) * separation;
 	int stretch_diff = stretch_max - stretch_min;
 
@@ -205,26 +201,31 @@ void GraphNode::_accessibility_action_port(const Variant &p_data) {
 }
 
 void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
 	if (port_pos_dirty) {
 		_port_pos_update();
 	}
 
 	if (p_event->is_pressed() && enabled_port_count > 0) {
-		if (p_event->is_action("ui_up", true)) {
-			selected_port--;
-			if (selected_port < 0) {
-				selected_port = -1;
-			} else {
-				accept_event();
+		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
+		if ((ac_enabled && port_focus_mode == Control::FOCUS_ACCESSIBILITY) || port_focus_mode == Control::FOCUS_ALL) {
+			if (p_event->is_action("ui_up", true)) {
+				selected_port--;
+				if (selected_port < 0) {
+					selected_port = -1;
+				} else {
+					accept_event();
+				}
+			} else if (p_event->is_action("ui_down", true)) {
+				selected_port++;
+				if (selected_port >= enabled_port_count) {
+					selected_port = -1;
+				} else {
+					accept_event();
+				}
 			}
-		} else if (p_event->is_action("ui_down", true)) {
-			selected_port++;
-			if (selected_port >= enabled_port_count) {
-				selected_port = -1;
-			} else {
-				accept_event();
-			}
-		} else if (p_event->is_action("ui_cancel", true)) {
+		}
+		if (p_event->is_action("ui_cancel", true)) {
 			GraphEdit *graph = cast_to<GraphEdit>(get_parent());
 			if (graph && graph->is_keyboard_connecting()) {
 				graph->force_connection_drag_end();
@@ -278,6 +279,8 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		queue_accessibility_update();
 		queue_redraw();
 	}
+
+	GraphElement::gui_input(p_event);
 }
 
 Control *GraphNode::get_accessibility_node_by_port(int p_port_idx) {
@@ -358,10 +361,6 @@ void GraphNode::_notification(int p_what) {
 			// Draw body (slots area) stylebox.
 			draw_style_box(sb_to_draw_panel, body_rect);
 
-			if (has_focus()) {
-				draw_style_box(theme_cache.panel_focus, body_rect);
-			}
-
 			// Draw title bar stylebox above.
 			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
 
@@ -380,6 +379,19 @@ void GraphNode::_notification(int p_what) {
 					draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
 				}
 			}
+
+			// TODO: use this as reference to fix port layout
+			/*
+			// Left port.
+			if (slot.enable_left) {
+				draw_port(slot_index, Point2i(port_h_offset, slot_y_cache[E.key]), true, slot.color_left);
+			}
+
+			// Right port.
+			if (slot.enable_right) {
+				draw_port(slot_index, Point2i(get_size().x - port_h_offset, slot_y_cache[E.key]), false, slot.color_right);
+			}
+			*/
 
 			if (resizable) {
 				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
@@ -742,6 +754,23 @@ Vector<int> GraphNode::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
+void GraphNode::set_port_focus_mode(Control::FocusMode p_focus_mode) {
+	if (port_focus_mode == p_focus_mode) {
+		return;
+	}
+	ERR_FAIL_COND((int)p_focus_mode < 1 || (int)p_focus_mode > 3);
+
+	port_focus_mode = p_focus_mode;
+	if (port_focus_mode == Control::FOCUS_CLICK && selected_port > -1) {
+		selected_port = -1;
+		queue_redraw();
+	}
+}
+
+Control::FocusMode GraphNode::get_port_focus_mode() const {
+	return port_focus_mode;
+}
+
 void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphNode::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphNode::get_title);
@@ -767,9 +796,13 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
 
+	ClassDB::bind_method(D_METHOD("set_port_focus_mode", "focus_mode"), &GraphNode::set_port_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_port_focus_mode"), &GraphNode::get_port_focus_mode);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_ARRAY_TYPE, MAKE_NODE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_port_focus_mode", "get_port_focus_mode");
 
 	ADD_SIGNAL(MethodInfo("ports_updated", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NODE_TYPE, "GraphNode")));
 
@@ -794,7 +827,6 @@ GraphNode::GraphNode() {
 	title_label = memnew(Label);
 	title_label->set_theme_type_variation("GraphNodeTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
-	title_label->set_focus_mode(Control::FOCUS_NONE);
 	titlebar_hbox->add_child(title_label);
 
 	port_container = memnew(Container);

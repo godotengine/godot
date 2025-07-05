@@ -380,17 +380,17 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return mat_override;
 	}
 
+	Ref<Mesh> m = get_mesh();
+	if (m.is_null() || m->get_surface_count() == 0) {
+		return Ref<Material>();
+	}
+
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
 	if (surface_material.is_valid()) {
 		return surface_material;
 	}
 
-	Ref<Mesh> m = get_mesh();
-	if (m.is_valid()) {
-		return m->surface_get_material(p_surface);
-	}
-
-	return Ref<Material>();
+	return m->surface_get_material(p_surface);
 }
 
 void MeshInstance3D::_mesh_changed() {
@@ -591,7 +591,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 
 		for (int blendshape_index = 0; blendshape_index < blend_shape_count; blendshape_index++) {
 			float blend_weight = get_blend_shape_value(blendshape_index);
-			if (abs(blend_weight) <= 0.0001) {
+			if (std::abs(blend_weight) <= 0.0001) {
 				continue;
 			}
 

@@ -301,6 +301,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override;
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override;
@@ -319,6 +320,7 @@ public:
 
 	virtual void mesh_clear(RID p_mesh) override;
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
+	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) override {}
 
 	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
 		Mesh *mesh = mesh_owner.get_or_null(p_mesh);

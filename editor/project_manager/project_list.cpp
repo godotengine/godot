@@ -34,11 +34,11 @@
 #include "core/io/dir_access.h"
 #include "core/os/time.h"
 #include "core/version.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/project_manager.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/project_manager/project_tag.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -264,7 +264,6 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 		}
 		project_version->set_tooltip_text(tooltip_text);
 		project_unsupported_features->set_focus_mode(FOCUS_ACCESSIBILITY);
-		project_unsupported_features->set_accessibility_name(tooltip_text);
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
@@ -293,11 +292,11 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		project_icon->set_modulate(Color(1, 1, 1, 0.5));
 
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
-		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
+		explore_button->set_tooltip_text(TTRC("Error: Project is missing on the filesystem."));
 	} else {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
-		explore_button->set_tooltip_text(TTR("Show in File Manager"));
+		explore_button->set_tooltip_text(TTRC("Show in File Manager"));
 #else
 		// Opening the system file manager is not supported on the Android and web editors.
 		explore_button->hide();
@@ -323,6 +322,7 @@ void ProjectListItemControl::_bind_methods() {
 
 ProjectListItemControl::ProjectListItemControl() {
 	set_focus_mode(FocusMode::FOCUS_ALL);
+	set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_alignment(BoxContainer::ALIGNMENT_CENTER);
@@ -330,8 +330,8 @@ ProjectListItemControl::ProjectListItemControl() {
 
 	favorite_button = memnew(TextureButton);
 	favorite_button->set_name("FavoriteButton");
-	favorite_button->set_tooltip_text(TTR("Add to favorites"));
-	favorite_button->set_accessibility_name(TTRC("Add to favorites"));
+	favorite_button->set_tooltip_text(TTRC("Add to favorites"));
+	favorite_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
 	favorite_box->add_child(favorite_button);
@@ -357,7 +357,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		main_vbox->add_child(title_hb);
 
 		project_title = memnew(Label);
-		project_title->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		project_title->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_title->set_name("ProjectName");
 		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		project_title->set_clip_text(true);
@@ -379,14 +379,15 @@ ProjectListItemControl::ProjectListItemControl() {
 
 		explore_button = memnew(Button);
 		explore_button->set_name("ExploreButton");
-		explore_button->set_tooltip_text(TTR("Open in file manager"));
-		explore_button->set_accessibility_name(TTRC("Open in file manager"));
+		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		explore_button->set_tooltip_text(TTRC("Open in file manager"));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
 		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));
 
 		project_path = memnew(Label);
 		project_path->set_name("ProjectPath");
+		project_path->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 		project_path->set_clip_text(true);
 		project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -400,14 +401,17 @@ ProjectListItemControl::ProjectListItemControl() {
 		project_unsupported_features->hide();
 
 		project_version = memnew(Label);
+		project_version->set_focus_mode(FOCUS_ACCESSIBILITY);
 		project_version->set_name("ProjectVersion");
 		project_version->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		path_hb->add_child(project_version);
 
 		last_edited_info = memnew(Label);
+		last_edited_info->set_focus_mode(FOCUS_ACCESSIBILITY);
 		last_edited_info->set_name("LastEditedInfo");
 		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		last_edited_info->set_tooltip_text(TTR("Last edited timestamp"));
+		last_edited_info->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
+		last_edited_info->set_tooltip_text(TTRC("Last edited timestamp"));
 		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(last_edited_info);
 
@@ -451,6 +455,13 @@ bool ProjectList::project_feature_looks_like_version(const String &p_feature) {
 
 void ProjectList::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				// FIXME: Technically this only needs to update some dynamic texts, not the whole list.
+				update_project_list();
+			}
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Load icons as a coroutine to speed up launch when you have hundreds of projects.
 			if (_icon_load_index < _projects.size()) {
@@ -626,7 +637,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			unsupported_features.push_back("3.x");
 			project_version = "3.x";
 		} else {
-			unsupported_features.push_back("Unknown version");
+			unsupported_features.push_back(TTR("Unknown version"));
 		}
 	}
 
@@ -647,7 +658,6 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	} else {
 		grayed = true;
 		missing = true;
-		print_line("Project is missing: " + conf);
 	}
 
 	for (const String &tag : tags) {
@@ -818,14 +828,14 @@ void ProjectList::find_projects(const String &p_path) {
 void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 	if (!scan_progress && is_inside_tree()) {
 		scan_progress = memnew(AcceptDialog);
-		scan_progress->set_title(TTR("Scanning"));
-		scan_progress->set_ok_button_text(TTR("Cancel"));
+		scan_progress->set_title(TTRC("Scanning"));
+		scan_progress->set_ok_button_text(TTRC("Cancel"));
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		scan_progress->add_child(vb);
 
 		Label *label = memnew(Label);
-		label->set_text(TTR("Scanning for projects..."));
+		label->set_text(TTRC("Scanning for projects..."));
 		vb->add_child(label);
 
 		ProgressBar *progress = memnew(ProgressBar);
@@ -852,9 +862,8 @@ void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 }
 
 void ProjectList::load_project_list() {
-	List<String> sections;
 	_config.load(_config_path);
-	_config.get_sections(&sections);
+	Vector<String> sections = _config.get_sections();
 
 	for (const String &path : sections) {
 		bool favorite = _config.get_value(path, "favorite", false);
@@ -984,7 +993,7 @@ void ProjectList::_create_project_item_control(int p_index) {
 	hb->set_tags(item.tags, this);
 	hb->set_unsupported_features(item.unsupported_features.duplicate());
 	hb->set_project_version(item.project_version);
-	hb->set_last_edited_info(!item.missing ? Time::get_singleton()->get_datetime_string_from_unix_time(item.last_edited, true) : TTR("Missing Date"));
+	hb->set_last_edited_info(item.get_last_edited_string());
 
 	hb->set_is_favorite(item.favorite);
 	hb->set_is_missing(item.missing);

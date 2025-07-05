@@ -82,20 +82,20 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 		if (ps.orig_len != 0) {
 			CharString dst_s;
-			dst_s.resize(src_s.size());
+			dst_s.resize_uninitialized(src_s.size());
 			int ret = smaz_compress(src_s.get_data(), src_s.size(), dst_s.ptrw(), src_s.size());
 			if (ret >= src_s.size()) {
 				//if compressed is larger than original, just use original
 				ps.orig_len = src_s.size();
 				ps.compressed = src_s;
 			} else {
-				dst_s.resize(ret);
+				dst_s.resize_uninitialized(ret);
 				//ps.orig_len=;
 				ps.compressed = dst_s;
 			}
 		} else {
 			ps.orig_len = 1;
-			ps.compressed.resize(1);
+			ps.compressed.resize_uninitialized(1);
 			ps.compressed[0] = 0;
 		}
 
@@ -256,7 +256,7 @@ StringName OptimizedTranslation::get_message(const StringName &p_src_text, const
 		return String::utf8(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].uncomp_size);
 	} else {
 		CharString uncomp;
-		uncomp.resize(bucket.elem[idx].uncomp_size + 1);
+		uncomp.resize_uninitialized(bucket.elem[idx].uncomp_size + 1);
 		smaz_decompress(&sptr[bucket.elem[idx].str_offset], bucket.elem[idx].comp_size, uncomp.ptrw(), bucket.elem[idx].uncomp_size);
 		return String::utf8(uncomp.get_data());
 	}
@@ -282,7 +282,7 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 					msgs.push_back(rstr);
 				} else {
 					CharString uncomp;
-					uncomp.resize(bucket.elem[j].uncomp_size + 1);
+					uncomp.resize_uninitialized(bucket.elem[j].uncomp_size + 1);
 					smaz_decompress(&sptr[bucket.elem[j].str_offset], bucket.elem[j].comp_size, uncomp.ptrw(), bucket.elem[j].uncomp_size);
 					String rstr = String::utf8(uncomp.get_data());
 					msgs.push_back(rstr);

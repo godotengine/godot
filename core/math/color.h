@@ -62,6 +62,7 @@ struct [[nodiscard]] Color {
 	float get_ok_hsl_s() const;
 	float get_ok_hsl_l() const;
 	void set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	void set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 
 	_FORCE_INLINE_ float &operator[](int p_idx) {
 		return components[p_idx];
@@ -214,11 +215,12 @@ struct [[nodiscard]] Color {
 	static Color from_string(const String &p_string, const Color &p_default);
 	static Color from_hsv(float p_h, float p_s, float p_v, float p_alpha = 1.0f);
 	static Color from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
+	static Color from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha = 1.0f);
 	static Color from_rgbe9995(uint32_t p_rgbe);
 	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
 
 	constexpr bool operator<(const Color &p_color) const; // Used in set keys.
-	operator String() const;
+	explicit operator String() const;
 
 	// For the binder.
 	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0f); }

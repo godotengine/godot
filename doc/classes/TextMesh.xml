@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="TextMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Generate an [PrimitiveMesh] from the text.
+		Generate a [PrimitiveMesh] from the text.
 	</brief_description>
 	<description>
-		Generate an [PrimitiveMesh] from the text.
+		Generate a [PrimitiveMesh] from the text.
 		TextMesh can be generated only when using dynamic fonts with vector glyph contours. Bitmap fonts (including bitmap data in the TrueType/OpenType containers, like color emoji fonts) are not supported.
 		The UV layout is arranged in 4 horizontal strips, top to bottom: 40% of the height for the front face, 40% for the back face, 10% for the outer edges and 10% for the inner edges.
 	</description>
@@ -13,7 +13,7 @@
 	</tutorials>
 	<members>
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="0">
-			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. To see how each mode behaves, see [enum TextServer.AutowrapMode].
+			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
 		</member>
 		<member name="curve_step" type="float" setter="set_curve_step" getter="get_curve_step" default="0.5">
 			Step (in pixels) used to approximate Bézier curves.
@@ -28,10 +28,10 @@
 			Font size of the [TextMesh]'s text.
 		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
-			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify.
 		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" is_bitfield="true" default="163">
-			Line fill alignment rules. See [enum TextServer.JustificationFlag] for more information.
+			Line fill alignment rules.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for text shaping algorithms, if left empty current locale is used instead.
@@ -62,7 +62,7 @@
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
 		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="1">
-			Controls the text's vertical alignment. Supports top, center, bottom. Set it to one of the [enum VerticalAlignment] constants.
+			Controls the text's vertical alignment. Supports top, center, and bottom.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
 			Text width (in pixels), used for fill alignment.

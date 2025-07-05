@@ -31,6 +31,7 @@
 #include "hb-aat-layout-common.hh"
 #include "hb-ot-layout.hh"
 #include "hb-open-type.hh"
+#include "hb-ot-stat-table.hh"
 
 /*
  * trak -- Tracking
@@ -115,7 +116,7 @@ struct TrackTableEntry
 
   protected:
   F16DOT16	track;		/* Track value for this record. */
-  NameID	trackNameID;	/* The 'name' table index for this track.
+  OT::NameID	trackNameID;	/* The 'name' table index for this track.
 				 * (a short word or phrase like "loose"
 				 * or "very tight") */
   NNOffset16To<UnsizedArrayOf<FWORD>>
@@ -142,9 +143,9 @@ struct TrackData
     unsigned j = count - 1;
 
     // Find the two entries that track is between.
-    while (i + 1 < count && trackTable[i + 1].get_track_value () < track)
+    while (i + 1 < count && trackTable[i + 1].get_track_value () <= track)
       i++;
-    while (j > 0 && trackTable[j - 1].get_track_value () > track)
+    while (j > 0 && trackTable[j - 1].get_track_value () >= track)
       j--;
 
     // Exact match.
@@ -199,6 +200,46 @@ struct trak
   {
     float ptem = font->ptem > 0.f ? font->ptem : HB_CORETEXT_DEFAULT_FONT_SIZE;
     return font->em_scalef_y ((this+vertData).get_tracking (this, ptem, track));
+  }
+  hb_position_t get_tracking (hb_font_t *font, hb_direction_t dir, float track = 0.f) const
+  {
+#ifndef HB_NO_STYLE
+    if (!font->face->table.STAT->has_data ())
+      return 0;
+    return HB_DIRECTION_IS_HORIZONTAL (dir) ?
+      get_h_tracking (font, track) :
+      get_v_tracking (font, track);
+#else
+    return 0;
+#endif
+  }
+
+  bool apply (hb_aat_apply_context_t *c, float track = 0.f) const
+  {
+    TRACE_APPLY (this);
+
+    float ptem = c->font->ptem;
+    if (unlikely (ptem <= 0.f))
+    {
+      /* https://developer.apple.com/documentation/coretext/1508745-ctfontcreatewithgraphicsfont */
+      ptem = HB_CORETEXT_DEFAULT_FONT_SIZE;
+    }
+
+    hb_buffer_t *buffer = c->buffer;
+    if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
+    {
+      hb_position_t advance_to_add = get_h_tracking (c->font, track);
+      foreach_grapheme (buffer, start, end)
+	buffer->pos[start].x_advance += advance_to_add;
+    }
+    else
+    {
+      hb_position_t advance_to_add = get_v_tracking (c->font, track);
+      foreach_grapheme (buffer, start, end)
+	buffer->pos[start].y_advance += advance_to_add;
+    }
+
+    return_trace (true);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const

@@ -70,6 +70,7 @@ protected:
 	PackedByteArray directed_enabled_port_count = { 0, 0, 0 };
 	int selected_port = -1;
 
+	Control::FocusMode port_focus_mode = Control::FOCUS_ACCESSIBILITY;
 	bool port_pos_dirty = true;
 
 	bool ignore_invalid_connection_type = false;
@@ -139,6 +140,9 @@ public:
 
 	void set_ignore_invalid_connection_type(bool p_ignore);
 	bool is_ignoring_valid_connection_type() const;
+
+	void set_port_focus_mode(Control::FocusMode p_focus_mode);
+	Control::FocusMode get_port_focus_mode() const;
 
 	virtual Size2 get_minimum_size() const override;
 

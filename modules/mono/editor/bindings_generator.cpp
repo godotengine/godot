@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "../godotsharp_defs.h"
 #include "../utils/naming_utils.h"
@@ -173,7 +173,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
-			.remove_chars("\t\r")
+			.remove_chars("\r")
 			.strip_edges();
 }
 
@@ -2732,11 +2732,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	if (getter && setter) {
 		const ArgumentInterface &setter_first_arg = setter->arguments.back()->get();
 		if (getter->return_type.cname != setter_first_arg.type.cname) {
-			// Special case for Node::set_name
-			bool whitelisted = getter->return_type.cname == name_cache.type_StringName &&
-					setter_first_arg.type.cname == name_cache.type_String;
-
-			ERR_FAIL_COND_V_MSG(!whitelisted, ERR_BUG,
+			ERR_FAIL_V_MSG(ERR_BUG,
 					"Return type from getter doesn't match first argument of setter for property: '" +
 							p_itype.name + "." + String(p_iprop.cname) + "'.");
 		}
@@ -3123,9 +3119,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 		if (p_imethod.requires_object_call) {
 			// Fallback to Godot's object.Call(string, params)
 
-			p_output.append(INDENT2 CS_METHOD_CALL "(\"");
-			p_output.append(p_imethod.name);
-			p_output.append("\"");
+			p_output.append(INDENT2 CS_METHOD_CALL "(");
+			p_output.append("MethodName." + p_imethod.proxy_name);
 
 			for (const ArgumentInterface &iarg : p_imethod.arguments) {
 				p_output.append(", ");
@@ -4014,7 +4009,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		List<Pair<MethodInfo, uint32_t>> method_list_with_hashes;
 		ClassDB::get_method_list_with_compatibility(type_cname, &method_list_with_hashes, true);
-		method_list_with_hashes.sort_custom_inplace<SortMethodWithHashes>();
+		method_list_with_hashes.sort_custom<SortMethodWithHashes>();
 
 		List<MethodInterface> compat_methods;
 		for (const Pair<MethodInfo, uint32_t> &E : method_list_with_hashes) {
@@ -5305,4 +5300,4 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	}
 }
 
-#endif
+#endif // DEBUG_ENABLED

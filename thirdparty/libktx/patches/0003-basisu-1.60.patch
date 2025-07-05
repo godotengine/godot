@@ -1,0 +1,13 @@
+diff --git a/thirdparty/libktx/lib/basis_transcode.cpp b/thirdparty/libktx/lib/basis_transcode.cpp
+index 293400f4a5..9268b8f31b 100644
+--- a/thirdparty/libktx/lib/basis_transcode.cpp
++++ b/thirdparty/libktx/lib/basis_transcode.cpp
+@@ -663,7 +663,7 @@ ktxTexture2_transcodeUastc(ktxTexture2* This,
+     ktxLevelIndexEntry* protoLevelIndex = protoPriv._levelIndex;
+     ktx_size_t levelOffsetWrite = 0;
+ 
+-    basisu_lowlevel_uastc_transcoder uit;
++    basisu_lowlevel_uastc_ldr_4x4_transcoder uit;
+     // See comment on same declaration in transcodeEtc1s.
+     std::vector<basisu_transcoder_state> xcoderStates;
+     xcoderStates.resize(This->isVideo ? This->numFaces : 1);

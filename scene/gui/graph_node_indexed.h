@@ -50,6 +50,9 @@ protected:
 	HashMap<StringName, int> _slot_node_map_cache;
 	Vector<float> _slot_y_cache;
 
+	int selected_slot = -1;
+	Control::FocusMode slot_focus_mode = Control::FOCUS_ACCESSIBILITY;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;
@@ -77,6 +80,7 @@ protected:
 	void _remove_all_slots(bool p_with_ports = true);
 	void _remove_slot(int p_slot_index, bool p_with_ports = true);
 
+	virtual void _resort() override;
 	virtual void _port_pos_update() override;
 
 	virtual void add_child_notify(Node *p_child) override;
@@ -123,6 +127,9 @@ public:
 
 	bool get_slot_draw_stylebox(int p_slot_index);
 	void set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox);
+
+	void set_slot_focus_mode(Control::FocusMode p_focus_mode);
+	Control::FocusMode get_slot_focus_mode() const;
 
 	virtual Size2 get_minimum_size() const override;
 
