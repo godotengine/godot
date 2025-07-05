@@ -201,6 +201,11 @@ private:
 	void _on_replace_text_changed(const String &text);
 	void _on_replace_all_clicked();
 
+	enum {
+		FIND_BUTTON_REPLACE,
+		FIND_BUTTON_REMOVE,
+	};
+
 	struct Result {
 		int line_number = 0;
 		int begin = 0;
