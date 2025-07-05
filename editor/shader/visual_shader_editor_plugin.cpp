@@ -1296,7 +1296,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	/*
 	if (!is_frame && !is_reroute) {
 		VSGraphNode *gnode = cast_to<VSGraphNode>(node);
-		for (const Ref<GraphConnection> &conn : graph->get_connections()) {
+		for (const Ref<GraphConnection> conn : graph->get_connections()) {
 			if (E.to_node == p_id && E.to_port == j) {
 				port_left_used = true;
 				break;

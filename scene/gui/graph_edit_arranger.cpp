@@ -437,7 +437,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 		int min_order = MAX_ORDER;
 		Ref<GraphConnection> incoming;
 		const TypedArray<Ref<GraphConnection>> connection_list = graph_edit->get_connections();
-		for (const Ref<GraphConnection> &connection : connection_list) {
+		for (const Ref<GraphConnection> connection : connection_list) {
 			GraphNode *_from = connection->first_port->get_graph_node();
 			GraphNode *_to = connection->second_port->get_graph_node();
 			if (_to->get_name() == p_w) {
@@ -451,7 +451,6 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 
 		if (incoming.is_valid()) {
 			GraphNode *gnode_from = incoming->first_port->get_graph_node();
-			GraphNode *gnode_to = Object::cast_to<GraphNode>(r_node_names[p_w]);
 			Vector2 pos_from = incoming->first_port->get_position() * graph_edit->get_zoom();
 			Vector2 pos_to = incoming->second_port->get_position() * graph_edit->get_zoom();
 
@@ -470,7 +469,7 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 		int min_order = MAX_ORDER;
 		Ref<GraphConnection> outgoing;
 		const TypedArray<Ref<GraphConnection>> connection_list = graph_edit->get_connections();
-		for (const Ref<GraphConnection> &connection : connection_list) {
+		for (const Ref<GraphConnection> connection : connection_list) {
 			GraphNode *_from = connection->first_port->get_graph_node();
 			GraphNode *_to = connection->second_port->get_graph_node();
 			if (_from->get_name() == p_w) {
@@ -483,7 +482,6 @@ float GraphEditArranger::_calculate_threshold(const StringName &p_v, const Strin
 		}
 
 		if (outgoing.is_valid()) {
-			GraphNode *gnode_from = Object::cast_to<GraphNode>(r_node_names[p_w]);
 			GraphNode *gnode_to = outgoing->second_port->get_graph_node();
 			Vector2 pos_from = outgoing->first_port->get_position() * graph_edit->get_zoom();
 			Vector2 pos_to = outgoing->second_port->get_position() * graph_edit->get_zoom();

@@ -309,7 +309,7 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 		ERR_FAIL_COND_V_MSG(p_connection->clear_if_invalid, FAILED, "Tried to make a graph connection using null port(s). If this is intended, set clear_if_invalid to true.");
 		return OK;
 	}
-	if (is_connected(first_port, second_port)) {
+	if (ports_connected(first_port, second_port)) {
 		return OK;
 	}
 	connection_map[first_port].push_back(p_connection);
@@ -374,7 +374,7 @@ void GraphEdit::disconnect_by_connection(Ref<GraphConnection> p_connection) {
 }
 
 void GraphEdit::disconnect_all_by_port(GraphPort *p_port) {
-	for (const Ref<GraphConnection> &conn : connection_map[p_port]) {
+	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -387,7 +387,7 @@ void GraphEdit::disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_po
 }
 
 void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
-	for (const Ref<GraphConnection> &conn : connection_map[p_from_port]) {
+	for (const Ref<GraphConnection> conn : connection_map[p_from_port]) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -396,8 +396,8 @@ void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
 	}
 }
 
-bool GraphEdit::is_connected(GraphPort *p_first_port, GraphPort *p_second_port) {
-	for (const Ref<GraphConnection> &conn : connection_map[p_first_port]) {
+bool GraphEdit::ports_connected(GraphPort *p_first_port, GraphPort *p_second_port) {
+	for (const Ref<GraphConnection> conn : connection_map[p_first_port]) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -409,7 +409,7 @@ bool GraphEdit::is_connected(GraphPort *p_first_port, GraphPort *p_second_port) 
 }
 
 const Ref<GraphConnection> GraphEdit::get_connection(GraphPort *p_first_port, GraphPort *p_second_port) {
-	for (const Ref<GraphConnection> &conn : connection_map[p_first_port]) {
+	for (const Ref<GraphConnection> conn : connection_map[p_first_port]) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -458,7 +458,7 @@ GraphNode *GraphEdit::get_connection_target(GraphPort *p_port) {
 
 String GraphEdit::get_connections_description(GraphPort *p_port) {
 	String out;
-	for (const Ref<GraphConnection> &conn : connection_map[p_port]) {
+	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -1206,7 +1206,6 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 				if (!port) {
 					continue;
 				}
-				Vector2 pos = port->get_position() * zoom + graph_node->get_position();
 
 				if (is_in_port_hotzone(port, click_pos)) {
 					start_connecting(port, false);
@@ -1225,7 +1224,6 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to_point / zoom) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
 
 		if (connecting_valid) {
-			Vector2 mpos = mm->get_position() / zoom;
 			for (int i = get_child_count() - 1; i >= 0; i--) {
 				GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
 				if (!graph_node || !graph_node->is_visible_in_tree()) {
@@ -1236,11 +1234,10 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 					if (!port) {
 						continue;
 					}
-					Vector2 pos = port->get_position() * zoom + graph_node->get_position();
-					if (is_in_port_hotzone(port, pos)) {
+					if (is_in_port_hotzone(port, click_pos)) {
 						if (_is_connection_valid(port) && is_node_hover_valid(connecting_from_port, connecting_to_port)) {
 							connecting_target_valid = true;
-							connecting_to_point = pos;
+							connecting_to_point = port->get_position() * zoom + graph_node->get_position();
 							connecting_to_port = port;
 							return;
 						}
@@ -1365,7 +1362,7 @@ Ref<GraphConnection> GraphEdit::get_closest_connection_at_point(const Vector2 &p
 
 	Ref<GraphConnection> closest_connection;
 	float closest_distance = p_max_distance;
-	for (const Ref<GraphConnection> &conn : connections) {
+	for (const Ref<GraphConnection> conn : connections) {
 		if (conn.is_null() || conn->_cache.aabb.distance_to(transformed_point) > p_max_distance) {
 			continue;
 		}
@@ -1388,7 +1385,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_intersecting_with_re
 	transformed_rect.position += get_scroll_offset();
 
 	TypedArray<Ref<GraphConnection>> intersecting_connections;
-	for (const Ref<GraphConnection> &conn : connections) {
+	for (const Ref<GraphConnection> conn : connections) {
 		if (conn.is_null() || !conn->_cache.aabb.intersects(transformed_rect)) {
 			continue;
 		}
@@ -1517,7 +1514,7 @@ void GraphEdit::_update_connections() {
 		conn->_cache.line->set_gradient(line_gradient);
 	}
 
-	for (const Ref<GraphConnection> &dead_conn : dead_connections) {
+	for (const Ref<GraphConnection> dead_conn : dead_connections) {
 		if (dead_conn->first_port) {
 			connection_map.erase(dead_conn->first_port);
 		}
@@ -1665,7 +1662,7 @@ void GraphEdit::_minimap_draw() {
 	}
 
 	// Draw node connections.
-	for (const Ref<GraphConnection> &conn : connections) {
+	for (const Ref<GraphConnection> conn : connections) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -2151,7 +2148,7 @@ void GraphEdit::set_connection_activity_indexed(String p_first_node, int p_first
 
 void GraphEdit::set_connection_activity(Ref<GraphConnection> p_conn, float p_activity) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
-	ERR_FAIL_NULL(p_conn);
+	ERR_FAIL_COND(p_conn.is_null());
 
 	if (!Math::is_equal_approx(p_conn->activity, p_activity)) {
 		// Update only if changed.
@@ -2364,7 +2361,7 @@ void GraphEdit::set_connections(const TypedArray<Ref<GraphConnection>> p_connect
 	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 }
 
-const TypedArray<Ref<GraphConnection>> &GraphEdit::_get_connections() const {
+const TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections() const {
 	TypedArray<Ref<GraphConnection>> ret;
 	for (Ref<GraphConnection> conn : connections) {
 		ret.append(conn);
@@ -2764,7 +2761,7 @@ void GraphEdit::arrange_nodes() {
 
 void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_nodes", "first_port", "second_port", "keep_alive"), &GraphEdit::connect_nodes, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("is_node_connected", "first_port", "second_port"), &GraphEdit::is_connected);
+	ClassDB::bind_method(D_METHOD("ports_connected", "first_port", "second_port"), &GraphEdit::ports_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "first_port", "second_port"), &GraphEdit::disconnect_nodes);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "connection", "amount"), &GraphEdit::set_connection_activity);
 	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphEdit::set_connections);

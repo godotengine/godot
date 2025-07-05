@@ -303,7 +303,7 @@ private:
 
 	bool is_in_port_hotzone(GraphPort *p_port, const Vector2 &p_local_pos);
 
-	const TypedArray<Ref<GraphConnection>> &_get_connections() const;
+	const TypedArray<Ref<GraphConnection>> _get_connections() const;
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_by_node(GraphNode *p_node) const;
@@ -373,7 +373,7 @@ public:
 	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
 	void disconnect_all_by_port(GraphPort *p_port);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
-	bool is_connected(GraphPort *p_first_port, GraphPort *p_second_port);
+	bool ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
 	int get_connection_count(GraphPort *p_port);
 	GraphNode *get_connection_target(GraphPort *p_port);
 	String get_connections_description(GraphPort *p_port);
