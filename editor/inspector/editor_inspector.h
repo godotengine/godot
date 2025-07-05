@@ -385,6 +385,7 @@ class EditorInspectorSection : public Container {
 	Rect2 keying_rect;
 	bool keying_hover = false;
 	bool header_hover = false;
+	Vector<bool> default_read_only;
 
 	bool checkbox_only = false;
 
@@ -396,6 +397,7 @@ class EditorInspectorSection : public Container {
 	Ref<Texture2D> _get_checkbox();
 
 	EditorInspector *_get_parent_inspector() const;
+	void _update_child_read_only(bool p_setup = false);
 
 	struct ThemeCache {
 		int horizontal_separation = 0;

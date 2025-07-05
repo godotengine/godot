@@ -1886,8 +1886,6 @@ void EditorInspectorSection::_notification(int p_what) {
 				header_offset_x += section_indent;
 			}
 
-			bool can_click_unfold = vbox->get_child_count(false) != 0 && !(checkable && !checked && !checkbox_only);
-
 			// Draw header area.
 			int header_height = _get_header_height();
 			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
@@ -1915,7 +1913,7 @@ void EditorInspectorSection::_notification(int p_what) {
 						arrow_position.x = margin_start;
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
-					if (can_click_unfold) {
+					if (vbox->get_child_count(false) != 0) {
 						draw_texture(arrow, arrow_position);
 					}
 					margin_start += arrow->get_width() + theme_cache.horizontal_separation;
@@ -2111,6 +2109,43 @@ EditorInspector *EditorInspectorSection::_get_parent_inspector() const {
 	return nullptr;
 }
 
+void EditorInspectorSection::_update_child_read_only(bool p_setup) {
+	if (checkbox_only || !checkable) {
+		return;
+	}
+
+	if (p_setup) {
+		default_read_only.clear();
+	}
+
+	// TODO: This is only a subset of possible read_only inspector items that need to be handled, add the rest.
+	int distance = 0;
+	Vector<Node *> next_node;
+	next_node.push_back(vbox);
+	Node *current_node = vbox;
+	while (!next_node.is_empty()) {
+		current_node = next_node.get(next_node.size() - 1);
+		next_node.resize(next_node.size() - 1);
+
+		for (int i = 0; i < current_node->get_child_count(); i++) {
+			Node *child_node = current_node->get_child(i);
+			if (child_node->get_child_count() > 0) {
+				next_node.push_back(child_node);
+			}
+
+			EditorProperty *property = Object::cast_to<EditorProperty>(child_node);
+			if (property) {
+				if (p_setup) {
+					default_read_only.push_back(property->is_read_only());
+				}
+
+				property->set_read_only(checked ? default_read_only[distance++] : true);
+				continue;
+			}
+		}
+	}
+}
+
 Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const {
 	if (!checkable) {
 		return Container::make_custom_tooltip(p_text);
@@ -2168,7 +2203,7 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 
 void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
-	bool can_click_unfold = vbox->get_child_count(false) != 0 && !(!checkbox_only && checkable && !checked);
+	bool can_click_unfold = foldable && vbox->get_child_count(false) != 0;
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
@@ -2186,7 +2221,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 		}
 
-		bool new_header_hover = foldable && can_click_unfold && (get_local_mouse_position().y < _get_header_height());
+		bool new_header_hover = can_click_unfold && (get_local_mouse_position().y < _get_header_height());
 		if (new_header_hover != header_hover) {
 			header_hover = new_header_hover;
 			queue_redraw();
@@ -2195,7 +2230,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		if (foldable && can_click_unfold && k->is_action("ui_accept", true)) {
+		if (can_click_unfold && k->is_action("ui_accept", true)) {
 			accept_event();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
@@ -2222,13 +2257,8 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 
 		if (checkable && check_rect.has_point(pos)) {
-			checked = !checked;
+			set_checked(!checked);
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
-			if (checked) {
-				unfold();
-			} else if (!checkbox_only) {
-				vbox->hide();
-			}
 		} else if (keying && keying_rect.has_point(pos)) {
 			emit_signal(SNAME("property_keyed"), related_enable_property, false);
 		} else if (foldable) {
@@ -2261,7 +2291,7 @@ void EditorInspectorSection::_accessibility_action_expand(const Variant &p_data)
 }
 
 void EditorInspectorSection::unfold() {
-	if ((!foldable && !checkable) || (!checkbox_only && checkable && !checked)) {
+	if (!foldable) {
 		return;
 	}
 
@@ -2325,10 +2355,6 @@ void EditorInspectorSection::set_checkable(const String &p_related_check_propert
 		}
 	}
 
-	if (!checkbox_only && checkable && !checked) {
-		vbox->hide();
-	}
-
 	queue_redraw();
 }
 
@@ -2338,12 +2364,7 @@ void EditorInspectorSection::set_checked(bool p_checked) {
 	}
 
 	checked = p_checked;
-	if (!checkbox_only && checkable && !checked) {
-		vbox->hide();
-	} else if (!checkbox_only) {
-		unfold();
-	}
-
+	_update_child_read_only();
 	queue_redraw();
 }
 
@@ -2388,6 +2409,7 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
 
+	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
 	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property")));
 }
@@ -3687,10 +3709,8 @@ void EditorInspector::update_tree() {
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
-	EditorInspectorSection *group_togglable_property = nullptr;
 	String subgroup;
 	String subgroup_base;
-	EditorInspectorSection *subgroup_togglable_property = nullptr;
 	int section_depth = 0;
 	bool disable_favorite = false;
 	VBoxContainer *category_vbox = nullptr;
@@ -3725,7 +3745,6 @@ void EditorInspector::update_tree() {
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;
-			subgroup_togglable_property = nullptr;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			subgroup_base = hint_parts[0];
@@ -3740,7 +3759,6 @@ void EditorInspector::update_tree() {
 		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
 			group = p.name;
-			group_togglable_property = nullptr;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			group_base = hint_parts[0];
@@ -3752,7 +3770,6 @@ void EditorInspector::update_tree() {
 
 			subgroup = "";
 			subgroup_base = "";
-			subgroup_togglable_property = nullptr;
 
 			continue;
 
@@ -3760,10 +3777,8 @@ void EditorInspector::update_tree() {
 			// Setup a property category.
 			group = "";
 			group_base = "";
-			group_togglable_property = nullptr;
 			subgroup = "";
 			subgroup_base = "";
-			subgroup_togglable_property = nullptr;
 			section_depth = 0;
 			disable_favorite = false;
 
@@ -3927,7 +3942,6 @@ void EditorInspector::update_tree() {
 					// Keep it, this is used pretty often.
 				} else {
 					subgroup = ""; // The prefix changed, we are no longer in the subgroup.
-					subgroup_togglable_property = nullptr;
 				}
 			}
 
@@ -3939,9 +3953,7 @@ void EditorInspector::update_tree() {
 					// Keep it, this is used pretty often.
 				} else {
 					group = ""; // The prefix changed, we are no longer in the group.
-					group_togglable_property = nullptr;
 					subgroup = "";
-					subgroup_togglable_property = nullptr;
 				}
 			}
 
@@ -4285,9 +4297,9 @@ void EditorInspector::update_tree() {
 						last_created_section->set_keying(keying);
 
 						if (p.name.begins_with(group_base)) {
-							group_togglable_property = last_created_section;
+							togglable_editor_inspector_sections[group] = last_created_section;
 						} else {
-							subgroup_togglable_property = last_created_section;
+							togglable_editor_inspector_sections[group + "/" + subgroup] = last_created_section;
 						}
 
 						if (use_doc_hints) {
@@ -4395,13 +4407,6 @@ void EditorInspector::update_tree() {
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
 				ep->favorited = true;
 				favorites_to_add[group][subgroup].push_back(ep);
-
-				if (group_togglable_property) {
-					togglable_editor_inspector_sections[group] = group_togglable_property;
-				}
-				if (subgroup_togglable_property) {
-					togglable_editor_inspector_sections[group + "/" + subgroup] = subgroup_togglable_property;
-				}
 			} else {
 				current_vbox->add_child(editors[i].property_editor);
 
@@ -4485,20 +4490,16 @@ void EditorInspector::update_tree() {
 				if (togglable_editor_inspector_sections.has(section_name)) {
 					EditorInspectorSection *corresponding_section = togglable_editor_inspector_sections.get(section_name);
 
-					bool valid = false;
-					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
-					if (valid) {
-						section->section = corresponding_section->section;
-						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
-						section->set_keying(keying);
-						if (use_doc_hints) {
-							section->set_tooltip_text(corresponding_section->get_tooltip_text());
-						}
-
-						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
-						section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-						sections.push_back(section);
+					section->section = corresponding_section->section;
+					section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, corresponding_section->checked);
+					section->set_keying(keying);
+					if (use_doc_hints) {
+						section->set_tooltip_text(corresponding_section->get_tooltip_text());
 					}
+
+					section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+					section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+					sections.push_back(section);
 				}
 			}
 
@@ -4524,20 +4525,16 @@ void EditorInspector::update_tree() {
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
 						EditorInspectorSection *corresponding_section = togglable_editor_inspector_sections.get(KV.key + "/" + section_name);
 
-						bool valid = false;
-						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
-						if (valid) {
-							section->section = corresponding_section->section;
-							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
-							section->set_keying(keying);
-							if (use_doc_hints) {
-								section->set_tooltip_text(corresponding_section->get_tooltip_text());
-							}
-
-							section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
-							section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-							sections.push_back(section);
+						section->section = corresponding_section->section;
+						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, corresponding_section->checked);
+						section->set_keying(keying);
+						if (use_doc_hints) {
+							section->set_tooltip_text(corresponding_section->get_tooltip_text());
 						}
+
+						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+						section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+						sections.push_back(section);
 					}
 				}
 
@@ -4567,6 +4564,16 @@ void EditorInspector::update_tree() {
 						ep->select(current_focusable);
 					}
 				}
+
+				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(vbox->get_parent());
+				if (section && parent_vbox != vbox) {
+					section->_update_child_read_only(true);
+				}
+			}
+
+			EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(parent_vbox->get_parent());
+			if (section) {
+				section->_update_child_read_only(true);
 			}
 		}
 
@@ -4589,6 +4596,10 @@ void EditorInspector::update_tree() {
 				memdelete(section);
 			}
 		}
+	}
+
+	for (const KeyValue<String, EditorInspectorSection *> &KV : togglable_editor_inspector_sections) {
+		KV.value->_update_child_read_only(true);
 	}
 
 	if (!hide_metadata && !object->call("_hide_metadata_from_inspector")) {
