@@ -116,6 +116,11 @@ protected:
 	virtual bool _can_use_render_priority() const override;
 
 	void _shader_changed();
+
+	bool _shader_parameter_changed_queued = false;
+	void _shader_parameter_changed();
+	void _queue_shader_parameter_changed();
+
 	void _check_material_rid() const;
 
 public:

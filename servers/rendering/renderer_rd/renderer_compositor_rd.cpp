@@ -168,6 +168,7 @@ void RendererCompositorRD::initialize() {
 uint64_t RendererCompositorRD::frame = 1;
 
 void RendererCompositorRD::finalize() {
+	memdelete(mesh_rasterizer);
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(fog);
@@ -345,6 +346,8 @@ RendererCompositorRD::RendererCompositorRD() {
 	}
 
 	scene->init();
+
+	mesh_rasterizer = memnew(RendererRD::MeshRasterizerRD);
 }
 
 RendererCompositorRD::~RendererCompositorRD() {
