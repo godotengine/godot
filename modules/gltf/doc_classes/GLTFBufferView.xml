@@ -12,11 +12,24 @@
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>
 	</tutorials>
 	<methods>
+		<method name="from_dictionary" qualifiers="static">
+			<return type="GLTFBufferView" />
+			<param index="0" name="dictionary" type="Dictionary" />
+			<description>
+				Creates a new GLTFBufferView instance by parsing the given [Dictionary].
+			</description>
+		</method>
 		<method name="load_buffer_view_data" qualifiers="const">
 			<return type="PackedByteArray" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
 				Loads the buffer view data from the buffer referenced by this buffer view in the given [GLTFState]. Interleaved data with a byte stride is not yet supported by this method. The data is returned as a [PackedByteArray].
+			</description>
+		</method>
+		<method name="to_dictionary" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Serializes this GLTFBufferView instance into a [Dictionary].
 			</description>
 		</method>
 	</methods>

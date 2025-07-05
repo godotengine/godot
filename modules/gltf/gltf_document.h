@@ -48,10 +48,6 @@ public:
 	const int32_t JOINT_GROUP_SIZE = 4;
 
 	enum {
-		ARRAY_BUFFER = 34962,
-		ELEMENT_ARRAY_BUFFER = 34963,
-	};
-	enum {
 		TEXTURE_TYPE_GENERIC = 0,
 		TEXTURE_TYPE_NORMAL = 1,
 	};
