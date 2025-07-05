@@ -34,12 +34,16 @@
 #include "scene/gui/graph_element.h"
 #include "scene/resources/texture.h"
 
+class GraphEdit;
+class GraphNode;
+class GraphConnection;
+
 class GraphPort : public GraphElement {
 	GDCLASS(GraphPort, GraphElement);
 
-	friend class GraphEdit;
-	friend class GraphNode;
-	friend class GraphConnection;
+	friend GraphEdit;
+	friend GraphNode;
+	friend GraphConnection;
 
 public:
 	enum PortDirection {

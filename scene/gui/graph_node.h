@@ -37,11 +37,12 @@
 
 class HBoxContainer;
 class GraphConnection;
+class GraphEdit;
 
 class GraphNode : public GraphElement {
 	GDCLASS(GraphNode, GraphElement);
 
-	friend class GraphEdit;
+	friend GraphEdit;
 
 protected:
 	struct _MinSizeCache {

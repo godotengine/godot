@@ -33,12 +33,16 @@
 #include "core/io/resource.h"
 #include "scene/2d/line_2d.h"
 
+class GraphEdit;
+class GraphPort;
+class GraphNode;
+
 class GraphConnection : public Resource {
 	GDCLASS(GraphConnection, Resource);
 
-	friend class GraphEdit;
-	friend class GraphPort;
-	friend class GraphNode;
+	friend GraphEdit;
+	friend GraphPort;
+	friend GraphNode;
 
 public:
 	GraphPort *first_port = nullptr;
