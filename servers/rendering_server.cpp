@@ -1685,7 +1685,7 @@ Array RenderingServer::_get_array_from_surface(uint64_t p_format, Vector<uint8_t
 
 				Vector<int> arr;
 				arr.resize(p_index_len);
-				if (p_vertex_len <= (1 << 16)) {
+				if (p_vertex_len <= (1 << 16) && p_vertex_len > 0) {
 					int *w = arr.ptrw();
 
 					for (int j = 0; j < p_index_len; j++) {
