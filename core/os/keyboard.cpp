@@ -370,7 +370,7 @@ String keycode_get_string(Key p_code) {
 		codestr += "+";
 	}
 	if ((p_code & KeyModifierMask::CMD_OR_CTRL) != Key::NONE) {
-		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
+		if (OS::prefer_meta_over_ctrl()) {
 			codestr += find_keycode_name(Key::META);
 		} else {
 			codestr += find_keycode_name(Key::CTRL);
