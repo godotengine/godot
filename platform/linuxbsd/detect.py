@@ -380,17 +380,10 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
     if platform.system() == "Linux":
-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
-            if not env["use_sowrap"]:
-                if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                    env.ParseConfig("pkg-config libudev --cflags --libs")
-                    env.Append(CPPDEFINES=["UDEV_ENABLED"])
-                else:
-                    print_warning("libudev development libraries not found. Disabling controller hotplugging support.")
-                    env["udev"] = False
-            else:
-                env.Append(CPPDEFINES=["UDEV_ENABLED"])
+            # We don't check for SOWRAP_ENABLED here, because
+            # SDL code (that uses libudev) already loads this library dynamically anyway.
+            env.Append(CPPDEFINES=["UDEV_ENABLED"])
     else:
         env["udev"] = False  # Linux specific
 
