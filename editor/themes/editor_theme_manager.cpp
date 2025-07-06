@@ -1663,6 +1663,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			const bool high_contrast_borders = p_config.draw_extra_borders && p_config.dark_theme;
 
 			Ref<StyleBoxFlat> gn_panel_style = make_flat_stylebox(gn_frame_bg, gn_margin_side, gn_margin_top, gn_margin_side, gn_margin_bottom, p_config.corner_radius);
+			gn_panel_style->set_border_width(SIDE_TOP, 0);
 			gn_panel_style->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
 			gn_panel_style->set_border_width(SIDE_LEFT, 2 * EDSCALE);
 			gn_panel_style->set_border_width(SIDE_RIGHT, 2 * EDSCALE);
@@ -1672,10 +1673,6 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			Ref<StyleBoxFlat> gn_panel_selected_style = gn_panel_style->duplicate();
 			gn_panel_selected_style->set_bg_color(p_config.dark_theme ? gn_bg_color.lightened(0.15) : gn_bg_color.darkened(0.15));
-			gn_panel_selected_style->set_border_width(SIDE_TOP, 0);
-			gn_panel_selected_style->set_border_width(SIDE_BOTTOM, 2 * EDSCALE);
-			gn_panel_selected_style->set_border_width(SIDE_LEFT, 2 * EDSCALE);
-			gn_panel_selected_style->set_border_width(SIDE_RIGHT, 2 * EDSCALE);
 			gn_panel_selected_style->set_border_color(gn_selected_border_color);
 
 			const int gn_titlebar_margin_top = 8;
@@ -1759,6 +1756,16 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("line_spacing", "GraphNodeTitleLabel", 3 * EDSCALE);
 
 			// GraphNodeIndexed
+
+			Ref<StyleBoxFlat> gn_indexed_panel_style = gn_panel_style->duplicate();
+			gn_indexed_panel_style->set_content_margin(SIDE_LEFT, 12 * EDSCALE);
+			gn_indexed_panel_style->set_content_margin(SIDE_RIGHT, 12 * EDSCALE);
+			Ref<StyleBoxFlat> gn_indexed_panel_style_selected = gn_indexed_panel_style->duplicate();
+			gn_indexed_panel_style_selected->set_bg_color(p_config.dark_theme ? gn_bg_color.lightened(0.15) : gn_bg_color.darkened(0.15));
+			gn_indexed_panel_style_selected->set_border_color(gn_selected_border_color);
+
+			p_theme->set_stylebox(SceneStringName(panel), "GraphNodeIndexed", gn_indexed_panel_style);
+			p_theme->set_stylebox("panel_selected", "GraphNodeIndexed", gn_indexed_panel_style_selected);
 
 			p_theme->set_stylebox("slot", "GraphNodeIndexed", gn_slot_style);
 			p_theme->set_stylebox("slot_selected", "GraphNodeIndexed", p_config.button_style_focus);

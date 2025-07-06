@@ -793,9 +793,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 	// Set the minimum width of a node based on the preview size to avoid a resize when toggling the preview.
 	Ref<StyleBoxFlat> graph_node_stylebox = graph->get_theme_stylebox(SceneStringName(panel), "GraphNode");
+	Ref<StyleBox> slot_stylebox = graph->get_theme_stylebox("slot", "VSGraphNode");
+	Ref<StyleBox> slot_selected_stylebox = graph->get_theme_stylebox("slot_selected", "VSGraphNode");
+	Size2 min_node_s = graph_node_stylebox->get_minimum_size() + slot_stylebox->get_minimum_size().max(slot_selected_stylebox->get_minimum_size());
 	int port_preview_size = EDITOR_GET("editors/visual_editors/visual_shader/port_preview_size");
 	if (!is_frame && !is_reroute) {
-		node->set_custom_minimum_size(Size2((Math::ceil(graph_node_stylebox->get_minimum_size().width) + port_preview_size) * EDSCALE, 0));
+		node->set_custom_minimum_size(Size2((Math::ceil(min_node_s.width) + port_preview_size) * EDSCALE, 0));
 	}
 
 	Ref<VisualShaderNodeParticleEmit> emit = vsnode;

@@ -99,12 +99,12 @@ protected:
 
 	static void _bind_methods();
 
-	void _enabled();
-	void _disabled();
+	void _on_enabled();
+	void _on_disabled();
 
-	void _changed_direction(const PortDirection p_direction);
-	void _changed_type(const int p_type);
-	void _modified();
+	void _on_changed_direction(const PortDirection p_direction);
+	void _on_changed_type(const int p_type);
+	void _on_modified();
 
 	void _notification(int p_what);
 	virtual void _draw();
@@ -115,7 +115,7 @@ public:
 	void enable();
 	void disable();
 	void set_enabled(bool p_enabled);
-	bool get_enabled();
+	bool is_enabled();
 
 	int get_type();
 	void set_type(int p_type);
@@ -129,8 +129,8 @@ public:
 	PortDirection get_direction() const;
 	void set_direction(const PortDirection p_direction);
 
-	GraphPort::DisconnectBehaviour get_disabled_behaviour() const;
-	void set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconnect_behaviour);
+	DisconnectBehaviour get_disabled_behaviour() const;
+	void set_disabled_behaviour(DisconnectBehaviour p_disconnect_behaviour);
 
 	GraphNode *get_graph_node();
 

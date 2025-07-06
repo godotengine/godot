@@ -81,7 +81,7 @@ protected:
 	void _remove_slot(int p_slot_index, bool p_with_ports = true);
 
 	virtual void _resort() override;
-	virtual void _port_pos_update() override;
+	virtual void _update_port_positions() override;
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

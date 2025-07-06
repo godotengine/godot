@@ -72,23 +72,28 @@ void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, Por
 	set_type(p_type);
 	set_direction(p_direction);
 	set_enabled(p_enabled);
-	notify_property_list_changed();
 }
 
 void GraphPort::enable() {
 	enabled = true;
 	show();
+
+	queue_redraw();
 	notify_property_list_changed();
-	_enabled();
-	_modified();
+
+	_on_enabled();
+	_on_modified();
 }
 
 void GraphPort::disable() {
 	enabled = false;
 	hide();
+
+	queue_redraw();
 	notify_property_list_changed();
-	_disabled();
-	_modified();
+
+	_on_disabled();
+	_on_modified();
 }
 
 void GraphPort::set_enabled(bool p_enabled) {
@@ -102,7 +107,7 @@ void GraphPort::set_enabled(bool p_enabled) {
 	}
 }
 
-bool GraphPort::get_enabled() {
+bool GraphPort::is_enabled() {
 	return enabled;
 }
 
@@ -112,9 +117,12 @@ int GraphPort::get_type() {
 
 void GraphPort::set_type(int p_type) {
 	type = p_type;
+
+	queue_redraw();
 	notify_property_list_changed();
-	_changed_type(p_type);
-	_modified();
+
+	_on_changed_type(p_type);
+	_on_modified();
 }
 
 Color GraphPort::get_color() {
@@ -134,8 +142,11 @@ bool GraphPort::get_exclusive() {
 
 void GraphPort::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
+
+	queue_redraw();
 	notify_property_list_changed();
-	_modified();
+
+	_on_modified();
 }
 
 GraphPort::PortDirection GraphPort::get_direction() const {
@@ -144,9 +155,12 @@ GraphPort::PortDirection GraphPort::get_direction() const {
 
 void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
 	direction = p_direction;
+
+	queue_redraw();
 	notify_property_list_changed();
-	_changed_direction(p_direction);
-	_modified();
+
+	_on_changed_direction(p_direction);
+	_on_modified();
 }
 
 GraphPort::DisconnectBehaviour GraphPort::get_disabled_behaviour() const {
@@ -156,7 +170,7 @@ GraphPort::DisconnectBehaviour GraphPort::get_disabled_behaviour() const {
 void GraphPort::set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconnect_behaviour) {
 	on_disabled_behaviour = p_disconnect_behaviour;
 	notify_property_list_changed();
-	_modified();
+	_on_modified();
 }
 
 GraphNode *GraphPort::get_graph_node() {
@@ -232,7 +246,7 @@ void GraphPort::disconnect_all() {
 }
 
 void GraphPort::_draw() {
-	if (!enabled || !is_visible()) {
+	if (!enabled) {
 		return;
 	}
 
@@ -253,21 +267,21 @@ void GraphPort::_draw() {
 	port_icon->draw(get_canvas_item(), get_position() + icon_offset, get_color());
 }
 
-void GraphPort::_enabled() {
-	emit_signal(SNAME("enabled"), this);
+void GraphPort::_on_enabled() {
+	emit_signal(SNAME("on_enabled"), this);
 }
 
-void GraphPort::_disabled() {
-	emit_signal(SNAME("disabled"), this);
+void GraphPort::_on_disabled() {
+	emit_signal(SNAME("on_disabled"), this);
 }
 
-void GraphPort::_changed_direction(const PortDirection p_direction) {
+void GraphPort::_on_changed_direction(const PortDirection p_direction) {
 	emit_signal(SNAME("changed_direction"), p_direction);
 }
-void GraphPort::_changed_type(const int p_type) {
+void GraphPort::_on_changed_type(const int p_type) {
 	emit_signal(SNAME("changed_type"), p_type);
 }
-void GraphPort::_modified() {
+void GraphPort::_on_modified() {
 	emit_signal(SNAME("modified"));
 }
 
@@ -275,7 +289,7 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("enable"), &GraphPort::enable);
 	ClassDB::bind_method(D_METHOD("disable"), &GraphPort::disable);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &GraphPort::set_enabled);
-	ClassDB::bind_method(D_METHOD("get_enabled"), &GraphPort::get_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &GraphPort::is_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_type", "type"), &GraphPort::set_type);
 	ClassDB::bind_method(D_METHOD("get_type"), &GraphPort::get_type);
@@ -291,14 +305,14 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled_behaviour", "on_disabled_behaviour"), &GraphPort::set_disabled_behaviour);
 	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
 
-	ADD_SIGNAL(MethodInfo("enabled"));
-	ADD_SIGNAL(MethodInfo("disabled"));
+	ADD_SIGNAL(MethodInfo("on_enabled"));
+	ADD_SIGNAL(MethodInfo("on_disabled"));
 	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected")));
 	ADD_SIGNAL(MethodInfo("changed_type", PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("modified"));

@@ -831,6 +831,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// GraphNodeIndexed
 
+	Ref<StyleBoxFlat> graphnodeindexed_normal = graphnode_normal->duplicate();
+	graphnodeindexed_normal->set_content_margin(SIDE_LEFT, 12 * scale);
+	graphnodeindexed_normal->set_content_margin(SIDE_RIGHT, 12 * scale);
+	Ref<StyleBoxFlat> graphnodeindexed_selected = graphnodeindexed_normal->duplicate();
+	graphnodeindexed_selected->set_border_color(Color(0.625, 0.625, 0.625, 0.6));
+
+	theme->set_stylebox(SceneStringName(panel), "GraphNodeIndexed", graphnodeindexed_normal);
+	theme->set_stylebox("panel_selected", "GraphNodeIndexed", graphnodeindexed_selected);
+
 	Ref<StyleBoxEmpty> graphnode_slot = make_empty_stylebox(0, 0, 0, 0);
 
 	theme->set_stylebox("slot", "GraphNodeIndexed", graphnode_slot);

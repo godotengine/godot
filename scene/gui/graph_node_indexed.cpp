@@ -36,10 +36,9 @@
 #include "scene/gui/graph_port.h"
 #include "scene/gui/label.h"
 #include "scene/theme/theme_db.h"
+#include <scene/resources/style_box_flat.h>
 
 void GraphNodeIndexed::add_child_notify(Node *p_child) {
-	GraphNode::add_child_notify(p_child);
-
 	if (p_child->is_internal() || p_child == port_container) {
 		return;
 	}
@@ -56,11 +55,11 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	}
 
 	create_slot_and_ports(index, true);
+
+	GraphNode::add_child_notify(p_child);
 }
 
 void GraphNodeIndexed::move_child_notify(Node *p_child) {
-	GraphNode::move_child_notify(p_child);
-
 	if (p_child->is_internal() || !is_ready() || p_child == port_container) {
 		return;
 	}
@@ -87,11 +86,11 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 		}
 		_set_slot(old_index, swap_buffer);
 	}
+
+	GraphNode::move_child_notify(p_child);
 }
 
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
-	GraphNode::remove_child_notify(p_child);
-
 	if (p_child->is_internal() || !is_ready() || p_child == port_container) {
 		return;
 	}
@@ -105,19 +104,12 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	ERR_FAIL_INDEX(index, slots.size());
 
 	_remove_slot(index);
+
+	GraphNode::remove_child_notify(p_child);
 }
 
 void GraphNodeIndexed::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (theme_cache.slot.is_valid()) {
-				Size2 min_slot_s = theme_cache.slot->get_minimum_size();
-				if (theme_cache.slot_selected.is_valid()) {
-					min_slot_s = min_slot_s.max(theme_cache.slot_selected->get_minimum_size());
-				}
-				port_container->set_custom_minimum_size(min_slot_s);
-			}
-		} break;
 		case NOTIFICATION_DRAW: {
 			// Used for layout calculations.
 			Ref<StyleBox> sb_panel = theme_cache.panel;
@@ -153,10 +145,6 @@ void GraphNodeIndexed::_notification(int p_what) {
 
 					slot_index++;
 				}
-			}
-
-			if (resizable) {
-				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
 			}
 		} break;
 	}
@@ -196,7 +184,7 @@ void GraphNodeIndexed::set_slots(TypedArray<Array> p_slots) {
 		_insert_slot(i, slot, false);
 		i++;
 	}
-	notify_property_list_changed();
+	_port_modified();
 }
 
 const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
@@ -249,8 +237,6 @@ void GraphNodeIndexed::_remove_slot(int p_slot_index, bool p_with_ports) {
 			break;
 		}
 	}
-
-	notify_property_list_changed();
 }
 
 void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot, bool p_with_ports) {
@@ -266,8 +252,6 @@ void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot, bool p_
 	if (p_slot_index < get_child_count(false)) {
 		_slot_node_map_cache[get_child(p_slot_index, false)->get_name()] = p_slot_index;
 	}
-
-	notify_property_list_changed();
 }
 
 void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot, bool p_with_ports) {
@@ -296,25 +280,28 @@ void GraphNodeIndexed::_resort() {
 	emit_signal(SNAME("slot_sizes_changed"), this);
 }
 
-// I have absolutely no idea why so many things in this function need to be divided in half to align ports properly, but here we are
-void GraphNodeIndexed::_port_pos_update() {
+void GraphNodeIndexed::_update_port_positions() {
+	// Grab theme references for layout
+	Ref<StyleBoxFlat> sb_panel = theme_cache.panel;
+	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
+
 	int edgeofs = theme_cache.port_h_offset;
 	int separation = theme_cache.separation;
 
 	// This helps to immediately achieve the initial y "original point" of the slots, which the sum of the titlebar height and the top margin of the panel.
-	int vertical_ofs = titlebar_hbox->get_size().height / 2 + theme_cache.titlebar->get_minimum_size().height / 2 + theme_cache.panel->get_margin(SIDE_TOP);
+	int vertical_ofs = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height + sb_panel->get_margin(SIDE_TOP);
 
-	Size2 node_size = get_size() / 2;
-	Point2 port_container_size = port_container->get_size();
+	// Node x is uniform for all ports, so find it now
+	int node_width = get_size().width;
 
 	for (int i = 0; i < get_child_count(false); i++) {
-		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::IGNORE);
+		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
 		if (!child) {
 			continue;
 		}
 
-		Size2i size = child->get_size() / 2;
-		int port_y = vertical_ofs + size.height / 2;
+		Size2i size = child->get_size();
+		int port_y = vertical_ofs + size.height * 0.5;
 
 		if (_slot_node_map_cache.has(child->get_name())) {
 			int slot_index = _slot_node_map_cache[child->get_name()];
@@ -323,14 +310,14 @@ void GraphNodeIndexed::_port_pos_update() {
 				slot.left_port->set_position(Point2(edgeofs, port_y));
 			}
 			if (slot.right_port) {
-				slot.right_port->set_position(Point2(node_size.width + port_container_size.width - edgeofs, port_y));
+				slot.right_port->set_position(Point2(node_width - edgeofs, port_y));
 			}
 		}
 
 		vertical_ofs += size.height + separation;
 	}
 
-	GraphNode::_port_pos_update();
+	GraphNode::_update_port_positions();
 }
 
 int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
@@ -383,14 +370,12 @@ void GraphNodeIndexed::set_input_port(int p_slot_index, GraphPort *p_port) {
 	Slot old_slot = slots[p_slot_index];
 	slots.set(p_slot_index, Slot(p_port, old_slot.right_port, old_slot.draw_stylebox));
 	set_port(slot_to_port_index(p_slot_index, true), p_port);
-	notify_property_list_changed();
 }
 
 void GraphNodeIndexed::set_output_port(int p_slot_index, GraphPort *p_port) {
 	Slot old_slot = slots[p_slot_index];
 	slots.set(p_slot_index, Slot(old_slot.left_port, p_port, old_slot.draw_stylebox));
 	set_port(slot_to_port_index(p_slot_index, false), p_port);
-	notify_property_list_changed();
 }
 
 int GraphNodeIndexed::get_input_port_count() {
@@ -405,13 +390,13 @@ int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabl
 	int idx = 0;
 	int slot_idx = 0;
 	for (const Slot &slot : slots) {
-		if (slot.left_port && (p_include_disabled || slot.left_port->get_enabled())) {
+		if (slot.left_port && (p_include_disabled || slot.left_port->is_enabled())) {
 			if (idx == p_port_index) {
 				return slot_idx;
 			}
 			idx++;
 		}
-		if (slot.right_port && (p_include_disabled || slot.right_port->get_enabled())) {
+		if (slot.right_port && (p_include_disabled || slot.right_port->is_enabled())) {
 			if (idx == p_port_index) {
 				return slot_idx;
 			}
@@ -528,10 +513,10 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_port_properties", "slot_index", "enabled", "type"), &GraphNodeIndexed::set_input_port_properties);
 	ClassDB::bind_method(D_METHOD("set_output_port_properties", "slot_index", "enabled", "type"), &GraphNodeIndexed::set_output_port_properties);
 
-	ClassDB::bind_method(D_METHOD("set_input_port", "port"), &GraphNodeIndexed::set_input_port);
-	ClassDB::bind_method(D_METHOD("set_output_port", "port"), &GraphNodeIndexed::set_output_port);
-	ClassDB::bind_method(D_METHOD("get_input_port"), &GraphNodeIndexed::get_input_port);
-	ClassDB::bind_method(D_METHOD("get_output_port"), &GraphNodeIndexed::get_output_port);
+	ClassDB::bind_method(D_METHOD("set_input_port", "slot_index", "port"), &GraphNodeIndexed::set_input_port);
+	ClassDB::bind_method(D_METHOD("set_output_port", "slot_index", "port"), &GraphNodeIndexed::set_output_port);
+	ClassDB::bind_method(D_METHOD("get_input_port", "slot_index"), &GraphNodeIndexed::get_input_port);
+	ClassDB::bind_method(D_METHOD("get_output_port", "slot_index"), &GraphNodeIndexed::get_output_port);
 
 	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNodeIndexed::get_input_port_count);
 	ClassDB::bind_method(D_METHOD("get_output_port_count"), &GraphNodeIndexed::get_output_port_count);
@@ -575,14 +560,6 @@ void GraphNodeIndexed::_bind_methods() {
 }
 
 GraphNodeIndexed::GraphNodeIndexed() {
-	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	if (theme_cache.slot.is_valid()) {
-		Size2 min_slot_s = theme_cache.slot->get_minimum_size();
-		if (theme_cache.slot_selected.is_valid()) {
-			min_slot_s = min_slot_s.max(theme_cache.slot_selected->get_minimum_size());
-		}
-		port_container->set_custom_minimum_size(min_slot_s);
-	}
 }
 
 GraphNodeIndexed::Slot::Slot() {

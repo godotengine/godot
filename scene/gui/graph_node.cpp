@@ -178,7 +178,7 @@ void GraphNode::_accessibility_action_port(const Variant &p_data) {
 	}
 	GraphPort *port = get_port(selected_port, false);
 	ERR_FAIL_NULL(port);
-	ERR_FAIL_COND(!port->get_enabled());
+	ERR_FAIL_COND(!port->is_enabled());
 	GraphEdit *graph = cast_to<GraphEdit>(get_parent());
 	ERR_FAIL_NULL(graph);
 	switch (action) {
@@ -202,8 +202,9 @@ void GraphNode::_accessibility_action_port(const Variant &p_data) {
 
 void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
+
 	if (port_pos_dirty) {
-		_port_pos_update();
+		_update_port_positions();
 	}
 
 	if (p_event->is_pressed() && enabled_port_count > 0) {
@@ -240,7 +241,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (p_event->is_action("ui_graph_follow_left", true) || p_event->is_action("ui_graph_follow_right", true)) {
 			if (selected_port > 0) {
 				GraphPort *port = get_port(selected_port, false);
-				if (port && port->get_enabled()) {
+				if (port && port->is_enabled()) {
 					GraphEdit *graph = cast_to<GraphEdit>(get_parent());
 					if (graph) {
 						GraphNode *target = graph->get_connection_target(port);
@@ -254,7 +255,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (p_event->is_action("ui_left", true) || p_event->is_action("ui_right", true)) {
 			if (selected_port > 0) {
 				GraphPort *port = get_port(selected_port, false);
-				if (port && port->get_enabled()) {
+				if (port && port->is_enabled()) {
 					GraphEdit *graph = cast_to<GraphEdit>(get_parent());
 					if (graph) {
 						if (graph->is_keyboard_connecting()) {
@@ -308,7 +309,7 @@ void GraphNode::_notification(int p_what) {
 				GraphPort *port = get_port(selected_port, false);
 				if (port) {
 					name += ", " + vformat(ETR("port %d of %d"), selected_port + 1, enabled_port_count);
-					if (port->get_enabled()) {
+					if (port->is_enabled()) {
 						if (type_info.has(port->get_type())) {
 							name += "," + vformat(ETR("type: %s"), type_info[port->get_type()]);
 						} else {
@@ -367,31 +368,15 @@ void GraphNode::_notification(int p_what) {
 			//int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			// Take ports into account
-			if (port_pos_dirty) {
-				_port_pos_update();
-			}
 			if (selected_port >= 0) {
 				GraphPort *port = get_port(selected_port, false);
 				if (port) {
-					Size2i port_sz = theme_cache.port->get_size();
+					Size2i port_sz = port->get_size();
 					Vector2 port_pos = port->get_position();
 					draw_style_box(sb_port_selected, Rect2i(port_pos.x + port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
 					draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
 				}
 			}
-
-			// TODO: use this as reference to fix port layout
-			/*
-			// Left port.
-			if (slot.enable_left) {
-				draw_port(slot_index, Point2i(port_h_offset, slot_y_cache[E.key]), true, slot.color_left);
-			}
-
-			// Right port.
-			if (slot.enable_right) {
-				draw_port(slot_index, Point2i(get_size().x - port_h_offset, slot_y_cache[E.key]), false, slot.color_right);
-			}
-			*/
 
 			if (resizable) {
 				draw_texture(theme_cache.resizer, get_size() - theme_cache.resizer->get_size(), theme_cache.resizer_color);
@@ -405,7 +390,6 @@ void GraphNode::_set_ports(const Vector<GraphPort *> &p_ports) {
 	for (GraphPort *port : ports) {
 		_add_port(port);
 	}
-	_port_modified();
 }
 
 const Vector<GraphPort *> &GraphNode::_get_ports() {
@@ -490,6 +474,7 @@ void GraphNode::_port_modified() {
 	queue_redraw();
 	_port_rebuild_cache();
 	port_pos_dirty = true;
+	callable_mp(this, &GraphNode::_queue_update_port_positions).call_deferred();
 	notify_property_list_changed();
 	emit_signal(SNAME("ports_updated"), this);
 }
@@ -541,7 +526,7 @@ GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection
 	ERR_FAIL_INDEX_V(p_port_idx, get_filtered_port_count(p_direction, p_include_disabled), nullptr);
 	int filtered_idx = 0;
 	for (GraphPort *port : ports) {
-		if (!port || (!port->get_enabled() && !p_include_disabled)) {
+		if (!port || (!port->is_enabled() && !p_include_disabled)) {
 			continue;
 		}
 		if (filtered_idx == p_port_idx) {
@@ -590,7 +575,7 @@ int GraphNode::enabled_index_to_port_index(int p_enabled_port_index) {
 	ERR_FAIL_INDEX_V(p_enabled_port_index, enabled_port_count, -1);
 	int idx = 0;
 	for (GraphPort *port : ports) {
-		if (!port || !port->get_enabled()) {
+		if (!port || !port->is_enabled()) {
 			idx++;
 			continue;
 		}
@@ -661,7 +646,7 @@ void GraphNode::_port_rebuild_cache() {
 		port_count++;
 		directed_port_count.set(_dir, dir_port_count + 1);
 
-		if (!port->get_enabled()) {
+		if (!port->is_enabled()) {
 			continue;
 		}
 
@@ -674,17 +659,21 @@ void GraphNode::_port_rebuild_cache() {
 	}
 }
 
-void GraphNode::_port_pos_update() {
+void GraphNode::_update_port_positions() {
+	updating_port_pos = false;
 	port_pos_dirty = false;
 }
 
-Vector2 GraphNode::update_port_position(int p_port_idx, bool p_include_disabled) {
-	if (port_pos_dirty) {
-		_port_pos_update();
+void GraphNode::_queue_update_port_positions() {
+	ERR_THREAD_GUARD
+
+	if (updating_port_pos) {
+		return;
 	}
 
-	ERR_FAIL_INDEX_V(p_port_idx, get_port_count(p_include_disabled), Vector2());
-	return get_port(p_port_idx, p_include_disabled)->get_position();
+	updating_port_pos = true;
+
+	callable_mp(this, &GraphNode::_update_port_positions).call_deferred();
 }
 
 String GraphNode::get_accessibility_container_name(const Node *p_node) const {
@@ -788,7 +777,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_port", "port_index", "include_disabled"), &GraphNode::remove_port, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("get_port_count", "include_disabled"), &GraphNode::get_port_count, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("get_filtered_port_count", "filter_direction"), &GraphNode::get_filtered_port_count);
+	ClassDB::bind_method(D_METHOD("get_filtered_port_count", "filter_direction"), &GraphNode::get_filtered_port_count, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_of_port", "port", "include_disabled"), &GraphNode::index_of_port, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("enabled_index_to_port_index", "enabled_port_index"), &GraphNode::enabled_index_to_port_index);
 	ClassDB::bind_method(D_METHOD("port_index_to_enabled_index", "port_index"), &GraphNode::port_index_to_enabled_index);
@@ -830,8 +819,9 @@ GraphNode::GraphNode() {
 	titlebar_hbox->add_child(title_label);
 
 	port_container = memnew(Container);
-	port_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	port_container->set_focus_mode(Control::FOCUS_NONE);
+	port_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	port_container->set_anchors_preset(Control::PRESET_TOP_WIDE);
 	add_child(port_container, false, INTERNAL_MODE_BACK);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);

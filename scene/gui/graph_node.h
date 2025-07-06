@@ -73,6 +73,7 @@ protected:
 
 	Control::FocusMode port_focus_mode = Control::FOCUS_ACCESSIBILITY;
 	bool port_pos_dirty = true;
+	bool updating_port_pos = false;
 
 	bool ignore_invalid_connection_type = false;
 
@@ -87,7 +88,6 @@ protected:
 		int separation = 0;
 		int port_h_offset = 0;
 
-		Ref<Texture2D> port;
 		Ref<Texture2D> resizer;
 		Color resizer_color;
 	} theme_cache;
@@ -106,7 +106,8 @@ protected:
 	void _set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	void _remove_all_ports();
 
-	virtual void _port_pos_update();
+	virtual void _update_port_positions();
+	void _queue_update_port_positions();
 	virtual void _port_rebuild_cache();
 	void _port_modified();
 
@@ -136,8 +137,6 @@ public:
 	int filtered_index_of_port(GraphPort *p_port, bool p_include_disabled = true);
 	int enabled_index_to_port_index(int p_port_index);
 	int port_index_to_enabled_index(int p_port_index);
-
-	Vector2 update_port_position(int p_port_index, bool p_include_disabled = true);
 
 	void set_ignore_invalid_connection_type(bool p_ignore);
 	bool is_ignoring_valid_connection_type() const;
