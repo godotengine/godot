@@ -84,16 +84,16 @@
 #define HAVE_LINUX_INPUT_H 1
 #define HAVE_POLL 1
 
-// TODO: handle dynamic loading with SOWRAP_ENABLED
-
-// (even though DBus can also be loaded with SOWRAP_ENABLED, we load it
-// statically regardless of SOWRAP_ENABLED, because otherwise SDL won't compile)
+// We don't check for SOWRAP_ENABLED here and for libudev, because
+// SDL code already loads these libraries dynamically.
 #ifdef DBUS_ENABLED
 #define HAVE_DBUS_DBUS_H 1
+#define SDL_USE_LIBDBUS 1
 #endif
 
-#if defined(UDEV_ENABLED) && !defined(SOWRAP_ENABLED)
+#ifdef UDEV_ENABLED
 #define HAVE_LIBUDEV_H 1
+#define SDL_USE_LIBUDEV
 #endif
 
 #define SDL_LOADSO_DLOPEN 1
