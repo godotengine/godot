@@ -2109,41 +2109,13 @@ EditorInspector *EditorInspectorSection::_get_parent_inspector() const {
 	return nullptr;
 }
 
-void EditorInspectorSection::_update_child_read_only(bool p_setup) {
+void EditorInspectorSection::_update_child_read_only() {
 	if (checkbox_only || !checkable) {
 		return;
 	}
 
-	if (p_setup) {
-		default_read_only.clear();
-	}
-
-	// TODO: This is only a subset of possible read_only inspector items that need to be handled, add the rest.
-	int distance = 0;
-	Vector<Node *> next_node;
-	next_node.push_back(vbox);
-	Node *current_node = vbox;
-	while (!next_node.is_empty()) {
-		current_node = next_node.get(next_node.size() - 1);
-		next_node.resize(next_node.size() - 1);
-
-		for (int i = 0; i < current_node->get_child_count(); i++) {
-			Node *child_node = current_node->get_child(i);
-			if (child_node->get_child_count() > 0) {
-				next_node.push_back(child_node);
-			}
-
-			EditorProperty *property = Object::cast_to<EditorProperty>(child_node);
-			if (property) {
-				if (p_setup) {
-					default_read_only.push_back(property->is_read_only());
-				}
-
-				property->set_read_only(checked ? default_read_only[distance++] : true);
-				continue;
-			}
-		}
-	}
+	EditorInspector *inspector = _get_parent_inspector();
+	inspector->update_tree();
 }
 
 Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const {
@@ -2409,7 +2381,6 @@ void EditorInspectorSection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("unfold"), &EditorInspectorSection::unfold);
 	ClassDB::bind_method(D_METHOD("fold"), &EditorInspectorSection::fold);
 
-	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
 	ADD_SIGNAL(MethodInfo("section_toggled_by_user", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::BOOL, "value")));
 	ADD_SIGNAL(MethodInfo("property_keyed", PropertyInfo(Variant::STRING_NAME, "property")));
 }
@@ -4564,16 +4535,6 @@ void EditorInspector::update_tree() {
 						ep->select(current_focusable);
 					}
 				}
-
-				EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(vbox->get_parent());
-				if (section && parent_vbox != vbox) {
-					section->_update_child_read_only(true);
-				}
-			}
-
-			EditorInspectorSection *section = Object::cast_to<EditorInspectorSection>(parent_vbox->get_parent());
-			if (section) {
-				section->_update_child_read_only(true);
 			}
 		}
 
@@ -4596,10 +4557,6 @@ void EditorInspector::update_tree() {
 				memdelete(section);
 			}
 		}
-	}
-
-	for (const KeyValue<String, EditorInspectorSection *> &KV : togglable_editor_inspector_sections) {
-		KV.value->_update_child_read_only(true);
 	}
 
 	if (!hide_metadata && !object->call("_hide_metadata_from_inspector")) {

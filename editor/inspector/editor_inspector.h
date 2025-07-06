@@ -397,7 +397,7 @@ class EditorInspectorSection : public Container {
 	Ref<Texture2D> _get_checkbox();
 
 	EditorInspector *_get_parent_inspector() const;
-	void _update_child_read_only(bool p_setup = false);
+	void _update_child_read_only();
 
 	struct ThemeCache {
 		int horizontal_separation = 0;
