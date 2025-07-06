@@ -313,6 +313,7 @@ private:
 	void _folder_removed(const String &p_folder);
 
 	void _resource_created();
+	void _script_or_shader_created(const Ref<Resource> &p_resource);
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm(const String &p_path);
