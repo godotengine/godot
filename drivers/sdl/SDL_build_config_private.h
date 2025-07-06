@@ -84,6 +84,11 @@
 #define HAVE_LINUX_INPUT_H 1
 #define HAVE_POLL 1
 
+// Allows SDL to access the system environment variables
+#define HAVE_GETENV 1
+#define HAVE_SETENV 1
+#define HAVE_UNSETENV 1
+
 // TODO: handle dynamic loading with SOWRAP_ENABLED
 
 // (even though DBus can also be loaded with SOWRAP_ENABLED, we load it
