@@ -451,7 +451,6 @@ class ScriptEditor : public PanelContainer {
 	void _scene_saved_callback(const String &p_path);
 	void _mark_built_in_scripts_as_saved(const String &p_parent_path);
 
-	bool open_textfile_after_create = true;
 	bool trim_trailing_whitespace_on_save;
 	bool trim_final_newlines_on_save;
 	bool convert_indent_on_save;

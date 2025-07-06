@@ -1305,13 +1305,13 @@ void ScriptEditor::_file_dialog_action(const String &p_file) {
 					EditorFileSystem::get_singleton()->update_file(p_file);
 				}
 			}
-
-			if (!open_textfile_after_create) {
-				return;
-			}
 			[[fallthrough]];
 		}
 		case FILE_MENU_OPEN: {
+			if (!is_visible_in_tree()) {
+				// When created from outside the editor.
+				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+			}
 			open_file(p_file);
 			file_dialog_option = -1;
 		} break;
@@ -1390,7 +1390,6 @@ void ScriptEditor::_menu_option(int p_option) {
 			}
 			file_dialog->set_title(TTRC("New Text File..."));
 			file_dialog->popup_file_dialog();
-			open_textfile_after_create = true;
 		} break;
 		case FILE_MENU_OPEN: {
 			file_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -2895,7 +2894,6 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 	_menu_option(FILE_MENU_NEW_TEXTFILE);
 	file_dialog->set_current_dir(p_base_path);
 	file_dialog->set_current_file(p_base_name);
-	open_textfile_after_create = false;
 }
 
 Ref<Resource> ScriptEditor::open_file(const String &p_file) {
