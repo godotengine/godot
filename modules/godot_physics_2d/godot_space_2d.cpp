@@ -175,7 +175,7 @@ bool GodotPhysicsDirectSpaceState2D::intersect_ray(const RayParameters &p_parame
 			Transform2D xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point = xform.xform(shape_point);
 
-			real_t ld = normal.dot(shape_point);
+			real_t ld = normal.dot(shape_point - begin);
 
 			if (ld < min_d) {
 				min_d = ld;
