@@ -201,11 +201,12 @@ def configure(env: "SConsEnvironment"):
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
-    env["CC"] = "emcc"
-    env["CXX"] = "em++"
+    if env["platform_tools"]:
+        env["CC"] = "emcc"
+        env["CXX"] = "em++"
 
-    env["AR"] = "emar"
-    env["RANLIB"] = "emranlib"
+        env["AR"] = "emar"
+        env["RANLIB"] = "emranlib"
 
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.
