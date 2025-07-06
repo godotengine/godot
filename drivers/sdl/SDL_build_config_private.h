@@ -87,6 +87,9 @@
 #ifdef __linux__
 #define HAVE_INOTIFY 1
 #define HAVE_INOTIFY_INIT1 1
+#define HAVE_GETENV 1
+#define HAVE_SETENV 1
+#define HAVE_UNSETENV 1
 #endif
 
 // TODO: handle dynamic loading with SOWRAP_ENABLED
