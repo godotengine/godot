@@ -586,7 +586,7 @@ MAX_RELEASE_CHECK_RATE   default: 4095 unless not HAVE_MMAP
 #define LACKS_STRING_H
 #define LACKS_STRINGS_H
 #define LACKS_SYS_TYPES_H
-#define LACKS_ERRNO_H
+// #define LACKS_ERRNO_H // File uses `EINVAL` and `ENOMEM` defines, so include is required. Legacy exclusion?
 #define LACKS_SCHED_H
 #ifndef MALLOC_FAILURE_ACTION
 #define MALLOC_FAILURE_ACTION
