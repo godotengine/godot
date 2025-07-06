@@ -41,8 +41,6 @@ struct PrintHandlerList {
 	void *userdata = nullptr;
 
 	PrintHandlerList *next = nullptr;
-
-	PrintHandlerList() {}
 };
 
 String stringify_variants(const Variant &p_var);

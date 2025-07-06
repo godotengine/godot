@@ -63,6 +63,4 @@ public:
 	virtual void get_message_list(List<StringName> *r_messages) const;
 	virtual int get_message_count() const;
 	virtual Vector<String> get_translated_message_list() const;
-
-	Translation() {}
 };

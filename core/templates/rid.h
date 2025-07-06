@@ -68,8 +68,6 @@ public:
 		return _rid;
 	}
 	_ALWAYS_INLINE_ uint64_t get_id() const { return _id; }
-
-	_ALWAYS_INLINE_ RID() {}
 };
 
 template <>

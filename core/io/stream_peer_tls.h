@@ -60,8 +60,6 @@ public:
 	static StreamPeerTLS *create(bool p_notify_postinitialize = true);
 
 	static bool is_available();
-
-	StreamPeerTLS() {}
 };
 
 VARIANT_ENUM_CAST(StreamPeerTLS::Status);

@@ -67,6 +67,5 @@ public:
 	virtual bool process(double p_time);
 	virtual void finalize();
 
-	MainLoop() {}
 	virtual ~MainLoop() {}
 };

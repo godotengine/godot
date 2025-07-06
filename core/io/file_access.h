@@ -274,7 +274,6 @@ public:
 	}
 
 public:
-	FileAccess() {}
 	virtual ~FileAccess();
 };
 

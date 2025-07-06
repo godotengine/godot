@@ -60,7 +60,6 @@ public:
 	Vector<Variant> get_binds() { return binds; }
 
 	CallableCustomBind(const Callable &p_callable, const Vector<Variant> &p_binds);
-	virtual ~CallableCustomBind();
 };
 
 class CallableCustomUnbind : public CallableCustom {
@@ -91,5 +90,4 @@ public:
 	int get_unbinds() { return argcount; }
 
 	CallableCustomUnbind(const Callable &p_callable, int p_argcount);
-	virtual ~CallableCustomUnbind();
 };

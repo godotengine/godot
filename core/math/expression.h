@@ -39,8 +39,6 @@ private:
 	struct Input {
 		Variant::Type type = Variant::NIL;
 		String name;
-
-		Input() {}
 	};
 
 	Vector<Input> inputs;
@@ -135,7 +133,6 @@ private:
 
 		Type type = TYPE_INPUT;
 
-		ENode() {}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -267,6 +264,5 @@ public:
 	bool has_execute_failed() const;
 	String get_error_text() const;
 
-	Expression() {}
 	~Expression();
 };
