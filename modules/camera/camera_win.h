@@ -32,12 +32,55 @@
 
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
+#include <initguid.h>
+#include <mfapi.h>
+#include <mferror.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <windows.h>
+
+class CameraFeedWindows : public CameraFeed {
+private:
+	String device_id;
+	IMFMediaSource *imf_media_source = NULL;
+
+	IMFSourceReader *imf_source_reader = NULL;
+	std::thread *worker;
+	Vector<GUID> format_guids;
+	Vector<uint32_t> format_mediatypes;
+
+	Vector<uint32_t> warned_formats;
+
+	// image_y is used as unique image when format is RGB
+	Ref<Image> image_y;
+	Ref<Image> image_uv;
+	Vector<uint8_t> data_y;
+	Vector<uint8_t> data_uv;
+
+	static void capture(CameraFeedWindows *feed);
+
+	void read();
+	void fill_formats(IMFMediaTypeHandler *imf_media_type_handler);
+
+protected:
+public:
+	static Ref<CameraFeedWindows> create(IMFActivate *pDevice);
+	virtual ~CameraFeedWindows();
+
+	virtual Array get_formats() const override;
+	virtual bool set_format(int p_index, const Dictionary &p_parameters) override;
+
+	virtual bool activate_feed() override;
+	virtual void deactivate_feed() override;
+};
 
 class CameraWindows : public CameraServer {
 private:
-	void add_active_cameras();
+	void update_feeds();
 
 public:
 	CameraWindows();
-	~CameraWindows() {}
+	~CameraWindows();
+
+	virtual void set_monitoring_feeds(bool p_monitoring_feeds) override;
 };
