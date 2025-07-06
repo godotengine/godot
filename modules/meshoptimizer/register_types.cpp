@@ -58,6 +58,7 @@ void uninitialize_meshoptimizer_module(ModuleInitializationLevel p_level) {
 	SurfaceTool::optimize_vertex_fetch_remap_func = nullptr;
 	SurfaceTool::simplify_func = nullptr;
 	SurfaceTool::simplify_scale_func = nullptr;
+	SurfaceTool::simplify_with_attrib_func = nullptr;
 	SurfaceTool::generate_remap_func = nullptr;
 	SurfaceTool::remap_vertex_func = nullptr;
 	SurfaceTool::remap_index_func = nullptr;
