@@ -76,7 +76,6 @@ class SpinBox : public Range {
 	String suffix;
 	String last_text_value;
 	double custom_arrow_step = 0.0;
-	bool use_custom_arrow_step = false;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
