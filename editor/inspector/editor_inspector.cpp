@@ -1886,15 +1886,13 @@ void EditorInspectorSection::_notification(int p_what) {
 				header_offset_x += section_indent;
 			}
 
-			bool can_click_unfold = vbox->get_child_count(false) != 0 && !(checkable && !checked && !checkbox_only);
-
 			// Draw header area.
 			int header_height = _get_header_height();
 			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
 			Color c = bg_color;
 			c.a *= 0.4;
-			if (foldable && header_rect.has_point(get_local_mouse_position())) {
-				c = c.lightened((can_click_unfold && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) ? -0.05 : 0.2);
+			if (header_hover) {
+				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) ? -0.05 : 0.2);
 			}
 			draw_rect(header_rect, c);
 
@@ -1915,7 +1913,7 @@ void EditorInspectorSection::_notification(int p_what) {
 						arrow_position.x = margin_start;
 					}
 					arrow_position.y = (header_height - arrow->get_height()) / 2;
-					if (can_click_unfold) {
+					if (vbox->get_child_count(false) != 0) {
 						draw_texture(arrow, arrow_position);
 					}
 					margin_start += arrow->get_width() + theme_cache.horizontal_separation;
@@ -2059,11 +2057,13 @@ void EditorInspectorSection::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
+		case NOTIFICATION_MOUSE_EXIT_SELF:
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (dropping_for_unfold) {
 				dropping_unfold_timer->stop();
 			}
 
+			header_hover = false;
 			check_hover = false;
 			keying_hover = false;
 			queue_redraw();
@@ -2107,6 +2107,15 @@ EditorInspector *EditorInspectorSection::_get_parent_inspector() const {
 		parent = parent->get_parent();
 	}
 	return nullptr;
+}
+
+void EditorInspectorSection::_update_child_read_only() {
+	if (checkbox_only || !checkable) {
+		return;
+	}
+
+	EditorInspector *inspector = _get_parent_inspector();
+	inspector->update_tree();
 }
 
 Control *EditorInspectorSection::make_custom_tooltip(const String &p_text) const {
@@ -2166,11 +2175,11 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 
 void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
-	bool has_children_to_show = vbox->get_child_count(false) != 0;
+	bool can_click_unfold = foldable && vbox->get_child_count(false) != 0;
 
-	Ref<InputEventMouse> me = p_event;
-	if (me.is_valid()) {
-		Vector2 mpos = me->get_position();
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Vector2 mpos = mm->get_position();
 
 		bool new_check_hover = check_rect.has_point(mpos);
 		if (new_check_hover != check_hover) {
@@ -2183,11 +2192,17 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			keying_hover = new_keying_hover;
 			queue_redraw();
 		}
+
+		bool new_header_hover = can_click_unfold && (get_local_mouse_position().y < _get_header_height());
+		if (new_header_hover != header_hover) {
+			header_hover = new_header_hover;
+			queue_redraw();
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		if (foldable && has_children_to_show && !(checkable && !checked && !checkbox_only) && k->is_action("ui_accept", true)) {
+		if (can_click_unfold && k->is_action("ui_accept", true)) {
 			accept_event();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
@@ -2214,17 +2229,12 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		accept_event();
 
 		if (checkable && check_rect.has_point(pos)) {
-			checked = !checked;
+			set_checked(!checked);
 			emit_signal(SNAME("section_toggled_by_user"), related_enable_property, checked);
-			if (checked) {
-				unfold();
-			} else if (!checkbox_only) {
-				vbox->hide();
-			}
 		} else if (keying && keying_rect.has_point(pos)) {
 			emit_signal(SNAME("property_keyed"), related_enable_property, false);
 		} else if (foldable) {
-			bool should_unfold = has_children_to_show && !(checkable && !checked && !checkbox_only) && !object->editor_is_section_unfolded(section);
+			bool should_unfold = can_click_unfold && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2233,15 +2243,6 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
-	}
-
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid()) {
-		int header_height = _get_header_height();
-		Vector2 previous = mm->get_position() - mm->get_relative();
-		if (has_children_to_show && ((mm->get_position().y >= header_height) != (previous.y >= header_height))) {
-			queue_redraw();
-		}
 	}
 }
 
@@ -2262,7 +2263,7 @@ void EditorInspectorSection::_accessibility_action_expand(const Variant &p_data)
 }
 
 void EditorInspectorSection::unfold() {
-	if ((!foldable && !checkable) || (!checkbox_only && checkable && !checked)) {
+	if (!foldable) {
 		return;
 	}
 
@@ -2326,10 +2327,6 @@ void EditorInspectorSection::set_checkable(const String &p_related_check_propert
 		}
 	}
 
-	if (!checkbox_only && checkable && !checked) {
-		vbox->hide();
-	}
-
 	queue_redraw();
 }
 
@@ -2339,12 +2336,7 @@ void EditorInspectorSection::set_checked(bool p_checked) {
 	}
 
 	checked = p_checked;
-	if (!checkbox_only && checkable && !checked) {
-		vbox->hide();
-	} else if (!checkbox_only) {
-		unfold();
-	}
-
+	_update_child_read_only();
 	queue_redraw();
 }
 
@@ -3688,10 +3680,8 @@ void EditorInspector::update_tree() {
 	String filter = search_box ? search_box->get_text() : "";
 	String group;
 	String group_base;
-	EditorInspectorSection *group_togglable_property = nullptr;
 	String subgroup;
 	String subgroup_base;
-	EditorInspectorSection *subgroup_togglable_property = nullptr;
 	int section_depth = 0;
 	bool disable_favorite = false;
 	VBoxContainer *category_vbox = nullptr;
@@ -3726,7 +3716,6 @@ void EditorInspector::update_tree() {
 		if (p.usage & PROPERTY_USAGE_SUBGROUP) {
 			// Setup a property sub-group.
 			subgroup = p.name;
-			subgroup_togglable_property = nullptr;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			subgroup_base = hint_parts[0];
@@ -3741,7 +3730,6 @@ void EditorInspector::update_tree() {
 		} else if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
 			group = p.name;
-			group_togglable_property = nullptr;
 
 			Vector<String> hint_parts = p.hint_string.split(",");
 			group_base = hint_parts[0];
@@ -3753,7 +3741,6 @@ void EditorInspector::update_tree() {
 
 			subgroup = "";
 			subgroup_base = "";
-			subgroup_togglable_property = nullptr;
 
 			continue;
 
@@ -3761,10 +3748,8 @@ void EditorInspector::update_tree() {
 			// Setup a property category.
 			group = "";
 			group_base = "";
-			group_togglable_property = nullptr;
 			subgroup = "";
 			subgroup_base = "";
-			subgroup_togglable_property = nullptr;
 			section_depth = 0;
 			disable_favorite = false;
 
@@ -3928,7 +3913,6 @@ void EditorInspector::update_tree() {
 					// Keep it, this is used pretty often.
 				} else {
 					subgroup = ""; // The prefix changed, we are no longer in the subgroup.
-					subgroup_togglable_property = nullptr;
 				}
 			}
 
@@ -3940,9 +3924,7 @@ void EditorInspector::update_tree() {
 					// Keep it, this is used pretty often.
 				} else {
 					group = ""; // The prefix changed, we are no longer in the group.
-					group_togglable_property = nullptr;
 					subgroup = "";
-					subgroup_togglable_property = nullptr;
 				}
 			}
 
@@ -4286,9 +4268,9 @@ void EditorInspector::update_tree() {
 						last_created_section->set_keying(keying);
 
 						if (p.name.begins_with(group_base)) {
-							group_togglable_property = last_created_section;
+							togglable_editor_inspector_sections[group] = last_created_section;
 						} else {
-							subgroup_togglable_property = last_created_section;
+							togglable_editor_inspector_sections[group + "/" + subgroup] = last_created_section;
 						}
 
 						if (use_doc_hints) {
@@ -4396,13 +4378,6 @@ void EditorInspector::update_tree() {
 			if (ep && ep->is_favoritable() && current_favorites.has(p.name)) {
 				ep->favorited = true;
 				favorites_to_add[group][subgroup].push_back(ep);
-
-				if (group_togglable_property) {
-					togglable_editor_inspector_sections[group] = group_togglable_property;
-				}
-				if (subgroup_togglable_property) {
-					togglable_editor_inspector_sections[group + "/" + subgroup] = subgroup_togglable_property;
-				}
 			} else {
 				current_vbox->add_child(editors[i].property_editor);
 
@@ -4486,20 +4461,16 @@ void EditorInspector::update_tree() {
 				if (togglable_editor_inspector_sections.has(section_name)) {
 					EditorInspectorSection *corresponding_section = togglable_editor_inspector_sections.get(section_name);
 
-					bool valid = false;
-					Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
-					if (valid) {
-						section->section = corresponding_section->section;
-						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
-						section->set_keying(keying);
-						if (use_doc_hints) {
-							section->set_tooltip_text(corresponding_section->get_tooltip_text());
-						}
-
-						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
-						section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-						sections.push_back(section);
+					section->section = corresponding_section->section;
+					section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, corresponding_section->checked);
+					section->set_keying(keying);
+					if (use_doc_hints) {
+						section->set_tooltip_text(corresponding_section->get_tooltip_text());
 					}
+
+					section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+					section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+					sections.push_back(section);
 				}
 			}
 
@@ -4525,20 +4496,16 @@ void EditorInspector::update_tree() {
 					if (togglable_editor_inspector_sections.has(KV.key + "/" + section_name)) {
 						EditorInspectorSection *corresponding_section = togglable_editor_inspector_sections.get(KV.key + "/" + section_name);
 
-						bool valid = false;
-						Variant value_checked = object->get(corresponding_section->related_enable_property, &valid);
-						if (valid) {
-							section->section = corresponding_section->section;
-							section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, value_checked.operator bool());
-							section->set_keying(keying);
-							if (use_doc_hints) {
-								section->set_tooltip_text(corresponding_section->get_tooltip_text());
-							}
-
-							section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
-							section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
-							sections.push_back(section);
+						section->section = corresponding_section->section;
+						section->set_checkable(corresponding_section->related_enable_property, corresponding_section->checkbox_only, corresponding_section->checked);
+						section->set_keying(keying);
+						if (use_doc_hints) {
+							section->set_tooltip_text(corresponding_section->get_tooltip_text());
 						}
+
+						section->connect("section_toggled_by_user", callable_mp(this, &EditorInspector::_section_toggled_by_user));
+						section->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
+						sections.push_back(section);
 					}
 				}
 
