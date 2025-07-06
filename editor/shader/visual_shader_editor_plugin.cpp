@@ -1252,10 +1252,6 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 		}
 
-		if (expanded_type != VisualShaderNode::PORT_TYPE_SCALAR) {
-			continue;
-		}
-
 		int idx = is_first_hbox ? 1 : i + port_offset;
 		if (is_reroute) {
 			idx = 0;
@@ -1265,33 +1261,24 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 			graph_node->set_slot_properties(idx, valid_left, port_type_left, valid_right, port_type_right);
 
-			if (vsnode->_is_output_port_expanded(i)) {
-				int p_cnt = 0;
-				switch (vsnode->get_output_port_type(i)) {
-					case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
-						p_cnt = 2;
-						expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_2D;
-					} break;
-					case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
-						p_cnt = 3;
-						expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_3D;
-					} break;
-					case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
-						p_cnt = 4;
-						expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_4D;
-					} break;
-					default:
-						break;
-				}
-				for (int p = 0; p < p_cnt; p++) {
-					port_offset++;
-					valid_left = (i + p + 1) < vsnode->get_input_port_count();
-					port_type_left = VisualShaderNode::PORT_TYPE_SCALAR;
-					if (valid_left) {
-						port_type_left = vsnode->get_input_port_type(i + p + 1);
+			if (expanded_type == VisualShaderNode::PORT_TYPE_SCALAR) {
+				if (vsnode->_is_output_port_expanded(i)) {
+					switch (vsnode->get_output_port_type(i)) {
+						case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
+							expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_2D;
+						} break;
+						case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
+							expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_3D;
+						} break;
+						case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
+							expanded_type = VisualShaderNode::PORT_TYPE_VECTOR_4D;
+						} break;
+						default:
+							break;
 					}
-					graph_node->set_slot_properties(i + port_offset, valid_left, port_type_left, true, VisualShaderNode::PORT_TYPE_SCALAR);
 				}
+			} else {
+				graph_node->get_output_port(idx)->add_theme_color_override("color", vector_expanded_color[expanded_port_counter - 1]);
 			}
 		}
 	}
