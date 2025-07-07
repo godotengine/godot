@@ -161,7 +161,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			if (on_floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length_squared() < 0.0001f) {
 				Transform2D gt = get_global_transform();
-				if (result.travel.length() <= margin + CMP_EPSILON) {
+				if (result.travel.length_squared() <= (margin + CMP_EPSILON) * (margin + CMP_EPSILON)) {
 					gt.columns[2] -= result.travel;
 				}
 				set_global_transform(gt);
@@ -181,7 +181,7 @@ void CharacterBody2D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				// Avoid to move forward on a wall if floor_block_on_wall is true.
 				if (p_was_on_floor && !on_floor && !vel_dir_facing_up) {
 					// If the movement is large the body can be prevented from reaching the walls.
-					if (result.travel.length() <= margin + CMP_EPSILON) {
+					if (result.travel.length_squared() <= (margin + CMP_EPSILON) * (margin + CMP_EPSILON)) {
 						// Cancels the motion.
 						Transform2D gt = get_global_transform();
 						gt.columns[2] -= result.travel;
@@ -356,7 +356,7 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 			// move_and_collide may stray the object a bit when getting it unstuck.
 			// Canceling this motion should not affect move_and_slide, as previous
 			// calls to move_and_collide already took care of freeing the body.
-			if (result.travel.length() > margin) {
+			if (result.travel.length_squared() > (margin * margin)) {
 				result.travel = up_direction * up_direction.dot(result.travel);
 			} else {
 				result.travel = Vector2();

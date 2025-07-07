@@ -36,7 +36,7 @@
 
 bool SegmentShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, a, b);
-	return p_point.distance_to(closest) < p_tolerance;
+	return p_point.distance_squared_to(closest) < (p_tolerance * p_tolerance);
 }
 
 void SegmentShape2D::_update_shape() {

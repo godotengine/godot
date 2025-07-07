@@ -426,7 +426,7 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
 	Point2 mouse_pos = get_local_mouse_position();
-	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
+	const bool movement_threshold_passed = original_mouse_pos.distance_squared_to(mouse_pos) > (4.0f * EDSCALE) * (4.0f * EDSCALE);
 	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -2155,7 +2155,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
 			} else {
-				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
+				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_squared_to(_edit.mouse_pos) > (8.0f * EDSCALE) * (8.0f * EDSCALE);
 
 				if ((selection_in_progress || clicked_wants_append) && movement_threshold_passed && clicked.is_valid()) {
 					cursor.region_select = true;

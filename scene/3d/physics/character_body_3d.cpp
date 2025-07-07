@@ -188,7 +188,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 
 			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length_squared() < 0.0001f) {
 				Transform3D gt = get_global_transform();
-				if (result.travel.length() <= margin + CMP_EPSILON) {
+				if (result.travel.length_squared() <= (margin + CMP_EPSILON) * (margin + CMP_EPSILON)) {
 					gt.origin -= result.travel;
 				}
 				set_global_transform(gt);
@@ -224,12 +224,13 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 						if (p_was_on_floor && !vel_dir_facing_up) {
 							// Cancel the motion.
 							Transform3D gt = get_global_transform();
-							real_t travel_total = result.travel.length();
+							real_t travel_total_squared = result.travel.length_squared();
 							real_t cancel_dist_max = MIN(0.1, margin * 20);
-							if (travel_total <= margin + CMP_EPSILON) {
+							real_t cancel_dist_max_squared = cancel_dist_max * cancel_dist_max;
+							if (travel_total_squared <= (margin + CMP_EPSILON) * (margin + CMP_EPSILON)) {
 								gt.origin -= result.travel;
 								result.travel = Vector3(); // Cancel for constant speed computation.
-							} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
+							} else if (travel_total_squared < cancel_dist_max_squared) { // If the movement is large the body can be prevented from reaching the walls.
 								gt.origin -= result.travel.slide(up_direction);
 								// Keep remaining motion in sync with amount canceled.
 								motion = motion.slide(up_direction);
@@ -424,7 +425,7 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 
 			if (wall_min_slide_angle != 0 && Math::acos(wall_normal.dot(-velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
 				motion = Vector3();
-				if (result.travel.length() < margin + CMP_EPSILON) {
+				if (result.travel.length_squared() < (margin + CMP_EPSILON) * (margin + CMP_EPSILON)) {
 					Transform3D gt = get_global_transform();
 					gt.origin -= result.travel;
 					set_global_transform(gt);
@@ -473,7 +474,7 @@ void CharacterBody3D::apply_floor_snap() {
 			// move_and_collide may stray the object a bit when getting it unstuck.
 			// Canceling this motion should not affect move_and_slide, as previous
 			// calls to move_and_collide already took care of freeing the body.
-			if (result.travel.length() > margin) {
+			if (result.travel.length_squared() > (margin * margin)) {
 				result.travel = up_direction * up_direction.dot(result.travel);
 			} else {
 				result.travel = Vector3();

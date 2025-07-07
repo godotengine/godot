@@ -275,7 +275,7 @@ bool GodotSphereShape3D::intersect_segment(const Vector3 &p_begin, const Vector3
 }
 
 bool GodotSphereShape3D::intersect_point(const Vector3 &p_point) const {
-	return p_point.length() < radius;
+	return p_point.length_squared() < (radius * radius);
 }
 
 Vector3 GodotSphereShape3D::get_closest_point_to(const Vector3 &p_point) const {
@@ -599,11 +599,11 @@ bool GodotCapsuleShape3D::intersect_segment(const Vector3 &p_begin, const Vector
 
 bool GodotCapsuleShape3D::intersect_point(const Vector3 &p_point) const {
 	if (Math::abs(p_point.y) < height * 0.5 - radius) {
-		return Vector3(p_point.x, 0, p_point.z).length() < radius;
+		return Vector3(p_point.x, 0, p_point.z).length_squared() < (radius * radius);
 	} else {
 		Vector3 p = p_point;
 		p.y = Math::abs(p.y) - height * 0.5 + radius;
-		return p.length() < radius;
+		return p.length_squared() < (radius * radius);
 	}
 }
 
@@ -613,7 +613,7 @@ Vector3 GodotCapsuleShape3D::get_closest_point_to(const Vector3 &p_point) const 
 
 	const Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 
-	if (p.distance_to(p_point) < radius) {
+	if (p.distance_squared_to(p_point) < (radius * radius)) {
 		return p_point;
 	}
 
@@ -737,7 +737,7 @@ bool GodotCylinderShape3D::intersect_segment(const Vector3 &p_begin, const Vecto
 
 bool GodotCylinderShape3D::intersect_point(const Vector3 &p_point) const {
 	if (Math::abs(p_point.y) < height * 0.5) {
-		return Vector3(p_point.x, 0, p_point.z).length() < radius;
+		return Vector3(p_point.x, 0, p_point.z).length_squared() < (radius * radius);
 	}
 	return false;
 }
@@ -765,7 +765,7 @@ Vector3 GodotCylinderShape3D::get_closest_point_to(const Vector3 &p_point) const
 
 		const Vector3 p = Geometry3D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 
-		if (p.distance_to(p_point) < radius) {
+		if (p.distance_squared_to(p_point) < (radius * radius)) {
 			return p_point;
 		}
 

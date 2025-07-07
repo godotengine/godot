@@ -235,9 +235,10 @@ public:
 
 	_FORCE_INLINE_ void apply_bias_impulse(const Vector3 &p_impulse, const Vector3 &p_position = Vector3(), real_t p_max_delta_av = -1.0) {
 		biased_linear_velocity += p_impulse * _inv_mass;
+		const real_t max_delta_av_squared = p_max_delta_av * p_max_delta_av;
 		if (p_max_delta_av != 0.0) {
 			Vector3 delta_av = _inv_inertia_tensor.xform((p_position - center_of_mass).cross(p_impulse));
-			if (p_max_delta_av > 0 && delta_av.length() > p_max_delta_av) {
+			if (p_max_delta_av > 0 && delta_av.length_squared() > max_delta_av_squared) {
 				delta_av = delta_av.normalized() * p_max_delta_av;
 			}
 			biased_angular_velocity += delta_av;

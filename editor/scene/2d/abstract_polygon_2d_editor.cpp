@@ -473,8 +473,9 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 					return true;
 				} else {
 					const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+					const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
-					if (!_is_line() && wip.size() > 1 && xform.xform(wip[0]).distance_to(xform.xform(cpoint)) < grab_threshold) {
+					if (!_is_line() && wip.size() > 1 && xform.xform(wip[0]).distance_squared_to(xform.xform(cpoint)) < grab_threshold_squared) {
 						//wip closed
 						_wip_close();
 
@@ -496,7 +497,8 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 		// Center drag.
 		if (edit_origin_and_center) {
-			real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_meta_pressed() || mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
@@ -504,7 +506,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 				}
 				if (mb->is_pressed() && !center_drag) {
 					Vector2 center_point = xform.xform(_get_geometric_center());
-					if ((gpoint - center_point).length() < grab_threshold) {
+					if ((gpoint - center_point).length_squared() < grab_threshold_squared) {
 						pre_center_move_edit.clear();
 						int n_polygons = _get_polygon_count();
 						for (int i = 0; i < n_polygons; i++) {

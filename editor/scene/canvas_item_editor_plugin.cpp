@@ -1801,6 +1801,7 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 					DragType resize_drag = DRAG_NONE;
 					real_t radius = (select_handle->get_size().width / 2) * 1.5;
+					real_t radius_squared = radius * radius;
 
 					for (int i = 0; i < 4; i++) {
 						int prev = (i + 3) % 4;
@@ -1809,13 +1810,13 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 						Vector2 ofs = ((endpoints[i] - endpoints[prev]).normalized() + ((endpoints[i] - endpoints[next]).normalized())).normalized();
 						ofs *= (select_handle->get_size().width / 2);
 						ofs += endpoints[i];
-						if (ofs.distance_to(b->get_position()) < radius) {
+						if (ofs.distance_squared_to(b->get_position()) < radius_squared) {
 							resize_drag = dragger[i * 2];
 						}
 
 						ofs = (endpoints[i] + endpoints[next]) / 2;
 						ofs += (endpoints[next] - endpoints[i]).orthogonal().normalized() * (select_handle->get_size().width / 2);
-						if (ofs.distance_to(b->get_position()) < radius) {
+						if (ofs.distance_squared_to(b->get_position()) < radius_squared) {
 							resize_drag = dragger[i * 2 + 1];
 						}
 					}
