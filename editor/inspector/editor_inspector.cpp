@@ -3476,8 +3476,6 @@ void EditorInspector::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 }
 
 void EditorInspector::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(inspector_plugin_count == MAX_PLUGINS);
-
 	int idx = -1;
 	for (int i = 0; i < inspector_plugin_count; i++) {
 		if (inspector_plugins[i] == p_plugin) {
