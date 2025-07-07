@@ -68,6 +68,7 @@
 #include "scene/resources/style_box_texture.h"
 
 #define DRAG_THRESHOLD (8 * EDSCALE)
+#define DRAG_THRESHOLD_SQUARED (DRAG_THRESHOLD * DRAG_THRESHOLD)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
 constexpr real_t MOVE_HANDLE_DISTANCE = 25;
 
@@ -2520,7 +2521,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 		if (can_select) {
 			click = transform.affine_inverse().xform(b->get_position());
 			// Allow selecting on release when performed very small box selection (necessary when Shift is pressed, see below).
-			can_select = b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && click.distance_to(drag_from) <= DRAG_THRESHOLD);
+			can_select = b->is_pressed() || (drag_type == DRAG_BOX_SELECTION && click.distance_squared_to(drag_from) <= DRAG_THRESHOLD_SQUARED);
 		}
 
 		if (can_select) {
