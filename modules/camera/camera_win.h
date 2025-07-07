@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "buffer_decoder.h"
 #include "servers/camera/camera_feed.h"
 #include "servers/camera/camera_server.h"
 #include <initguid.h>
@@ -51,16 +52,13 @@ private:
 
 	Vector<uint32_t> warned_formats;
 
-	// image_y is used as unique image when format is RGB
-	Ref<Image> image_y;
-	Ref<Image> image_uv;
-	Vector<uint8_t> data_y;
-	Vector<uint8_t> data_uv;
+	BufferDecoder *buffer_decoder = nullptr;
 
 	static void capture(CameraFeedWindows *feed);
 
 	void read();
 	void fill_formats(IMFMediaTypeHandler *imf_media_type_handler);
+	BufferDecoder *_create_buffer_decoder();
 
 protected:
 public:
@@ -68,6 +66,7 @@ public:
 	virtual ~CameraFeedWindows();
 
 	virtual Array get_formats() const override;
+	virtual FeedFormat get_format() const override;
 	virtual bool set_format(int p_index, const Dictionary &p_parameters) override;
 
 	virtual bool activate_feed() override;
