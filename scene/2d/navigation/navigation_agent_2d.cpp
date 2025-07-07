@@ -891,7 +891,7 @@ void NavigationAgent2D::_trigger_waypoint_reached() {
 			if (navlink) {
 				Vector2 link_global_start_position = navlink->get_global_start_position();
 				Vector2 link_global_end_position = navlink->get_global_end_position();
-				if (waypoint.distance_to(link_global_start_position) < waypoint.distance_to(link_global_end_position)) {
+				if (waypoint.distance_squared_to(link_global_start_position) < waypoint.distance_squared_to(link_global_end_position)) {
 					details[SNAME("link_entry_position")] = link_global_start_position;
 					details[SNAME("link_exit_position")] = link_global_end_position;
 				} else {
