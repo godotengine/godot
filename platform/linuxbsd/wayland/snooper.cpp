@@ -650,7 +650,7 @@ int WaylandEmbedderProxy::next_global_id() {
 		// Oh no. Time for debug info!
 
 #ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
-		for (uint32_t id = 1; id < objects.size(); ++id) {
+		for (uint32_t id = 1; id < objects.reserved_size(); ++id) {
 			WaylandObject &object = objects[id];
 			DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", id, id, object.interface->name, object.version, (uintptr_t)object.data));
 		}
@@ -660,17 +660,6 @@ int WaylandEmbedderProxy::next_global_id() {
 	}
 
 	return id;
-}
-
-int WaylandEmbedderProxy::next_global_server_id() {
-	for (uint32_t id = 2; id < server_objects.size(); ++id) {
-		if (server_objects[id].interface == nullptr) {
-			return id;
-		}
-	}
-
-	// FIXME: Resize or something.
-	CRASH_NOW_MSG("FIXME Out of ids. FIXME");
 }
 
 bool WaylandEmbedderProxy::global_surface_is_window(uint32_t p_wl_surface_id) {
