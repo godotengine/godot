@@ -6,6 +6,7 @@
 	<description>
 		AudioStreamWAV stores sound samples loaded from WAV files. To play the stored sound, use an [AudioStreamPlayer] (for non-positional audio) or [AudioStreamPlayer2D]/[AudioStreamPlayer3D] (for positional audio). The sound can be looped.
 		This class can also be used to store dynamically-generated PCM audio data. See also [AudioStreamGenerator] for procedural audio generation.
+		[b]Note:[/b] Since the WAV format is best used for sound effects rather than music, it does not support [AudioStreamInteractive] functionality such as BPM-based fading. To use [AudioStreamInteractive], convert the WAV audio to Ogg Vorbis or MP3 using an external tool, then use the resulting file as an audio clip.
 	</description>
 	<tutorials>
 		<link title="Runtime file loading and saving">$DOCS_URL/tutorials/io/runtime_file_loading_and_saving.html</link>

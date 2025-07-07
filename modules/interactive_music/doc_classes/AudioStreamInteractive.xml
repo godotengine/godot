@@ -6,6 +6,7 @@
 	<description>
 		This is an audio stream that can playback music interactively, combining clips and a transition table. Clips must be added first, and then the transition rules via the [method add_transition]. Additionally, this stream exports a property parameter to control the playback via [AudioStreamPlayer], [AudioStreamPlayer2D], or [AudioStreamPlayer3D].
 		The way this is used is by filling a number of clips, then configuring the transition table. From there, clips are selected for playback and the music will smoothly go from the current to the new one while using the corresponding transition rule defined in the transition table.
+		[b]Note:[/b] Only the Ogg Vorbis and MP3 audio formats are supported for clips. If you have music in the WAV format, you will need to convert it to Ogg Vorbis or MP3 format using an external tool before using it with [AudioStreamInteractive].
 	</description>
 	<tutorials>
 	</tutorials>
