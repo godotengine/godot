@@ -640,14 +640,12 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 				if (current_action == ACTION_ADD_POLYGON) {
 					int closest = -1;
-					real_t closest_dist = 1e20;
 
-					for (int i = 0; i < editing_points.size(); i++) {
+					for (int i = editing_points.size() - 1; i >= 0; i--) {
 						Vector2 tuv = mtx.xform(editing_points[i]);
-						real_t dist = tuv.distance_to(mb->get_position());
-						if (dist < 8 && dist < closest_dist) {
+						if (tuv.distance_to(mb->get_position()) < 8) {
 							closest = i;
-							closest_dist = dist;
+							break;
 						}
 					}
 
