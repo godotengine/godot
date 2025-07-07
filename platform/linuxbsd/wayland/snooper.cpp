@@ -746,6 +746,18 @@ bool WaylandEmbedderProxy::handle_generic_msg(Client *client, const WaylandObjec
 				} else if (info->direction == ProxyDirection::CLIENT) {
 					new_global_id = arg;
 
+					uint32_t stripped_id = new_global_id & ~(0xff000000);
+
+					// The max ID will never increment more than one at a time, due to the
+					// packed nature of IDs. libwayland already does similar assertions so it
+					// just makes sense to double-check to avoid messing memory up or
+					// allocating a huge buffer for nothing.
+					CRASH_COND_MSG(stripped_id > server_objects.size(), "Invalid new server id received.");
+
+					if (stripped_id == server_objects.size()) {
+						server_objects.resize(server_objects.size() + 1);
+					}
+
 					if (client) {
 						new_local_id = client->allocate_server_id();
 						CRASH_COND_MSG(new_local_id == 0, "Out of server-side IDs.");
@@ -2238,8 +2250,6 @@ void WaylandEmbedderProxy::_thread_loop(void *p_data) {
 }
 
 Error WaylandEmbedderProxy::init() {
-	server_objects.resize(SNOOP_ID_MAX);
-
 	ancillary_buf.resize(SNOOP_ANCILLARY_SIZE);
 
 	proxy_socket = socket(AF_UNIX, SOCK_STREAM, 0);
