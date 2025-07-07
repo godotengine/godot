@@ -270,8 +270,9 @@ Error GraphEdit::connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port
 Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_NULL_V_MSG(connections_layer, FAILED, "connections_layer is missing.");
 
+	// Lots of edge cases here to allow users to create temporarily-invalid connections in the inspector without throwing tons of errors
+	bool is_editor = Engine::get_singleton()->is_editor_hint();
 	if (p_connection.is_null()) {
-		bool is_editor = Engine::get_singleton()->is_editor_hint();
 		if (is_editor) {
 			// special case to allow users to create connections in the editor
 			p_connection.instantiate();
@@ -280,9 +281,24 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 			ERR_FAIL_COND_V_MSG(!is_editor, FAILED, "Attempted to add null connection to graph.");
 		}
 	}
-	graph_connections.push_back(p_connection);
 	GraphPort *first_port = p_connection->first_port;
 	GraphPort *second_port = p_connection->second_port;
+	bool connection_exists = ports_connected(first_port, second_port);
+
+	if (!first_port || !second_port) {
+		if (!is_editor) {
+			if (p_connection->clear_if_invalid) {
+				ERR_FAIL_V_MSG(FAILED, "Tried to make a graph connection using null port(s). If this is intended, set clear_if_invalid to true.");
+			} else {
+				WARN_PRINT("Connection has null port(s) - make sure to fill these out.");
+				return OK;
+			}
+		}
+	} else if (connection_exists) {
+		return OK;
+	}
+
+	graph_connections.push_back(p_connection);
 
 	Line2D *line = memnew(Line2D);
 	line->set_texture_mode(Line2D::LineTextureMode::LINE_TEXTURE_STRETCH);
@@ -304,15 +320,20 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 	connections_layer->add_child(line);
 	p_connection->_cache.line = line;
 
-	if (!first_port || !second_port) {
-		ERR_FAIL_COND_V_MSG(p_connection->clear_if_invalid, FAILED, "Tried to make a graph connection using null port(s). If this is intended, set clear_if_invalid to true.");
-		return OK;
+	if (first_port) {
+		if (first_port->exclusive) {
+			disconnect_all_by_port(first_port);
+		}
+		connection_map[first_port].push_back(p_connection);
+		first_port->_on_connected(p_connection);
 	}
-	if (ports_connected(first_port, second_port)) {
-		return OK;
+	if (second_port) {
+		if (second_port->exclusive) {
+			disconnect_all_by_port(second_port);
+		}
+		connection_map[second_port].push_back(p_connection);
+		second_port->_on_connected(p_connection);
 	}
-	connection_map[first_port].push_back(p_connection);
-	connection_map[second_port].push_back(p_connection);
 
 	minimap->queue_redraw();
 	queue_redraw();
@@ -410,12 +431,12 @@ void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
 			continue;
 		}
 		disconnect_by_connection(conn);
-		connect_nodes(p_to_port, conn->get_other(p_from_port));
+		connect_nodes(p_to_port, conn->get_other_port(p_from_port));
 	}
 }
 
 bool GraphEdit::ports_connected(GraphPort *p_first_port, GraphPort *p_second_port) {
-	if (!connection_map.has(p_first_port) || !connection_map.has(p_second_port)) {
+	if (!p_first_port || !p_second_port || !connection_map.has(p_first_port) || !connection_map.has(p_second_port)) {
 		return false;
 	}
 	for (const Ref<GraphConnection> conn : connection_map[p_first_port]) {
@@ -429,6 +450,25 @@ bool GraphEdit::ports_connected(GraphPort *p_first_port, GraphPort *p_second_por
 	return false;
 }
 
+bool GraphEdit::is_node_connected(GraphNode *p_node) {
+	if (!p_node) {
+		return false;
+	}
+	for (GraphPort *port : p_node->ports) {
+		if (port && connection_map.has(port) && !connection_map[port].is_empty()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool GraphEdit::is_port_connected(GraphPort *p_port) {
+	if (!p_port || !connection_map.has(p_port)) {
+		return false;
+	}
+	return !connection_map[p_port].is_empty();
+}
+
 TypedArray<GraphPort> GraphEdit::get_connected_ports(GraphPort *p_port) {
 	TypedArray<GraphPort> ret;
 	if (!p_port) {
@@ -438,7 +478,7 @@ TypedArray<GraphPort> GraphEdit::get_connected_ports(GraphPort *p_port) {
 		if (conn.is_null()) {
 			continue;
 		}
-		ret.push_back(conn->get_other(p_port));
+		ret.push_back(conn->get_other_port(p_port));
 	}
 	return ret;
 }
@@ -489,7 +529,7 @@ GraphNode *GraphEdit::get_connection_target(GraphPort *p_port) {
 		if (conn.is_null()) {
 			continue;
 		}
-		GraphNode *other = conn->get_other(p_port)->graph_node;
+		GraphNode *other = conn->get_other_port(p_port)->graph_node;
 		if (other) {
 			return other;
 		}
@@ -2452,11 +2492,18 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(GraphNode *
 		if (!port) {
 			continue;
 		}
-		for (Ref<GraphConnection> conn : connection_map[port]) {
-			connections_from_node.append(conn);
-		}
+		connections_from_node.append_array(connection_map[port]);
 	}
 	return connections_from_node;
+}
+
+TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_port(GraphPort *p_port) const {
+	TypedArray<Ref<GraphConnection>> connections_from_port;
+	if (!p_port) {
+		return connections_from_port;
+	}
+	connections_from_port.append_array(connection_map[p_port]);
+	return connections_from_port;
 }
 
 void GraphEdit::_zoom_minus() {
@@ -2832,6 +2879,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_nodes", "first_port", "second_port", "keep_alive"), &GraphEdit::connect_nodes, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("ports_connected", "first_port", "second_port"), &GraphEdit::ports_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "first_port", "second_port"), &GraphEdit::disconnect_nodes);
+	ClassDB::bind_method(D_METHOD("disconnect_by_connection", "connection"), &GraphEdit::disconnect_by_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_all_by_port", "port"), &GraphEdit::disconnect_all_by_port);
 	ClassDB::bind_method(D_METHOD("disconnect_all_by_node", "node"), &GraphEdit::disconnect_all_by_node);
 	ClassDB::bind_method(D_METHOD("set_connection_activity", "connection", "amount"), &GraphEdit::set_connection_activity);
@@ -2839,8 +2887,11 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphEdit::get_connections);
 	ClassDB::bind_method(D_METHOD("get_connection_count", "port"), &GraphEdit::get_connection_count);
 	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
-	ClassDB::bind_method(D_METHOD("get_connections_from_node", "node"), &GraphEdit::_get_connections_by_node);
+	ClassDB::bind_method(D_METHOD("get_connections_by_port", "port"), &GraphEdit::_get_connections_by_port);
+	ClassDB::bind_method(D_METHOD("get_connections_by_node", "node"), &GraphEdit::_get_connections_by_node);
 	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
+	ClassDB::bind_method(D_METHOD("is_node_connected", "node"), &GraphEdit::is_node_connected);
+	ClassDB::bind_method(D_METHOD("is_port_connected", "port"), &GraphEdit::is_port_connected);
 	ClassDB::bind_method(D_METHOD("get_connected_ports", "port"), &GraphEdit::get_connected_ports);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
@@ -2983,11 +3034,10 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_minimap_button"), "set_show_minimap_button", "is_showing_minimap_button");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_arrange_button"), "set_show_arrange_button", "is_showing_arrange_button");
 
-	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "to_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
-	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "to_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
-	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::OBJECT, "to_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "to_port", PROPERTY_HINT_NODE_TYPE, "GraphPort")));
+	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
+	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));

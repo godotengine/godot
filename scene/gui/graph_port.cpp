@@ -129,7 +129,9 @@ void GraphPort::set_type(int p_type) {
 
 Color GraphPort::get_color() {
 	Color base_col = selected ? theme_cache.selected_color : theme_cache.color;
-	ERR_FAIL_NULL_V(graph_edit, base_col);
+	if (!graph_edit) {
+		return base_col;
+	}
 	const TypedArray<Color> &graph_colors = graph_edit->get_type_colors();
 	return (type > 0 && type < graph_colors.size()) ? Color(graph_colors[type]) : base_col;
 }
@@ -209,11 +211,11 @@ Rect2 GraphPort::get_hotzone() {
 	return Rect2(pos.x + theme_cache.hotzone_offset_h - size.x / 2, pos.y + theme_cache.hotzone_offset_v - size.y / 2, size.x, size.y);
 }
 
-int GraphPort::get_index(bool p_include_disabled) {
+int GraphPort::get_port_index(bool p_include_disabled) {
 	return p_include_disabled ? _index : _enabled_index;
 }
 
-int GraphPort::get_filtered_index(bool p_include_disabled) {
+int GraphPort::get_filtered_port_index(bool p_include_disabled) {
 	return p_include_disabled ? _filtered_index : _filtered_enabled_index;
 }
 
@@ -221,7 +223,7 @@ void GraphPort::disconnect_all() {
 	ERR_FAIL_NULL(graph_edit);
 	switch (on_disabled_behaviour) {
 		case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
-			int prev_port_idx = get_index() - 1;
+			int prev_port_idx = get_port_index() - 1;
 			if (prev_port_idx >= 0) {
 				GraphPort *prev_port = graph_node->get_port(prev_port_idx);
 				if (prev_port) {
@@ -231,7 +233,7 @@ void GraphPort::disconnect_all() {
 			}
 		} break;
 		case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
-			int next_port_idx = get_index() + 1;
+			int next_port_idx = get_port_index() + 1;
 			if (next_port_idx < graph_node->get_port_count()) {
 				GraphPort *next_port = graph_node->get_port(next_port_idx);
 				if (next_port) {
@@ -245,6 +247,16 @@ void GraphPort::disconnect_all() {
 			break;
 	}
 	graph_edit->disconnect_all_by_port(this);
+}
+
+bool GraphPort::has_connection() {
+	ERR_FAIL_NULL_V(graph_edit, false);
+	return graph_edit->is_port_connected(this);
+}
+
+TypedArray<Ref<GraphConnection>> GraphPort::get_connections() {
+	ERR_FAIL_NULL_V(graph_edit, TypedArray<Ref<GraphConnection>>());
+	return graph_edit->get_connections_by_port(this);
 }
 
 void GraphPort::_draw() {
@@ -272,11 +284,9 @@ void GraphPort::_draw() {
 void GraphPort::_on_enabled() {
 	emit_signal(SNAME("on_enabled"), this);
 }
-
 void GraphPort::_on_disabled() {
 	emit_signal(SNAME("on_disabled"), this);
 }
-
 void GraphPort::_on_changed_direction(const PortDirection p_direction) {
 	emit_signal(SNAME("changed_direction"), p_direction);
 }
@@ -285,6 +295,12 @@ void GraphPort::_on_changed_type(const int p_type) {
 }
 void GraphPort::_on_modified() {
 	emit_signal(SNAME("modified"));
+}
+void GraphPort::_on_connected(const Ref<GraphConnection> p_conn) {
+	emit_signal(SNAME("connected"), p_conn);
+}
+void GraphPort::_on_disconnected(const Ref<GraphConnection> p_conn) {
+	emit_signal(SNAME("disconnected"), p_conn);
 }
 
 void GraphPort::_bind_methods() {
@@ -300,12 +316,19 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exclusive"), &GraphPort::get_exclusive);
 
 	ClassDB::bind_method(D_METHOD("get_color"), &GraphPort::get_color);
+	ClassDB::bind_method(D_METHOD("get_graph_node"), &GraphPort::get_graph_node);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);
 
 	ClassDB::bind_method(D_METHOD("set_disabled_behaviour", "on_disabled_behaviour"), &GraphPort::set_disabled_behaviour);
 	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
+
+	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
+	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
+
+	ClassDB::bind_method(D_METHOD("get_port_index"), &GraphPort::get_port_index, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_filtered_port_index"), &GraphPort::get_filtered_port_index);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
@@ -318,6 +341,12 @@ void GraphPort::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("changed_direction", PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected")));
 	ADD_SIGNAL(MethodInfo("changed_type", PropertyInfo(Variant::INT, "type")));
 	ADD_SIGNAL(MethodInfo("modified"));
+	ADD_SIGNAL(MethodInfo("connected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
+	ADD_SIGNAL(MethodInfo("disconnected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
+
+	BIND_ENUM_CONSTANT(INPUT)
+	BIND_ENUM_CONSTANT(OUTPUT)
+	BIND_ENUM_CONSTANT(UNDIRECTED)
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_selected);

@@ -43,15 +43,7 @@ class GraphConnection : public Resource {
 	friend GraphPort;
 	friend GraphNode;
 
-public:
-	GraphPort *first_port = nullptr;
-	GraphPort *second_port = nullptr;
-	bool clear_if_invalid = true;
-
-	GraphPort *get_other(GraphPort *port);
-	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data();
-	bool matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
-
+protected:
 	struct ConnectionType {
 		union {
 			uint64_t key = 0;
@@ -74,10 +66,6 @@ public:
 		}
 	};
 
-	GraphConnection();
-	GraphConnection(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid);
-
-protected:
 	float activity = 0.0; // why is this used?
 
 	struct Cache {
@@ -90,14 +78,31 @@ protected:
 		Line2D *line = nullptr; // In local screen space.
 	} _cache;
 
+	void set_clear_if_invalid(bool p_clear_if_invalid);
+	bool get_clear_if_invalid();
+
+	static void _bind_methods();
+
+public:
+	GraphPort *first_port = nullptr;
+	GraphPort *second_port = nullptr;
+	bool clear_if_invalid = true;
+
 	void set_first_port(GraphPort *p_port);
 	GraphPort *get_first_port();
 
 	void set_second_port(GraphPort *p_port);
 	GraphPort *get_second_port();
 
-	void set_clear_if_invalid(bool p_clear_if_invalid);
-	bool get_clear_if_invalid();
+	GraphNode *get_first_node();
+	GraphNode *get_second_node();
 
-	static void _bind_methods();
+	GraphPort *get_other_port(GraphPort *p_port);
+	GraphNode *get_other_node(GraphNode *p_node);
+
+	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data();
+	bool matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
+
+	GraphConnection();
+	GraphConnection(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid);
 };

@@ -101,10 +101,11 @@ protected:
 
 	void _on_enabled();
 	void _on_disabled();
-
 	void _on_changed_direction(const PortDirection p_direction);
 	void _on_changed_type(const int p_type);
 	void _on_modified();
+	void _on_connected(const Ref<GraphConnection> p_conn);
+	void _on_disconnected(const Ref<GraphConnection> p_conn);
 
 	void _notification(int p_what);
 	virtual void _draw();
@@ -136,10 +137,13 @@ public:
 
 	Rect2 get_hotzone();
 
-	int get_index(bool p_include_disabled = true);
-	int get_filtered_index(bool p_include_disabled = true);
+	int get_port_index(bool p_include_disabled = true);
+	int get_filtered_port_index(bool p_include_disabled = true);
 
 	void disconnect_all();
+
+	bool has_connection();
+	TypedArray<Ref<GraphConnection>> get_connections();
 
 	GraphPort();
 	GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);

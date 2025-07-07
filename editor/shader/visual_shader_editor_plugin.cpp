@@ -4156,8 +4156,8 @@ void VisualShaderEditor::_connection_request(GraphPort *p_from_port, GraphPort *
 
 	int _from = String(p_from_port->get_graph_node()->get_name()).to_int();
 	int _to = String(p_to_port->get_graph_node()->get_name()).to_int();
-	int _from_index = p_from_port->get_filtered_index(false);
-	int _to_index = p_to_port->get_filtered_index(false);
+	int _from_index = p_from_port->get_filtered_port_index(false);
+	int _to_index = p_to_port->get_filtered_port_index(false);
 
 	bool swap = last_to_node != -1 && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 
@@ -4208,8 +4208,8 @@ void VisualShaderEditor::_disconnection_request(GraphPort *p_from_port, GraphPor
 	ERR_FAIL_NULL(p_to_port);
 	int _from = String(p_from_port->get_graph_node()->get_name()).to_int();
 	int _to = String(p_to_port->get_graph_node()->get_name()).to_int();
-	int _from_index = p_from_port->get_filtered_index(false);
-	int _to_index = p_to_port->get_filtered_index(false);
+	int _from_index = p_from_port->get_filtered_port_index(false);
+	int _to_index = p_to_port->get_filtered_port_index(false);
 
 	VisualShader::Type type = get_current_shader_type();
 
@@ -4236,7 +4236,7 @@ void VisualShaderEditor::_connection_drag_ended() {
 void VisualShaderEditor::_connection_to_empty(GraphPort *p_from_port, const Vector2 &p_release_position) {
 	ERR_FAIL_NULL(p_from_port);
 	from_node = String(p_from_port->get_graph_node()->get_name()).to_int();
-	from_slot = p_from_port->get_filtered_index(false);
+	from_slot = p_from_port->get_filtered_port_index(false);
 	VisualShaderNode::PortType input_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), from_node);
@@ -4249,7 +4249,7 @@ void VisualShaderEditor::_connection_to_empty(GraphPort *p_from_port, const Vect
 void VisualShaderEditor::_connection_from_empty(GraphPort *p_to_port, const Vector2 &p_release_position) {
 	ERR_FAIL_NULL(p_to_port);
 	from_node = String(p_to_port->get_graph_node()->get_name()).to_int();
-	from_slot = p_to_port->get_filtered_index(false);
+	from_slot = p_to_port->get_filtered_port_index(false);
 	VisualShaderNode::PortType input_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), to_node);

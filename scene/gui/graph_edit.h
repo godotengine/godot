@@ -307,6 +307,7 @@ private:
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_by_node(GraphNode *p_node) const;
+	TypedArray<Ref<GraphConnection>> _get_connections_by_port(GraphPort *p_port) const;
 	Error _add_connection(Ref<GraphConnection> p_connection);
 	bool _is_connection_valid(GraphPort *p_port);
 	void _mark_connections_dirty_by_port(GraphPort *p_port);
@@ -376,6 +377,8 @@ public:
 	void disconnect_all_by_node(GraphNode *p_node);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
 	bool ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
+	bool is_node_connected(GraphNode *p_node);
+	bool is_port_connected(GraphPort *p_port);
 	TypedArray<GraphPort> get_connected_ports(GraphPort *p_port);
 	int get_connection_count(GraphPort *p_port);
 	GraphNode *get_connection_target(GraphPort *p_port);

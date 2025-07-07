@@ -32,13 +32,23 @@
 
 #include "scene/gui/graph_node.h"
 
-GraphPort *GraphConnection::get_other(GraphPort *port) {
-	if (port == first_port) {
+GraphPort *GraphConnection::get_other_port(GraphPort *p_port) {
+	if (p_port == first_port) {
 		return second_port;
-	} else if (port == second_port) {
+	} else if (p_port == second_port) {
 		return first_port;
 	} else {
 		ERR_FAIL_V_MSG(nullptr, "Connection does not contain port");
+	}
+}
+
+GraphNode *GraphConnection::get_other_node(GraphNode *p_node) {
+	if (p_node == get_first_node()) {
+		return get_first_node();
+	} else if (p_node == get_second_node()) {
+		return get_second_node();
+	} else {
+		ERR_FAIL_V_MSG(nullptr, "Connection does not connect to");
 	}
 }
 
@@ -46,7 +56,7 @@ GraphPort *GraphConnection::get_other(GraphPort *port) {
 Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() {
 	ERR_FAIL_NULL_V(first_port->graph_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
 	ERR_FAIL_NULL_V(second_port->graph_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
-	return Pair(Pair(String(first_port->graph_node->get_name()), first_port->get_filtered_index(false)), Pair(String(second_port->graph_node->get_name()), second_port->get_filtered_index(false)));
+	return Pair(Pair(String(first_port->graph_node->get_name()), first_port->get_filtered_port_index(false)), Pair(String(second_port->graph_node->get_name()), second_port->get_filtered_port_index(false)));
 }
 
 bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port) {
@@ -54,8 +64,8 @@ bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port,
 	ERR_FAIL_NULL_V(second_port, false);
 	ERR_FAIL_NULL_V(first_port->graph_node, false);
 	ERR_FAIL_NULL_V(second_port->graph_node, false);
-	return first_port->get_filtered_index(false) == p_first_port &&
-			second_port->get_filtered_index(false) == p_second_port &&
+	return first_port->get_filtered_port_index(false) == p_first_port &&
+			second_port->get_filtered_port_index(false) == p_second_port &&
 			String(first_port->graph_node->get_name()) == p_first_node &&
 			String(second_port->graph_node->get_name()) == p_second_node;
 }
@@ -76,6 +86,16 @@ GraphPort *GraphConnection::get_second_port() {
 	return second_port;
 }
 
+GraphNode *GraphConnection::get_first_node() {
+	ERR_FAIL_NULL_V(first_port, nullptr);
+	return first_port->graph_node;
+}
+
+GraphNode *GraphConnection::get_second_node() {
+	ERR_FAIL_NULL_V(second_port, nullptr);
+	return second_port->graph_node;
+}
+
 void GraphConnection::set_clear_if_invalid(bool p_clear_if_invalid) {
 	clear_if_invalid = p_clear_if_invalid;
 }
@@ -89,6 +109,11 @@ void GraphConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_first_port"), &GraphConnection::get_first_port);
 	ClassDB::bind_method(D_METHOD("set_second_port", "port"), &GraphConnection::set_second_port);
 	ClassDB::bind_method(D_METHOD("get_second_port"), &GraphConnection::get_second_port);
+	ClassDB::bind_method(D_METHOD("get_other_port"), &GraphConnection::get_other_port);
+
+	ClassDB::bind_method(D_METHOD("get_first_node"), &GraphConnection::get_first_node);
+	ClassDB::bind_method(D_METHOD("get_second_node"), &GraphConnection::get_second_node);
+	ClassDB::bind_method(D_METHOD("get_other_node"), &GraphConnection::get_other_node);
 
 	ClassDB::bind_method(D_METHOD("set_clear_if_invalid", "clear_if_invalid"), &GraphConnection::set_clear_if_invalid);
 	ClassDB::bind_method(D_METHOD("get_clear_if_invalid"), &GraphConnection::get_clear_if_invalid);

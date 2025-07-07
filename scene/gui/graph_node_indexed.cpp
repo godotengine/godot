@@ -413,7 +413,7 @@ int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input, bool p_
 		return idx;
 	} else {
 		GraphPort *port = Object::cast_to<GraphPort>(ports[idx]);
-		return port->get_index(false);
+		return port->get_port_index(false);
 	}
 }
 
@@ -421,14 +421,14 @@ int GraphNodeIndexed::slot_to_input_port_index(int p_slot_index, bool p_include_
 	ERR_FAIL_INDEX_V(p_slot_index * 2, ports.size(), -1);
 	GraphPort *port = Object::cast_to<GraphPort>(ports[p_slot_index * 2]);
 	ERR_FAIL_NULL_V(port, -1);
-	return port->get_filtered_index(p_include_disabled);
+	return port->get_filtered_port_index(p_include_disabled);
 }
 
 int GraphNodeIndexed::slot_to_output_port_index(int p_slot_index, bool p_include_disabled) {
 	ERR_FAIL_INDEX_V(p_slot_index * 2 + 1, ports.size(), -1);
 	GraphPort *port = Object::cast_to<GraphPort>(ports[p_slot_index * 2 + 1]);
 	ERR_FAIL_NULL_V(port, -1);
-	return port->get_filtered_index(p_include_disabled);
+	return port->get_filtered_port_index(p_include_disabled);
 }
 
 int GraphNodeIndexed::input_port_to_slot_index(int p_port_index, bool p_include_disabled) {

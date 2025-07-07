@@ -143,6 +143,12 @@ public:
 	void set_port_focus_mode(Control::FocusMode p_focus_mode);
 	Control::FocusMode get_port_focus_mode() const;
 
+	bool has_connection();
+	TypedArray<Ref<GraphConnection>> get_connections();
+
+	void _on_connected(const Ref<GraphConnection> p_conn);
+	void _on_disconnected(const Ref<GraphConnection> p_conn);
+
 	virtual Size2 get_minimum_size() const override;
 
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
