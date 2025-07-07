@@ -57,7 +57,9 @@ void GraphPort::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			graph_edit->disconnect_all_by_port(this);
+			if (graph_edit) {
+				graph_edit->disconnect_all_by_port(this);
+			}
 			graph_edit = nullptr;
 			graph_node = nullptr;
 		} break;
@@ -341,11 +343,9 @@ void GraphPort::_bind_methods() {
 }
 
 GraphPort::GraphPort() {
-	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 }
 
 GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
-	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	enabled = p_enabled;
 	exclusive = p_exclusive;
 	type = p_type;

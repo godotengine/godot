@@ -39,6 +39,8 @@
 #include <scene/resources/style_box_flat.h>
 
 void GraphNodeIndexed::add_child_notify(Node *p_child) {
+	GraphNode::add_child_notify(p_child);
+
 	if (p_child->is_internal() || p_child == port_container) {
 		return;
 	}
@@ -55,11 +57,11 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	}
 
 	create_slot_and_ports(index, true);
-
-	GraphNode::add_child_notify(p_child);
 }
 
 void GraphNodeIndexed::move_child_notify(Node *p_child) {
+	GraphNode::move_child_notify(p_child);
+
 	if (p_child->is_internal() || !is_ready() || p_child == port_container) {
 		return;
 	}
@@ -86,11 +88,11 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 		}
 		_set_slot(old_index, swap_buffer);
 	}
-
-	GraphNode::move_child_notify(p_child);
 }
 
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
+	GraphNode::remove_child_notify(p_child);
+
 	if (p_child->is_internal() || !is_ready() || p_child == port_container) {
 		return;
 	}
@@ -104,8 +106,6 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	ERR_FAIL_INDEX(index, slots.size());
 
 	_remove_slot(index);
-
-	GraphNode::remove_child_notify(p_child);
 }
 
 void GraphNodeIndexed::_notification(int p_what) {
@@ -345,34 +345,34 @@ void GraphNodeIndexed::set_slot_properties(int p_slot_index, bool p_input_enable
 }
 
 void GraphNodeIndexed::set_input_port_properties(int p_slot_index, bool p_enabled, int p_type) {
-	GraphPort *port = get_input_port(p_slot_index);
+	GraphPort *port = get_input_port_by_slot(p_slot_index);
 	ERR_FAIL_NULL(port);
 	port->set_properties(p_enabled, true, p_type, GraphPort::PortDirection::INPUT);
 }
 
 void GraphNodeIndexed::set_output_port_properties(int p_slot_index, bool p_enabled, int p_type) {
-	GraphPort *port = get_output_port(p_slot_index);
+	GraphPort *port = get_output_port_by_slot(p_slot_index);
 	ERR_FAIL_NULL(port);
 	port->set_properties(p_enabled, false, p_type, GraphPort::PortDirection::OUTPUT);
 }
 
-GraphPort *GraphNodeIndexed::get_input_port(int p_slot_index) {
+GraphPort *GraphNodeIndexed::get_input_port_by_slot(int p_slot_index) {
 	int port_index = slot_to_port_index(p_slot_index, true);
 	return get_port(port_index);
 }
 
-GraphPort *GraphNodeIndexed::get_output_port(int p_slot_index) {
+GraphPort *GraphNodeIndexed::get_output_port_by_slot(int p_slot_index) {
 	int port_index = slot_to_port_index(p_slot_index, false);
 	return get_port(port_index);
 }
 
-void GraphNodeIndexed::set_input_port(int p_slot_index, GraphPort *p_port) {
+void GraphNodeIndexed::set_input_port_by_slot(int p_slot_index, GraphPort *p_port) {
 	Slot old_slot = slots[p_slot_index];
 	slots.set(p_slot_index, Slot(p_port, old_slot.right_port, old_slot.draw_stylebox));
 	set_port(slot_to_port_index(p_slot_index, true), p_port);
 }
 
-void GraphNodeIndexed::set_output_port(int p_slot_index, GraphPort *p_port) {
+void GraphNodeIndexed::set_output_port_by_slot(int p_slot_index, GraphPort *p_port) {
 	Slot old_slot = slots[p_slot_index];
 	slots.set(p_slot_index, Slot(old_slot.left_port, p_port, old_slot.draw_stylebox));
 	set_port(slot_to_port_index(p_slot_index, false), p_port);
@@ -513,10 +513,10 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_port_properties", "slot_index", "enabled", "type"), &GraphNodeIndexed::set_input_port_properties);
 	ClassDB::bind_method(D_METHOD("set_output_port_properties", "slot_index", "enabled", "type"), &GraphNodeIndexed::set_output_port_properties);
 
-	ClassDB::bind_method(D_METHOD("set_input_port", "slot_index", "port"), &GraphNodeIndexed::set_input_port);
-	ClassDB::bind_method(D_METHOD("set_output_port", "slot_index", "port"), &GraphNodeIndexed::set_output_port);
-	ClassDB::bind_method(D_METHOD("get_input_port", "slot_index"), &GraphNodeIndexed::get_input_port);
-	ClassDB::bind_method(D_METHOD("get_output_port", "slot_index"), &GraphNodeIndexed::get_output_port);
+	ClassDB::bind_method(D_METHOD("set_input_port_by_slot", "slot_index", "port"), &GraphNodeIndexed::set_input_port_by_slot);
+	ClassDB::bind_method(D_METHOD("set_output_port_by_slot", "slot_index", "port"), &GraphNodeIndexed::set_output_port_by_slot);
+	ClassDB::bind_method(D_METHOD("get_input_port_by_slot", "slot_index"), &GraphNodeIndexed::get_input_port_by_slot);
+	ClassDB::bind_method(D_METHOD("get_output_port_by_slot", "slot_index"), &GraphNodeIndexed::get_output_port_by_slot);
 
 	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNodeIndexed::get_input_port_count);
 	ClassDB::bind_method(D_METHOD("get_output_port_count"), &GraphNodeIndexed::get_output_port_count);
@@ -563,6 +563,4 @@ GraphNodeIndexed::GraphNodeIndexed() {
 }
 
 GraphNodeIndexed::Slot::Slot() {
-	left_port = nullptr;
-	right_port = nullptr;
 }

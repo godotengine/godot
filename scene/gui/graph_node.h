@@ -32,7 +32,6 @@
 
 #include "core/templates/vector.h"
 #include "core/variant/typed_array.h"
-#include "scene/gui/graph_element.h"
 #include "scene/gui/graph_port.h"
 
 class HBoxContainer;

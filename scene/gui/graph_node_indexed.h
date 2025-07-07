@@ -38,8 +38,8 @@ class GraphNodeIndexed : public GraphNode {
 
 protected:
 	struct Slot {
-		GraphPort *left_port;
-		GraphPort *right_port;
+		GraphPort *left_port = nullptr;
+		GraphPort *right_port = nullptr;
 		bool draw_stylebox = true;
 
 		Slot();
@@ -105,10 +105,10 @@ public:
 	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type);
 	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type);
 
-	void set_input_port(int p_slot_index, GraphPort *p_port);
-	void set_output_port(int p_slot_index, GraphPort *p_port);
-	GraphPort *get_input_port(int p_slot_index);
-	GraphPort *get_output_port(int p_slot_index);
+	void set_input_port_by_slot(int p_slot_index, GraphPort *p_port);
+	void set_output_port_by_slot(int p_slot_index, GraphPort *p_port);
+	GraphPort *get_input_port_by_slot(int p_slot_index);
+	GraphPort *get_output_port_by_slot(int p_slot_index);
 
 	int get_input_port_count();
 	int get_output_port_count();

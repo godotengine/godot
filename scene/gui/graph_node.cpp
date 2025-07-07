@@ -526,7 +526,7 @@ GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection
 	ERR_FAIL_INDEX_V(p_port_idx, get_filtered_port_count(p_direction, p_include_disabled), nullptr);
 	int filtered_idx = 0;
 	for (GraphPort *port : ports) {
-		if (!port || (!port->is_enabled() && !p_include_disabled)) {
+		if (!port || (!port->is_enabled() && !p_include_disabled) || port->direction != p_direction) {
 			continue;
 		}
 		if (filtered_idx == p_port_idx) {
@@ -820,6 +820,7 @@ GraphNode::GraphNode() {
 
 	port_container = memnew(Container);
 	port_container->set_focus_mode(Control::FOCUS_NONE);
+	port_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	port_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	port_container->set_anchors_preset(Control::PRESET_TOP_WIDE);
 	add_child(port_container, false, INTERNAL_MODE_BACK);

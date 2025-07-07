@@ -146,6 +146,8 @@ private:
 	Ref<ViewPanner> panner;
 	bool warped_panning = true;
 
+	bool allow_self_connection = false;
+
 	bool show_menu = true;
 	bool show_zoom_label = false;
 	bool show_grid_buttons = true;
@@ -198,7 +200,7 @@ private:
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
 
-	TypedArray<Ref<GraphConnection>> connections;
+	TypedArray<Ref<GraphConnection>> graph_connections;
 	HashMap<GraphPort *, TypedArray<Ref<GraphConnection>>> connection_map;
 	Ref<GraphConnection> hovered_connection;
 
@@ -301,8 +303,6 @@ private:
 	void _minimap_draw();
 	void _draw_grid();
 
-	bool is_in_port_hotzone(GraphPort *p_port, const Vector2 &p_local_pos);
-
 	const TypedArray<Ref<GraphConnection>> _get_connections() const;
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
@@ -345,9 +345,10 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
+	bool is_in_port_hotzone(GraphPort *p_port, const Vector2 &p_local_pos);
+
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
-	GDVIRTUAL3R(bool, _is_in_input_hotzone, Object *, int, Vector2)
-	GDVIRTUAL3R(bool, _is_in_output_hotzone, Object *, int, Vector2)
+	GDVIRTUAL2R(bool, _is_in_port_hotzone, GraphPort *, Vector2)
 	GDVIRTUAL2R(bool, _is_node_hover_valid, GraphPort *, GraphPort *);
 
 public:
@@ -365,13 +366,14 @@ public:
 	void _update_graph_frame(GraphFrame *p_frame);
 
 	// Connection related methods.
-	Error connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool keep_alive = false);
-	Error connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool keep_alive = false);
-	Error connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool keep_alive = false);
+	Error connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid = true);
+	Error connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool p_clear_if_invalid = true);
+	Error connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool p_keep_alive = false);
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
 	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
 	void disconnect_all_by_port(GraphPort *p_port);
+	void disconnect_all_by_node(GraphNode *p_node);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
 	bool ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
 	int get_connection_count(GraphPort *p_port);
@@ -403,7 +405,7 @@ public:
 	virtual bool is_node_hover_valid(GraphPort *p_first_port, GraphPort *p_second_port);
 
 	void set_connection_activity(Ref<GraphConnection> p_conn, float p_activity);
-	void set_connection_activity_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, float p_activity);
+	void set_connection_activity_indexed_legacy(String p_first_node, int p_first_port, String p_second_node, int p_second_port, float p_activity);
 	void reset_all_connection_activity();
 	void add_valid_connection_type(int p_type, int p_with_type);
 	void remove_valid_connection_type(int p_type, int p_with_type);
@@ -459,6 +461,9 @@ public:
 
 	void set_input_disconnects(bool p_enable);
 	bool is_input_disconnects_enabled() const;
+
+	void set_allow_self_connection(bool p_allowed);
+	bool is_self_connection_allowed() const;
 
 	void add_valid_input_disconnect_type(int p_type);
 	void remove_valid_input_disconnect_type(int p_type);

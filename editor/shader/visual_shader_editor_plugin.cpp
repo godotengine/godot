@@ -138,15 +138,9 @@ void VSGraphPort::_draw() {
 }
 
 VSGraphPort::VSGraphPort() {
-	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 }
 
 VSGraphPort::VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
-	set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-	enabled = p_enabled;
-	exclusive = p_exclusive;
-	type = p_type;
-	direction = p_direction;
 }
 
 ///////////////////
@@ -1278,21 +1272,19 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 					}
 				}
 			} else {
-				graph_node->get_output_port(idx)->add_theme_color_override("color", vector_expanded_color[expanded_port_counter - 1]);
+				graph_node->get_output_port_by_slot(idx)->add_theme_color_override("color", vector_expanded_color[expanded_port_counter - 1]);
 			}
 		}
 	}
-	/*
-	if (!is_frame && !is_reroute) {
-		VSGraphNode *gnode = cast_to<VSGraphNode>(node);
-		for (const Ref<GraphConnection> conn : graph->get_connections()) {
-			if (E.to_node == p_id && E.to_port == j) {
-				port_left_used = true;
-				break;
+
+	// Because node updates are done by completely removing and re-adding nodes to the graph, re-add existing connections
+	if (p_just_update) {
+		for (const VisualShader::Connection &E : connections) {
+			if (E.from_node == p_id || E.to_node == p_id) {
+				graph->connect_nodes_indexed_legacy(itos(E.from_node), E.from_port, itos(E.to_node), E.to_port);
 			}
-			gnode->get_input_port(j);
 		}
-	}*/
+	}
 
 	bool has_relative_parameter_instances = false;
 	if (vsnode->get_output_port_for_preview() >= 0) {
@@ -1384,9 +1376,14 @@ void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, b
 		}
 
 		graph_edit->remove_child(links[p_id].graph_element);
-		memdelete(links[p_id].graph_element);
+		links[p_id].graph_element->queue_free();
 		if (!p_just_update) {
 			links.erase(p_id);
+		}
+
+		VSGraphNode *graph_node = Object::cast_to<VSGraphNode>(links[p_id].graph_element);
+		if (graph_node) {
+			graph_edit->disconnect_all_by_node(graph_node);
 		}
 	}
 }

@@ -30,10 +30,7 @@
 
 #include "graph_connection.h"
 
-#include "scene/gui/graph_edit.h"
 #include "scene/gui/graph_node.h"
-#include "scene/gui/graph_node_indexed.h"
-#include "scene/gui/graph_port.h"
 
 GraphPort *GraphConnection::get_other(GraphPort *port) {
 	if (port == first_port) {
@@ -60,7 +57,7 @@ bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port,
 	return first_port->get_filtered_index(false) == p_first_port &&
 			second_port->get_filtered_index(false) == p_second_port &&
 			String(first_port->graph_node->get_name()) == p_first_node &&
-			String(second_port->graph_node->get_name()) != p_second_node;
+			String(second_port->graph_node->get_name()) == p_second_node;
 }
 
 void GraphConnection::set_first_port(GraphPort *p_port) {
