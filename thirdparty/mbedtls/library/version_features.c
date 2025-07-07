@@ -477,6 +477,9 @@ static const char * const features[] = {
 #if defined(MBEDTLS_SSL_KEEP_PEER_CERTIFICATE)
     "SSL_KEEP_PEER_CERTIFICATE", //no-check-names
 #endif /* MBEDTLS_SSL_KEEP_PEER_CERTIFICATE */
+#if defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+    "SSL_KEYING_MATERIAL_EXPORT", //no-check-names
+#endif /* MBEDTLS_SSL_KEYING_MATERIAL_EXPORT */
 #if defined(MBEDTLS_SSL_RENEGOTIATION)
     "SSL_RENEGOTIATION", //no-check-names
 #endif /* MBEDTLS_SSL_RENEGOTIATION */

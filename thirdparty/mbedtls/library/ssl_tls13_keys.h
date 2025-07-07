@@ -40,8 +40,9 @@
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
 
+/* We need to tell the compiler that we meant to leave out the null character. */
 #define MBEDTLS_SSL_TLS1_3_LABEL(name, string)       \
-    const unsigned char name    [sizeof(string) - 1];
+    const unsigned char name    [sizeof(string) - 1] MBEDTLS_ATTRIBUTE_UNTERMINATED_STRING;
 
 union mbedtls_ssl_tls13_labels_union {
     MBEDTLS_SSL_TLS1_3_LABEL_LIST
@@ -60,8 +61,9 @@ extern const struct mbedtls_ssl_tls13_labels_struct mbedtls_ssl_tls13_labels;
     mbedtls_ssl_tls13_labels.LABEL,              \
     MBEDTLS_SSL_TLS1_3_LBL_LEN(LABEL)
 
-#define MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_LABEL_LEN  \
-    sizeof(union mbedtls_ssl_tls13_labels_union)
+/* Maximum length of the label field in the HkdfLabel struct defined in
+ * RFC 8446, Section 7.1, excluding the "tls13 " prefix. */
+#define MBEDTLS_SSL_TLS1_3_HKDF_LABEL_MAX_LABEL_LEN 249
 
 /* The maximum length of HKDF contexts used in the TLS 1.3 standard.
  * Since contexts are always hashes of message transcripts, this can
@@ -70,13 +72,11 @@ extern const struct mbedtls_ssl_tls13_labels_struct mbedtls_ssl_tls13_labels;
     PSA_HASH_MAX_SIZE
 
 /* Maximum desired length for expanded key material generated
- * by HKDF-Expand-Label.
- *
- * Warning: If this ever needs to be increased, the implementation
- * ssl_tls13_hkdf_encode_label() in ssl_tls13_keys.c needs to be
- * adjusted since it currently assumes that HKDF key expansion
- * is never used with more than 255 Bytes of output. */
-#define MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_EXPANSION_LEN 255
+ * by HKDF-Expand-Label. This algorithm can output up to 255 * hash_size
+ * bytes of key material where hash_size is the output size of the
+ * underlying hash function. */
+#define MBEDTLS_SSL_TLS1_3_KEY_SCHEDULE_MAX_EXPANSION_LEN \
+    (255 * MBEDTLS_TLS1_3_MD_MAX_SIZE)
 
 /**
  * \brief            The \c HKDF-Expand-Label function from
@@ -645,6 +645,23 @@ int mbedtls_ssl_tls13_export_handshake_psk(mbedtls_ssl_context *ssl,
                                            unsigned char **psk,
                                            size_t *psk_len);
 #endif
+
+/**
+ * \brief Calculate TLS-Exporter function as defined in RFC 8446, Section 7.5.
+ *
+ * \param[in]   hash_alg  The hash algorithm.
+ * \param[in]   secret  The secret to use. (Should be the exporter master secret.)
+ * \param[in]   secret_len  Length of secret.
+ * \param[in]   label  The label of the exported key.
+ * \param[in]   label_len  The length of label.
+ * \param[out]  out  The output buffer for the exported key. Must have room for at least out_len bytes.
+ * \param[in]   out_len  Length of the key to generate.
+ */
+int mbedtls_ssl_tls13_exporter(const psa_algorithm_t hash_alg,
+                               const unsigned char *secret, const size_t secret_len,
+                               const unsigned char *label, const size_t label_len,
+                               const unsigned char *context_value, const size_t context_len,
+                               uint8_t *out, const size_t out_len);
 
 #endif /* MBEDTLS_SSL_PROTO_TLS1_3 */
 
