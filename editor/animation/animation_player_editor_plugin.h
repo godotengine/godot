@@ -179,7 +179,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _select_anim_by_name(const String &p_anim);
 	float _get_editor_step() const;
-	void _go_to_nearest_keyframe(bool p_backward);
 	void _play_pressed();
 	void _play_from_pressed();
 	void _play_bw_pressed();
@@ -270,6 +269,7 @@ public:
 	void clear();
 
 	void ensure_visibility();
+	void go_to_nearest_keyframe(bool p_backward);
 
 	void edit(AnimationMixer *p_node, AnimationPlayer *p_player, bool p_is_dummy);
 	void forward_force_draw_over_viewport(Control *p_overlay);
