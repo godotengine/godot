@@ -235,8 +235,8 @@ void NavMeshQueries2D::map_query_path(NavMap2D *p_map, const Ref<NavigationPathQ
 }
 
 void NavMeshQueries2D::_query_task_find_start_end_positions(NavMeshPathQueryTask2D &p_query_task, const NavMapIteration2D &p_map_iteration) {
-	real_t begin_d = FLT_MAX;
-	real_t end_d = FLT_MAX;
+	real_t begin_d_squared = FLT_MAX;
+	real_t end_d_squared = FLT_MAX;
 
 	const LocalVector<Ref<NavRegionIteration2D>> &regions = p_map_iteration.region_iterations;
 
@@ -257,17 +257,17 @@ void NavMeshQueries2D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 				const Triangle2 triangle(p.vertices[0], p.vertices[point_id - 1], p.vertices[point_id]);
 
 				Vector2 point = triangle.get_closest_point_to(p_query_task.start_position);
-				real_t distance_to_point = point.distance_to(p_query_task.start_position);
-				if (distance_to_point < begin_d) {
-					begin_d = distance_to_point;
+				real_t distance_to_point_squared = point.distance_squared_to(p_query_task.start_position);
+				if (distance_to_point_squared < begin_d_squared) {
+					begin_d_squared = distance_to_point_squared;
 					p_query_task.begin_polygon = &p;
 					p_query_task.begin_position = point;
 				}
 
 				point = triangle.get_closest_point_to(p_query_task.target_position);
-				distance_to_point = point.distance_to(p_query_task.target_position);
-				if (distance_to_point < end_d) {
-					end_d = distance_to_point;
+				distance_to_point_squared = point.distance_squared_to(p_query_task.target_position);
+				if (distance_to_point_squared < end_d_squared) {
+					end_d_squared = distance_to_point_squared;
 					p_query_task.end_polygon = &p;
 					p_query_task.end_position = point;
 				}
