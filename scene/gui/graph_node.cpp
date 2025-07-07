@@ -851,7 +851,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_port_count", "include_disabled"), &GraphNode::get_port_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_count", "filter_direction", "include_disabled"), &GraphNode::get_filtered_port_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("index_of_port", "port", "include_disabled"), &GraphNode::index_of_port, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("filtered_index_of_port", "port", "filter_direction", "include_disabled"), &GraphNode::filtered_index_of_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("filtered_index_of_port", "port", "include_disabled"), &GraphNode::filtered_index_of_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("enabled_index_to_port_index", "enabled_port_index"), &GraphNode::enabled_index_to_port_index);
 	ClassDB::bind_method(D_METHOD("port_index_to_enabled_index", "port_index"), &GraphNode::port_index_to_enabled_index);
 
