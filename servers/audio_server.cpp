@@ -1918,12 +1918,13 @@ void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playba
 
 void AudioServer::stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
-	if (sample_playback_list.has(p_playback)) {
-		sample_playback_list.erase(p_playback);
-		AudioDriver::get_singleton()->stop_sample_playback(p_playback);
-		p_playback->stream_playback->set_sample_playback(nullptr);
-		stop_playback_stream(p_playback->stream_playback);
+	if (!sample_playback_list.has(p_playback)) {
+		return;
 	}
+	sample_playback_list.erase(p_playback);
+	AudioDriver::get_singleton()->stop_sample_playback(p_playback);
+	p_playback->stream_playback->set_sample_playback(nullptr);
+	stop_playback_stream(p_playback->stream_playback);
 }
 
 void AudioServer::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
@@ -1933,7 +1934,7 @@ void AudioServer::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_pl
 
 bool AudioServer::is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
-	return AudioDriver::get_singleton()->is_sample_playback_active(p_playback);
+	return sample_playback_list.has(p_playback);
 }
 
 double AudioServer::get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) {
