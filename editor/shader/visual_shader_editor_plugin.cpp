@@ -1375,15 +1375,24 @@ void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, b
 			return;
 		}
 
+		GraphNode *graph_node = Object::cast_to<GraphNode>(links[p_id].graph_element);
+		Array ports;
+		if (graph_node) {
+			graph_edit->disconnect_all_by_node(graph_node);
+			ports = Array(graph_node->get_ports());
+		}
+
 		graph_edit->remove_child(links[p_id].graph_element);
-		links[p_id].graph_element->queue_free();
+		memdelete(links[p_id].graph_element);
 		if (!p_just_update) {
 			links.erase(p_id);
 		}
 
-		VSGraphNode *graph_node = Object::cast_to<VSGraphNode>(links[p_id].graph_element);
-		if (graph_node) {
-			graph_edit->disconnect_all_by_node(graph_node);
+		for (Variant p : ports) {
+			GraphPort *port = Object::cast_to<GraphPort>(p);
+			if (port) {
+				memdelete(port);
+			}
 		}
 	}
 }
