@@ -109,11 +109,11 @@ void GraphConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_first_port"), &GraphConnection::get_first_port);
 	ClassDB::bind_method(D_METHOD("set_second_port", "port"), &GraphConnection::set_second_port);
 	ClassDB::bind_method(D_METHOD("get_second_port"), &GraphConnection::get_second_port);
-	ClassDB::bind_method(D_METHOD("get_other_port"), &GraphConnection::get_other_port);
+	ClassDB::bind_method(D_METHOD("get_other_port", "port"), &GraphConnection::get_other_port);
 
 	ClassDB::bind_method(D_METHOD("get_first_node"), &GraphConnection::get_first_node);
 	ClassDB::bind_method(D_METHOD("get_second_node"), &GraphConnection::get_second_node);
-	ClassDB::bind_method(D_METHOD("get_other_node"), &GraphConnection::get_other_node);
+	ClassDB::bind_method(D_METHOD("get_other_node", "node"), &GraphConnection::get_other_node);
 
 	ClassDB::bind_method(D_METHOD("set_clear_if_invalid", "clear_if_invalid"), &GraphConnection::set_clear_if_invalid);
 	ClassDB::bind_method(D_METHOD("get_clear_if_invalid"), &GraphConnection::get_clear_if_invalid);

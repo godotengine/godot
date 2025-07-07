@@ -441,6 +441,14 @@ int GraphNodeIndexed::output_port_to_slot_index(int p_port_index, bool p_include
 	return slot_index_of_port(port);
 }
 
+TypedArray<Ref<GraphConnection>> GraphNodeIndexed::get_input_connections() {
+	return get_filtered_connections(GraphPort::INPUT);
+}
+
+TypedArray<Ref<GraphConnection>> GraphNodeIndexed::get_output_connections() {
+	return get_filtered_connections(GraphPort::OUTPUT);
+}
+
 bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
 	ERR_FAIL_INDEX_V(p_slot_index, slots.size(), false);
 	return slots[p_slot_index].draw_stylebox;
@@ -535,6 +543,9 @@ void GraphNodeIndexed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_slot_focus_mode", "focus_mode"), &GraphNodeIndexed::set_slot_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_slot_focus_mode"), &GraphNodeIndexed::get_slot_focus_mode);
+
+	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNodeIndexed::get_input_connections);
+	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_slots", "get_slots");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "slot_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slot_focus_mode", "get_slot_focus_mode");

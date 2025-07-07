@@ -327,8 +327,8 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
 
-	ClassDB::bind_method(D_METHOD("get_port_index"), &GraphPort::get_port_index, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_filtered_port_index"), &GraphPort::get_filtered_port_index);
+	ClassDB::bind_method(D_METHOD("get_port_index", "include_disabled"), &GraphPort::get_port_index, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_filtered_port_index", "include_disabled"), &GraphPort::get_filtered_port_index, DEFVAL(true));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");

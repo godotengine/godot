@@ -782,6 +782,12 @@ TypedArray<Ref<GraphConnection>> GraphNode::get_connections() {
 	return graph->get_connections_by_node(this);
 }
 
+TypedArray<Ref<GraphConnection>> GraphNode::get_filtered_connections(GraphPort::PortDirection p_filter_direction) {
+	GraphEdit *graph = cast_to<GraphEdit>(get_parent());
+	ERR_FAIL_NULL_V(graph, TypedArray<Ref<GraphConnection>>());
+	return graph->get_filtered_connections_by_node(this, p_filter_direction);
+}
+
 void GraphNode::_on_connected(const Ref<GraphConnection> p_conn) {
 	emit_signal(SNAME("connected"), p_conn);
 }
@@ -795,7 +801,7 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
 
-	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::set_ports); // TypedArray<GraphPort>
+	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::set_ports);
 	ClassDB::bind_method(D_METHOD("get_ports"), &GraphNode::get_ports);
 	ClassDB::bind_method(D_METHOD("remove_all_ports"), &GraphNode::remove_all_ports);
 
@@ -809,11 +815,13 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_port_count", "include_disabled"), &GraphNode::get_port_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_count", "filter_direction", "include_disabled"), &GraphNode::get_filtered_port_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("index_of_port", "port", "include_disabled"), &GraphNode::index_of_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("filtered_index_of_port", "port", "filter_direction", "include_disabled"), &GraphNode::filtered_index_of_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("enabled_index_to_port_index", "enabled_port_index"), &GraphNode::enabled_index_to_port_index);
 	ClassDB::bind_method(D_METHOD("port_index_to_enabled_index", "port_index"), &GraphNode::port_index_to_enabled_index);
 
 	ClassDB::bind_method(D_METHOD("has_connection"), &GraphNode::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphNode::get_connections);
+	ClassDB::bind_method(D_METHOD("get_filtered_connections", "filter_direction"), &GraphNode::get_filtered_connections);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);

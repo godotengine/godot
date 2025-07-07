@@ -125,6 +125,9 @@ public:
 	int input_port_to_slot_index(int p_port_index, bool p_include_disabled = true);
 	int output_port_to_slot_index(int p_port_index, bool p_include_disabled = true);
 
+	TypedArray<Ref<GraphConnection>> get_input_connections();
+	TypedArray<Ref<GraphConnection>> get_output_connections();
+
 	bool get_slot_draw_stylebox(int p_slot_index);
 	void set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox);
 

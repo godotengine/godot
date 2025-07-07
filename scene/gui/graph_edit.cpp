@@ -517,6 +517,17 @@ const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_node(GraphN
 	return ret;
 }
 
+const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
+	TypedArray<Ref<GraphConnection>> ret;
+	for (GraphPort *port : p_node->ports) {
+		if (!port || port->direction != p_filter_direction) {
+			continue;
+		}
+		ret.append_array(connection_map[port]);
+	}
+	return ret;
+}
+
 int GraphEdit::get_connection_count(GraphPort *p_port) {
 	return connection_map[p_port].size();
 }
@@ -2876,35 +2887,39 @@ void GraphEdit::arrange_nodes() {
 }
 
 void GraphEdit::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphEdit::set_connections);
+	ClassDB::bind_method(D_METHOD("get_connections"), &GraphEdit::get_connections);
+	ClassDB::bind_method(D_METHOD("get_connections_by_port", "port"), &GraphEdit::_get_connections_by_port);
+	ClassDB::bind_method(D_METHOD("get_connections_by_node", "node"), &GraphEdit::_get_connections_by_node);
+	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
+	ClassDB::bind_method(D_METHOD("get_connection_count", "port"), &GraphEdit::get_connection_count);
+
 	ClassDB::bind_method(D_METHOD("connect_nodes", "first_port", "second_port", "keep_alive"), &GraphEdit::connect_nodes, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("ports_connected", "first_port", "second_port"), &GraphEdit::ports_connected);
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "first_port", "second_port"), &GraphEdit::disconnect_nodes);
 	ClassDB::bind_method(D_METHOD("disconnect_by_connection", "connection"), &GraphEdit::disconnect_by_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_all_by_port", "port"), &GraphEdit::disconnect_all_by_port);
 	ClassDB::bind_method(D_METHOD("disconnect_all_by_node", "node"), &GraphEdit::disconnect_all_by_node);
-	ClassDB::bind_method(D_METHOD("set_connection_activity", "connection", "amount"), &GraphEdit::set_connection_activity);
-	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphEdit::set_connections);
-	ClassDB::bind_method(D_METHOD("get_connections"), &GraphEdit::get_connections);
-	ClassDB::bind_method(D_METHOD("get_connection_count", "port"), &GraphEdit::get_connection_count);
-	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
-	ClassDB::bind_method(D_METHOD("get_connections_by_port", "port"), &GraphEdit::_get_connections_by_port);
-	ClassDB::bind_method(D_METHOD("get_connections_by_node", "node"), &GraphEdit::_get_connections_by_node);
-	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
+	ClassDB::bind_method(D_METHOD("ports_connected", "first_port", "second_port"), &GraphEdit::ports_connected);
+
 	ClassDB::bind_method(D_METHOD("is_node_connected", "node"), &GraphEdit::is_node_connected);
 	ClassDB::bind_method(D_METHOD("is_port_connected", "port"), &GraphEdit::is_port_connected);
 	ClassDB::bind_method(D_METHOD("get_connected_ports", "port"), &GraphEdit::get_connected_ports);
-	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
+
+	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
+	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
+	ClassDB::bind_method(D_METHOD("set_connection_activity", "connection", "amount"), &GraphEdit::set_connection_activity);
+
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &GraphEdit::get_scroll_offset);
 	ClassDB::bind_method(D_METHOD("set_scroll_offset", "offset"), &GraphEdit::set_scroll_offset);
 
-	ClassDB::bind_method(D_METHOD("add_valid_right_disconnect_type", "type"), &GraphEdit::add_valid_input_disconnect_type);
-	ClassDB::bind_method(D_METHOD("remove_valid_right_disconnect_type", "type"), &GraphEdit::remove_valid_input_disconnect_type);
-	ClassDB::bind_method(D_METHOD("add_valid_left_disconnect_type", "type"), &GraphEdit::add_valid_output_disconnect_type);
-	ClassDB::bind_method(D_METHOD("remove_valid_left_disconnect_type", "type"), &GraphEdit::remove_valid_output_disconnect_type);
 	ClassDB::bind_method(D_METHOD("add_valid_connection_type", "from_type", "to_type"), &GraphEdit::add_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("remove_valid_connection_type", "from_type", "to_type"), &GraphEdit::remove_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_valid_connection_type", "from_type", "to_type"), &GraphEdit::is_valid_connection_type);
+	ClassDB::bind_method(D_METHOD("add_valid_input_disconnect_type", "type"), &GraphEdit::add_valid_input_disconnect_type);
+	ClassDB::bind_method(D_METHOD("remove_valid_input_disconnect_type", "type"), &GraphEdit::remove_valid_input_disconnect_type);
+	ClassDB::bind_method(D_METHOD("add_valid_output_disconnect_type", "type"), &GraphEdit::add_valid_output_disconnect_type);
+	ClassDB::bind_method(D_METHOD("remove_valid_output_disconnect_type", "type"), &GraphEdit::remove_valid_output_disconnect_type);
 	ClassDB::bind_method(D_METHOD("get_connection_line", "from_node", "to_node"), &GraphEdit::get_connection_line);
 
 	ClassDB::bind_method(D_METHOD("attach_graph_element_to_frame", "element", "frame"), &GraphEdit::attach_graph_element_to_frame);

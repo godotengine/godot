@@ -145,6 +145,7 @@ public:
 
 	bool has_connection();
 	TypedArray<Ref<GraphConnection>> get_connections();
+	TypedArray<Ref<GraphConnection>> get_filtered_connections(GraphPort::PortDirection p_filter_direction);
 
 	void _on_connected(const Ref<GraphConnection> p_conn);
 	void _on_disconnected(const Ref<GraphConnection> p_conn);

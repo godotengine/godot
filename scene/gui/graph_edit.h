@@ -388,6 +388,7 @@ public:
 	const TypedArray<Ref<GraphConnection>> get_connections() const;
 	const TypedArray<Ref<GraphConnection>> get_connections_by_port(GraphPort *p_port) const;
 	const TypedArray<Ref<GraphConnection>> get_connections_by_node(GraphNode *p_node) const;
+	const TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
 	void move_connections(GraphPort *p_from_port, GraphPort *p_to_port);
 	void clear_connections();
 	const Ref<GraphConnection> get_connection(GraphPort *p_first_port, GraphPort *p_second_port);
