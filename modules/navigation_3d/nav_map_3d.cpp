@@ -500,6 +500,9 @@ void NavMap3D::_update_rvo_obstacles_tree_2d() {
 	// The following block is modified copy from RVO2D::AddObstacle()
 	// Obstacles are linked and depend on all other obstacles.
 	for (NavObstacle3D *obstacle : obstacles) {
+		if (!obstacle->is_avoidance_enabled()) {
+			continue;
+		}
 		const Vector3 &_obstacle_position = obstacle->get_position();
 		const Vector<Vector3> &_obstacle_vertices = obstacle->get_vertices();
 
