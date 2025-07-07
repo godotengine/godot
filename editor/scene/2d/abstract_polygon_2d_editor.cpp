@@ -823,12 +823,13 @@ AbstractPolygon2DEditor::Vertex AbstractPolygon2DEditor::get_active_point() cons
 
 AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const Vector2 &p_pos) const {
 	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
 	const int n_polygons = _get_polygon_count();
 	const Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_screen_transform();
 
 	PosVertex closest;
-	real_t closest_dist = 1e10;
+	real_t closest_dist_squared = 1e20;
 
 	for (int j = 0; j < n_polygons; j++) {
 		Vector<Vector2> points = _get_polygon(j);
@@ -838,9 +839,9 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const 
 		for (int i = 0; i < n_points; i++) {
 			Vector2 cp = xform.xform(points[i] + offset);
 
-			real_t d = cp.distance_to(p_pos);
-			if (d < closest_dist && d < grab_threshold) {
-				closest_dist = d;
+			real_t d_squared = cp.distance_squared_to(p_pos);
+			if (d_squared < closest_dist_squared && d_squared < grab_threshold_squared) {
+				closest_dist_squared = d_squared;
 				closest = PosVertex(j, i, cp);
 			}
 		}
@@ -851,6 +852,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const 
 
 AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(const Vector2 &p_pos) const {
 	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 	const real_t eps = grab_threshold * 2;
 	const real_t eps2 = eps * eps;
 
@@ -858,7 +860,7 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 	const Transform2D xform = canvas_item_editor->get_canvas_transform() * _get_node()->get_screen_transform();
 
 	PosVertex closest;
-	real_t closest_dist = 1e10;
+	real_t closest_dist_squared = 1e20;
 
 	for (int j = 0; j < n_polygons; j++) {
 		Vector<Vector2> points = _get_polygon(j);
@@ -876,9 +878,9 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 				continue; //not valid to reuse point
 			}
 
-			real_t d = cp.distance_to(p_pos);
-			if (d < closest_dist && d < grab_threshold) {
-				closest_dist = d;
+			real_t d_squared = cp.distance_squared_to(p_pos);
+			if (d_squared < closest_dist_squared && d_squared < grab_threshold_squared) {
+				closest_dist_squared = d_squared;
 				closest = PosVertex(j, i, cp);
 			}
 		}

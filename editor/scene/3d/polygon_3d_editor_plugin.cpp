@@ -199,7 +199,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 							//search edges
 							int closest_idx = -1;
 							Vector2 closest_pos;
-							real_t closest_dist = 1e10;
+							real_t closest_dist_squared = 1e20;
 							for (int i = 0; i < poly.size(); i++) {
 								const Vector2 segment_a = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 								const Vector2 segment_b = p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)));
@@ -209,9 +209,9 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 									continue; //not valid to reuse point
 								}
 
-								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_threshold) {
-									closest_dist = d;
+								real_t d_squared = cp.distance_squared_to(gpoint);
+								if (d_squared < closest_dist_squared && d_squared < grab_threshold_squared) {
+									closest_dist_squared = d_squared;
 									closest_pos = cp;
 									closest_idx = i;
 								}
@@ -233,13 +233,13 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 							int closest_idx = -1;
 							Vector2 closest_pos;
-							real_t closest_dist = 1e10;
+							real_t closest_dist_squared = 1e20;
 							for (int i = 0; i < poly.size(); i++) {
 								Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
-								real_t d = cp.distance_to(gpoint);
-								if (d < closest_dist && d < grab_threshold) {
-									closest_dist = d;
+								real_t d_squared = cp.distance_squared_to(gpoint);
+								if (d_squared < closest_dist_squared && d_squared < grab_threshold_squared) {
+									closest_dist_squared = d_squared;
 									closest_pos = cp;
 									closest_idx = i;
 								}
@@ -278,13 +278,13 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 				if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed() && edited_point == -1) {
 					int closest_idx = -1;
 					Vector2 closest_pos;
-					real_t closest_dist = 1e10;
+					real_t closest_dist_squared = 1e20;
 					for (int i = 0; i < poly.size(); i++) {
 						Vector2 cp = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
 
-						real_t d = cp.distance_to(gpoint);
-						if (d < closest_dist && d < grab_threshold) {
-							closest_dist = d;
+						real_t d_squared = cp.distance_squared_to(gpoint);
+						if (d_squared < closest_dist_squared && d_squared < grab_threshold_squared) {
+							closest_dist_squared = d_squared;
 							closest_pos = cp;
 							closest_idx = i;
 						}
