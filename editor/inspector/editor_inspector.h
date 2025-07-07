@@ -384,6 +384,7 @@ class EditorInspectorSection : public Container {
 	bool check_hover = false;
 	Rect2 keying_rect;
 	bool keying_hover = false;
+	bool header_hover = false;
 
 	bool checkbox_only = false;
 
