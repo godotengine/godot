@@ -25,12 +25,9 @@
  */
 #ifndef MBEDTLS_NET_SOCKETS_H
 #define MBEDTLS_NET_SOCKETS_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include "mbedtls/ssl.h"
 
@@ -84,7 +81,13 @@ extern "C" {
  * structures for hand-made UDP demultiplexing).
  */
 typedef struct mbedtls_net_context {
-    int fd;             /**< The underlying file descriptor                 */
+    /** The underlying file descriptor.
+     *
+     * This field is only guaranteed to be present on POSIX/Unix-like platforms.
+     * On other platforms, it may have a different type, have a different
+     * meaning, or be absent altogether.
+     */
+    int fd;
 }
 mbedtls_net_context;
 

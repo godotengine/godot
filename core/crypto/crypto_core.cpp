@@ -35,6 +35,9 @@
 #include <mbedtls/md5.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
+#if MBEDTLS_VERSION_MAJOR >= 3
+#include <mbedtls/compat-2.x.h>
+#endif
 
 // MD5
 CryptoCore::MD5Context::MD5Context() {

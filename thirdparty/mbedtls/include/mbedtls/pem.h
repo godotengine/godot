@@ -9,12 +9,9 @@
  */
 #ifndef MBEDTLS_PEM_H
 #define MBEDTLS_PEM_H
+#include "mbedtls/private_access.h"
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 
@@ -53,9 +50,9 @@ extern "C" {
  * \brief       PEM context structure
  */
 typedef struct mbedtls_pem_context {
-    unsigned char *buf;     /*!< buffer for decoded data             */
-    size_t buflen;          /*!< length of the buffer                */
-    unsigned char *info;    /*!< buffer for extra header information */
+    unsigned char *MBEDTLS_PRIVATE(buf);     /*!< buffer for decoded data             */
+    size_t MBEDTLS_PRIVATE(buflen);          /*!< length of the buffer                */
+    unsigned char *MBEDTLS_PRIVATE(info);    /*!< buffer for extra header information */
 }
 mbedtls_pem_context;
 
@@ -76,15 +73,19 @@ void mbedtls_pem_init(mbedtls_pem_context *ctx);
  * \param data      source data to look in (must be nul-terminated)
  * \param pwd       password for decryption (can be NULL)
  * \param pwdlen    length of password
- * \param use_len   destination for total length used (set after header is
- *                  correctly read, so unless you get
+ * \param use_len   destination for total length used from data buffer. It is
+ *                  set after header is correctly read, so unless you get
  *                  MBEDTLS_ERR_PEM_BAD_INPUT_DATA or
  *                  MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT, use_len is
- *                  the length to skip)
+ *                  the length to skip.
  *
  * \note            Attempts to check password correctness by verifying if
  *                  the decrypted text starts with an ASN.1 sequence of
  *                  appropriate length
+ *
+ * \note            \c mbedtls_pem_free must be called on PEM context before
+ *                  the PEM context can be reused in another call to
+ *                  \c mbedtls_pem_read_buffer
  *
  * \return          0 on success, or a specific PEM error code
  */
@@ -92,6 +93,25 @@ int mbedtls_pem_read_buffer(mbedtls_pem_context *ctx, const char *header, const 
                             const unsigned char *data,
                             const unsigned char *pwd,
                             size_t pwdlen, size_t *use_len);
+
+/**
+ * \brief       Get the pointer to the decoded binary data in a PEM context.
+ *
+ * \param ctx       PEM context to access.
+ * \param buflen    On success, this will contain the length of the binary data.
+ *                  This must be a valid (non-null) pointer.
+ *
+ * \return          A pointer to the decoded binary data.
+ *
+ * \note            The returned pointer remains valid only until \p ctx is
+                    modified or freed.
+ */
+static inline const unsigned char *mbedtls_pem_get_buffer(mbedtls_pem_context *ctx, size_t *buflen)
+{
+    *buflen = ctx->MBEDTLS_PRIVATE(buflen);
+    return ctx->MBEDTLS_PRIVATE(buf);
+}
+
 
 /**
  * \brief       PEM context memory freeing
