@@ -32,7 +32,9 @@
 
 #include "servers/camera/camera_feed.h"
 
+#if defined(LINUXBSD_ENABLED)
 #include <linux/videodev2.h>
+#endif
 
 BufferDecoder::BufferDecoder(CameraFeed *p_camera_feed) {
 	camera_feed = p_camera_feed;
@@ -43,6 +45,7 @@ BufferDecoder::BufferDecoder(CameraFeed *p_camera_feed) {
 
 AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) :
 		BufferDecoder(p_camera_feed) {
+#if defined(LINUXBSD_ENABLED)
 	switch (camera_feed->get_format().pixel_format) {
 		case V4L2_PIX_FMT_YYUV:
 			component_indexes = new int[4]{ 0, 1, 2, 3 };
@@ -59,6 +62,9 @@ AbstractYuyvBufferDecoder::AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed) 
 		default:
 			component_indexes = new int[4]{ 0, 2, 1, 3 };
 	}
+#else
+	component_indexes = new int[4]{ 0, 2, 1, 3 };
+#endif
 }
 
 AbstractYuyvBufferDecoder::~AbstractYuyvBufferDecoder() {
@@ -97,12 +103,12 @@ void SeparateYuyvBufferDecoder::decode(StreamingBuffer p_buffer) {
 	if (y_image.is_valid()) {
 		y_image->set_data(width, height, false, Image::FORMAT_L8, y_image_data);
 	} else {
-		y_image.instantiate(width, height, false, Image::FORMAT_RGB8, y_image_data);
+		y_image.instantiate(width, height, false, Image::FORMAT_L8, y_image_data);
 	}
 	if (cbcr_image.is_valid()) {
-		cbcr_image->set_data(width, height, false, Image::FORMAT_L8, cbcr_image_data);
+		cbcr_image->set_data(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
 	} else {
-		cbcr_image.instantiate(width, height, false, Image::FORMAT_RGB8, cbcr_image_data);
+		cbcr_image.instantiate(width / 2, height, false, Image::FORMAT_RG8, cbcr_image_data);
 	}
 
 	camera_feed->set_ycbcr_images(y_image, cbcr_image);
@@ -179,10 +185,10 @@ void YuyvToRgbBufferDecoder::decode(StreamingBuffer p_buffer) {
 	camera_feed->set_rgb_image(image);
 }
 
-CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, bool p_rgba) :
+CopyBufferDecoder::CopyBufferDecoder(CameraFeed *p_camera_feed, CopyFormat p_format) :
 		BufferDecoder(p_camera_feed) {
-	rgba = p_rgba;
-	image_data.resize(width * height * (rgba ? 4 : 2));
+	format = p_format.format;
+	image_data.resize(width * height * p_format.stride);
 }
 
 void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
@@ -190,9 +196,9 @@ void CopyBufferDecoder::decode(StreamingBuffer p_buffer) {
 	memcpy(dst, p_buffer.start, p_buffer.length);
 
 	if (image.is_valid()) {
-		image->set_data(width, height, false, rgba ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8, image_data);
+		image->set_data(width, height, false, format, image_data);
 	} else {
-		image.instantiate(width, height, false, rgba ? Image::FORMAT_RGBA8 : Image::FORMAT_LA8, image_data);
+		image.instantiate(width, height, false, format, image_data);
 	}
 
 	camera_feed->set_rgb_image(image);
@@ -209,4 +215,50 @@ void JpegBufferDecoder::decode(StreamingBuffer p_buffer) {
 	if (image->load_jpg_from_buffer(image_data) == OK) {
 		camera_feed->set_rgb_image(image);
 	}
+}
+
+Nv12BufferDecoder::Nv12BufferDecoder(CameraFeed *p_camera_feed) :
+		BufferDecoder(p_camera_feed) {
+}
+
+void Nv12BufferDecoder::decode(StreamingBuffer p_buffer) {
+	// NV12 format: Y plane followed by interleaved UV plane
+	// Create separate Y and UV images for YUV2 format
+	int y_size = width * height;
+	int uv_size = width * height / 2;
+
+	// Y image data
+	data_y.resize(y_size);
+	uint8_t *y_dst = (uint8_t *)data_y.ptrw();
+
+	// UV image data (interleaved U and V)
+	data_uv.resize(uv_size);
+	uint8_t *uv_dst = (uint8_t *)data_uv.ptrw();
+
+	memcpy(y_dst, p_buffer.start, y_size);
+	memcpy(uv_dst, (uint8_t *)p_buffer.start + y_size, uv_size);
+
+	// Create Y image
+	if (image_y.is_valid()) {
+		image_y->set_data(width, height, false, Image::FORMAT_L8, data_y);
+	} else {
+		image_y.instantiate(width, height, false, Image::FORMAT_L8, data_y);
+	}
+
+	// Create UV image (half resolution)
+	if (image_uv.is_valid()) {
+		image_uv->set_data(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+	} else {
+		image_uv.instantiate(width / 2, height / 2, false, Image::FORMAT_RG8, data_uv);
+	}
+
+	// Set the YCbCr images
+	camera_feed->set_ycbcr_images(image_y, image_uv);
+}
+
+NullBufferDecoder::NullBufferDecoder(CameraFeed *p_camera_feed) :
+		BufferDecoder(p_camera_feed) {
+}
+
+void NullBufferDecoder::decode(StreamingBuffer p_buffer) {
 }
