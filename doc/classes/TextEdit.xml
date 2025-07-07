@@ -1053,7 +1053,7 @@
 			<param index="0" name="column" type="int" />
 			<param index="1" name="draw_callback" type="Callable" />
 			<description>
-				Set a custom draw callback for the gutter at the given index. [param draw_callback] must take the following arguments: A line index [int], a gutter index [int], and an area [Rect2]. This callback only works when the gutter type is [constant GUTTER_TYPE_CUSTOM] (see [method set_gutter_type]).
+				Set a custom draw callback for the gutter at the given index. [param draw_callback] must take the following arguments: A canvas item [RID], a line index [int], a gutter index [int], and an area [Rect2]. This callback only works when the gutter type is [constant GUTTER_TYPE_CUSTOM] (see [method set_gutter_type]).
 			</description>
 		</method>
 		<method name="set_gutter_draw">
