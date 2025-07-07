@@ -316,6 +316,9 @@ public:
 
 		int last_shadow_filter = -1;
 
+		// If the device doesn't support image atomics, use storage buffers instead.
+		RD::UniformType atomic_type = RD::UNIFORM_TYPE_IMAGE;
+
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override {}
 
