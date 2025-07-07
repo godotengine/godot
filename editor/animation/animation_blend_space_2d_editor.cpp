@@ -193,7 +193,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 		// Then check point positions.
 		for (int i = 0; i < points.size(); i++) {
-			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
+			if (points[i].distance_squared_to(mb->get_position()) < (10.0f * EDSCALE) * (10.0f * EDSCALE)) {
 				_set_selected_point(i);
 
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
@@ -239,7 +239,7 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				continue;
 			}
 
-			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
+			if (points[i].distance_squared_to(mb->get_position()) < (10.0f * EDSCALE) * (10.0f * EDSCALE)) {
 				making_triangle.push_back(i);
 				if (making_triangle.size() == 3) {
 					//add triangle!
