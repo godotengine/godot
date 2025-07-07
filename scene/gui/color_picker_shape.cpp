@@ -747,9 +747,9 @@ void ColorPickerShapeCircle::update_circle_cursor(const Vector2 &p_color_change_
 	}
 
 	Vector2i potential_cursor_position = circle_keyboard_joypad_picker_cursor_position + p_color_change_vector;
-	real_t potential_new_cursor_distance = p_center.distance_to(potential_cursor_position);
-	real_t dist_pre = p_center.distance_to(circle_keyboard_joypad_picker_cursor_position);
-	if (color_picker->s < 1 || potential_new_cursor_distance < dist_pre) {
+	real_t potential_new_cursor_distance_squared = p_center.distance_squared_to(potential_cursor_position);
+	real_t dist_pre_squared = p_center.distance_squared_to(circle_keyboard_joypad_picker_cursor_position);
+	if (color_picker->s < 1 || potential_new_cursor_distance_squared < dist_pre_squared) {
 		circle_keyboard_joypad_picker_cursor_position += p_color_change_vector;
 		real_t dist = p_center.distance_to(circle_keyboard_joypad_picker_cursor_position);
 		real_t rad = p_center.angle_to_point(circle_keyboard_joypad_picker_cursor_position);

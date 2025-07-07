@@ -506,7 +506,7 @@ void ViewportRotationControl::_update_focus() {
 
 	for (int i = 0; i < axes.size(); i++) {
 		const Axis2D &axis = axes[i];
-		if (mouse_pos.distance_to(axis.screen_point) < AXIS_CIRCLE_RADIUS) {
+		if (mouse_pos.distance_squared_to(axis.screen_point) < AXIS_CIRCLE_RADIUS_SQUARED) {
 			focused_axis = axis.axis;
 		}
 	}
@@ -4507,6 +4507,7 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 
 Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D *p_node) const {
 	const float MAX_DISTANCE = 50.0;
+	const float MAX_DISTANCE_SQUARED = MAX_DISTANCE * MAX_DISTANCE;
 	const float FALLBACK_DISTANCE = 5.0;
 
 	Vector3 world_ray = get_ray(p_pos);
@@ -4567,7 +4568,7 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	Vector3 intersection;
 	Plane plane(Vector3(0, 1, 0));
 	if (plane.intersects_ray(world_pos, world_ray, &intersection)) {
-		if (is_orthogonal || world_pos.distance_to(intersection) <= MAX_DISTANCE) {
+		if (is_orthogonal || world_pos.distance_squared_to(intersection) <= MAX_DISTANCE_SQUARED) {
 			return intersection;
 		}
 	}
