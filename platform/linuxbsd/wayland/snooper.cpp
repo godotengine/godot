@@ -133,7 +133,18 @@ struct WaylandEmbedderProxy::WaylandObject *WaylandEmbedderProxy::get_object(uin
 		p_global_id &= ~(0xff000000);
 	}
 
-	CRASH_COND_MSG(p_global_id >= SNOOP_ID_MAX, "Max ID reached. This might indicate a leak.");
+	if (p_global_id >= SNOOP_ID_MAX) {
+		// Oh no. Time for debug info!
+
+#ifdef WAYLAND_SNOOPER_DEBUG_LOGS_ENABLED
+		for (uint32_t id = 1; id < objects.reserved_size(); ++id) {
+			WaylandObject &object = objects[id];
+			DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", id, id, object.interface->name, object.version, (uintptr_t)object.data));
+		}
+#endif
+
+		CRASH_NOW_MSG("Max ID reached. This might indicate a leak.");
+	}
 
 	if (is_server) {
 		return &server_objects[p_global_id];
@@ -649,10 +660,10 @@ int WaylandEmbedderProxy::next_global_id() {
 	if (id > SNOOP_ID_MAX) {
 		// Oh no. Time for debug info!
 
-#ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
-		for (uint32_t id = 1; id < objects.reserved_size(); ++id) {
+#ifdef WAYLAND_SNOOPER_DEBUG_LOGS_ENABLED
+		for (uint32_t i = 1; i < objects.reserved_size(); ++i) {
 			WaylandObject &object = objects[id];
-			DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", id, id, object.interface->name, object.version, (uintptr_t)object.data));
+			DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", i, i, object.interface->name, object.version, (uintptr_t)object.data));
 		}
 #endif
 
@@ -1581,7 +1592,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 	return false;
 }
 
-bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle p_local_handle, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len) {
+WaylandEmbedderProxy::MessageStatus WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle p_local_handle, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len) {
 	WaylandObject *global_object = get_object(p_global_id);
 	CRASH_COND_MSG(global_object == nullptr, "Compositor messages must always have a global object.");
 
@@ -1605,7 +1616,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			uint8_t *name = (uint8_t *)(body + 1);
 			global_data->device = String::utf8((const char *)name, name_len);
 
-			return false;
+			return MessageStatus::UNHANDLED;
 		}
 
 		if (p_opcode == WL_DRM_FORMAT) {
@@ -1613,14 +1624,14 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			uint32_t format = body[0];
 			global_data->formats.push_back(format);
 
-			return false;
+			return MessageStatus::UNHANDLED;
 		}
 
 		if (p_opcode == WL_DRM_AUTHENTICATED) {
 			// signature: N/A
 			global_data->authenticated = true;
 
-			return false;
+			return MessageStatus::UNHANDLED;
 		}
 
 		if (p_opcode == WL_DRM_CAPABILITIES) {
@@ -1629,7 +1640,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			global_data->capabilities = capabilities;
 		}
 
-		return false;
+		return MessageStatus::UNHANDLED;
 	}
 
 	if (global_object->interface == &wl_shm_interface) {
@@ -1657,7 +1668,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 
 				delete_object(global_delete_id);
 
-				return true;
+				return MessageStatus::HANDLED;
 			} else if (p_opcode == WL_DISPLAY_ERROR) {
 				// [Event] wl_display::error(ous)
 				uint32_t obj_id = body[0];
@@ -1671,7 +1682,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			if (sync_callback_id != INVALID_ID && p_global_id == sync_callback_id) {
 				sync_callback_id = 0;
 				DEBUG_LOG_WAYLAND_SNOOPER("Sync response received");
-				return true;
+				return MessageStatus::HANDLED;
 			}
 		}
 
@@ -1733,7 +1744,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 
 					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &xdg_wm_base_id, sizeof xdg_wm_base_id } });
 
-					return true;
+					return MessageStatus::HANDLED;
 				}
 
 				if (global_interface == &wl_compositor_interface && wl_compositor_id == 0) {
@@ -1748,7 +1759,7 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 
 					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_compositor_id, sizeof wl_compositor_id } });
 
-					return true;
+					return MessageStatus::HANDLED;
 				}
 
 				if (global_interface == &wl_subcompositor_interface && wl_subcompositor_id == 0) {
@@ -1763,16 +1774,16 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 
 					send_raw_message(compositor_socket, { { header, 8 }, { body, body_len }, { &wl_subcompositor_id, sizeof wl_subcompositor_id } });
 
-					return true;
+					return MessageStatus::HANDLED;
 				}
 			} else {
 				DEBUG_LOG_WAYLAND_SNOOPER("Skipping unknown global %s %d.", interface_name, global_version);
-				return true;
+				return MessageStatus::HANDLED;
 			}
 		}
 
 		DEBUG_LOG_WAYLAND_SNOOPER("No valid local object handle, falling back to generic handler.");
-		return false;
+		return MessageStatus::UNHANDLED;
 	}
 
 	Client *client = p_local_handle.get_client();
@@ -1788,18 +1799,19 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			uint32_t local_delete_id = client->get_local_id(global_delete_id);
 			DEBUG_LOG_WAYLAND_SNOOPER(vformat("Delete ID event g0x%x l0x%x", global_delete_id, local_delete_id));
 			if (local_delete_id == INVALID_ID) {
-				// No idea what this object is, might be of the other client.
-				return true;
+				// No idea what this object is, might be of the other client. This
+				// definitely does not make sense to us, so we're done.
+				return MessageStatus::INVALID;
 			}
 
 			client->delete_object(local_delete_id);
 
 			send_wayland_message(client->socket, DISPLAY_ID, WL_DISPLAY_DELETE_ID, { local_delete_id });
 
-			return true;
+			return MessageStatus::HANDLED;
 		}
 
-		return false;
+		return MessageStatus::UNHANDLED;
 	}
 
 	if (object->interface == &wl_keyboard_interface) {
@@ -1831,11 +1843,11 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			// spec, so there's no need to skip it.
 			if (global_seat_data->focused_surface_id != INVALID_ID && !client->local_ids.has(global_seat_data->focused_surface_id)) {
 				DEBUG_LOG_WAYLAND_SNOOPER(vformat("skipped wl_keyboard event due to unfocused surface 0x%x", global_seat_data->focused_surface_id));
-				return true;
+				return MessageStatus::HANDLED;
 			}
 		}
 
-		return false;
+		return MessageStatus::UNHANDLED;
 	}
 
 	if (object->interface == &wl_pointer_interface) {
@@ -1860,15 +1872,15 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			bool client_pointed = client->local_ids.has(global_seat_data->pointed_surface_id);
 
 			if (button != BTN_LEFT || state != WL_POINTER_BUTTON_STATE_RELEASED) {
-				return !client_pointed;
+				return client_pointed ? MessageStatus::UNHANDLED : MessageStatus::HANDLED;
 			}
 
 			if (global_seat_data->focused_surface_id == global_seat_data->pointed_surface_id) {
-				return !client_pointed;
+				return client_pointed ? MessageStatus::UNHANDLED : MessageStatus::HANDLED;
 			}
 
 			if (!global_surface_is_window(global_seat_data->pointed_surface_id)) {
-				return !client_pointed;
+				return client_pointed ? MessageStatus::UNHANDLED : MessageStatus::HANDLED;
 			}
 
 			if (global_seat_data->focused_surface_id != INVALID_ID) {
@@ -1900,10 +1912,10 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 			}
 		}
 
-		return false;
+		return MessageStatus::UNHANDLED;
 	}
 
-	return false;
+	return MessageStatus::UNHANDLED;
 }
 
 bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
@@ -2011,9 +2023,14 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 							continue;
 						}
 
-						if (handle_event(global_id, local_obj, info->opcode, buf, info->size)) {
+						MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
+						if (event_status == MessageStatus::HANDLED) {
 							DEBUG_LOG_WAYLAND_SNOOPER("Custom handler success.");
 							handled = true;
+							continue;
+						}
+
+						if (event_status == MessageStatus::INVALID) {
 							continue;
 						}
 
@@ -2050,9 +2067,14 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 
 					DEBUG_LOG_WAYLAND_SNOOPER(vformat("Shared non-global l0x%x g0x%x", c.get_local_id(global_id), global_id));
 
-					if (handle_event(global_id, local_obj, info->opcode, buf, info->size)) {
+					MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
+					if (event_status == MessageStatus::HANDLED) {
 						DEBUG_LOG_WAYLAND_SNOOPER("Custom handler success.");
 						handled = true;
+						continue;
+					}
+
+					if (event_status == MessageStatus::INVALID) {
 						continue;
 					}
 
@@ -2080,9 +2102,14 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 			}
 		} else {
 			LocalObjectHandle local_obj = LocalObjectHandle(client, client ? client->get_local_id(global_id) : INVALID_ID);
-			if (handle_event(global_id, local_obj, info->opcode, buf, info->size)) {
+
+			MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
+			if (event_status == MessageStatus::HANDLED || event_status == MessageStatus::INVALID) {
+				// We're done.
 				return false;
 			}
+
+			// Generic passthrough.
 
 			if (client) {
 				uint32_t local_id = client->get_local_id(global_id);
