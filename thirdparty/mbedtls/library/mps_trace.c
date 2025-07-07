@@ -7,7 +7,7 @@
 
 #include "common.h"
 
-#if defined(MBEDTLS_SSL_PROTO_TLS1_3_EXPERIMENTAL)
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
 
 #include "mps_common.h"
 
@@ -109,4 +109,4 @@ void mbedtls_mps_trace_indent(int level, mbedtls_mps_trace_type ty)
 }
 
 #endif /* MBEDTLS_MPS_ENABLE_TRACE */
-#endif /* MBEDTLS_SSL_PROTO_TLS1_3_EXPERIMENTAL */
+#endif /* MBEDTLS_SSL_PROTO_TLS1_3 */
