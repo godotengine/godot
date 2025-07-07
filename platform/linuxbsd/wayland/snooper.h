@@ -37,6 +37,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/list.h"
+#include "core/templates/pooled_list.h"
 
 #ifdef SOWRAP_ENABLED
 #include "wayland/dynwrappers/wayland-client-core-so_wrap.h"
@@ -410,7 +411,7 @@ private:
 	LocalVector<struct pollfd> pollfds;
 	LocalVector<Client> clients;
 
-	LocalVector<WaylandObject> objects;
+	PooledList<WaylandObject> objects;
 	// Proxies allocated by the compositor. Their ID starts from 0xff000000.
 	LocalVector<WaylandObject> server_objects;
 

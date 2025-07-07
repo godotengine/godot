@@ -133,7 +133,7 @@ struct WaylandEmbedderProxy::WaylandObject *WaylandEmbedderProxy::get_object(uin
 		p_global_id &= ~(0xff000000);
 	}
 
-	CRASH_COND_MSG(p_global_id >= SNOOP_ID_MAX, "max id reached");
+	CRASH_COND_MSG(p_global_id >= SNOOP_ID_MAX, "Max ID reached. This might indicate a leak.");
 
 	if (is_server) {
 		return &server_objects[p_global_id];
@@ -147,7 +147,7 @@ Error WaylandEmbedderProxy::delete_object(uint32_t p_global_id) {
 	ERR_FAIL_NULL_V(object, ERR_DOES_NOT_EXIST);
 
 	if (shared_objects.has(object->interface)) {
-		ERR_PRINT(vformat("Tried to delete shared object g0x%x.", p_global_id));
+		ERR_FAIL_V_MSG(FAILED, vformat("Tried to delete shared object g0x%x.", p_global_id));
 	}
 
 	DEBUG_LOG_WAYLAND_SNOOPER(vformat("Deleting object %s g0x%x", object->interface ? object->interface->name : "UNKNOWN", p_global_id));
@@ -157,6 +157,11 @@ Error WaylandEmbedderProxy::delete_object(uint32_t p_global_id) {
 	if (object->data) {
 		memdelete(object->data);
 		object->data = nullptr;
+	}
+
+	bool is_server = p_global_id & 0xff000000;
+	if (!is_server) {
+		objects.free(p_global_id);
 	}
 
 	registry_globals_names.erase(p_global_id);
@@ -207,12 +212,18 @@ Error WaylandEmbedderProxy::Client::delete_object(uint32_t p_local_id) {
 		DEBUG_LOG_WAYLAND_SNOOPER(vformat("Deleting global instance %s l0x%x", object->interface ? object->interface->name : "UNKNOWN", p_local_id));
 #endif
 
+		uint32_t global_id = get_global_id(p_local_id);
+
 		// wl_display::delete_id
 		send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
 
 		// We don't want to delete the global object tied to this instance, so we'll only get rid of the local stuff.
 		global_instances.erase(p_local_id);
 		global_ids.erase(p_local_id);
+
+		if (global_id != INVALID_ID) {
+			local_ids.erase(global_id);
+		}
 
 		// We're done here.
 		return OK;
@@ -630,24 +641,25 @@ void WaylandEmbedderProxy::seat_name_leave_surface(uint32_t p_seat_name, uint32_
 }
 
 int WaylandEmbedderProxy::next_global_id() {
-	for (uint32_t id = REGISTRY_ID; id < objects.size(); ++id) {
-		if (objects[id].interface == nullptr) {
-			DEBUG_LOG_WAYLAND_SNOOPER(vformat("Allocated new global id g0x%x", id));
-			return id;
-		}
-	}
+	uint32_t id = INVALID_ID;
+	objects.request(id);
 
-	// Oh no. Time for debug info!
+	DEBUG_LOG_WAYLAND_SNOOPER(vformat("Allocated new global id g0x%x", id));
+
+	if (id > SNOOP_ID_MAX) {
+		// Oh no. Time for debug info!
 
 #ifdef WAYLAND_THREAD_DEBUG_LOGS_ENABLED
-	for (uint32_t id = 1; id < objects.size(); ++id) {
-		WaylandObject &object = objects[id];
-		DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", id, id, object.interface->name, object.version, (uintptr_t)object.data));
-	}
+		for (uint32_t id = 1; id < objects.size(); ++id) {
+			WaylandObject &object = objects[id];
+			DEBUG_LOG_WAYLAND_SNOOPER(vformat(" - g0x%x (#%d): %s version %d, data 0x%x", id, id, object.interface->name, object.version, (uintptr_t)object.data));
+		}
 #endif
 
-	// FIXME: Resize or something.
-	CRASH_NOW_MSG("FIXME Out of ids. FIXME");
+		CRASH_NOW_MSG("Max ID reached. This might indicate a leak.");
+	}
+
+	return id;
 }
 
 int WaylandEmbedderProxy::next_global_server_id() {
@@ -1643,6 +1655,8 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 				DEBUG_LOG_WAYLAND_SNOOPER(vformat("Delete ID event g0x%x (no client)", global_delete_id));
 
 				delete_object(global_delete_id);
+
+				return true;
 			} else if (p_opcode == WL_DISPLAY_ERROR) {
 				// [Event] wl_display::error(ous)
 				uint32_t obj_id = body[0];
@@ -1653,8 +1667,6 @@ bool WaylandEmbedderProxy::handle_event(uint32_t p_global_id, LocalObjectHandle 
 		}
 
 		if (global_object->interface == &wl_callback_interface && p_opcode == WL_CALLBACK_DONE) {
-			delete_object(p_global_id);
-
 			if (sync_callback_id != INVALID_ID && p_global_id == sync_callback_id) {
 				sync_callback_id = 0;
 				DEBUG_LOG_WAYLAND_SNOOPER("Sync response received");
@@ -1973,7 +1985,7 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 		}
 
 		if (shared_objects.has(interface)) {
-			handle_event(global_id, LocalObjectHandle(nullptr, INVALID_ID), info->opcode, buf, info->size);
+			bool handled = false;
 
 			for (Client &c : clients) {
 				if (is_global) {
@@ -1994,8 +2006,13 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 						}
 
 						LocalObjectHandle local_obj = LocalObjectHandle(&c, instance_id);
+						if (!local_obj.is_valid()) {
+							continue;
+						}
+
 						if (handle_event(global_id, local_obj, info->opcode, buf, info->size)) {
 							DEBUG_LOG_WAYLAND_SNOOPER("Custom handler success.");
+							handled = true;
 							continue;
 						}
 
@@ -2013,6 +2030,7 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 						}
 
 						free(copy);
+						handled = true;
 					}
 				} else {
 					if (c.socket < 0) {
@@ -2025,8 +2043,15 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 					}
 
 					LocalObjectHandle local_obj = LocalObjectHandle(&c, c.get_local_id(global_id));
+					if (!local_obj.is_valid()) {
+						continue;
+					}
+
+					DEBUG_LOG_WAYLAND_SNOOPER(vformat("Shared non-global l0x%x g0x%x", c.get_local_id(global_id), global_id));
+
 					if (handle_event(global_id, local_obj, info->opcode, buf, info->size)) {
 						DEBUG_LOG_WAYLAND_SNOOPER("Custom handler success.");
+						handled = true;
 						continue;
 					}
 
@@ -2042,7 +2067,15 @@ bool WaylandEmbedderProxy::handle_msg_info(Client *client, const struct msg_info
 					}
 
 					free(copy);
+					handled = true;
 				}
+			}
+
+			if (!handled) {
+				// No client handled this, it's going to be handled as a client-less event.
+				// We do this only at the end to avoid handling certain events (e.g.
+				// deletion) twice.
+				handle_event(global_id, LocalObjectHandle(nullptr, INVALID_ID), info->opcode, buf, info->size);
 			}
 		} else {
 			LocalObjectHandle local_obj = LocalObjectHandle(client, client ? client->get_local_id(global_id) : INVALID_ID);
@@ -2216,7 +2249,6 @@ void WaylandEmbedderProxy::_thread_loop(void *p_data) {
 }
 
 Error WaylandEmbedderProxy::init() {
-	objects.resize(SNOOP_ID_MAX);
 	server_objects.resize(SNOOP_ID_MAX);
 
 	ancillary_buf.resize(SNOOP_ANCILLARY_SIZE);
@@ -2283,13 +2315,34 @@ Error WaylandEmbedderProxy::init() {
 	registry_globals.push_back(control_global_info);
 	godot_embedding_compositor_name = registry_globals.size() - 1;
 
-	get_object(DISPLAY_ID)->interface = &wl_display_interface;
-	get_object(DISPLAY_ID)->version = 1;
-	shared_objects[&wl_display_interface] = DISPLAY_ID;
+	{
+		uint32_t invalid_id = INVALID_ID;
+		objects.request(invalid_id);
 
-	get_object(REGISTRY_ID)->interface = &wl_registry_interface;
-	get_object(REGISTRY_ID)->version = 1;
-	shared_objects[&wl_registry_interface] = REGISTRY_ID;
+		CRASH_COND(invalid_id != INVALID_ID);
+	}
+
+	{
+		uint32_t display_id = INVALID_ID;
+		WaylandObject *display_object = objects.request(display_id);
+		display_object->interface = &wl_display_interface;
+		display_object->version = 1;
+
+		CRASH_COND(display_id != DISPLAY_ID);
+
+		shared_objects[&wl_display_interface] = DISPLAY_ID;
+	}
+
+	{
+		uint32_t registry_id = INVALID_ID;
+		WaylandObject *registry_object = objects.request(registry_id);
+		registry_object->interface = &wl_registry_interface;
+		registry_object->version = 1;
+
+		CRASH_COND(registry_id != REGISTRY_ID);
+
+		shared_objects[&wl_registry_interface] = DISPLAY_ID;
+	}
 
 	// wl_display::get_registry(n)
 	send_wayland_message(compositor_socket, DISPLAY_ID, 1, { REGISTRY_ID });
