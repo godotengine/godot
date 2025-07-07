@@ -138,7 +138,7 @@ int NavigationObstacle3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DG
 
 	for (int idx = 0; idx < vertices.size(); ++idx) {
 		Vector3 pos = gt.xform(vertices[idx]);
-		if (p_camera->unproject_position(pos).distance_to(p_point) < 20) {
+		if (p_camera->unproject_position(pos).distance_squared_to(p_point) < 400.0f) {
 			return idx;
 		}
 	}

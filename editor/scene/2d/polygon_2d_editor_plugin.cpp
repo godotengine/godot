@@ -578,7 +578,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = editing_points.size() - 1; i >= editing_points.size() - internal_vertices; i--) {
 						Vector2 tuv = mtx.xform(previous_polygon[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						if (tuv.distance_squared_to(mb->get_position()) < 64.0f) {
 							closest = i;
 							break;
 						}
@@ -627,7 +627,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 				if (current_action == ACTION_EDIT_POINT) {
 					point_drag_index = -1;
 					for (int i = 0; i < editing_points.size(); i++) {
-						if (mtx.xform(editing_points[i]).distance_to(mb->get_position()) < 8) {
+						if (mtx.xform(editing_points[i]).distance_squared_to(mb->get_position()) < 64.0f) {
 							drag_from = mb->get_position();
 							point_drag_index = i;
 						}
@@ -643,7 +643,7 @@ void Polygon2DEditor::_canvas_input(const Ref<InputEvent> &p_input) {
 
 					for (int i = editing_points.size() - 1; i >= 0; i--) {
 						Vector2 tuv = mtx.xform(editing_points[i]);
-						if (tuv.distance_to(mb->get_position()) < 8) {
+						if (tuv.distance_squared_to(mb->get_position()) < 64.0f) {
 							closest = i;
 							break;
 						}
