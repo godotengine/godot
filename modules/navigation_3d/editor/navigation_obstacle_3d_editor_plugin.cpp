@@ -457,6 +457,7 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 		Vector<Vector3> obstacle_vertices = obstacle_node->get_vertices();
 
 		const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+		const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
 		switch (mode) {
 			case MODE_CREATE: {
@@ -510,7 +511,7 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 						edited_point = 1;
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					} else {
-						if (wip_vertices.size() > 1 && p_camera->unproject_position(gt.xform(wip_vertices[0])).distance_to(mouse_position) < grab_threshold) {
+						if (wip_vertices.size() > 1 && p_camera->unproject_position(gt.xform(wip_vertices[0])).distance_squared_to(mouse_position) < grab_threshold_squared) {
 							_wip_close();
 
 							return EditorPlugin::AFTER_GUI_INPUT_STOP;
