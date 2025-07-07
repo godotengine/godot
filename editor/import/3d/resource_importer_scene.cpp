@@ -693,28 +693,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		}
 	}
 
-	if (Object::cast_to<ImporterMeshInstance3D>(p_node)) {
-		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
-
-		if (mi->get_multimesh().is_valid()) {
-			Ref<MultiMesh> mm = mi->get_multimesh();
-			Ref<ImporterMesh> mesh = mi->get_mesh();
-
-			if (mesh.is_valid()) {
-				mm->set_mesh(mesh->get_mesh());
-			}
-
-			MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
-			mm_node->set_multimesh(mm);
-			mm_node->set_name(name);
-			_copy_meta(p_node, mm_node);
-			p_node->replace_by(mm_node);
-			p_node->set_owner(nullptr);
-			memdelete(p_node);
-			p_node = mm_node;
-		}
-	}
-
 	if (Object::cast_to<AnimationPlayer>(p_node)) {
 		AnimationPlayer *ap = Object::cast_to<AnimationPlayer>(p_node);
 
@@ -2624,7 +2602,25 @@ Array ResourceImporterScene::_get_skinned_pose_transforms(ImporterMeshInstance3D
 
 Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches) {
 	ImporterMeshInstance3D *src_mesh_node = Object::cast_to<ImporterMeshInstance3D>(p_node);
-	if (src_mesh_node) {
+
+	if (src_mesh_node && src_mesh_node->get_multimesh().is_valid()) {
+		// is multimesh
+		Ref<MultiMesh> mm = src_mesh_node->get_multimesh();
+		Ref<ImporterMesh> mesh = src_mesh_node->get_mesh();
+
+		if (mesh.is_valid()) {
+			mm->set_mesh(mesh->get_mesh());
+		}
+
+		MultiMeshInstance3D *mm_node = memnew(MultiMeshInstance3D);
+		mm_node->set_multimesh(mm);
+		mm_node->set_name(src_mesh_node->get_name());
+		_copy_meta(p_node, mm_node);
+		p_node->replace_by(mm_node);
+		p_node->set_owner(nullptr);
+		memdelete(p_node);
+		p_node = mm_node;
+	} else if (src_mesh_node) {
 		//is mesh
 		MeshInstance3D *mesh_node = memnew(MeshInstance3D);
 		mesh_node->set_name(src_mesh_node->get_name());
