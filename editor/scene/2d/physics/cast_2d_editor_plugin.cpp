@@ -74,7 +74,7 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 gpoint = mb->get_position();
 
 		if (mb->is_pressed()) {
-			if (xform.xform(target_position).distance_to(gpoint) < 8) {
+			if (xform.xform(target_position).distance_squared_to(gpoint) < 64.0f) {
 				pressed = true;
 				original_target_position = target_position;
 				original_mouse_pos = gpoint;

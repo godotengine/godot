@@ -181,7 +181,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 			// If we hit a ceiling platform, we set the vertical velocity to at least the platform one.
 			if (collision_state.ceiling && platform_ceiling_velocity != Vector3() && platform_ceiling_velocity.dot(up_direction) < 0) {
 				// If ceiling sliding is on, only apply when the ceiling is flat or when the motion is upward.
-				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (ceiling_normal + up_direction).length() < 0.01f) {
+				if (!slide_on_ceiling || motion.dot(up_direction) < 0 || (ceiling_normal + up_direction).length_squared() < 0.0001f) {
 					apply_ceiling_velocity = true;
 					Vector3 ceiling_vertical_velocity = up_direction * up_direction.dot(platform_ceiling_velocity);
 					Vector3 motion_vertical_velocity = up_direction * up_direction.dot(velocity);
@@ -191,7 +191,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 				}
 			}
 
-			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length() < 0.01f) {
+			if (collision_state.floor && floor_stop_on_slope && (velocity.normalized() + up_direction).length_squared() < 0.0001f) {
 				Transform3D gt = get_global_transform();
 				if (result.travel.length() <= recovery_tolerance) {
 					gt.origin -= result.travel;
