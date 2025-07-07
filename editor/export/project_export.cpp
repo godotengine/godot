@@ -483,6 +483,9 @@ void ProjectExportDialog::_tab_changed(int) {
 }
 
 void ProjectExportDialog::_update_parameters(const String &p_edited_property) {
+	Ref<EditorExportPreset> current = get_current_preset();
+	current->get_platform()->export_option_set(p_edited_property);
+
 	_update_current_preset();
 }
 
