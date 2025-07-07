@@ -966,7 +966,7 @@ int mbedtls_ecp_tls_write_group(const mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_mul(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                     const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+                    mbedtls_f_rng_t *f_rng, void *p_rng);
 
 /**
  * \brief           This function performs multiplication of a point by
@@ -1000,7 +1000,7 @@ int mbedtls_ecp_mul(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
  */
 int mbedtls_ecp_mul_restartable(mbedtls_ecp_group *grp, mbedtls_ecp_point *R,
                                 const mbedtls_mpi *m, const mbedtls_ecp_point *P,
-                                int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+                                mbedtls_f_rng_t *f_rng, void *p_rng,
                                 mbedtls_ecp_restart_ctx *rs_ctx);
 
 #if defined(MBEDTLS_ECP_SHORT_WEIERSTRASS_ENABLED)
@@ -1179,7 +1179,7 @@ int mbedtls_ecp_check_privkey(const mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_gen_privkey(const mbedtls_ecp_group *grp,
                             mbedtls_mpi *d,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -1212,7 +1212,7 @@ int mbedtls_ecp_gen_privkey(const mbedtls_ecp_group *grp,
 int mbedtls_ecp_gen_keypair_base(mbedtls_ecp_group *grp,
                                  const mbedtls_ecp_point *G,
                                  mbedtls_mpi *d, mbedtls_ecp_point *Q,
-                                 int (*f_rng)(void *, unsigned char *, size_t),
+                                 mbedtls_f_rng_t *f_rng,
                                  void *p_rng);
 
 /**
@@ -1240,7 +1240,7 @@ int mbedtls_ecp_gen_keypair_base(mbedtls_ecp_group *grp,
  */
 int mbedtls_ecp_gen_keypair(mbedtls_ecp_group *grp, mbedtls_mpi *d,
                             mbedtls_ecp_point *Q,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -1257,7 +1257,7 @@ int mbedtls_ecp_gen_keypair(mbedtls_ecp_group *grp, mbedtls_mpi *d,
  *                  on failure.
  */
 int mbedtls_ecp_gen_key(mbedtls_ecp_group_id grp_id, mbedtls_ecp_keypair *key,
-                        int (*f_rng)(void *, unsigned char *, size_t),
+                        mbedtls_f_rng_t *f_rng,
                         void *p_rng);
 
 /** \brief          Set the public key in a key pair object.
@@ -1451,7 +1451,7 @@ int mbedtls_ecp_write_public_key(const mbedtls_ecp_keypair *key,
  */
 int mbedtls_ecp_check_pub_priv(
     const mbedtls_ecp_keypair *pub, const mbedtls_ecp_keypair *prv,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+    mbedtls_f_rng_t *f_rng, void *p_rng);
 
 /** \brief          Calculate the public key from a private key in a key pair.
  *
@@ -1468,7 +1468,7 @@ int mbedtls_ecp_check_pub_priv(
  */
 int mbedtls_ecp_keypair_calc_public(
     mbedtls_ecp_keypair *key,
-    int (*f_rng)(void *, unsigned char *, size_t), void *p_rng);
+    mbedtls_f_rng_t *f_rng, void *p_rng);
 
 /** \brief          Query the group that a key pair belongs to.
  *

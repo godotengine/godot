@@ -729,6 +729,14 @@ union mbedtls_ssl_premaster_secret {
 /* Length in number of bytes of the TLS sequence number */
 #define MBEDTLS_SSL_SEQUENCE_NUMBER_LEN 8
 
+/* Helper to state that client_random and server_random need to be stored
+ * after the handshake is complete. This is required for context serialization
+ * and for the keying material exporter in TLS 1.2. */
+#if defined(MBEDTLS_SSL_CONTEXT_SERIALIZATION) || \
+    (defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT) && defined(MBEDTLS_SSL_PROTO_TLS1_2))
+#define MBEDTLS_SSL_KEEP_RANDBYTES
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -2247,12 +2255,16 @@ void mbedtls_ssl_conf_verify(mbedtls_ssl_config *conf,
 /**
  * \brief          Set the random number generator callback
  *
+ * \note           The callback with its parameter must remain valid as
+ *                 long as there is an SSL context that uses the
+ *                 SSL configuration.
+ *
  * \param conf     SSL configuration
  * \param f_rng    RNG function (mandatory)
  * \param p_rng    RNG parameter
  */
 void mbedtls_ssl_conf_rng(mbedtls_ssl_config *conf,
-                          int (*f_rng)(void *, unsigned char *, size_t),
+                          mbedtls_f_rng_t *f_rng,
                           void *p_rng);
 
 /**
@@ -5767,6 +5779,41 @@ int  mbedtls_ssl_tls_prf(const mbedtls_tls_prf_types prf,
                          const unsigned char *random, size_t rlen,
                          unsigned char *dstbuf, size_t dlen);
 
+#if defined(MBEDTLS_SSL_KEYING_MATERIAL_EXPORT)
+/* Maximum value for key_len in mbedtls_ssl_export_keying material. Depending on the TLS
+ * version and the negotiated ciphersuite, larger keys could in principle be exported,
+ * but for simplicity, we define one limit that works in all cases. TLS 1.3 with SHA256
+ * has the strictest limit: 255 blocks of SHA256 output, or 8160 bytes. */
+#define MBEDTLS_SSL_EXPORT_MAX_KEY_LEN 8160
+
+/**
+ * \brief             TLS-Exporter to derive shared symmetric keys between server and client.
+ *
+ * \param ssl         SSL context from which to export keys. Must have finished the handshake.
+ * \param out         Output buffer of length at least key_len bytes.
+ * \param key_len     Length of the key to generate in bytes, must be at most
+ *                    MBEDTLS_SSL_EXPORT_MAX_KEY_LEN (8160).
+ * \param label       Label for which to generate the key of length label_len.
+ * \param label_len   Length of label in bytes. Must be at most 249 in TLS 1.3.
+ * \param context     Context of the key. Can be NULL if context_len or use_context is 0.
+ * \param context_len Length of context. Must be < 2^16 in TLS 1.2.
+ * \param use_context Indicates if a context should be used in deriving the key.
+ *
+ * \note TLS 1.2 makes a distinction between a 0-length context and no context.
+ *       This is why the use_context argument exists. TLS 1.3 does not make
+ *       this distinction. If use_context is 0 and TLS 1.3 is used, context and
+ *       context_len are ignored and a 0-length context is used.
+ *
+ * \return            0 on success.
+ * \return            MBEDTLS_ERR_SSL_BAD_INPUT_DATA if the handshake is not yet completed.
+ * \return            An SSL-specific error on failure.
+ */
+int mbedtls_ssl_export_keying_material(mbedtls_ssl_context *ssl,
+                                       uint8_t *out, const size_t key_len,
+                                       const char *label, const size_t label_len,
+                                       const unsigned char *context, const size_t context_len,
+                                       const int use_context);
+#endif
 #ifdef __cplusplus
 }
 #endif
