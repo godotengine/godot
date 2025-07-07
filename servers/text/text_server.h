@@ -41,6 +41,7 @@ class TypedArray;
 
 struct Glyph;
 struct CaretInfo;
+struct GlyphDrawCall;
 
 #define OT_TAG(m_c1, m_c2, m_c3, m_c4) ((int32_t)((((uint32_t)(m_c1) & 0xff) << 24) | (((uint32_t)(m_c2) & 0xff) << 16) | (((uint32_t)(m_c3) & 0xff) << 8) | ((uint32_t)(m_c4) & 0xff)))
 
@@ -170,6 +171,18 @@ public:
 
 		SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE = 20,
 		SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE = 16,
+	};
+
+	enum DrawCallType {
+		DRAW_CALL_NULL,
+		DRAW_CALL_NORMAL,
+		DRAW_CALL_MSDF,
+		DRAW_CALL_LCD,
+		DRAW_CALL_HEX,
+		DRAW_CALL_LINE,
+		DRAW_CALL_RECT,
+		DRAW_CALL_IMAGE,
+		DRAW_CALL_CUSTOM,
 	};
 
 	enum Feature {
@@ -430,6 +443,9 @@ public:
 	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const = 0;
 	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const = 0;
 
+	virtual void font_add_glyph_to_draw_list(const RID &p_font, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const = 0;
+	virtual void font_add_glyph_outline_to_draw_list(const RID &p_font, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const = 0;
+
 	virtual bool font_is_language_supported(const RID &p_font_rid, const String &p_language) const = 0;
 	virtual void font_set_language_support_override(const RID &p_font_rid, const String &p_language, bool p_supported) = 0;
 	virtual bool font_get_language_support_override(const RID &p_font_rid, const String &p_language) = 0;
@@ -457,6 +473,20 @@ public:
 
 	virtual Vector2 get_hex_code_box_size(int64_t p_size, int64_t p_index) const;
 	virtual void draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const;
+
+	/* Draw list interface */
+
+	virtual RID create_draw_list() = 0;
+	virtual void draw_list_sort(const RID &p_dc) = 0;
+	virtual void draw_list_reserve(const RID &p_dc, int64_t p_new_items) = 0;
+
+	virtual void draw_list_add_hexbox(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Vector2 &p_pos, int64_t p_index, int64_t p_size, const Color &p_modulate) const = 0;
+	virtual void draw_list_add_rect(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Rect2 &p_rect, bool p_filled, const Color &p_modulate) const = 0;
+	virtual void draw_list_add_line(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Point2 &p_start, const Point2 &p_end, float p_width, float p_dash, const Color &p_modulate) const = 0;
+	virtual void draw_list_add_texture(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, RID p_texture, const Rect2 &p_dst_rect, const Color &p_modulate) const = 0;
+	virtual void draw_list_add_custom(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Callable &p_callback) const = 0;
+
+	virtual void draw_list_draw(const RID &p_dc, const RID &p_ci, bool p_free = true) = 0;
 
 	/* Shaped text buffer interface */
 
@@ -579,6 +609,9 @@ public:
 	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
 
+	virtual void shaped_text_add_to_draw_list(const RID &p_shaped, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+	virtual void shaped_text_add_outline_to_draw_list(const RID &p_shaped, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const;
+
 #ifdef DEBUG_ENABLED
 	void debug_print_glyph(int p_idx, const Glyph &p_glyph) const;
 	void shaped_text_debug_print(const RID &p_shaped) const;
@@ -619,6 +652,8 @@ public:
 
 /*************************************************************************/
 
+// Native structures, sync with `register_server_types()` if definition is changed.
+
 struct Glyph {
 	int start = -1; // Start offset in the source string.
 	int end = -1; // End offset in the source string.
@@ -647,8 +682,30 @@ struct Glyph {
 struct CaretInfo {
 	Rect2 l_caret;
 	Rect2 t_caret;
-	TextServer::Direction l_dir;
-	TextServer::Direction t_dir;
+	TextServer::Direction l_dir = TextServer::DIRECTION_AUTO;
+	TextServer::Direction t_dir = TextServer::DIRECTION_AUTO;
+};
+
+struct GlyphDrawCall {
+	TextServer::DrawCallType draw_type = TextServer::DRAW_CALL_NULL;
+	int16_t layer = 0;
+	Transform2D transform;
+
+	RID texture;
+	Rect2 dst_rect;
+	Rect2 src_rect;
+	Color modulate;
+	Variant data;
+};
+
+struct GlyphDrawCallCompare {
+	_FORCE_INLINE_ bool operator()(const GlyphDrawCall &l, const GlyphDrawCall &r) const {
+		if (l.layer == r.layer) {
+			return l.texture.get_id() < r.texture.get_id();
+		} else {
+			return l.layer < r.layer;
+		}
+	}
 };
 
 /*************************************************************************/
@@ -709,6 +766,8 @@ VARIANT_ENUM_CAST(TextServer::StructuredTextParser);
 VARIANT_ENUM_CAST(TextServer::FontAntialiasing);
 VARIANT_ENUM_CAST(TextServer::FontLCDSubpixelLayout);
 VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
+VARIANT_ENUM_CAST(TextServer::DrawCallType);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);
+GDVIRTUAL_NATIVE_PTR(GlyphDrawCall);

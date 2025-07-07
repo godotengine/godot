@@ -218,6 +218,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND_COMPAT(_font_draw_glyph_bind_compat_104872, "font_rid", "canvas", "size", "pos", "index", "color");
 	GDVIRTUAL_BIND_COMPAT(_font_draw_glyph_outline_bind_compat_104872, "font_rid", "canvas", "size", "outline_size", "pos", "index", "color");
 #endif
+	GDVIRTUAL_BIND(_font_add_glyph_to_draw_list, "font_rid", "layer", "list", "transform", "size", "pos", "index", "color", "oversampling");
+	GDVIRTUAL_BIND(_font_add_glyph_outline_to_draw_list, "font_rid", "layer", "list", "transform", "size", "outline_size", "pos", "index", "color", "oversampling");
 
 	GDVIRTUAL_BIND(_font_is_language_supported, "font_rid", "language");
 	GDVIRTUAL_BIND(_font_set_language_support_override, "font_rid", "language", "supported");
@@ -246,6 +248,18 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_hex_code_box_size, "size", "index");
 	GDVIRTUAL_BIND(_draw_hex_code_box, "canvas", "size", "pos", "index", "color");
+
+	/* Draw list interface */
+
+	GDVIRTUAL_BIND(_create_draw_list);
+	GDVIRTUAL_BIND(_draw_list_sort, "list");
+	GDVIRTUAL_BIND(_draw_list_reserve, "list", "count");
+	GDVIRTUAL_BIND(_draw_list_add_hexbox, "list", "layer", "transform", "pos", "index", "size", "modulate");
+	GDVIRTUAL_BIND(_draw_list_add_rect, "list", "layer", "transform", "rect", "filled", "modulate");
+	GDVIRTUAL_BIND(_draw_list_add_line, "list", "layer", "transform", "start", "end", "width", "dash", "modulate");
+	GDVIRTUAL_BIND(_draw_list_add_texture, "list", "layer", "transform", "texture", "rect", "modulate");
+	GDVIRTUAL_BIND(_draw_list_add_custom, "list", "layer", "transform", "callback");
+	GDVIRTUAL_BIND(_draw_list_draw, "list", "ci", "free");
 
 	/* Shaped text buffer interface */
 
@@ -355,6 +369,8 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND_COMPAT(_shaped_text_draw_bind_compat_104872, "shaped", "canvas", "pos", "clip_l", "clip_r", "color");
 	GDVIRTUAL_BIND_COMPAT(_shaped_text_draw_outline_bind_compat_104872, "shaped", "canvas", "pos", "clip_l", "clip_r", "outline_size", "color");
 #endif
+	GDVIRTUAL_BIND(_shaped_text_add_to_draw_list, "shaped", "layer", "list", "transform", "pos", "clip_l", "clip_r", "color", "oversampling");
+	GDVIRTUAL_BIND(_shaped_text_add_outline_to_draw_list, "shaped", "layer", "list", "transform", "pos", "clip_l", "clip_r", "outline_size", "color", "oversampling");
 
 	GDVIRTUAL_BIND(_shaped_text_get_grapheme_bounds, "shaped", "pos");
 	GDVIRTUAL_BIND(_shaped_text_next_grapheme_pos, "shaped", "pos");
@@ -1032,6 +1048,14 @@ void TextServerExtension::font_draw_glyph_outline(const RID &p_font_rid, const R
 #endif
 }
 
+void TextServerExtension::font_add_glyph_to_draw_list(const RID &p_font_rid, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	GDVIRTUAL_CALL(_font_add_glyph_to_draw_list, p_font_rid, p_layer, p_list, p_transform, p_size, p_pos, p_index, p_color, p_oversampling);
+}
+
+void TextServerExtension::font_add_glyph_outline_to_draw_list(const RID &p_font_rid, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
+	GDVIRTUAL_CALL(_font_add_glyph_outline_to_draw_list, p_font_rid, p_layer, p_list, p_transform, p_size, p_outline_size, p_pos, p_index, p_color, p_oversampling);
+}
+
 bool TextServerExtension::font_is_language_supported(const RID &p_font_rid, const String &p_language) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_font_is_language_supported, p_font_rid, p_language, ret);
@@ -1136,6 +1160,47 @@ void TextServerExtension::draw_hex_code_box(const RID &p_canvas, int64_t p_size,
 	if (!GDVIRTUAL_CALL(_draw_hex_code_box, p_canvas, p_size, p_pos, p_index, p_color)) {
 		TextServer::draw_hex_code_box(p_canvas, p_size, p_pos, p_index, p_color);
 	}
+}
+/*************************************************************************/
+/* Draw list interface                                                   */
+/*************************************************************************/
+
+RID TextServerExtension::create_draw_list() {
+	RID ret;
+	GDVIRTUAL_CALL(_create_draw_list, ret);
+	return ret;
+}
+
+void TextServerExtension::draw_list_sort(const RID &p_dc) {
+	GDVIRTUAL_CALL(_draw_list_sort, p_dc);
+}
+
+void TextServerExtension::draw_list_reserve(const RID &p_dc, int64_t p_new_items) {
+	GDVIRTUAL_CALL(_draw_list_reserve, p_dc, p_new_items);
+}
+
+void TextServerExtension::draw_list_add_hexbox(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Vector2 &p_pos, int64_t p_index, int64_t p_size, const Color &p_modulate) const {
+	GDVIRTUAL_CALL(_draw_list_add_hexbox, p_dc, p_layer, p_transform, p_pos, p_index, p_size, p_modulate);
+}
+
+void TextServerExtension::draw_list_add_rect(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Rect2 &p_rect, bool p_filled, const Color &p_modulate) const {
+	GDVIRTUAL_CALL(_draw_list_add_rect, p_dc, p_layer, p_transform, p_rect, p_filled, p_modulate);
+}
+
+void TextServerExtension::draw_list_add_line(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Point2 &p_start, const Point2 &p_end, float p_width, float p_dash, const Color &p_modulate) const {
+	GDVIRTUAL_CALL(_draw_list_add_line, p_dc, p_layer, p_transform, p_start, p_end, p_width, p_dash, p_modulate);
+}
+
+void TextServerExtension::draw_list_add_texture(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, RID p_texture, const Rect2 &p_dst_rect, const Color &p_modulate) const {
+	GDVIRTUAL_CALL(_draw_list_add_texture, p_dc, p_layer, p_transform, p_texture, p_dst_rect, p_modulate);
+}
+
+void TextServerExtension::draw_list_add_custom(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Callable &p_callback) const {
+	GDVIRTUAL_CALL(_draw_list_add_custom, p_dc, p_layer, p_transform, p_callback);
+}
+
+void TextServerExtension::draw_list_draw(const RID &p_dc, const RID &p_ci, bool p_free) {
+	GDVIRTUAL_CALL(_draw_list_draw, p_dc, p_ci, p_free);
 }
 
 /*************************************************************************/
@@ -1596,6 +1661,20 @@ void TextServerExtension::shaped_text_draw_outline(const RID &p_shaped, const RI
 	}
 #endif
 	TextServer::shaped_text_draw_outline(p_shaped, p_canvas, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color, p_oversampling);
+}
+
+void TextServerExtension::shaped_text_add_to_draw_list(const RID &p_shaped, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, const Vector2 &p_pos, double p_clip_l, double p_clip_r, const Color &p_color, float p_oversampling) const {
+	if (GDVIRTUAL_CALL(_shaped_text_add_to_draw_list, p_shaped, p_layer, p_list, p_transform, p_pos, p_clip_l, p_clip_r, p_color, p_oversampling)) {
+		return;
+	}
+	TextServer::shaped_text_add_to_draw_list(p_shaped, p_layer, p_list, p_transform, p_pos, p_clip_l, p_clip_r, p_color, p_oversampling);
+}
+
+void TextServerExtension::shaped_text_add_outline_to_draw_list(const RID &p_shaped, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, const Vector2 &p_pos, double p_clip_l, double p_clip_r, int64_t p_outline_size, const Color &p_color, float p_oversampling) const {
+	if (GDVIRTUAL_CALL(_shaped_text_add_outline_to_draw_list, p_shaped, p_layer, p_list, p_transform, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color, p_oversampling)) {
+		return;
+	}
+	TextServer::shaped_text_add_outline_to_draw_list(p_shaped, p_layer, p_list, p_transform, p_pos, p_clip_l, p_clip_r, p_outline_size, p_color, p_oversampling);
 }
 
 Vector2 TextServerExtension::shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const {

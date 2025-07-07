@@ -96,7 +96,7 @@ private:
 
 	int main_gutter = -1;
 	void _update_draw_main_gutter();
-	void _main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
+	void _main_gutter_draw_callback(RID p_ci, int p_line, int p_gutter, const Rect2 &p_region);
 
 	// breakpoints
 	HashMap<int, bool> breakpointed_lines;
@@ -116,12 +116,12 @@ private:
 	HashMap<int, RID> line_number_text_cache;
 	void _clear_line_number_text_cache();
 	void _update_line_number_gutter_width();
-	void _line_number_draw_callback(int p_line, int p_gutter, const Rect2 &p_region);
+	void _line_number_draw_callback(RID p_ci, int p_line, int p_gutter, const Rect2 &p_region);
 
 	/* Fold Gutter */
 	int fold_gutter = -1;
 	bool draw_fold_gutter = false;
-	void _fold_gutter_draw_callback(int p_line, int p_gutter, Rect2 p_region);
+	void _fold_gutter_draw_callback(RID p_ci, int p_line, int p_gutter, Rect2 p_region);
 
 	void _gutter_clicked(int p_line, int p_gutter);
 	void _update_gutter_indexes();

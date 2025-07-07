@@ -15,6 +15,12 @@
 				This method is called before text server is unregistered.
 			</description>
 		</method>
+		<method name="_create_draw_list" qualifiers="virtual required">
+			<return type="RID" />
+			<description>
+				Creates a new, empty draw list resource.
+			</description>
+		</method>
 		<method name="_create_font" qualifiers="virtual required">
 			<return type="RID" />
 			<description>
@@ -46,6 +52,122 @@
 			<param index="4" name="color" type="Color" />
 			<description>
 				Draws box displaying character hexadecimal code.
+			</description>
+		</method>
+		<method name="_draw_list_add_custom" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="callback" type="Callable" />
+			<description>
+				Adds custom draw call to the draw list [param list]. [param callback] is called with one argument, [RID] of canvas item to draw it to.
+			</description>
+		</method>
+		<method name="_draw_list_add_hexbox" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="pos" type="Vector2" />
+			<param index="4" name="index" type="int" />
+			<param index="5" name="size" type="int" />
+			<param index="6" name="modulate" type="Color" />
+			<description>
+				Adds draw call for box displaying character hexadecimal code to a draw list [param list].
+			</description>
+		</method>
+		<method name="_draw_list_add_line" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="start" type="Vector2" />
+			<param index="4" name="end" type="Vector2" />
+			<param index="5" name="width" type="float" />
+			<param index="6" name="dash" type="float" />
+			<param index="7" name="modulate" type="Color" />
+			<description>
+				Adds draw call for a line to a draw list [param list].
+			</description>
+		</method>
+		<method name="_draw_list_add_rect" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="rect" type="Rect2" />
+			<param index="4" name="filled" type="bool" />
+			<param index="5" name="modulate" type="Color" />
+			<description>
+				Adds draw call for a rectangle to a draw list [param list].
+			</description>
+		</method>
+		<method name="_draw_list_add_texture" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="transform" type="Transform2D" />
+			<param index="3" name="texture" type="RID" />
+			<param index="4" name="rect" type="Rect2" />
+			<param index="5" name="modulate" type="Color" />
+			<description>
+				Adds draw call for a texture to a draw list [param list].
+			</description>
+		</method>
+		<method name="_draw_list_draw" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="ci" type="RID" />
+			<param index="2" name="free" type="bool" />
+			<description>
+				Processes all draw calls in the draw list [param list] to the canvas item [param ci]. If [param free] is [code]true[/code], the draw list is also deleted.
+			</description>
+		</method>
+		<method name="_draw_list_reserve" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<param index="1" name="count" type="int" />
+			<description>
+				Reserves additional space in the draw list [param list] for a [param count] draw calls.
+			</description>
+		</method>
+		<method name="_draw_list_sort" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="list" type="RID" />
+			<description>
+				Sorts draw calls in the draw list using to layer index and texture id.
+			</description>
+		</method>
+		<method name="_font_add_glyph_outline_to_draw_list" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="list" type="RID" />
+			<param index="3" name="transform" type="Transform2D" />
+			<param index="4" name="size" type="int" />
+			<param index="5" name="outline_size" type="int" />
+			<param index="6" name="pos" type="Vector2" />
+			<param index="7" name="index" type="int" />
+			<param index="8" name="color" type="Color" />
+			<param index="9" name="oversampling" type="float" />
+			<description>
+				Adds draw call for a single glyph outline to a draw list [param list].
+			</description>
+		</method>
+		<method name="_font_add_glyph_to_draw_list" qualifiers="virtual required const">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="list" type="RID" />
+			<param index="3" name="transform" type="Transform2D" />
+			<param index="4" name="size" type="int" />
+			<param index="5" name="pos" type="Vector2" />
+			<param index="6" name="index" type="int" />
+			<param index="7" name="color" type="Color" />
+			<param index="8" name="oversampling" type="float" />
+			<description>
+				Adds draw call for a single glyph to a draw list [param list].
 			</description>
 		</method>
 		<method name="_font_clear_glyphs" qualifiers="virtual required">
@@ -1335,6 +1457,22 @@
 				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
 			</description>
 		</method>
+		<method name="_shaped_text_add_outline_to_draw_list" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="list" type="RID" />
+			<param index="3" name="transform" type="Transform2D" />
+			<param index="4" name="pos" type="Vector2" />
+			<param index="5" name="clip_l" type="float" />
+			<param index="6" name="clip_r" type="float" />
+			<param index="7" name="outline_size" type="int" />
+			<param index="8" name="color" type="Color" />
+			<param index="9" name="oversampling" type="float" />
+			<description>
+				Adds draw calls for text buffer glyph outlines to the draw list [param list].
+			</description>
+		</method>
 		<method name="_shaped_text_add_string" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="shaped" type="RID" />
@@ -1346,6 +1484,21 @@
 			<param index="6" name="meta" type="Variant" />
 			<description>
 				Adds text span and font to draw it to the text buffer.
+			</description>
+		</method>
+		<method name="_shaped_text_add_to_draw_list" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="list" type="RID" />
+			<param index="3" name="transform" type="Transform2D" />
+			<param index="4" name="pos" type="Vector2" />
+			<param index="5" name="clip_l" type="float" />
+			<param index="6" name="clip_r" type="float" />
+			<param index="7" name="color" type="Color" />
+			<param index="8" name="oversampling" type="float" />
+			<description>
+				Adds draw calls for text buffer glyphs to the draw list [param list].
 			</description>
 		</method>
 		<method name="_shaped_text_clear" qualifiers="virtual required">

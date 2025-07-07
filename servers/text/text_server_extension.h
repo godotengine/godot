@@ -356,6 +356,10 @@ public:
 	GDVIRTUAL6C_COMPAT(_font_draw_glyph_bind_compat_104872, _font_draw_glyph, RID, RID, int64_t, const Vector2 &, int64_t, const Color &);
 	GDVIRTUAL7C_COMPAT(_font_draw_glyph_outline_bind_compat_104872, _font_draw_glyph_outline, RID, RID, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
 #endif
+	virtual void font_add_glyph_to_draw_list(const RID &p_font, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	virtual void font_add_glyph_outline_to_draw_list(const RID &p_font, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	GDVIRTUAL9C_REQUIRED(_font_add_glyph_to_draw_list, const RID &, int64_t, const RID &, const Transform2D &, int64_t, const Vector2 &, int64_t, const Color &, float);
+	GDVIRTUAL10C_REQUIRED(_font_add_glyph_outline_to_draw_list, const RID &, int64_t, const RID &, const Transform2D &, int64_t, int64_t, const Vector2 &, int64_t, const Color &, float);
 
 	virtual bool font_is_language_supported(const RID &p_font_rid, const String &p_language) const override;
 	virtual void font_set_language_support_override(const RID &p_font_rid, const String &p_language, bool p_supported) override;
@@ -404,6 +408,27 @@ public:
 	virtual void draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override;
 	GDVIRTUAL2RC(Vector2, _get_hex_code_box_size, int64_t, int64_t);
 	GDVIRTUAL5C(_draw_hex_code_box, RID, int64_t, const Vector2 &, int64_t, const Color &);
+
+	/* Draw list interface */
+
+	virtual RID create_draw_list() override;
+	virtual void draw_list_sort(const RID &p_dc) override;
+	virtual void draw_list_reserve(const RID &p_dc, int64_t p_new_items) override;
+	virtual void draw_list_add_hexbox(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Vector2 &p_pos, int64_t p_index, int64_t p_size, const Color &p_modulate) const override;
+	virtual void draw_list_add_rect(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Rect2 &p_rect, bool p_filled, const Color &p_modulate) const override;
+	virtual void draw_list_add_line(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Point2 &p_start, const Point2 &p_end, float p_width, float p_dash, const Color &p_modulate) const override;
+	virtual void draw_list_add_texture(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, RID p_texture, const Rect2 &p_dst_rect, const Color &p_modulate) const override;
+	virtual void draw_list_add_custom(const RID &p_dc, int64_t p_layer, const Transform2D &p_transform, const Callable &p_callback) const override;
+	virtual void draw_list_draw(const RID &p_dc, const RID &p_ci, bool p_free = true) override;
+	GDVIRTUAL0R_REQUIRED(RID, _create_draw_list);
+	GDVIRTUAL1_REQUIRED(_draw_list_sort, const RID &);
+	GDVIRTUAL2_REQUIRED(_draw_list_reserve, const RID &, int64_t);
+	GDVIRTUAL7C_REQUIRED(_draw_list_add_hexbox, const RID &, int64_t, const Transform2D &, const Vector2 &, int64_t, int64_t, const Color &);
+	GDVIRTUAL6C_REQUIRED(_draw_list_add_rect, const RID &, int64_t, const Transform2D &, const Rect2 &, bool, const Color &);
+	GDVIRTUAL8C_REQUIRED(_draw_list_add_line, const RID &, int64_t, const Transform2D &, const Point2 &, const Point2 &, float, float, const Color &);
+	GDVIRTUAL6C_REQUIRED(_draw_list_add_texture, const RID &, int64_t, const Transform2D &, RID, const Rect2 &, const Color &);
+	GDVIRTUAL4C_REQUIRED(_draw_list_add_custom, const RID &, int64_t, const Transform2D &, const Callable &);
+	GDVIRTUAL3_REQUIRED(_draw_list_draw, const RID &, const RID &, bool);
 
 	/* Shaped text buffer interface */
 
@@ -590,6 +615,10 @@ public:
 	GDVIRTUAL6C_COMPAT(_shaped_text_draw_bind_compat_104872, _shaped_text_draw, RID, RID, const Vector2 &, double, double, const Color &);
 	GDVIRTUAL7C_COMPAT(_shaped_text_draw_outline_bind_compat_104872, _shaped_text_draw_outline, RID, RID, const Vector2 &, double, double, int64_t, const Color &);
 #endif
+	virtual void shaped_text_add_to_draw_list(const RID &p_shaped, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	virtual void shaped_text_add_outline_to_draw_list(const RID &p_shaped, int64_t p_layer, const RID &p_list, const Transform2D &p_transform, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	GDVIRTUAL9C(_shaped_text_add_to_draw_list, RID, int64_t, RID, const Transform2D &, const Vector2 &, double, double, const Color &, float);
+	GDVIRTUAL10C(_shaped_text_add_outline_to_draw_list, RID, int64_t, RID, const Transform2D &, const Vector2 &, double, double, int64_t, const Color &, float);
 
 	virtual Vector2 shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const override;
 	virtual int64_t shaped_text_next_grapheme_pos(const RID &p_shaped, int64_t p_pos) const override;

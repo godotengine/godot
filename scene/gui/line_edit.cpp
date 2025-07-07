@@ -1470,33 +1470,24 @@ void LineEdit::_notification(int p_what) {
 			int gl_size = TS->shaped_text_get_glyph_count(text_rid);
 
 			// Draw text.
+			RID draw_list = TS->create_draw_list();
+
 			ofs.y += TS->shaped_text_get_ascent(text_rid);
 			Color font_outline_color = theme_cache.font_outline_color;
 			int outline_size = theme_cache.font_outline_size;
-			if (outline_size > 0 && font_outline_color.a > 0) {
-				Vector2 oofs = ofs;
-				for (int i = 0; i < gl_size; i++) {
-					for (int j = 0; j < glyphs[i].repeat; j++) {
-						if (std::ceil(oofs.x) >= x_ofs && (oofs.x + glyphs[i].advance) <= ofs_max) {
-							if (glyphs[i].font_rid != RID()) {
-								TS->font_draw_glyph_outline(glyphs[i].font_rid, ci, glyphs[i].font_size, outline_size, oofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
-							}
-						}
-						oofs.x += glyphs[i].advance;
-					}
-					if (oofs.x >= ofs_max) {
-						break;
-					}
-				}
-			}
+
+			TS->draw_list_reserve(draw_list, gl_size * (outline_size > 0 && font_outline_color.a > 0 ? 2 : 1));
 			for (int i = 0; i < gl_size; i++) {
 				bool selected = selection.enabled && glyphs[i].start >= selection.begin && glyphs[i].end <= selection.end;
 				for (int j = 0; j < glyphs[i].repeat; j++) {
 					if (std::ceil(ofs.x) >= x_ofs && (ofs.x + glyphs[i].advance) <= ofs_max) {
 						if (glyphs[i].font_rid != RID()) {
-							TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
+							if (outline_size > 0 && font_outline_color.a > 0) {
+								TS->font_add_glyph_outline_to_draw_list(glyphs[i].font_rid, DRAW_STEP_OUTLINE, draw_list, Transform2D(), glyphs[i].font_size, outline_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, font_outline_color);
+							}
+							TS->font_add_glyph_to_draw_list(glyphs[i].font_rid, DRAW_STEP_TEXT, draw_list, Transform2D(), glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
 						} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
-							TS->draw_hex_code_box(ci, glyphs[i].font_size, ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, selected ? font_selected_color : font_color);
+							TS->draw_list_add_hexbox(draw_list, DRAW_STEP_TEXT, Transform2D(), ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, glyphs[i].font_size, selected ? font_selected_color : font_color);
 						}
 					}
 					ofs.x += glyphs[i].advance;
@@ -1505,6 +1496,8 @@ void LineEdit::_notification(int p_what) {
 					break;
 				}
 			}
+			TS->draw_list_sort(draw_list);
+			TS->draw_list_draw(draw_list, ci, true);
 
 			// Draw carets.
 			ofs.x = x_ofs + scroll_offset;

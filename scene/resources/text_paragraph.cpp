@@ -149,6 +149,15 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_dropcap", "canvas", "pos", "color", "oversampling"), &TextParagraph::draw_dropcap, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("draw_dropcap_outline", "canvas", "pos", "outline_size", "color", "oversampling"), &TextParagraph::draw_dropcap_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
 
+	ClassDB::bind_method(D_METHOD("add_to_draw_list", "layer", "list", "transform", "pos", "color", "dc_color", "oversampling"), &TextParagraph::add_to_draw_list, DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("add_outline_to_draw_list", "layer", "list", "transform", "pos", "outline_size", "color", "dc_color", "oversampling"), &TextParagraph::add_outline_to_draw_list, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+
+	ClassDB::bind_method(D_METHOD("add_line_to_draw_list", "layer", "list", "transform", "pos", "line", "color", "oversampling"), &TextParagraph::add_line_to_draw_list, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("add_line_outline_to_draw_list", "layer", "list", "transform", "pos", "line", "outline_size", "color", "oversampling"), &TextParagraph::add_line_outline_to_draw_list, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+
+	ClassDB::bind_method(D_METHOD("add_dropcap_to_draw_list", "layer", "list", "transform", "pos", "color", "oversampling"), &TextParagraph::add_dropcap_to_draw_list, DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("add_dropcap_outline_to_draw_list", "layer", "list", "transform", "pos", "outline_size", "color", "oversampling"), &TextParagraph::add_dropcap_outline_to_draw_list, DEFVAL(1), DEFVAL(Color(1, 1, 1)), DEFVAL(0.0));
+
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextParagraph::hit_test);
 }
 
@@ -1039,6 +1048,211 @@ void TextParagraph::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outli
 	}
 }
 
+void TextParagraph::add_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, const Color &p_color, const Color &p_dc_color, float p_oversampling) const {
+	_THREAD_SAFE_METHOD_
+
+	_shape_lines();
+	Vector2 ofs = p_pos;
+	float h_offset = 0.f;
+	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+	} else {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+	}
+
+	if (h_offset > 0) {
+		// Draw dropcap.
+		Vector2 dc_off = ofs;
+		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
+			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+				dc_off.x += width - h_offset;
+			} else {
+				dc_off.y += width - h_offset;
+			}
+		}
+		TS->shaped_text_add_to_draw_list(dropcap_rid, p_layer, p_list, p_transform, dc_off + Vector2(0, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.size.y + dropcap_margins.position.y / 2), -1, -1, p_dc_color, p_oversampling);
+	}
+
+	int lines_visible = (max_lines_visible >= 0) ? MIN(max_lines_visible, (int)lines_rid.size()) : (int)lines_rid.size();
+
+	for (int i = 0; i < lines_visible; i++) {
+		float l_width = width;
+		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+			ofs.x = p_pos.x;
+			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.x -= h_offset;
+				}
+				l_width -= h_offset;
+			}
+		} else {
+			ofs.y = p_pos.y;
+			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.y -= h_offset;
+				}
+				l_width -= h_offset;
+			}
+		}
+		float line_width = TS->shaped_text_get_width(lines_rid[i]);
+		if (width > 0) {
+			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_FILL:
+					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - line_width;
+						} else {
+							ofs.y += l_width - line_width;
+						}
+					}
+					break;
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					break;
+				case HORIZONTAL_ALIGNMENT_CENTER: {
+					if (line_width <= l_width) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += Math::floor((l_width - line_width) / 2.0);
+						} else {
+							ofs.y += Math::floor((l_width - line_width) / 2.0);
+						}
+					} else if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - line_width;
+						} else {
+							ofs.y += l_width - line_width;
+						}
+					}
+				} break;
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
+					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += l_width - line_width;
+					} else {
+						ofs.y += l_width - line_width;
+					}
+				} break;
+			}
+		}
+		float clip_l;
+		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+			clip_l = MAX(0, p_pos.x - ofs.x);
+		} else {
+			clip_l = MAX(0, p_pos.y - ofs.y);
+		}
+		TS->shaped_text_add_to_draw_list(lines_rid[i], p_layer, p_list, p_transform, ofs, clip_l, clip_l + l_width, p_color, p_oversampling);
+		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+			ofs.x = p_pos.x;
+			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
+		} else {
+			ofs.y = p_pos.y;
+			ofs.x += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
+		}
+	}
+}
+
+void TextParagraph::add_outline_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_outline_size, const Color &p_color, const Color &p_dc_color, float p_oversampling) const {
+	_THREAD_SAFE_METHOD_
+
+	_shape_lines();
+	Vector2 ofs = p_pos;
+
+	float h_offset = 0.f;
+	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+	} else {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+	}
+
+	if (h_offset > 0) {
+		// Draw dropcap.
+		Vector2 dc_off = ofs;
+		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
+			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+				dc_off.x += width - h_offset;
+			} else {
+				dc_off.y += width - h_offset;
+			}
+		}
+		TS->shaped_text_add_outline_to_draw_list(dropcap_rid, p_layer, p_list, p_transform, dc_off + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_dc_color, p_oversampling);
+	}
+
+	for (int i = 0; i < (int)lines_rid.size(); i++) {
+		float l_width = width;
+		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+			ofs.x = p_pos.x;
+			ofs.y += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.x -= h_offset;
+				}
+				l_width -= h_offset;
+			}
+		} else {
+			ofs.y = p_pos.y;
+			ofs.x += TS->shaped_text_get_ascent(lines_rid[i]);
+			if (i <= dropcap_lines) {
+				if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_LTR) {
+					ofs.y -= h_offset;
+				}
+				l_width -= h_offset;
+			}
+		}
+		float length = TS->shaped_text_get_width(lines_rid[i]);
+		if (width > 0) {
+			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_FILL:
+					if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - length;
+						} else {
+							ofs.y += l_width - length;
+						}
+					}
+					break;
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					break;
+				case HORIZONTAL_ALIGNMENT_CENTER: {
+					if (length <= l_width) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += Math::floor((l_width - length) / 2.0);
+						} else {
+							ofs.y += Math::floor((l_width - length) / 2.0);
+						}
+					} else if (TS->shaped_text_get_inferred_direction(lines_rid[i]) == TextServer::DIRECTION_RTL) {
+						if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+							ofs.x += l_width - length;
+						} else {
+							ofs.y += l_width - length;
+						}
+					}
+				} break;
+				case HORIZONTAL_ALIGNMENT_RIGHT: {
+					if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+						ofs.x += l_width - length;
+					} else {
+						ofs.y += l_width - length;
+					}
+				} break;
+			}
+		}
+		float clip_l;
+		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+			clip_l = MAX(0, p_pos.x - ofs.x);
+		} else {
+			clip_l = MAX(0, p_pos.y - ofs.y);
+		}
+		TS->shaped_text_add_outline_to_draw_list(lines_rid[i], p_layer, p_list, p_transform, ofs, clip_l, clip_l + l_width, p_outline_size, p_color, p_oversampling);
+		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
+			ofs.x = p_pos.x;
+			ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
+		} else {
+			ofs.y = p_pos.y;
+			ofs.x += TS->shaped_text_get_descent(lines_rid[i]) + line_spacing;
+		}
+	}
+}
+
 int TextParagraph::hit_test(const Point2 &p_coords) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1121,6 +1335,54 @@ void TextParagraph::draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int
 	}
 }
 
+void TextParagraph::add_dropcap_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, const Color &p_color, float p_oversampling) const {
+	_THREAD_SAFE_METHOD_
+
+	Vector2 ofs = p_pos;
+	float h_offset = 0.f;
+	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+	} else {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+	}
+
+	if (h_offset > 0) {
+		// Draw dropcap.
+		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
+			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+				ofs.x += width - h_offset;
+			} else {
+				ofs.y += width - h_offset;
+			}
+		}
+		TS->shaped_text_add_to_draw_list(dropcap_rid, p_layer, p_list, p_transform, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_color, p_oversampling);
+	}
+}
+
+void TextParagraph::add_dropcap_outline_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_outline_size, const Color &p_color, float p_oversampling) const {
+	_THREAD_SAFE_METHOD_
+
+	Vector2 ofs = p_pos;
+	float h_offset = 0.f;
+	if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).x + dropcap_margins.size.x + dropcap_margins.position.x;
+	} else {
+		h_offset = TS->shaped_text_get_size(dropcap_rid).y + dropcap_margins.size.y + dropcap_margins.position.y;
+	}
+
+	if (h_offset > 0) {
+		// Draw dropcap.
+		if (TS->shaped_text_get_inferred_direction(dropcap_rid) == TextServer::DIRECTION_RTL) {
+			if (TS->shaped_text_get_orientation(dropcap_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+				ofs.x += width - h_offset;
+			} else {
+				ofs.y += width - h_offset;
+			}
+		}
+		TS->shaped_text_add_outline_to_draw_list(dropcap_rid, p_layer, p_list, p_transform, ofs + Vector2(dropcap_margins.position.x, TS->shaped_text_get_ascent(dropcap_rid) + dropcap_margins.position.y), -1, -1, p_outline_size, p_color, p_oversampling);
+	}
+}
+
 void TextParagraph::draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color, float p_oversampling) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1150,6 +1412,37 @@ void TextParagraph::draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_
 		ofs.x += TS->shaped_text_get_ascent(lines_rid[p_line]);
 	}
 	return TS->shaped_text_draw_outline(lines_rid[p_line], p_canvas, ofs, -1, -1, p_outline_size, p_color, p_oversampling);
+}
+
+void TextParagraph::add_line_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_line, const Color &p_color, float p_oversampling) const {
+	_THREAD_SAFE_METHOD_
+
+	_shape_lines();
+	ERR_FAIL_COND(p_line < 0 || p_line >= (int)lines_rid.size());
+
+	Vector2 ofs = p_pos;
+
+	if (TS->shaped_text_get_orientation(lines_rid[p_line]) == TextServer::ORIENTATION_HORIZONTAL) {
+		ofs.y += TS->shaped_text_get_ascent(lines_rid[p_line]);
+	} else {
+		ofs.x += TS->shaped_text_get_ascent(lines_rid[p_line]);
+	}
+	return TS->shaped_text_add_to_draw_list(lines_rid[p_line], p_layer, p_list, p_transform, ofs, -1, -1, p_color, p_oversampling);
+}
+
+void TextParagraph::add_line_outline_to_draw_list(int p_layer, RID p_list, const Transform2D &p_transform, const Vector2 &p_pos, int p_line, int p_outline_size, const Color &p_color, float p_oversampling) const {
+	_THREAD_SAFE_METHOD_
+
+	_shape_lines();
+	ERR_FAIL_COND(p_line < 0 || p_line >= (int)lines_rid.size());
+
+	Vector2 ofs = p_pos;
+	if (TS->shaped_text_get_orientation(lines_rid[p_line]) == TextServer::ORIENTATION_HORIZONTAL) {
+		ofs.y += TS->shaped_text_get_ascent(lines_rid[p_line]);
+	} else {
+		ofs.x += TS->shaped_text_get_ascent(lines_rid[p_line]);
+	}
+	return TS->shaped_text_add_outline_to_draw_list(lines_rid[p_line], p_layer, p_list, p_transform, ofs, -1, -1, p_outline_size, p_color, p_oversampling);
 }
 
 TextParagraph::TextParagraph(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, float p_width, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
