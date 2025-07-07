@@ -194,7 +194,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 	Vector3 circle_B_line_1 = p_points_B[1] - circle_B_pos;
 	Vector3 circle_B_line_2 = p_points_B[2] - circle_B_pos;
 
-	real_t circle_B_radius = circle_B_line_1.length();
+	real_t circle_B_radius_squared = circle_B_line_1.length_squared();
 	Vector3 circle_B_normal = circle_B_line_1.cross(circle_B_line_2).normalized();
 
 	Plane circle_plane(circle_B_normal, circle_B_pos);
@@ -211,7 +211,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 	real_t dist_sq = dist_vec.length_squared();
 
 	// Point 1 is inside disk, add as contact point.
-	if (dist_sq <= circle_B_radius * circle_B_radius) {
+	if (dist_sq <= circle_B_radius_squared) {
 		contact_points[num_points] = edge_A_1;
 		++num_points;
 	}
@@ -223,7 +223,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 	real_t dist_sq_2 = dist_vec_2.length_squared();
 
 	// Point 2 is inside disk, add as contact point.
-	if (dist_sq_2 <= circle_B_radius * circle_B_radius) {
+	if (dist_sq_2 <= circle_B_radius_squared) {
 		contact_points[num_points] = edge_A_2;
 		++num_points;
 	}
@@ -237,7 +237,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 
 		a = line_length_sq;
 		b = 2.0 * dist_vec.dot(line_vec);
-		c = dist_sq - circle_B_radius * circle_B_radius;
+		c = dist_sq - circle_B_radius_squared;
 
 		// Solve for t.
 		real_t sqrtterm = b * b - 4.0 * a * c;

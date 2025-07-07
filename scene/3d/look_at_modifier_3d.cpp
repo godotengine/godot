@@ -611,7 +611,7 @@ bool LookAtModifier3D::is_intersecting_axis(const Vector3 &p_prev, const Vector3
 	// Prevent that the angular velocity does not become too large.
 	// Check that is p_flipping_axis flipped nearby p_check_axis (close than origin_safe_margin) or not. If p_check_plane is true, check two axes of crossed plane.
 	if (p_check_plane) {
-		if (get_projection_vector(p_prev, p_check_axis).length() > origin_safe_margin && get_projection_vector(p_current, p_check_axis).length() > origin_safe_margin) {
+		if (get_projection_vector(p_prev, p_check_axis).length_squared() > (origin_safe_margin * origin_safe_margin) && get_projection_vector(p_current, p_check_axis).length_squared() > (origin_safe_margin * origin_safe_margin)) {
 			return false;
 		}
 	} else if (Math::abs(p_prev[p_check_axis]) > origin_safe_margin && Math::abs(p_current[p_check_axis]) > origin_safe_margin) {

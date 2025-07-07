@@ -35,6 +35,7 @@
 #include "servers/rendering/rendering_server.h"
 
 bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
+	const double tolerance_squared = p_tolerance * p_tolerance;
 	Vector<Vector2> s = get_segments();
 	int len = s.size();
 	if (len == 0 || (len % 2) == 1) {
@@ -44,7 +45,7 @@ bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, do
 	const Vector2 *r = s.ptr();
 	for (int i = 0; i < len; i += 2) {
 		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, r[i], r[i + 1]);
-		if (p_point.distance_to(closest) < p_tolerance) {
+		if (p_point.distance_squared_to(closest) < tolerance_squared) {
 			return true;
 		}
 	}

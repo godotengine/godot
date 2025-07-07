@@ -74,7 +74,7 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 			const Vector2 segment_b = curve->sample(i, frac);
 
 			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
-			if (p.distance_to(p_point) <= p_tolerance) {
+			if (p.distance_squared_to(p_point) <= (p_tolerance * p_tolerance)) {
 				return true;
 			}
 

@@ -48,7 +48,7 @@ bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tole
 	if (_edit_use_rect()) {
 		return _edit_get_rect().has_point(p_point);
 	} else {
-		return p_point.length() < p_tolerance;
+		return p_point.length_squared() < (p_tolerance * p_tolerance);
 	}
 }
 #endif // DEBUG_ENABLED

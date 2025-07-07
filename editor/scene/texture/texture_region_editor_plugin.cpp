@@ -383,7 +383,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(mb->get_position()) < handle_radius) {
+						if (tuv.distance_squared_to(mb->get_position()) < (handle_radius * handle_radius)) {
 							drag_index = i;
 						}
 					}
