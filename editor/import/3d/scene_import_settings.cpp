@@ -40,6 +40,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/3d/multimesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/timer.h"
@@ -468,6 +469,15 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_fill_scene(p_node->get_child(i), item);
 	}
+
+	MultiMeshInstance3D *multimesh_node = Object::cast_to<MultiMeshInstance3D>(p_node);
+	if (multimesh_node) {
+		Ref<MultiMesh> multimesh = multimesh_node->get_multimesh();
+		if (multimesh.is_valid() && multimesh->get_mesh().is_valid()) {
+			_fill_mesh(scene_tree, multimesh->get_mesh(), item);
+		}
+	}
+
 	MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(p_node);
 	if (mesh_node && mesh_node->get_mesh().is_valid()) {
 		// This controls the display of mesh resources in the import settings dialog tree (the white mesh icon).
