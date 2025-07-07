@@ -110,6 +110,9 @@ public:
 	GraphPort *get_input_port_by_slot(int p_slot_index);
 	GraphPort *get_output_port_by_slot(int p_slot_index);
 
+	TypedArray<GraphPort> get_input_ports(bool p_include_disabled = true);
+	TypedArray<GraphPort> get_output_ports(bool p_include_disabled = true);
+
 	int get_input_port_count();
 	int get_output_port_count();
 

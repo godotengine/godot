@@ -122,6 +122,7 @@ public:
 
 	void set_ports(TypedArray<GraphPort> p_ports);
 	TypedArray<GraphPort> get_ports();
+	TypedArray<GraphPort> get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled = true);
 	void remove_all_ports();
 	void set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	GraphPort *get_port(int p_port_index, bool p_include_disabled = true);

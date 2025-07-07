@@ -563,6 +563,17 @@ TypedArray<GraphPort> GraphNode::get_ports() {
 	return _ports;
 }
 
+TypedArray<GraphPort> GraphNode::get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled) {
+	TypedArray<GraphPort> _ports;
+	for (GraphPort *port : ports) {
+		if (!port || port->direction != p_direction) {
+			continue;
+		}
+		_ports.append(port);
+	}
+	return _ports;
+}
+
 int GraphNode::index_of_port(GraphPort *p_port, bool p_include_disabled) {
 	ERR_FAIL_NULL_V(p_port, -1);
 	return p_port->get_port_index(p_include_disabled);
@@ -827,6 +838,7 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::set_ports);
 	ClassDB::bind_method(D_METHOD("get_ports"), &GraphNode::get_ports);
+	ClassDB::bind_method(D_METHOD("get_filtered_ports", "filter_direction", "include_disabled"), &GraphNode::get_filtered_ports, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("remove_all_ports"), &GraphNode::remove_all_ports);
 
 	ClassDB::bind_method(D_METHOD("set_port", "port_index", "port", "include_disabled"), &GraphNode::set_port, DEFVAL(true));
