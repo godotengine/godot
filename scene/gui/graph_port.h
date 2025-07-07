@@ -144,6 +144,10 @@ public:
 
 	bool has_connection();
 	TypedArray<Ref<GraphConnection>> get_connections();
+	Ref<GraphConnection> get_first_connection();
+	TypedArray<GraphPort> get_connected_ports();
+	GraphPort *get_first_connected_port();
+	GraphNode *get_first_connected_node();
 
 	GraphPort();
 	GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);

@@ -788,6 +788,30 @@ TypedArray<Ref<GraphConnection>> GraphNode::get_filtered_connections(GraphPort::
 	return graph->get_filtered_connections_by_node(this, p_filter_direction);
 }
 
+TypedArray<GraphNode> GraphNode::get_connected_nodes() {
+	const TypedArray<Ref<GraphConnection>> conns = get_connections();
+	TypedArray<GraphNode> ret;
+	for (const Ref<GraphConnection> conn : conns) {
+		if (conn.is_null()) {
+			continue;
+		}
+		ret.push_back(conn->get_other_node(this));
+	}
+	return ret;
+}
+
+TypedArray<GraphNode> GraphNode::get_filtered_connected_nodes(GraphPort::PortDirection p_filter_direction) {
+	const TypedArray<Ref<GraphConnection>> conns = get_filtered_connections(p_filter_direction);
+	TypedArray<GraphNode> ret;
+	for (const Ref<GraphConnection> conn : conns) {
+		if (conn.is_null()) {
+			continue;
+		}
+		ret.push_back(conn->get_other_node(this));
+	}
+	return ret;
+}
+
 void GraphNode::_on_connected(const Ref<GraphConnection> p_conn) {
 	emit_signal(SNAME("connected"), p_conn);
 }
@@ -822,6 +846,8 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_connection"), &GraphNode::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphNode::get_connections);
 	ClassDB::bind_method(D_METHOD("get_filtered_connections", "filter_direction"), &GraphNode::get_filtered_connections);
+	ClassDB::bind_method(D_METHOD("get_connected_nodes"), &GraphNode::get_connected_nodes);
+	ClassDB::bind_method(D_METHOD("get_filtered_connected_nodes", "filter_direction"), &GraphNode::get_filtered_connected_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);

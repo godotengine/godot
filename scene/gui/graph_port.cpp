@@ -259,6 +259,32 @@ TypedArray<Ref<GraphConnection>> GraphPort::get_connections() {
 	return graph_edit->get_connections_by_port(this);
 }
 
+Ref<GraphConnection> GraphPort::get_first_connection() {
+	ERR_FAIL_NULL_V(graph_edit, Ref<GraphConnection>(nullptr));
+	return graph_edit->get_first_connection_by_port(this);
+}
+
+TypedArray<GraphPort> GraphPort::get_connected_ports() {
+	ERR_FAIL_NULL_V(graph_edit, TypedArray<GraphPort>());
+	return graph_edit->get_connected_ports(this);
+}
+
+GraphPort *GraphPort::get_first_connected_port() {
+	const Ref<GraphConnection> first_conn = get_first_connection();
+	if (first_conn.is_null()) {
+		return nullptr;
+	}
+	return first_conn->get_other_port(this);
+}
+
+GraphNode *GraphPort::get_first_connected_node() {
+	GraphPort *other_port = get_first_connected_port();
+	if (!other_port) {
+		return nullptr;
+	}
+	return other_port->graph_node;
+}
+
 void GraphPort::_draw() {
 	if (!enabled) {
 		return;
@@ -326,6 +352,10 @@ void GraphPort::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
+	ClassDB::bind_method(D_METHOD("get_connected_ports"), &GraphPort::get_connected_ports);
+	ClassDB::bind_method(D_METHOD("get_first_connection"), &GraphPort::get_first_connection);
+	ClassDB::bind_method(D_METHOD("get_first_connected_port"), &GraphPort::get_first_connected_port);
+	ClassDB::bind_method(D_METHOD("get_first_connected_node"), &GraphPort::get_first_connected_node);
 
 	ClassDB::bind_method(D_METHOD("get_port_index", "include_disabled"), &GraphPort::get_port_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_index", "include_disabled"), &GraphPort::get_filtered_port_index, DEFVAL(true));
