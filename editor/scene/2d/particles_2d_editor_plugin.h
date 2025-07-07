@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  particles_editor_plugin.h                                             */
+/*  particles_2d_editor_plugin.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,46 +30,80 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
+#include "editor/scene/particles_editor_plugin.h"
 
-class CheckBox;
-class ConfirmationDialog;
-class HBoxContainer;
-class MenuButton;
-class OptionButton;
-class SceneTreeDialog;
-class SpinBox;
+class EditorFileDialog;
 
-class ParticlesEditorPlugin : public EditorPlugin {
-	GDCLASS(ParticlesEditorPlugin, EditorPlugin);
-
-private:
-	enum {
-		MENU_OPTION_CONVERT,
-		MENU_RESTART
-	};
-
-	HBoxContainer *toolbar = nullptr;
-	MenuButton *menu = nullptr;
+class Particles2DEditorPlugin : public ParticlesEditorPlugin {
+	GDCLASS(Particles2DEditorPlugin, ParticlesEditorPlugin);
 
 protected:
-	String handled_type;
-	String conversion_option_name;
+	enum {
+		MENU_LOAD_EMISSION_MASK = 100,
+	};
 
-	Node *edited_node = nullptr;
+	List<Node *> selected_particles;
 
+	enum EmissionMode {
+		EMISSION_MODE_SOLID,
+		EMISSION_MODE_BORDER,
+		EMISSION_MODE_BORDER_DIRECTED
+	};
+
+	EditorFileDialog *file = nullptr;
+	ConfirmationDialog *emission_mask = nullptr;
+	OptionButton *emission_mask_mode = nullptr;
+	CheckBox *emission_mask_centered = nullptr;
+	CheckBox *emission_colors = nullptr;
+	String source_emission_file;
+
+	virtual void _menu_callback(int p_idx) override;
+	virtual void _add_menu_options(PopupMenu *p_menu) override;
+
+	void _file_selected(const String &p_file);
+	void _get_base_emission_mask(PackedVector2Array &r_valid_positions, PackedVector2Array &r_valid_normals, PackedByteArray &r_valid_colors, Vector2i &r_image_size);
+	virtual void _generate_emission_mask() = 0;
 	void _notification(int p_what);
-
-	bool need_show_lifetime_dialog(SpinBox *p_seconds);
-	virtual void _menu_callback(int p_idx);
-
-	virtual void _add_menu_options(PopupMenu *p_menu) {}
-	virtual Node *_convert_particles() = 0;
+	void _set_show_gizmos(Node *p_node, bool p_show);
+	void _selection_changed();
+	void _node_removed(Node *p_node);
 
 public:
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	Particles2DEditorPlugin();
+};
 
-	ParticlesEditorPlugin();
+class GPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
+	GDCLASS(GPUParticles2DEditorPlugin, Particles2DEditorPlugin);
+
+	enum {
+		MENU_GENERATE_VISIBILITY_RECT = 200,
+	};
+
+	ConfirmationDialog *generate_visibility_rect = nullptr;
+	SpinBox *generate_seconds = nullptr;
+
+	void _generate_visibility_rect();
+
+protected:
+	void _menu_callback(int p_idx) override;
+	void _add_menu_options(PopupMenu *p_menu) override;
+
+	Node *_convert_particles() override;
+
+	void _generate_emission_mask() override;
+
+public:
+	GPUParticles2DEditorPlugin();
+};
+
+class CPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
+	GDCLASS(CPUParticles2DEditorPlugin, Particles2DEditorPlugin);
+
+protected:
+	Node *_convert_particles() override;
+
+	void _generate_emission_mask() override;
+
+public:
+	CPUParticles2DEditorPlugin();
 };

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  particles_editor_plugin.h                                             */
+/*  particles_3d_editor_plugin.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,46 +30,63 @@
 
 #pragma once
 
-#include "editor/plugins/editor_plugin.h"
+#include "editor/scene/particles_editor_plugin.h"
 
-class CheckBox;
-class ConfirmationDialog;
-class HBoxContainer;
-class MenuButton;
-class OptionButton;
-class SceneTreeDialog;
-class SpinBox;
+class Particles3DEditorPlugin : public ParticlesEditorPlugin {
+	GDCLASS(Particles3DEditorPlugin, ParticlesEditorPlugin);
 
-class ParticlesEditorPlugin : public EditorPlugin {
-	GDCLASS(ParticlesEditorPlugin, EditorPlugin);
-
-private:
 	enum {
-		MENU_OPTION_CONVERT,
-		MENU_RESTART
+		MENU_OPTION_GENERATE_AABB = 300,
+		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
 	};
 
-	HBoxContainer *toolbar = nullptr;
-	MenuButton *menu = nullptr;
+	ConfirmationDialog *generate_aabb = nullptr;
+	SpinBox *generate_seconds = nullptr;
+
+	SceneTreeDialog *emission_tree_dialog = nullptr;
+	ConfirmationDialog *emission_dialog = nullptr;
+	SpinBox *emission_amount = nullptr;
+	OptionButton *emission_fill = nullptr;
+
+	void _generate_aabb();
+	void _node_selected(const NodePath &p_path);
 
 protected:
-	String handled_type;
-	String conversion_option_name;
+	Vector<Face3> geometry;
 
-	Node *edited_node = nullptr;
+	virtual void _menu_callback(int p_idx) override;
+	virtual void _add_menu_options(PopupMenu *p_menu) override;
 
-	void _notification(int p_what);
-
-	bool need_show_lifetime_dialog(SpinBox *p_seconds);
-	virtual void _menu_callback(int p_idx);
-
-	virtual void _add_menu_options(PopupMenu *p_menu) {}
-	virtual Node *_convert_particles() = 0;
+	bool _generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals);
+	virtual bool _can_generate_points() const = 0;
+	virtual void _generate_emission_points() = 0;
 
 public:
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	Particles3DEditorPlugin();
+};
 
-	ParticlesEditorPlugin();
+class GPUParticles3DEditorPlugin : public Particles3DEditorPlugin {
+	GDCLASS(GPUParticles3DEditorPlugin, Particles3DEditorPlugin);
+
+protected:
+	Node *_convert_particles() override;
+
+	bool _can_generate_points() const override;
+	void _generate_emission_points() override;
+
+public:
+	GPUParticles3DEditorPlugin();
+};
+
+class CPUParticles3DEditorPlugin : public Particles3DEditorPlugin {
+	GDCLASS(CPUParticles3DEditorPlugin, Particles3DEditorPlugin);
+
+protected:
+	Node *_convert_particles() override;
+
+	bool _can_generate_points() const override { return true; }
+	void _generate_emission_points() override;
+
+public:
+	CPUParticles3DEditorPlugin();
 };
