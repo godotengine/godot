@@ -465,7 +465,7 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 					if (obstacle_vertices.size() >= 3) {
 						int closest_idx = -1;
 						Vector2 closest_edge_point;
-						real_t closest_dist = 1e10;
+						real_t closest_dist_squared = 1e20;
 						for (int i = 0; i < obstacle_vertices.size(); i++) {
 							const Vector2 a = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
 							const Vector2 b = p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]));
@@ -475,9 +475,9 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 								continue; // Skip edge as clicked point is too close to existing vertex.
 							}
 
-							const real_t dist = cp.distance_to(mouse_position);
-							if (dist < closest_dist && dist < grab_threshold) {
-								closest_dist = dist;
+							const real_t dist_squared = cp.distance_squared_to(mouse_position);
+							if (dist_squared < closest_dist_squared && dist_squared < grab_threshold_squared) {
+								closest_dist_squared = dist_squared;
 								closest_edge_point = cp;
 								closest_idx = i;
 							}
@@ -544,7 +544,7 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 
 							//search edges
 							Vector2 closest_pos;
-							real_t closest_dist = 1e10;
+							real_t closest_dist_squared = 1e20;
 							int closest_idx = -1;
 							for (int i = 0; i < obstacle_vertices.size(); i++) {
 								const Vector2 a = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
@@ -555,9 +555,9 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 									continue; //not valid to reuse point
 								}
 
-								const real_t dist = cp.distance_to(mouse_position);
-								if (dist < closest_dist && dist < grab_threshold) {
-									closest_dist = dist;
+								const real_t dist_squared = cp.distance_squared_to(mouse_position);
+								if (dist_squared < closest_dist_squared && dist_squared < grab_threshold_squared) {
+									closest_dist_squared = dist_squared;
 									closest_pos = cp;
 									closest_idx = i;
 								}
@@ -576,14 +576,14 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 							}
 						} else {
 							Vector2 closest_pos;
-							real_t closest_dist = 1e10;
+							real_t closest_dist_squared = 1e20;
 							int closest_idx = -1;
 							for (int i = 0; i < obstacle_vertices.size(); i++) {
 								Vector2 cp = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
 
-								const real_t dist = cp.distance_to(mouse_position);
-								if (dist < closest_dist && dist < grab_threshold) {
-									closest_dist = dist;
+								const real_t dist_squared = cp.distance_squared_to(mouse_position);
+								if (dist_squared < closest_dist_squared && dist_squared < grab_threshold_squared) {
+									closest_dist_squared = dist_squared;
 									closest_pos = cp;
 									closest_idx = i;
 								}
@@ -621,13 +621,13 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 
 			case MODE_DELETE: {
 				if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-					real_t closest_dist = 1e10;
+					real_t closest_dist_squared = 1e20;
 					int closest_idx = -1;
 					for (int i = 0; i < obstacle_vertices.size(); i++) {
 						Vector2 point = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
-						const real_t dist = point.distance_to(mouse_position);
-						if (dist < closest_dist && dist < grab_threshold) {
-							closest_dist = dist;
+						const real_t dist_squared = point.distance_squared_to(mouse_position);
+						if (dist_squared < closest_dist_squared && dist_squared < grab_threshold_squared) {
+							closest_dist_squared = dist_squared;
 							closest_idx = i;
 						}
 					}
