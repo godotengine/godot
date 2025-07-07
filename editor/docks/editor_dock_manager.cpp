@@ -39,7 +39,6 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/window_wrapper.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -741,6 +740,13 @@ void EditorDockManager::bottom_dock_show_placement_popup(const Rect2i &p_positio
 	}
 	dock_context_popup->set_position(popup_pos);
 	dock_context_popup->popup();
+}
+
+void EditorDockManager::set_dock_contextual(Control *p_dock, bool p_contextual) {
+	ERR_FAIL_NULL(p_dock);
+	ERR_FAIL_COND_MSG(!all_docks.has(p_dock), vformat("Cannot set contextual unknown dock '%s'.", p_dock->get_name()));
+
+	all_docks[p_dock].contextual = p_contextual;
 }
 
 void EditorDockManager::set_dock_enabled(Control *p_dock, bool p_enabled) {

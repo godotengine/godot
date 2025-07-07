@@ -79,11 +79,6 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
-Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut) {
-	ERR_FAIL_NULL_V(p_control, nullptr);
-	return EditorNode::get_bottom_panel()->add_item(p_title, p_control, p_shortcut);
-}
-
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut) {
 	ERR_FAIL_NULL(p_control);
 	EditorDockManager::get_singleton()->add_dock(p_control, String(), EditorDockManager::DockSlot(p_slot), p_shortcut);
@@ -92,11 +87,6 @@ void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control, cons
 void EditorPlugin::remove_control_from_docks(Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	EditorDockManager::get_singleton()->remove_dock(p_control);
-}
-
-void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
-	ERR_FAIL_NULL(p_control);
-	EditorNode::get_bottom_panel()->remove_item(p_control);
 }
 
 void EditorPlugin::set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon) {
@@ -535,9 +525,33 @@ void EditorPlugin::queue_save_layout() {
 	EditorNode::get_singleton()->save_editor_layout_delayed();
 }
 
-void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
-	EditorNode::get_bottom_panel()->make_item_visible(p_item);
+#ifndef DISABLE_DEPRECATED
+Button *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_NULL_V(p_control, nullptr);
+	EditorDockManager::get_singleton()->add_dock(p_control, p_title, EditorDockManager::DOCK_SLOT_BOTTOM, p_shortcut);
+	EditorDockManager::get_singleton()->set_dock_contextual(p_control, true);
+
+	// Still return a dummy button for compatibility reasons.
+	Button *tb = memnew(Button);
+	tb->set_toggle_mode(true);
+	tb->connect(SceneStringName(visibility_changed), callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::close_dock).bind(p_control));
+	legacy_bottom_panel_buttons[p_control] = tb;
+	return tb;
 }
+
+void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
+	ERR_FAIL_NULL(p_control);
+	EditorDockManager::get_singleton()->remove_dock(p_control);
+
+	legacy_bottom_panel_buttons[p_control]->queue_free();
+	legacy_bottom_panel_buttons.erase(p_control);
+}
+
+void EditorPlugin::make_bottom_panel_item_visible(Control *p_item) {
+	EditorDockManager::get_singleton()->open_dock(p_item);
+}
+
+#endif
 
 void EditorPlugin::hide_bottom_panel() {
 	EditorNode::get_bottom_panel()->hide_bottom_panel();
@@ -582,6 +596,10 @@ void EditorPlugin::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			ProjectSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &EditorPlugin::_editor_project_settings_changed));
+
+			for (const KeyValue<Control *, Button *> &E : legacy_bottom_panel_buttons) {
+				remove_control_from_bottom_panel(E.key);
+			}
 		} break;
 	}
 #endif
@@ -589,10 +607,8 @@ void EditorPlugin::_notification(int p_what) {
 
 void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_control_to_container", "container", "control"), &EditorPlugin::add_control_to_container);
-	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("add_control_to_dock", "slot", "control", "shortcut"), &EditorPlugin::add_control_to_dock, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("remove_control_from_docks", "control"), &EditorPlugin::remove_control_from_docks);
-	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
 	ClassDB::bind_method(D_METHOD("remove_control_from_container", "container", "control"), &EditorPlugin::remove_control_from_container);
 	ClassDB::bind_method(D_METHOD("set_dock_tab_icon", "control", "icon"), &EditorPlugin::set_dock_tab_icon);
 	ClassDB::bind_method(D_METHOD("add_tool_menu_item", "name", "callable"), &EditorPlugin::add_tool_menu_item);
@@ -607,7 +623,11 @@ void EditorPlugin::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("update_overlays"), &EditorPlugin::update_overlays);
 
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("add_control_to_bottom_panel", "control", "title", "shortcut"), &EditorPlugin::add_control_to_bottom_panel, DEFVAL(Ref<Shortcut>()));
 	ClassDB::bind_method(D_METHOD("make_bottom_panel_item_visible", "item"), &EditorPlugin::make_bottom_panel_item_visible);
+	ClassDB::bind_method(D_METHOD("remove_control_from_bottom_panel", "control"), &EditorPlugin::remove_control_from_bottom_panel);
+#endif
 	ClassDB::bind_method(D_METHOD("hide_bottom_panel"), &EditorPlugin::hide_bottom_panel);
 
 	ClassDB::bind_method(D_METHOD("get_undo_redo"), &EditorPlugin::get_undo_redo);

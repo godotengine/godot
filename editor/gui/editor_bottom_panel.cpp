@@ -110,17 +110,9 @@ void EditorBottomPanel::load_layout_from_config(Ref<ConfigFile> p_config_file, c
 	set_current_tab(-1);
 }
 
-void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool p_ignore_lock) {
+bool EditorBottomPanel::can_swap_tabs() const {
 	// Don't allow changing tabs involuntarily when tabs are locked.
-	if (!p_ignore_lock && lock_panel_switching && pin_button->is_visible()) {
-		return;
-	}
-
-	p_item->set_visible(p_visible);
-}
-
-void EditorBottomPanel::move_item_to_end(Control *p_item) {
-	move_child(p_item, -1);
+	return lock_panel_switching && pin_button->is_visible();
 }
 
 void EditorBottomPanel::hide_bottom_panel() {
@@ -129,19 +121,6 @@ void EditorBottomPanel::hide_bottom_panel() {
 
 void EditorBottomPanel::toggle_last_opened_bottom_panel() {
 	set_current_tab(get_current_tab() == -1 ? get_previous_tab() : -1);
-}
-
-void EditorBottomPanel::shortcut_input(const Ref<InputEvent> &p_event) {
-	if (p_event.is_null() || !p_event->is_pressed() || p_event->is_echo()) {
-		return;
-	}
-
-	for (uint32_t i = 0; i < dock_shortcuts.size(); i++) {
-		if (dock_shortcuts[i].is_valid() && dock_shortcuts[i]->matches_event(p_event)) {
-			bottom_docks[i]->set_visible(!bottom_docks[i]->is_visible());
-			break;
-		}
-	}
 }
 
 void EditorBottomPanel::_pin_button_toggled(bool p_pressed) {
@@ -156,42 +135,7 @@ void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 	EditorNode::get_top_split()->set_visible(!p_pressed);
 }
 
-Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
-	EditorDockManager::get_singleton()->add_dock(p_item, p_text, EditorDockManager::DOCK_SLOT_BOTTOM, p_shortcut);
-	if (p_at_front) {
-		move_child(p_item, 0);
-	}
-	bottom_docks.push_back(p_item);
-	dock_shortcuts.push_back(p_shortcut);
-
-	set_process_shortcut_input(is_processing_shortcut_input() || p_shortcut.is_valid());
-
-	// Still return a dummy button for compatibility reasons.
-	Button *tb = memnew(Button);
-	tb->set_toggle_mode(true);
-	tb->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorBottomPanel::_on_button_visibility_changed).bind(tb, p_item));
-	legacy_buttons.push_back(tb);
-	return tb;
-}
-
-void EditorBottomPanel::remove_item(Control *p_item) {
-	EditorDockManager::get_singleton()->remove_dock(p_item);
-
-	bottom_docks.remove_at(item_idx);
-	dock_shortcuts.remove_at(item_idx);
-
-	legacy_buttons[item_idx]->queue_free();
-	legacy_buttons.remove_at(item_idx);
-
-	remove_child(p_item);
-}
-
-void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control *p_control) {
-	EditorDockManager::get_singleton()->set_dock_enabled(p_control, p_button->is_visible());
-}
-
 EditorBottomPanel::EditorBottomPanel() {
-	get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_gui_input).bind(this));
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
 	set_deselect_enabled(true);
@@ -232,10 +176,4 @@ EditorBottomPanel::EditorBottomPanel() {
 	expand_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_expand_button_toggled));
 
 	callable_mp(this, &EditorBottomPanel::_repaint).call_deferred();
-}
-
-EditorBottomPanel::~EditorBottomPanel() {
-	for (Button *b : legacy_buttons) {
-		memdelete(b);
-	}
 }

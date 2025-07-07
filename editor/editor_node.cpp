@@ -45,9 +45,9 @@
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
 #include "core/version.h"
+#include "docks/editor_dock_manager.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
-#include "editor_dock_manager.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -5008,9 +5008,9 @@ void EditorNode::_project_run_started() {
 
 	int action_on_play = EDITOR_GET("run/bottom_panel/action_on_play");
 	if (action_on_play == ACTION_ON_PLAY_OPEN_OUTPUT) {
-		bottom_panel->make_item_visible(log);
+		EditorDockManager::get_singleton()->focus_dock(log);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
-		bottom_panel->make_item_visible(EditorDebuggerNode::get_singleton());
+		EditorDockManager::get_singleton()->focus_dock(EditorDebuggerNode::get_singleton());
 	}
 }
 
@@ -8396,7 +8396,7 @@ EditorNode::EditorNode() {
 	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
 	log = memnew(EditorLog);
-	bottom_panel->add_item(TTRC("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
+	editor_dock_manager->add_dock(log, TTRC("Output"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O), "Terminal");
 
 	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
 	gui_base->add_child(native_shader_source_visualizer);
@@ -8575,7 +8575,7 @@ EditorNode::EditorNode() {
 	}
 
 	// More visually meaningful to have this later.
-	bottom_panel->move_item_to_end(AnimationPlayerEditor::get_singleton());
+	// bottom_panel->move_item_to_end(AnimationPlayerEditor::get_singleton());
 
 	add_editor_plugin(VersionControlEditorPlugin::get_singleton());
 

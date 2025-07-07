@@ -83,12 +83,12 @@ public:
 private:
 	friend class DockContextPopup;
 	friend class EditorDockDragHint;
-	friend class EditorBottomPanel; // TODO: Temporary until DOCK_SLOT_BOTTOM registered. Used to connect signals.
 
 	struct DockInfo {
 		String title;
 		bool open = false;
 		bool enabled = true;
+		bool contextual = false;
 		int previous_tab_index = -1;
 		WindowWrapper *dock_window = nullptr;
 		int dock_slot_index = DOCK_SLOT_NONE;
@@ -150,6 +150,7 @@ public:
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
 	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
 
+	void set_dock_contextual(Control *p_dock, bool p_contextual);
 	void set_dock_enabled(Control *p_dock, bool p_enabled);
 	void close_dock(Control *p_dock);
 	void open_dock(Control *p_dock, bool p_set_current = true);

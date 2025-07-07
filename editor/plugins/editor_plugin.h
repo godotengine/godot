@@ -66,6 +66,8 @@ class EditorPlugin : public Node {
 
 #ifndef DISABLE_DEPRECATED
 	void _editor_project_settings_changed();
+
+	HashMap<Control *, Button *> legacy_bottom_panel_buttons;
 #endif
 
 public:
@@ -148,10 +150,8 @@ public:
 
 	void add_control_to_container(CustomControlContainer p_location, Control *p_control);
 	void remove_control_from_container(CustomControlContainer p_location, Control *p_control);
-	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
 	void add_control_to_dock(DockSlot p_slot, Control *p_control, const Ref<Shortcut> &p_shortcut = nullptr);
 	void remove_control_from_docks(Control *p_control);
-	void remove_control_from_bottom_panel(Control *p_control);
 
 	void set_dock_tab_icon(Control *p_control, const Ref<Texture2D> &p_icon);
 
@@ -214,7 +214,11 @@ public:
 
 	void queue_save_layout();
 
+#ifndef DISABLE_DEPRECATED
+	Button *add_control_to_bottom_panel(Control *p_control, const String &p_title, const Ref<Shortcut> &p_shortcut = nullptr);
 	void make_bottom_panel_item_visible(Control *p_item);
+	void remove_control_from_bottom_panel(Control *p_control);
+#endif
 	void hide_bottom_panel();
 
 	void add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser);

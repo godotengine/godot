@@ -410,7 +410,7 @@
 				[b]Note:[/b] A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
-		<method name="add_control_to_bottom_panel">
+		<method name="add_control_to_bottom_panel" deprecated="Use [method add_control_to_dock] instead.">
 			<return type="Button" />
 			<param index="0" name="control" type="Control" />
 			<param index="1" name="title" type="String" />
@@ -613,7 +613,7 @@
 				Minimizes the bottom panel.
 			</description>
 		</method>
-		<method name="make_bottom_panel_item_visible">
+		<method name="make_bottom_panel_item_visible" deprecated="Use [method add_control_to_dock] instead.">
 			<return type="void" />
 			<param index="0" name="item" type="Control" />
 			<description>
