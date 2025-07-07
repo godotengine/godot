@@ -625,14 +625,15 @@ void ColorPickerShapeWheel::_wheel_input(const Ref<InputEvent> &p_event) {
 	const Vector2 center = uv_size * 0.5;
 
 	if (is_click && !spinning) {
-		real_t dist = center.distance_to(event_position);
-		if (dist >= center.x * WHEEL_RADIUS * 2.0 && dist <= center.x) {
+		const real_t dist_squared = center.distance_squared_to(event_position);
+		const real_t min_dist_squared = (center.x * WHEEL_RADIUS * 2.0f) * (center.x * WHEEL_RADIUS * 2.0f);
+		if (dist_squared >= min_dist_squared && dist_squared <= (center.x * center.x)) {
 			spinning = true;
 			if (!wheel_focused) {
 				cursor_editing = true;
 				wheel_focused = true;
 			}
-		} else if (dist > center.x) {
+		} else if (dist_squared > (center.x * center.x)) {
 			// Clicked outside the wheel.
 			cancel_event();
 			return;

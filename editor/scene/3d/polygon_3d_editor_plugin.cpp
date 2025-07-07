@@ -145,7 +145,8 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 		PackedVector2Array poly = _get_polygon();
 
 		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+		const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+		const real_t grab_threshold_squared = grab_threshold * grab_threshold;
 
 		switch (mode) {
 			case MODE_CREATE: {
@@ -160,7 +161,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 						edited_point = 1;
 						return EditorPlugin::AFTER_GUI_INPUT_STOP;
 					} else {
-						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_to(gpoint) < grab_threshold) {
+						if (wip.size() > 1 && p_camera->unproject_position(gt.xform(Vector3(wip[0].x, wip[0].y, depth))).distance_squared_to(gpoint) < grab_threshold_squared) {
 							//wip closed
 							_wip_close();
 

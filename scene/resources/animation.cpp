@@ -4154,11 +4154,12 @@ bool Animation::_float_track_optimize_key(const TKey<float> t0, const TKey<float
 }
 
 bool Animation::_vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error, bool p_is_nearest) {
+	const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 	// Remove overlapping keys.
 	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
 		return true;
 	}
-	if ((t0.value - t1.value).length() < p_allowed_precision_error && (t1.value - t2.value).length() < p_allowed_precision_error) {
+	if ((t0.value - t1.value).length_squared() < allowed_precision_error_squared && (t1.value - t2.value).length_squared() < allowed_precision_error_squared) {
 		return true;
 	}
 	if (p_is_nearest) {
@@ -4188,11 +4189,12 @@ bool Animation::_vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<V
 }
 
 bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error, bool p_is_nearest) {
+	const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 	// Remove overlapping keys.
 	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
 		return true;
 	}
-	if ((t0.value - t1.value).length() < p_allowed_precision_error && (t1.value - t2.value).length() < p_allowed_precision_error) {
+	if ((t0.value - t1.value).length_squared() < allowed_precision_error_squared && (t1.value - t2.value).length_squared() < allowed_precision_error_squared) {
 		return true;
 	}
 	if (p_is_nearest) {
@@ -4223,11 +4225,12 @@ bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<V
 }
 
 bool Animation::_quaternion_track_optimize_key(const TKey<Quaternion> t0, const TKey<Quaternion> t1, const TKey<Quaternion> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error, bool p_is_nearest) {
+	const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 	// Remove overlapping keys.
 	if (Math::is_equal_approx(t0.time, t1.time) || Math::is_equal_approx(t1.time, t2.time)) {
 		return true;
 	}
-	if ((t0.value - t1.value).length() < p_allowed_precision_error && (t1.value - t2.value).length() < p_allowed_precision_error) {
+	if ((t0.value - t1.value).length_squared() < allowed_precision_error_squared && (t1.value - t2.value).length_squared() < allowed_precision_error_squared) {
 		return true;
 	}
 	if (p_is_nearest) {
@@ -4282,8 +4285,9 @@ void Animation::_position_track_optimize(int p_idx, real_t p_allowed_velocity_er
 		}
 	}
 
+	const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 	if (tt->positions.size() == 2) {
-		if ((tt->positions[0].value - tt->positions[1].value).length() < p_allowed_precision_error) {
+		if ((tt->positions[0].value - tt->positions[1].value).length_squared() < allowed_precision_error_squared) {
 			tt->positions.remove_at(1);
 		}
 	}
@@ -4312,8 +4316,9 @@ void Animation::_rotation_track_optimize(int p_idx, real_t p_allowed_velocity_er
 		}
 	}
 
+	const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 	if (rt->rotations.size() == 2) {
-		if ((rt->rotations[0].value - rt->rotations[1].value).length() < p_allowed_precision_error) {
+		if ((rt->rotations[0].value - rt->rotations[1].value).length_squared() < allowed_precision_error_squared) {
 			rt->rotations.remove_at(1);
 		}
 	}
@@ -4342,8 +4347,9 @@ void Animation::_scale_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 		}
 	}
 
+	const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 	if (st->scales.size() == 2) {
-		if ((st->scales[0].value - st->scales[1].value).length() < p_allowed_precision_error) {
+		if ((st->scales[0].value - st->scales[1].value).length_squared() < allowed_precision_error_squared) {
 			st->scales.remove_at(1);
 		}
 	}
@@ -4470,6 +4476,7 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 	}
 
 	if (vt->values.size() == 2) {
+		const real_t allowed_precision_error_squared = p_allowed_precision_error * p_allowed_precision_error;
 		bool single_key = false;
 		switch (type) {
 			case Variant::FLOAT: {
@@ -4484,17 +4491,17 @@ void Animation::_value_track_optimize(int p_idx, real_t p_allowed_velocity_err, 
 			case Variant::VECTOR2: {
 				Vector2 val_0 = vt->values[0].value;
 				Vector2 val_1 = vt->values[1].value;
-				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
+				single_key = (val_0 - val_1).length_squared() < allowed_precision_error_squared;
 			} break;
 			case Variant::VECTOR3: {
 				Vector3 val_0 = vt->values[0].value;
 				Vector3 val_1 = vt->values[1].value;
-				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
+				single_key = (val_0 - val_1).length_squared() < allowed_precision_error_squared;
 			} break;
 			case Variant::QUATERNION: {
 				Quaternion val_0 = vt->values[0].value;
 				Quaternion val_1 = vt->values[1].value;
-				single_key = (val_0 - val_1).length() < p_allowed_precision_error;
+				single_key = (val_0 - val_1).length_squared() < allowed_precision_error_squared;
 			} break;
 			default: {
 			} break;
