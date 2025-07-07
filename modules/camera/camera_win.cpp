@@ -262,32 +262,8 @@ bool CameraFeedWindows::activate_feed() {
 				if (SUCCEEDED(hr)) {
 					result = true;
 
-					const FeedFormat &format = formats[selected_format];
-					const GUID &video_format = format_guids[selected_format];
-
-					// Prepare images and textures
-					if (video_format == MFVideoFormat_RGB24) {
-						data_y.resize(format.width * format.height * 3);
-						image_y.instantiate(format.width, format.height, false, Image::FORMAT_RGB8);
-						set_rgb_image(image_y);
-					} else if (video_format == MFVideoFormat_MJPG) {
-						//data_y.resize(format.width * format.height * 3);
-						image_y.instantiate(format.width, format.height, false, Image::FORMAT_RGB8);
-						set_rgb_image(image_y);
-					} else if (video_format == MFVideoFormat_NV12) {
-						data_y.resize(format.width * format.height);
-						data_uv.resize(format.width * format.height / 2); // half_width * half_height * 2 channels
-						image_y.instantiate(format.width, format.height, false, Image::FORMAT_R8);
-						image_uv.instantiate(format.width / 2, format.height / 2, false, Image::FORMAT_RG8);
-						set_ycbcr_images(image_y, image_uv);
-					} else if (video_format == MFVideoFormat_YUY2) {
-						data_y.resize(format.width * format.height);
-						data_uv.resize(format.width * format.height); // half_width * full height * 2 channels
-						image_y.instantiate(format.width, format.height, false, Image::FORMAT_R8);
-						image_uv.instantiate(format.width / 2, format.height, false, Image::FORMAT_RG8);
-						set_ycbcr_images(image_y, image_uv);
-					}
-					result = true;
+					// Create buffer decoder
+					buffer_decoder = _create_buffer_decoder();
 
 					// Start reading
 					worker = memnew(std::thread(capture, this));
@@ -307,6 +283,11 @@ void CameraFeedWindows::deactivate_feed() {
 		worker->join();
 		memdelete(worker);
 		worker = nullptr;
+	}
+
+	if (buffer_decoder != nullptr) {
+		memdelete(buffer_decoder);
+		buffer_decoder = nullptr;
 	}
 
 	if (imf_media_source != nullptr) {
@@ -375,41 +356,18 @@ void CameraFeedWindows::read() {
 			BYTE *data;
 			DWORD buffer_length;
 			buffer->Lock(&data, nullptr, &buffer_length);
-			const GUID &format = format_guids[selected_format];
-			if (format == MFVideoFormat_RGB24) {
-				memcpy(data_y.ptrw(), data, data_y.size());
-			} else if (format == MFVideoFormat_NV12) {
-				memcpy(data_y.ptrw(), data, data_y.size());
-				memcpy(data_uv.ptrw(), data + data_y.size(), data_uv.size());
-			} else if (format == MFVideoFormat_YUY2) {
-				int data_size = data_y.size();
-				uint8_t *ptr_y = data_y.ptrw();
-				uint8_t *ptr_uv = data_uv.ptrw();
-				for (int idx = 0; idx < data_size; ++idx) {
-					ptr_y[idx] = data[idx * 2];
-					ptr_uv[idx] = data[idx * 2 + 1];
-				}
-			} else if (format == MFVideoFormat_MJPG) {
-				Ref<Image> img = Image::_jpg_mem_loader_func(data, buffer_length);
-				image_y->copy_internals_from(img);
-				set_rgb_image(image_y);
+
+			// Use buffer decoder to process the frame
+			StreamingBuffer streaming_buffer;
+			streaming_buffer.start = data;
+			streaming_buffer.length = buffer_length;
+
+			if (buffer_decoder) {
+				buffer_decoder->decode(streaming_buffer);
 			}
 
 			buffer->Unlock();
 			buffer->Release();
-
-			if (format == MFVideoFormat_RGB24) {
-				image_y->set_data(image_y->get_width(), image_y->get_height(), false, image_y->get_format(), data_y);
-				set_rgb_image(image_y);
-			} else if (format == MFVideoFormat_NV12) {
-				image_y->set_data(image_y->get_width(), image_y->get_height(), false, image_y->get_format(), data_y);
-				image_uv->set_data(image_uv->get_width(), image_uv->get_height(), false, image_uv->get_format(), data_uv);
-				set_ycbcr_images(image_y, image_uv);
-			} else if (format == MFVideoFormat_YUY2) {
-				image_y->set_data(image_y->get_width(), image_y->get_height(), false, image_y->get_format(), data_y);
-				image_uv->set_data(image_uv->get_width(), image_uv->get_height(), false, image_uv->get_format(), data_uv);
-				set_ycbcr_images(image_y, image_uv);
-			}
 		}
 		pSample->Release();
 	}
@@ -429,10 +387,33 @@ Array CameraFeedWindows::get_formats() const {
 	return result;
 }
 
+CameraFeed::FeedFormat CameraFeedWindows::get_format() const {
+	FeedFormat feed_format = {};
+	return selected_format == -1 ? feed_format : formats[selected_format];
+}
+
 bool CameraFeedWindows::set_format(int p_index, const Dictionary &p_parameters) {
 	selected_format = p_index;
+	parameters = p_parameters.duplicate();
 
 	return true;
+}
+
+BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
+	const GUID &video_format = format_guids[selected_format];
+
+	if (video_format == MFVideoFormat_MJPG) {
+		return memnew(JpegBufferDecoder(this));
+	} else if (video_format == MFVideoFormat_NV12) {
+		return memnew(Nv12BufferDecoder(this));
+	} else if (video_format == MFVideoFormat_YUY2) {
+		return memnew(SeparateYuyvBufferDecoder(this));
+	} else if (video_format == MFVideoFormat_RGB24) {
+		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
+	}
+
+	// Default to null decoder
+	return memnew(NullBufferDecoder(this));
 }
 
 //////////////////////////////////////////////////////////////////////////
