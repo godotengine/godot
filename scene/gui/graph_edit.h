@@ -376,6 +376,7 @@ public:
 	void disconnect_all_by_node(GraphNode *p_node);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
 	bool ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
+	TypedArray<GraphPort> get_connected_ports(GraphPort *p_port);
 	int get_connection_count(GraphPort *p_port);
 	GraphNode *get_connection_target(GraphPort *p_port);
 	String get_connections_description(GraphPort *p_port);

@@ -429,6 +429,20 @@ bool GraphEdit::ports_connected(GraphPort *p_first_port, GraphPort *p_second_por
 	return false;
 }
 
+TypedArray<GraphPort> GraphEdit::get_connected_ports(GraphPort *p_port) {
+	TypedArray<GraphPort> ret;
+	if (!p_port) {
+		return ret;
+	}
+	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
+		if (conn.is_null()) {
+			continue;
+		}
+		ret.push_back(conn->get_other(p_port));
+	}
+	return ret;
+}
+
 const Ref<GraphConnection> GraphEdit::get_connection(GraphPort *p_first_port, GraphPort *p_second_port) {
 	if (!connection_map.has(p_first_port) || !connection_map.has(p_second_port)) {
 		return Ref<GraphConnection>(nullptr);
@@ -2181,7 +2195,7 @@ void GraphEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputE
 }
 
 void GraphEdit::set_connection_activity_indexed_legacy(String p_first_node, int p_first_port, String p_second_node, int p_second_port, float p_activity) {
-	for (const Ref<GraphConnection> &conn : graph_connections) {
+	for (const Ref<GraphConnection> conn : graph_connections) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -2827,6 +2841,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
 	ClassDB::bind_method(D_METHOD("get_connections_from_node", "node"), &GraphEdit::_get_connections_by_node);
 	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
+	ClassDB::bind_method(D_METHOD("get_connected_ports", "port"), &GraphEdit::get_connected_ports);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &GraphEdit::get_scroll_offset);
