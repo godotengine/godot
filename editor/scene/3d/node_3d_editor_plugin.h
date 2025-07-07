@@ -89,6 +89,7 @@ class ViewportRotationControl : public Control {
 	bool gizmo_activated = false;
 
 	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
+	const float AXIS_CIRCLE_RADIUS_SQUARED = AXIS_CIRCLE_RADIUS * AXIS_CIRCLE_RADIUS;
 
 protected:
 	void _notification(int p_what);
