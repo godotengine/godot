@@ -2278,20 +2278,20 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	revoke_dialog_label = memnew(Label);
 	revoke_dialog_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(revoke_dialog_label);
-	ask_before_revoke_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
-	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
+	ask_before_revoke_checkbox = memnew(CheckBox(TTRC("Don't Ask Again")));
+	ask_before_revoke_checkbox->set_tooltip_text(TTRC("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
 	revoke_node_exposure = memnew(ConfirmationDialog);
-	revoke_node_exposure->set_ok_button_text(TTR("Revoke"));
+	revoke_node_exposure->set_ok_button_text(TTRC("Revoke"));
 	add_child(revoke_node_exposure);
 	revoke_node_exposure->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeEditor::_update_ask_before_revoking_node_exposure));
 	VBoxContainer *nevb = memnew(VBoxContainer);
 	revoke_node_exposure->add_child(nevb);
 	revoke_node_exposure_dialog_label = memnew(Label);
 	nevb->add_child(revoke_node_exposure_dialog_label);
-	ask_before_revoke_node_exposure_checkbox = memnew(CheckBox(TTR("Don't Ask Again")));
-	ask_before_revoke_node_exposure_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Node Exposure."));
+	ask_before_revoke_node_exposure_checkbox = memnew(CheckBox(TTRC("Don't Ask Again")));
+	ask_before_revoke_node_exposure_checkbox->set_tooltip_text(TTRC("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Node Exposure."));
 	nevb->add_child(ask_before_revoke_node_exposure_checkbox);
 
 	script_types = memnew(LocalVector<StringName>);
