@@ -534,8 +534,8 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_port_by_slot", "slot_index"), &GraphNodeIndexed::get_input_port_by_slot);
 	ClassDB::bind_method(D_METHOD("get_output_port_by_slot", "slot_index"), &GraphNodeIndexed::get_output_port_by_slot);
 
-	ClassDB::bind_method(D_METHOD("get_input_ports"), &GraphNodeIndexed::get_input_ports);
-	ClassDB::bind_method(D_METHOD("get_output_ports"), &GraphNodeIndexed::get_output_ports);
+	ClassDB::bind_method(D_METHOD("get_input_ports", "include_disabled"), &GraphNodeIndexed::get_input_ports, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_output_ports", "include_disabled"), &GraphNodeIndexed::get_output_ports, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNodeIndexed::get_input_port_count);
 	ClassDB::bind_method(D_METHOD("get_output_port_count"), &GraphNodeIndexed::get_output_port_count);

@@ -82,9 +82,6 @@ void GraphNode::_resort() {
 
 		children_count++;
 	}
-	if (selected_port >= enabled_port_count) {
-		selected_port = -1;
-	}
 
 	int stretch_max = new_size.height - (children_count - 1) * separation;
 	int stretch_diff = stretch_max - stretch_min;
@@ -173,26 +170,24 @@ void GraphNode::_resort() {
 
 void GraphNode::_accessibility_action_port(const Variant &p_data) {
 	CustomAccessibilityAction action = (CustomAccessibilityAction)p_data.operator int();
-	if (selected_port < 0) {
+	if (!selected_port) {
 		return;
 	}
-	GraphPort *port = get_port(selected_port, false);
-	ERR_FAIL_NULL(port);
-	ERR_FAIL_COND(!port->is_enabled());
+	ERR_FAIL_COND(!selected_port->is_enabled());
 	GraphEdit *graph = cast_to<GraphEdit>(get_parent());
 	ERR_FAIL_NULL(graph);
 	switch (action) {
 		case ACTION_CONNECT:
 			if (graph->is_keyboard_connecting()) {
-				graph->end_connecting(port, true);
+				graph->end_connecting(selected_port, true);
 			} else {
-				graph->start_connecting(port, true);
+				graph->start_connecting(selected_port, true);
 			}
 			queue_accessibility_update();
 			queue_redraw();
 			break;
 		case ACTION_FOLLOW:
-			GraphNode *target = graph->get_connection_target(port);
+			GraphNode *target = graph->get_connection_target(selected_port);
 			if (target) {
 				target->grab_focus();
 			}
@@ -211,17 +206,13 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
 		if ((ac_enabled && port_focus_mode == Control::FOCUS_ACCESSIBILITY) || port_focus_mode == Control::FOCUS_ALL) {
 			if (p_event->is_action("ui_up", true)) {
-				selected_port--;
-				if (selected_port < 0) {
-					selected_port = -1;
-				} else {
+				selected_port = get_previous_matching_port(selected_port);
+				if (selected_port) {
 					accept_event();
 				}
 			} else if (p_event->is_action("ui_down", true)) {
-				selected_port++;
-				if (selected_port >= enabled_port_count) {
-					selected_port = -1;
-				} else {
+				selected_port = get_next_matching_port(selected_port);
+				if (selected_port) {
 					accept_event();
 				}
 			}
@@ -239,39 +230,33 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 				accept_event();
 			}
 		} else if (p_event->is_action("ui_graph_follow_left", true) || p_event->is_action("ui_graph_follow_right", true)) {
-			if (selected_port > 0) {
-				GraphPort *port = get_port(selected_port, false);
-				if (port && port->is_enabled()) {
-					GraphEdit *graph = cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						GraphNode *target = graph->get_connection_target(port);
-						if (target) {
-							target->grab_focus();
-							accept_event();
-						}
-					}
-				}
-			}
-		} else if (p_event->is_action("ui_left", true) || p_event->is_action("ui_right", true)) {
-			if (selected_port > 0) {
-				GraphPort *port = get_port(selected_port, false);
-				if (port && port->is_enabled()) {
-					GraphEdit *graph = cast_to<GraphEdit>(get_parent());
-					if (graph) {
-						if (graph->is_keyboard_connecting()) {
-							graph->end_connecting(port, true);
-						} else {
-							graph->start_connecting(port, true);
-						}
+			if (selected_port && selected_port->is_enabled()) {
+				GraphEdit *graph = cast_to<GraphEdit>(get_parent());
+				if (graph) {
+					GraphNode *target = graph->get_connection_target(selected_port);
+					if (target) {
+						target->grab_focus();
 						accept_event();
 					}
 				}
 			}
+		} else if (p_event->is_action("ui_left", true) || p_event->is_action("ui_right", true)) {
+			if (selected_port && selected_port->is_enabled()) {
+				GraphEdit *graph = cast_to<GraphEdit>(get_parent());
+				if (graph) {
+					if (graph->is_keyboard_connecting()) {
+						graph->end_connecting(selected_port, true);
+					} else {
+						graph->start_connecting(selected_port, true);
+					}
+					accept_event();
+				}
+			}
 		} else if (p_event->is_action("ui_accept", true)) {
-			if (selected_port > 0) {
-				Control *accessible_node = get_accessibility_node_by_port(selected_port);
+			if (selected_port) {
+				Control *accessible_node = get_accessibility_node_by_port(selected_port->get_port_index());
 				if (accessible_node) {
-					selected_port = -1;
+					selected_port = nullptr;
 					accessible_node->grab_focus();
 				}
 				accept_event();
@@ -300,28 +285,25 @@ void GraphNode::_notification(int p_what) {
 			}
 			name = vformat(ETR("graph node %s (%s)"), name, get_title());
 
-			if (selected_port > 0) {
+			if (selected_port) {
 				GraphEdit *graph = cast_to<GraphEdit>(get_parent());
 				Dictionary type_info;
 				if (graph) {
 					type_info = graph->get_type_names();
 				}
-				GraphPort *port = get_port(selected_port, false);
-				if (port) {
-					name += ", " + vformat(ETR("port %d of %d"), selected_port + 1, enabled_port_count);
-					if (port->is_enabled()) {
-						if (type_info.has(port->get_type())) {
-							name += "," + vformat(ETR("type: %s"), type_info[port->get_type()]);
+				name += ", " + vformat(ETR("port %d of %d"), selected_port->get_port_index() + 1, enabled_port_count);
+				if (selected_port->is_enabled()) {
+					if (type_info.has(selected_port->get_type())) {
+						name += "," + vformat(ETR("type: %s"), type_info[selected_port->get_type()]);
+					} else {
+						name += "," + vformat(ETR("type: %d"), selected_port->get_type());
+					}
+					if (graph) {
+						String cd = graph->get_connections_description(selected_port);
+						if (cd.is_empty()) {
+							name += " " + ETR("no connections");
 						} else {
-							name += "," + vformat(ETR("type: %d"), port->get_type());
-						}
-						if (graph) {
-							String cd = graph->get_connections_description(port);
-							if (cd.is_empty()) {
-								name += " " + ETR("no connections");
-							} else {
-								name += " " + cd;
-							}
+							name += " " + cd;
 						}
 					}
 				}
@@ -338,7 +320,7 @@ void GraphNode::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphNode::_accessibility_action_port));
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
-			selected_port = -1;
+			selected_port = nullptr;
 			queue_redraw();
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -368,14 +350,11 @@ void GraphNode::_notification(int p_what) {
 			//int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			// Take ports into account
-			if (selected_port >= 0) {
-				GraphPort *port = get_port(selected_port, false);
-				if (port) {
-					Size2i port_sz = port->get_size();
-					Vector2 port_pos = port->get_position();
-					draw_style_box(sb_port_selected, Rect2i(port_pos.x + port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-					draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-				}
+			if (selected_port) {
+				Size2i port_sz = selected_port->get_size();
+				Vector2 port_pos = selected_port->get_position();
+				draw_style_box(sb_port_selected, Rect2i(port_pos.x + port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+				draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
 			}
 
 			if (resizable) {
@@ -547,6 +526,24 @@ GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection
 	ERR_FAIL_V_MSG(nullptr, "filtered port index out of bounds - fewer than p_port_index ports with the given direction are enabled.");
 }
 
+GraphPort *GraphNode::get_next_matching_port(GraphPort *p_port, bool p_include_disabled) {
+	ERR_FAIL_NULL_V(p_port, nullptr);
+	int filtered_selected_port_idx = filtered_index_of_port(p_port, false);
+	if (filtered_selected_port_idx + 1 >= get_filtered_port_count(p_port->direction, false)) {
+		return nullptr;
+	}
+	return get_filtered_port(filtered_selected_port_idx + 1, p_port->direction, false);
+}
+
+GraphPort *GraphNode::get_previous_matching_port(GraphPort *p_port, bool p_include_disabled) {
+	ERR_FAIL_NULL_V(p_port, nullptr);
+	int filtered_selected_port_idx = filtered_index_of_port(p_port, false);
+	if (filtered_selected_port_idx - 1 < 0) {
+		return nullptr;
+	}
+	return get_filtered_port(filtered_selected_port_idx - 1, p_port->direction, false);
+}
+
 void GraphNode::set_ports(TypedArray<GraphPort> p_ports) {
 	_remove_all_ports();
 	for (Variant port : p_ports) {
@@ -675,8 +672,8 @@ void GraphNode::_port_rebuild_cache() {
 		directed_enabled_port_count.set(_dir, dir_enabled_port_count + 1);
 	}
 
-	if (selected_port >= enabled_port_count) {
-		selected_port = -1;
+	if (selected_port->get_port_index(false) >= enabled_port_count) {
+		selected_port = nullptr;
 	}
 }
 
@@ -771,8 +768,8 @@ void GraphNode::set_port_focus_mode(Control::FocusMode p_focus_mode) {
 	ERR_FAIL_COND((int)p_focus_mode < 1 || (int)p_focus_mode > 3);
 
 	port_focus_mode = p_focus_mode;
-	if (port_focus_mode == Control::FOCUS_CLICK && selected_port > -1) {
-		selected_port = -1;
+	if (port_focus_mode == Control::FOCUS_CLICK && selected_port) {
+		selected_port = nullptr;
 		queue_redraw();
 	}
 }
@@ -844,6 +841,8 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_port", "port_index", "port", "include_disabled"), &GraphNode::set_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_port", "port_index", "include_disabled"), &GraphNode::get_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port", "port_index", "filter_direction", "include_disabled"), &GraphNode::get_filtered_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_next_matching_port", "port", "include_disabled"), &GraphNode::get_next_matching_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_previous_matching_port", "port", "include_disabled"), &GraphNode::get_previous_matching_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_port", "port"), &GraphNode::add_port);
 	ClassDB::bind_method(D_METHOD("insert_port", "port_index", "port", "include_disabled"), &GraphNode::insert_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("remove_port", "port_index", "include_disabled"), &GraphNode::remove_port, DEFVAL(true));

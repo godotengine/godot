@@ -68,7 +68,7 @@ protected:
 	int enabled_port_count = 0;
 	PackedByteArray directed_port_count = { 0, 0, 0 };
 	PackedByteArray directed_enabled_port_count = { 0, 0, 0 };
-	int selected_port = -1;
+	GraphPort *selected_port = nullptr;
 
 	Control::FocusMode port_focus_mode = Control::FOCUS_ACCESSIBILITY;
 	bool port_pos_dirty = true;
@@ -127,6 +127,8 @@ public:
 	void set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	GraphPort *get_port(int p_port_index, bool p_include_disabled = true);
 	GraphPort *get_filtered_port(int p_port_index, GraphPort::PortDirection p_direction, bool p_include_disabled = true);
+	GraphPort *get_next_matching_port(GraphPort *p_port, bool p_include_disabled = true);
+	GraphPort *get_previous_matching_port(GraphPort *p_port, bool p_include_disabled = true);
 	void add_port(GraphPort *port);
 	void insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	void remove_port(int p_port_index, bool p_include_disabled = true);
