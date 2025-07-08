@@ -210,9 +210,9 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 			file->store_string("[" + E.key.replace("]", "\\]") + "]\n");
 
 			if (!E.value.is_empty()) {
-				file->store_string("\n"); 
+				file->store_string("\n");
 			}
-}
+		}
 
 		for (const KeyValue<String, Variant> &F : E.value) {
 			String vstr;
