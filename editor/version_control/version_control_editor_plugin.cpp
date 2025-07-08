@@ -275,7 +275,7 @@ void VersionControlEditorPlugin::_commit() {
 
 	EditorVCSInterface::get_singleton()->commit(msg);
 
-	EditorNode::get_bottom_panel()->make_item_visible(version_control_dock, false);
+	// EditorDockManager::get_singleton()->close_dock(version_control_dock);
 
 	commit_message->release_focus();
 	commit_button->release_focus();
@@ -487,7 +487,7 @@ void VersionControlEditorPlugin::_move_all(Object *p_tree) {
 void VersionControlEditorPlugin::_load_diff(Object *p_tree) {
 	CHECK_PLUGIN_INITIALIZED();
 
-	EditorNode::get_bottom_panel()->make_item_visible(version_control_dock, true, true);
+	EditorDockManager::get_singleton()->focus_dock(version_control_dock);
 
 	Tree *tree = Object::cast_to<Tree>(p_tree);
 	if (tree == staged_files) {
@@ -908,8 +908,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 
 void VersionControlEditorPlugin::register_editor() {
 	EditorDockManager::get_singleton()->add_dock(version_commit_dock, "", EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_version_control", TTRC("Open Version Control Dock")));
-
-	EditorNode::get_bottom_panel()->add_item(TTRC("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")));
+	EditorDockManager::get_singleton()->add_dock(version_control_dock, TTRC("Version Control"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")), "VcsBranches");
 
 	_set_vcs_ui_state(true);
 }
@@ -928,7 +927,7 @@ void VersionControlEditorPlugin::shut_down() {
 	EditorVCSInterface::set_singleton(nullptr);
 
 	EditorDockManager::get_singleton()->remove_dock(version_commit_dock);
-	EditorNode::get_bottom_panel()->remove_item(version_control_dock);
+	EditorDockManager::get_singleton()->remove_dock(version_control_dock);
 
 	_set_vcs_ui_state(false);
 }

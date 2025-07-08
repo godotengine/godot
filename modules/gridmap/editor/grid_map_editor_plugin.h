@@ -268,10 +268,8 @@ class GridMapEditorPlugin : public EditorPlugin {
 	GDCLASS(GridMapEditorPlugin, EditorPlugin);
 
 	GridMapEditor *grid_map_editor = nullptr;
-	Button *panel_button = nullptr;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
@@ -290,4 +288,6 @@ public:
 	Array get_selected_cells() const;
 	void set_selected_palette_item(int p_item) const;
 	int get_selected_palette_item() const;
+
+	GridMapEditorPlugin();
 };

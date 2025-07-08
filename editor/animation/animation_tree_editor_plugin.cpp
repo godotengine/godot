@@ -34,8 +34,8 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/animation/animation_blend_tree.h"
@@ -288,15 +288,10 @@ bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		//editor->hide_animation_player_editors();
-		//editor->animation_panel_make_visible(true);
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(anim_tree_editor);
+		EditorDockManager::get_singleton()->focus_dock(anim_tree_editor);
 		anim_tree_editor->set_process(true);
 	} else {
-		if (anim_tree_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-		button->hide();
+		// EditorDockManager::get_singleton()->close_dock(anim_tree_editor);
 		anim_tree_editor->set_process(false);
 	}
 }
@@ -305,6 +300,6 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTRC("Toggle AnimationTree Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(anim_tree_editor, TTRC("AnimationTree"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTRC("Toggle AnimationTree Bottom Panel")), "Animation");
+	EditorDockManager::get_singleton()->close_dock(anim_tree_editor);
 }

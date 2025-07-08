@@ -32,13 +32,13 @@
 
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -2570,19 +2570,16 @@ bool SpriteFramesEditorPlugin::handles(Object *p_object) const {
 
 void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(frames_editor);
+		EditorDockManager::get_singleton()->focus_dock(frames_editor);
 	} else {
-		button->hide();
-		if (frames_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		// EditorDockManager::get_singleton()->close_dock(frames_editor);
 	}
 }
 
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(frames_editor, TTRC("SpriteFrames"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")), "SpriteFrames");
+	EditorDockManager::get_singleton()->set_dock_contextual(frames_editor, true);
+	EditorDockManager::get_singleton()->close_dock(frames_editor);
 }

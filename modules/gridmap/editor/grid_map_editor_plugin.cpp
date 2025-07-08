@@ -31,11 +31,11 @@
 #include "grid_map_editor_plugin.h"
 
 #include "core/os/keyboard.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -1170,6 +1170,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			mesh_library_palette->disconnect(SceneStringName(item_selected), callable_mp(this, &GridMapEditor::_item_selected_cbk));
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
@@ -1751,27 +1752,6 @@ GridMapEditor::~GridMapEditor() {
 	}
 }
 
-void GridMapEditorPlugin::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			grid_map_editor = memnew(GridMapEditor);
-			grid_map_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			grid_map_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-			grid_map_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
-			grid_map_editor->hide();
-
-			panel_button = EditorNode::get_bottom_panel()->add_item(TTRC("GridMap"), grid_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Bottom Panel")));
-			panel_button->hide();
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			EditorNode::get_bottom_panel()->remove_item(grid_map_editor);
-			memdelete_notnull(grid_map_editor);
-			grid_map_editor = nullptr;
-			panel_button = nullptr;
-		} break;
-	}
-}
-
 void GridMapEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_grid_map"), &GridMapEditorPlugin::get_current_grid_map);
 	ClassDB::bind_method(D_METHOD("set_selection", "begin", "end"), &GridMapEditorPlugin::set_selection);
@@ -1784,7 +1764,6 @@ void GridMapEditorPlugin::_bind_methods() {
 }
 
 void GridMapEditorPlugin::edit(Object *p_object) {
-	ERR_FAIL_NULL(grid_map_editor);
 	grid_map_editor->edit(Object::cast_to<GridMap>(p_object));
 }
 
@@ -1793,58 +1772,46 @@ bool GridMapEditorPlugin::handles(Object *p_object) const {
 }
 
 void GridMapEditorPlugin::make_visible(bool p_visible) {
-	ERR_FAIL_NULL(grid_map_editor);
 	if (p_visible) {
 		BaseButton *button = grid_map_editor->mode_buttons_group->get_pressed_button();
 		if (button == nullptr) {
 			grid_map_editor->select_mode_button->set_pressed(true);
 		}
 		grid_map_editor->_on_tool_mode_changed();
-		panel_button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(grid_map_editor);
+		EditorDockManager::get_singleton()->focus_dock(grid_map_editor);
 		grid_map_editor->set_process(true);
 	} else {
 		grid_map_editor->_show_viewports_transform_gizmo(true);
-		panel_button->hide();
-		if (grid_map_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		// EditorDockManager::get_singleton()->close_dock(grid_map_editor);
 		grid_map_editor->set_process(false);
 	}
 }
 
 GridMap *GridMapEditorPlugin::get_current_grid_map() const {
-	ERR_FAIL_NULL_V(grid_map_editor, nullptr);
 	return grid_map_editor->node;
 }
 
 void GridMapEditorPlugin::set_selection(const Vector3i &p_begin, const Vector3i &p_end) {
-	ERR_FAIL_NULL(grid_map_editor);
 	grid_map_editor->_set_selection(true, p_begin, p_end);
 }
 
 void GridMapEditorPlugin::clear_selection() {
-	ERR_FAIL_NULL(grid_map_editor);
 	grid_map_editor->_set_selection(false);
 }
 
 AABB GridMapEditorPlugin::get_selection() const {
-	ERR_FAIL_NULL_V(grid_map_editor, AABB());
 	return grid_map_editor->_get_selection();
 }
 
 bool GridMapEditorPlugin::has_selection() const {
-	ERR_FAIL_NULL_V(grid_map_editor, false);
 	return grid_map_editor->_has_selection();
 }
 
 Array GridMapEditorPlugin::get_selected_cells() const {
-	ERR_FAIL_NULL_V(grid_map_editor, Array());
 	return grid_map_editor->_get_selected_cells();
 }
 
 void GridMapEditorPlugin::set_selected_palette_item(int p_item) const {
-	ERR_FAIL_NULL(grid_map_editor);
 	if (grid_map_editor->node && grid_map_editor->node->get_mesh_library().is_valid()) {
 		if (p_item < -1) {
 			p_item = -1;
@@ -1860,10 +1827,20 @@ void GridMapEditorPlugin::set_selected_palette_item(int p_item) const {
 }
 
 int GridMapEditorPlugin::get_selected_palette_item() const {
-	ERR_FAIL_NULL_V(grid_map_editor, 0);
 	if (grid_map_editor->selected_palette >= 0 && grid_map_editor->node && grid_map_editor->node->get_mesh_library().is_valid()) {
 		return grid_map_editor->selected_palette;
 	} else {
 		return -1;
 	}
+}
+
+GridMapEditorPlugin::GridMapEditorPlugin() {
+	grid_map_editor = memnew(GridMapEditor);
+	grid_map_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	grid_map_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	grid_map_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
+
+	EditorDockManager::get_singleton()->add_dock(grid_map_editor, TTRC("GridMap"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_grid_map_bottom_panel", TTRC("Toggle GridMap Bottom Panel")), "GridMapIcon");
+	EditorDockManager::get_singleton()->set_dock_contextual(grid_map_editor, true);
+	EditorDockManager::get_singleton()->close_dock(grid_map_editor);
 }

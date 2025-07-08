@@ -30,9 +30,9 @@
 
 #include "shader_file_editor_plugin.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/item_list.h"
@@ -301,21 +301,17 @@ bool ShaderFileEditorPlugin::handles(Object *p_object) const {
 
 void ShaderFileEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(shader_editor);
-
+		EditorDockManager::get_singleton()->focus_dock(shader_editor);
 	} else {
-		button->hide();
-		if (shader_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
+		// EditorDockManager::get_singleton()->close_dock(shader_editor);
 	}
 }
 
 ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	shader_editor = memnew(ShaderFileEditor);
-
 	shader_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("ShaderFile"), shader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")));
-	button->hide();
+
+	EditorDockManager::get_singleton()->add_dock(shader_editor, TTRC("ShaderFile"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")), "ShaderGlobalsOverride");
+	EditorDockManager::get_singleton()->set_dock_contextual(shader_editor, true);
+	EditorDockManager::get_singleton()->close_dock(shader_editor);
 }

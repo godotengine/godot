@@ -83,7 +83,6 @@ class Polygon2DEditor : public AbstractPolygon2DEditor {
 	Polygon2D *node = nullptr;
 	Polygon2D *previous_node = nullptr;
 
-	Button *dock_button = nullptr;
 	VBoxContainer *polygon_edit = nullptr;
 	Mode current_mode = MODE_MAX; // Uninitialized.
 	Button *mode_buttons[MODE_MAX];

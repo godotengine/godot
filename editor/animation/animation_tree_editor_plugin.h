@@ -96,7 +96,6 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	GDCLASS(AnimationTreeEditorPlugin, EditorPlugin);
 
 	AnimationTreeEditor *anim_tree_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "AnimationTree"; }

@@ -291,7 +291,6 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	GDCLASS(SpriteFramesEditorPlugin, EditorPlugin);
 
 	SpriteFramesEditor *frames_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "SpriteFrames"; }

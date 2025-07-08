@@ -30,12 +30,12 @@
 
 #include "shader_editor_plugin.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/window_wrapper.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/shader/shader_create_dialog.h"
@@ -210,7 +210,9 @@ bool ShaderEditorPlugin::handles(Object *p_object) const {
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		EditorNode::get_bottom_panel()->make_item_visible(window_wrapper);
+		EditorDockManager::get_singleton()->focus_dock(window_wrapper);
+	} else {
+		// EditorDockManager::get_singleton()->close_dock(window_wrapper);
 	}
 }
 
@@ -946,7 +948,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);
 
-	EditorNode::get_bottom_panel()->add_item(TTRC("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
+	EditorDockManager::get_singleton()->add_dock(window_wrapper, TTRC("Shader Editor"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S), "Shader");
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	files_split->add_child(shader_create_dialog);

@@ -481,7 +481,6 @@ class ThemeEditorPlugin : public EditorPlugin {
 	GDCLASS(ThemeEditorPlugin, EditorPlugin);
 
 	ThemeEditor *theme_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "Theme"; }

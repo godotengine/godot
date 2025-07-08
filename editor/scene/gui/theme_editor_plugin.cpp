@@ -31,12 +31,12 @@
 #include "theme_editor_plugin.h"
 
 #include "editor/doc/editor_help.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/inspector/editor_resource_picker.h"
@@ -1932,10 +1932,7 @@ void ThemeItemEditorDialog::_select_another_theme_cbk(const String &p_path) {
 
 void ThemeItemEditorDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			connect("about_to_popup", callable_mp(this, &ThemeItemEditorDialog::_dialog_about_to_show));
-			[[fallthrough]];
-		}
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_items_add_color->set_button_icon(get_editor_theme_icon(SNAME("Color")));
 			edit_items_add_constant->set_button_icon(get_editor_theme_icon(SNAME("MemberConstant")));
@@ -1965,6 +1962,7 @@ void ThemeItemEditorDialog::set_edited_theme(const Ref<Theme> &p_theme) {
 }
 
 ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_editor) {
+	connect("about_to_popup", callable_mp(this, &ThemeItemEditorDialog::_dialog_about_to_show));
 	set_title(TTR("Manage Theme Items"));
 	set_ok_button_text(TTR("Close"));
 	set_hide_on_ok(false); // Closing may require a confirmation in some cases.
@@ -2277,10 +2275,7 @@ void ThemeTypeDialog::_add_type_confirmed() {
 
 void ThemeTypeDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			connect("about_to_popup", callable_mp(this, &ThemeTypeDialog::_dialog_about_to_show));
-			[[fallthrough]];
-		}
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_add_type_options();
 		} break;
@@ -2306,6 +2301,7 @@ void ThemeTypeDialog::set_include_own_types(bool p_enable) {
 }
 
 ThemeTypeDialog::ThemeTypeDialog() {
+	connect("about_to_popup", callable_mp(this, &ThemeTypeDialog::_dialog_about_to_show));
 	set_hide_on_ok(false);
 
 	VBoxContainer *add_type_vb = memnew(VBoxContainer);
@@ -4000,14 +3996,9 @@ bool ThemeEditorPlugin::handles(Object *p_object) const {
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(theme_editor);
+		EditorDockManager::get_singleton()->focus_dock(theme_editor);
 	} else {
-		if (theme_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-
-		button->hide();
+		// EditorDockManager::get_singleton()->close_dock(theme_editor);
 	}
 }
 
@@ -4020,6 +4011,7 @@ ThemeEditorPlugin::ThemeEditorPlugin() {
 	theme_editor->plugin = this;
 	theme_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("Theme"), theme_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(theme_editor, TTRC("Theme"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Bottom Panel")), "Paint");
+	EditorDockManager::get_singleton()->set_dock_contextual(theme_editor, true);
+	EditorDockManager::get_singleton()->close_dock(theme_editor);
 }
