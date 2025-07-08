@@ -112,6 +112,7 @@ const GodotFS = {
 	$GodotFS__postset: [
 		'Module["initFS"] = GodotFS.init;',
 		'Module["copyToFS"] = GodotFS.copy_to_fs;',
+		'Module["getPThread"] = GodotFS.getPThread;',
 		'Module["deleteDirFS"] = GodotFS.rm_dir;',
 		'Module["copyToAdapter"] = GodotFS.copy_to_adapter;',
 		'Module["updateGameDatas"] = GodotFS.update_game_datas;',
@@ -126,6 +127,11 @@ const GodotFS = {
 		_game_datas: null,
 		_set_game_data_cb: null,
 		
+		
+		getPThread:function () {
+			return PThread
+		},
+
 		update_game_datas: function (path, files) {
 			GodotFS._game_datas = { path: path, files: files }
 			if(GodotFS._set_game_data_cb){
