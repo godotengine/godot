@@ -99,10 +99,13 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 	if (gdextension_map.has(p_path)) {
 		return LOAD_STATUS_ALREADY_LOADED;
 	}
-
+	auto path = GDExtension::ext_path;
+	if(path == ""){
+		path = p_path;
+	}
 	Ref<GDExtension> extension;
 	extension.instantiate();
-	Error err = extension->open_library(p_path, p_loader);
+	Error err = extension->open_library(path, p_loader);
 	if (err != OK) {
 		return LOAD_STATUS_FAILED;
 	}
