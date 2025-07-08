@@ -34,8 +34,8 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "editor/debugger/editor_file_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/run/run_instances_dialog.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -55,7 +55,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	file_server = memnew(EditorFileServer);
 
 	EditorDebuggerNode *debugger = memnew(EditorDebuggerNode);
-	EditorNode::get_bottom_panel()->add_item(TTRC("Debugger"), debugger, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D));
+	EditorDockManager::get_singleton()->add_dock(debugger, TTRC("Debugger"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_debugger_bottom_panel", TTRC("Toggle Debugger Bottom Panel"), KeyModifierMask::ALT | Key::D), "Debug");
 
 	// Main editor debug menu.
 	debug_menu = p_debug_menu;

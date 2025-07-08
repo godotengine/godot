@@ -34,13 +34,13 @@
 #include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
@@ -557,7 +557,7 @@ void EditorDebuggerNode::_break_state_changed() {
 	const bool breaked = get_current_debugger()->is_breaked();
 	const bool can_debug = get_current_debugger()->is_debuggable();
 	if (breaked) { // Show debugger.
-		EditorNode::get_bottom_panel()->make_item_visible(this);
+		EditorDockManager::get_singleton()->focus_dock(this);
 	}
 
 	// Update script menu.

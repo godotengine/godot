@@ -31,8 +31,8 @@
 #include "openxr_action_map_editor.h"
 
 #include "core/config/project_settings.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 
@@ -383,7 +383,7 @@ void OpenXRActionMapEditor::_do_remove_interaction_profile_editor(OpenXRInteract
 }
 
 void OpenXRActionMapEditor::open_action_map(String p_path) {
-	EditorNode::get_bottom_panel()->make_item_visible(this);
+	EditorDockManager::get_singleton()->focus_dock(this);
 
 	// out with the old...
 	_clear_action_map();

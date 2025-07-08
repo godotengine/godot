@@ -374,7 +374,6 @@ class ScriptEditor : public PanelContainer {
 
 	FindInFilesDialog *find_in_files_dialog = nullptr;
 	FindInFilesPanel *find_in_files = nullptr;
-	Button *find_in_files_button = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
 
@@ -556,7 +555,6 @@ class ScriptEditor : public PanelContainer {
 	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
 	void _start_find_in_files(bool with_replace);
 	void _on_find_in_files_modified_files(const PackedStringArray &paths);
-	void _on_find_in_files_close_button_clicked();
 
 	void _set_script_zoom_factor(float p_zoom_factor);
 	void _update_code_editor_zoom_factor(CodeTextEditor *p_code_text_editor);

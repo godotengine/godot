@@ -86,10 +86,6 @@ void ThemeEditorPreview::_refresh_interval() {
 	_propagate_redraw(preview_content);
 }
 
-void ThemeEditorPreview::_preview_visibility_changed() {
-	set_process(is_visible_in_tree());
-}
-
 void ThemeEditorPreview::_picker_button_cbk() {
 	picker_overlay->set_visible(picker_button->is_pressed());
 	if (picker_button->is_pressed()) {
@@ -201,12 +197,10 @@ void ThemeEditorPreview::_reset_picker_overlay() {
 
 void ThemeEditorPreview::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (is_visible_in_tree()) {
-				set_process(true);
-			}
-
-			connect(SceneStringName(visibility_changed), callable_mp(this, &ThemeEditorPreview::_preview_visibility_changed));
+		case NOTIFICATION_VISIBILITY_CHANGED:
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_EXIT_TREE: {
+			set_process(is_visible_in_tree());
 		} break;
 
 		case NOTIFICATION_READY: {

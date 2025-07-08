@@ -34,11 +34,11 @@
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
 #include "editor/animation/animation_tree_editor_plugin.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h" // For onion skinning.
@@ -908,7 +908,7 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 			}
 
 			_update_player();
-			EditorNode::get_bottom_panel()->make_item_visible(this);
+			EditorDockManager::get_singleton()->focus_dock(this);
 			set_process(true);
 			ensure_visibility();
 
@@ -2418,7 +2418,8 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 		if (AnimationTreeEditor::get_singleton() && AnimationTreeEditor::get_singleton()->is_visible_in_tree()) {
 			return;
 		}
-		EditorNode::get_bottom_panel()->make_item_visible(anim_editor);
+
+		EditorDockManager::get_singleton()->focus_dock(anim_editor);
 		anim_editor->set_process(true);
 		anim_editor->ensure_visibility();
 	}
@@ -2426,7 +2427,7 @@ void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
 
 AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 	anim_editor = memnew(AnimationPlayerEditor(this));
-	EditorNode::get_bottom_panel()->add_item(TTRC("Animation"), anim_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N));
+	EditorDockManager::get_singleton()->add_dock(anim_editor, TTRC("Animation"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_bottom_panel", TTRC("Toggle Animation Bottom Panel"), KeyModifierMask::ALT | Key::N), "Animation");
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
