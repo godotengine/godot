@@ -1300,6 +1300,7 @@ public:
 		COMPLETION_PROPERTY_METHOD, // Property setter or getter (list available methods).
 		COMPLETION_RESOURCE_PATH, // For load/preload.
 		COMPLETION_SUBSCRIPT, // Inside id[|].
+		COMPLETION_SUPER, // super(), used for lookup.
 		COMPLETION_SUPER_METHOD, // After super.
 		COMPLETION_TYPE_ATTRIBUTE, // Attribute in type name (Type.|).
 		COMPLETION_TYPE_NAME, // Name of type (after :).
