@@ -158,6 +158,11 @@ double Timer::get_time_left() const {
 	return time_left > 0 ? time_left : 0;
 }
 
+void Timer::set_time_left(double p_time) {
+	ERR_FAIL_COND_MSG(!processing, "Setting time_left when the timer is stopped. Use start(time_left) to start automatically.");
+	time_left = p_time;
+}
+
 void Timer::set_timer_process_callback(TimerProcessCallback p_callback) {
 	if (timer_process_callback == p_callback) {
 		return;
@@ -228,6 +233,7 @@ void Timer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_stopped"), &Timer::is_stopped);
 
 	ClassDB::bind_method(D_METHOD("get_time_left"), &Timer::get_time_left);
+	ClassDB::bind_method(D_METHOD("set_time_left", "time_left"), &Timer::set_time_left);
 
 	ClassDB::bind_method(D_METHOD("set_timer_process_callback", "callback"), &Timer::set_timer_process_callback);
 	ClassDB::bind_method(D_METHOD("get_timer_process_callback"), &Timer::get_timer_process_callback);
@@ -240,7 +246,7 @@ void Timer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autostart"), "set_autostart", "has_autostart");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_paused", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_time_scale"), "set_ignore_time_scale", "is_ignoring_time_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_NONE), "", "get_time_left");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_left", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_time_left", "get_time_left");
 
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(TIMER_PROCESS_IDLE);
