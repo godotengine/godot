@@ -421,28 +421,24 @@ void AnimationNodeBlendTreeEditor::_popup_request(const Vector2 &p_position) {
 	_popup(false, p_position);
 }
 
-void AnimationNodeBlendTreeEditor::_connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position) {
+void AnimationNodeBlendTreeEditor::_connection_to_empty(GraphPort *p_from_port, const Vector2 &p_release_position) {
 	if (read_only) {
 		return;
 	}
+	GraphNodeIndexed *_from_node = Object::cast_to<GraphNodeIndexed>(p_from_port->get_graph_node());
+	ERR_FAIL_NULL(_from_node);
+	_from_node->get_name();
 
-	Ref<AnimationNode> node = blend_tree->get_node(p_from);
+	Ref<AnimationNode> node = blend_tree->get_node(_from_node->get_name());
 	if (node.is_valid()) {
-		from_node = p_from;
-		_popup(true, p_release_position);
-	}
-}
-
-void AnimationNodeBlendTreeEditor::_connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position) {
-	if (read_only) {
-		return;
-	}
-
-	Ref<AnimationNode> node = blend_tree->get_node(p_to);
-	if (node.is_valid()) {
-		to_node = p_to;
-		to_slot = p_to_slot;
-		_popup(false, p_release_position);
+		if (p_from_port->get_direction() == GraphPort::PortDirection::INPUT) {
+			from_node = _from_node->get_name();
+			_popup(true, p_release_position);
+		} else {
+			to_node = _from_node->get_name();
+			to_slot = _from_node->slot_index_of_port(p_from_port);
+			_popup(false, p_release_position);
+		}
 	}
 }
 
@@ -1201,7 +1197,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	graph->connect("delete_nodes_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_delete_nodes_request));
 	graph->connect("popup_request", callable_mp(this, &AnimationNodeBlendTreeEditor::_popup_request));
 	graph->connect("connection_to_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_to_empty));
-	graph->connect("connection_from_empty", callable_mp(this, &AnimationNodeBlendTreeEditor::_connection_from_empty));
 	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");

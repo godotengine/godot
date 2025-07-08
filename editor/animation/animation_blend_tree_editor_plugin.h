@@ -130,8 +130,7 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 
 	void _popup(bool p_has_input_ports, const Vector2 &p_node_position);
 	void _popup_request(const Vector2 &p_position);
-	void _connection_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_position);
-	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
+	void _connection_to_empty(GraphPort *p_from_port, const Vector2 &p_release_position);
 	void _popup_hide();
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
