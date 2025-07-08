@@ -986,8 +986,18 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 	}
 }
 
+float LightmapGI::_get_total_supersampling() const {
+	const float shadowmask_supersample = MAX(1.0f, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE ? shadow_scale_ratio : 1);
+	const float directional_supersample = MAX(1.0f, directional ? directional_scale_ratio : 1);
+	const float lightmap_supersample = supersampling_enabled ? supersampling_factor : 1;
+
+	return MAX(directional_supersample, shadowmask_supersample) * lightmap_supersample;
+}
+
 LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, LightTextureType p_type) const {
 	LocalVector<Ref<Image>> images;
+
+	float texture_resize_ratio = 1.0f / _get_total_supersampling();
 
 	switch (p_type) {
 		case LIGHT_TEX_LIGHTMAP: {
@@ -998,12 +1008,14 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 		} break;
 		case LIGHT_TEX_SHADOWMASK: {
 			images.resize(p_lightmapper->get_shadowmask_texture_count());
+			texture_resize_ratio *= shadow_scale_ratio;
 			for (uint32_t i = 0; i < images.size(); i++) {
 				images[i] = p_lightmapper->get_shadowmask_texture((int)i);
 			}
 		} break;
 		case LIGHT_TEX_DIRECTIONAL: {
 			images.resize(p_lightmapper->get_directional_texture_count());
+			texture_resize_ratio *= directional_scale_ratio;
 			for (uint32_t i = 0; i < images.size(); i++) {
 				images[i] = p_lightmapper->get_directional_texture((int)i);
 			}
@@ -1058,8 +1070,13 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 
 		config->save(config_path);
 
-		if (supersampling_enabled) {
-			texture_image->resize(texture_image->get_width() / supersampling_factor, texture_image->get_height() / supersampling_factor, Image::INTERPOLATE_TRILINEAR);
+		if (!Math::is_equal_approx(texture_resize_ratio, 1.0f)) {
+			// Impose the limit of the resolution on each axis being a power of 2.
+			// Ensure that the new size is never greater than the current one.
+			const int scaled_height = MIN(nearest_power_of_2_templated<int>(slice_height * texture_resize_ratio), slice_height) * texture_slice_count;
+			const int scaled_width = MIN(nearest_power_of_2_templated<int>(slice_width * texture_resize_ratio), slice_width);
+
+			texture_image->resize(scaled_width, scaled_height, Image::INTERPOLATE_TRILINEAR);
 		}
 
 		// Save the file.
@@ -1138,7 +1155,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				mesh_lightmap_size = Size2i(64, 64);
 			}
 			// Double lightmap texel density if downsampling is enabled, as the final texture size will be halved before saving lightmaps.
-			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale) * (supersampling_enabled ? supersampling_factor : 1.0);
+			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale) * _get_total_supersampling();
 			ERR_FAIL_COND_V(lightmap_size.x == 0 || lightmap_size.y == 0, BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 
 			TypedArray<RID> overrides;
@@ -1468,7 +1485,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces,
 			bounce_indirect_energy, bias, max_texture_size, directional, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE, use_texture_for_bounces,
-			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization, (supersampling_enabled ? supersampling_factor : 1));
+			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization, _get_total_supersampling());
 
 	if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1841,10 +1858,19 @@ int LightmapGI::get_denoiser_range() const {
 
 void LightmapGI::set_directional(bool p_enable) {
 	directional = p_enable;
+	notify_property_list_changed();
 }
 
 bool LightmapGI::is_directional() const {
 	return directional;
+}
+
+void LightmapGI::set_directional_scale_ratio(float p_ratio) {
+	directional_scale_ratio = p_ratio;
+}
+
+float LightmapGI::get_directional_scale_ratio() const {
+	return directional_scale_ratio;
 }
 
 void LightmapGI::set_shadowmask_mode(LightmapGIData::ShadowmaskMode p_mode) {
@@ -1854,10 +1880,19 @@ void LightmapGI::set_shadowmask_mode(LightmapGIData::ShadowmaskMode p_mode) {
 	}
 
 	update_configuration_warnings();
+	notify_property_list_changed();
 }
 
 LightmapGIData::ShadowmaskMode LightmapGI::get_shadowmask_mode() const {
 	return shadowmask_mode;
+}
+
+void LightmapGI::set_shadowmask_scale_ratio(float p_ratio) {
+	shadow_scale_ratio = p_ratio;
+}
+
+float LightmapGI::get_shadowmask_scale_ratio() const {
+	return shadow_scale_ratio;
 }
 
 void LightmapGI::set_use_texture_for_bounces(bool p_enable) {
@@ -2041,6 +2076,12 @@ void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "denoiser_range" && !use_denoiser) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
+	if (p_property.name == "directional_scale_ratio" && !directional) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
+	if (p_property.name == "shadowmask_scale_ratio" && shadowmask_mode == LightmapGIData::SHADOWMASK_MODE_NONE) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 }
 
 void LightmapGI::_bind_methods() {
@@ -2101,8 +2142,14 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_directional", "directional"), &LightmapGI::set_directional);
 	ClassDB::bind_method(D_METHOD("is_directional"), &LightmapGI::is_directional);
 
+	ClassDB::bind_method(D_METHOD("set_directional_scale_ratio", "ratio"), &LightmapGI::set_directional_scale_ratio);
+	ClassDB::bind_method(D_METHOD("get_directional_scale_ratio"), &LightmapGI::get_directional_scale_ratio);
+
 	ClassDB::bind_method(D_METHOD("set_shadowmask_mode", "mode"), &LightmapGI::set_shadowmask_mode);
 	ClassDB::bind_method(D_METHOD("get_shadowmask_mode"), &LightmapGI::get_shadowmask_mode);
+
+	ClassDB::bind_method(D_METHOD("set_shadowmask_scale_ratio", "ratio"), &LightmapGI::set_shadowmask_scale_ratio);
+	ClassDB::bind_method(D_METHOD("get_shadowmask_scale_ratio"), &LightmapGI::get_shadowmask_scale_ratio);
 
 	ClassDB::bind_method(D_METHOD("set_use_texture_for_bounces", "use_texture_for_bounces"), &LightmapGI::set_use_texture_for_bounces);
 	ClassDB::bind_method(D_METHOD("is_using_texture_for_bounces"), &LightmapGI::is_using_texture_for_bounces);
@@ -2119,7 +2166,9 @@ void LightmapGI::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,6,1,or_greater"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "directional_scale_ratio", PROPERTY_HINT_RANGE, "0.01,8.0,0.001"), "set_directional_scale_ratio", "get_directional_scale_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shadowmask_mode", PROPERTY_HINT_ENUM, "None,Replace,Overlay"), "set_shadowmask_mode", "get_shadowmask_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shadowmask_scale_ratio", PROPERTY_HINT_RANGE, "0.01,8.0,0.001"), "set_shadowmask_scale_ratio", "get_shadowmask_scale_ratio");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_texture_for_bounces"), "set_use_texture_for_bounces", "is_using_texture_for_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "interior"), "set_interior", "is_interior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_denoiser"), "set_use_denoiser", "is_using_denoiser");

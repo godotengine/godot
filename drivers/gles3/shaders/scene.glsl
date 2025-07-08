@@ -1224,6 +1224,8 @@ uniform uint lightmap_shadowmask_mode;
 
 #ifdef LIGHTMAP_BICUBIC_FILTER
 uniform highp vec2 lightmap_texture_size;
+uniform highp vec2 shadowmask_texture_size;
+uniform highp vec2 direction_texture_size;
 #endif
 
 #ifdef USE_SH_LIGHTMAP
@@ -2116,9 +2118,9 @@ void main() {
 #ifdef USE_SH_LIGHTMAP
 #ifdef LIGHTMAP_BICUBIC_FILTER
 		vec3 lm_light_l0 = textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb;
-		vec3 lm_light_l1n1 = (textureArray_bicubic(directional_textures, vec3(uvw.xy, uvw.z * 3 + 0.0), lightmap_texture_size).rgb - vec3(0.5)) * 2.0;
-		vec3 lm_light_l1_0 = (textureArray_bicubic(directional_textures, vec3(uvw.xy, uvw.z * 3 + 1.0), lightmap_texture_size).rgb - vec3(0.5)) * 2.0;
-		vec3 lm_light_l1p1 = (textureArray_bicubic(directional_textures, vec3(uvw.xy, uvw.z * 3 + 2.0), lightmap_texture_size).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1n1 = (textureArray_bicubic(directional_textures, vec3(uvw.xy, uvw.z * 3 + 0.0), direction_texture_size).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1_0 = (textureArray_bicubic(directional_textures, vec3(uvw.xy, uvw.z * 3 + 1.0), direction_texture_size).rgb - vec3(0.5)) * 2.0;
+		vec3 lm_light_l1p1 = (textureArray_bicubic(directional_textures, vec3(uvw.xy, uvw.z * 3 + 2.0), direction_texture_size).rgb - vec3(0.5)) * 2.0;
 #else
 		vec3 lm_light_l0 = textureLod(lightmap_textures, uvw, 0.0).rgb;
 		vec3 lm_light_l1n1 = (textureLod(directional_textures, vec3(uvw.xy, uvw.z * 3 + 0.0), 0.0).rgb - vec3(0.5)) * 2.0;
@@ -2373,7 +2375,7 @@ void main() {
 		uvw.z = float(lightmap_slice);
 
 #ifdef LIGHTMAP_BICUBIC_FILTER
-		shadowmask = textureArray_bicubic(shadowmask_textures, uvw, lightmap_texture_size).x;
+		shadowmask = textureArray_bicubic(shadowmask_textures, uvw, shadowmask_texture_size).x;
 #else
 		shadowmask = textureLod(shadowmask_textures, uvw, 0.0).x;
 #endif

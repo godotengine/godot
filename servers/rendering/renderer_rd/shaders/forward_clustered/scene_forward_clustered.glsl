@@ -1735,9 +1735,9 @@ void fragment_shader(in SceneData scene_data) {
 
 			if (sc_use_lightmap_bicubic_filter()) {
 				lm_light_l0 = textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb;
-				lm_light_l1n1 = (textureArray_bicubic(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], vec3(uvw.xy, uvw.z * 3 + 0.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0;
-				lm_light_l1_0 = (textureArray_bicubic(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], vec3(uvw.xy, uvw.z * 3 + 1.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0;
-				lm_light_l1p1 = (textureArray_bicubic(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], vec3(uvw.xy, uvw.z * 3 + 2.0), lightmaps.data[ofs].light_texture_size).rgb - vec3(0.5)) * 2.0;
+				lm_light_l1n1 = (textureArray_bicubic(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], vec3(uvw.xy, uvw.z * 3 + 0.0), lightmaps.data[ofs].direction_texture_size).rgb - vec3(0.5)) * 2.0;
+				lm_light_l1_0 = (textureArray_bicubic(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], vec3(uvw.xy, uvw.z * 3 + 1.0), lightmaps.data[ofs].direction_texture_size).rgb - vec3(0.5)) * 2.0;
+				lm_light_l1p1 = (textureArray_bicubic(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], vec3(uvw.xy, uvw.z * 3 + 2.0), lightmaps.data[ofs].direction_texture_size).rgb - vec3(0.5)) * 2.0;
 			} else {
 				lm_light_l0 = textureLod(sampler2DArray(lightmap_textures[ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).rgb;
 				lm_light_l1n1 = (textureLod(sampler2DArray(lightmap_textures[LIGHTMAP_DIR_TEX_OFS + ofs], SAMPLER_LINEAR_CLAMP), vec3(uvw.xy, uvw.z * 3 + 0.0), 0.0).rgb - vec3(0.5)) * 2.0;
@@ -2118,7 +2118,7 @@ void fragment_shader(in SceneData scene_data) {
 				const vec3 uvw = vec3(scaled_uv, float(slice));
 
 				if (sc_use_lightmap_bicubic_filter()) {
-					shadowmask = textureArray_bicubic(lightmap_textures[LIGHTMAP_SHADOW_TEX_OFS + ofs], uvw, lightmaps.data[ofs].light_texture_size).x;
+					shadowmask = textureArray_bicubic(lightmap_textures[LIGHTMAP_SHADOW_TEX_OFS + ofs], uvw, lightmaps.data[ofs].shadow_texture_size).x;
 				} else {
 					shadowmask = textureLod(sampler2DArray(lightmap_textures[LIGHTMAP_SHADOW_TEX_OFS + ofs], SAMPLER_LINEAR_CLAMP), uvw, 0.0).x;
 				}
