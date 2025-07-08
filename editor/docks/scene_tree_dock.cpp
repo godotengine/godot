@@ -3626,7 +3626,7 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 			to_node = nullptr;
 			ERR_FAIL_MSG("Cannot perform drop above the root node!");
 		}
-		if (to_node->has_meta(META_EXPOSED_IN_OWNER)) {
+		if (to_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
 			to_node = to_node->get_owner();
 			to_pos = -1;
 		} else {
@@ -3662,7 +3662,7 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 				to_pos = lower_sibling->get_index(false);
 			}
 
-			if (to_node->has_meta(META_EXPOSED_IN_OWNER)) {
+			if (to_node->has_meta(META_EXPOSED_IN_INSTANCE)) {
 				to_pos = to_node->get_index(false) + 1;
 				to_node = to_node->get_owner();
 			} else {
