@@ -88,7 +88,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	TabContainer *shader_tabs = nullptr;
 	HBoxContainer *empty_menu = nullptr;
 
-	Button *button = nullptr;
 	MenuButton *file_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
