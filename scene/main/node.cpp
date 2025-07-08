@@ -29,6 +29,8 @@
 /**************************************************************************/
 
 #include "node.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
 #include "node.compat.inc"
 
 #include "core/config/project_settings.h"
@@ -298,6 +300,13 @@ void Node::_notification(int p_notification) {
 				data.is_auto_translate_dirty = true;
 			}
 		} break;
+
+		case NOTIFICATION_AFTER_READY: {
+			if (get_script_instance()) {
+				get_script_instance()->call("after_ready");
+			}
+			_after_ready();
+		} break;
 	}
 }
 
@@ -316,6 +325,7 @@ void Node::_propagate_ready() {
 		data.ready_first = false;
 		notification(NOTIFICATION_READY);
 		emit_signal(SceneStringName(ready));
+		notification(NOTIFICATION_AFTER_READY);
 	}
 }
 
@@ -1046,6 +1056,10 @@ void Node::set_process_internal(bool p_process_internal) {
 	if (_is_any_processing()) {
 		_add_to_process_thread_group();
 	}
+}
+
+void Node::_after_ready() {
+	// empty
 }
 
 void Node::_add_process_group() {
@@ -3835,6 +3849,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("atr", "message", "context"), &Node::atr, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("atr_n", "message", "plural_message", "n", "context"), &Node::atr_n, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("_after_ready"), &Node::_after_ready);
 
 #ifdef TOOLS_ENABLED
 	ClassDB::bind_method(D_METHOD("_set_property_pinned", "property", "pinned"), &Node::set_property_pinned);
@@ -3932,6 +3947,7 @@ void Node::_bind_methods() {
 
 	BIND_CONSTANT(NOTIFICATION_ACCESSIBILITY_UPDATE);
 	BIND_CONSTANT(NOTIFICATION_ACCESSIBILITY_INVALIDATE);
+	BIND_CONSTANT(NOTIFICATION_AFTER_READY);
 
 	BIND_ENUM_CONSTANT(PROCESS_MODE_INHERIT);
 	BIND_ENUM_CONSTANT(PROCESS_MODE_PAUSABLE);

@@ -469,7 +469,8 @@ public:
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
 		NOTIFICATION_EDITOR_POST_SAVE = 9002,
 		NOTIFICATION_SUSPENDED = 9003,
-		NOTIFICATION_UNSUSPENDED = 9004
+		NOTIFICATION_UNSUSPENDED = 9004,
+		NOTIFICATION_AFTER_READY = 9005
 	};
 
 	/* NODE/TREE */
@@ -842,6 +843,7 @@ public:
 	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
 	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
 	virtual bool has_connections(const StringName &p_signal) const override;
+	virtual void _after_ready();
 #endif
 	Node();
 	~Node();
