@@ -56,6 +56,9 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 public:
+	void set_split_offsets_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+	PackedInt32Array get_split_offsets_to_save_to_config() const;
+
 	DockSplitContainer();
 };
 
@@ -101,7 +104,7 @@ private:
 
 	// To access splits easily by index.
 	Vector<DockSplitContainer *> vsplits;
-	Vector<DockSplitContainer *> hsplits;
+	DockSplitContainer *main_hsplit;
 
 	Vector<WindowWrapper *> dock_windows;
 	TabContainer *dock_slot[DOCK_SLOT_MAX];
@@ -147,7 +150,7 @@ public:
 	void set_tab_icon_max_width(int p_max_width);
 
 	void add_vsplit(DockSplitContainer *p_split);
-	void add_hsplit(DockSplitContainer *p_split);
+	void set_hsplit(DockSplitContainer *p_split);
 	void register_dock_slot(DockSlot p_dock_slot, TabContainer *p_tab_container);
 	int get_vsplit_count() const;
 	PopupMenu *get_docks_menu();
