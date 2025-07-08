@@ -91,7 +91,7 @@ jobs:
       - name: Build Web Editor
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: platform=web target=editor threads=no ${{ inputs.common_args }} ${{ inputs.editor_args }}
+          sconsflags: platform=web target=editor threads=no debug_symbols=no ${{ inputs.common_args }}
           platform: web
           target: editor
 
