@@ -427,15 +427,15 @@ void AnimationNodeBlendTreeEditor::_connection_to_empty(GraphPort *p_from_port, 
 	}
 	GraphNodeIndexed *_from_node = Object::cast_to<GraphNodeIndexed>(p_from_port->get_graph_node());
 	ERR_FAIL_NULL(_from_node);
-	_from_node->get_name();
+	StringName _from_node_name = _from_node->get_name();
 
-	Ref<AnimationNode> node = blend_tree->get_node(_from_node->get_name());
+	Ref<AnimationNode> node = blend_tree->get_node(_from_node_name);
 	if (node.is_valid()) {
 		if (p_from_port->get_direction() == GraphPort::PortDirection::INPUT) {
-			from_node = _from_node->get_name();
+			from_node = String(_from_node_name);
 			_popup(true, p_release_position);
 		} else {
-			to_node = _from_node->get_name();
+			to_node = String(_from_node_name);
 			to_slot = _from_node->slot_index_of_port(p_from_port);
 			_popup(false, p_release_position);
 		}
