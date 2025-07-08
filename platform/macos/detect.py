@@ -65,6 +65,11 @@ def get_flags():
     }
 
 
+def compute_whole_archive_libs_macos(target, source, env, for_signature):
+    whole_archives = env.get("WHOLEARCHIVELIBS", ())
+    return [f"-Wl,-force_load,{str(lib)}" for lib in whole_archives]
+
+
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_64", "arm64"]
@@ -87,6 +92,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(ASFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
         env.Append(CCFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
+
+    env["WHOLEARCHIVELIBFLAGS"] = compute_whole_archive_libs_macos
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
     env.Append(CCFLAGS=["-fobjc-arc"])

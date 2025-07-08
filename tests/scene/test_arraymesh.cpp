@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_arraymesh.h                                                      */
+/*  test_arraymesh.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef _3D_DISABLED
 
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/mesh.h"
@@ -444,3 +444,5 @@ TEST_CASE("[SceneTree][ArrayMesh] Get/Set mesh metadata and actions") {
 }
 
 } // namespace TestArrayMesh
+
+#endif // !_3D_DISABLED

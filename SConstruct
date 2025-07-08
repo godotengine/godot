@@ -645,6 +645,10 @@ if env["scu_build"]:
 
     methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
+# Add support for WHOLEARCHIVELIBS.
+# Must come before detect.configure(), since some platforms tweak this behavior.
+methods.add_wholearchive_support(env)
+
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
 detect.configure(env)
