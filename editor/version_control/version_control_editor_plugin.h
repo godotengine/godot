@@ -128,7 +128,6 @@ private:
 	Button *commit_button = nullptr;
 
 	VBoxContainer *version_control_dock = nullptr;
-	Button *version_control_dock_button = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
 	OptionButton *diff_view_type_select = nullptr;
