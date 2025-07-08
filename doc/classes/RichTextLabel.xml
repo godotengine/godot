@@ -766,6 +766,9 @@
 		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following" default="false">
 			If [code]true[/code], the window scrolls down to display new content automatically.
 		</member>
+		<member name="scroll_following_visible_characters" type="bool" setter="set_scroll_follow_visible_characters" getter="is_scroll_following_visible_characters" default="false">
+			If [code]true[/code], the window scrolls to display the last visible line when [member visible_characters] or [member visible_ratio] is changed.
+		</member>
 		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled" default="false">
 			If [code]true[/code], the label allows text selection.
 		</member>

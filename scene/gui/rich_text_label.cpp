@@ -2539,6 +2539,9 @@ void RichTextLabel::_notification(int p_what) {
 				ofs.y += main->lines[from_line].text_buf->get_size().y + (main->lines[from_line].text_buf->get_line_count() - 1) * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation + vsep);
 				from_line++;
 			}
+			if (scroll_follow_visible_characters && scroll_active) {
+				vscroll->set_visible(follow_vc_pos > 0);
+			}
 			if (has_focus() && get_tree()->is_accessibility_enabled()) {
 				RID ae;
 				if (keyboard_focus_frame && keyboard_focus_item) {
@@ -5042,6 +5045,31 @@ bool RichTextLabel::is_scroll_following() const {
 	return scroll_follow;
 }
 
+void RichTextLabel::_update_follow_vc() {
+	if (!scroll_follow_visible_characters) {
+		return;
+	}
+	int vc = (visible_characters < 0 ? get_total_character_count() : MIN(visible_characters, get_total_character_count())) - 1;
+	int voff = get_character_line(vc) + 1;
+	if (voff <= get_line_count() - 1) {
+		follow_vc_pos = get_line_offset(voff) - _get_text_rect().size.y;
+	} else {
+		follow_vc_pos = vscroll->get_max();
+	}
+	vscroll->scroll_to(follow_vc_pos);
+}
+
+void RichTextLabel::set_scroll_follow_visible_characters(bool p_follow) {
+	if (scroll_follow_visible_characters != p_follow) {
+		scroll_follow_visible_characters = p_follow;
+		_update_follow_vc();
+	}
+}
+
+bool RichTextLabel::is_scroll_following_visible_characters() const {
+	return scroll_follow_visible_characters;
+}
+
 void RichTextLabel::parse_bbcode(const String &p_bbcode) {
 	clear();
 	append_text(p_bbcode);
@@ -7230,6 +7258,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 				total_height = _calculate_line_vertical_offset(main->lines[i]);
 			}
 		}
+		_update_follow_vc();
 		queue_redraw();
 	}
 }
@@ -7424,6 +7453,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scroll_active", "active"), &RichTextLabel::set_scroll_active);
 	ClassDB::bind_method(D_METHOD("is_scroll_active"), &RichTextLabel::is_scroll_active);
 
+	ClassDB::bind_method(D_METHOD("set_scroll_follow_visible_characters", "follow"), &RichTextLabel::set_scroll_follow_visible_characters);
+	ClassDB::bind_method(D_METHOD("is_scroll_following_visible_characters"), &RichTextLabel::is_scroll_following_visible_characters);
+
 	ClassDB::bind_method(D_METHOD("set_scroll_follow", "follow"), &RichTextLabel::set_scroll_follow);
 	ClassDB::bind_method(D_METHOD("is_scroll_following"), &RichTextLabel::is_scroll_following);
 
@@ -7530,6 +7562,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content"), "set_fit_content", "is_fit_content_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_active"), "set_scroll_active", "is_scroll_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_following"), "set_scroll_follow", "is_scroll_following");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_following_visible_characters"), "set_scroll_follow_visible_characters", "is_scroll_following_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
@@ -7711,6 +7744,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				total_height = _calculate_line_vertical_offset(main->lines[i]);
 			}
 		}
+		_update_follow_vc();
 		queue_redraw();
 	}
 }
