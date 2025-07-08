@@ -369,14 +369,14 @@ void vertex_shader(in vec3 vertex,
 		//transpose
 		matrix = transpose(matrix);
 
-#if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
+#if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(MODEL_MATRIX_USED)
 		// Normally we can bake the multimesh transform into the model matrix, but when using double precision
 		// we avoid baking it in so we can emulate high precision.
 		read_model_matrix = model_matrix * matrix;
-#if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
+#if !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED)
 		model_matrix = read_model_matrix;
-#endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED)
-#endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(VERTEX_WORLD_COORDS_USED) || defined(MODEL_MATRIX_USED)
+#endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED)
+#endif // !defined(USE_DOUBLE_PRECISION) || defined(SKIP_TRANSFORM_USED) || defined(MODEL_MATRIX_USED)
 		model_normal_matrix = model_normal_matrix * mat3(matrix);
 	}
 
@@ -408,23 +408,6 @@ void vertex_shader(in vec3 vertex,
 #else
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 #endif // USE_MULTIVIEW
-
-//using world coordinates
-#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-
-	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
-
-#ifdef NORMAL_USED
-	normal_highp = model_normal_matrix * normal_highp;
-#endif
-
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-
-	tangent_highp = model_normal_matrix * tangent_highp;
-	binormal_highp = model_normal_matrix * binormal_highp;
-
-#endif
-#endif
 
 #ifdef Z_CLIP_SCALE_USED
 	float z_clip_scale = 1.0;
@@ -468,7 +451,7 @@ void vertex_shader(in vec3 vertex,
 	half roughness = half(roughness_highp);
 
 // using local coordinates (default)
-#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
+#if !defined(SKIP_TRANSFORM_USED)
 
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
 
@@ -481,21 +464,7 @@ void vertex_shader(in vec3 vertex,
 	binormal_highp = modelview_normal * binormal_highp;
 	tangent_highp = modelview_normal * tangent_highp;
 #endif
-#endif // !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
-
-//using world coordinates
-#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-
-	vertex = (view_matrix * vec4(vertex, 1.0)).xyz;
-#ifdef NORMAL_USED
-	normal_highp = (view_matrix * vec4(normal_highp, 0.0)).xyz;
-#endif
-
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(BENT_NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal_highp = (view_matrix * vec4(binormal_highp, 0.0)).xyz;
-	tangent_highp = (view_matrix * vec4(tangent_highp, 0.0)).xyz;
-#endif
-#endif
+#endif // !defined(SKIP_TRANSFORM_USED)
 
 	vertex_interp = vertex;
 
