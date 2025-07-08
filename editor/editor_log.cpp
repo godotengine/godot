@@ -39,6 +39,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/tab_container.h"
 #include "scene/resources/font.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
@@ -203,7 +204,7 @@ void EditorLog::_clear_request() {
 	log->clear();
 	messages.clear();
 	_reset_message_counts();
-	tool_button->set_button_icon(Ref<Texture2D>());
+	_set_dock_tab_icon(Ref<Texture2D>());
 }
 
 void EditorLog::_copy_request() {
@@ -254,8 +255,13 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 	}
 }
 
-void EditorLog::set_tool_button(Button *p_tool_button) {
-	tool_button = p_tool_button;
+void EditorLog::_set_dock_tab_icon(Ref<Texture2D> p_icon) {
+	// This is the sole reason to include "tab_container.h" here.
+	TabContainer *parent = Object::cast_to<TabContainer>(get_parent());
+	if (parent) {
+		int idx = parent->get_tab_idx_from_control(this);
+		parent->set_tab_icon(idx, p_icon);
+	}
 }
 
 void EditorLog::register_undo_redo(UndoRedo *p_undo_redo) {
@@ -360,7 +366,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_bold();
 			log->add_text(" ERROR: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_WARNING: {
 			log->push_color(theme_cache.warning_color);
@@ -369,7 +375,7 @@ void EditorLog::_add_log_line(LogMessage &p_message, bool p_replace_previous) {
 			log->push_bold();
 			log->add_text(" WARNING: ");
 			log->pop(); // bold
-			tool_button->set_button_icon(icon);
+			_set_dock_tab_icon(icon);
 		} break;
 		case MSG_TYPE_EDITOR: {
 			// Distinguish editor messages from messages printed by the project

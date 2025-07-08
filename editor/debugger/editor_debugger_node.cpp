@@ -439,26 +439,35 @@ void EditorDebuggerNode::_update_errors() {
 			dbg->update_tabs();
 		});
 
-		if (error_count == 0 && warning_count == 0) {
-			debugger_button->set_text(TTR("Debugger"));
-			debugger_button->remove_theme_color_override(SceneStringName(font_color));
-			debugger_button->set_button_icon(Ref<Texture2D>());
-		} else {
-			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
-			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
-				// Use error color to represent the highest level of severity reported.
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			} else if (error_count >= 1) {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Error")));
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			} else {
-				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Warning")));
-				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-			}
-		}
 		last_error_count = error_count;
 		last_warning_count = warning_count;
+
+		// TODO: Replace logic when EditorDock class is merged to be more flexible.
+		TabContainer *parent = Object::cast_to<TabContainer>(get_parent());
+		if (!parent) {
+			return;
+		}
+
+		int idx = parent->get_tab_idx_from_control(this);
+
+		if (error_count == 0 && warning_count == 0) {
+			set_name(TTR("Debugger"));
+			parent->set_tab_icon(idx, Ref<Texture2D>());
+			parent->get_tab_bar()->set_font_color_override_all(idx, Color(0, 0, 0, 0));
+		} else {
+			set_name(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
+			if (error_count >= 1 && warning_count >= 1) {
+				parent->set_tab_icon(idx, get_editor_theme_icon(SNAME("ErrorWarning")));
+				// Use error color to represent the highest level of severity reported.
+				parent->get_tab_bar()->set_font_color_override_all(idx, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			} else if (error_count >= 1) {
+				parent->set_tab_icon(idx, get_editor_theme_icon(SNAME("Error")));
+				parent->get_tab_bar()->set_font_color_override_all(idx, get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			} else {
+				parent->set_tab_icon(idx, get_editor_theme_icon(SNAME("Warning")));
+				parent->get_tab_bar()->set_font_color_override_all(idx, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+			}
+		}
 	}
 }
 

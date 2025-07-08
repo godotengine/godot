@@ -30,50 +30,38 @@
 
 #pragma once
 
-#include "scene/gui/panel_container.h"
+#include "scene/gui/tab_container.h"
 
 class Button;
 class ConfigFile;
 class EditorToaster;
 class HBoxContainer;
-class VBoxContainer;
-class ScrollContainer;
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
+class EditorBottomPanel : public TabContainer {
+	GDCLASS(EditorBottomPanel, TabContainer);
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
-
-	Vector<BottomPanelItem> items;
-	bool lock_panel_switching = false;
-
-	VBoxContainer *item_vbox = nullptr;
 	HBoxContainer *bottom_hbox = nullptr;
-	Button *left_button = nullptr;
-	Button *right_button = nullptr;
-	ScrollContainer *button_scroll = nullptr;
-	HBoxContainer *button_hbox = nullptr;
 	EditorToaster *editor_toaster = nullptr;
 	Button *pin_button = nullptr;
 	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
 
-	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
-	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
+	bool lock_panel_switching = false;
+	LocalVector<Control *> bottom_docks;
+	LocalVector<Ref<Shortcut>> dock_shortcuts;
+
+	LocalVector<Button *> legacy_buttons;
+	void _on_button_visibility_changed(Button *p_button, Control *p_control);
+
+	void _repaint();
+	void _on_tab_changed(int p_idx);
 	void _pin_button_toggled(bool p_pressed);
 	void _expand_button_toggled(bool p_pressed);
-	void _scroll(bool p_right);
-	void _update_scroll_buttons();
-	void _update_disabled_buttons();
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
 
 protected:
 	void _notification(int p_what);
+
+	virtual void _update_margins() override;
+	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
@@ -88,4 +76,5 @@ public:
 	void set_expanded(bool p_expanded);
 
 	EditorBottomPanel();
+	~EditorBottomPanel();
 };
