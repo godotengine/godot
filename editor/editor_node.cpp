@@ -7808,16 +7808,15 @@ EditorNode::EditorNode() {
 	main_vbox->add_child(title_bar);
 #endif
 
-	left_l_hsplit = memnew(DockSplitContainer);
-	left_l_hsplit->set_name("DockHSplitLeftL");
-	main_vbox->add_child(left_l_hsplit);
-
-	left_l_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_hsplit = memnew(DockSplitContainer);
+	main_hsplit->set_name("DockHSplitMain");
+	main_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	main_vbox->add_child(main_hsplit);
 
 	left_l_vsplit = memnew(DockSplitContainer);
 	left_l_vsplit->set_name("DockVSplitLeftL");
 	left_l_vsplit->set_vertical(true);
-	left_l_hsplit->add_child(left_l_vsplit);
+	main_hsplit->add_child(left_l_vsplit);
 
 	TabContainer *dock_slot[EditorDockManager::DOCK_SLOT_MAX];
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UL] = memnew(TabContainer);
@@ -7827,13 +7826,10 @@ EditorNode::EditorNode() {
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BL]->set_name("DockSlotLeftBL");
 	left_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BL]);
 
-	left_r_hsplit = memnew(DockSplitContainer);
-	left_r_hsplit->set_name("DockHSplitLeftR");
-	left_l_hsplit->add_child(left_r_hsplit);
 	left_r_vsplit = memnew(DockSplitContainer);
 	left_r_vsplit->set_name("DockVSplitLeftR");
 	left_r_vsplit->set_vertical(true);
-	left_r_hsplit->add_child(left_r_vsplit);
+	main_hsplit->add_child(left_r_vsplit);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR] = memnew(TabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR]->set_name("DockSlotLeftUR");
 	left_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_UR]);
@@ -7841,13 +7837,9 @@ EditorNode::EditorNode() {
 	dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BR]->set_name("DockSlotLeftBR");
 	left_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_LEFT_BR]);
 
-	main_hsplit = memnew(DockSplitContainer);
-	main_hsplit->set_name("DockHSplitMain");
-	left_r_hsplit->add_child(main_hsplit);
 	VBoxContainer *center_vb = memnew(VBoxContainer);
-	main_hsplit->add_child(center_vb);
-
 	center_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	main_hsplit->add_child(center_vb);
 
 	center_split = memnew(DockSplitContainer);
 	center_split->set_name("DockVSplitCenter");
@@ -7856,14 +7848,10 @@ EditorNode::EditorNode() {
 	center_split->set_collapsed(false);
 	center_vb->add_child(center_split);
 
-	right_hsplit = memnew(DockSplitContainer);
-	right_hsplit->set_name("DockHSplitRight");
-	main_hsplit->add_child(right_hsplit);
-
 	right_l_vsplit = memnew(DockSplitContainer);
 	right_l_vsplit->set_name("DockVSplitRightL");
 	right_l_vsplit->set_vertical(true);
-	right_hsplit->add_child(right_l_vsplit);
+	main_hsplit->add_child(right_l_vsplit);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL] = memnew(TabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL]->set_name("DockSlotRightUL");
 	right_l_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UL]);
@@ -7874,7 +7862,7 @@ EditorNode::EditorNode() {
 	right_r_vsplit = memnew(DockSplitContainer);
 	right_r_vsplit->set_name("DockVSplitRightR");
 	right_r_vsplit->set_vertical(true);
-	right_hsplit->add_child(right_r_vsplit);
+	main_hsplit->add_child(right_r_vsplit);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR] = memnew(TabContainer);
 	dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR]->set_name("DockSlotRightUR");
 	right_r_vsplit->add_child(dock_slot[EditorDockManager::DOCK_SLOT_RIGHT_UR]);
@@ -7890,10 +7878,7 @@ EditorNode::EditorNode() {
 	editor_dock_manager->add_vsplit(right_l_vsplit);
 	editor_dock_manager->add_vsplit(right_r_vsplit);
 
-	editor_dock_manager->add_hsplit(left_l_hsplit);
-	editor_dock_manager->add_hsplit(left_r_hsplit);
-	editor_dock_manager->add_hsplit(main_hsplit);
-	editor_dock_manager->add_hsplit(right_hsplit);
+	editor_dock_manager->set_hsplit(main_hsplit);
 
 	for (int i = 0; i < EditorDockManager::DOCK_SLOT_MAX; i++) {
 		editor_dock_manager->register_dock_slot((EditorDockManager::DockSlot)i, dock_slot[i]);
@@ -8356,9 +8341,9 @@ EditorNode::EditorNode() {
 	// History: Full height right, behind Node.
 	editor_dock_manager->add_dock(history_dock, TTRC("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_history", TTRC("Open History Dock")), "History");
 
-	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
-	left_r_hsplit->set_split_offset(270 * EDSCALE);
-	main_hsplit->set_split_offset(-270 * EDSCALE);
+	// Add some offsets to make LEFT_R and RIGHT_L docks wider than minsize.
+	const int dock_hsize = 270 * EDSCALE;
+	main_hsplit->set_split_offsets({ 0, dock_hsize, -dock_hsize, 0 });
 
 	// Define corresponding default layout.
 
