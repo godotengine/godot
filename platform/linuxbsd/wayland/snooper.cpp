@@ -1483,6 +1483,9 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 			// xdg_toplevel::configure
 			send_wayland_message(eclient->socket, eclient->embedded_window_id, 0, { width, height, 0 });
 
+			// xdg_surface::configure
+			send_wayland_message(eclient->socket, toplevel_data->xdg_surface_handle.get_local_id(), 0, { configure_serial_counter++ });
+
 			return true;
 		} else if (p_opcode == GODOT_EMBEDDED_CLIENT_SET_EMBEDDED_WINDOW_PARENT) {
 			uint32_t main_client_parent_id = body[0];

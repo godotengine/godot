@@ -444,6 +444,7 @@ private:
 	List<int> compositor_fds;
 
 	uint32_t serial_counter = 0;
+	uint32_t configure_serial_counter = 0;
 
 	uint32_t sync_callback_id = 0;
 
