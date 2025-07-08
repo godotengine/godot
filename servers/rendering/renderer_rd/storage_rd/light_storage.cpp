@@ -2059,6 +2059,7 @@ void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow
 	}
 
 	t->lightmap_users.insert(p_lightmap);
+	lm->shadow_texture_size = Vector2i(t->width, t->height);
 
 	if (lm->array_index < 0) {
 		// Not in array, try to put in array.
@@ -2117,6 +2118,7 @@ void LightStorage::lightmap_set_directional_textures(RID p_lightmap, RID p_direc
 	}
 
 	t->lightmap_users.insert(p_lightmap);
+	lm->direction_texture_size = Vector2i(t->width, t->height);
 
 	if (lm->array_index < 0) {
 		// Not in array, try to put in array.

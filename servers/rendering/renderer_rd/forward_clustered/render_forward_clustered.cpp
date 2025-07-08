@@ -1180,8 +1180,18 @@ void RenderForwardClustered::_setup_lightmaps(const RenderDataRD *p_render_data,
 
 		// Light texture size.
 		Vector2i lightmap_size = light_storage->lightmap_get_light_texture_size(lightmap);
-		scene_state.lightmaps[i].texture_size[0] = lightmap_size[0];
-		scene_state.lightmaps[i].texture_size[1] = lightmap_size[1];
+		scene_state.lightmaps[i].light_texture_size[0] = lightmap_size[0];
+		scene_state.lightmaps[i].light_texture_size[1] = lightmap_size[1];
+
+		// Shadow texture size.
+		Vector2i lightmap_shadow_size = light_storage->lightmap_get_shadow_texture_size(lightmap);
+		scene_state.lightmaps[i].shadow_texture_size[0] = lightmap_shadow_size[0];
+		scene_state.lightmaps[i].shadow_texture_size[1] = lightmap_shadow_size[1];
+
+		// Direction texture size.
+		Vector2i lightmap_direction_size = light_storage->lightmap_get_direction_texture_size(lightmap);
+		scene_state.lightmaps[i].direction_texture_size[0] = lightmap_direction_size[0];
+		scene_state.lightmaps[i].direction_texture_size[1] = lightmap_direction_size[1];
 
 		// Exposure.
 		scene_state.lightmaps[i].exposure_normalization = 1.0;

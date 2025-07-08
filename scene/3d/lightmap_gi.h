@@ -219,8 +219,10 @@ private:
 	Color environment_custom_color = Color(1, 1, 1);
 	float environment_custom_energy = 1.0;
 	bool directional = false;
+	float directional_scale_ratio = 1.0;
 	bool use_texture_for_bounces = true;
 	LightmapGIData::ShadowmaskMode shadowmask_mode = LightmapGIData::SHADOWMASK_MODE_NONE;
+	float shadow_scale_ratio = 1.0;
 	GenerateProbes gen_probes = GENERATE_PROBES_SUBDIV_8;
 	Ref<CameraAttributes> camera_attributes;
 
@@ -298,6 +300,7 @@ private:
 		LIGHT_TEX_DIRECTIONAL,
 	};
 
+	float _get_total_supersampling() const;
 	BakeError _save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, LightTextureType p_type) const;
 
 protected:
@@ -324,8 +327,14 @@ public:
 	void set_directional(bool p_enable);
 	bool is_directional() const;
 
+	void set_directional_scale_ratio(float p_ratio);
+	float get_directional_scale_ratio() const;
+
 	void set_shadowmask_mode(LightmapGIData::ShadowmaskMode p_mode);
 	LightmapGIData::ShadowmaskMode get_shadowmask_mode() const;
+
+	void set_shadowmask_scale_ratio(float p_ratio);
+	float get_shadowmask_scale_ratio() const;
 
 	void set_use_texture_for_bounces(bool p_enable);
 	bool is_using_texture_for_bounces() const;
