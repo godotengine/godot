@@ -199,6 +199,8 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		set_indexes[set_indexes_size - 1] = offset;
 	}
 	CompilerMSL::Options msl_options{};
+	// MAJOR * 10000 + MINOR * 100
+	uint32_t msl_version = CompilerMSL::Options::make_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
 	msl_options.set_msl_version(device_profile->features.mslVersionMajor, device_profile->features.mslVersionMinor);
 	mtl_reflection_data.msl_version = msl_options.msl_version;
 	msl_options.platform = device_profile->platform == MetalDeviceProfile::Platform::macOS ? CompilerMSL::Options::macOS : CompilerMSL::Options::iOS;
@@ -209,7 +211,7 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 	}
 
 	bool disable_argument_buffers = false;
-	if (String v = OS::get_singleton()->get_environment(U"GODOT_DISABLE_ARGUMENT_BUFFERS"); v == U"1") {
+	if (String v = OS::get_singleton()->get_environment("GODOT_MTL_DISABLE_ARGUMENT_BUFFERS"); v == "1") {
 		disable_argument_buffers = true;
 	}
 
@@ -235,6 +237,10 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		msl_options.multiview = true;
 		msl_options.multiview_layered_rendering = true;
 		msl_options.view_mask_buffer_index = VIEW_MASK_BUFFER_INDEX;
+	}
+	if (msl_version >= CompilerMSL::Options::make_msl_version(3, 2)) {
+		// All 3.2+ versions support device coherence, so we can disable texture fences.
+		msl_options.readwrite_texture_fences = false;
 	}
 
 	CompilerGLSL::Options options{};
@@ -416,6 +422,10 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 						case spv::DimBuffer: {
 							// VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER
 							primary.texture_type = MTLTextureTypeTextureBuffer;
+						} break;
+						case spv::DimTileImageDataEXT: {
+							// Godot does not use this extension.
+							// See: https://registry.khronos.org/vulkan/specs/latest/man/html/VK_EXT_shader_tile_image.html
 						} break;
 						case spv::DimMax: {
 							// Add all enumerations to silence the compiler warning

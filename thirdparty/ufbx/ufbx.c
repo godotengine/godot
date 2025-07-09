@@ -407,8 +407,10 @@ extern "C" {
 
 #if defined(__GNUC__)
 	#define UFBXI_GNUC __GNUC__
+	#define UFBXI_GNUC_VERSION ufbx_pack_version(__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__)
 #else
 	#define UFBXI_GNUC 0
+	#define UFBXI_GNUC_VERSION 0
 #endif
 
 #if !defined(UFBX_STANDARD_C) && defined(_MSC_VER)
@@ -539,6 +541,10 @@ extern "C" {
 	// MSC isnan() definition triggers this error on MinGW GCC
 	#if defined(__MINGW32__)
 		#pragma GCC diagnostic ignored "-Wfloat-conversion"
+	#endif
+	// `-Warray-bounds` results in warnings if UBsan is enabled and pre-GCC-14 has no way of detecting it..
+	#if UFBXI_GNUC_VERSION >= ufbx_pack_version(4, 3, 0) && UFBXI_GNUC_VERSION < ufbx_pack_version(14, 0, 0)
+		#pragma GCC diagnostic ignored "-Warray-bounds"
 	#endif
 #endif
 
@@ -868,7 +874,7 @@ enum { UFBX_MAXIMUM_ALIGNMENT = sizeof(void*) > 8 ? sizeof(void*) : 8 };
 
 // -- Version
 
-#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 18, 2)
+#define UFBX_SOURCE_VERSION ufbx_pack_version(0, 20, 0)
 ufbx_abi_data_def const uint32_t ufbx_source_version = UFBX_SOURCE_VERSION;
 
 ufbx_static_assert(source_header_version, UFBX_SOURCE_VERSION/1000u == UFBX_HEADER_VERSION/1000u);
@@ -5944,6 +5950,11 @@ ufbx_inline ufbx_vec3 ufbxi_normalize3(ufbx_vec3 a) {
 	}
 }
 
+ufbx_inline ufbx_vec3 ufbxi_neg3(ufbx_vec3 a) {
+	ufbx_vec3 v = { -a.x, -a.y, -a.z };
+	return v;
+}
+
 ufbx_inline ufbx_real ufbxi_distsq2(ufbx_vec2 a, ufbx_vec2 b) {
 	ufbx_real dx = a.x - b.x, dy = a.y - b.y;
 	return dx*dx + dy*dy;
@@ -5960,7 +5971,6 @@ static ufbxi_noinline ufbx_vec3 ufbxi_slow_normalized_cross3(const ufbx_vec3 *a,
 // -- Threading
 
 typedef struct ufbxi_task ufbxi_task;
-typedef struct ufbxi_thread ufbxi_thread;
 typedef struct ufbxi_thread_pool ufbxi_thread_pool;
 
 typedef bool ufbxi_task_fn(ufbxi_task *task);
@@ -6423,7 +6433,6 @@ typedef struct {
 
 	uint64_t usemtl_fbx_id;
 	uint32_t usemtl_index;
-	ufbx_string usemtl_name;
 
 	uint32_t face_material;
 
@@ -6584,6 +6593,7 @@ typedef struct {
 	bool has_geometry_transform_nodes;
 	bool has_scale_helper_nodes;
 	bool retain_vertex_w;
+	bool blender_full_weights;
 
 	ufbx_mirror_axis mirror_axis;
 
@@ -7950,7 +7960,7 @@ typedef enum {
 
 typedef enum {
 	UFBXI_ARRAY_FLAG_RESULT       = 0x1, // < Allocate the array from the result buffer
-	UFBXI_ARRAY_FLAG_TMP_BUF      = 0x2, // < Allocate the array from the result buffer
+	UFBXI_ARRAY_FLAG_TMP_BUF      = 0x2, // < Allocate the array from the long-term temporary buffer
 	UFBXI_ARRAY_FLAG_PAD_BEGIN    = 0x4, // < Pad the begin of the array with 4 zero elements to guard from invalid -1 index accesses
 	UFBXI_ARRAY_FLAG_ACCURATE_F32 = 0x8, // < Must be parsed as bit-accurate 32-bit floats
 } ufbxi_array_flags;
@@ -8171,7 +8181,7 @@ static bool ufbxi_is_array_node(ufbxi_context *uc, ufbxi_parse_state parent, con
 			// in versions >= 7200 as some of the elements aren't actually floats (!)
 			info->type = uc->from_ascii && uc->version >= 7200 ? 'i' : 'f';
 			if (uc->opts.ignore_animation) info->type = '-';
-			if (uc->from_ascii && uc->version >= 7200) {
+			if (uc->from_ascii && uc->version < 7200) {
 				info->flags |= UFBXI_ARRAY_FLAG_ACCURATE_F32;
 			}
 			return true;
@@ -8419,14 +8429,8 @@ static bool ufbxi_is_array_node(ufbxi_context *uc, ufbxi_parse_state parent, con
 			info->flags = UFBXI_ARRAY_FLAG_RESULT;
 			return true;
 		} else if (name == ufbxi_FullWeights) {
-			// Ignore blend shape FullWeights as it's used in Blender for vertex groups
-			// which we don't currently handle. https://developer.blender.org/T90382
-			// TODO: Should we present this to users anyway somehow?
 			info->type = 'r';
-			if (!uc->opts.disable_quirks && uc->exporter == UFBX_EXPORTER_BLENDER_BINARY) {
-				info->type = '-';
-			}
-			info->flags |= UFBXI_ARRAY_FLAG_TMP_BUF;
+			info->flags = (uint8_t)(info->flags | (uc->blender_full_weights ? UFBXI_ARRAY_FLAG_RESULT : UFBXI_ARRAY_FLAG_TMP_BUF));
 			return true;
 		} else if (!strcmp(name, "TransformAssociateModel")) {
 			info->type = uc->opts.retain_dom ? 'r' : '-';
@@ -10738,14 +10742,14 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_retain_dom_node(ufbxi_context *u
 		val->value_float = (double)(val->value_int = (int64_t)arr->size);
 
 		switch (arr->type) {
-		case 'c': val->type = UFBX_DOM_VALUE_ARRAY_I8; break;
-		case 'b': val->type = UFBX_DOM_VALUE_ARRAY_I8; break;
+		case 'c': val->type = UFBX_DOM_VALUE_BLOB; break;
+		case 'b': val->type = UFBX_DOM_VALUE_BLOB; break;
 		case 'i': val->type = UFBX_DOM_VALUE_ARRAY_I32; break;
 		case 'l': val->type = UFBX_DOM_VALUE_ARRAY_I64; break;
 		case 'f': val->type = UFBX_DOM_VALUE_ARRAY_F32; break;
 		case 'd': val->type = UFBX_DOM_VALUE_ARRAY_F64; break;
-		case 's': val->type = UFBX_DOM_VALUE_ARRAY_RAW_STRING; break;
-		case 'C': val->type = UFBX_DOM_VALUE_ARRAY_RAW_STRING; break;
+		case 's': val->type = UFBX_DOM_VALUE_ARRAY_BLOB; break;
+		case 'C': val->type = UFBX_DOM_VALUE_ARRAY_BLOB; break;
 		case '-': val->type = UFBX_DOM_VALUE_ARRAY_IGNORED; break;
 		default: ufbxi_fail("Bad array type");
 		}
@@ -12049,7 +12053,7 @@ static bool ufbxi_match_version_string(const char *fmt, ufbx_string str, uint32_
 	return true;
 }
 
-ufbxi_nodiscard static int ufbxi_match_exporter(ufbxi_context *uc)
+ufbxi_nodiscard ufbxi_noinline static int ufbxi_match_exporter(ufbxi_context *uc)
 {
 	ufbx_string creator = uc->scene.metadata.creator;
 	uint32_t version[3] = { 0 };
@@ -12083,6 +12087,10 @@ ufbxi_nodiscard static int ufbxi_match_exporter(ufbxi_context *uc)
 	if (uc->opts.disable_quirks) {
 		uc->exporter = UFBX_EXPORTER_UNKNOWN;
 		uc->exporter_version = 0;
+	}
+
+	if (uc->exporter == UFBX_EXPORTER_BLENDER_BINARY) {
+		uc->blender_full_weights = true;
 	}
 
 	return 1;
@@ -17104,6 +17112,8 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_indices(ufbxi_context 
 				uc->obj.face_material = index - mesh->usemtl_base;
 			}
 			uc->obj.face_material = entry->user_id - mesh->usemtl_base;
+		} else {
+			uc->obj.face_material = UFBX_NO_INDEX;
 		}
 	}
 
@@ -17262,7 +17272,14 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_comment(ufbxi_context 
 
 ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_material(ufbxi_context *uc)
 {
-	ufbxi_check(uc->obj.num_tokens >= 2);
+	uc->obj.material_dirty = true;
+
+	// Allow empty `usemtl` lines to specify "no material".
+	if (uc->obj.num_tokens < 2) {
+		uc->obj.usemtl_fbx_id = 0;
+		return 1;
+	}
+
 	ufbx_string name = ufbxi_obj_span_token(uc, 1, SIZE_MAX);
 
 	ufbxi_check(ufbxi_push_string_place_str(&uc->string_pool, &name, false));
@@ -17273,7 +17290,6 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_material(ufbxi_context
 	ufbxi_fbx_id_entry *entry = ufbxi_find_fbx_id(uc, fbx_id);
 
 	uc->obj.usemtl_fbx_id = fbx_id;
-	uc->obj.usemtl_name = name;
 
 	if (!entry) {
 		ufbxi_element_info info = { 0 };
@@ -17291,8 +17307,6 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_material(ufbxi_context
 		ufbxi_check(ufbxi_grow_array(&uc->ator_tmp, &uc->obj.tmp_materials, &uc->obj.tmp_materials_cap, id + 1));
 		uc->obj.tmp_materials[id] = material;
 	}
-
-	uc->obj.material_dirty = true;
 
 	return 1;
 }
@@ -17805,7 +17819,8 @@ ufbxi_nodiscard static ufbxi_noinline int ufbxi_obj_parse_mtl(ufbxi_context *uc)
 
 		ufbx_string cmd = uc->obj.tokens[0];
 		if (ufbxi_str_equal(cmd, ufbxi_str_c("newmtl"))) {
-			// HACK: Reuse mesh material parsing
+			// HACK: Reuse mesh material parsing, but don't allow for empty material name
+			ufbxi_check(uc->obj.num_tokens >= 2);
 			ufbxi_check(ufbxi_obj_flush_material(uc));
 			ufbxi_check(ufbxi_obj_parse_material(uc));
 		} else if (cmd.length > 4 && !memcmp(cmd.data, "map_", 4)) {
@@ -17980,6 +17995,23 @@ typedef struct {
 	ufbx_vec3 constant_value;
 } ufbxi_pre_anim_value;
 
+static bool ufbxi_pivot_nonzero(ufbx_vec3 offset)
+{
+	// TODO: Expose this as a setting?
+	const double epsilon = 0.0009765625;
+	return ufbx_fabs(offset.x) >= epsilon || ufbx_fabs(offset.y) >= epsilon || ufbx_fabs(offset.z) >= epsilon;
+}
+
+static ufbx_real ufbxi_pivot_div(ufbx_real offset, ufbx_real initial_scale)
+{
+	const double epsilon = 0.0078125;
+	if (ufbx_fabs(initial_scale) >= epsilon) {
+		return offset / initial_scale;
+	} else {
+		return offset;
+	}
+}
+
 // Called between parsing and `ufbxi_finalize_scene()`.
 // This is a very messy function reminiscent of the _old_ ufbx, where we do
 // multiple passes over connections without having a proper scene graph.
@@ -17992,7 +18024,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_pre_finalize_scene(ufbxi_context
 	bool required = false;
 	if (uc->opts.geometry_transform_handling == UFBX_GEOMETRY_TRANSFORM_HANDLING_HELPER_NODES || uc->opts.geometry_transform_handling == UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY) required = true;
 	if (uc->opts.inherit_mode_handling == UFBX_INHERIT_MODE_HANDLING_HELPER_NODES || uc->opts.inherit_mode_handling == UFBX_INHERIT_MODE_HANDLING_COMPENSATE || uc->opts.inherit_mode_handling == UFBX_INHERIT_MODE_HANDLING_COMPENSATE_NO_FALLBACK) required = true;
-	if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT) required = true;
+	if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT || uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT) required = true;
 #if defined(UFBX_REGRESSION)
 	required = true;
 #endif
@@ -18016,6 +18048,9 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_pre_finalize_scene(ufbxi_context
 
 	bool *modify_not_supported = ufbxi_push_zero(&uc->tmp_parse, bool, num_elements);
 	ufbxi_check(modify_not_supported);
+
+	ufbx_element_type *node_attrib_type = ufbxi_push_zero(&uc->tmp_parse, ufbx_element_type, num_nodes);
+	ufbxi_check(node_attrib_type);
 
 	bool *has_unscaled_children = ufbxi_push_zero(&uc->tmp_parse, bool, num_nodes);
 	ufbxi_check(has_unscaled_children);
@@ -18085,7 +18120,8 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_pre_finalize_scene(ufbxi_context
 				ufbx_node *dst_node = (ufbx_node*)dst;
 
 				if (src->type >= UFBX_ELEMENT_TYPE_FIRST_ATTRIB && src->type <= UFBX_ELEMENT_TYPE_LAST_ATTRIB) {
-					++instance_counts[src->element_id];
+					uint32_t count = ++instance_counts[src->element_id];
+					node_attrib_type[dst->typed_id] = count == 1 ? src->type : UFBX_ELEMENT_UNKNOWN;
 
 					// These must match what can be trasnsformed in `ufbxi_modify_geometry()`
 					switch (src->type) {
@@ -18197,19 +18233,35 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_pre_finalize_scene(ufbxi_context
 		}
 	}
 
-	if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT) {
+	if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT || uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT) {
 		for (size_t i = 0; i < num_nodes; i++) {
 			ufbxi_pre_node *pre_node = &pre_nodes[i];
 			ufbx_node *node = (ufbx_node*)elements[pre_node->element_id];
+
 			ufbx_vec3 rotation_pivot = ufbxi_find_vec3(&node->props, ufbxi_RotationPivot, 0.0f, 0.0f, 0.0f);
 			ufbx_vec3 scaling_pivot = ufbxi_find_vec3(&node->props, ufbxi_ScalingPivot, 0.0f, 0.0f, 0.0f);
-			if (!ufbxi_is_vec3_zero(rotation_pivot)) {
-				ufbx_real err = 0.0f;
-				err += (ufbx_real)ufbx_fabs(rotation_pivot.x - scaling_pivot.x);
-				err += (ufbx_real)ufbx_fabs(rotation_pivot.y - scaling_pivot.y);
-				err += (ufbx_real)ufbx_fabs(rotation_pivot.z - scaling_pivot.z);
+			ufbx_vec3 scaling_offset = ufbxi_find_vec3(&node->props, ufbxi_ScalingOffset, 0.0f, 0.0f, 0.0f);
 
+			bool should_modify_pivot = false;
+			if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT) {
+				should_modify_pivot = !ufbxi_is_vec3_zero(rotation_pivot);
+			} else if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT) {
+				should_modify_pivot = ufbxi_pivot_nonzero(rotation_pivot) || ufbxi_pivot_nonzero(scaling_pivot) || ufbxi_pivot_nonzero(scaling_offset);
+			}
+
+			if (should_modify_pivot) {
+				bool skip_geometry_transform = false;
 				bool can_modify_geometry_transform = true;
+				if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT) {
+					if (node_attrib_type[node->typed_id] == UFBX_ELEMENT_EMPTY) {
+						if (!uc->opts.pivot_handling_retain_empties) {
+							skip_geometry_transform = true;
+						} else {
+							can_modify_geometry_transform = false;
+						}
+					}
+				}
+
 				if (uc->opts.geometry_transform_handling == UFBX_GEOMETRY_TRANSFORM_HANDLING_MODIFY_GEOMETRY_NO_FALLBACK) {
 					if (instance_counts[node->element_id] > 1 || modify_not_supported[node->element_id]) {
 						can_modify_geometry_transform = false;
@@ -18220,24 +18272,77 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_pre_finalize_scene(ufbxi_context
 					can_modify_geometry_transform = false;
 				}
 
-				if (err <= pivot_epsilon && can_modify_geometry_transform) {
-					size_t num_props = node->props.props.count;
-					ufbx_prop *new_props = ufbxi_push_zero(&uc->result, ufbx_prop, num_props + 3);
-					ufbxi_check(new_props);
-					memcpy(new_props, node->props.props.data, num_props * sizeof(ufbx_prop));
+				bool can_modify_pivot = true;
+				if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT) {
+					ufbx_real err = 0.0f;
+					err += (ufbx_real)ufbx_fabs(rotation_pivot.x - scaling_pivot.x);
+					err += (ufbx_real)ufbx_fabs(rotation_pivot.y - scaling_pivot.y);
+					err += (ufbx_real)ufbx_fabs(rotation_pivot.z - scaling_pivot.z);
+					if (err > pivot_epsilon) {
+						can_modify_pivot = false;
+					}
+				}
 
+				if (can_modify_pivot && (can_modify_geometry_transform || skip_geometry_transform)) {
 					ufbx_vec3 geometric_translation = ufbxi_find_vec3(&node->props, ufbxi_GeometricTranslation, 0.0f, 0.0f, 0.0f);
-					geometric_translation.x -= rotation_pivot.x;
-					geometric_translation.y -= rotation_pivot.y;
-					geometric_translation.z -= rotation_pivot.z;
 
-					ufbx_prop *dst = new_props + num_props;
-					ufbxi_init_synthetic_vec3_prop(&dst[0], ufbxi_RotationPivot, &ufbx_zero_vec3, UFBX_PROP_VECTOR);
-					ufbxi_init_synthetic_vec3_prop(&dst[1], ufbxi_ScalingPivot, &ufbx_zero_vec3, UFBX_PROP_VECTOR);
-					ufbxi_init_synthetic_vec3_prop(&dst[2], ufbxi_GeometricTranslation, &geometric_translation, UFBX_PROP_VECTOR);
+					ufbx_vec3 child_offset = { 0.0f };
+					ufbx_prop *new_props = NULL;
+					size_t num_props = node->props.props.count;
+					size_t new_prop_count = num_props;
+					if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_PIVOT) {
+						ufbx_assert(!skip_geometry_transform); // not supporeted in legacy mode
+						child_offset = ufbxi_neg3(rotation_pivot);
+						geometric_translation = ufbxi_add3(geometric_translation, child_offset);
+
+						new_props = ufbxi_push_zero(&uc->result, ufbx_prop, num_props + 3);
+						ufbxi_check(new_props);
+						memcpy(new_props, node->props.props.data, num_props * sizeof(ufbx_prop));
+
+						ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_RotationPivot, &ufbx_zero_vec3, UFBX_PROP_VECTOR);
+						ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_ScalingPivot, &ufbx_zero_vec3, UFBX_PROP_VECTOR);
+						ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_GeometricTranslation, &geometric_translation, UFBX_PROP_VECTOR);
+					} else if (uc->opts.pivot_handling == UFBX_PIVOT_HANDLING_ADJUST_TO_ROTATION_PIVOT) {
+						// We can eliminate the post-rotation translation and move it to the geometry/children as follows.
+						// Let Z be the initial value of S in the transform (aka `initial_scale`):
+						//
+						//   (Rp-1+Soff+Sp) + S * (Sp-1)
+						//   S * (Sp-1 + (Rp-1+Soff+Sp)/S)
+						//   S * (Sp-1 + (Rp-1+Soff+Sp)/S - (Rp-1+Soff+Sp)/Z + (Rp-1+Soff+Sp)/Z)
+						//
+						//   (Rp-1 + Soff + Sp) + S * (-(Rp-1 + Soff + Sp)/Z + (Sp-1 + (Rp-1 + Soff + Sp)/Z))
+						//   ^-scaled_offset--^         ^-unscaled_offset--^           ^-unscaled_offset--^
+						//   ^---------------- 0, when S=Z ----------------^   ^------- child_offset ------^
+						//
+						// We need to be careful when doing this in case any component of Z is 0. Fortunately,
+						// the above holds for all `Z != 0`, it will just result in non-zero translation in the parent.
+						ufbx_vec3 initial_scale = ufbxi_find_vec3(&node->props, ufbxi_Lcl_Scaling, 1.0f, 1.0f, 1.0f);
+						ufbx_vec3 scaled_offset = ufbxi_sub3(ufbxi_add3(scaling_offset, scaling_pivot), rotation_pivot);
+						ufbx_vec3 unscaled_offset;
+						unscaled_offset.x = ufbxi_pivot_div(scaled_offset.x, initial_scale.x);
+						unscaled_offset.y = ufbxi_pivot_div(scaled_offset.y, initial_scale.y);
+						unscaled_offset.z = ufbxi_pivot_div(scaled_offset.z, initial_scale.z);
+
+						// Convert `scaled_offset + S*unscaled_offset` to FBX scaling pivot and offset.
+						ufbx_vec3 new_scaling_pivot = unscaled_offset;
+						ufbx_vec3 new_scaling_offset = ufbxi_sub3(scaled_offset, new_scaling_pivot);
+						child_offset = ufbxi_sub3(unscaled_offset, scaling_pivot);
+
+						new_props = ufbxi_push_zero(&uc->result, ufbx_prop, num_props + 4);
+						ufbxi_check(new_props);
+						memcpy(new_props, node->props.props.data, num_props * sizeof(ufbx_prop));
+
+						ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_RotationPivot, &ufbx_zero_vec3, UFBX_PROP_VECTOR);
+						ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_ScalingPivot, &new_scaling_pivot, UFBX_PROP_VECTOR);
+						ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_ScalingOffset, &new_scaling_offset, UFBX_PROP_VECTOR);
+						if (!skip_geometry_transform) {
+							geometric_translation = ufbxi_add3(geometric_translation, child_offset);
+							ufbxi_init_synthetic_vec3_prop(&new_props[new_prop_count++], ufbxi_GeometricTranslation, &geometric_translation, UFBX_PROP_VECTOR);
+						}
+					}
 
 					node->props.props.data = new_props;
-					node->props.props.count = num_props + 3;
+					node->props.props.count = new_prop_count;
 					ufbxi_check(ufbxi_sort_properties(uc, node->props.props.data, node->props.props.count));
 					ufbxi_deduplicate_properties(&node->props.props);
 
@@ -18248,7 +18353,7 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_pre_finalize_scene(ufbxi_context
 						ufbxi_pre_node *pre_child = &pre_nodes[ix];
 						ufbx_node *child = (ufbx_node*)elements[pre_child->element_id];
 
-						child->adjust_pre_translation = ufbxi_sub3(child->adjust_pre_translation, rotation_pivot);
+						child->adjust_pre_translation = ufbxi_add3(child->adjust_pre_translation, child_offset);
 						child->has_adjust_transform = true;
 
 						ix = pre_child->next_child;
@@ -21792,10 +21897,23 @@ ufbxi_nodiscard ufbxi_noinline static int ufbxi_finalize_scene(ufbxi_context *uc
 
 		for (size_t i = 0; i < channel->keyframes.count; i++) {
 			ufbx_blend_keyframe *key = &channel->keyframes.data[i];
+			key->target_weight = 1.0f;
 			if (i < full_weights->count) {
-				key->target_weight = full_weights->data[i] / (ufbx_real)100.0;
-			} else {
-				key->target_weight = 1.0f;
+				if (!uc->blender_full_weights) {
+					key->target_weight = full_weights->data[i] / (ufbx_real)100.0;
+				} else if (full_weights->count == key->shape->num_offsets) {
+					if (i == 0) {
+						// Duplicate `index_data` for modification if we retain DOM
+						if (uc->opts.retain_dom) {
+							full_weights->data = ufbxi_push_copy(&uc->result, ufbx_real, full_weights->count, full_weights->data);
+							ufbxi_check(full_weights->data);
+						}
+						ufbxi_for_list(ufbx_real, p_weight, *full_weights) {
+							*p_weight /= (ufbx_real)100.0;
+						}
+					}
+					key->shape->offset_weights = *full_weights;
+				}
 			}
 		}
 
@@ -23497,8 +23615,13 @@ ufbxi_noinline static void ufbxi_update_adjust_transforms(ufbxi_context *uc, ufb
 		light->local_direction.z = 0.0f;
 	}
 
-	ufbx_real root_scale = ufbxi_min3(root_transform.scale);
 	scene->metadata.space_conversion = conversion;
+	scene->metadata.geometry_transform_handling = uc->opts.geometry_transform_handling;
+	scene->metadata.inherit_mode_handling = uc->opts.inherit_mode_handling;
+	scene->metadata.pivot_handling = uc->opts.pivot_handling;
+	scene->metadata.handedness_conversion_axis = uc->opts.handedness_conversion_axis;
+
+	ufbx_real root_scale = ufbxi_min3(root_transform.scale);
 	if (conversion == UFBX_SPACE_CONVERSION_MODIFY_GEOMETRY) {
 		scene->metadata.geometry_scale = root_scale;
 		scene->metadata.root_scale = 1.0f;
@@ -31832,10 +31955,15 @@ ufbx_abi void ufbx_add_blend_shape_vertex_offsets(const ufbx_blend_shape *shape,
 	size_t num_offsets = shape->num_offsets;
 	uint32_t *vertex_indices = shape->offset_vertices.data;
 	ufbx_vec3 *offsets = shape->position_offsets.data;
+	ufbx_real_list weights = shape->offset_weights;
 	for (size_t i = 0; i < num_offsets; i++) {
 		uint32_t index = vertex_indices[i];
 		if (index < num_vertices) {
-			ufbxi_add_weighted_vec3(&vertices[index], offsets[i], weight);
+			ufbx_real vertex_weight = weight;
+			if (i < weights.count) {
+				vertex_weight *= weights.data[i];
+			}
+			ufbxi_add_weighted_vec3(&vertices[index], offsets[i], vertex_weight);
 		}
 	}
 }
@@ -32833,6 +32961,69 @@ ufbx_abi ufbx_audio_layer *ufbx_as_audio_layer(const ufbx_element *element) { re
 ufbx_abi ufbx_audio_clip *ufbx_as_audio_clip(const ufbx_element *element) { return element && element->type == UFBX_ELEMENT_AUDIO_CLIP ? (ufbx_audio_clip*)element : NULL; }
 ufbx_abi ufbx_pose *ufbx_as_pose(const ufbx_element *element) { return element && element->type == UFBX_ELEMENT_POSE ? (ufbx_pose*)element : NULL; }
 ufbx_abi ufbx_metadata_object *ufbx_as_metadata_object(const ufbx_element *element) { return element && element->type == UFBX_ELEMENT_METADATA_OBJECT ? (ufbx_metadata_object*)element : NULL; }
+
+ufbx_abi bool ufbx_dom_is_array(const ufbx_dom_node *node) {
+	if (!node || node->values.count != 1) return false;
+	ufbx_dom_value v = node->values.data[0];
+	return v.type >= UFBX_DOM_VALUE_ARRAY_I32 && v.type <= UFBX_DOM_VALUE_ARRAY_BLOB;
+}
+ufbx_abi size_t ufbx_dom_array_size(const ufbx_dom_node *node) {
+	return ufbx_dom_is_array(node) ? (size_t)node->values.data[0].value_int : (size_t)0;
+}
+ufbx_abi ufbx_int32_list ufbx_dom_as_int32_list(const ufbx_dom_node *node) {
+	ufbx_int32_list list = { NULL, 0 };
+	if (node && node->values.count == 1 && node->values.data[0].type == UFBX_DOM_VALUE_ARRAY_I32) {
+		ufbx_dom_value value = node->values.data[0];
+		list.data = (int32_t*)value.value_blob.data;
+		list.count = value.value_blob.size / sizeof(int32_t);
+	}
+	return list;
+}
+ufbx_abi ufbx_int64_list ufbx_dom_as_int64_list(const ufbx_dom_node *node) {
+	ufbx_int64_list list = { NULL, 0 };
+	if (node && node->values.count == 1 && node->values.data[0].type == UFBX_DOM_VALUE_ARRAY_I64) {
+		ufbx_dom_value value = node->values.data[0];
+		list.data = (int64_t*)value.value_blob.data;
+		list.count = value.value_blob.size / sizeof(int64_t);
+	}
+	return list;
+}
+ufbx_abi ufbx_float_list ufbx_dom_as_float_list(const ufbx_dom_node *node) {
+	ufbx_float_list list = { NULL, 0 };
+	if (node && node->values.count == 1 && node->values.data[0].type == UFBX_DOM_VALUE_ARRAY_F32) {
+		ufbx_dom_value value = node->values.data[0];
+		list.data = (float*)value.value_blob.data;
+		list.count = value.value_blob.size / sizeof(float);
+	}
+	return list;
+}
+ufbx_abi ufbx_double_list ufbx_dom_as_double_list(const ufbx_dom_node *node) {
+	ufbx_double_list list = { NULL, 0 };
+	if (node && node->values.count == 1 && node->values.data[0].type == UFBX_DOM_VALUE_ARRAY_F64) {
+		ufbx_dom_value value = node->values.data[0];
+		list.data = (double*)value.value_blob.data;
+		list.count = value.value_blob.size / sizeof(double);
+	}
+	return list;
+}
+ufbx_abi ufbx_real_list ufbx_dom_as_real_list(const ufbx_dom_node *node) {
+	ufbx_real_list list = { NULL, 0 };
+	if (node && node->values.count == 1 && node->values.data[0].type == (sizeof(ufbx_real) == sizeof(double) ? UFBX_DOM_VALUE_ARRAY_F64 : UFBX_DOM_VALUE_ARRAY_F32)) {
+		ufbx_dom_value value = node->values.data[0];
+		list.data = (ufbx_real*)value.value_blob.data;
+		list.count = value.value_blob.size / sizeof(ufbx_real);
+	}
+	return list;
+}
+ufbx_abi ufbx_blob_list ufbx_dom_as_blob_list(const ufbx_dom_node *node) {
+	ufbx_blob_list list = { NULL, 0 };
+	if (node && node->values.count == 1 && node->values.data[0].type == UFBX_DOM_VALUE_ARRAY_BLOB) {
+		ufbx_dom_value value = node->values.data[0];
+		list.data = (ufbx_blob*)value.value_blob.data;
+		list.count = value.value_blob.size / sizeof(ufbx_blob);
+	}
+	return list;
+}
 
 // -- String API
 

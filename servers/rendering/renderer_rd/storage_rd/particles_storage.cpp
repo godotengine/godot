@@ -439,7 +439,7 @@ void ParticlesStorage::particles_set_fractional_delta(RID p_particles, bool p_en
 void ParticlesStorage::particles_set_trails(RID p_particles, bool p_enable, double p_length) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
-	ERR_FAIL_COND(p_length < 0.01);
+	ERR_FAIL_COND(p_length < 0.01 - CMP_EPSILON);
 	p_length = MIN(10.0, p_length);
 
 	particles->trails_enabled = p_enable;

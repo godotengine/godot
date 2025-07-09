@@ -952,7 +952,7 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 }
 
 void Node::reset_physics_interpolation() {
-	if (is_inside_tree()) {
+	if (SceneTree::is_fti_enabled() && is_inside_tree()) {
 		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 
 		// If `reset_physics_interpolation()` is called explicitly by the user

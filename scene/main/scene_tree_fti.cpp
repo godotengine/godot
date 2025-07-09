@@ -88,6 +88,17 @@ void SceneTreeFTI::set_enabled(Node *p_root, bool p_enabled) {
 	data.tick_xform_list[0].clear();
 	data.tick_xform_list[1].clear();
 
+	data.frame_xform_list.clear();
+	data.frame_xform_list_forced.clear();
+
+	data.tick_property_list[0].clear();
+	data.tick_property_list[1].clear();
+
+	data.frame_property_list.clear();
+	data.request_reset_list.clear();
+
+	_clear_depth_lists();
+
 	// Node3D flags must be reset.
 	if (p_root) {
 		_reset_flags(p_root);

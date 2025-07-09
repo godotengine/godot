@@ -436,6 +436,12 @@ void JoltSpace3D::remove_object(const JPH::BodyID &p_jolt_id) {
 	}
 
 	body_iface.DestroyBody(p_jolt_id);
+
+	// If we're never going to step this space, like in the editor viewport, we need to manually clean up Jolt's broad phase instead, otherwise performance can degrade when doing things like switching scenes.
+	// We'll never actually have zero bodies in any space though, since we always have the default area, so we check if there's one or fewer left instead.
+	if (!JoltPhysicsServer3D::get_singleton()->is_active() && physics_system->GetNumBodies() <= 1) {
+		physics_system->OptimizeBroadPhase();
+	}
 }
 
 void JoltSpace3D::flush_pending_objects() {

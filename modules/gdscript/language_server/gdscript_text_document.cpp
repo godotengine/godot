@@ -34,8 +34,8 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "editor/editor_settings.h"
-#include "editor/plugins/script_text_editor.h"
+#include "editor/script/script_text_editor.h"
+#include "editor/settings/editor_settings.h"
 #include "servers/display_server.h"
 
 void GDScriptTextDocument::_bind_methods() {

@@ -219,6 +219,9 @@ xcuserdata/
 *.xcodeproj/*
 !misc/misc/dist/ios_xcode/godot_ios.xcodeproj/project.pbxproj
 
+# Zed
+.zed/
+
 ##############################
 ### Visual Studio specific ###
 ##############################
