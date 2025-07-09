@@ -19,7 +19,3 @@ SConscript("audio/SCsub")
 SConscript("resources/SCsub")
 SConscript("debugger/SCsub")
 SConscript("theme/SCsub")
-
-# Build it all as a library
-lib = env.add_library("scene", env.scene_sources)
-env.Prepend(LIBS=[lib])
