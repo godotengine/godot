@@ -312,6 +312,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 				// Check if we click on any handle first.
 				{
 					const real_t handle_radius = 16 * EDSCALE;
+					const real_t handle_radius_squared = handle_radius * handle_radius;
 					const real_t handle_offset = 8 * EDSCALE;
 
 					// Position of selection handles.
@@ -338,7 +339,7 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 
 					for (int i = 0; i < 8; i++) {
 						Vector2 tuv = endpoints[i];
-						if (tuv.distance_to(mb->get_position()) < handle_radius) {
+						if (tuv.distance_squared_to(mb->get_position()) < handle_radius_squared) {
 							drag_index = i;
 						}
 					}

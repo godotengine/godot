@@ -153,20 +153,20 @@ void MobileVRInterface::set_position_from_sensors() {
 	last_accerometer_data = acc;
 	last_magnetometer_data = magneto;
 
-	if (grav.length() < 0.1) {
+	if (grav.length_squared() < 0.01f) {
 		// not ideal but use our accelerometer, this will contain shaky user behavior
 		// maybe look into some math but I'm guessing that if this isn't available, it's because we lack the gyro sensor to actually work out
 		// what a stable gravity vector is
 		grav = acc;
-		if (grav.length() > 0.1) {
+		if (grav.length_squared() > 0.01f) {
 			has_grav = true;
 		};
 	} else {
 		has_grav = true;
 	};
 
-	bool has_magneto = magneto.length() > 0.1;
-	if (gyro.length() > 0.1) {
+	bool has_magneto = magneto.length_squared() > 0.01f;
+	if (gyro.length_squared() > 0.01f) {
 		/* this can return to 0.0 if the user doesn't move the phone, so once on, it's on */
 		has_gyro = true;
 	};

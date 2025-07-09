@@ -331,9 +331,9 @@ void GPUParticlesCollisionSDF3D::_find_closest_distance(const Vector3 &p_pos, co
 
 			Vector3 rel = (p_pos - center).abs();
 			Vector3 closest = rel.min(he);
-			float d = rel.distance_to(closest);
+			float d_squared = rel.distance_squared_to(closest);
 
-			if (d >= r_closest_distance) {
+			if (d_squared >= (r_closest_distance * r_closest_distance)) {
 				pass = false; //already closer than this aabb, discard
 			}
 		}

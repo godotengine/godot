@@ -1044,19 +1044,19 @@ void CPUParticles3D::_particles_process(double p_delta) {
 				position.z = 0.0;
 			}
 			//apply linear acceleration
-			force += p.velocity.length() > 0.0 ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector3();
+			force += p.velocity.length_squared() > 0.0f ? p.velocity.normalized() * tex_linear_accel * Math::lerp(parameters_min[PARAM_LINEAR_ACCEL], parameters_max[PARAM_LINEAR_ACCEL], rand_from_seed(alt_seed)) : Vector3();
 			//apply radial acceleration
 			Vector3 org = emission_xform.origin;
 			Vector3 diff = position - org;
-			force += diff.length() > 0.0 ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector3();
+			force += diff.length_squared() > 0.0f ? diff.normalized() * (tex_radial_accel)*Math::lerp(parameters_min[PARAM_RADIAL_ACCEL], parameters_max[PARAM_RADIAL_ACCEL], rand_from_seed(alt_seed)) : Vector3();
 			if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 				Vector2 yx = Vector2(diff.y, diff.x);
 				Vector2 yx2 = (yx * Vector2(-1.0, 1.0)).normalized();
-				force += yx.length() > 0.0 ? Vector3(yx2.x, yx2.y, 0.0) * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
+				force += yx.length_squared() > 0.0f ? Vector3(yx2.x, yx2.y, 0.0) * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
 
 			} else {
 				Vector3 crossDiff = diff.normalized().cross(gravity.normalized());
-				force += crossDiff.length() > 0.0 ? crossDiff.normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
+				force += crossDiff.length_squared() > 0.0f ? crossDiff.normalized() * (tex_tangential_accel * Math::lerp(parameters_min[PARAM_TANGENTIAL_ACCEL], parameters_max[PARAM_TANGENTIAL_ACCEL], rand_from_seed(alt_seed))) : Vector3();
 			}
 			//apply attractor forces
 			p.velocity += force * local_delta;
@@ -1156,7 +1156,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 
 		if (particle_flags[PARTICLE_FLAG_DISABLE_Z]) {
 			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-				if (p.velocity.length() > 0.0) {
+				if (p.velocity.length_squared() > 0.0f) {
 					p.transform.basis.set_column(1, p.velocity.normalized());
 				} else {
 					p.transform.basis.set_column(1, p.transform.basis.get_column(1));
@@ -1173,7 +1173,7 @@ void CPUParticles3D::_particles_process(double p_delta) {
 		} else {
 			//orient particle Y towards velocity
 			if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
-				if (p.velocity.length() > 0.0) {
+				if (p.velocity.length_squared() > 0.0f) {
 					p.transform.basis.set_column(1, p.velocity.normalized());
 				} else {
 					p.transform.basis.set_column(1, p.transform.basis.get_column(1).normalized());
