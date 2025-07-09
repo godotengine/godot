@@ -255,7 +255,7 @@ inline bool is_inline_info_valid(const Variant &p_info) {
 		return false;
 	}
 	Dictionary info = p_info;
-	if (!info.get_valid("column").is_num() || !info.get_valid("line").is_num() || !info.get_valid("width_ratio").is_num()) {
+	if (!info.get_valid("column").is_num() || !info.get_valid("width_ratio").is_num()) {
 		return false;
 	}
 	return true;
@@ -300,7 +300,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 		int from = 0;
 		if (inline_object_parser.is_valid()) {
 			// Insert inline object.
-			Variant parsed_result = inline_object_parser.call(text_with_ime, p_line);
+			Variant parsed_result = inline_object_parser.call(text_with_ime);
 			if (parsed_result.is_array()) {
 				Array object_infos = parsed_result;
 				for (Variant val : object_infos) {
@@ -2386,12 +2386,13 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 					float wrap_indent = wrap_i > first_indent_line ? MIN(text.get_indent_offset(pos.y, is_layout_rtl()), wrap_at_column * 0.6) : 0.0;
 
 					Ref<TextParagraph> ldata = text.get_line_data(line);
-					for (Variant k : ldata->get_line_objects(wrap_i)) {
-						if (!is_inline_info_valid(k)) {
+					for (const Variant &inline_key : ldata->get_line_objects(wrap_i)) {
+						if (!is_inline_info_valid(inline_key)) {
 							continue;
 						}
-						Dictionary info = k;
-						Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, k);
+						Dictionary info = inline_key.duplicate();
+						info["line"] = line;
+						Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, inline_key);
 						obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 
 						if (mpos.x > obj_rect.position.x && mpos.x < obj_rect.get_end().x) {
