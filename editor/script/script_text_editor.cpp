@@ -2460,7 +2460,6 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		if (has_color) {
 			String line = tx->get_line(mouse_line);
 			color_position.x = mouse_line;
-			color_position.y = mouse_column;
 
 			int begin = -1;
 			int end = -1;
@@ -2528,6 +2527,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			}
 			if (has_color) {
 				color_panel->set_position(get_screen_position() + local_pos);
+				color_position.y = begin;
+				color_position.z = end;
 			}
 		}
 		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
@@ -2544,7 +2545,7 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	}
 
 	String line = code_editor->get_text_editor()->get_line(color_position.x);
-	String line_with_replaced_args = line.replace(color_args, new_args);
+	String line_with_replaced_args = line.substr(0, color_position.y) + line.substr(color_position.y, color_position.z - color_position.y).replace(color_args, new_args) + line.substr(color_position.z);
 
 	color_args = new_args;
 	code_editor->get_text_editor()->begin_complex_operation();
