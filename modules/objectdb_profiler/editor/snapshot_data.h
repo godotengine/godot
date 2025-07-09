@@ -50,9 +50,9 @@ public:
 	HashSet<ObjectID> get_unique_outbound_refernces();
 	HashSet<ObjectID> get_unique_inbound_references();
 
-	uint64_t remote_object_id;
+	uint64_t remote_object_id = 0;
 	String type_name;
-	List<PropertyInfo> prop_list;
+	LocalVector<PropertyInfo> prop_list;
 	HashMap<StringName, Variant> prop_values;
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
@@ -72,7 +72,7 @@ public:
 	bool is_class(const String &p_base_class);
 
 protected:
-	// Snapshots are inheritly read-only. Can't edit the past.
+	// Snapshots are inherently read-only. Can't edit the past.
 	bool _is_read_only() { return true; }
 	static void _bind_methods();
 };
@@ -81,7 +81,7 @@ class GameStateSnapshot : public Object {
 	GDCLASS(GameStateSnapshot, Object);
 
 	void _get_outbound_references(Variant &p_var, HashMap<String, ObjectID> &r_ret_val, const String &p_current_path = "");
-	void _get_rc_cycles(SnapshotDataObject *p_obj, SnapshotDataObject *p_source_obj, HashSet<SnapshotDataObject *> p_traversed_objs, List<String> &r_ret_val, const String &p_current_path = "");
+	void _get_rc_cycles(SnapshotDataObject *p_obj, SnapshotDataObject *p_source_obj, HashSet<SnapshotDataObject *> p_traversed_objs, LocalVector<String> &r_ret_val, const String &p_current_path = "");
 
 public:
 	String name;

@@ -56,7 +56,7 @@ DarkPanelContainer::DarkPanelContainer() {
 	Ref<StyleBoxFlat> content_wrapper_sbf;
 	content_wrapper_sbf.instantiate();
 	content_wrapper_sbf->set_bg_color(EditorNode::get_singleton()->get_editor_theme()->get_color("dark_color_2", "Editor"));
-	add_theme_style_override("panel", content_wrapper_sbf);
+	add_theme_style_override(SceneStringName(panel), content_wrapper_sbf);
 }
 
 void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
@@ -68,7 +68,7 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 		return;
 	}
 
-	// Reset ourself to default state.
+	// Reset ourselves to default state.
 	p_current_node->set_visible(true);
 	p_current_node->clear_custom_color(0);
 
@@ -98,7 +98,7 @@ void TreeSortAndFilterBar::_apply_filter(TreeItem *p_current_node) {
 		// We have a visible child.
 		p_current_node->set_custom_color(0, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	} else {
-		// We and out children aren't visible.
+		// We and our children are not visible.
 		p_current_node->set_visible(false);
 	}
 }
@@ -121,7 +121,8 @@ void TreeSortAndFilterBar::_apply_sort() {
 		TreeItem *to_sort = items_to_sort.front()->get();
 		items_to_sort.pop_front();
 
-		List<TreeItemColumn> items;
+		LocalVector<TreeItemColumn> items;
+		items.reserve(to_sort->get_child_count());
 		for (int i = 0; i < to_sort->get_child_count(); i++) {
 			items.push_back(TreeItemColumn(to_sort->get_child(i), sort.column));
 		}
@@ -187,15 +188,10 @@ TreeSortAndFilterBar::TreeSortAndFilterBar(Tree *p_managed_tree, const String &p
 void TreeSortAndFilterBar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE:
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED: {
+		case NOTIFICATION_THEME_CHANGED: {
 			filter_edit->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			sort_button->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
-
 			apply();
-
 		} break;
 	}
 }
@@ -203,11 +199,11 @@ void TreeSortAndFilterBar::_notification(int p_what) {
 TreeSortAndFilterBar::SortOptionIndexes TreeSortAndFilterBar::add_sort_option(const String &p_new_option, SortType p_sort_type, int p_sort_column, bool p_is_default) {
 	sort_button->set_visible(true);
 	bool is_first_item = sort_items.is_empty();
-	SortItem item_ascending(sort_items.size(), TTR("Sort By ") + p_new_option + TTR(" (Ascending)"), p_sort_type, true, p_sort_column);
+	SortItem item_ascending(sort_items.size(), vformat(TTRC("Sort By %s (Ascending)"), p_new_option), p_sort_type, true, p_sort_column);
 	sort_items[item_ascending.id] = item_ascending;
 	sort_button->get_popup()->add_radio_check_item(item_ascending.label, item_ascending.id);
 
-	SortItem item_descending(sort_items.size(), TTR("Sort By ") + p_new_option + TTR(" (Descending)"), p_sort_type, false, p_sort_column);
+	SortItem item_descending(sort_items.size(), vformat(TTRC("Sort By %s (Descending)"), p_new_option), p_sort_type, false, p_sort_column);
 	sort_items[item_descending.id] = item_descending;
 	sort_button->get_popup()->add_radio_check_item(item_descending.label, item_descending.id);
 
@@ -240,10 +236,6 @@ void TreeSortAndFilterBar::apply() {
 		return;
 	}
 
-	OS::get_singleton()->benchmark_begin_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_sort");
 	_apply_sort();
-	OS::get_singleton()->benchmark_end_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_sort");
-	OS::get_singleton()->benchmark_begin_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_filter");
 	_apply_filter();
-	OS::get_singleton()->benchmark_end_measure("odb profiler", "TreeSortAndFilterBar::apply _apply_filter");
 }

@@ -44,7 +44,7 @@ protected:
 	GameStateSnapshot *snapshot_data = nullptr;
 	GameStateSnapshot *diff_data = nullptr;
 
-	List<TreeItem *> _get_children_recursive(Tree *p_tree);
+	Vector<TreeItem *> _get_children_recursive(Tree *p_tree);
 
 public:
 	String view_name;

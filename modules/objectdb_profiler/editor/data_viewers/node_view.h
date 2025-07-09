@@ -52,31 +52,32 @@ struct NodeTreeElements {
 class SnapshotNodeView : public SnapshotView {
 	GDCLASS(SnapshotNodeView, SnapshotView);
 
-protected:
+	enum DiffGroup {
+		DIFF_GROUP_NONE,
+		DIFF_GROUP_ADDED,
+		DIFF_GROUP_REMOVED
+	};
+
 	NodeTreeElements main_tree;
 	NodeTreeElements diff_tree;
 	Tree *active_tree = nullptr;
 	PopupMenu *choose_object_menu = nullptr;
 	bool combined_diff_view = true;
-	HashMap<TreeItem *, List<SnapshotDataObject *>> tree_item_owners;
+	HashMap<TreeItem *, LocalVector<SnapshotDataObject *>> tree_item_data;
 
 	void _node_selected(Tree *p_tree_selected_from);
 	void _notification(int p_what);
-	NodeTreeElements _make_node_tree(const String &p_tree_name, GameStateSnapshot *p_snapshot);
+	NodeTreeElements _make_node_tree(const String &p_tree_name);
 	void _apply_filters();
 	void _refresh_icons();
 	void _toggle_diff_mode(bool p_state);
 	void _choose_object_pressed(int p_object_idx, bool p_confirm_override);
 	void _show_choose_object_menu();
 
-	// `_add_snapshot_to_tree`, `_add_object_to_tree`, and `_add_child_named` work together to add items to the node tree.
-	// They support adding two snapshots to the same tree, and will highlight rows to show additions and removals.
-	// `_add_snapshot_to_tree` walks the root items in the tree and adds them first, then `_add_object_to_tree` recursively
-	// adds all the child items. `_add_child_named` is used by both to add each individual items.
-	void _add_snapshot_to_tree(Tree *p_tree, GameStateSnapshot *p_snapshot, const String &p_diff_group_name = "");
-	void _add_object_to_tree(TreeItem *p_parent_item, SnapshotDataObject *p_data, const String &p_diff_group_name = "");
-	TreeItem *_add_child_named(Tree *p_tree, TreeItem *p_item, SnapshotDataObject *p_item_owner, const String &p_diff_group_name = "");
-	void _add_tree_item_owner(TreeItem *p_item, SnapshotDataObject *p_owner);
+	void _add_snapshot_to_tree(Tree *p_tree, GameStateSnapshot *p_snapshot, DiffGroup p_diff_group = DIFF_GROUP_NONE);
+	void _add_children_to_tree(TreeItem *p_parent_item, SnapshotDataObject *p_data, DiffGroup p_diff_group = DIFF_GROUP_NONE);
+	TreeItem *_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, const String &p_item_name, DiffGroup p_diff_group = DIFF_GROUP_NONE);
+	TreeItem *_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, SnapshotDataObject *p_data, DiffGroup p_diff_group = DIFF_GROUP_NONE);
 
 public:
 	SnapshotNodeView();

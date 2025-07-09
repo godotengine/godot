@@ -37,29 +37,18 @@
 #endif // TOOLS_ENABLED
 
 void initialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
-	switch (p_level) {
-		case MODULE_INITIALIZATION_LEVEL_SCENE: {
-			SnapshotCollector::initialize();
-		} break;
-
-#ifdef TOOLS_ENABLED
-		case MODULE_INITIALIZATION_LEVEL_EDITOR: {
-			EditorPlugins::add_by_type<ObjectDBProfilerPlugin>();
-		} break;
-#endif // TOOLS_ENABLED
-
-		default:
-			break;
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		SnapshotCollector::initialize();
 	}
+#ifdef TOOLS_ENABLED
+	else if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<ObjectDBProfilerPlugin>();
+	}
+#endif // TOOLS_ENABLED
 }
 
 void uninitialize_objectdb_profiler_module(ModuleInitializationLevel p_level) {
-	switch (p_level) {
-		case MODULE_INITIALIZATION_LEVEL_SCENE: {
-			SnapshotCollector::deinitialize();
-		} break;
-
-		default:
-			break;
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
+		SnapshotCollector::deinitialize();
 	}
 }

@@ -39,13 +39,13 @@
 class TabContainer;
 class Tree;
 
-const int SNAPSHOT_CACHE_MAX_SIZE = 10;
-
 // UI loaded by the debugger.
 class ObjectDBProfilerPanel : public Control {
 	GDCLASS(ObjectDBProfilerPanel, Control);
 
 protected:
+	static constexpr int SNAPSHOT_CACHE_MAX_SIZE = 10;
+
 	enum OdbProfilerMenuOptions {
 		ODB_MENU_RENAME,
 		ODB_MENU_SHOW_IN_FOLDER,
@@ -66,10 +66,9 @@ protected:
 	TabContainer *view_tabs = nullptr;
 	PopupMenu *rmb_menu = nullptr;
 	OptionButton *diff_button = nullptr;
-	HashMap<int, String> diff_options;
 	HashMap<int, PartialSnapshot> partial_snapshots;
 
-	List<SnapshotView *> views;
+	LocalVector<SnapshotView *> views;
 	Ref<GameStateSnapshotRef> current_snapshot;
 	Ref<GameStateSnapshotRef> diff_snapshot;
 	LRUCache<String, Ref<GameStateSnapshotRef>> snapshot_cache;
@@ -78,11 +77,12 @@ protected:
 	void _begin_object_snapshot();
 	void _on_debug_breaked(bool p_reallydid, bool p_can_debug, const String &p_reason, bool p_has_stackdump);
 	void _show_selected_snapshot();
+	void _on_snapshot_deselected();
 	Ref<DirAccess> _get_and_create_snapshot_storage_dir();
 	TreeItem *_add_snapshot_button(const String &p_snapshot_file_name, const String &p_full_file_path);
 	void _snapshot_rmb(const Vector2 &p_pos, MouseButton p_button);
 	void _rmb_menu_pressed(int p_tool, bool p_confirm_override);
-	void _apply_diff(int p_item_idx);
+	void _update_view_tabs();
 	void _update_diff_items();
 	void _update_enabled_diff_items();
 	void _edit_snapshot_name();
@@ -94,7 +94,7 @@ public:
 
 	void receive_snapshot(int p_request_id);
 	void show_snapshot(const String &p_snapshot_file_name, const String &p_snapshot_diff_file_name);
-	void clear_snapshot();
+	void clear_snapshot(bool p_update_view_tabs = true);
 	Ref<GameStateSnapshotRef> get_snapshot(const String &p_snapshot_file_name);
 	void set_enabled(bool p_enabled);
 	void add_view(SnapshotView *p_to_add);

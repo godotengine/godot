@@ -33,10 +33,11 @@
 #include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"
 
 SnapshotNodeView::SnapshotNodeView() {
-	set_name("Nodes");
+	set_name(TTRC("Nodes"));
 }
 
 void SnapshotNodeView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
@@ -49,13 +50,12 @@ void SnapshotNodeView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 	diff_sides->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
 	add_child(diff_sides);
 
-	bool show_diff_label = diff_data && combined_diff_view;
-	main_tree = _make_node_tree(diff_data && !combined_diff_view ? TTR("A Nodes") : TTR("Nodes"), snapshot_data);
+	main_tree = _make_node_tree(diff_data && !combined_diff_view ? TTRC("A Nodes") : TTRC("Nodes"));
 	diff_sides->add_child(main_tree.root);
-	_add_snapshot_to_tree(main_tree.tree, snapshot_data, show_diff_label ? "-" : "");
+	_add_snapshot_to_tree(main_tree.tree, snapshot_data, diff_data && combined_diff_view ? DIFF_GROUP_REMOVED : DIFF_GROUP_NONE);
 
 	if (diff_data) {
-		CheckButton *diff_mode_toggle = memnew(CheckButton(TTR("Combine Diff")));
+		CheckButton *diff_mode_toggle = memnew(CheckButton(TTRC("Combine Diff")));
 		diff_mode_toggle->set_pressed(combined_diff_view);
 		diff_mode_toggle->connect(SceneStringName(toggled), callable_mp(this, &SnapshotNodeView::_toggle_diff_mode));
 		main_tree.filter_bar->add_child(diff_mode_toggle);
@@ -63,12 +63,12 @@ void SnapshotNodeView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 
 		if (combined_diff_view) {
 			// Merge the snapshots together and add a diff.
-			_add_snapshot_to_tree(main_tree.tree, diff_data, "+");
+			_add_snapshot_to_tree(main_tree.tree, diff_data, DIFF_GROUP_ADDED);
 		} else {
 			// Add a second column with the diff snapshot.
-			diff_tree = _make_node_tree(TTR("B Nodes"), diff_data);
+			diff_tree = _make_node_tree(TTRC("B Nodes"));
 			diff_sides->add_child(diff_tree.root);
-			_add_snapshot_to_tree(diff_tree.tree, diff_data, "");
+			_add_snapshot_to_tree(diff_tree.tree, diff_data, DIFF_GROUP_NONE);
 		}
 	}
 
@@ -84,12 +84,12 @@ void SnapshotNodeView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapsho
 	choose_object_menu->connect(SceneStringName(id_pressed), callable_mp(this, &SnapshotNodeView::_choose_object_pressed).bind(false));
 }
 
-NodeTreeElements SnapshotNodeView::_make_node_tree(const String &p_tree_name, GameStateSnapshot *p_snapshot) {
+NodeTreeElements SnapshotNodeView::_make_node_tree(const String &p_tree_name) {
 	NodeTreeElements elements;
 	elements.root = memnew(VBoxContainer);
 	elements.root->set_anchors_preset(LayoutPreset::PRESET_FULL_RECT);
 	elements.tree = memnew(Tree);
-	elements.filter_bar = memnew(TreeSortAndFilterBar(elements.tree, TTR("Filter Nodes")));
+	elements.filter_bar = memnew(TreeSortAndFilterBar(elements.tree, TTRC("Filter Nodes")));
 	elements.root->add_child(elements.filter_bar);
 	elements.tree->set_select_mode(Tree::SelectMode::SELECT_ROW);
 	elements.tree->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
@@ -125,14 +125,12 @@ void SnapshotNodeView::_node_selected(Tree *p_tree_selected_from) {
 		}
 	}
 
-	List<SnapshotDataObject *> &objects = tree_item_owners[p_tree_selected_from->get_selected()];
-	if (objects.is_empty()) {
+	const LocalVector<SnapshotDataObject *> &item_data = tree_item_data[p_tree_selected_from->get_selected()];
+	if (item_data.is_empty()) {
 		return;
-	}
-	if (objects.size() == 1) {
-		EditorNode::get_singleton()->push_item((Object *)objects.get(0));
-	}
-	if (objects.size() == 2) {
+	} else if (item_data.size() == 1) {
+		EditorNode::get_singleton()->push_item(static_cast<Object *>(item_data[0]));
+	} else if (item_data.size() == 2) {
 		// This happens if we're in the combined diff view and the node exists in both trees
 		// The user has to specify which version of the node they want to see in the inspector.
 		_show_choose_object_menu();
@@ -145,89 +143,105 @@ void SnapshotNodeView::_toggle_diff_mode(bool p_state) {
 }
 
 void SnapshotNodeView::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
-		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_refresh_icons();
-		} break;
+	if (p_what == NOTIFICATION_THEME_CHANGED) {
+		_refresh_icons();
 	}
 }
 
-void SnapshotNodeView::_add_snapshot_to_tree(Tree *p_tree, GameStateSnapshot *p_snapshot, const String &p_diff_group_name) {
+void SnapshotNodeView::_add_snapshot_to_tree(Tree *p_tree, GameStateSnapshot *p_snapshot, DiffGroup p_diff_group) {
+	SnapshotDataObject *scene_root = nullptr;
+	LocalVector<SnapshotDataObject *> orphan_nodes;
+
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &kv : p_snapshot->objects) {
 		if (kv.value->is_node() && !kv.value->extra_debug_data.has("node_parent")) {
-			TreeItem *root_item = _add_child_named(p_tree, p_tree->get_root(), kv.value, p_diff_group_name);
-			_add_object_to_tree(root_item, kv.value, p_diff_group_name);
+			if (kv.value->extra_debug_data["node_is_scene_root"]) {
+				scene_root = kv.value;
+			} else {
+				orphan_nodes.push_back(kv.value);
+			}
+		}
+	}
+
+	if (scene_root != nullptr) {
+		TreeItem *root_item = _add_item_to_tree(p_tree, p_tree->get_root(), scene_root, p_diff_group);
+		_add_children_to_tree(root_item, scene_root, p_diff_group);
+	}
+
+	if (!orphan_nodes.is_empty()) {
+		TreeItem *orphans_item = _add_item_to_tree(p_tree, p_tree->get_root(), TTRC("Orphan Nodes"), p_diff_group);
+		for (SnapshotDataObject *orphan_node : orphan_nodes) {
+			TreeItem *orphan_item = _add_item_to_tree(p_tree, orphans_item, orphan_node, p_diff_group);
+			_add_children_to_tree(orphan_item, orphan_node, p_diff_group);
 		}
 	}
 }
 
-void SnapshotNodeView::_add_object_to_tree(TreeItem *p_parent_item, SnapshotDataObject *p_data, const String &p_diff_group_name) {
-	for (const Variant &v : (Array)p_data->extra_debug_data["node_children"]) {
-		SnapshotDataObject *child_object = p_data->snapshot->objects[ObjectID((uint64_t)v)];
-		TreeItem *child_item = _add_child_named(p_parent_item->get_tree(), p_parent_item, child_object, p_diff_group_name);
-		_add_object_to_tree(child_item, child_object, p_diff_group_name);
+void SnapshotNodeView::_add_children_to_tree(TreeItem *p_parent_item, SnapshotDataObject *p_data, DiffGroup p_diff_group) {
+	for (const Variant &child_id : (Array)p_data->extra_debug_data["node_children"]) {
+		SnapshotDataObject *child_object = p_data->snapshot->objects[ObjectID((uint64_t)child_id)];
+		TreeItem *child_item = _add_item_to_tree(p_parent_item->get_tree(), p_parent_item, child_object, p_diff_group);
+		_add_children_to_tree(child_item, child_object, p_diff_group);
 	}
 }
 
-TreeItem *SnapshotNodeView::_add_child_named(Tree *p_tree, TreeItem *p_item, SnapshotDataObject *p_item_owner, const String &p_diff_group_name) {
-	bool has_group = !p_diff_group_name.is_empty();
-	const String &item_name = p_item_owner->extra_debug_data["node_name"];
+TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, const String &p_item_name, DiffGroup p_diff_group) {
 	// Find out if this node already exists.
-	TreeItem *child_item = nullptr;
-	if (has_group) {
-		for (int idx = 0; idx < p_item->get_child_count(); idx++) {
-			TreeItem *child = p_item->get_child(idx);
-			if (child->get_text(0) == item_name) {
-				child_item = child;
+	TreeItem *item = nullptr;
+	if (p_diff_group != DIFF_GROUP_NONE) {
+		for (int idx = 0; idx < p_parent->get_child_count(); idx++) {
+			TreeItem *child = p_parent->get_child(idx);
+			if (child->get_text(0) == p_item_name) {
+				item = child;
 				break;
 			}
 		}
 	}
 
-	if (child_item) {
+	if (item) {
 		// If it exists, clear the background color because we now know it exists in both trees.
-		child_item->clear_custom_bg_color(0);
+		item->clear_custom_bg_color(0);
 	} else {
-		// Add the new node and set it's background color to green or red depending on which snapshot it's a part of.
-		if (p_item_owner->extra_debug_data["node_is_scene_root"]) {
-			child_item = p_tree->get_root() ? p_tree->get_root() : p_tree->create_item();
-		} else {
-			child_item = p_tree->create_item(p_item);
-		}
-		if (has_group) {
-			if (p_diff_group_name == "+") {
-				child_item->set_custom_bg_color(0, Color(0, 1, 0, 0.1));
-			}
-			if (p_diff_group_name == "-") {
-				child_item->set_custom_bg_color(0, Color(1, 0, 0, 0.1));
-			}
+		// Add the new node and set its background color to green or red depending on which snapshot it's a part of.
+		item = p_tree->create_item(p_parent);
+
+		if (p_diff_group == DIFF_GROUP_ADDED) {
+			item->set_custom_bg_color(0, Color(0, 1, 0, 0.1));
+		} else if (p_diff_group == DIFF_GROUP_REMOVED) {
+			item->set_custom_bg_color(0, Color(1, 0, 0, 0.1));
 		}
 	}
 
-	child_item->set_text(0, item_name);
-	_add_tree_item_owner(child_item, p_item_owner);
-	return child_item;
+	item->set_text(0, p_item_name);
+	item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+
+	return item;
 }
 
-// Each node in the tree may be part of one or two snapshots. This tracks that relationship
-// so we can display the correct data in the inspector if a node is clicked.
-void SnapshotNodeView::_add_tree_item_owner(TreeItem *p_item, SnapshotDataObject *p_owner) {
-	if (!tree_item_owners.has(p_item)) {
-		tree_item_owners.insert(p_item, List<SnapshotDataObject *>());
-	}
-	tree_item_owners[p_item].push_back(p_owner);
+TreeItem *SnapshotNodeView::_add_item_to_tree(Tree *p_tree, TreeItem *p_parent, SnapshotDataObject *p_data, DiffGroup p_diff_group) {
+	String node_name = p_data->extra_debug_data["node_name"];
+	TreeItem *child_item = _add_item_to_tree(p_tree, p_parent, node_name, p_diff_group);
+	tree_item_data[child_item].push_back(p_data);
+	return child_item;
 }
 
 void SnapshotNodeView::_refresh_icons() {
 	for (TreeItem *item : _get_children_recursive(main_tree.tree)) {
-		item->set_icon(0, EditorNode::get_singleton()->get_class_icon(tree_item_owners[item].get(0)->type_name, ""));
+		HashMap<TreeItem *, LocalVector<SnapshotDataObject *>>::Iterator E = tree_item_data.find(item);
+		if (E && !E->value.is_empty()) {
+			item->set_icon(0, EditorNode::get_singleton()->get_class_icon(E->value[0]->type_name));
+		} else {
+			item->set_icon(0, EditorNode::get_singleton()->get_class_icon("MissingNode"));
+		}
 	}
+
 	if (diff_tree.tree) {
 		for (TreeItem *item : _get_children_recursive(diff_tree.tree)) {
-			item->set_icon(0, EditorNode::get_singleton()->get_class_icon(tree_item_owners[item].get(0)->type_name, ""));
+			HashMap<TreeItem *, LocalVector<SnapshotDataObject *>>::Iterator E = tree_item_data.find(item);
+			if (E && !E->value.is_empty()) {
+				item->set_icon(0, EditorNode::get_singleton()->get_class_icon(E->value[0]->type_name));
+			} else {
+				item->set_icon(0, EditorNode::get_singleton()->get_class_icon("MissingNode"));
+			}
 		}
 	}
 }
@@ -235,7 +249,7 @@ void SnapshotNodeView::_refresh_icons() {
 void SnapshotNodeView::clear_snapshot() {
 	SnapshotView::clear_snapshot();
 
-	tree_item_owners.clear();
+	tree_item_data.clear();
 	main_tree.tree = nullptr;
 	main_tree.filter_bar = nullptr;
 	main_tree.root = nullptr;
@@ -246,16 +260,15 @@ void SnapshotNodeView::clear_snapshot() {
 }
 
 void SnapshotNodeView::_choose_object_pressed(int p_object_idx, bool p_confirm_override) {
-	List<SnapshotDataObject *> &objects = tree_item_owners[active_tree->get_selected()];
-	EditorNode::get_singleton()->push_item((Object *)objects.get(p_object_idx));
+	EditorNode::get_singleton()->push_item(static_cast<Object *>(tree_item_data[active_tree->get_selected()][p_object_idx]));
 }
 
 void SnapshotNodeView::_show_choose_object_menu() {
 	remove_child(choose_object_menu);
 	add_child(choose_object_menu);
 	choose_object_menu->clear(false);
-	choose_object_menu->add_item(TTR("Snapshot A"), 0);
-	choose_object_menu->add_item(TTR("Snapshot B"), 1);
+	choose_object_menu->add_item(TTRC("Snapshot A"), 0);
+	choose_object_menu->add_item(TTRC("Snapshot B"), 1);
 	choose_object_menu->reset_size();
 	choose_object_menu->set_position(get_screen_position() + get_local_mouse_position());
 	choose_object_menu->popup();
