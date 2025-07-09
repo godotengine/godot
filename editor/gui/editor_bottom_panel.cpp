@@ -31,11 +31,11 @@
 #include "editor_bottom_panel.h"
 
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -356,7 +356,6 @@ EditorBottomPanel::EditorBottomPanel() {
 	pin_button->set_theme_type_variation("FlatMenuButton");
 	pin_button->set_toggle_mode(true);
 	pin_button->set_tooltip_text(TTRC("Pin Bottom Panel Switching"));
-	pin_button->set_accessibility_name(TTRC("Pin Bottom Panel"));
 	pin_button->connect(SceneStringName(toggled), callable_mp(this, &EditorBottomPanel::_pin_button_toggled));
 
 	expand_button = memnew(Button);

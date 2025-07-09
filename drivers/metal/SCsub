@@ -12,7 +12,6 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/spirv-cross/"
 thirdparty_sources = [
     "spirv_cfg.cpp",
-    "spirv_cross_util.cpp",
     "spirv_cross.cpp",
     "spirv_parser.cpp",
     "spirv_msl.cpp",

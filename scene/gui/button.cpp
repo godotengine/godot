@@ -191,10 +191,13 @@ void Button::_notification(int p_what) {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
 
-			if (!xl_text.is_empty() && get_accessibility_name().is_empty()) {
+			const String &ac_name = get_accessibility_name();
+			if (!xl_text.is_empty() && ac_name.is_empty()) {
 				DisplayServer::get_singleton()->accessibility_update_set_name(ae, xl_text);
-			} else if (!xl_text.is_empty() && !get_accessibility_name().is_empty() && get_accessibility_name() != xl_text) {
-				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_accessibility_name() + ": " + xl_text);
+			} else if (!xl_text.is_empty() && !ac_name.is_empty() && ac_name != xl_text) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, ac_name + ": " + xl_text);
+			} else if (xl_text.is_empty() && ac_name.is_empty() && !get_tooltip_text().is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, get_tooltip_text()); // Fall back to tooltip.
 			}
 			AcceptDialog *dlg = Object::cast_to<AcceptDialog>(get_parent());
 			if (dlg && dlg->get_ok_button() == this) {

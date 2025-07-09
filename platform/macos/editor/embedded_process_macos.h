@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/embedded_process.h"
+#include "editor/run/embedded_process.h"
 
 class DisplayServerMacOS;
 class EmbeddedProcessMacOS;
@@ -62,7 +62,6 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 		IN_PROGRESS,
 		COMPLETED,
 		FAILED,
-		CLOSED,
 	};
 
 	DisplayServerMacOS *ds = nullptr;

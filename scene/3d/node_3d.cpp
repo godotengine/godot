@@ -509,7 +509,7 @@ Transform3D Node3D::get_global_transform_interpolated() {
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
-	if (is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !Engine::get_singleton()->is_in_physics_frame()) {
+	if (SceneTree::is_fti_enabled() && is_inside_tree() && !Engine::get_singleton()->is_in_physics_frame()) {
 		// Note that with SceneTreeFTI, we may want to calculate interpolated transform for a node
 		// with physics interpolation set to OFF, if it has a parent that is ON.
 
@@ -1028,6 +1028,7 @@ void Node3D::set_as_top_level(bool p_enabled) {
 		}
 	}
 	data.top_level = p_enabled;
+	reset_physics_interpolation();
 }
 
 void Node3D::set_as_top_level_keep_local(bool p_enabled) {
@@ -1037,6 +1038,7 @@ void Node3D::set_as_top_level_keep_local(bool p_enabled) {
 	}
 	data.top_level = p_enabled;
 	_propagate_transform_changed(this);
+	reset_physics_interpolation();
 }
 
 bool Node3D::is_set_as_top_level() const {

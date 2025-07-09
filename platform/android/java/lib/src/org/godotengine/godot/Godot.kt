@@ -204,7 +204,7 @@ class Godot private constructor(val context: Context) {
 	 * @throws IllegalArgumentException exception if the specified expansion pack (if any)
 	 * is invalid.
 	 */
-	fun initEngine(commandLineParams: List<String>, hostPlugins: Set<GodotPlugin>): Boolean {
+	fun initEngine(host: GodotHost?, commandLineParams: List<String>, hostPlugins: Set<GodotPlugin> = Collections.emptySet()): Boolean {
 		if (isNativeInitialized()) {
 			Log.d(TAG, "Engine already initialized")
 			return true
@@ -216,6 +216,8 @@ class Godot private constructor(val context: Context) {
 
 		beginBenchmarkMeasure("Startup", "Godot::initEngine")
 		try {
+			this.primaryHost = host
+
 			Log.v(TAG, "Initializing Godot plugin registry")
 			val runtimePlugins = mutableSetOf<GodotPlugin>(AndroidRuntimePlugin(this))
 			runtimePlugins.addAll(hostPlugins)
@@ -342,6 +344,8 @@ class Godot private constructor(val context: Context) {
 	 */
 	@JvmOverloads
 	fun enableEdgeToEdge(enabled: Boolean, override: Boolean = false) {
+		// Note: If modifying edge-to-edge or immersive mode logic, ensure to test with GodotIO.getDisplaySafeArea()
+		// to confirm there are no regressions in safe area calculation.
 		val window = getActivity()?.window ?: return
 
 		if (!isEdgeToEdge.compareAndSet(!enabled, enabled) && !override) {
@@ -354,18 +358,25 @@ class Godot private constructor(val context: Context) {
 			ViewCompat.setOnApplyWindowInsetsListener(rootView, null)
 			rootView.setPadding(0, 0, 0, 0)
 		} else {
-			val insetType = WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
 			if (rootView.rootWindowInsets != null) {
 				val windowInsets = WindowInsetsCompat.toWindowInsetsCompat(rootView.rootWindowInsets)
-				val insets = windowInsets.getInsets(insetType)
+				val insets = windowInsets.getInsets(getInsetType())
 				rootView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
 			}
 
 			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-				val windowInsets = insets.getInsets(insetType)
+				val windowInsets = insets.getInsets(getInsetType())
 				v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
 				WindowInsetsCompat.CONSUMED
 			}
+		}
+	}
+
+	private fun getInsetType(): Int {
+		return if (!useImmersive.get() || isEditorBuild()) {
+			WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+		} else {
+			WindowInsetsCompat.Type.systemBars()
 		}
 	}
 
@@ -375,6 +386,8 @@ class Godot private constructor(val context: Context) {
 	 */
 	@JvmOverloads
 	fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
+		// Note: If modifying edge-to-edge or immersive mode logic, ensure to test with GodotIO.getDisplaySafeArea()
+		// to confirm there are no regressions in safe area calculation.
 		val activity = getActivity() ?: return
 		val window = activity.window ?: return
 

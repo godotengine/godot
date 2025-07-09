@@ -23,14 +23,14 @@
 		<method name="_reset_state" qualifiers="virtual">
 			<return type="void" />
 			<description>
-				For resources that use a variable number of properties, either via [method Object._validate_property] or [method Object._get_property_list], this method should be implemented to correctly clear the resource's state.
+				For resources that store state in non-exported properties, such as via [method Object._validate_property] or [method Object._get_property_list], this method must be implemented to clear them.
 			</description>
 		</method>
 		<method name="_set_path_cache" qualifiers="virtual const">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Sets the resource's path to [param path] without involving the resource cache.
+				Override this method to execute additional logic after [method set_path_cache] is called on this object.
 			</description>
 		</method>
 		<method name="_setup_local_to_scene" qualifiers="virtual">
@@ -94,7 +94,7 @@
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Returns the unique identifier for the resource with the given [param path] from the resource cache. If the resource is not loaded and cached, an empty string is returned.
+				From the internal cache for scene-unique IDs, returns the ID of this resource for the scene at [param path]. If there is no entry, an empty string is returned. Useful to keep scene-unique IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 				[b]Note:[/b] This method is only implemented when running in an editor context. At runtime, it returns an empty string.
 			</description>
 		</method>
@@ -113,13 +113,13 @@
 		<method name="is_built_in" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the resource is built-in (from the engine) or [code]false[/code] if it is user-defined.
+				Returns [code]true[/code] if the resource is saved on disk as a part of another resource's file.
 			</description>
 		</method>
 		<method name="reset_state">
 			<return type="void" />
 			<description>
-				For resources that use a variable number of properties, either via [method Object._validate_property] or [method Object._get_property_list], override [method _reset_state] to correctly clear the resource's state.
+				Makes the resource clear its non-exported properties. See also [method _reset_state]. Useful when implementing a custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 			</description>
 		</method>
 		<method name="set_id_for_path">
@@ -127,7 +127,7 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="id" type="String" />
 			<description>
-				Sets the unique identifier to [param id] for the resource with the given [param path] in the resource cache. If the unique identifier is empty, the cache entry using [param path] is removed if it exists.
+				In the internal cache for scene-unique IDs, sets the ID of this resource to [param id] for the scene at [param path]. If [param id] is empty, the cache entry for [param path] is cleared. Useful to keep scene-unique IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 				[b]Note:[/b] This method is only implemented when running in an editor context.
 			</description>
 		</method>
@@ -135,7 +135,7 @@
 			<return type="void" />
 			<param index="0" name="path" type="String" />
 			<description>
-				Sets the resource's path to [param path] without involving the resource cache.
+				Sets the resource's path to [param path] without involving the resource cache. Useful for handling [enum ResourceFormatLoader.CacheMode] values when implementing a custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 			</description>
 		</method>
 		<method name="setup_local_to_scene" deprecated="This method should only be called internally.">
@@ -166,7 +166,7 @@
 			[b]Note:[/b] Setting this property manually may fail if a resource with the same path has already been previously loaded. If necessary, use [method take_over_path].
 		</member>
 		<member name="resource_scene_unique_id" type="String" setter="set_scene_unique_id" getter="get_scene_unique_id">
-			An unique identifier relative to the this resource's scene. If left empty, the ID is automatically generated when this resource is saved inside a [PackedScene]. If the resource is not inside a scene, this property is empty by default.
+			A unique identifier relative to the this resource's scene. If left empty, the ID is automatically generated when this resource is saved inside a [PackedScene]. If the resource is not inside a scene, this property is empty by default.
 			[b]Note:[/b] When the [PackedScene] is saved, if multiple resources in the same scene use the same ID, only the earliest resource in the scene hierarchy keeps the original ID. The other resources are assigned new IDs from [method generate_scene_unique_id].
 			[b]Note:[/b] Setting this property does not emit the [signal changed] signal.
 			[b]Warning:[/b] When setting, the ID must only consist of letters, numbers, and underscores. Otherwise, it will fail and default to a randomly generated ID.

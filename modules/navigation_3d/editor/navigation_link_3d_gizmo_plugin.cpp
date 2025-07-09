@@ -31,7 +31,7 @@
 #include "navigation_link_3d_gizmo_plugin.h"
 
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/3d/navigation/navigation_link_3d.h"
 #include "servers/navigation_server_3d.h"
 

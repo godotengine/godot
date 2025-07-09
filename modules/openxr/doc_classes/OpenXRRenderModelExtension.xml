@@ -87,7 +87,7 @@
 			<return type="String" />
 			<param index="0" name="render_model" type="RID" />
 			<description>
-				Returns the top level path associated with this [param render_model]. If provided this identifies whether the render model is associated with the players hands or other body part.
+				Returns the top level path associated with this [param render_model]. If provided this identifies whether the render model is associated with the player's hands or other body part.
 			</description>
 		</method>
 		<method name="render_model_is_animatable_node_visible" qualifiers="const">

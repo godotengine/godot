@@ -34,11 +34,11 @@
 #include "core/io/dir_access.h"
 #include "core/os/time.h"
 #include "core/version.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/project_manager.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/project_manager/project_tag.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -264,7 +264,6 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 		}
 		project_version->set_tooltip_text(tooltip_text);
 		project_unsupported_features->set_focus_mode(FOCUS_ACCESSIBILITY);
-		project_unsupported_features->set_accessibility_name(tooltip_text);
 		project_unsupported_features->set_tooltip_text(tooltip_text);
 		project_unsupported_features->show();
 	} else {
@@ -332,7 +331,6 @@ ProjectListItemControl::ProjectListItemControl() {
 	favorite_button = memnew(TextureButton);
 	favorite_button->set_name("FavoriteButton");
 	favorite_button->set_tooltip_text(TTRC("Add to favorites"));
-	favorite_button->set_accessibility_name(TTRC("Add to favorites"));
 	favorite_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 	// This makes the project's "hover" style display correctly when hovering the favorite icon.
 	favorite_button->set_mouse_filter(MOUSE_FILTER_PASS);
@@ -383,7 +381,6 @@ ProjectListItemControl::ProjectListItemControl() {
 		explore_button->set_name("ExploreButton");
 		explore_button->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
 		explore_button->set_tooltip_text(TTRC("Open in file manager"));
-		explore_button->set_accessibility_name(TTRC("Open in file manager"));
 		explore_button->set_flat(true);
 		path_hb->add_child(explore_button);
 		explore_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectListItemControl::_explore_button_pressed));

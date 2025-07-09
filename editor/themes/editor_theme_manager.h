@@ -157,7 +157,6 @@ class EditorThemeManager {
 	static void _populate_standard_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 	static void _populate_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 
-	static void _generate_text_editor_defaults(ThemeConfiguration &p_config);
 	static void _populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 	static void _populate_visual_shader_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config);
 

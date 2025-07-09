@@ -42,7 +42,7 @@
 #include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 void LineEdit::edit() {
@@ -75,7 +75,7 @@ void LineEdit::_edit(bool p_show_virtual_keyboard) {
 	editing = true;
 	_validate_caret_can_draw();
 
-	if (p_show_virtual_keyboard) {
+	if (p_show_virtual_keyboard && !pending_select_all_on_focus) {
 		show_virtual_keyboard();
 	}
 	queue_redraw();
@@ -3291,7 +3291,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_mid_grapheme"), "set_caret_mid_grapheme_enabled", "is_caret_mid_grapheme_enabled");
 
 	ADD_GROUP("Secret", "secret");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_secret", "is_secret");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "secret", PROPERTY_HINT_GROUP_ENABLE), "set_secret", "is_secret");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "secret_character"), "set_secret_character", "get_secret_character");
 
 	ADD_GROUP("BiDi", "");

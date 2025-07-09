@@ -4,7 +4,7 @@
 		A class to interact with the editor debugger.
 	</brief_description>
 	<description>
-		This class cannot be directly instantiated and must be retrieved via a [EditorDebuggerPlugin].
+		This class cannot be directly instantiated and must be retrieved via an [EditorDebuggerPlugin].
 		You can add tabs to the session UI via [method add_session_tab], send messages via [method send_message], and toggle [EngineProfiler]s via [method toggle_profiler].
 	</description>
 	<tutorials>

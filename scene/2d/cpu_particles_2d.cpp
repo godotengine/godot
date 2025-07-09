@@ -45,7 +45,7 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 		return;
 	}
 
-	if (p_emitting && !use_fixed_seed) {
+	if (p_emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 

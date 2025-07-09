@@ -188,14 +188,6 @@ private:
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
 
-	struct LayoutInfo {
-		String name;
-		String code;
-	};
-	mutable Vector<LayoutInfo> kbd_layouts;
-	mutable int current_layout = 0;
-	mutable bool keyboard_layout_dirty = true;
-
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 	WindowID window_id_counter = MAIN_WINDOW_ID;
@@ -242,8 +234,6 @@ private:
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts() const;
-	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
@@ -453,15 +443,6 @@ public:
 #endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
-
-	virtual int keyboard_get_layout_count() const override;
-	virtual int keyboard_get_current_layout() const override;
-	virtual void keyboard_set_current_layout(int p_index) override;
-	virtual String keyboard_get_layout_language(int p_index) const override;
-	virtual String keyboard_get_layout_name(int p_index) const override;
-	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
-	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
-	virtual void show_emoji_and_symbol_picker() const override;
 
 	void _process_events(bool p_pump);
 	virtual void process_events() override;

@@ -210,6 +210,7 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 
 		if (fer >= 0 && (fer >> 2) < 15)
 		{
+			// note: getEdgeFifo implicitly rotates triangles by matching a/b to existing edge
 			const unsigned int* order = kTriangleIndexOrder[fer & 3];
 
 			unsigned int a = indices[i + order[0]], b = indices[i + order[1]], c = indices[i + order[2]];
@@ -267,6 +268,7 @@ size_t meshopt_encodeIndexBuffer(unsigned char* buffer, size_t buffer_size, cons
 			int fc = getVertexFifo(vertexfifo, c, vertexfifooffset);
 
 			// after rotation, a is almost always equal to next, so we don't waste bits on FIFO encoding for a
+			// note: decoder implicitly assumes that if feb=fec=0, then fea=0 (reset code); this is enforced by rotation
 			int fea = (a == next) ? (next++, 0) : 15;
 			int feb = (fb >= 0 && fb < 14) ? fb + 1 : (b == next ? (next++, 0) : 15);
 			int fec = (fc >= 0 && fc < 14) ? fc + 1 : (c == next ? (next++, 0) : 15);
@@ -433,6 +435,7 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 			// fifo reads are wrapped around 16 entry buffer
 			unsigned int a = edgefifo[(edgefifooffset - 1 - fe) & 15][0];
 			unsigned int b = edgefifo[(edgefifooffset - 1 - fe) & 15][1];
+			unsigned int c = 0;
 
 			int fec = codetri & 15;
 
@@ -442,37 +445,30 @@ int meshopt_decodeIndexBuffer(void* destination, size_t index_count, size_t inde
 			{
 				// fifo reads are wrapped around 16 entry buffer
 				unsigned int cf = vertexfifo[(vertexfifooffset - 1 - fec) & 15];
-				unsigned int c = (fec == 0) ? next : cf;
+				c = (fec == 0) ? next : cf;
 
 				int fec0 = fec == 0;
 				next += fec0;
 
-				// output triangle
-				writeTriangle(destination, i, index_size, a, b, c);
-
-				// push vertex/edge fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
+				// push vertex fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
 				pushVertexFifo(vertexfifo, c, vertexfifooffset, fec0);
-
-				pushEdgeFifo(edgefifo, c, b, edgefifooffset);
-				pushEdgeFifo(edgefifo, a, c, edgefifooffset);
 			}
 			else
 			{
-				unsigned int c = 0;
-
 				// fec - (fec ^ 3) decodes 13, 14 into -1, 1
 				// note that we need to update the last index since free indices are delta-encoded
 				last = c = (fec != 15) ? last + (fec - (fec ^ 3)) : decodeIndex(data, last);
 
-				// output triangle
-				writeTriangle(destination, i, index_size, a, b, c);
-
 				// push vertex/edge fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
 				pushVertexFifo(vertexfifo, c, vertexfifooffset);
-
-				pushEdgeFifo(edgefifo, c, b, edgefifooffset);
-				pushEdgeFifo(edgefifo, a, c, edgefifooffset);
 			}
+
+			// push edge fifo must match the encoding step *exactly* otherwise the data will not be decoded correctly
+			pushEdgeFifo(edgefifo, c, b, edgefifooffset);
+			pushEdgeFifo(edgefifo, a, c, edgefifooffset);
+
+			// output triangle
+			writeTriangle(destination, i, index_size, a, b, c);
 		}
 		else
 		{

@@ -305,6 +305,7 @@ void Parser::parse(const Instruction &instruction)
 	}
 
 	case OpExtInst:
+	case OpExtInstWithForwardRefsKHR:
 	{
 		// The SPIR-V debug information extended instructions might come at global scope.
 		if (current_block)
@@ -380,13 +381,21 @@ void Parser::parse(const Instruction &instruction)
 		auto mode = static_cast<ExecutionMode>(ops[1]);
 		execution.flags.set(mode);
 
-		if (mode == ExecutionModeLocalSizeId)
+		switch (mode)
 		{
+		case ExecutionModeLocalSizeId:
 			execution.workgroup_size.id_x = ops[2];
 			execution.workgroup_size.id_y = ops[3];
 			execution.workgroup_size.id_z = ops[4];
-		}
+			break;
 
+		case ExecutionModeFPFastMathDefault:
+			execution.fp_fast_math_defaults[ops[2]] = ops[3];
+			break;
+
+		default:
+			break;
+		}
 		break;
 	}
 
@@ -536,12 +545,37 @@ void Parser::parse(const Instruction &instruction)
 		uint32_t id = ops[0];
 		uint32_t width = ops[1];
 		auto &type = set<SPIRType>(id, op);
+
+		if (width != 16 && width != 8 && length > 2)
+			SPIRV_CROSS_THROW("Unrecognized FP encoding mode for OpTypeFloat.");
+
 		if (width == 64)
 			type.basetype = SPIRType::Double;
 		else if (width == 32)
 			type.basetype = SPIRType::Float;
 		else if (width == 16)
-			type.basetype = SPIRType::Half;
+		{
+			if (length > 2)
+			{
+				if (ops[2] == spv::FPEncodingBFloat16KHR)
+					type.basetype = SPIRType::BFloat16;
+				else
+					SPIRV_CROSS_THROW("Unrecognized encoding for OpTypeFloat 16.");
+			}
+			else
+				type.basetype = SPIRType::Half;
+		}
+		else if (width == 8)
+		{
+			if (length < 2)
+				SPIRV_CROSS_THROW("Missing encoding for OpTypeFloat 8.");
+			else if (ops[2] == spv::FPEncodingFloat8E4M3EXT)
+				type.basetype = SPIRType::FloatE4M3;
+			else if (ops[2] == spv::FPEncodingFloat8E5M2EXT)
+				type.basetype = SPIRType::FloatE5M2;
+			else
+				SPIRV_CROSS_THROW("Invalid encoding for OpTypeFloat 8.");
+		}
 		else
 			SPIRV_CROSS_THROW("Unrecognized bit-width of floating point type.");
 		type.width = width;
@@ -587,6 +621,22 @@ void Parser::parse(const Instruction &instruction)
 
 		matrixbase.op = op;
 		matrixbase.columns = colcount;
+		matrixbase.self = id;
+		matrixbase.parent_type = ops[1];
+		break;
+	}
+
+	case OpTypeCooperativeMatrixKHR:
+	{
+		uint32_t id = ops[0];
+		auto &base = get<SPIRType>(ops[1]);
+		auto &matrixbase = set<SPIRType>(id, base);
+
+		matrixbase.op = op;
+		matrixbase.cooperative.scope_id = ops[2];
+		matrixbase.cooperative.rows_id = ops[3];
+		matrixbase.cooperative.columns_id = ops[4];
+		matrixbase.cooperative.use_id = ops[5];
 		matrixbase.self = id;
 		matrixbase.parent_type = ops[1];
 		break;
@@ -835,17 +885,27 @@ void Parser::parse(const Instruction &instruction)
 		break;
 	}
 
-		// Constants
+	// Constants
 	case OpSpecConstant:
 	case OpConstant:
+	case OpConstantCompositeReplicateEXT:
+	case OpSpecConstantCompositeReplicateEXT:
 	{
 		uint32_t id = ops[1];
 		auto &type = get<SPIRType>(ops[0]);
-
-		if (type.width > 32)
-			set<SPIRConstant>(id, ops[0], ops[2] | (uint64_t(ops[3]) << 32), op == OpSpecConstant);
+		if (op == OpConstantCompositeReplicateEXT || op == OpSpecConstantCompositeReplicateEXT)
+		{
+			auto subconstant = uint32_t(ops[2]);
+			set<SPIRConstant>(id, ops[0], &subconstant, 1, op == OpSpecConstantCompositeReplicateEXT, true);
+		}
 		else
-			set<SPIRConstant>(id, ops[0], ops[2], op == OpSpecConstant);
+		{
+
+			if (type.width > 32)
+				set<SPIRConstant>(id, ops[0], ops[2] | (uint64_t(ops[3]) << 32), op == OpSpecConstant);
+			else
+				set<SPIRConstant>(id, ops[0], ops[2], op == OpSpecConstant);
+		}
 		break;
 	}
 

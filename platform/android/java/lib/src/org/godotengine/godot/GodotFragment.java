@@ -174,7 +174,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 
 	private void performEngineInitialization() {
 		try {
-			if (!godot.initEngine(getCommandLine(), getHostPlugins(godot))) {
+			if (!godot.initEngine(this, getCommandLine(), getHostPlugins(godot))) {
 				throw new IllegalStateException("Unable to initialize Godot engine");
 			}
 

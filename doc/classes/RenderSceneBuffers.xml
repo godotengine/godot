@@ -14,7 +14,7 @@
 			<return type="void" />
 			<param index="0" name="config" type="RenderSceneBuffersConfiguration" />
 			<description>
-				This method is called by the rendering server when the associated viewports configuration is changed. It will discard the old buffers and recreate the internal buffers used.
+				This method is called by the rendering server when the associated viewport's configuration is changed. It will discard the old buffers and recreate the internal buffers used.
 			</description>
 		</method>
 	</methods>

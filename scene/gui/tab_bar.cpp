@@ -1266,7 +1266,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	queue_redraw();
 	update_minimum_size();
 
-	if (tabs.size() == 1) {
+	if (!deselect_enabled && tabs.size() == 1) {
 		if (is_inside_tree()) {
 			set_current_tab(0);
 		} else {

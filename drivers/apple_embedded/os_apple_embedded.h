@@ -137,6 +137,9 @@ public:
 	void on_exit_background();
 
 	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const override;
+
+	virtual bool request_permission(const String &p_name) override;
+	virtual Vector<String> get_granted_permissions() const override;
 };
 
 #endif // APPLE_EMBEDDED_ENABLED
