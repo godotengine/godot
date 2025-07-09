@@ -404,7 +404,7 @@ bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
 	return true;
 }
 
-Array ScriptTextEditor::_inline_object_parse(const String &p_text, int p_line) {
+Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 	Array result;
 	int i_end_previous = 0;
 	int i_start = p_text.find("Color");
@@ -426,7 +426,6 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text, int p_line) {
 		}
 
 		Dictionary color_info;
-		color_info["line"] = p_line;
 		color_info["column"] = i_start;
 		color_info["width_ratio"] = 1.0;
 		color_info["color_end"] = i_par_end;
