@@ -272,15 +272,7 @@ void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, i
 }
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field) {
-	Array msg = { p_obj_id, p_prop };
-
-	Ref<Resource> res = p_value;
-	if (res.is_valid() && !res->get_path().is_empty()) {
-		msg.append(res->get_path());
-	} else {
-		msg.append(p_value);
-	}
-
+	Array msg = { p_obj_id, p_prop, p_value };
 	if (p_field.is_empty()) {
 		_put_msg("scene:set_object_property", msg);
 	} else {
@@ -1078,7 +1070,12 @@ void ScriptEditorDebugger::_update_reason_content_height() {
 
 void ScriptEditorDebugger::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_POSTINITIALIZE: {
+		case NOTIFICATION_ENTER_TREE: {
+			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
+			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
+			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
+			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
+			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 			connect("started", callable_mp(expression_evaluator, &EditorExpressionEvaluator::on_start));
 		} break;
 
@@ -2138,9 +2135,15 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
 		docontinue->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_continue));
 
+		HSplitContainer *parent_sc = memnew(HSplitContainer);
+		vbc->add_child(parent_sc);
+		parent_sc->set_v_size_flags(SIZE_EXPAND_FILL);
+		parent_sc->set_split_offset(500 * EDSCALE);
+
 		HSplitContainer *sc = memnew(HSplitContainer);
 		sc->set_v_size_flags(SIZE_EXPAND_FILL);
-		vbc->add_child(sc);
+		sc->set_h_size_flags(SIZE_EXPAND_FILL);
+		parent_sc->add_child(sc);
 
 		VBoxContainer *stack_vb = memnew(VBoxContainer);
 		stack_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2203,10 +2206,9 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		breakpoints_tree->set_hide_root(true);
 		breakpoints_tree->set_theme_type_variation("TreeSecondary");
 		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
-		breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
 		breakpoints_tree->create_item();
 
-		sc->add_child(breakpoints_tree);
+		parent_sc->add_child(breakpoints_tree);
 		tabs->add_child(dbg);
 
 		breakpoints_menu = memnew(PopupMenu);
@@ -2260,8 +2262,6 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		error_tree->set_allow_rmb_select(true);
 		error_tree->set_allow_reselect(true);
 		error_tree->set_theme_type_variation("TreeSecondary");
-		error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
-		error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 		error_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_error_tree_item_rmb_selected));
 		errors_tab->add_child(error_tree);
 
@@ -2352,12 +2352,14 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_refresh->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_request));
 		vmem_export->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_video_mem_export));
 
-		MarginContainer *mc = memnew(MarginContainer);
-		mc->set_theme_type_variation("NoBorderBottomPanel");
-		mc->set_v_size_flags(SIZE_EXPAND_FILL);
-		vmem_vb->add_child(mc);
-
+		VBoxContainer *vmmc = memnew(VBoxContainer);
 		vmem_tree = memnew(Tree);
+		vmem_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+		vmem_tree->set_h_size_flags(SIZE_EXPAND_FILL);
+		vmmc->add_child(vmem_tree);
+		vmmc->set_v_size_flags(SIZE_EXPAND_FILL);
+		vmem_vb->add_child(vmmc);
+
 		vmem_vb->set_name(TTRC("Video RAM"));
 		vmem_tree->set_columns(4);
 		vmem_tree->set_column_titles_visible(true);
@@ -2373,8 +2375,6 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 		vmem_tree->set_column_title(3, TTRC("Usage"));
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
-		vmem_tree->set_scroll_hint_mode(Tree::SCROLL_HINT_MODE_BOTTOM);
-		mc->add_child(vmem_tree);
 		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
 
 		tabs->add_child(vmem_vb);
@@ -2412,10 +2412,8 @@ Instead, use the monitors tab to obtain more precise VRAM usage.
 			info_left->add_child(l);
 			lehb->add_child(live_edit_root);
 			le_set = memnew(Button(TTRC("Set From Tree")));
-			le_set->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_set));
 			lehb->add_child(le_set);
 			le_clear = memnew(Button(TTRC("Clear")));
-			le_clear->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::_live_edit_clear));
 			lehb->add_child(le_clear);
 			info_left->add_child(lehb);
 		}
