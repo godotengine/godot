@@ -27,16 +27,32 @@ JPH_EXPORT extern AlignedFreeFunction AlignedFree;
 /// Register platform default allocation / free functions
 JPH_EXPORT void RegisterDefaultAllocator();
 
+// 32-bit MinGW g++ doesn't call the correct overload for the new operator when a type is 16 bytes aligned.
+// It uses the non-aligned version, which on 32 bit platforms usually returns an 8 byte aligned block.
+// We therefore default to 16 byte aligned allocations when the regular new operator is used.
+// See: https://github.com/godotengine/godot/issues/105455#issuecomment-2824311547
+#if defined(JPH_COMPILER_MINGW) && JPH_CPU_ADDRESS_BITS == 32
+	#define JPH_INTERNAL_DEFAULT_ALLOCATE(size) JPH::AlignedAllocate(size, 16)
+	#define JPH_INTERNAL_DEFAULT_FREE(pointer) JPH::AlignedFree(pointer)
+#else
+	#define JPH_INTERNAL_DEFAULT_ALLOCATE(size) JPH::Allocate(size)
+	#define JPH_INTERNAL_DEFAULT_FREE(pointer) JPH::Free(pointer)
+#endif
+
 /// Macro to override the new and delete functions
 #define JPH_OVERRIDE_NEW_DELETE \
-	JPH_INLINE void *operator new (size_t inCount)												{ return JPH::Allocate(inCount); } \
-	JPH_INLINE void operator delete (void *inPointer) noexcept									{ JPH::Free(inPointer); } \
-	JPH_INLINE void *operator new[] (size_t inCount)											{ return JPH::Allocate(inCount); } \
-	JPH_INLINE void operator delete[] (void *inPointer) noexcept								{ JPH::Free(inPointer); } \
+	JPH_INLINE void *operator new (size_t inCount)												{ return JPH_INTERNAL_DEFAULT_ALLOCATE(inCount); } \
+	JPH_INLINE void operator delete (void *inPointer) noexcept									{ JPH_INTERNAL_DEFAULT_FREE(inPointer); } \
+	JPH_INLINE void *operator new[] (size_t inCount)											{ return JPH_INTERNAL_DEFAULT_ALLOCATE(inCount); } \
+	JPH_INLINE void operator delete[] (void *inPointer) noexcept								{ JPH_INTERNAL_DEFAULT_FREE(inPointer); } \
 	JPH_INLINE void *operator new (size_t inCount, std::align_val_t inAlignment)				{ return JPH::AlignedAllocate(inCount, static_cast<size_t>(inAlignment)); } \
 	JPH_INLINE void operator delete (void *inPointer, [[maybe_unused]] std::align_val_t inAlignment) noexcept	{ JPH::AlignedFree(inPointer); } \
 	JPH_INLINE void *operator new[] (size_t inCount, std::align_val_t inAlignment)				{ return JPH::AlignedAllocate(inCount, static_cast<size_t>(inAlignment)); } \
-	JPH_INLINE void operator delete[] (void *inPointer, [[maybe_unused]] std::align_val_t inAlignment) noexcept	{ JPH::AlignedFree(inPointer); }
+	JPH_INLINE void operator delete[] (void *inPointer, [[maybe_unused]] std::align_val_t inAlignment) noexcept	{ JPH::AlignedFree(inPointer); } \
+	JPH_INLINE void *operator new ([[maybe_unused]] size_t inCount, void *inPointer) noexcept	{ return inPointer; } \
+	JPH_INLINE void operator delete ([[maybe_unused]] void *inPointer, [[maybe_unused]] void *inPlace) noexcept { /* Do nothing */ } \
+	JPH_INLINE void *operator new[] ([[maybe_unused]] size_t inCount, void *inPointer) noexcept	{ return inPointer; } \
+	JPH_INLINE void operator delete[] ([[maybe_unused]] void *inPointer, [[maybe_unused]] void *inPlace) noexcept { /* Do nothing */ }
 
 #else
 

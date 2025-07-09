@@ -35,9 +35,6 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 
-const int InputEvent::DEVICE_ID_EMULATION = -1;
-const int InputEvent::DEVICE_ID_INTERNAL = -2;
-
 void InputEvent::set_device(int p_device) {
 	device = p_device;
 	emit_changed();
@@ -230,7 +227,7 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 }
 
 BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
-	BitField<KeyModifierMask> mask;
+	BitField<KeyModifierMask> mask = {};
 	if (is_ctrl_pressed()) {
 		mask.set_flag(KeyModifierMask::CTRL);
 	}
@@ -385,11 +382,11 @@ bool InputEventKey::is_echo() const {
 }
 
 Key InputEventKey::get_keycode_with_modifiers() const {
-	return keycode | (int64_t)get_modifiers_mask();
+	return keycode | get_modifiers_mask();
 }
 
 Key InputEventKey::get_physical_keycode_with_modifiers() const {
-	return physical_keycode | (int64_t)get_modifiers_mask();
+	return physical_keycode | get_modifiers_mask();
 }
 
 Key InputEventKey::get_key_label_with_modifiers() const {
@@ -1104,7 +1101,7 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
-	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_DEADZONE;
+	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_TOGGLE_DEADZONE;
 	emit_changed();
 }
 
@@ -1668,7 +1665,7 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_event_index", "index"), &InputEventAction::set_event_index);
 	ClassDB::bind_method(D_METHOD("get_event_index"), &InputEventAction::get_event_index);
 
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action"), "set_action", "get_action");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "action", PROPERTY_HINT_INPUT_NAME, "show_builtin,loose_mode"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "event_index", PROPERTY_HINT_RANGE, "-1,31,1"), "set_event_index", "get_event_index"); // The max value equals to Input::MAX_EVENT - 1.

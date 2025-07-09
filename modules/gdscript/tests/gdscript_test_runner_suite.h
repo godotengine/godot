@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TEST_RUNNER_SUITE_H
-#define GDSCRIPT_TEST_RUNNER_SUITE_H
+#pragma once
 
 #include "gdscript_test_runner.h"
 
@@ -49,8 +48,10 @@ TEST_SUITE("[Modules][GDScript]") {
 		REQUIRE_MESSAGE(fail_count == 0, "All GDScript tests should pass.");
 	}
 }
+#endif // TOOLS_ENABLED
 
 TEST_CASE("[Modules][GDScript] Load source code dynamically and run it") {
+	GDScriptLanguage::get_singleton()->init();
 	Ref<GDScript> gdscript = memnew(GDScript);
 	gdscript->set_source_code(R"(
 extends RefCounted
@@ -70,7 +71,6 @@ func _init():
 	ref_counted->set_script(gdscript);
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
 }
-#endif // TOOLS_ENABLED
 
 TEST_CASE("[Modules][GDScript] Validate built-in API") {
 	GDScriptLanguage *lang = GDScriptLanguage::get_singleton();
@@ -81,9 +81,8 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 
 	SUBCASE("[Modules][GDScript] Validate built-in methods") {
 		for (const MethodInfo &mi : builtin_methods) {
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
-				TEST_COND((itr->name.is_empty() || itr->name.begins_with("_unnamed_arg")),
+			for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+				TEST_COND((mi.arguments[i].name.is_empty() || mi.arguments[i].name.begins_with("_unnamed_arg")),
 						vformat("Unnamed argument in position %d of built-in method '%s'.", i, mi.name));
 			}
 		}
@@ -95,9 +94,8 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 
 	SUBCASE("[Modules][GDScript] Validate built-in annotations") {
 		for (const MethodInfo &ai : builtin_annotations) {
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = ai.arguments.begin(); itr != ai.arguments.end(); ++itr, ++i) {
-				TEST_COND((itr->name.is_empty() || itr->name.begins_with("_unnamed_arg")),
+			for (int64_t i = 0; i < ai.arguments.size(); ++i) {
+				TEST_COND((ai.arguments[i].name.is_empty() || ai.arguments[i].name.begins_with("_unnamed_arg")),
 						vformat("Unnamed argument in position %d of built-in annotation '%s'.", i, ai.name));
 			}
 		}
@@ -105,5 +103,3 @@ TEST_CASE("[Modules][GDScript] Validate built-in API") {
 }
 
 } // namespace GDScriptTests
-
-#endif // GDSCRIPT_TEST_RUNNER_SUITE_H

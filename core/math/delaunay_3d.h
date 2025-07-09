@@ -28,17 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DELAUNAY_3D_H
-#define DELAUNAY_3D_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "core/math/aabb.h"
 #include "core/math/projection.h"
 #include "core/math/vector3.h"
+#include "core/templates/a_hash_map.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
-#include "core/variant/variant.h"
 
 #include "thirdparty/misc/r128.h"
 
@@ -135,9 +133,9 @@ class Delaunay3D {
 		R128 row3_y = v3_y - v0_y;
 		R128 row3_z = v3_z - v0_z;
 
-		R128 sq_lenght1 = row1_x * row1_x + row1_y * row1_y + row1_z * row1_z;
-		R128 sq_lenght2 = row2_x * row2_x + row2_y * row2_y + row2_z * row2_z;
-		R128 sq_lenght3 = row3_x * row3_x + row3_y * row3_y + row3_z * row3_z;
+		R128 sq_length1 = row1_x * row1_x + row1_y * row1_y + row1_z * row1_z;
+		R128 sq_length2 = row2_x * row2_x + row2_y * row2_y + row2_z * row2_z;
+		R128 sq_length3 = row3_x * row3_x + row3_y * row3_y + row3_z * row3_z;
 
 		// Compute the determinant of said matrix.
 		R128 determinant = row1_x * (row2_y * row3_z - row3_y * row2_z) - row2_x * (row1_y * row3_z - row3_y * row1_z) + row3_x * (row1_y * row2_z - row2_y * row1_z);
@@ -146,9 +144,9 @@ class Delaunay3D {
 		R128 volume = determinant / R128(6.f);
 		R128 i12volume = R128(1.f) / (volume * R128(12.f));
 
-		R128 center_x = v0_x + i12volume * ((row2_y * row3_z - row3_y * row2_z) * sq_lenght1 - (row1_y * row3_z - row3_y * row1_z) * sq_lenght2 + (row1_y * row2_z - row2_y * row1_z) * sq_lenght3);
-		R128 center_y = v0_y + i12volume * (-(row2_x * row3_z - row3_x * row2_z) * sq_lenght1 + (row1_x * row3_z - row3_x * row1_z) * sq_lenght2 - (row1_x * row2_z - row2_x * row1_z) * sq_lenght3);
-		R128 center_z = v0_z + i12volume * ((row2_x * row3_y - row3_x * row2_y) * sq_lenght1 - (row1_x * row3_y - row3_x * row1_y) * sq_lenght2 + (row1_x * row2_y - row2_x * row1_y) * sq_lenght3);
+		R128 center_x = v0_x + i12volume * ((row2_y * row3_z - row3_y * row2_z) * sq_length1 - (row1_y * row3_z - row3_y * row1_z) * sq_length2 + (row1_y * row2_z - row2_y * row1_z) * sq_length3);
+		R128 center_y = v0_y + i12volume * (-(row2_x * row3_z - row3_x * row2_z) * sq_length1 + (row1_x * row3_z - row3_x * row1_z) * sq_length2 - (row1_x * row2_z - row2_x * row1_z) * sq_length3);
+		R128 center_z = v0_z + i12volume * ((row2_x * row3_y - row3_x * row2_y) * sq_length1 - (row1_x * row3_y - row3_x * row1_y) * sq_length2 + (row1_x * row2_y - row2_x * row1_y) * sq_length3);
 
 		// Once we know the center, the radius is clearly the distance to any vertex.
 		R128 rel1_x = center_x - v0_x;
@@ -187,7 +185,7 @@ class Delaunay3D {
 			Plane p(p_points[p_simplex.points[i]], p_points[p_simplex.points[(i + 1) % 4]], p_points[p_simplex.points[(i + 2) % 4]]);
 			// This tolerance should not be smaller than the one used with
 			// Plane::has_point() when creating the LightmapGI probe BSP tree.
-			if (ABS(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
+			if (Math::abs(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
 				return true;
 			}
 		}
@@ -262,7 +260,7 @@ public:
 			circum_sphere_compute(points, root);
 		}
 
-		OAHashMap<Triangle, uint32_t, TriangleHasher> triangles_inserted;
+		AHashMap<Triangle, uint32_t, TriangleHasher> triangles_inserted;
 		LocalVector<Triangle> triangles;
 
 		for (uint32_t i = 0; i < point_count; i++) {
@@ -295,7 +293,7 @@ public:
 
 					for (uint32_t k = 0; k < 4; k++) {
 						Triangle t = Triangle(simplex->points[triangle_order[k][0]], simplex->points[triangle_order[k][1]], simplex->points[triangle_order[k][2]]);
-						uint32_t *p = triangles_inserted.lookup_ptr(t);
+						uint32_t *p = triangles_inserted.getptr(t);
 						if (p) {
 							// This Delaunay implementation uses the Bowyer-Watson algorithm.
 							// The rule is that you don't reuse any triangles that were
@@ -389,5 +387,3 @@ public:
 		return ret_simplices;
 	}
 };
-
-#endif // DELAUNAY_3D_H

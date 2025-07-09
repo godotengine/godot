@@ -30,14 +30,8 @@
 
 #include "editor_scene_importer_gltf.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
-
-uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
 
 void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
@@ -61,6 +55,9 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
+	}
+	if (p_options.has(SNAME("extract_path"))) {
+		state->set_extract_path(p_options["extract_path"]);
 	}
 	state->set_bake_fps(p_options["animation/fps"]);
 	Error err = gltf->append_from_file(p_path, state, p_flags);
@@ -87,7 +84,7 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 	String file_extension = p_path.get_extension().to_lower();
 	// Returns all the options when path is empty because that means it's for the Project Settings.
 	if (p_path.is_empty() || file_extension == "gltf" || file_extension == "glb") {
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.1 or 4.0,Godot 4.2 or later"), 1));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
 	}
 }
@@ -104,5 +101,3 @@ Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_pat
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	return true;
 }
-
-#endif // TOOLS_ENABLED

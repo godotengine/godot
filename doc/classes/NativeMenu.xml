@@ -11,28 +11,28 @@
 		var menu
 
 		func _menu_callback(item_id):
-		    if item_id == "ITEM_CUT":
-		        cut()
-		    elif item_id == "ITEM_COPY":
-		        copy()
-		    elif item_id == "ITEM_PASTE":
-		        paste()
+			if item_id == "ITEM_CUT":
+				cut()
+			elif item_id == "ITEM_COPY":
+				copy()
+			elif item_id == "ITEM_PASTE":
+				paste()
 
 		func _enter_tree():
-		    # Create new menu and add items:
-		    menu = NativeMenu.create_menu()
-		    NativeMenu.add_item(menu, "Cut", _menu_callback, Callable(), "ITEM_CUT")
-		    NativeMenu.add_item(menu, "Copy", _menu_callback, Callable(), "ITEM_COPY")
-		    NativeMenu.add_separator(menu)
-		    NativeMenu.add_item(menu, "Paste", _menu_callback, Callable(), "ITEM_PASTE")
+			# Create new menu and add items:
+			menu = NativeMenu.create_menu()
+			NativeMenu.add_item(menu, "Cut", _menu_callback, Callable(), "ITEM_CUT")
+			NativeMenu.add_item(menu, "Copy", _menu_callback, Callable(), "ITEM_COPY")
+			NativeMenu.add_separator(menu)
+			NativeMenu.add_item(menu, "Paste", _menu_callback, Callable(), "ITEM_PASTE")
 
 		func _on_button_pressed():
-		    # Show popup menu at mouse position:
-		    NativeMenu.popup(menu, DisplayServer.mouse_get_position())
+			# Show popup menu at mouse position:
+			NativeMenu.popup(menu, DisplayServer.mouse_get_position())
 
 		func _exit_tree():
-		    # Remove menu when it's no longer needed:
-		    NativeMenu.free_menu(menu)
+			# Remove menu when it's no longer needed:
+			NativeMenu.free_menu(menu)
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -366,7 +366,7 @@
 			<param index="0" name="rid" type="RID" />
 			<description>
 				Returns global menu close callback.
-				b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="get_popup_open_callback" qualifiers="const">
@@ -374,7 +374,7 @@
 			<param index="0" name="rid" type="RID" />
 			<description>
 				Returns global menu open callback.
-				b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
@@ -708,7 +708,7 @@
 			<description>
 				Registers callable to emit when the menu is about to show.
 				[b]Note:[/b] The OS can simulate menu opening to track menu item changes and global shortcuts, in which case the corresponding close callback is not triggered. Use [method is_opened] to check if the menu is currently opened.
-				[b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="set_popup_open_callback">

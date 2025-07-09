@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLES_STORAGE_RD_H
-#define PARTICLES_STORAGE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -166,6 +165,7 @@ private:
 		int amount = 0;
 		double lifetime = 1.0;
 		double pre_process_time = 0.0;
+		real_t request_process_time = 0.0;
 		real_t explosiveness = 0.0;
 		real_t randomness = 0.0;
 		bool restart_request = false;
@@ -261,6 +261,7 @@ private:
 
 		Particles() :
 				update_list(this) {
+			random_seed = Math::rand();
 		}
 	};
 
@@ -363,6 +364,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		ParticlesShaderData() {}
 		virtual ~ParticlesShaderData();
@@ -402,6 +404,7 @@ private:
 		RID heightfield_texture;
 		RID heightfield_fb;
 		Size2i heightfield_fb_size;
+		uint32_t heightfield_mask = (1 << 20) - 1;
 
 		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
@@ -441,6 +444,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) override;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) override;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) override;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) override;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) override;
 	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) override;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override;
@@ -454,6 +458,7 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
+	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override;
@@ -577,6 +582,9 @@ public:
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override;
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const override;
 
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
 
@@ -590,5 +598,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // PARTICLES_STORAGE_RD_H

@@ -133,7 +133,7 @@ void ShaderPreprocessor::Tokenizer::skip_whitespace() {
 
 bool ShaderPreprocessor::Tokenizer::consume_empty_line() {
 	// Read until newline and return true if the content was all whitespace/empty.
-	return tokens_to_string(advance('\n')).strip_edges().size() == 0;
+	return tokens_to_string(advance('\n')).strip_edges().is_empty();
 }
 
 String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_started) {
@@ -358,7 +358,7 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 	const int count = stop - p_start;
 
 	String result;
-	result.resize(count + 1);
+	result.resize_uninitialized(count + 1);
 	for (int i = 0; i < count; i++) {
 		result[i] = p_v[p_start + i];
 	}
@@ -552,7 +552,8 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 	if (skip) {
 		Vector<String> ends;
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -847,7 +848,8 @@ void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_s
 		ends.push_back("elif");
 		ends.push_back("else");
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -1096,7 +1098,7 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 				int arg_index_start = 0;
 				int arg_index = 0;
 				while (find_match(body, arg_name, arg_index, arg_index_start)) {
-					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length(), body.length() - (arg_index + arg_name.length()));
+					body = body.substr(0, arg_index) + args[i] + body.substr(arg_index + arg_name.length());
 					// Manually reset arg_index_start to where the arg value of the define finishes.
 					// This ensures we don't skip the other args of this macro in the string.
 					arg_index_start = arg_index + args[i].length() + 1;
@@ -1105,11 +1107,11 @@ bool ShaderPreprocessor::expand_macros_once(const String &p_line, int p_line_num
 
 			concatenate_macro_body(body);
 
-			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1, result.length());
+			result = result.substr(0, index) + " " + body + " " + result.substr(args_end + 1);
 		} else {
 			concatenate_macro_body(body);
 
-			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length(), result.length() - (index + key.length()));
+			result = result.substr(0, index) + " " + body + " " + result.substr(index + key.length());
 		}
 
 		r_expanded = result;
@@ -1176,7 +1178,7 @@ void ShaderPreprocessor::concatenate_macro_body(String &r_body) {
 			index_start--;
 		}
 
-		r_body = r_body.substr(0, index_start) + r_body.substr(index_end, r_body.length() - index_end);
+		r_body = r_body.substr(0, index_start) + r_body.substr(index_end);
 
 		index_start = r_body.find("##", index_start);
 	}

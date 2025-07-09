@@ -30,7 +30,6 @@
 
 #include "graph_element.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/theme/theme_db.h"
 
@@ -60,7 +59,7 @@ void GraphElement::_resort() {
 Size2 GraphElement::get_minimum_size() const {
 	Size2 minsize;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = as_sortable_control(get_child(i), SortableVisbilityMode::IGNORE);
+		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
 		if (!child) {
 			continue;
 		}
@@ -89,7 +88,9 @@ void GraphElement::_notification(int p_what) {
 }
 
 void GraphElement::_validate_property(PropertyInfo &p_property) const {
-	Control::_validate_property(p_property);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
 	if (graph) {
 		if (p_property.name == "position") {
@@ -173,6 +174,11 @@ void GraphElement::gui_input(const Ref<InputEvent> &p_ev) {
 		Vector2 diff = mpos - resizing_from;
 
 		emit_signal(SNAME("resize_request"), resizing_from_size + diff);
+	}
+
+	GraphEdit *graph = Object::cast_to<GraphEdit>(get_parent());
+	if (graph && has_focus()) {
+		graph->key_input(p_ev);
 	}
 }
 

@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+env.add_source_files(env.scene_sources, "skeleton_modification_2d.cpp")
+env.add_source_files(env.scene_sources, "skeleton_modification_2d_ccdik.cpp")
+env.add_source_files(env.scene_sources, "skeleton_modification_2d_fabrik.cpp")
+env.add_source_files(env.scene_sources, "skeleton_modification_2d_lookat.cpp")
+env.add_source_files(env.scene_sources, "skeleton_modification_2d_stackholder.cpp")
+env.add_source_files(env.scene_sources, "skeleton_modification_2d_twoboneik.cpp")
+env.add_source_files(env.scene_sources, "skeleton_modification_stack_2d.cpp")
+
+if not env["disable_physics_2d"]:
+    env.add_source_files(env.scene_sources, "skeleton_modification_2d_jiggle.cpp")
+    env.add_source_files(env.scene_sources, "skeleton_modification_2d_physicalbones.cpp")

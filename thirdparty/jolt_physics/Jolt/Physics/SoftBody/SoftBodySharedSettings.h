@@ -111,6 +111,12 @@ public:
 	/// Restore a shape and materials. Pass in an empty map in ioSettingsMap / ioMaterialMap or reuse the same map while reading multiple settings objects from the same stream in order to restore duplicates.
 	static SettingsResult sRestoreWithMaterials(StreamIn &inStream, IDToSharedSettingsMap &ioSettingsMap, IDToMaterialMap &ioMaterialMap);
 
+	/// Create a cube. This can be used to create a simple soft body for testing purposes.
+	/// It will contain edge constraints, volume constraints and faces.
+	/// @param inGridSize Number of points along each axis
+	/// @param inGridSpacing Distance between points
+	static Ref<SoftBodySharedSettings> sCreateCube(uint inGridSize, float inGridSpacing);
+
 	/// A vertex is a particle, the data in this structure is only used during creation of the soft body and not during simulation
 	struct JPH_EXPORT Vertex
 	{
@@ -204,7 +210,7 @@ public:
 		/// Return the lowest vertex index of this constraint
 		uint32			GetMinVertexIndex() const					{ return min(min(mVertex[0], mVertex[1]), min(mVertex[2], mVertex[3])); }
 
-		uint32			mVertex[4];									///< Indices of the vertices that form the tetrhedron
+		uint32			mVertex[4];									///< Indices of the vertices that form the tetrahedron
 		float			mSixRestVolume = 1.0f;						///< 6 times the rest volume of the tetrahedron (calculated by CalculateVolumeConstraintVolumes())
 		float			mCompliance = 0.0f;							///< Inverse of the stiffness of the constraint
 	};

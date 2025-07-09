@@ -33,12 +33,15 @@
 
 #include "core/config/project_settings.h"
 #include "scene/2d/audio_listener_2d.h"
-#include "scene/2d/physics/area_2d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio_server.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/area_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 void AudioStreamPlayer2D::_notification(int p_what) {
 	internal->notification(p_what);
@@ -76,6 +79,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 
 // Interacts with PhysicsServer2D, so can only be called during _physics_process.
 StringName AudioStreamPlayer2D::_get_actual_bus() {
+#ifndef PHYSICS_2D_DISABLED
 	Vector2 global_pos = get_global_position();
 
 	//check if any area is diverting sound into a bus
@@ -93,7 +97,6 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 	point_params.collide_with_areas = true;
 
 	int areas = space_state->intersect_point(point_params, sr, MAX_INTERSECT_AREAS);
-
 	for (int i = 0; i < areas; i++) {
 		Area2D *area2d = Object::cast_to<Area2D>(sr[i].collider);
 		if (!area2d) {
@@ -106,6 +109,8 @@ StringName AudioStreamPlayer2D::_get_actual_bus() {
 
 		return area2d->get_audio_bus_name();
 	}
+#endif // PHYSICS_2D_DISABLED
+
 	return internal->bus;
 }
 
@@ -208,6 +213,14 @@ void AudioStreamPlayer2D::set_volume_db(float p_volume) {
 
 float AudioStreamPlayer2D::get_volume_db() const {
 	return internal->volume_db;
+}
+
+void AudioStreamPlayer2D::set_volume_linear(float p_volume) {
+	set_volume_db(Math::linear_to_db(p_volume));
+}
+
+float AudioStreamPlayer2D::get_volume_linear() const {
+	return Math::db_to_linear(get_volume_db());
 }
 
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
@@ -368,6 +381,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer2D::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer2D::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer2D::set_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer2D::get_volume_linear);
+
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer2D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer2D::get_pitch_scale);
 
@@ -412,6 +428,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
@@ -429,7 +446,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer2D::play), callable_mp(this, &AudioStreamPlayer2D::stop), true));
-	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
+	cached_global_panning_strength = GLOBAL_GET_CACHED(float, "audio/general/2d_panning_strength");
 	set_hide_clip_children(true);
 }
 

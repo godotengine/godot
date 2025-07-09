@@ -6,6 +6,7 @@ mode_copy_section = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY
 mode_copy_section_source = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define MODE_COPY_FROM
 mode_copy_section_3d = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_3D
 mode_copy_section_2d_array = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_2D_ARRAY
+mode_lens_distortion = #define USE_COPY_SECTION \n#define MODE_SIMPLE_COPY \n#define USE_TEXTURE_2D_ARRAY \n#define APPLY_LENS_DISTORTION
 mode_screen = #define MODE_SIMPLE_COPY \n#define MODE_MULTIPLY
 mode_gaussian_blur = #define MODE_GAUSSIAN_BLUR
 mode_mipmap = #define MODE_MIPMAP
@@ -14,6 +15,8 @@ mode_cube_to_octahedral = #define CUBE_TO_OCTAHEDRAL \n#define USE_COPY_SECTION
 mode_cube_to_panorama = #define CUBE_TO_PANORAMA
 
 #[specializations]
+
+CONVERT_LINEAR_TO_SRGB = false
 
 #[vertex]
 
@@ -93,6 +96,14 @@ uniform sampler2D source; // texunit:0
 
 #endif // !(defined(CUBE_TO_OCTAHEDRAL) || defined(CUBE_TO_PANORAMA))
 
+#ifdef APPLY_LENS_DISTORTION
+uniform vec2 eye_center;
+uniform float k1;
+uniform float k2;
+uniform float upscale;
+uniform float aspect_ratio;
+#endif // APPLY_LENS_DISTORTION
+
 layout(location = 0) out vec4 frag_color;
 
 // This expects 0-1 range input, outside that range it behaves poorly.
@@ -101,22 +112,69 @@ vec3 srgb_to_linear(vec3 color) {
 	return color * (color * (color * 0.305306011 + 0.682171111) + 0.012522878);
 }
 
+// This expects 0-1 range input.
+vec3 linear_to_srgb(vec3 color) {
+	// Approximation from http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
+	return max(vec3(1.055) * pow(color, vec3(0.416666667)) - vec3(0.055), vec3(0.0));
+}
+
 void main() {
 #ifdef MODE_SIMPLE_COPY
 
+	vec2 uv = uv_interp;
+
+#ifdef APPLY_LENS_DISTORTION
+	uv = uv * 2.0 - 1.0;
+	vec2 offset = uv - eye_center;
+
+	// take aspect ratio into account
+	offset.y /= aspect_ratio;
+
+	// distort
+	vec2 offset_sq = offset * offset;
+	float radius_sq = offset_sq.x + offset_sq.y;
+	float radius_s4 = radius_sq * radius_sq;
+	float distortion_scale = 1.0 + (k1 * radius_sq) + (k2 * radius_s4);
+	offset *= distortion_scale;
+
+	// reapply aspect ratio
+	offset.y *= aspect_ratio;
+
+	// add our eye center back in
+	uv = offset + eye_center;
+	uv /= upscale;
+
+	// and check our color
+	if (uv.x < -1.0 || uv.y < -1.0 || uv.x > 1.0 || uv.y > 1.0) {
+		frag_color = vec4(0.0, 0.0, 0.0, 1.0);
+	} else {
+		uv = uv * 0.5 + 0.5;
+#endif // APPLY_LENS_DISTORTION
+
 #ifdef USE_TEXTURE_3D
-	vec4 color = textureLod(source_3d, vec3(uv_interp, layer), lod);
+		vec4 color = textureLod(source_3d, vec3(uv, layer), lod);
 #elif defined(USE_TEXTURE_2D_ARRAY)
-	vec4 color = textureLod(source_2d_array, vec3(uv_interp, layer), lod);
+	vec4 color = textureLod(source_2d_array, vec3(uv, layer), lod);
 #else
-	vec4 color = texture(source, uv_interp);
+	vec4 color = texture(source, uv);
 #endif // USE_TEXTURE_3D
 
+#ifdef CONVERT_LINEAR_TO_SRGB
+		// Reading from a *_SRGB texture source will have converted data to linear,
+		// but we should output in sRGB!
+		color.rgb = linear_to_srgb(color.rgb);
+#endif
+
 #ifdef MODE_MULTIPLY
-	color *= multiply;
+		color *= multiply;
 #endif // MODE_MULTIPLY
 
-	frag_color = color;
+		frag_color = color;
+
+#ifdef APPLY_LENS_DISTORTION
+	}
+#endif // APPLY_LENS_DISTORTION
+
 #endif // MODE_SIMPLE_COPY
 
 #ifdef MODE_SIMPLE_COLOR

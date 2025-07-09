@@ -570,7 +570,7 @@ struct cff_subset_accelerator_t
   parsed_cs_str_vec_t parsed_charstrings;
   parsed_cs_str_vec_t parsed_global_subrs;
   hb_vector_t<parsed_cs_str_vec_t> parsed_local_subrs;
-  mutable hb_atomic_ptr_t<glyph_to_sid_map_t> glyph_to_sid_map;
+  mutable hb_atomic_t<glyph_to_sid_map_t *> glyph_to_sid_map;
 
  private:
   hb_blob_t* original_blob;
@@ -1128,7 +1128,7 @@ struct subr_subsetter_t
       if (opstr.op == OpCode_callsubr || opstr.op == OpCode_callgsubr)
         size += 3;
     }
-    if (!buff.alloc (buff.length + size, true))
+    if (!buff.alloc_exact (buff.length + size))
       return false;
 
     for (auto &opstr : str.values)

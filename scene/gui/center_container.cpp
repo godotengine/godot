@@ -36,7 +36,7 @@ Size2 CenterContainer::get_minimum_size() const {
 	}
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}
@@ -93,5 +93,3 @@ void CenterContainer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_top_left"), "set_use_top_left", "is_using_top_left");
 }
-
-CenterContainer::CenterContainer() {}

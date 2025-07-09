@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_2D_H
-#define PATH_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/curve.h"
@@ -42,6 +41,15 @@ class Path2D : public Node2D {
 	Ref<Curve2D> curve;
 
 	void _curve_changed();
+
+#ifdef DEBUG_ENABLED
+	RID debug_mesh_rid;
+	RID debug_instance;
+
+	void _debug_create();
+	void _debug_update();
+	void _debug_free();
+#endif // DEBUG_ENABLED
 
 protected:
 	void _notification(int p_what);
@@ -56,8 +64,6 @@ public:
 
 	void set_curve(const Ref<Curve2D> &p_curve);
 	Ref<Curve2D> get_curve() const;
-
-	Path2D() {}
 };
 
 class PathFollow2D : public Node2D {
@@ -107,8 +113,4 @@ public:
 	bool is_cubic_interpolation_enabled() const;
 
 	PackedStringArray get_configuration_warnings() const override;
-
-	PathFollow2D() {}
 };
-
-#endif // PATH_2D_H

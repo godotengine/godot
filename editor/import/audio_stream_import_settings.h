@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_IMPORT_SETTINGS_H
-#define AUDIO_STREAM_IMPORT_SETTINGS_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/spin_box.h"
-#include "scene/resources/texture.h"
 
 class CheckBox;
 
@@ -113,5 +111,3 @@ public:
 
 	AudioStreamImportSettingsDialog();
 };
-
-#endif // AUDIO_STREAM_IMPORT_SETTINGS_H

@@ -34,11 +34,12 @@
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/os/main_loop.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
 void EditorPluginSettings::_notification(int p_what) {
@@ -47,9 +48,21 @@ void EditorPluginSettings::_notification(int p_what) {
 			update_plugins();
 		} break;
 
-		case Node::NOTIFICATION_READY: {
+		case NOTIFICATION_READY: {
 			plugin_config_dialog->connect("plugin_ready", callable_mp(EditorNode::get_singleton(), &EditorNode::_on_plugin_ready));
 			plugin_list->connect("button_clicked", callable_mp(this, &EditorPluginSettings::_cell_button_pressed));
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (plugin_list->get_root()) {
+				update_plugins();
+			}
+		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			if (Engine::get_singleton()->is_recovery_mode_hint()) {
+				recovery_mode_icon->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
+			}
 		} break;
 	}
 }
@@ -113,10 +126,10 @@ void EditorPluginSettings::update_plugins() {
 				item->set_text(COLUMN_AUTHOR, author);
 				item->set_metadata(COLUMN_AUTHOR, description);
 				item->set_cell_mode(COLUMN_STATUS, TreeItem::CELL_MODE_CHECK);
-				item->set_text(COLUMN_STATUS, TTR("On"));
+				item->set_text(COLUMN_STATUS, TTRC("On"));
 				item->set_checked(COLUMN_STATUS, is_enabled);
 				item->set_editable(COLUMN_STATUS, true);
-				item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
+				item->add_button(COLUMN_EDIT, get_editor_theme_icon(SNAME("Edit")), BUTTON_PLUGIN_EDIT, false, TTRC("Edit Plugin"));
 			}
 		}
 	}
@@ -206,12 +219,29 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_config_dialog->config("");
 	add_child(plugin_config_dialog);
 
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		HBoxContainer *c = memnew(HBoxContainer);
+		add_child(c);
+
+		recovery_mode_icon = memnew(TextureRect);
+		recovery_mode_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+		c->add_child(recovery_mode_icon);
+
+		Label *recovery_mode_label = memnew(Label(TTRC("Recovery mode is enabled. Enabled plugins will not run while this mode is active.")));
+		recovery_mode_label->set_theme_type_variation("HeaderSmall");
+		recovery_mode_label->set_h_size_flags(SIZE_EXPAND_FILL);
+		c->add_child(recovery_mode_label);
+
+		HSeparator *sep = memnew(HSeparator);
+		add_child(sep);
+	}
+
 	HBoxContainer *title_hb = memnew(HBoxContainer);
-	Label *label = memnew(Label(TTR("Installed Plugins:")));
+	Label *label = memnew(Label(TTRC("Installed Plugins:")));
 	label->set_theme_type_variation("HeaderSmall");
 	title_hb->add_child(label);
 	title_hb->add_spacer();
-	Button *create_plugin_button = memnew(Button(TTR("Create New Plugin")));
+	Button *create_plugin_button = memnew(Button(TTRC("Create New Plugin")));
 	create_plugin_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPluginSettings::_create_clicked));
 	title_hb->add_child(create_plugin_button);
 	add_child(title_hb);
@@ -220,11 +250,11 @@ EditorPluginSettings::EditorPluginSettings() {
 	plugin_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	plugin_list->set_columns(COLUMN_MAX);
 	plugin_list->set_column_titles_visible(true);
-	plugin_list->set_column_title(COLUMN_STATUS, TTR("Enabled"));
-	plugin_list->set_column_title(COLUMN_NAME, TTR("Name"));
-	plugin_list->set_column_title(COLUMN_VERSION, TTR("Version"));
-	plugin_list->set_column_title(COLUMN_AUTHOR, TTR("Author"));
-	plugin_list->set_column_title(COLUMN_EDIT, TTR("Edit"));
+	plugin_list->set_column_title(COLUMN_STATUS, TTRC("Enabled"));
+	plugin_list->set_column_title(COLUMN_NAME, TTRC("Name"));
+	plugin_list->set_column_title(COLUMN_VERSION, TTRC("Version"));
+	plugin_list->set_column_title(COLUMN_AUTHOR, TTRC("Author"));
+	plugin_list->set_column_title(COLUMN_EDIT, TTRC("Edit"));
 	plugin_list->set_column_title_alignment(COLUMN_STATUS, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_NAME, HORIZONTAL_ALIGNMENT_LEFT);
 	plugin_list->set_column_title_alignment(COLUMN_VERSION, HORIZONTAL_ALIGNMENT_LEFT);

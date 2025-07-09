@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LOOK_AT_MODIFIER_3D_H
-#define LOOK_AT_MODIFIER_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/animation/tween.h"
@@ -38,15 +37,6 @@ class LookAtModifier3D : public SkeletonModifier3D {
 	GDCLASS(LookAtModifier3D, SkeletonModifier3D);
 
 public:
-	enum BoneAxis {
-		BONE_AXIS_PLUS_X,
-		BONE_AXIS_MINUS_X,
-		BONE_AXIS_PLUS_Y,
-		BONE_AXIS_MINUS_Y,
-		BONE_AXIS_PLUS_Z,
-		BONE_AXIS_MINUS_Z,
-	};
-
 	enum OriginFrom {
 		ORIGIN_FROM_SELF,
 		ORIGIN_FROM_SPECIFIC_BONE,
@@ -81,18 +71,18 @@ private:
 	bool use_angle_limitation = false;
 	bool symmetry_limitation = true;
 
-	float primary_limit_angle = Math_TAU;
+	float primary_limit_angle = Math::TAU;
 	float primary_damp_threshold = 1.0f;
-	float primary_positive_limit_angle = Math_PI;
+	float primary_positive_limit_angle = Math::PI;
 	float primary_positive_damp_threshold = 1.0f;
-	float primary_negative_limit_angle = Math_PI;
+	float primary_negative_limit_angle = Math::PI;
 	float primary_negative_damp_threshold = 1.0f;
 
-	float secondary_limit_angle = Math_TAU;
+	float secondary_limit_angle = Math::TAU;
 	float secondary_damp_threshold = 1.0f;
-	float secondary_positive_limit_angle = Math_PI;
+	float secondary_positive_limit_angle = Math::PI;
 	float secondary_positive_damp_threshold = 1.0f;
-	float secondary_negative_limit_angle = Math_PI;
+	float secondary_negative_limit_angle = Math::PI;
 	float secondary_negative_damp_threshold = 1.0f;
 
 	bool is_within_limitations = false;
@@ -104,11 +94,6 @@ private:
 	float remaining = 0;
 	float time_step = 1.0;
 
-	Vector3 get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis) const;
-	Vector3 get_vector_from_bone_axis(const BoneAxis &p_axis) const;
-	Vector3 get_vector_from_axis(const Vector3::Axis &p_axis) const;
-	Vector3::Axis get_axis_from_bone_axis(BoneAxis p_axis) const;
-	Vector2 get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis) const;
 	float remap_damped(float p_from, float p_to, float p_damp_threshold, float p_value) const;
 	double get_bspline_y(const Vector2 &p_from, const Vector2 &p_control, const Vector2 &p_to, double p_x) const;
 	bool is_intersecting_axis(const Vector3 &p_prev, const Vector3 &p_current, Vector3::Axis p_flipping_axis, Vector3::Axis p_check_axis, bool p_check_plane = false) const;
@@ -120,9 +105,11 @@ protected:
 	virtual PackedStringArray get_configuration_warnings() const override;
 	void _validate_property(PropertyInfo &p_property) const;
 
+	virtual void _validate_bone_names() override;
+
 	static void _bind_methods();
 
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
 	void set_bone_name(const String &p_bone_name);
@@ -197,9 +184,10 @@ public:
 	float get_interpolation_remaining() const;
 	bool is_interpolating() const;
 	bool is_target_within_limitation() const;
+
+	static Vector3::Axis get_secondary_rotation_axis(BoneAxis p_forward_axis, Vector3::Axis p_primary_rotation_axis);
+	static Vector3 get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis);
+	static Vector2 get_projection_vector(const Vector3 &p_vector, Vector3::Axis p_axis);
 };
 
-VARIANT_ENUM_CAST(LookAtModifier3D::BoneAxis);
 VARIANT_ENUM_CAST(LookAtModifier3D::OriginFrom);
-
-#endif // LOOK_AT_MODIFIER_3D_H

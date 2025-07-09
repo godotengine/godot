@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RIGID_BODY_3D_H
-#define RIGID_BODY_3D_H
+#pragma once
 
-#include "scene/3d/physics/static_body_3d.h"
+#include "core/templates/vset.h"
+#include "scene/3d/physics/physics_body_3d.h"
 
 class RigidBody3D : public PhysicsBody3D {
 	GDCLASS(RigidBody3D, PhysicsBody3D);
@@ -244,5 +244,3 @@ private:
 VARIANT_ENUM_CAST(RigidBody3D::FreezeMode);
 VARIANT_ENUM_CAST(RigidBody3D::CenterOfMassMode);
 VARIANT_ENUM_CAST(RigidBody3D::DampMode);
-
-#endif // RIGID_BODY_3D_H

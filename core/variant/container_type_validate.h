@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTAINER_TYPE_VALIDATE_H
-#define CONTAINER_TYPE_VALIDATE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/variant/variant.h"
@@ -130,9 +129,9 @@ struct ContainerTypeValidate {
 			return true; // All good, no class type requested.
 		}
 
-		StringName obj_class = object->get_class_name();
+		const StringName &obj_class = object->get_class_name();
 		if (obj_class != class_name) {
-			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(object->get_class_name(), class_name), false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class(), where, String(class_name)));
+			ERR_FAIL_COND_V_MSG(!ClassDB::is_parent_class(obj_class, class_name), false, vformat("Attempted to %s an object of type '%s' into a %s, which does not inherit from '%s'.", String(p_operation), object->get_class(), where, String(class_name)));
 		}
 
 		if (script.is_null()) {
@@ -148,5 +147,3 @@ struct ContainerTypeValidate {
 		return true;
 	}
 };
-
-#endif // CONTAINER_TYPE_VALIDATE_H

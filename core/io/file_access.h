@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_H
-#define FILE_ACCESS_H
+#pragma once
 
 #include "core/io/compression.h"
 #include "core/math/math_defs.h"
@@ -46,7 +45,7 @@ class FileAccess : public RefCounted {
 	GDCLASS(FileAccess, RefCounted);
 
 public:
-	enum AccessType {
+	enum AccessType : int32_t {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM,
@@ -54,14 +53,15 @@ public:
 		ACCESS_MAX
 	};
 
-	enum ModeFlags {
+	enum ModeFlags : int32_t {
 		READ = 1,
 		WRITE = 2,
 		READ_WRITE = 3,
 		WRITE_READ = 7,
+		SKIP_PACK = 16,
 	};
 
-	enum UnixPermissionFlags {
+	enum UnixPermissionFlags : int32_t {
 		UNIX_EXECUTE_OTHER = 0x001,
 		UNIX_WRITE_OTHER = 0x002,
 		UNIX_READ_OTHER = 0x004,
@@ -76,7 +76,7 @@ public:
 		UNIX_SET_USER_ID = 0x800,
 	};
 
-	enum CompressionMode {
+	enum CompressionMode : int32_t {
 		COMPRESSION_FASTLZ = Compression::MODE_FASTLZ,
 		COMPRESSION_DEFLATE = Compression::MODE_DEFLATE,
 		COMPRESSION_ZSTD = Compression::MODE_ZSTD,
@@ -87,7 +87,11 @@ public:
 	typedef void (*FileCloseFailNotify)(const String &);
 
 	typedef Ref<FileAccess> (*CreateFunc)();
+#ifdef BIG_ENDIAN_ENABLED
+	bool big_endian = true;
+#else
 	bool big_endian = false;
+#endif
 	bool real_is_double = false;
 
 	virtual BitField<UnixPermissionFlags> _get_unix_permissions(const String &p_file) = 0;
@@ -105,9 +109,11 @@ protected:
 	virtual String fix_path(const String &p_path) const;
 	virtual Error open_internal(const String &p_path, int p_mode_flags) = 0; ///< open a file
 	virtual uint64_t _get_modified_time(const String &p_file) = 0;
+	virtual uint64_t _get_access_time(const String &p_file) = 0;
+	virtual int64_t _get_size(const String &p_file) = 0;
 	virtual void _set_access_type(AccessType p_access);
 
-	static FileCloseFailNotify close_fail_notify;
+	static inline FileCloseFailNotify close_fail_notify = nullptr;
 
 #ifndef DISABLE_DEPRECATED
 	static Ref<FileAccess> _open_encrypted_bind_compat_98918(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key);
@@ -131,11 +137,11 @@ protected:
 #endif
 
 private:
-	static bool backup_save;
-	thread_local static Error last_file_open_error;
+	static inline bool backup_save = false;
+	static inline thread_local Error last_file_open_error = OK;
 
 	AccessType _access_type = ACCESS_FILESYSTEM;
-	static CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
+	static inline CreateFunc create_func[ACCESS_MAX]; /** default file access creation function for a platform */
 	template <typename T>
 	static Ref<FileAccess> _create_builtin() {
 		return memnew(T);
@@ -239,6 +245,8 @@ public:
 	static CreateFunc get_create_func(AccessType p_access);
 	static bool exists(const String &p_name); ///< return true if a file exists
 	static uint64_t get_modified_time(const String &p_file);
+	static uint64_t get_access_time(const String &p_file);
+	static int64_t get_size(const String &p_file);
 	static BitField<FileAccess::UnixPermissionFlags> get_unix_permissions(const String &p_file);
 	static Error set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions);
 
@@ -273,5 +281,3 @@ public:
 VARIANT_ENUM_CAST(FileAccess::CompressionMode);
 VARIANT_ENUM_CAST(FileAccess::ModeFlags);
 VARIANT_BITFIELD_CAST(FileAccess::UnixPermissionFlags);
-
-#endif // FILE_ACCESS_H

@@ -31,11 +31,11 @@
 #include "gdscript_language_protocol.h"
 
 #include "core/config/project_settings.h"
-#include "editor/doc_tools.h"
-#include "editor/editor_help.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 GDScriptLanguageProtocol *GDScriptLanguageProtocol::singleton = nullptr;
 
@@ -60,8 +60,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 			// End of headers
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				r[l - 3] = '\0'; // Null terminate to read string
-				String header;
-				header.parse_utf8(r);
+				String header = String::utf8(r);
 				content_length = header.substr(16).to_int();
 				has_header = true;
 				req_pos = 0;
@@ -87,8 +86,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 		}
 
 		// Parse data
-		String msg;
-		msg.parse_utf8((const char *)req_buf, req_pos);
+		String msg = String::utf8((const char *)req_buf, req_pos);
 
 		// Reset to read again
 		req_pos = 0;
@@ -171,7 +169,29 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-	lsp::InitializeResult ret;
+	LSP::InitializeResult ret;
+
+	{
+		// Warn if the workspace root does not match with the project that is currently open in Godot,
+		// since it might lead to unexpected behavior, like wrong warnings about duplicate class names.
+
+		String root;
+		Variant root_uri_var = p_params["rootUri"];
+		Variant root_var = p_params["rootPath"];
+		if (root_uri_var.is_string()) {
+			root = get_workspace()->get_file_path(root_uri_var);
+		} else if (root_var.is_string()) {
+			root = root_var;
+		}
+
+		if (ProjectSettings::get_singleton()->localize_path(root) != "res://") {
+			LSP::ShowMessageParams params{
+				LSP::MessageType::Warning,
+				"The GDScript Language Server might not work correctly with other projects than the one opened in Godot."
+			};
+			notify_client("window/showMessage", params.to_json());
+		}
+	}
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
@@ -179,7 +199,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 #ifndef WINDOWS_ENABLED
 	is_same_workspace = root.to_lower() == workspace->root.to_lower();
 #else
-	is_same_workspace = root.replace("\\", "/").to_lower() == workspace->root.to_lower();
+	is_same_workspace = root.replace_char('\\', '/').to_lower() == workspace->root.to_lower();
 #endif
 
 	if (root_uri.length() && is_same_workspace) {
@@ -213,11 +233,11 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-	lsp::GodotCapabilities capabilities;
+	LSP::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
-		lsp::GodotNativeClassInfo gdclass;
+		LSP::GodotNativeClassInfo gdclass;
 		gdclass.name = E.value.name;
 		gdclass.class_doc = &(E.value);
 		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
@@ -336,13 +356,50 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
 }
 
+// clang-format off
+#define SET_DOCUMENT_METHOD(m_method) set_method(_STR(textDocument/m_method), callable_mp(text_document.ptr(), &GDScriptTextDocument::m_method))
+#define SET_COMPLETION_METHOD(m_method) set_method(_STR(completionItem/m_method), callable_mp(text_document.ptr(), &GDScriptTextDocument::m_method))
+#define SET_WORKSPACE_METHOD(m_method) set_method(_STR(workspace/m_method), callable_mp(workspace.ptr(), &GDScriptWorkspace::m_method))
+// clang-format on
+
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server.instantiate();
 	singleton = this;
 	workspace.instantiate();
 	text_document.instantiate();
-	set_scope("textDocument", text_document.ptr());
-	set_scope("completionItem", text_document.ptr());
-	set_scope("workspace", workspace.ptr());
+
+	SET_DOCUMENT_METHOD(didOpen);
+	SET_DOCUMENT_METHOD(didClose);
+	SET_DOCUMENT_METHOD(didChange);
+	SET_DOCUMENT_METHOD(willSaveWaitUntil);
+	SET_DOCUMENT_METHOD(didSave);
+
+	SET_DOCUMENT_METHOD(documentSymbol);
+	SET_DOCUMENT_METHOD(completion);
+	SET_DOCUMENT_METHOD(rename);
+	SET_DOCUMENT_METHOD(prepareRename);
+	SET_DOCUMENT_METHOD(references);
+	SET_DOCUMENT_METHOD(foldingRange);
+	SET_DOCUMENT_METHOD(codeLens);
+	SET_DOCUMENT_METHOD(documentLink);
+	SET_DOCUMENT_METHOD(colorPresentation);
+	SET_DOCUMENT_METHOD(hover);
+	SET_DOCUMENT_METHOD(definition);
+	SET_DOCUMENT_METHOD(declaration);
+	SET_DOCUMENT_METHOD(signatureHelp);
+
+	SET_DOCUMENT_METHOD(nativeSymbol); // Custom method.
+
+	SET_COMPLETION_METHOD(resolve);
+
+	SET_WORKSPACE_METHOD(didDeleteFiles);
+
+	set_method("initialize", callable_mp(this, &GDScriptLanguageProtocol::initialize));
+	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
+
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }
+
+#undef SET_DOCUMENT_METHOD
+#undef SET_COMPLETION_METHOD
+#undef SET_WORKSPACE_METHOD

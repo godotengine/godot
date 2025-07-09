@@ -5,6 +5,7 @@ plugins {
 
 ext {
     PUBLISH_ARTIFACT_ID = 'godot'
+    TOOLS_PUBLISH_ARTIFACT_ID = 'godot-tools'
 }
 
 apply from: "../scripts/publish-module.gradle"
@@ -66,9 +67,11 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
 
-        // 'doNotStrip' is enabled for development within Android Studio
+        // Debug symbols are kept for development within Android Studio.
         if (shouldNotStrip()) {
-            doNotStrip '**/*.so'
+            jniLibs {
+                keepDebugSymbols += '**/*.so'
+            }
         }
     }
 
@@ -104,7 +107,7 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
-        boolean debugSymbols = devBuild
+        boolean debugSymbols = devBuild || (buildType == "debug" && isAndroidStudio())
         boolean runTests = devBuild
         boolean storeRelease = buildType == "release"
         boolean productionBuild = storeRelease
@@ -182,6 +185,10 @@ android {
 
     publishing {
         singleVariant("templateRelease") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+        singleVariant("editorRelease") {
             withSourcesJar()
             withJavadocJar()
         }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_MANAGER_H
-#define GDEXTENSION_MANAGER_H
+#pragma once
 
 #include "core/extension/gdextension.h"
 
@@ -40,9 +39,12 @@ class GDExtensionManager : public Object {
 	HashMap<String, Ref<GDExtension>> gdextension_map;
 	HashMap<String, String> gdextension_class_icon_paths;
 
+	bool startup_callback_called = false;
+	bool shutdown_callback_called = false;
+
 	static void _bind_methods();
 
-	static GDExtensionManager *singleton;
+	static inline GDExtensionManager *singleton = nullptr;
 
 public:
 	enum LoadStatus {
@@ -87,10 +89,12 @@ public:
 	void reload_extensions();
 	bool ensure_extensions_loaded(const HashSet<String> &p_extensions);
 
+	void startup();
+	void shutdown();
+	void frame();
+
 	GDExtensionManager();
 	~GDExtensionManager();
 };
 
 VARIANT_ENUM_CAST(GDExtensionManager::LoadStatus)
-
-#endif // GDEXTENSION_MANAGER_H

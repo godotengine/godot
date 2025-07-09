@@ -56,26 +56,26 @@
 	</methods>
 	<members>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
-			The height of the shape, in meters. This is only used when the shape type is "capsule" or "cylinder". This value should not be negative, and for "capsule" it should be at least twice the radius.
+			The height of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code] or [code]"cylinder"[/code]. This value should not be negative, and for [code]"capsule"[/code] it should be at least twice the radius.
 		</member>
 		<member name="importer_mesh" type="ImporterMesh" setter="set_importer_mesh" getter="get_importer_mesh">
-			The [ImporterMesh] resource of the shape. This is only used when the shape type is "hull" (convex hull) or "trimesh" (concave trimesh).
+			The [ImporterMesh] resource of the shape. This is only used when the shape type is [code]"hull"[/code] (convex hull) or [code]"trimesh"[/code] (concave trimesh).
 		</member>
 		<member name="is_trigger" type="bool" setter="set_is_trigger" getter="get_is_trigger" default="false">
-			If [code]true[/code], indicates that this shape is a trigger. For Godot, this means that the shape should be a child of an Area3D node.
+			If [code]true[/code], indicates that this shape is a trigger. For Godot, this means that the shape should be a child of an [Area3D] node.
 			This is the only variable not used in the [method to_node] method, it's intended to be used alongside when deciding where to add the generated node as a child.
 		</member>
 		<member name="mesh_index" type="int" setter="set_mesh_index" getter="get_mesh_index" default="-1">
-			The index of the shape's mesh in the glTF file. This is only used when the shape type is "hull" (convex hull) or "trimesh" (concave trimesh).
+			The index of the shape's mesh in the glTF file. This is only used when the shape type is [code]"hull"[/code] (convex hull) or [code]"trimesh"[/code] (concave trimesh).
 		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.5">
-			The radius of the shape, in meters. This is only used when the shape type is "capsule", "cylinder", or "sphere". This value should not be negative.
+			The radius of the shape, in meters. This is only used when the shape type is [code]"capsule"[/code], [code]"cylinder"[/code], or [code]"sphere"[/code]. This value should not be negative.
 		</member>
 		<member name="shape_type" type="String" setter="set_shape_type" getter="get_shape_type" default="&quot;&quot;">
-			The type of shape this shape represents. Valid values are "box", "capsule", "cylinder", "sphere", "hull", and "trimesh".
+			The type of shape this shape represents. Valid values are [code]"box"[/code], [code]"capsule"[/code], [code]"cylinder"[/code], [code]"sphere"[/code], [code]"hull"[/code], and [code]"trimesh"[/code].
 		</member>
 		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
-			The size of the shape, in meters. This is only used when the shape type is "box", and it represents the "diameter" of the box. This value should not be negative.
+			The size of the shape, in meters. This is only used when the shape type is [code]"box"[/code], and it represents the [code]"diameter"[/code] of the box. This value should not be negative.
 		</member>
 	</members>
 </class>

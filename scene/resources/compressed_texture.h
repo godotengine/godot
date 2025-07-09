@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COMPRESSED_TEXTURE_H
-#define COMPRESSED_TEXTURE_H
+#pragma once
 
+#include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
 
 class BitMap;
@@ -76,7 +76,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	static Ref<Image> load_image_from_file(Ref<FileAccess> p_file, int p_size_limit);
@@ -107,7 +106,6 @@ public:
 
 	virtual Ref<Image> get_image() const override;
 
-	CompressedTexture2D();
 	~CompressedTexture2D();
 };
 
@@ -154,7 +152,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Image::Format get_format() const override;
@@ -241,7 +238,6 @@ private:
 
 protected:
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	Image::Format get_format() const override;
@@ -258,7 +254,6 @@ public:
 
 	virtual Vector<Ref<Image>> get_data() const override;
 
-	CompressedTexture3D();
 	~CompressedTexture3D();
 };
 
@@ -269,5 +264,3 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 };
-
-#endif // COMPRESSED_TEXTURE_H

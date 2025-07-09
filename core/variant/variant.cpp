@@ -32,10 +32,8 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/json.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
 #include "core/variant/variant_parser.h"
 
 PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
@@ -986,34 +984,34 @@ bool Variant::is_zero() const {
 
 		// Arrays.
 		case PACKED_BYTE_ARRAY: {
-			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_INT32_ARRAY: {
-			return PackedArrayRef<int32_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int32_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_INT64_ARRAY: {
-			return PackedArrayRef<int64_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int64_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_FLOAT32_ARRAY: {
-			return PackedArrayRef<float>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<float>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_FLOAT64_ARRAY: {
-			return PackedArrayRef<double>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<double>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_STRING_ARRAY: {
-			return PackedArrayRef<String>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<String>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR2_ARRAY: {
-			return PackedArrayRef<Vector2>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector2>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR3_ARRAY: {
-			return PackedArrayRef<Vector3>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector3>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_COLOR_ARRAY: {
-			return PackedArrayRef<Color>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Color>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR4_ARRAY: {
-			return PackedArrayRef<Vector4>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector4>::get_array(_data.packed_array).is_empty();
 		}
 		default: {
 		}
@@ -1488,147 +1486,35 @@ void Variant::_clear_internal() {
 }
 
 Variant::operator int64_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int64_t>();
 }
 
 Variant::operator int32_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int32_t>();
 }
 
 Variant::operator int16_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int16_t>();
 }
 
 Variant::operator int8_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int8_t>();
 }
 
 Variant::operator uint64_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint64_t>();
 }
 
 Variant::operator uint32_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint32_t>();
 }
 
 Variant::operator uint16_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint16_t>();
 }
 
 Variant::operator uint8_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint8_t>();
 }
 
 Variant::operator ObjectID() const {
@@ -1646,39 +1532,11 @@ Variant::operator char32_t() const {
 }
 
 Variant::operator float() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1.0 : 0.0;
-		case INT:
-			return (float)_data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_float();
-		default: {
-			return 0;
-		}
-	}
+	return _to_float<float>();
 }
 
 Variant::operator double() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1.0 : 0.0;
-		case INT:
-			return (double)_data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_float();
-		default: {
-			return 0;
-		}
-	}
+	return _to_float<double>();
 }
 
 Variant::operator StringName() const {
@@ -1752,41 +1610,41 @@ String Variant::stringify(int recursion_count) const {
 		case STRING:
 			return *reinterpret_cast<const String *>(_data._mem);
 		case VECTOR2:
-			return operator Vector2();
+			return String(operator Vector2());
 		case VECTOR2I:
-			return operator Vector2i();
+			return String(operator Vector2i());
 		case RECT2:
-			return operator Rect2();
+			return String(operator Rect2());
 		case RECT2I:
-			return operator Rect2i();
+			return String(operator Rect2i());
 		case TRANSFORM2D:
-			return operator Transform2D();
+			return String(operator Transform2D());
 		case VECTOR3:
-			return operator Vector3();
+			return String(operator Vector3());
 		case VECTOR3I:
-			return operator Vector3i();
+			return String(operator Vector3i());
 		case VECTOR4:
-			return operator Vector4();
+			return String(operator Vector4());
 		case VECTOR4I:
-			return operator Vector4i();
+			return String(operator Vector4i());
 		case PLANE:
-			return operator Plane();
+			return String(operator Plane());
 		case AABB:
-			return operator ::AABB();
+			return String(operator ::AABB());
 		case QUATERNION:
-			return operator Quaternion();
+			return String(operator Quaternion());
 		case BASIS:
-			return operator Basis();
+			return String(operator Basis());
 		case TRANSFORM3D:
-			return operator Transform3D();
+			return String(operator Transform3D());
 		case PROJECTION:
-			return operator Projection();
+			return String(operator Projection());
 		case STRING_NAME:
 			return operator StringName();
 		case NODE_PATH:
-			return operator NodePath();
+			return String(operator NodePath());
 		case COLOR:
-			return operator Color();
+			return String(operator Color());
 		case DICTIONARY: {
 			ERR_FAIL_COND_V_MSG(recursion_count > MAX_RECURSION, "{ ... }", "Maximum dictionary recursion reached!");
 			recursion_count++;
@@ -1796,15 +1654,13 @@ String Variant::stringify(int recursion_count) const {
 			// Add leading and trailing space to Dictionary printing. This distinguishes it
 			// from array printing on fonts that have similar-looking {} and [] characters.
 			String str("{ ");
-			List<Variant> keys;
-			d.get_key_list(&keys);
 
 			Vector<_VariantStrPair> pairs;
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (const KeyValue<Variant, Variant> &kv : d) {
 				_VariantStrPair sp;
-				sp.key = stringify_variant_clean(E->get(), recursion_count);
-				sp.value = stringify_variant_clean(d[E->get()], recursion_count);
+				sp.key = stringify_variant_clean(kv.key, recursion_count);
+				sp.value = stringify_variant_clean(kv.value, recursion_count);
 
 				pairs.push_back(sp);
 			}
@@ -1869,11 +1725,11 @@ String Variant::stringify(int recursion_count) const {
 		}
 		case CALLABLE: {
 			const Callable &c = *reinterpret_cast<const Callable *>(_data._mem);
-			return c;
+			return String(c);
 		}
 		case SIGNAL: {
 			const Signal &s = *reinterpret_cast<const Signal *>(_data._mem);
-			return s;
+			return String(s);
 		}
 		case RID: {
 			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
@@ -2438,14 +2294,6 @@ Variant::operator Vector<StringName>() const {
 	return to;
 }
 
-Variant::operator Side() const {
-	return (Side) operator int();
-}
-
-Variant::operator Orientation() const {
-	return (Orientation) operator int();
-}
-
 Variant::operator IPAddress() const {
 	if (type == PACKED_FLOAT32_ARRAY || type == PACKED_INT32_ARRAY || type == PACKED_FLOAT64_ARRAY || type == PACKED_INT64_ARRAY || type == PACKED_BYTE_ARRAY) {
 		Vector<int> addr = operator Vector<int>();
@@ -2484,22 +2332,22 @@ Variant::Variant(int8_t p_int8) :
 
 Variant::Variant(uint64_t p_uint64) :
 		type(INT) {
-	_data._int = p_uint64;
+	_data._int = int64_t(p_uint64);
 }
 
 Variant::Variant(uint32_t p_uint32) :
 		type(INT) {
-	_data._int = p_uint32;
+	_data._int = int64_t(p_uint32);
 }
 
 Variant::Variant(uint16_t p_uint16) :
 		type(INT) {
-	_data._int = p_uint16;
+	_data._int = int64_t(p_uint16);
 }
 
 Variant::Variant(uint8_t p_uint8) :
 		type(INT) {
-	_data._int = p_uint8;
+	_data._int = int64_t(p_uint8);
 }
 
 Variant::Variant(float p_float) :
@@ -2514,72 +2362,85 @@ Variant::Variant(double p_double) :
 
 Variant::Variant(const ObjectID &p_id) :
 		type(INT) {
-	_data._int = p_id;
+	_data._int = int64_t(p_id);
 }
 
 Variant::Variant(const StringName &p_string) :
 		type(STRING_NAME) {
 	memnew_placement(_data._mem, StringName(p_string));
+	static_assert(sizeof(StringName) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const String &p_string) :
 		type(STRING) {
 	memnew_placement(_data._mem, String(p_string));
+	static_assert(sizeof(String) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const char *const p_cstring) :
 		type(STRING) {
 	memnew_placement(_data._mem, String((const char *)p_cstring));
+	static_assert(sizeof(String) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const char32_t *p_wstring) :
 		type(STRING) {
 	memnew_placement(_data._mem, String(p_wstring));
+	static_assert(sizeof(String) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector3 &p_vector3) :
 		type(VECTOR3) {
 	memnew_placement(_data._mem, Vector3(p_vector3));
+	static_assert(sizeof(Vector3) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector3i &p_vector3i) :
 		type(VECTOR3I) {
 	memnew_placement(_data._mem, Vector3i(p_vector3i));
+	static_assert(sizeof(Vector3i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector4 &p_vector4) :
 		type(VECTOR4) {
 	memnew_placement(_data._mem, Vector4(p_vector4));
+	static_assert(sizeof(Vector4) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector4i &p_vector4i) :
 		type(VECTOR4I) {
 	memnew_placement(_data._mem, Vector4i(p_vector4i));
+	static_assert(sizeof(Vector4i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector2 &p_vector2) :
 		type(VECTOR2) {
 	memnew_placement(_data._mem, Vector2(p_vector2));
+	static_assert(sizeof(Vector2) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector2i &p_vector2i) :
 		type(VECTOR2I) {
 	memnew_placement(_data._mem, Vector2i(p_vector2i));
+	static_assert(sizeof(Vector2i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Rect2 &p_rect2) :
 		type(RECT2) {
 	memnew_placement(_data._mem, Rect2(p_rect2));
+	static_assert(sizeof(Rect2) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Rect2i &p_rect2i) :
 		type(RECT2I) {
 	memnew_placement(_data._mem, Rect2i(p_rect2i));
+	static_assert(sizeof(Rect2i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Plane &p_plane) :
 		type(PLANE) {
 	memnew_placement(_data._mem, Plane(p_plane));
+	static_assert(sizeof(Plane) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const ::AABB &p_aabb) :
@@ -2597,6 +2458,7 @@ Variant::Variant(const Basis &p_matrix) :
 Variant::Variant(const Quaternion &p_quaternion) :
 		type(QUATERNION) {
 	memnew_placement(_data._mem, Quaternion(p_quaternion));
+	static_assert(sizeof(Quaternion) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Transform3D &p_transform) :
@@ -2620,16 +2482,19 @@ Variant::Variant(const Transform2D &p_transform) :
 Variant::Variant(const Color &p_color) :
 		type(COLOR) {
 	memnew_placement(_data._mem, Color(p_color));
+	static_assert(sizeof(Color) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const NodePath &p_node_path) :
 		type(NODE_PATH) {
 	memnew_placement(_data._mem, NodePath(p_node_path));
+	static_assert(sizeof(NodePath) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const ::RID &p_rid) :
 		type(RID) {
 	memnew_placement(_data._mem, ::RID(p_rid));
+	static_assert(sizeof(::RID) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Object *p_object) :
@@ -2641,21 +2506,30 @@ Variant::Variant(const Object *p_object) :
 Variant::Variant(const Callable &p_callable) :
 		type(CALLABLE) {
 	memnew_placement(_data._mem, Callable(p_callable));
+	static_assert(sizeof(Callable) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Signal &p_callable) :
 		type(SIGNAL) {
 	memnew_placement(_data._mem, Signal(p_callable));
+	static_assert(sizeof(Signal) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Dictionary &p_dictionary) :
 		type(DICTIONARY) {
 	memnew_placement(_data._mem, Dictionary(p_dictionary));
+	static_assert(sizeof(Dictionary) <= sizeof(_data._mem));
+}
+
+Variant::Variant(std::initializer_list<Variant> p_init) :
+		type(ARRAY) {
+	memnew_placement(_data._mem, Array(p_init));
 }
 
 Variant::Variant(const Array &p_array) :
 		type(ARRAY) {
 	memnew_placement(_data._mem, Array(p_array));
+	static_assert(sizeof(Array) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const PackedByteArray &p_byte_array) :
@@ -3260,32 +3134,20 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 #define hash_compare_scalar(p_lhs, p_rhs) \
 	(hash_compare_scalar_base(p_lhs, p_rhs, true))
 
-#define hash_compare_vector2(p_lhs, p_rhs)        \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) && \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y))
+#define hash_compare_vector2(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_vector3(p_lhs, p_rhs)               \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
-			hash_compare_scalar((p_lhs).z, (p_rhs).z))
+#define hash_compare_vector3(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_vector4(p_lhs, p_rhs)               \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
-			hash_compare_scalar((p_lhs).z, (p_rhs).z) && \
-			hash_compare_scalar((p_lhs).w, (p_rhs).w))
+#define hash_compare_vector4(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_quaternion(p_lhs, p_rhs)            \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
-			hash_compare_scalar((p_lhs).z, (p_rhs).z) && \
-			hash_compare_scalar((p_lhs).w, (p_rhs).w))
+#define hash_compare_quaternion(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_color(p_lhs, p_rhs)                 \
-	(hash_compare_scalar((p_lhs).r, (p_rhs).r) &&        \
-			hash_compare_scalar((p_lhs).g, (p_rhs).g) && \
-			hash_compare_scalar((p_lhs).b, (p_rhs).b) && \
-			hash_compare_scalar((p_lhs).a, (p_rhs).a))
+#define hash_compare_color(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
 #define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
 	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
@@ -3356,13 +3218,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			Transform2D *l = _data._transform2d;
 			Transform2D *r = p_variant._data._transform2d;
 
-			for (int i = 0; i < 3; i++) {
-				if (!hash_compare_vector2(l->columns[i], r->columns[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return l->is_same(*r);
 		} break;
 
 		case VECTOR3: {
@@ -3394,17 +3250,14 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			const Plane *l = reinterpret_cast<const Plane *>(_data._mem);
 			const Plane *r = reinterpret_cast<const Plane *>(p_variant._data._mem);
 
-			return hash_compare_vector3(l->normal, r->normal) &&
-					hash_compare_scalar(l->d, r->d);
+			return l->is_same(*r);
 		} break;
 
 		case AABB: {
 			const ::AABB *l = _data._aabb;
 			const ::AABB *r = p_variant._data._aabb;
 
-			return hash_compare_vector3(l->position, r->position) &&
-					hash_compare_vector3(l->size, r->size);
-
+			return l->is_same(*r);
 		} break;
 
 		case QUATERNION: {
@@ -3418,38 +3271,20 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			const Basis *l = _data._basis;
 			const Basis *r = p_variant._data._basis;
 
-			for (int i = 0; i < 3; i++) {
-				if (!hash_compare_vector3(l->rows[i], r->rows[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return l->is_same(*r);
 		} break;
 
 		case TRANSFORM3D: {
 			const Transform3D *l = _data._transform3d;
 			const Transform3D *r = p_variant._data._transform3d;
 
-			for (int i = 0; i < 3; i++) {
-				if (!hash_compare_vector3(l->basis.rows[i], r->basis.rows[i])) {
-					return false;
-				}
-			}
-
-			return hash_compare_vector3(l->origin, r->origin);
+			return l->is_same(*r);
 		} break;
 		case PROJECTION: {
 			const Projection *l = _data._projection;
 			const Projection *r = p_variant._data._projection;
 
-			for (int i = 0; i < 4; i++) {
-				if (!hash_compare_vector4(l->columns[i], r->columns[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return l->is_same(*r);
 		} break;
 
 		case COLOR: {
@@ -3568,6 +3403,26 @@ bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p
 	return false;
 }
 
+bool StringLikeVariantOrder::compare(const Variant &p_lhs, const Variant &p_rhs) {
+	if (p_lhs.get_type() == Variant::STRING) {
+		const String &lhs = *VariantInternal::get_string(&p_lhs);
+		if (p_rhs.get_type() == Variant::STRING) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string(&p_rhs));
+		} else if (p_rhs.get_type() == Variant::STRING_NAME) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string_name(&p_rhs));
+		}
+	} else if (p_lhs.get_type() == Variant::STRING_NAME) {
+		const StringName &lhs = *VariantInternal::get_string_name(&p_lhs);
+		if (p_rhs.get_type() == Variant::STRING) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string(&p_rhs));
+		} else if (p_rhs.get_type() == Variant::STRING_NAME) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string_name(&p_rhs));
+		}
+	}
+
+	return p_lhs < p_rhs;
+}
+
 bool Variant::is_ref_counted() const {
 	return type == OBJECT && _get_obj().id.is_ref_counted();
 }
@@ -3646,9 +3501,9 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 			err_text = "Cannot convert argument " + itos(errorarg + 1) + " from [missing argptr, type unknown] to " + Variant::get_type_name(Variant::Type(ce.expected));
 		}
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " argument(s), but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
-		err_text = "Method expected " + itos(ce.expected) + " arguments, but called with " + itos(p_argcount);
+		err_text = "Method expected " + itos(ce.expected) + " argument(s), but called with " + itos(p_argcount);
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INVALID_METHOD) {
 		err_text = "Method not found";
 	} else if (ce.error == Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL) {

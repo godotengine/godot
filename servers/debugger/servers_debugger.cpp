@@ -33,7 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/engine_profiler.h"
-#include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/object/script_language.h"
 #include "servers/display_server.h"
 
 #define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() < (uint32_t)(expected), false, String("Malformed ") + what + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
@@ -42,8 +43,7 @@
 Array ServersDebugger::ResourceUsage::serialize() {
 	infos.sort();
 
-	Array arr;
-	arr.push_back(infos.size() * 4);
+	Array arr = { infos.size() * 4 };
 	for (const ResourceInfo &E : infos) {
 		arr.push_back(E.path);
 		arr.push_back(E.format);
@@ -73,9 +73,7 @@ bool ServersDebugger::ResourceUsage::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ScriptFunctionSignature::serialize() {
-	Array arr;
-	arr.push_back(name);
-	arr.push_back(id);
+	Array arr = { name, id };
 	return arr;
 }
 
@@ -88,13 +86,7 @@ bool ServersDebugger::ScriptFunctionSignature::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::ServersProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(frame_number);
-	arr.push_back(frame_time);
-	arr.push_back(process_time);
-	arr.push_back(physics_time);
-	arr.push_back(physics_frame_time);
-	arr.push_back(script_time);
+	Array arr = { frame_number, frame_time, process_time, physics_time, physics_frame_time, script_time };
 
 	arr.push_back(servers.size());
 	for (const ServerInfo &s : servers) {
@@ -163,9 +155,7 @@ bool ServersDebugger::ServersProfilerFrame::deserialize(const Array &p_arr) {
 }
 
 Array ServersDebugger::VisualProfilerFrame::serialize() {
-	Array arr;
-	arr.push_back(frame_number);
-	arr.push_back(areas.size() * 3);
+	Array arr = { frame_number, areas.size() * 3 };
 	for (int i = 0; i < areas.size(); i++) {
 		arr.push_back(areas[i].name);
 		arr.push_back(areas[i].cpu_msec);
@@ -372,9 +362,10 @@ public:
 		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
 
 		// Send hardware information from the remote device so that it's accurate for remote debugging.
-		Array hardware_info;
-		hardware_info.push_back(OS::get_singleton()->get_processor_name());
-		hardware_info.push_back(RenderingServer::get_singleton()->get_video_adapter_name());
+		Array hardware_info = {
+			OS::get_singleton()->get_processor_name(),
+			RenderingServer::get_singleton()->get_video_adapter_name()
+		};
 		EngineDebugger::get_singleton()->send_message("visual:hardware_info", hardware_info);
 	}
 
@@ -445,7 +436,24 @@ void ServersDebugger::_send_resource_usage() {
 		info.path = E.path;
 		info.vram = E.bytes;
 		info.id = E.texture;
-		info.type = "Texture";
+
+		switch (E.type) {
+			case RS::TextureType::TEXTURE_TYPE_2D:
+				info.type = "Texture2D";
+				break;
+			case RS::TextureType::TEXTURE_TYPE_3D:
+				info.type = "Texture3D";
+				break;
+			case RS::TextureType::TEXTURE_TYPE_LAYERED:
+				info.type = "TextureLayered";
+				break;
+		}
+
+		String possible_type = _get_resource_type_from_path(E.path);
+		if (!possible_type.is_empty()) {
+			info.type = possible_type;
+		}
+
 		if (E.depth == 0) {
 			info.format = itos(E.width) + "x" + itos(E.height) + " " + Image::get_format_name(E.format);
 		} else {
@@ -454,7 +462,59 @@ void ServersDebugger::_send_resource_usage() {
 		usage.infos.push_back(info);
 	}
 
+	List<RS::MeshInfo> mesh_info;
+	RS::get_singleton()->mesh_debug_usage(&mesh_info);
+
+	for (const RS::MeshInfo &E : mesh_info) {
+		ServersDebugger::ResourceInfo info;
+		info.path = E.path;
+		// We use 64-bit integers to avoid overflow, if for whatever reason, the sum is bigger than 4GB.
+		uint64_t vram = E.vertex_buffer_size + E.attribute_buffer_size + E.skin_buffer_size + E.index_buffer_size + E.blend_shape_buffer_size + E.lod_index_buffers_size;
+		// But can info.vram even hold that, and why is it an int instead of an uint?
+		info.vram = vram;
+
+		// Even though these empty meshes can be indicative of issues somewhere else
+		// for UX reasons, we don't want to show them.
+		if (vram == 0 && E.path.is_empty()) {
+			continue;
+		}
+
+		info.id = E.mesh;
+		info.type = "Mesh";
+		String possible_type = _get_resource_type_from_path(E.path);
+		if (!possible_type.is_empty()) {
+			info.type = possible_type;
+		}
+
+		info.format = itos(E.vertex_count) + " Vertices";
+		usage.infos.push_back(info);
+	}
+
 	EngineDebugger::get_singleton()->send_message("servers:memory_usage", usage.serialize());
+}
+
+// Done on a best-effort basis.
+String ServersDebugger::_get_resource_type_from_path(const String &p_path) {
+	if (p_path.is_empty()) {
+		return "";
+	}
+
+	if (!ResourceLoader::exists(p_path)) {
+		return "";
+	}
+
+	if (ResourceCache::has(p_path)) {
+		Ref<Resource> resource = ResourceCache::get_ref(p_path);
+		return resource->get_class();
+	} else {
+		// This doesn't work all the time for embedded resources.
+		String resource_type = ResourceLoader::get_resource_type(p_path);
+		if (resource_type != "") {
+			return resource_type;
+		}
+	}
+
+	return "";
 }
 
 ServersDebugger::ServersDebugger() {

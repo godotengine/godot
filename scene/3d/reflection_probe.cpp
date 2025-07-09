@@ -105,7 +105,7 @@ void ReflectionProbe::set_size(const Vector3 &p_size) {
 			half_size = 0.01;
 		}
 
-		if (half_size - 0.01 < ABS(origin_offset[i])) {
+		if (half_size - 0.01 < Math::abs(origin_offset[i])) {
 			origin_offset[i] = SIGN(origin_offset[i]) * (half_size - 0.01);
 		}
 	}
@@ -125,7 +125,7 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_offset) {
 
 	for (int i = 0; i < 3; i++) {
 		float half_size = size[i] / 2;
-		if (half_size - 0.01 < ABS(origin_offset[i])) {
+		if (half_size - 0.01 < Math::abs(origin_offset[i])) {
 			origin_offset[i] = SIGN(origin_offset[i]) * (half_size - 0.01);
 		}
 	}
@@ -201,6 +201,9 @@ AABB ReflectionProbe::get_aabb() const {
 }
 
 void ReflectionProbe::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "ambient_color" || p_property.name == "ambient_color_energy") {
 		if (ambient_mode != AMBIENT_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

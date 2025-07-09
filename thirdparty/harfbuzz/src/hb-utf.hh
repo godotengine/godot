@@ -458,19 +458,21 @@ struct hb_ascii_t
 template <typename utf_t>
 static inline const typename utf_t::codepoint_t *
 hb_utf_offset_to_pointer (const typename utf_t::codepoint_t *start,
+			  const typename utf_t::codepoint_t *text,
+			  unsigned text_len,
 			  signed offset)
 {
   hb_codepoint_t unicode;
 
   while (offset-- > 0)
     start = utf_t::next (start,
-			 start + utf_t::max_len,
+			 text + text_len,
 			 &unicode,
 			 HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT);
 
   while (offset++ < 0)
     start = utf_t::prev (start,
-			 start - utf_t::max_len,
+			 text,
 			 &unicode,
 			 HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT);
 

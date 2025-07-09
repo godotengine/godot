@@ -106,9 +106,7 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
-	AnimationMixer::_validate_property(p_property);
-
-	if (p_property.name == "current_animation") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "current_animation") {
 		List<String> names;
 
 		for (const KeyValue<StringName, AnimationData> &E : animation_set) {
@@ -160,7 +158,7 @@ void AnimationPlayer::_notification(int p_what) {
 
 void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_internal_seeked, bool p_started, bool p_is_current) {
 	double speed = speed_scale * cd.speed_scale;
-	bool backwards = signbit(speed); // Negative zero means playing backwards too.
+	bool backwards = std::signbit(speed); // Negative zero means playing backwards too.
 	double delta = p_started ? 0 : p_delta * speed;
 	double next_pos = cd.pos + delta;
 
@@ -256,8 +254,7 @@ void AnimationPlayer::_process_playback_data(PlaybackData &cd, double p_delta, f
 float AnimationPlayer::get_current_blend_amount() {
 	Playback &c = playback;
 	float blend = 1.0;
-	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
-		Blend &b = E->get();
+	for (const Blend &b : c.blend) {
 		blend = blend - b.blend_left;
 	}
 	return MAX(0, blend);
@@ -285,7 +282,7 @@ void AnimationPlayer::_blend_playback_data(double p_delta, bool p_started) {
 	List<List<Blend>::Element *> to_erase;
 	for (List<Blend>::Element *E = c.blend.front(); E; E = E->next()) {
 		Blend &b = E->get();
-		b.blend_left = MAX(0, b.blend_left - Math::absf(speed_scale * p_delta) / b.blend_time);
+		b.blend_left = MAX(0, b.blend_left - Math::abs(speed_scale * p_delta) / b.blend_time);
 		if (Animation::is_less_or_equal_approx(b.blend_left, 0)) {
 			to_erase.push_back(E);
 			b.blend_left = CMP_EPSILON; // May want to play last frame.
@@ -346,6 +343,7 @@ void AnimationPlayer::_blend_post_process() {
 				_set_process(false);
 				if (end_notify) {
 					emit_signal(SceneStringName(animation_finished), playback.assigned);
+					emit_signal(SNAME("current_animation_changed"), "");
 					if (movie_quit_on_finish && OS::get_singleton()->has_feature("movie")) {
 						print_line(vformat("Movie Maker mode is enabled. Quitting on animation finish as requested by: %s", get_path()));
 						get_tree()->quit();
@@ -546,7 +544,7 @@ void AnimationPlayer::_capture(const StringName &p_name, bool p_from_end, double
 	if (anim.is_null() || !anim->is_capture_included()) {
 		return;
 	}
-	if (signbit(p_duration)) {
+	if (std::signbit(p_duration)) {
 		double max_dur = 0;
 		double current_pos = playback.current.pos;
 		if (playback.assigned != name) {
@@ -588,7 +586,7 @@ void AnimationPlayer::set_current_animation(const String &p_animation) {
 		play(p_animation);
 	} else if (playback.assigned != p_animation) {
 		float speed = playback.current.speed_scale;
-		play(p_animation, -1.0, speed, signbit(speed));
+		play(p_animation, -1.0, speed, std::signbit(speed));
 	} else {
 		// Same animation, do not replay from start.
 	}
@@ -601,7 +599,7 @@ String AnimationPlayer::get_current_animation() const {
 void AnimationPlayer::set_assigned_animation(const String &p_animation) {
 	if (is_playing()) {
 		float speed = playback.current.speed_scale;
-		play(p_animation, -1.0, speed, signbit(speed));
+		play(p_animation, -1.0, speed, std::signbit(speed));
 	} else {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation));
 		playback.current.pos = 0;

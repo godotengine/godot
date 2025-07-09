@@ -59,15 +59,42 @@ HB_EXTERN hb_face_t *
 hb_face_create (hb_blob_t    *blob,
 		unsigned int  index);
 
+HB_EXTERN hb_face_t *
+hb_face_create_or_fail (hb_blob_t    *blob,
+			unsigned int  index);
+
+HB_EXTERN hb_face_t *
+hb_face_create_or_fail_using (hb_blob_t    *blob,
+			      unsigned int  index,
+			      const char   *loader_name);
+
+HB_EXTERN hb_face_t *
+hb_face_create_from_file_or_fail (const char   *file_name,
+				  unsigned int  index);
+
+HB_EXTERN hb_face_t *
+hb_face_create_from_file_or_fail_using (const char   *file_name,
+					unsigned int  index,
+					const char   *loader_name);
+
+HB_EXTERN const char **
+hb_face_list_loaders (void);
+
+
 /**
  * hb_reference_table_func_t:
  * @face: an #hb_face_t to reference table for
  * @tag: the tag of the table to reference
  * @user_data: User data pointer passed by the caller
  *
- * Callback function for hb_face_create_for_tables().
+ * Callback function for hb_face_create_for_tables(). The @tag is the tag of the
+ * table to reference, and the special tag #HB_TAG_NONE is used to reference the
+ * blob of the face itself. If referencing the face blob is not possible, it is
+ * recommended to set hb_get_table_tags_func_t on the @face to allow
+ * hb_face_reference_blob() to create a face blob out of individual table blobs.
  *
- * Return value: (transfer full): A pointer to the @tag table within @face
+ * Return value: (transfer full): A pointer to the @tag table within @face or
+ * `NULL` if the table is not found or cannot be referenced.
  *
  * Since: 0.9.2
  */
@@ -104,7 +131,7 @@ HB_EXTERN void
 hb_face_make_immutable (hb_face_t *face);
 
 HB_EXTERN hb_bool_t
-hb_face_is_immutable (const hb_face_t *face);
+hb_face_is_immutable (hb_face_t *face);
 
 
 HB_EXTERN hb_blob_t *

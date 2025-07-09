@@ -53,8 +53,15 @@ void MeshStorage::mesh_initialize(RID p_rid) {
 void MeshStorage::mesh_free(RID p_rid) {
 	DummyMesh *mesh = mesh_owner.get_or_null(p_rid);
 	ERR_FAIL_NULL(mesh);
-
+	mesh->dependency.deleted_notify(p_rid);
 	mesh_owner.free(p_rid);
+}
+
+void MeshStorage::mesh_surface_remove(RID p_mesh, int p_surface) {
+	DummyMesh *m = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(m);
+	m->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
+	m->surfaces.remove_at(p_surface);
 }
 
 void MeshStorage::mesh_clear(RID p_mesh) {

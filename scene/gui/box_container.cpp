@@ -243,7 +243,7 @@ Size2 BoxContainer::get_minimum_size() const {
 	bool first = true;
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *c = as_sortable_control(get_child(i), SortableVisbilityMode::VISIBLE);
+		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
 		if (!c) {
 			continue;
 		}
@@ -394,6 +394,7 @@ MarginContainer *VBoxContainer::add_margin_child(const String &p_label, Control 
 	if (p_expand) {
 		mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	}
+	p_control->set_accessibility_name(p_label);
 
 	return mc;
 }

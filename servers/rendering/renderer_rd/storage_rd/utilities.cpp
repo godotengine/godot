@@ -265,7 +265,7 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 		return true;
 	}
 
-#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
+#if !defined(ANDROID_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 	// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
 	// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).
 	// For good measure we do the same hack for iOS, just in case.
@@ -283,6 +283,10 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 	}
 
 	if (p_feature == "astc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	if (p_feature == "astc_hdr" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;
 	}
 
@@ -328,4 +332,12 @@ Size2i Utilities::get_maximum_viewport_size() const {
 	int max_x = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_X);
 	int max_y = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_Y);
 	return Size2i(max_x, max_y);
+}
+
+uint32_t Utilities::get_maximum_shader_varyings() const {
+	return RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_SHADER_VARYINGS);
+}
+
+uint64_t Utilities::get_maximum_uniform_buffer_size() const {
+	return RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
 }

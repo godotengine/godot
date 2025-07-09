@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPED_ARRAY_H
-#define TYPED_ARRAY_H
+#pragma once
 
 #include "core/object/object.h"
 #include "core/variant/array.h"
@@ -43,7 +42,7 @@ class TypedArray : public Array {
 public:
 	_FORCE_INLINE_ void operator=(const Array &p_array) {
 		ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type.");
-		_ref(p_array);
+		Array::operator=(p_array);
 	}
 	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
 			TypedArray(Array(p_variant)) {
@@ -51,11 +50,13 @@ public:
 	_FORCE_INLINE_ TypedArray(const Array &p_array) {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
 		if (is_same_typed(p_array)) {
-			_ref(p_array);
+			Array::operator=(p_array);
 		} else {
 			assign(p_array);
 		}
 	}
+	_FORCE_INLINE_ TypedArray(std::initializer_list<Variant> p_init) :
+			TypedArray(Array(p_init)) {}
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
 	}
@@ -80,7 +81,10 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 	public:                                                                                                      \
 		_FORCE_INLINE_ void operator=(const Array &p_array) {                                                    \
 			ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type."); \
-			_ref(p_array);                                                                                       \
+			Array::operator=(p_array);                                                                           \
+		}                                                                                                        \
+		_FORCE_INLINE_ TypedArray(std::initializer_list<Variant> p_init) :                                       \
+				Array(Array(p_init), m_variant_type, StringName(), Variant()) {                                  \
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray(const Variant &p_variant) :                                                    \
 				TypedArray(Array(p_variant)) {                                                                   \
@@ -88,7 +92,7 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 		_FORCE_INLINE_ TypedArray(const Array &p_array) {                                                        \
 			set_typed(m_variant_type, StringName(), Variant());                                                  \
 			if (is_same_typed(p_array)) {                                                                        \
-				_ref(p_array);                                                                                   \
+				Array::operator=(p_array);                                                                       \
 			} else {                                                                                             \
 				assign(p_array);                                                                                 \
 			}                                                                                                    \
@@ -159,24 +163,7 @@ struct PtrToArg<TypedArray<T>> {
 };
 
 template <typename T>
-struct PtrToArg<const TypedArray<T> &> {
-	typedef Array EncodeT;
-	_FORCE_INLINE_ static TypedArray<T> convert(const void *p_ptr) {
-		return TypedArray<T>(*reinterpret_cast<const Array *>(p_ptr));
-	}
-};
-
-template <typename T>
 struct GetTypeInfo<TypedArray<T>> {
-	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, T::get_class_static());
-	}
-};
-
-template <typename T>
-struct GetTypeInfo<const TypedArray<T> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::ARRAY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
@@ -187,14 +174,6 @@ struct GetTypeInfo<const TypedArray<T> &> {
 #define MAKE_TYPED_ARRAY_INFO(m_type, m_variant_type)                                                                        \
 	template <>                                                                                                              \
 	struct GetTypeInfo<TypedArray<m_type>> {                                                                                 \
-		static const Variant::Type VARIANT_TYPE = Variant::ARRAY;                                                            \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                        \
-		static inline PropertyInfo get_class_info() {                                                                        \
-			return PropertyInfo(Variant::ARRAY, String(), PROPERTY_HINT_ARRAY_TYPE, Variant::get_type_name(m_variant_type)); \
-		}                                                                                                                    \
-	};                                                                                                                       \
-	template <>                                                                                                              \
-	struct GetTypeInfo<const TypedArray<m_type> &> {                                                                         \
 		static const Variant::Type VARIANT_TYPE = Variant::ARRAY;                                                            \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                        \
 		static inline PropertyInfo get_class_info() {                                                                        \
@@ -251,5 +230,3 @@ MAKE_TYPED_ARRAY_INFO(IPAddress, Variant::STRING)
 
 #undef MAKE_TYPED_ARRAY
 #undef MAKE_TYPED_ARRAY_INFO
-
-#endif // TYPED_ARRAY_H

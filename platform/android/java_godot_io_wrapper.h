@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JAVA_GODOT_IO_WRAPPER_H
-#define JAVA_GODOT_IO_WRAPPER_H
+#pragma once
 
-#include "string_android.h"
+#include "jni_utils.h"
 
 #include "core/math/rect2i.h"
 #include "core/variant/typed_array.h"
@@ -50,6 +49,7 @@ private:
 	jmethodID _get_data_dir = 0;
 	jmethodID _get_temp_dir = 0;
 	jmethodID _get_display_cutouts = 0;
+	jmethodID _get_display_rotation = 0;
 	jmethodID _get_display_safe_area = 0;
 	jmethodID _get_locale = 0;
 	jmethodID _get_model = 0;
@@ -73,7 +73,7 @@ public:
 	Error open_uri(const String &p_uri);
 	String get_cache_dir();
 	String get_temp_dir();
-	String get_user_data_dir();
+	String get_user_data_dir(const String &p_user_dir);
 	String get_locale();
 	String get_model();
 	int get_screen_dpi();
@@ -91,6 +91,5 @@ public:
 	void set_screen_orientation(int p_orient);
 	int get_screen_orientation();
 	String get_system_dir(int p_dir, bool p_shared_storage);
+	int get_display_rotation();
 };
-
-#endif // JAVA_GODOT_IO_WRAPPER_H

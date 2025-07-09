@@ -33,15 +33,15 @@
 #include "../multiplayer_synchronizer.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/property_selector.h"
+#include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
@@ -235,6 +235,7 @@ ReplicationEditor::ReplicationEditor() {
 
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
+	np_line_edit->set_accessibility_name(TTRC("Path:"));
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
@@ -274,6 +275,7 @@ ReplicationEditor::ReplicationEditor() {
 	vb->add_child(tree);
 
 	drop_label = memnew(Label);
+	drop_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	drop_label->set_text(TTR("Add properties using the options above, or\ndrag them from the inspector and drop them here."));
 	drop_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	drop_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
@@ -337,7 +339,7 @@ void ReplicationEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return;
 	}
 
-	String path = root->get_path_to(node);
+	String path = String(root->get_path_to(node));
 	path += ":" + String(d["property"]);
 
 	_add_sync_property(path);
@@ -387,7 +389,7 @@ void ReplicationEditor::_add_pressed() {
 		return;
 	}
 
-	_add_sync_property(path);
+	_add_sync_property(String(path));
 }
 
 void ReplicationEditor::_np_text_submitted(const String &p_newtext) {
@@ -491,7 +493,7 @@ void ReplicationEditor::_update_config() {
 	tree->clear();
 	tree->create_item();
 	drop_label->set_visible(true);
-	if (!config.is_valid()) {
+	if (config.is_null()) {
 		return;
 	}
 	TypedArray<NodePath> props = config->get_properties();

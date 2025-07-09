@@ -23,7 +23,7 @@ struct InstanceData {
 	vec2 world_y;
 	vec2 world_ofs;
 	uint flags;
-	uint pad2;
+	uint instance_uniforms_ofs;
 #ifdef USE_PRIMITIVE
 	vec2 points[3];
 	vec2 uvs[3];
@@ -109,8 +109,8 @@ layout(set = 0, binding = 1, std140) uniform CanvasData {
 
 	uint directional_light_count;
 	float tex_to_sdf;
+	float shadow_pixel_size;
 	uint flags;
-	uint pad2;
 }
 canvas_data;
 
@@ -143,8 +143,8 @@ struct Light {
 	vec4 atlas_rect;
 };
 
-layout(set = 0, binding = 2, std140) uniform LightData {
-	Light data[MAX_LIGHTS];
+layout(set = 0, binding = 2, std430) restrict readonly buffer LightData {
+	Light data[];
 }
 light_array;
 

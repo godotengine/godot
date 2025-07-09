@@ -69,6 +69,55 @@ void NavigationPathQueryResult3D::reset() {
 	path_owner_ids.clear();
 }
 
+void NavigationPathQueryResult3D::set_data(const LocalVector<Vector3> &p_path, const LocalVector<int32_t> &p_path_types, const LocalVector<RID> &p_path_rids, const LocalVector<int64_t> &p_path_owner_ids) {
+	path.clear();
+	path_types.clear();
+	path_rids.clear();
+	path_owner_ids.clear();
+
+	{
+		path.resize(p_path.size());
+		Vector3 *w = path.ptrw();
+		const Vector3 *r = p_path.ptr();
+		for (uint32_t i = 0; i < p_path.size(); i++) {
+			w[i] = r[i];
+		}
+	}
+
+	{
+		path_types.resize(p_path_types.size());
+		int32_t *w = path_types.ptrw();
+		const int32_t *r = p_path_types.ptr();
+		for (uint32_t i = 0; i < p_path_types.size(); i++) {
+			w[i] = r[i];
+		}
+	}
+
+	{
+		path_rids.resize(p_path_rids.size());
+		for (uint32_t i = 0; i < p_path_rids.size(); i++) {
+			path_rids[i] = p_path_rids[i];
+		}
+	}
+
+	{
+		path_owner_ids.resize(p_path_owner_ids.size());
+		int64_t *w = path_owner_ids.ptrw();
+		const int64_t *r = p_path_owner_ids.ptr();
+		for (uint32_t i = 0; i < p_path_owner_ids.size(); i++) {
+			w[i] = r[i];
+		}
+	}
+}
+
+void NavigationPathQueryResult3D::set_path_length(float p_length) {
+	path_length = p_length;
+}
+
+float NavigationPathQueryResult3D::get_path_length() const {
+	return path_length;
+}
+
 void NavigationPathQueryResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult3D::set_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult3D::get_path);
@@ -82,12 +131,16 @@ void NavigationPathQueryResult3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_owner_ids", "path_owner_ids"), &NavigationPathQueryResult3D::set_path_owner_ids);
 	ClassDB::bind_method(D_METHOD("get_path_owner_ids"), &NavigationPathQueryResult3D::get_path_owner_ids);
 
+	ClassDB::bind_method(D_METHOD("set_path_length", "length"), &NavigationPathQueryResult3D::set_path_length);
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationPathQueryResult3D::get_path_length);
+
 	ClassDB::bind_method(D_METHOD("reset"), &NavigationPathQueryResult3D::reset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "path"), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "path_types"), "set_path_types", "get_path_types");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "path_rids", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_path_rids", "get_path_rids");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "path_owner_ids"), "set_path_owner_ids", "get_path_owner_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_length"), "set_path_length", "get_path_length");
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);

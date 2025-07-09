@@ -174,7 +174,7 @@ void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 }
 
 bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
-	if (!alpha_cache.is_valid()) {
+	if (alpha_cache.is_null()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
 			if (img->is_compressed()) { //must decompress, if compressed
@@ -197,8 +197,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 		int x = p_x * aw / w;
 		int y = p_y * ah / h;
 
-		x = CLAMP(x, 0, aw);
-		y = CLAMP(y, 0, ah);
+		x = CLAMP(x, 0, aw - 1);
+		y = CLAMP(y, 0, ah - 1);
 
 		return alpha_cache->get_bit(x, y);
 	}
@@ -233,8 +233,6 @@ void ImageTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &ImageTexture::set_size_override);
 }
-
-ImageTexture::ImageTexture() {}
 
 ImageTexture::~ImageTexture() {
 	if (texture.is_valid()) {

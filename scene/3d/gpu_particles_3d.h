@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GPU_PARTICLES_3D_H
-#define GPU_PARTICLES_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/skin.h"
@@ -78,6 +77,8 @@ private:
 	bool interpolate = true;
 	NodePath sub_emitter;
 	real_t collision_base_size = 0.01;
+	uint32_t seed = 0;
+	bool use_fixed_seed = false;
 
 	bool trail_enabled = false;
 	double trail_lifetime = 0.3;
@@ -106,6 +107,11 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
+
+#ifndef DISABLE_DEPRECATED
+	void _restart_bind_compat_92089();
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	AABB get_aabb() const override;
@@ -175,7 +181,14 @@ public:
 	void set_transform_align(TransformAlign p_align);
 	TransformAlign get_transform_align() const;
 
-	void restart();
+	void restart(bool p_keep_seed = false);
+
+	void set_use_fixed_seed(bool p_use_fixed_seed);
+	bool get_use_fixed_seed() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+	void request_particles_process(real_t p_requested_process_time);
 
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,
@@ -197,5 +210,3 @@ public:
 VARIANT_ENUM_CAST(GPUParticles3D::DrawOrder)
 VARIANT_ENUM_CAST(GPUParticles3D::TransformAlign)
 VARIANT_ENUM_CAST(GPUParticles3D::EmitFlags)
-
-#endif // GPU_PARTICLES_3D_H

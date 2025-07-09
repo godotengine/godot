@@ -31,7 +31,6 @@
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
 	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
@@ -298,6 +297,12 @@ int AudioStream::get_beat_count() const {
 	return ret;
 }
 
+Dictionary AudioStream::get_tags() const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_get_tags, ret);
+	return ret;
+}
+
 void AudioStream::tag_used(float p_offset) {
 	if (tagged_frame != AudioServer::get_singleton()->get_mixed_frames()) {
 		offset_count = 0;
@@ -351,6 +356,7 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_is_monophonic);
 	GDVIRTUAL_BIND(_get_bpm)
 	GDVIRTUAL_BIND(_get_beat_count)
+	GDVIRTUAL_BIND(_get_tags);
 	GDVIRTUAL_BIND(_get_parameter_list)
 	GDVIRTUAL_BIND(_has_loop);
 	GDVIRTUAL_BIND(_get_bar_beats);
@@ -451,7 +457,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET("audio/driver/enable_input")) {
+	if (!GLOBAL_GET_CACHED(bool, "audio/driver/enable_input")) {
 		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
 		return;
 	}
@@ -730,7 +736,10 @@ String AudioStreamRandomizer::get_stream_name() const {
 }
 
 double AudioStreamRandomizer::get_length() const {
-	return 0;
+	if (!last_playback.is_valid()) {
+		return 0;
+	}
+	return last_playback->get_length();
 }
 
 bool AudioStreamRandomizer::is_monophonic() const {

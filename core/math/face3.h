@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FACE3_H
-#define FACE3_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
@@ -77,14 +76,11 @@ struct [[nodiscard]] Face3 {
 
 	bool intersects_aabb(const AABB &p_aabb) const;
 	_FORCE_INLINE_ bool intersects_aabb2(const AABB &p_aabb) const;
-	operator String() const;
+	explicit operator String() const;
 
-	inline Face3() {}
-	inline Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
-		vertex[0] = p_v1;
-		vertex[1] = p_v2;
-		vertex[2] = p_v3;
-	}
+	Face3() = default;
+	constexpr Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) :
+			vertex{ p_v1, p_v2, p_v3 } {}
 };
 
 bool Face3::intersects_aabb2(const AABB &p_aabb) const {
@@ -238,4 +234,5 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	return true;
 }
 
-#endif // FACE3_H
+template <>
+struct is_zero_constructible<Face3> : std::true_type {};

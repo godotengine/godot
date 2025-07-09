@@ -231,9 +231,9 @@ struct tuple_delta_t
   /* indices_length = point_count, indice[i] = 1 means point i is referenced */
   hb_vector_t<bool> indices;
 
-  hb_vector_t<double> deltas_x;
+  hb_vector_t<float> deltas_x;
   /* empty for cvar tuples */
-  hb_vector_t<double> deltas_y;
+  hb_vector_t<float> deltas_y;
 
   /* compiled data: header and deltas
    * compiled point data is saved in a hashmap within tuple_variations_t cause
@@ -299,9 +299,9 @@ struct tuple_delta_t
     return *this;
   }
 
-  tuple_delta_t& operator *= (double scalar)
+  tuple_delta_t& operator *= (float scalar)
   {
-    if (scalar == 1.0)
+    if (scalar == 1.0f)
       return *this;
 
     unsigned num = indices.length;
@@ -514,9 +514,9 @@ struct tuple_delta_t
   bool compile_deltas ()
   { return compile_deltas (indices, deltas_x, deltas_y, compiled_deltas); }
 
-  static bool compile_deltas (const hb_vector_t<bool> &point_indices,
-			      const hb_vector_t<double> &x_deltas,
-			      const hb_vector_t<double> &y_deltas,
+  static bool compile_deltas (hb_array_t<const bool> point_indices,
+			      hb_array_t<const float> x_deltas,
+			      hb_array_t<const float> y_deltas,
 			      hb_vector_t<unsigned char> &compiled_deltas /* OUT */)
   {
     hb_vector_t<int> rounded_deltas;
@@ -629,11 +629,11 @@ struct tuple_delta_t
           deltas_x.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].x,
                                             (double) orig_points.arrayZ[prev].x,
                                             (double) orig_points.arrayZ[next].x,
-                                            deltas_x.arrayZ[prev], deltas_x.arrayZ[next]);
+                                            (double) deltas_x.arrayZ[prev], (double) deltas_x.arrayZ[next]);
           deltas_y.arrayZ[i] = infer_delta ((double) orig_points.arrayZ[i].y,
                                             (double) orig_points.arrayZ[prev].y,
                                             (double) orig_points.arrayZ[next].y,
-                                            deltas_y.arrayZ[prev], deltas_y.arrayZ[next]);
+                                            (double) deltas_y.arrayZ[prev], (double) deltas_y.arrayZ[next]);
           inferred_idxes.add (i);
           if (--unref_count == 0) goto no_more_gaps;
         }
@@ -692,7 +692,7 @@ struct tuple_delta_t
 
     if (ref_count == count) return true;
 
-    hb_vector_t<double> opt_deltas_x, opt_deltas_y;
+    hb_vector_t<float> opt_deltas_x, opt_deltas_y;
     bool is_comp_glyph_wo_deltas = (is_composite && ref_count == 0);
     if (is_comp_glyph_wo_deltas)
     {
@@ -841,6 +841,7 @@ struct tuple_delta_t
   { return (i >= end) ? start : (i + 1); }
 };
 
+template <typename OffType = HBUINT16>
 struct TupleVariationData
 {
   bool sanitize (hb_sanitize_context_t *c) const
@@ -875,7 +876,7 @@ struct TupleVariationData
 
     private:
     /* referenced point set->compiled point data map */
-    hb_hashmap_t<const hb_vector_t<bool>*, hb_vector_t<char>> point_data_map;
+    hb_hashmap_t<const hb_vector_t<bool>*, hb_vector_t<unsigned char>> point_data_map;
     /* referenced point set-> count map, used in finding shared points */
     hb_hashmap_t<const hb_vector_t<bool>*, unsigned> point_set_count_map;
 
@@ -883,11 +884,11 @@ struct TupleVariationData
      * shared_points_bytes is a pointer to some value in the point_data_map,
      * which will be freed during map destruction. Save it for serialization, so
      * no need to do find_shared_points () again */
-    hb_vector_t<char> *shared_points_bytes = nullptr;
+    hb_vector_t<unsigned char> *shared_points_bytes = nullptr;
 
-    /* total compiled byte size as TupleVariationData format, initialized to its
-     * min_size: 4 */
-    unsigned compiled_byte_size = 4;
+    /* total compiled byte size as TupleVariationData format, initialized to 0 */
+    unsigned compiled_byte_size = 0;
+    bool needs_padding = false;
 
     /* for gvar iup delta optimization: whether this is a composite glyph */
     bool is_composite = false;
@@ -1219,11 +1220,20 @@ struct TupleVariationData
     bool compile_bytes (const hb_map_t& axes_index_map,
                         const hb_map_t& axes_old_index_tag_map,
                         bool use_shared_points,
+                        bool is_gvar = false,
                         const hb_hashmap_t<const hb_vector_t<char>*, unsigned>* shared_tuples_idx_map = nullptr)
     {
+      // return true for empty glyph
+      if (!tuple_vars)
+        return true;
+
       // compile points set and store data in hashmap
       if (!compile_all_point_sets ())
         return false;
+
+      /* total compiled byte size as TupleVariationData format, initialized to its
+       * min_size: 4 */
+      compiled_byte_size += 4;
 
       if (use_shared_points)
       {
@@ -1235,7 +1245,7 @@ struct TupleVariationData
       for (auto& tuple: tuple_vars)
       {
         const hb_vector_t<bool>* points_set = &(tuple.indices);
-        hb_vector_t<char> *points_data;
+        hb_vector_t<unsigned char> *points_data;
         if (unlikely (!point_data_map.has (points_set, &points_data)))
           return false;
 
@@ -1253,6 +1263,13 @@ struct TupleVariationData
           return false;
         compiled_byte_size += tuple.compiled_tuple_header.length + points_data_length + tuple.compiled_deltas.length;
       }
+
+      if (is_gvar && (compiled_byte_size % 2))
+      {
+        needs_padding = true;
+        compiled_byte_size += 1;
+      }
+
       return true;
     }
 
@@ -1273,20 +1290,20 @@ struct TupleVariationData
       TRACE_SERIALIZE (this);
       if (is_gvar && shared_points_bytes)
       {
-        hb_bytes_t s (shared_points_bytes->arrayZ, shared_points_bytes->length);
+        hb_ubytes_t s (shared_points_bytes->arrayZ, shared_points_bytes->length);
         s.copy (c);
       }
 
       for (const auto& tuple: tuple_vars)
       {
         const hb_vector_t<bool>* points_set = &(tuple.indices);
-        hb_vector_t<char> *point_data;
+        hb_vector_t<unsigned char> *point_data;
         if (!point_data_map.has (points_set, &point_data))
           return_trace (false);
 
         if (!is_gvar || point_data != shared_points_bytes)
         {
-          hb_bytes_t s (point_data->arrayZ, point_data->length);
+          hb_ubytes_t s (point_data->arrayZ, point_data->length);
           s.copy (c);
         }
 
@@ -1295,7 +1312,7 @@ struct TupleVariationData
       }
 
       /* padding for gvar */
-      if (is_gvar && (compiled_byte_size % 2))
+      if (is_gvar && needs_padding)
       {
         HBUINT8 pad;
         pad = 0;
@@ -1505,15 +1522,16 @@ struct TupleVariationData
                                  * low 12 bits are the number of tuple variation tables
                                  * for this glyph. The number of tuple variation tables
                                  * can be any number between 1 and 4095. */
-  Offset16To<HBUINT8>
+  OffsetTo<HBUINT8, OffType>
                 data;           /* Offset from the start of the base table
                                  * to the serialized data. */
   /* TupleVariationHeader tupleVariationHeaders[] *//* Array of tuple variation headers. */
   public:
-  DEFINE_SIZE_MIN (4);
+  DEFINE_SIZE_MIN (2 + OffType::static_size);
 };
 
-using tuple_variations_t = TupleVariationData::tuple_variations_t;
+// TODO: Move tuple_variations_t to outside of TupleVariationData
+using tuple_variations_t = TupleVariationData<HBUINT16>::tuple_variations_t;
 struct item_variations_t
 {
   using region_t = const hb_hashmap_t<hb_tag_t, Triple>*;

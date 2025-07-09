@@ -30,14 +30,12 @@
 
 #include "editor_performance_profiler.h"
 
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
-
-EditorPerformanceProfiler::Monitor::Monitor() {}
 
 EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
@@ -419,6 +417,7 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	add_child(monitor_draw);
 
 	info_message = memnew(Label);
+	info_message->set_focus_mode(FOCUS_ACCESSIBILITY);
 	info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
 	info_message->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	info_message->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

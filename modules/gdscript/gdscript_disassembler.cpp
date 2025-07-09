@@ -362,7 +362,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3;
 			} break;
 			case OPCODE_SET_STATIC_VARIABLE: {
-				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+				Ref<GDScript> gdscript;
+				if (_code_ptr[ip + 2] == ADDR_CLASS) {
+					gdscript = Ref<GDScript>(_script);
+				} else {
+					gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+				}
 
 				text += "set_static_variable script(";
 				text += GDScript::debug_get_script_name(gdscript);
@@ -378,7 +383,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_GET_STATIC_VARIABLE: {
-				Ref<GDScript> gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+				Ref<GDScript> gdscript;
+				if (_code_ptr[ip + 2] == ADDR_CLASS) {
+					gdscript = Ref<GDScript>(_script);
+				} else {
+					gdscript = get_constant(_code_ptr[ip + 2] & ADDR_MASK);
+				}
 
 				text += "get_static_variable ";
 				text += DADDR(1);
@@ -543,7 +553,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CONSTRUCT_ARRAY: {
 				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
-				text += " make_array ";
+				text += "make_array ";
 				text += DADDR(1 + argc);
 				text += " = [";
 
@@ -575,7 +585,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 					type_name = Variant::get_type_name(builtin_type);
 				}
 
-				text += " make_typed_array (";
+				text += "make_typed_array (";
 				text += type_name;
 				text += ") ";
 
@@ -1171,9 +1181,25 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5;
 			} break;
 				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE_BEGIN);
+			case OPCODE_ITERATE_BEGIN_RANGE: {
+				text += "for-init ";
+				text += DADDR(5);
+				text += " in range from ";
+				text += DADDR(2);
+				text += " to ";
+				text += DADDR(3);
+				text += " step ";
+				text += DADDR(4);
+				text += " counter ";
+				text += DADDR(1);
+				text += " end ";
+				text += itos(_code_ptr[ip + 6]);
+
+				incr += 7;
+			} break;
 			case OPCODE_ITERATE: {
 				text += "for-loop ";
-				text += DADDR(2);
+				text += DADDR(3);
 				text += " in ";
 				text += DADDR(2);
 				text += " counter ";
@@ -1184,6 +1210,20 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5;
 			} break;
 				DISASSEMBLE_ITERATE_TYPES(DISASSEMBLE_ITERATE);
+			case OPCODE_ITERATE_RANGE: {
+				text += "for-loop ";
+				text += DADDR(4);
+				text += " in range to ";
+				text += DADDR(2);
+				text += " step ";
+				text += DADDR(3);
+				text += " counter ";
+				text += DADDR(1);
+				text += " end ";
+				text += itos(_code_ptr[ip + 5]);
+
+				incr += 6;
+			} break;
 			case OPCODE_STORE_GLOBAL: {
 				text += "store global ";
 				text += DADDR(1);

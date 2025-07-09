@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_FEED_H
-#define CAMERA_FEED_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/math/transform_2d.h"
 #include "servers/camera_server.h"
-#include "servers/rendering_server.h"
 
 /**
 	The camera server is a singleton object that gives access to the various
@@ -130,5 +128,3 @@ public:
 
 VARIANT_ENUM_CAST(CameraFeed::FeedDataType);
 VARIANT_ENUM_CAST(CameraFeed::FeedPosition);
-
-#endif // CAMERA_FEED_H

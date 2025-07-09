@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_H
-#define INPUT_EVENT_H
+#pragma once
 
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
@@ -62,8 +61,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const int DEVICE_ID_EMULATION;
-	static const int DEVICE_ID_INTERNAL;
+	static constexpr int DEVICE_ID_EMULATION = -1;
+	static constexpr int DEVICE_ID_INTERNAL = -2;
 
 	void set_device(int p_device);
 	int get_device() const;
@@ -89,6 +88,8 @@ public:
 	virtual bool is_action_type() const;
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) { return false; }
+
+	virtual InputEventType get_type() const { return InputEventType::INVALID; }
 
 	InputEvent() {}
 };
@@ -203,13 +204,15 @@ public:
 
 	static Ref<InputEventKey> create_reference(Key p_keycode_with_modifier_masks, bool p_physical = false);
 
+	InputEventType get_type() const final override { return InputEventType::KEY; }
+
 	InputEventKey() {}
 };
 
 class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	BitField<MouseButtonMask> button_mask;
+	BitField<MouseButtonMask> button_mask = MouseButtonMask::NONE;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -262,6 +265,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MOUSE_BUTTON; }
+
 	InputEventMouseButton() {}
 };
 
@@ -307,6 +312,8 @@ public:
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
+	InputEventType get_type() const final override { return InputEventType::MOUSE_MOTION; }
+
 	InputEventMouseMotion() {}
 };
 
@@ -333,6 +340,8 @@ public:
 	virtual String to_string() override;
 
 	static Ref<InputEventJoypadMotion> create_reference(JoyAxis p_axis, float p_value);
+
+	InputEventType get_type() const final override { return InputEventType::JOY_MOTION; }
 
 	InputEventJoypadMotion() {}
 };
@@ -364,6 +373,8 @@ public:
 
 	static Ref<InputEventJoypadButton> create_reference(JoyButton p_btn_index);
 
+	InputEventType get_type() const final override { return InputEventType::JOY_BUTTON; }
+
 	InputEventJoypadButton() {}
 };
 
@@ -392,6 +403,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::SCREEN_TOUCH; }
 
 	InputEventScreenTouch() {}
 };
@@ -445,6 +458,8 @@ public:
 
 	virtual bool accumulate(const Ref<InputEvent> &p_event) override;
 
+	InputEventType get_type() const final override { return InputEventType::SCREEN_DRAG; }
+
 	InputEventScreenDrag() {}
 };
 
@@ -480,6 +495,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::ACTION; }
+
 	InputEventAction() {}
 };
 
@@ -511,6 +528,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MAGNIFY_GESTURE; }
+
 	InputEventMagnifyGesture() {}
 };
 
@@ -528,6 +547,8 @@ public:
 	virtual Ref<InputEvent> xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs = Vector2()) const override;
 	virtual String as_text() const override;
 	virtual String to_string() override;
+
+	InputEventType get_type() const final override { return InputEventType::PAN_GESTURE; }
 
 	InputEventPanGesture() {}
 };
@@ -575,6 +596,8 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::MIDI; }
+
 	InputEventMIDI() {}
 };
 
@@ -593,7 +616,7 @@ public:
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
+	InputEventType get_type() const final override { return InputEventType::SHORTCUT; }
+
 	InputEventShortcut();
 };
-
-#endif // INPUT_EVENT_H

@@ -230,7 +230,7 @@ namespace GodotTools.Build
 
             if (!success)
             {
-                ShowBuildErrorDialog("Failed to build project");
+                ShowBuildErrorDialog("Failed to build project. Check MSBuild panel for details.");
             }
 
             return success;

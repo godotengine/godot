@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "承認済みすべて"
+
 msgid "New Code Region"
 msgstr "新しいコード領域"
 
@@ -27,24 +30,14 @@ msgstr "画面から色を選択します。"
 msgid "Pick a color from the application window."
 msgstr "アプリケーション ウィンドウから色を選択します。"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"色: #%s\n"
-"左クリック: カラーを適用\n"
-"右クリック: プリセットを削除"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"色: #%s\n"
-"左クリック: 色をセット"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "16進コード (「#ff0000」) または名前付きの色 (「red」) を入力します。"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Clear"
+msgstr "クリア"
 
 msgid "Select a picker shape."
 msgstr "ピッカーシェイプを選択"
@@ -80,9 +73,6 @@ msgstr "このフォルダーを選択"
 msgid "You don't have permission to access contents of this folder."
 msgstr "このフォルダーの内容にアクセスする権限がありません。"
 
-msgid "All Recognized"
-msgstr "承認済みすべて"
-
 msgid "All Files"
 msgstr "すべてのファイル"
 
@@ -97,9 +87,6 @@ msgstr "ディレクトリを開く"
 
 msgid "Open a File or Directory"
 msgstr "ファイルまたはディレクトリを開く"
-
-msgid "Save"
-msgstr "保存"
 
 msgid "Save a File"
 msgstr "ファイルを保存"
@@ -119,11 +106,11 @@ msgstr "パス:"
 msgid "Refresh files."
 msgstr "ファイルの一覧をリフレッシュする。"
 
-msgid "Toggle the visibility of hidden files."
-msgstr "隠しファイルの表示 / 非表示を切り替えます。"
-
 msgid "Directories & Files:"
 msgstr "ディレクトリとファイル:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "隠しファイルの表示 / 非表示を切り替えます。"
 
 msgid "File:"
 msgstr "ファイル:"
@@ -235,9 +222,6 @@ msgstr "貼り付け"
 
 msgid "Select All"
 msgstr "すべて選択"
-
-msgid "Clear"
-msgstr "クリア"
 
 msgid "Undo"
 msgstr "元に戻す"

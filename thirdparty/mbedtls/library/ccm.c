@@ -170,11 +170,12 @@ static int ccm_calculate_first_block_if_ready(mbedtls_ccm_context *ctx)
     }
 
     /* CCM expects non-empty tag.
-     * CCM* allows empty tag. For CCM* without tag, ignore plaintext length.
+     * CCM* allows empty tag. For CCM* without tag, the tag calculation is skipped.
      */
     if (ctx->tag_len == 0) {
         if (ctx->mode == MBEDTLS_CCM_STAR_ENCRYPT || ctx->mode == MBEDTLS_CCM_STAR_DECRYPT) {
             ctx->plaintext_len = 0;
+            return 0;
         } else {
             return MBEDTLS_ERR_CCM_BAD_INPUT;
         }

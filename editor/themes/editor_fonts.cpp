@@ -31,8 +31,8 @@
 #include "editor_fonts.h"
 
 #include "core/io/dir_access.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/builtin_fonts.gen.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/font.h"
@@ -159,7 +159,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	String noto_cjk_path;
 	String noto_cjk_bold_path;
 	String var_suffix[] = { "HK", "KR", "SC", "TC", "JP" }; // Note: All Noto Sans CJK versions support all glyph variations, it should not match current locale.
-	for (size_t i = 0; i < sizeof(var_suffix) / sizeof(String); i++) {
+	for (size_t i = 0; i < std::size(var_suffix); i++) {
 		if (noto_cjk_path.is_empty()) {
 			noto_cjk_path = OS::get_singleton()->get_system_font_path("Noto Sans CJK " + var_suffix[i], 400, 100);
 		}
@@ -210,13 +210,14 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	Ref<FontVariation> japanese_font_bold = make_bold_font(japanese_font, embolden_strength, &fallbacks_bold);
 
 	if (OS::get_singleton()->has_feature("system_fonts")) {
-		PackedStringArray emoji_font_names;
-		emoji_font_names.push_back("Apple Color Emoji");
-		emoji_font_names.push_back("Segoe UI Emoji");
-		emoji_font_names.push_back("Noto Color Emoji");
-		emoji_font_names.push_back("Twitter Color Emoji");
-		emoji_font_names.push_back("OpenMoji");
-		emoji_font_names.push_back("EmojiOne Color");
+		PackedStringArray emoji_font_names = {
+			"Apple Color Emoji",
+			"Segoe UI Emoji",
+			"Noto Color Emoji",
+			"Twitter Color Emoji",
+			"OpenMoji",
+			"EmojiOne Color"
+		};
 		Ref<SystemFont> emoji_font = load_system_font(emoji_font_names, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, false);
 		fallbacks.push_back(emoji_font);
 		fallbacks_bold.push_back(emoji_font);
@@ -238,8 +239,7 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font);
+			TypedArray<Font> fallback_custom = { default_font };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		default_fc->set_base_font(custom_font);
@@ -249,14 +249,16 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	default_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	Dictionary default_fc_opentype;
+	default_fc_opentype["weight"] = 400;
+	default_fc->set_variation_opentype(default_fc_opentype);
 
 	Ref<FontVariation> default_fc_msdf;
 	default_fc_msdf.instantiate();
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_msdf);
+			TypedArray<Font> fallback_custom = { default_font_msdf };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		default_fc_msdf->set_base_font(custom_font);
@@ -266,22 +268,21 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	default_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	default_fc_msdf->set_variation_opentype(default_fc_opentype);
 
 	Ref<FontVariation> bold_fc;
 	bold_fc.instantiate();
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold);
+			TypedArray<Font> fallback_custom = { default_font_bold };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc->set_base_font(custom_font);
 	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold);
+			TypedArray<Font> fallback_custom = { default_font_bold };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc->set_base_font(custom_font);
@@ -292,22 +293,23 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	bold_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	Dictionary bold_fc_opentype;
+	bold_fc_opentype["weight"] = 700;
+	bold_fc->set_variation_opentype(bold_fc_opentype);
 
 	Ref<FontVariation> bold_fc_msdf;
 	bold_fc_msdf.instantiate();
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold_msdf);
+			TypedArray<Font> fallback_custom = { default_font_bold_msdf };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc_msdf->set_base_font(custom_font);
 	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps, font_allow_msdf);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold_msdf);
+			TypedArray<Font> fallback_custom = { default_font_bold_msdf };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		bold_fc_msdf->set_base_font(custom_font);
@@ -318,14 +320,14 @@ void editor_register_fonts(const Ref<Theme> &p_theme) {
 	}
 	bold_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+	bold_fc_msdf->set_variation_opentype(bold_fc_opentype);
 
 	Ref<FontVariation> mono_fc;
 	mono_fc.instantiate();
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path_source, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning, font_disable_embedded_bitmaps);
 		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_mono);
+			TypedArray<Font> fallback_custom = { default_font_mono };
 			custom_font->set_fallbacks(fallback_custom);
 		}
 		mono_fc->set_base_font(custom_font);

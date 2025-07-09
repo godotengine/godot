@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-Import("env")
-
 import os
 
 import core_builders
 
 import methods
+
+Import("env")
 
 env.core_sources = []
 
@@ -51,8 +51,8 @@ if env["brotli"] and env["builtin_brotli"]:
     ]
     thirdparty_brotli_sources = [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
 
-    env_thirdparty.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
-    env.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_brotli_dir + "include"])
+    env.Prepend(CPPEXTPATH=[thirdparty_brotli_dir + "include"])
 
     if env.get("use_ubsan") or env.get("use_asan") or env.get("use_tsan") or env.get("use_lsan") or env.get("use_msan"):
         env_thirdparty.Append(CPPDEFINES=["BROTLI_BUILD_PORTABLE"])
@@ -69,8 +69,8 @@ if env["builtin_clipper2"]:
     ]
     thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
 
-    env_thirdparty.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
-    env.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_clipper_dir + "include"])
+    env.Prepend(CPPEXTPATH=[thirdparty_clipper_dir + "include"])
 
     env_thirdparty.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
     env.Append(CPPDEFINES=["CLIPPER2_ENABLED"])
@@ -94,11 +94,13 @@ if env["builtin_zlib"]:
     ]
     thirdparty_zlib_sources = [thirdparty_zlib_dir + file for file in thirdparty_zlib_sources]
 
-    env_thirdparty.Prepend(CPPPATH=[thirdparty_zlib_dir])
+    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_zlib_dir])
     # Needs to be available in main env too
-    env.Prepend(CPPPATH=[thirdparty_zlib_dir])
+    env.Prepend(CPPEXTPATH=[thirdparty_zlib_dir])
     if env.dev_build:
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
+        # Affects headers so it should also be defined for Godot code
+        env.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zlib_sources)
 
@@ -109,9 +111,7 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
-# Zstd library, can be unbundled in theory
-# though we currently use some private symbols
-# https://github.com/godotengine/godot/issues/17374
+# Zstd library, can be unbundled
 if env["builtin_zstd"]:
     thirdparty_zstd_dir = "#thirdparty/zstd/"
     thirdparty_zstd_sources = [
@@ -132,6 +132,7 @@ if env["builtin_zstd"]:
         "compress/zstd_lazy.c",
         "compress/zstd_ldm.c",
         "compress/zstd_opt.c",
+        "compress/zstd_preSplit.c",
         "compress/zstdmt_compress.c",
         "compress/zstd_compress_literals.c",
         "compress/zstd_compress_sequences.c",
@@ -141,14 +142,18 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
-    if env["platform"] in ["android", "ios", "linuxbsd", "macos"] and env["arch"] == "x86_64":
+    if (
+        env["platform"] in ["android", "ios", "linuxbsd", "macos", "windows"]
+        and env["arch"] == "x86_64"
+        and not env.msvc
+    ):
         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
-    env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
+    env_thirdparty.Prepend(CPPEXTPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
     env_thirdparty.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
-    env.Prepend(CPPPATH=thirdparty_zstd_dir)
+    env.Prepend(CPPEXTPATH=thirdparty_zstd_dir)
     # Also needed in main env includes will trigger warnings
     env.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
 
@@ -159,120 +164,56 @@ env.core_sources += thirdparty_obj
 
 
 # Godot source files
-
 env.add_source_files(env.core_sources, "*.cpp")
 
-
 # Generate disabled classes
-def disabled_class_builder(target, source, env):
-    with methods.generated_wrapper(target) as file:
-        for c in source[0].read():
-            cs = c.strip()
-            if cs != "":
-                file.write(f"#define ClassDB_Disable_{cs} 1\n")
-
-
-env.CommandNoCache("disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(disabled_class_builder))
-
+env.CommandNoCache(
+    "disabled_classes.gen.h", env.Value(env.disabled_classes), env.Run(core_builders.disabled_class_builder)
+)
 
 # Generate version info
-def version_info_builder(target, source, env):
-    with methods.generated_wrapper(target) as file:
-        file.write(
-            """\
-#define VERSION_SHORT_NAME "{short_name}"
-#define VERSION_NAME "{name}"
-#define VERSION_MAJOR {major}
-#define VERSION_MINOR {minor}
-#define VERSION_PATCH {patch}
-#define VERSION_STATUS "{status}"
-#define VERSION_BUILD "{build}"
-#define VERSION_MODULE_CONFIG "{module_config}"
-#define VERSION_WEBSITE "{website}"
-#define VERSION_DOCS_BRANCH "{docs_branch}"
-#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
-""".format(**env.version_info)
-        )
-
-
-env.CommandNoCache("version_generated.gen.h", env.Value(env.version_info), env.Run(version_info_builder))
-
+env.CommandNoCache(
+    "version_generated.gen.h",
+    env.Value(methods.get_version_info(env.module_version_string)),
+    env.Run(core_builders.version_info_builder),
+)
 
 # Generate version hash
-def version_hash_builder(target, source, env):
-    with methods.generated_wrapper(target) as file:
-        file.write(
-            """\
-#include "core/version.h"
-
-const char *const VERSION_HASH = "{git_hash}";
-const uint64_t VERSION_TIMESTAMP = {git_timestamp};
-""".format(**env.version_info)
-        )
-
-
 gen_hash = env.CommandNoCache(
-    "version_hash.gen.cpp", env.Value(env.version_info["git_hash"]), env.Run(version_hash_builder)
+    "version_hash.gen.cpp", env.Value(methods.get_git_info()), env.Run(core_builders.version_hash_builder)
 )
 env.add_source_files(env.core_sources, gen_hash)
 
-
 # Generate AES256 script encryption key
-def encryption_key_builder(target, source, env):
-    with methods.generated_wrapper(target) as file:
-        file.write(
-            f"""\
-#include "core/config/project_settings.h"
-
-uint8_t script_encryption_key[32] = {{
-	{source[0]}
-}};"""
-        )
-
-
-gdkey = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY", "0" * 64)
-ec_valid = len(gdkey) == 64
-if ec_valid:
-    try:
-        gdkey = ", ".join([str(int(f"{a}{b}", 16)) for a, b in zip(gdkey[0::2], gdkey[1::2])])
-    except Exception:
-        ec_valid = False
-if not ec_valid:
-    methods.print_error(
-        f'Invalid AES256 encryption key, not 64 hexadecimal characters: "{gdkey}".\n'
-        "Unset `SCRIPT_AES256_ENCRYPTION_KEY` in your environment "
-        "or make sure that it contains exactly 64 hexadecimal characters."
+encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
+if encryption_key:
+    print(
+        "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
+        "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
     )
-    Exit(255)
-gen_encrypt = env.CommandNoCache("script_encryption_key.gen.cpp", env.Value(gdkey), env.Run(encryption_key_builder))
+gen_encrypt = env.CommandNoCache(
+    "script_encryption_key.gen.cpp",
+    env.Value(encryption_key),
+    env.Run(core_builders.encryption_key_builder),
+)
 env.add_source_files(env.core_sources, gen_encrypt)
 
-
 # Certificates
-env.Depends(
-    "#core/io/certs_compressed.gen.h",
-    ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
-)
 env.CommandNoCache(
     "#core/io/certs_compressed.gen.h",
-    "#thirdparty/certs/ca-certificates.crt",
+    ["#thirdparty/certs/ca-certificates.crt", env.Value(env["builtin_certs"]), env.Value(env["system_certs_path"])],
     env.Run(core_builders.make_certs_header),
 )
 
 # Authors
-env.Depends("#core/authors.gen.h", "../AUTHORS.md")
-env.CommandNoCache("#core/authors.gen.h", "../AUTHORS.md", env.Run(core_builders.make_authors_header))
+env.CommandNoCache("#core/authors.gen.h", "#AUTHORS.md", env.Run(core_builders.make_authors_header))
 
 # Donors
-env.Depends("#core/donors.gen.h", "../DONORS.md")
-env.CommandNoCache("#core/donors.gen.h", "../DONORS.md", env.Run(core_builders.make_donors_header))
+env.CommandNoCache("#core/donors.gen.h", "#DONORS.md", env.Run(core_builders.make_donors_header))
 
 # License
-env.Depends("#core/license.gen.h", ["../COPYRIGHT.txt", "../LICENSE.txt"])
 env.CommandNoCache(
-    "#core/license.gen.h",
-    ["../COPYRIGHT.txt", "../LICENSE.txt"],
-    env.Run(core_builders.make_license_header),
+    "#core/license.gen.h", ["#COPYRIGHT.txt", "#LICENSE.txt"], env.Run(core_builders.make_license_header)
 )
 
 # Chain load SCsubs

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STREAM_PEER_H
-#define STREAM_PEER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
@@ -50,7 +49,11 @@ protected:
 	Array _get_data(int p_bytes);
 	Array _get_partial_data(int p_bytes);
 
+#ifdef BIG_ENDIAN_ENABLED
+	bool big_endian = true;
+#else
 	bool big_endian = false;
+#endif
 
 public:
 	virtual Error put_data(const uint8_t *p_data, int p_bytes) = 0; ///< put a whole chunk of data, blocking until it sent
@@ -152,5 +155,3 @@ public:
 
 	StreamPeerBuffer() {}
 };
-
-#endif // STREAM_PEER_H

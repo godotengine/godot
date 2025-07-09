@@ -11,10 +11,14 @@
 #define MBEDTLS_SSL_MISC_H
 
 #include "mbedtls/build_info.h"
+#include "common.h"
 
 #include "mbedtls/error.h"
 
 #include "mbedtls/ssl.h"
+#include "mbedtls/debug.h"
+#include "debug_internal.h"
+
 #include "mbedtls/cipher.h"
 
 #if defined(MBEDTLS_USE_PSA_CRYPTO) || defined(MBEDTLS_SSL_PROTO_TLS1_3)
@@ -47,7 +51,7 @@
 #include "ssl_ciphersuites_internal.h"
 #include "x509_internal.h"
 #include "pk_internal.h"
-#include "common.h"
+
 
 /* Shorthand for restartable ECC */
 #if defined(MBEDTLS_ECP_RESTARTABLE) && \
@@ -1162,14 +1166,15 @@ struct mbedtls_ssl_transform {
     unsigned char out_cid[MBEDTLS_SSL_CID_OUT_LEN_MAX];
 #endif /* MBEDTLS_SSL_DTLS_CONNECTION_ID */
 
-#if defined(MBEDTLS_SSL_CONTEXT_SERIALIZATION)
+#if defined(MBEDTLS_SSL_KEEP_RANDBYTES)
     /* We need the Hello random bytes in order to re-derive keys from the
-     * Master Secret and other session info,
-     * see ssl_tls12_populate_transform() */
+     * Master Secret and other session info and for the keying material
+     * exporter in TLS 1.2.
+     * See ssl_tls12_populate_transform() */
     unsigned char randbytes[MBEDTLS_SERVER_HELLO_RANDOM_LEN +
                             MBEDTLS_CLIENT_HELLO_RANDOM_LEN];
     /*!< ServerHello.random+ClientHello.random */
-#endif /* MBEDTLS_SSL_CONTEXT_SERIALIZATION */
+#endif /* defined(MBEDTLS_SSL_KEEP_RANDBYTES) */
 };
 
 /*
@@ -1332,10 +1337,28 @@ int mbedtls_ssl_handshake_client_step(mbedtls_ssl_context *ssl);
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_handshake_server_step(mbedtls_ssl_context *ssl);
 void mbedtls_ssl_handshake_wrapup(mbedtls_ssl_context *ssl);
+
+#if defined(MBEDTLS_DEBUG_C)
+/* Declared in "ssl_debug_helpers.h". We can't include this file from
+ * "ssl_misc.h" because it includes "ssl_misc.h" because it needs some
+ * type definitions. TODO: split the type definitions and the helper
+ * functions into different headers.
+ */
+const char *mbedtls_ssl_states_str(mbedtls_ssl_states state);
+#endif
+
 static inline void mbedtls_ssl_handshake_set_state(mbedtls_ssl_context *ssl,
                                                    mbedtls_ssl_states state)
 {
+    MBEDTLS_SSL_DEBUG_MSG(3, ("handshake state: %d (%s) -> %d (%s)",
+                              ssl->state, mbedtls_ssl_states_str(ssl->state),
+                              (int) state, mbedtls_ssl_states_str(state)));
     ssl->state = (int) state;
+}
+
+static inline void mbedtls_ssl_handshake_increment_state(mbedtls_ssl_context *ssl)
+{
+    mbedtls_ssl_handshake_set_state(ssl, ssl->state + 1);
 }
 
 MBEDTLS_CHECK_RETURN_CRITICAL
@@ -1829,10 +1852,11 @@ void mbedtls_ssl_set_timer(mbedtls_ssl_context *ssl, uint32_t millisecs);
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_check_timer(mbedtls_ssl_context *ssl);
 
-void mbedtls_ssl_reset_in_out_pointers(mbedtls_ssl_context *ssl);
+void mbedtls_ssl_reset_in_pointers(mbedtls_ssl_context *ssl);
+void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl);
+void mbedtls_ssl_reset_out_pointers(mbedtls_ssl_context *ssl);
 void mbedtls_ssl_update_out_pointers(mbedtls_ssl_context *ssl,
                                      mbedtls_ssl_transform *transform);
-void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_session_reset_int(mbedtls_ssl_context *ssl, int partial);
@@ -2898,6 +2922,18 @@ int mbedtls_ssl_tls13_write_binders_of_pre_shared_key_ext(
     unsigned char *buf, unsigned char *end);
 #endif /* MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED */
 
+#if defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
+/** Get the host name from the SSL context.
+ *
+ * \param[in]   ssl     SSL context
+ *
+ * \return The \p hostname pointer from the SSL context.
+ *         \c NULL if mbedtls_ssl_set_hostname() has never been called on
+ *         \p ssl or if it was last called with \p NULL.
+ */
+const char *mbedtls_ssl_get_hostname_pointer(const mbedtls_ssl_context *ssl);
+#endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
+
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3) && \
     defined(MBEDTLS_SSL_SESSION_TICKETS) && \
     defined(MBEDTLS_SSL_SERVER_NAME_INDICATION) && \
@@ -2981,6 +3017,7 @@ static inline void mbedtls_ssl_tls13_session_clear_ticket_flags(
 #define MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_MASK \
     (1 << MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_BIT)
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_2)
 static inline int mbedtls_ssl_conf_get_session_tickets(
     const mbedtls_ssl_config *conf)
 {
@@ -2988,6 +3025,7 @@ static inline int mbedtls_ssl_conf_get_session_tickets(
            MBEDTLS_SSL_SESSION_TICKETS_ENABLED :
            MBEDTLS_SSL_SESSION_TICKETS_DISABLED;
 }
+#endif /* MBEDTLS_SSL_PROTO_TLS1_2 */
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
 static inline int mbedtls_ssl_conf_is_signal_new_session_tickets_enabled(

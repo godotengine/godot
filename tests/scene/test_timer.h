@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TIMER_H
-#define TEST_TIMER_H
+#pragma once
 
 #include "scene/main/timer.h"
 
@@ -157,9 +156,7 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 		SceneTree::get_singleton()->process(0.2);
 
-		Array signal_args;
-		signal_args.push_back(Array());
-
+		Array signal_args = { {} };
 		SIGNAL_CHECK(SNAME("timeout"), signal_args);
 
 		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
@@ -171,9 +168,7 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 		SceneTree::get_singleton()->process(0.05);
 
-		Array signal_args;
-		signal_args.push_back(Array());
-
+		Array signal_args = { {} };
 		SIGNAL_CHECK_FALSE(SNAME("timeout"));
 
 		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
@@ -187,9 +182,7 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 		SceneTree::get_singleton()->physics_process(0.2);
 
-		Array signal_args;
-		signal_args.push_back(Array());
-
+		Array signal_args = { {} };
 		SIGNAL_CHECK(SNAME("timeout"), signal_args);
 
 		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
@@ -201,9 +194,7 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 
 		SceneTree::get_singleton()->physics_process(0.05);
 
-		Array signal_args;
-		signal_args.push_back(Array());
-
+		Array signal_args = { {} };
 		SIGNAL_CHECK_FALSE(SNAME("timeout"));
 
 		SIGNAL_UNWATCH(test_timer, SNAME("timeout"));
@@ -213,5 +204,3 @@ TEST_CASE("[SceneTree][Timer] Check Timer timeout signal") {
 }
 
 } // namespace TestTimer
-
-#endif // TEST_TIMER_H

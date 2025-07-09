@@ -67,7 +67,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the angle to the given vector, in radians.
+				Returns the signed angle to the given vector, in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
@@ -211,12 +211,13 @@
 			<return type="Vector2" />
 			<param index="0" name="angle" type="float" />
 			<description>
-				Creates a unit [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
+				Creates a [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
 				[codeblock]
-				print(Vector2.from_angle(0)) # Prints (1.0, 0.0).
+				print(Vector2.from_angle(0)) # Prints (1.0, 0.0)
 				print(Vector2(1, 0).angle()) # Prints 0.0, which is the angle used above.
-				print(Vector2.from_angle(PI / 2)) # Prints (0.0, 1.0).
+				print(Vector2.from_angle(PI / 2)) # Prints (0.0, 1.0)
 				[/codeblock]
+				[b]Note:[/b] The length of the returned [Vector2] is [i]approximately[/i] [code]1.0[/code], but is is not guaranteed to be exactly [code]1.0[/code] due to floating-point precision issues. Call [method normalized] on the returned [Vector2] if you require a unit vector.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -266,7 +267,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const" keywords="truncate">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>

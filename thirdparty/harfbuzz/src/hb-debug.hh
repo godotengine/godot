@@ -49,15 +49,15 @@ struct hb_options_t
 };
 
 union hb_options_union_t {
-  int i;
+  unsigned i;
   hb_options_t opts;
 };
-static_assert ((sizeof (hb_atomic_int_t) >= sizeof (hb_options_union_t)), "");
+static_assert ((sizeof (hb_atomic_t<unsigned>) >= sizeof (hb_options_union_t)), "");
 
 HB_INTERNAL void
 _hb_options_init ();
 
-extern HB_INTERNAL hb_atomic_int_t _hb_options;
+extern HB_INTERNAL hb_atomic_t<unsigned> _hb_options;
 
 static inline hb_options_t
 hb_options ()

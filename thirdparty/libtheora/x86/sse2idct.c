@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009,2025           *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id: mmxidct.c 16503 2009-08-22 18:14:02Z giles $
 
  ********************************************************************/
 
@@ -229,7 +229,7 @@ static void oc_idct8x8_slow_sse2(ogg_int16_t _y[64],ogg_int16_t _x[64]){
     :[buf]"=m"(OC_ARRAY_OPERAND(ogg_int16_t,buf,16)),
      [y]"=m"(OC_ARRAY_OPERAND(ogg_int16_t,_y,64))
     :[x]"m"(OC_CONST_ARRAY_OPERAND(ogg_int16_t,_x,64)),
-     [c]"m"(OC_CONST_ARRAY_OPERAND(ogg_int16_t,OC_IDCT_CONSTS,128))
+     [c]"m"(OC_CONST_ARRAY_OPERAND(ogg_int16_t,OC_IDCT_CONSTS,64))
   );
   __asm__ __volatile__("pxor %%xmm0,%%xmm0\n\t"::);
   /*Clear input data for next block (decoder only).*/
@@ -407,7 +407,7 @@ static void oc_idct8x8_10_sse2(ogg_int16_t _y[64],ogg_int16_t _x[64]){
     :[buf]"=m"(OC_ARRAY_OPERAND(short,buf,16)),
      [y]"=m"(OC_ARRAY_OPERAND(ogg_int16_t,_y,64))
     :[x]"m"OC_CONST_ARRAY_OPERAND(ogg_int16_t,_x,64),
-     [c]"m"(OC_CONST_ARRAY_OPERAND(ogg_int16_t,OC_IDCT_CONSTS,128))
+     [c]"m"(OC_CONST_ARRAY_OPERAND(ogg_int16_t,OC_IDCT_CONSTS,64))
   );
   /*Clear input data for next block (decoder only).*/
   __asm__ __volatile__(

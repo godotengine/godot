@@ -30,10 +30,7 @@
 
 #include "rendering_server_default.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/templates/sort_array.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
@@ -76,7 +73,17 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 	uint64_t time_usec = OS::get_singleton()->get_ticks_usec();
 
 	RENDER_TIMESTAMP("Prepare Render Frame");
+
+#ifndef XR_DISABLED
+	XRServer *xr_server = XRServer::get_singleton();
+	if (xr_server != nullptr) {
+		// Let XR server know we're about to render a frame.
+		xr_server->pre_render();
+	}
+#endif // XR_DISABLED
+
 	RSG::scene->update(); //update scenes stuff before updating instances
+	RSG::canvas->update();
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
@@ -89,13 +96,12 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RSG::rasterizer->end_frame(p_swap_buffers);
 
-#ifndef _3D_DISABLED
-	XRServer *xr_server = XRServer::get_singleton();
+#ifndef XR_DISABLED
 	if (xr_server != nullptr) {
 		// let our XR server know we're done so we can get our frame timing
 		xr_server->end_frame();
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	RSG::canvas->update_visibility_notifiers();
 	RSG::scene->update_visibility_notifiers();

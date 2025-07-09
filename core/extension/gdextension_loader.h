@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_LOADER_H
-#define GDEXTENSION_LOADER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
 class GDExtension;
 
 class GDExtensionLoader : public RefCounted {
+	GDSOFTCLASS(GDExtensionLoader, RefCounted);
+
 public:
 	virtual Error open_library(const String &p_path) = 0;
 	virtual Error initialize(GDExtensionInterfaceGetProcAddress p_get_proc_address, const Ref<GDExtension> &p_extension, GDExtensionInitialization *r_initialization) = 0;
@@ -44,5 +45,3 @@ public:
 	virtual bool has_library_changed() const = 0;
 	virtual bool library_exists() const = 0;
 };
-
-#endif // GDEXTENSION_LOADER_H

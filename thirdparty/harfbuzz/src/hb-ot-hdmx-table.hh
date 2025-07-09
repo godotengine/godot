@@ -95,7 +95,7 @@ struct hdmx
   bool serialize (hb_serialize_context_t *c,
 		  unsigned version,
 		  Iterator it,
-		  const hb_vector_t<hb_codepoint_pair_t> &new_to_old_gid_list,
+		  hb_array_t<const hb_codepoint_pair_t> new_to_old_gid_list,
 		  unsigned num_glyphs)
   {
     TRACE_SERIALIZE (this);

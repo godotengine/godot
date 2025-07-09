@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_HEADLESS_H
-#define DISPLAY_SERVER_HEADLESS_H
+#pragma once
 
 #include "servers/display_server.h"
 
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 class DisplayServerHeadless : public DisplayServer {
+	GDSOFTCLASS(DisplayServerHeadless, DisplayServer);
+
 private:
 	friend class DisplayServer;
 
@@ -45,7 +46,7 @@ private:
 		return drivers;
 	}
 
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 		r_error = OK;
 		RasterizerDummy::make_current();
 		return memnew(DisplayServerHeadless());
@@ -109,7 +110,7 @@ public:
 
 	void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override {}
 
-	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override { return -1; }
+	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override { return INVALID_SCREEN; }
 	void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override { return Point2i(); }
@@ -170,6 +171,8 @@ public:
 	void tts_stop() override {}
 
 	void mouse_set_mode(MouseMode p_mode) override {}
+	void mouse_set_mode_override(MouseMode p_mode) override {}
+	void mouse_set_mode_override_enabled(bool p_override_enabled) override {}
 	Point2i mouse_get_position() const override { return Point2i(); }
 	void clipboard_set(const String &p_text) override {}
 	void clipboard_set_primary(const String &p_text) override {}
@@ -182,8 +185,8 @@ public:
 
 	Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override { return ERR_UNAVAILABLE; }
 	Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override { return ERR_UNAVAILABLE; }
-	Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override { return ERR_UNAVAILABLE; }
-	Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override { return ERR_UNAVAILABLE; }
+	Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override { return ERR_UNAVAILABLE; }
+	Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override { return ERR_UNAVAILABLE; }
 
 	void release_rendering_thread() override {}
 	void swap_buffers() override {}
@@ -206,5 +209,3 @@ public:
 		}
 	}
 };
-
-#endif // DISPLAY_SERVER_HEADLESS_H

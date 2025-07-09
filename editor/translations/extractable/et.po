@@ -16,6 +16,15 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
+msgid "All Recognized"
+msgstr "Kõik tuvastatud"
+
+msgid "Save"
+msgstr "Salvesta"
+
+msgid "Clear"
+msgstr "Puhasta"
+
 msgid "Network"
 msgstr "Võrk"
 
@@ -35,9 +44,6 @@ msgstr "Valige praegune kaust"
 msgid "Select This Folder"
 msgstr "Vali see kaust"
 
-msgid "All Recognized"
-msgstr "Kõik tuvastatud"
-
 msgid "Open a File"
 msgstr "Ava fail"
 
@@ -49,9 +55,6 @@ msgstr "Ava kataloog"
 
 msgid "Open a File or Directory"
 msgstr "Ava kaust või kataloog"
-
-msgid "Save"
-msgstr "Salvesta"
 
 msgid "Save a File"
 msgstr "Salvesta fail"
@@ -71,11 +74,11 @@ msgstr "Failitee:"
 msgid "Refresh files."
 msgstr "Värskenda faile."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Näita peidetud faile."
-
 msgid "Directories & Files:"
 msgstr "Kataloogid ja failid:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Näita peidetud faile."
 
 msgid "File:"
 msgstr "Fail:"
@@ -109,9 +112,6 @@ msgstr "Kleebi"
 
 msgid "Select All"
 msgstr "Vali Kõik"
-
-msgid "Clear"
-msgstr "Puhasta"
 
 msgid "Undo"
 msgstr "Võta tagasi"

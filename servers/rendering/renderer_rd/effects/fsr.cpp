@@ -35,31 +35,27 @@
 using namespace RendererRD;
 
 FSR::FSR() {
-	Vector<String> FSR_upscale_modes;
+	Vector<String> fsr_upscale_modes;
+	fsr_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_NORMAL\n");
+	fsr_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
+	fsr_shader.initialize(fsr_upscale_modes);
 
-#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
-	// MoltenVK does not support some of the operations used by the normal mode of FSR. Fallback works just fine though.
-	FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
-#else
-	// Everyone else can use normal mode when available.
-	if (RD::get_singleton()->has_feature(RD::SUPPORTS_FSR_HALF_FLOAT)) {
-		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_NORMAL\n");
+	FSRShaderVariant variant;
+	if (RD::get_singleton()->has_feature(RD::SUPPORTS_HALF_FLOAT)) {
+		variant = FSR_SHADER_VARIANT_NORMAL;
 	} else {
-		FSR_upscale_modes.push_back("\n#define MODE_FSR_UPSCALE_FALLBACK\n");
+		variant = FSR_SHADER_VARIANT_FALLBACK;
 	}
-#endif
-
-	fsr_shader.initialize(FSR_upscale_modes);
 
 	shader_version = fsr_shader.version_create();
-	pipeline = RD::get_singleton()->compute_pipeline_create(fsr_shader.version_get_shader(shader_version, 0));
+	pipeline = RD::get_singleton()->compute_pipeline_create(fsr_shader.version_get_shader(shader_version, variant));
 }
 
 FSR::~FSR() {
 	fsr_shader.version_free(shader_version);
 }
 
-void FSR::fsr_upscale(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) {
+void FSR::process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();

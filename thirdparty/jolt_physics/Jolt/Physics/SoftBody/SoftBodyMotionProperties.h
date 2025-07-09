@@ -125,7 +125,7 @@ public:
 	/// This function allows you to update the soft body immediately without going through the PhysicsSystem.
 	/// This is useful if the soft body is teleported and needs to 'settle' or it can be used if a the soft body
 	/// is not added to the PhysicsSystem and needs to be updated manually. One reason for not adding it to the
-	/// PhyicsSystem is that you might want to update a soft body immediately after updating an animated object
+	/// PhysicsSystem is that you might want to update a soft body immediately after updating an animated object
 	/// that has the soft body attached to it. If the soft body is added to the PhysicsSystem it will be updated
 	/// by it, so calling this function will effectively update it twice. Note that when you use this function,
 	/// only the current thread will be used, whereas if you update through the PhysicsSystem, multiple threads may
@@ -286,10 +286,11 @@ private:
 	AABox								mLocalBounds;								///< Bounding box of all vertices
 	AABox								mLocalPredictedBounds;						///< Predicted bounding box for all vertices using extrapolation of velocity by last step delta time
 	uint32								mNumIterations;								///< Number of solver iterations
+	uint								mNumSensors;								///< Workaround for TSAN false positive: store mCollidingSensors.size() in a separate variable.
 	float								mPressure;									///< n * R * T, amount of substance * ideal gas constant * absolute temperature, see https://en.wikipedia.org/wiki/Pressure
 	float								mSkinnedMaxDistanceMultiplier = 1.0f;		///< Multiplier applied to Skinned::mMaxDistance to allow tightening or loosening of the skin constraints
 	bool								mUpdatePosition;							///< Update the position of the body while simulating (set to false for something that is attached to the static world)
-	bool								mNeedContactCallback = false;						///< True if the soft body has collided with anything in the last update
+	atomic<bool>						mNeedContactCallback = false;				///< True if the soft body has collided with anything in the last update
 	bool								mEnableSkinConstraints = true;				///< If skin constraints are enabled
 	bool								mSkinStatePreviousPositionValid = false;	///< True if the skinning was updated in the last update so that the previous position of the skin state is valid
 };

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TAB_CONTAINER_H
-#define TAB_CONTAINER_H
+#pragma once
 
 #include "scene/gui/container.h"
 #include "scene/gui/popup.h"
@@ -71,6 +70,7 @@ private:
 
 		// TabBar overrides.
 		int icon_separation = 0;
+		int tab_separation = 0;
 		int icon_max_width = 0;
 		int outline_size = 0;
 
@@ -97,6 +97,9 @@ private:
 		int tab_font_size;
 	} theme_cache;
 
+	HashMap<Node *, RID> tab_panels;
+
+	Rect2 _get_tab_rect() const;
 	int _get_tab_height() const;
 	Vector<Control *> _get_tab_controls() const;
 	void _on_theme_changed();
@@ -129,6 +132,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
+
 	TabBar *get_tab_bar() const;
 
 	int get_tab_idx_at_point(const Point2 &p_point) const;
@@ -211,5 +216,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(TabContainer::TabPosition);
-
-#endif // TAB_CONTAINER_H

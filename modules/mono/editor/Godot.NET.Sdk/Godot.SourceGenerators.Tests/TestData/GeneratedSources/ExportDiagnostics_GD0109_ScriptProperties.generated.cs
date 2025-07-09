@@ -9,19 +9,9 @@ partial class ExportDiagnostics_GD0109
     /// </summary>
     public new class PropertyName : global::Godot.Node.PropertyName {
         /// <summary>
-        /// Cached name for the 'MyButton' field.
+        /// Cached name for the 'MyButton' property.
         /// </summary>
         public new static readonly global::Godot.StringName @MyButton = "MyButton";
-    }
-    /// <inheritdoc/>
-    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]
-    protected override bool SetGodotClassPropertyValue(in godot_string_name name, in godot_variant value)
-    {
-        if (name == PropertyName.@MyButton) {
-            this.@MyButton = global::Godot.NativeInterop.VariantUtils.ConvertTo<global::Godot.Callable>(value);
-            return true;
-        }
-        return base.SetGodotClassPropertyValue(name, value);
     }
     /// <inheritdoc/>
     [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]

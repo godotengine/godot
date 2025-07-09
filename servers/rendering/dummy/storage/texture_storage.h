@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_STORAGE_DUMMY_H
-#define TEXTURE_STORAGE_DUMMY_H
+#pragma once
 
-#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/texture_storage.h"
 
 namespace RendererDummy {
@@ -206,6 +204,9 @@ public:
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override { return RID(); }
 	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override { return RID(); }
 
+	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override {}
+	virtual Rect2i render_target_get_render_region(RID p_render_target) const override { return Rect2i(); }
+
 	virtual RID render_target_get_texture(RID p_render_target) override { return RID(); }
 
 	virtual void render_target_set_velocity_target_size(RID p_render_target, const Size2i &p_target_size) override {}
@@ -213,5 +214,3 @@ public:
 };
 
 } // namespace RendererDummy
-
-#endif // TEXTURE_STORAGE_DUMMY_H

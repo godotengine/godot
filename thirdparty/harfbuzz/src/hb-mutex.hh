@@ -99,6 +99,8 @@ struct hb_mutex_t
 
   hb_mutex_t () { init (); }
   ~hb_mutex_t () { fini (); }
+  hb_mutex_t (const hb_mutex_t &) = delete;
+  hb_mutex_t &operator= (const hb_mutex_t &) = delete;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-align"
@@ -114,6 +116,10 @@ struct hb_lock_t
   hb_lock_t (hb_mutex_t &mutex_) : mutex (&mutex_) { mutex->lock (); }
   hb_lock_t (hb_mutex_t *mutex_) : mutex (mutex_) { if (mutex) mutex->lock (); }
   ~hb_lock_t () { if (mutex) mutex->unlock (); }
+
+  hb_lock_t (const hb_lock_t &) = delete;
+  hb_lock_t &operator= (const hb_lock_t &) = delete;
+
   private:
   hb_mutex_t *mutex;
 };

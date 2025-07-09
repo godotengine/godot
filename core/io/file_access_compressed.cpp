@@ -30,8 +30,6 @@
 
 #include "file_access_compressed.h"
 
-#include "core/string/print_string.h"
-
 void FileAccessCompressed::configure(const String &p_magic, Compression::Mode p_mode, uint32_t p_block_size) {
 	magic = p_magic.ascii().get_data();
 	magic = (magic + "    ").substr(0, 4);
@@ -70,7 +68,7 @@ Error FileAccessCompressed::open_after_magic(Ref<FileAccess> p_base) {
 	read_block_count = bc;
 	read_block_size = read_blocks.size() == 1 ? read_total : block_size;
 
-	int ret = Compression::decompress(buffer.ptrw(), read_block_size, comp_buffer.ptr(), read_blocks[0].csize, cmode);
+	const int64_t ret = Compression::decompress(buffer.ptrw(), read_block_size, comp_buffer.ptr(), read_blocks[0].csize, cmode);
 	read_block = 0;
 	read_pos = 0;
 
@@ -125,7 +123,7 @@ void FileAccessCompressed::_close() {
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //write header 4
 		f->store_32(cmode); //write compression mode 4
 		f->store_32(block_size); //write block size 4
-		f->store_32(write_max); //max amount of data written 4
+		f->store_32(uint32_t(write_max)); //max amount of data written 4
 		uint32_t bc = (write_max / block_size) + 1;
 
 		for (uint32_t i = 0; i < bc; i++) {
@@ -139,15 +137,16 @@ void FileAccessCompressed::_close() {
 
 			Vector<uint8_t> cblock;
 			cblock.resize(Compression::get_max_compressed_buffer_size(bl, cmode));
-			int s = Compression::compress(cblock.ptrw(), bp, bl, cmode);
+			const int64_t compressed_size = Compression::compress(cblock.ptrw(), bp, bl, cmode);
+			ERR_FAIL_COND_MSG(compressed_size < 0, "FileAccessCompressed: Error compressing data.");
 
-			f->store_buffer(cblock.ptr(), s);
-			block_sizes.push_back(s);
+			f->store_buffer(cblock.ptr(), (uint64_t)compressed_size);
+			block_sizes.push_back(compressed_size);
 		}
 
 		f->seek(16); //ok write block sizes
 		for (uint32_t i = 0; i < bc; i++) {
-			f->store_32(block_sizes[i]);
+			f->store_32(uint32_t(block_sizes[i]));
 		}
 		f->seek_end();
 		f->store_buffer((const uint8_t *)mgc.get_data(), mgc.length()); //magic at the end too
@@ -202,7 +201,7 @@ void FileAccessCompressed::seek(uint64_t p_position) {
 				read_block = block_idx;
 				f->seek(read_blocks[read_block].offset);
 				f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
-				int ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
+				const int64_t ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
 				ERR_FAIL_COND_MSG(ret == -1, "Compressed file is corrupt.");
 				read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
 			}
@@ -249,7 +248,11 @@ bool FileAccessCompressed::eof_reached() const {
 }
 
 uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
+	if (p_length == 0) {
+		return 0;
+	}
+
+	ERR_FAIL_NULL_V(p_dst, -1);
 	ERR_FAIL_COND_V_MSG(f.is_null(), -1, "File must be opened before use.");
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
@@ -258,29 +261,38 @@ uint64_t FileAccessCompressed::get_buffer(uint8_t *p_dst, uint64_t p_length) con
 		return 0;
 	}
 
-	for (uint64_t i = 0; i < p_length; i++) {
-		p_dst[i] = read_ptr[read_pos];
-		read_pos++;
-		if (read_pos >= read_block_size) {
-			read_block++;
+	uint64_t dst_idx = 0;
+	while (true) {
+		// Copy over as much of our current block as possible.
+		const uint32_t copied_bytes_count = MIN(p_length - dst_idx, read_block_size - read_pos);
+		memcpy(p_dst + dst_idx, read_ptr + read_pos, copied_bytes_count);
+		dst_idx += copied_bytes_count;
+		read_pos += copied_bytes_count;
 
-			if (read_block < read_block_count) {
-				//read another block of compressed data
-				f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
-				int ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
-				ERR_FAIL_COND_V_MSG(ret == -1, -1, "Compressed file is corrupt.");
-				read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
-				read_pos = 0;
-
-			} else {
-				read_block--;
-				at_end = true;
-				if (i + 1 < p_length) {
-					read_eof = true;
-				}
-				return i + 1;
-			}
+		if (dst_idx == p_length) {
+			// We're done! We read back all that was requested.
+			return p_length;
 		}
+
+		// We're not done yet; try reading the next block.
+		read_block++;
+
+		if (read_block >= read_block_count) {
+			// We're done! We read back the whole file.
+			read_block--;
+			at_end = true;
+			if (dst_idx + 1 < p_length) {
+				read_eof = true;
+			}
+			return dst_idx;
+		}
+
+		// Read the next block of compressed data.
+		f->get_buffer(comp_buffer.ptrw(), read_blocks[read_block].csize);
+		const int64_t ret = Compression::decompress(buffer.ptrw(), read_blocks.size() == 1 ? read_total : block_size, comp_buffer.ptr(), read_blocks[read_block].csize, cmode);
+		ERR_FAIL_COND_V_MSG(ret == -1, -1, "Compressed file is corrupt.");
+		read_block_size = read_block == read_block_count - 1 ? read_total % block_size : block_size;
+		read_pos = 0;
 	}
 
 	return p_length;
@@ -310,7 +322,9 @@ bool FileAccessCompressed::store_buffer(const uint8_t *p_src, uint64_t p_length)
 		write_ptr = buffer.ptrw();
 	}
 
-	memcpy(write_ptr + write_pos, p_src, p_length);
+	if (p_length) {
+		memcpy(write_ptr + write_pos, p_src, p_length);
+	}
 
 	write_pos += p_length;
 	return true;
@@ -329,6 +343,22 @@ uint64_t FileAccessCompressed::_get_modified_time(const String &p_file) {
 		return f->get_modified_time(p_file);
 	} else {
 		return 0;
+	}
+}
+
+uint64_t FileAccessCompressed::_get_access_time(const String &p_file) {
+	if (f.is_valid()) {
+		return f->get_access_time(p_file);
+	} else {
+		return 0;
+	}
+}
+
+int64_t FileAccessCompressed::_get_size(const String &p_file) {
+	if (f.is_valid()) {
+		return f->get_size(p_file);
+	} else {
+		return -1;
 	}
 }
 

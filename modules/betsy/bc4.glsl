@@ -6,13 +6,10 @@ signed = "#define SNORM";
 #[compute]
 #version 450
 
-#include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
-
 #VERSION_DEFINES
 
-shared float2 g_minMaxValues[4u * 4u * 4u];
-shared uint2 g_mask[4u * 4u];
+shared vec2 g_minMaxValues[4u * 4u * 4u];
+shared uvec2 g_mask[4u * 4u];
 
 layout(binding = 0) uniform sampler2D srcTex;
 layout(binding = 1, rg32ui) uniform restrict writeonly uimage2D dstTexture;
@@ -41,30 +38,30 @@ layout(local_size_x = 4, //
 ///  - Long threads (e.g. 1 thread per block) misses parallelism opportunities
 void main() {
 	float minVal, maxVal;
-	float4 srcPixel;
+	vec4 srcPixel;
 
 	const uint blockThreadId = gl_LocalInvocationID.x;
 
-	const uint2 pixelsToLoadBase = gl_GlobalInvocationID.yz << 2u;
+	const uvec2 pixelsToLoadBase = gl_GlobalInvocationID.yz << 2u;
 
 	for (uint i = 0u; i < 4u; ++i) {
-		const uint2 pixelsToLoad = pixelsToLoadBase + uint2(i, blockThreadId);
+		const uvec2 pixelsToLoad = pixelsToLoadBase + uvec2(i, blockThreadId);
 
-		const float4 value = OGRE_Load2D(srcTex, int2(pixelsToLoad), 0).xyzw;
+		const vec4 value = texelFetch(srcTex, ivec2(pixelsToLoad), 0).xyzw;
 		srcPixel[i] = params.p_channelIdx == 0 ? value.x : (params.p_channelIdx == 1 ? value.y : value.w);
 		srcPixel[i] *= 255.0f;
 	}
 
-	minVal = min3(srcPixel.x, srcPixel.y, srcPixel.z);
-	maxVal = max3(srcPixel.x, srcPixel.y, srcPixel.z);
+	minVal = min(srcPixel.x, min(srcPixel.y, srcPixel.z));
+	maxVal = max(srcPixel.x, max(srcPixel.y, srcPixel.z));
 	minVal = min(minVal, srcPixel.w);
 	maxVal = max(maxVal, srcPixel.w);
 
 	const uint minMaxIdxBase = (gl_LocalInvocationID.z << 4u) + (gl_LocalInvocationID.y << 2u);
 	const uint maskIdxBase = (gl_LocalInvocationID.z << 2u) + gl_LocalInvocationID.y;
 
-	g_minMaxValues[minMaxIdxBase + blockThreadId] = float2(minVal, maxVal);
-	g_mask[maskIdxBase] = uint2(0u, 0u);
+	g_minMaxValues[minMaxIdxBase + blockThreadId] = vec2(minVal, maxVal);
+	g_mask[maskIdxBase] = uvec2(0u, 0u);
 
 	memoryBarrierShared();
 	barrier();
@@ -102,8 +99,9 @@ void main() {
 			a -= dist2;
 		}
 
-		if (a >= dist)
+		if (a >= dist) {
 			ind += 1;
+		}
 
 		// turn linear scale into DXT index (0/1 are extremal pts)
 		ind = -ind & 7;
@@ -121,31 +119,33 @@ void main() {
 		}
 	}
 
-	if (mask0 != 0u)
+	if (mask0 != 0u) {
 		atomicOr(g_mask[maskIdxBase].x, mask0);
-	if (mask1 != 0u)
+	}
+	if (mask1 != 0u) {
 		atomicOr(g_mask[maskIdxBase].y, mask1);
+	}
 
 	memoryBarrierShared();
 	barrier();
 
 	if (blockThreadId == 0u) {
 		// Save data
-		uint2 outputBytes;
+		uvec2 outputBytes;
 
 #ifdef SNORM
 		outputBytes.x =
-				packSnorm4x8(float4(maxVal * (1.0f / 255.0f) * 2.0f - 1.0f,
+				packSnorm4x8(vec4(maxVal * (1.0f / 255.0f) * 2.0f - 1.0f,
 						minVal * (1.0f / 255.0f) * 2.0f - 1.0f, 0.0f, 0.0f));
 #else
 		outputBytes.x = packUnorm4x8(
-				float4(maxVal * (1.0f / 255.0f), minVal * (1.0f / 255.0f), 0.0f, 0.0f));
+				vec4(maxVal * (1.0f / 255.0f), minVal * (1.0f / 255.0f), 0.0f, 0.0f));
 #endif
 
 		outputBytes.x |= g_mask[maskIdxBase].x;
 		outputBytes.y = g_mask[maskIdxBase].y;
 
-		uint2 dstUV = gl_GlobalInvocationID.yz;
-		imageStore(dstTexture, int2(dstUV), uint4(outputBytes.xy, 0u, 0u));
+		uvec2 dstUV = gl_GlobalInvocationID.yz;
+		imageStore(dstTexture, ivec2(dstUV), uvec4(outputBytes.xy, 0u, 0u));
 	}
 }

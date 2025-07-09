@@ -33,15 +33,10 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
-
-uint32_t EditorOBJImporter::get_import_flags() const {
-	return IMPORT_SCENE;
-}
 
 static Error _parse_material_library(const String &p_path, HashMap<String, Ref<StandardMaterial3D>> &material_map, List<String> *r_missing_deps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
@@ -124,7 +119,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Kd", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Kd", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -144,7 +139,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Ks", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Ks", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -164,7 +159,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_Ns", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_Ns", "").replace_char('\\', '/').strip_edges();
 			String path;
 			if (p.is_absolute_path()) {
 				path = p;
@@ -183,7 +178,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			//normal
 			ERR_FAIL_COND_V(current.is_null(), ERR_FILE_CORRUPT);
 
-			String p = l.replace("map_bump", "").replace("\\", "/").strip_edges();
+			String p = l.replace("map_bump", "").replace_char('\\', '/').strip_edges();
 			String path = base_path.path_join(p);
 
 			Ref<Texture2D> texture = ResourceLoader::load(path);
@@ -370,7 +365,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				face[1] = face[2];
 			}
 		} else if (l.begins_with("s ")) { //smoothing
-			String what = l.substr(2, l.length()).strip_edges();
+			String what = l.substr(2).strip_edges();
 			bool do_smooth;
 			if (what == "off") {
 				do_smooth = false;
@@ -407,7 +402,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			//groups are too annoying
 			if (surf_tool->get_vertex_array().size()) {
 				//another group going on, commit it
-				if (normals.size() == 0) {
+				if (normals.is_empty()) {
 					surf_tool->generate_normals();
 				}
 
@@ -437,7 +432,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 					ERR_FAIL_COND_V(tangents.is_empty(), ERR_FILE_CORRUPT);
 					for (int vert = 0; vert < norms.size(); vert++) {
 						Vector3 tan = Vector3(tangents[vert * 4 + 0], tangents[vert * 4 + 1], tangents[vert * 4 + 2]);
-						if (abs(tan.dot(norms[vert])) > 0.0001) {
+						if (std::abs(tan.dot(norms[vert])) > 0.0001) {
 							// Tangent is not perpendicular to the normal, so we can't use compression.
 							mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 						}
@@ -481,7 +476,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("o ")) {
-				name = l.substr(2, l.length()).strip_edges();
+				name = l.substr(2).strip_edges();
 			}
 
 			if (l.begins_with("usemtl ")) {
@@ -489,7 +484,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("g ")) {
-				current_group = l.substr(2, l.length()).strip_edges();
+				current_group = l.substr(2).strip_edges();
 			}
 
 		} else if (l.begins_with("mtllib ")) { //parse material
@@ -589,9 +584,6 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("obj");
 }
 
-EditorOBJImporter::EditorOBJImporter() {
-}
-
 ////////////////////////////////////////////////////
 
 String ResourceImporterOBJ::get_importer_name() const {
@@ -686,7 +678,4 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	r_gen_files->push_back(save_path);
 
 	return OK;
-}
-
-ResourceImporterOBJ::ResourceImporterOBJ() {
 }

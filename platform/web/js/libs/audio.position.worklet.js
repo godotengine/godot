@@ -29,9 +29,19 @@
 /**************************************************************************/
 
 class GodotPositionReportingProcessor extends AudioWorkletProcessor {
-	constructor() {
-		super();
+	constructor(...args) {
+		super(...args);
 		this.position = 0;
+
+		this.port.onmessage = (event) => {
+			switch (event?.data?.type) {
+			case 'reset':
+				this.position = 0;
+				break;
+			default:
+				// Do nothing.
+			}
+		};
 	}
 
 	process(inputs, _outputs, _parameters) {
@@ -39,10 +49,10 @@ class GodotPositionReportingProcessor extends AudioWorkletProcessor {
 			const input = inputs[0];
 			if (input.length > 0) {
 				this.position += input[0].length;
-				this.port.postMessage({ 'type': 'position', 'data': this.position });
-				return true;
+				this.port.postMessage({ type: 'position', data: this.position });
 			}
 		}
+
 		return true;
 	}
 }

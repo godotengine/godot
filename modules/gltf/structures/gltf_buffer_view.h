@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_BUFFER_VIEW_H
-#define GLTF_BUFFER_VIEW_H
+#pragma once
 
 #include "../gltf_defines.h"
 
@@ -41,9 +40,9 @@ class GLTFBufferView : public Resource {
 
 private:
 	GLTFBufferIndex buffer = -1;
-	int byte_offset = 0;
-	int byte_length = 0;
-	int byte_stride = -1;
+	int64_t byte_offset = 0;
+	int64_t byte_length = 0;
+	int64_t byte_stride = -1;
 	bool indices = false;
 	bool vertex_attributes = false;
 
@@ -51,6 +50,7 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	// Non-const versions for compatibility.
 	GLTFBufferIndex _get_buffer_bind_compat_86907();
 	int _get_byte_offset_bind_compat_86907();
 	int _get_byte_length_bind_compat_86907();
@@ -63,14 +63,14 @@ public:
 	GLTFBufferIndex get_buffer() const;
 	void set_buffer(GLTFBufferIndex p_buffer);
 
-	int get_byte_offset() const;
-	void set_byte_offset(int p_byte_offset);
+	int64_t get_byte_offset() const;
+	void set_byte_offset(int64_t p_byte_offset);
 
-	int get_byte_length() const;
-	void set_byte_length(int p_byte_length);
+	int64_t get_byte_length() const;
+	void set_byte_length(int64_t p_byte_length);
 
-	int get_byte_stride() const;
-	void set_byte_stride(int p_byte_stride);
+	int64_t get_byte_stride() const;
+	void set_byte_stride(int64_t p_byte_stride);
 
 	bool get_indices() const;
 	void set_indices(bool p_indices);
@@ -80,5 +80,3 @@ public:
 
 	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_state) const;
 };
-
-#endif // GLTF_BUFFER_VIEW_H

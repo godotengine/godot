@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Todos Reconocidos"
+
 msgid "New Code Region"
 msgstr "Nuevo Code Region"
 
@@ -27,25 +30,15 @@ msgstr "Selecciona un color de la pantalla."
 msgid "Pick a color from the application window."
 msgstr "Elige un color en la ventana de la aplicación."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Color: #%s\n"
-"Clic Izq.: Aplicar color\n"
-"Clic Der.: Eliminar Predeterminado"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Color: #%s\n"
-"Clic Izq.: Aplicar color"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Introduce un código hexadecimal (\"#ff0000\") o un color con nombre (\"red\")."
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Clear"
+msgstr "Limpiar"
 
 msgid "Select a picker shape."
 msgstr "Selecciona una forma de selección."
@@ -81,9 +74,6 @@ msgstr "Seleccionar Esta Carpeta"
 msgid "You don't have permission to access contents of this folder."
 msgstr "No tienes permiso para acceder al contenido de esta carpeta."
 
-msgid "All Recognized"
-msgstr "Todos Reconocidos"
-
 msgid "All Files"
 msgstr "Todos los Archivos"
 
@@ -98,9 +88,6 @@ msgstr "Abrir un Directorio"
 
 msgid "Open a File or Directory"
 msgstr "Abrir un archivo o directorio"
-
-msgid "Save"
-msgstr "Guardar"
 
 msgid "Save a File"
 msgstr "Guardar un Archivo"
@@ -120,11 +107,11 @@ msgstr "Ruta:"
 msgid "Refresh files."
 msgstr "Refrescar archivos."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Mostrar/Ocultar archivos ocultos."
-
 msgid "Directories & Files:"
 msgstr "Directorios y Archivos:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Mostrar/Ocultar archivos ocultos."
 
 msgid "File:"
 msgstr "Archivo:"
@@ -236,9 +223,6 @@ msgstr "Pegar"
 
 msgid "Select All"
 msgstr "Seleccionar Todo"
-
-msgid "Clear"
-msgstr "Limpiar"
 
 msgid "Undo"
 msgstr "Deshacer"

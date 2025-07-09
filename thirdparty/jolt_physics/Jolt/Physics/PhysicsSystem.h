@@ -35,6 +35,19 @@ public:
 								PhysicsSystem()												: mContactManager(mPhysicsSettings) JPH_IF_ENABLE_ASSERTS(, mConstraintManager(&mBodyManager)) { }
 								~PhysicsSystem();
 
+	/// The maximum value that can be passed to Init for inMaxBodies.
+	static constexpr uint		cMaxBodiesLimit = BodyID::cMaxBodyIndex + 1;
+
+	/// The maximum value that can be passed to Init for inMaxBodyPairs.
+	/// Note you should really use a lower value, using this value will cost a lot of memory!
+	/// On a 32 bit platform, you'll run out of memory way before you reach this limit.
+	static constexpr uint		cMaxBodyPairsLimit = ContactConstraintManager::cMaxBodyPairsLimit;
+
+	/// The maximum value that can be passed to Init for inMaxContactConstraints.
+	/// Note you should really use a lower value, using this value will cost a lot of memory!
+	/// On a 32 bit platform, you'll run out of memory way before you reach this limit.
+	static constexpr uint		cMaxContactConstraintsLimit = ContactConstraintManager::cMaxContactConstraintsLimit;
+
 	/// Initialize the system.
 	/// @param inMaxBodies Maximum number of bodies to support.
 	/// @param inNumBodyMutexes Number of body mutexes to use. Should be a power of 2 in the range [1, 64], use 0 to auto detect.
@@ -65,7 +78,7 @@ public:
 
 	/// Set the function that combines the restitution of two bodies and returns it
 	/// Default method is max(restitution1, restitution1)
-	void						SetCombineRestitution(ContactConstraintManager::CombineFunction inCombineRestition) { mContactManager.SetCombineRestitution(inCombineRestition); }
+	void						SetCombineRestitution(ContactConstraintManager::CombineFunction inCombineRestitution) { mContactManager.SetCombineRestitution(inCombineRestitution); }
 	ContactConstraintManager::CombineFunction GetCombineRestitution() const					{ return mContactManager.GetCombineRestitution(); }
 
 	/// Set/get the shape filter that will be used during simulation. This can be used to exclude shapes within a body from colliding with each other.
@@ -75,6 +88,24 @@ public:
 	/// The PhysicsSystem does not own the ShapeFilter, make sure it stays alive during the lifetime of the PhysicsSystem.
 	void						SetSimShapeFilter(const SimShapeFilter *inShapeFilter)		{ mSimShapeFilter = inShapeFilter; }
 	const SimShapeFilter *		GetSimShapeFilter() const									{ return mSimShapeFilter; }
+
+	/// Advanced use only: This function is similar to CollisionDispatch::sCollideShapeVsShape but only used to collide bodies during simulation.
+	/// inBody1 The first body to collide.
+	/// inBody2 The second body to collide.
+	/// inCenterOfMassTransform1 The center of mass transform of the first body (note this will not be the actual world space position of the body, it will be made relative to some position so we can drop down to single precision).
+	/// inCenterOfMassTransform2 The center of mass transform of the second body.
+	/// ioCollideShapeSettings Settings that control the collision detection. Note that the implementation can freely overwrite the shape settings if needed, the caller provides a temporary that will not be used after the function returns.
+	/// ioCollector The collector that will receive the contact points.
+	/// inShapeFilter The shape filter that can be used to exclude shapes from colliding with each other.
+	using SimCollideBodyVsBody = std::function<void(const Body &inBody1, const Body &inBody2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, CollideShapeSettings &ioCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter)>;
+
+	/// Advanced use only: Set the function that will be used to collide two bodies during simulation.
+	/// This function is expected to eventually call CollideShapeCollector::AddHit all contact points between the shapes of body 1 and 2 in their given transforms.
+	void						SetSimCollideBodyVsBody(const SimCollideBodyVsBody &inBodyVsBody) { mSimCollideBodyVsBody = inBodyVsBody; }
+	const SimCollideBodyVsBody &GetSimCollideBodyVsBody() const								{ return mSimCollideBodyVsBody; }
+
+	/// Advanced use only: Default function that is used to collide two bodies during simulation.
+	static void					sDefaultSimCollideBodyVsBody(const Body &inBody1, const Body &inBody2, Mat44Arg inCenterOfMassTransform1, Mat44Arg inCenterOfMassTransform2, CollideShapeSettings &ioCollideShapeSettings, CollideShapeCollector &ioCollector, const ShapeFilter &inShapeFilter);
 
 	/// Control the main constants of the physics simulation
 	void						SetPhysicsSettings(const PhysicsSettings &inSettings)		{ mPhysicsSettings = inSettings; }
@@ -126,6 +157,8 @@ public:
 	/// The world steps for a total of inDeltaTime seconds. This is divided in inCollisionSteps iterations.
 	/// Each iteration consists of collision detection followed by an integration step.
 	/// This function internally spawns jobs using inJobSystem and waits for them to complete, so no jobs will be running when this function returns.
+	/// The temp allocator is used, for example, to store the list of bodies that are in contact, how they form islands together
+	/// and data to solve the contacts between bodies. At the end of the Update call, all allocated memory will have been freed.
 	EPhysicsUpdateError			Update(float inDeltaTime, int inCollisionSteps, TempAllocator *inTempAllocator, JobSystem *inJobSystem);
 
 	/// Saving state for replay
@@ -305,6 +338,9 @@ private:
 
 	/// The shape filter that is used to filter out sub shapes during simulation
 	const SimShapeFilter *		mSimShapeFilter = nullptr;
+
+	/// The collision function that is used to collide two shapes during simulation
+	SimCollideBodyVsBody		mSimCollideBodyVsBody = &sDefaultSimCollideBodyVsBody;
 
 	/// Simulation settings
 	PhysicsSettings				mPhysicsSettings;

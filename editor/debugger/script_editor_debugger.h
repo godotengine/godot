@@ -28,17 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_EDITOR_DEBUGGER_H
-#define SCRIPT_EDITOR_DEBUGGER_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/debugger/editor_debugger_server.h"
-#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
+class Button;
 class Tree;
 class LineEdit;
 class TabContainer;
@@ -115,13 +113,15 @@ private:
 	int warning_count;
 
 	bool skip_breakpoints_value = false;
+	bool ignore_error_breaks_value = false;
 	Ref<Script> stack_script;
 
 	TabContainer *tabs = nullptr;
 
-	Label *reason = nullptr;
+	RichTextLabel *reason = nullptr;
 
 	Button *skip_breakpoints = nullptr;
+	Button *ignore_error_breaks = nullptr;
 	Button *copy = nullptr;
 	Button *step = nullptr;
 	Button *next = nullptr;
@@ -137,6 +137,7 @@ private:
 	Button *vmem_refresh = nullptr;
 	Button *vmem_export = nullptr;
 	LineEdit *vmem_total = nullptr;
+	TextureRect *vmem_notice_icon = nullptr;
 
 	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
@@ -147,7 +148,7 @@ private:
 	Ref<RemoteDebuggerPeer> peer;
 
 	HashMap<NodePath, int> node_path_cache;
-	int last_path_id;
+	int last_path_id = 0;
 	HashMap<String, int> res_path_cache;
 
 	EditorProfiler *profiler = nullptr;
@@ -159,7 +160,7 @@ private:
 	bool move_to_foreground = true;
 	bool can_request_idle_draw = false;
 
-	bool live_debug;
+	bool live_debug = true;
 
 	uint64_t debugging_thread_id = Thread::UNASSIGNED_ID;
 
@@ -183,16 +184,57 @@ private:
 
 	void _select_thread(int p_index);
 
+	bool debug_mute_audio = false;
+
 	EditorDebuggerNode::CameraOverride camera_override;
 
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);
+
+	/// Message handler function for _parse_message.
+	typedef void (ScriptEditorDebugger::*ParseMessageFunc)(uint64_t p_thread_id, const Array &p_data);
+	static HashMap<String, ParseMessageFunc> parse_message_handlers;
+	static void _init_parse_message_handlers();
+
+	void _msg_debug_enter(uint64_t p_thread_id, const Array &p_data);
+	void _msg_debug_exit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_set_pid(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_click_ctrl(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_scene_tree(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_drawn(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_dump(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_frame_vars(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_frame_var(uint64_t p_thread_id, const Array &p_data);
+	void _msg_output(uint64_t p_thread_id, const Array &p_data);
+	void _msg_performance_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_visual_hardware_info(uint64_t p_thread_id, const Array &p_data);
+	void _msg_visual_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_error(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_function_signature(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_profile_common(const Array &p_data, const bool p_final);
+	void _msg_servers_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_profile_total(uint64_t p_thread_id, const Array &p_data);
+	void _msg_request_quit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_nothing_selected(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_selection_invalidated(uint64_t p_thread_id, const Array &p_data);
+	void _msg_show_selection_limit_warning(uint64_t p_thread_id, const Array &p_data);
+	void _msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data);
+	void _msg_filesystem_update_file(uint64_t p_thread_id, const Array &p_data);
+	void _msg_evaluation_return(uint64_t p_thread_id, const Array &p_data);
+	void _msg_window_title(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_suspend_toggle(uint64_t p_thread_id, const Array &p_data);
+	void _msg_embed_next_frame(uint64_t p_thread_id, const Array &p_data);
+
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
+	void _update_reason_content_height();
 	void _update_buttons_state();
 	void _remote_object_selected(ObjectID p_object);
-	void _remote_object_edited(ObjectID, const String &p_prop, const Variant &p_value);
+	void _remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
@@ -215,6 +257,8 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+
+	void _vmem_item_activated();
 
 	void _profiler_activate(bool p_enable, int p_profiler);
 	void _profiler_seeked();
@@ -246,9 +290,15 @@ protected:
 	static void _bind_methods();
 
 public:
-	void request_remote_object(ObjectID p_obj_id);
-	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value);
-	Object *get_remote_object(ObjectID p_id);
+	enum EmbedShortcutAction {
+		EMBED_SUSPEND_TOGGLE,
+		EMBED_NEXT_FRAME,
+	};
+
+	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
+	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
+
+	void clear_inspector(bool p_send_msg = true);
 
 	// Needed by _live_edit_set, buttons state.
 	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
@@ -262,6 +312,7 @@ public:
 	void stop();
 
 	void debug_skip_breakpoints();
+	void debug_ignore_error_breaks();
 	void debug_copy();
 
 	void debug_next();
@@ -299,6 +350,9 @@ public:
 	void live_debug_duplicate_node(const NodePath &p_at, const String &p_new_name);
 	void live_debug_reparent_node(const NodePath &p_at, const NodePath &p_new_place, const String &p_new_name, int p_at_pos);
 
+	bool get_debug_mute_audio() const;
+	void set_debug_mute_audio(bool p_mute);
+
 	EditorDebuggerNode::CameraOverride get_camera_override() const;
 	void set_camera_override(EditorDebuggerNode::CameraOverride p_override);
 
@@ -309,7 +363,8 @@ public:
 	void reload_all_scripts();
 	void reload_scripts(const Vector<String> &p_script_paths);
 
-	bool is_skip_breakpoints();
+	bool is_skip_breakpoints() const;
+	bool is_ignore_error_breaks() const;
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -324,5 +379,3 @@ public:
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
 };
-
-#endif // SCRIPT_EDITOR_DEBUGGER_H

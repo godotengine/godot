@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_INTERFACE_H
-#define EDITOR_INTERFACE_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -148,7 +147,7 @@ public:
 	void popup_property_selector(Object *p_object, const Callable &p_callback, const PackedInt32Array &p_type_filter = PackedInt32Array(), const String &p_current_value = String());
 	void popup_method_selector(Object *p_object, const Callable &p_callback, const String &p_current_value = String());
 	void popup_quick_open(const Callable &p_callback, const TypedArray<StringName> &p_base_types = TypedArray<StringName>());
-	void popup_create_dialog(const Callable &p_callback, const StringName &p_base_type = "", const String &p_current_type = "", const String &p_dialog_title = "", const TypedArray<StringName> &p_custom_type_blocklist = TypedArray<String>(), const Dictionary &p_custom_suffix = Dictionary());
+	void popup_create_dialog(const Callable &p_callback, const StringName &p_base_type = "", const String &p_current_type = "", const String &p_dialog_title = "", const TypedArray<StringName> &p_custom_type_blocklist = TypedArray<StringName>());
 
 	// Editor docks.
 
@@ -171,12 +170,14 @@ public:
 	void reload_scene_from_path(const String &scene_path);
 
 	PackedStringArray get_open_scenes() const;
+	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
 
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
 	void save_all_scenes();
+	Error close_scene();
 
 	// Scene playback.
 
@@ -190,9 +191,7 @@ public:
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
 
-#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	// Base.
 	static void create();
@@ -200,5 +199,3 @@ public:
 
 	EditorInterface();
 };
-
-#endif // EDITOR_INTERFACE_H

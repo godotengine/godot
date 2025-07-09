@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_CODEGEN_H
-#define GDSCRIPT_CODEGEN_H
+#pragma once
 
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
@@ -149,10 +148,11 @@ public:
 	virtual void write_endif() = 0;
 	virtual void write_jump_if_shared(const Address &p_value) = 0;
 	virtual void write_end_jump_if_shared() = 0;
-	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type) = 0;
-	virtual void write_for_assignment(const Address &p_list) = 0;
-	virtual void write_for(const Address &p_variable, bool p_use_conversion) = 0;
-	virtual void write_endfor() = 0;
+	virtual void start_for(const GDScriptDataType &p_iterator_type, const GDScriptDataType &p_list_type, bool p_is_range) = 0;
+	virtual void write_for_list_assignment(const Address &p_list) = 0;
+	virtual void write_for_range_assignment(const Address &p_from, const Address &p_to, const Address &p_step) = 0;
+	virtual void write_for(const Address &p_variable, bool p_use_conversion, bool p_is_range) = 0;
+	virtual void write_endfor(bool p_is_range) = 0;
 	virtual void start_while_condition() = 0; // Used to allow a jump to the expression evaluation.
 	virtual void write_while(const Address &p_condition) = 0;
 	virtual void write_endwhile() = 0;
@@ -165,5 +165,3 @@ public:
 
 	virtual ~GDScriptCodeGenerator() {}
 };
-
-#endif // GDSCRIPT_CODEGEN_H

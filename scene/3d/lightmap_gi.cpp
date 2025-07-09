@@ -33,12 +33,15 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/math/delaunay_3d.h"
-#include "lightmap_probe.h"
+#include "core/object/object.h"
+#include "scene/3d/lightmap_probe.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/sky.h"
+
+#include "modules/modules_enabled.gen.h" // For lightmapper_rd.
 
 void LightmapGIData::add_user(const NodePath &p_path, const Rect2 &p_uv_scale, int p_slice_index, int32_t p_sub_instance) {
 	User user;
@@ -78,9 +81,8 @@ void LightmapGIData::clear_users() {
 }
 
 void LightmapGIData::_set_user_data(const Array &p_data) {
-	ERR_FAIL_COND(p_data.is_empty());
 	ERR_FAIL_COND((p_data.size() % 4) != 0);
-
+	users.clear();
 	for (int i = 0; i < p_data.size(); i += 4) {
 		add_user(p_data[i + 0], p_data[i + 1], p_data[i + 2], p_data[i + 3]);
 	}
@@ -290,8 +292,7 @@ Dictionary LightmapGIData::_get_probe_data() const {
 
 #ifndef DISABLE_DEPRECATED
 void LightmapGIData::set_light_texture(const Ref<TextureLayered> &p_light_texture) {
-	TypedArray<TextureLayered> arr;
-	arr.append(p_light_texture);
+	TypedArray<TextureLayered> arr = { p_light_texture };
 	set_lightmap_textures(arr);
 }
 
@@ -423,7 +424,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 			Transform3D xf = get_global_transform().affine_inverse() * s->get_global_transform();
 			for (int i = 0; i < bmeshes.size(); i += 2) {
 				Ref<Mesh> mesh = bmeshes[i];
-				if (!mesh.is_valid()) {
+				if (mesh.is_null()) {
 					continue;
 				}
 
@@ -696,7 +697,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	BSPNode node;
 	node.plane = best_plane;
 
-	if (indices_under.size() == 0) {
+	if (indices_under.is_empty()) {
 		//nothing to do here
 		node.under = BSPNode::EMPTY_LEAF;
 	} else if (indices_under.size() == 1) {
@@ -705,7 +706,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 		node.under = _compute_bsp_tree(p_points, p_planes, planes_tested, p_simplices, indices_under, bsp_nodes);
 	}
 
-	if (indices_over.size() == 0) {
+	if (indices_over.is_empty()) {
 		//nothing to do here
 		node.over = BSPNode::EMPTY_LEAF;
 	} else if (indices_over.size() == 1) {
@@ -855,6 +856,10 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 
 		config->save(config_path);
 
+		if (supersampling_enabled) {
+			texture_image->resize(texture_image->get_width() / supersampling_factor, texture_image->get_height() / supersampling_factor, Image::INTERPOLATE_TRILINEAR);
+		}
+
 		// Save the file.
 		Error save_err;
 		if (p_is_shadowmask) {
@@ -910,7 +915,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		Vector<MeshesFound> meshes_found;
 		_find_meshes_and_lights(p_from_node ? p_from_node : get_parent(), meshes_found, lights_found, probes_found);
 
-		if (meshes_found.size() == 0) {
+		if (meshes_found.is_empty()) {
 			return BAKE_ERROR_NO_MESHES;
 		}
 		// create mesh data for insert
@@ -930,7 +935,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				// For now set to basic size to avoid crash.
 				mesh_lightmap_size = Size2i(64, 64);
 			}
-			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale);
+			// Double lightmap texel density if downsampling is enabled, as the final texture size will be halved before saving lightmaps.
+			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale) * (supersampling_enabled ? supersampling_factor : 1.0);
 			ERR_FAIL_COND_V(lightmap_size.x == 0 || lightmap_size.y == 0, BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 
 			TypedArray<RID> overrides;
@@ -981,7 +987,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					w_albedo[i + 0] = uint8_t(CLAMP(float(r_aa[i + 0]) * (1.0 - float(r_orm[i + 2] / 255.0)), 0, 255));
 					w_albedo[i + 1] = uint8_t(CLAMP(float(r_aa[i + 1]) * (1.0 - float(r_orm[i + 2] / 255.0)), 0, 255));
 					w_albedo[i + 2] = uint8_t(CLAMP(float(r_aa[i + 2]) * (1.0 - float(r_orm[i + 2] / 255.0)), 0, 255));
-					w_albedo[i + 3] = 255;
+					w_albedo[i + 3] = r_aa[i + 3];
 				}
 
 				md.albedo_on_uv2.instantiate();
@@ -1002,6 +1008,11 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 					continue;
 				}
 				Array a = mf.mesh->surface_get_arrays(i);
+				Ref<Material> mat = mf.mesh->surface_get_material(i);
+				RID mat_rid;
+				if (mat.is_valid()) {
+					mat_rid = mat->get_rid();
+				}
 
 				Vector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
 				const Vector3 *vr = vertices.ptr();
@@ -1011,8 +1022,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				const Vector3 *nr = nullptr;
 				Vector<int> index = a[Mesh::ARRAY_INDEX];
 
-				ERR_CONTINUE(uv.size() == 0);
-				ERR_CONTINUE(normals.size() == 0);
+				ERR_CONTINUE(uv.is_empty());
+				ERR_CONTINUE(normals.is_empty());
 
 				uvr = uv.ptr();
 				nr = normals.ptr();
@@ -1051,6 +1062,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 						md.uv2.push_back(uvr[vidx[k]]);
 						md.normal.push_back(normal_xform.xform(nr[vidx[k]]).normalized());
+						md.material.push_back(mat_rid);
 					}
 				}
 			}
@@ -1180,13 +1192,13 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			} else if (Object::cast_to<OmniLight3D>(light)) {
 				OmniLight3D *l = Object::cast_to<OmniLight3D>(light);
 				if (use_physical_light_units) {
-					energy *= (1.0 / (Math_PI * 4.0));
+					energy *= (1.0 / (Math::PI * 4.0));
 				}
 				lightmapper->add_omni_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			} else if (Object::cast_to<SpotLight3D>(light)) {
 				SpotLight3D *l = Object::cast_to<SpotLight3D>(light);
 				if (use_physical_light_units) {
-					energy *= (1.0 / Math_PI);
+					energy *= (1.0 / Math::PI);
 				}
 				lightmapper->add_spot_light(light->get_name(), light->get_bake_mode() == Light3D::BAKE_STATIC, xf.origin, -xf.basis.get_column(Vector3::AXIS_Z).normalized(), linear_color, energy, indirect_energy, l->get_param(Light3D::PARAM_RANGE), l->get_param(Light3D::PARAM_ATTENUATION), l->get_param(Light3D::PARAM_SPOT_ANGLE), l->get_param(Light3D::PARAM_SPOT_ATTENUATION), l->get_param(Light3D::PARAM_SIZE), l->get_param(Light3D::PARAM_SHADOW_BLUR));
 			}
@@ -1254,7 +1266,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces,
 			bounce_indirect_energy, bias, max_texture_size, directional, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE, use_texture_for_bounces,
-			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization);
+			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization, (supersampling_enabled ? supersampling_factor : 1));
 
 	if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1477,11 +1489,17 @@ void LightmapGI::_notification(int p_what) {
 								"%s (%s): The directional lightmap textures are stored in a format that isn't supported anymore. Please bake lightmaps again to make lightmaps display from this node again.",
 								get_light_data()->get_path(), get_name()));
 
+				if (last_owner && last_owner != get_owner()) {
+					light_data->clear_users();
+				}
+
 				_assign_lightmaps();
 			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			last_owner = get_owner();
+
 			if (light_data.is_valid()) {
 				_clear_lightmaps();
 			}
@@ -1490,10 +1508,17 @@ void LightmapGI::_notification(int p_what) {
 }
 
 void LightmapGI::_assign_lightmaps() {
-	ERR_FAIL_COND(!light_data.is_valid());
+	ERR_FAIL_COND(light_data.is_null());
+
+	Vector<String> missing_node_paths;
 
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
+		NodePath user_path = light_data->get_user_path(i);
+		Node *node = get_node_or_null(user_path);
+		if (!node) {
+			missing_node_paths.push_back(String(user_path));
+			continue;
+		}
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
@@ -1506,12 +1531,25 @@ void LightmapGI::_assign_lightmaps() {
 			RS::get_singleton()->instance_geometry_set_lightmap(vi->get_instance(), get_instance(), light_data->get_user_lightmap_uv_scale(i), light_data->get_user_lightmap_slice_index(i));
 		}
 	}
+
+	if (!missing_node_paths.is_empty()) {
+		String missing_paths_text;
+		if (missing_node_paths.size() <= 3) {
+			missing_paths_text = String(", ").join(missing_node_paths);
+		} else {
+			missing_paths_text = vformat("%s and %d more", String(", ").join(missing_node_paths.slice(0, 3)), missing_node_paths.size() - 3);
+		}
+		WARN_PRINT(vformat("%s couldn't find previously baked nodes and needs a rebake (missing nodes: %s).", get_name(), missing_paths_text));
+	}
 }
 
 void LightmapGI::_clear_lightmaps() {
-	ERR_FAIL_COND(!light_data.is_valid());
+	ERR_FAIL_COND(light_data.is_null());
 	for (int i = 0; i < light_data->get_user_count(); i++) {
-		Node *node = get_node(light_data->get_user_path(i));
+		Node *node = get_node_or_null(light_data->get_user_path(i));
+		if (!node) {
+			continue;
+		}
 		int instance_idx = light_data->get_user_sub_instance(i);
 		if (instance_idx >= 0) {
 			RID instance_id = node->call("get_bake_mesh_instance", instance_idx);
@@ -1703,6 +1741,26 @@ int LightmapGI::get_max_texture_size() const {
 	return max_texture_size;
 }
 
+void LightmapGI::set_supersampling_enabled(bool p_enable) {
+	supersampling_enabled = p_enable;
+
+	notify_property_list_changed();
+}
+
+bool LightmapGI::is_supersampling_enabled() const {
+	return supersampling_enabled;
+}
+
+void LightmapGI::set_supersampling_factor(float p_factor) {
+	ERR_FAIL_COND(p_factor < 1);
+
+	supersampling_factor = p_factor;
+}
+
+float LightmapGI::get_supersampling_factor() const {
+	return supersampling_factor;
+}
+
 void LightmapGI::set_generate_probes(GenerateProbes p_generate_probes) {
 	gen_probes = p_generate_probes;
 }
@@ -1732,7 +1790,7 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 		warnings.push_back(RTR("The lightmap has no baked shadowmask textures. Please rebake with the Shadowmask Mode set to anything other than None."));
 	}
 
-#elif defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+#elif defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
 	warnings.push_back(vformat(RTR("Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will still work."), OS::get_singleton()->get_name()));
 #else
 	warnings.push_back(RTR("Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at compile-time. Rendering existing baked lightmaps will still work."));
@@ -1742,20 +1800,26 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 }
 
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+	}
 	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	if (p_property.name == "environment_custom_color" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	if (p_property.name == "environment_custom_energy" && environment_mode != ENVIRONMENT_MODE_CUSTOM_COLOR && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	if (p_property.name == "denoiser_strength" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 	if (p_property.name == "denoiser_range" && !use_denoiser) {
-		p_property.usage = PROPERTY_USAGE_NONE;
+		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -1796,6 +1860,12 @@ void LightmapGI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_texture_size", "max_texture_size"), &LightmapGI::set_max_texture_size);
 	ClassDB::bind_method(D_METHOD("get_max_texture_size"), &LightmapGI::get_max_texture_size);
 
+	ClassDB::bind_method(D_METHOD("set_supersampling_enabled", "enable"), &LightmapGI::set_supersampling_enabled);
+	ClassDB::bind_method(D_METHOD("is_supersampling_enabled"), &LightmapGI::is_supersampling_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_supersampling_factor", "factor"), &LightmapGI::set_supersampling_factor);
+	ClassDB::bind_method(D_METHOD("get_supersampling_factor"), &LightmapGI::get_supersampling_factor);
+
 	ClassDB::bind_method(D_METHOD("set_use_denoiser", "use_denoiser"), &LightmapGI::set_use_denoiser);
 	ClassDB::bind_method(D_METHOD("is_using_denoiser"), &LightmapGI::is_using_denoiser);
 
@@ -1824,6 +1894,8 @@ void LightmapGI::_bind_methods() {
 
 	ADD_GROUP("Tweaks", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "quality", PROPERTY_HINT_ENUM, "Low,Medium,High,Ultra"), "set_bake_quality", "get_bake_quality");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "supersampling"), "set_supersampling_enabled", "is_supersampling_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "supersampling_factor", PROPERTY_HINT_RANGE, "1,8,1"), "set_supersampling_factor", "get_supersampling_factor");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bounces", PROPERTY_HINT_RANGE, "0,6,1,or_greater"), "set_bounces", "get_bounces");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bounce_indirect_energy", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_bounce_indirect_energy", "get_bounce_indirect_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "directional"), "set_directional", "is_directional");

@@ -103,11 +103,9 @@ struct SwShapeTask : SwTask
 
     bool clip(SwRle* target) override
     {
-        if (shape.fastTrack) rleClip(target, &bbox);
-        else if (shape.rle) rleClip(target, shape.rle);
-        else return false;
-
-        return true;
+        if (shape.fastTrack) return rleClip(target, &bbox);
+        else if (shape.rle) return rleClip(target, shape.rle);
+        return false;
     }
 
     void run(unsigned tid) override
@@ -120,51 +118,41 @@ struct SwShapeTask : SwTask
 
         auto strokeWidth = validStrokeWidth();
         SwBBox renderRegion{};
-        auto visibleFill = false;
-
-        //This checks also for the case, if the invisible shape turned to visible by alpha.
-        auto prepareShape = false;
-        if (!shapePrepared(&shape) && (flags & RenderUpdateFlag::Color)) prepareShape = true;
+        auto updateShape = flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform | RenderUpdateFlag::Clip);
+        auto updateFill = false;
 
         //Shape
-        if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Transform) || prepareShape) {
+        if (updateShape || flags & (RenderUpdateFlag::Color | RenderUpdateFlag::Gradient)) {
             uint8_t alpha = 0;
             rshape->fillColor(nullptr, nullptr, nullptr, &alpha);
-            alpha = MULTIPLY(alpha, opacity);
-            visibleFill = (alpha > 0 || rshape->fill);
-            shapeReset(&shape);
-            if (visibleFill || clipper) {
-                if (!shapePrepare(&shape, rshape, transform, bbox, renderRegion, mpool, tid, clips.count > 0 ? true : false)) {
-                    visibleFill = false;
+            updateFill = (MULTIPLY(alpha, opacity) || rshape->fill);
+            if (updateShape) shapeReset(&shape);
+            if (updateFill || clipper) {
+                if (shapePrepare(&shape, rshape, transform, bbox, renderRegion, mpool, tid, clips.count > 0 ? true : false)) {
+                    if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
+                } else {
+                    updateFill = false;
                     renderRegion.reset();
                 }
             }
         }
         //Fill
-        if (flags & (RenderUpdateFlag::Path |RenderUpdateFlag::Gradient | RenderUpdateFlag::Transform | RenderUpdateFlag::Color)) {
-            if (visibleFill || clipper) {
-                if (!shapeGenRle(&shape, rshape, antialiasing(strokeWidth))) goto err;
-            }
+        if (updateFill) {
             if (auto fill = rshape->fill) {
                 auto ctable = (flags & RenderUpdateFlag::Gradient) ? true : false;
                 if (ctable) shapeResetFill(&shape);
                 if (!shapeGenFillColors(&shape, fill, transform, surface, opacity, ctable)) goto err;
-            } else {
-                shapeDelFill(&shape);
             }
         }
         //Stroke
-        if (flags & (RenderUpdateFlag::Path | RenderUpdateFlag::Stroke | RenderUpdateFlag::Transform)) {
+        if (updateShape || flags & RenderUpdateFlag::Stroke) {
             if (strokeWidth > 0.0f) {
                 shapeResetStroke(&shape, rshape, transform);
-
                 if (!shapeGenStrokeRle(&shape, rshape, transform, bbox, renderRegion, mpool, tid)) goto err;
                 if (auto fill = rshape->strokeFill()) {
                     auto ctable = (flags & RenderUpdateFlag::GradientStroke) ? true : false;
                     if (ctable) shapeResetStrokeFill(&shape);
                     if (!shapeGenStrokeFillColors(&shape, fill, transform, surface, opacity, ctable)) goto err;
-                } else {
-                    shapeDelStrokeFill(&shape);
                 }
             } else {
                 shapeDelStroke(&shape);
@@ -177,10 +165,8 @@ struct SwShapeTask : SwTask
         //Clip Path
         for (auto clip = clips.begin(); clip < clips.end(); ++clip) {
             auto clipper = static_cast<SwTask*>(*clip);
-            //Clip shape rle
-            if (shape.rle && !clipper->clip(shape.rle)) goto err;
-            //Clip stroke rle
-            if (shape.strokeRle && !clipper->clip(shape.strokeRle)) goto err;
+            if (shape.rle && !clipper->clip(shape.rle)) goto err;                 //Clip shape rle
+            if (shape.strokeRle && !clipper->clip(shape.strokeRle)) goto err;     //Clip stroke rle
         }
 
         bbox = renderRegion; //sync
@@ -190,6 +176,7 @@ struct SwShapeTask : SwTask
     err:
         bbox.reset();
         shapeReset(&shape);
+        rleReset(shape.strokeRle);
         shapeDelOutline(&shape, mpool, tid);
     }
 
@@ -546,15 +533,27 @@ const RenderSurface* SwRenderer::mainSurface()
 }
 
 
-SwSurface* SwRenderer::request(int channelSize)
+SwSurface* SwRenderer::request(int channelSize, bool square)
 {
     SwSurface* cmp = nullptr;
+    uint32_t w, h;
+
+    if (square) {
+        //Same Dimensional Size is demanded for the Post Processing Fast Flipping
+        w = h = std::max(surface->w, surface->h);
+    } else {
+        w = surface->w;
+        h = surface->h;
+    }
 
     //Use cached data
     for (auto p = compositors.begin(); p < compositors.end(); ++p) {
-        if ((*p)->compositor->valid && (*p)->compositor->image.channelSize == channelSize) {
-            cmp = *p;
-            break;
+        auto cur = *p;
+        if (cur->compositor->valid && cur->compositor->image.channelSize == channelSize) {
+            if (w == cur->w && h == cur->h) {
+                cmp = *p;
+                break;
+            }
         }
     }
 
@@ -563,15 +562,13 @@ SwSurface* SwRenderer::request(int channelSize)
         //Inherits attributes from main surface
         cmp = new SwSurface(surface);
         cmp->compositor = new SwCompositor;
-        cmp->compositor->image.data = (pixel_t*)malloc(channelSize * surface->stride * surface->h);
-        cmp->compositor->image.w = surface->w;
-        cmp->compositor->image.h = surface->h;
-        cmp->compositor->image.stride = surface->stride;
+        cmp->compositor->image.data = (pixel_t*)malloc(channelSize * w * h);
+        cmp->w = cmp->compositor->image.w = w;
+        cmp->h = cmp->compositor->image.h = h;
+        cmp->stride = cmp->compositor->image.stride = w;
         cmp->compositor->image.direct = true;
         cmp->compositor->valid = true;
         cmp->channelSize = cmp->compositor->image.channelSize = channelSize;
-        cmp->w = cmp->compositor->image.w;
-        cmp->h = cmp->compositor->image.h;
 
         compositors.push(cmp);
     }
@@ -583,7 +580,7 @@ SwSurface* SwRenderer::request(int channelSize)
 }
 
 
-RenderCompositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
+RenderCompositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs, CompositionFlag flags)
 {
     auto x = region.x;
     auto y = region.y;
@@ -595,7 +592,7 @@ RenderCompositor* SwRenderer::target(const RenderRegion& region, ColorSpace cs)
     //Out of boundary
     if (x >= sw || y >= sh || x + w < 0 || y + h < 0) return nullptr;
 
-    auto cmp = request(CHANNEL_SIZE(cs));
+    auto cmp = request(CHANNEL_SIZE(cs), (flags & CompositionFlag::PostProcessing));
 
     //Boundary Check
     if (x < 0) x = 0;
@@ -630,11 +627,14 @@ bool SwRenderer::endComposite(RenderCompositor* cmp)
     if (!cmp) return false;
 
     auto p = static_cast<SwCompositor*>(cmp);
-    p->valid = true;
 
     //Recover Context
     surface = p->recoverSfc;
     surface->compositor = p->recoverCmp;
+
+    //only invalid (currently used) surface can be composited
+    if (p->valid) return true;
+    p->valid = true;
 
     //Default is alpha blending
     if (p->method == CompositeMethod::None) {
@@ -646,34 +646,59 @@ bool SwRenderer::endComposite(RenderCompositor* cmp)
 }
 
 
-bool SwRenderer::prepare(RenderEffect* effect)
+void SwRenderer::prepare(RenderEffect* effect, const Matrix& transform)
 {
     switch (effect->type) {
-        case SceneEffect::GaussianBlur: return effectGaussianBlurPrepare(static_cast<RenderEffectGaussianBlur*>(effect));
-        case SceneEffect::DropShadow: return effectDropShadowPrepare(static_cast<RenderEffectDropShadow*>(effect));
+        case SceneEffect::GaussianBlur: effectGaussianBlurUpdate(static_cast<RenderEffectGaussianBlur*>(effect), transform); break;
+        case SceneEffect::DropShadow: effectDropShadowUpdate(static_cast<RenderEffectDropShadow*>(effect), transform); break;
+        case SceneEffect::Fill: effectFillUpdate(static_cast<RenderEffectFill*>(effect)); break;
+        case SceneEffect::Tint: effectTintUpdate(static_cast<RenderEffectTint*>(effect)); break;
+        case SceneEffect::Tritone: effectTritoneUpdate(static_cast<RenderEffectTritone*>(effect)); break;
+        default: break;
+    }
+}
+
+
+bool SwRenderer::region(RenderEffect* effect)
+{
+    switch (effect->type) {
+        case SceneEffect::GaussianBlur: return effectGaussianBlurRegion(static_cast<RenderEffectGaussianBlur*>(effect));
+        case SceneEffect::DropShadow: return effectDropShadowRegion(static_cast<RenderEffectDropShadow*>(effect));
         default: return false;
     }
 }
 
 
-bool SwRenderer::effect(RenderCompositor* cmp, const RenderEffect* effect, uint8_t opacity, bool direct)
+bool SwRenderer::render(RenderCompositor* cmp, const RenderEffect* effect, bool direct)
 {
-    if (effect->invalid) return false;
-
     auto p = static_cast<SwCompositor*>(cmp);
+
+    if (p->image.channelSize != sizeof(uint32_t)) {
+        TVGERR("SW_ENGINE", "Not supported grayscale Gaussian Blur!");
+        return false;
+    }
 
     switch (effect->type) {
         case SceneEffect::GaussianBlur: {
-            return effectGaussianBlur(p, request(surface->channelSize), static_cast<const RenderEffectGaussianBlur*>(effect));
+            return effectGaussianBlur(p, request(surface->channelSize, true), static_cast<const RenderEffectGaussianBlur*>(effect));
         }
         case SceneEffect::DropShadow: {
-            auto cmp1 = request(surface->channelSize);
+            auto cmp1 = request(surface->channelSize, true);
             cmp1->compositor->valid = false;
-            auto cmp2 = request(surface->channelSize);
+            auto cmp2 = request(surface->channelSize, true);
             SwSurface* surfaces[] = {cmp1, cmp2};
-            auto ret = effectDropShadow(p, surfaces, static_cast<const RenderEffectDropShadow*>(effect), opacity, direct);
+            auto ret = effectDropShadow(p, surfaces, static_cast<const RenderEffectDropShadow*>(effect), direct);
             cmp1->compositor->valid = true;
             return ret;
+        }
+        case SceneEffect::Fill: {
+            return effectFill(p, static_cast<const RenderEffectFill*>(effect), direct);
+        }
+        case SceneEffect::Tint: {
+            return effectTint(p, static_cast<const RenderEffectTint*>(effect), direct);
+        }
+        case SceneEffect::Tritone: {
+            return effectTritone(p, static_cast<const RenderEffectTritone*>(effect), direct);
         }
         default: return false;
     }

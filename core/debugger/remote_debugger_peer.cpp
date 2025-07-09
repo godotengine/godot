@@ -44,8 +44,10 @@ bool RemoteDebuggerPeerTCP::has_message() {
 
 Array RemoteDebuggerPeerTCP::get_message() {
 	MutexLock lock(mutex);
-	ERR_FAIL_COND_V(!has_message(), Array());
-	Array out = in_queue.front()->get();
+	List<Array>::Element *E = in_queue.front();
+	ERR_FAIL_NULL_V_MSG(E, Array(), "No remote debugger messages in queue.");
+
+	Array out = E->get();
 	in_queue.pop_front();
 	return out;
 }
@@ -96,11 +98,13 @@ void RemoteDebuggerPeerTCP::_write_out() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
-			if (out_queue.size() == 0) {
-				break; // Nothing left to send
-			}
 			mutex.lock();
-			Variant var = out_queue.front()->get();
+			List<Array>::Element *E = out_queue.front();
+			if (!E) {
+				mutex.unlock();
+				break;
+			}
+			Variant var = E->get();
 			out_queue.pop_front();
 			mutex.unlock();
 			int size = 0;
@@ -163,7 +167,8 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 	const int tries = 6;
 	const int waits[tries] = { 1, 10, 100, 1000, 1000, 1000 };
 
-	tcp_client->connect_to_host(ip, port);
+	Error err = tcp_client->connect_to_host(ip, port);
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Remote Debugger: Unable to connect to host '%s:%d'.", p_host, port));
 
 	for (int i = 0; i < tries; i++) {
 		tcp_client->poll();
@@ -173,12 +178,12 @@ Error RemoteDebuggerPeerTCP::connect_to_host(const String &p_host, uint16_t p_po
 		} else {
 			const int ms = waits[i];
 			OS::get_singleton()->delay_usec(ms * 1000);
-			print_verbose("Remote Debugger: Connection failed with status: '" + String::num(tcp_client->get_status()) + "', retrying in " + String::num(ms) + " msec.");
+			print_verbose("Remote Debugger: Connection failed with status: '" + String::num_int64(tcp_client->get_status()) + "', retrying in " + String::num_int64(ms) + " msec.");
 		}
 	}
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
-		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num(tcp_client->get_status())));
+		ERR_PRINT(vformat("Remote Debugger: Unable to connect. Status: %s.", String::num_int64(tcp_client->get_status())));
 		return FAILED;
 	}
 	connected = true;

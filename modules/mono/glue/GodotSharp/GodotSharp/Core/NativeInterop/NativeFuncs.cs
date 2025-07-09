@@ -167,6 +167,12 @@ namespace Godot.NativeInterop
 
         internal static partial Color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha);
 
+        internal static partial float godotsharp_color_get_ok_hsl_h(in Color p_self);
+
+        internal static partial float godotsharp_color_get_ok_hsl_s(in Color p_self);
+
+        internal static partial float godotsharp_color_get_ok_hsl_l(in Color p_self);
+
         // GDNative functions
 
         // gdnative.h
@@ -427,6 +433,12 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
 
+        public static partial void godotsharp_packed_byte_array_compress(scoped in godot_packed_byte_array p_src, int p_mode, out godot_packed_byte_array r_dst);
+
+        public static partial void godotsharp_packed_byte_array_decompress(scoped in godot_packed_byte_array p_src, long p_buffer_size, int p_mode, out godot_packed_byte_array r_dst);
+
+        public static partial void godotsharp_packed_byte_array_decompress_dynamic(scoped in godot_packed_byte_array p_src, long p_buffer_size, int p_mode, out godot_packed_byte_array r_dst);
+
         // Dictionary
 
         public static partial godot_bool godotsharp_dictionary_try_get_value(scoped ref godot_dictionary p_self,
@@ -497,6 +509,9 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_string_simplify_path(scoped in godot_string p_self,
             out godot_string r_simplified_path);
 
+        public static partial void godotsharp_string_capitalize(scoped in godot_string p_self,
+            out godot_string r_capitalized);
+
         public static partial void godotsharp_string_to_camel_case(scoped in godot_string p_self,
             out godot_string r_camel_case);
 
@@ -505,6 +520,9 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_string_to_snake_case(scoped in godot_string p_self,
             out godot_string r_snake_case);
+
+        public static partial void godotsharp_string_to_kebab_case(scoped in godot_string p_self,
+            out godot_string r_kebab_case);
 
         // NodePath
 

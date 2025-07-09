@@ -21,9 +21,16 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 
-/* Limit the maximum key size in storage. This should have no effect
- * since the key size is limited in memory. */
+/* Limit the maximum key size in storage. */
+#if defined(MBEDTLS_PSA_STATIC_KEY_SLOTS)
+/* Reflect the maximum size for the key buffer. */
+#define PSA_CRYPTO_MAX_STORAGE_SIZE (MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE)
+#else
+/* Just set an upper boundary but it should have no effect since the key size
+ * is limited in memory. */
 #define PSA_CRYPTO_MAX_STORAGE_SIZE (PSA_BITS_TO_BYTES(PSA_MAX_KEY_BITS))
+#endif
+
 /* Sanity check: a file size must fit in 32 bits. Allow a generous
  * 64kB of metadata. */
 #if PSA_CRYPTO_MAX_STORAGE_SIZE > 0xffff0000

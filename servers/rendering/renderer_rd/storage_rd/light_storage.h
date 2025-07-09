@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_STORAGE_RD_H
-#define LIGHT_STORAGE_RD_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "core/templates/paged_array.h"
@@ -316,10 +315,10 @@ private:
 	};
 
 	struct ReflectionProbeInstanceSort {
-		float depth;
+		float size;
 		ReflectionProbeInstance *probe_instance;
 		bool operator<(const ReflectionProbeInstanceSort &p_sort) const {
-			return depth < p_sort.depth;
+			return size < p_sort.size;
 		}
 	};
 
@@ -1164,5 +1163,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // LIGHT_STORAGE_RD_H

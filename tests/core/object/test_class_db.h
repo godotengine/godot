@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CLASS_DB_H
-#define TEST_CLASS_DB_H
+#pragma once
 
 #include "core/core_bind.h"
 #include "core/core_constants.h"
@@ -125,21 +124,21 @@ struct ExposedClass {
 };
 
 struct NamesCache {
-	StringName variant_type = StaticCString::create("Variant");
-	StringName object_class = StaticCString::create("Object");
-	StringName ref_counted_class = StaticCString::create("RefCounted");
-	StringName string_type = StaticCString::create("String");
-	StringName string_name_type = StaticCString::create("StringName");
-	StringName node_path_type = StaticCString::create("NodePath");
-	StringName bool_type = StaticCString::create("bool");
-	StringName int_type = StaticCString::create("int");
-	StringName float_type = StaticCString::create("float");
-	StringName void_type = StaticCString::create("void");
-	StringName vararg_stub_type = StaticCString::create("@VarArg@");
-	StringName vector2_type = StaticCString::create("Vector2");
-	StringName rect2_type = StaticCString::create("Rect2");
-	StringName vector3_type = StaticCString::create("Vector3");
-	StringName vector4_type = StaticCString::create("Vector4");
+	StringName variant_type = StringName("Variant");
+	StringName object_class = StringName("Object");
+	StringName ref_counted_class = StringName("RefCounted");
+	StringName string_type = StringName("String");
+	StringName string_name_type = StringName("StringName");
+	StringName node_path_type = StringName("NodePath");
+	StringName bool_type = StringName("bool");
+	StringName int_type = StringName("int");
+	StringName float_type = StringName("float");
+	StringName void_type = StringName("void");
+	StringName vararg_stub_type = StringName("@VarArg@");
+	StringName vector2_type = StringName("Vector2");
+	StringName rect2_type = StringName("Rect2");
+	StringName vector3_type = StringName("Vector3");
+	StringName vector4_type = StringName("Vector4");
 
 	// Object not included as it must be checked for all derived classes
 	static constexpr int nullable_types_count = 18;
@@ -148,21 +147,21 @@ struct NamesCache {
 		string_name_type,
 		node_path_type,
 
-		StaticCString::create(_STR(Array)),
-		StaticCString::create(_STR(Dictionary)),
-		StaticCString::create(_STR(Callable)),
-		StaticCString::create(_STR(Signal)),
+		StringName(_STR(Array)),
+		StringName(_STR(Dictionary)),
+		StringName(_STR(Callable)),
+		StringName(_STR(Signal)),
 
-		StaticCString::create(_STR(PackedByteArray)),
-		StaticCString::create(_STR(PackedInt32Array)),
-		StaticCString::create(_STR(PackedInt64rray)),
-		StaticCString::create(_STR(PackedFloat32Array)),
-		StaticCString::create(_STR(PackedFloat64Array)),
-		StaticCString::create(_STR(PackedStringArray)),
-		StaticCString::create(_STR(PackedVector2Array)),
-		StaticCString::create(_STR(PackedVector3Array)),
-		StaticCString::create(_STR(PackedColorArray)),
-		StaticCString::create(_STR(PackedVector4Array)),
+		StringName(_STR(PackedByteArray)),
+		StringName(_STR(PackedInt32Array)),
+		StringName(_STR(PackedInt64rray)),
+		StringName(_STR(PackedFloat32Array)),
+		StringName(_STR(PackedFloat64Array)),
+		StringName(_STR(PackedStringArray)),
+		StringName(_STR(PackedVector2Array)),
+		StringName(_STR(PackedVector3Array)),
+		StringName(_STR(PackedColorArray)),
+		StringName(_STR(PackedVector4Array)),
 	};
 
 	bool is_nullable_type(const StringName &p_type) const {
@@ -360,11 +359,7 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 	if (getter && setter) {
 		const ArgumentData &setter_first_arg = setter->arguments.back()->get();
 		if (getter->return_type.name != setter_first_arg.type.name) {
-			// Special case for Node::set_name
-			bool whitelisted = getter->return_type.name == p_context.names_cache.string_name_type &&
-					setter_first_arg.type.name == p_context.names_cache.string_type;
-
-			TEST_FAIL_COND(!whitelisted,
+			TEST_FAIL(
 					"Return type from getter doesn't match first argument of setter, for property: '", p_class.name, ".", String(p_prop.name), "'.");
 		}
 	}
@@ -412,10 +407,13 @@ void validate_property(const Context &p_context, const ExposedClass &p_class, co
 }
 
 void validate_argument(const Context &p_context, const ExposedClass &p_class, const String &p_owner_name, const String &p_owner_type, const ArgumentData &p_arg) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
-#endif // DEBUG_METHODS_ENABLED
+
+	TEST_FAIL_COND((p_arg.name != "@varargs@" && !p_arg.name.is_valid_ascii_identifier()),
+			vformat("Invalid argument name '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
+#endif // DEBUG_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
 	if (arg_class) {
@@ -658,9 +656,8 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = Variant::get_type_name(return_info.type);
 			}
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				const PropertyInfo &arg_info = *itr;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -732,9 +729,8 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
 					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				const PropertyInfo &arg_info = *itr;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -900,5 +896,3 @@ TEST_SUITE("[ClassDB]") {
 	}
 }
 } // namespace TestClassDB
-
-#endif // TEST_CLASS_DB_H

@@ -30,7 +30,6 @@
 
 #include "post_import_plugin_skeleton_rest_fixer.h"
 
-#include "editor/import/3d/scene_import_settings.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/retarget_modifier_3d.h"
@@ -93,7 +92,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		}
 		BoneMap *bone_map = Object::cast_to<BoneMap>(map);
 		Ref<SkeletonProfile> profile = bone_map->get_profile();
-		if (!profile.is_valid()) {
+		if (profile.is_null()) {
 			return;
 		}
 		Skeleton3D *src_skeleton = Object::cast_to<Skeleton3D>(p_node);
@@ -368,31 +367,15 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 				Vector3 prof_dir = prof_tail - prof_head;
 				Vector3 src_dir = src_tail - src_head;
+				if (Math::is_zero_approx(prof_dir.length_squared()) || Math::is_zero_approx(src_dir.length_squared())) {
+					continue;
+				}
+				prof_dir.normalize();
+				src_dir.normalize();
 
 				// Rotate rest.
 				if (Math::abs(Math::rad_to_deg(src_dir.angle_to(prof_dir))) > float(p_options["retarget/rest_fixer/fix_silhouette/threshold"])) {
-					// Get rotation difference.
-					Vector3 up_vec; // Need to rotate other than roll axis.
-					switch (Vector3(abs(src_dir.x), abs(src_dir.y), abs(src_dir.z)).min_axis_index()) {
-						case Vector3::AXIS_X: {
-							up_vec = Vector3(1, 0, 0);
-						} break;
-						case Vector3::AXIS_Y: {
-							up_vec = Vector3(0, 1, 0);
-						} break;
-						case Vector3::AXIS_Z: {
-							up_vec = Vector3(0, 0, 1);
-						} break;
-					}
-					Basis src_b;
-					src_b = src_b.looking_at(src_dir, up_vec);
-					Basis prof_b;
-					prof_b = src_b.looking_at(prof_dir, up_vec);
-					if (prof_b.is_equal_approx(Basis())) {
-						continue; // May not need to rotate.
-					}
-					Basis diff_b = prof_b * src_b.inverse();
-
+					Basis diff_b = Basis(Quaternion(src_dir, prof_dir));
 					// Apply rotation difference as global transform to skeleton.
 					Basis src_pg;
 					int src_parent = src_skeleton->get_bone_parent(src_idx);
@@ -466,7 +449,7 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 		if (bool(p_options["retarget/rest_fixer/normalize_position_tracks"])) {
 			int src_bone_idx = src_skeleton->find_bone(profile->get_scale_base_bone());
 			if (src_bone_idx >= 0) {
-				real_t motion_scale = abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
+				real_t motion_scale = std::abs(src_skeleton->get_bone_global_rest(src_bone_idx).origin.y);
 				if (motion_scale > 0) {
 					src_skeleton->set_motion_scale(motion_scale);
 				}
@@ -646,13 +629,13 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 						// Scan descendants for mapped bones.
 						bool found_mapped = false;
 
-						Vector<int> decendants_to_process = src_skeleton->get_bone_children(src_idx);
-						while (decendants_to_process.size() > 0) {
-							int desc_idx = decendants_to_process[0];
-							decendants_to_process.erase(desc_idx);
+						Vector<int> descendants_to_process = src_skeleton->get_bone_children(src_idx);
+						while (descendants_to_process.size() > 0) {
+							int desc_idx = descendants_to_process[0];
+							descendants_to_process.erase(desc_idx);
 							Vector<int> desc_children = src_skeleton->get_bone_children(desc_idx);
 							for (const int &desc_child : desc_children) {
-								decendants_to_process.push_back(desc_child);
+								descendants_to_process.push_back(desc_child);
 							}
 
 							StringName desc_bone_name = is_renamed ? StringName(src_skeleton->get_bone_name(desc_idx)) : bone_map->find_profile_bone_name(src_skeleton->get_bone_name(desc_idx));
@@ -972,7 +955,4 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 		memdelete(prof_skeleton);
 	}
-}
-
-PostImportPluginSkeletonRestFixer::PostImportPluginSkeletonRestFixer() {
 }

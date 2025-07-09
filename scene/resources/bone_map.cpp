@@ -65,11 +65,11 @@ Ref<SkeletonProfile> BoneMap::get_profile() const {
 void BoneMap::set_profile(const Ref<SkeletonProfile> &p_profile) {
 	bool is_changed = profile != p_profile;
 	if (is_changed) {
-		if (!profile.is_null() && profile->is_connected("profile_updated", callable_mp(this, &BoneMap::_update_profile))) {
+		if (profile.is_valid() && profile->is_connected("profile_updated", callable_mp(this, &BoneMap::_update_profile))) {
 			profile->disconnect("profile_updated", callable_mp(this, &BoneMap::_update_profile));
 		}
 		profile = p_profile;
-		if (!profile.is_null()) {
+		if (profile.is_valid()) {
 			profile->connect("profile_updated", callable_mp(this, &BoneMap::_update_profile));
 		}
 		_update_profile();
@@ -171,6 +171,9 @@ void BoneMap::_bind_methods() {
 }
 
 void BoneMap::_validate_property(PropertyInfo &property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (property.name == "bonemap" || property.name == "profile") {
 		property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NET_SOCKET_H
-#define NET_SOCKET_H
+#pragma once
 
 #include "core/io/ip.h"
 #include "core/object/ref_counted.h"
@@ -41,13 +40,13 @@ protected:
 public:
 	static NetSocket *create();
 
-	enum PollType {
+	enum PollType : int32_t {
 		POLL_TYPE_IN,
 		POLL_TYPE_OUT,
 		POLL_TYPE_IN_OUT
 	};
 
-	enum Type {
+	enum Type : int32_t {
 		TYPE_NONE,
 		TYPE_TCP,
 		TYPE_UDP,
@@ -79,5 +78,3 @@ public:
 
 	virtual ~NetSocket() {}
 };
-
-#endif // NET_SOCKET_H

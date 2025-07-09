@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKY_RD_H
-#define SKY_RD_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/renderer_compositor.h"
@@ -101,8 +100,9 @@ private:
 		float projection[4]; // 16 - 64
 		float position[3]; // 12 - 76
 		float time; // 4 - 80
-		float pad[3]; // 12 - 92
-		float luminance_multiplier; // 4 - 96
+		float pad[2]; // 8 - 88
+		float luminance_multiplier; // 4 - 92
+		float brightness_multiplier; // 4 - 96
 		// 128 is the max size of a push constant. We can replace "pad" but we can't add any more.
 	};
 
@@ -128,12 +128,13 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		SkyShaderData() {}
 		virtual ~SkyShaderData();
 	};
 
-	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier);
+	void _render_sky(RD::DrawListID p_list, float p_time, RID p_fb, PipelineCacheRD *p_pipeline, RID p_uniform_set, RID p_texture_set, const Projection &p_projection, const Basis &p_orientation, const Vector3 &p_position, float p_luminance_multiplier, float p_brightness_modifier);
 
 public:
 	struct SkySceneState {
@@ -280,6 +281,9 @@ public:
 
 	uint32_t sky_ggx_samples_quality;
 	bool sky_use_cubemap_array;
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+	void check_cubemap_array();
+#endif
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;
@@ -296,9 +300,9 @@ public:
 	~SkyRD();
 
 	void setup_sky(const RenderDataRD *p_render_data, const Size2i p_screen_size);
-	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0);
-	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0);
-	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0);
+	void update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, const Vector3 &p_global_pos, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void update_res_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
+	void draw_sky(RD::DrawListID p_draw_list, Ref<RenderSceneBuffersRD> p_render_buffers, RID p_env, RID p_fb, double p_time, float p_luminance_multiplier = 1.0, float p_brightness_multiplier = 1.0);
 
 	void invalidate_sky(Sky *p_sky);
 	void update_dirty_skys();
@@ -318,5 +322,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // SKY_RD_H

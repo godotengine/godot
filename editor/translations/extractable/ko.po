@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "인식 가능한 모든 파일"
+
 msgid "New Code Region"
 msgstr "새 코드 구역"
 
@@ -27,24 +30,14 @@ msgstr "화면에서 색상을 고르세요."
 msgid "Pick a color from the application window."
 msgstr "프로그램 창에서 색상을 고르세요."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"색상: #%s\n"
-"좌클릭: 색상 지정\n"
-"우클릭: 프리셋 제거"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"색상: #%s\n"
-"좌클릭: 색상 지정"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "헥스 코드(\"#ff0000\") 또는 영어 색상 이름(\"red\")을 넣어 주세요."
+
+msgid "Save"
+msgstr "저장"
+
+msgid "Clear"
+msgstr "지우기"
 
 msgid "Select a picker shape."
 msgstr "피커 모양을 고르세요."
@@ -80,9 +73,6 @@ msgstr "이 폴더 선택"
 msgid "You don't have permission to access contents of this folder."
 msgstr "이 폴더에 접근할 권한이 없습니다."
 
-msgid "All Recognized"
-msgstr "인식 가능한 모든 파일"
-
 msgid "All Files"
 msgstr "모든 파일"
 
@@ -97,9 +87,6 @@ msgstr "디렉토리 열기"
 
 msgid "Open a File or Directory"
 msgstr "디렉토리 또는 파일 열기"
-
-msgid "Save"
-msgstr "저장"
 
 msgid "Save a File"
 msgstr "파일로 저장"
@@ -119,11 +106,11 @@ msgstr "경로:"
 msgid "Refresh files."
 msgstr "파일을 새로고침합니다."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "숨긴 파일의 표시 여부를 토글합니다."
-
 msgid "Directories & Files:"
 msgstr "디렉토리 & 파일:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "숨긴 파일의 표시 여부를 토글합니다."
 
 msgid "File:"
 msgstr "파일:"
@@ -193,9 +180,6 @@ msgstr "붙여넣기"
 
 msgid "Select All"
 msgstr "모두 선택"
-
-msgid "Clear"
-msgstr "지우기"
 
 msgid "Undo"
 msgstr "실행 취소"

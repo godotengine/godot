@@ -28,18 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPIN_BOX_H
-#define SPIN_BOX_H
+#pragma once
 
 #include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
 #include "scene/main/timer.h"
 
+class SpinBoxLineEdit : public LineEdit {
+	GDCLASS(SpinBoxLineEdit, LineEdit);
+
+protected:
+	void _notification(int p_what);
+
+	void _accessibility_action_inc(const Variant &p_data);
+	void _accessibility_action_dec(const Variant &p_data);
+};
+
 class SpinBox : public Range {
 	GDCLASS(SpinBox, Range);
 
-	LineEdit *line_edit = nullptr;
+	SpinBoxLineEdit *line_edit = nullptr;
 	bool update_on_text_changed = false;
+	bool accepted = true;
 
 	struct SizingCache {
 		int buttons_block_width = 0;
@@ -58,13 +68,13 @@ class SpinBox : public Range {
 	void _range_click_timeout();
 	void _release_mouse_from_drag_mode();
 
-	void _update_text(bool p_keep_line_edit = false);
+	void _update_text(bool p_only_update_if_value_changed = false);
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
 
 	String prefix;
 	String suffix;
-	String last_updated_text;
+	String last_text_value;
 	double custom_arrow_step = 0.0;
 	bool use_custom_arrow_step = false;
 
@@ -134,7 +144,6 @@ class SpinBox : public Range {
 
 	void _mouse_exited();
 	void _update_buttons_state_for_current_value();
-	void _set_step_no_signal(double p_step);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -173,5 +182,3 @@ public:
 
 	SpinBox();
 };
-
-#endif // SPIN_BOX_H

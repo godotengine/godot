@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_BLEND_TREE_H
-#define ANIMATION_BLEND_TREE_H
+#pragma once
 
 #include "scene/animation/animation_tree.h"
 
@@ -86,7 +85,7 @@ public:
 	void set_timeline_length(double p_length);
 	double get_timeline_length() const;
 
-	void set_stretch_time_scale(bool p_strech_time_scale);
+	void set_stretch_time_scale(bool p_stretch_time_scale);
 	bool is_stretching_time_scale() const;
 
 	void set_start_offset(double p_offset);
@@ -331,7 +330,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 		bool break_loop_at_end = false;
 		bool reset = true;
 	};
-	Vector<InputData> input_data;
+	LocalVector<InputData> input_data;
 
 	StringName prev_xfading = "prev_xfading";
 	StringName prev_index = "prev_index";
@@ -410,7 +409,7 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 		Vector<StringName> connections;
 	};
 
-	RBMap<StringName, Node, StringName::AlphCompare> nodes;
+	AHashMap<StringName, Node> nodes;
 
 	Vector2 graph_offset;
 
@@ -469,7 +468,8 @@ public:
 	virtual String get_caption() const override;
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
-	void get_node_list(List<StringName> *r_list);
+	LocalVector<StringName> get_node_list() const;
+	TypedArray<StringName> get_node_list_as_typed_array() const;
 
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;
@@ -485,5 +485,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNodeBlendTree::ConnectionError)
-
-#endif // ANIMATION_BLEND_TREE_H

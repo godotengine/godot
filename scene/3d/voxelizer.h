@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VOXELIZER_H
-#define VOXELIZER_H
+#pragma once
 
 #include "scene/resources/multimesh.h"
 
@@ -72,13 +71,13 @@ private:
 
 	struct CellSort {
 		union {
+			uint64_t key = 0;
 			struct {
 				uint64_t z : 16;
 				uint64_t y : 16;
 				uint64_t x : 16;
 				uint64_t level : 16;
 			};
-			uint64_t key = 0;
 		};
 
 		int32_t index = 0;
@@ -138,5 +137,3 @@ public:
 	Transform3D get_to_cell_space_xform() const;
 	Voxelizer();
 };
-
-#endif // VOXELIZER_H

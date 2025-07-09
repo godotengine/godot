@@ -22,7 +22,7 @@
 			<param index="0" name="candidates" type="Dictionary[]" />
 			<description>
 				Override this method to define what items in [param candidates] should be displayed.
-				Both [param candidates] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
+				Both [param candidates] and the return is an [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
 			</description>
 		</method>
 		<method name="_request_code_completion" qualifiers="virtual">
@@ -582,13 +582,13 @@
 			If [code]true[/code], lines can be folded. Otherwise, line folding methods like [method fold_line] will not work and [method can_fold_line] will always return [code]false[/code]. See [member gutters_draw_fold_gutter].
 		</member>
 		<member name="line_length_guidelines" type="int[]" setter="set_line_length_guidelines" getter="get_line_length_guidelines" default="[]">
-			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently.
+			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is drawn more prominently.
 		</member>
 		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
 		</member>
 		<member name="symbol_tooltip_on_hover" type="bool" setter="set_symbol_tooltip_on_hover_enabled" getter="is_symbol_tooltip_on_hover_enabled" default="false">
-			Set when a word is hovered, the [signal symbol_hovered] should be emitted.
+			If [code]true[/code], the [signal symbol_hovered] signal is emitted when hovering over a word.
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" overrides="TextEdit" enum="Control.TextDirection" default="1" />
 	</members>
@@ -596,7 +596,7 @@
 		<signal name="breakpoint_toggled">
 			<param index="0" name="line" type="int" />
 			<description>
-				Emitted when a breakpoint is added or removed from a line. If the line is moved via backspace a removed is emitted at the old line.
+				Emitted when a breakpoint is added or removed from a line. If the line is removed via backspace, a signal is emitted at the old line.
 			</description>
 		</signal>
 		<signal name="code_completion_requested">

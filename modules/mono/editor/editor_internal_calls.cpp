@@ -43,11 +43,11 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/export/lipo.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 
@@ -68,23 +68,15 @@ void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 }
 
 void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_build_logs_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {
-	memnew_placement(r_dest, String(path::get_csharp_project_name()));
+	memnew_placement(r_dest, String(Path::get_csharp_project_name()));
 }
 
 void godot_icall_EditorProgress_Create(const godot_string *p_task, const godot_string *p_label, int32_t p_amount, bool p_can_cancel) {
@@ -105,7 +97,7 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 }
 
 void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
-	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
 	memnew_placement(r_dest, String(full_templates_dir));
 }
 
@@ -152,7 +144,7 @@ bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 
 void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	callable_mp(mono_bind::GodotSharp::get_singleton(), &mono_bind::GodotSharp::reload_assemblies).call_deferred(p_soft_reload);
+	callable_mp(MonoBind::GodotSharp::get_singleton(), &MonoBind::GodotSharp::reload_assemblies).call_deferred(p_soft_reload);
 #endif
 }
 

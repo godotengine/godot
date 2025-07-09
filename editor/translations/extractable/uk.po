@@ -19,28 +19,21 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Усе розпізнано"
+
 msgid "Pick a color from the application window."
 msgstr "Вибрати колір з вікна програми."
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Колір: #%s\n"
-"Ліва кнопка: застосувати колір\n"
-"Права кнопка: вилучити взірець"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Колір: #%s\n"
-"Ліва кнопка: Застосувати колір"
 
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr ""
 "Введите шестнадцатеричный код (\"#ff0000\") или названный цвет (\"красный\")."
+
+msgid "Save"
+msgstr "Зберегти"
+
+msgid "Clear"
+msgstr "Очистити"
 
 msgid "Select a picker shape."
 msgstr "Виберіть фігуру вибору."
@@ -76,9 +69,6 @@ msgstr "Вибрати цю теку"
 msgid "You don't have permission to access contents of this folder."
 msgstr "У вас немає дозволу на доступ до вмісту цієї папки."
 
-msgid "All Recognized"
-msgstr "Усе розпізнано"
-
 msgid "All Files"
 msgstr "Усі файли"
 
@@ -93,9 +83,6 @@ msgstr "Відкрити каталог"
 
 msgid "Open a File or Directory"
 msgstr "Відкрити файл або каталог"
-
-msgid "Save"
-msgstr "Зберегти"
 
 msgid "Save a File"
 msgstr "Зберегти файл"
@@ -115,11 +102,11 @@ msgstr "Шлях:"
 msgid "Refresh files."
 msgstr "Освіжити файли."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Увімкнути або вимкнути видимість прихованих файлів."
-
 msgid "Directories & Files:"
 msgstr "Каталоги та файли:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Увімкнути або вимкнути видимість прихованих файлів."
 
 msgid "File:"
 msgstr "Файл:"
@@ -216,9 +203,6 @@ msgstr "Вставити"
 
 msgid "Select All"
 msgstr "Виділити все"
-
-msgid "Clear"
-msgstr "Очистити"
 
 msgid "Undo"
 msgstr "Скасувати"

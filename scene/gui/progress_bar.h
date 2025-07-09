@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROGRESS_BAR_H
-#define PROGRESS_BAR_H
+#pragma once
 
 #include "scene/gui/range.h"
 
@@ -84,11 +83,9 @@ public:
 	ProgressBar();
 
 private:
-	float _inderminate_fill_progress = 0;
+	float _indeterminate_fill_progress = 0;
 
 	FillMode mode = FILL_BEGIN_TO_END;
 };
 
 VARIANT_ENUM_CAST(ProgressBar::FillMode);
-
-#endif // PROGRESS_BAR_H

@@ -30,8 +30,6 @@
 
 #include "option_button.h"
 
-#include "core/os/keyboard.h"
-#include "core/string/print_string.h"
 #include "scene/theme/theme_db.h"
 
 static const int NONE_SELECTED = -1;
@@ -75,6 +73,14 @@ Size2 OptionButton::get_minimum_size() const {
 
 void OptionButton::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_BUTTON);
+			DisplayServer::get_singleton()->accessibility_update_set_popup_type(ae, DisplayServer::AccessibilityPopupType::POPUP_LIST);
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			_refresh_size_cache();
 			if (has_theme_icon(SNAME("arrow"))) {
@@ -167,7 +173,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 			_select(index, false);
 		}
 
-		const String property = sname.get_slice("/", 2);
+		const String property = sname.get_slicec('/', 2);
 		if (property == "text" || property == "icon") {
 			_queue_update_size_cache();
 		}
@@ -242,6 +248,21 @@ void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	popup->set_item_tooltip(p_idx, p_tooltip);
 }
 
+void OptionButton::set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	if (popup->get_item_auto_translate_mode(p_idx) == p_mode) {
+		return;
+	}
+	popup->set_item_auto_translate_mode(p_idx, p_mode);
+
+	if (current == p_idx) {
+		set_text(popup->get_item_text(p_idx));
+	}
+	_queue_update_size_cache();
+}
+
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
 	popup->set_item_disabled(p_idx, p_disabled);
 }
@@ -274,6 +295,10 @@ String OptionButton::get_item_tooltip(int p_idx) const {
 	return popup->get_item_tooltip(p_idx);
 }
 
+Node::AutoTranslateMode OptionButton::get_item_auto_translate_mode(int p_idx) const {
+	return popup->get_item_auto_translate_mode(p_idx);
+}
+
 bool OptionButton::is_item_disabled(int p_idx) const {
 	return popup->is_item_disabled(p_idx);
 }
@@ -287,6 +312,10 @@ void OptionButton::set_item_count(int p_count) {
 	int count_old = get_item_count();
 	if (p_count == count_old) {
 		return;
+	}
+
+	if (current > p_count - 1) {
+		_select(p_count - 1, false);
 	}
 
 	popup->set_item_count(p_count);
@@ -433,6 +462,25 @@ void OptionButton::_queue_update_size_cache() {
 	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferred();
 }
 
+String OptionButton::_get_translated_text(const String &p_text) const {
+	if (0 <= current && current < popup->get_item_count()) {
+		AutoTranslateMode mode = popup->get_item_auto_translate_mode(current);
+		switch (mode) {
+			case AUTO_TRANSLATE_MODE_INHERIT: {
+				return atr(p_text);
+			} break;
+			case AUTO_TRANSLATE_MODE_ALWAYS: {
+				return tr(p_text);
+			} break;
+			case AUTO_TRANSLATE_MODE_DISABLED: {
+				return p_text;
+			} break;
+		}
+		ERR_FAIL_V_MSG(atr(p_text), "Unexpected auto translate mode: " + itos(mode));
+	}
+	return atr(p_text);
+}
+
 void OptionButton::select(int p_idx) {
 	_select(p_idx, false);
 }
@@ -470,12 +518,6 @@ void OptionButton::show_popup() {
 		return;
 	}
 
-	Rect2 rect = get_screen_rect();
-	rect.position.y += rect.size.height;
-	rect.size.height = 0;
-	popup->set_position(rect.position);
-	popup->set_size(rect.size);
-
 	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
 	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
 		if (!_was_pressed_by_mouse()) {
@@ -497,7 +539,14 @@ void OptionButton::show_popup() {
 		}
 	}
 
-	popup->popup();
+	Rect2 rect = get_screen_rect();
+	rect.position.y += rect.size.height;
+	if (get_viewport()->is_embedding_subwindows() && popup->get_force_native()) {
+		Transform2D xform = get_viewport()->get_popup_base_transform_native();
+		rect = xform.xform(rect);
+	}
+	rect.size.height = 0;
+	popup->popup(rect);
 }
 
 void OptionButton::_validate_property(PropertyInfo &p_property) const {
@@ -515,12 +564,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
+	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &OptionButton::set_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "idx"), &OptionButton::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
 	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
@@ -578,11 +629,21 @@ void OptionButton::_bind_methods() {
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "disabled"), defaults.disabled, &OptionButton::_dummy_setter, &OptionButton::is_item_disabled);
 	base_property_helper.register_property(PropertyInfo(Variant::BOOL, "separator"), defaults.separator, &OptionButton::_dummy_setter, &OptionButton::is_item_separator);
 	PropertyListHelper::register_base_helper(&base_property_helper);
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
 
 void OptionButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
+
+#ifdef TOOLS_ENABLED
+PackedStringArray OptionButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Button::get_configuration_warnings();
+	warnings.append_array(popup->get_configuration_warnings());
+	return warnings;
+}
+#endif
 
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {

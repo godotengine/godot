@@ -63,7 +63,7 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 			} else {
 				class_str = config_name.utf8();
 			}
-			tts->synth = spd_open(class_str, "Godot_Engine_Speech_API", "Godot_Engine", SPD_MODE_THREADED);
+			tts->synth = spd_open(class_str.get_data(), "Godot_Engine_Speech_API", "Godot_Engine", SPD_MODE_THREADED);
 			if (tts->synth) {
 				tts->synth->callback_end = &speech_event_callback;
 				tts->synth->callback_cancel = &speech_event_callback;
@@ -166,9 +166,9 @@ void TTS_Linux::_speech_event(int p_msg_id, int p_type) {
 		spd_set_voice_pitch(synth, (message.pitch - 1) * 100);
 		float rate = 0;
 		if (message.rate > 1.f) {
-			rate = log10(MIN(message.rate, 2.5f)) / log10(2.5f) * 100;
+			rate = std::log10(MIN(message.rate, 2.5f)) / std::log10(2.5f) * 100;
 		} else if (message.rate < 1.f) {
-			rate = log10(MAX(message.rate, 0.5f)) / log10(0.5f) * -100;
+			rate = std::log10(MAX(message.rate, 0.5f)) / std::log10(0.5f) * -100;
 		}
 		spd_set_voice_rate(synth, rate);
 		spd_set_data_mode(synth, SPD_DATA_SSML);

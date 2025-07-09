@@ -30,14 +30,16 @@
 
 #include "logger.h"
 
-#include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
-#include "core/os/os.h"
 #include "core/os/time.h"
-#include "core/string/print_string.h"
+#include "core/templates/rb_set.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif // MODULE_REGEX_ENABLED
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -47,35 +49,16 @@ bool Logger::should_log(bool p_err) {
 	return (!p_err || CoreGlobals::print_error_enabled) && (p_err || CoreGlobals::print_line_enabled);
 }
 
-bool Logger::_flush_stdout_on_print = true;
-
 void Logger::set_flush_stdout_on_print(bool value) {
 	_flush_stdout_on_print = value;
 }
 
-void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void Logger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
 
-	const char *err_type = "ERROR";
-	switch (p_type) {
-		case ERR_ERROR:
-			err_type = "ERROR";
-			break;
-		case ERR_WARNING:
-			err_type = "WARNING";
-			break;
-		case ERR_SCRIPT:
-			err_type = "SCRIPT ERROR";
-			break;
-		case ERR_SHADER:
-			err_type = "SHADER ERROR";
-			break;
-		default:
-			ERR_PRINT("Unknown error type");
-			break;
-	}
+	const char *err_type = error_type_string(p_type);
 
 	const char *err_details;
 	if (p_rationale && *p_rationale) {
@@ -86,6 +69,12 @@ void Logger::log_error(const char *p_function, const char *p_file, int p_line, c
 
 	logf_error("%s: %s\n", err_type, err_details);
 	logf_error("   at: %s (%s:%i)\n", p_function, p_file, p_line);
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		if (!backtrace->is_empty()) {
+			logf_error("%s\n", backtrace->format(3).utf8().get_data());
+		}
+	}
 }
 
 void Logger::logf(const char *p_format, ...) {
@@ -127,7 +116,9 @@ void RotatedFileLogger::clear_old_backups() {
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	HashSet<String> backups;
+	// backups is a RBSet because it guarantees that iterating on it is done in sorted order.
+	// RotatedFileLogger depends on this behavior to delete the oldest log file first.
+	RBSet<String> backups;
 	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
@@ -136,12 +127,12 @@ void RotatedFileLogger::clear_old_backups() {
 	}
 	da->list_dir_end();
 
-	if (backups.size() > (uint32_t)max_backups) {
+	if (backups.size() > max_backups) {
 		// since backups are appended with timestamp and Set iterates them in sorted order,
 		// first backups are the oldest
 		int to_delete = backups.size() - max_backups;
-		for (HashSet<String>::Iterator E = backups.begin(); E && to_delete > 0; ++E, --to_delete) {
-			da->remove(*E);
+		for (RBSet<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
+			da->remove(E->get());
 		}
 	}
 }
@@ -151,7 +142,7 @@ void RotatedFileLogger::rotate_file() {
 
 	if (FileAccess::exists(base_path)) {
 		if (max_files > 1) {
-			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace(":", ".");
+			String timestamp = Time::get_singleton()->get_datetime_string_from_system().replace_char(':', '.');
 			String backup_name = base_path.get_basename() + timestamp;
 			if (!base_path.get_extension().is_empty()) {
 				backup_name += "." + base_path.get_extension();
@@ -259,13 +250,13 @@ void CompositeLogger::logv(const char *p_format, va_list p_list, bool p_err) {
 	}
 }
 
-void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void CompositeLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
 
 	for (int i = 0; i < loggers.size(); ++i) {
-		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
+		loggers[i]->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type, p_script_backtraces);
 	}
 }
 

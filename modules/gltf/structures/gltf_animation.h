@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_ANIMATION_H
-#define GLTF_ANIMATION_H
+#pragma once
 
-#include "scene/animation/animation_player.h"
+#include "scene/resources/animation.h"
 
 class GLTFAnimation : public Resource {
 	GDCLASS(GLTFAnimation, Resource);
@@ -86,5 +85,3 @@ public:
 
 	GLTFAnimation();
 };
-
-#endif // GLTF_ANIMATION_H

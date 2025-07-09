@@ -30,15 +30,13 @@
 
 #include "editor_scene_exporter_gltf_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor_scene_exporter_gltf_settings.h"
 
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/3d/scene_import_settings.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
 
 String SceneExporterGLTFPlugin::get_plugin_name() const {
@@ -71,7 +69,7 @@ SceneExporterGLTFPlugin::SceneExporterGLTFPlugin() {
 	// Add a button to the Scene -> Export menu to pop up the settings dialog.
 	PopupMenu *menu = get_export_as_menu();
 	int idx = menu->get_item_count();
-	menu->add_item(TTR("glTF 2.0 Scene..."));
+	menu->add_item(TTRC("glTF 2.0 Scene..."));
 	menu->set_item_metadata(idx, callable_mp(this, &SceneExporterGLTFPlugin::_popup_gltf_export_dialog));
 }
 
@@ -118,5 +116,3 @@ void SceneExporterGLTFPlugin::_export_scene_as_gltf(const String &p_file_path) {
 	}
 	EditorFileSystem::get_singleton()->scan_changes();
 }
-
-#endif // TOOLS_ENABLED

@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_CONTACT_LISTENER_3D_H
-#define JOLT_CONTACT_LISTENER_3D_H
+#pragma once
 
+#include "core/os/mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/hashfuncs.h"
@@ -44,7 +44,6 @@
 #include "Jolt/Physics/Collision/ContactListener.h"
 #include "Jolt/Physics/SoftBody/SoftBodyContactListener.h"
 
-#include <stdint.h>
 #include <new>
 
 class JoltShapedObject3D;
@@ -85,7 +84,6 @@ class JoltContactListener3D final
 	};
 
 	HashMap<JPH::SubShapeIDPair, Manifold, ShapePairHasher> manifolds_by_shape_pair;
-	HashSet<JPH::BodyID, BodyIDHasher> listening_for;
 	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_overlaps;
 	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_enters;
 	HashSet<JPH::SubShapeIDPair, ShapePairHasher> area_exits;
@@ -94,7 +92,7 @@ class JoltContactListener3D final
 
 #ifdef DEBUG_ENABLED
 	PackedVector3Array debug_contacts;
-	std::atomic_int debug_contact_count;
+	std::atomic_int debug_contact_count = 0;
 #endif
 
 	virtual void OnContactAdded(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings) override;
@@ -107,12 +105,10 @@ class JoltContactListener3D final
 	virtual void OnSoftBodyContactAdded(const JPH::Body &p_soft_body, const JPH::SoftBodyManifold &p_manifold) override;
 #endif
 
-	bool _is_listening_for(const JPH::Body &p_body) const;
-
 	bool _try_override_collision_response(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, JPH::ContactSettings &p_settings);
 	bool _try_override_collision_response(const JPH::Body &p_jolt_soft_body, const JPH::Body &p_jolt_other_body, JPH::SoftBodyContactSettings &p_settings);
 	bool _try_apply_surface_velocities(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, JPH::ContactSettings &p_settings);
-	bool _try_add_contacts(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings);
+	bool _try_add_contacts(const JPH::Body &p_jolt_body1, const JPH::Body &p_jolt_body2, const JPH::ContactManifold &p_manifold, JPH::ContactSettings &p_settings);
 	bool _try_evaluate_area_overlap(const JPH::Body &p_body1, const JPH::Body &p_body2, const JPH::ContactManifold &p_manifold);
 	bool _try_remove_contacts(const JPH::SubShapeIDPair &p_shape_pair);
 	bool _try_remove_area_overlap(const JPH::SubShapeIDPair &p_shape_pair);
@@ -124,14 +120,11 @@ class JoltContactListener3D final
 
 	void _flush_contacts();
 	void _flush_area_enters();
-	void _flush_area_shifts();
 	void _flush_area_exits();
 
 public:
 	explicit JoltContactListener3D(JoltSpace3D *p_space) :
 			space(p_space) {}
-
-	void listen_for(JoltShapedObject3D *p_object);
 
 	void pre_step();
 	void post_step();
@@ -143,5 +136,3 @@ public:
 	void set_max_debug_contacts(int p_count) { debug_contacts.resize(p_count); }
 #endif
 };
-
-#endif // JOLT_CONTACT_LISTENER_3D_H

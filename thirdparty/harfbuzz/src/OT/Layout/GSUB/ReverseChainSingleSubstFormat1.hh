@@ -112,7 +112,7 @@ struct ReverseChainSingleSubstFormat1
   {
     TRACE_APPLY (this);
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur ().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+    if (index == NOT_COVERED) return_trace (false);
 
     if (unlikely (c->nesting_level_left != HB_MAX_NESTING_LEVEL))
       return_trace (false); /* No chaining to this type */

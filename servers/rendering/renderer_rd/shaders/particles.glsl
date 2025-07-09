@@ -488,7 +488,7 @@ void main() {
 			}
 			amount = pow(amount, FRAME.attractors[i].attenuation);
 			dir = safe_normalize(mix(dir, FRAME.attractors[i].transform[2].xyz, FRAME.attractors[i].directionality));
-			attractor_force -= amount * dir * FRAME.attractors[i].strength;
+			attractor_force -= mass * amount * dir * FRAME.attractors[i].strength;
 		}
 
 		float particle_size = FRAME.particle_size;

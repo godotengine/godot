@@ -30,17 +30,14 @@
 
 #include "csg_gizmos.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/plugins/gizmos/gizmo_3d_helper.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/gizmos/gizmo_3d_helper.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
-#include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 
@@ -157,6 +154,8 @@ CSGShapeEditor::CSGShapeEditor() {
 	options->hide();
 	options->set_text(TTR("CSG"));
 	options->set_switch_on_hover(true);
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Bake Mesh Instance"), MENU_OPTION_BAKE_MESH_INSTANCE);
@@ -186,9 +185,6 @@ CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	create_material("shape_intersection_solid_material", gizmo_color);
 
 	create_handle_material("handles");
-}
-
-CSGShape3DGizmoPlugin::~CSGShape3DGizmoPlugin() {
 }
 
 String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
@@ -228,7 +224,7 @@ Variant CSGShape3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo
 
 	if (Object::cast_to<CSGCylinder3D>(cs)) {
 		CSGCylinder3D *s = Object::cast_to<CSGCylinder3D>(cs);
-		return p_id == 0 ? s->get_radius() : s->get_height();
+		return Vector2(s->get_radius(), s->get_height());
 	}
 
 	if (Object::cast_to<CSGTorus3D>(cs)) {
@@ -385,7 +381,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<Vector3> faces = cs->get_brush_faces();
 
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return;
 	}
 
@@ -509,5 +505,3 @@ EditorPluginCSG::EditorPluginCSG() {
 	csg_shape_editor = memnew(CSGShapeEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(csg_shape_editor);
 }
-
-#endif // TOOLS_ENABLED

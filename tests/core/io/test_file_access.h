@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_FILE_ACCESS_H
-#define TEST_FILE_ACCESS_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "tests/test_macros.h"
@@ -84,7 +83,7 @@ TEST_CASE("[FileAccess] CSV read") {
 
 TEST_CASE("[FileAccess] Get as UTF-8 String") {
 	Ref<FileAccess> f_lf = FileAccess::open(TestUtils::get_data_path("line_endings_lf.test.txt"), FileAccess::READ);
-	REQUIRE(!f_lf.is_null());
+	REQUIRE(f_lf.is_valid());
 	String s_lf = f_lf->get_as_utf8_string();
 	f_lf->seek(0);
 	String s_lf_nocr = f_lf->get_as_utf8_string(true);
@@ -92,7 +91,7 @@ TEST_CASE("[FileAccess] Get as UTF-8 String") {
 	CHECK(s_lf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
 
 	Ref<FileAccess> f_crlf = FileAccess::open(TestUtils::get_data_path("line_endings_crlf.test.txt"), FileAccess::READ);
-	REQUIRE(!f_crlf.is_null());
+	REQUIRE(f_crlf.is_valid());
 	String s_crlf = f_crlf->get_as_utf8_string();
 	f_crlf->seek(0);
 	String s_crlf_nocr = f_crlf->get_as_utf8_string(true);
@@ -100,7 +99,7 @@ TEST_CASE("[FileAccess] Get as UTF-8 String") {
 	CHECK(s_crlf_nocr == "Hello darkness\nMy old friend\nI've come to talk\nWith you again\n");
 
 	Ref<FileAccess> f_cr = FileAccess::open(TestUtils::get_data_path("line_endings_cr.test.txt"), FileAccess::READ);
-	REQUIRE(!f_cr.is_null());
+	REQUIRE(f_cr.is_valid());
 	String s_cr = f_cr->get_as_utf8_string();
 	f_cr->seek(0);
 	String s_cr_nocr = f_cr->get_as_utf8_string(true);
@@ -197,8 +196,28 @@ TEST_CASE("[FileAccess] Get/Store floating point half precision values") {
 
 		DirAccess::remove_file_or_error(file_path_new);
 	}
+
+	SUBCASE("4096 bytes fastlz compressed") {
+		const String file_path = TestUtils::get_data_path("exactly_4096_bytes_fastlz.bin");
+
+		Ref<FileAccess> f = FileAccess::open_compressed(file_path, FileAccess::READ, FileAccess::COMPRESSION_FASTLZ);
+		const Vector<uint8_t> full_data = f->get_buffer(4096 * 2);
+		CHECK(full_data.size() == 4096);
+		CHECK(f->eof_reached());
+
+		// Data should be empty.
+		PackedByteArray reference;
+		reference.resize_initialized(4096);
+		CHECK(reference == full_data);
+
+		f->seek(0);
+		const Vector<uint8_t> partial_data = f->get_buffer(4095);
+		CHECK(partial_data.size() == 4095);
+		CHECK(!f->eof_reached());
+
+		reference.resize_initialized(4095);
+		CHECK(reference == partial_data);
+	}
 }
 
 } // namespace TestFileAccess
-
-#endif // TEST_FILE_ACCESS_H

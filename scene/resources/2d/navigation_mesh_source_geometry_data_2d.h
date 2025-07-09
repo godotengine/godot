@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
-#define NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H
+#pragma once
 
+#include "core/io/resource.h"
 #include "core/os/rw_lock.h"
-#include "scene/2d/node_2d.h"
-#include "scene/resources/2d/navigation_polygon.h"
 
 class NavigationMeshSourceGeometryData2D : public Resource {
 	friend class NavMeshGenerator2D;
@@ -110,8 +108,5 @@ public:
 
 	Rect2 get_bounds();
 
-	NavigationMeshSourceGeometryData2D() {}
 	~NavigationMeshSourceGeometryData2D() { clear(); }
 };
-
-#endif // NAVIGATION_MESH_SOURCE_GEOMETRY_DATA_2D_H

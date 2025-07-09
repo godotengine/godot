@@ -6,7 +6,7 @@
 	<description>
 		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
+		[b]Note:[/b] The IDs used for items are limited to signed 32-bit integers, not the full 64 bits of [int]. These have a range of [code]-2^31[/code] to [code]2^31 - 1[/code], that is, [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
 	</description>
 	<tutorials>
@@ -40,6 +40,13 @@
 			<return type="void" />
 			<description>
 				Clears all the items in the [OptionButton].
+			</description>
+		</method>
+		<method name="get_item_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the auto translate mode of the item at index [param idx].
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -151,6 +158,15 @@
 			<param index="0" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
+		<method name="set_item_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the auto translate mode of the item at index [param idx].
+				Items use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [OptionButton] itself.
 			</description>
 		</method>
 		<method name="set_item_disabled">

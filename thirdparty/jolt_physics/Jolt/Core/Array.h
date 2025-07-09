@@ -47,6 +47,83 @@ public:
 	using const_iterator = const T *;
 	using iterator = T *;
 
+	/// An iterator that traverses the array in reverse order
+	class rev_it
+	{
+	public:
+		/// Constructor
+							rev_it() = default;
+		explicit			rev_it(T *inValue)				: mValue(inValue) { }
+
+		/// Copying
+							rev_it(const rev_it &) = default;
+		rev_it &			operator = (const rev_it &) = default;
+
+		/// Comparison
+		bool				operator == (const rev_it &inRHS) const { return mValue == inRHS.mValue; }
+		bool				operator != (const rev_it &inRHS) const { return mValue != inRHS.mValue; }
+
+		/// Arithmetics
+		rev_it &			operator ++ ()					{ --mValue; return *this; }
+		rev_it				operator ++ (int)				{ return rev_it(mValue--); }
+		rev_it &			operator -- ()					{ ++mValue; return *this; }
+		rev_it				operator -- (int)				{ return rev_it(mValue++); }
+
+		rev_it				operator + (int inValue)		{ return rev_it(mValue - inValue); }
+		rev_it				operator - (int inValue)		{ return rev_it(mValue + inValue); }
+
+		rev_it &			operator += (int inValue)		{ mValue -= inValue; return *this; }
+		rev_it &			operator -= (int inValue)		{ mValue += inValue; return *this; }
+
+		/// Access
+		T &					operator * () const				{ return *mValue; }
+		T &					operator -> () const			{ return *mValue; }
+
+	private:
+		T *					mValue;
+	};
+
+	/// A const iterator that traverses the array in reverse order
+	class crev_it
+	{
+	public:
+		/// Constructor
+							crev_it() = default;
+		explicit			crev_it(const T *inValue)		: mValue(inValue) { }
+
+		/// Copying
+							crev_it(const crev_it &) = default;
+		explicit			crev_it(const rev_it &inValue)	: mValue(inValue.mValue) { }
+		crev_it &			operator = (const crev_it &) = default;
+		crev_it &			operator = (const rev_it &inRHS) { mValue = inRHS.mValue; return *this; }
+
+		/// Comparison
+		bool				operator == (const crev_it &inRHS) const { return mValue == inRHS.mValue; }
+		bool				operator != (const crev_it &inRHS) const { return mValue != inRHS.mValue; }
+
+		/// Arithmetics
+		crev_it &			operator ++ ()					{ --mValue; return *this; }
+		crev_it				operator ++ (int)				{ return crev_it(mValue--); }
+		crev_it &			operator -- ()					{ ++mValue; return *this; }
+		crev_it				operator -- (int)				{ return crev_it(mValue++); }
+
+		crev_it				operator + (int inValue)		{ return crev_it(mValue - inValue); }
+		crev_it				operator - (int inValue)		{ return crev_it(mValue + inValue); }
+
+		crev_it &			operator += (int inValue)		{ mValue -= inValue; return *this; }
+		crev_it &			operator -= (int inValue)		{ mValue += inValue; return *this; }
+
+		/// Access
+		const T &			operator * () const				{ return *mValue; }
+		const T &			operator -> () const			{ return *mValue; }
+
+	private:
+		const T *			mValue;
+	};
+
+	using reverse_iterator = rev_it;
+	using const_reverse_iterator = crev_it;
+
 private:
 	/// Move elements from one location to another
 	inline void				move(pointer inDestination, pointer inSource, size_type inCount)
@@ -59,7 +136,7 @@ private:
 			{
 				for (T *destination_end = inDestination + inCount; inDestination < destination_end; ++inDestination, ++inSource)
 				{
-					::new (inDestination) T(std::move(*inSource));
+					new (inDestination) T(std::move(*inSource));
 					inSource->~T();
 				}
 			}
@@ -67,7 +144,7 @@ private:
 			{
 				for (T *destination = inDestination + inCount - 1, *source = inSource + inCount - 1; destination >= inDestination; --destination, --source)
 				{
-					::new (destination) T(std::move(*source));
+					new (destination) T(std::move(*source));
 					source->~T();
 				}
 			}
@@ -124,7 +201,7 @@ public:
 
 		if constexpr (!std::is_trivially_constructible<T>())
 			for (T *element = mElements + mSize, *element_end = mElements + inNewSize; element < element_end; ++element)
-				::new (element) T;
+				new (element) T;
 		mSize = inNewSize;
 	}
 
@@ -137,7 +214,7 @@ public:
 		reserve(inNewSize);
 
 		for (T *element = mElements + mSize, *element_end = mElements + inNewSize; element < element_end; ++element)
-			::new (element) T(inValue);
+			new (element) T(inValue);
 		mSize = inNewSize;
 	}
 
@@ -187,7 +264,7 @@ public:
 		reserve(size_type(std::distance(inBegin, inEnd)));
 
 		for (Iterator element = inBegin; element != inEnd; ++element)
-			::new (&mElements[mSize++]) T(*element);
+			new (&mElements[mSize++]) T(*element);
 	}
 
 	/// Replace the contents of this array with inList
@@ -197,7 +274,7 @@ public:
 		reserve(size_type(inList.size()));
 
 		for (const T &v : inList)
-			::new (&mElements[mSize++]) T(v);
+			new (&mElements[mSize++]) T(v);
 	}
 
 	/// Default constructor
@@ -281,7 +358,7 @@ public:
 		grow();
 
 		T *element = mElements + mSize++;
-		::new (element) T(inValue);
+		new (element) T(inValue);
 	}
 
 	inline void				push_back(T &&inValue)
@@ -289,7 +366,7 @@ public:
 		grow();
 
 		T *element = mElements + mSize++;
-		::new (element) T(std::move(inValue));
+		new (element) T(std::move(inValue));
 	}
 
 	/// Construct element at the back of the array
@@ -299,7 +376,7 @@ public:
 		grow();
 
 		T *element = mElements + mSize++;
-		::new (element) T(std::forward<A>(inValue)...);
+		new (element) T(std::forward<A>(inValue)...);
 		return *element;
 	}
 
@@ -365,7 +442,7 @@ public:
 			move(element_end, element_begin, mSize - first_element);
 
 			for (T *element = element_begin; element < element_end; ++element, ++inBegin)
-				::new (element) T(*inBegin);
+				new (element) T(*inBegin);
 
 			mSize += num_elements;
 		}
@@ -383,12 +460,12 @@ public:
 		T *element = mElements + first_element;
 		move(element + 1, element, mSize - first_element);
 
-		::new (element) T(inValue);
+		new (element) T(inValue);
 		mSize++;
 	}
 
 	/// Remove one element from the array
-	void					erase(const_iterator inIter)
+	iterator				erase(const_iterator inIter)
 	{
 		size_type p = size_type(inIter - begin());
 		JPH_ASSERT(p < mSize);
@@ -396,10 +473,11 @@ public:
 		if (p + 1 < mSize)
 			move(mElements + p, mElements + p + 1, mSize - p - 1);
 		--mSize;
+		return const_cast<iterator>(inIter);
 	}
 
 	/// Remove multiple element from the array
-	void					erase(const_iterator inBegin, const_iterator inEnd)
+	iterator				erase(const_iterator inBegin, const_iterator inEnd)
 	{
 		size_type p = size_type(inBegin - begin());
 		size_type n = size_type(inEnd - inBegin);
@@ -408,6 +486,7 @@ public:
 		if (p + n < mSize)
 			move(mElements + p, mElements + p + n, mSize - p - n);
 		mSize -= n;
+		return const_cast<iterator>(inBegin);
 	}
 
 	/// Iterators
@@ -421,14 +500,34 @@ public:
 		return mElements + mSize;
 	}
 
+	inline crev_it			rbegin() const
+	{
+		return crev_it(mElements + mSize - 1);
+	}
+
+	inline crev_it			rend() const
+	{
+		return crev_it(mElements - 1);
+	}
+
 	inline const_iterator	cbegin() const
 	{
-		return mElements;
+		return begin();
 	}
 
 	inline const_iterator	cend() const
 	{
-		return mElements + mSize;
+		return end();
+	}
+
+	inline crev_it			crbegin() const
+	{
+		return rbegin();
+	}
+
+	inline crev_it			crend() const
+	{
+		return rend();
 	}
 
 	inline iterator			begin()
@@ -439,6 +538,16 @@ public:
 	inline iterator			end()
 	{
 		return mElements + mSize;
+	}
+
+	inline rev_it			rbegin()
+	{
+		return rev_it(mElements + mSize - 1);
+	}
+
+	inline rev_it			rend()
+	{
+		return rev_it(mElements - 1);
 	}
 
 	inline const T *		data() const

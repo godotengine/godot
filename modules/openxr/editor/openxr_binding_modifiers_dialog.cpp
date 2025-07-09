@@ -30,8 +30,9 @@
 
 #include "openxr_binding_modifiers_dialog.h"
 #include "../action_map/openxr_interaction_profile_metadata.h"
-#include "editor/editor_string_names.h"
 #include "openxr_action_map_editor.h"
+
+#include "editor/themes/editor_scale.h"
 
 void OpenXRBindingModifiersDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_add_binding_modifier_editor", "binding_modifier_editor"), &OpenXRBindingModifiersDialog::_do_add_binding_modifier_editor);
@@ -192,7 +193,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	set_transient(true);
 
 	binding_modifier_sc = memnew(ScrollContainer);
-	binding_modifier_sc->set_custom_minimum_size(Size2(350.0, 0.0));
+	binding_modifier_sc->set_custom_minimum_size(Size2(350.0 * EDSCALE, 0.0));
 	binding_modifier_sc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	binding_modifier_sc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	binding_modifier_sc->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
@@ -203,6 +204,7 @@ OpenXRBindingModifiersDialog::OpenXRBindingModifiersDialog() {
 	binding_modifier_sc->add_child(binding_modifiers_vb);
 
 	binding_warning_label = memnew(Label);
+	binding_warning_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	binding_warning_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	binding_warning_label->set_text(TTR("Note: modifiers will only be applied if supported on the host system."));
 	binding_modifiers_vb->add_child(binding_warning_label);

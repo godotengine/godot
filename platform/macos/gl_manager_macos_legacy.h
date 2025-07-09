@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_MACOS_LEGACY_H
-#define GL_MANAGER_MACOS_LEGACY_H
+#pragma once
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
@@ -42,8 +40,7 @@
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreVideo/CoreVideo.h>
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
 typedef CGLError (*CGLEnablePtr)(CGLContextObj ctx, CGLContextEnable pname);
 typedef CGLError (*CGLSetParameterPtr)(CGLContextObj ctx, CGLContextParameter pname, const GLint *params);
@@ -91,8 +88,6 @@ public:
 	~GLManagerLegacy_MacOS();
 };
 
-#pragma clang diagnostic push
+GODOT_CLANG_WARNING_PUSH
 
 #endif // MACOS_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_MACOS_LEGACY_H

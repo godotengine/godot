@@ -14,27 +14,27 @@
 		var dict_variable_key = "Another key name"
 		var dict_variable_value = "value2"
 		var another_dict = {
-		    "Some key name": "value1",
-		    dict_variable_key: dict_variable_value,
+			"Some key name": "value1",
+			dict_variable_key: dict_variable_value,
 		}
 
-		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
 
 		# Alternative Lua-style syntax.
 		# Doesn't require quotes around keys, but only string constants can be used as key names.
 		# Additionally, key names must start with a letter or an underscore.
 		# Here, `some_key` is a string literal, not a variable!
 		another_dict = {
-		    some_key = 42,
+			some_key = 42,
 		}
 		[/gdscript]
 		[csharp]
 		var myDict = new Godot.Collections.Dictionary(); // Creates an empty dictionary.
 		var pointsDict = new Godot.Collections.Dictionary
 		{
-		    {"White", 50},
-		    {"Yellow", 75},
-		    {"Orange", 100}
+			{ "White", 50 },
+			{ "Yellow", 75 },
+			{ "Orange", 100 },
 		};
 		[/csharp]
 		[/codeblocks]
@@ -42,24 +42,24 @@
 		[codeblocks]
 		[gdscript]
 		@export_enum("White", "Yellow", "Orange") var my_color: String
-		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
 		func _ready():
-		    # We can't use dot syntax here as `my_color` is a variable.
-		    var points = points_dict[my_color]
+			# We can't use dot syntax here as `my_color` is a variable.
+			var points = points_dict[my_color]
 		[/gdscript]
 		[csharp]
 		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
 		public string MyColor { get; set; }
 		private Godot.Collections.Dictionary _pointsDict = new Godot.Collections.Dictionary
 		{
-		    {"White", 50},
-		    {"Yellow", 75},
-		    {"Orange", 100}
+			{ "White", 50 },
+			{ "Yellow", 75 },
+			{ "Orange", 100 },
 		};
 
 		public override void _Ready()
 		{
-		    int points = (int)_pointsDict[MyColor];
+			int points = (int)_pointsDict[MyColor];
 		}
 		[/csharp]
 		[/codeblocks]
@@ -68,28 +68,28 @@
 		[codeblocks]
 		[gdscript]
 		var my_dict = {
-		    "First Array": [1, 2, 3, 4] # Assigns an Array to a String key.
+			"First Array": [1, 2, 3, 4] # Assigns an Array to a String key.
 		}
 		[/gdscript]
 		[csharp]
 		var myDict = new Godot.Collections.Dictionary
 		{
-		    {"First Array", new Godot.Collections.Array{1, 2, 3, 4}}
+			{ "First Array", new Godot.Collections.Array { 1, 2, 3, 4 } }
 		};
 		[/csharp]
 		[/codeblocks]
 		To add a key to an existing dictionary, access it like an existing key and assign to it:
 		[codeblocks]
 		[gdscript]
-		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
+		var points_dict = { "White": 50, "Yellow": 75, "Orange": 100 }
 		points_dict["Blue"] = 150 # Add "Blue" as a key and assign 150 as its value.
 		[/gdscript]
 		[csharp]
 		var pointsDict = new Godot.Collections.Dictionary
 		{
-		    {"White", 50},
-		    {"Yellow", 75},
-		    {"Orange", 100}
+			{ "White", 50 },
+			{ "Yellow", 75 },
+			{ "Orange", 100 },
 		};
 		pointsDict["Blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
 		[/csharp]
@@ -101,35 +101,35 @@
 		# To access the string "Nested value" below, use `my_dict.sub_dict.sub_key` or `my_dict["sub_dict"]["sub_key"]`.
 		# Indexing styles can be mixed and matched depending on your needs.
 		var my_dict = {
-		    "String Key": 5,
-		    4: [1, 2, 3],
-		    7: "Hello",
-		    "sub_dict": {"sub_key": "Nested value"},
+			"String Key": 5,
+			4: [1, 2, 3],
+			7: "Hello",
+			"sub_dict": { "sub_key": "Nested value" },
 		}
 		[/gdscript]
 		[csharp]
 		// This is a valid dictionary.
 		// To access the string "Nested value" below, use `((Godot.Collections.Dictionary)myDict["sub_dict"])["sub_key"]`.
 		var myDict = new Godot.Collections.Dictionary {
-		    {"String Key", 5},
-		    {4, new Godot.Collections.Array{1,2,3}},
-		    {7, "Hello"},
-		    {"sub_dict", new Godot.Collections.Dictionary{{"sub_key", "Nested value"}}}
+			{ "String Key", 5 },
+			{ 4, new Godot.Collections.Array { 1, 2, 3 } },
+			{ 7, "Hello" },
+			{ "sub_dict", new Godot.Collections.Dictionary { { "sub_key", "Nested value" } } },
 		};
 		[/csharp]
 		[/codeblocks]
 		The keys of a dictionary can be iterated with the [code]for[/code] keyword:
 		[codeblocks]
 		[gdscript]
-		var groceries = {"Orange": 20, "Apple": 2, "Banana": 4}
+		var groceries = { "Orange": 20, "Apple": 2, "Banana": 4 }
 		for fruit in groceries:
-		    var amount = groceries[fruit]
+			var amount = groceries[fruit]
 		[/gdscript]
 		[csharp]
-		var groceries = new Godot.Collections.Dictionary{{"Orange", 20}, {"Apple", 2}, {"Banana", 4}};
+		var groceries = new Godot.Collections.Dictionary { { "Orange", 20 }, { "Apple", 2 }, { "Banana", 4 } };
 		foreach (var (fruit, amount) in groceries)
 		{
-		    // `fruit` is the key, `amount` is the value.
+			// `fruit` is the key, `amount` is the value.
 		}
 		[/csharp]
 		[/codeblocks]
@@ -187,7 +187,17 @@
 			<return type="Dictionary" />
 			<param index="0" name="deep" type="bool" default="false" />
 			<description>
-				Creates and returns a new copy of the dictionary. If [param deep] is [code]true[/code], inner [Dictionary] and [Array] keys and values are also copied, recursively.
+				Returns a new copy of the dictionary.
+				By default, a [b]shallow[/b] copy is returned: all nested [Array], [Dictionary], and [Resource] keys and values are shared with the original dictionary. Modifying any of those in one dictionary will also affect them in the other.
+				If [param deep] is [code]true[/code], a [b]deep[/b] copy is returned: all nested arrays and dictionaries are also duplicated (recursively). Any [Resource] is still shared with the original dictionary, though.
+			</description>
+		</method>
+		<method name="duplicate_deep" qualifiers="const">
+			<return type="Dictionary" />
+			<param index="0" name="deep_subresources_mode" type="int" default="1" />
+			<description>
+				Duplicates this dictionary, deeply, like [method duplicate][code](true)[/code], with extra control over how subresources are handled.
+				[param deep_subresources_mode] must be one of the values from [enum Resource.DeepDuplicateMode]. By default, only internal resources will be duplicated (recursively).
 			</description>
 		</method>
 		<method name="erase">
@@ -266,8 +276,8 @@
 				[codeblocks]
 				[gdscript]
 				var my_dict = {
-				    "Godot" : 4,
-				    210 : null,
+					"Godot" : 4,
+					210 : null,
 				}
 
 				print(my_dict.has("Godot")) # Prints true
@@ -277,8 +287,8 @@
 				[csharp]
 				var myDict = new Godot.Collections.Dictionary
 				{
-				    { "Godot", 4 },
-				    { 210, default },
+					{ "Godot", 4 },
+					{ 210, default },
 				};
 
 				GD.Print(myDict.ContainsKey("Godot")); // Prints True
@@ -288,8 +298,8 @@
 				[/codeblocks]
 				In GDScript, this is equivalent to the [code]in[/code] operator:
 				[codeblock]
-				if "Godot" in {"Godot": 4}:
-				    print("The key is here!") # Will be printed.
+				if "Godot" in { "Godot": 4 }:
+					print("The key is here!") # Will be printed.
 				[/codeblock]
 				[b]Note:[/b] This method returns [code]true[/code] as long as the [param key] exists, even if its corresponding value is [code]null[/code].
 			</description>
@@ -300,7 +310,7 @@
 			<description>
 				Returns [code]true[/code] if the dictionary contains all keys in the given [param keys] array.
 				[codeblock]
-				var data = {"width" : 10, "height" : 20}
+				var data = { "width": 10, "height": 20 }
 				data.has_all(["height", "width"]) # Returns true
 				[/codeblock]
 			</description>
@@ -311,14 +321,14 @@
 				Returns a hashed 32-bit integer value representing the dictionary contents.
 				[codeblocks]
 				[gdscript]
-				var dict1 = {"A": 10, "B": 2}
-				var dict2 = {"A": 10, "B": 2}
+				var dict1 = { "A": 10, "B": 2 }
+				var dict2 = { "A": 10, "B": 2 }
 
 				print(dict1.hash() == dict2.hash()) # Prints true
 				[/gdscript]
 				[csharp]
-				var dict1 = new Godot.Collections.Dictionary{{"A", 10}, {"B", 2}};
-				var dict2 = new Godot.Collections.Dictionary{{"A", 10}, {"B", 2}};
+				var dict1 = new Godot.Collections.Dictionary { { "A", 10 }, { "B", 2 } };
+				var dict2 = new Godot.Collections.Dictionary { { "A", 10 }, { "B", 2 } };
 
 				// Godot.Collections.Dictionary has no Hash() method. Use GD.Hash() instead.
 				GD.Print(GD.Hash(dict1) == GD.Hash(dict2)); // Prints True
@@ -413,14 +423,14 @@
 				[csharp]
 				var dict = new Godot.Collections.Dictionary
 				{
-				    ["item"] = "sword",
-				    ["quantity"] = 2,
+					["item"] = "sword",
+					["quantity"] = 2,
 				};
 
 				var otherDict = new Godot.Collections.Dictionary
 				{
-				    ["quantity"] = 15,
-				    ["color"] = "silver",
+					["quantity"] = 15,
+					["color"] = "silver",
 				};
 
 				// Overwriting of existing keys is disabled by default.
@@ -477,7 +487,15 @@
 		<method name="sort">
 			<return type="void" />
 			<description>
-				Sorts the dictionary in-place by key. This can be used to ensure dictionaries with the same contents produce equivalent results when getting the [method keys], getting the [method values], and converting to a string. This is also useful when wanting a JSON representation consistent with what is in memory, and useful for storing on a database that requires dictionaries to be sorted.
+				Sorts the dictionary in ascending order, by key. The final order is dependent on the "less than" ([code]&lt;[/code]) comparison between keys.
+				[codeblocks]
+				[gdscript]
+				var numbers = { "c": 2, "a": 0, "b": 1 }
+				numbers.sort()
+				print(numbers) # Prints { "a": 0, "b": 1, "c": 2 }
+				[/gdscript]
+				[/codeblocks]
+				This method ensures that the dictionary's entries are ordered consistently when [method keys] or [method values] are called, or when the dictionary needs to be converted to a string through [method @GlobalScope.str] or [method JSON.stringify].
 			</description>
 		</method>
 		<method name="values" qualifiers="const">

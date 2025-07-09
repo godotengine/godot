@@ -32,9 +32,9 @@
 
 #include "core/io/config_file.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
@@ -228,6 +228,30 @@ EditorPlugin *EditorMainScreen::get_selected_plugin() const {
 	return selected_plugin;
 }
 
+EditorPlugin *EditorMainScreen::get_plugin_by_name(const String &p_plugin_name) const {
+	ERR_FAIL_COND_V(!main_editor_plugins.has(p_plugin_name), nullptr);
+	return main_editor_plugins[p_plugin_name];
+}
+
+bool EditorMainScreen::can_auto_switch_screens() const {
+	if (selected_plugin == nullptr) {
+		return true;
+	}
+	// Only allow auto-switching if the selected button is to the left of the Script button.
+	for (int i = 0; i < button_hb->get_child_count(); i++) {
+		Button *button = Object::cast_to<Button>(button_hb->get_child(i));
+		if (button->get_text() == "Script") {
+			// Selected button is at or after the Script button.
+			return false;
+		}
+		if (button->get_text() == selected_plugin->get_plugin_name()) {
+			// Selected button is before the Script button.
+			return true;
+		}
+	}
+	return false;
+}
+
 VBoxContainer *EditorMainScreen::get_control() const {
 	return main_screen_vbox;
 }
@@ -254,6 +278,7 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	buttons.push_back(tb);
 	button_hb->add_child(tb);
 	editor_table.push_back(p_editor);
+	main_editor_plugins.insert(p_editor->get_plugin_name(), p_editor);
 }
 
 void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
@@ -280,6 +305,7 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 	}
 
 	editor_table.erase(p_editor);
+	main_editor_plugins.erase(p_editor->get_plugin_name());
 }
 
 EditorMainScreen::EditorMainScreen() {

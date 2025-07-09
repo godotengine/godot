@@ -225,19 +225,12 @@ public class Helpers {
         return path;
     }
 
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     static public String getSaveFilePath(Context c) {
         // This technically existed since Honeycomb, but it is critical
         // on KitKat and greater versions since it will create the
         // directory if needed
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return c.getObbDir().toString();
-        } else {
-            File root = Environment.getExternalStorageDirectory();
-            String path = root.toString() + Constants.EXP_PATH + c.getPackageName();
-            return path;
-        }
-    }
+		return c.getObbDir().toString();
+	}
 
     /**
      * Helper function to ascertain the existence of a file and return true/false appropriately
@@ -297,7 +290,7 @@ public class Helpers {
     /**
      * Helper function to ascertain whether the application has the correct access to the OBB
      * directory to allow an OBB file to be written.
-     * 
+     *
      * @param c the app/activity/service context
      * @return true if the application can write an OBB file, false otherwise
      */
@@ -317,7 +310,7 @@ public class Helpers {
      * Converts download states that are returned by the
      * {@link IDownloaderClient#onDownloadStateChanged} callback into usable strings. This is useful
      * if using the state strings built into the library to display user messages.
-     * 
+     *
      * @param state One of the STATE_* constants from {@link IDownloaderClient}.
      * @return string resource ID for the corresponding string.
      */

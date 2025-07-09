@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKED_SCENE_H
-#define PACKED_SCENE_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "scene/main/node.h"
@@ -70,7 +69,7 @@ class SceneState : public RefCounted {
 	};
 
 	struct DeferredNodePathProperties {
-		Node *base = nullptr;
+		ObjectID base;
 		StringName property;
 		Variant value;
 	};
@@ -197,6 +196,7 @@ public:
 
 	Vector<NodePath> get_editable_instances() const;
 	Ref<Resource> get_sub_resource(const String &p_path);
+	Vector<Ref<Resource>> get_sub_resources();
 
 	//build API
 
@@ -280,5 +280,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(PackedScene::GenEditState)
-
-#endif // PACKED_SCENE_H

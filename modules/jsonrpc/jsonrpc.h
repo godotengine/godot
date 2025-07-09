@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JSONRPC_H
-#define JSONRPC_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/variant/variant.h"
@@ -37,10 +36,15 @@
 class JSONRPC : public Object {
 	GDCLASS(JSONRPC, Object)
 
-	HashMap<String, Object *> method_scopes;
+	HashMap<String, Callable> methods;
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	void _set_scope_bind_compat_104890(const String &p_scope, Object *p_obj);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	JSONRPC();
@@ -62,9 +66,7 @@ public:
 	Variant process_action(const Variant &p_action, bool p_process_arr_elements = false);
 	String process_string(const String &p_input);
 
-	void set_scope(const String &p_scope, Object *p_obj);
+	void set_method(const String &p_name, const Callable &p_callback);
 };
 
 VARIANT_ENUM_CAST(JSONRPC::ErrorCode);
-
-#endif // JSONRPC_H

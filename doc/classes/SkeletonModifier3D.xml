@@ -1,22 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SkeletonModifier3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A Node that may modify Skeleton3D's bone.
+		A node that may modify a Skeleton3D's bones.
 	</brief_description>
 	<description>
 		[SkeletonModifier3D] retrieves a target [Skeleton3D] by having a [Skeleton3D] parent.
-		If there is [AnimationMixer], modification always performs after playback process of the [AnimationMixer].
+		If there is an [AnimationMixer], a modification always performs after playback process of the [AnimationMixer].
 		This node should be used to implement custom IK solvers, constraints, or skeleton physics.
 	</description>
 	<tutorials>
 		<link title="Design of the Skeleton Modifier 3D">https://godotengine.org/article/design-of-the-skeleton-modifier-3d/</link>
 	</tutorials>
 	<methods>
-		<method name="_process_modification" qualifiers="virtual">
+		<method name="_process_modification" qualifiers="virtual" deprecated="Use [method _process_modification_with_delta] instead.">
 			<return type="void" />
 			<description>
 				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
 				[method _process_modification] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+			</description>
+		</method>
+		<method name="_process_modification_with_delta" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
+				[method _process_modification_with_delta] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+				[param delta] is passed from parent [Skeleton3D]. See also [method Skeleton3D.advance].
+			</description>
+		</method>
+		<method name="_skeleton_changed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="old_skeleton" type="Skeleton3D" />
+			<param index="1" name="new_skeleton" type="Skeleton3D" />
+			<description>
+				Called when the skeleton is changed.
+			</description>
+		</method>
+		<method name="_validate_bone_names" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when bone name and index need to be validated such as the timing of the entering tree or changing skeleton.
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
@@ -43,4 +66,24 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="BONE_AXIS_PLUS_X" value="0" enum="BoneAxis">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_X" value="1" enum="BoneAxis">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Y" value="2" enum="BoneAxis">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Y" value="3" enum="BoneAxis">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Z" value="4" enum="BoneAxis">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Z" value="5" enum="BoneAxis">
+			Enumerated value for the -Z axis.
+		</constant>
+	</constants>
 </class>

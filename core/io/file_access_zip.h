@@ -28,17 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_ZIP_H
-#define FILE_ACCESS_ZIP_H
+#pragma once
 
 #ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
-#include "core/templates/rb_map.h"
 
 #include "thirdparty/minizip/unzip.h"
-
-#include <stdlib.h>
 
 class ZipArchive : public PackSource {
 public:
@@ -51,13 +47,12 @@ public:
 private:
 	struct Package {
 		String filename;
-		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 
 	HashMap<String, File> files;
 
-	static ZipArchive *instance;
+	static inline ZipArchive *instance = nullptr;
 
 public:
 	void close_handle(unzFile p_file) const;
@@ -77,6 +72,7 @@ public:
 };
 
 class FileAccessZip : public FileAccess {
+	GDSOFTCLASS(FileAccessZip, FileAccess);
 	unzFile zfile = nullptr;
 	unz_file_info64 file_info;
 
@@ -105,7 +101,9 @@ public:
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
-	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; } // todo
+	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
 
@@ -121,5 +119,3 @@ public:
 };
 
 #endif // MINIZIP_ENABLED
-
-#endif // FILE_ACCESS_ZIP_H

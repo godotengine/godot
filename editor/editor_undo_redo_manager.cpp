@@ -29,10 +29,10 @@
 /**************************************************************************/
 
 #include "editor_undo_redo_manager.h"
+#include "editor_undo_redo_manager.compat.inc"
 
 #include "core/io/resource.h"
 #include "core/os/os.h"
-#include "core/templates/local_vector.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
@@ -62,7 +62,7 @@ UndoRedo *EditorUndoRedoManager::get_history_undo_redo(int p_idx) const {
 int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 	int history_id = INVALID_HISTORY;
 
-	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+	if (Object::cast_to<EditorDebuggerRemoteObjects>(p_object)) {
 		return REMOTE_HISTORY;
 	}
 
@@ -126,7 +126,7 @@ void EditorUndoRedoManager::force_fixed_history() {
 	forced_history = true;
 }
 
-void EditorUndoRedoManager::create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode, bool p_backward_undo_ops) {
+void EditorUndoRedoManager::create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode, bool p_backward_undo_ops, bool p_mark_unsaved) {
 	if (pending_action.history_id != INVALID_HISTORY) {
 		// Nested action.
 		p_history_id = pending_action.history_id;
@@ -135,6 +135,7 @@ void EditorUndoRedoManager::create_action_for_history(const String &p_name, int 
 		pending_action.timestamp = OS::get_singleton()->get_unix_time();
 		pending_action.merge_mode = p_mode;
 		pending_action.backward_undo_ops = p_backward_undo_ops;
+		pending_action.mark_unsaved = p_mark_unsaved;
 	}
 
 	if (p_history_id != INVALID_HISTORY) {
@@ -144,8 +145,8 @@ void EditorUndoRedoManager::create_action_for_history(const String &p_name, int 
 	}
 }
 
-void EditorUndoRedoManager::create_action(const String &p_name, UndoRedo::MergeMode p_mode, Object *p_custom_context, bool p_backward_undo_ops) {
-	create_action_for_history(p_name, INVALID_HISTORY, p_mode, p_backward_undo_ops);
+void EditorUndoRedoManager::create_action(const String &p_name, UndoRedo::MergeMode p_mode, Object *p_custom_context, bool p_backward_undo_ops, bool p_mark_unsaved) {
+	create_action_for_history(p_name, INVALID_HISTORY, p_mode, p_backward_undo_ops, p_mark_unsaved);
 
 	if (p_custom_context) {
 		// This assigns history to pending action.
@@ -322,7 +323,7 @@ bool EditorUndoRedoManager::redo() {
 	}
 
 	int selected_history = INVALID_HISTORY;
-	double global_timestamp = INFINITY;
+	double global_timestamp = Math::INF;
 
 	// Pick the history with lowest last action timestamp (either global or current scene).
 	{
@@ -376,12 +377,36 @@ void EditorUndoRedoManager::set_history_as_saved(int p_id) {
 
 void EditorUndoRedoManager::set_history_as_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
-	history.saved_version = -1;
+	history.saved_version = 0;
 }
 
 bool EditorUndoRedoManager::is_history_unsaved(int p_id) {
 	History &history = get_or_create_history(p_id);
-	return history.undo_redo->get_version() != history.saved_version;
+	if (history.saved_version == 0) {
+		return true;
+	}
+
+	int version_difference = history.undo_redo->get_version() - history.saved_version;
+	if (version_difference > 0) {
+		List<Action>::Element *E = history.undo_stack.back();
+		for (int i = 0; i < version_difference; i++) {
+			ERR_FAIL_NULL_V_MSG(E, false, "Inconsistent undo history.");
+			if (E->get().mark_unsaved) {
+				return true;
+			}
+			E = E->prev();
+		}
+	} else if (version_difference < 0) {
+		List<Action>::Element *E = history.redo_stack.back();
+		for (int i = 0; i > version_difference; i--) {
+			ERR_FAIL_NULL_V_MSG(E, false, "Inconsistent redo history.");
+			if (E->get().mark_unsaved) {
+				return true;
+			}
+			E = E->prev();
+		}
+	}
+	return false;
 }
 
 bool EditorUndoRedoManager::has_undo() {
@@ -493,7 +518,7 @@ EditorUndoRedoManager::History *EditorUndoRedoManager::_get_newest_undo() {
 }
 
 void EditorUndoRedoManager::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode", "custom_context", "backward_undo_ops"), &EditorUndoRedoManager::create_action, DEFVAL(UndoRedo::MERGE_DISABLE), DEFVAL((Object *)nullptr), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("create_action", "name", "merge_mode", "custom_context", "backward_undo_ops", "mark_unsaved"), &EditorUndoRedoManager::create_action, DEFVAL(UndoRedo::MERGE_DISABLE), DEFVAL((Object *)nullptr), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("commit_action", "execute"), &EditorUndoRedoManager::commit_action, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_committing_action"), &EditorUndoRedoManager::is_committing_action);
 	ClassDB::bind_method(D_METHOD("force_fixed_history"), &EditorUndoRedoManager::force_fixed_history);

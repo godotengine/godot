@@ -60,11 +60,11 @@
 			[b]Note:[/b] PCSS for directional lights is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="2" keywords="global_illumination_mode, gi_mode">
-			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering. See [enum BakeMode].
+			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering.
 			[b]Note:[/b] Meshes' global illumination mode will also affect the global illumination rendering. See [member GeometryInstance3D.gi_mode].
 		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
-			The light's color. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
+			The light's color in the nonlinear sRGB color space. An [i]overbright[/i] color can be used to achieve a result equivalent to increasing the light's [member light_energy].
 		</member>
 		<member name="light_cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="4294967295">
 			The light will affect objects in the selected layers.
@@ -201,7 +201,7 @@
 			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="BAKE_DISABLED" value="0" enum="BakeMode">
-			Light is ignored when baking. This is the fastest mode, but the light will be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
+			Light is ignored when baking. This is the fastest mode, but the light will not be taken into account when baking global illumination. This mode should generally be used for dynamic lights that change quickly, as the effect of global illumination is less noticeable on those lights.
 			[b]Note:[/b] Hiding a light does [i]not[/i] affect baking [LightmapGI]. Hiding a light will still affect baking [VoxelGI] and SDFGI (see [member Environment.sdfgi_enabled]).
 		</constant>
 		<constant name="BAKE_STATIC" value="1" enum="BakeMode">

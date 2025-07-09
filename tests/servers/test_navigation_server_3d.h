@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_NAVIGATION_SERVER_3D_H
-#define TEST_NAVIGATION_SERVER_3D_H
+#pragma once
 
-#include "modules/navigation/nav_utils.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "servers/navigation_server_3d.h"
@@ -52,43 +50,7 @@ public:
 	Variant function1_latest_arg0;
 };
 
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
-struct GreaterThan {
-	bool operator()(int p_a, int p_b) const { return p_a > p_b; }
-};
-
-struct CompareArrayValues {
-	const int *array;
-
-	CompareArrayValues(const int *p_array) :
-			array(p_array) {}
-
-	bool operator()(uint32_t p_index_a, uint32_t p_index_b) const {
-		return array[p_index_a] < array[p_index_b];
-	}
-};
-
-struct RegisterHeapIndexes {
-	uint32_t *indexes;
-
-	RegisterHeapIndexes(uint32_t *p_indexes) :
-			indexes(p_indexes) {}
-
-	void operator()(uint32_t p_vector_index, uint32_t p_heap_index) {
-		indexes[p_vector_index] = p_heap_index;
-	}
-};
-
-TEST_SUITE("[Navigation]") {
+TEST_SUITE("[Navigation3D]") {
 	TEST_CASE("[NavigationServer3D] Server should be empty when initialized") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 		CHECK_EQ(navigation_server->get_maps().size(), 0);
@@ -119,7 +81,7 @@ TEST_SUITE("[Navigation]") {
 		SUBCASE("Setters/getters should work") {
 			bool initial_use_3d_avoidance = navigation_server->agent_get_use_3d_avoidance(agent);
 			navigation_server->agent_set_use_3d_avoidance(agent, !initial_use_3d_avoidance);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			CHECK_EQ(navigation_server->agent_get_use_3d_avoidance(agent), !initial_use_3d_avoidance);
 			// TODO: Add remaining setters/getters once the missing getters are added.
@@ -130,11 +92,11 @@ TEST_SUITE("[Navigation]") {
 			CHECK(map.is_valid());
 			navigation_server->map_set_active(map, true);
 			navigation_server->agent_set_map(agent, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 1);
 			navigation_server->agent_set_map(agent, RID());
 			navigation_server->free(map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_AGENT_COUNT), 0);
 		}
 
@@ -185,7 +147,7 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->map_set_up(map, Vector3(1, 0, 0));
 			bool initial_use_edge_connections = navigation_server->map_get_use_edge_connections(map);
 			navigation_server->map_set_use_edge_connections(map, !initial_use_edge_connections);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			CHECK_EQ(navigation_server->map_get_cell_size(map), doctest::Approx(0.55));
 			CHECK_EQ(navigation_server->map_get_edge_connection_margin(map), doctest::Approx(0.66));
@@ -196,11 +158,11 @@ TEST_SUITE("[Navigation]") {
 
 		SUBCASE("'ProcessInfo' should report map iff active") {
 			navigation_server->map_set_active(map, true);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK(navigation_server->map_is_active(map));
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS), 1);
 			navigation_server->map_set_active(map, false);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_ACTIVE_MAPS), 0);
 		}
 
@@ -208,10 +170,10 @@ TEST_SUITE("[Navigation]") {
 			RID agent = navigation_server->agent_create();
 			CHECK(agent.is_valid());
 			navigation_server->agent_set_map(agent, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_agents(map).size(), 1);
 			navigation_server->free(agent);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_agents(map).size(), 0);
 		}
 
@@ -219,10 +181,10 @@ TEST_SUITE("[Navigation]") {
 			RID link = navigation_server->link_create();
 			CHECK(link.is_valid());
 			navigation_server->link_set_map(link, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_links(map).size(), 1);
 			navigation_server->free(link);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_links(map).size(), 0);
 		}
 
@@ -230,10 +192,10 @@ TEST_SUITE("[Navigation]") {
 			RID obstacle = navigation_server->obstacle_create();
 			CHECK(obstacle.is_valid());
 			navigation_server->obstacle_set_map(obstacle, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_obstacles(map).size(), 1);
 			navigation_server->free(obstacle);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_obstacles(map).size(), 0);
 		}
 
@@ -241,16 +203,16 @@ TEST_SUITE("[Navigation]") {
 			RID region = navigation_server->region_create();
 			CHECK(region.is_valid());
 			navigation_server->region_set_map(region, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_regions(map).size(), 1);
 			navigation_server->free(region);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->map_get_regions(map).size(), 0);
 		}
 
 		SUBCASE("Queries against empty map should return empty or invalid values") {
 			navigation_server->map_set_active(map, true);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			ERR_PRINT_OFF;
 			CHECK_EQ(navigation_server->map_get_closest_point(map, Vector3(7, 7, 7)), Vector3());
@@ -274,11 +236,11 @@ TEST_SUITE("[Navigation]") {
 			ERR_PRINT_ON;
 
 			navigation_server->map_set_active(map, false);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		}
 
 		navigation_server->free(map);
-		navigation_server->process(0.0); // Give server some cycles to actually remove map.
+		navigation_server->physics_process(0.0); // Give server some cycles to actually remove map.
 		CHECK_EQ(navigation_server->get_maps().size(), 0);
 	}
 
@@ -301,7 +263,7 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->link_set_owner_id(link, ObjectID((int64_t)7));
 			navigation_server->link_set_start_position(link, Vector3(8, 8, 8));
 			navigation_server->link_set_travel_cost(link, 0.66);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			CHECK_EQ(navigation_server->link_is_bidirectional(link), !initial_bidirectional);
 			CHECK_EQ(navigation_server->link_get_end_position(link), Vector3(7, 7, 7));
@@ -317,11 +279,11 @@ TEST_SUITE("[Navigation]") {
 			CHECK(map.is_valid());
 			navigation_server->map_set_active(map, true);
 			navigation_server->link_set_map(link, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 1);
 			navigation_server->link_set_map(link, RID());
 			navigation_server->free(map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_LINK_COUNT), 0);
 		}
 
@@ -356,7 +318,7 @@ TEST_SUITE("[Navigation]") {
 			navigation_server->region_set_owner_id(region, ObjectID((int64_t)7));
 			navigation_server->region_set_travel_cost(region, 0.66);
 			navigation_server->region_set_use_edge_connections(region, !initial_use_edge_connections);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 			CHECK_EQ(navigation_server->region_get_enter_cost(region), doctest::Approx(0.55));
 			CHECK_EQ(navigation_server->region_get_navigation_layers(region), 5);
@@ -370,11 +332,11 @@ TEST_SUITE("[Navigation]") {
 			CHECK(map.is_valid());
 			navigation_server->map_set_active(map, true);
 			navigation_server->region_set_map(region, map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 1);
 			navigation_server->region_set_map(region, RID());
 			navigation_server->free(map);
-			navigation_server->process(0.0); // Give server some cycles to commit.
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
 			CHECK_EQ(navigation_server->get_process_info(NavigationServer3D::INFO_REGION_COUNT), 0);
 		}
 
@@ -403,7 +365,7 @@ TEST_SUITE("[Navigation]") {
 		CallableMock agent_avoidance_callback_mock;
 		navigation_server->agent_set_avoidance_callback(agent, callable_mp(&agent_avoidance_callback_mock, &CallableMock::function1));
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 0);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_avoidance_callback_mock.function1_calls, 1);
 		CHECK_NE(agent_avoidance_callback_mock.function1_latest_arg0, Vector3(0, 0, 0));
 
@@ -439,7 +401,7 @@ TEST_SUITE("[Navigation]") {
 
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
 		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 0);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
 		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
 		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
@@ -477,7 +439,7 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->obstacle_set_radius(obstacle_1, 1);
 
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
 		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
 		CHECK_MESSAGE(agent_1_safe_velocity.x > 0, "Agent 1 should move a bit along desired velocity (+X).");
@@ -486,7 +448,7 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(obstacle_1);
 		navigation_server->free(agent_1);
 		navigation_server->free(map);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
 	TEST_CASE("[NavigationServer3D] Server should make agents avoid static obstacles when avoidance enabled") {
@@ -536,7 +498,7 @@ TEST_SUITE("[Navigation]") {
 
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 0);
 		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 0);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		CHECK_EQ(agent_1_avoidance_callback_mock.function1_calls, 1);
 		CHECK_EQ(agent_2_avoidance_callback_mock.function1_calls, 1);
 		Vector3 agent_1_safe_velocity = agent_1_avoidance_callback_mock.function1_latest_arg0;
@@ -550,7 +512,7 @@ TEST_SUITE("[Navigation]") {
 		navigation_server->free(agent_2);
 		navigation_server->free(agent_1);
 		navigation_server->free(map);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
 #ifndef DISABLE_DEPRECATED
@@ -572,10 +534,12 @@ TEST_SUITE("[Navigation]") {
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
@@ -591,15 +555,15 @@ TEST_SUITE("[Navigation]") {
 		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
 			SIGNAL_CHECK_FALSE("map_changed");
-			navigation_server->process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", build_array(build_array(map)));
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			SIGNAL_CHECK("map_changed", { { map } });
 			SIGNAL_UNWATCH(navigation_server, "map_changed");
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 		}
 
 		navigation_server->free(region);
 		navigation_server->free(map);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		memdelete(mesh_instance);
 		memdelete(node_3d);
 	}
@@ -632,7 +596,7 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(source_geometry->get_indices().size(), 6);
 		}
 
-		SUBCASE("Parsed geometry should be extendible with other geometry") {
+		SUBCASE("Parsed geometry should be extendable with other geometry") {
 			source_geometry->merge(source_geometry); // Merging with itself.
 			const Vector<float> vertices = source_geometry->get_vertices();
 			const Vector<int> indices = source_geometry->get_indices();
@@ -667,10 +631,12 @@ TEST_SUITE("[Navigation]") {
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 		CHECK_EQ(navigation_mesh->get_polygon_count(), 0);
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
@@ -686,15 +652,15 @@ TEST_SUITE("[Navigation]") {
 		SUBCASE("Map should emit signal and take newly baked navigation mesh into account") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
 			SIGNAL_CHECK_FALSE("map_changed");
-			navigation_server->process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", build_array(build_array(map)));
+			navigation_server->physics_process(0.0); // Give server some cycles to commit.
+			SIGNAL_CHECK("map_changed", { { map } });
 			SIGNAL_UNWATCH(navigation_server, "map_changed");
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 		}
 
 		navigation_server->free(region);
 		navigation_server->free(map);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 		memdelete(mesh_instance);
 		memdelete(node_3d);
 	}
@@ -716,9 +682,11 @@ TEST_SUITE("[Navigation]") {
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
 		navigation_server->map_set_active(map, true);
+		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 
 		SUBCASE("Simple queries should return non-default values") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
@@ -790,9 +758,49 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
 		}
 
+		SUBCASE("Elaborate query with excluded region should yield empty path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_excluded_regions({ region });
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with included region should yield path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_included_regions({ region });
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with excluded and included region should yield empty path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_excluded_regions({ region });
+			query_parameters->set_included_regions({ region });
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+		}
+
 		navigation_server->free(region);
 		navigation_server->free(map);
-		navigation_server->process(0.0); // Give server some cycles to commit.
+		navigation_server->physics_process(0.0); // Give server some cycles to commit.
 	}
 
 	// FIXME: The race condition mentioned below is actually a problem and fails on CI (GH-90613).
@@ -830,140 +838,5 @@ TEST_SUITE("[Navigation]") {
 		Vector<Vector3> simplified_path = NavigationServer3D::get_singleton()->simplify_path(source_path, simplify_epsilon);
 		CHECK_EQ(simplified_path.size(), 4);
 	}
-
-	TEST_CASE("[Heap] size") {
-		gd::Heap<int> heap;
-
-		CHECK(heap.size() == 0);
-
-		heap.push(0);
-		CHECK(heap.size() == 1);
-
-		heap.push(1);
-		CHECK(heap.size() == 2);
-
-		heap.pop();
-		CHECK(heap.size() == 1);
-
-		heap.pop();
-		CHECK(heap.size() == 0);
-	}
-
-	TEST_CASE("[Heap] is_empty") {
-		gd::Heap<int> heap;
-
-		CHECK(heap.is_empty() == true);
-
-		heap.push(0);
-		CHECK(heap.is_empty() == false);
-
-		heap.pop();
-		CHECK(heap.is_empty() == true);
-	}
-
-	TEST_CASE("[Heap] push/pop") {
-		SUBCASE("Default comparator") {
-			gd::Heap<int> heap;
-
-			heap.push(2);
-			heap.push(7);
-			heap.push(5);
-			heap.push(3);
-			heap.push(4);
-
-			CHECK(heap.pop() == 7);
-			CHECK(heap.pop() == 5);
-			CHECK(heap.pop() == 4);
-			CHECK(heap.pop() == 3);
-			CHECK(heap.pop() == 2);
-		}
-
-		SUBCASE("Custom comparator") {
-			GreaterThan greaterThan;
-			gd::Heap<int, GreaterThan> heap(greaterThan);
-
-			heap.push(2);
-			heap.push(7);
-			heap.push(5);
-			heap.push(3);
-			heap.push(4);
-
-			CHECK(heap.pop() == 2);
-			CHECK(heap.pop() == 3);
-			CHECK(heap.pop() == 4);
-			CHECK(heap.pop() == 5);
-			CHECK(heap.pop() == 7);
-		}
-
-		SUBCASE("Intermediate pops") {
-			gd::Heap<int> heap;
-
-			heap.push(0);
-			heap.push(3);
-			heap.pop();
-			heap.push(1);
-			heap.push(2);
-
-			CHECK(heap.pop() == 2);
-			CHECK(heap.pop() == 1);
-			CHECK(heap.pop() == 0);
-		}
-	}
-
-	TEST_CASE("[Heap] shift") {
-		int values[] = { 5, 3, 6, 7, 1 };
-		uint32_t heap_indexes[] = { 0, 0, 0, 0, 0 };
-		CompareArrayValues comparator(values);
-		RegisterHeapIndexes indexer(heap_indexes);
-		gd::Heap<uint32_t, CompareArrayValues, RegisterHeapIndexes> heap(comparator, indexer);
-
-		heap.push(0);
-		heap.push(1);
-		heap.push(2);
-		heap.push(3);
-		heap.push(4);
-
-		// Shift down: 6 -> 2
-		values[2] = 2;
-		heap.shift(heap_indexes[2]);
-
-		// Shift up: 5 -> 8
-		values[0] = 8;
-		heap.shift(heap_indexes[0]);
-
-		CHECK(heap.pop() == 0);
-		CHECK(heap.pop() == 3);
-		CHECK(heap.pop() == 1);
-		CHECK(heap.pop() == 2);
-		CHECK(heap.pop() == 4);
-
-		CHECK(heap_indexes[0] == UINT32_MAX);
-		CHECK(heap_indexes[1] == UINT32_MAX);
-		CHECK(heap_indexes[2] == UINT32_MAX);
-		CHECK(heap_indexes[3] == UINT32_MAX);
-		CHECK(heap_indexes[4] == UINT32_MAX);
-	}
-
-	TEST_CASE("[Heap] clear") {
-		uint32_t heap_indexes[] = { 0, 0, 0, 0 };
-		RegisterHeapIndexes indexer(heap_indexes);
-		gd::Heap<uint32_t, Comparator<uint32_t>, RegisterHeapIndexes> heap(indexer);
-
-		heap.push(0);
-		heap.push(2);
-		heap.push(1);
-		heap.push(3);
-
-		heap.clear();
-
-		CHECK(heap.size() == 0);
-
-		CHECK(heap_indexes[0] == UINT32_MAX);
-		CHECK(heap_indexes[1] == UINT32_MAX);
-		CHECK(heap_indexes[2] == UINT32_MAX);
-		CHECK(heap_indexes[3] == UINT32_MAX);
-	}
 }
 } //namespace TestNavigationServer3D
-
-#endif // TEST_NAVIGATION_SERVER_3D_H

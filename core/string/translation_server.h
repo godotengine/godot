@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSLATION_SERVER_H
-#define TRANSLATION_SERVER_H
+#pragma once
 
 #include "core/string/translation.h"
 #include "core/string/translation_domain.h"
@@ -48,10 +47,7 @@ class TranslationServer : public Object {
 
 	mutable HashMap<String, int> locale_compare_cache;
 
-	bool enabled = true;
-
 	static inline TranslationServer *singleton = nullptr;
-	bool _load_translations(const String &p_from);
 
 	static void _bind_methods();
 
@@ -81,7 +77,7 @@ class TranslationServer : public Object {
 					(p_locale.variant == variant);
 		}
 
-		operator String() const;
+		explicit operator String() const;
 
 		Locale(const TranslationServer &p_server, const String &p_locale, bool p_add_defaults);
 	};
@@ -98,10 +94,8 @@ class TranslationServer : public Object {
 public:
 	_FORCE_INLINE_ static TranslationServer *get_singleton() { return singleton; }
 
+	Ref<TranslationDomain> get_main_domain() const { return main_domain; }
 	Ref<TranslationDomain> get_editor_domain() const { return editor_domain; }
-
-	void set_enabled(bool p_enabled) { enabled = p_enabled; }
-	_FORCE_INLINE_ bool is_enabled() const { return enabled; }
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
@@ -160,5 +154,3 @@ public:
 
 	TranslationServer();
 };
-
-#endif // TRANSLATION_SERVER_H

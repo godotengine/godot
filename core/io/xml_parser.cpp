@@ -30,7 +30,7 @@
 
 #include "xml_parser.h"
 
-#include "core/string/print_string.h"
+#include "core/io/file_access.h"
 
 //#define DEBUG_XML
 
@@ -95,7 +95,8 @@ void XMLParser::_ignore_definition() {
 	while (*P && *P != '>') {
 		next_char();
 	}
-	node_name.parse_utf8(F, P - F);
+	node_name.clear();
+	node_name.append_utf8(F, P - F);
 
 	if (*P) {
 		next_char();

@@ -71,10 +71,12 @@ typedef struct hb_subset_plan_t hb_subset_plan_t;
  * in the final subset.
  * @HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES: If set then the unicode ranges in
  * OS/2 will not be recalculated.
- * @HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE: If set don't perform glyph closure on layout
+ * @HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE: If set do not perform glyph closure on layout
  * substitution rules (GSUB). Since: 7.2.0.
  * @HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS: If set perform IUP delta optimization on the
  * remaining gvar table's deltas. Since: 8.5.0
+ * @HB_SUBSET_FLAGS_NO_BIDI_CLOSURE: If set do not pull mirrored versions of input
+ * codepoints into the subset. Since: 11.1.0
  * @HB_SUBSET_FLAGS_IFTB_REQUIREMENTS: If set enforce requirements on the output subset
  * to allow it to be used with incremental font transfer IFTB patches. Primarily,
  * this forces all outline data to use long (32 bit) offsets. Since: EXPERIMENTAL
@@ -96,8 +98,9 @@ typedef enum { /*< flags >*/
   HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES =  0x00000100u,
   HB_SUBSET_FLAGS_NO_LAYOUT_CLOSURE =        0x00000200u,
   HB_SUBSET_FLAGS_OPTIMIZE_IUP_DELTAS	  =  0x00000400u,
+  HB_SUBSET_FLAGS_NO_BIDI_CLOSURE         =  0x00000800u,
 #ifdef HB_EXPERIMENTAL_API
-  HB_SUBSET_FLAGS_IFTB_REQUIREMENTS       =  0x00000800u,
+  HB_SUBSET_FLAGS_IFTB_REQUIREMENTS       =  0x00001000u,
 #endif
 } hb_subset_flags_t;
 
@@ -203,6 +206,18 @@ hb_subset_input_set_axis_range (hb_subset_input_t  *input,
 				float               axis_max_value,
 				float               axis_def_value);
 
+HB_EXTERN hb_bool_t
+hb_subset_axis_range_from_string (const char *str, int len,
+				  float *axis_min_value,
+				  float *axis_max_value,
+				  float *axis_def_value);
+
+HB_EXTERN void
+hb_subset_axis_range_to_string (hb_subset_input_t *input,
+				hb_tag_t axis_tag,
+				char *buf,
+				unsigned size);
+
 #ifdef HB_EXPERIMENTAL_API
 HB_EXTERN hb_bool_t
 hb_subset_input_override_name_table (hb_subset_input_t  *input,
@@ -212,6 +227,23 @@ hb_subset_input_override_name_table (hb_subset_input_t  *input,
 				     unsigned            language_id,
 				     const char         *name_str,
 				     int                 str_len);
+
+
+/*
+* Raw outline data access
+*/
+
+HB_EXTERN hb_blob_t*
+hb_subset_cff_get_charstring_data (hb_face_t* face, hb_codepoint_t glyph_index);
+
+HB_EXTERN hb_blob_t*
+hb_subset_cff_get_charstrings_index (hb_face_t* face);
+
+HB_EXTERN hb_blob_t*
+hb_subset_cff2_get_charstring_data (hb_face_t* face, hb_codepoint_t glyph_index);
+
+HB_EXTERN hb_blob_t*
+hb_subset_cff2_get_charstrings_index (hb_face_t* face);
 #endif
 
 HB_EXTERN hb_face_t *

@@ -46,14 +46,14 @@ void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 
 #ifdef DEBUG_ENABLED
-	if (
-			p_texture->is_class("AnimatedTexture") ||
-			p_texture->is_class("AtlasTexture") ||
-			p_texture->is_class("CameraTexture") ||
-			p_texture->is_class("CanvasTexture") ||
-			p_texture->is_class("MeshTexture") ||
-			p_texture->is_class("Texture2DRD") ||
-			p_texture->is_class("ViewportTexture")) {
+	if (p_texture.is_valid() &&
+			(p_texture->is_class("AnimatedTexture") ||
+					p_texture->is_class("AtlasTexture") ||
+					p_texture->is_class("CameraTexture") ||
+					p_texture->is_class("CanvasTexture") ||
+					p_texture->is_class("MeshTexture") ||
+					p_texture->is_class("Texture2DRD") ||
+					p_texture->is_class("ViewportTexture"))) {
 		WARN_PRINT(vformat("%s cannot be used as a Decal texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 	}
 #endif
@@ -167,7 +167,7 @@ AABB Decal::get_aabb() const {
 }
 
 void Decal::_validate_property(PropertyInfo &p_property) const {
-	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
+	if (Engine::get_singleton()->is_editor_hint() && !distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -179,7 +179,7 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
 		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
 		return warnings;
 	}

@@ -41,12 +41,7 @@ bool AnimationLibrary::is_valid_library_name(const String &p_name) {
 }
 
 String AnimationLibrary::validate_library_name(const String &p_name) {
-	String name = p_name;
-	const char *characters = "/:,[";
-	for (const char *p = characters; *p; p++) {
-		name = name.replace(String::chr(*p), "_");
-	}
-	return name;
+	return p_name.replace_chars("/:,[", '_');
 }
 
 Error AnimationLibrary::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
@@ -134,10 +129,8 @@ void AnimationLibrary::_set_data(const Dictionary &p_data) {
 		K.value->disconnect_changed(callable_mp(this, &AnimationLibrary::_animation_changed));
 	}
 	animations.clear();
-	List<Variant> keys;
-	p_data.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		add_animation(K, p_data[K]);
+	for (const KeyValue<Variant, Variant> &kv : p_data) {
+		add_animation(kv.key, kv.value);
 	}
 }
 

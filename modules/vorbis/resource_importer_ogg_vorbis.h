@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_OGG_VORBIS_H
-#define RESOURCE_IMPORTER_OGG_VORBIS_H
+#pragma once
 
 #include "audio_stream_ogg_vorbis.h"
 
@@ -37,10 +36,6 @@
 
 class ResourceImporterOggVorbis : public ResourceImporter {
 	GDCLASS(ResourceImporterOggVorbis, ResourceImporter);
-
-	enum {
-		OGG_SYNC_BUFFER_SIZE = 8192,
-	};
 
 protected:
 	static void _bind_methods();
@@ -51,8 +46,11 @@ public:
 	virtual void show_advanced_options(const String &p_path) override;
 #endif
 
+#ifndef DISABLE_DEPRECATED
 	static Ref<AudioStreamOggVorbis> load_from_file(const String &p_path);
-	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &file_data);
+	static Ref<AudioStreamOggVorbis> load_from_buffer(const Vector<uint8_t> &p_stream_data);
+#endif
+
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual String get_save_extension() const override;
 	virtual String get_resource_type() const override;
@@ -69,5 +67,3 @@ public:
 
 	ResourceImporterOggVorbis();
 };
-
-#endif // RESOURCE_IMPORTER_OGG_VORBIS_H
