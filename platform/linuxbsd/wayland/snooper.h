@@ -50,6 +50,7 @@
 #include "protocol/linux_dmabuf_v1.gen.h"
 #include "protocol/xdg_shell.gen.h"
 
+#include "protocol/commit_timing_v1.gen.h"
 #include "protocol/cursor_shape.gen.h"
 #include "protocol/fifo_v1.gen.h"
 #include "protocol/fractional_scale.gen.h"
@@ -401,6 +402,10 @@ private:
 
 		// fifo-v1
 		&wp_fifo_v1_interface,
+
+		// commit-timing-v1
+		&wp_commit_timing_manager_v1_interface,
+		&wp_commit_timer_v1_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,

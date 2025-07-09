@@ -98,6 +98,7 @@ objects = [
         "#thirdparty/wayland-protocols/unstable/linux-explicit-synchronization/linux-explicit-synchronization-unstable-v1.xml",
     ),
     generate_from_xml("fifo_v1", "#thirdparty/wayland-protocols/staging/fifo/fifo-v1.xml"),
+    generate_from_xml("commit_timing_v1", "#thirdparty/wayland-protocols/staging/commit-timing/commit-timing-v1.xml"),
     generate_from_xml(
         "linux_drm_syncobj_v1", "#thirdparty/wayland-protocols/staging/linux-drm-syncobj/linux-drm-syncobj-v1.xml"
     ),
