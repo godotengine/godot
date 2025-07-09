@@ -165,19 +165,19 @@ EditorExpressionEvaluator::EditorExpressionEvaluator() {
 
 	clear_on_run_checkbox = memnew(CheckBox);
 	clear_on_run_checkbox->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	clear_on_run_checkbox->set_text(TTR("Clear on Run"));
+	clear_on_run_checkbox->set_text(TTRC("Clear on Run"));
 	clear_on_run_checkbox->set_pressed(true);
 	hb->add_child(clear_on_run_checkbox);
 
 	evaluate_btn = memnew(Button);
 	evaluate_btn->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	evaluate_btn->set_text(TTR("Evaluate"));
+	evaluate_btn->set_text(TTRC("Evaluate"));
 	evaluate_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorExpressionEvaluator::_evaluate));
 	hb->add_child(evaluate_btn);
 
 	clear_btn = memnew(Button);
 	clear_btn->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
-	clear_btn->set_text(TTR("Clear"));
+	clear_btn->set_text(TTRC("Clear"));
 	clear_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorExpressionEvaluator::_clear));
 	hb->add_child(clear_btn);
 
