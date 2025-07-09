@@ -42,8 +42,9 @@ struct SnapshotDataTransportObject : public SceneDebuggerObject {
 };
 
 class SnapshotCollector {
+	inline static HashMap<int, Vector<uint8_t>> pending_snapshots;
+
 public:
-	static HashMap<int, Vector<uint8_t>> pending_snapshots;
 	static void snapshot_objects(Array *p_arr, Dictionary &p_snapshot_context);
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
 	static void initialize();

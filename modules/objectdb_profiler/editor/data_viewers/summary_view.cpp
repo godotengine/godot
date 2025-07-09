@@ -39,7 +39,7 @@
 #include "scene/resources/style_box_flat.h"
 
 SnapshotSummaryView::SnapshotSummaryView() {
-	set_name("Summary");
+	set_name(TTRC("Summary"));
 
 	set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 	set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
@@ -70,7 +70,7 @@ SnapshotSummaryView::SnapshotSummaryView() {
 	pc->add_theme_style_override("panel", sbf);
 	content->add_child(pc);
 	pc->set_anchors_preset(LayoutPreset::PRESET_TOP_WIDE);
-	Label *title = memnew(Label(TTR("ObjectDB Snapshot Summary")));
+	Label *title = memnew(Label(TTRC("ObjectDB Snapshot Summary")));
 	pc->add_child(title);
 	title->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 	title->set_vertical_alignment(VerticalAlignment::VERTICAL_ALIGNMENT_CENTER);
@@ -81,9 +81,9 @@ SnapshotSummaryView::SnapshotSummaryView() {
 	content->add_child(explainer_text);
 	VBoxContainer *explainer_lines = memnew(VBoxContainer);
 	explainer_text->add_child(explainer_lines);
-	Label *l1 = memnew(Label(TTR("Press 'Take ObjectDB Snapshot' to snapshot the ObjectDB.")));
-	Label *l2 = memnew(Label(TTR("Memory in Godot is either owned natively by the engine or owned by the ObjectDB.")));
-	Label *l3 = memnew(Label(TTR("ObjectDB Snapshots capture only memory owned by the ObjectDB.")));
+	Label *l1 = memnew(Label(TTRC("Press 'Take ObjectDB Snapshot' to snapshot the ObjectDB.")));
+	Label *l2 = memnew(Label(TTRC("Memory in Godot is either owned natively by the engine or owned by the ObjectDB.")));
+	Label *l3 = memnew(Label(TTRC("ObjectDB Snapshots capture only memory owned by the ObjectDB.")));
 	l1->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 	l2->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 	l3->set_horizontal_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
@@ -107,27 +107,27 @@ void SnapshotSummaryView::show_snapshot(GameStateSnapshot *p_data, GameStateSnap
 	SnapshotView::show_snapshot(p_data, p_diff_data);
 	explainer_text->set_visible(false);
 
-	String snapshot_a_name = diff_data == nullptr ? TTR("Snapshot") : TTR("Snapshot A");
-	String snapshot_b_name = TTR("Snapshot B");
+	String snapshot_a_name = diff_data == nullptr ? TTRC("Snapshot") : TTRC("Snapshot A");
+	String snapshot_b_name = TTRC("Snapshot B");
 
-	_push_overview_blurb(snapshot_a_name + " " + TTR("Overview"), snapshot_data);
+	_push_overview_blurb(snapshot_a_name + " " + TTRC("Overview"), snapshot_data);
 	if (diff_data) {
-		_push_overview_blurb(snapshot_b_name + " " + TTR("Overview"), diff_data);
+		_push_overview_blurb(snapshot_b_name + " " + TTRC("Overview"), diff_data);
 	}
 
-	_push_node_blurb(snapshot_a_name + " " + TTR("Nodes"), snapshot_data);
+	_push_node_blurb(snapshot_a_name + " " + TTRC("Nodes"), snapshot_data);
 	if (diff_data) {
-		_push_node_blurb(snapshot_b_name + " " + TTR("Nodes"), diff_data);
+		_push_node_blurb(snapshot_b_name + " " + TTRC("Nodes"), diff_data);
 	}
 
-	_push_refcounted_blurb(snapshot_a_name + " " + TTR("RefCounteds"), snapshot_data);
+	_push_refcounted_blurb(snapshot_a_name + " " + TTRC("RefCounteds"), snapshot_data);
 	if (diff_data) {
-		_push_refcounted_blurb(snapshot_b_name + " " + TTR("RefCounteds"), diff_data);
+		_push_refcounted_blurb(snapshot_b_name + " " + TTRC("RefCounteds"), diff_data);
 	}
 
-	_push_object_blurb(snapshot_a_name + " " + TTR("Objects"), snapshot_data);
+	_push_object_blurb(snapshot_a_name + " " + TTRC("Objects"), snapshot_data);
 	if (diff_data) {
-		_push_object_blurb(snapshot_b_name + " " + TTR("Objects"), diff_data);
+		_push_object_blurb(snapshot_b_name + " " + TTRC("Objects"), diff_data);
 	}
 }
 
@@ -149,6 +149,7 @@ SummaryBlurb::SummaryBlurb(const String &p_title, const String &p_rtl_content) {
 
 	label = memnew(RichTextLabel);
 	label->add_theme_constant_override(SceneStringName(line_separation), 6);
+	label->set_text_direction(Control::TEXT_DIRECTION_INHERITED);
 	label->set_fit_content(true);
 	label->set_use_bbcode(true);
 	label->add_newline();
@@ -183,11 +184,6 @@ void SnapshotSummaryView::_push_overview_blurb(const String &p_title, GameStateS
 	if (p_snapshot->snapshot_context.has("mem_max_usage")) {
 		c += vformat(" [i]%s[/i] %s\n", TTR("Max Memory Used:"), String::num((double)((uint64_t)p_snapshot->snapshot_context["mem_max_usage"]) * bytes_to_mb, 3) + " MB");
 	}
-	if (p_snapshot->snapshot_context.has("mem_available")) {
-		// I'm guessing pretty hard about what this is supposed to be. It's hard coded to be -1 cast to a uint64_t in Memory.h,
-		// so it _could_ be checking if we're on a 64 bit system, I think...
-		c += vformat(" [i]%s[/i] %s\n", TTR("Max uint64 Value:"), String::num_uint64((uint64_t)p_snapshot->snapshot_context["mem_available"]));
-	}
 	c += vformat(" [i]%s[/i] %s\n", TTR("Total Objects:"), itos(p_snapshot->objects.size()));
 
 	int node_count = 0;
@@ -203,11 +199,13 @@ void SnapshotSummaryView::_push_overview_blurb(const String &p_title, GameStateS
 }
 
 void SnapshotSummaryView::_push_node_blurb(const String &p_title, GameStateSnapshot *p_snapshot) {
-	List<String> nodes;
+	LocalVector<String> nodes;
+	nodes.reserve(p_snapshot->objects.size());
+
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : p_snapshot->objects) {
 		// if it's a node AND it doesn't have a parent node
 		if (pair.value->is_node() && !pair.value->extra_debug_data.has("node_parent") && pair.value->extra_debug_data.has("node_is_scene_root") && !pair.value->extra_debug_data["node_is_scene_root"]) {
-			const String &node_name = pair.value->extra_debug_data["node_name"];
+			String node_name = pair.value->extra_debug_data["node_name"];
 			nodes.push_back(node_name != "" ? node_name : pair.value->get_name());
 		}
 	}
@@ -216,7 +214,7 @@ void SnapshotSummaryView::_push_node_blurb(const String &p_title, GameStateSnaps
 		return;
 	}
 
-	String c = TTR("Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')[/i]\n");
+	String c = TTRC("Multiple root nodes [i](possible call to 'remove_child' without 'queue_free')[/i]\n");
 	c += "[ul]\n";
 	for (const String &node : nodes) {
 		c += " " + node + "\n";
@@ -227,7 +225,9 @@ void SnapshotSummaryView::_push_node_blurb(const String &p_title, GameStateSnaps
 }
 
 void SnapshotSummaryView::_push_refcounted_blurb(const String &p_title, GameStateSnapshot *p_snapshot) {
-	List<String> rcs;
+	LocalVector<String> rcs;
+	rcs.reserve(p_snapshot->objects.size());
+
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : p_snapshot->objects) {
 		if (pair.value->is_refcounted()) {
 			int ref_count = (uint64_t)pair.value->extra_debug_data["ref_count"];
@@ -243,7 +243,7 @@ void SnapshotSummaryView::_push_refcounted_blurb(const String &p_title, GameStat
 		return;
 	}
 
-	String c = TTR("RefCounted objects only referenced in cycles [i](cycles often indicate a memory leaks)[/i]\n");
+	String c = TTRC("RefCounted objects only referenced in cycles [i](cycles often indicate a memory leaks)[/i]\n");
 	c += "[ul]\n";
 	for (const String &rc : rcs) {
 		c += " " + rc + "\n";
@@ -254,7 +254,9 @@ void SnapshotSummaryView::_push_refcounted_blurb(const String &p_title, GameStat
 }
 
 void SnapshotSummaryView::_push_object_blurb(const String &p_title, GameStateSnapshot *p_snapshot) {
-	List<String> objects;
+	LocalVector<String> objects;
+	objects.reserve(p_snapshot->objects.size());
+
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &pair : p_snapshot->objects) {
 		if (pair.value->inbound_references.is_empty() && pair.value->outbound_references.is_empty()) {
 			if (!pair.value->get_script().is_null()) {
@@ -271,7 +273,7 @@ void SnapshotSummaryView::_push_object_blurb(const String &p_title, GameStateSna
 		return;
 	}
 
-	String c = TTR("Scripted objects not referenced by any other objects [i](unreferenced objects may indicate a memory leak)[/i]\n");
+	String c = TTRC("Scripted objects not referenced by any other objects [i](unreferenced objects may indicate a memory leak)[/i]\n");
 	c += "[ul]\n";
 	for (const String &object : objects) {
 		c += " " + object + "\n";

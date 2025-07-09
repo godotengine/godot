@@ -38,8 +38,6 @@
 #include "modules/gdscript/gdscript.h"
 #endif
 
-#include <zlib.h>
-
 SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnapshot *p_snapshot, ResourceCache &resource_cache) :
 		snapshot(p_snapshot) {
 	remote_object_id = p_obj.id;
@@ -48,7 +46,6 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 	for (const SceneDebuggerObject::SceneDebuggerProperty &prop : p_obj.properties) {
 		PropertyInfo pinfo = prop.first;
 		Variant pvalue = prop.second;
-		// pinfo.name = pinfo.name.trim_prefix("Node/").trim_prefix("Members/");
 
 		if (pinfo.type == Variant::OBJECT && pvalue.is_string()) {
 			String path = pvalue;
@@ -56,7 +53,7 @@ SnapshotDataObject::SnapshotDataObject(SceneDebuggerObject &p_obj, GameStateSnap
 			// To get a reference to it, first we load the parent resource (the .tscn, for example), then,
 			// we load the child resource. The parent resource (dependency) should not be destroyed before the child
 			// resource (pvalue) is loaded.
-			if (path.contains("::")) {
+			if (path.is_resource_file()) {
 				// Built-in resource.
 				String base_path = path.get_slice("::", 0);
 				if (!resource_cache.cache.has(base_path)) {
@@ -160,27 +157,22 @@ String SnapshotDataObject::get_name() {
 	String found_type_name = type_name;
 
 	// Ideally, we will name it after the script attached to it.
-	if (!get_script().is_null()) {
-		Object *maybe_script_obj = get_script().get_validated_object();
-
-		if (maybe_script_obj->is_class(Script::get_class_static())) {
-			Ref<Script> script_obj = Ref<Script>((Script *)maybe_script_obj);
-
-			String full_name;
-			while (script_obj.is_valid()) {
-				String global_name = _get_script_name(script_obj);
-				if (global_name != "") {
-					if (full_name != "") {
-						full_name = global_name + "/" + full_name;
-					} else {
-						full_name = global_name;
-					}
+	Ref<Script> maybe_script = get_script();
+	if (maybe_script.is_valid()) {
+		String full_name;
+		while (maybe_script.is_valid()) {
+			String global_name = _get_script_name(maybe_script);
+			if (global_name != "") {
+				if (full_name != "") {
+					full_name = global_name + "/" + full_name;
+				} else {
+					full_name = global_name;
 				}
-				script_obj = script_obj->get_base_script().ptr();
 			}
-
-			found_type_name = type_name + "/" + full_name;
+			maybe_script = maybe_script->get_base_script().ptr();
 		}
+
+		found_type_name = type_name + "/" + full_name;
 	}
 
 	return found_type_name + "_" + uitos(remote_object_id);
@@ -258,7 +250,7 @@ void GameStateSnapshot::_get_rc_cycles(
 		SnapshotDataObject *p_obj,
 		SnapshotDataObject *p_source_obj,
 		HashSet<SnapshotDataObject *> p_traversed_objs,
-		List<String> &r_ret_val,
+		LocalVector<String> &r_ret_val,
 		const String &p_current_path) {
 	// We're at the end of this branch and it was a cycle.
 	if (p_obj == p_source_obj && p_current_path != "") {
@@ -314,7 +306,7 @@ void GameStateSnapshot::recompute_references() {
 			continue;
 		}
 		HashSet<SnapshotDataObject *> traversed_objs;
-		List<String> cycles;
+		LocalVector<String> cycles;
 
 		_get_rc_cycles(obj.value, obj.value, traversed_objs, cycles, "");
 		Array cycles_array;
@@ -340,22 +332,16 @@ Ref<GameStateSnapshotRef> GameStateSnapshot::create_ref(const String &p_snapshot
 	CoreBind::Marshalls *m = CoreBind::Marshalls::get_singleton();
 	Array snapshot_data = m->base64_to_variant(m->raw_to_base64(snapshot_buffer_decompressed));
 	ERR_FAIL_COND_V_MSG(snapshot_data.is_empty(), nullptr, "ObjectDB Snapshot could not be parsed. Variant array is empty.");
-	const Variant &first_item = snapshot_data.get(0);
-	if (first_item.get_type() != Variant::DICTIONARY) {
-		ERR_PRINT("ObjectDB Snapshot could not be parsed. First item is not a Dictionary.");
-		return nullptr;
-	}
+	const Variant &first_item = snapshot_data[0];
+	ERR_FAIL_COND_V_MSG(first_item.get_type() != Variant::DICTIONARY, nullptr, "ObjectDB Snapshot could not be parsed. First item is not a Dictionary.");
 	snapshot->snapshot_context = first_item;
 
 	SnapshotDataObject::ResourceCache resource_cache;
 	for (int i = 1; i < snapshot_data.size(); i += 4) {
 		SceneDebuggerObject obj;
 		obj.deserialize(uint64_t(snapshot_data[i + 0]), snapshot_data[i + 1], snapshot_data[i + 2]);
+		ERR_FAIL_COND_V_MSG(snapshot_data[i + 3].get_type() != Variant::DICTIONARY, nullptr, "ObjectDB Snapshot could not be parsed. Extra debug data is not a Dictionary.");
 
-		if (snapshot_data[i + 3].get_type() != Variant::DICTIONARY) {
-			ERR_PRINT("ObjectDB Snapshot could not be parsed. Extra debug data is not a Dictionary.");
-			return nullptr;
-		}
 		if (obj.id.is_null()) {
 			continue;
 		}
@@ -371,7 +357,7 @@ Ref<GameStateSnapshotRef> GameStateSnapshot::create_ref(const String &p_snapshot
 
 GameStateSnapshot::~GameStateSnapshot() {
 	for (const KeyValue<ObjectID, SnapshotDataObject *> &item : objects) {
-		memfree(item.value);
+		memdelete(item.value);
 	}
 }
 

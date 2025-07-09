@@ -36,7 +36,7 @@
 #include "scene/gui/split_container.h"
 
 SnapshotObjectView::SnapshotObjectView() {
-	set_name(TTR("Objects"));
+	set_name(TTRC("Objects"));
 }
 
 void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnapshot *p_diff_data) {
@@ -60,17 +60,17 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 
 	object_list = memnew(Tree);
 
-	filter_bar = memnew(TreeSortAndFilterBar(object_list, TTR("Filter Objects")));
+	filter_bar = memnew(TreeSortAndFilterBar(object_list, TTRC("Filter Objects")));
 	object_column->add_child(filter_bar);
 	int sort_idx = 0;
 	if (diff_data) {
-		filter_bar->add_sort_option(TTR("Snapshot"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
+		filter_bar->add_sort_option(TTRC("Snapshot"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
 	}
-	filter_bar->add_sort_option(TTR("Class"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
-	filter_bar->add_sort_option(TTR("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
-	filter_bar->add_sort_option(TTR("Inbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
+	filter_bar->add_sort_option(TTRC("Class"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
+	filter_bar->add_sort_option(TTRC("Name"), TreeSortAndFilterBar::SortType::ALPHA_SORT, sort_idx++);
+	filter_bar->add_sort_option(TTRC("Inbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
 	TreeSortAndFilterBar::SortOptionIndexes default_sort = filter_bar->add_sort_option(
-			TTR("Outbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
+			TTRC("Outbound References"), TreeSortAndFilterBar::SortType::NUMERIC_SORT, sort_idx++);
 
 	// Tree of objects.
 	object_list->set_select_mode(Tree::SelectMode::SELECT_ROW);
@@ -82,27 +82,27 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_list->set_column_titles_visible(true);
 	int offset = 0;
 	if (diff_data) {
-		object_list->set_column_title(0, TTR("Snapshot"));
+		object_list->set_column_title(0, TTRC("Snapshot"));
 		object_list->set_column_expand(0, false);
 		object_list->set_column_title_tooltip_text(0, "A: " + snapshot_data->name + ", B: " + diff_data->name);
 		offset++;
 	}
-	object_list->set_column_title(offset + 0, TTR("Class"));
+	object_list->set_column_title(offset + 0, TTRC("Class"));
 	object_list->set_column_expand(offset + 0, true);
-	object_list->set_column_title_tooltip_text(offset + 0, TTR("Object's class"));
-	object_list->set_column_title(offset + 1, TTR("Object"));
+	object_list->set_column_title_tooltip_text(offset + 0, TTRC("Object's class"));
+	object_list->set_column_title(offset + 1, TTRC("Object"));
 	object_list->set_column_expand(offset + 1, true);
 	object_list->set_column_expand_ratio(offset + 1, 2);
-	object_list->set_column_title_tooltip_text(offset + 1, TTR("Object's name"));
-	object_list->set_column_title(offset + 2, TTR("In"));
+	object_list->set_column_title_tooltip_text(offset + 1, TTRC("Object's name"));
+	object_list->set_column_title(offset + 2, TTRC("In"));
 	object_list->set_column_expand(offset + 2, false);
 	object_list->set_column_clip_content(offset + 2, false);
-	object_list->set_column_title_tooltip_text(offset + 2, TTR("Number of inbound references"));
+	object_list->set_column_title_tooltip_text(offset + 2, TTRC("Number of inbound references"));
 	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
-	object_list->set_column_title(offset + 3, TTR("Out"));
+	object_list->set_column_title(offset + 3, TTRC("Out"));
 	object_list->set_column_expand(offset + 3, false);
 	object_list->set_column_clip_content(offset + 3, false);
-	object_list->set_column_title_tooltip_text(offset + 3, TTR("Number of outbound references"));
+	object_list->set_column_title_tooltip_text(offset + 3, TTRC("Number of outbound references"));
 	object_list->set_column_custom_minimum_width(offset + 2, 30 * EDSCALE);
 	object_list->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_object_selected));
 	object_list->set_h_size_flags(SizeFlags::SIZE_EXPAND_FILL);
@@ -115,9 +115,9 @@ void SnapshotObjectView::show_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	object_details->set_v_size_flags(SizeFlags::SIZE_EXPAND_FILL);
 
 	object_list->create_item();
-	_insert_data(snapshot_data, TTR("A"));
+	_insert_data(snapshot_data, TTRC("A"));
 	if (diff_data) {
-		_insert_data(diff_data, TTR("B"));
+		_insert_data(diff_data, TTRC("B"));
 	}
 
 	filter_bar->select_sort(default_sort.descending);
@@ -136,8 +136,11 @@ void SnapshotObjectView::_insert_data(GameStateSnapshot *p_snapshot, const Strin
 		if (diff_data) {
 			item->set_text(0, p_name);
 			item->set_tooltip_text(0, p_snapshot->name);
+			item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
 			offset = 1;
 		}
+		item->set_auto_translate_mode(offset + 0, AUTO_TRANSLATE_MODE_DISABLED);
+		item->set_auto_translate_mode(offset + 1, AUTO_TRANSLATE_MODE_DISABLED);
 		item->set_text(offset + 0, pair.value->type_name);
 		item->set_text(offset + 1, pair.value->get_name());
 		item->set_text(offset + 2, String::num_uint64(pair.value->inbound_references.size()));
@@ -155,7 +158,7 @@ void SnapshotObjectView::_object_selected() {
 	}
 
 	SnapshotDataObject *d = item_data_map[object_list->get_selected()];
-	EditorNode::get_singleton()->push_item((Object *)d);
+	EditorNode::get_singleton()->push_item(static_cast<Object *>(d));
 
 	DarkPanelContainer *object_panel = memnew(DarkPanelContainer);
 	VBoxContainer *object_panel_content = memnew(VBoxContainer);
@@ -177,22 +180,28 @@ void SnapshotObjectView::_object_selected() {
 	properties_scroll->add_child(properties_container);
 	properties_container->add_theme_constant_override("separation", 8);
 
-	inbound_tree = _make_references_list(properties_container, TTR("Inbound References"), TTR("Source"), TTR("Other object referencing this object"), TTR("Property"), TTR("Property of other object referencing this object"));
+	inbound_tree = _make_references_list(properties_container, TTRC("Inbound References"), TTRC("Source"), TTRC("Other object referencing this object"), TTRC("Property"), TTRC("Property of other object referencing this object"));
 	inbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(inbound_tree));
 	TreeItem *ib_root = inbound_tree->create_item();
 	for (const KeyValue<String, ObjectID> &ob : d->inbound_references) {
 		TreeItem *i = inbound_tree->create_item(ib_root);
+		i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+		i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
+
 		SnapshotDataObject *target = d->snapshot->objects[ob.value];
 		i->set_text(0, target->get_name());
 		i->set_text(1, ob.key);
 		reference_item_map[i] = data_item_map[target];
 	}
 
-	outbound_tree = _make_references_list(properties_container, TTR("Outbound References"), TTR("Property"), TTR("Property of this object referencing other object"), TTR("Target"), TTR("Other object being referenced"));
+	outbound_tree = _make_references_list(properties_container, TTRC("Outbound References"), TTRC("Property"), TTRC("Property of this object referencing other object"), TTRC("Target"), TTRC("Other object being referenced"));
 	outbound_tree->connect(SceneStringName(item_selected), callable_mp(this, &SnapshotObjectView::_reference_selected).bind(outbound_tree));
 	TreeItem *ob_root = outbound_tree->create_item();
 	for (const KeyValue<String, ObjectID> &ob : d->outbound_references) {
 		TreeItem *i = outbound_tree->create_item(ob_root);
+		i->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+		i->set_auto_translate_mode(1, AUTO_TRANSLATE_MODE_DISABLED);
+
 		SnapshotDataObject *target = d->snapshot->objects[ob.value];
 		i->set_text(0, ob.key);
 		i->set_text(1, target->get_name());

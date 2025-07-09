@@ -43,7 +43,7 @@ struct ClassData {
 	String class_name;
 	String parent_class_name;
 	HashSet<String> child_classes;
-	List<SnapshotDataObject *> instances;
+	LocalVector<SnapshotDataObject *> instances;
 	TreeItem *tree_node = nullptr;
 	HashMap<GameStateSnapshot *, int> recursive_instance_count_cache;
 
@@ -66,6 +66,7 @@ protected:
 
 	Tree *_make_object_list_tree(const String &p_column_name);
 	void _populate_object_list(GameStateSnapshot *p_snapshot, Tree *p_list, const String &p_name_base);
+	void _update_lists();
 
 public:
 	SnapshotClassView();

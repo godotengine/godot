@@ -37,8 +37,6 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 
-HashMap<int, Vector<uint8_t>> SnapshotCollector::pending_snapshots;
-
 void SnapshotCollector::initialize() {
 	pending_snapshots.clear();
 	EngineDebugger::register_message_capture("snapshot", EngineDebugger::Capture(nullptr, SnapshotCollector::parse_message));
@@ -56,36 +54,34 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 	// Gather all ObjectIDs first. The ObjectDB will be locked in debug_objects, so we can't serialize until it exits.
 
 	// In rare cases, the object may be deleted as the snapshot is taken. So, we store the object's class name to give users a clue about what went wrong.
-	List<Pair<ObjectID, String>> debugger_object_ids;
-	ObjectDB::debug_objects([](Object *p_obj, void *p_user_data) {
-		List<Pair<ObjectID, String>> *debugger_object_ids_ptr = (List<Pair<ObjectID, String>> *)p_user_data;
-		debugger_object_ids_ptr->push_back(Pair<ObjectID, String>(p_obj->get_instance_id(), p_obj->get_class_name()));
-	},
+	LocalVector<Pair<ObjectID, StringName>> debugger_object_ids;
+	debugger_object_ids.reserve(ObjectDB::get_object_count());
+
+	ObjectDB::debug_objects(
+			[](Object *p_obj, void *p_user_data) {
+				LocalVector<Pair<ObjectID, StringName>> *debugger_object_ids_ptr = (LocalVector<Pair<ObjectID, StringName>> *)p_user_data;
+				debugger_object_ids_ptr->push_back(Pair<ObjectID, StringName>(p_obj->get_instance_id(), p_obj->get_class_name()));
+			},
 			(void *)&debugger_object_ids);
 
 	// Get SnapshotDataTransportObject from ObjectID list now that DB is unlocked.
-	List<SnapshotDataTransportObject> debugger_objects;
-	for (Pair<ObjectID, String> ids : debugger_object_ids) {
+	LocalVector<SnapshotDataTransportObject> debugger_objects;
+	debugger_objects.reserve(debugger_object_ids.size());
+	for (Pair<ObjectID, StringName> ids : debugger_object_ids) {
 		ObjectID oid = ids.first;
 		Object *obj = ObjectDB::get_instance(oid);
-
-		if (obj == nullptr) {
-			print_error("An object was deleted while the ObjectDB was being snapshotted. \
-				The debugger is automatically paused when snapshots are taken, so this should not happen. \
-				The missing object's ID was " +
-					String::num_uint64(oid) + ". \
-				 It's class was " +
-					ids.second + ". Consider reporting this.");
+		if (unlikely(obj == nullptr)) {
+			print_verbose(vformat("Object of class '%s' with ID %ud was found to be deleted after ObjectDB was snapshotted.", ids.second, (uint64_t)oid));
 			continue;
 		}
 
-		if (obj->get_class_name() == SNAME("EditorInterface")) {
-			// The EditorInterface + EditorNode is _kind of_ constructored in a debug game, but many properties rae null
+		if (ids.second == SNAME("EditorInterface")) {
+			// The EditorInterface + EditorNode is _kind of_ constructed in a debug game, but many properties are null
 			// We can prevent it from being constructed, but that would break other projects so better to just skip it.
 			continue;
 		}
 
-		// This is the same way objects in the remote scene tree are seialized,
+		// This is the same way objects in the remote scene tree are serialized,
 		// but here we add a few extra properties via the extra_debug_data dictionary.
 		SnapshotDataTransportObject debug_data(obj);
 
@@ -115,7 +111,6 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 	}
 
 	// Add a header to the snapshot with general data about the state of the game, not tied to any particular object.
-	p_snapshot_context["mem_available"] = Memory::get_mem_available();
 	p_snapshot_context["mem_usage"] = Memory::get_mem_usage();
 	p_snapshot_context["mem_max_usage"] = Memory::get_mem_max_usage();
 	p_snapshot_context["timestamp"] = Time::get_singleton()->get_unix_time_from_system();
@@ -132,11 +127,11 @@ void SnapshotCollector::snapshot_objects(Array *p_arr, Dictionary &p_snapshot_co
 Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
 	r_captured = true;
 	if (p_msg == "request_prepare_snapshot") {
-		int request_id = (int)p_args.get(0);
+		int request_id = p_args[0];
 		Dictionary snapshot_context;
-		snapshot_context["editor_version"] = (String)p_args.get(1);
+		snapshot_context["editor_version"] = (String)p_args[1];
 		Array objects;
-		SnapshotCollector::snapshot_objects(&objects, snapshot_context);
+		snapshot_objects(&objects, snapshot_context);
 		// Debugger networking has a limit on both how many objects can be queued to send and how
 		// many bytes can be queued to send. Serializing to a string means we never hit the object
 		// limit, and only have to deal with the byte limit.
@@ -150,19 +145,15 @@ Error SnapshotCollector::parse_message(void *p_user, const String &p_msg, const 
 		pending_snapshots[request_id] = objs_buffer_compressed;
 
 		// Tell the editor how long the snapshot is.
-		Array resp;
-		resp.push_back(request_id);
-		resp.push_back(pending_snapshots[request_id].size());
+		Array resp = { request_id, pending_snapshots[request_id].size() };
 		EngineDebugger::get_singleton()->send_message("snapshot:snapshot_prepared", resp);
 
 	} else if (p_msg == "request_snapshot_chunk") {
-		int request_id = (int)p_args.get(0);
-		int begin = (int)p_args.get(1);
-		int end = (int)p_args.get(2);
+		int request_id = p_args[0];
+		int begin = p_args[1];
+		int end = p_args[2];
 
-		Array resp;
-		resp.push_back(request_id);
-		resp.push_back(pending_snapshots[request_id].slice(begin, end));
+		Array resp = { request_id, pending_snapshots[request_id].slice(begin, end) };
 		EngineDebugger::get_singleton()->send_message("snapshot:snapshot_chunk", resp);
 
 		// If we sent the last part of the string, delete it locally.

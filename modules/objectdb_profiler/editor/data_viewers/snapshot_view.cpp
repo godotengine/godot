@@ -50,8 +50,8 @@ bool SnapshotView::is_showing_snapshot(GameStateSnapshot *p_data, GameStateSnaps
 	return p_data == snapshot_data && p_diff_data == diff_data;
 }
 
-List<TreeItem *> SnapshotView::_get_children_recursive(Tree *p_tree) {
-	List<TreeItem *> found_items;
+Vector<TreeItem *> SnapshotView::_get_children_recursive(Tree *p_tree) {
+	Vector<TreeItem *> found_items;
 	List<TreeItem *> items_to_check;
 	if (p_tree && p_tree->get_root()) {
 		items_to_check.push_back(p_tree->get_root());
