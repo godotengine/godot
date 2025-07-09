@@ -167,7 +167,7 @@ void light_compute(hvec3 N, hvec3 L, hvec3 V, half A, hvec3 light_color, bool is
 		half cLdotH5 = SchlickFresnel(cLdotH);
 
 		half Dr = D_GGX(ccNdotH, half(mix(half(0.001), half(0.1), clearcoat_roughness)), vertex_normal, H);
-		half Gr = half(0.25) / (cLdotH * cLdotH);
+		half Gr = half(0.25) / (cLdotH * cLdotH + half(1e-4));
 		half Fr = mix(half(0.04), half(1.0), cLdotH5);
 		half clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
 
