@@ -5,6 +5,8 @@ pluginManagement {
     plugins {
         id 'com.android.application' version versions.androidGradlePlugin
         id 'org.jetbrains.kotlin.android' version versions.kotlinVersion
+
+        // Not sure how to implement it, but perhaps an extension of the plugins here.
     }
     repositories {
         google()
