@@ -644,4 +644,55 @@ TEST_CASE("[Array] Test rfind_custom") {
 	CHECK_EQ(index, 4);
 }
 
+TEST_CASE("[Array] swap()") {
+	Array a1 = { 0, 1, 2, 3 };
+
+	Array a2 = a1.duplicate();
+	a2.swap(1, 2);
+	CHECK_EQ(a2[1], Variant(2));
+	CHECK_EQ(a2[2], Variant(1));
+
+	a2 = a1.duplicate();
+	a2.swap(0, -2);
+	CHECK_EQ(a2[0], Variant(2));
+	CHECK_EQ(a2[2], Variant(0));
+
+	a2 = a1.duplicate();
+	a2.swap(-1, 1);
+	CHECK_EQ(a2[3], Variant(1));
+	CHECK_EQ(a2[1], Variant(3));
+
+	a2 = a1.duplicate();
+	a2.swap(-3, -1);
+	CHECK_EQ(a2[1], Variant(3));
+	CHECK_EQ(a2[3], Variant(1));
+
+	a2 = a1.duplicate();
+	a2.swap(2, 2);
+	CHECK_EQ(a1, a2);
+
+	a2 = a1.duplicate();
+	// Out-of-bound index should fail.
+	ERR_PRINT_OFF;
+	a2.swap(1, 9);
+	CHECK_EQ(a1, a2);
+	ERR_PRINT_ON;
+
+	Array a3 = { 0 };
+	Array a4 = a3.duplicate();
+	// Array with less than 2 elements cannot swap.
+	ERR_PRINT_OFF;
+	a4.swap(0, 0);
+	CHECK_EQ(a3, a4);
+	ERR_PRINT_ON;
+
+	a3.clear();
+	a4.clear();
+	// Array with less than 2 elements cannot swap.
+	ERR_PRINT_OFF;
+	a4.swap(0, 0);
+	CHECK_EQ(a3, a4);
+	ERR_PRINT_ON;
+}
+
 } // namespace TestArray
