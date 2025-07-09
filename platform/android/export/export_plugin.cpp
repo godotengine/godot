@@ -1078,6 +1078,10 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	splash_theme_attributes["postSplashScreenTheme"] = "@style/GodotAppMainTheme";
 	splash_theme_attributes["android:windowIsTranslucent"] = bool_to_string(should_be_transparent);
 
+	PackedStringArray reserved_splash_keys;
+	reserved_splash_keys.append("postSplashScreenTheme");
+	reserved_splash_keys.append("android:windowIsTranslucent");
+
 	Dictionary custom_theme_attributes = p_preset->get("gradle_build/custom_theme_attributes");
 
 	// Does not override default/reserved theme attributes; skips any duplicates from custom_theme_attributes.
@@ -1086,7 +1090,7 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 		String value = custom_theme_attributes[k];
 		if (key.begins_with("[splash]")) {
 			String splash_key = key.trim_prefix("[splash]");
-			if (splash_theme_attributes.has(splash_key)) {
+			if (reserved_splash_keys.has(splash_key)) {
 				WARN_PRINT(vformat("Skipped custom_theme_attribute '%s'; this is a reserved attribute configured via other export options or project settings.", splash_key));
 			} else {
 				splash_theme_attributes[splash_key] = value;
