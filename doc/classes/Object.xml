@@ -703,7 +703,7 @@
 			<return type="Dictionary[]" />
 			<description>
 				Returns the list of existing signals as an [Array] of dictionaries.
-				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
+				[b]Note:[/b] Due to the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>
 		<method name="get_translation_domain" qualifiers="const">
