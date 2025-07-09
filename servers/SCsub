@@ -35,7 +35,3 @@ if not env["disable_physics_3d"]:
 if not env["disable_xr"]:
     env.add_source_files(env.servers_sources, "xr_server.cpp")
     SConscript("xr/SCsub")
-
-lib = env.add_library("servers", env.servers_sources)
-
-env.Prepend(LIBS=[lib])
