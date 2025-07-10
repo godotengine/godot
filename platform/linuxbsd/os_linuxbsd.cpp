@@ -36,6 +36,7 @@
 #include "drivers/sdl/joypad_sdl.h"
 #endif
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 #include "servers/display_server.h"
 #include "servers/rendering_server.h"
 
@@ -968,6 +969,8 @@ String OS_LinuxBSD::get_system_dir(SystemDir p_dir, bool p_shared_storage) const
 }
 
 void OS_LinuxBSD::run() {
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_LinuxBSD::run");
 	if (!main_loop) {
 		return;
 	}
