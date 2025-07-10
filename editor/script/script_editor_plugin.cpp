@@ -4090,13 +4090,8 @@ void ScriptEditor::_start_find_in_files(bool with_replace) {
 	find_in_files->set_replace_text(find_in_files_dialog->get_replace_text());
 	find_in_files->start_search();
 
-	if (find_in_files_button->get_index() != find_in_files_button->get_parent()->get_child_count()) {
-		find_in_files_button->get_parent()->move_child(find_in_files_button, -1);
-	}
-	if (!find_in_files_button->is_visible()) {
-		find_in_files_button->show();
-	}
-
+	EditorNode::get_bottom_panel()->move_item_to_end(find_in_files);
+	find_in_files_button->show();
 	EditorNode::get_bottom_panel()->make_item_visible(find_in_files);
 }
 
