@@ -46,10 +46,11 @@ String init(const String &p_test, const String &p_copy_target = String()) {
 	// Setup project settings since it's needed for the import process.
 	String project_folder = TestUtils::get_temp_path(p_test.get_file().get_basename());
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->make_dir_recursive(project_folder.path_join(".godot").path_join("imported"));
 	// Initialize res:// to `project_folder`.
 	TestProjectSettingsInternalsAccessor::resource_path() = project_folder;
-	err = ProjectSettings::get_singleton()->setup(project_folder, String(), true);
+	ProjectSettings *ps = ProjectSettings::get_singleton();
+	err = ps->setup(project_folder, String(), true);
+	da->make_dir_recursive(ps->globalize_path(ps->get_imported_files_path()));
 
 	if (p_copy_target.is_empty()) {
 		return old_resource_path;
