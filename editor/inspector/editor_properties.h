@@ -184,6 +184,8 @@ protected:
 	void _notification(int p_what);
 
 public:
+	LineEdit *get_path_edit() const { return path; }
+
 	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global, bool p_enable_uid);
 	void set_save_mode();
 	virtual void update_property() override;
