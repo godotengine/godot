@@ -298,6 +298,9 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 							DEV_ASSERT(false);
 						}
 					}
+					if (should_duplicate && ClassDB::is_parent_class(sr->get_class_name(), SNAME("Script"))) {
+						should_duplicate = false;
+					}
 				}
 			}
 			if (should_duplicate) {
