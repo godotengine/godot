@@ -869,7 +869,7 @@ int AudioStreamPlaybackInteractive::mix(AudioFrame *p_buffer, float p_rate_scale
 
 	while (todo) {
 		int to_mix = MIN(todo, BUFFER_SIZE);
-		_mix_internal(to_mix);
+		_mix_internal(to_mix, p_rate_scale);
 		for (int i = 0; i < to_mix; i++) {
 			p_buffer[i] = mix_buffer[i];
 		}
@@ -880,7 +880,7 @@ int AudioStreamPlaybackInteractive::mix(AudioFrame *p_buffer, float p_rate_scale
 	return p_frames;
 }
 
-void AudioStreamPlaybackInteractive::_mix_internal(int p_frames) {
+void AudioStreamPlaybackInteractive::_mix_internal(int p_frames, float p_rate_scale) {
 	for (int i = 0; i < p_frames; i++) {
 		mix_buffer[i] = AudioFrame(0, 0);
 	}
@@ -890,11 +890,11 @@ void AudioStreamPlaybackInteractive::_mix_internal(int p_frames) {
 			continue;
 		}
 
-		_mix_internal_state(i, p_frames);
+		_mix_internal_state(i, p_frames, p_rate_scale);
 	}
 }
 
-void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_frames) {
+void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_frames, float p_rate_scale) {
 	State &state = states[p_state_idx];
 	double mix_rate = double(AudioServer::get_singleton()->get_mix_rate());
 	double frame_inc = 1.0 / mix_rate;
@@ -922,7 +922,7 @@ void AudioStreamPlaybackInteractive::_mix_internal_state(int p_state_idx, int p_
 	}
 
 	state.previous_position = state.playback->get_playback_position();
-	state.playback->mix(temp_buffer + from_frame, 1.0, p_frames - from_frame);
+	state.playback->mix(temp_buffer + from_frame, p_rate_scale, p_frames - from_frame);
 
 	double frame_fade_inc = state.fade_speed * frame_inc;
 	for (int i = from_frame; i < p_frames; i++) {
