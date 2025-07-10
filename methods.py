@@ -450,6 +450,48 @@ def no_verbose(env):
     env["GENCOMSTR"] = generated_file_message
 
 
+def _compute_whole_archive_libs(target, source, env, for_signature):
+    whole_archives = env.get("WHOLEARCHIVELIBS", None)
+    if not whole_archives:
+        return []
+    return ["-Wl,--whole-archive"] + whole_archives + ["-Wl,--no-whole-archive"]
+
+
+def _whole_archive_emitter(target, source, env):
+    whole_archives = env.get("WHOLEARCHIVELIBS", ())
+    for tgt in target:
+        for lib in whole_archives:
+            tgt.add_dependency([lib])
+    return (target, source)
+
+
+def add_wholearchive_support(env):
+    """
+    Add support for a WHOLEARCHIVELIBS variable.
+
+    This behaves like LIBS, but entries in the WHOLEARCHIVELIBS variable will be linked
+    with /WHOLEARCHIVE when using MSVC, and --Wl,--whole-archive when using gcc/clang.
+
+    Note: this functionality is a bit limited because it does not allow you to control
+    ordering between libraries in LIBS and WHOLEARCHIVELIBS.  SCons unfortunately does
+    track dependencies between libraries, and relies on users to manually list them in
+    the right order in LIBS.  We currently list everything in WHOLEARCHIVELIBS before
+    LIBS, which only works if nothing in LIBS depends on libraries in WHOLEARCHIVELIBS.
+    """
+    # Add a function to _LIBFLAGS that will expand to the desired command line arguments
+    # Note that the WHOLEARCHIVELIBFLAGS may be overridden in platform/*/detect.py,
+    # specifically for the MSVC and MacOS linkers.
+    env["WHOLEARCHIVELIBFLAGS"] = _compute_whole_archive_libs
+    env["_LIBFLAGS"] = "$WHOLEARCHIVELIBFLAGS " + env["_LIBFLAGS"]
+
+    # With MSVC and Mac, the whole archive libs are added to the command line as strings
+    # rather than directly including the File nodes.  Therefore SCons can't automatically
+    # figure out that the target depends on these files. Add an emitter to explicitly
+    # create dependencies on the items in WHOLEARCHIVELIBS.
+    env.Append(SHLIBEMITTER=[_whole_archive_emitter])
+    env.Append(PROGEMITTER=[_whole_archive_emitter])
+
+
 def detect_visual_c_compiler_version(tools_env):
     # tools_env is the variable scons uses to call tools that execute tasks, SCons's env['ENV'] that executes tasks...
     # (see the SCons documentation for more information on what it does)...

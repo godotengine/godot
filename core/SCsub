@@ -230,11 +230,3 @@ SConscript("templates/SCsub")
 SConscript("string/SCsub")
 SConscript("config/SCsub")
 SConscript("error/SCsub")
-
-
-# Build it all as a library
-lib = env.add_library("core", env.core_sources)
-env.Prepend(LIBS=[lib])
-
-# Needed to force rebuilding the core files when the thirdparty code is updated.
-env.Depends(lib, thirdparty_obj)

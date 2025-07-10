@@ -645,6 +645,10 @@ if env["scu_build"]:
 
     methods.set_scu_folders(scu_builders.generate_scu_files(max_includes_per_scu))
 
+# Add support for WHOLEARCHIVELIBS.
+# Must come before detect.configure(), since some platforms tweak this behavior.
+methods.add_wholearchive_support(env)
+
 # Must happen after the flags' definition, as configure is when most flags
 # are actually handled to change compile options, etc.
 detect.configure(env)
@@ -1172,18 +1176,39 @@ if "cpp_compiler_launcher" in env:
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
+# Build subdirectories.
+# There is currently no dependency hierarchy between the following subdirectories:
+# each one uses files from the other subdirectories.  This means that we have to
+# link them all into one library.
 SConscript("core/SCsub")
 SConscript("servers/SCsub")
 SConscript("scene/SCsub")
 if env.editor_build:
     SConscript("editor/SCsub")
+else:
+    env.editor_sources = []
 SConscript("drivers/SCsub")
-
 SConscript("platform/SCsub")
 SConscript("modules/SCsub")
 if env["tests"]:
     SConscript("tests/SCsub")
+else:
+    env.tests_sources = []
 SConscript("main/SCsub")
+
+godot_sources = (
+    env.core_sources
+    + env.scene_sources
+    + env.drivers_sources
+    + env.servers_sources
+    + env.editor_sources
+    + env.main_sources
+    + env.modules_sources
+    + env.platform_sources
+    + env.tests_sources
+)
+lib = env.add_library("godot_core", godot_sources)
+env.Prepend(LIBS=[lib])
 
 SConscript("platform/" + env["platform"] + "/SCsub")  # Build selected platform.
 
