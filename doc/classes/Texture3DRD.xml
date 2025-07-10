@@ -11,6 +11,7 @@
 	<members>
 		<member name="texture_rd_rid" type="RID" setter="set_texture_rd_rid" getter="get_texture_rd_rid">
 			The RID of the texture object created on the [RenderingDevice].
+			Note: Texture3DRD depends on the texture_rd_rid. If this is already freed before a new texture_rd_rid is assigned, an error will be printed indicating it attempted to free an invalid RID.
 		</member>
 	</members>
 </class>
