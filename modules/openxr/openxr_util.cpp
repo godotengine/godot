@@ -34,13 +34,9 @@
 
 #include <openxr/openxr_reflection.h>
 
-#define XR_ENUM_CASE_STR(name, val) \
-	case name:                      \
-		return #name;
-#define XR_ENUM_SWITCH(enumType, var)                                                                                           \
-	switch (var) {                                                                                                              \
-		XR_LIST_ENUM_##enumType(XR_ENUM_CASE_STR) default : return "Unknown " #enumType ": " + String::num_int64(int64_t(var)); \
-	}
+String OpenXRUtil::get_result_string(XrResult p_result){
+	XR_ENUM_SWITCH(XrResult, p_result)
+}
 
 String OpenXRUtil::get_view_configuration_name(XrViewConfigurationType p_view_configuration){
 	XR_ENUM_SWITCH(XrViewConfigurationType, p_view_configuration)
@@ -76,6 +72,36 @@ String OpenXRUtil::make_xr_version_string(XrVersion p_version) {
 	version += String::num_int64(XR_VERSION_PATCH(p_version));
 
 	return version;
+}
+
+String OpenXRUtil::get_handle_as_hex_string(void *p_handle) {
+	String hex;
+
+	if (p_handle == XR_NULL_HANDLE) {
+		return "null";
+	}
+
+	uint64_t handle = (uint64_t)p_handle;
+
+	while (handle != 0) {
+		uint8_t a = handle & 0x0F;
+		uint8_t b = (handle & 0xF0) >> 4;
+		handle = handle >> 8;
+
+		if (a < 10) {
+			hex = (a + '0') + hex;
+		} else {
+			hex = (a + 'a' - 10) + hex;
+		}
+
+		if (b < 10) {
+			hex = (b + '0') + hex;
+		} else {
+			hex = (b + 'a' - 10) + hex;
+		}
+	}
+
+	return "0x" + hex;
 }
 
 // Copied from OpenXR xr_linear.h private header, so we can still link against

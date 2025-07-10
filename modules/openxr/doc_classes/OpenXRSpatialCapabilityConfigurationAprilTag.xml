@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRSpatialCapabilityConfigurationAprilTag" inherits="OpenXRSpatialCapabilityConfigurationBaseHeader" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Configuration header for April tag markers.
+	</brief_description>
+	<description>
+		Configuration header for April tag markers. Pass this to [method OpenXRSpatialEntityExtension.create_spatial_context] to create a spatial context that can detect april tags.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_enabled_components" qualifiers="const">
+			<return type="PackedInt64Array" />
+			<description>
+				Returns components enabled by this configuration.
+				[b]Note:[/b] Only valid after this configuration was used to create a spatial context.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="april_dict" type="int" setter="set_april_dict" getter="get_april_dict" enum="OpenXRSpatialCapabilityConfigurationAprilTag.XrSpatialMarkerAprilTagDictEXT" default="1">
+			Dictionary to use to decode april tags.
+			[b]Note:[/b] Must be set before using this configuration to create a spatial context.
+		</member>
+	</members>
+	<constants>
+		<constant name="XR_SPATIAL_MARKER_APRIL_TAG_DICT_16H5_EXT" value="1" enum="XrSpatialMarkerAprilTagDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_APRIL_TAG_DICT_25H9_EXT" value="2" enum="XrSpatialMarkerAprilTagDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_APRIL_TAG_DICT_36H10_EXT" value="3" enum="XrSpatialMarkerAprilTagDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_APRIL_TAG_DICT_36H11_EXT" value="4" enum="XrSpatialMarkerAprilTagDictEXT">
+		</constant>
+		<constant name="XR_SPATIAL_MARKER_APRIL_TAG_DICT_MAX_ENUM_EXT" value="2147483647" enum="XrSpatialMarkerAprilTagDictEXT">
+		</constant>
+	</constants>
+</class>
