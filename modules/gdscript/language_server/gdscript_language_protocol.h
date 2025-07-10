@@ -36,6 +36,7 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
+#include "modules/gdscript/language_server/gdscript_extend_parser.h"
 #include "modules/jsonrpc/jsonrpc.h"
 
 #define LSP_MAX_BUFFER_SIZE 4194304
@@ -43,6 +44,7 @@
 
 class GDScriptLanguageProtocol : public JSONRPC {
 	GDCLASS(GDScriptLanguageProtocol, JSONRPC)
+	friend class TestGDScriptLanguageProtocolInitializer;
 
 private:
 	struct LSPeer : RefCounted {
@@ -58,6 +60,24 @@ private:
 
 		Error handle_data();
 		Error send_data();
+
+		/**
+		 * Tracks all files that the client claimed, however for files deemed not relevant
+		 * to the server the `text` might not be persisted.
+		 */
+		HashMap<String, LSP::TextDocumentItem> managed_files;
+		HashMap<String, ExtendGDScriptParser *> parse_results;
+
+		void remove_cached_parser(const String &p_path);
+		ExtendGDScriptParser *parse_script(const String &p_path);
+
+		~LSPeer();
+
+	private:
+		// We can't cache parsers for scripts not managed by the editor since we have
+		// no way to invalidate the cache. We still need to keep track of those parsers
+		// to clean them up properly.
+		HashMap<String, ExtendGDScriptParser *> stale_parsers;
 	};
 
 	enum LSPErrorCode {
@@ -107,5 +127,24 @@ public:
 	bool is_smart_resolve_enabled() const;
 	bool is_goto_native_symbols_enabled() const;
 
+	/**
+	 * Returns the client which is currently being processed.
+	 */
+	Ref<LSPeer> get_client();
+
+	// Text Document Synchronization
+	void lsp_did_open(const Dictionary &p_params);
+	void lsp_did_change(const Dictionary &p_params);
+	void lsp_did_close(const Dictionary &p_params);
+
+	/**
+	 * Returns parse results for the given path, using the cache if available.
+	 * If no such file exists, or the file is not a GDScript file a `nullptr` is returned.
+	 */
+	ExtendGDScriptParser *get_parse_result(const String &p_path);
+
 	GDScriptLanguageProtocol();
+	~GDScriptLanguageProtocol() {
+		clients.clear();
+	}
 };
