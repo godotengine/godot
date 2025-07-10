@@ -1159,6 +1159,8 @@ Vector2 Curve2D::get_closest_point(const Vector2 &p_to_point) const {
 	for (int i = 0; i < pc - 1; i++) {
 		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
 		if (Math::is_zero_approx(interval)) {
+			// In case both points are roughly identical, force interval to 1.0
+			// This prevents a division by zero and wrong results
 			interval = 1.0;
 		}
 
@@ -1205,6 +1207,8 @@ real_t Curve2D::get_closest_offset(const Vector2 &p_to_point) const {
 
 		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
 		if (Math::is_zero_approx(interval)) {
+			// In case both points are roughly identical, force interval to 1.0
+			// This prevents a division by zero and wrong results
 			interval = 1.0;
 		}
 
@@ -2158,6 +2162,8 @@ Vector3 Curve3D::get_closest_point(const Vector3 &p_to_point) const {
 	for (int i = 0; i < pc - 1; i++) {
 		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
 		if (Math::is_zero_approx(interval)) {
+			// In case both points are roughly identical, force interval to 1.0
+			// This prevents a division by zero and wrong results
 			interval = 1.0;
 		}
 
@@ -2201,13 +2207,15 @@ real_t Curve3D::get_closest_offset(const Vector3 &p_to_point) const {
 
 	real_t nearest = 0.0f;
 	real_t nearest_dist = -1.0f;
-	real_t offset;
+	real_t offset = 0.0f;
 
 	for (int i = 0; i < pc - 1; i++) {
 		offset = baked_dist_cache[i];
 
 		real_t interval = baked_dist_cache[i + 1] - baked_dist_cache[i];
 		if (Math::is_zero_approx(interval)) {
+			// In case both points are roughly identical, force interval to 1.0
+			// This prevents a division by zero and wrong results
 			interval = 1.0;
 		}
 
