@@ -224,6 +224,10 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			script_debugger->set_depth(0);
 			script_debugger->set_lines_left(1);
 			break;
+		} else if (line == "o" || line == "out") {
+			script_debugger->set_depth(1);
+			script_debugger->set_lines_left(1);
+			break;
 		} else if (line == "fin" || line == "finish") {
 			String current_function = script_lang->debug_get_stack_level_function(0);
 
