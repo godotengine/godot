@@ -280,16 +280,19 @@ RID GridMap::get_navigation_map() const {
 #endif // NAVIGATION_3D_DISABLED
 
 void GridMap::set_mesh_library(const Ref<MeshLibrary> &p_mesh_library) {
-	if (mesh_library.is_valid()) {
-		mesh_library->disconnect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
-	}
-	mesh_library = p_mesh_library;
-	if (mesh_library.is_valid()) {
-		mesh_library->connect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
-	}
+	if (mesh_library != p_mesh_library) {
+		if (mesh_library.is_valid()) {
+			mesh_library->disconnect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
+		}
 
-	_recreate_octant_data();
-	emit_signal(CoreStringName(changed));
+		mesh_library = p_mesh_library;
+		if (mesh_library.is_valid()) {
+			mesh_library->connect_changed(callable_mp(this, &GridMap::_recreate_octant_data));
+		}
+
+		_recreate_octant_data();
+		emit_signal(CoreStringName(changed));
+	}
 }
 
 Ref<MeshLibrary> GridMap::get_mesh_library() const {
@@ -1130,6 +1133,16 @@ void GridMap::clear() {
 	clear_baked_meshes();
 }
 
+void GridMap::fix_invalid_cells() {
+	ERR_FAIL_COND_MSG(mesh_library.is_null(), "Cannot fix invalid cells if MeshLibrary is not open.");
+
+	for (HashMap<IndexKey, Cell, IndexKey>::Iterator I = cell_map.begin(); I; ++I) {
+		if (!mesh_library.is_valid() || !mesh_library->has_item(I->value.item)) {
+			set_cell_item(I->key, INVALID_CELL_ITEM);
+		}
+	}
+}
+
 #ifndef DISABLE_DEPRECATED
 void GridMap::resource_changed(const Ref<Resource> &p_res) {
 }
@@ -1222,6 +1235,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_center_z"), &GridMap::get_center_z);
 
 	ClassDB::bind_method(D_METHOD("clear"), &GridMap::clear);
+	ClassDB::bind_method(D_METHOD("fix_invalid_cells"), &GridMap::fix_invalid_cells);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells"), &GridMap::get_used_cells);
 	ClassDB::bind_method(D_METHOD("get_used_cells_by_item", "item"), &GridMap::get_used_cells_by_item);
