@@ -33,8 +33,14 @@
 #ifdef IOS_ENABLED
 
 #import "drivers/apple_embedded/os_apple_embedded.h"
+#import "virtual_controller_ios.h"
 
 class OS_IOS : public OS_AppleEmbedded {
+private:
+	IOSVirtualController *virtual_controller = nullptr;
+	virtual void deinitialize_modules() override;
+	virtual void initialize_joypads() override;
+
 public:
 	static OS_IOS *get_singleton();
 
@@ -42,6 +48,10 @@ public:
 	~OS_IOS();
 
 	virtual String get_name() const override;
+	virtual void start() override;
+	virtual VirtualController *get_virtual_controller() const override;
+	virtual void controller_connected() const override;
+	virtual void controller_disconnected() const override;
 };
 
 #endif // IOS_ENABLED
