@@ -144,25 +144,11 @@
 				Returns the length in vertices of the vertex array in the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
-		<method name="surface_get_format" qualifiers="const">
-			<return type="int" enum="Mesh.ArrayFormat" is_bitfield="true" />
-			<param index="0" name="surf_idx" type="int" />
-			<description>
-				Returns the format mask of the requested surface (see [method add_surface_from_arrays]).
-			</description>
-		</method>
 		<method name="surface_get_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Gets the name assigned to this surface.
-			</description>
-		</method>
-		<method name="surface_get_primitive_type" qualifiers="const">
-			<return type="int" enum="Mesh.PrimitiveType" />
-			<param index="0" name="surf_idx" type="int" />
-			<description>
-				Returns the primitive type of the requested surface (see [method add_surface_from_arrays]).
 			</description>
 		</method>
 		<method name="surface_remove">
