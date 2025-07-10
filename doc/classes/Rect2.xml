@@ -4,7 +4,7 @@
 		A 2D axis-aligned bounding box using floating-point coordinates.
 	</brief_description>
 	<description>
-		The [Rect2] built-in [Variant] type represents an axis-aligned rectangle in a 2D space. It is defined by its [member position] and [member size], which are [Vector2]. It is frequently used for fast overlap tests (see [method intersects]). Although [Rect2] itself is axis-aligned, it can be combined with [Transform2D] to represent a rotated or skewed rectangle.
+		The [Rect2] built-in [Variant] type represents an axis-aligned rectangle in a 2D space. It is defined by its [member position] and [member size], which are [Vector2]. It is frequently used for fast overlap tests (see [method intersects]).
 		For integer coordinates, use [Rect2i]. The 3D equivalent to [Rect2] is [AABB].
 		[b]Note:[/b] Negative values for [member size] are not supported. With negative size, most [Rect2] methods do not work correctly. Use [method abs] to get an equivalent [Rect2] with a non-negative size.
 		[b]Note:[/b] In a boolean context, a [Rect2] evaluates to [code]false[/code] if both [member position] and [member size] are zero (equal to [constant Vector2.ZERO]). Otherwise, it always evaluates to [code]true[/code].
