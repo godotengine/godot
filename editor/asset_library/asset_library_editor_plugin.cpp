@@ -34,6 +34,8 @@
 #include "core/io/stream_peer_tls.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"
+#include "editor/asset_library/editor_asset_installer.h"
+#include "editor/asset_library/editor_asset_library_pagination.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -42,8 +44,18 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/grid_container.h"
+#include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/progress_bar.h"
+#include "scene/gui/rich_text_label.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_button.h"
+#include "scene/gui/texture_rect.h"
+#include "scene/main/http_request.h"
 #include "scene/resources/image_texture.h"
 
 static inline void setup_http_request(HTTPRequest *request) {
@@ -1125,91 +1137,6 @@ void EditorAssetLibrary::_request_current_config() {
 	_repository_changed(repository->get_selected());
 }
 
-HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items) {
-	HBoxContainer *hbc = memnew(HBoxContainer);
-
-	if (p_page_count < 2) {
-		return hbc;
-	}
-
-	//do the mario
-	int from = p_page - (5 / EDSCALE);
-	if (from < 0) {
-		from = 0;
-	}
-	int to = from + (10 / EDSCALE);
-	if (to > p_page_count) {
-		to = p_page_count;
-	}
-
-	hbc->add_spacer();
-	hbc->add_theme_constant_override("separation", 5 * EDSCALE);
-
-	Button *first = memnew(Button);
-	first->set_text(TTR("First", "Pagination"));
-	first->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page != 0) {
-		first->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(0));
-	} else {
-		first->set_disabled(true);
-		first->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	}
-	hbc->add_child(first);
-
-	Button *prev = memnew(Button);
-	prev->set_text(TTR("Previous", "Pagination"));
-	prev->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page > 0) {
-		prev->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page - 1));
-	} else {
-		prev->set_disabled(true);
-		prev->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	}
-	hbc->add_child(prev);
-	hbc->add_child(memnew(VSeparator));
-
-	for (int i = from; i < to; i++) {
-		Button *current = memnew(Button);
-		// Add padding to make page number buttons easier to click.
-		current->set_text(vformat(" %d ", i + 1));
-		current->set_theme_type_variation("PanelBackgroundButton");
-		if (i == p_page) {
-			current->set_disabled(true);
-			current->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-		} else {
-			current->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(i));
-		}
-		hbc->add_child(current);
-	}
-
-	Button *next = memnew(Button);
-	next->set_text(TTR("Next", "Pagination"));
-	next->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page < p_page_count - 1) {
-		next->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page + 1));
-	} else {
-		next->set_disabled(true);
-		next->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	}
-	hbc->add_child(memnew(VSeparator));
-	hbc->add_child(next);
-
-	Button *last = memnew(Button);
-	last->set_text(TTR("Last", "Pagination"));
-	last->set_theme_type_variation("PanelBackgroundButton");
-	if (p_page != p_page_count - 1) {
-		last->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibrary::_search).bind(p_page_count - 1));
-	} else {
-		last->set_disabled(true);
-		last->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	}
-	hbc->add_child(last);
-
-	hbc->add_spacer();
-
-	return hbc;
-}
-
 void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_request_type, const String &p_arguments) {
 	if (requesting != REQUESTING_NONE) {
 		request->cancel_request();
@@ -1309,22 +1236,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		case REQUESTING_SEARCH: {
 			initial_loading = false;
 
-			if (asset_items) {
-				memdelete(asset_items);
-			}
-
-			if (asset_top_page) {
-				memdelete(asset_top_page);
-			}
-
-			if (asset_bottom_page) {
-				memdelete(asset_bottom_page);
-			}
-
 			int page = 0;
 			int pages = 1;
-			int page_len = 10;
-			int total_items = 1;
 			Array result;
 
 			if (d.has("page")) {
@@ -1333,28 +1246,20 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			if (d.has("pages")) {
 				pages = d["pages"];
 			}
-			if (d.has("page_length")) {
-				page_len = d["page_length"];
-			}
-			if (d.has("total")) {
-				total_items = d["total"];
-			}
 			if (d.has("result")) {
 				result = d["result"];
 			}
 
-			asset_top_page = _make_pages(page, pages, page_len, total_items, result.size());
-			library_vb->add_child(asset_top_page);
+			asset_top_page->setup(page, pages);
 
-			asset_items = memnew(GridContainer);
+			while (asset_items->get_child_count() > 0) {
+				memdelete(asset_items->get_child(0));
+			}
+			asset_items->show();
+
+			asset_bottom_page->setup(page, pages);
+
 			_update_asset_items_columns();
-			asset_items->add_theme_constant_override("h_separation", 10 * EDSCALE);
-			asset_items->add_theme_constant_override("v_separation", 10 * EDSCALE);
-
-			library_vb->add_child(asset_items);
-
-			asset_bottom_page = _make_pages(page, pages, page_len, total_items, result.size());
-			library_vb->add_child(asset_bottom_page);
 
 			if (result.is_empty()) {
 				String support_list;
@@ -1728,7 +1633,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_message_button->set_theme_type_variation("PanelBackgroundButton");
 	library_message_box->add_child(library_message_button);
 
-	asset_top_page = memnew(HBoxContainer);
+	asset_top_page = memnew(EditorAssetLibraryPagination);
+	asset_top_page->connect("page_pressed", callable_mp(this, &EditorAssetLibrary::_search));
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
@@ -1738,7 +1644,8 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb->add_child(asset_items);
 
-	asset_bottom_page = memnew(HBoxContainer);
+	asset_bottom_page = memnew(EditorAssetLibraryPagination);
+	asset_bottom_page->connect("page_pressed", callable_mp(this, &EditorAssetLibrary::_search));
 	library_vb->add_child(asset_bottom_page);
 
 	request = memnew(HTTPRequest);
