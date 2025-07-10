@@ -688,6 +688,10 @@ Key OS::find_keycode_from_string(const String &p_code) const {
 	return find_keycode(p_code);
 }
 
+Key OS::get_command_keycode() const {
+	return ::OS::get_singleton()->get_command_keycode();
+}
+
 bool OS::request_permission(const String &p_name) {
 	return ::OS::get_singleton()->request_permission(p_name);
 }
@@ -833,6 +837,8 @@ void OS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_logger", "logger"), &OS::add_logger);
 	ClassDB::bind_method(D_METHOD("remove_logger", "logger"), &OS::remove_logger);
+
+	ClassDB::bind_method(D_METHOD("get_command_keycode"), &OS::get_command_keycode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "low_processor_usage_mode_sleep_usec"), "set_low_processor_usage_mode_sleep_usec", "get_low_processor_usage_mode_sleep_usec");

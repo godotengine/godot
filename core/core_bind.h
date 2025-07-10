@@ -261,6 +261,8 @@ public:
 	bool is_keycode_unicode(char32_t p_unicode) const;
 	Key find_keycode_from_string(const String &p_code) const;
 
+	Key get_command_keycode() const;
+
 	void set_use_file_access_save_and_swap(bool p_enable);
 
 	uint64_t get_static_memory_usage() const;

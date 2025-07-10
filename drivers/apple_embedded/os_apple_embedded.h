@@ -34,6 +34,7 @@
 
 #import "apple_embedded.h"
 
+#import "core/os/keyboard.h"
 #import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #include "drivers/unix/os_unix.h"
@@ -125,6 +126,8 @@ public:
 	virtual String get_processor_name() const override;
 
 	virtual void vibrate_handheld(int p_duration_ms = 500, float p_amplitude = -1.0) override;
+
+	virtual Key get_command_keycode() const override { return Key::META; }
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 

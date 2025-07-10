@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/io/logger.h"
 #include "core/io/remote_filesystem_client.h"
+#include "core/os/keyboard.h"
 #include "core/os/time_enums.h"
 #include "core/string/ustring.h"
 #include "core/templates/list.h"
@@ -217,6 +218,8 @@ public:
 	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
 	virtual String get_model_name() const;
+
+	virtual Key get_command_keycode() const { return Key::CTRL; }
 
 	bool is_layered_allowed() const { return _allow_layered; }
 	bool is_hidpi_allowed() const { return _allow_hidpi; }
