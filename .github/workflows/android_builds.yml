@@ -26,14 +26,14 @@ jobs:
               arch=arm64
               production=yes
 
-          - name: Template arm32 (target=template_release, arch=arm32)
+          - name: Template arm32 (target=template_debug, arch=arm32)
             cache-name: android-template-arm32
-            target: template_release
+            target: template_debug
             scons-flags: arch=arm32
 
-          - name: Template arm64 (target=template_release, arch=arm64)
+          - name: Template arm64 (target=template_debug, arch=arm64)
             cache-name: android-template-arm64
-            target: template_release
+            target: template_debug
             scons-flags: arch=arm64
 
     steps:
@@ -82,7 +82,7 @@ jobs:
         continue-on-error: true
 
       - name: Generate Godot templates
-        if: matrix.target == 'template_release'
+        if: matrix.target == 'template_debug'
         run: |
           cd platform/android/java
           ./gradlew generateGodotTemplates
