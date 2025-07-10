@@ -151,6 +151,12 @@ public:
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
 
+	void set_navigation_buttons_switch_tabs(bool p_navigation_buttons_switch_tabs);
+	bool get_navigation_buttons_switch_tabs() const;
+
+	void set_navigation_buttons_always_visible(bool p_navigation_buttons_always_visible);
+	bool get_navigation_buttons_always_visible() const;
+
 	void set_tabs_visible(bool p_visible);
 	bool are_tabs_visible() const;
 

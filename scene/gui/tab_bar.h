@@ -100,6 +100,8 @@ private:
 	int previous = -1;
 	AlignmentMode tab_alignment = ALIGNMENT_LEFT;
 	bool clip_tabs = true;
+	bool navigation_buttons_switch_tabs = false;
+	bool navigation_buttons_always_visible = false;
 	int rb_hover = -1;
 	bool rb_pressing = false;
 	bool tab_style_v_flip = false;
@@ -177,6 +179,9 @@ private:
 	void _accessibility_action_scroll_into_view(const Variant &p_data, int p_index);
 	void _accessibility_action_focus(const Variant &p_data, int p_index);
 
+	void _handle_increment();
+	void _handle_decrement();
+
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
@@ -243,6 +248,12 @@ public:
 
 	void set_clip_tabs(bool p_clip_tabs);
 	bool get_clip_tabs() const;
+
+	void set_navigation_buttons_switch_tabs(bool p_navigation_buttons_switch_tabs);
+	bool get_navigation_buttons_switch_tabs() const;
+
+	void set_navigation_buttons_always_visible(bool p_navigation_buttons_always_visible);
+	bool get_navigation_buttons_always_visible() const;
 
 	void set_tab_style_v_flip(bool p_tab_style_v_flip);
 
