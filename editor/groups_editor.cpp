@@ -325,15 +325,21 @@ void GroupsEditor::set_current(Node *p_node) {
 }
 
 void GroupsEditor::_item_edited() {
+	//Change the presence of one node in one group.
+
+	//Get the editor tree of the groups editor
 	TreeItem *ti = tree->get_edited();
 	if (!ti) {
 		return;
 	}
 
+	//Get the name of the group
 	String name = ti->get_text(0);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (ti->is_checked(0)) {
+
+		//Create a commit an action to add the node to a group, and print a message to the console dock.
 		undo_redo->create_action(TTR("Add to Group"));
 
 		undo_redo->add_do_method(node, "add_to_group", name, true);

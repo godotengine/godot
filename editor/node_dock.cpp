@@ -87,25 +87,8 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::set_node(Node *p_node) {
-	connections->set_node(p_node);
-	groups->set_current(p_node);
-
-	if (p_node) {
-		if (connections_button->is_pressed()) {
-			connections->show();
-		} else {
-			groups->show();
-		}
-
-		mode_hb->show();
-		select_a_node->hide();
-	} else {
-		connections->hide();
-		groups->hide();
-		mode_hb->hide();
-		select_a_node->show();
-	}
+void NodeDock::edit(Object *object) {
+	
 }
 
 NodeDock::NodeDock() {
@@ -154,7 +137,9 @@ NodeDock::NodeDock() {
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	add_child(select_a_node);
+	//this used to be added to the dock, but since I'm giving multiselect to 
+	//	groups, move this panel to the connections panel temporarily.
+	connections->add_child(select_a_node);
 }
 
 NodeDock::~NodeDock() {

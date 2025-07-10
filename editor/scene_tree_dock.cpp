@@ -1339,6 +1339,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
+			//This is where the scene tree updates the NodeDock after making a scene
+			//	local. Note how the element is assumed to be the "front" of the selection.
 			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			List<Node *>::Element *e = selection.front();
 			if (e) {
@@ -1356,7 +1358,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					undo_redo->add_undo_method(node, "set_scene_file_path", node->get_scene_file_path());
 					_node_replace_owner(node, node, root);
 					_node_strip_signal_inheritance(node);
-					NodeDock::get_singleton()->set_node(node); // Refresh.
+					NodeDock::get_singleton()->edit(node); // Refresh.
 					undo_redo->add_do_method(scene_tree, "update_tree");
 					undo_redo->add_undo_method(scene_tree, "update_tree");
 					undo_redo->commit_action();
@@ -2851,7 +2853,9 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	editor_history->cleanup_history();
 	InspectorDock::get_singleton()->call("_prepare_history");
 	InspectorDock::get_singleton()->update(nullptr);
-	NodeDock::get_singleton()->set_node(nullptr);
+
+	// Empty out the node dock to show the "Please select node" message again
+	NodeDock::get_singleton()->edit(nullptr);
 }
 
 void SceneTreeDock::_update_script_button() {
