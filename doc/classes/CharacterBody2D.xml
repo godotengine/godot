@@ -135,6 +135,18 @@
 				Returns [code]true[/code] if the body collided only with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
 			</description>
 		</method>
+		<method name="is_on_wall_from_left" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body's left side collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
+			</description>
+		</method>
+		<method name="is_on_wall_from_right" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the body's right side collided with a wall on the last call of [method move_and_slide]. Otherwise, returns [code]false[/code]. The [member up_direction] and [member floor_max_angle] are used to determine whether a surface is "wall" or not.
+			</description>
+		</method>
 		<method name="move_and_slide">
 			<return type="bool" />
 			<description>
