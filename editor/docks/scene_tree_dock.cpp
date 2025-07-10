@@ -2898,6 +2898,18 @@ void SceneTreeDock::_update_script_button() {
 	button_create_script->set_visible(can_create_script);
 	button_detach_script->set_visible(can_detach_script);
 	button_extend_script->set_visible(can_extend_script);
+
+	update_script_button_queued = false;
+}
+
+void SceneTreeDock::_queue_update_script_button() {
+	if (update_script_button_queued) {
+		return;
+	}
+
+	update_script_button_queued = true;
+
+	callable_mp(this, &SceneTreeDock::_update_script_button).call_deferred();
 }
 
 void SceneTreeDock::_selection_changed() {
@@ -2911,6 +2923,18 @@ void SceneTreeDock::_selection_changed() {
 		_push_item(nullptr);
 	}
 
+	// Track script changes in selected nodes
+	for (Node *node : node_previous_selection) {
+		node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	}
+
+	node_previous_selection.clear();
+	node_previous_selection.reserve(editor_selection->get_selection().size());
+	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+		Node *node = E.key;
+		node_previous_selection.push_back(node);
+		node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	}
 	_update_script_button();
 }
 
@@ -4653,6 +4677,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	edited_scene = nullptr;
 	editor_data = &p_editor_data;
 	editor_selection = p_editor_selection;
+	update_script_button_queued = false;
 	scene_root = p_scene_root;
 
 	VBoxContainer *vbc = this;
