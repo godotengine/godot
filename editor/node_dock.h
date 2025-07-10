@@ -40,7 +40,9 @@ class NodeDock : public VBoxContainer {
 
 	Button *connections_button = nullptr;
 	Button *groups_button = nullptr;
-	
+
+	VBoxContainer *panel = nullptr;
+
 	ConnectionsDock *connections = nullptr;
 	GroupsEditor *groups = nullptr;
 

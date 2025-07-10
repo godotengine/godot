@@ -114,8 +114,8 @@ void NodeDock::edit(Object *object) {
 		connections->set_node(nullptr);
 	}
 
-	if (!(groups->is_visible() || connections->is_visible())) {
-		show_connections();
+	if (!groups->is_visible() && !connections->is_visible() && object) {
+		show_groups();
 	}
 }
 
@@ -131,7 +131,7 @@ NodeDock::NodeDock() {
 	connections_button->set_theme_type_variation(SceneStringName(FlatButton));
 	connections_button->set_text(TTRC("Signals"));
 	connections_button->set_toggle_mode(true);
-	connections_button->set_pressed(true);
+	connections_button->set_pressed(false);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
@@ -141,19 +141,24 @@ NodeDock::NodeDock() {
 	groups_button->set_theme_type_variation(SceneStringName(FlatButton));
 	groups_button->set_text(TTRC("Groups"));
 	groups_button->set_toggle_mode(true);
-	groups_button->set_pressed(false);
+	groups_button->set_pressed(true);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
 	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
 
+
+	panel = memnew(VBoxContainer);
+	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(panel);
+
 	connections = memnew(ConnectionsDock);
-	add_child(connections);
+	panel->add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
 	connections->hide();
 
 	groups = memnew(GroupsEditor);
-	add_child(groups);
+	panel->add_child(groups);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->hide();
 
@@ -165,7 +170,7 @@ NodeDock::NodeDock() {
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	add_child(select_a_node);
+	panel->add_child(select_a_node);
 }
 
 NodeDock::~NodeDock() {
