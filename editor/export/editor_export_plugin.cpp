@@ -248,9 +248,9 @@ PackedStringArray EditorExportPlugin::get_android_dependencies_maven_repos(const
 	return ret;
 }
 
-PackedStringArray EditorExportPlugin::get_android_plugins(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const {
+PackedStringArray EditorExportPlugin::get_android_gradle_plugins(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const {
 	PackedStringArray ret;
-	GDVIRTUAL_CALL(_get_android_plugins, p_export_platform, p_debug, ret);
+	GDVIRTUAL_CALL(_get_android_gradle_plugins, p_export_platform, p_debug, ret);
 	return ret;
 }
 
@@ -397,7 +397,7 @@ void EditorExportPlugin::_bind_methods() {
 
 	GDVIRTUAL_BIND(_get_android_dependencies, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_dependencies_maven_repos, "platform", "debug");
-	GDVIRTUAL_BIND(_get_android_plugins, "platform", "debug");
+	GDVIRTUAL_BIND(_get_android_gradle_plugins, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_libraries, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_manifest_activity_element_contents, "platform", "debug");
 	GDVIRTUAL_BIND(_get_android_manifest_application_element_contents, "platform", "debug");

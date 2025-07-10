@@ -277,18 +277,40 @@ ext.getGodotPluginsRemoteBinaries = { ->
 }
 
 /**
- * Parse the project properties for the 'plugins_remote_plugins' property and return
- * it for inclusion in the build plugins.
+ * Parse the project properties for the 'plugins_remote_gradle_plugins' property and return
+ * it for inclusion in the build plugins without version.
  */
-ext.getGodotPluginsRemotePlugins = { ->
+ext.getGodotPluginsRemoteGradlePluginsWithoutVersion = { ->
     Set<String> remotePlugs = []
 
     // Retrieve the list of remote plugins.
-    if (project.hasProperty("plugins_remote_plugins")) {
-        String remotePlugsList = project.property("plugins_remote_plugins")
+    if (project.hasProperty("plugins_remote_gradle_plugins")) {
+        String remotePlugsList = project.property("plugins_remote_gradle_plugins")
         if (remotePlugsList != null && !remotePlugsList.trim().isEmpty()) {
-            for (String dep: remotePlugsList.split(VALUE_SEPARATOR_REGEX)) {
-                remotePlugs += dep.trim()
+            for (String plug: remotePlugsList.split(VALUE_SEPARATOR_REGEX)) {
+                String name = plug.trim().split(":")[0]
+                remotePlugs += id name
+            }
+        }
+    }
+    return remotePlugs
+}
+
+/**
+ * Parse the project properties for the 'plugins_remote_gradle_plugins' property and return
+ * it for inclusion in the build plugins.
+ */
+ext.getGodotPluginsRemoteGradlePluginsWithVersion = { ->
+    Set<String> remotePlugs = []
+
+    // Retrieve the list of remote plugins.
+    if (project.hasProperty("plugins_remote_gradle_plugins")) {
+        String remotePlugsList = project.property("plugins_remote_gradle_plugins")
+        if (remotePlugsList != null && !remotePlugsList.trim().isEmpty()) {
+            for (String plug: remotePlugsList.split(VALUE_SEPARATOR_REGEX)) {
+                String name = plug.trim().split(":")[0]
+                String versionString = plug.trim().split(":")[1]
+                remotePlugs += id name version versionString apply + " false"
             }
         }
     }
