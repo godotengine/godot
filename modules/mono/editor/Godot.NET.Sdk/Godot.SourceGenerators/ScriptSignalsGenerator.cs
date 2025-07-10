@@ -102,13 +102,13 @@ namespace Godot.SourceGenerators
 
                     source.Append("partial ");
                     source.Append(containingType.GetDeclarationKeyword());
-                    source.Append(" ");
+                    source.Append(" @");
                     source.Append(containingType.NameWithTypeParameters());
                     source.Append("\n{\n");
                 }
             }
 
-            source.Append("partial class ");
+            source.Append("partial class @");
             source.Append(symbol.NameWithTypeParameters());
             source.Append("\n{\n");
 

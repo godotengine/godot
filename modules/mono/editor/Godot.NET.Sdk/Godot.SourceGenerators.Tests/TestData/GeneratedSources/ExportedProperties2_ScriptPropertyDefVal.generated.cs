@@ -1,4 +1,4 @@
-partial class ExportedProperties2
+partial class @ExportedProperties2
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
 #if TOOLS
