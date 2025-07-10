@@ -1021,6 +1021,16 @@ int AudioStreamPlaybackInteractive::get_current_clip_index() const {
 	return playback_current;
 }
 
+int AudioStreamPlaybackInteractive::switch_to_held() {
+	if (return_memory == -1) {
+		return -1;
+	}
+
+	switch_request = return_memory;
+	return_memory = -1;
+	return switch_request;
+}
+
 int AudioStreamPlaybackInteractive::get_loop_count() const {
 	return 0; // Looping not supported
 }
@@ -1036,5 +1046,6 @@ bool AudioStreamPlaybackInteractive::is_playing() const {
 void AudioStreamPlaybackInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("switch_to_clip_by_name", "clip_name"), &AudioStreamPlaybackInteractive::switch_to_clip_by_name);
 	ClassDB::bind_method(D_METHOD("switch_to_clip", "clip_index"), &AudioStreamPlaybackInteractive::switch_to_clip);
+	ClassDB::bind_method(D_METHOD("switch_to_held"), &AudioStreamPlaybackInteractive::switch_to_held);
 	ClassDB::bind_method(D_METHOD("get_current_clip_index"), &AudioStreamPlaybackInteractive::get_current_clip_index);
 }
