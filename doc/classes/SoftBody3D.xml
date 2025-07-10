@@ -150,6 +150,11 @@
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
 		</member>
+		<member name="pin_mode_process" type="int" setter="set_pin_mode_process" getter="get_pin_mode_process" enum="SoftBody3D.PinModeProcess" default="1">
+			Sets the processing timing for the pinned points.
+			Points attached to a [Skeleton3D] may work better at [code]Idle[/code] if the skeleton is updated at idle.
+			Points attached to geometry moved on the physics tick may produce better results set to [code]Physics[/code].
+		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
 			The pressure coefficient of this soft body. Simulate pressure build-up from inside this body. Higher values increase the strength of this effect.
 		</member>
@@ -174,6 +179,10 @@
 		</constant>
 		<constant name="DISABLE_MODE_KEEP_ACTIVE" value="1" enum="DisableMode">
 			When [member Node.process_mode] is set to [constant Node.PROCESS_MODE_DISABLED], do not affect the physics simulation.
+		</constant>
+		<constant name="PIN_MODE_PROCESS_PHYSICS" value="0" enum="PinModeProcess">
+		</constant>
+		<constant name="PIN_MODE_PROCESS_IDLE" value="1" enum="PinModeProcess">
 		</constant>
 	</constants>
 </class>
