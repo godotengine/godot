@@ -1043,6 +1043,10 @@ int Control::_get_anchors_layout_preset() const {
 	float top = get_anchor(SIDE_TOP);
 	float bottom = get_anchor(SIDE_BOTTOM);
 
+	if (get_offset(SIDE_LEFT) != 0.0 || get_offset(SIDE_RIGHT) != 0.0 || get_offset(SIDE_TOP) != 0.0 || get_offset(SIDE_BOTTOM) != 0.0) {
+		return -1;
+	}
+
 	if (left == (float)ANCHOR_BEGIN && right == (float)ANCHOR_BEGIN && top == (float)ANCHOR_BEGIN && bottom == (float)ANCHOR_BEGIN) {
 		return (int)LayoutPreset::PRESET_TOP_LEFT;
 	}
