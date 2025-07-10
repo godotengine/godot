@@ -73,7 +73,6 @@ protected:
 
 		float rotation_sin;
 		float rotation_cos;
-		float pad[2];
 
 		float eye_center[2];
 		float k1;
@@ -83,6 +82,8 @@ protected:
 		float aspect_ratio;
 		uint32_t layer;
 		uint32_t convert_to_srgb;
+		uint32_t use_debanding;
+		float pad;
 	};
 
 	struct Blit {
