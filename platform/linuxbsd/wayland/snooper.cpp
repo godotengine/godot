@@ -181,18 +181,23 @@ Error WaylandEmbedderProxy::delete_object(uint32_t p_global_id) {
 }
 
 uint32_t WaylandEmbedderProxy::Client::allocate_server_id() {
-	for (uint32_t test_id = 0; test_id < server_id_map.size(); ++test_id) {
-		if (server_id_map[test_id] == false) {
-			server_id_map[test_id] = true;
+	uint32_t new_id = INVALID_ID;
 
-			uint32_t id = test_id | 0xff000000;
-			DEBUG_LOG_WAYLAND_SNOOPER(vformat("allocated server-side id 0x%x", id));
+	if (free_server_ids.size() > 0) {
+		int new_size = free_server_ids.size() - 1;
+		new_id = free_server_ids[new_size] | 0xff000000;
+		free_server_ids.resize_uninitialized(new_size);
+	} else {
+		new_id = allocated_server_ids | 0xff000000;
 
-			return id;
-		}
+		++allocated_server_ids;
+
+		CRASH_COND_MSG(allocated_server_ids > SNOOP_ID_MAX, "Max server ID reached. This might indicate a leak.");
 	}
 
-	CRASH_NOW_MSG("Out of server-side IDs.");
+	DEBUG_LOG_WAYLAND_SNOOPER(vformat("Allocated server-side id 0x%x.", new_id));
+
+	return new_id;
 }
 
 struct WaylandEmbedderProxy::WaylandObject *WaylandEmbedderProxy::Client::get_object(uint32_t p_local_id) {
@@ -271,7 +276,7 @@ Error WaylandEmbedderProxy::Client::delete_object(uint32_t p_local_id) {
 	local_ids.erase(global_id);
 
 	if (p_local_id & 0xff000000) {
-		server_id_map[p_local_id & ~(0xff000000)] = false;
+		free_server_ids.push_back(p_local_id & ~(0xff000000));
 	}
 
 	uint32_t *global_name = snooper->registry_globals_names.getptr(global_id);
@@ -771,7 +776,7 @@ bool WaylandEmbedderProxy::handle_generic_msg(Client *client, const WaylandObjec
 
 					if (client) {
 						new_local_id = client->allocate_server_id();
-						CRASH_COND_MSG(new_local_id == 0, "Out of server-side IDs.");
+						CRASH_COND_MSG(new_local_id == INVALID_ID, "Out of server-side IDs.");
 
 						body[buf_idx] = new_local_id;
 					}
@@ -2419,9 +2424,6 @@ void WaylandEmbedderProxy::handle_fd(int p_fd, int p_revents) {
 
 		client->global_ids[DISPLAY_ID] = DISPLAY_ID;
 		client->local_ids[DISPLAY_ID] = DISPLAY_ID;
-
-		client->server_id_map.resize(SNOOP_ID_MAX);
-		memset(client->server_id_map.ptr(), 0, client->server_id_map.size());
 
 		client->get_object(DISPLAY_ID)->interface = &wl_display_interface;
 

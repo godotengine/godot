@@ -164,7 +164,10 @@ private:
 
 		List<int> fds;
 
-		LocalVector<bool> server_id_map;
+		// Clients obviously expect properly packed server IDs, so we need to allocate
+		// them somehow. This approach mimics the one used in PooledList.
+		uint32_t allocated_server_ids = INVALID_ID;
+		LocalVector<uint32_t> free_server_ids;
 
 		uint32_t get_global_id(uint32_t p_local_id) const { return global_ids.has(p_local_id) ? global_ids[p_local_id] : INVALID_ID; }
 		uint32_t get_local_id(uint32_t p_global_id) const { return local_ids.has(p_global_id) ? local_ids[p_global_id] : INVALID_ID; }
