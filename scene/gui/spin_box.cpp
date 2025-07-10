@@ -144,8 +144,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 	Error err = expr->parse(text);
 
-	use_custom_arrow_step = false;
-
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
@@ -193,14 +191,7 @@ void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
 void SpinBox::_range_click_timeout() {
 	if (!drag.enabled && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 		bool mouse_on_up_button = get_local_mouse_position().y < (get_size().height / 2);
-		// Arrow button is being pressed. Snap the value to next step.
-		double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
-		double new_value = _calc_value(get_value(), temp_step);
-		if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
-			new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
-		}
-		set_value(new_value);
-		use_custom_arrow_step = true;
+		_arrow_clicked(mouse_on_up_button);
 
 		if (range_click_timer->is_one_shot()) {
 			range_click_timer->set_wait_time(0.075);
@@ -219,6 +210,21 @@ void SpinBox::_release_mouse_from_drag_mode() {
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_HIDDEN);
 		warp_mouse(drag.capture_pos);
 		Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+	}
+}
+
+void SpinBox::_arrow_clicked(bool p_increase) {
+	double arrow_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+	if (custom_arrow_round && get_custom_arrow_step() != 0.0) {
+		// Arrow button is being pressed. Snap the value to next step.
+		arrow_step = Math::snapped(arrow_step, get_step());
+		double new_value = _calc_value(get_value(), arrow_step);
+		if ((p_increase && new_value <= get_value() + CMP_EPSILON) || (!p_increase && new_value >= get_value() - CMP_EPSILON)) {
+			new_value = _calc_value(get_value() + (p_increase ? arrow_step : -arrow_step), arrow_step);
+		}
+		set_value(new_value);
+	} else {
+		set_value(get_value() + (p_increase ? arrow_step : -arrow_step));
 	}
 }
 
@@ -262,14 +268,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 				line_edit->grab_focus();
 
 				if (mouse_on_up_button || mouse_on_down_button) {
-					// Arrow button is being pressed. Snap the value to next step.
-					double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
-					double new_value = _calc_value(get_value(), temp_step);
-					if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
-						new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
-					}
-					set_value(new_value);
-					use_custom_arrow_step = true;
+					_arrow_clicked(mouse_on_up_button);
 				}
 				state_cache.up_button_pressed = mouse_on_up_button;
 				state_cache.down_button_pressed = mouse_on_down_button;
@@ -285,20 +284,17 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::RIGHT: {
 				line_edit->grab_focus();
 				if (mouse_on_up_button || mouse_on_down_button) {
-					use_custom_arrow_step = false;
 					set_value(mouse_on_up_button ? get_max() : get_min());
 				}
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (line_edit->is_editing()) {
-					use_custom_arrow_step = false;
 					set_value(get_value() + step * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->is_editing()) {
-					use_custom_arrow_step = false;
 					set_value(get_value() - step * mb->get_factor());
 					accept_event();
 				}
@@ -338,7 +334,6 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
 			double diff_y = -0.01 * Math::pow(Math::abs(drag.diff_y), 1.8) * SIGN(drag.diff_y);
-			use_custom_arrow_step = false;
 			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -600,6 +595,14 @@ double SpinBox::get_custom_arrow_step() const {
 	return custom_arrow_step;
 }
 
+void SpinBox::set_custom_arrow_round(bool p_round) {
+	custom_arrow_round = p_round;
+}
+
+bool SpinBox::is_custom_arrow_rounding() const {
+	return custom_arrow_round;
+}
+
 void SpinBox::_value_changed(double p_value) {
 	_update_buttons_state_for_current_value();
 }
@@ -632,6 +635,8 @@ void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
+	ClassDB::bind_method(D_METHOD("set_custom_arrow_round", "round"), &SpinBox::set_custom_arrow_round);
+	ClassDB::bind_method(D_METHOD("is_custom_arrow_rounding"), &SpinBox::is_custom_arrow_rounding);
 	ClassDB::bind_method(D_METHOD("is_editable"), &SpinBox::is_editable);
 	ClassDB::bind_method(D_METHOD("set_update_on_text_changed", "enabled"), &SpinBox::set_update_on_text_changed);
 	ClassDB::bind_method(D_METHOD("get_update_on_text_changed"), &SpinBox::get_update_on_text_changed);
@@ -646,6 +651,7 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "custom_arrow_round"), "set_custom_arrow_round", "is_custom_arrow_rounding");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_vertical_separation);
