@@ -35,6 +35,7 @@
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
 #include "core/variant/variant_parser.h"
+#include "core/variant/variant_struct.h"
 
 PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
 PagedAllocator<Variant::Pools::BucketMedium, true> Variant::Pools::_bucket_medium;
@@ -117,6 +118,11 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case OBJECT: {
 			return "Object";
 		}
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			return "Struct";
+		}
+#endif
 		case CALLABLE: {
 			return "Callable";
 		}
@@ -167,6 +173,11 @@ String Variant::get_type_name(Variant::Type p_type) {
 		case PACKED_VECTOR4_ARRAY: {
 			return "PackedVector4Array";
 		}
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			return "Struct";
+		}
+#endif
 		default: {
 		}
 	}
@@ -963,6 +974,11 @@ bool Variant::is_zero() const {
 		case OBJECT: {
 			return get_validated_object() == nullptr;
 		}
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			return reinterpret_cast<VariantStruct *>(_data._mem)->is_empty();
+		}
+#endif
 		case CALLABLE: {
 			return reinterpret_cast<const Callable *>(_data._mem)->is_null();
 		}
@@ -1013,6 +1029,12 @@ bool Variant::is_zero() const {
 		case PACKED_VECTOR4_ARRAY: {
 			return PackedArrayRef<Vector4>::get_array(_data.packed_array).is_empty();
 		}
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			return reinterpret_cast<const VariantStruct *>(_data._mem)->is_empty();
+		}
+#endif
 		default: {
 		}
 	}
@@ -1363,6 +1385,10 @@ void Variant::zero() {
 			*reinterpret_cast<Color *>(_data._mem) = Color();
 			break;
 
+		case STRUCT:
+			*reinterpret_cast<VariantStruct *>(_data._mem) = VariantStruct();
+			break;
+
 		default:
 			Type prev_type = type;
 			clear();
@@ -1428,6 +1454,11 @@ void Variant::_clear_internal() {
 		case OBJECT: {
 			_get_obj().unref();
 		} break;
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			reinterpret_cast<VariantStruct *>(_data._mem)->~VariantStruct();
+		} break;
+#endif
 		case RID: {
 			// Not much need probably.
 			// HACK: Can't seem to use destructor + scoping operator, so hack.
@@ -1478,6 +1509,12 @@ void Variant::_clear_internal() {
 		case PACKED_VECTOR4_ARRAY: {
 			PackedArrayRefBase::destroy(_data.packed_array);
 		} break;
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			reinterpret_cast<VariantStruct *>(_data._mem)->~VariantStruct();
+		} break;
+#endif
 		default: {
 			// Not needed, there is no point. The following do not allocate memory:
 			// VECTOR2, VECTOR3, VECTOR4, RECT2, PLANE, QUATERNION, COLOR.
@@ -1734,6 +1771,9 @@ String Variant::stringify(int recursion_count) const {
 		case RID: {
 			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
 			return "RID(" + itos(s.get_id()) + ")";
+		}
+		case STRUCT: {
+			// TODO
 		}
 		default: {
 			return "<" + get_type_name(type) + ">";
@@ -2029,6 +2069,14 @@ Variant::operator Object *() const {
 		return _get_obj().obj;
 	} else {
 		return nullptr;
+	}
+}
+
+Variant::operator VariantStruct() const {
+	if (type == STRUCT) {
+		return *reinterpret_cast<const VariantStruct *>(_data._mem);
+	} else {
+		return VariantStruct();
 	}
 }
 
@@ -2643,6 +2691,17 @@ Variant::Variant(const Vector<StringName> &p_array) {
 	*this = v;
 }
 
+Variant::Variant(const VariantStruct &p_struct) :
+		type(STRUCT) {
+	memnew_placement(_data._mem, VariantStruct(p_struct));
+	static_assert(sizeof(VariantStruct) <= sizeof(_data._mem));
+}
+Variant::Variant(VariantStruct &&p_struct) :
+		type(STRUCT) {
+	memnew_placement(_data._mem, VariantStruct(p_struct));
+	static_assert(sizeof(VariantStruct) <= sizeof(_data._mem));
+}
+
 void Variant::operator=(const Variant &p_variant) {
 	if (unlikely(this == &p_variant)) {
 		return;
@@ -2730,6 +2789,11 @@ void Variant::operator=(const Variant &p_variant) {
 		case OBJECT: {
 			_get_obj().ref(p_variant._get_obj());
 		} break;
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			*reinterpret_cast<VariantStruct *>(_data._mem) = *reinterpret_cast<const VariantStruct *>(p_variant._data._mem);
+		} break;
+#endif
 		case CALLABLE: {
 			*reinterpret_cast<Callable *>(_data._mem) = *reinterpret_cast<const Callable *>(p_variant._data._mem);
 		} break;
@@ -2781,6 +2845,11 @@ void Variant::operator=(const Variant &p_variant) {
 		case PACKED_VECTOR4_ARRAY: {
 			_data.packed_array = PackedArrayRef<Vector4>::reference_from(_data.packed_array, p_variant._data.packed_array);
 		} break;
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			*reinterpret_cast<VariantStruct *>(_data._mem) = *reinterpret_cast<const VariantStruct *>(p_variant._data._mem);
+		} break;
+#endif
 		default: {
 		}
 	}
@@ -2800,6 +2869,7 @@ uint32_t Variant::hash() const {
 }
 
 uint32_t Variant::recursive_hash(int recursion_count) const {
+	// TODO
 	switch (type) {
 		case NIL: {
 			return 0;
@@ -3432,6 +3502,7 @@ bool Variant::is_type_shared(Variant::Type p_type) {
 		case OBJECT:
 		case ARRAY:
 		case DICTIONARY:
+		case STRUCT:
 			return true;
 		default: {
 		}

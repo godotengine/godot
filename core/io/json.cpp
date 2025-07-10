@@ -822,6 +822,8 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 			return ret;
 		} break;
 
+		// TODO: STRUCTS
+
 		case Variant::DICTIONARY: {
 			const Dictionary dict = p_variant;
 

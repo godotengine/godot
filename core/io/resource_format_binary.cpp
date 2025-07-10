@@ -1885,6 +1885,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
+
+		// TODO: STRUCTS
+
 		case Variant::CALLABLE: {
 			f->store_32(VARIANT_CALLABLE);
 			WARN_PRINT("Can't save Callables.");
@@ -2092,6 +2095,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			saved_resources.push_back(res);
 
 		} break;
+
+		// TODO: STRUCTS
 
 		case Variant::ARRAY: {
 			Array varray = p_variant;

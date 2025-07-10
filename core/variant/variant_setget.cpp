@@ -32,6 +32,7 @@
 #include "variant_callable.h"
 
 #include "core/io/resource.h"
+#include "core/variant/variant_struct.h"
 
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
@@ -258,6 +259,9 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 	} else if (type == Variant::DICTIONARY) {
 		Dictionary &dict = *VariantGetInternalPtr<Dictionary>::get_ptr(this);
 		r_valid = dict.set(p_member, p_value);
+	} else if (type == Variant::STRUCT) {
+		VariantStruct &stru = *VariantGetInternalPtr<VariantStruct>::get_ptr(this);
+		stru.set(p_member, p_value, r_valid);
 	} else {
 		r_valid = false;
 	}
@@ -292,6 +296,10 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				r_valid = true;
 				return *v;
 			}
+		} break;
+		case Variant::STRUCT: {
+			const VariantStruct &stru = *VariantGetInternalPtr<VariantStruct>::get_ptr(this);
+			stru.get(p_member, r_valid);
 		} break;
 		default: {
 			if (Variant::has_builtin_method(type, p_member)) {
@@ -1090,6 +1098,30 @@ struct VariantKeyedSetGetObject {
 	}
 };
 
+struct VariantKeyedSetGetStruct {
+	static void get(const Variant *base, const Variant *key, Variant *value, bool *r_valid) {
+		// TODO
+	}
+
+	static void ptr_get(const void *base, const void *key, void *value) {
+		// TODO
+	}
+	static void set(Variant *base, const Variant *key, const Variant *value, bool *r_valid) {
+		// TODO
+	}
+	static void ptr_set(void *base, const void *key, const void *value) {
+		// TODO
+	}
+	static bool has(const Variant *base, const Variant *key, bool *r_valid) {
+		// TODO
+		return true;
+	}
+	static uint32_t ptr_has(const void *base, const void *key) {
+		// TODO
+		return 0;
+	}
+};
+
 struct VariantKeyedSetterGetterInfo {
 	Variant::ValidatedKeyedSetter validated_setter = nullptr;
 	Variant::ValidatedKeyedGetter validated_getter = nullptr;
@@ -1123,6 +1155,7 @@ static void register_keyed_member(Variant::Type p_type) {
 static void register_keyed_setters_getters() {
 	register_keyed_member<VariantKeyedSetGetDictionary>(Variant::DICTIONARY);
 	register_keyed_member<VariantKeyedSetGetObject>(Variant::OBJECT);
+	register_keyed_member<VariantKeyedSetGetStruct>(Variant::STRUCT);
 }
 bool Variant::is_keyed(Variant::Type p_type) {
 	ERR_FAIL_INDEX_V(p_type, VARIANT_MAX, false);
@@ -1185,7 +1218,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid,
 	if (err_code) {
 		*err_code = VariantSetError::SET_OK;
 	}
-	if (type == DICTIONARY || type == OBJECT) {
+	if (type == DICTIONARY || type == OBJECT || type == STRUCT) {
 		bool valid;
 		set_keyed(p_index, p_value, valid);
 		if (r_valid) {
@@ -1236,7 +1269,7 @@ Variant Variant::get(const Variant &p_index, bool *r_valid, VariantGetError *err
 		*err_code = VariantGetError::GET_OK;
 	}
 	Variant ret;
-	if (type == DICTIONARY || type == OBJECT) {
+	if (type == DICTIONARY || type == OBJECT || type == STRUCT) {
 		bool valid;
 		ret = get_keyed(p_index, valid);
 		if (r_valid) {

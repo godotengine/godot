@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/doc_data.h"
 #include "core/io/resource.h"
 #include "core/object/script_backtrace.h"
@@ -341,6 +343,9 @@ public:
 	enum LookupResultType {
 		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
 		LOOKUP_RESULT_CLASS,
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		LOOKUP_RESULT_CLASS_STRUCT,
+#endif
 		LOOKUP_RESULT_CLASS_CONSTANT,
 		LOOKUP_RESULT_CLASS_PROPERTY,
 		LOOKUP_RESULT_CLASS_METHOD,
@@ -350,6 +355,9 @@ public:
 		LOOKUP_RESULT_CLASS_ANNOTATION,
 		LOOKUP_RESULT_LOCAL_CONSTANT,
 		LOOKUP_RESULT_LOCAL_VARIABLE,
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		LOOKUP_RESULT_CLASS_STRUCT,
+#endif
 		LOOKUP_RESULT_MAX,
 	};
 

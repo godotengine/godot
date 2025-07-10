@@ -475,6 +475,8 @@ void unregister_core_types() {
 	memdelete(_time);
 	ObjectDB::cleanup();
 
+	StructDefinition::unregister_native_types(); // de-allocates the definitions linked to native structs, *and* also clears the static pointers
+	StructDefinition::clean_struct_definitions(); // de-allocates any other definition created & performs additional cleanup
 	Variant::unregister_types();
 
 	unregister_global_constants();

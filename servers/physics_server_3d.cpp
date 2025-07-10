@@ -35,6 +35,8 @@
 #include "core/config/project_settings.h"
 #include "core/variant/typed_array.h"
 
+#include "core/variant/variant_struct_native.h"
+
 void PhysicsServer3DRenderingServerHandler::set_vertex(int p_vertex_id, const Vector3 &p_vertex) {
 	GDVIRTUAL_CALL(_set_vertex, p_vertex_id, p_vertex);
 }
@@ -376,6 +378,19 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 	return d;
 }
 
+VariantStruct PhysicsDirectSpaceState3D::_intersect_ray_st(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
+	ERR_FAIL_COND_V(p_ray_query.is_null(), VariantStruct());
+
+	RayResult result;
+	bool res = intersect_ray(p_ray_query->get_parameters(), result);
+
+	if (!res) {
+		return VariantStruct();
+	}
+
+	return NativeVariantStruct(result);
+}
+
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results) {
 	ERR_FAIL_COND_V(p_point_query.is_null(), TypedArray<Dictionary>());
 
@@ -479,13 +494,26 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
+	REGISTER_INBUILT_STRUCT(PhysicsDirectSpaceState3D,RayResult);
+
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
+	ClassDB::bind_method(D_METHOD("intersect_ray_st", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray_st);
 	ClassDB::bind_method(D_METHOD("intersect_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("cast_motion", "parameters"), &PhysicsDirectSpaceState3D::_cast_motion);
 	ClassDB::bind_method(D_METHOD("collide_shape", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_collide_shape, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
+
+VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D,RayResult,
+	VARIANT_STRUCT_PROPERTY(position),
+	VARIANT_STRUCT_PROPERTY(normal),
+	VARIANT_STRUCT_PROPERTY(rid),
+	VARIANT_STRUCT_PROPERTY(collider_id),
+	VARIANT_STRUCT_PROPERTY(collider),
+	VARIANT_STRUCT_PROPERTY(shape),
+	VARIANT_STRUCT_PROPERTY(face_index),
+);
 
 ///////////////////////////////
 

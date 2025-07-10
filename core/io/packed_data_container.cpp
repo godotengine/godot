@@ -259,6 +259,9 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::OBJECT: {
 			return _pack(Variant(), tmpdata, string_cache);
 		} break;
+
+		// TODO: STRUCTS
+
 		case Variant::DICTIONARY: {
 			Dictionary d = p_data;
 			//size is known, use sort

@@ -30,6 +30,8 @@
 
 #include "variant_utility.h"
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -899,6 +901,9 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 			return p_variant.operator ::RID();
 		case Variant::Type::OBJECT:
 			return p_variant.operator Object *();
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+			return p_variant.operator VariantStruct();
+#endif
 		case Variant::Type::CALLABLE:
 			return p_variant.operator Callable();
 		case Variant::Type::SIGNAL:
@@ -927,6 +932,9 @@ Variant VariantUtilityFunctions::type_convert(const Variant &p_variant, const Va
 			return p_variant.operator PackedColorArray();
 		case Variant::Type::PACKED_VECTOR4_ARRAY:
 			return p_variant.operator PackedVector4Array();
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+			return p_variant.operator VariantStruct();
+#endif
 		case Variant::Type::VARIANT_MAX:
 			ERR_PRINT("Invalid type argument to type_convert(), use the TYPE_* constants. Returning the unconverted Variant.");
 	}
