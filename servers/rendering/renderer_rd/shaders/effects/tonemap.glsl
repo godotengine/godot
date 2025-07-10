@@ -399,6 +399,7 @@ vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
 #define GLOW_MODE_SOFTLIGHT 2
 #define GLOW_MODE_REPLACE 3
 #define GLOW_MODE_MIX 4
+#define GLOW_MODE_PRE_ADDITIVE 5
 
 vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blending mode
 	if (params.glow_mode == GLOW_MODE_ADD) {
@@ -855,12 +856,20 @@ void main() {
 		color.rgb = do_fxaa(color.rgb, exposure, uv_interp);
 	}
 
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode == GLOW_MODE_MIX) {
-		vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
-		if (params.glow_map_strength > 0.001) {
-			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+	if (bool(params.flags & FLAG_USE_GLOW)) {
+		if (params.glow_mode == GLOW_MODE_MIX) {
+			vec3 glow = gather_glow(source_glow, uv_interp) * params.luminance_multiplier;
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			color.rgb = mix(color.rgb, glow, params.glow_intensity);
+		} else if (params.glow_mode == GLOW_MODE_PRE_ADDITIVE) {
+			vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
+			if (params.glow_map_strength > 0.001) {
+				glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
+			}
+			color.rgb += glow;
 		}
-		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 #endif
 
@@ -871,7 +880,7 @@ void main() {
 	}
 #ifndef SUBPASS
 	// Glow
-	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX) {
+	if (bool(params.flags & FLAG_USE_GLOW) && params.glow_mode != GLOW_MODE_MIX && params.glow_mode != GLOW_MODE_PRE_ADDITIVE) {
 		vec3 glow = gather_glow(source_glow, uv_interp) * params.glow_intensity * params.luminance_multiplier;
 		if (params.glow_map_strength > 0.001) {
 			glow = mix(glow, texture(glow_map, uv_interp).rgb * glow, params.glow_map_strength);
