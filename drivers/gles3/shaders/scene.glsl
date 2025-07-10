@@ -1448,7 +1448,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
 		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
-		float Gr = 0.25 / (cLdotH * cLdotH);
+		float Gr = 0.25 / (cLdotH * cLdotH + 1e-4);
 		float Fr = mix(.04, 1.0, cLdotH5);
 		float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
 

@@ -411,76 +411,97 @@ Array ScriptTextEditor::_inline_object_parse(const String &p_text, int p_line) {
 
 	while (i_start != -1) {
 		// Ignore words that just have "Color" in them.
-		if (i_start == 0 || !("_" + p_text.substr(i_start - 1, 1)).is_valid_ascii_identifier()) {
-			int i_par_start = p_text.find_char('(', i_start + 5);
-			if (i_par_start != -1) {
-				int i_par_end = p_text.find_char(')', i_start + 5);
-				if (i_par_end != -1) {
-					Dictionary color_info;
-					color_info["line"] = p_line;
-					color_info["column"] = i_start;
-					color_info["width_ratio"] = 1.0;
-					color_info["color_end"] = i_par_end;
+		if (i_start != 0 && ('_' + p_text.substr(i_start - 1, 1)).is_valid_ascii_identifier()) {
+			i_end_previous = MAX(i_end_previous, i_start);
+			i_start = p_text.find("Color", i_start + 1);
+			continue;
+		}
 
-					String fn_name = p_text.substr(i_start + 5, i_par_start - i_start - 5);
-					String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
-					bool has_added_color = false;
+		const int i_par_start = p_text.find_char('(', i_start + 5);
+		const int i_par_end = p_text.find_char(')', i_start + 5);
+		if (i_par_start == -1 || i_par_end == -1) {
+			i_end_previous = MAX(i_end_previous, i_start);
+			i_start = p_text.find("Color", i_start + 1);
+			continue;
+		}
 
-					if (fn_name.is_empty()) {
-						String stripped = s_params.strip_edges(true, true);
-						// String constructor.
-						if (stripped.length() > 0 && (stripped[0] == '\"')) {
-							String color_string = stripped.substr(1, stripped.length() - 2);
-							color_info["color"] = Color(color_string);
-							color_info["color_mode"] = MODE_STRING;
-							has_added_color = true;
-						}
-						// Hex constructor.
-						else if (stripped.length() == 10 && stripped.substr(0, 2) == "0x") {
-							color_info["color"] = Color(stripped.substr(2, stripped.length() - 2));
-							color_info["color_mode"] = MODE_HEX;
-							has_added_color = true;
-						}
-						// Empty Color() constructor.
-						else if (stripped.is_empty()) {
-							color_info["color"] = Color();
-							color_info["color_mode"] = MODE_RGB;
-							has_added_color = true;
-						}
-					}
-					// Float & int parameters.
-					if (!has_added_color && s_params.size() > 0) {
-						PackedFloat64Array params = s_params.split_floats(",", false);
-						if (params.size() == 3) {
-							params.resize(4);
-							params.set(3, 1.0);
-						}
-						if (params.size() == 4) {
-							has_added_color = true;
-							if (fn_name == ".from_ok_hsl") {
-								color_info["color"] = Color::from_ok_hsl(params[0], params[1], params[2], params[3]);
-								color_info["color_mode"] = MODE_OKHSL;
-							} else if (fn_name == ".from_hsv") {
-								color_info["color"] = Color::from_hsv(params[0], params[1], params[2], params[3]);
-								color_info["color_mode"] = MODE_HSV;
-							} else if (fn_name == ".from_rgba8") {
-								color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
-								color_info["color_mode"] = MODE_RGB8;
-							} else if (fn_name.is_empty()) {
-								color_info["color"] = Color(params[0], params[1], params[2], params[3]);
-								color_info["color_mode"] = MODE_RGB;
-							} else {
-								has_added_color = false;
-							}
-						}
-					}
+		Dictionary color_info;
+		color_info["line"] = p_line;
+		color_info["column"] = i_start;
+		color_info["width_ratio"] = 1.0;
+		color_info["color_end"] = i_par_end;
 
-					if (has_added_color) {
-						result.push_back(color_info);
-						i_end_previous = i_par_end + 1;
+		const String fn_name = p_text.substr(i_start + 5, i_par_start - i_start - 5);
+		const String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
+		bool has_added_color = false;
+
+		if (fn_name.is_empty()) {
+			String stripped = s_params.strip_edges(true, true);
+			if (stripped.length() > 1 && (stripped[0] == '"' || stripped[0] == '\'')) {
+				// String constructor.
+				const char32_t string_delimiter = stripped[0];
+				if (stripped[stripped.length() - 1] == string_delimiter) {
+					const String color_string = stripped.substr(1, stripped.length() - 2);
+					if (!color_string.contains_char(string_delimiter)) {
+						color_info["color"] = Color::from_string(color_string, Color());
+						color_info["color_mode"] = MODE_STRING;
+						has_added_color = true;
 					}
 				}
+			} else if (stripped.length() == 10 && stripped.begins_with("0x")) {
+				// Hex constructor.
+				const String color_string = stripped.substr(2);
+				if (color_string.is_valid_hex_number(false)) {
+					color_info["color"] = Color::from_string(color_string, Color());
+					color_info["color_mode"] = MODE_HEX;
+					has_added_color = true;
+				}
+			} else if (stripped.is_empty()) {
+				// Empty Color() constructor.
+				color_info["color"] = Color();
+				color_info["color_mode"] = MODE_RGB;
+				has_added_color = true;
 			}
+		}
+		// Float & int parameters.
+		if (!has_added_color && s_params.size() > 0) {
+			const PackedStringArray s_params_split = s_params.split(",", false, 4);
+			PackedFloat64Array params;
+			bool valid_floats = true;
+			for (const String &s_param : s_params_split) {
+				// Only allow float literals, expressions won't be evaluated and could get replaced.
+				if (!s_param.strip_edges().is_valid_float()) {
+					valid_floats = false;
+					break;
+				}
+				params.push_back(s_param.to_float());
+			}
+			if (valid_floats && params.size() == 3) {
+				params.push_back(1.0);
+			}
+			if (valid_floats && params.size() == 4) {
+				has_added_color = true;
+				if (fn_name == ".from_ok_hsl") {
+					color_info["color"] = Color::from_ok_hsl(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_OKHSL;
+				} else if (fn_name == ".from_hsv") {
+					color_info["color"] = Color::from_hsv(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_HSV;
+				} else if (fn_name == ".from_rgba8") {
+					color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
+					color_info["color_mode"] = MODE_RGB8;
+				} else if (fn_name.is_empty()) {
+					color_info["color"] = Color(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_RGB;
+				} else {
+					has_added_color = false;
+				}
+			}
+		}
+
+		if (has_added_color) {
+			result.push_back(color_info);
+			i_end_previous = i_par_end + 1;
 		}
 		i_end_previous = MAX(i_end_previous, i_start);
 		i_start = p_text.find("Color", i_start + 1);

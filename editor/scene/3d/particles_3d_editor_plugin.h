@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  soft_body_3d_gizmo_plugin.h                                           */
+/*  particles_3d_editor_plugin.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,23 +30,63 @@
 
 #pragma once
 
-#include "editor/scene/3d/node_3d_editor_gizmos.h"
+#include "editor/scene/particles_editor_plugin.h"
 
-class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class Particles3DEditorPlugin : public ParticlesEditorPlugin {
+	GDCLASS(Particles3DEditorPlugin, ParticlesEditorPlugin);
+
+	enum {
+		MENU_OPTION_GENERATE_AABB = 300,
+		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE,
+	};
+
+	ConfirmationDialog *generate_aabb = nullptr;
+	SpinBox *generate_seconds = nullptr;
+
+	SceneTreeDialog *emission_tree_dialog = nullptr;
+	ConfirmationDialog *emission_dialog = nullptr;
+	SpinBox *emission_amount = nullptr;
+	OptionButton *emission_fill = nullptr;
+
+	void _generate_aabb();
+	void _node_selected(const NodePath &p_path);
+
+protected:
+	Vector<Face3> geometry;
+
+	virtual void _menu_callback(int p_idx) override;
+	virtual void _add_menu_options(PopupMenu *p_menu) override;
+
+	bool _generate(Vector<Vector3> &r_points, Vector<Vector3> &r_normals);
+	virtual bool _can_generate_points() const = 0;
+	virtual void _generate_emission_points() = 0;
 
 public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	bool is_selectable_when_hidden() const override;
-	bool can_commit_handle_on_click() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
+	Particles3DEditorPlugin();
+};
 
-	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
-	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+class GPUParticles3DEditorPlugin : public Particles3DEditorPlugin {
+	GDCLASS(GPUParticles3DEditorPlugin, Particles3DEditorPlugin);
 
-	SoftBody3DGizmoPlugin();
+protected:
+	Node *_convert_particles() override;
+
+	bool _can_generate_points() const override;
+	void _generate_emission_points() override;
+
+public:
+	GPUParticles3DEditorPlugin();
+};
+
+class CPUParticles3DEditorPlugin : public Particles3DEditorPlugin {
+	GDCLASS(CPUParticles3DEditorPlugin, Particles3DEditorPlugin);
+
+protected:
+	Node *_convert_particles() override;
+
+	bool _can_generate_points() const override { return true; }
+	void _generate_emission_points() override;
+
+public:
+	CPUParticles3DEditorPlugin();
 };

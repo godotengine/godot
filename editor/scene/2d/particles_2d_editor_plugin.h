@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  soft_body_3d_gizmo_plugin.h                                           */
+/*  particles_2d_editor_plugin.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,23 +30,80 @@
 
 #pragma once
 
-#include "editor/scene/3d/node_3d_editor_gizmos.h"
+#include "editor/scene/particles_editor_plugin.h"
 
-class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
+class EditorFileDialog;
+
+class Particles2DEditorPlugin : public ParticlesEditorPlugin {
+	GDCLASS(Particles2DEditorPlugin, ParticlesEditorPlugin);
+
+protected:
+	enum {
+		MENU_LOAD_EMISSION_MASK = 100,
+	};
+
+	List<Node *> selected_particles;
+
+	enum EmissionMode {
+		EMISSION_MODE_SOLID,
+		EMISSION_MODE_BORDER,
+		EMISSION_MODE_BORDER_DIRECTED
+	};
+
+	EditorFileDialog *file = nullptr;
+	ConfirmationDialog *emission_mask = nullptr;
+	OptionButton *emission_mask_mode = nullptr;
+	CheckBox *emission_mask_centered = nullptr;
+	CheckBox *emission_colors = nullptr;
+	String source_emission_file;
+
+	virtual void _menu_callback(int p_idx) override;
+	virtual void _add_menu_options(PopupMenu *p_menu) override;
+
+	void _file_selected(const String &p_file);
+	void _get_base_emission_mask(PackedVector2Array &r_valid_positions, PackedVector2Array &r_valid_normals, PackedByteArray &r_valid_colors, Vector2i &r_image_size);
+	virtual void _generate_emission_mask() = 0;
+	void _notification(int p_what);
+	void _set_show_gizmos(Node *p_node, bool p_show);
+	void _selection_changed();
+	void _node_removed(Node *p_node);
 
 public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	bool is_selectable_when_hidden() const override;
-	bool can_commit_handle_on_click() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
+	Particles2DEditorPlugin();
+};
 
-	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
-	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
+class GPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
+	GDCLASS(GPUParticles2DEditorPlugin, Particles2DEditorPlugin);
 
-	SoftBody3DGizmoPlugin();
+	enum {
+		MENU_GENERATE_VISIBILITY_RECT = 200,
+	};
+
+	ConfirmationDialog *generate_visibility_rect = nullptr;
+	SpinBox *generate_seconds = nullptr;
+
+	void _generate_visibility_rect();
+
+protected:
+	void _menu_callback(int p_idx) override;
+	void _add_menu_options(PopupMenu *p_menu) override;
+
+	Node *_convert_particles() override;
+
+	void _generate_emission_mask() override;
+
+public:
+	GPUParticles2DEditorPlugin();
+};
+
+class CPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
+	GDCLASS(CPUParticles2DEditorPlugin, Particles2DEditorPlugin);
+
+protected:
+	Node *_convert_particles() override;
+
+	void _generate_emission_mask() override;
+
+public:
+	CPUParticles2DEditorPlugin();
 };
