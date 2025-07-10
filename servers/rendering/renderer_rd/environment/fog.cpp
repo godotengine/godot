@@ -186,7 +186,7 @@ void Fog::fog_instance_free(RID p_rid) {
 ////////////////////////////////////////////////////////////////////////////////
 // Volumetric Fog Shader
 
-void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_layers, bool p_is_using_radiance_cubemap_array) {
+void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_layers, bool p_is_using_radiance_octmap_array) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 	{
@@ -272,8 +272,8 @@ ALBEDO = vec3(1.0);
 	{
 		String defines = "\n#define MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS " + itos(p_max_directional_lights) + "\n";
 		defines += "\n#define MAX_SKY_LOD " + itos(p_roughness_layers - 1) + ".0\n";
-		if (p_is_using_radiance_cubemap_array) {
-			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+		if (p_is_using_radiance_octmap_array) {
+			defines += "\n#define USE_RADIANCE_OCTMAP_ARRAY \n";
 		}
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n");
@@ -932,7 +932,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			RD::Uniform u;
 			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 			u.binding = 19;
-			RID radiance_texture = texture_storage->texture_rd_get_default(p_settings.is_using_radiance_cubemap_array ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+			RID radiance_texture = texture_storage->texture_rd_get_default(p_settings.is_using_radiance_octmap_array ? RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_BLACK : RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 			RID sky_texture = RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env).is_valid() ? p_settings.sky->sky_get_radiance_texture_rd(RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env)) : RID();
 			u.append_id(sky_texture.is_valid() ? sky_texture : radiance_texture);
 			uniforms.push_back(u);
@@ -1072,6 +1072,13 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 
 	params.use_temporal_reprojection = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection(p_settings.env);
 	params.temporal_blend = RendererSceneRenderRD::get_singleton()->environment_get_volumetric_fog_temporal_reprojection_amount(p_settings.env);
+
+	RID sky_rid = RendererSceneRenderRD::get_singleton()->environment_get_sky(p_settings.env);
+	if (sky_rid.is_valid()) {
+		int radiance_size = p_settings.sky->sky_get_radiance_size(sky_rid);
+		params.sky_pixel_size[0] = 1.0f / (float)(radiance_size);
+		params.sky_pixel_size[1] = 1.0f / (float)(radiance_size);
+	}
 
 	{
 		uint32_t cluster_size = p_settings.cluster_builder->get_cluster_size();
