@@ -71,6 +71,9 @@ void RemoteDebuggerPeerTCP::close() {
 	if (thread.is_started()) {
 		thread.wait_to_finish();
 	}
+	if (out_queue.size() > 0) {
+		_write_out();
+	}
 	tcp_client->disconnect_from_host();
 	out_buf.clear();
 	in_buf.clear();
