@@ -217,14 +217,12 @@ bool Dictionary::is_empty() const {
 
 bool Dictionary::has(const Variant &p_key) const {
 	Variant key = p_key;
-	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has'"), false);
 	return _p->variant_map.has(key);
 }
 
 bool Dictionary::has_all(const Array &p_keys) const {
 	for (int i = 0; i < p_keys.size(); i++) {
 		Variant key = p_keys[i];
-		ERR_FAIL_COND_V(!_p->typed_key.validate(key, "use 'has_all'"), false);
 		if (!_p->variant_map.has(key)) {
 			return false;
 		}
