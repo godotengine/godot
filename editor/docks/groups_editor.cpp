@@ -44,6 +44,14 @@
 #include "scene/gui/label.h"
 #include "scene/resources/packed_scene.h"
 
+//TODO: Remove when done debugging.
+#include "editor/editor_log.h"
+
+//checking if an item is editable should depend individual objects in a
+	//	multi-select. If 3 objects are selected, and only one is editable, 
+	//	selecting them all and changing the group should make the item
+	//	not editable. This will reduce confusion versus setting groups on a set
+	//	of objects that misses a few due to the individual editing states.
 static bool can_edit(Node *p_node, const String &p_group) {
 	Node *n = p_node;
 	bool can_edit = true;
@@ -102,7 +110,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 		return;
 	}
 
-	if (!node) {
+	if (!current_obj) {
 		return;
 	}
 
@@ -118,7 +126,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 
 void GroupsEditor::_load_scene_groups(Node *p_node) {
 	List<Node::GroupInfo> groups;
-	p_node->get_groups(&groups);
+	_get_groups(current_obj, &groups);
 
 	for (const GroupInfo &gi : groups) {
 		if (!gi.persistent) {
@@ -139,6 +147,14 @@ void GroupsEditor::_load_scene_groups(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_load_scene_groups(p_node->get_child(i));
+	}
+}
+
+// Get the current groups occupied by a selection.
+void GroupsEditor::_get_groups(Object *p_object, List<Node::GroupInfo> *p_groups) {
+	if (Object::cast_to<Node>(p_object)) {
+		Node* p_node = Object::cast_to<Node>(p_object);
+		p_node->get_groups(p_groups);
 	}
 }
 
@@ -177,7 +193,7 @@ void GroupsEditor::_update_tree() {
 		return;
 	}
 
-	if (!node) {
+	if (!current_obj) {
 		return;
 	}
 
@@ -190,7 +206,8 @@ void GroupsEditor::_update_tree() {
 	tree->clear();
 
 	List<Node::GroupInfo> groups;
-	node->get_groups(&groups);
+	
+	_get_groups(current_obj, &groups);
 	groups.sort_custom<_GroupInfoComparator>();
 
 	List<StringName> current_groups;
@@ -219,7 +236,7 @@ void GroupsEditor::_update_tree() {
 
 		TreeItem *item = tree->create_item(local_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0, can_edit(node, E));
+		item->set_editable(0, can_edit(current_obj, E));
 		item->set_checked(0, current_groups.find(E) != nullptr);
 		item->set_text(0, E);
 		item->set_meta("__local", true);
@@ -250,7 +267,7 @@ void GroupsEditor::_update_tree() {
 
 		TreeItem *item = tree->create_item(global_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0, can_edit(node, E));
+		item->set_editable(0, can_edit(current_obj, E));
 		item->set_checked(0, current_groups.find(E) != nullptr);
 		item->set_text(0, E);
 		item->set_meta("__local", false);
@@ -305,23 +322,31 @@ void GroupsEditor::_cache_scene_groups(const ObjectID &p_id) {
 	}
 }
 
-void GroupsEditor::set_current(Node *p_node) {
-	if (node == p_node) {
-		return;
+void GroupsEditor::set_current(Object *p_object) {
+	if (!p_object) {
+		if (current_obj == p_object) {
+			return;
+		}
+		current_obj = nullptr;
 	}
-	node = p_node;
+	else if (Object::cast_to<Node>(p_object)) {
+		Node *p_node = Object::cast_to<Node>(p_object);
+		if (current_obj == p_node) {
+			return;
+		}
+		current_obj = p_node;
 
-	if (!node) {
-		return;
+		if (scene_tree->get_edited_scene_root() != scene_root_node) {
+			scene_root_node = scene_tree->get_edited_scene_root();
+			_update_scene_groups(scene_root_node->get_instance_id());
+			_update_groups();
+		}
+
+		_update_tree();
 	}
-
-	if (scene_tree->get_edited_scene_root() != scene_root_node) {
-		scene_root_node = scene_tree->get_edited_scene_root();
-		_update_scene_groups(scene_root_node->get_instance_id());
-		_update_groups();
+	else {
+		EditorNode::get_log()->add_message(String("TODO: groups editor cannot accept object {} that is not of type Node.").format({p_object->to_string()}, "{}"));
 	}
-
-	_update_tree();
 }
 
 void GroupsEditor::_item_edited() {
@@ -342,8 +367,8 @@ void GroupsEditor::_item_edited() {
 		//Create a commit an action to add the node to a group, and print a message to the console dock.
 		undo_redo->create_action(TTR("Add to Group"));
 
-		undo_redo->add_do_method(node, "add_to_group", name, true);
-		undo_redo->add_undo_method(node, "remove_from_group", name);
+		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+		undo_redo->add_undo_method(current_obj, "remove_from_group", name);
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, true);
 		undo_redo->add_undo_method(this, "_set_group_checked", name, false);
@@ -357,8 +382,8 @@ void GroupsEditor::_item_edited() {
 	} else {
 		undo_redo->create_action(TTR("Remove from Group"));
 
-		undo_redo->add_do_method(node, "remove_from_group", name);
-		undo_redo->add_undo_method(node, "add_to_group", name, true);
+		undo_redo->add_do_method(current_obj, "remove_from_group", name);
+		undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, false);
 		undo_redo->add_undo_method(this, "_set_group_checked", name, true);
@@ -493,8 +518,8 @@ void GroupsEditor::_confirm_add() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add to Group"));
 
-	undo_redo->add_do_method(node, "add_to_group", name, true);
-	undo_redo->add_undo_method(node, "remove_from_group", name);
+	undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+	undo_redo->add_undo_method(current_obj, "remove_from_group", name);
 
 	bool is_local = !global_group_button->is_pressed();
 	if (is_local) {
@@ -838,7 +863,7 @@ void GroupsEditor::_node_removed(Node *p_node) {
 }
 
 GroupsEditor::GroupsEditor() {
-	node = nullptr;
+	current_obj = nullptr;
 	scene_tree = SceneTree::get_singleton();
 
 	ED_SHORTCUT("groups_editor/delete", TTRC("Delete"), Key::KEY_DELETE);

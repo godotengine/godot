@@ -34,6 +34,7 @@
 #include "editor/scene/connections_dialog.h"
 #include "editor/themes/editor_scale.h"
 
+//TODO: Remove when done debugging
 #include "editor_node.h"
 #include "editor_log.h"
 
@@ -93,14 +94,29 @@ void NodeDock::update_lists() {
 void NodeDock::edit(Object *object) {
 
 	if (!object) {
-		mode_hb.hide()
-		return;
+		mode_hb->hide();
+		groups->hide();
+		connections->hide();
+		select_a_node->show();
+	} 
+	else {
+		mode_hb->show();
+		select_a_node->hide();
 	}
 
-	mode_hb.show()
+	groups->set_current(object);
 
-	String s = object->to_string();
-	EditorNode::get_log()->add_message(s);
+	if (Object::cast_to<Node>(object)) {
+		Node* p_node = Object::cast_to<Node>(object);
+		connections->set_node(p_node);
+	} 
+	else {
+		connections->set_node(nullptr);
+	}
+
+	if (!(groups->is_visible() || connections->is_visible())) {
+		show_connections();
+	}
 }
 
 NodeDock::NodeDock() {
@@ -143,15 +159,13 @@ NodeDock::NodeDock() {
 
 	select_a_node = memnew(Label);
 	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);
-	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups."));
+	select_a_node->set_text(TTRC("Make a selection to edit its signals and groups."));
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	//this used to be added to the dock, but since I'm giving multiselect to 
-	//	groups, move this panel to the connections panel temporarily.
-	connections->add_child(select_a_node);
+	add_child(select_a_node);
 }
 
 NodeDock::~NodeDock() {
