@@ -407,6 +407,24 @@ public:
 		glUniformMatrix4fv(uniform_location, 1, false, matrix);
 	}}
 
+	_FORCE_INLINE_ void version_set_uniform(Uniforms p_uniform, const Basis &p_basis, RID p_version, ShaderVariant p_variant{defvariant}, uint64_t p_specialization = {defspec}) {{
+		TRY_GET_UNIFORM(uniform_location);
+
+		GLfloat matrix[9] = {{ /* build a 3x3 matrix */
+			(GLfloat)p_basis.rows[0][0],
+			(GLfloat)p_basis.rows[1][0],
+			(GLfloat)p_basis.rows[2][0],
+			(GLfloat)p_basis.rows[0][1],
+			(GLfloat)p_basis.rows[1][1],
+			(GLfloat)p_basis.rows[2][1],
+			(GLfloat)p_basis.rows[0][2],
+			(GLfloat)p_basis.rows[1][2],
+			(GLfloat)p_basis.rows[2][2],
+		}};
+
+		glUniformMatrix3fv(uniform_location, 1, false, matrix);
+	}}
+
 #undef TRY_GET_UNIFORM
 
 """)
