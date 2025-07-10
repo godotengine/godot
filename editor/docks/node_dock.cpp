@@ -34,6 +34,9 @@
 #include "editor/scene/connections_dialog.h"
 #include "editor/themes/editor_scale.h"
 
+#include "editor_node.h"
+#include "editor_log.h"
+
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);
 	connections_button->set_pressed(false);
@@ -88,7 +91,16 @@ void NodeDock::update_lists() {
 }
 
 void NodeDock::edit(Object *object) {
-	
+
+	if (!object) {
+		mode_hb.hide()
+		return;
+	}
+
+	mode_hb.show()
+
+	String s = object->to_string();
+	EditorNode::get_log()->add_message(s);
 }
 
 NodeDock::NodeDock() {
