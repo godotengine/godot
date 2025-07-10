@@ -1284,7 +1284,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->class_info = _get_global_script_class(fi->type, path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_md5 = "";
+				fi->import_md5 = FileAccess::get_md5(path + ".import");
 				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 
