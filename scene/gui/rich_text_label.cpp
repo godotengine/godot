@@ -58,6 +58,14 @@ RichTextLabel::ItemCustomFX::~ItemCustomFX() {
 	custom_effect.unref();
 }
 
+Rect2i _merge_or_copy_rect(const Rect2i &p_a, const Rect2i &p_b) {
+	if (!p_a.has_area()) {
+		return p_b;
+	} else {
+		return p_a.merge(p_b);
+	}
+}
+
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) const {
 	if (!p_item) {
 		return nullptr;
@@ -986,8 +994,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									Size2 pad_size = rect.size.min(img->image->get_size());
 									Vector2 pad_off = (rect.size - pad_size) / 2;
 									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
+									visible_rect = _merge_or_copy_rect(visible_rect, Rect2(p_ofs + rect.position + off + pad_off, pad_size));
 								} else {
 									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off, rect.size), false, img->color);
+									visible_rect = _merge_or_copy_rect(visible_rect, Rect2(p_ofs + rect.position + off, rect.size));
 								}
 							} break;
 							case ITEM_TABLE: {
@@ -1358,6 +1368,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (!skip) {
 							if (txt_visible) {
 								has_visible_chars = true;
+								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
 										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
@@ -2501,6 +2512,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			visible_paragraph_count = 0;
 			visible_line_count = 0;
+			visible_rect = Rect2i();
 
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
@@ -7258,6 +7270,10 @@ int RichTextLabel::get_content_height() const {
 	return total_height;
 }
 
+Rect2i RichTextLabel::get_visible_content_rect() const {
+	return visible_rect;
+}
+
 int RichTextLabel::get_content_width() const {
 	const_cast<RichTextLabel *>(this)->_validate_line_caches();
 
@@ -7479,6 +7495,8 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &RichTextLabel::get_line_height);
 	ClassDB::bind_method(D_METHOD("get_line_width", "line"), &RichTextLabel::get_line_width);
+
+	ClassDB::bind_method(D_METHOD("get_visible_content_rect"), &RichTextLabel::get_visible_content_rect);
 
 	ClassDB::bind_method(D_METHOD("get_line_offset", "line"), &RichTextLabel::get_line_offset);
 	ClassDB::bind_method(D_METHOD("get_paragraph_offset", "paragraph"), &RichTextLabel::get_paragraph_offset);
