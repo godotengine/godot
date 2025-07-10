@@ -22,6 +22,10 @@
 			The list of object [RID]s that will be excluded from collisions. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node.
 			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then assign it to the property again.
 		</member>
+		<member name="include" type="RID[]" setter="set_include" getter="get_include" default="[]">
+			The list of object [RID]s that will be included by the query. Use [method CollisionObject2D.get_rid] to get the [RID] associated with a [CollisionObject2D]-derived node. If left empty all objects are included. If an object ends up being both included and excluded at the same time it will be excluded.
+			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then assign it to the property again.
+		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
 			The collision margin for the shape.
 		</member>

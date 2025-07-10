@@ -65,6 +65,8 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 	int amount = space->broadphase->cull_point(p_parameters.position, space->intersection_query_results, GodotSpace3D::INTERSECTION_QUERY_MAX, space->intersection_query_subindex_results);
 	int cc = 0;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	//Transform3D ai = p_xform.affine_inverse();
 
 	for (int i = 0; i < amount; i++) {
@@ -79,6 +81,10 @@ int GodotPhysicsDirectSpaceState3D::intersect_point(const PointParameters &p_par
 		//area can't be picked by ray (default)
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
+			continue;
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
 			continue;
 		}
 
@@ -127,6 +133,8 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 	const GodotCollisionObject3D *res_obj = nullptr;
 	real_t min_d = 1e10;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
@@ -137,6 +145,10 @@ bool GodotPhysicsDirectSpaceState3D::intersect_ray(const RayParameters &p_parame
 		}
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
+			continue;
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
 			continue;
 		}
 
@@ -221,6 +233,7 @@ int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_par
 
 	int cc = 0;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
 	//Transform3D ai = p_xform.affine_inverse();
 
 	for (int i = 0; i < amount; i++) {
@@ -235,6 +248,10 @@ int GodotPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_par
 		//area can't be picked by ray (default)
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
+			continue;
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
 			continue;
 		}
 
@@ -286,6 +303,8 @@ bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parame
 
 	Vector3 closest_A, closest_B;
 
+	const bool include_filter_enabled = !p_parameters.include.is_empty();
+
 	for (int i = 0; i < amount; i++) {
 		if (!_can_collide_with(space->intersection_query_results[i], p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas)) {
 			continue;
@@ -293,6 +312,10 @@ bool GodotPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_parame
 
 		if (p_parameters.exclude.has(space->intersection_query_results[i]->get_self())) {
 			continue; //ignore excluded
+		}
+
+		if (include_filter_enabled && !p_parameters.include.has(space->intersection_query_results[i]->get_self())) {
+			continue;
 		}
 
 		const GodotCollisionObject3D *col_obj = space->intersection_query_results[i];
