@@ -1016,6 +1016,7 @@
 			If [code]true[/code], enables a window manager hint that the main window background [i]can[/i] be transparent. This does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/viewport/transparent_background].
 			[b]Note:[/b] To use a transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
 			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] This setting has no effect on Android as transparency is controlled only via [member display/window/per_pixel_transparency/allowed].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
