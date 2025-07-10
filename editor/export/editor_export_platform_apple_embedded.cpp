@@ -620,7 +620,7 @@ void EditorExportPlatformAppleEmbedded::_fix_config_file(const Ref<EditorExportP
 			strnew += lines[i].replace("$pbx_launch_screen_build_reference", value) + "\n";
 #ifndef DISABLE_DEPRECATED
 		} else if (lines[i].contains("$pbx_launch_image_usage_setting")) {
-			strnew += lines[i].replace("$pbx_launch_image_usage_setting", "") + "\n";
+			strnew += lines[i].remove_string("$pbx_launch_image_usage_setting") + "\n";
 #endif
 		} else if (lines[i].contains("$launch_screen_image_mode")) {
 			int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
@@ -1290,7 +1290,7 @@ Error EditorExportPlatformAppleEmbedded::_copy_asset(const Ref<EditorExportPrese
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	String base_dir = p_asset.get_base_dir().replace("res://", "").replace(".godot/mono/temp/bin/", "");
+	String base_dir = p_asset.get_base_dir().remove_string("res://").remove_string(".godot/mono/temp/bin/");
 	String asset = p_asset.ends_with("/") ? p_asset.left(-1) : p_asset;
 	String destination_dir;
 	String destination;
