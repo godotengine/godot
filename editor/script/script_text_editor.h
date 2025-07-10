@@ -112,7 +112,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
-	Vector2 color_position;
+	Vector3i color_position;
 	String color_args;
 
 	bool theme_loaded = false;
