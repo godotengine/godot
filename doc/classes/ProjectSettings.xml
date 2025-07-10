@@ -690,6 +690,10 @@
 		<member name="debug/settings/stdout/verbose_stdout" type="bool" setter="" getter="" default="false">
 			Print more information to standard output when running. It displays information such as memory leaks, which scenes and resources are being loaded, etc. This can also be enabled using the [code]--verbose[/code] or [code]-v[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url], even on an exported project. See also [method OS.is_stdout_verbose] and [method @GlobalScope.print_verbose].
 		</member>
+		<member name="debug/shader_language/errors/output_shader_contents_on_error" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], the contents of shader files containing invalid code will be printed to standard output.
+			[b]Warning:[/b] Enabling this setting can cause the editor to stall for a long time while editing shader include files. This is due to the contents of the including files being printed alongside the contents of the included files. Nesting includes further multiplies the output.
+		</member>
 		<member name="debug/shader_language/warnings/device_limit_exceeded" type="bool" setter="" getter="" default="true">
 			When set to [code]true[/code], produces a warning when the shader exceeds certain device limits. Currently, the only device limit checked is the limit on uniform buffer size. More device limits will be added in the future.
 		</member>
