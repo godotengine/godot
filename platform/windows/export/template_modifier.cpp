@@ -533,8 +533,8 @@ Error TemplateModifier::_truncate(const String &p_path, uint32_t p_size) const {
 }
 
 HashMap<String, String> TemplateModifier::_get_strings(const Ref<EditorExportPreset> &p_preset) const {
-	String file_version = p_preset->get("application/file_version");
-	String product_version = p_preset->get("application/product_version");
+	String file_version = p_preset->get_version("application/file_version", true);
+	String product_version = p_preset->get_version("application/product_version", true);
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
 	String file_description = p_preset->get("application/file_description");
