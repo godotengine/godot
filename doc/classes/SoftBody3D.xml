@@ -150,6 +150,10 @@
 		<member name="parent_collision_ignore" type="NodePath" setter="set_parent_collision_ignore" getter="get_parent_collision_ignore" default="NodePath(&quot;&quot;)">
 			[NodePath] to a [CollisionObject3D] this SoftBody3D should avoid clipping.
 		</member>
+		<member name="point_radius" type="float" setter="set_point_radius" getter="get_point_radius" default="0.01">
+			The radius of the soft body's points. When using a thin mesh as a soft body (such as a [PlaneMesh] for cloth simulation), this can be increased to prevent the mesh from clipping through other objects. Setting this too high will make the soft body appear to float, can also make its simulation look more "rounded".
+			[b]Note:[/b] This is only supported when using Jolt Physics (see [member ProjectSettings.physics/3d/physics_engine]).
+		</member>
 		<member name="pressure_coefficient" type="float" setter="set_pressure_coefficient" getter="get_pressure_coefficient" default="0.0">
 			The pressure coefficient of this soft body. Simulate pressure build-up from inside this body. Higher values increase the strength of this effect.
 		</member>
