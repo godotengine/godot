@@ -446,6 +446,14 @@ bool CharacterBody2D::is_on_wall_only() const {
 	return on_wall && !on_floor && !on_ceiling;
 }
 
+bool CharacterBody2D::is_on_wall_from_left() const {
+	return on_wall && wall_normal.cross(up_direction) < 0;
+}
+
+bool CharacterBody2D::is_on_wall_from_right() const {
+	return on_wall && wall_normal.cross(up_direction) > 0;
+}
+
 bool CharacterBody2D::is_on_ceiling() const {
 	return on_ceiling;
 }
@@ -704,6 +712,8 @@ void CharacterBody2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_on_ceiling_only"), &CharacterBody2D::is_on_ceiling_only);
 	ClassDB::bind_method(D_METHOD("is_on_wall"), &CharacterBody2D::is_on_wall);
 	ClassDB::bind_method(D_METHOD("is_on_wall_only"), &CharacterBody2D::is_on_wall_only);
+	ClassDB::bind_method(D_METHOD("is_on_wall_from_left"), &CharacterBody2D::is_on_wall_from_left);
+	ClassDB::bind_method(D_METHOD("is_on_wall_from_right"), &CharacterBody2D::is_on_wall_from_right);
 	ClassDB::bind_method(D_METHOD("get_floor_normal"), &CharacterBody2D::get_floor_normal);
 	ClassDB::bind_method(D_METHOD("get_wall_normal"), &CharacterBody2D::get_wall_normal);
 	ClassDB::bind_method(D_METHOD("get_last_motion"), &CharacterBody2D::get_last_motion);
