@@ -464,6 +464,10 @@
 		<member name="audio/general/ios/session_category" type="int" setter="" getter="" default="0">
 			Sets the [url=https://developer.apple.com/documentation/avfaudio/avaudiosessioncategory]AVAudioSessionCategory[/url] on iOS. Use the [code]Playback[/code] category to get sound output, even if the phone is in silent mode.
 		</member>
+		<member name="audio/general/speaker_mode" type="int" setter="" getter="" default="-1">
+			The speaker mode used internally by Godot. [code]Default[/code] will use the audio driver's speaker mode, while other values will override the internal speaker mode, and thus the number of audio channels, used by the [AudioServer].
+			When the internal speaker mode differs from the driver's speaker mode, audio channels will be muted, ignored, or mapped to the audio driver's channels.
+		</member>
 		<member name="audio/general/text_to_speech" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text-to-speech support is enabled on startup, otherwise it is enabled first time TTS method is used, see [method DisplayServer.tts_get_voices] and [method DisplayServer.tts_speak].
 			[b]Note:[/b] Enabling TTS can cause addition idle CPU usage and interfere with the sleep mode, so consider disabling it if TTS is not used.
