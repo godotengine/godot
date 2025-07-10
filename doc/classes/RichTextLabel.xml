@@ -104,6 +104,7 @@
 			<return type="int" />
 			<description>
 				Returns the height of the content.
+				[b]Note:[/b] This method always returns the full content size, and is not affected by [member visible_ratio] and [member visible_characters]. To get the visible content size, use [method get_visible_content_rect].
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
@@ -111,6 +112,7 @@
 			<return type="int" />
 			<description>
 				Returns the width of the content.
+				[b]Note:[/b] This method always returns the full content size, and is not affected by [member visible_ratio] and [member visible_characters]. To get the visible content size, use [method get_visible_content_rect].
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
@@ -257,10 +259,44 @@
 				[b]Warning:[/b] This is a required internal node, removing and freeing it may cause a crash. If you wish to hide it or any of its children, use their [member CanvasItem.visible] property.
 			</description>
 		</method>
+		<method name="get_visible_content_rect" qualifiers="const">
+			<return type="Rect2i" />
+			<description>
+				Returns the bounding rectangle of the visible content.
+				[b]Note:[/b] This method returns a correct value only after the label has been drawn.
+				[codeblocks]
+				[gdscript]
+				extends RichTextLabel
+
+				@export var background_panel: Panel
+
+				func _ready():
+					await draw
+					background_panel.position = get_visible_content_rect().position
+					background_panel.size = get_visible_content_rect().size
+				[/gdscript]
+				[csharp]
+				public partial class TestLabel : RichTextLabel
+				{
+					[Export]
+					public Panel BackgroundPanel { get; set; }
+
+					public override async void _Ready()
+					{
+						await ToSignal(this, Control.SignalName.Draw);
+						BackgroundGPanel.Position = GetVisibleContentRect().Position;
+						BackgroundPanel.Size = GetVisibleContentRect().Size;
+					}
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_visible_line_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of visible lines.
+				[b]Note:[/b] This method returns a correct value only after the label has been drawn.
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>
@@ -268,6 +304,7 @@
 			<return type="int" />
 			<description>
 				Returns the number of visible paragraphs. A paragraph is considered visible if at least one of its lines is visible.
+				[b]Note:[/b] This method returns a correct value only after the label has been drawn.
 				[b]Note:[/b] If [member threaded] is enabled, this method returns a value for the loaded part of the document. Use [method is_finished] or [signal finished] to determine whether document is fully loaded.
 			</description>
 		</method>

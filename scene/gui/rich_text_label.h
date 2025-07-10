@@ -536,6 +536,7 @@ private:
 	int current_char_ofs = 0;
 	int visible_paragraph_count = 0;
 	int visible_line_count = 0;
+	Rect2i visible_rect;
 
 	int tab_size = 4;
 	bool underline_meta = true;
@@ -870,6 +871,8 @@ public:
 
 	int get_line_height(int p_line) const;
 	int get_line_width(int p_line) const;
+
+	Rect2i get_visible_content_rect() const;
 
 	void scroll_to_selection();
 
