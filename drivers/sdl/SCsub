@@ -145,6 +145,7 @@ if env["builtin_sdl"]:
             "thread/pthread/SDL_systls.c",
             "timer/unix/SDL_systimer.c",
         ]
+        env_sdl.Prepend(CPPPATH=[thirdparty_dir + "core/linux"])
 
     elif env["platform"] == "macos":
         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
