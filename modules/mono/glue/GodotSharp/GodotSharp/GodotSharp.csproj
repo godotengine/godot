@@ -141,6 +141,7 @@
     <Compile Include="Core\Vector4I.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NonAlloc.cs" />
   </ItemGroup>
 
   <!-- Compat Sources -->
