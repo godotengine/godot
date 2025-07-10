@@ -3807,6 +3807,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 			}
 		} break;
+		case GDScriptParser::COMPLETION_SUPER:
+			break;
 		case GDScriptParser::COMPLETION_SUPER_METHOD: {
 			if (!completion_context.current_class) {
 				break;
@@ -4365,6 +4367,13 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			base_type.is_meta_type = true;
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
 				return OK;
+			}
+		} break;
+		case GDScriptParser::COMPLETION_SUPER: {
+			if (context.current_class && context.current_function) {
+				if (_lookup_symbol_from_base(context.current_class->base_type, context.current_function->info.name, r_result) == OK) {
+					return OK;
+				}
 			}
 		} break;
 		case GDScriptParser::COMPLETION_SUPER_METHOD:
