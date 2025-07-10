@@ -363,6 +363,7 @@ int Window::get_current_screen() const {
 
 void Window::set_position(const Point2i &p_position) {
 	ERR_MAIN_THREAD_GUARD;
+	emit_signal(SNAME("position_changed"));
 
 	position = p_position;
 
@@ -743,6 +744,7 @@ void Window::_rect_changed_callback(const Rect2i &p_callback) {
 	}
 
 	if (position != p_callback.position) {
+		emit_signal(SNAME("position_changed"));
 		position = p_callback.position;
 		_propagate_window_notification(this, NOTIFICATION_WM_POSITION_CHANGED);
 	}
@@ -3341,6 +3343,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 	ADD_SIGNAL(MethodInfo("title_changed"));
+	ADD_SIGNAL(MethodInfo("position_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_THEME_CHANGED);
