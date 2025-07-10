@@ -199,7 +199,7 @@ void GradientTexture2DEdit::_draw() {
 	draw_texture_rect(texture, Rect2(Point2(), size));
 
 	// Draw grid snap lines.
-	if (snap_enabled || (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && grabbed != HANDLE_NONE)) {
+	if (snap_enabled || (Input::get_singleton()->is_command_or_control_pressed() && grabbed != HANDLE_NONE)) {
 		const Color line_color = Color(0.5, 0.5, 0.5, 0.5);
 
 		for (int idx = 0; idx < snap_count + 1; idx++) {

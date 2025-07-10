@@ -2007,7 +2007,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
-				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+				if (snapping_enabled ^ Input::get_singleton()->is_command_or_control_pressed()) {
 					pos = pos.snappedf(snapping_distance);
 				}
 
@@ -2082,7 +2082,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && dragging) {
-			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_command_or_control_pressed()) {
 				// Deselect current node.
 				for (int i = get_child_count() - 1; i >= 0; i--) {
 					GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
@@ -2193,7 +2193,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				dragging = true;
 				drag_accum = Vector2();
 				just_selected = !graph_element->is_selected();
-				if (!graph_element->is_selected() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+				if (!graph_element->is_selected() && !Input::get_singleton()->is_command_or_control_pressed()) {
 					for (int i = 0; i < get_child_count(); i++) {
 						GraphElement *child_element = Object::cast_to<GraphElement>(get_child(i));
 						if (!child_element) {

@@ -353,7 +353,7 @@ void EditorAudioBus::_volume_changed(float p_normalized) {
 
 	const float p_db = _normalized_volume_to_scaled_db(p_normalized);
 
-	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+	if (Input::get_singleton()->is_command_or_control_pressed()) {
 		// Snap the value when holding Ctrl for easier editing.
 		// To do so, it needs to be converted back to normalized volume (as the slider uses that unit).
 		slider->set_value(_scaled_db_to_normalized_volume(Math::round(p_db)));
@@ -413,7 +413,7 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 
 void EditorAudioBus::_show_value(float slider_value) {
 	float db;
-	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+	if (Input::get_singleton()->is_command_or_control_pressed()) {
 		// Display the correct (snapped) value when holding Ctrl
 		db = Math::round(_normalized_volume_to_scaled_db(slider_value));
 	} else {
