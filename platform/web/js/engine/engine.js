@@ -8,8 +8,6 @@
  * @module Engine
  * @header Web export JavaScript reference
  */
-var GodotModule = null;
-var GodotEngine = null;
 const Engine = (function () {
 	const preloader = new Preloader();
 
@@ -84,7 +82,6 @@ const Engine = (function () {
 				if(typeof miniEngine !== 'undefined' && miniEngine){
 					loadPath = "js/"+loadPath;
 				}
-				GodotEngine = this;
 				const me = this;
 				function doInit() {
 					// Care! Promise chaining is bogus with old emscripten versions.
@@ -94,7 +91,6 @@ const Engine = (function () {
 						// Now proceed with Godot and other logic
 						let gdmodule = me.config.getModuleConfig(loadPath, me.config.wasmEngine);
 						Godot(gdmodule).then(function (module) {
-							GodotModule = gdmodule
 							const paths = me.config.persistentPaths;
 							if (typeof miniEngine === 'undefined' || !miniEngine){
 								module['initFS'](paths).then(function (err) {
@@ -134,6 +130,9 @@ const Engine = (function () {
 			 */
 			preloadFile: function (file, path) {
 				return preloader.preload(file, path, this.config.fileSizes[file]);
+			},
+			getPThread:function () {
+				return this.rtenv['getPThread']()
 			},
 			unpackGameData:async function (dir,projectName, projectData, pckName, pckData) {
 				let datas = []
@@ -227,7 +226,6 @@ const Engine = (function () {
 			 * @return {Promise} Promise that resolves once the game started.
 			 */
 			startGame: function (override) {
-				GodotEngine = this;
 				this.config.update(override);
 				// Add main-pack argument.
 				const exe = this.config.executable;
