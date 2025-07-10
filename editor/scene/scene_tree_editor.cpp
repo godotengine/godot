@@ -895,6 +895,7 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	if (!p_parent) {
 		return;
 	}
+
 	Node *node = p_I->key;
 
 	TreeItem *item = p_I->value.item;
@@ -1037,6 +1038,7 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
+
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 
@@ -2492,6 +2494,7 @@ SceneTreeDialog::SceneTreeDialog() {
 }
 
 /******** CACHE *********/
+
 HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::add(Node *p_node, TreeItem *p_item) {
 	if (!p_node) {
 		return HashMap<Node *, CachedNode>::Iterator();
