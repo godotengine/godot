@@ -1215,6 +1215,9 @@ void LightStorage::lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow
 	ERR_FAIL_NULL(lightmap);
 	lightmap->shadow_texture = p_shadow;
 
+	Vector3i shadow_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->shadow_texture);
+	lightmap->shadow_texture_size = Vector2i(shadow_texture_size.x, shadow_texture_size.y);
+
 	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->shadow_texture);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
 	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -1235,6 +1238,23 @@ void LightStorage::lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMo
 	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
 	ERR_FAIL_NULL(lightmap);
 	lightmap->shadowmask_mode = p_mode;
+}
+
+void LightStorage::lightmap_set_directional_textures(RID p_lightmap, RID p_directional) {
+	Lightmap *lightmap = lightmap_owner.get_or_null(p_lightmap);
+	ERR_FAIL_NULL(lightmap);
+	lightmap->directional_texture = p_directional;
+
+	Vector3i direction_texture_size = GLES3::TextureStorage::get_singleton()->texture_get_size(lightmap->directional_texture);
+	lightmap->direction_texture_size = Vector2i(direction_texture_size.x, direction_texture_size.y);
+
+	GLuint tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lightmap->directional_texture);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 }
 
 /* LIGHTMAP INSTANCE */
