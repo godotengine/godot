@@ -69,6 +69,8 @@ public:
 
 	void set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field);
 
+	void set_group(const StringName &p_group, const Variant &p_value);
+
 	// If the nodes selected are the same independently of order then return true.
 	bool is_same_selection(const MultiNodeEdit *p_other) const {
 		if (get_node_count() != p_other->get_node_count()) {

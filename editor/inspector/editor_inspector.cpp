@@ -4941,6 +4941,11 @@ void EditorInspector::_edit_request_change(Object *p_object, const String &p_pro
 }
 
 void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field) {
+	
+	//Leaving comments here as notes for integrating MultiNodeEdit with the Groups panel.
+	//This method sets a property in the Inspector panel.
+
+	//readraw(?) all properties if the _edit_set is valid and `autoclear` is true. Sure.
 	if (autoclear && editor_property_map.has(p_name)) {
 		for (EditorProperty *E : editor_property_map[p_name]) {
 			if (E->is_checkable()) {
@@ -4949,30 +4954,42 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
+	//reference the undo-redo stack to push actions onto.
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	//If the object of the inspector doesn't want any of this undo_redo business, exclude it.
 	if (bool(object->call("_dont_undo_redo"))) {
 		object->set(p_name, p_value);
+
+		//check if all properties should be marked as changed. Not sure how this is different from redrawing
 		if (p_refresh_all) {
 			_edit_request_change(object, "");
 		} else {
 			_edit_request_change(object, p_name);
 		}
 
-		emit_signal(_prop_edited, p_name);
+		//emit a signal that the property has been edited.
+		emit_signal(_prop_edited, p_name); 
+	//Use static casting to check if the object is of a special type, and thus has its own methods to handle setting the property.
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
+		//MultiNodeEdit will set the same property path on multiple nodes at once.
 		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
+		//EditorDebuggerRemoteObjects will set a property path on a collection of nodes in a running instance.
 		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
 	} else {
+		//Otherwise, just set one property on one node.
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
 		undo_redo->add_do_property(object, p_name, p_value);
+		
+		//The old value might be invalid, in which case it cannot be added to the undo stack.
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		if (valid) {
+			//Some kind of special case for Control anchor presets.
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
 			} else {

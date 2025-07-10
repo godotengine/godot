@@ -62,7 +62,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_node(Node *p_node);
+	void edit(Object *object);
 
 	void show_groups();
 	void show_connections();
