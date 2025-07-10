@@ -117,7 +117,7 @@ MethodBind::MethodBind() {
 }
 
 MethodBind::~MethodBind() {
-	if (argument_types) {
+	if (argument_types && _argument_types_dynamic_allocated) {
 		memdelete_arr(argument_types);
 	}
 }
