@@ -249,6 +249,41 @@ TEST_CASE("[Curve2D] Sampling") {
 		CHECK(cross_linear_curve->get_baked_points().size() >= 3);
 		CHECK(cross_linear_curve->sample_baked_with_rotation(cross_linear_curve->get_closest_offset(Vector2(0.5, 0))).is_equal_approx(Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(0.5, 0))));
 	}
+
+	SUBCASE("Sample overlapping points") {
+		// Only overlapping points.
+		curve->clear_points();
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 0));
+
+		CHECK(curve->sample_baked_with_rotation(0.0) == Transform2D(Vector2(1, 0), Vector2(0, 1), Vector2(10, 0)));
+
+		// Overlapping points at start.
+		curve->clear_points();
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 10));
+
+		CHECK(curve->sample_baked_with_rotation(0.0) == Transform2D(Vector2(0, 1), Vector2(-1, 0), Vector2(10, 0)));
+
+		// Overlapping points at end.
+		curve->clear_points();
+		curve->add_point(Vector2(10, -5));
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 0));
+
+		CHECK(curve->sample_baked_with_rotation(5.0) == Transform2D(Vector2(0, 1), Vector2(-1, 0), Vector2(10, 0)));
+
+		// Overlapping points at middle.
+		curve->clear_points();
+		curve->add_point(Vector2(10, -5));
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 0));
+		curve->add_point(Vector2(10, 10));
+
+		CHECK(curve->sample_baked_with_rotation(5.0) == Transform2D(Vector2(0, 1), Vector2(-1, 0), Vector2(10, 0)));
+	}
 }
 
 TEST_CASE("[Curve2D] Tessellation") {
