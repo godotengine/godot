@@ -1715,10 +1715,21 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
 						if (glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) {
 							// Emebedded object.
+							Vector2 obj_off = p_ofs + off;
 							for (int i = 0; i < objects.size(); i++) {
 								if (TS->shaped_text_get_object_glyph(rid, objects[i]) == glyph_idx) {
 									Rect2 obj_rect = TS->shaped_text_get_object_rect(rid, objects[i]);
-									obj_rect.position.y += baseline_y;
+									obj_rect.position += obj_off;
+									Item *it = items.get_or_null(objects[i]);
+									if (it && it->type == ITEM_IMAGE) {
+										ItemImage *img = reinterpret_cast<ItemImage *>(it);
+										if (img && img->pad && img->image.is_valid()) {
+											Size2 pad_size = rect.size.min(img->image->get_size());
+											Vector2 pad_off = (rect.size - pad_size) / 2;
+											obj_rect.position += pad_off;
+											obj_rect.size = pad_size;
+										}
+									}
 									if (p_click.y >= obj_rect.position.y && p_click.y <= obj_rect.position.y + obj_rect.size.y) {
 										char_pos = glyphs[glyph_idx].start;
 										char_clicked = true;
