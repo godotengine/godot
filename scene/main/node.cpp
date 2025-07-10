@@ -3027,34 +3027,73 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 			value = value.duplicate(true);
 		}
 
-		if (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE) {
+		// Handle Resources
+		if (Object::cast_to<Resource>(value)) {
 			Resource *res = Object::cast_to<Resource>(value);
-			if (res) { // Duplicate only if it's a resource
-				p_copy->set(name, res->duplicate());
+			p_copy->set(name, _duplicate_resource(res, E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE));
+			continue;
+		}
+
+		if (value.get_type() == Variant::OBJECT) {
+			Node *property_node = Object::cast_to<Node>(value);
+			Variant out_value = value;
+			if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+				out_value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
 			}
-		} else {
-			if (value.get_type() == Variant::OBJECT) {
-				Node *property_node = Object::cast_to<Node>(value);
-				Variant out_value = value;
-				if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
-					out_value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
-				}
-				p_copy->set(name, out_value);
-			} else if (value.get_type() == Variant::ARRAY) {
-				Array arr = value;
-				if (arr.get_typed_builtin() == Variant::OBJECT) {
-					for (int i = 0; i < arr.size(); i++) {
-						Node *property_node = Object::cast_to<Node>(arr[i]);
-						if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
-							arr[i] = p_copy->get_node_or_null(p_original->get_path_to(property_node));
-						}
+			p_copy->set(name, out_value);
+			continue;
+		}
+
+		if (value.get_type() == Variant::ARRAY) {
+			Array arr = value;
+			if (arr.get_typed_builtin() == Variant::OBJECT) {
+				for (int i = 0; i < arr.size(); i++) {
+					Node *property_node = Object::cast_to<Node>(arr[i]);
+					if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
+						arr[i] = p_copy->get_node_or_null(p_original->get_path_to(property_node));
 					}
 				}
-				p_copy->set(name, arr);
-			} else {
-				p_copy->set(name, value);
 			}
+
+			// Duplicate resources stored in array
+			for (int i = 0; i < arr.size(); i++) {
+				if (arr[i].get_type() != Variant::OBJECT) {
+					continue;
+				}
+				Resource *res = Object::cast_to<Resource>(arr[i]);
+				if (res) {
+					arr[i] = _duplicate_resource(res);
+				}
+			}
+
+			p_copy->set(name, arr);
+			continue;
 		}
+
+		if (value.get_type() == Variant::DICTIONARY) {
+			Dictionary dict = value;
+
+			// Duplicate resources stored in dictionary
+			for (int i = 0; i < dict.size(); i++) {
+				if (dict.keys()[i].get_type() == Variant::OBJECT) {
+					Resource *res = Object::cast_to<Resource>(dict.keys()[i]);
+					if (res) {
+						dict.keys().set(i, _duplicate_resource(res));
+					}
+				}
+
+				if (dict.values()[i].get_type() == Variant::OBJECT) {
+					Resource *res = Object::cast_to<Resource>(dict.values()[i]);
+					if (res) {
+						dict.values().set(i, _duplicate_resource(res));
+					}
+				}
+			}
+			p_copy->set(name, dict);
+			continue;
+		}
+
+		p_copy->set(name, value);
 	}
 
 	for (int i = 0; i < p_original->get_child_count(false); i++) {
@@ -3062,6 +3101,22 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
 		_duplicate_properties(p_root, p_original->get_child(i, false), copy_child, p_flags);
 	}
+}
+
+Ref<Resource> Node::_duplicate_resource(const Resource *res, bool force_full_copy) const {
+	if (force_full_copy) {
+		return res->duplicate();
+	}
+
+	bool is_internal_resource = (res->get_path() == "" ||
+			res->get_path().begins_with("uid://") ||
+			res->get_path().contains("::"));
+
+	if (!res->get_use_shared_copy() && is_internal_resource) {
+		return res->duplicate();
+	}
+
+	return Ref<Resource>(res);
 }
 
 // Duplication of signals must happen after all the node descendants have been copied,

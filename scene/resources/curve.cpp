@@ -36,6 +36,7 @@ const char *Curve::SIGNAL_RANGE_CHANGED = "range_changed";
 const char *Curve::SIGNAL_DOMAIN_CHANGED = "domain_changed";
 
 Curve::Curve() {
+	set_use_shared_copy(false);
 }
 
 void Curve::set_point_count(int p_count) {
@@ -1341,6 +1342,10 @@ PackedVector2Array Curve2D::tessellate_even_length(int p_max_stages, real_t p_le
 	return tess;
 }
 
+Curve2D::Curve2D() {
+	set_use_shared_copy(false);
+}
+
 bool Curve2D::_set(const StringName &p_name, const Variant &p_value) {
 	Vector<String> components = String(p_name).split("/", true, 2);
 	if (components.size() >= 2 && components[0].begins_with("point_") && components[0].trim_prefix("point_").is_valid_int()) {
@@ -2394,6 +2399,10 @@ PackedVector3Array Curve3D::tessellate_even_length(int p_max_stages, real_t p_le
 	}
 
 	return tess;
+}
+
+Curve3D::Curve3D() {
+	set_use_shared_copy(false);
 }
 
 bool Curve3D::_set(const StringName &p_name, const Variant &p_value) {
