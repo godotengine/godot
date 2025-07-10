@@ -184,6 +184,10 @@ def configure(env: "SConsEnvironment"):
     env["RANLIB"] = os.path.join(compiler_path, "llvm-ranlib")
     env["AS"] = os.path.join(compiler_path, "clang")
 
+    # Use TempFileMunge since some AR invocations are too long otherwise
+    env["ARCOM_ORIG"] = env["ARCOM"]
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
+
     env.Append(
         CCFLAGS=(["-fpic", "-ffunction-sections", "-funwind-tables", "-fstack-protector-strong", "-fvisibility=hidden"])
     )
