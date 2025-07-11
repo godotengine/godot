@@ -68,28 +68,34 @@ protected:
 	};
 
 	struct BlitPushConstant {
-		float src_rect[4];
-		float dst_rect[4];
+		float src_rect[4]; // 16 - 16
+		float dst_rect[4]; // 16 - 32
 
-		float rotation_sin;
-		float rotation_cos;
-		float pad[2];
+		float rotation_sin; //  4 - 36
+		float rotation_cos; //  4 - 40
 
-		float eye_center[2];
-		float k1;
-		float k2;
+		float eye_center[2]; //  8 - 48
+		float k1; //  4 - 52
+		float k2; //  4 - 56
 
-		float upscale;
-		float aspect_ratio;
-		uint32_t layer;
-		uint32_t convert_to_srgb;
+		float upscale; //  4 - 60
+		float aspect_ratio; //  4 - 64
+		uint32_t layer; //  4 - 68
+		uint32_t source_is_srgb; //  4 - 72
+
+		uint32_t target_color_space; //  4 - 76
+		float reference_multiplier; //  4 - 80
+	};
+
+	struct BlitPipelines {
+		RID pipelines[BLIT_MODE_MAX];
 	};
 
 	struct Blit {
 		BlitPushConstant push_constant;
 		BlitShaderRD shader;
 		RID shader_version;
-		RID pipelines[BLIT_MODE_MAX];
+		HashMap<RenderingDevice::FramebufferFormatID, BlitPipelines> pipelinesByFormat;
 		RID index_buffer;
 		RID array;
 		RID sampler;
@@ -102,6 +108,9 @@ protected:
 
 	static uint64_t frame;
 	static RendererCompositorRD *singleton;
+
+	BlitPipelines _get_blit_pipelines_for_format(RenderingDevice::FramebufferFormatID format);
+	float _compute_reference_multiplier(RD::ColorSpace p_color_space, const float p_reference_luminance);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
