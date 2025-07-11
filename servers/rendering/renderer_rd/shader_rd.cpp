@@ -233,13 +233,6 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
 					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
-#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
-				RenderingDevice *rd = RD::get_singleton();
-				if (!rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-					builder.append("#define NO_IMAGE_ATOMICS\n");
-				}
-#endif
-
 				builder.append(String("#define RENDER_DRIVER_") + OS::get_singleton()->get_current_rendering_driver_name().to_upper() + "\n");
 				builder.append("#define samplerExternalOES sampler2D\n");
 				builder.append("#define textureExternalOES texture2D\n");
