@@ -1373,7 +1373,7 @@ bool ClassDB::has_struct(const StringName &p_class, const StringName &p_name) {
 	return type->struct_map.has(p_name);
 }
 
-StructDefinition *ClassDB::get_struct(const StringName &p_class, const StringName &p_name) {
+const StructDefinition *ClassDB::get_struct(const StringName &p_class, const StringName &p_name) {
 	Locker::Lock lock(Locker::STATE_READ);
 
 	ClassInfo *type = classes.getptr(p_class);

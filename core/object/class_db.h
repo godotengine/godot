@@ -81,7 +81,7 @@ class ClassDB {
 	friend class Object;
 
 public:
-	typedef StructDefinition *(*StructDefinitionGetter)();
+	typedef const StructDefinition *(*StructDefinitionGetter)();
 	enum APIType {
 		API_CORE,
 		API_EDITOR,
@@ -499,7 +499,7 @@ public:
 	static void bind_struct(const StringName &p_class, const StringName &p_name, StructDefinitionGetter p_definition);
 	static void get_struct_list(const StringName &p_class, List<StringName> *p_structs);
 	static bool has_struct(const StringName &p_class, const StringName &p_name);
-	static StructDefinition *get_struct(const StringName &p_class, const StringName &p_name);
+	static const StructDefinition *get_struct(const StringName &p_class, const StringName &p_name);
 
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);
 	static Vector<Error> get_method_error_return_values(const StringName &p_class, const StringName &p_method);

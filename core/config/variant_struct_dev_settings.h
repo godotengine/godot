@@ -5,11 +5,19 @@
 // NOTE: this .h is just for enabling different configurations/possible implementations
 // this file will be removed when this PR is squashed for merging, and the behaviour is decided
 
-// // Enabled reference-type behaviour
-// // If commented out, COW behaviour is enabled
-// // #define VSTRUCT_IS_REFERENCE_TYPE
-// (note: full implementation not currently included)
+// Enabled reference-type behaviour
+// If commented out, COW behaviour is enabled
+// #define VSTRUCT_IS_REFERENCE_TYPE
 
 // Moves all newly defined enums to the end of their respective lists, rather than where they make more intuitive sense
 // If commented out, backwards compatability may break
 #define ENUMS_SHOULD_NOT_BREAK_APIS
+
+// Increases the value off each member address by sizeof(SafeRefCount)
+// Should be slightly faster than not doing so (fewer operations)
+// However, it might make things more confusing (and so if decided upon, would need to be properly documented)
+// Regardless of if enabled or disabled, the address for each property will always be `instance + address`
+#define SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
+
+// Should also be noted that this, and certain other changes, intentionally break the style checker
+// That is so these can server as reminders

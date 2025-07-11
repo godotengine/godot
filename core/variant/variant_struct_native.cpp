@@ -49,7 +49,6 @@ void unregister_inbuilt_data_structures() {
 	in_built_struct_pointers.clear();
 }
 
-
 const StructDefinition *StructDefinition::get_native(const StringName &p_name) {
 	return in_built_struct_definitions.get(p_name);
 }

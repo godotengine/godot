@@ -500,7 +500,7 @@ public:
 	operator PackedVector2Array() const;
 	operator PackedColorArray() const;
 	operator PackedVector4Array() const;
-	
+
 #ifdef ENUMS_SHOULD_NOT_BREAK_APIS
 	operator VariantStruct() const;
 #endif

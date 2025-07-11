@@ -1886,7 +1886,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 
 		} break;
 
-		// TODO: STRUCTS
+// TODO: STRUCTS
 
 		case Variant::CALLABLE: {
 			f->store_32(VARIANT_CALLABLE);
@@ -2096,7 +2096,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 		} break;
 
-		// TODO: STRUCTS
+// TODO: STRUCTS
 
 		case Variant::ARRAY: {
 			Array varray = p_variant;

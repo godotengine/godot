@@ -36,8 +36,8 @@
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
-#include "core/version.h"
 #include "core/variant/variant_struct.h"
+#include "core/version.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/editor_help.h"

@@ -260,7 +260,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			return _pack(Variant(), tmpdata, string_cache);
 		} break;
 
-		// TODO: STRUCTS
+// TODO: STRUCTS
 
 		case Variant::DICTIONARY: {
 			Dictionary d = p_data;

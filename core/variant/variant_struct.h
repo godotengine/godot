@@ -46,7 +46,6 @@ class StructDefinition {
 		virtual size_t align() const = 0;
 		virtual Variant::Type get_variant_type() const = 0;
 		virtual const StringName get_class_name() const = 0;
-		virtual bool is_trivial() const = 0;
 
 		// operations
 		virtual void construct(void *p_target) const = 0;
@@ -87,26 +86,24 @@ class StructDefinition {
 				return StringName();
 			}
 		}
-		bool is_trivial() const override {
-			if constexpr (std::is_trivially_constructible_v<T> && std::is_trivially_destructible_v<T>) {
-				return true;
-			} else {
-				return false;
-			}
-		}
 
-		void copy_construct(void *p_target, const void *p_value) const override {
-			if constexpr (std::is_same_v<T, nullptr_t>) {
-				// Do Nothing
-			} else if constexpr (!std::is_trivially_constructible_v<T>) {
-				new (reinterpret_cast<T *>(p_target)) T(*reinterpret_cast<const T *>(p_value));
-			}
-		}
 		void construct(void *p_target) const override {
 			if constexpr (std::is_same_v<T, nullptr_t>) {
 				// Do Nothing
 			} else if constexpr (!std::is_trivially_constructible_v<T>) {
 				new (reinterpret_cast<T *>(p_target)) T;
+			} else {
+// TODO: assign default values for various types
+				// (should use same logic, like how Variant ints are always 0)
+			}
+		}
+		void copy_construct(void *p_target, const void *p_value) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else if constexpr (!std::is_trivially_copy_constructible_v<T>) {
+				new (reinterpret_cast<T *>(p_target)) T(*reinterpret_cast<const T *>(p_value));
+			} else {
+				*reinterpret_cast<T *>(p_target) = *reinterpret_cast<const T *>(p_value);
 			}
 		}
 		void destruct(void *p_target) const override {
@@ -327,15 +324,18 @@ public:
 	using MemberAddress = select_uint<sizeof(int StructDefinition::*)>::type;
 
 	struct StructPropertyInfo {
-		// Properties
 		StringName name;
 		MemberAddress address;
 		TypeInfo type;
 
 		StructPropertyInfo() :
 				address(0), type{ get_native_type_info<nullptr_t>() } {}
-		StructPropertyInfo(StringName p_name, MemberAddress p_address, TypeInfo p_type) :
+#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
+		_ALWAYS_INLINE_ StructPropertyInfo(StringName p_name, MemberAddress p_address, TypeInfo p_type);
+#else
+		_ALWAYS_INLINE_ StructPropertyInfo(StringName p_name, MemberAddress p_address, TypeInfo p_type) :
 				name{ p_name }, address{ p_address }, type{ p_type } {}
+#endif
 	};
 
 	template <typename ST, typename MT>
@@ -343,15 +343,17 @@ public:
 		return StructPropertyInfo(p_name, *reinterpret_cast<const MemberAddress *>(&p_member_pointer), get_native_type_info<MT>());
 	}
 
-	typedef void (*StructConstructor)(void *, StructDefinition *);
-	typedef void (*StructDestructor)(void *, StructDefinition *);
+	typedef void (*StructConstructor)(void *, const StructDefinition *);
+	typedef void (*StructCopyConstructor)(void *, const StructDefinition *, const void *);
+	typedef void (*StructDestructor)(void *, const StructDefinition *);
 
 	// -- StructDefinition definition starts here
 public:
-	// Properties
+	// StructDefinition Properties
 	Vector<StructPropertyInfo> properties;
 	StringName qualified_name;
 	StructConstructor constructor;
+	StructCopyConstructor copy_constructor;
 	StructDestructor destructor;
 
 	const StructPropertyInfo *get_property_info(const int &p_property_index) const;
@@ -363,8 +365,10 @@ public:
 	const StructPropertyInfo *get_property_info(const String &p_property) const;
 	const StructPropertyInfo *get_property_info(const Variant &p_property) const;
 
-	static void generic_constructor(void *p_struct, StructDefinition *p_definition);
-	static void generic_destructor(void *p_struct, StructDefinition *p_definition);
+	static void generic_constructor(void *p_struct, const StructDefinition *p_definition);
+	static void generic_copy_constructor(void *p_struct, const StructDefinition *p_definition, const void *p_other);
+	static void generic_destructor(void *p_struct, const StructDefinition *p_definition);
+	static void trivial_destructor(void *p_struct, const StructDefinition *p_definition) {}
 
 	const size_t get_size() const;
 	static const StructDefinition *get_native(const StringName &p_name);
@@ -373,8 +377,8 @@ public:
 	static void _register_struct_definition(StructDefinition *p_definition, bool to_clear = true);
 	static void clean_struct_definitions();
 
-	StructDefinition(Vector<StructPropertyInfo> p_properties, StringName p_qualified_name, StructConstructor p_constructor, StructDestructor p_destructor) :
-			properties{ p_properties }, qualified_name{ p_qualified_name }, constructor{ p_constructor }, destructor{ p_destructor } {}
+	StructDefinition(Vector<StructPropertyInfo> p_properties, StringName p_qualified_name, StructConstructor p_constructor, StructCopyConstructor p_copy_constructor, StructDestructor p_destructor) :
+			properties{ p_properties }, qualified_name{ p_qualified_name }, constructor{ p_constructor }, copy_constructor{ p_copy_constructor }, destructor{ p_destructor } {}
 };
 
 ///////////////////////////////
@@ -388,11 +392,6 @@ private:
 	static StructDefinition *build_definition();
 
 	// These shouldn't ever be needed, as any native struct that should be used for this should not generally define any of these
-	// static void copy_construct (void *p_struct, StructDefinition *p_definition, void *p_other) {
-	// 	if constexpr (!std::is_trivially_constructible_v<T>) {
-	// 		new (reinterpret_cast<T *>(p_struct)) T (*reinterpret_cast<T *>(p_other));
-	// 	}
-	// }
 	// static void move_construct (void *p_struct, StructDefinition *p_definition, void *p_other) {
 	// 	if constexpr (!std::is_trivially_constructible_v<T>) {
 	// 		new (reinterpret_cast<T *>(p_struct)) T (std::move(*reinterpret_cast<T *>(p_other)));
@@ -404,12 +403,18 @@ private:
 	// 	}
 	// }
 
-	static void init_struct(void *p_struct, StructDefinition *p_definition) {
+	// If there are any non-trivial properties, C++ should be able to handle these operations faster than the generic variants above
+	static void init_struct(void *p_struct, const StructDefinition *p_definition) {
 		if constexpr (!std::is_trivially_constructible_v<T>) {
 			new (reinterpret_cast<T *>(p_struct)) T();
 		}
 	}
-	static void deinit_struct(void *p_struct, StructDefinition *p_definition) {
+	static void copy_construct(void *p_struct, const StructDefinition *p_definition, const void *p_other) {
+		if constexpr (!std::is_trivially_copy_constructible_v<T>) {
+			new (reinterpret_cast<T *>(p_struct)) T(*reinterpret_cast<T *>(p_other));
+		}
+	}
+	static void deinit_struct(void *p_struct, const StructDefinition *p_definition) {
 		if constexpr (!std::is_trivially_destructible_v<T>) {
 			reinterpret_cast<T *>(p_struct)->~T();
 		}
@@ -422,7 +427,7 @@ public:
 			sdef = nullptr;
 		}
 	}
-	static StructDefinition *get_definition() {
+	static const StructDefinition *get_definition() {
 		if (sdef == nullptr) {
 			sdef = build_definition();
 			StructDefinition::_register_native_definition(&sdef);
@@ -437,198 +442,156 @@ StructDefinition *NativeStructDefinition<T>::sdef = nullptr;
 ///////////////////////////////
 
 class VariantStruct {
+	friend class StructDefinition;
+	static constexpr size_t STRUCT_OFFSET = sizeof(uintptr_t);
+
+#define ptr_math(m_ptr, m_operant, m_operand) reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(m_ptr) m_operant m_operand)
+
 protected:
-	// IMPORTANT: Do not add additional properties
-	// This needs to fit squarely inside Variant::_data
-	const StructDefinition *definition = nullptr;
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
-	void *instance = nullptr;
+	const StructDefinition *definition;
+	void *instance;
+
+#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
+	_ALWAYS_INLINE_ void *struct_ptr() {
+		return ptr_math(instance, +, STRUCT_OFFSET);
+	}
+	_ALWAYS_INLINE_ SafeRefCount &getrefcount() {
+		return *reinterpret_cast<SafeRefCount *>(instance);
+	}
 #else
-	CowData<uint8_t> _cowdata;
+	_ALWAYS_INLINE_ void *struct_ptr() {
+		return instance;
+	}
+	_ALWAYS_INLINE_ SafeRefCount &getrefcount() {
+		return *reinterpret_cast<SafeRefCount *>(ptr_math(instance, -, STRUCT_OFFSET));
+	}
 #endif
 
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
-	// (dev-note: didn't have time to re-write this)
-	// _ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::MemberAddress &address) {
-	// 	uintptr_t ptr = reinterpret_cast<uintptr_t>(_cowdata.ptrw()) + address;
-	// 	return reinterpret_cast<void *>(ptr);
-	// }
-	// _ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::MemberAddress &address) const {
-	// 	uintptr_t ptr = reinterpret_cast<uintptr_t>(_cowdata.ptr()) + address;
-	// 	return reinterpret_cast<void *>(ptr);
-	// }
-	// _ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::StructPropertyInfo *prop) {
-	// 	return member_ptrw(prop->address);
-	// }
-	// _ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::StructPropertyInfo *prop) const {
-	// 	return member_ptr(prop->address);
-	// }
-#else
-	_ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::MemberAddress &address) {
-		// If this causes a CoW, we need to ensure that any appropriate copy-constructors are called for non-trivial types
-
-		// (dev-note: optimally in the finaly implementation, this would all be handled internally)
-		// (this is because CowData is already copying the bytes over; it just isn't aware of the actual types of the data)
-		// (so it would be better to not perform those needless writes; in the meantime, this ensures that any appropriate copy constructor is called)
-		// (which is important for anything non-trivial)
-		const void *r = _cowdata.ptr();
-		void *w = _cowdata.ptrw();
-		if (r != w) {
-			for (const StructDefinition::StructPropertyInfo &E : definition->properties) {
-				if (!E.type->is_trivial()) {
-					void *here = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(w) + E.address);
-					const void *there = reinterpret_cast<void *>(reinterpret_cast<const uintptr_t>(r) + E.address);
-					E.type->copy_construct(here, there);
-				}
-			}
+	// Assigns memory for the given struct definition
+	// NOTE: does not construct it, but does initialise the reference counter
+	// void allocate(const StructDefinition *p_definition);
+	void allocate(const StructDefinition *p_definition) {
+		if (instance) {
+			_unref();
 		}
+		definition = p_definition;
+#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
+		instance = Memory::alloc_static(definition->get_size() + STRUCT_OFFSET);
+#else
+		instance = ptr_math(Memory::alloc_static(definition->get_size() + STRUCT_OFFSET), +, STRUCT_OFFSET);
+#endif
+		getrefcount().init();
+	}
 
-		uintptr_t ptr = reinterpret_cast<uintptr_t>(w) + address;
-		return reinterpret_cast<void *>(ptr);
+#ifdef VSTRUCT_IS_REFERENCE_TYPE
+	// NOTE: member_ptr DOES NOT check if instance != nullptr
+	// It is presumed that anywhere these are called has already done that
+	_ALWAYS_INLINE_ void *member_ptr(const StructDefinition::MemberAddress &address) {
+		return ptr_math(instance, +, address);
 	}
 	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::MemberAddress &address) const {
-		uintptr_t ptr = reinterpret_cast<uintptr_t>(_cowdata.ptr()) + address;
-		return reinterpret_cast<void *>(ptr);
+		return ptr_math(instance, +, address);
+	}
+	_ALWAYS_INLINE_ void *member_ptr(const StructDefinition::StructPropertyInfo *prop) {
+		return member_ptr(prop->address);
+	}
+	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::StructPropertyInfo *prop) const {
+		return member_ptr(prop->address);
+	}
+#else
+	void _copy_on_write() {
+		if (getrefcount().get() > 1) {
+			void *copy_from = struct_ptr();
+			allocate(definition);
+			definition->copy_constructor(struct_ptr(), definition, copy_from);
+		}
+	}
+
+	// NOTE: member_ptr and member_ptrw DO NOT check if instance != nullptr
+	// It is presumed that anywhere these are called has already done that
+	_ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::MemberAddress &address) {
+		_copy_on_write();
+		return ptr_math(instance, +, address);
 	}
 	_ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::StructPropertyInfo *prop) {
 		return member_ptrw(prop->address);
+	}
+	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::MemberAddress &address) const {
+		return ptr_math(instance, +, address);
 	}
 	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::StructPropertyInfo *prop) const {
 		return member_ptr(prop->address);
 	}
 #endif
 
+	void _unref() {
+		if (getrefcount().unref()) {
+			// Call the destructor for the type, then free the memory
+			if (definition->destructor != StructDefinition::trivial_destructor) {
+				definition->destructor(struct_ptr(), definition);
+			}
+#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
+			Memory::free_static(instance, false);
+#else
+			Memory::free_static(ptr_math(instance, -, STRUCT_OFFSET), false);
+#endif
+		}
+		instance = nullptr;
+	}
+
 public:
 	void set(const StringName &p_name, const Variant &p_value, bool &r_valid);
 	Variant get(const StringName &p_name, bool &r_valid) const;
 
-
 	bool is_empty() const {
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
 		return instance == nullptr;
-#else
-		return _cowdata.is_empty();
-#endif
 	}
 
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
-private:
-	_ALWAYS_INLINE_ SafeRefCount &getrefcount() {
-		uintptr_t ptr = reinterpret_cast<uintptr_t>(instance) - sizeof(SafeRefCount);
-		return *reinterpret_cast<SafeRefCount *>(reinterpret_cast<void *>(ptr));
-	}
-	void _ref(void *p_instance) {
+	~VariantStruct() {
 		if (instance) {
 			_unref();
 		}
-		instance = p_instance;
+	}
+
+	VariantStruct() :
+			definition(nullptr), instance(nullptr) {}
+
+	VariantStruct(const VariantStruct &p_struct) :
+			definition(p_struct.definition), instance(p_struct.instance) {
 		if (instance) {
 			getrefcount().ref();
 		}
 	}
-	void _unref() {
-		if (getrefcount().unref()) {
-			memdelete(&getrefcount());
-		}
-		instance = nullptr;
-	}
-	void allocate(const StructDefinition *p_definition) {
-		if (instance) {
-			_unref();
-		}
-		definition = p_definition;
-		uintptr_t ptr = reinterpret_cast<uintptr_t>(memalloc(definition->get_size() + sizeof(SafeRefCount)));
-		instance = reinterpret_cast<void *>(ptr + sizeof(SafeRefCount));
-		getrefcount().init();
-	}
 
-public:
-	~VariantStruct() {
-		if (instance) {
-			_unref();
-		}
-	}
-	VariantStruct() {}
-	VariantStruct(const VariantStruct &p_struct) :
-			definition(p_struct.definition) {
-		if (p_struct.instance) {
-			_ref(p_struct.instance);
-		}
-	}
 	VariantStruct(VariantStruct &&p_struct) :
-			definition(p_struct.definition) {
+			definition(p_struct.definition), instance(p_struct.instance) {
 		if (p_struct.instance) {
-			instance = p_struct.instance;
 			p_struct.instance = nullptr;
 		}
 	}
-#else
-private:
-	// note: part of super hacky solution below
-	typedef uint64_t USize;
-	constexpr static size_t REF_COUNT_OFFSET = 0;
-	constexpr static size_t SIZE_OFFSET = ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize) == 0) ? (REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) : ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) + alignof(USize) - ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize)));
-	constexpr static size_t DATA_OFFSET = ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t) == 0) ? (SIZE_OFFSET + sizeof(USize)) : ((SIZE_OFFSET + sizeof(USize)) + alignof(max_align_t) - ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t)));
-
-public:
-	VariantStruct() {}
-	VariantStruct(const VariantStruct &p_struct) :
-			definition(p_struct.definition), _cowdata(p_struct._cowdata) {}
-	VariantStruct(VariantStruct &&p_struct) :
-			definition(p_struct.definition), _cowdata(std::move(p_struct._cowdata)) {}
-	~VariantStruct() {
-		// If this causes a CoW, we need to ensure that any appropriate de-constructors are called for non-trivial types
-
-		// (dev-note: optimally in the finaly implementation, this would all be handled internally)
-		// (however, because we currently rely on CowData, and it isn't aware of the actual types of the data)
-		// (we need to deconstruct any non-trivial type)
-
-		// (so, for now, we have this super hacky solution!)
-
-		if (!_cowdata.is_empty()) {
-			const void *r = _cowdata.ptr();
-			SafeNumeric<USize> *sn = (SafeNumeric<USize> *)((uint8_t *)r - DATA_OFFSET + REF_COUNT_OFFSET);
-
-			// check if it is the last instance, then deconstruct any non-trivial properties
-			if (sn->get() <= 1) {
-				for (const StructDefinition::StructPropertyInfo &E : definition->properties) {
-					if (!E.type->is_trivial()) {
-						void *ptr = reinterpret_cast<void *>(reinterpret_cast<const uintptr_t>(r) + E.address);
-						E.type->destruct(ptr);
-					}
-				}
-			}
-		}
-	}
-#endif
 
 	_FORCE_INLINE_ void operator=(const VariantStruct &p_struct) {
-		definition = p_struct.definition;
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
 		if (instance) {
 			_unref();
 		}
+
 		definition = p_struct.definition;
-		_ref(p_struct.instance);
-#else
-		definition = p_struct.definition;
-		_cowdata = p_struct._cowdata;
-#endif
+		if (p_struct.instance) {
+			instance = p_struct.instance;
+			getrefcount().ref();
+		}
 	}
+
 	_FORCE_INLINE_ void operator=(VariantStruct &&p_struct) {
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
 		if (instance) {
 			_unref();
 		}
+
 		definition = p_struct.definition;
 		if (p_struct.instance) {
 			instance = p_struct.instance;
 			p_struct.instance = nullptr;
 		}
-#else
-		definition = p_struct.definition;
-		_cowdata = std::move(p_struct._cowdata);
-#endif
 	}
 };
 
@@ -642,23 +605,16 @@ public:
 			VariantStruct(p_struct) {}
 
 	NativeVariantStruct(const T &p_struct) {
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
 		allocate(NativeStructDefinition<T>::get_definition());
-		new (reinterpret_cast<T *>(instance)) T(p_struct);
-#else
-		definition = NativeStructDefinition<T>::get_definition();
-		_cowdata.resize(definition->get_size());
-		new (reinterpret_cast<T *>(_cowdata.ptrw())) T(p_struct);
-#endif
+		definition->copy_constructor(struct_ptr(), definition, &p_struct);
 	}
-	NativeVariantStruct(T &&p_struct) {
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
-		allocate(NativeStructDefinition<T>::get_definition());
-		new (reinterpret_cast<T *>(instance)) T(p_struct);
-#else
-		definition = NativeStructDefinition<T>::get_definition();
-		_cowdata.resize(definition->get_size());
-		new (reinterpret_cast<T *>(_cowdata.ptrw())) T(p_struct);
-#endif
-	}
+	// NativeVariantStruct(T &&p_struct) {
+	// 	allocate(NativeStructDefinition<T>::get_definition());
+	// 	definition->move_constructor(struct_ptr(), definition, &p_struct);
+	// }
 };
+
+#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
+StructDefinition::StructPropertyInfo::StructPropertyInfo(StringName p_name, MemberAddress p_address, TypeInfo p_type) :
+		name{ p_name }, address{ *reinterpret_cast<const MemberAddress *>(&p_address) + VariantStruct::STRUCT_OFFSET }, type{ p_type } {}
+#endif

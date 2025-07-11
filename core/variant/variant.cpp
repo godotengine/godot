@@ -1773,7 +1773,7 @@ String Variant::stringify(int recursion_count) const {
 			return "RID(" + itos(s.get_id()) + ")";
 		}
 		case STRUCT: {
-			// TODO
+// TODO
 		}
 		default: {
 			return "<" + get_type_name(type) + ">";
@@ -2869,7 +2869,7 @@ uint32_t Variant::hash() const {
 }
 
 uint32_t Variant::recursive_hash(int recursion_count) const {
-	// TODO
+// TODO
 	switch (type) {
 		case NIL: {
 			return 0;
