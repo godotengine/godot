@@ -30,12 +30,12 @@
 
 #pragma once
 
+#include "variant.h"
+
 #include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
 
-#include "variant.h"
-#include "core/variant/variant_struct.h"
-
 #include "core/templates/simple_type.h"
+#include "core/variant/variant_struct.h"
 
 // For use when you want to access the internal pointer of a Variant directly.
 // Use with caution. You need to be sure that the type is correct.
@@ -333,7 +333,7 @@ public:
 		v->type = Variant::OBJECT;
 	}
 	_FORCE_INLINE_ static void init_struct(Variant *v) {
-		new(get_struct(v)) VariantStruct;
+		new (get_struct(v)) VariantStruct;
 		v->type = Variant::STRUCT;
 	}
 

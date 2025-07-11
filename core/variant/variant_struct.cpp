@@ -55,11 +55,11 @@ void VariantStruct::set(const StringName &p_name, const Variant &p_value, bool &
 			r_valid = false;
 		} else {
 			// prop->type->ptr_set( member_ptrw(prop), VariantInternal::get_opaque_pointer(&p_value) ); // couldn't figure out why variant_internal.h was causing errors so commented out for now
-			prop->type->write( member_ptrw(prop), p_value ); // (note: this is slightly less efficient)
+			prop->type->write(member_ptrw(prop), p_value); // (note: this is slightly less efficient)
 			r_valid = true;
 		}
 	} else if (Variant::can_convert(val_type, prop_type)) {
-		prop->type->write( member_ptrw(prop), p_value );
+		prop->type->write(member_ptrw(prop), p_value);
 		r_valid = true;
 	} else {
 		r_valid = false;
@@ -123,11 +123,17 @@ const size_t StructDefinition::get_size() const {
 	for (const StructPropertyInfo &E : properties) {
 		const size_t a = E.type->align();
 		const size_t c = E.type->size() + E.address;
-		if (c > cap) cap = c;
-		if (a > maxalign) maxalign = a;
+		if (c > cap) {
+			cap = c;
+		}
+		if (a > maxalign) {
+			maxalign = a;
+		}
 	}
 	size_t overstep = cap % maxalign;
-	if (overstep == 0) return cap;
+	if (overstep == 0) {
+		return cap;
+	}
 	return cap + maxalign - overstep;
 }
 
@@ -169,7 +175,7 @@ const StructDefinition::StructPropertyInfo *StructDefinition::get_property_info(
 	// 	} break;
 	// }
 
-	// (again, slighlty less efficient)
+	// (again, slightly less efficient)
 	switch (p_property.get_type()) {
 		case Variant::Type::INT: {
 			return get_property_info(p_property.operator int());

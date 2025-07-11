@@ -494,7 +494,7 @@ PhysicsDirectSpaceState3D::PhysicsDirectSpaceState3D() {
 }
 
 void PhysicsDirectSpaceState3D::_bind_methods() {
-	REGISTER_INBUILT_STRUCT(PhysicsDirectSpaceState3D,RayResult);
+	REGISTER_INBUILT_STRUCT(PhysicsDirectSpaceState3D, RayResult);
 
 	ClassDB::bind_method(D_METHOD("intersect_point", "parameters", "max_results"), &PhysicsDirectSpaceState3D::_intersect_point, DEFVAL(32));
 	ClassDB::bind_method(D_METHOD("intersect_ray", "parameters"), &PhysicsDirectSpaceState3D::_intersect_ray);
@@ -505,15 +505,14 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
 
-VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D,RayResult,
-	VARIANT_STRUCT_PROPERTY(position),
-	VARIANT_STRUCT_PROPERTY(normal),
-	VARIANT_STRUCT_PROPERTY(rid),
-	VARIANT_STRUCT_PROPERTY(collider_id),
-	VARIANT_STRUCT_PROPERTY(collider),
-	VARIANT_STRUCT_PROPERTY(shape),
-	VARIANT_STRUCT_PROPERTY(face_index),
-);
+VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D, RayResult,
+		VARIANT_STRUCT_PROPERTY(position),
+		VARIANT_STRUCT_PROPERTY(normal),
+		VARIANT_STRUCT_PROPERTY(rid),
+		VARIANT_STRUCT_PROPERTY(collider_id),
+		VARIANT_STRUCT_PROPERTY(collider),
+		VARIANT_STRUCT_PROPERTY(shape),
+		VARIANT_STRUCT_PROPERTY(face_index));
 
 ///////////////////////////////
 
