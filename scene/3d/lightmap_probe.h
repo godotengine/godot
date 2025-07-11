@@ -34,6 +34,4 @@
 
 class LightmapProbe : public Node3D {
 	GDCLASS(LightmapProbe, Node3D)
-public:
-	LightmapProbe();
 };
