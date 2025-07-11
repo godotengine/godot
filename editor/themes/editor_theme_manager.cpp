@@ -286,8 +286,8 @@ EditorThemeManager::ThemeConfiguration EditorThemeManager::_create_theme_config(
 
 			// Please use alphabetical order if you're adding a new theme here.
 			if (config.preset == "Breeze Dark") {
-				preset_accent_color = Color(0.26, 0.76, 1.00);
-				preset_base_color = Color(0.24, 0.26, 0.28);
+				preset_accent_color = Color(0.239, 0.682, 0.914);
+				preset_base_color = Color(0.1255, 0.1373, 0.149);
 				preset_contrast = config.default_contrast;
 			} else if (config.preset == "Godot 2") {
 				preset_accent_color = Color(0.53, 0.67, 0.89);
