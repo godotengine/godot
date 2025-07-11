@@ -4,7 +4,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
 
     // Godot user plugins remote gradle plugins
-    String[] remotePlugs = getGodotPluginsRemoteGradlePluginsWithoutVersion()
+    String[] remotePlugs = getGodotPluginsRemoteGradlePlugins()
     if (remotePlugs != null && remotePlugs.size() > 0) {
         for (String plug : remotePlugs) {
             plug

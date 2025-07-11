@@ -1,13 +1,5 @@
 plugins {
     id 'io.github.gradle-nexus.publish-plugin'
-
-    // Godot user plugins remote gradle plugins
-    String[] remotePlugs = getGodotPluginsRemoteGradlePluginsWithVersion()
-    if (remotePlugs != null && remotePlugs.size() > 0) {
-        for (String plug : remotePlugs) {
-            plug
-        }
-    }
 }
 
 apply from: 'app/config.gradle'
