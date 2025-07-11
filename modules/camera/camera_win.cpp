@@ -368,6 +368,9 @@ void CameraFeedWindows::read() {
 
 			buffer->Unlock();
 			buffer->Release();
+
+			// delete when https://github.com/godotengine/godot/pull/104809 is merged
+			call_deferred("emit_signal", SNAME("frame_changed"));
 		}
 		pSample->Release();
 	}
@@ -457,6 +460,9 @@ void CameraWindows::update_feeds() {
 
 		source_attributes->Release();
 	}
+
+	// waiting for merge of https://github.com/godotengine/godot/pull/108165
+	// emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 CameraWindows::CameraWindows() {
