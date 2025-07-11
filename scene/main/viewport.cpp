@@ -4302,8 +4302,7 @@ Camera2D *Viewport::get_camera_2d() const {
 
 void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
 	ERR_MAIN_THREAD_GUARD;
-	List<Node *> camera_list;
-	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
+	Vector<Node *> camera_list = get_tree()->get_nodes_in_group(p_camera_group);
 
 	Camera2D *new_camera = nullptr;
 	for (Node *E : camera_list) {

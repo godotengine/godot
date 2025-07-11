@@ -1565,22 +1565,20 @@ Node *SceneTree::get_first_node_in_group(const StringName &p_group) {
 	return E->value.nodes[0];
 }
 
-void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_list) {
+Vector<Node *> SceneTree::get_nodes_in_group(const StringName &p_group) {
 	_THREAD_SAFE_METHOD_
 	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
 	if (!E) {
-		return;
+		return {};
 	}
 
 	_update_group_order(E->value); //update order just in case
 	int nc = E->value.nodes.size();
 	if (nc == 0) {
-		return;
+		return {};
 	}
-	Node **ptr = E->value.nodes.ptrw();
-	for (int i = 0; i < nc; i++) {
-		p_list->push_back(ptr[i]);
-	}
+
+	return E->value.nodes;
 }
 
 void SceneTree::_flush_delete_queue() {

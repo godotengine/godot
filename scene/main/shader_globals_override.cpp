@@ -226,8 +226,7 @@ void ShaderGlobalsOverride::_get_property_list(List<PropertyInfo> *p_list) const
 
 void ShaderGlobalsOverride::_activate() {
 	ERR_FAIL_NULL(get_tree());
-	List<Node *> nodes;
-	get_tree()->get_nodes_in_group(SceneStringName(shader_overrides_group_active), &nodes);
+	Vector<Node *> nodes = get_tree()->get_nodes_in_group(SceneStringName(shader_overrides_group_active));
 	if (nodes.is_empty()) {
 		//good we are the only override, enable all
 		active = true;
