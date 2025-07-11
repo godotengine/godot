@@ -270,10 +270,10 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_NEAREST_MIPMAP_NEAREST;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				} else {
 					pmin = GL_NEAREST_MIPMAP_LINEAR;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				}
 			} break;
 			case RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
@@ -287,10 +287,10 @@ struct Texture {
 					max_lod = 0;
 				} else if (config->use_nearest_mip_filter) {
 					pmin = GL_LINEAR_MIPMAP_NEAREST;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				} else {
 					pmin = GL_LINEAR_MIPMAP_LINEAR;
-					max_lod = 1000;
+					max_lod = mipmaps - 1;
 				}
 			} break;
 			default: {
