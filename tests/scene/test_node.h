@@ -160,16 +160,15 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tr
 	}
 
 	SUBCASE("Node should be accessible via group") {
-		List<Node *> nodes;
-		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		Vector<Node *> nodes = SceneTree::get_singleton()->get_nodes_in_group("nodes");
 		CHECK(nodes.is_empty());
 
 		node->add_to_group("nodes");
 
-		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		nodes = SceneTree::get_singleton()->get_nodes_in_group("nodes");
 		CHECK_EQ(nodes.size(), 1);
-		List<Node *>::Element *E = nodes.front();
-		CHECK_EQ(E->get(), node);
+		Node *E = nodes.get(0);
+		CHECK_EQ(E, node);
 	}
 
 	SUBCASE("Node should be possible to find") {
@@ -394,11 +393,10 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	}
 
 	SUBCASE("Nodes should be accessible via their groups") {
-		List<Node *> nodes;
-		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		Vector<Node *> nodes = SceneTree::get_singleton()->get_nodes_in_group("nodes");
 		CHECK(nodes.is_empty());
 
-		SceneTree::get_singleton()->get_nodes_in_group("other_nodes", &nodes);
+		nodes = SceneTree::get_singleton()->get_nodes_in_group("other_nodes");
 		CHECK(nodes.is_empty());
 
 		node1->add_to_group("nodes");
@@ -406,34 +404,34 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		node1_1->add_to_group("nodes");
 		node1_1->add_to_group("other_nodes");
 
-		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		nodes = SceneTree::get_singleton()->get_nodes_in_group("nodes");
 		CHECK_EQ(nodes.size(), 2);
 
-		List<Node *>::Element *E = nodes.front();
-		CHECK_EQ(E->get(), node1);
-		E = E->next();
-		CHECK_EQ(E->get(), node1_1);
+		Node *E = nodes.get(0);
+		CHECK_EQ(E, node1);
+		E = nodes.get(1);
+		CHECK_EQ(E, node1_1);
 
 		// Clear and try again with the other group.
 		nodes.clear();
 
-		SceneTree::get_singleton()->get_nodes_in_group("other_nodes", &nodes);
+		nodes = SceneTree::get_singleton()->get_nodes_in_group("other_nodes");
 		CHECK_EQ(nodes.size(), 2);
 
-		E = nodes.front();
-		CHECK_EQ(E->get(), node1_1);
-		E = E->next();
-		CHECK_EQ(E->get(), node2);
+		E = nodes.get(0);
+		CHECK_EQ(E, node1_1);
+		E = nodes.get(1);
+		CHECK_EQ(E, node2);
 
 		// Clear and try again with the other group and one node removed.
 		nodes.clear();
 
 		node1->remove_from_group("nodes");
-		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		nodes = SceneTree::get_singleton()->get_nodes_in_group("nodes");
 		CHECK_EQ(nodes.size(), 1);
 
-		E = nodes.front();
-		CHECK_EQ(E->get(), node1_1);
+		E = nodes.get(0);
+		CHECK_EQ(E, node1_1);
 	}
 
 	SUBCASE("Nodes added as siblings of another node should be right next to it") {
@@ -472,12 +470,11 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		node1->add_to_group("nodes");
 		node1->replace_by(node2, true);
 
-		List<Node *> nodes;
-		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		Vector<Node *> nodes = SceneTree::get_singleton()->get_nodes_in_group("nodes");
 		CHECK_EQ(nodes.size(), 1);
 
-		List<Node *>::Element *E = nodes.front();
-		CHECK_EQ(E->get(), node2);
+		Node *E = nodes.get(0);
+		CHECK_EQ(E, node2);
 	}
 
 	SUBCASE("Duplicating a node should also duplicate the children") {
