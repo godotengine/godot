@@ -35,7 +35,7 @@
 class StaticRaycaster : public RefCounted {
 	GDCLASS(StaticRaycaster, RefCounted)
 protected:
-	static StaticRaycaster *(*create_function)();
+	static inline StaticRaycaster *(*create_function)() = nullptr;
 
 public:
 	// Compatible with embree4 rays.
@@ -94,5 +94,10 @@ public:
 	virtual void set_mesh_filter(const HashSet<int> &p_mesh_ids) = 0;
 	virtual void clear_mesh_filter() = 0;
 
-	static Ref<StaticRaycaster> create();
+	static Ref<StaticRaycaster> create() {
+		if (create_function) {
+			return Ref<StaticRaycaster>(create_function());
+		}
+		return Ref<StaticRaycaster>();
+	}
 };

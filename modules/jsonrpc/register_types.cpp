@@ -42,8 +42,4 @@ void initialize_jsonrpc_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(JSONRPC);
 }
 
-void uninitialize_jsonrpc_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+void uninitialize_jsonrpc_module(ModuleInitializationLevel p_level) {}
