@@ -1542,13 +1542,9 @@ void ClassDB::get_property_list(const StringName &p_class, List<PropertyInfo> *p
 	ClassInfo *check = type;
 	while (check) {
 		for (const PropertyInfo &pi : check->property_list) {
+			p_list->push_back(pi);
 			if (p_validator) {
-				// Making a copy as we may modify it.
-				PropertyInfo pi_mut = pi;
-				p_validator->validate_property(pi_mut);
-				p_list->push_back(pi_mut);
-			} else {
-				p_list->push_back(pi);
+				p_validator->validate_property(p_list->back()->get());
 			}
 		}
 
