@@ -808,12 +808,20 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 #ifndef PHYSICS_3D_DISABLED
 	if (col_debug.size()) {
+		SceneTree *st = SceneTree::get_singleton();
+
+		Vector<Color> colors;
+		colors.resize(col_debug.size());
+		if (st) {
+			colors.fill(st->get_debug_collisions_color());
+		}
+
 		Array arr;
 		arr.resize(RS::ARRAY_MAX);
 		arr[RS::ARRAY_VERTEX] = col_debug;
+		arr[RS::ARRAY_COLOR] = colors;
 
 		RS::get_singleton()->mesh_add_surface_from_arrays(g.collision_debug, RS::PRIMITIVE_LINES, arr);
-		SceneTree *st = SceneTree::get_singleton();
 		if (st) {
 			RS::get_singleton()->mesh_surface_set_material(g.collision_debug, 0, st->get_debug_collision_material()->get_rid());
 		}
