@@ -44,8 +44,9 @@
 
 # Editor
 
+/editor/                                      @godotengine/docks
 /editor/script/                               @godotengine/script-editor
-/editor/shader/                               @godotengine/shaders
+/editor/shader/                               @godotengine/script-editor @godotengine/shaders
 /editor/animation/                            @godotengine/animation
 /editor/audio/                                @godotengine/audio
 /editor/debugger/                             @godotengine/debugger
@@ -57,9 +58,12 @@
 /editor/inspector/                            @godotengine/docks
 /editor/scene/                                @godotengine/core
 /editor/scene/2d/                             @godotengine/2d-editor
+/editor/scene/2d/physics                      @godotengine/2d-editor @godotengine/physics
 /editor/scene/3d/                             @godotengine/3d-editor
+/editor/scene/3d/physics                      @godotengine/3d-editor @godotengine/physics
 /editor/scene/gui/                            @godotengine/usability @godotengine/gui-nodes
 /editor/themes/                               @godotengine/usability @godotengine/gui-nodes
+/editor/translations/                         @godotengine/usability
 
 # Main
 
