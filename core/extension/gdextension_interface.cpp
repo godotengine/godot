@@ -33,7 +33,7 @@
 #include "core/config/engine.h"
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
-#include "core/extension/gdextension_spx_ext.h"
+#include "core/extension/spx_util.h"
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/xml_parser.h"
@@ -43,7 +43,6 @@
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
-
 #include <string.h>
 
 class CallableCustomExtension : public CallableCustom {
@@ -1699,7 +1698,9 @@ void setup_spx_interface() {
 	REGISTER_INTERFACE_FUNC(spx_string_to_utf8_chars);
 	REGISTER_INTERFACE_FUNC(spx_variant_get_ptr_constructor);
 	REGISTER_INTERFACE_FUNC(spx_variant_get_ptr_destructor);
-	gdextension_spx_setup_interface();
+	if (SpxUtil::register_func) {
+		SpxUtil::register_func();
+	}
 }
 void gdextension_setup_interface() {
 	setup_spx_interface();

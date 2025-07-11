@@ -73,7 +73,7 @@ GdBool SpxPlatformMgr::is_window_fullscreen() {
 }
 
 void SpxPlatformMgr::set_debug_mode(GdBool enable) {
-	Spx::debug_mode = enable;
+	Spx::set_debug_mode(enable);
 }
 
 GdBool SpxPlatformMgr::is_debug_mode() {

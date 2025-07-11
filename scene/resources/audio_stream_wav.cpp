@@ -33,9 +33,6 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/marshalls.h"
 
-const float TRIM_DB_LIMIT = -50;
-const int TRIM_FADE_OUT_FRAMES = 500;
-
 void AudioStreamPlaybackWAV::start(double p_from_pos) {
 	if (base->format == AudioStreamWAV::FORMAT_IMA_ADPCM) {
 		//no seeking in IMA_ADPCM

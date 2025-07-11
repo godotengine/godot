@@ -1,12 +1,12 @@
-#ifndef SPX_IMPORTER_WAV_H
-#define SPX_IMPORTER_WAV_H
+#ifndef AUDIO_IMPORTER_WAV_H
+#define AUDIO_IMPORTER_WAV_H
 
-#include "gdextension_spx_ext.h"
-#include "spx_base_mgr.h"
+#include "core/io/resource_importer.h"
+#include "scene/resources/audio_stream_wav.h"
 
 class AudioStreamWAV;
 
-class SpxImporterWav {
+class AudioImporterWav {
 public:
 	static void _compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &dst_data) {
 		static const int16_t _ima_adpcm_step_table[89] = {
@@ -103,4 +103,4 @@ public:
 	static Error import_asset(Ref<AudioStreamWAV> &sample, const String &p_source_file, const HashMap<StringName, Variant> &p_options);
 };
 
-#endif // SPX_IMPORTER_WAV_H
+#endif // AUDIO_IMPORTER_WAV_H

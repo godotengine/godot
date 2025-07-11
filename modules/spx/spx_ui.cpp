@@ -38,6 +38,10 @@ void SpxUi::set_control_item(Control *ctrl) {
 	this->control = ctrl;
 }
 
+void SpxUi::on_click_internal() {
+	uiMgr->on_click(this);
+}
+
 SpxControl *SpxUi::get_control() {
 	return control;
 }

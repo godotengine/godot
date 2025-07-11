@@ -1,7 +1,7 @@
 
 #include "os_web.h"
 #include "core/extension/gdextension_interface.h"
-#include "core/extension/spx_engine.h"
+#include "modules/spx/spx_engine.h"
 #include "godot_js.h"
 #include <emscripten.h>
 

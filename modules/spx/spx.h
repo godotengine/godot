@@ -38,6 +38,9 @@ public:
 	static bool debug_mode;
 	static String project_data_path;
 public:
+	static void register_extension_functions();
+	static void set_debug_mode(bool enable);
+
 	static void register_types();
 	static void on_start(void *p_tree);
 	static void on_fixed_update(double delta);

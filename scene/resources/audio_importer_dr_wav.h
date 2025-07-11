@@ -135,8 +135,8 @@ Notes
 - dr_wav will try to read the WAV file as best it can, even if it's not strictly conformant to the WAV format.
 */
 
-#ifndef spx_importer_dr_wav_h
-#define spx_importer_dr_wav_h
+#ifndef audio_importer_dr_wav_h
+#define audio_importer_dr_wav_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -1320,7 +1320,7 @@ DRWAV_API drwav_bool32 drwav_fourcc_equal(const drwav_uint8* a, const char* b);
 #ifdef __cplusplus
 }
 #endif
-#endif  /* spx_importer_dr_wav_h */
+#endif  /* audio_importer_dr_wav_h */
 
 
 /************************************************************************************************************************************************************

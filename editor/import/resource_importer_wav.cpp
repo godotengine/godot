@@ -31,10 +31,10 @@
 #include "resource_importer_wav.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/spx_importer_wav.h"
 #include "core/io/file_access.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
+#include "scene/resources/audio_importer_wav.h"
 
 String ResourceImporterWAV::get_importer_name() const {
 	return "wav";
@@ -92,7 +92,10 @@ void ResourceImporterWAV::get_import_options(const String &p_path, List<ImportOp
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "PCM (Uncompressed),IMA ADPCM,Quite OK Audio"), 2));
 }
 Error ResourceImporterWAV::import_asset(Ref<AudioStreamWAV> &sample, const String &p_source_file, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	return SpxImporterWav::import_asset(sample,p_source_file,p_options);
+	return AudioImporterWav::import_asset(sample,p_source_file,p_options);
+}
+void ResourceImporterWAV::_compress_ima_adpcm(const Vector<float> &p_data, Vector<uint8_t> &dst_data) {
+	return AudioImporterWav::_compress_ima_adpcm(p_data,dst_data);
 }
 
 Error ResourceImporterWAV::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {

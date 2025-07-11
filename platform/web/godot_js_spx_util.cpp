@@ -1,4 +1,4 @@
-#include "core/extension/gdextension_spx_ext.h"
+#include "modules/spx/gdextension_spx_ext.h"
 #include "core/extension/gdextension.h"
 
 #include "godot_js_spx_util.h"

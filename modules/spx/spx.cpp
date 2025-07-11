@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "core/extension/spx_util.h"
 #include "spx.h"
 #include "gdextension_spx_ext.h"
 #include "scene/main/node.h"
@@ -41,11 +42,21 @@
 #ifdef MINIZIP_ENABLED
 #include "modules/zip/zip_reader.h"
 #endif
- 
+   
 #define SPX_ENGINE SpxEngine::get_singleton()
 bool Spx::initialed = false;
 bool Spx::debug_mode = false;
 String Spx::project_data_path;
+
+void Spx::register_extension_functions() {
+	SpxUtil::register_func = &gdextension_spx_setup_interface;
+	SpxUtil::debug_mode = debug_mode;
+}
+
+void Spx::set_debug_mode(bool enable) {
+	debug_mode = enable;
+	SpxUtil::debug_mode = enable;
+}
 
 void Spx::register_types() {
 	ClassDB::register_class<SpxSprite>();
