@@ -546,6 +546,40 @@ public:
 	bool is_empty() const {
 		return instance == nullptr;
 	}
+	void clear() {
+		if (instance) {
+			_unref();
+		}
+	}
+
+	template <class T>
+	_ALWAYS_INLINE_ T &get_struct() {
+		return *reinterpret_cast<T *>(struct_ptr());
+	}
+
+	// Creates a new instance of the given StructDefinition, without initialising any properties
+	// This is the only way to do this, and relies on the caller to be doing so intentionally (or risk undefined behaviour)
+	// (any other way of creating a VariantStruct instance either: allocates no additional memory; uses a given struct; or uses constructors)
+	_FORCE_INLINE_ static VariantStruct allocate_struct(const StructDefinition *p_definition) {
+		VariantStruct ret;
+		ret.allocate(p_definition);
+		return ret;
+	}
+	template <class T>
+	_ALWAYS_INLINE_ static VariantStruct allocate_struct() {
+		return allocate_struct(NativeStructDefinition<T>::get_definition());
+	}
+
+	_FORCE_INLINE_ static VariantStruct construct_new(const StructDefinition *p_definition) {
+		VariantStruct ret;
+		ret.allocate(p_definition);
+		p_definition->constructor(ret.struct_ptr(), p_definition);
+		return ret;
+	}
+	template <class T>
+	_ALWAYS_INLINE_ static VariantStruct construct_new() {
+		return construct_new(NativeStructDefinition<T>::get_definition());
+	}
 
 	~VariantStruct() {
 		if (instance) {
@@ -599,19 +633,39 @@ public:
 template <class T>
 class NativeVariantStruct : public VariantStruct {
 public:
-	NativeVariantStruct(const VariantStruct &p_struct) :
-			VariantStruct(p_struct) {}
-	NativeVariantStruct(VariantStruct &&p_struct) :
-			VariantStruct(p_struct) {}
-
-	NativeVariantStruct(const T &p_struct) {
-		allocate(NativeStructDefinition<T>::get_definition());
-		definition->copy_constructor(struct_ptr(), definition, &p_struct);
+	_ALWAYS_INLINE_ T &get_struct() {
+		return *reinterpret_cast<T *>(struct_ptr());
 	}
-	// NativeVariantStruct(T &&p_struct) {
-	// 	allocate(NativeStructDefinition<T>::get_definition());
-	// 	definition->move_constructor(struct_ptr(), definition, &p_struct);
-	// }
+
+	_ALWAYS_INLINE_ explicit NativeVariantStruct(bool p_should_construct) {
+		allocate(NativeStructDefinition<T>::get_definition());
+		if (p_should_construct) {
+			new (struct_ptr()) T;
+		}
+	}
+
+	_ALWAYS_INLINE_ NativeVariantStruct(const VariantStruct &p_struct) :
+			VariantStruct(p_struct) {}
+	_ALWAYS_INLINE_ NativeVariantStruct(VariantStruct &&p_struct) :
+			VariantStruct(std::move(p_struct)) {}
+
+	_ALWAYS_INLINE_ NativeVariantStruct(const T &p_struct) {
+		allocate(NativeStructDefinition<T>::get_definition());
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			*reinterpret_cast<T *>(struct_ptr()) = p_struct;
+		} else {
+			new (struct_ptr()) T(p_struct);
+		}
+	}
+
+	_ALWAYS_INLINE_ NativeVariantStruct(T &&p_struct) {
+		allocate(NativeStructDefinition<T>::get_definition());
+		if constexpr (std::is_trivially_move_constructible_v<T>) {
+			*reinterpret_cast<T *>(struct_ptr()) = p_struct;
+		} else {
+			new (struct_ptr()) T(p_struct);
+		}
+	}
 };
 
 #ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
