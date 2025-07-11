@@ -27,8 +27,6 @@ web_files = [
     "http_client_web.cpp",
     "javascript_bridge_singleton.cpp",
     "web_main.cpp",
-    "ip_web.cpp",
-    "net_socket_web.cpp",
     "os_web.cpp",
 ]
 
