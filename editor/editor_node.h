@@ -100,6 +100,7 @@ class ProjectExportDialog;
 class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
 class ProjectUpgradeTool;
+class SvgImportConversionTool;
 
 #ifdef ANDROID_ENABLED
 class TouchActionsPanel;
@@ -173,6 +174,7 @@ public:
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_PROJECT_UPGRADE,
+		TOOLS_SVG_IMPORT_CONVERSION,
 		TOOLS_CUSTOM,
 
 		VCS_METADATA,
@@ -493,6 +495,8 @@ private:
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
+	SvgImportConversionTool *svg_import_conversion_tool = nullptr;
+	bool run_svg_import_conversion_tool = false;
 
 	bool was_window_windowed_last = false;
 

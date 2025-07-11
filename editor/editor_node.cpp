@@ -162,6 +162,7 @@
 #include "editor/settings/project_settings_editor.h"
 #include "editor/shader/editor_native_shader_source_visualizer.h"
 #include "editor/shader/visual_shader_editor_plugin.h"
+#include "editor/svg_import_conversion_tool.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation_parser.h"
@@ -1076,6 +1077,10 @@ void EditorNode::_execute_upgrades() {
 		// Execute another scan to reimport the modified files.
 		project_upgrade_tool->connect(project_upgrade_tool->UPGRADE_FINISHED, callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
 		project_upgrade_tool->finish_upgrade();
+	} else if (run_svg_import_conversion_tool) {
+		run_svg_import_conversion_tool = false;
+		svg_import_conversion_tool->connect("conversion_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+		svg_import_conversion_tool->finish_conversion();
 	}
 }
 
@@ -3643,6 +3648,9 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		} break;
 		case TOOLS_PROJECT_UPGRADE: {
 			project_upgrade_tool->popup_dialog();
+		} break;
+		case TOOLS_SVG_IMPORT_CONVERSION: {
+			svg_import_conversion_tool->popup_dialog();
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -7560,6 +7568,13 @@ EditorNode::EditorNode() {
 		project_upgrade_tool->begin_upgrade();
 	}
 
+	// Similar warm up for the svg import upgrade tool.
+	svg_import_conversion_tool = memnew(SvgImportConversionTool);
+	run_svg_import_conversion_tool = EditorSettings::get_singleton()->get_project_metadata(svg_import_conversion_tool->META_SVG_IMPORT_CONVERSION_TOOL, svg_import_conversion_tool->META_RUN_ON_RESTART, false);
+	if (run_svg_import_conversion_tool) {
+		svg_import_conversion_tool->begin_conversion();
+	}
+
 	{
 		bool agile_input_event_flushing = EDITOR_GET("input/buffering/agile_event_flushing");
 		bool use_accumulated_input = EDITOR_GET("input/buffering/use_accumulated_input");
@@ -8122,6 +8137,7 @@ EditorNode::EditorNode() {
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files...")), TOOLS_PROJECT_UPGRADE);
+	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_svg_imports", TTRC("Convert SVG Import Files from Texture2D to SVGTexture...")), TOOLS_SVG_IMPORT_CONVERSION);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
@@ -8850,6 +8866,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(progress_hb);
 	memdelete(project_upgrade_tool);
+	memdelete(svg_import_conversion_tool);
 	memdelete(editor_dock_manager);
 
 	EditorSettings::destroy();
