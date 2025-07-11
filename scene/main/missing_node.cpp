@@ -101,8 +101,8 @@ void MissingNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_original_class", "name"), &MissingNode::set_original_class);
 	ClassDB::bind_method(D_METHOD("get_original_class"), &MissingNode::get_original_class);
 
-	ClassDB::bind_method(D_METHOD("set_original_scene", "name"), &MissingNode::set_original_class);
-	ClassDB::bind_method(D_METHOD("get_original_scene"), &MissingNode::get_original_class);
+	ClassDB::bind_method(D_METHOD("set_original_scene", "name"), &MissingNode::set_original_scene);
+	ClassDB::bind_method(D_METHOD("get_original_scene"), &MissingNode::get_original_scene);
 
 	ClassDB::bind_method(D_METHOD("set_recording_properties", "enable"), &MissingNode::set_recording_properties);
 	ClassDB::bind_method(D_METHOD("is_recording_properties"), &MissingNode::is_recording_properties);
