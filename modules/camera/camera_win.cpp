@@ -457,6 +457,8 @@ void CameraWindows::update_feeds() {
 
 		source_attributes->Release();
 	}
+
+	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 CameraWindows::CameraWindows() {
