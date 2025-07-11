@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
 
@@ -58,6 +59,8 @@ struct [[nodiscard]] Projection {
 		{ 0, 0, 1, 0 },
 		{ 0, 0, 0, 1 },
 	};
+
+	Vector2 offset = { 0.0, 0.0 };
 
 	constexpr const Vector4 &operator[](int p_axis) const {
 		DEV_ASSERT((unsigned int)p_axis < 4);
@@ -108,6 +111,7 @@ struct [[nodiscard]] Projection {
 	real_t get_z_near() const;
 	real_t get_aspect() const;
 	real_t get_fov() const;
+	Vector2 get_offset() const;
 	bool is_orthogonal() const;
 
 	Vector<Plane> get_projection_planes(const Transform3D &p_transform) const;

@@ -362,6 +362,7 @@ void Projection::set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear, 
 }
 
 void Projection::set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far) {
+	offset = Vector2(0.0, 0.0);
 	ERR_FAIL_COND(p_right <= p_left);
 	ERR_FAIL_COND(p_top <= p_bottom);
 	ERR_FAIL_COND(p_far <= p_near);
@@ -399,6 +400,7 @@ void Projection::set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, r
 	}
 
 	set_frustum(-p_size / 2 + p_offset.x, +p_size / 2 + p_offset.x, -p_size / p_aspect / 2 + p_offset.y, +p_size / p_aspect / 2 + p_offset.y, p_near, p_far);
+	offset = p_offset;
 }
 
 real_t Projection::get_z_far() const {
@@ -895,6 +897,10 @@ real_t Projection::get_lod_multiplier() const {
 	// - the matrix is a projection across z-axis (i.e. is invertible and columns[0][1], [0][3], [1][0] and [1][3] == 0)
 	// - the projection plane is rectangular (i.e. columns[0][2] and [1][2] == 0 if columns[2][3] != 0)
 	return 2 / columns[0][0];
+}
+
+Vector2 Projection::get_offset() const {
+	return offset;
 }
 
 void Projection::make_scale(const Vector3 &p_scale) {
