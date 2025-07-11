@@ -4,3 +4,5 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
+if not env["disable_physics_3d"]:
+    SConscript("physics/SCsub")
