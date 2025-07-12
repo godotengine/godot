@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENHARMONY_EXPORT_H
-#define OPENHARMONY_EXPORT_H
+#pragma once
 
 void register_openharmony_exporter_types();
 void register_openharmony_exporter();
 
-#endif // OPENHARMONY_EXPORT_H

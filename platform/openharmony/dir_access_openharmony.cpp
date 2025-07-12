@@ -30,13 +30,14 @@
 
 #include "dir_access_openharmony.h"
 #include "os_openharmony.h"
+
 #include <rawfile/raw_dir.h>
 #include <rawfile/raw_file_manager.h>
 
 NativeResourceManager *DirAccessOpenHarmony::resource_manager = nullptr;
 
 void DirAccessOpenHarmony::setup(NativeResourceManager *p_resource_manager) {
-    DirAccessOpenHarmony::resource_manager = p_resource_manager;
+	DirAccessOpenHarmony::resource_manager = p_resource_manager;
 }
 
 String DirAccessOpenHarmony::get_absolute_path(String p_path) {
