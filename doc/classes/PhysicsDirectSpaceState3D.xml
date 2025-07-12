@@ -90,4 +90,35 @@
 			</description>
 		</method>
 	</methods>
+	<structs>
+		<struct name="RayResult">
+			<brief_description>
+				Contains the results of [method PhysicsDirectSpaceState3D.intersect_ray]. May be empty.
+			</brief_description>
+			<members>
+				<member name="collider" type="Object">
+					The colliding object.
+				</member>
+				<member name="collider_id" type="int">
+					The colliding object's ID.
+				</member>
+				<member name="normal" type="Vector3">
+					The object's surface normal at the intersection point, or [code]Vector3(0, 0, 0)[/code] if the ray starts inside the shape and [member PhysicsRayQueryParameters3D.hit_from_inside] is [code]true[/code].
+				</member>
+				<member name="position" type="Vector3">
+					The intersection point.
+				</member>
+				<member name="face_index" type="int">
+					The face index at the intersection point.
+					[b]Note:[/b] Returns a valid number only if the intersected shape is a [ConcavePolygonShape3D]. Otherwise, [code]-1[/code] is returned.
+				</member>
+				<member name="rid" type="RID">
+					The intersection point.
+				</member>
+				<member name="shape" type="int">
+					The shape index of the colliding shape.
+				</member>
+			</members>
+		</struct>
+	</structs>
 </class>

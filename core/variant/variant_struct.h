@@ -1,0 +1,637 @@
+/**************************************************************************/
+/*  variant_struct.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
+#include "core/templates/heap_object.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
+
+class VariantStruct;
+
+namespace {
+	using VarStructPtrType = VarHeapPointer<SafeRefCount>;
+	constexpr size_t VarStructPtrAlign = alignof(max_align_t);
+}
+
+class StructDefinition : public VarHeapObject {
+	struct AbstractTypeInfo {
+		// IMPORTANT: *NEVER* add any properties to this!
+
+		// info
+		virtual size_t size() const = 0;
+		virtual size_t align() const = 0;
+		virtual Variant::Type get_variant_type() const = 0;
+		virtual const StringName get_class_name() const = 0;
+
+		// operations
+		virtual void construct(void *p_target) const = 0;
+		virtual void copy_construct(void *p_target, const void *p_value) const = 0;
+		virtual void destruct(void *p_target) const = 0;
+
+		virtual Variant read(const void *p_target) const = 0;
+		virtual void ptr_get(const void *p_target, void *p_into) const = 0;
+
+		virtual void write(void *p_target, const Variant &p_value) const = 0;
+		virtual void ptr_set(void *p_target, const void *p_value) const = 0;
+	};
+
+	template <typename T>
+	struct NativeTypeInfo : public AbstractTypeInfo {
+		// IMPORTANT: *NEVER* add any properties to this!
+
+		size_t size() const override {
+			return sizeof(T);
+		}
+		size_t align() const override {
+			return alignof(T);
+		}
+		// Variant::Type get_variant_type() const override {
+		// 	if constexpr (std::is_same_v<T,nullptr_t>) {
+		// 		return Variant::NIL;
+		// 	} else {
+		// 		return GetTypeInfo<T>::VARIANT_TYPE;
+		// 	}
+		// }
+		const StringName get_class_name() const override {
+			if constexpr (std::is_base_of_v<T, Object *>) {
+				return std::remove_pointer_t<T>::get_class_static();
+			} else {
+				// Only pointers to Object have class names
+				// (dev-note: not sure if we want to fail)
+				// ERR_FAIL_V_MSG(StringName(),"Cannot get class name for struct properties that are not Object pointers");
+				return StringName();
+			}
+		}
+
+		void construct(void *p_target) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else if constexpr (!std::is_trivially_constructible_v<T>) {
+				new (reinterpret_cast<T *>(p_target)) T;
+			} else {
+// TODO: assign default values for various types
+				// (should use same logic, like how Variant ints are always 0)
+			}
+		}
+		void copy_construct(void *p_target, const void *p_value) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else if constexpr (!std::is_trivially_copy_constructible_v<T>) {
+				new (reinterpret_cast<T *>(p_target)) T(*reinterpret_cast<const T *>(p_value));
+			} else {
+				*reinterpret_cast<T *>(p_target) = *reinterpret_cast<const T *>(p_value);
+			}
+		}
+		void destruct(void *p_target) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else if constexpr (!std::is_trivially_destructible_v<T>) {
+				reinterpret_cast<T *>(p_target)->~T();
+			}
+		}
+
+		Variant read(const void *p_target) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				return Variant(); // Return NIL
+			} else {
+				return Variant(*reinterpret_cast<const T *>(p_target));
+			}
+		}
+		void ptr_get(const void *p_target, void *p_into) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else {
+				*reinterpret_cast<T *>(p_into) = *reinterpret_cast<const T *>(p_target);
+			}
+		}
+
+		void write(void *p_target, const Variant &p_value) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else if constexpr (std::is_same_v<T, ObjectID>) {
+				// TODO: analyze why this is necessary
+				// Something about ambiguous casting?
+				// Should check with the maintainers on if this is intentional before making any changes to the engine
+				*reinterpret_cast<ObjectID *>(p_target) = static_cast<ObjectID>(static_cast<uint64_t>(p_value));
+			} else {
+				*reinterpret_cast<T *>(p_target) = static_cast<T>(p_value);
+			}
+		}
+		void ptr_set(void *p_target, const void *p_value) const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				// Do Nothing
+			} else {
+				*reinterpret_cast<T *>(p_target) = *reinterpret_cast<const T *>(p_value);
+			}
+		}
+
+		Variant::Type get_variant_type() const override {
+			if constexpr (std::is_same_v<T, nullptr_t>) {
+				return Variant::Type::NIL;
+			}
+
+			// atomic types
+			if constexpr (std::is_same_v<T, bool>) {
+				return Variant::Type::BOOL;
+			}
+			if constexpr (std::is_same_v<T, int64_t> || std::is_same_v<T, int32_t> || std::is_same_v<T, int16_t> || std::is_same_v<T, int8_t> || std::is_same_v<T, uint64_t> || std::is_same_v<T, uint32_t> || std::is_same_v<T, uint16_t> || std::is_same_v<T, uint8_t> || std::is_same_v<T, ObjectID>) {
+				return Variant::Type::INT;
+			}
+			if constexpr (std::is_same_v<T, real_t> || std::is_same_v<T, float> || std::is_same_v<T, double>) {
+				return Variant::Type::FLOAT;
+			}
+			if constexpr (std::is_same_v<T, String> || std::is_same_v<T, char *> || std::is_same_v<T, char32_t *> || std::is_same_v<T, IPAddress>) {
+				return Variant::Type::STRING;
+			}
+
+			// math types
+			if constexpr (std::is_same_v<T, Vector2>) {
+				return Variant::Type::VECTOR2;
+			}
+			if constexpr (std::is_same_v<T, Vector2i>) {
+				return Variant::Type::VECTOR2I;
+			}
+			if constexpr (std::is_same_v<T, Rect2>) {
+				return Variant::Type::RECT2;
+			}
+			if constexpr (std::is_same_v<T, Rect2i>) {
+				return Variant::Type::RECT2I;
+			}
+			if constexpr (std::is_same_v<T, Vector3>) {
+				return Variant::Type::VECTOR3;
+			}
+			if constexpr (std::is_same_v<T, Vector3i>) {
+				return Variant::Type::VECTOR3I;
+			}
+			if constexpr (std::is_same_v<T, Transform2D>) {
+				return Variant::Type::TRANSFORM2D;
+			}
+			if constexpr (std::is_same_v<T, Vector4>) {
+				return Variant::Type::VECTOR4;
+			}
+			if constexpr (std::is_same_v<T, Vector4i>) {
+				return Variant::Type::VECTOR4I;
+			}
+			if constexpr (std::is_same_v<T, Plane>) {
+				return Variant::Type::PLANE;
+			}
+			if constexpr (std::is_same_v<T, Quaternion>) {
+				return Variant::Type::QUATERNION;
+			}
+			if constexpr (std::is_same_v<T, ::AABB>) {
+				return Variant::Type::AABB;
+			}
+			if constexpr (std::is_same_v<T, Basis>) {
+				return Variant::Type::BASIS;
+			}
+			if constexpr (std::is_same_v<T, Transform3D>) {
+				return Variant::Type::TRANSFORM3D;
+			}
+			if constexpr (std::is_same_v<T, Projection>) {
+				return Variant::Type::PROJECTION;
+			}
+
+			// misc types
+			if constexpr (std::is_same_v<T, Color>) {
+				return Variant::Type::COLOR;
+			}
+			if constexpr (std::is_same_v<T, StringName>) {
+				return Variant::Type::STRING_NAME;
+			}
+			if constexpr (std::is_same_v<T, NodePath>) {
+				return Variant::Type::NODE_PATH;
+			}
+			if constexpr (std::is_same_v<T, ::RID>) {
+				return Variant::Type::RID;
+			}
+			if constexpr (std::is_base_of_v<Object *, T>) {
+				return Variant::Type::OBJECT;
+			}
+			if constexpr (std::is_same_v<T, Callable>) {
+				return Variant::Type::CALLABLE;
+			}
+			if constexpr (std::is_same_v<T, Signal>) {
+				return Variant::Type::SIGNAL;
+			}
+			if constexpr (std::is_same_v<T, Dictionary>) {
+				return Variant::Type::DICTIONARY;
+			}
+			if constexpr (std::is_same_v<T, VariantStruct>) {
+				return Variant::Type::STRUCT;
+			}
+			if constexpr (std::is_same_v<T, Array>) {
+				return Variant::Type::ARRAY;
+			}
+
+			// typed arrays
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_BYTE_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_INT32_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_INT64_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_FLOAT32_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_FLOAT64_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_STRING_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_VECTOR2_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_VECTOR3_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_COLOR_ARRAY;
+			}
+			if constexpr (std::is_same_v<T, T>) {
+				return Variant::Type::PACKED_VECTOR4_ARRAY;
+			}
+		}
+	};
+
+public:
+	// TypeInfo wraps NativeTypeInfo, allowing us to easily access the virtual table pointer while being compatible with arrays
+	struct TypeInfo {
+		uint8_t x[sizeof(NativeTypeInfo<int>)];
+		_FORCE_INLINE_ const AbstractTypeInfo *const operator->() const {
+			return reinterpret_cast<const AbstractTypeInfo *const>(this);
+		}
+
+	private:
+		TypeInfo() {} // should only be "constructed" through get_native_type_info
+	};
+
+	template <typename T>
+	_ALWAYS_INLINE_ static TypeInfo get_native_type_info() {
+		NativeTypeInfo<T> ret;
+		return *reinterpret_cast<TypeInfo *>(&ret);
+	}
+
+public:
+	// MemberAddress is defined as the equivalent integer of any pointer-to-member
+	using MemberAddress = VarStructPtrType::MemberDataPointer;
+
+	struct StructPropertyInfo {
+		StringName name;
+		MemberAddress address;
+		TypeInfo type;
+
+		StructPropertyInfo() :
+				type{ get_native_type_info<nullptr_t>() } {}
+		_ALWAYS_INLINE_ StructPropertyInfo(StringName p_name, MemberAddress p_address, TypeInfo p_type) :
+				name{ p_name }, address{ p_address }, type{ p_type } {}
+	};
+
+	template <typename ST, typename MT>
+	_ALWAYS_INLINE_ static StructPropertyInfo build_native_property(StringName const &p_name, const MT ST::*const &p_member_pointer) {
+		return StructPropertyInfo(p_name, p_member_pointer, get_native_type_info<MT>());
+	}
+
+	typedef void (*StructConstructor)(VarStructPtrType, const StructDefinition *);
+	typedef void (*StructCopyConstructor)(VarStructPtrType, const StructDefinition *, const VarStructPtrType);
+	typedef void (*StructDestructor)(VarStructPtrType, const StructDefinition *);
+
+	// -- StructDefinition definition starts here
+public:
+	// StructDefinition Properties
+	StringName qualified_name;
+	StructConstructor constructor;
+	StructCopyConstructor copy_constructor;
+	StructDestructor destructor;
+	size_t size;
+	VarHeapData<StructPropertyInfo> properties;
+
+	const StructPropertyInfo *get_property_info(const int &p_property_index) const;
+	// const StructPropertyInfo *get_property_info(const int &p_property_index) const {
+	// 	ERR_FAIL_INDEX_V(p_property_index, properties.size(), nullptr);
+	// 	return &properties[p_property_index];
+	// }
+	const StructPropertyInfo *get_property_info(const StringName &p_property) const;
+	const StructPropertyInfo *get_property_info(const String &p_property) const;
+	const StructPropertyInfo *get_property_info(const Variant &p_property) const;
+
+	static void generic_constructor(VarStructPtrType p_struct, const StructDefinition *p_definition);
+	static void generic_copy_constructor(VarStructPtrType p_struct, const StructDefinition *p_definition, const VarStructPtrType p_other);
+	static void generic_destructor(VarStructPtrType p_struct, const StructDefinition *p_definition);
+	static void trivial_destructor(VarStructPtrType p_struct, const StructDefinition *p_definition) {}
+
+	static const StructDefinition *get_native(const StringName &p_name);
+	static void _register_native_definition(StructDefinition **p_definition);
+	static void unregister_native_types();
+	static void _register_struct_definition(StructDefinition *p_definition, bool to_clear = true);
+	static void clean_struct_definitions();
+
+private:
+	StructDefinition(StringName p_qualified_name, size_t p_size,  StructConstructor p_constructor, StructCopyConstructor p_copy_constructor, StructDestructor p_destructor) :
+			qualified_name{ p_qualified_name }, size{ p_size }, constructor{ p_constructor }, copy_constructor{ p_copy_constructor }, destructor{ p_destructor } {}
+public:
+	static StructDefinition *create (std::initializer_list<StructPropertyInfo> p_properties, StringName p_qualified_name, size_t p_size, StructConstructor p_constructor, StructCopyConstructor p_copy_constructor, StructDestructor p_destructor) {
+		void *ptr = heap_allocate(&StructDefinition::properties, p_properties);
+		new (ptr) StructDefinition(p_qualified_name, p_size, p_constructor, p_copy_constructor, p_destructor);
+		return reinterpret_cast<StructDefinition *>(ptr);
+	}
+};
+
+///////////////////////////////
+
+template <class T>
+struct NativeStructDefinition {
+	friend class VariantStruct;
+
+private:
+	static StructDefinition *sdef;
+	static StructDefinition *build_definition();
+
+	// These shouldn't ever be needed, as any native struct that should be used for this should not generally define any of these
+	// static void move_construct (void *p_struct, StructDefinition *p_definition, void *p_other) {
+	// 	if constexpr (!std::is_trivially_constructible_v<T>) {
+	// 		new (reinterpret_cast<T *>(p_struct)) T (std::move(*reinterpret_cast<T *>(p_other)));
+	// 	}
+	// }
+	// static void copy_assign (void *p_struct, StructDefinition *p_definition, void *p_other) {
+	// 	if constexpr (!std::is_trivially_constructible_v<T>) {
+	// 		*reinterpret_cast<T *>(p_struct) = *reinterpret_cast<T *>(p_other);
+	// 	}
+	// }
+
+	// If there are any non-trivial properties, C++ should be able to handle these operations faster than the generic variants above
+	static void init_struct(VarStructPtrType p_struct, const StructDefinition *p_definition) {
+		if constexpr (!std::is_trivially_constructible_v<T>) {
+			new (p_struct.get_heap<T>(VarStructPtrAlign)) T();
+		}
+	}
+	static void copy_construct(VarStructPtrType p_struct, const StructDefinition *p_definition, const VarStructPtrType p_other) {
+		if constexpr (!std::is_trivially_copy_constructible_v<T>) {
+			new (p_struct.get_heap<T>(VarStructPtrAlign)) T(*p_other.get_heap<T>(VarStructPtrAlign));
+		}
+	}
+	static void deinit_struct(VarStructPtrType p_struct, const StructDefinition *p_definition) {
+		if constexpr (!std::is_trivially_destructible_v<T>) {
+			p_struct.get_heap<T>(VarStructPtrAlign)->~T();
+		}
+	}
+
+public:
+	static void clear_definition() {
+		if (sdef != nullptr) {
+			memdelete(sdef);
+			sdef = nullptr;
+		}
+	}
+	static const StructDefinition *get_definition() {
+		if (sdef == nullptr) {
+			sdef = build_definition();
+			StructDefinition::_register_native_definition(&sdef);
+		}
+		return sdef;
+	}
+};
+
+template <class T>
+StructDefinition *NativeStructDefinition<T>::sdef = nullptr;
+
+///////////////////////////////
+
+class VariantStruct {
+	friend class StructDefinition;
+
+protected:
+	const StructDefinition *definition;
+	VarStructPtrType instance;
+
+	_ALWAYS_INLINE_ void *struct_ptr() {
+		return instance.get_heap(VarStructPtrAlign);
+	}
+
+	// Assigns memory for the given struct definition
+	// NOTE: does not construct it, but does initialise the reference counter
+	// void allocate(const StructDefinition *p_definition);
+	void allocate(const StructDefinition *p_definition) {
+		if (instance) {
+			_unref();
+		}
+		definition = p_definition;
+		instance.allocate(VarStructPtrAlign, definition->size);
+		instance->init();
+	}
+
+#ifdef VSTRUCT_IS_REFERENCE_TYPE
+	// NOTE: member_ptr DOES NOT check if instance != nullptr
+	// It is presumed that anywhere these are called has already done that
+	_ALWAYS_INLINE_ void *member_ptr(const StructDefinition::MemberAddress &address) {
+		return instance->*address;
+	}
+	_ALWAYS_INLINE_ void *member_ptr(const StructDefinition::StructPropertyInfo *prop) {
+		return member_ptr(prop->address);
+	}
+
+	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::MemberAddress &address) const {
+		return instance->*address;
+	}
+	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::StructPropertyInfo *prop) const {
+		return member_ptr(prop->address);
+	}
+#else
+	void _copy_on_write() {
+		if (instance->get() > 1) {
+			void *copy_from = struct_ptr();
+			allocate(definition);
+			definition->copy_constructor(struct_ptr(), definition, copy_from);
+		}
+	}
+
+	// NOTE: member_ptr and member_ptrw DO NOT check if instance != nullptr
+	// It is presumed that anywhere these are called has already done that
+	_ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::MemberAddress &address) {
+		_copy_on_write();
+		return instance->*address;
+	}
+	_ALWAYS_INLINE_ void *member_ptrw(const StructDefinition::StructPropertyInfo *prop) {
+		return member_ptrw(prop->address);
+	}
+
+	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::MemberAddress &address) const {
+		return instance->*address;
+	}
+	_ALWAYS_INLINE_ const void *member_ptr(const StructDefinition::StructPropertyInfo *prop) const {
+		return member_ptr(prop->address);
+	}
+#endif
+
+	void _unref() {
+		if (instance->unref()) {
+			// Call the destructor for the type, then free the memory
+			if (definition->destructor != StructDefinition::trivial_destructor) {
+				definition->destructor(struct_ptr(), definition);
+			}
+			instance.free();
+		}
+		instance = nullptr;
+	}
+
+public:
+	void set(const StringName &p_name, const Variant &p_value, bool &r_valid);
+	Variant get(const StringName &p_name, bool &r_valid) const;
+
+	bool is_empty() const {
+		return instance == nullptr;
+	}
+	void clear() {
+		if (instance) {
+			_unref();
+		}
+	}
+
+	template <class T>
+	_ALWAYS_INLINE_ T &get_struct() {
+		return *reinterpret_cast<T *>(struct_ptr());
+	}
+
+	// Creates a new instance of the given StructDefinition, without initialising any properties
+	// This is the only way to do this, and relies on the caller to be doing so intentionally (or risk undefined behaviour)
+	// (any other way of creating a VariantStruct instance either: allocates no additional memory; uses a given struct; or uses constructors)
+	_FORCE_INLINE_ static VariantStruct allocate_struct(const StructDefinition *p_definition) {
+		VariantStruct ret;
+		ret.allocate(p_definition);
+		return ret;
+	}
+	template <class T>
+	_ALWAYS_INLINE_ static VariantStruct allocate_struct() {
+		return allocate_struct(NativeStructDefinition<T>::get_definition());
+	}
+
+	_FORCE_INLINE_ static VariantStruct construct_new(const StructDefinition *p_definition) {
+		VariantStruct ret;
+		ret.allocate(p_definition);
+		p_definition->constructor(ret.struct_ptr(), p_definition);
+		return ret;
+	}
+	template <class T>
+	_ALWAYS_INLINE_ static VariantStruct construct_new() {
+		return construct_new(NativeStructDefinition<T>::get_definition());
+	}
+
+	~VariantStruct() {
+		if (instance) {
+			_unref();
+		}
+	}
+
+	VariantStruct() :
+			definition(nullptr), instance(nullptr) {}
+
+	VariantStruct(const VariantStruct &p_struct) :
+			definition(p_struct.definition), instance(p_struct.instance) {
+		if (instance) {
+			instance->ref();
+		}
+	}
+
+	VariantStruct(VariantStruct &&p_struct) :
+			definition(p_struct.definition), instance(p_struct.instance) {
+		if (p_struct.instance) {
+			p_struct.instance = nullptr;
+		}
+	}
+
+	_FORCE_INLINE_ void operator=(const VariantStruct &p_struct) {
+		if (instance) {
+			_unref();
+		}
+
+		definition = p_struct.definition;
+		if (p_struct.instance) {
+			instance = p_struct.instance;
+			instance->ref();
+		}
+	}
+
+	_FORCE_INLINE_ void operator=(VariantStruct &&p_struct) {
+		if (instance) {
+			_unref();
+		}
+
+		definition = p_struct.definition;
+		if (p_struct.instance) {
+			instance = p_struct.instance;
+			p_struct.instance = nullptr;
+		}
+	}
+};
+
+// (I couldn't figure out how to get random things to stop trying to use the template constructor for VariantStruct)
+template <class T>
+class NativeVariantStruct : public VariantStruct {
+public:
+	_ALWAYS_INLINE_ T &get_struct() {
+		return *reinterpret_cast<T *>(struct_ptr());
+	}
+
+	_ALWAYS_INLINE_ explicit NativeVariantStruct(bool p_should_construct) {
+		allocate(NativeStructDefinition<T>::get_definition());
+		if (p_should_construct) {
+			new (struct_ptr()) T;
+		}
+	}
+
+	_ALWAYS_INLINE_ NativeVariantStruct(const VariantStruct &p_struct) :
+			VariantStruct(p_struct) {}
+	_ALWAYS_INLINE_ NativeVariantStruct(VariantStruct &&p_struct) :
+			VariantStruct(std::move(p_struct)) {}
+
+	_ALWAYS_INLINE_ NativeVariantStruct(const T &p_struct) {
+		allocate(NativeStructDefinition<T>::get_definition());
+		if constexpr (std::is_trivially_copyable_v<T>) {
+			*reinterpret_cast<T *>(struct_ptr()) = p_struct;
+		} else {
+			new (struct_ptr()) T(p_struct);
+		}
+	}
+
+	_ALWAYS_INLINE_ NativeVariantStruct(T &&p_struct) {
+		allocate(NativeStructDefinition<T>::get_definition());
+		if constexpr (std::is_trivially_move_constructible_v<T>) {
+			*reinterpret_cast<T *>(struct_ptr()) = p_struct;
+		} else {
+			new (struct_ptr()) T(p_struct);
+		}
+	}
+};
