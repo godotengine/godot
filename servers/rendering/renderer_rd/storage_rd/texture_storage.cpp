@@ -851,7 +851,7 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 	{
 		int valid_width = 0;
 		int valid_height = 0;
-		bool valid_mipmaps = false;
+		int valid_mipmaps = 0;
 		Image::Format valid_format = Image::FORMAT_MAX;
 
 		for (int i = 0; i < p_layers.size(); i++) {
@@ -861,12 +861,12 @@ void TextureStorage::texture_2d_layered_initialize(RID p_texture, const Vector<R
 				valid_width = p_layers[i]->get_width();
 				valid_height = p_layers[i]->get_height();
 				valid_format = p_layers[i]->get_format();
-				valid_mipmaps = p_layers[i]->has_mipmaps();
+				valid_mipmaps = p_layers[i]->get_mipmap_count();
 			} else {
 				ERR_FAIL_COND(p_layers[i]->get_width() != valid_width);
 				ERR_FAIL_COND(p_layers[i]->get_height() != valid_height);
 				ERR_FAIL_COND(p_layers[i]->get_format() != valid_format);
-				ERR_FAIL_COND(p_layers[i]->has_mipmaps() != valid_mipmaps);
+				ERR_FAIL_COND(p_layers[i]->get_mipmap_count() != valid_mipmaps);
 			}
 
 			images.push_back(_validate_texture_format(p_layers[i], ret_format));
@@ -1455,9 +1455,9 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 			ndp[ofs * 4 + 2] = Math::make_half_float(float(b) / 1023.0);
 			ndp[ofs * 4 + 3] = Math::make_half_float(float(a) / 3.0);
 		}
-		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, new_data);
+		image = Image::create_from_data_partial_mipmaps(tex->width, tex->height, tex->mipmaps - 1, tex->validated_format, new_data);
 	} else {
-		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+		image = Image::create_from_data_partial_mipmaps(tex->width, tex->height, tex->mipmaps - 1, tex->validated_format, data);
 	}
 
 	if (image->is_empty()) {
@@ -1484,7 +1484,7 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
-	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
+	Ref<Image> image = Image::create_from_data_partial_mipmaps(tex->width, tex->height, tex->mipmaps - 1, tex->validated_format, data);
 	if (image->is_empty()) {
 		const String &path_str = tex->path.is_empty() ? "with no path" : vformat("with path '%s'", tex->path);
 		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
@@ -1639,7 +1639,7 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 		tinfo.format = t->format;
 		tinfo.width = t->width;
 		tinfo.height = t->height;
-		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps > 1);
+		tinfo.bytes = Image::get_image_data_size(t->width, t->height, t->format, t->mipmaps - 1);
 		tinfo.type = static_cast<RenderingServer::TextureType>(t->type);
 
 		switch (t->type) {
