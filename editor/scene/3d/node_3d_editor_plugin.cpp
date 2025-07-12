@@ -8070,6 +8070,38 @@ void Node3DEditor::_finish_grid() {
 	}
 }
 
+void Node3DEditor::update_gizmo_opacity() {
+	if (!origin_instance.is_valid()) {
+		return;
+	}
+
+	const float opacity = EDITOR_GET("editors/3d/manipulator_gizmo_opacity");
+
+	for (int i = 0; i < 3; i++) {
+		Color col = gizmo_color[i]->get_albedo();
+		col.a = opacity;
+		gizmo_color[i]->set_albedo(col);
+
+		col = gizmo_color_hl[i]->get_albedo();
+		col.a = 1.0;
+		gizmo_color_hl[i]->set_albedo(col);
+
+		col = plane_gizmo_color[i]->get_albedo();
+		col.a = opacity;
+		plane_gizmo_color[i]->set_albedo(col);
+
+		col = plane_gizmo_color_hl[i]->get_albedo();
+		col.a = 1.0;
+		plane_gizmo_color_hl[i]->set_albedo(col);
+	}
+}
+
+void Node3DEditor::_on_editor_settings_changed() {
+	if (EditorSettings::get_singleton()->get_changed_settings().has("editors/3d/manipulator_gizmo_opacity")) {
+		update_gizmo_opacity();
+	}
+}
+
 void Node3DEditor::update_grid() {
 	const Camera3D::ProjectionType current_projection = viewports[0]->camera->get_projection();
 
@@ -8523,6 +8555,7 @@ void Node3DEditor::_notification(int p_what) {
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
 
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
+			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -8543,6 +8576,7 @@ void Node3DEditor::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_finish_indicators();
+			EditorSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Node3DEditor::_on_editor_settings_changed));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {

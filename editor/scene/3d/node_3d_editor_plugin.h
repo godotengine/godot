@@ -807,6 +807,7 @@ private:
 	HashMap<Control *, VSeparator *> context_toolbar_separators;
 
 	void _update_context_toolbar();
+	void _on_editor_settings_changed();
 
 	void _generate_selection_boxes();
 
@@ -973,6 +974,7 @@ public:
 	void update_grid();
 	void update_transform_gizmo();
 	void update_all_gizmos(Node *p_node = nullptr);
+	void update_gizmo_opacity();
 	void snap_selected_nodes_to_floor();
 	void select_gizmo_highlight_axis(int p_axis);
 	void set_custom_camera(Node *p_camera) { custom_camera = p_camera; }
