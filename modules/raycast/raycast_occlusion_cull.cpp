@@ -463,7 +463,7 @@ void RaycastOcclusionCull::Scenario::update() {
 		}
 
 		RTCGeometry geom = rtcNewGeometry(raycast_singleton->ebr_device, RTC_GEOMETRY_TYPE_TRIANGLE);
-		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, occ_inst->xformed_vertices.ptr(), 0, sizeof(float) * 3, occ_inst->xformed_vertices.size() / 3);
+		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_VERTEX, 0, RTC_FORMAT_FLOAT3, occ_inst->xformed_vertices.ptr(), 0, sizeof(float) * 3, occ_inst->xformed_vertices.size() / 3 - 3);
 		rtcSetSharedGeometryBuffer(geom, RTC_BUFFER_TYPE_INDEX, 0, RTC_FORMAT_UINT3, occ_inst->indices.ptr(), 0, sizeof(uint32_t) * 3, occ_inst->indices.size() / 3);
 		rtcCommitGeometry(geom);
 		rtcAttachGeometry(next_scene, geom);
