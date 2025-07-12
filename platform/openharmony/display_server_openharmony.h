@@ -110,7 +110,7 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override {}
 	virtual bool mouse_is_mode_override_enabled() const override { return false; }
 	virtual void warp_mouse(const Point2i &p_position) override {}
-	virtual BitField<MouseButtonMask> mouse_get_button_state() const override { return 0; }
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override { return BitField<MouseButtonMask>(0); }
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
