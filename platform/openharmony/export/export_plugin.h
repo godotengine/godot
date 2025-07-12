@@ -92,7 +92,7 @@ public:
 	virtual String get_options_tooltip() const override;
 	virtual String get_option_label(int p_device) const override;
 	virtual String get_option_tooltip(int p_device) const override;
-	virtual String get_device_architecture(int p_device) const;
+	virtual String get_device_architecture(int p_device) const override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
 
