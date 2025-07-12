@@ -434,6 +434,20 @@ class Godot private constructor(val context: Context) {
 	@Keep
 	fun isInEdgeToEdgeMode() = isEdgeToEdge.get()
 
+
+	fun setBlackSystemBars() {
+		val window = getActivity()?.window ?: return
+		window.decorView.setBackgroundColor(Color.BLACK)
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			val controller = window.insetsController
+			val masks = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+			controller?.setSystemBarsAppearance(0, masks)
+		} else {
+			window.decorView.systemUiVisibility = 0
+		}
+	}
+
 	/**
 	 * Used to complete initialization of the view used by the engine for rendering.
 	 *

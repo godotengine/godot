@@ -39,6 +39,8 @@ import android.util.Log;
 import androidx.activity.EdgeToEdge;
 import androidx.core.splashscreen.SplashScreen;
 
+import java.util.Objects;
+
 /**
  * Template activity for Godot Android builds.
  * Feel free to extend and modify this class for your custom logic.
@@ -81,5 +83,8 @@ public class GodotApp extends GodotActivity {
 	public void onGodotMainLoopStarted() {
 		super.onGodotMainLoopStarted();
 		runOnUiThread(updateImmersiveAndEdgeToEdgeModes);
+		runOnUiThread(() -> {
+			Objects.requireNonNull(getGodot()).setBlackSystemBars();
+		});
 	}
 }
