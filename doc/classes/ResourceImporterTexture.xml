@@ -82,7 +82,9 @@
 			It's recommended to enable mipmaps in 3D. However, in 2D, this should only be enabled if your project visibly benefits from having mipmaps enabled. If the camera never zooms out significantly, there won't be a benefit to enabling mipmaps but memory usage will increase.
 		</member>
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
-			Unimplemented. This currently has no effect when changed.
+			Sets the maximum number of mipmaps for a texture. The smaller the limit, the sharper the texture will appear from a distance. This can help alleviate the overblurring of distant images, especially ones at a low resolution. Limiting the number of mipmaps may help decrease the memory usage and file size of a texture.
+			If [code]-1[/code], generates as many mipmaps as possible. If [code]0[/code], no mipmaps will be generated.
+			[b]Note:[/b] This setting has no effect if [member mipmaps/generate] is [code]false[/code].
 		</member>
 		<member name="mipmaps/preserve_alpha_test_coverage" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], automatically adjusts alpha values to maintain consistent coverage when alpha testing is used. This is especially useful for hair, foliage, or other alpha-tested materials, as it prevents fading or popping artifacts across mipmap levels (LODs). This option is intended for color textures and clamps the alpha channel in the 0.0 - 1.0 range.

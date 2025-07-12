@@ -52,7 +52,7 @@ Error Image::_compress_from_channels_bind_compat_115003(CompressMode p_mode, Use
 }
 
 Error Image::_generate_mipmaps_bind_compat_104289(bool p_renormalize) {
-	return generate_mipmaps(p_renormalize, false, 0.5f);
+	return generate_mipmaps(p_renormalize, false, 0.5f, -1);
 }
 
 Vector<uint8_t> Image::_save_exr_to_buffer_bind_compat_117800(bool p_grayscale) const {
@@ -63,12 +63,32 @@ Error Image::_save_exr_bind_compat_117800(const String &p_path, bool p_grayscale
 	return save_exr(p_path, p_grayscale);
 }
 
+Error Image::_generate_mipmaps_bind_compat_108720(bool p_renormalize, bool p_preserve_alpha_test_coverage, float p_alpha_test_threshold) {
+	return generate_mipmaps(p_renormalize, p_preserve_alpha_test_coverage, p_alpha_test_threshold, -1);
+}
+
+Ref<Image> Image::_create_empty_bind_compat_108720(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+	return create_empty(p_width, p_height, p_use_mipmaps, p_format, -1);
+}
+
+Ref<Image> Image::_create_from_data_bind_compat_108720(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	return create_from_data(p_width, p_height, p_use_mipmaps, p_format, p_data, -1);
+}
+
+void Image::_set_data_bind_compat_108720(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	set_data(p_width, p_height, p_use_mipmaps, p_format, p_data, -1);
+}
+
 void Image::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::_compress_bind_compat_115003, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_compatibility_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::_compress_from_channels_bind_compat_115003, DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_compatibility_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::_generate_mipmaps_bind_compat_104289, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr", "path", "grayscale"), &Image::_save_exr_bind_compat_117800, DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("save_exr_to_buffer", "grayscale"), &Image::_save_exr_to_buffer_bind_compat_117800, DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("generate_mipmaps", "renormalize", "preserve_alpha_test_coverage", "alpha_test_threshold"), &Image::_generate_mipmaps_bind_compat_108720, DEFVAL(false), DEFVAL(false), DEFVAL(0.5));
+	ClassDB::bind_compatibility_method(D_METHOD("set_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_set_data_bind_compat_108720);
+	ClassDB::bind_compatibility_static_method("Image", D_METHOD("create_empty", "width", "height", "use_mipmaps", "format"), &Image::_create_empty_bind_compat_108720);
+	ClassDB::bind_compatibility_static_method("Image", D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::_create_from_data_bind_compat_108720);
 }
 
 #endif // DISABLE_DEPRECATED
