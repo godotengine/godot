@@ -163,6 +163,10 @@ bool TextureLayeredRD::has_mipmaps() const {
 	return mipmaps > 1;
 }
 
+int TextureLayeredRD::get_mipmap_count() const {
+	return mipmaps;
+}
+
 RID TextureLayeredRD::get_rid() const {
 	if (texture_rid.is_null()) {
 		// We are in trouble, create something temporary.
@@ -288,6 +292,10 @@ int Texture3DRD::get_depth() const {
 
 bool Texture3DRD::has_mipmaps() const {
 	return mipmaps > 1;
+}
+
+int Texture3DRD::get_mipmap_count() const {
+	return mipmaps;
 }
 
 RID Texture3DRD::get_rid() const {
