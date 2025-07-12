@@ -38,13 +38,13 @@
 	template <>                                                                                                               \
 	StructDefinition *NativeStructDefinition<m_parent_class::m_struct_class>::build_definition() {                            \
 		using T = m_parent_class::m_struct_class;                                                                             \
-		StructDefinition *sd = memnew(StructDefinition(                                                                       \
-				Vector<StructDefinition::StructPropertyInfo>{##__VA_ARGS__##},                                                \
+		StructDefinition *sd = StructDefinition::create(                                                                      \
+				{##__VA_ARGS__##},                                                                                            \
 				STRINGIFY_MACRO(m_parent_class.m_struct_class),                                                               \
+				sizeof(m_parent_class::m_struct_class),                                                                       \
 				(!std::is_trivially_constructible_v<T> ? &init_struct : &StructDefinition::generic_constructor),              \
 				(!std::is_trivially_copy_constructible_v<T> ? &copy_construct : &StructDefinition::generic_copy_constructor), \
-				(!std::is_trivially_destructible_v<T> ? &deinit_struct : &StructDefinition::trivial_destructor)));            \
-		DEV_ASSERT(sd->get_size() == sizeof(T));                                                                              \
+				(!std::is_trivially_destructible_v<T> ? &deinit_struct : &StructDefinition::trivial_destructor));             \
 		return sd;                                                                                                            \
 	}
 

@@ -13,11 +13,5 @@
 // If commented out, backwards compatability may break
 #define ENUMS_SHOULD_NOT_BREAK_APIS
 
-// Increases the value off each member address by sizeof(SafeRefCount)
-// Should be slightly faster than not doing so (fewer operations)
-// However, it might make things more confusing (and so if decided upon, would need to be properly documented)
-// Regardless of if enabled or disabled, the address for each property will always be `instance + address`
-#define SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
-
 // Should also be noted that this, and certain other changes, intentionally break the style checker
 // That is so these can server as reminders

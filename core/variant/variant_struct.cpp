@@ -90,42 +90,21 @@ Variant VariantStruct::get(const StringName &p_name, bool &r_valid) const {
 	return prop->type->read(member_ptr(prop));
 }
 
-void StructDefinition::generic_constructor(void *p_struct, const StructDefinition *p_definition) {
-#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
-	uintptr_t struct_address = *reinterpret_cast<uintptr_t *>(&p_struct) - VariantStruct::STRUCT_OFFSET;
-#else
-	uintptr_t &struct_address = *reinterpret_cast<uintptr_t *>(&p_struct);
-#endif
+void StructDefinition::generic_constructor(VarStructPtrType p_struct, const StructDefinition *p_definition) {
 	for (const StructDefinition::StructPropertyInfo &E : p_definition->properties) {
-		uintptr_t ptr = struct_address + E.address; // equivalent to member_ptr
-		E.type->construct(reinterpret_cast<void *>(ptr));
+		E.type->construct(p_struct->*E.address);
 	}
 }
 
-void StructDefinition::generic_copy_constructor(void *p_struct, const StructDefinition *p_definition, const void *p_other) {
-#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
-	uintptr_t struct_address = *reinterpret_cast<uintptr_t *>(&p_struct) - VariantStruct::STRUCT_OFFSET;
-	uintptr_t other_address = *reinterpret_cast<uintptr_t *>(&p_other) - VariantStruct::STRUCT_OFFSET;
-#else
-	uintptr_t &struct_address = *reinterpret_cast<uintptr_t *>(&p_struct);
-	uintptr_t &other_address = *reinterpret_cast<uintptr_t *>(&p_other);
-#endif
+void StructDefinition::generic_copy_constructor(VarStructPtrType p_struct, const StructDefinition *p_definition, const VarStructPtrType p_other) {
 	for (const StructDefinition::StructPropertyInfo &E : p_definition->properties) {
-		uintptr_t to_ptr = struct_address + E.address; // equivalent to member_ptr
-		uintptr_t from_ptr = other_address + E.address; // equivalent to member_ptr
-		E.type->copy_construct(reinterpret_cast<void *>(to_ptr), reinterpret_cast<const void *>(from_ptr));
+		E.type->copy_construct(p_struct->*E.address, p_other->*E.address);
 	}
 }
 
-void StructDefinition::generic_destructor(void *p_struct, const StructDefinition *p_definition) {
-#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
-	uintptr_t struct_address = *reinterpret_cast<uintptr_t *>(&p_struct) - VariantStruct::STRUCT_OFFSET;
-#else
-	uintptr_t &struct_address = *reinterpret_cast<uintptr_t *>(&p_struct);
-#endif
+void StructDefinition::generic_destructor(VarStructPtrType p_struct, const StructDefinition *p_definition) {
 	for (const StructDefinition::StructPropertyInfo &E : p_definition->properties) {
-		uintptr_t ptr = struct_address + E.address; // equivalent to member_ptr
-		E.type->destruct(reinterpret_cast<void *>(ptr));
+		E.type->destruct(p_struct->*E.address);
 	}
 }
 
@@ -147,33 +126,6 @@ void StructDefinition::clean_struct_definitions() {
 	}
 	qualified_struct_definitions.clear();
 	qualifiedd_definitions_to_clear.clear();
-}
-
-const size_t StructDefinition::get_size() const {
-	size_t maxalign = 1;
-	size_t cap = 0;
-	for (const StructPropertyInfo &E : properties) {
-		const size_t a = E.type->align();
-		const size_t c = E.type->size() + E.address;
-		if (c > cap) {
-			cap = c;
-		}
-		if (a > maxalign) {
-			maxalign = a;
-		}
-	}
-	size_t overstep = cap % maxalign;
-#ifdef SHOULD_PRE_CALC_OFFSET_ADDRESS_BY_REFCOUNTSIZE
-	if (overstep == 0) {
-		return cap - VariantStruct::STRUCT_OFFSET;
-	}
-	return cap + maxalign - overstep - VariantStruct::STRUCT_OFFSET;
-#else
-	if (overstep == 0) {
-		return cap;
-	}
-	return cap + maxalign - overstep;
-#endif
 }
 
 const StructDefinition::StructPropertyInfo *StructDefinition::get_property_info(const int &p_property_index) const {
