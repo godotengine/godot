@@ -73,9 +73,9 @@
 			<param index="0" name="features" type="PackedStringArray" />
 			<param index="1" name="is_debug" type="bool" />
 			<param index="2" name="path" type="String" />
-			<param index="3" name="flags" type="int" />
+			<param index="3" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
 			<description>
-				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. [param features] is the list of features for the export, [param is_debug] is [code]true[/code] for debug builds, [param path] is the target path for the exported project. [param flags] is only used when running a runnable profile, e.g. when using native run on Android.
+				Virtual method to be overridden by the user. It is called when the export starts and provides all information about the export. [param features] is the list of features for the export, [param is_debug] is [code]true[/code] for debug builds, [param path] is the target path for the exported project.
 			</description>
 		</method>
 		<method name="_export_end" qualifiers="virtual">

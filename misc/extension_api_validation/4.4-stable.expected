@@ -321,3 +321,10 @@ Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/a
 Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_image/arguments': size changed value in new API, from 11 to 12.
 
 Optional argument added. Compatibility methods registered.
+
+GH-108559
+---------
+Validate extension JSON: Error: Field 'classes/EditorExportPlugin/methods/_export_begin/arguments': meta was removed.
+Validate extension JSON: Error: Field 'classes/EditorExportPlugin/methods/_export_begin/arguments/3': type changed value in new API, from "int" to "bitfield::EditorExportPlatform.DebugFlags".
+
+Argument type changed from "uint32_t" to "EditorExportPlatform::DebugFlags".

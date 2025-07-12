@@ -82,7 +82,7 @@ class EditorExportPlugin : public RefCounted {
 
 	// Export
 	void _export_file_script(const String &p_path, const String &p_type, const Vector<String> &p_features);
-	void _export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	void _export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags);
 	void _export_end_script();
 
 	String _has_valid_export_configuration(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset);
@@ -110,13 +110,13 @@ protected:
 	void skip();
 
 	virtual void _export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features);
-	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags);
+	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags);
 	virtual void _export_end();
 
 	static void _bind_methods();
 
 	GDVIRTUAL3(_export_file, String, String, Vector<String>)
-	GDVIRTUAL4(_export_begin, Vector<String>, bool, String, uint32_t)
+	GDVIRTUAL4(_export_begin, Vector<String>, bool, String, BitField<EditorExportPlatform::DebugFlags>)
 	GDVIRTUAL0(_export_end)
 
 	GDVIRTUAL2RC(bool, _begin_customize_resources, const Ref<EditorExportPlatform> &, const Vector<String> &)
