@@ -256,12 +256,22 @@ protected:
 
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	static Ref<Image> _create_empty_bind_compat_108720(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
+	static Ref<Image> _create_from_data_bind_compat_108720(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+
+	Error _generate_mipmaps_bind_compat_108720(bool p_renormalize = false);
+	void _set_data_bind_compat_108720(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+
+	static void _bind_compatibility_methods();
+#endif
+
 private:
 	Format format = FORMAT_L8;
 	Vector<uint8_t> data;
 	int width = 0;
 	int height = 0;
-	bool mipmaps = false;
+	int mipmap_count = 0;
 
 	void _copy_internals_from(const Image &p_image);
 
@@ -336,7 +346,7 @@ public:
 	void flip_y();
 
 	// Generate a mipmap chain of an image (creates an image 1/4 the size, with averaging of 4->1).
-	Error generate_mipmaps(bool p_renormalize = false);
+	Error generate_mipmaps(bool p_renormalize = false, int p_limit = -1);
 
 	Error generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map);
 
@@ -344,8 +354,8 @@ public:
 	void normalize();
 
 	// Creates new internal image data of a given size and format. Current image will be lost.
-	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, int p_mipmap_limit = -1);
+	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data, int p_mipmap_limit = -1);
 	void initialize_data(const char **p_xpm);
 
 	// Returns true when the image is empty (0,0) in size.
@@ -366,13 +376,13 @@ public:
 	Error save_webp(const String &p_path, const bool p_lossy = false, const float p_quality = 0.75f) const;
 	Vector<uint8_t> save_webp_to_buffer(const bool p_lossy = false, const float p_quality = 0.75f) const;
 
-	static Ref<Image> create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format);
-	static Ref<Image> create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
-	void set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data);
+	static Ref<Image> create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format, int p_mipmap_limit = -1);
+	static Ref<Image> create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data, int p_mipmap_limit = -1);
+	void set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data, int p_mipmap_limit = -1);
 
 	Image() = default; // Create an empty image.
-	Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format); // Create an empty image of a specific size and format.
-	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data); // Import an image of a specific size and format from a byte vector.
+	Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format, int p_mipmap_limit = -1); // Create an empty image of a specific size and format.
+	Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data, int p_mipmap_limit = -1); // Import an image of a specific size and format from a byte vector.
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1); // Import either a png or jpg from a pointer.
 	Image(const char **p_xpm); // Import an XPM image.
 
@@ -386,7 +396,7 @@ public:
 	static int get_format_block_size(Format p_format);
 	static void get_format_min_pixel_size(Format p_format, int &r_w, int &r_h);
 
-	static int64_t get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false);
+	static int64_t get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps = false, int p_mipmap_limit = -1);
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 	static Size2i get_image_mipmap_size(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int64_t get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);

@@ -138,8 +138,10 @@
 			<param index="1" name="height" type="int" />
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
+			<param index="4" name="mipmap_limit" type="int" default="-1" />
 			<description>
-				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image (see [method generate_mipmaps]).
+				The number of generated mipmaps depends on [param mipmap_limit]: Only up to [param mipmap_limit] mipmaps are generated. If [param mipmap_limit] is [code]-1[/code], generates as many mipmaps as possible.
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">
@@ -149,8 +151,11 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<param index="4" name="data" type="PackedByteArray" />
+			<param index="5" name="mipmap_limit" type="int" default="-1" />
 			<description>
-				Creates a new image of the given size and format. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code], loads the mipmaps for this image from [param data]. See [method generate_mipmaps].
+				Creates a new image of the given size and format. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code], loads the mipmaps for this image from [param data] (see [method generate_mipmaps]).
+				The number of loaded mipmaps depends on [param mipmap_limit]: Only up to [param mipmap_limit] mipmaps are loaded. If [param mipmap_limit] is [code]-1[/code], loads as many mipmaps as possible.
+				[b]Note:[/b] [param mipmap_limit] has to exactly represent the number of mipmaps present in [param data]. Otherwise, attempting to use the method will result in an error.
 			</description>
 		</method>
 		<method name="crop">
@@ -216,8 +221,10 @@
 		<method name="generate_mipmaps">
 			<return type="int" enum="Error" />
 			<param index="0" name="renormalize" type="bool" default="false" />
+			<param index="1" name="limit" type="int" default="-1" />
 			<description>
 				Generates mipmaps for the image. Mipmaps are precalculated lower-resolution copies of the image that are automatically used if the image needs to be scaled down when rendered. They help improve image quality and performance when rendering. This method returns an error if the image is compressed, in a custom format, or if the image's width/height is [code]0[/code]. Enabling [param renormalize] when generating mipmaps for normal map textures will make sure all resulting vector values are normalized.
+				Only up to [param limit] mipmaps are generated. If [param limit] is [code]-1[/code], generates as many mipmaps as possible.
 				It is possible to check if the image has mipmaps by calling [method has_mipmaps] or [method get_mipmap_count]. Calling [method generate_mipmaps] on an image that already has mipmaps will replace existing mipmaps in the image.
 			</description>
 		</method>
@@ -556,6 +563,7 @@
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<param index="4" name="data" type="PackedByteArray" />
+			<param index="5" name="mipmap_limit" type="int" default="-1" />
 			<description>
 				Overwrites data of an existing [Image]. Non-static equivalent of [method create_from_data].
 			</description>
@@ -626,7 +634,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;data&quot;: PackedByteArray(), &quot;format&quot;: &quot;Lum8&quot;, &quot;height&quot;: 0, &quot;mipmaps&quot;: false, &quot;width&quot;: 0 }">
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{ &quot;data&quot;: PackedByteArray(), &quot;format&quot;: &quot;Lum8&quot;, &quot;height&quot;: 0, &quot;mipmap_count&quot;: 0, &quot;mipmaps&quot;: false, &quot;width&quot;: 0 }">
 			Holds all the image's color data in a given format. See [enum Format] constants.
 		</member>
 	</members>
