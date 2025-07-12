@@ -1070,6 +1070,8 @@ void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> 
 	main_theme_attributes["android:windowIsTranslucent"] = bool_to_string(transparency_allowed);
 	if (transparency_allowed) {
 		main_theme_attributes["android:windowBackground"] = "@android:color/transparent";
+	} else {
+		main_theme_attributes["android:windowBackground"] = "#" + p_preset->get("screen/background_color").operator Color().to_html(false);
 	}
 
 	Dictionary splash_theme_attributes;
@@ -2179,6 +2181,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/edge_to_edge"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "screen/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
 
@@ -3098,6 +3101,13 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	if (edge_to_edge) {
 		command_line_strings.push_back("--edge_to_edge");
 	}
+
+	String background_color = "#" + p_preset->get("screen/background_color").operator Color().to_html(false);
+	if (_is_transparency_allowed(p_preset) && p_preset->get("gradle_build/use_gradle_build")) {
+		background_color = "#00000000";
+	}
+	command_line_strings.push_back("--background_color");
+	command_line_strings.push_back(background_color);
 
 	bool debug_opengl = p_preset->get("graphics/opengl_debug");
 	if (debug_opengl) {
