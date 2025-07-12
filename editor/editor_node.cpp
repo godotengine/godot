@@ -1031,6 +1031,13 @@ void EditorNode::_notification(int p_what) {
 				DisplayServer::get_singleton()->screen_set_keep_on(EDITOR_GET("interface/editor/keep_screen_on"));
 			}
 
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				if (InspectorDock::get_inspector_singleton()) {
+					bool disable_folding = EDITOR_GET("interface/inspector/disable_folding");
+					InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding);
+				}
+			}
+
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme/highlighting")) {
 				EditorHelpHighlighter::get_singleton()->reset_cache();
