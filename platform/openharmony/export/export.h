@@ -32,4 +32,3 @@
 
 void register_openharmony_exporter_types();
 void register_openharmony_exporter();
-
