@@ -49,6 +49,17 @@
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 
+static bool _has_sub_resources(const Ref<Resource> &p_res) {
+	List<PropertyInfo> property_list;
+	p_res->get_property_list(&property_list);
+	for (const PropertyInfo &p : property_list) {
+		if (p.type == Variant::OBJECT && p.hint == PROPERTY_HINT_RESOURCE_TYPE && !(p.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && p_res->get(p.name).get_validated_object()) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
 	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
@@ -237,17 +248,7 @@ void EditorResourcePicker::_update_menu_items() {
 			}
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
-			// Check whether the resource has subresources.
-			List<PropertyInfo> property_list;
-			edited_resource->get_property_list(&property_list);
-			bool has_subresources = false;
-			for (PropertyInfo &p : property_list) {
-				if ((p.type == Variant::OBJECT) && (p.hint == PROPERTY_HINT_RESOURCE_TYPE) && (p.name != "script") && ((Object *)edited_resource->get(p.name) != nullptr)) {
-					has_subresources = true;
-					break;
-				}
-			}
-			if (has_subresources) {
+			if (_has_sub_resources(edited_resource)) {
 				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique (Recursive)"), OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 			}
 
@@ -448,8 +449,8 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 					(EditorNode::get_singleton()->get_edited_scene() && edited_resource->is_built_in() && edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path())) {
 				// Automatically make resource unique if it belongs to another scene,
 				// or if requested by the user with the Paste as Unique option.
-				if (p_which == OBJ_MENU_PASTE_AS_UNIQUE) {
-					// Use the recursive version when using Paste as Unique.
+				if (p_which == OBJ_MENU_PASTE_AS_UNIQUE && _has_sub_resources(edited_resource)) {
+					// Use the recursive version when using Paste as Unique and the resource has sub-resources.
 					// This will show up a dialog to select which resources to make unique.
 					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 				} else {
