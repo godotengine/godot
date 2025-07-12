@@ -111,4 +111,3 @@ public:
 	EditorExportPlatformOpenHarmony();
 	~EditorExportPlatformOpenHarmony();
 };
-
