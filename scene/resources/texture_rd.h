@@ -89,6 +89,7 @@ public:
 	virtual int get_height() const override;
 	virtual int get_layers() const override;
 	virtual bool has_mipmaps() const override;
+	virtual int get_mipmap_count() const override;
 	virtual RID get_rid() const override;
 
 	virtual Ref<Image> get_layer_data(int p_layer) const override;
@@ -146,6 +147,7 @@ public:
 	virtual int get_height() const override;
 	virtual int get_depth() const override;
 	virtual bool has_mipmaps() const override;
+	virtual int get_mipmap_count() const override;
 	virtual RID get_rid() const override;
 
 	void set_texture_rd_rid(RID p_texture_rd_rid);

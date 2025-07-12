@@ -273,7 +273,7 @@ void image_decompress_bcdec(Image *p_image) {
 	}
 
 	int mm_count = p_image->get_mipmap_count();
-	int64_t target_size = Image::get_image_data_size(width, height, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(width, height, target_format, p_image->get_mipmap_count());
 
 	// Decompressed data.
 	Vector<uint8_t> data;
@@ -291,7 +291,7 @@ void image_decompress_bcdec(Image *p_image) {
 		decompress_image(bcdec_format, rb + src_ofs, wb + dst_ofs, mipmap_w, mipmap_h);
 	}
 
-	p_image->set_data(width, height, p_image->has_mipmaps(), target_format, data);
+	p_image->set_data_partial_mipmaps(width, height, mm_count, target_format, data);
 
 	// Swap channels if the format is using a channel swizzle.
 	if (source_format == Image::FORMAT_DXT5_RA_AS_RG) {

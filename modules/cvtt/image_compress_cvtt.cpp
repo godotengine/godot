@@ -186,8 +186,8 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	}
 
 	Vector<uint8_t> data;
-	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
-	int mm_count = p_image->has_mipmaps() ? Image::get_image_required_mipmaps(w, h, target_format) : 0;
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->get_mipmap_count());
+	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 	int shift = Image::get_format_pixel_rshift(target_format);
 
@@ -282,7 +282,7 @@ void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_native_group_task(&_digest_job_queue, &job_queue, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("CVTT Compress"));
 	WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-	p_image->set_data(w, h, p_image->has_mipmaps(), target_format, data);
+	p_image->set_data_partial_mipmaps(w, h, mm_count, target_format, data);
 
 	print_verbose(vformat("CVTT: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
@@ -314,7 +314,7 @@ void image_decompress_cvtt(Image *p_image) {
 	const uint8_t *rb = p_image->get_data().ptr();
 
 	Vector<uint8_t> data;
-	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->has_mipmaps());
+	int64_t target_size = Image::get_image_data_size(w, h, target_format, p_image->get_mipmap_count());
 	int mm_count = p_image->get_mipmap_count();
 	data.resize(target_size);
 
@@ -393,5 +393,5 @@ void image_decompress_cvtt(Image *p_image) {
 		w >>= 1;
 		h >>= 1;
 	}
-	p_image->set_data(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+	p_image->set_data_partial_mipmaps(p_image->get_width(), p_image->get_height(), mm_count, target_format, data);
 }

@@ -40,7 +40,7 @@ class ImageTexture : public Texture2D {
 
 	mutable RID texture;
 	Image::Format format = Image::FORMAT_L8;
-	bool mipmaps = false;
+	int mipmap_count = 0;
 	int w = 0;
 	int h = 0;
 	Size2 size_override;
@@ -95,7 +95,7 @@ class ImageTextureLayered : public TextureLayered {
 	int width = 0;
 	int height = 0;
 	int layers = 0;
-	bool mipmaps = false;
+	int mipmap_count = 0;
 
 	Error _create_from_images(const TypedArray<Image> &p_images);
 
@@ -111,6 +111,7 @@ public:
 	virtual int get_height() const override;
 	virtual int get_layers() const override;
 	virtual bool has_mipmaps() const override;
+	virtual int get_mipmap_count() const override;
 	virtual LayeredType get_layered_type() const override;
 
 	Error create_from_images(Vector<Ref<Image>> p_images);
@@ -133,7 +134,7 @@ class ImageTexture3D : public Texture3D {
 	int width = 1;
 	int height = 1;
 	int depth = 1;
-	bool mipmaps = false;
+	int mipmap_count = 0;
 
 	TypedArray<Image> _get_images() const;
 	void _set_images(const TypedArray<Image> &p_images);
@@ -150,6 +151,7 @@ public:
 	virtual int get_height() const override;
 	virtual int get_depth() const override;
 	virtual bool has_mipmaps() const override;
+	virtual int get_mipmap_count() const override;
 
 	Error create(Image::Format p_format, int p_width, int p_height, int p_depth, bool p_mipmaps, const Vector<Ref<Image>> &p_data);
 	void update(const Vector<Ref<Image>> &p_data);

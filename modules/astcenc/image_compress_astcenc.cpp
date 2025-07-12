@@ -94,7 +94,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	print_verbose(vformat("astcenc: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), has_mipmaps ? ", with mipmaps" : ""));
 
 	// Initialize astcenc.
-	const int64_t dest_size = Image::get_image_data_size(width, height, target_format, has_mipmaps);
+	const int64_t dest_size = Image::get_image_data_size(width, height, target_format, r_img->get_mipmap_count());
 	Vector<uint8_t> dest_data;
 	dest_data.resize(dest_size);
 	uint8_t *dest_write = dest_data.ptrw();
@@ -116,7 +116,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	ERR_FAIL_COND_MSG(status != ASTCENC_SUCCESS,
 			vformat("astcenc: Context allocation failed: %s.", astcenc_get_error_string(status)));
 
-	const int mip_count = has_mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
+	const int mip_count = r_img->get_mipmap_count();
 	const uint8_t *src_data = r_img->ptr();
 
 	for (int i = 0; i < mip_count + 1; i++) {
@@ -168,7 +168,7 @@ void _compress_astc(Image *r_img, Image::ASTCFormat p_format) {
 	astcenc_context_free(context);
 
 	// Replace original image with compressed one.
-	r_img->set_data(width, height, has_mipmaps, target_format, dest_data);
+	r_img->set_data_partial_mipmaps(width, height, mip_count, target_format, dest_data);
 
 	print_verbose(vformat("astcenc: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }
@@ -231,17 +231,16 @@ void _decompress_astc(Image *r_img) {
 
 	const Image::Format target_format = is_hdr ? Image::FORMAT_RGBAH : Image::FORMAT_RGBA8;
 
-	const bool has_mipmaps = r_img->has_mipmaps();
 	int width = r_img->get_width();
 	int height = r_img->get_height();
 
-	const int64_t dest_size = Image::get_image_data_size(width, height, target_format, has_mipmaps);
+	const int64_t dest_size = Image::get_image_data_size(width, height, target_format, r_img->get_mipmap_count());
 	Vector<uint8_t> dest_data;
 	dest_data.resize(dest_size);
 	uint8_t *dest_write = dest_data.ptrw();
 
 	// Decompress image.
-	const int mip_count = has_mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
+	const int mip_count = r_img->get_mipmap_count();
 	const uint8_t *src_data = r_img->ptr();
 
 	for (int i = 0; i < mip_count + 1; i++) {
@@ -284,7 +283,7 @@ void _decompress_astc(Image *r_img) {
 	astcenc_context_free(context);
 
 	// Replace original image with compressed one.
-	r_img->set_data(width, height, has_mipmaps, target_format, dest_data);
+	r_img->set_data_partial_mipmaps(width, height, mip_count, target_format, dest_data);
 
 	print_verbose(vformat("astcenc: Decompression took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }

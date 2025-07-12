@@ -383,7 +383,7 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 		}
 	}
 
-	return memnew(Image(p_width, p_height, p_mipmaps > 1, info.format, r_src_data));
+	return memnew(Image(p_width, p_height, info.format, p_mipmaps - 1, r_src_data));
 }
 
 static Vector<Ref<Image>> _dds_load_images(Ref<FileAccess> p_f, DDSFormat p_dds_format, uint32_t p_width, uint32_t p_height, uint32_t p_mipmaps, uint32_t p_pitch, uint32_t p_flags, uint32_t p_layer_count) {
