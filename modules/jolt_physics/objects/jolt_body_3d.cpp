@@ -161,6 +161,8 @@ void JoltBody3D::_add_to_space() {
 }
 
 void JoltBody3D::_enqueue_call_queries() {
+	// This method will be called from the body activation listener on multiple threads during the simulation step.
+
 	if (space != nullptr) {
 		space->enqueue_call_queries(&call_queries_element);
 	}
@@ -297,6 +299,14 @@ JPH::MassProperties JoltBody3D::_calculate_mass_properties(const JPH::Shape &p_s
 
 JPH::MassProperties JoltBody3D::_calculate_mass_properties() const {
 	return _calculate_mass_properties(*jolt_shape);
+}
+
+void JoltBody3D::_on_wake_up() {
+	// This method will be called from the body activation listener on multiple threads during the simulation step.
+
+	if (_should_call_queries()) {
+		_enqueue_call_queries();
+	}
 }
 
 void JoltBody3D::_update_mass_properties() {
