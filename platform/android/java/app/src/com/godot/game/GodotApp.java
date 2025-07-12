@@ -81,5 +81,10 @@ public class GodotApp extends GodotActivity {
 	public void onGodotMainLoopStarted() {
 		super.onGodotMainLoopStarted();
 		runOnUiThread(updateImmersiveAndEdgeToEdgeModes);
+		runOnUiThread(() -> {
+			Godot godot = getGodot();
+			if (godot != null)
+				godot.setSystemBarsAppearance();
+		});
 	}
 }

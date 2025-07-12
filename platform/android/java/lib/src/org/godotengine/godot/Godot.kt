@@ -39,6 +39,7 @@ import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
 import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
@@ -48,6 +49,7 @@ import android.view.*
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
+import androidx.core.graphics.ColorUtils
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsAnimationCompat
@@ -447,6 +449,41 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	fun isInEdgeToEdgeMode() = isEdgeToEdge.get()
+
+
+	fun setSystemBarsAppearance() {
+		if (isEdgeToEdge.get()) {
+			return
+		}
+		val activity = getActivity() ?: return
+		val window = activity.window ?: return
+		val bgColor = getWindowBackgroundColor(activity) ?: return
+		val isLight = ColorUtils.calculateLuminance(bgColor) > 0.5
+
+		val controller = WindowInsetsControllerCompat(window, window.decorView)
+		controller.isAppearanceLightNavigationBars = isLight
+		controller.isAppearanceLightStatusBars = isLight
+	}
+
+	private fun getWindowBackgroundColor(activity: Activity): Int? {
+		val background = activity.window.decorView.background
+		return if (background is ColorDrawable) {
+			background.color
+		} else {
+			val typedValue = TypedValue()
+			val theme = activity.theme
+			return if (theme.resolveAttribute(android.R.attr.windowBackground, typedValue, true)) {
+				if (typedValue.type in TypedValue.TYPE_FIRST_COLOR_INT..TypedValue.TYPE_LAST_COLOR_INT) {
+					typedValue.data
+				} else {
+					null
+				}
+			} else {
+				null
+			}
+		}
+	}
+
 
 	/**
 	 * Used to complete initialization of the view used by the engine for rendering.

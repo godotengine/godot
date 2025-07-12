@@ -340,6 +340,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 			// Hide the loading indicator
 			editorLoadingIndicator?.visibility = View.GONE
 			updateImmersiveAndEdgeToEdgeModes()
+			godot?.setSystemBarsAppearance()
 		}
 	}
 
