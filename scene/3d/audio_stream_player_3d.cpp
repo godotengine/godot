@@ -410,10 +410,10 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		float dist = local_pos.length();
 
+#ifndef PHYSICS_3D_DISABLED
 		Vector3 area_sound_pos;
 		Vector3 listener_area_pos;
 
-#ifndef PHYSICS_3D_DISABLED
 		Area3D *area = _get_overriding_area();
 		if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 			area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
