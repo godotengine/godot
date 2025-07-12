@@ -257,7 +257,7 @@ String DisplayServerOpenHarmony::clipboard_get() const {
 			OH_UdmfRecord *record = OH_UdmfData_GetRecord(udmfData, 0);
 			OH_UdsPlainText *plainText = OH_UdsPlainText_Create();
 			OH_UdmfRecord_GetPlainText(record, plainText);
-			content.parse_utf8(OH_UdsPlainText_GetContent(plainText));
+			content = String::utf8(OH_UdsPlainText_GetContent(plainText));
 			OH_UdsPlainText_Destroy(plainText);
 		} else {
 			ERR_PRINT("Failed to get clipboard data with PASTEBOARD_ErrCode: " + itos(status));
@@ -314,8 +314,7 @@ void DisplayServerOpenHarmony::_get_text_config(InputMethod_TextEditorProxy *tex
 }
 
 void DisplayServerOpenHarmony::_insert_text(InputMethod_TextEditorProxy *text_editor_proxy, const char16_t *text, size_t length) {
-	String characters;
-	characters.parse_utf16(text, length);
+	String characters = String::utf16(text, length);
 
 	for (int i = 0; i < characters.size(); i++) {
 		int character = characters[i];

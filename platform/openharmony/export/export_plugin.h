@@ -40,7 +40,6 @@
 #include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
 #include "core/version.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "main/splash.gen.h"

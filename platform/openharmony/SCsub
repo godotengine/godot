@@ -14,7 +14,7 @@ def generate_bundle(target, source, env):
         Dir(f"#platform/openharmony/template/entry/src/main/cpp/libs/{lib_arch_dir}/").abspath + "/libgodot.so"
     )
     os.makedirs(os.path.dirname(dst_lib_path), exist_ok=True)
-    shutil.copy(File(lib_name).abspath, dst_lib_path)
+    shutil.copy(lib[0].abspath, dst_lib_path)
     dst_header_path = (
         Dir("#platform/openharmony/template/entry/src/main/cpp/include/").abspath + "/bridge_openharmony.h"
     )
@@ -22,8 +22,7 @@ def generate_bundle(target, source, env):
     shutil.copy(File("#platform/openharmony/bridge_openharmony.h").abspath, dst_header_path)
 
     template_dir = Dir("#platform/openharmony/template").abspath
-    zip_target = Dir(f"#bin/openharmony_{lib_type_dir}_{lib_arch_dir}").abspath
-    shutil.make_archive(zip_target, "zip", root_dir=template_dir)
+    shutil.make_archive(Dir(f"#bin/openharmony_{lib_type_dir}_{lib_arch_dir}").abspath, "zip", root_dir=template_dir)
     os.remove(dst_lib_path)
     os.remove(dst_header_path)
 
