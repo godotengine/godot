@@ -1217,6 +1217,9 @@ void AnimationPlayerEditor::edit(AnimationMixer *p_node, AnimationPlayer *p_play
 		if (player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
 			player->disconnect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
 		}
+		if (player->is_connected(SNAME("seeked"), callable_mp(this, &AnimationPlayerEditor::_animation_player_seeked))) {
+			player->disconnect(SNAME("seeked"), callable_mp(this, &AnimationPlayerEditor::_animation_player_seeked));
+		}
 	}
 
 	AnimationTree *tree = Object::cast_to<AnimationTree>(p_node);
@@ -1246,6 +1249,9 @@ void AnimationPlayerEditor::edit(AnimationMixer *p_node, AnimationPlayer *p_play
 		}
 		if (!player->is_connected(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed))) {
 			player->connect(SNAME("current_animation_changed"), callable_mp(this, &AnimationPlayerEditor::_current_animation_changed));
+		}
+		if (!player->is_connected(SNAME("seeked"), callable_mp(this, &AnimationPlayerEditor::_animation_player_seeked))) {
+			player->connect(SNAME("seeked"), callable_mp(this, &AnimationPlayerEditor::_animation_player_seeked));
 		}
 		_update_player();
 
@@ -1412,6 +1418,10 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 
 	frame->set_value(pos);
 	track_editor->set_anim_pos(pos);
+}
+
+void AnimationPlayerEditor::_animation_player_seeked(float p_value) {
+	_seek_value_changed(p_value, false);
 }
 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
