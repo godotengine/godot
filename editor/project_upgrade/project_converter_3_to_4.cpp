@@ -458,6 +458,7 @@ bool ProjectConverter3To4::convert() {
 				rename_joypad_buttons_and_axes(source_lines, reg_container);
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, source_lines);
 				custom_rename(source_lines, "config_version=4", "config_version=5");
+				custom_rename(source_lines, "^\\[locale\\]$", "[internationalization]", false);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else if (file_name.ends_with(".import")) {
@@ -642,6 +643,7 @@ bool ProjectConverter3To4::validate_conversion() {
 				changed_elements.append_array(check_for_rename_input_map_scancode(lines, reg_container));
 				changed_elements.append_array(check_for_rename_joypad_buttons_and_axes(lines, reg_container));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines));
+				changed_elements.append_array(check_for_custom_rename(lines, "^\\[locale\\]$", "[internationalization]", false));
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else {
@@ -2832,8 +2834,8 @@ Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<
 	return found_renames;
 }
 
-void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to) {
-	RegEx reg = RegEx(String("\\b") + from + "\\b");
+void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const String &from, const String &to, bool p_add_boundary_check) {
+	RegEx reg = RegEx(p_add_boundary_check ? "\\b" + from + "\\b" : from);
 	CRASH_COND(!reg.is_valid());
 	for (SourceLine &source_line : source_lines) {
 		if (source_line.is_comment) {
@@ -2847,10 +2849,10 @@ void ProjectConverter3To4::custom_rename(Vector<SourceLine> &source_lines, const
 	}
 }
 
-Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, const String &from, const String &to) {
+Vector<String> ProjectConverter3To4::check_for_custom_rename(Vector<String> &lines, const String &from, const String &to, bool p_add_boundary_check) {
 	Vector<String> found_renames;
 
-	RegEx reg = RegEx(String("\\b") + from + "\\b");
+	RegEx reg = RegEx(p_add_boundary_check ? "\\b" + from + "\\b" : from);
 	CRASH_COND(!reg.is_valid());
 
 	int current_line = 1;

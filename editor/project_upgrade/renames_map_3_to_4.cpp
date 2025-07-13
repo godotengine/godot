@@ -1362,6 +1362,10 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/lights_and_shadows/shadow_atlas/size.mobile" },
 	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2_astc" },
 	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc_bptc" },
+	{ "locale/fallback", "internationalization/locale/fallback" },
+	{ "locale/test", "internationalization/locale/test" },
+	{ "locale/translation_remaps", "internationalization/locale/translation_remaps" },
+	{ "locale/translations", "internationalization/locale/translations" },
 
 	{ nullptr, nullptr },
 };
@@ -1407,6 +1411,10 @@ const char *RenamesMap3To4::project_godot_renames[][2] = {
 	{ "quality/shadow_atlas/size.mobile", "lights_and_shadows/shadow_atlas/size.mobile" },
 	{ "vram_compression/import_etc2", "textures/vram_compression/import_etc2_astc" },
 	{ "vram_compression/import_s3tc", "textures/vram_compression/import_s3tc_bptc" },
+	{ "fallback", "locale/fallback" },
+	{ "test", "locale/test" },
+	{ "translation_remaps", "locale/translation_remaps" },
+	{ "translations", "locale/translations" },
 
 	{ nullptr, nullptr },
 };
