@@ -1410,6 +1410,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_timeline_o
 		player->seek_internal(pos, true, true, false);
 	}
 
+	frame->set_value(pos);
 	track_editor->set_anim_pos(pos);
 }
 
