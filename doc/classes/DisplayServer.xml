@@ -895,6 +895,15 @@
 				[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 			</description>
 		</method>
+		<method name="get_system_icon_theme" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns system application icon theme information. Returned [Dictionary] contains the floating entries:
+				- [code]theme : String[/code] icon theme name, one of the following values: "RegularLight", "RegularDark", "ClearLight", "ClearDark", "ClearAutomatic", "TintedLight", "TintedDark", "TintedAutomatic".
+				- [code]tint : Color[/code] icon tint color.
+				[b]Note:[/b] This method is implemented on macOS.
+			</description>
+		</method>
 		<method name="get_window_at_screen_position" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="position" type="Vector2i" />
@@ -1871,6 +1880,14 @@
 			<description>
 				Sets the [param callable] that should be called when system theme settings are changed. Callback method should have zero arguments.
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
+			</description>
+		</method>
+		<method name="set_themed_icons">
+			<return type="void" />
+			<param index="0" name="images" type="Dictionary" />
+			<description>
+				Sets themed variants of the application icon, [param images] should contain images with the following keys: "RegularLight", "RegularDark", "ClearLight", "ClearDark", "TintedLight", "TintedDark".
+				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
 		<method name="show_emoji_and_symbol_picker" qualifiers="const">
