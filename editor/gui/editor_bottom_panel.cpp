@@ -42,11 +42,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/split_container.h"
 
-void EditorBottomPanel::_update_margins() {
-	TabContainer::_update_margins();
-	get_tab_bar()->set_offset(SIDE_RIGHT, get_tab_bar()->get_offset(SIDE_RIGHT) - bottom_hbox->get_size().x);
-}
-
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -60,8 +55,25 @@ void EditorBottomPanel::_on_tab_changed(int p_idx) {
 	callable_mp(this, &EditorBottomPanel::_repaint).call_deferred();
 }
 
+void EditorBottomPanel::_theme_changed() {
+	Ref<StyleBox> bottom_tabbar_style = get_theme_stylebox("tabbar_background", "BottomPanel")->duplicate();
+	bottom_tabbar_style->set_content_margin(SIDE_RIGHT, bottom_hbox->get_minimum_size().x + bottom_tabbar_style->get_content_margin(SIDE_LEFT));
+	add_theme_style_override("tabbar_background", bottom_tabbar_style);
+
+	if (get_current_tab() == -1) {
+		// Hide panel when not showing anything.
+		remove_theme_style_override(SceneStringName(panel));
+	} else {
+		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
+	}
+}
+
 void EditorBottomPanel::_repaint() {
 	bool panel_collapsed = get_current_tab() == -1;
+	if (panel_collapsed == (get_previous_tab() == -1)) {
+		return;
+	}
+
 	SplitContainer *center_split = Object::cast_to<SplitContainer>(get_parent());
 	ERR_FAIL_NULL(center_split);
 
@@ -74,12 +86,7 @@ void EditorBottomPanel::_repaint() {
 		EditorNode::get_top_split()->set_visible(panel_collapsed);
 	}
 
-	if (panel_collapsed) {
-		// Hide panel when not showing anything.
-		remove_theme_style_override(SceneStringName(panel));
-	} else {
-		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)));
-	}
+	_theme_changed();
 }
 
 void EditorBottomPanel::save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const {
@@ -194,7 +201,6 @@ void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control 
 EditorBottomPanel::EditorBottomPanel() {
 	get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_gui_input).bind(this));
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
-	set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);
 	set_deselect_enabled(true);
 

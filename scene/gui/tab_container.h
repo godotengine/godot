@@ -106,6 +106,7 @@ private:
 	void _repaint();
 	void _refresh_tab_indices();
 	void _refresh_tab_names();
+	void _update_margins();
 	void _on_mouse_exited();
 	void _on_tab_changed(int p_tab);
 	void _on_tab_clicked(int p_tab);
@@ -129,8 +130,6 @@ protected:
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	static void _bind_methods();
-
-	virtual void _update_margins();
 
 public:
 	virtual bool accessibility_override_tree_hierarchy() const override { return true; }
