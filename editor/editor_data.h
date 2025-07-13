@@ -138,7 +138,7 @@ private:
 	Vector<Callable> undo_redo_callbacks;
 	HashMap<StringName, Callable> move_element_functions;
 
-	Vector<EditedScene> edited_scene;
+	Vector<EditedScene> edited_scenes;
 	int current_edited_scene = -1;
 	int last_created_scene = 1;
 
