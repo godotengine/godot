@@ -2570,6 +2570,9 @@
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+				Updates the vertex data of a mesh's surface given the [RID] of the mesh [param mesh] and the index of the surface [param surface] with a provided [PackedByteArray] [param data] starting from a byte offset of [param offset].
+				Each vertex is represented as 12 bytes in the [PackedByteArray] (4 bytes per float, 3 floats per [Vector3]), with an [param offset] of 0, the size of [param data] should be at most 12 times the vertex count. A [PackedVector3Array] can be directly converted into a [PackedByteArray] using [method PackedVector3Array.to_byte_array()].
+				[param offset] determines from where the updates start in the internal mesh data. With each vertex represented as 12, for the vast majority of usecases [param offset] should be a multiple of 12. The maximum allowable size of [param data] decreases by the same value as [param offset].
 			</description>
 		</method>
 		<method name="multimesh_allocate_data">
