@@ -60,7 +60,6 @@ class EditorBottomPanel : public TabContainer {
 protected:
 	void _notification(int p_what);
 
-	virtual void _update_margins() override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
 public:
@@ -74,6 +73,7 @@ public:
 	void hide_bottom_panel();
 	void toggle_last_opened_bottom_panel();
 	void set_expanded(bool p_expanded);
+	void _theme_changed();
 
 	EditorBottomPanel();
 	~EditorBottomPanel();
