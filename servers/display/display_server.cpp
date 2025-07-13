@@ -1364,6 +1364,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("is_dark_mode_supported"), &DisplayServer::is_dark_mode_supported);
 	ClassDB::bind_method(D_METHOD("is_dark_mode"), &DisplayServer::is_dark_mode);
+	ClassDB::bind_method(D_METHOD("get_system_icon_theme"), &DisplayServer::get_system_icon_theme);
 	ClassDB::bind_method(D_METHOD("get_accent_color"), &DisplayServer::get_accent_color);
 	ClassDB::bind_method(D_METHOD("get_base_color"), &DisplayServer::get_base_color);
 	ClassDB::bind_method(D_METHOD("set_system_theme_change_callback", "callable"), &DisplayServer::set_system_theme_change_callback);
@@ -1603,6 +1604,7 @@ void DisplayServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_native_icon", "filename"), &DisplayServer::set_native_icon);
 	ClassDB::bind_method(D_METHOD("set_icon", "image"), &DisplayServer::set_icon);
+	ClassDB::bind_method(D_METHOD("set_themed_icons", "images"), &DisplayServer::set_themed_icons);
 
 	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);
