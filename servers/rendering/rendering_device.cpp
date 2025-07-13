@@ -3577,6 +3577,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 
 		const Uniform &uniform = uniforms[uniform_idx];
 
+		ERR_FAIL_INDEX_V(uniform.uniform_type, RD::UNIFORM_TYPE_MAX, RID());
 		ERR_FAIL_COND_V_MSG(uniform.uniform_type != set_uniform.type, RID(),
 				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + "). Expected '" + SHADER_UNIFORM_NAMES[set_uniform.type] + "', supplied: '" + SHADER_UNIFORM_NAMES[uniform.uniform_type] + "'.");
 
