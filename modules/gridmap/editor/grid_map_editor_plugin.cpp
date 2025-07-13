@@ -517,6 +517,9 @@ void GridMapEditor::_set_clipboard_data() {
 	_clear_clipboard_data();
 
 	Ref<MeshLibrary> meshLibrary = node->get_mesh_library();
+	if (meshLibrary.is_null()) {
+		return;
+	}
 
 	const RID scenario = get_tree()->get_root()->get_world_3d()->get_scenario();
 
@@ -993,6 +996,7 @@ void GridMapEditor::_update_mesh_library() {
 	} else {
 		return;
 	}
+	_set_selection(false);
 
 	if (mesh_library.is_valid()) {
 		mesh_library->connect_changed(callable_mp(this, &GridMapEditor::update_palette));
@@ -1003,6 +1007,8 @@ void GridMapEditor::_update_mesh_library() {
 	if (mesh_library_palette->get_current() == -1 && mesh_library_palette->get_item_count() > 0) {
 		mesh_library_palette->set_current(0);
 		selected_palette = mesh_library_palette->get_item_metadata(0);
+	} else if (mesh_library_palette->get_item_count() == 0) {
+		selected_palette = -1;
 	}
 	// Update the cursor and grid in case the library is changed or removed.
 	_update_cursor_instance();
@@ -1264,8 +1270,10 @@ void GridMapEditor::_update_cursor_instance() {
 		cursor_instance = RenderingServer::get_singleton()->instance_create2(cursor_mesh, scenario);
 	}
 
-	// Make the cursor translucent so that it can be distinguished from already-placed tiles.
-	RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
+	if (cursor_instance.is_valid()) {
+		// Make the cursor translucent so that it can be distinguished from already-placed tiles.
+		RenderingServer::get_singleton()->instance_geometry_set_transparency(cursor_instance, 0.5);
+	}
 
 	_update_cursor_transform();
 }
