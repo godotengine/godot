@@ -45,7 +45,7 @@
 #include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/plugins/control_editor_plugin.h"
+#include "editor/scene/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
 
 // Editor plugin interoperability.
@@ -3519,7 +3519,8 @@ bool Control::is_layout_rtl() const {
 						String locale = OS::get_singleton()->get_locale();
 						data.is_rtl = TS->is_locale_right_to_left(locale);
 					} else {
-						String locale = TranslationServer::get_singleton()->get_tool_locale();
+						const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
+						String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
 						data.is_rtl = TS->is_locale_right_to_left(locale);
 					}
 					return data.is_rtl;

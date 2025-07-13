@@ -5586,6 +5586,8 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
 			return true;
+		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
+			return true;
 		default:
 			return false;
 	}

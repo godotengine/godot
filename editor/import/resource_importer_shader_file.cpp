@@ -33,7 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "editor/plugins/shader_file_editor_plugin.h"
+#include "editor/shader/shader_file_editor_plugin.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 String ResourceImporterShaderFile::get_importer_name() const {

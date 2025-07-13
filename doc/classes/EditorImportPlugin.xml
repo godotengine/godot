@@ -163,18 +163,18 @@
 				Gets whether the import option specified by [param option_name] should be visible in the Import dock. The default implementation always returns [code]true[/code], making all options visible. This is mainly useful for hiding options that depend on others if one of them is disabled.
 				[codeblocks]
 				[gdscript]
-				func _get_option_visibility(option, options):
+				func _get_option_visibility(path, option_name, options):
 					# Only show the lossy quality setting if the compression mode is set to "Lossy".
-					if option == "compress/lossy_quality" and options.has("compress/mode"):
+					if option_name == "compress/lossy_quality" and options.has("compress/mode"):
 						return int(options["compress/mode"]) == COMPRESS_LOSSY # This is a constant that you set
 
 					return true
 				[/gdscript]
 				[csharp]
-				public void _GetOptionVisibility(string option, Godot.Collections.Dictionary options)
+				public override bool _GetOptionVisibility(string path, StringName optionName, Godot.Collections.Dictionary options)
 				{
 					// Only show the lossy quality setting if the compression mode is set to "Lossy".
-					if (option == "compress/lossy_quality" &amp;&amp; options.ContainsKey("compress/mode"))
+					if (optionName == "compress/lossy_quality" &amp;&amp; options.ContainsKey("compress/mode"))
 					{
 						return (int)options["compress/mode"] == CompressLossy; // This is a constant you set
 					}

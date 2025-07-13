@@ -30,9 +30,9 @@
 
 #include "editor_performance_profiler.h"
 
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"

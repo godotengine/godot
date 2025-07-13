@@ -5,6 +5,8 @@
 #include <math.h>
 #include <string.h>
 
+// This work is based on:
+// Takio Kurita. An efficient agglomerative clustering algorithm using a heap. 1991
 namespace meshopt
 {
 
@@ -15,7 +17,87 @@ struct ClusterAdjacency
 	unsigned int* shared;
 };
 
-static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned int* cluster_indices, const unsigned int* cluster_offsets, size_t cluster_count, unsigned char* used, size_t vertex_count, meshopt_Allocator& allocator)
+static void filterClusterIndices(unsigned int* data, unsigned int* offsets, const unsigned int* cluster_indices, const unsigned int* cluster_index_counts, size_t cluster_count, unsigned char* used, size_t vertex_count, size_t total_index_count)
+{
+	(void)vertex_count;
+	(void)total_index_count;
+
+	size_t cluster_start = 0;
+	size_t cluster_write = 0;
+
+	for (size_t i = 0; i < cluster_count; ++i)
+	{
+		offsets[i] = unsigned(cluster_write);
+
+		// copy cluster indices, skipping duplicates
+		for (size_t j = 0; j < cluster_index_counts[i]; ++j)
+		{
+			unsigned int v = cluster_indices[cluster_start + j];
+			assert(v < vertex_count);
+
+			data[cluster_write] = v;
+			cluster_write += 1 - used[v];
+			used[v] = 1;
+		}
+
+		// reset used flags for the next cluster
+		for (size_t j = offsets[i]; j < cluster_write; ++j)
+			used[data[j]] = 0;
+
+		cluster_start += cluster_index_counts[i];
+	}
+
+	assert(cluster_start == total_index_count);
+	assert(cluster_write <= total_index_count);
+	offsets[cluster_count] = unsigned(cluster_write);
+}
+
+static void computeClusterBounds(float* cluster_bounds, const unsigned int* cluster_indices, const unsigned int* cluster_offsets, size_t cluster_count, const float* vertex_positions, size_t vertex_positions_stride)
+{
+	size_t vertex_stride_float = vertex_positions_stride / sizeof(float);
+
+	for (size_t i = 0; i < cluster_count; ++i)
+	{
+		float center[3] = {0, 0, 0};
+
+		// approximate center of the cluster by averaging all vertex positions
+		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
+		{
+			const float* p = vertex_positions + cluster_indices[j] * vertex_stride_float;
+
+			center[0] += p[0];
+			center[1] += p[1];
+			center[2] += p[2];
+		}
+
+		// note: technically clusters can't be empty per meshopt_partitionCluster but we check for a division by zero in case that changes
+		if (size_t cluster_size = cluster_offsets[i + 1] - cluster_offsets[i])
+		{
+			center[0] /= float(cluster_size);
+			center[1] /= float(cluster_size);
+			center[2] /= float(cluster_size);
+		}
+
+		// compute radius of the bounding sphere for each cluster
+		float radiussq = 0;
+
+		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
+		{
+			const float* p = vertex_positions + cluster_indices[j] * vertex_stride_float;
+
+			float d2 = (p[0] - center[0]) * (p[0] - center[0]) + (p[1] - center[1]) * (p[1] - center[1]) + (p[2] - center[2]) * (p[2] - center[2]);
+
+			radiussq = radiussq < d2 ? d2 : radiussq;
+		}
+
+		cluster_bounds[i * 4 + 0] = center[0];
+		cluster_bounds[i * 4 + 1] = center[1];
+		cluster_bounds[i * 4 + 2] = center[2];
+		cluster_bounds[i * 4 + 3] = sqrtf(radiussq);
+	}
+}
+
+static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned int* cluster_indices, const unsigned int* cluster_offsets, size_t cluster_count, size_t vertex_count, meshopt_Allocator& allocator)
 {
 	unsigned int* ref_offsets = allocator.allocate<unsigned int>(vertex_count + 1);
 
@@ -25,16 +107,7 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 	for (size_t i = 0; i < cluster_count; ++i)
 	{
 		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-		{
-			unsigned int v = cluster_indices[j];
-			assert(v < vertex_count);
-
-			ref_offsets[v] += 1 - used[v];
-			used[v] = 1;
-		}
-
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-			used[cluster_indices[j]] = 0;
+			ref_offsets[cluster_indices[j]]++;
 	}
 
 	// compute (worst-case) number of adjacent clusters for each cluster
@@ -43,21 +116,13 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 	for (size_t i = 0; i < cluster_count; ++i)
 	{
 		size_t count = 0;
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-		{
-			unsigned int v = cluster_indices[j];
-			assert(v < vertex_count);
 
-			// worst case is every vertex has a disjoint cluster list
-			count += used[v] ? 0 : ref_offsets[v] - 1;
-			used[v] = 1;
-		}
+		// worst case is every vertex has a disjoint cluster list
+		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
+			count += ref_offsets[cluster_indices[j]] - 1;
 
 		// ... but only every other cluster can be adjacent in the end
 		total_adjacency += count < cluster_count - 1 ? count : cluster_count - 1;
-
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-			used[cluster_indices[j]] = 0;
 	}
 
 	// we can now allocate adjacency buffers
@@ -81,19 +146,7 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 	for (size_t i = 0; i < cluster_count; ++i)
 	{
 		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-		{
-			unsigned int v = cluster_indices[j];
-			assert(v < vertex_count);
-
-			if (used[v])
-				continue;
-
-			ref_data[ref_offsets[v]++] = unsigned(i);
-			used[v] = 1;
-		}
-
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-			used[cluster_indices[j]] = 0;
+			ref_data[ref_offsets[cluster_indices[j]]++] = unsigned(i);
 	}
 
 	// after the previous pass, ref_offsets contain the end of the data for each vertex; shift it forward to get the start
@@ -112,10 +165,6 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
 		{
 			unsigned int v = cluster_indices[j];
-			assert(v < vertex_count);
-
-			if (used[v])
-				continue;
 
 			// merge the entire cluster list of each vertex into current list
 			for (size_t k = ref_offsets[v]; k < ref_offsets[v + 1]; ++k)
@@ -144,12 +193,7 @@ static void buildClusterAdjacency(ClusterAdjacency& adjacency, const unsigned in
 					count++;
 				}
 			}
-
-			used[v] = 1;
 		}
-
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-			used[cluster_indices[j]] = 0;
 
 		// mark the end of the adjacency list; the next cluster will start there as well
 		adjacency.offsets[i + 1] = adjacency.offsets[i] + unsigned(count);
@@ -223,29 +267,6 @@ static GroupOrder heapPop(GroupOrder* heap, size_t size)
 	return top;
 }
 
-static unsigned int countTotal(const ClusterGroup* groups, int id, const unsigned int* cluster_indices, const unsigned int* cluster_offsets, unsigned char* used)
-{
-	unsigned int total = 0;
-
-	for (int i = id; i >= 0; i = groups[i].next)
-	{
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-		{
-			unsigned int v = cluster_indices[j];
-			total += 1 - used[v];
-			used[v] = 1;
-		}
-	}
-
-	for (int i = id; i >= 0; i = groups[i].next)
-	{
-		for (size_t j = cluster_offsets[i]; j < cluster_offsets[i + 1]; ++j)
-			used[cluster_indices[j]] = 0;
-	}
-
-	return total;
-}
-
 static unsigned int countShared(const ClusterGroup* groups, int group1, int group2, const ClusterAdjacency& adjacency)
 {
 	unsigned int total = 0;
@@ -264,7 +285,41 @@ static unsigned int countShared(const ClusterGroup* groups, int group1, int grou
 	return total;
 }
 
-static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdjacency& adjacency, size_t max_partition_size)
+static void mergeBounds(float* target, const float* source)
+{
+	float r1 = target[3], r2 = source[3];
+	float dx = source[0] - target[0], dy = source[1] - target[1], dz = source[2] - target[2];
+	float d = sqrtf(dx * dx + dy * dy + dz * dz);
+
+	if (d + r1 < r2)
+	{
+		memcpy(target, source, 4 * sizeof(float));
+		return;
+	}
+
+	if (d + r2 > r1)
+	{
+		float k = d > 0 ? (d + r2 - r1) / (2 * d) : 0.f;
+
+		target[0] += dx * k;
+		target[1] += dy * k;
+		target[2] += dz * k;
+		target[3] = (d + r2 + r1) / 2;
+	}
+}
+
+static float boundsScore(const float* target, const float* source)
+{
+	float r1 = target[3], r2 = source[3];
+	float dx = source[0] - target[0], dy = source[1] - target[1], dz = source[2] - target[2];
+	float d = sqrtf(dx * dx + dy * dy + dz * dz);
+
+	float mr = d + r1 < r2 ? r2 : (d + r2 < r1 ? r1 : (d + r2 + r1) / 2);
+
+	return mr > 0 ? r1 / mr : 0.f;
+}
+
+static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdjacency& adjacency, size_t max_partition_size, const float* cluster_bounds)
 {
 	assert(groups[id].size > 0);
 
@@ -291,6 +346,10 @@ static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdj
 			// normalize shared count by the expected boundary of each group (+ keeps scoring symmetric)
 			float score = float(int(shared)) * (group_rsqrt + other_rsqrt);
 
+			// incorporate spatial score to favor merging nearby groups
+			if (cluster_bounds)
+				score *= 1.f + 0.4f * boundsScore(&cluster_bounds[id * 4], &cluster_bounds[other * 4]);
+
 			if (score > best_score)
 			{
 				best_group = other;
@@ -304,10 +363,12 @@ static int pickGroupToMerge(const ClusterGroup* groups, int id, const ClusterAdj
 
 } // namespace meshopt
 
-size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* cluster_indices, size_t total_index_count, const unsigned int* cluster_index_counts, size_t cluster_count, size_t vertex_count, size_t target_partition_size)
+size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* cluster_indices, size_t total_index_count, const unsigned int* cluster_index_counts, size_t cluster_count, const float* vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_partition_size)
 {
 	using namespace meshopt;
 
+	assert((vertex_positions == NULL || vertex_positions_stride >= 12) && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_partition_size > 0);
 
 	size_t max_partition_size = target_partition_size + target_partition_size * 3 / 8;
@@ -317,24 +378,25 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 	unsigned char* used = allocator.allocate<unsigned char>(vertex_count);
 	memset(used, 0, vertex_count);
 
-	// build cluster index offsets as a prefix sum
+	unsigned int* cluster_newindices = allocator.allocate<unsigned int>(total_index_count);
 	unsigned int* cluster_offsets = allocator.allocate<unsigned int>(cluster_count + 1);
-	unsigned int cluster_nextoffset = 0;
 
-	for (size_t i = 0; i < cluster_count; ++i)
+	// make new cluster index list that filters out duplicate indices
+	filterClusterIndices(cluster_newindices, cluster_offsets, cluster_indices, cluster_index_counts, cluster_count, used, vertex_count, total_index_count);
+	cluster_indices = cluster_newindices;
+
+	// compute bounding sphere for each cluster if positions are provided
+	float* cluster_bounds = NULL;
+
+	if (vertex_positions)
 	{
-		assert(cluster_index_counts[i] > 0);
-
-		cluster_offsets[i] = cluster_nextoffset;
-		cluster_nextoffset += cluster_index_counts[i];
+		cluster_bounds = allocator.allocate<float>(cluster_count * 4);
+		computeClusterBounds(cluster_bounds, cluster_indices, cluster_offsets, cluster_count, vertex_positions, vertex_positions_stride);
 	}
-
-	assert(cluster_nextoffset == total_index_count);
-	cluster_offsets[cluster_count] = unsigned(total_index_count);
 
 	// build cluster adjacency along with edge weights (shared vertex count)
 	ClusterAdjacency adjacency = {};
-	buildClusterAdjacency(adjacency, cluster_indices, cluster_offsets, cluster_count, used, vertex_count, allocator);
+	buildClusterAdjacency(adjacency, cluster_indices, cluster_offsets, cluster_count, vertex_count, allocator);
 
 	ClusterGroup* groups = allocator.allocate<ClusterGroup>(cluster_count);
 
@@ -347,7 +409,8 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		groups[i].group = int(i);
 		groups[i].next = -1;
 		groups[i].size = 1;
-		groups[i].vertices = countTotal(groups, int(i), cluster_indices, cluster_offsets, used);
+		groups[i].vertices = cluster_offsets[i + 1] - cluster_offsets[i];
+		assert(groups[i].vertices > 0);
 
 		GroupOrder item = {};
 		item.id = unsigned(i);
@@ -376,7 +439,7 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 		if (groups[top.id].size >= target_partition_size)
 			continue;
 
-		int best_group = pickGroupToMerge(groups, top.id, adjacency, max_partition_size);
+		int best_group = pickGroupToMerge(groups, top.id, adjacency, max_partition_size, cluster_bounds);
 
 		// we can't grow the group any more, emit as is
 		if (best_group == -1)
@@ -395,13 +458,20 @@ size_t meshopt_partitionClusters(unsigned int* destination, const unsigned int* 
 				break;
 			}
 
-		// update group sizes; note, the vertex update is an approximation which avoids recomputing the true size via countTotal
+		// update group sizes; note, the vertex update is a O(1) approximation which avoids recomputing the true size
 		groups[top.id].size += groups[best_group].size;
 		groups[top.id].vertices += groups[best_group].vertices;
 		groups[top.id].vertices = (groups[top.id].vertices > shared) ? groups[top.id].vertices - shared : 1;
 
 		groups[best_group].size = 0;
 		groups[best_group].vertices = 0;
+
+		// merge bounding spheres if bounds are available
+		if (cluster_bounds)
+		{
+			mergeBounds(&cluster_bounds[top.id * 4], &cluster_bounds[best_group * 4]);
+			memset(&cluster_bounds[best_group * 4], 0, 4 * sizeof(float));
+		}
 
 		// re-associate all clusters back to the merged group
 		for (int i = top.id; i >= 0; i = groups[i].next)

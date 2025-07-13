@@ -36,9 +36,9 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"

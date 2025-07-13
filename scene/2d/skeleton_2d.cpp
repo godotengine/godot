@@ -34,8 +34,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_data.h"
-#include "editor/editor_settings.h"
-#include "editor/plugins/canvas_item_editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #endif //TOOLS_ENABLED
 
 bool Bone2D::_set(const StringName &p_path, const Variant &p_value) {

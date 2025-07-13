@@ -37,8 +37,8 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "editor/gui/editor_run_bar.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/settings/editor_settings.h"
 
 DebugAdapterProtocol *DebugAdapterProtocol::singleton = nullptr;
 

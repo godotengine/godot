@@ -53,6 +53,8 @@ import android.view.WindowInsets;
 import android.view.WindowManager;
 
 import androidx.core.content.FileProvider;
+import androidx.core.graphics.Insets;
+import androidx.core.view.WindowInsetsCompat;
 
 import java.io.File;
 import java.util.List;
@@ -223,25 +225,25 @@ public class GodotIO {
 		}
 
 		if (topView != null) {
-			topView.getWindowVisibleDisplayFrame(rect);
-			result[0] = rect.left;
-			result[1] = rect.top;
-			result[2] = rect.right;
-			result[3] = rect.bottom;
+			int insetTypes = WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				WindowInsets insets = topView.getRootWindowInsets();
-				DisplayCutout cutout = insets.getDisplayCutout();
-				if (cutout != null) {
-					int insetLeft = cutout.getSafeInsetLeft();
-					int insetTop = cutout.getSafeInsetTop();
-					result[0] = insetLeft;
-					result[1] = insetTop;
-					result[2] -= insetLeft + cutout.getSafeInsetRight();
-					result[3] -= insetTop + cutout.getSafeInsetBottom();
+			if (topView.getRootWindowInsets() != null) {
+				WindowInsetsCompat insetsCompat = WindowInsetsCompat.toWindowInsetsCompat(topView.getRootWindowInsets(), topView);
+				Insets insets = insetsCompat.getInsets(insetTypes);
+
+				if (godot.isInEdgeToEdgeMode() || godot.isInImmersiveMode()) {
+					result[0] = insets.left;
+					result[1] = insets.top;
+				} else {
+					// The top and left padding (if required) is already applied.
+					result[0] = 0;
+					result[1] = 0;
 				}
+				result[2] = topView.getWidth() - insets.right - insets.left;
+				result[3] = topView.getHeight() - insets.bottom - insets.top;
 			}
 		}
+
 		return result;
 	}
 

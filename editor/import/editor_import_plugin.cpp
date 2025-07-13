@@ -31,7 +31,7 @@
 #include "editor_import_plugin.h"
 
 #include "core/object/script_language.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 
 String EditorImportPlugin::get_importer_name() const {
 	String ret;

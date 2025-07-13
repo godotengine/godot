@@ -48,8 +48,19 @@
  */
 int mbedtls_aesni_has_support(unsigned int what)
 {
-    static int done = 0;
-    static unsigned int c = 0;
+    /* To avoid a race condition, tell the compiler that the assignment
+     * `done = 1` and the assignment to `c` may not be reordered.
+     * https://github.com/Mbed-TLS/mbedtls/issues/9840
+     *
+     * Note that we may also be worried about memory access reordering,
+     * but fortunately the x86 memory model is not too wild: stores
+     * from the same thread are observed consistently by other threads.
+     * (See example 8-1 in Sewell et al., "x86-TSO: A Rigorous and Usable
+     * Programmer’s Model for x86 Multiprocessors", CACM, 2010,
+     * https://www.cl.cam.ac.uk/~pes20/weakmemory/cacm.pdf)
+     */
+    static volatile int done = 0;
+    static volatile unsigned int c = 0;
 
     if (!done) {
 #if MBEDTLS_AESNI_HAVE_CODE == 2
