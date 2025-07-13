@@ -701,6 +701,34 @@ void BaseMaterial3D::_update_shader() {
 	// looks broken with nearest-neighbor filtering (with and without Deep Parallax).
 	String texfilter_height_str;
 	switch (texture_filter) {
+		case TEXTURE_FILTER_DEFAULT:
+			switch (RS::get_singleton()->base_material_3d_get_default_filter()) {
+				case RSE::MATERIAL_FILTER_NEAREST:
+					texfilter_str = "filter_nearest";
+					texfilter_height_str = "filter_linear";
+					break;
+				case RSE::MATERIAL_FILTER_LINEAR:
+					texfilter_str = "filter_linear";
+					texfilter_height_str = "filter_linear";
+					break;
+				case RSE::MATERIAL_FILTER_NEAREST_MIPMAPS:
+					texfilter_str = "filter_nearest_mipmap";
+					texfilter_height_str = "filter_linear_mipmap";
+					break;
+				case RSE::MATERIAL_FILTER_LINEAR_MIPMAPS:
+					texfilter_str = "filter_linear_mipmap";
+					texfilter_height_str = "filter_linear_mipmap";
+					break;
+				case RSE::MATERIAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC:
+					texfilter_str = "filter_nearest_mipmap_anisotropic";
+					texfilter_height_str = "filter_linear_mipmap_anisotropic";
+					break;
+				case RSE::MATERIAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC:
+					texfilter_str = "filter_linear_mipmap_anisotropic";
+					texfilter_height_str = "filter_linear_mipmap_anisotropic";
+					break;
+			}
+			break;
 		case TEXTURE_FILTER_NEAREST:
 			texfilter_str = "filter_nearest";
 			texfilter_height_str = "filter_linear";
@@ -3359,6 +3387,103 @@ Shader::Mode BaseMaterial3D::get_shader_mode() const {
 	return Shader::MODE_SPATIAL;
 }
 
+void BaseMaterial3D::reset_state() {
+	orm = false;
+	pending_params.clear();
+
+	albedo = Color();
+	specular = 0.0f;
+	metallic = 0.0f;
+	roughness = 0.0f;
+	emission = Color();
+	emission_energy_multiplier = 1.0f;
+	emission_intensity = 1000.0f;
+	normal_scale = 0.0f;
+	rim = 0.0f;
+	rim_tint = 0.0f;
+	clearcoat = 0.0f;
+	clearcoat_roughness = 0.0f;
+	anisotropy = 0.0f;
+	heightmap_scale = 0.0f;
+	subsurface_scattering_strength = 0.0f;
+	transmittance_color = Color();
+	transmittance_depth = 0.0f;
+	transmittance_boost = 0.0f;
+
+	backlight = Color();
+	point_size = 0.0f;
+	refraction = 0.0f;
+	alpha_scissor_threshold = 0.0f;
+	alpha_hash_scale = 0.0f;
+	alpha_antialiasing_edge = 0.0f;
+	grow_enabled = false;
+	ao_light_affect = 0.0f;
+	grow = 0.0f;
+	particles_anim_h_frames = 0;
+	particles_anim_v_frames = 0;
+	particles_anim_loop = false;
+
+	transparency = TRANSPARENCY_DISABLED;
+	shading_mode = SHADING_MODE_PER_PIXEL;
+
+	texture_filter = TEXTURE_FILTER_DEFAULT;
+
+	uv1_scale = Vector3();
+	uv1_offset = Vector3();
+	uv1_triplanar_sharpness = 0.0f;
+
+	uv2_scale = Vector3();
+	uv2_offset = Vector3();
+	uv2_triplanar_sharpness = 0.0f;
+
+	detail_uv = DETAIL_UV_1;
+
+	deep_parallax = false;
+	deep_parallax_min_layers = 0;
+	deep_parallax_max_layers = 0;
+	heightmap_parallax_flip_tangent = false;
+	heightmap_parallax_flip_binormal = false;
+
+	proximity_fade_enabled = false;
+	proximity_fade_distance = 0.0f;
+
+	msdf_pixel_range = 4.f;
+	msdf_outline_size = 0.f;
+
+	distance_fade = DISTANCE_FADE_DISABLED;
+	distance_fade_max_distance = 0.0f;
+	distance_fade_min_distance = 0.0f;
+
+	blend_mode = BLEND_MODE_MIX;
+	detail_blend_mode = BLEND_MODE_MIX;
+	depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	depth_test = DEPTH_TEST_DEFAULT;
+	cull_mode = CULL_BACK;
+
+	specular_mode = SPECULAR_SCHLICK_GGX;
+	diffuse_mode = DIFFUSE_BURLEY;
+	billboard_mode = BILLBOARD_DISABLED;
+	emission_op = EMISSION_OP_ADD;
+
+	metallic_texture_channel = TEXTURE_CHANNEL_RED;
+	roughness_texture_channel = TEXTURE_CHANNEL_RED;
+	ao_texture_channel = TEXTURE_CHANNEL_RED;
+	refraction_texture_channel = TEXTURE_CHANNEL_RED;
+
+	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
+
+	z_clip_scale = 1.0;
+	fov_override = 75.0;
+
+	stencil_mode = STENCIL_MODE_DISABLED;
+	stencil_flags = 0;
+	stencil_compare = STENCIL_COMPARE_ALWAYS;
+	stencil_reference = 1;
+
+	stencil_effect_color = Color();
+	stencil_effect_outline_thickness = 0.01f;
+}
+
 void BaseMaterial3D::_bind_methods() {
 	static_assert(sizeof(MaterialKey) == 16, "MaterialKey should be 16 bytes");
 
@@ -3738,7 +3863,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "uv2_world_triplanar"), "set_flag", "get_flag", FLAG_UV2_USE_WORLD_TRIPLANAR);
 
 	ADD_GROUP("Sampling", "texture_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Default:-1,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "texture_repeat"), "set_flag", "get_flag", FLAG_USE_TEXTURE_REPEAT);
 
 	ADD_GROUP("Shadows", "");
@@ -3812,6 +3937,7 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_ORM);
 	BIND_ENUM_CONSTANT(TEXTURE_MAX);
 
+	BIND_ENUM_CONSTANT(TEXTURE_FILTER_DEFAULT);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_LINEAR);
 	BIND_ENUM_CONSTANT(TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);

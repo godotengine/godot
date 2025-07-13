@@ -3522,6 +3522,9 @@
 			[b]Note:[/b] In 2D, for this setting to have an effect, set [member CanvasItem.texture_filter] to [constant CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on the [CanvasItem] node displaying the texture (or in [CanvasTexture]). However, anisotropic filtering is rarely useful in 2D, so only enable it for textures in 2D if it makes a meaningful visual difference.
 			[b]Note:[/b] This property is only read when the project starts. To change the anisotropic filtering level at runtime, set [member Viewport.anisotropic_filtering_level] on the root [Viewport] instead.
 		</member>
+		<member name="rendering/textures/default_filters/base_material_3d_filter" type="int" setter="" getter="" default="3">
+			The default filtering quality to use for [BaseMaterial3D]. This only applies for materials with [member BaseMaterial3D.texture_filter] set to [constant BaseMaterial3D.TEXTURE_FILTER_DEFAULT].
+		</member>
 		<member name="rendering/textures/default_filters/texture_mipmap_bias" type="float" setter="" getter="" default="0.0">
 			Affects the final texture sharpness by reading from a lower or higher mipmap (also called "texture LOD bias"). Negative values make mipmapped textures sharper but grainier when viewed at a distance, while positive values make mipmapped textures blurrier (even when up close).
 			Enabling temporal antialiasing ([member rendering/anti_aliasing/quality/use_taa]) will automatically apply a [code]-0.5[/code] offset to this value, while enabling FXAA ([member rendering/anti_aliasing/quality/screen_space_aa]) will automatically apply a [code]-0.25[/code] offset to this value. If both TAA and FXAA are enabled at the same time, an offset of [code]-0.75[/code] is applied to this value.
