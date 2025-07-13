@@ -406,6 +406,16 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 	int mixed_frames = p_frames;
 
+	// Fix for audio delay bug: Check for buffer drift and resynchronize if necessary
+	if (input_size > 0 && input_ofs >= input_size) {
+		// We've read past the available data, resynchronize to prevent growing delay
+		input_ofs = input_size - 1;
+		if (input_ofs < 0) input_ofs = 0;
+#ifdef DEBUG_ENABLED
+		print_verbose(String(get_class_name()) + " buffer resynchronization: input_ofs=" + itos(input_ofs) + " input_size=" + itos(input_size));
+#endif
+	}
+
 	if (playback_delay > input_size) {
 		for (int i = 0; i < p_frames; i++) {
 			p_buffer[i] = AudioFrame(0.0f, 0.0f);
