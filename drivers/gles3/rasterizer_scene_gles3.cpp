@@ -4226,6 +4226,14 @@ void RasterizerSceneGLES3::decals_set_filter(RS::DecalFilter p_filter) {
 void RasterizerSceneGLES3::light_projectors_set_filter(RS::LightProjectorFilter p_filter) {
 }
 
+void RasterizerSceneGLES3::base_material_3d_set_default_filter(RS::MaterialFilter p_filter) {
+	if (RS::get_singleton()->base_material_3d_default_filter == p_filter) {
+		return;
+	}
+
+	RS::get_singleton()->base_material_3d_default_filter = p_filter;
+}
+
 void RasterizerSceneGLES3::lightmaps_set_bicubic_filter(bool p_enable) {
 	lightmap_bicubic_upscale = p_enable;
 }
@@ -4243,6 +4251,7 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 
 	positional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality"));
 	directional_soft_shadow_filter_set_quality((RS::ShadowQuality)(int)GLOBAL_GET("rendering/lights_and_shadows/directional_shadow/soft_shadow_filter_quality"));
+	base_material_3d_set_default_filter(RS::MaterialFilter(int(GLOBAL_GET("rendering/textures/default_filters/base_material_3d_filter"))));
 	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	{
