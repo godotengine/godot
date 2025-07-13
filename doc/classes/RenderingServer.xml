@@ -36,6 +36,12 @@
 				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
 			</description>
 		</method>
+		<method name="base_material_3d_set_default_filter">
+			<return type="void" />
+			<param index="0" name="filter" type="int" enum="RenderingServer.MaterialFilter" />
+			<description>
+			</description>
+		</method>
 		<method name="call_on_render_thread">
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
@@ -4867,6 +4873,18 @@
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MAX" value="127">
 			The maximum renderpriority of all materials.
+		</constant>
+		<constant name="MATERIAL_FILTER_NEAREST" value="0" enum="MaterialFilter">
+		</constant>
+		<constant name="MATERIAL_FILTER_LINEAR" value="1" enum="MaterialFilter">
+		</constant>
+		<constant name="MATERIAL_FILTER_NEAREST_MIPMAPS" value="2" enum="MaterialFilter">
+		</constant>
+		<constant name="MATERIAL_FILTER_LINEAR_MIPMAPS" value="3" enum="MaterialFilter">
+		</constant>
+		<constant name="MATERIAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC" value="4" enum="MaterialFilter">
+		</constant>
+		<constant name="MATERIAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC" value="5" enum="MaterialFilter">
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array is a vertex position array.

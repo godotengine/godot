@@ -1477,6 +1477,11 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+	MaterialFilter default_material_filter = MaterialFilter::MATERIAL_FILTER_SOURCE;
+	if (p_options.has("materials/default_filter")) {
+		default_material_filter = MaterialFilter(p_options["materials/default_filter"]);
+	}
+
 	bool isroot = p_node == p_root;
 
 	String import_id = p_node->get_meta("import_id", "PATH:" + String(p_root->get_path_to(p_node)));
@@ -1658,6 +1663,42 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						for (const ImportOption &E : iopts) {
 							if (!matdata.has(E.option.name)) {
 								matdata[E.option.name] = E.default_value;
+							}
+						}
+					}
+					// Apply material filter setting
+					if (matdata.has("textures/default_filter")) {
+						Ref<BaseMaterial3D> base_mat = (Ref<BaseMaterial3D>)mat;
+						if (!base_mat.is_null()) {
+							MaterialFilter filter = MaterialFilter(matdata["textures/default_filter"]);
+							if (filter == MaterialFilter::MATERIAL_FILTER_DEFAULT) {
+								filter = default_material_filter;
+							}
+
+							switch (filter) {
+								case MaterialFilter::MATERIAL_FILTER_PROJECT_DEFAULT:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_DEFAULT);
+									break;
+								case MaterialFilter::MATERIAL_FILTER_NEAREST:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_NEAREST);
+									break;
+								case MaterialFilter::MATERIAL_FILTER_LINEAR:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_LINEAR);
+									break;
+								case MaterialFilter::MATERIAL_FILTER_NEAREST_MIPMAPS:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS);
+									break;
+								case MaterialFilter::MATERIAL_FILTER_LINEAR_MIPMAPS:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS);
+									break;
+								case MaterialFilter::MATERIAL_FILTER_NEAREST_MIPMAPS_ANISOTROPIC:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC);
+									break;
+								case MaterialFilter::MATERIAL_FILTER_LINEAR_MIPMAPS_ANISOTROPIC:
+									base_mat->set_texture_filter(BaseMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC);
+									break;
+								default:
+									break;
 							}
 						}
 					}
@@ -2365,6 +2406,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "textures/default_filter", PROPERTY_HINT_ENUM, "Default:-1,Source,Project Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), MaterialFilter::MATERIAL_FILTER_DEFAULT));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
@@ -2723,6 +2765,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/extract", PROPERTY_HINT_ENUM, "Keep Internal,Extract Once,Extract and Overwrite"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/extract_format", PROPERTY_HINT_ENUM, "Text (*.tres),Binary (*.res),Material (*.material)"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "materials/extract_path", PROPERTY_HINT_DIR, ""), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "materials/default_filter", PROPERTY_HINT_ENUM, "Source,Project Default,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), MaterialFilter::MATERIAL_FILTER_SOURCE));
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::DICTIONARY, "_subresources", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), Dictionary()));
 
