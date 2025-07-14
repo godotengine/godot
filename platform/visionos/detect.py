@@ -153,7 +153,7 @@ def configure(env: "SConsEnvironment"):
                 "$VISIONOS_SDK_PATH/System/Library/Frameworks/QuartzCore.framework/Headers",
             ]
         )
-        env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
+        env.Prepend(CPPEXTPATH=["#thirdparty/spirv-cross"])
 
     if env["opengl3"]:
         print_warning("The visionOS platform does not support the OpenGL rendering driver")

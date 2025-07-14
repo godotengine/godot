@@ -414,7 +414,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if env["accesskit_sdk_path"] != "":
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            env.Prepend(CPPEXTPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64":
                 env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/msvc/static"])
             elif env["arch"] == "x86_64":
@@ -791,7 +791,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if env["accesskit_sdk_path"] != "":
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            env.Prepend(CPPEXTPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["use_llvm"]:
                 if env["arch"] == "arm64":
                     env.Append(LIBPATH=[env["accesskit_sdk_path"] + "/lib/windows/arm64/mingw-llvm/static/"])

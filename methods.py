@@ -106,6 +106,44 @@ def redirect_emitter(target, source, env):
     return redirected_targets, source
 
 
+_c_scanner_advanced = None
+
+
+def c_scanner_advanced():
+    """
+    Returns a `ClassicCPP` subclass which accounts for external includes when parsing.
+    """
+
+    global _c_scanner_advanced
+    if _c_scanner_advanced is not None:
+        return _c_scanner_advanced
+
+    from SCons.Scanner import ClassicCPP
+
+    class AdvancedCPP(ClassicCPP):
+        def __init__(  # Default values lifted from SCons.Scanner.C.CScanner
+            self,
+            name="CScannerAdvanced",
+            suffixes="$CPPSUFFIXES",
+            path_variables=["CPPPATH", "CPPEXTPATH"],
+            regex=r'^[ \t]*#[ \t]*(?:include|import)[ \t]*(<|")([^>"]+)(>|")',
+            *args,
+            **kwargs,
+        ) -> None:
+            super().__init__(name, suffixes, "", regex, *args, **kwargs)
+            self.path_variables = path_variables
+            self.path_function = self._path_function
+
+        def _path_function(self, env, dir=None, target=None, source=None, argument=None):
+            from SCons.PathList import PathList
+
+            paths = env.Flatten([env.get(path, []) for path in self.path_variables])
+            return tuple((dir or env.fs._cwd).Rfindalldirs(PathList(paths).subst_path(env, target, source)))
+
+    _c_scanner_advanced = AdvancedCPP()
+    return _c_scanner_advanced
+
+
 def disable_warnings(self):
     # 'self' is the environment
     if self.msvc and not using_clang(self):
