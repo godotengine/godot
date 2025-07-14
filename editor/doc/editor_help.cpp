@@ -974,7 +974,7 @@ void EditorHelp::_update_doc() {
 	_push_title_font();
 
 	class_desc->add_text(TTR("Class:") + " ");
-	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "Object");
+	_add_type_icon(edited_class, theme_cache.doc_title_font_size, "");
 	class_desc->add_text(nbsp);
 
 	class_desc->push_color(theme_cache.headline_color);

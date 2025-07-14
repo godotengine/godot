@@ -2369,7 +2369,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				for (int i = 0; i < selection_results.size(); i++) {
 					CanvasItem *item = selection_results[i].item;
 
-					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item, "Node");
+					Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(item);
 					String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(item->get_path()));
 
 					int locked = 0;

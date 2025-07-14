@@ -1674,7 +1674,7 @@ void Node3DEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 		for (int i = 0; i < selection_results.size(); i++) {
 			Node3D *spat = selection_results[i];
 
-			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat, "Node");
+			Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(spat);
 
 			String node_path = "/" + root_name + "/" + String(root_path.rel_path_to(spat->get_path()));
 
