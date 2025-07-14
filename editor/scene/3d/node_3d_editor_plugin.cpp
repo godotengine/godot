@@ -352,13 +352,7 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 	const Color axis_color = axis_colors[direction];
 	const double min_alpha = 0.35;
 	const double alpha = focused ? 1.0 : Math::remap((p_axis.z_axis + 1.0) / 2.0, 0, 0.5, min_alpha, 1.0);
-	const Color c = focused ? Color(axis_color.lightened(0.25), 1.0) : Color(axis_color, alpha);
-
-	// Highlight positive axis text when hovered.
-	const Color c_positive_axis = focused ? Color(1.0, 1.0, 1.0, alpha) : Color(0.0, 0.0, 0.0, alpha * 0.6);
-
-	// Highlight negative axis text when hovered, but hide when not focused.
-	const Color c_negative_axis = focused ? Color(1.0, 1.0, 1.0, alpha) : Color(axis_color, 0);
+	const Color c = focused ? Color(axis_color.lightened(0.75), 1.0) : Color(axis_color, alpha);
 
 	if (positive) {
 		// Draw axis lines for the positive axes.
@@ -376,22 +370,11 @@ void ViewportRotationControl::_draw_axis(const Axis2D &p_axis) {
 		const int font_size = get_theme_font_size(SNAME("rotation_control_size"), EditorStringName(EditorFonts));
 		const Size2 char_size = font->get_char_size(axis_name[0], font_size);
 		const Vector2 char_offset = Vector2(-char_size.width / 2.0, char_size.height * 0.25);
-		draw_char(font, p_axis.screen_point + char_offset, axis_name, font_size, c_positive_axis);
+		draw_char(font, p_axis.screen_point + char_offset, axis_name, font_size, Color(0.0, 0.0, 0.0, alpha * 0.6));
 	} else {
 		// Draw an outline around the negative axes.
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS, c, true, -1.0, true);
 		draw_circle(p_axis.screen_point, AXIS_CIRCLE_RADIUS * 0.8, c.darkened(0.4), true, -1.0, true);
-
-		// Draw the text for the negative axes.
-		const String axis_name = direction == 0 ? "-X" : (direction == 1 ? "-Y" : "-Z");
-		const Ref<Font> &font = get_theme_font(SNAME("rotation_control"), EditorStringName(EditorFonts));
-		const int font_size = get_theme_font_size(SNAME("rotation_control_size"), EditorStringName(EditorFonts));
-		const Size2 string_size = font->get_string_size(axis_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, font_size);
-		const float font_ascent = font->get_ascent(font_size);
-		const float font_descent = font->get_descent(font_size);
-		const float string_height = font_ascent + font_descent;
-		const Vector2 offset(-string_size.width / 2.0, string_height * 0.25);
-		draw_string(font, p_axis.screen_point + offset, axis_name, HORIZONTAL_ALIGNMENT_LEFT, -1.0f, font_size, c_negative_axis);
 	}
 }
 
@@ -514,7 +497,7 @@ void ViewportRotationControl::gui_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventScreenDrag> screen_drag = p_event;
 	if (screen_drag.is_valid()) {
-		_process_drag(nullptr, screen_drag->get_index(), screen_drag->get_position(), screen_drag->get_relative());
+		_process_drag(screen_drag, screen_drag->get_index(), screen_drag->get_position(), screen_drag->get_relative());
 	}
 }
 
@@ -673,12 +656,12 @@ Transform3D Node3DEditorViewport::to_camera_transform(const Cursor &p_cursor) co
 }
 
 int Node3DEditorViewport::get_selected_count() const {
-	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 	int count = 0;
 
-	for (const KeyValue<ObjectID, Object *> &E : selection) {
-		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}
@@ -729,9 +712,9 @@ void Node3DEditorViewport::cancel_transform() {
 }
 
 void Node3DEditorViewport::_update_shrink() {
-	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
-	const float shrink_factor = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION)) ? 0.5 : 1.0;
-	viewport->set_scaling_3d_scale(MAX(0.25, scaling_3d_scale * shrink_factor));
+	bool shrink = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+	subviewport_container->set_stretch_shrink(shrink ? 2 : 1);
+	subviewport_container->set_texture_filter(shrink ? TEXTURE_FILTER_NEAREST : TEXTURE_FILTER_PARENT_NODE);
 }
 
 float Node3DEditorViewport::get_znear() const {
@@ -755,11 +738,11 @@ Vector3 Node3DEditorViewport::_get_camera_position() const {
 }
 
 Point2 Node3DEditorViewport::point_to_screen(const Vector3 &p_point) {
-	return camera->unproject_position(p_point);
+	return camera->unproject_position(p_point) * subviewport_container->get_stretch_shrink();
 }
 
 Vector3 Node3DEditorViewport::get_ray_pos(const Vector2 &p_pos) const {
-	return camera->project_ray_origin(p_pos);
+	return camera->project_ray_origin(p_pos / subviewport_container->get_stretch_shrink());
 }
 
 Vector3 Node3DEditorViewport::_get_camera_normal() const {
@@ -767,7 +750,7 @@ Vector3 Node3DEditorViewport::_get_camera_normal() const {
 }
 
 Vector3 Node3DEditorViewport::get_ray(const Vector2 &p_pos) const {
-	return camera->project_ray_normal(p_pos);
+	return camera->project_ray_normal(p_pos / subviewport_container->get_stretch_shrink());
 }
 
 void Node3DEditorViewport::_clear_selected() {
@@ -852,7 +835,7 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 ObjectID Node3DEditorViewport::_select_ray(const Point2 &p_pos) const {
 	Vector3 ray = get_ray(p_pos);
 	Vector3 pos = get_ray_pos(p_pos);
-	Vector2 shrinked_pos = p_pos;
+	Vector2 shrinked_pos = p_pos / subviewport_container->get_stretch_shrink();
 
 	if (viewport->get_debug_draw() == Viewport::DEBUG_DRAW_SDFGI_PROBES) {
 		RS::get_singleton()->sdfgi_set_debug_probe_select(pos, ray);
@@ -1331,7 +1314,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 
 	Transform3D gt = spatial_editor->get_gizmo_transform();
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		int col_axis = -1;
 		real_t col_d = 1e20;
 
@@ -1397,7 +1380,7 @@ bool Node3DEditorViewport::_transform_gizmo_select(const Vector2 &p_screenpos, b
 		}
 	}
 
-	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+	if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
 		int col_axis = -1;
 		bool view_rotation_selected = false;
 
@@ -1810,18 +1793,8 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	const Ref<InputEventKey> k = p_event;
-
-	if (k.is_valid() && k->is_pressed() && EDITOR_GET("editors/3d/navigation/emulate_numpad")) {
-		const Key code = k->get_physical_keycode();
-		if (code >= Key::KEY_0 && code <= Key::KEY_9) {
-			k->set_keycode(code - Key::KEY_0 + Key::KP_0);
-		}
-	}
-
 	if (previewing || get_viewport()->gui_get_drag_data()) {
-		// Disable all input actions when previewing a camera or during drag-and-drop.
-		return;
+		return; //do NONE
 	}
 
 	if (_redirect_freelook_input(p_event, this)) {
@@ -2103,7 +2076,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						clicked = _select_ray(b->get_position());
 
 						if (clicked.is_valid() && !editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked))) {
-							if (!node_selected || (!b->is_alt_pressed() && !(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM && b->is_command_or_control_pressed()))) {
+							if (!node_selected || (!b->is_alt_pressed() && !(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()))) {
 								selection_in_progress = true;
 								break;
 							}
@@ -2113,7 +2086,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 							if (node_selected) {
 								TransformMode mode = TRANSFORM_NONE;
 
-								if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM) {
+								if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) {
 									if (b->is_command_or_control_pressed()) {
 										mode = TRANSFORM_ROTATE;
 									} else if (b->is_alt_pressed()) {
@@ -2154,7 +2127,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						TransformMode mode = TRANSFORM_NONE;
 
 						switch (spatial_editor->get_tool_mode()) {
-							case Node3DEditor::TOOL_MODE_TRANSFORM:
+							case Node3DEditor::TOOL_MODE_SELECT:
 								if (b->is_command_or_control_pressed() && node_selected) {
 									mode = TRANSFORM_ROTATE;
 								} else if (b->is_alt_pressed() && node_selected) {
@@ -2215,13 +2188,13 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 						if (clicked.is_valid() && _edit.mode == TRANSFORM_NONE) {
 							_select_clicked(false);
-						} else if (cursor.region_select) {
-							_select_region();
-							surface->queue_redraw();
 						}
 
-						movement_threshold_passed = false;
-						cursor.region_select = false;
+						if (cursor.region_select) {
+							_select_region();
+							cursor.region_select = false;
+							surface->queue_redraw();
+						}
 					}
 
 					if (!_edit.instant && _edit.mode != TRANSFORM_NONE) {
@@ -2333,9 +2306,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			if (change_nav_from_shortcut != NAVIGATION_NONE) {
 				nav_mode = change_nav_from_shortcut;
 			} else {
-				movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
+				const bool movement_threshold_passed = _edit.original_mouse_pos.distance_to(_edit.mouse_pos) > 8 * EDSCALE;
 
-				if ((selection_in_progress || clicked_wants_append || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) && movement_threshold_passed && clicked.is_valid()) {
+				if ((selection_in_progress || clicked_wants_append) && movement_threshold_passed && clicked.is_valid()) {
 					cursor.region_select = true;
 					cursor.region_begin = _edit.original_mouse_pos;
 					clicked = ObjectID();
@@ -2347,8 +2320,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
-					bool is_select_mode = (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM);
+				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
+					bool is_select_mode = (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
 					bool is_clicked_selected = editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked));
 
 					if (_edit.mode == TRANSFORM_NONE && (is_select_mode || is_clicked_selected)) {
@@ -2473,6 +2446,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 	}
+
+	Ref<InputEventKey> k = p_event;
 
 	if (k.is_valid()) {
 		if (!k->is_pressed()) {
@@ -3154,6 +3129,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 	viewport->set_positional_shadow_atlas_quadrant_subdiv(2, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q2));
 	viewport->set_positional_shadow_atlas_quadrant_subdiv(3, Viewport::PositionalShadowAtlasQuadrantSubdiv(atlas_q3));
 
+	_update_shrink();
+
 	// Update MSAA, screen-space AA and debanding if changed
 
 	const int msaa_mode = GLOBAL_GET("rendering/anti_aliasing/quality/msaa_3d");
@@ -3181,7 +3158,8 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const Viewport::Scaling3DMode scaling_3d_mode = Viewport::Scaling3DMode(int(GLOBAL_GET("rendering/scaling_3d/mode")));
 	viewport->set_scaling_3d_mode(scaling_3d_mode);
 
-	_update_shrink();
+	const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+	viewport->set_scaling_3d_scale(scaling_3d_scale);
 
 	const float fsr_sharpness = GLOBAL_GET("rendering/scaling_3d/fsr_sharpness");
 	viewport->set_fsr_sharpness(fsr_sharpness);
@@ -3247,11 +3225,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 						break;
 					case SupportedRenderingMethods::FORWARD_PLUS_MOBILE:
 						disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility";
-						disabled_tooltip = TTR("This debug draw mode is only supported when using the Forward+ or Mobile renderer.");
+						disabled_tooltip = TTR("This debug draw mode is not supported when using the Compatibility rendering method.");
 						break;
 					case SupportedRenderingMethods::FORWARD_PLUS:
 						disabled = OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "mobile";
-						disabled_tooltip = TTR("This debug draw mode is only supported when using the Forward+ renderer.");
+						disabled_tooltip = TTR("This debug draw mode is not supported when using the Mobile or Compatibility rendering methods.");
 						break;
 				}
 
@@ -3349,13 +3327,13 @@ void Node3DEditorViewport::_notification(int p_what) {
 				_update_camera(delta);
 			}
 
-			const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
+			const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
 			bool changed = false;
 			bool exist = false;
 
-			for (const KeyValue<ObjectID, Object *> &E : selection) {
-				Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
+			for (const KeyValue<Node *, Object *> &E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E.key);
 				if (!sp) {
 					continue;
 				}
@@ -3435,7 +3413,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 			}
 
 			if (show_info) {
-				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x * viewport->get_scaling_3d_scale(), viewport->get_size().y * viewport->get_scaling_3d_scale());
+				const String viewport_size = vformat(U"%d × %d", viewport->get_size().x, viewport->get_size().y);
 				String text;
 				text += vformat(TTR("X: %s\n"), rtos(current_camera->get_position().x).pad_decimals(1));
 				text += vformat(TTR("Y: %s\n"), rtos(current_camera->get_position().y).pad_decimals(1));
@@ -3444,7 +3422,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				text += vformat(
 						TTR("Size: %s (%.1fMP)\n"),
 						viewport_size,
-						viewport->get_size().x * viewport->get_size().y * Math::pow(viewport->get_scaling_3d_scale(), 2) * 0.000001);
+						viewport->get_size().x * viewport->get_size().y * 0.000001);
 
 				text += "\n";
 				text += vformat(TTR("Objects: %d\n"), viewport->get_render_info(Viewport::RENDER_INFO_TYPE_VISIBLE, Viewport::RENDER_INFO_OBJECTS_IN_FRAME));
@@ -3700,7 +3678,7 @@ void Node3DEditorViewport::_draw() {
 		get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles))->draw(surface->get_canvas_item(), r);
 	}
 
-	if (cursor.region_select && movement_threshold_passed) {
+	if (cursor.region_select) {
 		const Rect2 selection_rect = Rect2(cursor.region_begin, cursor.region_end - cursor.region_begin);
 
 		surface->draw_rect(
@@ -4583,7 +4561,8 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	const int viewport_base_height = 400 * MAX(1, EDSCALE);
 	gizmo_scale =
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
-			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height;
+			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
+			subviewport_container->get_stretch_shrink();
 	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
 
 	// if the determinant is zero, we should disable the gizmo from being rendered
@@ -4603,7 +4582,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 	bool hide_during_rotation = _is_rotation_arc_visible();
 
 	bool show_gizmo = spatial_editor->is_gizmo_visible() && !_edit.instant && transform_gizmo_visible && !collision_reposition && !hide_during_rotation;
-	bool show_rotate_gizmo = show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE);
+	bool show_rotate_gizmo = show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE);
 
 	for (int i = 0; i < 3; i++) {
 		Transform3D axis_angle;
@@ -4613,9 +4592,9 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 		axis_angle.basis.scale(scale);
 		axis_angle.origin = xform.origin;
 		RenderingServer::get_singleton()->instance_set_transform(move_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_visible(move_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(move_plane_gizmo_instance[i], axis_angle);
-		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_TRANSFORM || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
+		RenderingServer::get_singleton()->instance_set_visible(move_plane_gizmo_instance[i], show_gizmo && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE));
 		RenderingServer::get_singleton()->instance_set_transform(rotate_gizmo_instance[i], axis_angle);
 		RenderingServer::get_singleton()->instance_set_visible(rotate_gizmo_instance[i], show_rotate_gizmo);
 		RenderingServer::get_singleton()->instance_set_transform(scale_gizmo_instance[i], axis_angle);
@@ -4821,7 +4800,7 @@ Dictionary Node3DEditorViewport::get_state() const {
 	d["grid"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_GRID));
 	d["information"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 	d["frame_time"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_FRAME_TIME));
-	d["half_res"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_HALF_RESOLUTION));
+	d["half_res"] = subviewport_container->get_stretch_shrink() > 1;
 	d["cinematic_preview"] = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
 	if (previewing) {
 		d["previewing"] = EditorNode::get_singleton()->get_edited_scene()->get_path_to(previewing);
@@ -4921,12 +4900,12 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 
 	HashSet<RID> rids;
 
-	if (preview_node && preview_node->get_child_count() > 0) {
-		_insert_rid_recursive(preview_node, rids);
-	} else if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
+	if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
+
+		Array children = first_selected_node->get_children();
 
 		if (first_selected_node) {
 			_insert_rid_recursive(first_selected_node, rids);
@@ -6156,7 +6135,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI, SupportedRenderingMethods::FORWARD_PLUS,
 			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Left-click a SDFGI probe to display its occlusion information (white = not occluded, red = fully occluded).\nRequires SDFGI to be enabled in Environment to have a visible effect."));
+			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
 	display_submenu->add_separator();
 	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
 			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));
@@ -6309,7 +6288,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	locked_label->hide();
 
 	zoom_limit_label = memnew(Label);
-	zoom_limit_label->set_text(TTRC(U"To zoom further, change the camera's clipping planes (View → Settings...)"));
+	zoom_limit_label->set_text(TTRC("To zoom further, change the camera's clipping planes (View -> Settings...)"));
 	zoom_limit_label->set_name("ZoomLimitMessageLabel");
 	zoom_limit_label->add_theme_color_override(SceneStringName(font_color), Color(1, 1, 1, 1));
 	zoom_limit_label->hide();
@@ -7372,18 +7351,11 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 void Node3DEditor::_menu_item_pressed(int p_option) {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
-		case MENU_TOOL_TRANSFORM:
+		case MENU_TOOL_SELECT:
 		case MENU_TOOL_MOVE:
 		case MENU_TOOL_ROTATE:
 		case MENU_TOOL_SCALE:
-		case MENU_TOOL_SELECT:
 		case MENU_TOOL_LIST_SELECT: {
-			for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
-				if (viewports[i]->_edit.mode != Node3DEditorViewport::TRANSFORM_NONE) {
-					viewports[i]->commit_transform();
-				}
-			}
-
 			for (int i = 0; i < TOOL_MAX; i++) {
 				tool_button[i]->set_pressed(i == p_option);
 			}
@@ -8497,10 +8469,10 @@ void Node3DEditor::update_grid() {
 void Node3DEditor::_selection_changed() {
 	_refresh_menu_icons();
 
-	const HashMap<ObjectID, Object *> &selection = editor_selection->get_selection();
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
-	for (const KeyValue<ObjectID, Object *> &E : selection) {
-		Node3D *sp = ObjectDB::get_instance<Node3D>(E.key);
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
 		if (!sp) {
 			continue;
 		}
@@ -8867,11 +8839,10 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 }
 
 void Node3DEditor::_update_theme() {
-	tool_button[TOOL_MODE_TRANSFORM]->set_button_icon(get_editor_theme_icon(SNAME("ToolTransform")));
+	tool_button[TOOL_MODE_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 	tool_button[TOOL_MODE_MOVE]->set_button_icon(get_editor_theme_icon(SNAME("ToolMove")));
 	tool_button[TOOL_MODE_ROTATE]->set_button_icon(get_editor_theme_icon(SNAME("ToolRotate")));
 	tool_button[TOOL_MODE_SCALE]->set_button_icon(get_editor_theme_icon(SNAME("ToolScale")));
-	tool_button[TOOL_MODE_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 	tool_button[TOOL_MODE_LIST_SELECT]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
 	tool_button[TOOL_LOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Lock")));
 	tool_button[TOOL_UNLOCK_SELECTED]->set_button_icon(get_editor_theme_icon(SNAME("Unlock")));
@@ -8896,9 +8867,9 @@ void Node3DEditor::_update_theme() {
 	sun_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 	environ_title->add_theme_font_override(SceneStringName(font), get_theme_font(SNAME("title_font"), SNAME("Window")));
 
-	sun_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
-	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
-	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("inspector_property_height"), EditorStringName(Editor))));
+	sun_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
+	environ_sky_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
+	environ_ground_color->set_custom_minimum_size(Size2(0, get_theme_constant(SNAME("color_picker_button_height"), EditorStringName(Editor))));
 
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 }
@@ -8906,11 +8877,10 @@ void Node3DEditor::_update_theme() {
 void Node3DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			tool_button[TOOL_MODE_TRANSFORM]->set_tooltip_text(vformat(TTR("%s+Drag: Rotate selected node around pivot."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
-			tool_button[TOOL_MODE_MOVE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-			tool_button[TOOL_MODE_ROTATE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-			tool_button[TOOL_MODE_SCALE]->set_tooltip_text(vformat(TTR("%s+Drag: Use snap."), keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL)) + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
-			tool_button[TOOL_MODE_SELECT]->set_tooltip_text(TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
+			tool_button[TOOL_MODE_SELECT]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)"));
+			tool_button[TOOL_MODE_MOVE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+			tool_button[TOOL_MODE_ROTATE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
+			tool_button[TOOL_MODE_SCALE]->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Use snap.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked."));
 			_update_gizmos_menu();
 		} break;
 
@@ -9710,7 +9680,7 @@ Node3DEditor::Node3DEditor() {
 
 	snap_enabled = false;
 	snap_key_enabled = false;
-	tool_mode = TOOL_MODE_TRANSFORM;
+	tool_mode = TOOL_MODE_SELECT;
 
 	MarginContainer *toolbar_margin = memnew(MarginContainer);
 	toolbar_margin->set_theme_type_variation("MainToolBarMargin");
@@ -9726,15 +9696,17 @@ Node3DEditor::Node3DEditor() {
 
 	String sct;
 
-	tool_button[TOOL_MODE_TRANSFORM] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_TRANSFORM]);
-	tool_button[TOOL_MODE_TRANSFORM]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_TRANSFORM]->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_button[TOOL_MODE_TRANSFORM]->set_pressed(true);
-	tool_button[TOOL_MODE_TRANSFORM]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_TRANSFORM));
-	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_transform", TTRC("Transform Mode"), Key::Q, true));
-	tool_button[TOOL_MODE_TRANSFORM]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_TRANSFORM]->set_accessibility_name(TTRC("Transform Mode"));
+	tool_button[TOOL_MODE_SELECT] = memnew(Button);
+	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
+	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
+	tool_button[TOOL_MODE_SELECT]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
+	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
+	tool_button[TOOL_MODE_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SELECT));
+	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::Q, true));
+	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
+	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Select Mode"));
+	main_menu_hbox->add_child(memnew(VSeparator));
 
 	tool_button[TOOL_MODE_MOVE] = memnew(Button);
 	main_menu_hbox->add_child(tool_button[TOOL_MODE_MOVE]);
@@ -9766,16 +9738,6 @@ Node3DEditor::Node3DEditor() {
 	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTRC("Scale Mode"), Key::R, true));
 	tool_button[TOOL_MODE_SCALE]->set_shortcut_context(this);
 	tool_button[TOOL_MODE_SCALE]->set_accessibility_name(TTRC("Scale Mode"));
-
-	tool_button[TOOL_MODE_SELECT] = memnew(Button);
-	main_menu_hbox->add_child(tool_button[TOOL_MODE_SELECT]);
-	tool_button[TOOL_MODE_SELECT]->set_toggle_mode(true);
-	tool_button[TOOL_MODE_SELECT]->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	tool_button[TOOL_MODE_SELECT]->set_theme_type_variation(SceneStringName(FlatButton));
-	tool_button[TOOL_MODE_SELECT]->connect(SceneStringName(pressed), callable_mp(this, &Node3DEditor::_menu_item_pressed).bind(MENU_TOOL_SELECT));
-	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::V, true));
-	tool_button[TOOL_MODE_SELECT]->set_shortcut_context(this);
-	tool_button[TOOL_MODE_SELECT]->set_accessibility_name(TTRC("Select Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
