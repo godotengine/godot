@@ -30,15 +30,15 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
+#include "editor/docks/editor_dock.h"
 
 class CheckBox;
 class ConfigFile;
 class ItemList;
 class EditorUndoRedoManager;
 
-class HistoryDock : public VBoxContainer {
-	GDCLASS(HistoryDock, VBoxContainer);
+class HistoryDock : public EditorDock {
+	GDCLASS(HistoryDock, EditorDock);
 
 	EditorUndoRedoManager *ur_manager;
 	ItemList *action_list = nullptr;
@@ -54,12 +54,11 @@ class HistoryDock : public VBoxContainer {
 	void on_version_changed();
 	void refresh_version();
 
-	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
-
 protected:
 	void _notification(int p_notification);
-	static void _bind_methods();
+
+	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
+	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
 public:
 	void seek_history(int p_index);

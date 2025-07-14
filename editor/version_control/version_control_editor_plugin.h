@@ -39,6 +39,8 @@
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 
+class EditorDock;
+
 class VersionControlEditorPlugin : public EditorPlugin {
 	GDCLASS(VersionControlEditorPlugin, EditorPlugin)
 
@@ -98,7 +100,7 @@ private:
 	HashMap<EditorVCSInterface::ChangeType, Color> change_type_to_color;
 	HashMap<EditorVCSInterface::ChangeType, Ref<Texture>> change_type_to_icon;
 
-	VBoxContainer *version_commit_dock = nullptr;
+	EditorDock *version_commit_dock = nullptr;
 	Tree *staged_files = nullptr;
 	Tree *unstaged_files = nullptr;
 	Tree *commit_list = nullptr;
@@ -128,7 +130,6 @@ private:
 	Button *commit_button = nullptr;
 
 	VBoxContainer *version_control_dock = nullptr;
-	Button *version_control_dock_button = nullptr;
 	Label *diff_title = nullptr;
 	RichTextLabel *diff = nullptr;
 	OptionButton *diff_view_type_select = nullptr;
