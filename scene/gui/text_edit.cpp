@@ -1304,6 +1304,9 @@ void TextEdit::_notification(int p_what) {
 				bottom_limit_y -= theme_cache.style_normal->get_margin(SIDE_BOTTOM);
 			}
 
+			// Draw guidelines.
+			_draw_guidelines();
+
 			// Draw main text.
 			line_drawing_cache.clear();
 			int row_height = draw_placeholder ? placeholder_line_height + theme_cache.line_spacing : get_line_height();
