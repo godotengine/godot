@@ -45,10 +45,14 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	int index = p_child->get_index(false);
+	int index = p_child->get_index(false) - 1; // subtract 1 to skip port_container
 	if (!is_ready()) {
 		_slot_node_map_cache[p_child->get_name()] = index;
-		return;
+		// Don't create a slot if one has already been assigned
+		// This keeps ports from being overridden/recreated on load
+		if (slots.size() > index) {
+			return;
+		}
 	}
 
 	Control *control = Object::cast_to<Control>(p_child);
@@ -72,7 +76,7 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 	}
 
 	StringName node_name = p_child->get_name();
-	int new_index = p_child->get_index(false);
+	int new_index = p_child->get_index(false) - 1; // subtract 1 to skip port_container
 	int old_index = _slot_node_map_cache[node_name];
 
 	if (old_index < new_index) {
@@ -102,7 +106,7 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 		return;
 	}
 
-	int index = p_child->get_index(false);
+	int index = p_child->get_index(false) - 1; // subtract 1 to skip port_container
 	ERR_FAIL_INDEX(index, slots.size());
 
 	_remove_slot(index);
@@ -159,6 +163,8 @@ void GraphNodeIndexed::create_slot(int p_slot_index, GraphPort *p_left_port, Gra
 void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool draw_stylebox) {
 	GraphPort *p_left = memnew(GraphPort(false, true, 0, GraphPort::PortDirection::INPUT));
 	GraphPort *p_right = memnew(GraphPort(false, false, 0, GraphPort::PortDirection::OUTPUT));
+	p_left->set_name(vformat("InputPort%s", itos(p_slot_index)));
+	p_right->set_name(vformat("OutputPort%s", itos(p_slot_index)));
 	port_container->add_child(p_left);
 	port_container->add_child(p_right);
 	return create_slot(p_slot_index, p_left, p_right, draw_stylebox);

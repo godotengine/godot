@@ -671,10 +671,6 @@ void GraphNode::_port_rebuild_cache() {
 		enabled_port_count++;
 		directed_enabled_port_count.set(_dir, dir_enabled_port_count + 1);
 	}
-
-	if (selected_port->get_port_index(false) >= enabled_port_count) {
-		selected_port = nullptr;
-	}
 }
 
 void GraphNode::_update_port_positions() {
@@ -899,11 +895,12 @@ GraphNode::GraphNode() {
 	titlebar_hbox->add_child(title_label);
 
 	port_container = memnew(Container);
+	port_container->set_name("PortContainer");
 	port_container->set_focus_mode(Control::FOCUS_NONE);
 	port_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
 	port_container->set_h_size_flags(SIZE_EXPAND_FILL);
 	port_container->set_anchors_preset(Control::PRESET_TOP_WIDE);
-	add_child(port_container, false, INTERNAL_MODE_BACK);
+	add_child(port_container);
 
 	set_mouse_filter(MOUSE_FILTER_STOP);
 	set_focus_mode(FOCUS_ACCESSIBILITY);
