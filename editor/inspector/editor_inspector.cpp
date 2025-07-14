@@ -1886,7 +1886,7 @@ void EditorInspectorCategory::_update_icon() {
 	if (scr.is_valid()) {
 		StringName script_name = EditorNode::get_editor_data().script_class_get_name(scr->get_path());
 		if (script_name == StringName()) {
-			icon = EditorNode::get_singleton()->get_object_icon(scr.ptr(), "Object");
+			icon = EditorNode::get_singleton()->get_object_icon(scr.ptr());
 		} else {
 			icon = EditorNode::get_singleton()->get_class_icon(script_name);
 		}

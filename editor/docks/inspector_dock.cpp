@@ -337,7 +337,7 @@ void InspectorDock::_prepare_history() {
 
 		already.insert(id);
 
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj, "Object");
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(obj);
 
 		String text;
 		if (obj->has_method("_get_editor_name")) {

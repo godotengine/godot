@@ -404,7 +404,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		}
 	}
 
-	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node, "Node");
+	Ref<Texture2D> icon = EditorNode::get_singleton()->get_object_icon(p_node);
 	p_item->set_icon(0, icon);
 	p_item->set_metadata(0, p_node->get_path());
 
