@@ -169,6 +169,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_HDR,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -371,6 +372,13 @@ public:
 	virtual Ref<Image> screen_get_image_rect(const Rect2i &p_rect) const { return Ref<Image>(); }
 	virtual bool is_touchscreen_available() const;
 
+	// Display capabilities for HDR.
+	virtual bool screen_is_hdr_supported(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return false; }
+	virtual float screen_get_min_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return 0.0f; }
+	virtual float screen_get_max_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return 0.0f; }
+	virtual float screen_get_max_full_frame_luminance(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return 0.0f; }
+	virtual float screen_get_sdr_white_level(int p_screen = SCREEN_OF_MAIN_WINDOW) const { return 0.0f; }
+
 	// Keep the ScreenOrientation enum values in sync with the `display/window/handheld/orientation`
 	// project setting hint.
 	enum ScreenOrientation {
@@ -498,6 +506,24 @@ public:
 
 	virtual void window_set_vsync_mode(VSyncMode p_vsync_mode, WindowID p_window = MAIN_WINDOW_ID);
 	virtual VSyncMode window_get_vsync_mode(WindowID p_window) const;
+
+	virtual bool window_is_hdr_output_supported(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_is_hdr_output_enabled(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_is_hdr_output_preferring_high_precision(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_hdr_output_auto_adjust_reference_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_is_hdr_output_auto_adjusting_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_reference_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual void window_set_hdr_output_auto_adjust_max_luminance(const bool p_enabled, WindowID p_window = MAIN_WINDOW_ID);
+	virtual bool window_is_hdr_output_auto_adjusting_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+	virtual void window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window = MAIN_WINDOW_ID);
+	virtual float window_get_hdr_output_max_luminance(WindowID p_window = MAIN_WINDOW_ID) const;
+
+	virtual float window_get_hdr_output_max_value(WindowID p_window = MAIN_WINDOW_ID) const;
 
 	virtual bool window_is_maximize_allowed(WindowID p_window = MAIN_WINDOW_ID) const = 0;
 
