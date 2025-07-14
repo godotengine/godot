@@ -323,16 +323,8 @@ void MultiNodeEdit::add_to_group(const StringName &p_identifier, bool persistent
 	}
 }
 
-void MultiNodeEdit::remove_from_group(const StringName &p_identifier) {
-	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	for (const NodePath &E : nodes) {
-		Node *node = es->get_node_or_null(E);
-		if (!node) {
-			continue;
-		}
-
-		node->remove_from_group(p_identifier);
-	}
+void MultiNodeEdit::remove_partial_from_group(const StringName &p_identifier, const String &mask) {
+	
 }
 
 void MultiNodeEdit::get_groups(List<Node::GroupInfo> *p_groups) {
@@ -369,6 +361,6 @@ void MultiNodeEdit::_bind_methods() {
 	ClassDB::bind_method("_get_editor_name", &MultiNodeEdit::_get_editor_name);
 
 	ClassDB::bind_method("add_to_group", &MultiNodeEdit::add_to_group);
-	ClassDB::bind_method("remove_from_group", &MultiNodeEdit::remove_from_group);
+	ClassDB::bind_method("remove_partial_from_group", &MultiNodeEdit::remove_partial_from_group);
 }
 
