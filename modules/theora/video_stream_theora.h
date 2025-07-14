@@ -155,6 +155,8 @@ public:
 
 class VideoStreamTheora : public VideoStream {
 	GDCLASS(VideoStreamTheora, VideoStream);
+	OBJ_SAVE_TYPE(VideoStream); // Saves derived classes with common type so they can be interchanged.
+	RES_BASE_EXTENSION("theoravideostr");
 
 protected:
 	static void _bind_methods();
