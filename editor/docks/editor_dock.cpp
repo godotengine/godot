@@ -35,7 +35,7 @@
 
 void EditorDock::_set_default_slot_bind(EditorPlugin::DockSlot p_slot) {
 	ERR_FAIL_INDEX(p_slot, EditorPlugin::DOCK_SLOT_MAX);
-	default_slot = (EditorDockManager::DockSlot)p_slot;
+	default_slot = (DockConstants::DockSlot)p_slot;
 }
 
 void EditorDock::_bind_methods() {
@@ -69,6 +69,7 @@ void EditorDock::_bind_methods() {
 
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_VERTICAL);
 	BIND_BITFIELD_FLAG(DOCK_LAYOUT_HORIZONTAL);
+	BIND_BITFIELD_FLAG(DOCK_LAYOUT_FLOATING);
 
 	GDVIRTUAL_BIND(_update_layout, "layout");
 	GDVIRTUAL_BIND(_save_layout_to_config, "config", "section");
@@ -104,9 +105,25 @@ void EditorDock::set_dock_icon(const Ref<Texture2D> &p_icon) {
 	emit_signal("tab_style_changed");
 }
 
-void EditorDock::set_default_slot(EditorDockManager::DockSlot p_slot) {
-	ERR_FAIL_INDEX(p_slot, EditorDockManager::DOCK_SLOT_MAX);
+void EditorDock::set_default_slot(DockConstants::DockSlot p_slot) {
+	ERR_FAIL_INDEX(p_slot, DockConstants::DOCK_SLOT_MAX);
 	default_slot = p_slot;
+}
+
+void EditorDock::set_global(bool p_global) {
+	if (global == p_global) {
+		return;
+	}
+	global = p_global;
+	// TODO: update dock menu
+}
+
+void EditorDock::set_hidden(bool p_hidden) {
+	if (hidden == p_hidden) {
+		return;
+	}
+	hidden = p_hidden;
+	emit_signal("tab_style_changed");
 }
 
 String EditorDock::get_display_title() const {

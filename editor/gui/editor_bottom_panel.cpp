@@ -31,6 +31,7 @@
 #include "editor_bottom_panel.h"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/editor_dock.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -116,7 +117,8 @@ void EditorBottomPanel::make_item_visible(Control *p_item, bool p_visible, bool 
 		return;
 	}
 
-	p_item->set_visible(p_visible);
+	EditorDock *dock = Object::cast_to<EditorDock>(p_item->get_meta("__dock"));
+	dock->set_visible(p_visible);
 }
 
 void EditorBottomPanel::move_item_to_end(Control *p_item) {
@@ -157,20 +159,26 @@ void EditorBottomPanel::_expand_button_toggled(bool p_pressed) {
 }
 
 Button *EditorBottomPanel::add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut, bool p_at_front) {
-	p_item->set_name(p_text);
-	add_child(p_item);
-	if (p_at_front) {
-		move_child(p_item, 0);
-	}
-	bottom_docks.push_back(p_item);
-	dock_shortcuts.push_back(p_shortcut);
+	EditorDock *dock = memnew(EditorDock);
+	dock->add_child(p_item);
+	dock->set_title(p_text);
+	dock->set_dock_shortcut(p_shortcut);
+	dock->set_global(false);
+	dock->set_default_slot(DockConstants::DOCK_SLOT_BOTTOM);
+	dock->set_available_layouts(EditorDock::DOCK_LAYOUT_HORIZONTAL);
+	EditorDockManager::get_singleton()->add_dock(dock);
+
+	p_item->set_meta(SNAME("__dock"), dock);
+	p_item->show(); // Compatibility in case it was hidden.
+
+	bottom_docks.push_back(dock);
 
 	set_process_shortcut_input(is_processing_shortcut_input() || p_shortcut.is_valid());
 
 	// Still return a dummy button for compatibility reasons.
 	Button *tb = memnew(Button);
 	tb->set_toggle_mode(true);
-	tb->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorBottomPanel::_on_button_visibility_changed).bind(tb, p_item));
+	tb->connect(SceneStringName(visibility_changed), callable_mp(this, &EditorBottomPanel::_on_button_visibility_changed).bind(tb, dock));
 	legacy_buttons.push_back(tb);
 	return tb;
 }
@@ -188,18 +196,12 @@ void EditorBottomPanel::remove_item(Control *p_item) {
 	remove_child(p_item);
 }
 
-void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, Control *p_control) {
-	int tab_index = get_tab_idx_from_control(p_control);
-	if (tab_index == -1) {
-		return;
-	}
-
+void EditorBottomPanel::_on_button_visibility_changed(Button *p_button, EditorDock *p_dock) {
 	// Ignore the tab if the button is hidden.
-	get_tab_bar()->set_tab_hidden(tab_index, !p_button->is_visible());
+	p_dock->set_hidden(!p_button->is_visible());
 }
 
 EditorBottomPanel::EditorBottomPanel() {
-	get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(EditorDockManager::get_singleton(), &EditorDockManager::_dock_container_gui_input).bind(this));
 	get_tab_bar()->connect("tab_changed", callable_mp(this, &EditorBottomPanel::_on_tab_changed));
 	set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 	set_tabs_position(TabPosition::POSITION_BOTTOM);

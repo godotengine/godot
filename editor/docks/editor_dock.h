@@ -43,8 +43,10 @@ class EditorDock : public MarginContainer {
 
 public:
 	enum DockLayout {
-		DOCK_LAYOUT_VERTICAL = 1,
-		DOCK_LAYOUT_HORIZONTAL = 2,
+		DOCK_LAYOUT_VERTICAL = DockConstants::DOCK_LAYOUT_VERTICAL,
+		DOCK_LAYOUT_HORIZONTAL = DockConstants::DOCK_LAYOUT_HORIZONTAL,
+		DOCK_LAYOUT_FLOATING = DockConstants::DOCK_LAYOUT_FLOATING,
+		DOCK_LAYOUT_ALL = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL | DOCK_LAYOUT_FLOATING,
 	};
 
 private:
@@ -56,17 +58,17 @@ private:
 	StringName icon_name;
 	Ref<Texture2D> dock_icon;
 	Ref<Shortcut> shortcut;
-	EditorDockManager::DockSlot default_slot = EditorDockManager::DOCK_SLOT_NONE;
+	DockConstants::DockSlot default_slot = DockConstants::DOCK_SLOT_NONE;
+	bool global = true;
 
-	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL;
+	BitField<DockLayout> available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_FLOATING;
 
 	bool open = false;
+	bool hidden = false;
 	bool enabled = true;
-	bool at_bottom = false;
 	int previous_tab_index = -1;
-	bool previous_at_bottom = false;
 	WindowWrapper *dock_window = nullptr;
-	int dock_slot_index = EditorDockManager::DOCK_SLOT_NONE;
+	int dock_slot_index = DockConstants::DOCK_SLOT_NONE;
 
 	void _set_default_slot_bind(EditorPlugin::DockSlot p_slot);
 	EditorPlugin::DockSlot _get_default_slot_bind() const { return (EditorPlugin::DockSlot)default_slot; }
@@ -96,11 +98,14 @@ public:
 	void set_dock_shortcut(const Ref<Shortcut> &p_shortcut) { shortcut = p_shortcut; }
 	Ref<Shortcut> get_dock_shortcut() const { return shortcut; }
 
-	void set_default_slot(EditorDockManager::DockSlot p_slot);
-	EditorDockManager::DockSlot get_default_slot() const { return default_slot; }
+	void set_default_slot(DockConstants::DockSlot p_slot);
+	DockConstants::DockSlot get_default_slot() const { return default_slot; }
 
 	void set_available_layouts(BitField<DockLayout> p_layouts) { available_layouts = p_layouts; }
 	BitField<DockLayout> get_available_layouts() const { return available_layouts; }
+
+	void set_global(bool p_global);
+	void set_hidden(bool p_hidden);
 
 	String get_display_title() const;
 	String get_effective_layout_key() const;

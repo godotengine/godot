@@ -65,12 +65,6 @@ EditorDebuggerNode::EditorDebuggerNode() {
 		singleton = this;
 	}
 
-	Ref<StyleBox> bottom_panel_margins = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
-	add_theme_constant_override("margin_top", -bottom_panel_margins->get_margin(SIDE_TOP));
-	add_theme_constant_override("margin_left", -bottom_panel_margins->get_margin(SIDE_LEFT));
-	add_theme_constant_override("margin_right", -bottom_panel_margins->get_margin(SIDE_RIGHT));
-	add_theme_constant_override("margin_bottom", -bottom_panel_margins->get_margin(SIDE_BOTTOM));
-
 	tabs = memnew(TabContainer);
 	tabs->set_tabs_visible(false);
 	tabs->connect("tab_changed", callable_mp(this, &EditorDebuggerNode::_debugger_changed));

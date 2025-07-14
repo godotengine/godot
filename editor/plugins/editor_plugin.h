@@ -89,16 +89,17 @@ public:
 	};
 
 	enum DockSlot {
-		DOCK_SLOT_NONE = EditorDockManager::DOCK_SLOT_NONE,
-		DOCK_SLOT_LEFT_UL = EditorDockManager::DOCK_SLOT_LEFT_UL,
-		DOCK_SLOT_LEFT_BL = EditorDockManager::DOCK_SLOT_LEFT_BL,
-		DOCK_SLOT_LEFT_UR = EditorDockManager::DOCK_SLOT_LEFT_UR,
-		DOCK_SLOT_LEFT_BR = EditorDockManager::DOCK_SLOT_LEFT_BR,
-		DOCK_SLOT_RIGHT_UL = EditorDockManager::DOCK_SLOT_RIGHT_UL,
-		DOCK_SLOT_RIGHT_BL = EditorDockManager::DOCK_SLOT_RIGHT_BL,
-		DOCK_SLOT_RIGHT_UR = EditorDockManager::DOCK_SLOT_RIGHT_UR,
-		DOCK_SLOT_RIGHT_BR = EditorDockManager::DOCK_SLOT_RIGHT_BR,
-		DOCK_SLOT_MAX = EditorDockManager::DOCK_SLOT_MAX
+		DOCK_SLOT_NONE = DockConstants::DOCK_SLOT_NONE,
+		DOCK_SLOT_LEFT_UL = DockConstants::DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL = DockConstants::DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR = DockConstants::DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR = DockConstants::DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL = DockConstants::DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL = DockConstants::DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR = DockConstants::DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR = DockConstants::DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_BOTTOM = DockConstants::DOCK_SLOT_BOTTOM,
+		DOCK_SLOT_MAX = DockConstants::DOCK_SLOT_MAX
 	};
 
 	enum AfterGUIInput {

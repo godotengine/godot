@@ -62,7 +62,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="1">
+		<member name="available_layouts" type="int" setter="set_available_layouts" getter="get_available_layouts" enum="EditorDock.DockLayout" is_bitfield="true" default="5">
 			The available layouts for this dock, as a bitmask.
 			If you want to make all layouts available, use [code]available_layouts = DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL[/code].
 		</member>
@@ -90,10 +90,12 @@
 	<constants>
 		<constant name="DOCK_LAYOUT_VERTICAL" value="1" enum="DockLayout" is_bitfield="true">
 			Allows placing the dock in the vertical dock slots on either sides of the editor.
-			[b]Note:[/b] Currently this flag has no effect, because the bottom panel is not a proper dock slot. This means that the dock can always be vertical.
 		</constant>
 		<constant name="DOCK_LAYOUT_HORIZONTAL" value="2" enum="DockLayout" is_bitfield="true">
-			Allows placing the dock in the editor's bottom panel. Implement [method _update_layout] to handle changing layouts.
+			Allows placing the dock in the editor's bottom panel.
+		</constant>
+		<constant name="DOCK_LAYOUT_FLOATING" value="4" enum="DockLayout" is_bitfield="true">
+			Allows making the dock float (open in a separate window).
 		</constant>
 	</constants>
 </class>

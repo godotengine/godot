@@ -4657,7 +4657,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	set_name(TTRC("Scene"));
 	set_icon_name("PackedScene");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")));
-	set_default_slot(EditorDockManager::DOCK_SLOT_LEFT_UR);
+	set_default_slot(DockConstants::DOCK_SLOT_LEFT_UR);
 
 	edited_scene = nullptr;
 	editor_data = &p_editor_data;

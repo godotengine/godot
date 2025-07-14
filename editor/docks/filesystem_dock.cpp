@@ -4145,8 +4145,8 @@ FileSystemDock::FileSystemDock() {
 	set_name(TTRC("FileSystem"));
 	set_icon_name("Folder");
 	set_dock_shortcut(ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F));
-	set_default_slot(EditorDockManager::DOCK_SLOT_LEFT_BR);
-	set_available_layouts(DOCK_LAYOUT_VERTICAL | DOCK_LAYOUT_HORIZONTAL);
+	set_default_slot(DockConstants::DOCK_SLOT_LEFT_BR);
+	set_available_layouts(DOCK_LAYOUT_ALL);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");
 
