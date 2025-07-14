@@ -38,8 +38,8 @@
 #include "scene/gui/label.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
-#include "servers/display_server.h"
-#include "servers/text_server.h"
+#include "servers/display/display_server.h"
+#include "servers/text/text_server.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/settings/editor_settings.h"
