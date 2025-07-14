@@ -112,6 +112,8 @@ void GroupsEditor::_add_scene_group(const String &p_name) {
 void GroupsEditor::_remove_scene_group(const String &p_name) {
 	scene_groups.erase(p_name);
 	ProjectSettingsEditor::get_singleton()->get_group_settings()->remove_node_references(scene_root_node, p_name);
+
+	EditorNode::get_singleton()->get_log()->add_message(String("Erasing scene group {}").format({p_name}, "{}"));
 }
 
 void GroupsEditor::_rename_scene_group(const String &p_old_name, const String &p_new_name) {
@@ -338,6 +340,7 @@ void GroupsEditor::_update_scene_groups(const ObjectID &p_id) {
 		scene_groups = I->value;
 		scene_groups_cache.remove(I);
 	} else {
+		EditorNode::get_singleton()->get_log()->add_message(String("Clearing scene grouips due to invalid object id"));
 		scene_groups = HashMap<StringName, bool>();
 	}
 }
@@ -368,6 +371,7 @@ void GroupsEditor::set_current(Object *p_object) {
 
 		if (scene_tree->get_edited_scene_root() != scene_root_node) {
 			scene_root_node = scene_tree->get_edited_scene_root();
+			EditorNode::get_singleton()->get_log()->add_message(String("updating scene groups with root node {}").format({ scene_root_node->to_string() }, "{}"));
 			_update_scene_groups(scene_root_node->get_instance_id());
 			_update_groups();
 		}
