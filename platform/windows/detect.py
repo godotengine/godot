@@ -402,8 +402,8 @@ def configure_msvc(env: "SConsEnvironment"):
             "WINMIDI_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
-            "WINVER=0x0A00",
-            "_WIN32_WINNT=0x0A00",
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.AppendUnique(CPPDEFINES=["NOMINMAX"])  # disable bogus min/max WinDef.h macros
@@ -793,8 +793,8 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["WINDOWS_ENABLED", "WASAPI_ENABLED", "WINMIDI_ENABLED"])
     env.Append(
         CPPDEFINES=[
-            "WINVER=0x0A00",
-            "_WIN32_WINNT=0x0A00",
+            ("WINVER", "0x0A00"),
+            ("_WIN32_WINNT", "0x0A00"),
         ]
     )
     env.Append(
