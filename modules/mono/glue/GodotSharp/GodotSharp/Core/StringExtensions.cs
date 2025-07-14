@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Security;
@@ -428,7 +429,7 @@ namespace Godot
         /// <returns>The extension of the file or an empty string.</returns>
         public static string GetExtension(this string instance)
         {
-            int pos = instance.RFind(".");
+            int pos = instance.LastIndexOf('.');
 
             if (pos < 0 || pos < Math.Max(instance.RFind("/"), instance.RFind("\\")))
                 return string.Empty;
@@ -459,17 +460,19 @@ namespace Godot
         }
 
         /// <summary>
-        /// Find the first occurrence of a char. Optionally, the search starting position can be passed.
+        /// Returns the index of the first occurrence of the specified char in this instance,
+        /// or <c>-1</c>. Optionally, the starting search index can be specified, continuing
+        /// to the end of the string.
         /// </summary>
         /// <seealso cref="Find(string, string, int, bool)"/>
         /// <seealso cref="FindN(string, string, int)"/>
         /// <seealso cref="RFind(string, string, int, bool)"/>
         /// <seealso cref="RFindN(string, string, int)"/>
         /// <param name="instance">The string that will be searched.</param>
-        /// <param name="what">The substring to find.</param>
+        /// <param name="what">The char to find.</param>
         /// <param name="from">The search starting position.</param>
         /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
-        /// <returns>The first instance of the char, or -1 if not found.</returns>
+        /// <returns>The starting position of the char, or -1 if not found.</returns>
         public static int Find(this string instance, char what, int from = 0, bool caseSensitive = true)
         {
             if (caseSensitive)
@@ -530,9 +533,9 @@ namespace Godot
                 }
             }
 
-            int sep = Mathf.Max(rs.RFind("/"), rs.RFind("\\"));
+            int sep = rs.AsSpan().LastIndexOfAny('/', '\\');
 
-            if (sep == -1)
+            if (sep < 0)
                 return directory;
 
             return directory + rs.Substr(0, sep);
@@ -548,7 +551,7 @@ namespace Godot
         /// <returns>The path to the file without the extension.</returns>
         public static string GetBaseName(this string instance)
         {
-            int index = instance.RFind(".");
+            int index = instance.LastIndexOf('.');
 
             if (index > 0)
                 return instance.Substring(0, index);
@@ -566,9 +569,9 @@ namespace Godot
         /// <returns>The file name.</returns>
         public static string GetFile(this string instance)
         {
-            int sep = Mathf.Max(instance.RFind("/"), instance.RFind("\\"));
+            int sep = instance.AsSpan().LastIndexOfAny('/', '\\');
 
-            if (sep == -1)
+            if (sep < 0)
                 return instance;
 
             return instance.Substring(sep + 1);
@@ -793,9 +796,9 @@ namespace Godot
             if (string.IsNullOrEmpty(instance))
                 return false;
             else if (instance.Length > 1)
-                return instance[0] == '/' || instance[0] == '\\' || instance.Contains(":/", StringComparison.Ordinal) || instance.Contains(":\\", StringComparison.Ordinal);
+                return instance[0] is '/' or '\\' || instance.Contains(":/", StringComparison.Ordinal) || instance.Contains(":\\", StringComparison.Ordinal);
             else
-                return instance[0] == '/' || instance[0] == '\\';
+                return instance[0] is '/' or '\\';
         }
 
         /// <summary>
@@ -873,7 +876,7 @@ namespace Godot
             return instance.IsSubsequenceOf(text, caseSensitive: false);
         }
 
-        private static readonly char[] _invalidFileNameCharacters = { ':', '/', '\\', '?', '*', '"', '|', '%', '<', '>' };
+        private static readonly SearchValues<char> _invalidFileNameCharacters = SearchValues.Create([':', '/', '\\', '?', '*', '"', '|', '%', '<', '>']);
 
         /// <summary>
         /// Returns <see langword="true"/> if this string is free from characters that
@@ -890,7 +893,7 @@ namespace Godot
             if (string.IsNullOrEmpty(stripped))
                 return false;
 
-            return instance.IndexOfAny(_invalidFileNameCharacters) == -1;
+            return !instance.AsSpan().ContainsAny(_invalidFileNameCharacters);
         }
 
         /// <summary>
@@ -926,7 +929,7 @@ namespace Godot
                 return false;
 
             int from = 0;
-            if (instance.Length != 1 && instance[0] == '+' || instance[0] == '-')
+            if (instance.Length != 1 && instance[0] is '+' or '-')
             {
                 from++;
             }
@@ -935,7 +938,7 @@ namespace Godot
             {
                 if (instance.Length < 3)
                     return false;
-                if (instance[from] != '0' || instance[from + 1] != 'x' || instance[from + 1] != 'X')
+                if (!(instance[from] is '0' && instance[from + 1] is 'x' or 'X'))
                     return false;
                 from += 2;
             }
@@ -943,18 +946,13 @@ namespace Godot
             for (int i = from; i < instance.Length; i++)
             {
                 char c = instance[i];
-                if (IsHexDigit(c))
+                if (char.IsAsciiHexDigit(c))
                     continue;
 
                 return false;
             }
 
             return true;
-
-            static bool IsHexDigit(char c)
-            {
-                return char.IsDigit(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-            }
         }
 
         /// <summary>
@@ -990,15 +988,15 @@ namespace Godot
             if (len == 0)
                 return false;
 
-            if (instance[0] >= '0' && instance[0] <= '9')
+            if (instance[0] is >= '0' and <= '9')
                 return false; // Identifiers cannot start with numbers.
 
             for (int i = 0; i < len; i++)
             {
-                bool validChar = instance[i] == '_' ||
-                    (instance[i] >= 'a' && instance[i] <= 'z') ||
-                    (instance[i] >= 'A' && instance[i] <= 'Z') ||
-                    (instance[i] >= '0' && instance[i] <= '9');
+                bool validChar = instance[i] is '_' ||
+                    (instance[i] is >= 'a' and <= 'z') ||
+                    (instance[i] is >= 'A' and <= 'Z') ||
+                    (instance[i] is >= '0' and <= '9');
 
                 if (!validChar)
                     return false;
@@ -1047,8 +1045,7 @@ namespace Godot
 
                     if (n.IsValidHexNumber(withPrefix: false))
                     {
-                        long nint = n.HexToInt();
-                        if (nint < 0 || nint > 0xffff)
+                        if (!ushort.TryParse(n, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out _))
                             return false;
 
                         continue;
@@ -1068,11 +1065,8 @@ namespace Godot
                 for (int i = 0; i < ip.Length; i++)
                 {
                     string n = ip[i];
-                    if (!n.IsValidInt())
-                        return false;
 
-                    int val = n.ToInt();
-                    if (val < 0 || val > 255)
+                    if (!byte.TryParse(n, CultureInfo.InvariantCulture, out _))
                         return false;
                 }
             }
@@ -1087,16 +1081,23 @@ namespace Godot
         /// <returns>The escaped string.</returns>
         public static string JSONEscape(this string instance)
         {
-            var sb = new StringBuilder(instance);
+            var sb = new StringBuilder(instance.Length);
 
-            sb.Replace("\\", "\\\\");
-            sb.Replace("\b", "\\b");
-            sb.Replace("\f", "\\f");
-            sb.Replace("\n", "\\n");
-            sb.Replace("\r", "\\r");
-            sb.Replace("\t", "\\t");
-            sb.Replace("\v", "\\v");
-            sb.Replace("\"", "\\\"");
+            foreach (char c in instance)
+            {
+                switch (c)
+                {
+                    case '\\': sb.Append("\\\\"); break;
+                    case '\b': sb.Append("\\b"); break;
+                    case '\f': sb.Append("\\f"); break;
+                    case '\n': sb.Append("\\n"); break;
+                    case '\r': sb.Append("\\r"); break;
+                    case '\t': sb.Append("\\t"); break;
+                    case '\v': sb.Append("\\v"); break;
+                    case '\"': sb.Append("\\\""); break;
+                    default: sb.Append(c); break;
+                }
+            }
 
             return sb.ToString();
         }
@@ -1141,7 +1142,7 @@ namespace Godot
                     return WildcardMatch(str, pattern.Slice(1), caseSensitive)
                         || (!str.IsEmpty && WildcardMatch(str.Slice(1), pattern, caseSensitive));
                 case '?':
-                    return !str.IsEmpty && str[0] != '.' &&
+                    return !str.IsEmpty && str[0] is not '.' &&
                         WildcardMatch(str.Slice(1), pattern.Slice(1), caseSensitive);
                 default:
                     if (str.IsEmpty)
@@ -1238,7 +1239,7 @@ namespace Godot
         {
             int c = instance.Find(".");
 
-            if (c == -1)
+            if (c < 0)
             {
                 if (digits <= 0)
                     return instance;
@@ -1280,7 +1281,7 @@ namespace Godot
             string s = instance;
             int end = s.Find(".");
 
-            if (end == -1)
+            if (end < 0)
                 end = s.Length;
 
             if (end == 0)
@@ -1288,7 +1289,7 @@ namespace Godot
 
             int begin = 0;
 
-            while (begin < end && (s[begin] < '0' || s[begin] > '9'))
+            while (begin < end && (s[begin] is < '0' or > '9'))
             {
                 begin++;
             }
@@ -1317,7 +1318,7 @@ namespace Godot
         {
             if (instance.Length == 0)
                 return file;
-            if (instance[^1] == '/' || (file.Length > 0 && file[0] == '/'))
+            if (instance[^1] is '/' || (file.Length > 0 && file[0] is '/'))
                 return instance + file;
             return instance + "/" + file;
         }
@@ -1351,11 +1352,36 @@ namespace Godot
         /// <returns>The position at which the substring was found, or -1 if not found.</returns>
         public static int RFind(this string instance, string what, int from = -1, bool caseSensitive = true)
         {
-            if (from == -1)
+            if (from < 0)
                 from = instance.Length - 1;
 
             return instance.LastIndexOf(what, from,
                 caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Returns the index of the last occurrence of the specified char in this instance,
+        /// or <c>-1</c>. Optionally, the starting search index can be specified, continuing to
+        /// the beginning of the string.
+        /// </summary>
+        /// <seealso cref="Find(string, string, int, bool)"/>
+        /// <seealso cref="FindN(string, string, int)"/>
+        /// <seealso cref="RFind(string, string, int, bool)"/>
+        /// <seealso cref="RFindN(string, string, int)"/>
+        /// <param name="instance">The string that will be searched.</param>
+        /// <param name="what">The char to find.</param>
+        /// <param name="from">The search starting position.</param>
+        /// <param name="caseSensitive">If <see langword="true"/>, the search is case sensitive.</param>
+        /// <returns>The position at which the char was found, or -1 if not found.</returns>
+        public static int RFind(this string instance, char what, int from = -1, bool caseSensitive = true)
+        {
+            if (from < 0)
+                from = instance.Length - 1;
+
+            if (caseSensitive)
+                return instance.LastIndexOf(what, from);
+
+            return CultureInfo.InvariantCulture.CompareInfo.LastIndexOf(instance, what, from, CompareOptions.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -1373,7 +1399,7 @@ namespace Godot
         /// <returns>The position at which the substring was found, or -1 if not found.</returns>
         public static int RFindN(this string instance, string what, int from = -1)
         {
-            if (from == -1)
+            if (from < 0)
                 from = instance.Length - 1;
 
             return instance.LastIndexOf(what, from, StringComparison.OrdinalIgnoreCase);
@@ -1550,14 +1576,14 @@ namespace Godot
         }
 
         private static readonly char[] _nonPrintable =
-        {
+        [
             (char)00, (char)01, (char)02, (char)03, (char)04, (char)05,
             (char)06, (char)07, (char)08, (char)09, (char)10, (char)11,
             (char)12, (char)13, (char)14, (char)15, (char)16, (char)17,
             (char)18, (char)19, (char)20, (char)21, (char)22, (char)23,
             (char)24, (char)25, (char)26, (char)27, (char)28, (char)29,
             (char)30, (char)31, (char)32
-        };
+        ];
 
         /// <summary>
         /// Returns a copy of the string stripped of any non-printable character
@@ -1755,7 +1781,7 @@ namespace Godot
         }
 
         private const string UniqueNodePrefix = "%";
-        private static readonly string[] _invalidNodeNameCharacters = { ".", ":", "@", "/", "\"", UniqueNodePrefix };
+        private static readonly string[] _invalidNodeNameCharacters = [".", ":", "@", "/", "\"", UniqueNodePrefix];
 
         /// <summary>
         /// Removes any characters from the string that are prohibited in
@@ -1765,12 +1791,11 @@ namespace Godot
         /// <returns>The string sanitized as a valid node name.</returns>
         public static string ValidateNodeName(this string instance)
         {
-            string name = instance.Replace(_invalidNodeNameCharacters[0], "", StringComparison.Ordinal);
-            for (int i = 1; i < _invalidNodeNameCharacters.Length; i++)
+            foreach (string invalidNodeNameCharacter in _invalidNodeNameCharacters)
             {
-                name = name.Replace(_invalidNodeNameCharacters[i], "", StringComparison.Ordinal);
+                instance = instance.Replace(invalidNodeNameCharacter, "", StringComparison.Ordinal);
             }
-            return name;
+            return instance;
         }
 
         /// <summary>
