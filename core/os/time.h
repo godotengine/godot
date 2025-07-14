@@ -64,6 +64,8 @@ public:
 	int64_t get_unix_time_from_datetime_string(const String &p_datetime) const;
 	String get_offset_string_from_offset_minutes(int64_t p_offset_minutes) const;
 
+	Dictionary get_duration_dict_from_duration(double p_duration_seconds, DurationComponent p_components) const;
+
 	// Methods that get information from OS.
 	Dictionary get_datetime_dict_from_system(bool p_utc = false) const;
 	Dictionary get_date_dict_from_system(bool p_utc = false) const;
@@ -78,7 +80,11 @@ public:
 
 	Time();
 	virtual ~Time();
+
+private:
+	double _take_time_unit(double *p_seconds, double p_sec_time_unit) const;
 };
 
 VARIANT_ENUM_CAST(Month);
 VARIANT_ENUM_CAST(Weekday);
+VARIANT_ENUM_CAST(DurationComponent);
