@@ -392,10 +392,17 @@ void GroupsEditor::_item_edited() {
 	if (ti->is_checked(0)) {
 
 		//Create a commit an action to add the node to a group, and print a message to the console dock.
-		undo_redo->create_action(TTR("Add to Group"));
 
-		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
-		undo_redo->add_undo_method(current_obj, "remove_from_group", name);
+		if (Object::cast_to<Node>(current_obj)) {
+			undo_redo->create_action(TTR("Add to Group"));
+			undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+			undo_redo->add_undo_method(current_obj, "remove_from_group", name);
+		}
+		else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+			undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+			undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+			undo_redo->add_undo_method(current_obj, "remove_partial_from_group", name);
+		}
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, true);
 		undo_redo->add_undo_method(this, "_set_group_checked", name, false);
@@ -407,10 +414,17 @@ void GroupsEditor::_item_edited() {
 		undo_redo->commit_action();
 
 	} else {
-		undo_redo->create_action(TTR("Remove from Group"));
-
-		undo_redo->add_do_method(current_obj, "remove_from_group", name);
-		undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
+		
+		if (Object::cast_to<Node>(current_obj)) {
+			undo_redo->create_action(TTR("Remove from Group"));
+			undo_redo->add_do_method(current_obj, "remove_from_group", name);
+			undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
+		}
+		else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+			undo_redo->create_action(TTR("Remove from Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+			undo_redo->add_do_method(current_obj, "remove_partial_from_group", name);
+			undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
+		}
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, false);
 		undo_redo->add_undo_method(this, "_set_group_checked", name, true);
@@ -543,10 +557,23 @@ void GroupsEditor::_confirm_add() {
 	String description = add_group_description->get_text();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add to Group"));
+	
 
-	undo_redo->add_do_method(current_obj, "add_to_group", name, true);
-	undo_redo->add_undo_method(current_obj, "remove_from_group", name);
+	//My main idea is to split this into a condition based on the type of the object
+	//Kinda defeats the elegance of the original design I had but it makes a lot of stuff easier
+	//For example: calling different args to undo with the correct mask on the selction,
+	//	and adding context based on the first node in the selection.
+	if (Object::cast_to<Node>(current_obj)) {
+		undo_redo->create_action(TTR("Add to Group"));
+		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+		undo_redo->add_undo_method(current_obj, "remove_from_group", name);
+	}
+	else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+		//UndoRedo won't implicitly get the scene context from a MultiNodeEdit, so we have to feed it by hand.
+		undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+		undo_redo->add_undo_method(current_obj, "remove_partial_from_group", name);
+	}
 
 	bool is_local = !global_group_button->is_pressed();
 	if (is_local) {
