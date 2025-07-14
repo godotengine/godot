@@ -48,6 +48,9 @@ class Fog : public RendererFog {
 private:
 	static Fog *singleton;
 
+	static int _get_fog_variant();
+	static int _get_fog_process_variant(int p_idx);
+
 	/* FOG VOLUMES */
 
 	struct FogVolume {
