@@ -401,7 +401,7 @@ void GroupsEditor::_item_edited() {
 		else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
 			undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 			undo_redo->add_do_method(current_obj, "add_to_group", name, true);
-			undo_redo->add_undo_method(current_obj, "remove_partial_from_group", name);
+			undo_redo->add_undo_method(current_obj, "remove_from_group", name);
 		}
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, true);
@@ -422,7 +422,7 @@ void GroupsEditor::_item_edited() {
 		}
 		else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
 			undo_redo->create_action(TTR("Remove from Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
-			undo_redo->add_do_method(current_obj, "remove_partial_from_group", name);
+			undo_redo->add_do_method(current_obj, "remove_from_group", name);
 			undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
 		}
 
@@ -572,7 +572,7 @@ void GroupsEditor::_confirm_add() {
 		//UndoRedo won't implicitly get the scene context from a MultiNodeEdit, so we have to feed it by hand.
 		undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
-		undo_redo->add_undo_method(current_obj, "remove_partial_from_group", name);
+		undo_redo->add_undo_method(current_obj, "remove_from_group", name);
 	}
 
 	bool is_local = !global_group_button->is_pressed();
