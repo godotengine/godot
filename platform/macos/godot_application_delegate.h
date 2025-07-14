@@ -37,7 +37,7 @@
 
 class OS_MacOS_NSApp;
 
-@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate>
+@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate, NSMenuItemValidation>
 
 - (GodotApplicationDelegate *)initWithOS:(OS_MacOS_NSApp *)os;
 
