@@ -168,7 +168,6 @@
 
 #ifndef _3D_DISABLED
 #include "tests/core/math/test_triangle_mesh.h"
-#include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_convert_transform_modifier_3d.h"
 #include "tests/scene/test_copy_transform_modifier_3d.h"

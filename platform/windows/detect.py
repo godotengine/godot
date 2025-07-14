@@ -277,6 +277,11 @@ def build_def_file(target, source, env: "SConsEnvironment"):
     return 0
 
 
+def compute_whole_archive_libs_msvc(target, source, env, for_signature):
+    whole_archives = env.get("WHOLEARCHIVELIBS", ())
+    return [f"/WHOLEARCHIVE:{str(lib)}" for lib in whole_archives]
+
+
 def configure_msvc(env: "SConsEnvironment"):
     """Configure env to work with MSVC"""
 
@@ -307,6 +312,8 @@ def configure_msvc(env: "SConsEnvironment"):
         env["CPPDEFPREFIX"] = "-D"
         env["INCPREFIX"] = "-I"
         env.AppendUnique(CPPDEFINES=[("alloca", "_alloca")])
+
+    env["WHOLEARCHIVELIBFLAGS"] = compute_whole_archive_libs_msvc
 
     if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp

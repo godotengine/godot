@@ -207,6 +207,10 @@ def configure(env: "SConsEnvironment"):
 
     env.Append(CCFLAGS=["-pipe"])
 
+    # Use TempFileMunge since some AR invocations are too long otherwise
+    env["ARCOM_ORIG"] = env["ARCOM"]
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
+
     ## Dependencies
 
     if env["use_sowrap"]:
