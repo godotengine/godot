@@ -58,3 +58,12 @@ enum Weekday : uint8_t {
 	WEEKDAY_FRIDAY,
 	WEEKDAY_SATURDAY,
 };
+
+enum DurationComponent : uint8_t {
+	DURATION_MILLISECONDS = 1 << 0,
+	DURATION_SECONDS = 1 << 1,
+	DURATION_MINUTES = 1 << 2,
+	DURATION_HOURS = 1 << 3,
+	DURATION_DAYS = 1 << 4,
+	DURATION_YEARS = 1 << 5
+};
