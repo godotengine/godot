@@ -1049,7 +1049,7 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window_id) const {
-	ERR_FAIL_COND_V(p_window_id != MAIN_WINDOW_ID, INVALID_SCREEN);
+	ERR_FAIL_COND_V(!windows.has(p_window_id), INVALID_SCREEN);
 	// Standard Wayland APIs don't support getting the screen of a window.
 	return 0;
 }
