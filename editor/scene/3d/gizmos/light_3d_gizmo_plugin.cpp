@@ -83,14 +83,14 @@ Variant Light3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, i
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	if (p_id == 0) {
 		if (Object::cast_to<AreaLight3D>(light)) {
-			return light->get_param(Light3D::PARAM_AREA_WIDTH);
+			return light->get_area_size().x;
 		} else {
 			return light->get_param(Light3D::PARAM_RANGE);
 		}
 	}
 	if (p_id == 1) {
 		if (Object::cast_to<AreaLight3D>(light)) {
-			return light->get_param(Light3D::PARAM_AREA_HEIGHT);
+			return light->get_area_size().y;
 		} else {
 			return light->get_param(Light3D::PARAM_SPOT_ANGLE);
 		}
@@ -145,7 +145,9 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 				float a = inv.x;
 				if (a >= 0) {
-					light->set_param(Light3D::PARAM_AREA_WIDTH, MAX(a * 2, 0.001));
+					Vector2 area_size = light->get_area_size();
+					area_size.x = MAX(a * 2, 0.001);
+					light->set_area_size(area_size);
 				}
 			}
 		}
@@ -162,7 +164,9 @@ void Light3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 				float b = inv.y;
 				if (b >= 0) {
-					light->set_param(Light3D::PARAM_AREA_HEIGHT, MAX(b * 2, 0.001));
+					Vector2 area_size = light->get_area_size();
+					area_size.y = MAX(b * 2, 0.001);
+					light->set_area_size(area_size);
 				}
 			}
 		}
@@ -173,7 +177,7 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 	Light3D *light = Object::cast_to<Light3D>(p_gizmo->get_node_3d());
 	if (p_cancel) {
 		if (Object::cast_to<AreaLight3D>(light)) {
-			light->set_param(p_id == 0 ? Light3D::PARAM_AREA_WIDTH : Light3D::PARAM_AREA_HEIGHT, p_restore);
+			light->set_area_size(p_restore);
 		} else {
 			light->set_param(p_id == 0 ? Light3D::PARAM_RANGE : Light3D::PARAM_SPOT_ANGLE, p_restore);
 		}
@@ -181,8 +185,8 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		if (Object::cast_to<AreaLight3D>(light)) {
 			ur->create_action(TTR("Change Area Light Width"));
-			ur->add_do_method(light, "set_param", Light3D::PARAM_AREA_WIDTH, light->get_param(Light3D::PARAM_AREA_WIDTH));
-			ur->add_undo_method(light, "set_param", Light3D::PARAM_AREA_WIDTH, p_restore);
+			ur->add_do_method(light, "set_area_size", light->get_area_size());
+			ur->add_undo_method(light, "set_area_size", p_restore);
 			ur->commit_action();
 		} else {
 			ur->create_action(TTR("Change Light Radius"));
@@ -194,8 +198,8 @@ void Light3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		if (Object::cast_to<AreaLight3D>(light)) {
 			ur->create_action(TTR("Change Area Light Height"));
-			ur->add_do_method(light, "set_param", Light3D::PARAM_AREA_HEIGHT, light->get_param(Light3D::PARAM_AREA_HEIGHT));
-			ur->add_undo_method(light, "set_param", Light3D::PARAM_AREA_HEIGHT, p_restore);
+			ur->add_do_method(light, "set_area_size", light->get_area_size());
+			ur->add_undo_method(light, "set_area_size", p_restore);
 			ur->commit_action();
 		} else {
 			ur->create_action(TTR("Change Light Radius"));
@@ -353,8 +357,9 @@ void Light3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector<Vector3> points;
 
 			AreaLight3D *cl = Object::cast_to<AreaLight3D>(light);
-			float a = cl->get_param(Light3D::PARAM_AREA_WIDTH);
-			float b = cl->get_param(Light3D::PARAM_AREA_HEIGHT);
+			Vector2 area_size = cl->get_area_size();
+			float a = area_size.x;
+			float b = area_size.y;
 
 			// Draw rectangle
 			points.push_back(Vector3(-a / 2, b / 2, 0));
