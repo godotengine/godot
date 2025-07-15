@@ -265,18 +265,25 @@ namespace Godot
         /// <returns>The escaped string.</returns>
         public static string CEscape(this string instance)
         {
-            var sb = new StringBuilder(instance);
+            var sb = new StringBuilder(instance.Length);
 
-            sb.Replace("\\", "\\\\");
-            sb.Replace("\a", "\\a");
-            sb.Replace("\b", "\\b");
-            sb.Replace("\f", "\\f");
-            sb.Replace("\n", "\\n");
-            sb.Replace("\r", "\\r");
-            sb.Replace("\t", "\\t");
-            sb.Replace("\v", "\\v");
-            sb.Replace("\'", "\\'");
-            sb.Replace("\"", "\\\"");
+            foreach (char c in instance)
+            {
+                switch (c)
+                {
+                    case '\\': sb.Append("\\\\"); break;
+                    case '\a': sb.Append("\\a"); break;
+                    case '\b': sb.Append("\\b"); break;
+                    case '\f': sb.Append("\\f"); break;
+                    case '\n': sb.Append("\\n"); break;
+                    case '\r': sb.Append("\\r"); break;
+                    case '\t': sb.Append("\\t"); break;
+                    case '\v': sb.Append("\\v"); break;
+                    case '\'': sb.Append("\\\'"); break;
+                    case '\"': sb.Append("\\\""); break;
+                    default: sb.Append(c); break;
+                }
+            }
 
             return sb.ToString();
         }
@@ -431,7 +438,7 @@ namespace Godot
         {
             int pos = instance.LastIndexOf('.');
 
-            if (pos < 0 || pos < Math.Max(instance.RFind("/"), instance.RFind("\\")))
+            if (pos < 0 || pos < instance.AsSpan().LastIndexOfAny('/', '\\'))
                 return string.Empty;
 
             return instance.Substring(pos + 1);
@@ -1237,7 +1244,7 @@ namespace Godot
         /// <returns>The string padded with zeroes.</returns>
         public static string PadDecimals(this string instance, int digits)
         {
-            int c = instance.Find(".");
+            int c = instance.IndexOf('.');
 
             if (c < 0)
             {
@@ -1279,7 +1286,7 @@ namespace Godot
         public static string PadZeros(this string instance, int digits)
         {
             string s = instance;
-            int end = s.Find(".");
+            int end = s.IndexOf('.');
 
             if (end < 0)
                 end = s.Length;
