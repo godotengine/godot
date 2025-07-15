@@ -269,12 +269,19 @@ void OpenXRViewportCompositionLayerProvider::create_android_surface() {
 		}
 	}
 
+	// Check to see if content should be protected.
+	XrSwapchainCreateFlags create_flags = 0;
+
+	if (protected_content) {
+		create_flags = XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT;
+	}
+
 	// The XR_FB_android_surface_swapchain_create extension mandates that format, sampleCount,
 	// faceCount, arraySize, and mipCount must be zero.
 	XrSwapchainCreateInfo info = {
 		XR_TYPE_SWAPCHAIN_CREATE_INFO, // type
 		next_pointer, // next
-		0, // createFlags
+		create_flags, // createFlags
 		XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, // usageFlags
 		0, // format
 		0, // sampleCount
@@ -471,7 +478,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 	// See if our current swapchain is outdated.
 	if (subviewport.swapchain_info.get_swapchain() != XR_NULL_HANDLE) {
 		// If this swap chain, or the previous one, were static, then we can't reuse it.
-		if (swapchain_size == subviewport.viewport_size && !p_static_image && !subviewport.static_image) {
+		if (swapchain_size == subviewport.viewport_size && !p_static_image && !subviewport.static_image && protected_content == subviewport.swapchain_protected_content) {
 			// We're all good! Just acquire it.
 			// We can ignore should_render here, return will be false.
 			bool should_render = true;
@@ -489,6 +496,9 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 	if (p_static_image) {
 		create_flags |= XR_SWAPCHAIN_CREATE_STATIC_IMAGE_BIT;
 	}
+	if (protected_content) {
+		create_flags |= XR_SWAPCHAIN_CREATE_PROTECTED_CONTENT_BIT;
+	}
 	if (!subviewport.swapchain_info.create(create_flags, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, swapchain_format, subviewport.viewport_size.width, subviewport.viewport_size.height, sample_count, array_size)) {
 		swapchain_size = Size2i();
 		return false;
@@ -503,6 +513,7 @@ bool OpenXRViewportCompositionLayerProvider::update_and_acquire_swapchain(bool p
 
 	swapchain_size = subviewport.viewport_size;
 	subviewport.static_image = p_static_image;
+	subviewport.swapchain_protected_content = protected_content;
 	return ret;
 }
 

@@ -153,6 +153,9 @@ public:
 	Ref<JavaObject> get_android_surface();
 	bool is_natively_supported() const;
 
+	void set_protected_content(bool p_protected_content);
+	bool is_protected_content() const;
+
 	void set_min_filter(Filter p_mode);
 	Filter get_min_filter() const;
 
