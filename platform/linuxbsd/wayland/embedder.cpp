@@ -367,6 +367,8 @@ void WaylandEmbedder::client_disconnect(size_t p_client_id) {
 	ERR_FAIL_UNSIGNED_INDEX(p_client_id, clients.size());
 	Client &client = clients[p_client_id];
 
+	DEBUG_LOG_WAYLAND_EMBED(vformat("Disconnecting client #%d (socket %d)", p_client_id, client.socket));
+
 	close(client.socket);
 
 	for (size_t i = 0; i < pollfds.size(); ++i) {
@@ -2161,6 +2163,11 @@ bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
 
 		ssize_t head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK);
 
+		if (head_rec == 0) {
+			// Client disconnected.
+			return false;
+		}
+
 		ERR_FAIL_COND_V_MSG(head_rec == -1, false, vformat("Can't read message header: %s", strerror(errno)));
 		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, false, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
 
@@ -2449,7 +2456,7 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 			}
 		}
 
-		DEBUG_LOG_WAYLAND_EMBED(vformat("New client #%d (pid %d) initialized.", client_id, cred.pid));
+		DEBUG_LOG_WAYLAND_EMBED(vformat("New client #%d (pid %d, socket %d) initialized.", client_id, cred.pid, client->socket));
 		return;
 	}
 

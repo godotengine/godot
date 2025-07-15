@@ -2138,6 +2138,8 @@ void WaylandThread::_wl_keyboard_on_modifiers(void *data, struct wl_keyboard *wl
 	SeatState *ss = (SeatState *)data;
 	ERR_FAIL_NULL(ss);
 
+	ERR_FAIL_NULL(ss->xkb_state);
+
 	xkb_state_update_mask(ss->xkb_state, mods_depressed, mods_latched, mods_locked, ss->current_layout_index, ss->current_layout_index, group);
 
 	ss->shift_pressed = xkb_state_mod_name_is_active(ss->xkb_state, XKB_MOD_NAME_SHIFT, XKB_STATE_MODS_DEPRESSED);
@@ -4398,7 +4400,10 @@ Error WaylandThread::init() {
 		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", socket_path);
 	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
 		socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
-		OS::get_singleton()->set_environment("WAYLAND_DEBUG", "1");
+
+		// Debug
+		//int fd = open("/tmp/test.log", O_CREAT | O_RDWR, 0666);
+		//dup2(fd, 2);
 	}
 
 	if (!socket_path.is_empty()) {
