@@ -2090,13 +2090,18 @@ void TileMapLayer::_bind_methods() {
 	// Generic cells manipulations and access.
 	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapLayer::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "coords"), &TileMapLayer::erase_cell);
+	ClassDB::bind_method(D_METHOD("set_cell_scene", "coords", "source_id", "alternative_tile", "properties"), &TileMapLayer::set_cell_scene);
+	ClassDB::bind_method(D_METHOD("set_cell_scene_properties", "coords", "properties", "index"), &TileMapLayer::set_cell_scene_properties, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("erase_cell_scene", "coords"), &TileMapLayer::erase_cell_scene);
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMapLayer::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear"), &TileMapLayer::clear);
+	ClassDB::bind_method(D_METHOD("clear_scenes"), &TileMapLayer::clear_scenes);
 
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapLayer::get_cell_source_id);
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "coords"), &TileMapLayer::get_cell_atlas_coords);
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "coords"), &TileMapLayer::get_cell_alternative_tile);
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "coords"), &TileMapLayer::get_cell_tile_data);
+	ClassDB::bind_method(D_METHOD("get_cell_scene", "coords", "index"), &TileMapLayer::get_cell_scene);
 
 	ClassDB::bind_method(D_METHOD("is_cell_flipped_h", "coords"), &TileMapLayer::is_cell_flipped_h);
 	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "coords"), &TileMapLayer::is_cell_flipped_v);
@@ -2735,6 +2740,51 @@ void TileMapLayer::erase_cell(const Vector2i &p_coords) {
 	set_cell(p_coords, TileSet::INVALID_SOURCE, TileSetSource::INVALID_ATLAS_COORDS, TileSetSource::INVALID_TILE_ALTERNATIVE);
 }
 
+void TileMapLayer::set_cell_scene(const Vector2i &p_coords, int p_source_id, int p_alternative_tile, Dictionary p_properties) {
+	TileSetSource *source;
+	Vector2i coords = p_coords;
+	int source_id = p_source_id;
+	int alternative_tile = p_alternative_tile;
+
+	ERR_FAIL_COND_MSG(!tile_set->has_source(source_id), vformat("TileSet with id %d does not exist, cannot set scene for tile at %s.", source_id, coords));
+
+	source = *tile_set->get_source(source_id);
+	TileSetScenesCollectionSource *scenes_collection_source = Object::cast_to<TileSetScenesCollectionSource>(source);
+	ERR_FAIL_COND_MSG(!scenes_collection_source, vformat("TileSetSource with id %d is not a TileSetScenesCollectionSource, cannot set scene for tile at %s.", source_id, coords));
+
+	Ref<PackedScene> packed_scene = scenes_collection_source->get_scene_tile_scene(alternative_tile);
+	ERR_FAIL_COND_MSG(!packed_scene.is_valid(), vformat("TileSetSource with id %d does not have a scene for alternative tile %d at %s.", source_id, alternative_tile, coords));
+
+	Node *scene = packed_scene->instantiate();
+	Control *scene_as_control = Object::cast_to<Control>(scene);
+	Node2D *scene_as_node2d = Object::cast_to<Node2D>(scene);
+	if (scene_as_control) {
+		scene_as_control->set_position(tile_set->map_to_local(coords) + scene_as_control->get_position());
+	} else if (scene_as_node2d) {
+		Transform2D xform;
+		xform.set_origin(tile_set->map_to_local(coords));
+		scene_as_node2d->set_transform(xform * scene_as_node2d->get_transform());
+	}
+	add_child(scene);
+	Node *parent = get_parent();
+	scene->set_owner(parent ? parent : this);
+	scene->set_name(vformat("%s-CoordsX%dY%d-CellScene", scene->get_name(), coords.x, coords.y));
+	for (const KeyValue<Variant, Variant> &E : p_properties) {
+		scene->set(E.key, E.value);
+	}
+}
+
+void TileMapLayer::erase_cell_scene(const Vector2i &p_coords) {
+	Vector2i coords = p_coords;
+	TypedArray<Node> scene_list = find_children(vformat("*-CoordsX%dY%d-CellScene*", coords.x, coords.y));
+
+	if (!scene_list.is_empty()) {
+		Node *scene = Object::cast_to<Node>(scene_list.pop_back());
+		ERR_FAIL_COND_MSG(!scene, vformat("Found a scene at %s, but it is not a Node.", coords));
+		scene->queue_free();
+	}
+}
+
 void TileMapLayer::fix_invalid_tiles() {
 	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot call fix_invalid_tiles() on a TileMapLayer without a valid TileSet.");
 
@@ -2756,6 +2806,16 @@ void TileMapLayer::clear() {
 		erase_cell(kv.key);
 	}
 	used_rect_cache_dirty = true;
+}
+
+void TileMapLayer::clear_scenes() {
+	TypedArray<Node> scene_list = find_children("*-CoordsX*Y*-CellScene*");
+	for (Variant &E : scene_list) {
+		Node *scene = Object::cast_to<Node>(E);
+		if (scene) {
+			scene->queue_free();
+		}
+	}
 }
 
 int TileMapLayer::get_cell_source_id(const Vector2i &p_coords) const {
@@ -2803,6 +2863,34 @@ TileData *TileMapLayer::get_cell_tile_data(const Vector2i &p_coords) const {
 	}
 
 	return nullptr;
+}
+
+Node *TileMapLayer::get_cell_scene(const Vector2i &p_coords, const int p_index) const {
+	int index = p_index;
+	Vector2i coords = p_coords;
+	TypedArray<Node> scene_list = find_children(vformat("*-CoordsX%dY%d-CellScene*", coords.x, coords.y));
+	ERR_FAIL_INDEX_V(index, scene_list.size(), nullptr);
+	ERR_FAIL_COND_V_MSG(scene_list.is_empty(), nullptr, vformat("No scene found for tile at %s.", coords));
+
+	Node *scene = Object::cast_to<Node>(scene_list[index]);
+	ERR_FAIL_COND_V_MSG(!scene, nullptr, vformat("Found a scene at %s, but it is not a Node.", coords));
+
+	return scene;
+}
+
+void TileMapLayer::set_cell_scene_properties(const Vector2i &p_coords, Dictionary properties, const int p_index) {
+	int index = p_index;
+	Vector2i coords = p_coords;
+	TypedArray<Node> scene_list = find_children(vformat("*-CoordsX%dY%d-CellScene*", coords.x, coords.y));
+	ERR_FAIL_INDEX(index, scene_list.size());
+	ERR_FAIL_COND_MSG(scene_list.is_empty(), vformat("No scene found for tile at %s.", coords));
+
+	Node *scene = Object::cast_to<Node>(scene_list[index]);
+	ERR_FAIL_COND_MSG(!scene, vformat("Found a scene at %s, but it is not a Node.", coords));
+
+	for (const KeyValue<Variant, Variant> &E : properties) {
+		scene->set(E.key, E.value);
+	}
 }
 
 TypedArray<Vector2i> TileMapLayer::get_used_cells() const {

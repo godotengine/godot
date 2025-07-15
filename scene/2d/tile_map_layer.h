@@ -536,13 +536,18 @@ public:
 	// Generic cells manipulations and data access.
 	void set_cell(const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
 	void erase_cell(const Vector2i &p_coords);
+	void set_cell_scene(const Vector2i &p_coords, int p_source_id, int p_alternative_tile, Dictionary p_properties);
+	void set_cell_scene_properties(const Vector2i &p_coords, Dictionary properties, const int p_index = 0);
+	void erase_cell_scene(const Vector2i &p_coords);
 	void fix_invalid_tiles();
 	void clear();
+	void clear_scenes();
 
 	int get_cell_source_id(const Vector2i &p_coords) const;
 	Vector2i get_cell_atlas_coords(const Vector2i &p_coords) const;
 	int get_cell_alternative_tile(const Vector2i &p_coords) const;
 	TileData *get_cell_tile_data(const Vector2i &p_coords) const; // Helper method to make accessing the data easier.
+	Node *get_cell_scene(const Vector2i &p_coords, const int p_index = 0) const;
 
 	TypedArray<Vector2i> get_used_cells() const;
 	TypedArray<Vector2i> get_used_cells_by_id(int p_source_id = TileSet::INVALID_SOURCE, const Vector2i &p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = TileSetSource::INVALID_TILE_ALTERNATIVE) const;

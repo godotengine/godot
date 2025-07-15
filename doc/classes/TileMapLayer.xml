@@ -61,11 +61,24 @@
 				Clears all cells.
 			</description>
 		</method>
+		<method name="clear_scenes">
+			<return type="void" />
+			<description>
+				Clears all cell scenes.
+			</description>
+		</method>
 		<method name="erase_cell">
 			<return type="void" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
 				Erases the cell at coordinates [param coords].
+			</description>
+		</method>
+		<method name="erase_cell_scene">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<description>
+				Erases the last cell scene at coordinates [param coords].
 			</description>
 		</method>
 		<method name="fix_invalid_tiles">
@@ -79,6 +92,14 @@
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
 				Returns the tile alternative ID of the cell at coordinates [param coords].
+			</description>
+		</method>
+		<method name="get_cell_scene" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="index" type="int" />
+			<description>
+				Returns the scene instance associated with a tile at the given coordinates [param coords].
 			</description>
 		</method>
 		<method name="get_cell_atlas_coords" qualifiers="const">
@@ -242,6 +263,25 @@
 				- The atlas coordinate identifier [param atlas_coords] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]). For [TileSetScenesCollectionSource] it should always be [code]Vector2i(0, 0)[/code],
 				- The alternative tile identifier [param alternative_tile] identifies a tile alternative in the atlas (if the source is a [TileSetAtlasSource]), and the scene for a [TileSetScenesCollectionSource].
 				If [param source_id] is set to [code]-1[/code], [param atlas_coords] to [code]Vector2i(-1, -1)[/code], or [param alternative_tile] to [code]-1[/code], the cell will be erased. An erased cell gets [b]all[/b] its identifiers automatically set to their respective invalid values, namely [code]-1[/code], [code]Vector2i(-1, -1)[/code] and [code]-1[/code].
+			</description>
+		</method>
+		<method name="set_cell_scene">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="source_id" type="int" />
+			<param index="2" name="alternative_tile" type="int" />
+			<param index="3" name="properties" type="Dictionary" />
+			<description>
+				Sets the scene tile for the cell scene at coordinates [param coords] with custom properties.
+			</description>
+		</method>
+		<method name="set_cell_scene_properties">
+			<return type="void" />
+			<param index="0" name="coords" type="Vector2i" />
+			<param index="1" name="properties" type="Dictionary" />
+			<param index="2" name="index" type="int" />
+			<description>
+				Sets custom properties on a scene instance associated with a tile at the given coordinates [param coords].
 			</description>
 		</method>
 		<method name="set_cells_terrain_connect">
