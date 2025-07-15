@@ -1499,17 +1499,13 @@ Error DisplayServerWayland::embed_process(WindowID p_window, OS::ProcessID p_pid
 	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
 	ERR_FAIL_NULL_V(ecs, ERR_BUG);
 
-	if (!ecs->clients.has(p_pid)) {
+	if (!ecs->mapped_clients.has(p_pid)) {
 		return ERR_DOES_NOT_EXIST;
 	}
 
-	struct godot_embedded_client *embedded_client = ecs->clients[p_pid];
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
 	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
 	ERR_FAIL_NULL_V(client_data, ERR_BUG);
-
-	if (!client_data->window_mapped) {
-		return ERR_DOES_NOT_EXIST;
-	}
 
 	if (p_grab_focus) {
 		godot_embedded_client_focus_window(embedded_client);
@@ -1554,17 +1550,13 @@ Error DisplayServerWayland::request_close_embedded_process(OS::ProcessID p_pid) 
 	struct WaylandThread::EmbeddingCompositorState *ecs = WaylandThread::godot_embedding_compositor_get_state(ec);
 	ERR_FAIL_NULL_V(ecs, ERR_BUG);
 
-	if (!ecs->clients.has(p_pid)) {
+	if (!ecs->mapped_clients.has(p_pid)) {
 		return ERR_DOES_NOT_EXIST;
 	}
 
-	struct godot_embedded_client *embedded_client = ecs->clients[p_pid];
+	struct godot_embedded_client *embedded_client = ecs->mapped_clients[p_pid];
 	WaylandThread::EmbeddedClientState *client_data = (WaylandThread::EmbeddedClientState *)godot_embedded_client_get_user_data(embedded_client);
 	ERR_FAIL_NULL_V(client_data, ERR_BUG);
-
-	if (!client_data->window_mapped) {
-		return ERR_DOES_NOT_EXIST;
-	}
 
 	godot_embedded_client_embedded_window_request_close(embedded_client);
 	return OK;

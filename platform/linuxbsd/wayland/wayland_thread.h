@@ -534,7 +534,10 @@ public:
 	};
 
 	struct EmbeddingCompositorState {
-		HashMap<int32_t, struct godot_embedded_client *> clients;
+		LocalVector<struct godot_embedded_client *> clients;
+
+		// Only a client per PID can create a window.
+		HashMap<int, struct godot_embedded_client *> mapped_clients;
 
 		OS::ProcessID focused_pid = -1;
 	};

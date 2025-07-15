@@ -3007,7 +3007,7 @@ void WaylandThread::_godot_embedding_compositor_on_client(void *data, struct god
 	godot_embedded_client_add_listener(godot_embedded_client, &godot_embedded_client_listener, client_state);
 
 	DEBUG_LOG_WAYLAND_THREAD(vformat("New client %d.", pid));
-	state->clients[pid] = godot_embedded_client;
+	state->clients.push_back(godot_embedded_client);
 }
 
 void WaylandThread::_godot_embedded_client_on_disconnected(void *data, struct godot_embedded_client *godot_embedded_client) {
@@ -3017,7 +3017,7 @@ void WaylandThread::_godot_embedded_client_on_disconnected(void *data, struct go
 	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
 	ERR_FAIL_NULL(ecomp_state);
 
-	ecomp_state->clients.erase(state->pid);
+	ecomp_state->clients.erase_unordered(godot_embedded_client);
 
 	memfree(state);
 	godot_embedded_client_destroy(godot_embedded_client);
@@ -3029,7 +3029,14 @@ void WaylandThread::_godot_embedded_client_on_window_embedded(void *data, struct
 	EmbeddedClientState *state = (EmbeddedClientState *)data;
 	ERR_FAIL_NULL(state);
 
+	EmbeddingCompositorState *ecomp_state = godot_embedding_compositor_get_state(state->embedding_compositor);
+	ERR_FAIL_NULL(ecomp_state);
+
 	state->window_mapped = true;
+
+	ERR_FAIL_COND_MSG(ecomp_state->mapped_clients.has(state->pid), "More than one Wayland client per PID tried to create a window.");
+
+	ecomp_state->mapped_clients[state->pid] = godot_embedded_client;
 }
 
 void WaylandThread::_godot_embedded_client_on_window_focus_in(void *data, struct godot_embedded_client *godot_embedded_client) {
@@ -4391,6 +4398,7 @@ Error WaylandThread::init() {
 		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", socket_path);
 	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
 		socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
+		OS::get_singleton()->set_environment("WAYLAND_DEBUG", "1");
 	}
 
 	if (!socket_path.is_empty()) {

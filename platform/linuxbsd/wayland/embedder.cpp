@@ -701,7 +701,9 @@ bool WaylandEmbedder::global_surface_is_window(uint32_t p_wl_surface_id) {
 bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id) {
 	ERR_FAIL_NULL_V(p_object, false);
 
+#ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
 	const struct wl_interface *interface = p_object->interface;
+#endif
 
 	bool valid = true;
 
@@ -2160,7 +2162,7 @@ bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
 		ssize_t head_rec = recvmsg(p_fd, &head_msg, MSG_PEEK);
 
 		ERR_FAIL_COND_V_MSG(head_rec == -1, false, vformat("Can't read message header: %s", strerror(errno)));
-		ERR_FAIL_COND_V(((size_t)head_rec) != vec.iov_len, false);
+		ERR_FAIL_COND_V_MSG(((size_t)head_rec) != vec.iov_len, false, vformat("Should've received %d bytes, instead got %d bytes", vec.iov_len, head_rec));
 
 		// Header is two 32-bit words: first is ID, second has size in most significant
 		// half and opcode in the other half.
