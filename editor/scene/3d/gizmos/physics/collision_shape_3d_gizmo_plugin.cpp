@@ -396,7 +396,7 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(points, material, false, collision_color);
 		p_gizmo->add_collision_segments(points);
 		Vector<Vector3> handles;
-		handles.push_back(Vector3(r, 0, 0));
+		handles.push_back(Vector3(radius, 0, 0));
 		p_gizmo->add_handles(handles, handles_material);
 	}
 
