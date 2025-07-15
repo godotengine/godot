@@ -4394,10 +4394,10 @@ Error WaylandThread::init() {
 	}
 
 	if (!socket_path.is_empty()) {
-		wl_display = wl_display_connect(socket_path.utf8().get_data());
-	} else {
-		wl_display = wl_display_connect(nullptr);
+		OS::get_singleton()->set_environment("WAYLAND_DISPLAY", socket_path);
 	}
+
+	wl_display = wl_display_connect(nullptr);
 
 	ERR_FAIL_NULL_V_MSG(wl_display, ERR_CANT_CREATE, "Can't connect to a Wayland display.");
 
