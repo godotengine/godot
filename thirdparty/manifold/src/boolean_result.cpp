@@ -663,6 +663,7 @@ void CreateProperties(Manifold::Impl& outR, const Manifold::Impl& inP,
 }
 
 void ReorderHalfedges(VecView<Halfedge>& halfedges) {
+  ZoneScoped;
   // halfedges in the same face are added in non-deterministic order, so we have
   // to reorder them for determinism
 
