@@ -113,6 +113,9 @@ void OpenXRCompositionLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_android_surface"), &OpenXRCompositionLayer::get_android_surface);
 	ClassDB::bind_method(D_METHOD("is_natively_supported"), &OpenXRCompositionLayer::is_natively_supported);
 
+	ClassDB::bind_method(D_METHOD("is_protected_content"), &OpenXRCompositionLayer::is_protected_content);
+	ClassDB::bind_method(D_METHOD("set_protected_content", "protected_content"), &OpenXRCompositionLayer::set_protected_content);
+
 	ClassDB::bind_method(D_METHOD("set_min_filter", "mode"), &OpenXRCompositionLayer::set_min_filter);
 	ClassDB::bind_method(D_METHOD("get_min_filter"), &OpenXRCompositionLayer::get_min_filter);
 
@@ -150,6 +153,7 @@ void OpenXRCompositionLayer::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "layer_viewport", PROPERTY_HINT_NODE_TYPE, "SubViewport"), "set_layer_viewport", "get_layer_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_android_surface", PROPERTY_HINT_NONE, ""), "set_use_android_surface", "get_use_android_surface");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "protected_content", PROPERTY_HINT_NONE, ""), "set_protected_content", "is_protected_content");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "android_surface_size", PROPERTY_HINT_NONE, ""), "set_android_surface_size", "get_android_surface_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "sort_order", PROPERTY_HINT_NONE, ""), "set_sort_order", "get_sort_order");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alpha_blend", PROPERTY_HINT_NONE, ""), "set_alpha_blend", "get_alpha_blend");
@@ -408,6 +412,14 @@ bool OpenXRCompositionLayer::is_natively_supported() const {
 		return composition_layer_extension->is_available(openxr_layer_provider->get_openxr_type());
 	}
 	return false;
+}
+
+void OpenXRCompositionLayer::set_protected_content(bool p_protected_content) {
+	openxr_layer_provider->set_protected_content(p_protected_content);
+}
+
+bool OpenXRCompositionLayer::is_protected_content() const {
+	return openxr_layer_provider->is_protected_content();
 }
 
 void OpenXRCompositionLayer::set_min_filter(Filter p_mode) {
