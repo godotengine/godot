@@ -31,6 +31,7 @@
 #include "crash_handler_linuxbsd.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -45,8 +46,8 @@
 #include <dlfcn.h>
 #include <execinfo.h>
 #include <link.h>
-#include <signal.h>
-#include <stdlib.h>
+#include <csignal>
+#include <cstdlib>
 
 static void handle_crash(int sig) {
 	signal(SIGSEGV, SIG_DFL);
@@ -66,9 +67,8 @@ static void handle_crash(int sig) {
 	String _execpath = OS::get_singleton()->get_executable_path();
 
 	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
+	if (ProjectSettings::get_singleton()) {
+		msg = GLOBAL_GET("debug/settings/crash_handler/message");
 	}
 
 	// Tell MainLoop about the crash. This can be handled by users too in Node.
@@ -143,8 +143,16 @@ static void handle_crash(int sig) {
 
 		free(strings);
 	}
-	print_error("-- END OF BACKTRACE --");
+	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
+
+	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
+		if (!backtrace->is_empty()) {
+			print_error(backtrace->format());
+			print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
+			print_error("================================================================");
+		}
+	}
 
 	// Abort to pass the error to the OS
 	abort();

@@ -198,7 +198,6 @@ protected:
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
-		~TrackCacheTransform() {}
 	};
 
 	struct RootMotionCache {
@@ -219,7 +218,6 @@ protected:
 				shape_index(p_other.shape_index) {}
 
 		TrackCacheBlendShape() { type = Animation::TYPE_BLEND_SHAPE; }
-		~TrackCacheBlendShape() {}
 	};
 
 	struct TrackCacheValue : public TrackCache {
@@ -258,7 +256,6 @@ protected:
 
 	struct TrackCacheMethod : public TrackCache {
 		TrackCacheMethod() { type = Animation::TYPE_METHOD; }
-		~TrackCacheMethod() {}
 	};
 
 	// Audio stream information for each audio stream placed on the track.
@@ -296,7 +293,6 @@ protected:
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;
 		}
-		~TrackCacheAudio() {}
 	};
 
 	struct TrackCacheAnimation : public TrackCache {
@@ -305,7 +301,6 @@ protected:
 		TrackCacheAnimation() {
 			type = Animation::TYPE_ANIMATION;
 		}
-		~TrackCacheAnimation() {}
 	};
 
 	RootMotionCache root_motion_cache;
@@ -390,7 +385,6 @@ protected:
 			step = 0.0;
 		}
 
-		CaptureCache() {}
 		~CaptureCache() {
 			clear();
 		}

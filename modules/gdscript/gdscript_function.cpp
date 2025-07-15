@@ -223,6 +223,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
 		if (gdfs && gdfs->function == function) {
 			completed = false;
+			// Keep the first state alive via reference.
 			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
 		}
 	}
@@ -231,19 +232,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	state.result = Variant();
 
 	if (completed) {
-		if (first_state.is_valid()) {
-			first_state->emit_signal(SNAME("completed"), ret);
-		} else {
-			emit_signal(SNAME("completed"), ret);
-		}
-
-#ifdef DEBUG_ENABLED
-		if (EngineDebugger::is_active()) {
-			GDScriptLanguage::get_singleton()->exit_function();
-		}
-
 		_clear_stack();
-#endif
 	}
 
 	return ret;
@@ -252,8 +241,9 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 void GDScriptFunctionState::_clear_stack() {
 	if (state.stack_size) {
 		Variant *stack = (Variant *)state.stack.ptr();
-		// The first 3 are special addresses and not copied to the state, so we skip them here.
-		for (int i = 3; i < state.stack_size; i++) {
+		// First `GDScriptFunction::FIXED_ADDRESSES_MAX` stack addresses are special
+		// and not copied to the state, so we skip them here.
+		for (int i = GDScriptFunction::FIXED_ADDRESSES_MAX; i < state.stack_size; i++) {
 			stack[i].~Variant();
 		}
 		state.stack_size = 0;

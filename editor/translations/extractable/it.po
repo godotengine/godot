@@ -24,21 +24,11 @@ msgstr "Tutti i formati riconosciuti"
 msgid "Pick a color from the application window."
 msgstr "Seleziona un colore dalla finestra applicativa."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Colore: #%s\n"
-"LMB: Imposta il colore\n"
-"RMB: Rimuovi la preimpostazione"
+msgid "Save"
+msgstr "Salva"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Colore: #%s\n"
-"LMB: Imposta il colore"
+msgid "Clear"
+msgstr "Rimuovi tutto"
 
 msgid "Add current color as a preset."
 msgstr "Aggiungi il colore corrente come preset."
@@ -58,9 +48,6 @@ msgstr "Apri"
 
 msgid "Select Current Folder"
 msgstr "Seleziona la cartella attuale"
-
-msgid "Save"
-msgstr "Salva"
 
 msgid "Select This Folder"
 msgstr "Seleziona questa cartella"
@@ -98,11 +85,11 @@ msgstr "Percorso:"
 msgid "Refresh files."
 msgstr "Ricarica i file."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Commuta la visibilità dei file nascosti."
-
 msgid "Directories & Files:"
 msgstr "File e cartelle:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Commuta la visibilità dei file nascosti."
 
 msgid "File:"
 msgstr "File:"
@@ -154,9 +141,6 @@ msgstr "Incolla"
 
 msgid "Select All"
 msgstr "Seleziona tutto"
-
-msgid "Clear"
-msgstr "Rimuovi tutto"
 
 msgid "Undo"
 msgstr "Annulla"

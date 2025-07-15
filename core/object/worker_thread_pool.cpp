@@ -182,6 +182,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 
 void WorkerThreadPool::_thread_function(void *p_user) {
 	ThreadData *thread_data = (ThreadData *)p_user;
+	Thread::set_name(vformat("WorkerThread %d", thread_data->index));
 
 	while (true) {
 		Task *task_to_process = nullptr;
@@ -221,7 +222,7 @@ void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
-	bool process_on_calling_thread = threads.size() == 0;
+	bool process_on_calling_thread = threads.is_empty();
 	if (process_on_calling_thread) {
 		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
@@ -739,6 +740,15 @@ WorkerThreadPool::TaskID WorkerThreadPool::get_caller_task_id() const {
 	}
 }
 
+WorkerThreadPool::GroupID WorkerThreadPool::get_caller_group_id() const {
+	int th_index = get_thread_index();
+	if (th_index != -1 && threads[th_index].current_task && threads[th_index].current_task->group) {
+		return threads[th_index].current_task->group->self;
+	} else {
+		return INVALID_TASK_ID;
+	}
+}
+
 #ifdef THREADS_ENABLED
 uint32_t WorkerThreadPool::_thread_enter_unlock_allowance_zone(THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &p_ulock) {
 	for (uint32_t i = 0; i < MAX_UNLOCKABLE_LOCKS; i++) {
@@ -780,16 +790,29 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 
 	threads.resize(p_thread_count);
 
+	Thread::Settings settings;
+#ifdef __APPLE__
+	// The default stack size for new threads on Apple platforms is 512KiB.
+	// This is insufficient when using a library like SPIRV-Cross,
+	// which can generate deep stacks and result in a stack overflow.
+#ifdef DEV_ENABLED
+	// Debug builds need an even larger stack size.
+	settings.stack_size = 2 * 1024 * 1024; // 2 MiB
+#else
+	settings.stack_size = 1 * 1024 * 1024; // 1 MiB
+#endif
+#endif
+
 	for (uint32_t i = 0; i < threads.size(); i++) {
 		threads[i].index = i;
 		threads[i].pool = this;
-		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i]);
+		threads[i].thread.start(&WorkerThreadPool::_thread_function, &threads[i], settings);
 		thread_ids.insert(threads[i].thread.get_id(), i);
 	}
 }
 
 void WorkerThreadPool::exit_languages_threads() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 
@@ -809,7 +832,7 @@ void WorkerThreadPool::exit_languages_threads() {
 }
 
 void WorkerThreadPool::finish() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 
@@ -842,11 +865,13 @@ void WorkerThreadPool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_task", "action", "high_priority", "description"), &WorkerThreadPool::add_task, DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_task_completed", "task_id"), &WorkerThreadPool::is_task_completed);
 	ClassDB::bind_method(D_METHOD("wait_for_task_completion", "task_id"), &WorkerThreadPool::wait_for_task_completion);
+	ClassDB::bind_method(D_METHOD("get_caller_task_id"), &WorkerThreadPool::get_caller_task_id);
 
 	ClassDB::bind_method(D_METHOD("add_group_task", "action", "elements", "tasks_needed", "high_priority", "description"), &WorkerThreadPool::add_group_task, DEFVAL(-1), DEFVAL(false), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("is_group_task_completed", "group_id"), &WorkerThreadPool::is_group_task_completed);
 	ClassDB::bind_method(D_METHOD("get_group_processed_element_count", "group_id"), &WorkerThreadPool::get_group_processed_element_count);
 	ClassDB::bind_method(D_METHOD("wait_for_group_task_completion", "group_id"), &WorkerThreadPool::wait_for_group_task_completion);
+	ClassDB::bind_method(D_METHOD("get_caller_group_id"), &WorkerThreadPool::get_caller_group_id);
 }
 
 WorkerThreadPool *WorkerThreadPool::get_named_pool(const StringName &p_name) {

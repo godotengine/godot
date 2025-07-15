@@ -12,7 +12,7 @@
 		<method name="convert_to_image" qualifiers="const">
 			<return type="Image" />
 			<description>
-				Returns an image of the same size as the bitmap and with a [enum Image.Format] of type [constant Image.FORMAT_L8]. [code]true[/code] bits of the bitmap are being converted into white pixels, and [code]false[/code] bits into black.
+				Returns an image of the same size as the bitmap and with an [enum Image.Format] of type [constant Image.FORMAT_L8]. [code]true[/code] bits of the bitmap are being converted into white pixels, and [code]false[/code] bits into black.
 			</description>
 		</method>
 		<method name="create">

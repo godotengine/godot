@@ -360,9 +360,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < ic; j++) {
-					facesw[widx++] = vr[ir[j - 2]];
-					facesw[widx++] = vr[ir[j - 1]];
-					facesw[widx++] = vr[ir[j]];
+					if (j % 2 == 0) {
+						facesw[widx++] = vr[ir[j - 2]];
+						facesw[widx++] = vr[ir[j - 1]];
+						facesw[widx++] = vr[ir[j]];
+					} else {
+						facesw[widx++] = vr[ir[j - 2]];
+						facesw[widx++] = vr[ir[j]];
+						facesw[widx++] = vr[ir[j - 1]];
+					}
 				}
 			}
 
@@ -373,9 +379,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < vc; j++) {
-					facesw[widx++] = vr[j - 2];
-					facesw[widx++] = vr[j - 1];
-					facesw[widx++] = vr[j];
+					if (j % 2 == 0) {
+						facesw[widx++] = vr[j - 2];
+						facesw[widx++] = vr[j - 1];
+						facesw[widx++] = vr[j];
+					} else {
+						facesw[widx++] = vr[j - 2];
+						facesw[widx++] = vr[j];
+						facesw[widx++] = vr[j - 1];
+					}
 				}
 			}
 		}
@@ -565,7 +577,7 @@ Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplif
 
 Ref<ConcavePolygonShape3D> Mesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<ConcavePolygonShape3D>();
 	}
 
@@ -617,7 +629,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 						if (j == ARRAY_VERTEX) {
 							vcount = src.size();
 						}
-						if (dst.size() == 0 || src.size() == 0) {
+						if (dst.is_empty() || src.is_empty()) {
 							arrays[j] = Variant();
 							continue;
 						}
@@ -629,7 +641,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					case ARRAY_WEIGHTS: {
 						Vector<real_t> dst = arrays[j];
 						Vector<real_t> src = a[j];
-						if (dst.size() == 0 || src.size() == 0) {
+						if (dst.is_empty() || src.is_empty()) {
 							arrays[j] = Variant();
 							continue;
 						}
@@ -640,7 +652,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					case ARRAY_COLOR: {
 						Vector<Color> dst = arrays[j];
 						Vector<Color> src = a[j];
-						if (dst.size() == 0 || src.size() == 0) {
+						if (dst.is_empty() || src.is_empty()) {
 							arrays[j] = Variant();
 							continue;
 						}
@@ -652,7 +664,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					case ARRAY_TEX_UV2: {
 						Vector<Vector2> dst = arrays[j];
 						Vector<Vector2> src = a[j];
-						if (dst.size() == 0 || src.size() == 0) {
+						if (dst.is_empty() || src.is_empty()) {
 							arrays[j] = Variant();
 							continue;
 						}
@@ -663,7 +675,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 					case ARRAY_INDEX: {
 						Vector<int> dst = arrays[j];
 						Vector<int> src = a[j];
-						if (dst.size() == 0 || src.size() == 0) {
+						if (dst.is_empty() || src.is_empty()) {
 							arrays[j] = Variant();
 							continue;
 						}
@@ -978,15 +990,15 @@ enum OldArrayFormat {
 	OLD_ARRAY_FORMAT_INDEX = 1 << OLD_ARRAY_INDEX,
 
 	OLD_ARRAY_COMPRESS_BASE = (OLD_ARRAY_INDEX + 1),
-	OLD_ARRAY_COMPRESS_VERTEX = 1 << (OLD_ARRAY_VERTEX + OLD_ARRAY_COMPRESS_BASE), // mandatory
-	OLD_ARRAY_COMPRESS_NORMAL = 1 << (OLD_ARRAY_NORMAL + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_TANGENT = 1 << (OLD_ARRAY_TANGENT + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_COLOR = 1 << (OLD_ARRAY_COLOR + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_TEX_UV = 1 << (OLD_ARRAY_TEX_UV + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_TEX_UV2 = 1 << (OLD_ARRAY_TEX_UV2 + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_BONES = 1 << (OLD_ARRAY_BONES + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_WEIGHTS = 1 << (OLD_ARRAY_WEIGHTS + OLD_ARRAY_COMPRESS_BASE),
-	OLD_ARRAY_COMPRESS_INDEX = 1 << (OLD_ARRAY_INDEX + OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_VERTEX = 1 << (OLD_ARRAY_VERTEX + (int32_t)OLD_ARRAY_COMPRESS_BASE), // mandatory
+	OLD_ARRAY_COMPRESS_NORMAL = 1 << (OLD_ARRAY_NORMAL + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_TANGENT = 1 << (OLD_ARRAY_TANGENT + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_COLOR = 1 << (OLD_ARRAY_COLOR + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_TEX_UV = 1 << (OLD_ARRAY_TEX_UV + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_TEX_UV2 = 1 << (OLD_ARRAY_TEX_UV2 + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_BONES = 1 << (OLD_ARRAY_BONES + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_WEIGHTS = 1 << (OLD_ARRAY_WEIGHTS + (int32_t)OLD_ARRAY_COMPRESS_BASE),
+	OLD_ARRAY_COMPRESS_INDEX = 1 << (OLD_ARRAY_INDEX + (int32_t)OLD_ARRAY_COMPRESS_BASE),
 
 	OLD_ARRAY_FLAG_USE_2D_VERTICES = OLD_ARRAY_COMPRESS_INDEX << 1,
 	OLD_ARRAY_FLAG_USE_16_BIT_BONES = OLD_ARRAY_COMPRESS_INDEX << 2,
@@ -1679,6 +1691,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 	}
 
 	surfaces.clear();
+	clear_cache();
 
 	aabb = AABB();
 	for (int i = 0; i < surface_data.size(); i++) {
@@ -2032,7 +2045,7 @@ AABB ArrayMesh::get_custom_aabb() const {
 }
 
 void ArrayMesh::regen_normal_maps() {
-	if (surfaces.size() == 0) {
+	if (surfaces.is_empty()) {
 		return;
 	}
 	Vector<Ref<SurfaceTool>> surfs;
@@ -2305,9 +2318,9 @@ void ArrayMesh::_bind_methods() {
 #endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(), StringName("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("lightmap_unwrap", "transform", "texel_size"), &ArrayMesh::lightmap_unwrap);
-	ClassDB::set_method_flags(get_class_static(), _scs_create("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+	ClassDB::set_method_flags(get_class_static(), StringName("lightmap_unwrap"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &ArrayMesh::generate_triangle_mesh);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &ArrayMesh::set_custom_aabb);

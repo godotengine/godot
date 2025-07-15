@@ -652,12 +652,10 @@ namespace Godot
                 column2 = -column2;
             }
             Vector3 column0 = up.Value.Cross(column2);
-#if DEBUG
             if (column0.IsZeroApprox())
             {
-                throw new ArgumentException("The target vector and up vector can't be parallel to each other.");
+                throw new ArgumentException("Target and up vectors are colinear. This is not advised as it may cause unwanted rotation around local Z axis.");
             }
-#endif
             column0.Normalize();
             Vector3 column1 = column2.Cross(column0);
             return new Basis(column0, column1, column2);
@@ -714,6 +712,20 @@ namespace Godot
             b.Row0 *= scale.X;
             b.Row1 *= scale.Y;
             b.Row2 *= scale.Z;
+            return b;
+        }
+
+        /// <summary>
+        /// Returns this basis with each axis scaled by the corresponding component in the given <paramref name="scale"/>. The basis matrix's columns are multiplied by <paramref name="scale"/>'s components. This operation is a local scale (relative to self).
+        /// </summary>
+        /// <param name="scale">The scale to introduce.</param>
+        /// <returns>The scaled basis matrix.</returns>
+        public readonly Basis ScaledLocal(Vector3 scale)
+        {
+            Basis b = this;
+            b.Row0 *= scale;
+            b.Row1 *= scale;
+            b.Row2 *= scale;
             return b;
         }
 

@@ -92,25 +92,7 @@ struct PtrToArg<TypedDictionary<K, V>> {
 };
 
 template <typename K, typename V>
-struct PtrToArg<const TypedDictionary<K, V> &> {
-	typedef Dictionary EncodeT;
-	_FORCE_INLINE_ static TypedDictionary<K, V>
-	convert(const void *p_ptr) {
-		return TypedDictionary<K, V>(*reinterpret_cast<const Dictionary *>(p_ptr));
-	}
-};
-
-template <typename K, typename V>
 struct GetTypeInfo<TypedDictionary<K, V>> {
-	static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;
-	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
-	static inline PropertyInfo get_class_info() {
-		return PropertyInfo(Variant::DICTIONARY, String(), PROPERTY_HINT_DICTIONARY_TYPE, vformat("%s;%s", K::get_class_static(), V::get_class_static()));
-	}
-};
-
-template <typename K, typename V>
-struct GetTypeInfo<const TypedDictionary<K, V> &> {
 	static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;
 	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 	static inline PropertyInfo get_class_info() {
@@ -160,15 +142,6 @@ struct GetTypeInfo<const TypedDictionary<K, V> &> {
 		}                                                                                                                                          \
 	};                                                                                                                                             \
 	template <typename T>                                                                                                                          \
-	struct GetTypeInfo<const TypedDictionary<T, m_type> &> {                                                                                       \
-		static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;                                                                             \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                              \
-		static inline PropertyInfo get_class_info() {                                                                                              \
-			return PropertyInfo(Variant::DICTIONARY, String(), PROPERTY_HINT_DICTIONARY_TYPE,                                                      \
-					vformat("%s;%s", T::get_class_static(), m_variant_type == Variant::NIL ? "Variant" : Variant::get_type_name(m_variant_type))); \
-		}                                                                                                                                          \
-	};                                                                                                                                             \
-	template <typename T>                                                                                                                          \
 	class TypedDictionary<m_type, T> : public Dictionary {                                                                                         \
 	public:                                                                                                                                        \
 		_FORCE_INLINE_ void operator=(const Dictionary &p_dictionary) {                                                                            \
@@ -189,18 +162,16 @@ struct GetTypeInfo<const TypedDictionary<K, V> &> {
 		_FORCE_INLINE_ TypedDictionary() {                                                                                                         \
 			set_typed(m_variant_type, StringName(), Variant(), Variant::OBJECT, T::get_class_static(), Variant());                                 \
 		}                                                                                                                                          \
-	};                                                                                                                                             \
-	template <typename T>                                                                                                                          \
-	struct GetTypeInfo<TypedDictionary<m_type, T>> {                                                                                               \
-		static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;                                                                             \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                              \
-		static inline PropertyInfo get_class_info() {                                                                                              \
-			return PropertyInfo(Variant::DICTIONARY, String(), PROPERTY_HINT_DICTIONARY_TYPE,                                                      \
-					vformat("%s;%s", m_variant_type == Variant::NIL ? "Variant" : Variant::get_type_name(m_variant_type), T::get_class_static())); \
+		_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<m_type, T>> p_init) :                                                        \
+				Dictionary() {                                                                                                                     \
+			set_typed(m_variant_type, StringName(), Variant(), Variant::OBJECT, std::remove_pointer<T>::type::get_class_static(), Variant());      \
+			for (const KeyValue<m_type, T> &E : p_init) {                                                                                          \
+				operator[](E.key) = E.value;                                                                                                       \
+			}                                                                                                                                      \
 		}                                                                                                                                          \
 	};                                                                                                                                             \
 	template <typename T>                                                                                                                          \
-	struct GetTypeInfo<const TypedDictionary<m_type, T> &> {                                                                                       \
+	struct GetTypeInfo<TypedDictionary<m_type, T>> {                                                                                               \
 		static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;                                                                             \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                              \
 		static inline PropertyInfo get_class_info() {                                                                                              \
@@ -241,16 +212,6 @@ struct GetTypeInfo<const TypedDictionary<K, V> &> {
 	};                                                                                                                            \
 	template <>                                                                                                                   \
 	struct GetTypeInfo<TypedDictionary<m_type_key, m_type_value>> {                                                               \
-		static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;                                                            \
-		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                             \
-		static inline PropertyInfo get_class_info() {                                                                             \
-			return PropertyInfo(Variant::DICTIONARY, String(), PROPERTY_HINT_DICTIONARY_TYPE,                                     \
-					vformat("%s;%s", m_variant_type_key == Variant::NIL ? "Variant" : Variant::get_type_name(m_variant_type_key), \
-							m_variant_type_value == Variant::NIL ? "Variant" : Variant::get_type_name(m_variant_type_value)));    \
-		}                                                                                                                         \
-	};                                                                                                                            \
-	template <>                                                                                                                   \
-	struct GetTypeInfo<const TypedDictionary<m_type_key, m_type_value> &> {                                                       \
 		static const Variant::Type VARIANT_TYPE = Variant::DICTIONARY;                                                            \
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                             \
 		static inline PropertyInfo get_class_info() {                                                                             \

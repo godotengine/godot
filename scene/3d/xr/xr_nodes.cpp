@@ -72,36 +72,13 @@ void XRCamera3D::_removed_tracker(const StringName &p_tracker_name, int p_tracke
 
 void XRCamera3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	if (p_pose->get_name() == pose_name) {
-		Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-		if (is_inside_tree() && parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level() && !is_physics_interpolated()) {
-			pose_offset = p_pose->get_adjusted_transform();
-		} else {
-			set_transform(p_pose->get_adjusted_transform());
-		}
+		set_transform(p_pose->get_adjusted_transform());
 	}
 }
 
-void XRCamera3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_desired_process_modes(true, false);
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!is_inside_tree() || is_physics_interpolated() || Engine::get_singleton()->is_editor_hint()) {
-				break;
-			}
-
-			Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-			if (parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level()) {
-				set_global_transform(parent->get_global_transform_interpolated() * pose_offset);
-			}
-		} break;
-	}
+void XRCamera3D::_physics_interpolated_changed() {
+	Camera3D::_physics_interpolated_changed();
+	update_configuration_warnings();
 }
 
 PackedStringArray XRCamera3D::get_configuration_warnings() const {
@@ -114,6 +91,10 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 		if (parent && origin == nullptr) {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
+
+		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
+		}
 	}
 
 	return warnings;
@@ -274,6 +255,9 @@ void XRNode3D::_bind_methods() {
 }
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -431,13 +415,7 @@ void XRNode3D::_removed_tracker(const StringName &p_tracker_name, int p_tracker_
 
 void XRNode3D::_pose_changed(const Ref<XRPose> &p_pose) {
 	if (p_pose.is_valid() && p_pose->get_name() == pose_name) {
-		Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-		if (is_inside_tree() && parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level() && !is_physics_interpolated()) {
-			pose_offset = p_pose->get_adjusted_transform();
-		} else {
-			set_transform(p_pose->get_adjusted_transform());
-		}
+		set_transform(p_pose->get_adjusted_transform());
 		_set_has_tracking_data(p_pose->get_has_tracking_data());
 	}
 }
@@ -477,26 +455,8 @@ void XRNode3D::_update_visibility() {
 	}
 }
 
-void XRNode3D::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				set_process_internal(true);
-			}
-		} break;
-
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (!is_inside_tree() || is_physics_interpolated() || Engine::get_singleton()->is_editor_hint()) {
-				break;
-			}
-
-			Node3D *parent = Object::cast_to<Node3D>(get_parent());
-
-			if (parent && parent->is_physics_interpolated_and_enabled() && !is_set_as_top_level()) {
-				set_global_transform(parent->get_global_transform_interpolated() * pose_offset);
-			}
-		} break;
-	}
+void XRNode3D::_physics_interpolated_changed() {
+	update_configuration_warnings();
 }
 
 XRNode3D::XRNode3D() {
@@ -539,6 +499,10 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 
 		if (pose_name == "") {
 			warnings.push_back(RTR("No pose is set."));
+		}
+
+		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
+			warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 		}
 	}
 

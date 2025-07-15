@@ -81,6 +81,7 @@ private:
 	bool force_update_panning = false;
 
 	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Vector<AudioFrame> &output);
+	static AudioFrame _calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength);
 
 #ifndef PHYSICS_3D_DISABLED
 	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol);

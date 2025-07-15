@@ -32,6 +32,9 @@
 
 #include "../nav_utils_3d.h"
 
+#include "core/templates/a_hash_map.h"
+
+#include "servers/navigation/navigation_globals.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 #include "servers/navigation/navigation_utilities.h"
@@ -48,6 +51,7 @@ public:
 		Heap<Nav3D::NavigationPoly *, Nav3D::NavPolyTravelCostGreaterThan, Nav3D::NavPolyHeapIndexer> traversable_polys;
 		bool in_use = false;
 		uint32_t slot_index = 0;
+		AHashMap<const Nav3D::Polygon *, uint32_t> poly_to_id;
 	};
 
 	struct NavMeshPathQueryTask3D {
@@ -68,10 +72,16 @@ public:
 		PathPostProcessing path_postprocessing = PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
 		bool simplify_path = false;
 		real_t simplify_epsilon = 0.0;
+
 		bool exclude_regions = false;
 		bool include_regions = false;
 		LocalVector<RID> excluded_regions;
 		LocalVector<RID> included_regions;
+
+		float path_return_max_length = 0.0;
+		float path_return_max_radius = 0.0;
+		int path_search_max_polygons = NavigationDefaults3D::path_search_max_polygons;
+		float path_search_max_distance = 0.0;
 
 		// Path building.
 		Vector3 begin_position;
@@ -90,6 +100,7 @@ public:
 		LocalVector<int32_t> path_meta_point_types;
 		LocalVector<RID> path_meta_point_rids;
 		LocalVector<int64_t> path_meta_point_owners;
+		float path_length = 0.0;
 
 		Ref<NavigationPathQueryParameters3D> query_parameters;
 		Ref<NavigationPathQueryResult3D> query_result;
@@ -104,10 +115,10 @@ public:
 		}
 
 		void path_reverse() {
-			path_points.invert();
-			path_meta_point_types.invert();
-			path_meta_point_rids.invert();
-			path_meta_point_owners.invert();
+			path_points.reverse();
+			path_meta_point_types.reverse();
+			path_meta_point_rids.reverse();
+			path_meta_point_owners.reverse();
 		}
 	};
 
@@ -133,14 +144,19 @@ public:
 	static void query_task_map_iteration_get_path(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration);
 	static void _query_task_push_back_point_with_metadata(NavMeshPathQueryTask3D &p_query_task, const Vector3 &p_point, const Nav3D::Polygon *p_point_polygon);
 	static void _query_task_find_start_end_positions(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration);
-	static void _query_task_build_path_corridor(NavMeshPathQueryTask3D &p_query_task);
+	static void _query_task_build_path_corridor(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration);
 	static void _query_task_post_process_corridorfunnel(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_post_process_edgecentered(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_post_process_nopostprocessing(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_clip_path(NavMeshPathQueryTask3D &p_query_task, const Nav3D::NavigationPoly *from_poly, const Vector3 &p_to_point, const Nav3D::NavigationPoly *p_to_poly);
 	static void _query_task_simplified_path_points(NavMeshPathQueryTask3D &p_query_task);
 	static bool _query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner);
+	static void _query_task_process_path_result_limits(NavMeshPathQueryTask3D &p_query_task);
+
+	static void _query_task_search_polygon_connections(NavMeshPathQueryTask3D &p_query_task, const Nav3D::Connection &p_connection, uint32_t p_least_cost_id, const Nav3D::NavigationPoly &p_least_cost_poly, real_t p_poly_enter_cost, const Vector3 &p_end_point);
 
 	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices);
 	static LocalVector<uint32_t> get_simplified_path_indices(const LocalVector<Vector3> &p_path, real_t p_epsilon);
+
+	static float _calculate_path_length(const LocalVector<Vector3> &p_path, uint32_t p_start_index, uint32_t p_end_index);
 };

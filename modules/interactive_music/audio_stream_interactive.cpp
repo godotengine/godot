@@ -123,9 +123,9 @@ void AudioStreamInteractive::set_clip_stream(int p_clip, const Ref<AudioStream> 
 		if (clips[p_clip].name == StringName() && p_stream.is_valid()) {
 			String n;
 			if (!clips[p_clip].stream->get_name().is_empty()) {
-				n = clips[p_clip].stream->get_name().replace(",", " ");
+				n = clips[p_clip].stream->get_name().replace_char(',', ' ');
 			} else if (clips[p_clip].stream->get_path().is_resource_file()) {
-				n = clips[p_clip].stream->get_path().get_file().get_basename().replace(",", " ");
+				n = clips[p_clip].stream->get_path().get_file().get_basename().replace_char(',', ' ');
 				n = n.capitalize();
 			}
 
@@ -395,13 +395,13 @@ String AudioStreamInteractive::_get_streams_hint() const {
 		if (i > 0) {
 			stream_name_cache += ",";
 		}
-		String n = String(clips[i].name).replace(",", " ");
+		String n = String(clips[i].name).replace_char(',', ' ');
 
 		if (n == "" && clips[i].stream.is_valid()) {
 			if (!clips[i].stream->get_name().is_empty()) {
-				n = clips[i].stream->get_name().replace(",", " ");
+				n = clips[i].stream->get_name().replace_char(',', ' ');
 			} else if (clips[i].stream->get_path().is_resource_file()) {
-				n = clips[i].stream->get_path().get_file().replace(",", " ");
+				n = clips[i].stream->get_path().get_file().replace_char(',', ' ');
 			}
 		}
 
@@ -416,17 +416,18 @@ String AudioStreamInteractive::_get_streams_hint() const {
 }
 
 #endif
+
 void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const {
 	String prop = r_property.name;
 
+	if (Engine::get_singleton()->is_editor_hint() && prop == "switch_to") {
 #ifdef TOOLS_ENABLED
-	if (prop == "switch_to") {
 		r_property.hint_string = _get_streams_hint();
+#endif
 		return;
 	}
-#endif
 
-	if (prop == "initial_clip") {
+	if (Engine::get_singleton()->is_editor_hint() && prop == "initial_clip") {
 #ifdef TOOLS_ENABLED
 		r_property.hint_string = _get_streams_hint();
 #endif
@@ -437,7 +438,7 @@ void AudioStreamInteractive::_validate_property(PropertyInfo &r_property) const 
 		} else if (prop == "clip_" + itos(clip) + "/next_clip") {
 			if (clips[clip].auto_advance != AUTO_ADVANCE_ENABLED) {
 				r_property.usage = 0;
-			} else {
+			} else if (Engine::get_singleton()->is_editor_hint()) {
 #ifdef TOOLS_ENABLED
 				r_property.hint_string = _get_streams_hint();
 #endif

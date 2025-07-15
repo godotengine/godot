@@ -36,8 +36,6 @@
 #include "core/os/time.h"
 #include "core/templates/local_vector.h"
 
-thread_local Error DirAccess::last_dir_open_error = OK;
-
 String DirAccess::_get_root_path() const {
 	switch (_access_type) {
 		case ACCESS_RESOURCES:
@@ -146,7 +144,7 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		full_dir = p_dir;
 	}
 
-	full_dir = full_dir.replace("\\", "/");
+	full_dir = full_dir.replace_char('\\', '/');
 
 	String base;
 
@@ -673,6 +671,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
 	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
 	ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
+
+	ClassDB::bind_method(D_METHOD("get_filesystem_type"), &DirAccess::get_filesystem_type);
 
 	ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
 	ClassDB::bind_method(D_METHOD("is_equivalent", "path_a", "path_b"), &DirAccess::is_equivalent);

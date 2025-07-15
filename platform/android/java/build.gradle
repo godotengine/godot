@@ -18,7 +18,7 @@ allprojects {
         mavenCentral()
         gradlePluginPortal()
         maven { url "https://plugins.gradle.org/m2/" }
-        maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/"}
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/"}
     }
 }
 
@@ -79,7 +79,7 @@ def templateExcludedBuildTask() {
     // We exclude these gradle tasks so we can run the scons command manually.
     def excludedTasks = []
     if (excludeSconsBuildTasks()) {
-        logger.lifecycle("Excluding Android studio build tasks")
+        logger.info("Excluding Android studio build tasks")
         for (String flavor : supportedFlavors) {
             String[] supportedBuildTypes = supportedFlavorsBuildTypes[flavor]
             for (String buildType : supportedBuildTypes) {
@@ -173,9 +173,10 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                     buildTasks += tasks.create(name: copyBinaryTaskName, type: Copy) {
                         String filenameSuffix = edition == "mono" ? "${edition}${capitalizedTarget}" : target
                         dependsOn ":app:assemble${capitalizedEdition}${capitalizedTarget}"
-                        from("app/build/outputs/apk/${edition}/${target}")
+                        from("app/build/outputs/apk/${edition}/${target}") {
+                            include("android_${filenameSuffix}.apk")
+                        }
                         into(binDir)
-                        include("android_${filenameSuffix}.apk")
                     }
                 }
             } else {
@@ -186,9 +187,10 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                 } else {
                     buildTasks += tasks.create(name: copyEditorApkTaskName, type: Copy) {
                         dependsOn ":editor:assemble${capitalizedAndroidDistro}${capitalizedTarget}"
-                        from("editor/build/outputs/apk/${androidDistro}/${target}")
+                        from("editor/build/outputs/apk/${androidDistro}/${target}") {
+                            include("android_editor-${androidDistro}-${target}*.apk")
+                        }
                         into(androidEditorBuildsDir)
-                        include("android_editor-${androidDistro}-${target}*.apk")
                     }
                 }
 
@@ -206,7 +208,7 @@ def generateBuildTasks(String flavor = "template", String edition = "standard", 
                 }
             }
         } else {
-            logger.lifecycle("No native shared libs for target $target. Skipping build.")
+            logger.info("No native shared libs for target $target. Skipping build.")
         }
     }
 
@@ -270,19 +272,6 @@ task generateGodotMonoTemplates {
     finalizedBy 'zipGradleBuild'
 }
 
-/**
- * Generates the same output as generateGodotTemplates but with dev symbols
- */
-task generateDevTemplate {
-    // add parameter to set symbols to true
-    project.ext.doNotStrip = "true"
-
-    gradle.startParameter.excludedTaskNames += templateExcludedBuildTask()
-    dependsOn = generateBuildTasks("template")
-
-    finalizedBy 'zipGradleBuild'
-}
-
 task clean(type: Delete) {
     dependsOn 'cleanGodotEditor'
     dependsOn 'cleanGodotTemplates'
@@ -340,4 +329,12 @@ task cleanGodotTemplates(type: Delete) {
     delete("$binDir/godot-lib.debug.aar")
     delete("$binDir/godot-lib.dev.aar")
     delete("$binDir/godot-lib.release.aar")
+
+    // Delete the native debug symbols files.
+    delete("$binDir/android-editor-debug-native-symbols.zip")
+    delete("$binDir/android-editor-dev-native-symbols.zip")
+    delete("$binDir/android-editor-release-native-symbols.zip")
+    delete("$binDir/android-template-debug-native-symbols.zip")
+    delete("$binDir/android-template-dev-native-symbols.zip")
+    delete("$binDir/android-template-release-native-symbols.zip")
 }

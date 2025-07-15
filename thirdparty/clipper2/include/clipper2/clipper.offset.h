@@ -35,7 +35,7 @@ private:
 	class Group {
 	public:
 		Paths64 paths_in;
-        std::optional<size_t> lowest_path_idx{};
+    std::optional<size_t> lowest_path_idx{};
 		bool is_reversed = false;
 		JoinType join_type;
 		EndType end_type;

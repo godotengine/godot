@@ -509,7 +509,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision2D> CharacterBody2D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision2D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);
@@ -646,6 +646,9 @@ void CharacterBody2D::_notification(int p_what) {
 }
 
 void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

@@ -39,7 +39,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {
@@ -283,43 +283,43 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 #define REAL_MEMBER_OFFSET(type, member) \
 	{                                    \
 		type,                            \
-				member,                  \
-				"float",                 \
-				sizeof(float),           \
-				"float",                 \
-				sizeof(float),           \
-				"double",                \
-				sizeof(double),          \
-				"double",                \
-				sizeof(double),          \
+		member,                          \
+		"float",                         \
+		sizeof(float),                   \
+		"float",                         \
+		sizeof(float),                   \
+		"double",                        \
+		sizeof(double),                  \
+		"double",                        \
+		sizeof(double),                  \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
 	{                                     \
 		type,                             \
-				member,                   \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
+		member,                           \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
 	{                                                                              \
 		type,                                                                      \
-				member,                                                            \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
+		member,                                                                    \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
@@ -1343,16 +1343,16 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
-		for (const Variant &key : old_dict.keys()) {
-			if (!new_dict.has(key)) {
+		for (const KeyValue<Variant, Variant> &kv : old_dict) {
+			if (!new_dict.has(kv.key)) {
 				failed = true;
-				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && key == "name") {
+			if (p_allow_name_change && kv.key == "name") {
 				continue;
 			}
-			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {
 				failed = true;
 			}
 		}

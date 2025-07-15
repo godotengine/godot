@@ -441,5 +441,5 @@ Variant AABB::intersects_ray_bind(const Vector3 &p_from, const Vector3 &p_dir) c
 }
 
 AABB::operator String() const {
-	return "[P: " + position.operator String() + ", S: " + size + "]";
+	return "[P: " + String(position) + ", S: " + String(size) + "]";
 }

@@ -426,10 +426,6 @@ void AudioStreamPlaybackWAV::set_sample_playback(const Ref<AudioSamplePlayback> 
 	}
 }
 
-AudioStreamPlaybackWAV::AudioStreamPlaybackWAV() {}
-
-AudioStreamPlaybackWAV::~AudioStreamPlaybackWAV() {}
-
 /////////////////////
 
 void AudioStreamWAV::set_format(Format p_format) {
@@ -479,6 +475,14 @@ void AudioStreamWAV::set_stereo(bool p_enable) {
 
 bool AudioStreamWAV::is_stereo() const {
 	return stereo;
+}
+
+void AudioStreamWAV::set_tags(const Dictionary &p_tags) {
+	tags = p_tags;
+}
+
+Dictionary AudioStreamWAV::get_tags() const {
+	return tags;
 }
 
 double AudioStreamWAV::get_length() const {
@@ -580,8 +584,7 @@ Error AudioStreamWAV::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	Vector<uint8_t> stream_data = get_data();
-	const uint8_t *read_data = stream_data.ptr();
+	const uint8_t *read_data = data.ptr();
 	switch (format) {
 		case AudioStreamWAV::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
@@ -707,6 +710,8 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	int frames = 0;
 
 	Vector<float> data;
+
+	HashMap<String, String> tag_map;
 
 	while (!file->eof_reached()) {
 		/* chunk */
@@ -863,6 +868,48 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 				loop_end = file->get_32();
 			}
 		}
+
+		if (chunk_id[0] == 'L' && chunk_id[1] == 'I' && chunk_id[2] == 'S' && chunk_id[3] == 'T') {
+			// RIFF 'LIST' chunk.
+			// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+
+			char list_id[4];
+			file->get_buffer((uint8_t *)&list_id, 4);
+			uint32_t end_of_chunk = file_pos + chunksize - 8;
+
+			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
+				// 'INFO' list type.
+				// The size of an entry can be arbitrary.
+				while (file->get_position() < end_of_chunk) {
+					char info_id[4];
+					file->get_buffer((uint8_t *)&info_id, 4);
+
+					uint32_t text_size = file->get_32();
+					if (text_size == 0) {
+						continue;
+					}
+
+					Vector<char> text;
+					text.resize(text_size);
+					file->get_buffer((uint8_t *)&text[0], text_size);
+
+					// Skip padding byte if text_size is odd
+					if (text_size & 1) {
+						file->get_8();
+					}
+
+					// The data is always an ASCII string. ASCII is a subset of UTF-8.
+					String tag;
+					tag.append_utf8(&info_id[0], 4);
+
+					String tag_value;
+					tag_value.append_utf8(&text[0], text_size);
+
+					tag_map[tag] = tag_value;
+				}
+			}
+		}
+
 		// Move to the start of the next chunk. Note that RIFF requires a padding byte for odd
 		// chunk sizes.
 		file->seek(file_pos + chunksize + (chunksize & 1));
@@ -1102,6 +1149,39 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	sample->set_loop_begin(loop_begin);
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
+
+	if (!tag_map.is_empty()) {
+		// Used to make the metadata tags more unified across different AudioStreams.
+		// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+		HashMap<String, String> tag_id_remaps;
+		tag_id_remaps.reserve(15);
+		tag_id_remaps["IARL"] = "location";
+		tag_id_remaps["IART"] = "artist";
+		tag_id_remaps["ICMS"] = "organization";
+		tag_id_remaps["ICMT"] = "comments";
+		tag_id_remaps["ICOP"] = "copyright";
+		tag_id_remaps["ICRD"] = "date";
+		tag_id_remaps["IGNR"] = "genre";
+		tag_id_remaps["IKEY"] = "keywords";
+		tag_id_remaps["IMED"] = "medium";
+		tag_id_remaps["INAM"] = "title";
+		tag_id_remaps["IPRD"] = "album";
+		tag_id_remaps["ISBJ"] = "description";
+		tag_id_remaps["ISFT"] = "software";
+		tag_id_remaps["ITRK"] = "tracknumber";
+		Dictionary tag_dictionary;
+		for (const KeyValue<String, String> &E : tag_map) {
+			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);
+			String tag_key = E.key;
+			if (remap) {
+				tag_key = remap->value;
+			}
+
+			tag_dictionary[tag_key] = E.value;
+		}
+		sample->set_tags(tag_dictionary);
+	}
+
 	return sample;
 }
 
@@ -1136,6 +1216,9 @@ void AudioStreamWAV::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamWAV::set_stereo);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamWAV::is_stereo);
 
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamWAV::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamWAV::get_tags);
+
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamWAV::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
@@ -1145,6 +1228,7 @@ void AudioStreamWAV::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tags", "get_tags");
 
 	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
 	BIND_ENUM_CONSTANT(FORMAT_16_BITS);
@@ -1156,7 +1240,3 @@ void AudioStreamWAV::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
 }
-
-AudioStreamWAV::AudioStreamWAV() {}
-
-AudioStreamWAV::~AudioStreamWAV() {}

@@ -42,10 +42,32 @@
 // Otherwise, it grows exponentially (the default and what you want in most cases).
 template <typename T, typename U = uint32_t, bool force_trivial = false, bool tight = false>
 class LocalVector {
+	static_assert(!force_trivial, "force_trivial is no longer supported. Use resize_uninitialized instead.");
+
 private:
 	U count = 0;
 	U capacity = 0;
 	T *data = nullptr;
+
+	template <bool p_init>
+	void _resize(U p_size) {
+		if (p_size < count) {
+			if constexpr (!std::is_trivially_destructible_v<T>) {
+				for (U i = p_size; i < count; i++) {
+					data[i].~T();
+				}
+			}
+			count = p_size;
+		} else if (p_size > count) {
+			reserve(p_size);
+			if constexpr (p_init) {
+				memnew_arr_placement(data + count, p_size - count);
+			} else {
+				static_assert(std::is_trivially_destructible_v<T>, "T must be trivially destructible to resize uninitialized");
+			}
+			count = p_size;
+		}
+	}
 
 public:
 	_FORCE_INLINE_ T *ptr() { return data; }
@@ -58,16 +80,10 @@ public:
 	// Must take a copy instead of a reference (see GH-31736).
 	_FORCE_INLINE_ void push_back(T p_elem) {
 		if (unlikely(count == capacity)) {
-			capacity = tight ? (capacity + 1) : MAX((U)1, capacity << 1);
-			data = (T *)memrealloc(data, capacity * sizeof(T));
-			CRASH_COND_MSG(!data, "Out of memory");
+			reserve(count + 1);
 		}
 
-		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-			memnew_placement(&data[count++], T(std::move(p_elem)));
-		} else {
-			data[count++] = std::move(p_elem);
-		}
+		memnew_placement(&data[count++], T(std::move(p_elem)));
 	}
 
 	void remove_at(U p_index) {
@@ -76,9 +92,7 @@ public:
 		for (U i = p_index; i < count; i++) {
 			data[i] = std::move(data[i + 1]);
 		}
-		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-			data[count].~T();
-		}
+		data[count].~T();
 	}
 
 	/// Removes the item copying the last value into the position of the one to
@@ -89,9 +103,7 @@ public:
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
 		}
-		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-			data[count].~T();
-		}
+		data[count].~T();
 	}
 
 	_FORCE_INLINE_ bool erase(const T &p_val) {
@@ -128,11 +140,14 @@ public:
 		return occurrences;
 	}
 
-	void invert() {
+	void reverse() {
 		for (U i = 0; i < count / 2; i++) {
 			SWAP(data[i], data[count - i - 1]);
 		}
 	}
+#ifndef DISABLE_DEPRECATED
+	[[deprecated("Use reverse() instead")]] void invert() { reverse(); }
+#endif
 
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ void reset() {
@@ -145,35 +160,37 @@ public:
 	}
 	_FORCE_INLINE_ bool is_empty() const { return count == 0; }
 	_FORCE_INLINE_ U get_capacity() const { return capacity; }
-	_FORCE_INLINE_ void reserve(U p_size) {
-		p_size = tight ? p_size : nearest_power_of_2_templated(p_size);
+	void reserve(U p_size) {
+		ERR_FAIL_COND_MSG(p_size < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		if (p_size > capacity) {
-			capacity = p_size;
+			if (tight) {
+				capacity = p_size;
+			} else {
+				capacity = MAX((U)2, capacity + ((1 + capacity) >> 1));
+				if (p_size > capacity) {
+					capacity = p_size;
+				}
+			}
 			data = (T *)memrealloc(data, capacity * sizeof(T));
 			CRASH_COND_MSG(!data, "Out of memory");
 		}
 	}
 
+	/// Resize the vector.
+	/// Elements are initialized (or not) depending on what the default C++ behavior for T is.
+	/// Note: If force_trivial is set, this will behave like resize_uninitialized instead.
 	void resize(U p_size) {
-		if (p_size < count) {
-			if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-				for (U i = p_size; i < count; i++) {
-					data[i].~T();
-				}
-			}
-			count = p_size;
-		} else if (p_size > count) {
-			if (unlikely(p_size > capacity)) {
-				capacity = tight ? p_size : nearest_power_of_2_templated(p_size);
-				data = (T *)memrealloc(data, capacity * sizeof(T));
-				CRASH_COND_MSG(!data, "Out of memory");
-			}
-			if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-				memnew_arr_placement(data + count, p_size - count);
-			}
-			count = p_size;
-		}
+		// Don't init when trivially constructible.
+		_resize<!std::is_trivially_constructible_v<T>>(p_size);
 	}
+
+	/// Resize and set all values to 0 / false / nullptr.
+	_FORCE_INLINE_ void resize_initialized(U p_size) { _resize<true>(p_size); }
+
+	/// Resize and set all values to 0 / false / nullptr.
+	/// This is only available for trivially destructible types (otherwise, trivial resize might be UB).
+	_FORCE_INLINE_ void resize_uninitialized(U p_size) { _resize<false>(p_size); }
+
 	_FORCE_INLINE_ const T &operator[](U p_index) const {
 		CRASH_BAD_UNSIGNED_INDEX(p_index, count);
 		return data[p_index];
@@ -388,8 +405,8 @@ public:
 	}
 };
 
-template <typename T, typename U = uint32_t, bool force_trivial = false>
-using TightLocalVector = LocalVector<T, U, force_trivial, true>;
+template <typename T, typename U = uint32_t>
+using TightLocalVector = LocalVector<T, U, false, true>;
 
 // Zero-constructing LocalVector initializes count, capacity and data to 0 and thus empty.
 template <typename T, typename U, bool force_trivial, bool tight>

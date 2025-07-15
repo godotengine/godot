@@ -20,10 +20,10 @@
 		uniform float exposure : hint_range(0, 128) = 1.0;
 
 		void sky() {
-		    // If importing a cubemap from another engine, you may need to flip one of the `EYEDIR` components below
-		    // by replacing it with `-EYEDIR`.
-		    vec3 eyedir = vec3(EYEDIR.x, EYEDIR.y, EYEDIR.z);
-		    COLOR = texture(source_panorama, eyedir).rgb * exposure;
+			// If importing a cubemap from another engine, you may need to flip one of the `EYEDIR` components below
+			// by replacing it with `-EYEDIR`.
+			vec3 eyedir = vec3(EYEDIR.x, EYEDIR.y, EYEDIR.z);
+			COLOR = texture(source_panorama, eyedir).rgb * exposure;
 		}
 		[/codeblock]
 		After replacing the shader code and saving, specify the imported Cubemap resource in the Shader Parameters section of the ShaderMaterial in the inspector.

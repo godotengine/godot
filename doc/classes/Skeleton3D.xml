@@ -20,6 +20,14 @@
 				[b]Note:[/b] Bone names should be unique, non empty, and cannot include the [code]:[/code] and [code]/[/code] characters.
 			</description>
 		</method>
+		<method name="advance">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Manually advance the child [SkeletonModifier3D]s by the specified time (in seconds).
+				[b]Note:[/b] The [param delta] is temporarily accumulated in the [Skeleton3D], and the deferred process uses the accumulated value to process the modification.
+			</description>
+		</method>
 		<method name="clear_bones">
 			<return type="void" />
 			<description>
@@ -104,14 +112,14 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="key" type="StringName" />
 			<description>
-				Returns bone metadata for [param bone_idx] with [param key].
+				Returns the metadata for the bone at index [param bone_idx] with [param key].
 			</description>
 		</method>
 		<method name="get_bone_meta_list" qualifiers="const">
 			<return type="StringName[]" />
 			<param index="0" name="bone_idx" type="int" />
 			<description>
-				Returns a list of all metadata keys for [param bone_idx].
+				Returns the list of all metadata keys for the bone at index [param bone_idx].
 			</description>
 		</method>
 		<method name="get_bone_name" qualifiers="const">
@@ -191,7 +199,7 @@
 			<param index="0" name="bone_idx" type="int" />
 			<param index="1" name="key" type="StringName" />
 			<description>
-				Returns whether there exists any bone metadata for [param bone_idx] with key [param key].
+				Returns [code]true[/code] if the bone at index [param bone_idx] has metadata with the key [param key].
 			</description>
 		</method>
 		<method name="is_bone_enabled" qualifiers="const">
@@ -292,7 +300,7 @@
 			<param index="1" name="key" type="StringName" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets bone metadata for [param bone_idx], will set the [param key] meta to [param value].
+				Sets the metadata for the bone at index [param bone_idx], setting the [param key] meta to [param value].
 			</description>
 		</method>
 		<method name="set_bone_name">
@@ -385,6 +393,7 @@
 		</signal>
 		<signal name="bone_list_changed">
 			<description>
+				Emitted when the list of bones changes, such as when calling [method add_bone], [method set_bone_parent], [method unparent_bone_and_rest], or [method clear_bones].
 			</description>
 		</signal>
 		<signal name="pose_updated">
@@ -419,6 +428,9 @@
 		</constant>
 		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_IDLE" value="1" enum="ModifierCallbackModeProcess">
 			Set a flag to process modification during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_MANUAL" value="2" enum="ModifierCallbackModeProcess">
+			Do not process modification. Use [method advance] to process the modification manually.
 		</constant>
 	</constants>
 </class>

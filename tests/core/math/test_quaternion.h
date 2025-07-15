@@ -411,21 +411,21 @@ TEST_CASE("[Stress][Quaternion] Many vector xforms") {
 	// For each trial, check that rotation by Quaternion yields same result as
 	// rotation by Basis.
 	constexpr int STEPS = 100; // Number of test steps in each dimension
-	constexpr double delta = 2.0 * Math_PI / STEPS; // Angle increment per step
+	constexpr double delta = 2.0 * Math::PI / STEPS; // Angle increment per step
 	constexpr double delta_vec = 20.0 / STEPS; // Vector increment per step
 	Vector3 vec_arb(1.0, 1.0, 1.0);
-	double x_angle = -Math_PI;
-	double y_angle = -Math_PI;
-	double z_angle = -Math_PI;
+	double x_angle = -Math::PI;
+	double y_angle = -Math::PI;
+	double z_angle = -Math::PI;
 	for (double i = 0; i < STEPS; ++i) {
 		vec_arb[0] = -10.0 + i * delta_vec;
-		x_angle = i * delta - Math_PI;
+		x_angle = i * delta - Math::PI;
 		for (double j = 0; j < STEPS; ++j) {
 			vec_arb[1] = -10.0 + j * delta_vec;
-			y_angle = j * delta - Math_PI;
+			y_angle = j * delta - Math::PI;
 			for (double k = 0; k < STEPS; ++k) {
 				vec_arb[2] = -10.0 + k * delta_vec;
-				z_angle = k * delta - Math_PI;
+				z_angle = k * delta - Math::PI;
 				Vector3 euler_yzx(x_angle, y_angle, z_angle);
 				test_quat_vec_rotate(euler_yzx, vec_arb);
 			}
@@ -434,7 +434,7 @@ TEST_CASE("[Stress][Quaternion] Many vector xforms") {
 }
 
 TEST_CASE("[Quaternion] Finite number checks") {
-	const real_t x = NAN;
+	constexpr real_t x = Math::NaN;
 
 	CHECK_MESSAGE(
 			Quaternion(0, 1, 2, 3).is_finite(),

@@ -38,12 +38,17 @@
 
 // Godot's packed file magic header ("GDPC" in ASCII).
 #define PACK_HEADER_MAGIC 0x43504447
+
+#define PACK_FORMAT_VERSION_V2 2
+#define PACK_FORMAT_VERSION_V3 3
+
 // The current packed file format version number.
-#define PACK_FORMAT_VERSION 2
+#define PACK_FORMAT_VERSION PACK_FORMAT_VERSION_V3
 
 enum PackFlags {
 	PACK_DIR_ENCRYPTED = 1 << 0,
 	PACK_REL_FILEBASE = 1 << 1,
+	PACK_SPARSE_BUNDLE = 1 << 2,
 };
 
 enum PackFileFlags {
@@ -66,6 +71,7 @@ public:
 		uint8_t md5[16];
 		PackSource *src = nullptr;
 		bool encrypted;
+		bool bundle;
 	};
 
 private:
@@ -102,7 +108,7 @@ private:
 
 	PackedDir *root = nullptr;
 
-	static PackedData *singleton;
+	static inline PackedData *singleton = nullptr;
 	bool disabled = false;
 
 	void _free_packed_dirs(PackedDir *p_dir);
@@ -110,7 +116,7 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false); // for PackSource
+	void add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted = false, bool p_bundle = false); // for PackSource
 	void remove_path(const String &p_path);
 	uint8_t *get_file_hash(const String &p_path);
 	HashSet<String> get_file_paths() const;
@@ -157,6 +163,7 @@ public:
 };
 
 class FileAccessPack : public FileAccess {
+	GDSOFTCLASS(FileAccessPack, FileAccess);
 	PackedData::PackedFile pf;
 
 	mutable uint64_t pos;
@@ -241,6 +248,7 @@ bool PackedData::has_directory(const String &p_path) {
 }
 
 class DirAccessPack : public DirAccess {
+	GDSOFTCLASS(DirAccessPack, DirAccess);
 	PackedData::PackedDir *current;
 
 	List<String> list_dirs;

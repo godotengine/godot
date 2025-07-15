@@ -44,7 +44,7 @@ private:
 		RS::CompositorEffectCallbackType callback_type;
 		Callable callback;
 
-		BitField<RS::CompositorEffectFlags> flags;
+		BitField<RS::CompositorEffectFlags> flags = {};
 	};
 
 	mutable RID_Owner<CompositorEffect, true> compositor_effects_owner;

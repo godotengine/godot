@@ -33,6 +33,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/self_list.h"
+#include "rendering_shader_container_d3d12.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #ifndef _MSC_VER
@@ -40,26 +41,10 @@
 #define __REQUIRED_RPCNDR_H_VERSION__ 475
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#pragma clang diagnostic ignored "-Wimplicit-fallthrough"
-#endif
-
-#include "d3dx12.h"
+#include <d3dx12.h>
 #include <dxgi1_6.h>
 #define D3D12MA_D3D12_HEADERS_ALREADY_INCLUDED
-#include "D3D12MemAlloc.h"
+#include <D3D12MemAlloc.h>
 
 #include <wrl/client.h>
 
@@ -68,15 +53,7 @@
 #undef MemoryBarrier
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
 using Microsoft::WRL::ComPtr;
-
-#define D3D12_BITCODE_OFFSETS_NUM_STAGES 3
 
 #ifdef DEV_ENABLED
 #define CUSTOM_INFO_QUEUE_ENABLED 0
@@ -153,6 +130,7 @@ class RenderingDeviceDriverD3D12 : public RenderingDeviceDriver {
 	FormatCapabilities format_capabilities;
 	BarrierCapabilities barrier_capabilities;
 	MiscFeaturesSupport misc_features_support;
+	RenderingShaderContainerFormatD3D12 shader_container_format;
 	String pipeline_cache_id;
 
 	class DescriptorsHeap {
@@ -297,6 +275,9 @@ private:
 
 		UINT mapped_subresource = UINT_MAX;
 		SelfList<TextureInfo> pending_clear{ this };
+#ifdef DEBUG_ENABLED
+		bool created_from_extension = false;
+#endif
 	};
 	SelfList<TextureInfo>::List textures_pending_clear;
 
@@ -316,7 +297,7 @@ protected:
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) override final;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
 	virtual void texture_free(TextureID p_texture) override final;
@@ -537,6 +518,7 @@ public:
 	/****************/
 	/**** SHADER ****/
 	/****************/
+
 private:
 	static const uint32_t ROOT_SIGNATURE_SIZE = 256;
 	static const uint32_t PUSH_CONSTANT_SIZE = 128; // Mimicking Vulkan.
@@ -552,82 +534,6 @@ private:
 		//   given that most shader templates feature push constants).
 		// - NIR-DXIL runtime data.
 		MAX_UNIFORM_SETS = (ROOT_SIGNATURE_SIZE - PUSH_CONSTANT_SIZE) / sizeof(uint32_t),
-	};
-
-	enum RootSignatureLocationType {
-		RS_LOC_TYPE_RESOURCE,
-		RS_LOC_TYPE_SAMPLER,
-	};
-
-	enum ResourceClass {
-		RES_CLASS_INVALID,
-		RES_CLASS_CBV,
-		RES_CLASS_SRV,
-		RES_CLASS_UAV,
-	};
-
-	struct ShaderBinary {
-		// Version 1: Initial.
-		// Version 2: 64-bit vertex input mask.
-		// Version 3: Added SC stage mask.
-		static const uint32_t VERSION = 3;
-
-		// Phase 1: SPIR-V reflection, where the Vulkan/RD interface of the shader is discovered.
-		// Phase 2: SPIR-V to DXIL translation, where the DXIL interface is discovered, which may have gaps due to optimizations.
-
-		struct DataBinding {
-			// - Phase 1.
-			uint32_t type = 0;
-			uint32_t binding = 0;
-			uint32_t stages = 0;
-			uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
-			uint32_t writable = 0;
-			// - Phase 2.
-			uint32_t res_class = 0;
-			uint32_t has_sampler = 0;
-			uint32_t dxil_stages = 0;
-			struct RootSignatureLocation {
-				uint32_t root_param_idx = UINT32_MAX; // UINT32_MAX if unused.
-				uint32_t range_idx = UINT32_MAX; // UINT32_MAX if unused.
-			};
-			RootSignatureLocation root_sig_locations[2]; // Index is RootSignatureLocationType.
-
-			// We need to sort these to fill the root signature locations properly.
-			bool operator<(const DataBinding &p_other) const {
-				return binding < p_other.binding;
-			}
-		};
-
-		struct SpecializationConstant {
-			// - Phase 1.
-			uint32_t type = 0;
-			uint32_t constant_id = 0;
-			union {
-				uint32_t int_value = 0;
-				float float_value;
-				bool bool_value;
-			};
-			uint32_t stage_flags = 0;
-			// - Phase 2.
-			uint64_t stages_bit_offsets[D3D12_BITCODE_OFFSETS_NUM_STAGES] = {};
-		};
-
-		struct Data {
-			uint64_t vertex_input_mask = 0;
-			uint32_t fragment_output_mask = 0;
-			uint32_t specialization_constants_count = 0;
-			uint32_t spirv_specialization_constants_ids_mask = 0;
-			uint32_t is_compute = 0;
-			uint32_t compute_local_size[3] = {};
-			uint32_t set_count = 0;
-			uint32_t push_constant_size = 0;
-			uint32_t dxil_push_constant_stages = 0; // Phase 2.
-			uint32_t nir_runtime_data_root_param_idx = 0; // Phase 2.
-			uint32_t stage_count = 0;
-			uint32_t shader_name_len = 0;
-			uint32_t root_signature_len = 0;
-			uint32_t root_signature_crc = 0;
-		};
 	};
 
 	struct ShaderInfo {
@@ -680,22 +586,13 @@ private:
 		uint32_t root_signature_crc = 0;
 	};
 
-	uint32_t _shader_patch_dxil_specialization_constant(
-			PipelineSpecializationConstantType p_type,
-			const void *p_value,
-			const uint64_t (&p_stages_bit_offsets)[D3D12_BITCODE_OFFSETS_NUM_STAGES],
-			HashMap<ShaderStage, Vector<uint8_t>> &r_stages_bytecodes,
-			bool p_is_first_patch);
 	bool _shader_apply_specialization_constants(
 			const ShaderInfo *p_shader_info,
 			VectorView<PipelineSpecializationConstant> p_specialization_constants,
 			HashMap<ShaderStage, Vector<uint8_t>> &r_final_stages_bytecode);
-	void _shader_sign_dxil_bytecode(ShaderStage p_stage, Vector<uint8_t> &r_dxil_blob);
 
 public:
-	virtual String shader_get_binary_cache_key() override final;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
@@ -998,6 +895,7 @@ public:
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 

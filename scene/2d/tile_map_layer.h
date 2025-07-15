@@ -32,7 +32,9 @@
 
 #include "scene/resources/2d/tile_set.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
+#endif // NAVIGATION_2D_DISABLED
 class TileSetAtlasSource;
 class TileMap;
 
@@ -454,6 +456,7 @@ private:
 #endif // DEBUG_ENABLED
 #endif // PHYSICS_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update(bool p_force_cleanup);
 	void _navigation_notification(int p_what);
@@ -462,6 +465,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _navigation_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
+#endif // NAVIGATION_2D_DISABLED
 
 	bool _scenes_was_cleaned_up = false;
 	void _scenes_update(bool p_force_cleanup);
@@ -523,6 +527,7 @@ public:
 	// Not exposed to users.
 	TileMapCell get_cell(const Vector2i &p_coords) const;
 
+	static void compute_transformed_tile_dest_rect(Rect2 &r_dest_rect, bool &r_transpose, const Vector2 &p_position, const Vector2 &p_dest_rect_size, const TileData *p_tile_data, int p_alternative_tile);
 	static void draw_tile(RID p_canvas_item, const Vector2 &p_position, const Ref<TileSet> p_tile_set, int p_atlas_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile, int p_frame = -1, const TileData *p_tile_data_override = nullptr, real_t p_normalized_animation_offset = 0.0);
 
 	////////////// Exposed functions //////////////
@@ -618,12 +623,16 @@ public:
 	DebugVisibilityMode get_navigation_visibility_mode() const;
 
 private:
+#ifndef NAVIGATION_2D_DISABLED
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 public:
+#ifndef NAVIGATION_2D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 	TileMapLayer();
 	~TileMapLayer();

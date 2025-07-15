@@ -32,8 +32,8 @@
 
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
+#include "editor/settings/editor_settings.h"
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -69,7 +69,7 @@ class EditorExportPlatformWindows : public EditorExportPlatformPC {
 	int menu_options = 0;
 
 	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
-	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
+	Error _add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 	String _get_exe_arch(const String &p_path) const;

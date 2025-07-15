@@ -69,19 +69,18 @@
 #endif
 
 #include <dlfcn.h>
-#include <errno.h>
 #include <poll.h>
-#include <signal.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
-#include <time.h>
 #include <unistd.h>
+#include <cerrno>
+#include <csignal>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
 
 #ifndef RTLD_DEEPBIND
 #define RTLD_DEEPBIND 0
@@ -132,6 +131,8 @@ static void _setup_clock() {
 }
 #endif
 
+struct sigaction old_action;
+
 static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
@@ -139,6 +140,11 @@ static void handle_interrupt(int sig) {
 
 	EngineDebugger::get_script_debugger()->set_depth(-1);
 	EngineDebugger::get_script_debugger()->set_lines_left(1);
+
+	// Ensure we call the old action if it was configured.
+	if (old_action.sa_handler && old_action.sa_handler != SIG_IGN && old_action.sa_handler != SIG_DFL) {
+		old_action.sa_handler(sig);
+	}
 }
 
 void OS_Unix::initialize_debugging() {
@@ -146,7 +152,7 @@ void OS_Unix::initialize_debugging() {
 		struct sigaction action;
 		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
-		sigaction(SIGINT, &action, nullptr);
+		sigaction(SIGINT, &action, &old_action);
 	}
 }
 
@@ -580,7 +586,7 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 void OS_Unix::_load_iconv() {
 #if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
 	String iconv_lib_aliases[] = { "/usr/lib/libiconv.2.dylib" };
@@ -632,7 +638,7 @@ String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteAr
 	ERR_FAIL_COND_V_MSG(!_iconv_ok, String(), "Conversion failed: Unable to load libiconv");
 
 	LocalVector<char> chars;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data());
 #else
 	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data());
@@ -669,7 +675,7 @@ PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const Str
 	CharString charstr = p_string.utf8();
 
 	PackedByteArray ret;
-#ifdef __GLIBC__
+#if defined(__GLIBC__) || defined(WEB_ENABLED)
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data(), "UTF-8");
 #else
 	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data(), "UTF-8");
@@ -805,6 +811,67 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 #endif
 }
 
+int OS_Unix::_wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid) {
+	while (true) {
+		pid_t pid = waitpid(p_pid, r_status, p_options);
+		if (pid != -1) {
+			// Thread exited normally.
+			if (r_pid) {
+				*r_pid = pid;
+			}
+			return 0;
+		}
+		const int error = errno;
+		if (error == EINTR) {
+			// We're in a debugger, should call waitpid again.
+			// See https://stackoverflow.com/a/45472920/730797.
+			continue;
+		}
+		return error;
+	}
+}
+
+bool OS_Unix::_check_pid_is_running(const pid_t p_pid, int *r_status) const {
+	const ProcessInfo *pi = process_map->getptr(p_pid);
+
+	if (pi && !pi->is_running) {
+		// Can return cached value.
+		if (r_status) {
+			*r_status = pi->exit_code;
+		}
+		return false;
+	}
+
+	pid_t pid = -1;
+	int status = 0;
+	const int result = _wait_for_pid_completion(p_pid, &status, WNOHANG, &pid);
+	if (result == 0) {
+		// Thread is still running.
+		if (pi && pid == p_pid) {
+			pi->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+		}
+		return true;
+	}
+
+	ERR_FAIL_COND_V_MSG(result == -1, false, vformat("Thread %d exited with errno: %d", (int)p_pid, errno));
+	// Thread exited normally.
+
+	status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
+
+	if (pi) {
+		pi->is_running = false;
+		if (pid == p_pid) {
+			pi->exit_code = status;
+		}
+	}
+
+	if (r_status) {
+		*r_status = status;
+	}
+
+	return false;
+}
+
 Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
 #ifdef __EMSCRIPTEN__
 	// Don't compile this code at all to avoid undefined references.
@@ -870,12 +937,12 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 		raise(SIGKILL);
 	}
 
-	int status;
-	waitpid(pid, &status, 0);
+	int status = 0;
+	const int result = _wait_for_pid_completion(pid, &status, 0);
 	if (r_exitcode) {
 		*r_exitcode = WIFEXITED(status) ? WEXITSTATUS(status) : status;
 	}
-	return OK;
+	return result ? FAILED : OK;
 #endif
 }
 
@@ -929,7 +996,7 @@ Error OS_Unix::kill(const ProcessID &p_pid) {
 	if (!ret) {
 		//avoid zombie process
 		int st;
-		::waitpid(p_pid, &st, 0);
+		_wait_for_pid_completion(p_pid, &st, 0);
 	}
 	return ret ? ERR_INVALID_PARAMETER : OK;
 }
@@ -940,42 +1007,19 @@ int OS_Unix::get_process_id() const {
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	MutexLock lock(process_map_mutex);
-	const ProcessInfo *pi = process_map->getptr(p_pid);
-
-	if (pi && !pi->is_running) {
-		return false;
-	}
-
-	int status = 0;
-	if (waitpid(p_pid, &status, WNOHANG) != 0) {
-		if (pi) {
-			pi->is_running = false;
-			pi->exit_code = status;
-		}
-		return false;
-	}
-
-	return true;
+	return _check_pid_is_running(p_pid, nullptr);
 }
 
 int OS_Unix::get_process_exit_code(const ProcessID &p_pid) const {
 	MutexLock lock(process_map_mutex);
-	const ProcessInfo *pi = process_map->getptr(p_pid);
 
-	if (pi && !pi->is_running) {
-		return pi->exit_code;
+	int exit_code = 0;
+	if (_check_pid_is_running(p_pid, &exit_code)) {
+		// Thread is still running
+		return -1;
 	}
 
-	int status = 0;
-	if (waitpid(p_pid, &status, WNOHANG) != 0) {
-		status = WIFEXITED(status) ? WEXITSTATUS(status) : status;
-		if (pi) {
-			pi->is_running = false;
-			pi->exit_code = status;
-		}
-		return status;
-	}
-	return -1;
+	return exit_code;
 }
 
 String OS_Unix::get_locale() const {
@@ -1150,7 +1194,7 @@ String OS_Unix::get_executable_path() const {
 #endif
 }
 
-void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type) {
+void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
 	if (!should_log(true)) {
 		return;
 	}
@@ -1177,31 +1221,42 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
+	const char *bold_color;
+	const char *normal_color;
 	switch (p_type) {
 		case ERR_WARNING:
-			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
-			logf_error("%s     at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = yellow_bold;
+			normal_color = yellow;
 			break;
 		case ERR_SCRIPT:
-			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
-			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = magenta_bold;
+			normal_color = magenta;
 			break;
 		case ERR_SHADER:
-			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
-			logf_error("%s          at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = cyan_bold;
+			normal_color = cyan;
 			break;
 		case ERR_ERROR:
 		default:
-			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
-			logf_error("%s   at: %s (%s:%i)%s\n", gray, p_function, p_file, p_line, reset);
+			bold_color = red_bold;
+			normal_color = red;
 			break;
+	}
+
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray, error_type_indent(p_type), p_function, p_file, p_line, reset);
+
+	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
+		if (!backtrace->is_empty()) {
+			logf_error("%s%s%s\n", gray, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset);
+		}
 	}
 }
 
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
 OS_Unix::OS_Unix() {
-#ifndef __GLIBC__
+#if !defined(__GLIBC__) && !defined(WEB_ENABLED)
 	_load_iconv();
 #endif
 

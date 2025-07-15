@@ -19,7 +19,7 @@
 		<method name="is_interpolating" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the time-based interpolation is running or not. If [code]true[/code], it is equivalent to [method get_interpolation_remaining] being [code]0[/code].
+				Returns [code]true[/code] if time-based interpolation is running. If [code]true[/code], it is equivalent to [method get_interpolation_remaining] returning [code]0.0[/code].
 				This is useful to determine whether a [LookAtModifier3D] can be removed safely.
 			</description>
 		</method>
@@ -120,9 +120,9 @@
 			The transition type of the time-based interpolation. See also [enum Tween.TransitionType].
 		</member>
 		<member name="use_angle_limitation" type="bool" setter="set_use_angle_limitation" getter="is_using_angle_limitation" default="false">
-			If [code]true[/code], limits the degree of rotation. This helps prevent the character's neck from rotating 360 degrees.
+			If [code]true[/code], limits the amount of rotation. For example, this helps to prevent a character's neck from rotating 360 degrees.
 			[b]Note:[/b] As with [AnimationTree] blending, interpolation is provided that favors [method Skeleton3D.get_bone_rest]. This means that interpolation does not select the shortest path in some cases.
-			[b]Note:[/b] Some [member transition_type] may exceed the limitations (e.g. `Back`, `Elastic`, and `Spring`). If interpolation occurs while overshooting the limitations, the result might possibly not respect the bone rest.
+			[b]Note:[/b] Some values for [member transition_type] (such as [constant Tween.TRANS_BACK], [constant Tween.TRANS_ELASTIC], and [constant Tween.TRANS_SPRING]) may exceed the limitations. If interpolation occurs while overshooting the limitations, the result might not respect the bone rest.
 		</member>
 		<member name="use_secondary_rotation" type="bool" setter="set_use_secondary_rotation" getter="is_using_secondary_rotation" default="true">
 			If [code]true[/code], provides rotation by two axes.

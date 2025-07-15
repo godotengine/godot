@@ -265,7 +265,7 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 		return true;
 	}
 
-#if !defined(ANDROID_ENABLED) && !defined(IOS_ENABLED)
+#if !defined(ANDROID_ENABLED) && !defined(APPLE_EMBEDDED_ENABLED)
 	// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
 	// This could be fixed but so few devices support it that it doesn't seem useful (and makes bigger APKs).
 	// For good measure we do the same hack for iOS, just in case.

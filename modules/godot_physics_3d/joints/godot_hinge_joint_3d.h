@@ -75,8 +75,8 @@ class GodotHingeJoint3D : public GodotJoint3D {
 	real_t m_biasFactor = 0.3;
 	real_t m_relaxationFactor = 1.0;
 
-	real_t m_lowerLimit = Math_PI;
-	real_t m_upperLimit = -Math_PI;
+	real_t m_lowerLimit = Math::PI;
+	real_t m_upperLimit = -Math::PI;
 
 	real_t m_kHinge = 0.0;
 

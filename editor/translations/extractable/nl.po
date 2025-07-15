@@ -8,8 +8,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
 "PO-Revision-Date: 2024-02-26 06:02+0000\n"
-"Last-Translator: Luka van der Plas <lukavdplas@users.noreply.hosted.weblate."
-"org>\n"
+"Last-Translator: Luka van der Plas "
+"<lukavdplas@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -22,6 +22,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Alles Herkend"
 
+msgid "Save"
+msgstr "Opslaan"
+
+msgid "Clear"
+msgstr "Wissen"
+
 msgid "Add current color as a preset."
 msgstr "Huidige kleur als voorkeuze toevoegen."
 
@@ -33,9 +39,6 @@ msgstr "Openen"
 
 msgid "Select Current Folder"
 msgstr "Huidige Map Selecteren"
-
-msgid "Save"
-msgstr "Opslaan"
 
 msgid "Select This Folder"
 msgstr "Deze map selecteren"
@@ -70,11 +73,11 @@ msgstr "Pad:"
 msgid "Refresh files."
 msgstr "Ververs bestandslijst."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Maak verborgen bestanden (on)zichtbaar."
-
 msgid "Directories & Files:"
 msgstr "Mappen & Bestanden:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Maak verborgen bestanden (on)zichtbaar."
 
 msgid "File:"
 msgstr "Bestand:"
@@ -108,9 +111,6 @@ msgstr "Plakken"
 
 msgid "Select All"
 msgstr "Alles selecteren"
-
-msgid "Clear"
-msgstr "Wissen"
 
 msgid "Undo"
 msgstr "Ongedaan maken"

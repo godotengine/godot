@@ -44,19 +44,26 @@
 
 # Editor
 
-/editor/**/*2d*                               @godotengine/2d-editor
-/editor/**/*3d*                               @godotengine/3d-editor
-/editor/**/*audio*                            @godotengine/audio
-/editor/**/*code*                             @godotengine/script-editor
-/editor/**/*debugger*                         @godotengine/debugger
-/editor/**/*dock*                             @godotengine/docks
-/editor/**/*script*                           @godotengine/script-editor
-/editor/**/*shader*                           @godotengine/shaders
+/editor/                                      @godotengine/docks
+/editor/script/                               @godotengine/script-editor
+/editor/shader/                               @godotengine/script-editor @godotengine/shaders
+/editor/animation/                            @godotengine/animation
+/editor/audio/                                @godotengine/audio
 /editor/debugger/                             @godotengine/debugger
+/editor/doc/                                  @godotengine/documentation
+/editor/docks/                                @godotengine/docks
 /editor/gui/                                  @godotengine/usability @godotengine/gui-nodes
 /editor/icons/                                @godotengine/usability
 /editor/import/                               @godotengine/import
+/editor/inspector/                            @godotengine/docks
+/editor/scene/                                @godotengine/core
+/editor/scene/2d/                             @godotengine/2d-editor
+/editor/scene/2d/physics                      @godotengine/2d-editor @godotengine/physics
+/editor/scene/3d/                             @godotengine/3d-editor
+/editor/scene/3d/physics                      @godotengine/3d-editor @godotengine/physics
+/editor/scene/gui/                            @godotengine/usability @godotengine/gui-nodes
 /editor/themes/                               @godotengine/usability @godotengine/gui-nodes
+/editor/translations/                         @godotengine/usability
 
 # Main
 
@@ -179,6 +186,7 @@
 /modules/regex/tests/                         @godotengine/core @godotengine/tests
 /modules/zip/                                 @godotengine/core
 /modules/zip/doc_classes/                     @godotengine/core @godotengine/documentation
+/modules/zip/tests                            @godotengine/core @godotengine/tests
 
 # Platform
 

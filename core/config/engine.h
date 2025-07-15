@@ -90,7 +90,7 @@ private:
 
 	bool _print_header = true;
 
-	static Engine *singleton;
+	static inline Engine *singleton = nullptr;
 
 	String write_movie_path;
 	String shader_cache_path;

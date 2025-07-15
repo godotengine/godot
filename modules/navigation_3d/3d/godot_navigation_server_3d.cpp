@@ -94,11 +94,12 @@ void GodotNavigationServer3D::add_command(SetCommand3D *command) {
 
 TypedArray<RID> GodotNavigationServer3D::get_maps() const {
 	TypedArray<RID> all_map_rids;
-	List<RID> maps_owned;
-	map_owner.get_owned_list(&maps_owned);
-	if (maps_owned.size()) {
-		for (const RID &E : maps_owned) {
-			all_map_rids.push_back(E);
+	LocalVector<RID> maps_owned = map_owner.get_owned_list();
+	uint32_t map_count = maps_owned.size();
+	if (map_count) {
+		all_map_rids.resize(map_count);
+		for (uint32_t i = 0; i < map_count; i++) {
+			all_map_rids[i] = maps_owned[i];
 		}
 	}
 	return all_map_rids;
@@ -120,13 +121,11 @@ COMMAND_2(map_set_active, RID, p_map, bool, p_active) {
 	if (p_active) {
 		if (!map_is_active(p_map)) {
 			active_maps.push_back(map);
-			active_maps_iteration_id.push_back(map->get_iteration_id());
 		}
 	} else {
 		int map_index = active_maps.find(map);
 		ERR_FAIL_COND(map_index < 0);
 		active_maps.remove_at(map_index);
-		active_maps_iteration_id.remove_at(map_index);
 	}
 }
 
@@ -391,6 +390,26 @@ RID GodotNavigationServer3D::region_create() {
 	return rid;
 }
 
+uint32_t GodotNavigationServer3D::region_get_iteration_id(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, 0);
+
+	return region->get_iteration_id();
+}
+
+COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled) {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL(region);
+	region->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer3D::region_get_use_async_iterations(RID p_region) const {
+	NavRegion3D *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, false);
+
+	return region->get_use_async_iterations();
+}
+
 COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled) {
 	NavRegion3D *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
@@ -605,6 +624,13 @@ RID GodotNavigationServer3D::link_create() {
 	NavLink3D *link = link_owner.get_or_null(rid);
 	link->set_self(rid);
 	return rid;
+}
+
+uint32_t GodotNavigationServer3D::link_get_iteration_id(RID p_link) const {
+	NavLink3D *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_NULL_V(link, 0);
+
+	return link->get_iteration_id();
 }
 
 COMMAND_2(link_set_map, RID, p_link, RID, p_map) {
@@ -1193,6 +1219,14 @@ bool GodotNavigationServer3D::is_baking_navigation_mesh(Ref<NavigationMesh> p_na
 	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
 }
 
+String GodotNavigationServer3D::get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const {
+#ifdef _3D_DISABLED
+	return "";
+#else
+	return NavMeshGenerator3D::get_singleton()->get_baking_state_msg(p_navigation_mesh);
+#endif // _3D_DISABLED
+}
+
 COMMAND_1(free, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap3D *map = map_owner.get_or_null(p_object);
@@ -1224,7 +1258,6 @@ COMMAND_1(free, RID, p_object) {
 		int map_index = active_maps.find(map);
 		if (map_index >= 0) {
 			active_maps.remove_at(map_index);
-			active_maps_iteration_id.remove_at(map_index);
 		}
 		map_owner.free(p_object);
 
@@ -1306,8 +1339,6 @@ void GodotNavigationServer3D::set_active(bool p_active) {
 }
 
 void GodotNavigationServer3D::flush_queries() {
-	// In c++ we can't be sure that this is performed in the main thread
-	// even with mutable functions.
 	MutexLock lock(commands_mutex);
 	MutexLock lock2(operations_mutex);
 
@@ -1340,7 +1371,23 @@ void GodotNavigationServer3D::sync() {
 	}
 }
 
-void GodotNavigationServer3D::process(real_t p_delta_time) {
+void GodotNavigationServer3D::process(double p_delta_time) {
+	// Called for each main loop iteration AFTER node and user script process() and BEFORE RenderingServer sync.
+	// Will run reliably every rendered frame independent of the physics tick rate.
+	// Use for things that (only) need to update once per main loop iteration and rendered frame or is visible to the user.
+	// E.g. (final) sync of objects for this main loop iteration, updating rendered debug visuals, updating debug statistics, ...
+
+	sync();
+}
+
+void GodotNavigationServer3D::physics_process(double p_delta_time) {
+	// Called for each physics process step AFTER node and user script physics_process() and BEFORE PhysicsServer sync.
+	// Will NOT run reliably every rendered frame. If there is no physics step this function will not run.
+	// Use for physics or step depending calculations and updates where the result affects the next step calculation.
+	// E.g. anything physics sync related, avoidance simulations, physics space state queries, ...
+	// If physics process needs to play catchup this function will be called multiple times per frame so it should not hold
+	// costly updates that are not important outside the stepped calculations to avoid causing a physics performance death spiral.
+
 	flush_queries();
 
 	if (!active) {
@@ -1357,8 +1404,6 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	int _new_pm_edge_free_count = 0;
 	int _new_pm_obstacle_count = 0;
 
-	// In c++ we can't be sure that this is performed in the main thread
-	// even with mutable functions.
 	MutexLock lock(operations_mutex);
 	for (uint32_t i(0); i < active_maps.size(); i++) {
 		active_maps[i]->sync();
@@ -1374,13 +1419,6 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
 		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
-
-		// Emit a signal if a map changed.
-		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
-		if (new_map_iteration_id != active_maps_iteration_id[i]) {
-			emit_signal(SNAME("map_changed"), active_maps[i]->get_self());
-			active_maps_iteration_id[i] = new_map_iteration_id;
-		}
 	}
 
 	pm_region_count = _new_pm_region_count;

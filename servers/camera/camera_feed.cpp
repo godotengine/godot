@@ -268,7 +268,7 @@ void CameraFeed::set_external(int p_width, int p_height) {
 		base_width = p_width;
 		base_height = p_height;
 
-		auto new_texture = RenderingServer::get_singleton()->texture_external_create(p_width, p_height, 0);
+		RID new_texture = RenderingServer::get_singleton()->texture_external_create(p_width, p_height, 0);
 		RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_YCBCR_IMAGE], new_texture);
 	}
 

@@ -237,7 +237,3 @@ void StyleBoxTexture::_bind_methods() {
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE);
 	BIND_ENUM_CONSTANT(AXIS_STRETCH_MODE_TILE_FIT);
 }
-
-StyleBoxTexture::StyleBoxTexture() {}
-
-StyleBoxTexture::~StyleBoxTexture() {}

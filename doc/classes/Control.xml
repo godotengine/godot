@@ -24,6 +24,12 @@
 		<link title="All GUI Demos">https://github.com/godotengine/godot-demo-projects/tree/master/gui</link>
 	</tutorials>
 	<methods>
+		<method name="_accessibility_get_contextual_info" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				Return the description of the keyboard shortcuts and other contextual help for this control.
+			</description>
+		</method>
 		<method name="_can_drop_data" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="at_position" type="Vector2" />
@@ -31,19 +37,20 @@
 			<description>
 				Godot calls this method to test if [param data] from a control's [method _get_drag_data] can be dropped at [param at_position]. [param at_position] is local to this control.
 				This method should only be used to test the data. Process the data in [method _drop_data].
+				[b]Note:[/b] If the drag was initiated by a keyboard shortcut or [method accessibility_drag], [param at_position] is set to [constant Vector2.INF], and the currently selected item/text position should be used as the drop position.
 				[codeblocks]
 				[gdscript]
 				func _can_drop_data(position, data):
-				    # Check position if it is relevant to you
-				    # Otherwise, just check data
-				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
+					# Check position if it is relevant to you
+					# Otherwise, just check data
+					return typeof(data) == TYPE_DICTIONARY and data.has("expected")
 				[/gdscript]
 				[csharp]
 				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    // Check position if it is relevant to you
-				    // Otherwise, just check data
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("expected");
+					// Check position if it is relevant to you
+					// Otherwise, just check data
+					return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("expected");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -55,26 +62,34 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to pass you the [param data] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [param data] is allowed to drop at [param at_position] where [param at_position] is local to this control.
+				[b]Note:[/b] If the drag was initiated by a keyboard shortcut or [method accessibility_drag], [param at_position] is set to [constant Vector2.INF], and the currently selected item/text position should be used as the drop position.
 				[codeblocks]
 				[gdscript]
 				func _can_drop_data(position, data):
-				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
+					return typeof(data) == TYPE_DICTIONARY and data.has("color")
 
 				func _drop_data(position, data):
-				    var color = data["color"]
+					var color = data["color"]
 				[/gdscript]
 				[csharp]
 				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("color");
+					return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().ContainsKey("color");
 				}
 
 				public override void _DropData(Vector2 atPosition, Variant data)
 				{
-				    Color color = data.AsGodotDictionary()["color"].AsColor();
+					Color color = data.AsGodotDictionary()["color"].AsColor();
 				}
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="_get_accessibility_container_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Override this method to return a human-readable description of the position of the child [param node] in the custom container, added to the [member accessibility_name].
 			</description>
 		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
@@ -83,19 +98,20 @@
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [param at_position] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
+				[b]Note:[/b] If the drag was initiated by a keyboard shortcut or [method accessibility_drag], [param at_position] is set to [constant Vector2.INF], and the currently selected item/text position should be used as the drag position.
 				[codeblocks]
 				[gdscript]
 				func _get_drag_data(position):
-				    var mydata = make_data() # This is your custom method generating the drag data.
-				    set_drag_preview(make_preview(mydata)) # This is your custom method generating the preview of the drag data.
-				    return mydata
+					var mydata = make_data() # This is your custom method generating the drag data.
+					set_drag_preview(make_preview(mydata)) # This is your custom method generating the preview of the drag data.
+					return mydata
 				[/gdscript]
 				[csharp]
 				public override Variant _GetDragData(Vector2 atPosition)
 				{
-				    var myData = MakeData(); // This is your custom method generating the drag data.
-				    SetDragPreview(MakePreview(myData)); // This is your custom method generating the preview of the drag data.
-				    return myData;
+					var myData = MakeData(); // This is your custom method generating the drag data.
+					SetDragPreview(MakePreview(myData)); // This is your custom method generating the preview of the drag data.
+					return myData;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -126,20 +142,20 @@
 				[codeblocks]
 				[gdscript]
 				func _gui_input(event):
-				    if event is InputEventMouseButton:
-				        if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-				            print("I've been clicked D:")
+					if event is InputEventMouseButton:
+						if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+							print("I've been clicked D:")
 				[/gdscript]
 				[csharp]
 				public override void _GuiInput(InputEvent @event)
 				{
-				    if (@event is InputEventMouseButton mb)
-				    {
-				        if (mb.ButtonIndex == MouseButton.Left &amp;&amp; mb.Pressed)
-				        {
-				            GD.Print("I've been clicked D:");
-				        }
-				    }
+					if (@event is InputEventMouseButton mb)
+					{
+						if (mb.ButtonIndex == MouseButton.Left &amp;&amp; mb.Pressed)
+						{
+							GD.Print("I've been clicked D:");
+						}
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -175,16 +191,16 @@
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
-				    var label = Label.new()
-				    label.text = for_text
-				    return label
+					var label = Label.new()
+					label.text = for_text
+					return label
 				[/gdscript]
 				[csharp]
 				public override Control _MakeCustomTooltip(string forText)
 				{
-				    var label = new Label();
-				    label.Text = forText;
-				    return label;
+					var label = new Label();
+					label.Text = forText;
+					return label;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -192,16 +208,16 @@
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
-				    var tooltip = preload("res://some_tooltip_scene.tscn").instantiate()
-				    tooltip.get_node("Label").text = for_text
-				    return tooltip
+					var tooltip = preload("res://some_tooltip_scene.tscn").instantiate()
+					tooltip.get_node("Label").text = for_text
+					return tooltip
 				[/gdscript]
 				[csharp]
 				public override Control _MakeCustomTooltip(string forText)
 				{
-				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://some_tooltip_scene.tscn").Instantiate();
-				    tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
-				    return tooltip;
+					Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://some_tooltip_scene.tscn").Instantiate();
+					tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
+					return tooltip;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -221,6 +237,18 @@
 			<description>
 				Marks an input event as handled. Once you accept an input event, it stops propagating, even to nodes listening to [method Node._unhandled_input] or [method Node._unhandled_key_input].
 				[b]Note:[/b] This does not affect the methods in [Input], only the way events are propagated.
+			</description>
+		</method>
+		<method name="accessibility_drag">
+			<return type="void" />
+			<description>
+				Starts drag-and-drop operation without using a mouse.
+			</description>
+		</method>
+		<method name="accessibility_drop">
+			<return type="void" />
+			<description>
+				Ends drag-and-drop operation without using a mouse.
 			</description>
 		</method>
 		<method name="add_theme_color_override">
@@ -385,7 +413,7 @@
 			<return type="int" enum="Control.CursorShape" />
 			<param index="0" name="position" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
+				Returns the mouse cursor shape for this control when hovered over [param position] in local coordinates. For most controls, this is the same as [member mouse_default_cursor_shape], but some built-in controls implement more complex logic.
 			</description>
 		</method>
 		<method name="get_end" qualifiers="const">
@@ -394,10 +422,10 @@
 				Returns [member offset_right] and [member offset_bottom].
 			</description>
 		</method>
-		<method name="get_focus_mode_with_recursive" qualifiers="const">
+		<method name="get_focus_mode_with_override" qualifiers="const">
 			<return type="int" enum="Control.FocusMode" />
 			<description>
-				Similar to the getter of [member focus_mode], but takes parent's [member focus_recursive_behavior] into account.
+				Returns the [member focus_mode], but takes the [member focus_behavior_recursive] into account. If [member focus_behavior_recursive] is set to [constant FOCUS_BEHAVIOR_DISABLED], or it is set to [constant FOCUS_BEHAVIOR_INHERITED] and its ancestor is set to [constant FOCUS_BEHAVIOR_DISABLED], then this returns [constant FOCUS_NONE].
 			</description>
 		</method>
 		<method name="get_focus_neighbor" qualifiers="const">
@@ -422,10 +450,10 @@
 				Returns the minimum size for this control. See [member custom_minimum_size].
 			</description>
 		</method>
-		<method name="get_mouse_filter_with_recursive" qualifiers="const">
+		<method name="get_mouse_filter_with_override" qualifiers="const">
 			<return type="int" enum="Control.MouseFilter" />
 			<description>
-				Similar to the getter of [member mouse_filter], but takes parent's [member mouse_recursive_behavior] into account.
+				Returns the [member mouse_filter], but takes the [member mouse_behavior_recursive] into account. If [member mouse_behavior_recursive] is set to [constant MOUSE_BEHAVIOR_DISABLED], or it is set to [constant MOUSE_BEHAVIOR_INHERITED] and its ancestor is set to [constant MOUSE_BEHAVIOR_DISABLED], then this returns [constant MOUSE_FILTER_IGNORE].
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const">
@@ -478,18 +506,18 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    # Get the font color defined for the current Control's class, if it exists.
-				    modulate = get_theme_color("font_color")
-				    # Get the font color defined for the Button class.
-				    modulate = get_theme_color("font_color", "Button")
+					# Get the font color defined for the current Control's class, if it exists.
+					modulate = get_theme_color("font_color")
+					# Get the font color defined for the Button class.
+					modulate = get_theme_color("font_color", "Button")
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    // Get the font color defined for the current Control's class, if it exists.
-				    Modulate = GetThemeColor("font_color");
-				    // Get the font color defined for the Button class.
-				    Modulate = GetThemeColor("font_color", "Button");
+					// Get the font color defined for the current Control's class, if it exists.
+					Modulate = GetThemeColor("font_color");
+					// Get the font color defined for the Button class.
+					Modulate = GetThemeColor("font_color", "Button");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -577,12 +605,12 @@
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    grab_click_focus() # When clicking another Control node, this node will be clicked instead.
+					grab_click_focus() # When clicking another Control node, this node will be clicked instead.
 				[/gdscript]
 				[csharp]
 				public override void _Process(double delta)
 				{
-				    GrabClickFocus(); // When clicking another Control node, this node will be clicked instead.
+					GrabClickFocus(); // When clicking another Control node, this node will be clicked instead.
 				}
 				[/csharp]
 				[/codeblocks]
@@ -713,7 +741,7 @@
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if layout is right-to-left. See also [member layout_direction].
+				Returns [code]true[/code] if the layout is right-to-left. See also [member layout_direction].
 			</description>
 		</method>
 		<method name="release_focus">
@@ -840,12 +868,12 @@
 				@export var color = Color(1, 0, 0, 1)
 
 				func _get_drag_data(position):
-				    # Use a control that is not in the tree
-				    var cpb = ColorPickerButton.new()
-				    cpb.color = color
-				    cpb.size = Vector2(50, 50)
-				    set_drag_preview(cpb)
-				    return color
+					# Use a control that is not in the tree
+					var cpb = ColorPickerButton.new()
+					cpb.color = color
+					cpb.size = Vector2(50, 50)
+					set_drag_preview(cpb)
+					return color
 				[/gdscript]
 				[csharp]
 				[Export]
@@ -853,12 +881,12 @@
 
 				public override Variant _GetDragData(Vector2 atPosition)
 				{
-				    // Use a control that is not in the tree
-				    var cpb = new ColorPickerButton();
-				    cpb.Color = _color;
-				    cpb.Size = new Vector2(50, 50);
-				    SetDragPreview(cpb);
-				    return _color;
+					// Use a control that is not in the tree
+					var cpb = new ColorPickerButton();
+					cpb.Color = _color;
+					cpb.Size = new Vector2(50, 50);
+					SetDragPreview(cpb);
+					return _color;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -941,6 +969,27 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
+			The paths to the nodes which are controlled by this node.
+		</member>
+		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
+			The paths to the nodes which are describing this node.
+		</member>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			The human-readable node description that is reported to assistive apps.
+		</member>
+		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
+			The paths to the nodes which this node flows into.
+		</member>
+		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
+			The paths to the nodes which label this node.
+		</member>
+		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
+			The mode with which a live region updates. A live region is a [Node] that is updated as a result of an external event when the user's focus may be elsewhere.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			The human-readable node name that is reported to assistive apps.
+		</member>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
@@ -953,7 +1002,7 @@
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] instead.">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] and [method Node.can_auto_translate] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">
@@ -962,8 +1011,11 @@
 		<member name="custom_minimum_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than [code](0, 0)[/code], the node's bounding rectangle will always have at least this size. Note that [Control] nodes have their internal minimum size returned by [method get_minimum_size]. It depends on the control's contents, like text, textures, or style boxes. The actual minimum size is the maximum value of this property and the internal minimum size (see [method get_combined_minimum_size]).
 		</member>
+		<member name="focus_behavior_recursive" type="int" setter="set_focus_behavior_recursive" getter="get_focus_behavior_recursive" enum="Control.FocusBehaviorRecursive" default="0">
+			Determines which controls can be focused together with [member focus_mode]. See [method get_focus_mode_with_override]. Since the default behavior is [constant FOCUS_BEHAVIOR_INHERITED], this can be used to prevent all children controls from getting focused.
+		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" enum="Control.FocusMode" default="0">
-			The focus access mode for the control (None, Click or All). Only one Control can be focused at the same time, and it will receive keyboard, gamepad, and mouse signals.
+			Determines which controls can be focused. Only one control can be focused at a time, and the focused control will receive keyboard, gamepad, and mouse events in [method _gui_input]. Use [method get_focus_mode_with_override] to determine if a control can grab focus, since [member focus_behavior_recursive] also affects it. See also [method grab_focus].
 		</member>
 		<member name="focus_neighbor_bottom" type="NodePath" setter="set_focus_neighbor" getter="get_focus_neighbor" default="NodePath(&quot;&quot;)" keywords="focus_neighbour_bottom">
 			Tells Godot which node it should give focus to if the user presses the down arrow on the keyboard or down on a gamepad by default. You can change the key by editing the [member ProjectSettings.input/ui_down] input action. The node must be a [Control]. If this property is not set, Godot will give focus to the closest [Control] to the bottom of this one.
@@ -985,9 +1037,6 @@
 			Tells Godot which node it should give focus to if the user presses [kbd]Shift + Tab[/kbd] on a keyboard by default. You can change the key by editing the [member ProjectSettings.input/ui_focus_prev] input action.
 			If this property is not set, Godot will select a "best guess" based on surrounding nodes in the scene tree.
 		</member>
-		<member name="focus_recursive_behavior" type="int" setter="set_focus_recursive_behavior" getter="get_focus_recursive_behavior" enum="Control.RecursiveBehavior" default="0">
-			Controls whether the recursive child nodes should have their [member focus_mode] overridden to [constant FOCUS_NONE] when evaluating input.
-		</member>
 		<member name="global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the [CanvasLayer]).
 		</member>
@@ -1004,20 +1053,20 @@
 			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
 			[b]Note:[/b] Numbers within the text are not automatically converted, it can be done manually, using [method TextServer.format_number].
 		</member>
+		<member name="mouse_behavior_recursive" type="int" setter="set_mouse_behavior_recursive" getter="get_mouse_behavior_recursive" enum="Control.MouseBehaviorRecursive" default="0">
+			Determines which controls can receive mouse input together with [member mouse_filter]. See [method get_mouse_filter_with_override]. Since the default behavior is [constant MOUSE_BEHAVIOR_INHERITED], this can be used to prevent all children controls from receiving mouse input.
+		</member>
 		<member name="mouse_default_cursor_shape" type="int" setter="set_default_cursor_shape" getter="get_default_cursor_shape" enum="Control.CursorShape" default="0">
 			The default cursor shape for this control. Useful for Godot plugins and applications or games that use the system's mouse cursors.
 			[b]Note:[/b] On Linux, shapes may vary depending on the cursor theme of the system.
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" enum="Control.MouseFilter" default="0">
-			Controls whether the control will be able to receive mouse button input events through [method _gui_input] and how these events should be handled. Also controls whether the control can receive the [signal mouse_entered], and [signal mouse_exited] signals. See the constants to learn what each does.
+			Determines which controls will be able to receive mouse button input events through [method _gui_input] and the [signal mouse_entered], and [signal mouse_exited] signals. Also determines how these events should be propagated. See the constants to learn what each does. Use [method get_mouse_filter_with_override] to determine if a control can receive mouse input, since [member mouse_behavior_recursive] also affects it.
 		</member>
 		<member name="mouse_force_pass_scroll_events" type="bool" setter="set_force_pass_scroll_events" getter="is_force_pass_scroll_events" default="true">
 			When enabled, scroll wheel events processed by [method _gui_input] will be passed to the parent control even if [member mouse_filter] is set to [constant MOUSE_FILTER_STOP].
 			You should disable it on the root of your UI if you do not want scroll events to go to the [method Node._unhandled_input] processing.
 			[b]Note:[/b] Because this property defaults to [code]true[/code], this allows nested scrollable containers to work out of the box.
-		</member>
-		<member name="mouse_recursive_behavior" type="int" setter="set_mouse_recursive_behavior" getter="get_mouse_recursive_behavior" enum="Control.RecursiveBehavior" default="0">
-			Controls whether the recursive child nodes should have their [member mouse_filter] overridden to [constant MOUSE_FILTER_IGNORE] when evaluating input.
 		</member>
 		<member name="offset_bottom" type="float" setter="set_offset" getter="get_offset" default="0.0">
 			Distance between the node's bottom edge and its parent control, based on [member anchor_bottom].
@@ -1050,7 +1099,7 @@
 			Helper property to access [member rotation] in degrees instead of radians.
 		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
-			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member tooltip_text] will also scale according to this value.
+			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's tooltip will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
 			[b]Note:[/b] [member FontFile.oversampling] does [i]not[/i] take [Control] [member scale] into account. This means that scaling up/down will cause bitmap fonts and rasterized (non-MSDF) dynamic fonts to appear blurry or pixelated. To ensure text remains crisp regardless of scale, you can enable MSDF font rendering by enabling [member ProjectSettings.gui/theme/default_font_multichannel_signed_distance_field] (applies to the default project font only), or enabling [b]Multichannel Signed Distance Field[/b] in the import options of a DynamicFont for custom fonts. On system fonts, [member SystemFont.multichannel_signed_distance_field] can be enabled in the inspector.
 			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instantiated. To set the Control's scale when it's instantiated, wait for one frame using [code]await get_tree().process_frame[/code] then set its [member scale] property.
@@ -1143,8 +1192,8 @@
 				[b]Note:[/b] If you want to check whether the mouse truly left the area, ignoring any top nodes, you can use code like this:
 				[codeblock]
 				func _on_mouse_exited():
-				    if not Rect2(Vector2(), size).has_point(get_local_mouse_position()):
-				        # Not hovering over area.
+					if not Rect2(Vector2(), size).has_point(get_local_mouse_position()):
+						# Not hovering over area.
 				[/codeblock]
 			</description>
 		</signal>
@@ -1174,14 +1223,26 @@
 		<constant name="FOCUS_ALL" value="2" enum="FocusMode">
 			The node can grab focus on mouse click, using the arrows and the Tab keys on the keyboard, or using the D-pad buttons on a gamepad. Use with [member focus_mode].
 		</constant>
-		<constant name="RECURSIVE_BEHAVIOR_INHERITED" value="0" enum="RecursiveBehavior">
-			Inherits the associated behavior from the control's parent. This is the default for any newly created control.
+		<constant name="FOCUS_ACCESSIBILITY" value="3" enum="FocusMode">
+			The node can grab focus only when screen reader is active. Use with [member focus_mode].
 		</constant>
-		<constant name="RECURSIVE_BEHAVIOR_DISABLED" value="1" enum="RecursiveBehavior">
-			The current control and all its recursive child controls have their associated behavior disabled, regardless of the parent control's configuration.
+		<constant name="FOCUS_BEHAVIOR_INHERITED" value="0" enum="FocusBehaviorRecursive">
+			Inherits the [member focus_behavior_recursive] from the parent control. If there is no parent control, this is the same as [constant FOCUS_BEHAVIOR_ENABLED].
 		</constant>
-		<constant name="RECURSIVE_BEHAVIOR_ENABLED" value="2" enum="RecursiveBehavior">
-			The current control and all its recursive child controls have their associated behavior enabled, regardless of the parent control's configuration.
+		<constant name="FOCUS_BEHAVIOR_DISABLED" value="1" enum="FocusBehaviorRecursive">
+			Prevents the control from getting focused. [method get_focus_mode_with_override] will return [constant FOCUS_NONE].
+		</constant>
+		<constant name="FOCUS_BEHAVIOR_ENABLED" value="2" enum="FocusBehaviorRecursive">
+			Allows the control to be focused, depending on the [member focus_mode]. This can be used to ignore the parent's [member focus_behavior_recursive]. [method get_focus_mode_with_override] will return the [member focus_mode].
+		</constant>
+		<constant name="MOUSE_BEHAVIOR_INHERITED" value="0" enum="MouseBehaviorRecursive">
+			Inherits the [member mouse_behavior_recursive] from the parent control. If there is no parent control, this is the same as [constant MOUSE_BEHAVIOR_ENABLED].
+		</constant>
+		<constant name="MOUSE_BEHAVIOR_DISABLED" value="1" enum="MouseBehaviorRecursive">
+			Prevents the control from receiving mouse input. [method get_mouse_filter_with_override] will return [constant MOUSE_FILTER_IGNORE].
+		</constant>
+		<constant name="MOUSE_BEHAVIOR_ENABLED" value="2" enum="MouseBehaviorRecursive">
+			Allows the control to be receive mouse input, depending on the [member mouse_filter]. This can be used to ignore the parent's [member mouse_behavior_recursive]. [method get_mouse_filter_with_override] will return the [member mouse_filter].
 		</constant>
 		<constant name="NOTIFICATION_RESIZED" value="40">
 			Sent when the node changes size. Use [member size] to get the new size.
@@ -1222,10 +1283,10 @@
 			[b]Note:[/b] This notification is received alongside [constant Node.NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup theming for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method Node.is_node_ready].
 			[codeblock]
 			func _notification(what):
-			    if what == NOTIFICATION_THEME_CHANGED:
-			        if not is_node_ready():
-			            await ready # Wait until ready signal.
-			        $Label.add_theme_color_override("font_color", Color.YELLOW)
+				if what == NOTIFICATION_THEME_CHANGED:
+					if not is_node_ready():
+						await ready # Wait until ready signal.
+					$Label.add_theme_color_override("font_color", Color.YELLOW)
 			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_SCROLL_BEGIN" value="47">

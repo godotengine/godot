@@ -525,11 +525,11 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		} break;
 		case 0x10: {
 			node->data_type = PL_NODE_TYPE_INTEGER;
-			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, pow(2, marker_size)));
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, std::pow(2, marker_size)));
 		} break;
 		case 0x20: {
 			node->data_type = PL_NODE_TYPE_REAL;
-			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, pow(2, marker_size)));
+			node->data_int = static_cast<int64_t>(read_bplist_var_size_int(p_file, std::pow(2, marker_size)));
 		} break;
 		case 0x30: {
 			node->data_type = PL_NODE_TYPE_DATE;
@@ -539,7 +539,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0x40: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_DATA;
 			PackedByteArray buf;
@@ -550,19 +550,19 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0x50: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			node->data_type = PL_NODE_TYPE_STRING;
-			node->data_string.resize(marker_size + 1);
+			node->data_string.resize_uninitialized(marker_size + 1);
 			p_file->get_buffer(reinterpret_cast<uint8_t *>(node->data_string.ptrw()), marker_size);
 		} break;
 		case 0x60: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			Char16String cs16;
-			cs16.resize(marker_size + 1);
+			cs16.resize_uninitialized(marker_size + 1);
 			for (uint64_t i = 0; i < marker_size; i++) {
 				cs16[i] = BSWAP16(p_file->get_16());
 			}
@@ -577,7 +577,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0xC0: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			uint64_t pos = p_file->get_position();
 
@@ -594,7 +594,7 @@ Ref<PListNode> PList::read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_
 		case 0xD0: {
 			if (marker_size == 0x0F) {
 				uint8_t ext = p_file->get_8() & 0xF;
-				marker_size = read_bplist_var_size_int(p_file, pow(2, ext));
+				marker_size = read_bplist_var_size_int(p_file, std::pow(2, ext));
 			}
 			uint64_t pos = p_file->get_position();
 

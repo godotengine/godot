@@ -72,7 +72,7 @@ protected:
 	void _pose_updated();
 	void _bone_pose_updated(Skeleton3D *skeleton, int p_bone_id);
 
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
 

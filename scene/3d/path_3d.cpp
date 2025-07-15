@@ -336,6 +336,9 @@ bool PathFollow3D::is_cubic_interpolation_enabled() const {
 }
 
 void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "offset") {
 		real_t max = 10000;
 		if (path && path->get_curve().is_valid()) {
@@ -442,7 +445,7 @@ void PathFollow3D::_bind_methods() {
 }
 
 void PathFollow3D::set_progress(real_t p_progress) {
-	ERR_FAIL_COND(!isfinite(p_progress));
+	ERR_FAIL_COND(!std::isfinite(p_progress));
 	if (progress == p_progress) {
 		return;
 	}

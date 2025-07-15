@@ -58,7 +58,7 @@ HBITMAP NativeMenuWindows::_make_bitmap(const Ref<Image> &p_img) const {
 	HDC dc = GetDC(nullptr);
 	HBITMAP bitmap = CreateDIBSection(dc, reinterpret_cast<BITMAPINFO *>(&bi), DIB_RGB_COLORS, reinterpret_cast<void **>(&buffer), nullptr, 0);
 	for (UINT index = 0; index < image_size; index++) {
-		int row_index = floor(index / texture_size.width);
+		int row_index = std::floor(index / texture_size.width);
 		int column_index = (index % int(texture_size.width));
 		const Color &c = p_img->get_pixel(column_index, row_index);
 		*(buffer + index) = c.to_argb32();
@@ -574,7 +574,7 @@ int NativeMenuWindows::find_item_index_with_text(const RID &p_rid, const String 
 		if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 			item.cch++;
 			Char16String str;
-			str.resize(item.cch);
+			str.resize_uninitialized(item.cch);
 			item.dwTypeData = (LPWSTR)str.ptrw();
 			if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 				if (String::utf16((const char16_t *)str.get_data()) == p_text) {
@@ -728,7 +728,7 @@ String NativeMenuWindows::get_item_text(const RID &p_rid, int p_idx) const {
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 		item.cch++;
 		Char16String str;
-		str.resize(item.cch);
+		str.resize_uninitialized(item.cch);
 		item.dwTypeData = (LPWSTR)str.ptrw();
 		if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 			return String::utf16((const char16_t *)str.get_data());

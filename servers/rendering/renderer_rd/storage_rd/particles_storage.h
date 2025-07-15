@@ -364,6 +364,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		ParticlesShaderData() {}
 		virtual ~ParticlesShaderData();
@@ -583,6 +584,7 @@ public:
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
 	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override;
 	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override;
+	virtual uint32_t particles_collision_get_cull_mask(RID p_particles_collision) const override;
 
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
 

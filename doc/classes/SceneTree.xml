@@ -33,8 +33,8 @@
 				[codeblock]
 				# Calls "hide" to all nodes of the "enemies" group, at the end of the frame and in reverse tree order.
 				get_tree().call_group_flags(
-				        SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE,
-				        "enemies", "hide")
+						SceneTree.GROUP_CALL_DEFERRED | SceneTree.GROUP_CALL_REVERSE,
+						"enemies", "hide")
 				[/codeblock]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
@@ -76,16 +76,16 @@
 				[codeblocks]
 				[gdscript]
 				func some_function():
-				    print("start")
-				    await get_tree().create_timer(1.0).timeout
-				    print("end")
+					print("start")
+					await get_tree().create_timer(1.0).timeout
+					print("end")
 				[/gdscript]
 				[csharp]
 				public async Task SomeFunction()
 				{
-				    GD.Print("start");
-				    await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
-				    GD.Print("end");
+					GD.Print("start");
+					await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+					GD.Print("end");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -109,7 +109,7 @@
 		<method name="get_frame" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns how many frames have been processed, since the application started. This is [i]not[/i] a measurement of elapsed time.
+				Returns how many physics process steps have been processed, since the application started. This is [i]not[/i] a measurement of elapsed time. See also [signal physics_frame]. For the number of frames rendered, see [method Engine.get_process_frames].
 			</description>
 		</method>
 		<method name="get_multiplayer" qualifiers="const">
@@ -150,6 +150,18 @@
 			<param index="0" name="name" type="StringName" />
 			<description>
 				Returns [code]true[/code] if a node added to the given group [param name] exists in the tree.
+			</description>
+		</method>
+		<method name="is_accessibility_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if accessibility features are enabled, and accessibility information updates are actively processed.
+			</description>
+		</method>
+		<method name="is_accessibility_supported" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if accessibility features are supported by the OS and enabled in project settings.
 			</description>
 		</method>
 		<method name="notify_group">
@@ -222,6 +234,7 @@
 			<description>
 				Sets a custom [MultiplayerAPI] with the given [param root_path] (controlling also the relative subpaths), or override the default one if [param root_path] is empty.
 				[b]Note:[/b] No [MultiplayerAPI] must be configured for the subpath containing [param root_path], nested custom multiplayers are not allowed. I.e. if one is configured for [code]"/root/Foo"[/code] setting one for [code]"/root/Foo/Bar"[/code] will cause an error.
+				[b]Note:[/b] [method set_multiplayer] should be called [i]before[/i] the child nodes are ready at the given [param root_path]. If multiplayer nodes like [MultiplayerSpawner] or [MultiplayerSynchronizer] are added to the tree before the custom multiplayer API is set, they will not work.
 			</description>
 		</method>
 		<method name="unload_current_scene">

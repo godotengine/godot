@@ -14,6 +14,7 @@
 #if defined(MBEDTLS_CIPHER_C)
 
 #include "mbedtls/cipher.h"
+#include "cipher_invasive.h"
 #include "cipher_wrap.h"
 #include "mbedtls/platform_util.h"
 #include "mbedtls/error.h"
@@ -838,8 +839,14 @@ static void add_pkcs_padding(unsigned char *output, size_t output_len,
     }
 }
 
-static int get_pkcs_padding(unsigned char *input, size_t input_len,
-                            size_t *data_len)
+/*
+ * Get the length of the PKCS7 padding.
+ *
+ * Note: input_len must be the block size of the cipher.
+ */
+MBEDTLS_STATIC_TESTABLE int mbedtls_get_pkcs_padding(unsigned char *input,
+                                                     size_t input_len,
+                                                     size_t *data_len)
 {
     size_t i, pad_idx;
     unsigned char padding_len;
@@ -849,10 +856,6 @@ static int get_pkcs_padding(unsigned char *input, size_t input_len,
     }
 
     padding_len = input[input_len - 1];
-    if (padding_len == 0 || padding_len > input_len) {
-        return MBEDTLS_ERR_CIPHER_INVALID_PADDING;
-    }
-    *data_len = input_len - padding_len;
 
     mbedtls_ct_condition_t bad = mbedtls_ct_uint_gt(padding_len, input_len);
     bad = mbedtls_ct_bool_or(bad, mbedtls_ct_uint_eq(padding_len, 0));
@@ -865,6 +868,9 @@ static int get_pkcs_padding(unsigned char *input, size_t input_len,
         mbedtls_ct_condition_t different  = mbedtls_ct_uint_ne(input[i], padding_len);
         bad = mbedtls_ct_bool_or(bad, mbedtls_ct_bool_and(in_padding, different));
     }
+
+    /* If the padding is invalid, set the output length to 0 */
+    *data_len = mbedtls_ct_if(bad, 0, input_len - padding_len);
 
     return mbedtls_ct_error_if_else_0(bad, MBEDTLS_ERR_CIPHER_INVALID_PADDING);
 }
@@ -1144,7 +1150,7 @@ int mbedtls_cipher_set_padding_mode(mbedtls_cipher_context_t *ctx,
 #if defined(MBEDTLS_CIPHER_PADDING_PKCS7)
         case MBEDTLS_PADDING_PKCS7:
             ctx->add_padding = add_pkcs_padding;
-            ctx->get_padding = get_pkcs_padding;
+            ctx->get_padding = mbedtls_get_pkcs_padding;
             break;
 #endif
 #if defined(MBEDTLS_CIPHER_PADDING_ONE_AND_ZEROS)

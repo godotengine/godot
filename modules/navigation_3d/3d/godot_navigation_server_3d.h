@@ -79,7 +79,6 @@ class GodotNavigationServer3D : public NavigationServer3D {
 
 	bool active = true;
 	LocalVector<NavMap3D *> active_maps;
-	LocalVector<uint32_t> active_maps_iteration_id;
 
 	NavMeshGenerator3D *navmesh_generator_3d = nullptr;
 
@@ -148,6 +147,10 @@ public:
 	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
 	virtual RID region_create() override;
+	virtual uint32_t region_get_iteration_id(RID p_region) const override;
+
+	COMMAND_2(region_set_use_async_iterations, RID, p_region, bool, p_enabled);
+	virtual bool region_get_use_async_iterations(RID p_region) const override;
 
 	COMMAND_2(region_set_enabled, RID, p_region, bool, p_enabled);
 	virtual bool region_get_enabled(RID p_region) const override;
@@ -185,6 +188,7 @@ public:
 	virtual AABB region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
+	virtual uint32_t link_get_iteration_id(RID p_link) const override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
 	virtual RID link_get_map(RID p_link) const override;
 	COMMAND_2(link_set_enabled, RID, p_link, bool, p_enabled);
@@ -268,6 +272,7 @@ public:
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
+	virtual String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const override;
 
 	virtual RID source_geometry_parser_create() override;
 	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) override;
@@ -280,7 +285,9 @@ public:
 	virtual void set_active(bool p_active) override;
 
 	void flush_queries();
-	virtual void process(real_t p_delta_time) override;
+
+	virtual void process(double p_delta_time) override;
+	virtual void physics_process(double p_delta_time) override;
 	virtual void init() override;
 	virtual void sync() override;
 	virtual void finish() override;

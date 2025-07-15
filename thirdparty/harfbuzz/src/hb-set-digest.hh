@@ -31,11 +31,10 @@
 #include "hb-machinery.hh"
 
 /*
- * The set-digests here implement various "filters" that support
- * "approximate member query".  Conceptually these are like Bloom
- * Filter and Quotient Filter, however, much smaller, faster, and
- * designed to fit the requirements of our uses for glyph coverage
- * queries.
+ * The set-digests implement "filters" that support "approximate
+ * member query".  Conceptually these are like Bloom Filter and
+ * Quotient Filter, however, much smaller, faster, and designed
+ * to fit the requirements of our uses for glyph coverage queries.
  *
  * Our filters are highly accurate if the lookup covers fairly local
  * set of glyphs, but fully flooded and ineffective if coverage is

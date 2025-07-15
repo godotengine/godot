@@ -167,7 +167,7 @@ AABB Decal::get_aabb() const {
 }
 
 void Decal::_validate_property(PropertyInfo &p_property) const {
-	if (!distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
+	if (Engine::get_singleton()->is_editor_hint() && !distance_fade_enabled && (p_property.name == "distance_fade_begin" || p_property.name == "distance_fade_length")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 
@@ -179,7 +179,7 @@ void Decal::_validate_property(PropertyInfo &p_property) const {
 PackedStringArray Decal::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" || OS::get_singleton()->get_current_rendering_method() == "dummy") {
 		warnings.push_back(RTR("Decals are only available when using the Forward+ or Mobile renderers."));
 		return warnings;
 	}

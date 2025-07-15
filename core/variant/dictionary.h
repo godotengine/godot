@@ -32,9 +32,10 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 class Variant;
 
@@ -55,8 +56,12 @@ public:
 	ConstIterator begin() const;
 	ConstIterator end() const;
 
+<<<<<<< HEAD
 	void get_key_list(List<Variant> *p_keys) const;
 	const KeyValue<Variant, Variant> *get_key_value_at_index(int p_index) const;
+=======
+	LocalVector<Variant> get_key_list() const;
+>>>>>>> upstream/master
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;
 
@@ -99,7 +104,8 @@ public:
 	Array values() const;
 
 	Dictionary duplicate(bool p_deep = false) const;
-	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
+	Dictionary duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
@@ -107,6 +113,7 @@ public:
 	bool is_typed() const;
 	bool is_typed_key() const;
 	bool is_typed_value() const;
+	bool is_same_instance(const Dictionary &p_other) const;
 	bool is_same_typed(const Dictionary &p_other) const;
 	bool is_same_typed_key(const Dictionary &p_other) const;
 	bool is_same_typed_value(const Dictionary &p_other) const;

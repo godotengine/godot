@@ -42,6 +42,9 @@ void EditorExportPlatformPC::get_preset_features(const Ref<EditorExportPreset> &
 		r_features->push_back("etc2");
 		r_features->push_back("astc");
 	}
+	if (p_preset->get("shader_baker/enabled")) {
+		r_features->push_back("shader_baker");
+	}
 	// PC platforms only have one architecture per export, since
 	// we export a single executable instead of a bundle.
 	r_features->push_back(p_preset->get("binary_format/architecture"));
@@ -58,6 +61,21 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) c
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc_bptc"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2_astc"), false));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
+}
+
+String EditorExportPlatformPC::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
+	if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
+		String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
+		if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+			return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
+		} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
+			return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
+		}
+	}
+
+	return String();
 }
 
 String EditorExportPlatformPC::get_name() const {

@@ -44,7 +44,6 @@
 #include "audio/effects/audio_effect_eq.h"
 #include "audio/effects/audio_effect_filter.h"
 #include "audio/effects/audio_effect_hard_limiter.h"
-#include "audio/effects/audio_effect_limiter.h"
 #include "audio/effects/audio_effect_panner.h"
 #include "audio/effects/audio_effect_phaser.h"
 #include "audio/effects/audio_effect_pitch_shift.h"
@@ -60,7 +59,6 @@
 #include "display/native_menu.h"
 #include "display_server.h"
 #include "movie_writer/movie_writer.h"
-#include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
@@ -78,17 +76,24 @@
 #include "text/text_server_dummy.h"
 #include "text/text_server_extension.h"
 #include "text_server.h"
+#ifndef DISABLE_DEPRECATED
+#include "audio/effects/audio_effect_limiter.h"
+#endif
 
 // 2D physics and navigation.
+#ifndef NAVIGATION_2D_DISABLED
 #include "navigation_server_2d.h"
+#endif // NAVIGATION_2D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 #include "physics_server_2d.h"
 #include "physics_server_2d_dummy.h"
 #include "servers/extensions/physics_server_2d_extension.h"
 #endif // PHYSICS_2D_DISABLED
 
-// 3D physics and navigation (3D navigation is needed for 2D).
+// 3D physics and navigation.
+#ifndef NAVIGATION_3D_DISABLED
 #include "navigation_server_3d.h"
+#endif // NAVIGATION_3D_DISABLED
 #ifndef PHYSICS_3D_DISABLED
 #include "physics_server_3d.h"
 #include "physics_server_3d_dummy.h"
@@ -129,7 +134,6 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
-static MovieWriterMJPEG *writer_mjpeg = nullptr;
 static MovieWriterPNGWAV *writer_pngwav = nullptr;
 
 void register_server_types() {
@@ -201,16 +205,18 @@ void register_server_types() {
 		GDREGISTER_CLASS(AudioEffectChorus);
 		GDREGISTER_CLASS(AudioEffectDelay);
 		GDREGISTER_CLASS(AudioEffectCompressor);
-		GDREGISTER_CLASS(AudioEffectLimiter);
 		GDREGISTER_CLASS(AudioEffectHardLimiter);
 		GDREGISTER_CLASS(AudioEffectPitchShift);
 		GDREGISTER_CLASS(AudioEffectPhaser);
-
 		GDREGISTER_CLASS(AudioEffectRecord);
 		GDREGISTER_CLASS(AudioEffectSpectrumAnalyzer);
 		GDREGISTER_ABSTRACT_CLASS(AudioEffectSpectrumAnalyzerInstance);
 
 		GDREGISTER_CLASS(AudioEffectCapture);
+
+#ifndef DISABLE_DEPRECATED
+		GDREGISTER_CLASS(AudioEffectLimiter);
+#endif
 	}
 
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
@@ -254,6 +260,12 @@ void register_server_types() {
 
 	ServersDebugger::initialize();
 
+#ifndef NAVIGATION_2D_DISABLED
+	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
+	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
+	GDREGISTER_CLASS(NavigationPathQueryResult2D);
+#endif // NAVIGATION_2D_DISABLED
+
 #ifndef PHYSICS_2D_DISABLED
 	// Physics 2D
 	GDREGISTER_CLASS(PhysicsServer2DManager);
@@ -282,9 +294,11 @@ void register_server_types() {
 	PhysicsServer2DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_2d));
 #endif // PHYSICS_2D_DISABLED
 
-	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
-	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
-	GDREGISTER_CLASS(NavigationPathQueryResult2D);
+#ifndef NAVIGATION_3D_DISABLED
+	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
+	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
+	GDREGISTER_CLASS(NavigationPathQueryResult3D);
+#endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 	// Physics 3D
@@ -330,15 +344,10 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(XRTracker);
 #endif // XR_DISABLED
 
-	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
-	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
-	GDREGISTER_CLASS(NavigationPathQueryResult3D);
-
-	writer_mjpeg = memnew(MovieWriterMJPEG);
-	MovieWriter::add_writer(writer_mjpeg);
-
-	writer_pngwav = memnew(MovieWriterPNGWAV);
-	MovieWriter::add_writer(writer_pngwav);
+	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+		writer_pngwav = memnew(MovieWriterPNGWAV);
+		MovieWriter::add_writer(writer_pngwav);
+	}
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Register Extensions");
 }
@@ -348,8 +357,9 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
-	memdelete(writer_mjpeg);
-	memdelete(writer_pngwav);
+	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+		memdelete(writer_pngwav);
+	}
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
 }
@@ -361,10 +371,13 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeMenu", NativeMenu::get_singleton(), "NativeMenu"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton(), "NavigationServer2D"));
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton(), "NavigationServer3D"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));
-
+#ifndef NAVIGATION_2D_DISABLED
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer2D", NavigationServer2D::get_singleton(), "NavigationServer2D"));
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationServer3D", NavigationServer3D::get_singleton(), "NavigationServer3D"));
+#endif // NAVIGATION_3D_DISABLED
 #ifndef PHYSICS_2D_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton(), "PhysicsServer2D"));
 #endif // PHYSICS_2D_DISABLED

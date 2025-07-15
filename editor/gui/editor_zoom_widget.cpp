@@ -31,7 +31,7 @@
 #include "editor_zoom_widget.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 
 void EditorZoomWidget::_update_zoom_label() {
@@ -160,7 +160,6 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 
 void EditorZoomWidget::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			zoom_minus->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
 			zoom_plus->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
@@ -187,15 +186,17 @@ void EditorZoomWidget::set_shortcut_context(Node *p_node) const {
 EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
+	zoom_minus->set_accessibility_name(TTRC("Zoom Out"));
 	zoom_minus->set_flat(true);
 	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTRC("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
-	zoom_minus->set_focus_mode(FOCUS_NONE);
+	zoom_minus->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(zoom_minus);
 	zoom_minus->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_minus));
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
+	zoom_reset->set_accessibility_name(TTRC("Reset Zoom"));
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 	zoom_reset->add_theme_style_override(CoreStringName(normal), empty_stylebox);
@@ -208,7 +209,7 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	zoom_reset->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/zoom_100_percent"));
 	zoom_reset->set_shortcut_context(this);
-	zoom_reset->set_focus_mode(FOCUS_NONE);
+	zoom_reset->set_focus_mode(FOCUS_ACCESSIBILITY);
 	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	// Prevent the button's size from changing when the text size changes
 	zoom_reset->set_custom_minimum_size(Size2(56 * EDSCALE, 0));
@@ -216,10 +217,11 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
 
 	zoom_plus = memnew(Button);
+	zoom_plus->set_accessibility_name(TTRC("Zoom In"));
 	zoom_plus->set_flat(true);
 	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTRC("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);
-	zoom_plus->set_focus_mode(FOCUS_NONE);
+	zoom_plus->set_focus_mode(FOCUS_ACCESSIBILITY);
 	add_child(zoom_plus);
 	zoom_plus->connect(SceneStringName(pressed), callable_mp(this, &EditorZoomWidget::_button_zoom_plus));
 

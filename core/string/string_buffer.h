@@ -117,12 +117,13 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_size) {
-	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size() || !p_size) {
+	ERR_FAIL_COND_V_MSG(p_size < length(), *this, "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
+	if (p_size <= SHORT_BUFFER_SIZE || p_size <= buffer.size()) {
 		return *this;
 	}
 
 	bool need_copy = string_length > 0 && buffer.is_empty();
-	buffer.resize(next_power_of_2(p_size));
+	buffer.resize_uninitialized(next_power_of_2((uint32_t)p_size));
 	if (need_copy) {
 		memcpy(buffer.ptrw(), short_buffer, string_length * sizeof(char32_t));
 	}
@@ -141,7 +142,7 @@ String StringBuffer<SHORT_BUFFER_SIZE>::as_string() {
 	if (buffer.is_empty()) {
 		return String(short_buffer);
 	} else {
-		buffer.resize(string_length + 1);
+		buffer.resize_uninitialized(string_length + 1);
 		return buffer;
 	}
 }
