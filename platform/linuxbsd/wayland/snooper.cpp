@@ -77,7 +77,7 @@
 #endif
 
 // Wayland messages are structured with 32-bit words.
-#define WORD_SIZE (sizeof(uint32_t))
+#define WL_WORD_SIZE (sizeof(uint32_t))
 
 // Event opcodes. Request opcodes are defined in the generated client headers.
 // We could generate server headers but they would clash (without modifications)
@@ -893,7 +893,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 	DEBUG_LOG_WAYLAND_SNOOPER(vformat("Request %s::%s(%s) l0x%x -> g0x%x", interface->name, message.name, message.signature, local_id, global_id));
 
 	uint32_t *body = msg_data + 2;
-	size_t body_len = msg_len - (WORD_SIZE * 2);
+	size_t body_len = msg_len - (WL_WORD_SIZE * 2);
 
 	if (object->interface == &wl_display_interface && p_opcode == WL_DISPLAY_GET_REGISTRY) {
 		// The gist of this is that the registry is a global and the compositor can
@@ -1045,7 +1045,7 @@ bool WaylandEmbedderProxy::handle_request(LocalObjectHandle p_object, uint32_t p
 					global_info.global_ids[version] = new_gid;
 					registry_globals_names[new_gid] = global_name;
 
-					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WORD_SIZE }, { &new_gid, sizeof new_gid } });
+					send_raw_message(compositor_socket, { { header, sizeof header }, { body, body_len - WL_WORD_SIZE }, { &new_gid, sizeof new_gid } });
 				}
 
 				CRASH_COND(global_info.global_ids[version] == INVALID_ID);
@@ -1605,7 +1605,7 @@ WaylandEmbedderProxy::MessageStatus WaylandEmbedderProxy::handle_event(uint32_t 
 	CRASH_COND_MSG(global_object == nullptr, "Compositor messages must always have a global object.");
 
 	uint32_t *body = msg_data + 2;
-	size_t body_len = msg_len - (WORD_SIZE * 2);
+	size_t body_len = msg_len - (WL_WORD_SIZE * 2);
 
 	// FIXME: Make sure that it makes sense to track this protocol. Not only it is
 	// old and getting deprecated, but I can't even get this code branch to hit
@@ -2171,7 +2171,7 @@ bool WaylandEmbedderProxy::handle_sock(int p_fd, int p_id) {
 		msg_buf.resize(info.words());
 	}
 
-	ERR_FAIL_COND_V_MSG(info.size % WORD_SIZE != 0, false, "Invalid message length.");
+	ERR_FAIL_COND_V_MSG(info.size % WL_WORD_SIZE != 0, false, "Invalid message length.");
 
 	struct msghdr full_msg = {};
 	struct iovec vec = { msg_buf.ptr(), info.size };
