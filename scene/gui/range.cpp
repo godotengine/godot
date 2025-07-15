@@ -272,12 +272,12 @@ double Range::get_as_ratio() const {
 	if (shared->exp_ratio && get_min() >= 0) {
 		double exp_min = get_min() == 0 ? 0.0 : Math::log(get_min()) / Math::log((double)2);
 		double exp_max = Math::log(get_max()) / Math::log((double)2);
-		float value = CLAMP(get_value(), shared->min, shared->max);
+		double value = CLAMP(get_value(), shared->min, shared->max);
 		double v = Math::log(value) / Math::log((double)2);
 
 		return CLAMP((v - exp_min) / (exp_max - exp_min), 0, 1);
 	} else {
-		float value = CLAMP(get_value(), shared->min, shared->max);
+		double value = CLAMP(get_value(), shared->min, shared->max);
 		return CLAMP((value - get_min()) / (get_max() - get_min()), 0, 1);
 	}
 }
