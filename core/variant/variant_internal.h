@@ -333,7 +333,7 @@ public:
 		v->type = Variant::OBJECT;
 	}
 	_FORCE_INLINE_ static void init_struct(Variant *v) {
-		new (get_struct(v)) VariantStruct;
+		memnew_placement(v->_data._mem, VariantStruct);
 		v->type = Variant::STRUCT;
 	}
 

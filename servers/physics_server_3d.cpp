@@ -381,19 +381,19 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 VariantStruct PhysicsDirectSpaceState3D::_intersect_ray_st(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
 	ERR_FAIL_COND_V(p_ray_query.is_null(), VariantStruct());
 
-	if constexpr (false) {
-		// (if it was guaranteed to be more likely than not that intersect_ray that was successful, this would be more efficient)
-		// (as it stands, that is unlikely to be true, so for now code serves merely as an example)
-		VariantStruct result = VariantStruct::allocate_struct<RayResult>();
-		bool res = intersect_ray(p_ray_query->get_parameters(), result.get_struct<RayResult>());
-		return res ? result : VariantStruct();
-	}
-	if constexpr (false) {
-		// (this is a slightly cleaner version of the above, and functionally identical)
-		NativeVariantStruct<RayResult> result(false);
-		bool res = intersect_ray(p_ray_query->get_parameters(), result.get_struct());
-		return res ? result : VariantStruct();
-	}
+	// if constexpr (false) {
+	// 	// (if it was guaranteed to be more likely than not that intersect_ray that was successful, this would be more efficient)
+	// 	// (as it stands, that is unlikely to be true, so for now code serves merely as an example)
+	// 	VariantStruct result = VariantStruct::allocate_struct<RayResult>();
+	// 	bool res = intersect_ray(p_ray_query->get_parameters(), result.get_struct<RayResult>());
+	// 	return res ? result : VariantStruct();
+	// }
+	// if constexpr (false) {
+	// 	// (this is a slightly cleaner version of the above, and functionally identical)
+	// 	NativeVariantStruct<RayResult> result(false);
+	// 	bool res = intersect_ray(p_ray_query->get_parameters(), result.get_struct());
+	// 	return res ? result : VariantStruct();
+	// }
 
 	RayResult result;
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);
@@ -519,14 +519,23 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
 
+// VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D, RayResult,
+// 		VARIANT_STRUCT_PROPERTY(position),
+// 		VARIANT_STRUCT_PROPERTY(normal),
+// 		VARIANT_STRUCT_PROPERTY(rid),
+// 		VARIANT_STRUCT_PROPERTY(collider_id),
+// 		VARIANT_STRUCT_PROPERTY(collider),
+// 		VARIANT_STRUCT_PROPERTY(shape),
+// 		VARIANT_STRUCT_PROPERTY(face_index));
+
 VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D, RayResult,
-		VARIANT_STRUCT_PROPERTY(position),
-		VARIANT_STRUCT_PROPERTY(normal),
-		VARIANT_STRUCT_PROPERTY(rid),
-		VARIANT_STRUCT_PROPERTY(collider_id),
-		VARIANT_STRUCT_PROPERTY(collider),
-		VARIANT_STRUCT_PROPERTY(shape),
-		VARIANT_STRUCT_PROPERTY(face_index));
+		Internal::build_native_property("position", &T::position),
+		Internal::build_native_property("normal", &T::normal),
+		Internal::build_native_property("rid", &T::rid),
+		Internal::build_native_property("collider_id", &T::collider_id),
+		Internal::build_native_property("collider", &T::collider),
+		Internal::build_native_property("shape", &T::shape),
+		Internal::build_native_property("face_index", &T::face_index));
 
 ///////////////////////////////
 

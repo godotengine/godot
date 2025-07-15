@@ -1251,6 +1251,11 @@ void Variant::reference(const Variant &p_variant) {
 			memnew_placement(_data._mem, ObjData);
 			_get_obj().ref(p_variant._get_obj());
 		} break;
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			memnew_placement(_data._mem, VariantStruct(*reinterpret_cast<const VariantStruct *>(p_variant._data._mem)));
+		} break;
+#endif
 		case CALLABLE: {
 			memnew_placement(_data._mem, Callable(*reinterpret_cast<const Callable *>(p_variant._data._mem)));
 		} break;
@@ -1331,6 +1336,12 @@ void Variant::reference(const Variant &p_variant) {
 				_data.packed_array = PackedArrayRef<Vector4>::create();
 			}
 		} break;
+
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+		case STRUCT: {
+			memnew_placement(_data._mem, VariantStruct(*reinterpret_cast<const VariantStruct *>(p_variant._data._mem)));
+		} break;
+#endif
 		default: {
 		}
 	}
@@ -1771,9 +1782,6 @@ String Variant::stringify(int recursion_count) const {
 		case RID: {
 			const ::RID &s = *reinterpret_cast<const ::RID *>(_data._mem);
 			return "RID(" + itos(s.get_id()) + ")";
-		}
-		case STRUCT: {
-// TODO
 		}
 		default: {
 			return "<" + get_type_name(type) + ">";
@@ -2869,7 +2877,6 @@ uint32_t Variant::hash() const {
 }
 
 uint32_t Variant::recursive_hash(int recursion_count) const {
-// TODO
 	switch (type) {
 		case NIL: {
 			return 0;
