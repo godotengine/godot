@@ -2590,17 +2590,16 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 			RENDER_TIMESTAMP("Cull AreaLight3D Shadow Paraboloid");
 
 			real_t radius = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_RANGE);
-			real_t half_width = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_AREA_WIDTH) / 2.0;
-			real_t half_height = RSG::light_storage->light_get_param(p_instance->base, RS::LIGHT_PARAM_AREA_HEIGHT) / 2.0;
+			Vector2 half_size = RSG::light_storage->light_area_get_size(p_instance->base) / 2.0;
 
 			real_t z = -1;
 			Vector<Plane> planes;
 			planes.resize(6);
 			planes.write[0] = light_transform.xform(Plane(Vector3(0, 0, z), radius));
-			planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, 0).normalized(), radius + half_width));
-			planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, 0).normalized(), radius + half_width));
-			planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, 0).normalized(), radius + half_height));
-			planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, 0).normalized(), radius + half_height));
+			planes.write[1] = light_transform.xform(Plane(Vector3(1, 0, 0).normalized(), radius + half_size.x));
+			planes.write[2] = light_transform.xform(Plane(Vector3(-1, 0, 0).normalized(), radius + half_size.x));
+			planes.write[3] = light_transform.xform(Plane(Vector3(0, 1, 0).normalized(), radius + half_size.y));
+			planes.write[4] = light_transform.xform(Plane(Vector3(0, -1, 0).normalized(), radius + half_size.y));
 			planes.write[5] = light_transform.xform(Plane(Vector3(0, 0, -z), 0));
 
 			instance_shadow_cull_result.clear();
@@ -3442,7 +3441,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 					} break;
 					case RS::LIGHT_AREA: {
-						float diagonal = Vector2(RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_AREA_WIDTH), RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_AREA_HEIGHT)).length();
+						float diagonal = RSG::light_storage->light_area_get_size(ins->base).length();
 						float radius = RSG::light_storage->light_get_param(ins->base, RS::LIGHT_PARAM_RANGE) + diagonal;
 
 						//get two points parallel to near plane

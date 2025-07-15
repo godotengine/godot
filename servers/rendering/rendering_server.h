@@ -561,8 +561,6 @@ public:
 		LIGHT_PARAM_SHADOW_BLUR,
 		LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		LIGHT_PARAM_INTENSITY,
-		LIGHT_PARAM_AREA_WIDTH,
-		LIGHT_PARAM_AREA_HEIGHT,
 		LIGHT_PARAM_MAX
 	};
 
@@ -614,6 +612,8 @@ public:
 	virtual void light_directional_set_shadow_mode(RID p_light, LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
 	virtual void light_directional_set_sky_mode(RID p_light, LightDirectionalSkyMode p_mode) = 0;
+
+	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
 
 	// Shadow atlas
 

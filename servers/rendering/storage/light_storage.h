@@ -77,6 +77,9 @@ public:
 	virtual RS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) = 0;
 	virtual RS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) = 0;
 
+	virtual void light_area_set_size(RID p_light, const Vector2 &p_size) = 0;
+	virtual Vector2 light_area_get_size(RID p_light) const = 0;
+
 	virtual bool light_has_shadow(RID p_light) const = 0;
 
 	virtual bool light_has_projector(RID p_light) const = 0;

@@ -330,6 +330,16 @@ RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(R
 	return light->directional_shadow_mode;
 }
 
+void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+}
+
+Vector2 LightStorage::light_area_get_size(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_size;
+}
+
 RS::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, RS::LIGHT_BAKE_DISABLED);
@@ -375,8 +385,8 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 		case RS::LIGHT_AREA: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
 
-			float width = light->param[RS::LIGHT_PARAM_AREA_WIDTH] / 2.0 + len;
-			float height = light->param[RS::LIGHT_PARAM_AREA_HEIGHT] / 2.0 + len;
+			float width = light->area_size.x / 2.0 + len;
+			float height = light->area_size.y / 2.0 + len;
 
 			return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 		};

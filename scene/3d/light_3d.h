@@ -58,8 +58,6 @@ public:
 		PARAM_SHADOW_BLUR = RS::LIGHT_PARAM_SHADOW_BLUR,
 		PARAM_TRANSMITTANCE_BIAS = RS::LIGHT_PARAM_TRANSMITTANCE_BIAS,
 		PARAM_INTENSITY = RS::LIGHT_PARAM_INTENSITY,
-		PARAM_AREA_WIDTH = RS::LIGHT_PARAM_AREA_WIDTH,
-		PARAM_AREA_HEIGHT = RS::LIGHT_PARAM_AREA_HEIGHT,
 		PARAM_MAX = RS::LIGHT_PARAM_MAX
 	};
 
@@ -88,6 +86,7 @@ private:
 	Ref<Texture2D> projector;
 	Color correlated_color = Color(1.0, 1.0, 1.0);
 	float temperature = 6500.0;
+	Vector2 area_size;
 
 	// bind helpers
 
@@ -150,6 +149,9 @@ public:
 	void set_temperature(const float p_temperature);
 	float get_temperature() const;
 	Color get_correlated_color() const;
+
+	void set_area_size(Vector2 p_size);
+	Vector2 get_area_size() const;
 
 	virtual AABB get_aabb() const override;
 	virtual PackedStringArray get_configuration_warnings() const override;

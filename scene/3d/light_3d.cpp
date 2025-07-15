@@ -38,7 +38,7 @@ void Light3D::set_param(Param p_param, real_t p_value) {
 
 	RS::get_singleton()->light_set_param(light, RS::LightParam(p_param), p_value);
 
-	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE || p_param == PARAM_AREA_WIDTH || p_param == PARAM_AREA_HEIGHT) {
+	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
 		update_gizmos();
 
 		if (p_param == PARAM_SPOT_ANGLE) {
@@ -50,6 +50,17 @@ void Light3D::set_param(Param p_param, real_t p_value) {
 real_t Light3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return param[p_param];
+}
+
+void Light3D::set_area_size(Vector2 p_size) {
+	area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+	RS::get_singleton()->light_area_set_size(light, area_size);
+
+	update_gizmos();
+}
+
+Vector2 Light3D::get_area_size() const {
+	return area_size;
 }
 
 void Light3D::set_shadow(bool p_enable) {
@@ -175,8 +186,8 @@ AABB Light3D::get_aabb() const {
 	} else if (type == RenderingServer::LIGHT_AREA) {
 		float len = param[PARAM_RANGE];
 
-		float width = param[PARAM_AREA_WIDTH] / 2.0 + len;
-		float height = param[PARAM_AREA_HEIGHT] / 2.0 + len;
+		float width = area_size.x / 2.0 + len;
+		float height = area_size.y / 2.0 + len;
 
 		return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 	}
@@ -388,6 +399,9 @@ void Light3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_temperature"), &Light3D::get_temperature);
 	ClassDB::bind_method(D_METHOD("get_correlated_color"), &Light3D::get_correlated_color);
 
+	ClassDB::bind_method(D_METHOD("set_area_size", "area_size"), &AreaLight3D::set_area_size);
+	ClassDB::bind_method(D_METHOD("get_area_size"), &AreaLight3D::get_area_size);
+
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lumens", PROPERTY_HINT_RANGE, "0,100000.0,0.01,or_greater,suffix:lm"), "set_param", "get_param", PARAM_INTENSITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "light_intensity_lux", PROPERTY_HINT_RANGE, "0,150000.0,0.01,or_greater,suffix:lx"), "set_param", "get_param", PARAM_INTENSITY);
@@ -489,8 +503,7 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 	set_param(PARAM_ATTENUATION, 1);
 	set_param(PARAM_SPOT_ANGLE, 45);
 	set_param(PARAM_SPOT_ATTENUATION, 1);
-	set_param(PARAM_AREA_WIDTH, 1);
-	set_param(PARAM_AREA_HEIGHT, 1);
+	set_area_size(Vector2(1, 1));
 	set_param(PARAM_SHADOW_MAX_DISTANCE, 0);
 	set_param(PARAM_SHADOW_SPLIT_1_OFFSET, 0.1);
 	set_param(PARAM_SHADOW_SPLIT_2_OFFSET, 0.2);
@@ -699,14 +712,14 @@ AreaLight3D::AreaLight3D() :
 	// Decrease the default shadow bias to better suit most scenes.
 	set_param(PARAM_SHADOW_BIAS, 0.03);
 	set_param(PARAM_SIZE, 0.5);
+	set_param(PARAM_SPECULAR, 1.0);
 }
 
 void AreaLight3D::_bind_methods() {
 	ADD_GROUP("Area", "area_");
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_range", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_attenuation", PROPERTY_HINT_RANGE, "-10,10,0.001,or_greater,or_less"), "set_param", "get_param", PARAM_ATTENUATION);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_width", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_AREA_WIDTH);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "area_height", PROPERTY_HINT_RANGE, "0,4096,0.001,or_greater,exp,suffix:m"), "set_param", "get_param", PARAM_AREA_HEIGHT);
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "area_size", PROPERTY_HINT_LINK, "suffix:m"), "set_area_size", "get_area_size");
 }
 
 PackedStringArray AreaLight3D::get_configuration_warnings() const {

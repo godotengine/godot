@@ -1383,7 +1383,7 @@ void RenderForwardClustered::setup_added_reflection_probe(const Transform3D &p_t
 	}
 }
 
-void RenderForwardClustered::setup_added_light(const RS::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture, float p_area_width, float p_area_height) {
+void RenderForwardClustered::setup_added_light(const RS::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture, const Vector2 &p_area_size) {
 	if (current_cluster_builder != nullptr) {
 		ClusterBuilderRD::LightType type;
 		if (p_type == RS::LIGHT_SPOT) {
@@ -1394,7 +1394,7 @@ void RenderForwardClustered::setup_added_light(const RS::LightType p_type, const
 			type = ClusterBuilderRD::LIGHT_TYPE_AREA;
 		}
 
-		current_cluster_builder->add_light(type, p_transform, p_radius, p_spot_aperture, p_area_width, p_area_height);
+		current_cluster_builder->add_light(type, p_transform, p_radius, p_spot_aperture, p_area_size);
 	}
 }
 
@@ -2730,10 +2730,9 @@ void RenderForwardClustered::_render_shadow_pass(RID p_light, RID p_shadow_atlas
 
 			flip_y = true;
 		} else if (light_storage->light_get_type(base) == RS::LIGHT_AREA) {
-			float area_width = light_storage->light_get_param(base, RS::LIGHT_PARAM_AREA_WIDTH);
-			float area_height = light_storage->light_get_param(base, RS::LIGHT_PARAM_AREA_HEIGHT);
+			Vector2 area_size = light_storage->light_area_get_size(base);
 
-			zfar = light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE) + Vector2(area_width, area_height).length() / 2.0;
+			zfar = light_storage->light_get_param(base, RS::LIGHT_PARAM_RANGE) + area_size.length() / 2.0;
 
 			light_transform = light_storage->light_instance_get_shadow_transform(p_light, 0);
 

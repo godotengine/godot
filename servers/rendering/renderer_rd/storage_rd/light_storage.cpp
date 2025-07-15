@@ -141,8 +141,6 @@ void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	light.param[RS::LIGHT_PARAM_SHADOW_PANCAKE_SIZE] = 20.0;
 	light.param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] = 0.05;
 	light.param[RS::LIGHT_PARAM_INTENSITY] = p_type == RS::LIGHT_DIRECTIONAL ? 100000.0 : 1000.0;
-	light.param[RS::LIGHT_PARAM_AREA_WIDTH] = 1.0;
-	light.param[RS::LIGHT_PARAM_AREA_HEIGHT] = 1.0;
 
 	light_owner.initialize_rid(p_light, light);
 }
@@ -207,8 +205,6 @@ void LightStorage::light_set_param(RID p_light, RS::LightParam p_param, float p_
 	switch (p_param) {
 		case RS::LIGHT_PARAM_RANGE:
 		case RS::LIGHT_PARAM_SPOT_ANGLE:
-		case RS::LIGHT_PARAM_AREA_WIDTH:
-		case RS::LIGHT_PARAM_AREA_HEIGHT:
 		case RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
 		case RS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
 		case RS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
@@ -409,6 +405,15 @@ RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(R
 	return light->directional_shadow_mode;
 }
 
+void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+}
+Vector2 LightStorage::light_area_get_size(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_size;
+}
+
 uint32_t LightStorage::light_get_max_sdfgi_cascade(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, 0);
@@ -460,8 +465,8 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 		};
 		case RS::LIGHT_AREA: {
 			float len = light->param[RS::LIGHT_PARAM_RANGE];
-			float width = light->param[RS::LIGHT_PARAM_AREA_WIDTH] / 2.0 + len;
-			float height = light->param[RS::LIGHT_PARAM_AREA_HEIGHT] / 2.0 + len;
+			float width = light->area_size.x / 2.0 + len;
+			float height = light->area_size.y / 2.0 + len;
 			return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 		};
 		case RS::LIGHT_DIRECTIONAL: {
@@ -986,11 +991,10 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 
 		float radius = MAX(0.001, light->param[RS::LIGHT_PARAM_RANGE]);
 		light_data.inv_radius = 1.0 / radius;
-		float area_width = light->param[RS::LIGHT_PARAM_AREA_WIDTH];
-		float area_height = light->param[RS::LIGHT_PARAM_AREA_HEIGHT];
+		Vector2 area_size = light->area_size;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
 		if (type == RS::LIGHT_AREA) {
-			pos = inverse_transform.xform(light_transform.xform(Vector3(-area_width / 2.0, -area_height / 2.0, 0.0)));
+			pos = inverse_transform.xform(light_transform.xform(Vector3(-area_size.x / 2.0, -area_size.y / 2.0, 0.0)));
 		}
 		light_data.position[0] = pos.x;
 		light_data.position[1] = pos.y;
@@ -1010,8 +1014,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		float spot_angle = light->param[RS::LIGHT_PARAM_SPOT_ANGLE];
 		light_data.cos_spot_angle = Math::cos(Math::deg_to_rad(spot_angle));
 		if (type == RS::LIGHT_AREA) {
-			Vector3 area_vec_a = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(1, 0, 0))).normalized() * area_width;
-			Vector3 area_vec_b = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 1, 0))).normalized() * area_height;
+			Vector3 area_vec_a = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(1, 0, 0))).normalized() * area_size.x;
+			Vector3 area_vec_b = inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 1, 0))).normalized() * area_size.y;
 
 			light_data.area_width[0] = area_vec_a.x;
 			light_data.area_width[1] = area_vec_a.y;
@@ -1020,7 +1024,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			light_data.area_height[0] = area_vec_b.x;
 			light_data.area_height[1] = area_vec_b.y;
 			light_data.area_height[2] = area_vec_b.z;
-			light_data.inv_spot_attenuation = 1.0 / (radius + Vector2(area_width, area_height).length() / 2.0); // center range
+			light_data.inv_spot_attenuation = 1.0 / (radius + Vector2(area_size.x, area_size.y).length() / 2.0); // center range
 		}
 		light_data.mask = light->cull_mask;
 
@@ -1150,7 +1154,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		light_instance->cull_mask = light->cull_mask;
 
 		// hook for subclass to do further processing.
-		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_angle, area_width, area_height);
+		RendererSceneRenderRD::get_singleton()->setup_added_light(type, light_transform, radius, spot_angle, area_size);
 
 		r_positional_light_count++;
 	}
