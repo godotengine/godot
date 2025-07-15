@@ -39,6 +39,7 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -47,6 +48,7 @@
 
 class TileMapLayer;
 class TileMapLayerEditor;
+class TileMapSceneProperties;
 
 class TileMapLayerSubEditorPlugin : public Object {
 protected:
@@ -212,6 +214,9 @@ private:
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud);
 	void _scenes_list_multi_selected(int p_index, bool p_selected);
 	void _scenes_list_lmb_empty_clicked(const Vector2 &p_pos, MouseButton p_mouse_button_index);
+
+	HSplitContainer *scene_tile_properies_split_container = nullptr;
+	TileMapSceneProperties *tile_map_scene_properties = nullptr;
 
 	///// Bottom panel patterns ////
 	VBoxContainer *patterns_bottom_panel = nullptr;
@@ -385,6 +390,9 @@ private:
 	MenuButton *advanced_menu_button = nullptr;
 	void _advanced_menu_button_id_pressed(int p_id);
 
+	Button *scene_properties_button = nullptr;
+	void _on_scene_properties_toggled(bool p_pressed);
+
 	// Bottom panel.
 	Label *cant_edit_label = nullptr;
 	TabBar *tabs_bar = nullptr;
@@ -422,6 +430,50 @@ public:
 
 	// Static functions.
 	static Vector<Vector2i> get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell);
+};
+
+class TileMapSceneProperties : public VBoxContainer {
+	GDCLASS(TileMapSceneProperties, VBoxContainer);
+
+	inline static TileMapSceneProperties *singleton = nullptr;
+	bool show_scene_properies = false;
+
+	String scene_path;
+
+	Ref<PackedScene> scene = nullptr;
+
+	TextureRect *scene_icon = nullptr;
+	Label *scene_class_name = nullptr;
+	Button *open_scene_button = nullptr;
+
+	VBoxContainer *v_container = nullptr;
+
+	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
+	void _on_open_scene_button_pressed();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	static TileMapSceneProperties *get_singleton();
+
+	void set_icon(Ref<Texture2D> p_texture);
+	void set_class_name(StringName p_name);
+	void set_scene_path(String p_path);
+
+	void set_show_scene_properies(bool p_show);
+	bool get_show_scene_properies();
+
+	void set_scene(Ref<PackedScene> p_scene);
+	Ref<PackedScene> get_scene();
+	bool has_scene();
+
+	void update_properies();
+
+	void clear_properies();
+
+	TileMapSceneProperties();
+	~TileMapSceneProperties();
 };
 
 VARIANT_ENUM_CAST(TileMapLayerEditorTilesPlugin::TileTransformType);
