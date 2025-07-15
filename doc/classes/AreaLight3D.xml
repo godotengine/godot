@@ -1,19 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AreaLight3D" inherits="Light3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		An area light, such as a neon light tube or a screen.
 	</brief_description>
 	<description>
+		An area light is a type of [Light3D] node that emits light over a 2-dimensional area, in the shape of a rectangle. The light is attenuated through the distance. This attenuation can be configured by changing the energy, [member area_attenuation], and [member area_range].
+		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]).
+		[b]Note:[/b] Area lights are only supported in the Forward+ renderer. When using Mobile or Compatibility, they will not display. As a workaround, you can use [LightmapGI] and a [QuadMesh] with [member PrimitiveMesh.add_uv2] set to [code]true[/code] and assign an emissive material to the [QuadMesh], then hide the [QuadMesh] after baking lightmaps.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="area_attenuation" type="float" setter="set_param" getter="get_param" default="1.0">
+			Controls the distance attenuation function for area lights.
+			A value of [code]0.0[/code] will maintain a constant brightness through most of the range, but smoothly attenuate the light at the edge of the range. Use a value of [code]2.0[/code] for physically accurate lights as it results in the proper inverse square attenuation.
+			[b]Note:[/b] Setting attenuation to [code]2.0[/code] or higher may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units is attenuated by a factor of [code]0.0001[/code]. With a default brightness of [code]1[/code], the light would not be visible at that distance.
+			[b]Note:[/b] Using negative or values higher than [code]10.0[/code] may lead to unexpected results.
 		</member>
 		<member name="area_height" type="float" setter="set_param" getter="get_param" default="1.0">
+			The height of the area in meters.
 		</member>
 		<member name="area_range" type="float" setter="set_param" getter="get_param" default="5.0">
+			The range of the area in meters. This determines the maximum distance at which the area can still emit light relative to its surface, but also to its borders (which are positioned according to [member area_width] and [member area_width].
 		</member>
 		<member name="area_width" type="float" setter="set_param" getter="get_param" default="1.0">
+			The width of the area in meters.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
 		<member name="light_specular" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
