@@ -1710,20 +1710,20 @@ void VisualShaderEditor::_get_current_mode_limits(int &r_begin_type, int &r_end_
 	switch (visual_shader->get_mode()) {
 		case Shader::MODE_CANVAS_ITEM:
 		case Shader::MODE_SPATIAL: {
-			r_begin_type = 0;
-			r_end_type = 3;
+			r_begin_type = VisualShader::TYPE_VERTEX;
+			r_end_type = VisualShader::TYPE_START;
 		} break;
 		case Shader::MODE_PARTICLES: {
-			r_begin_type = 3;
-			r_end_type = 5 + r_begin_type;
+			r_begin_type = VisualShader::TYPE_START;
+			r_end_type = VisualShader::TYPE_SKY;
 		} break;
 		case Shader::MODE_SKY: {
-			r_begin_type = 8;
-			r_end_type = 1 + r_begin_type;
+			r_begin_type = VisualShader::TYPE_SKY;
+			r_end_type = VisualShader::TYPE_FOG;
 		} break;
 		case Shader::MODE_FOG: {
-			r_begin_type = 9;
-			r_end_type = 1 + r_begin_type;
+			r_begin_type = VisualShader::TYPE_FOG;
+			r_end_type = VisualShader::TYPE_MAX;
 		} break;
 		default: {
 		} break;
@@ -2500,8 +2500,30 @@ void VisualShaderEditor::_set_mode(int p_which) {
 
 	const String id_string = _get_cache_id_string();
 
-	int saved_type = vs_editor_cache->get_value(id_string, "edited_type", 0);
-	edit_type->select(saved_type);
+	int default_type = VisualShader::TYPE_VERTEX;
+	int upper_type = VisualShader::TYPE_START;
+	if (mode & MODE_FLAGS_PARTICLES) {
+		default_type = VisualShader::TYPE_START;
+		upper_type = VisualShader::TYPE_SKY;
+	} else if (mode & MODE_FLAGS_SKY) {
+		default_type = VisualShader::TYPE_SKY;
+		upper_type = VisualShader::TYPE_FOG;
+	} else if (mode & MODE_FLAGS_FOG) {
+		default_type = VisualShader::TYPE_FOG;
+		upper_type = VisualShader::TYPE_MAX;
+	}
+
+	int saved_type = vs_editor_cache->get_value(id_string, "edited_type", default_type);
+	if (saved_type >= upper_type || saved_type < default_type) {
+		saved_type = default_type;
+	}
+
+	if (mode & MODE_FLAGS_PARTICLES && saved_type - default_type >= 3) {
+		edit_type->select(saved_type - default_type - 3);
+		custom_mode_box->set_pressed(true);
+	} else {
+		edit_type->select(saved_type - default_type);
+	}
 	set_current_shader_type((VisualShader::Type)saved_type);
 }
 
@@ -5612,9 +5634,9 @@ void VisualShaderEditor::_paste_nodes(bool p_use_custom_position, const Vector2 
 }
 
 void VisualShaderEditor::_type_selected(int p_id) {
-	int offset = 0;
+	int offset = VisualShader::TYPE_VERTEX;
 	if (mode & MODE_FLAGS_PARTICLES) {
-		offset = 3;
+		offset = VisualShader::TYPE_START;
 		if (p_id + offset > VisualShader::TYPE_PROCESS) {
 			custom_mode_box->set_visible(false);
 			custom_mode_enabled = false;
@@ -5626,9 +5648,9 @@ void VisualShaderEditor::_type_selected(int p_id) {
 			}
 		}
 	} else if (mode & MODE_FLAGS_SKY) {
-		offset = 8;
+		offset = VisualShader::TYPE_SKY;
 	} else if (mode & MODE_FLAGS_FOG) {
-		offset = 9;
+		offset = VisualShader::TYPE_FOG;
 	}
 
 	set_current_shader_type(VisualShader::Type(p_id + offset));
