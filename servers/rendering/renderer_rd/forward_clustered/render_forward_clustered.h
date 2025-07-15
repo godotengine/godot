@@ -37,7 +37,6 @@
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
 #include "servers/rendering/renderer_rd/effects/motion_vectors_store.h"
-#include "servers/rendering/renderer_rd/effects/resolve.h"
 #include "servers/rendering/renderer_rd/effects/ss_effects.h"
 #include "servers/rendering/renderer_rd/effects/taa.h"
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
@@ -716,7 +715,6 @@ private:
 
 	/* Effects */
 
-	RendererRD::Resolve *resolve_effects = nullptr;
 	RendererRD::TAA *taa = nullptr;
 	RendererRD::FSR2Effect *fsr2_effect = nullptr;
 	RendererRD::SSEffects *ss_effects = nullptr;
