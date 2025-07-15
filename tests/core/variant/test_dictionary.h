@@ -115,10 +115,56 @@ TEST_CASE("[Dictionary] get_key_at_index()") {
 	Variant val = map.get_key_at_index(0);
 	CHECK(int(val) == 4);
 	map[3] = 1;
+	map[2] = 0;
 	val = map.get_key_at_index(0);
 	CHECK(int(val) == 4);
 	val = map.get_key_at_index(1);
 	CHECK(int(val) == 3);
+	val = map.get_key_at_index(2);
+	CHECK(int(val) == 2);
+
+	// Test negative indices
+	val = map.get_key_at_index(-3);
+	CHECK(int(val) == 4);
+	val = map.get_key_at_index(-2);
+	CHECK(int(val) == 3);
+	val = map.get_key_at_index(-1);
+	CHECK(int(val) == 2);
+
+	// Test out of bounds
+	val = map.get_key_at_index(3);
+	CHECK_EQ(val, Variant());
+	val = map.get_key_at_index(-4);
+	CHECK_EQ(val, Variant());
+}
+
+TEST_CASE("[Dictionary] get_value_at_index()") {
+	Dictionary map;
+	map[4] = 3;
+	Variant val = map.get_value_at_index(0);
+	CHECK(int(val) == 3);
+	map[3] = 1;
+	map[2] = 0;
+	val = map.get_value_at_index(0);
+	CHECK(int(val) == 3);
+	val = map.get_value_at_index(1);
+	CHECK(int(val) == 1);
+	val = map.get_value_at_index(2);
+	CHECK(int(val) == 0);
+
+	// Test negative indices
+	val = map.get_value_at_index(-3);
+	CHECK(int(val) == 3);
+	val = map.get_value_at_index(-2);
+	CHECK(int(val) == 1);
+	val = map.get_value_at_index(-1);
+	CHECK(int(val) == 0);
+
+	// Test out of bounds
+	val = map.get_value_at_index(3);
+	CHECK_EQ(val, Variant());
+	val = map.get_value_at_index(-4);
+	CHECK_EQ(val, Variant());
 }
 
 TEST_CASE("[Dictionary] getptr()") {
