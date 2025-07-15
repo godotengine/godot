@@ -36,6 +36,10 @@ extern int WINAPI mainCRTStartup();
 extern int WINAPI WinMainCRTStartup();
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+extern int WINAPI ShimMainCRTStartup() __attribute__((used));
+#endif
+
 extern int WINAPI ShimMainCRTStartup() {
 	if (IsProcessorFeaturePresent(PF_SSE4_2_INSTRUCTIONS_AVAILABLE)) {
 #ifdef WINDOWS_SUBSYSTEM_CONSOLE
