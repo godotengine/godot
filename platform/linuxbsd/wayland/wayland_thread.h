@@ -88,7 +88,7 @@
 #include "core/os/thread.h"
 #include "servers/display_server.h"
 
-#include "snooper.h"
+#include "embedder.h"
 
 class WaylandThread {
 public:
@@ -618,7 +618,7 @@ private:
 
 	bool initialized = false;
 
-	WaylandEmbedderProxy snooper;
+	WaylandEmbedder embedder;
 
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;

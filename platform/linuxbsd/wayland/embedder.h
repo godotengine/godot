@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  snooper.h                                                             */
+/*  embedder.h                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -86,15 +86,10 @@
 #include "core/io/dir_access.h"
 #include "core/os/thread.h"
 
-// FIXME: I think we might need to resize this dynamically, to a somewhat
-// arbitrary limit (if any).
-#define SNOOP_ANCILLARY_SIZE 4096
+// TODO: Consider resizing the ancillary buffer dynamically.
+#define EMBED_ANCILLARY_BUF_SIZE 4096
 
-// DEBUG: This value is very small on purpose to discover ID leaks quickly. When
-// deploying in production, set this to UINT32_MAX.
-#define SNOOP_ID_MAX 250
-
-class WaylandEmbedderProxy {
+class WaylandEmbedder {
 private:
 	enum class ProxyDirection {
 		CLIENT,
@@ -141,7 +136,7 @@ private:
 	};
 
 	struct Client {
-		WaylandEmbedderProxy *snooper = nullptr;
+		WaylandEmbedder *embedder = nullptr;
 
 		int socket = -1;
 		pid_t pid = 0;

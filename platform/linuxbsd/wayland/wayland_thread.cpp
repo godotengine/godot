@@ -4382,11 +4382,11 @@ Error WaylandThread::init() {
 
 	String socket_path;
 	if (Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
-		Error snooper_status = snooper.init();
-		ERR_FAIL_COND_V_MSG(snooper_status != OK, ERR_CANT_CREATE, "Can't initialize protocol embedder.");
+		Error embedder_status = embedder.init();
+		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
 
-		socket_path = snooper.get_socket_path();
-		ERR_FAIL_COND_V_MSG(socket_path.is_empty(), ERR_CANT_CREATE, "Process embedder returned invalid path.");
+		socket_path = embedder.get_socket_path();
+		ERR_FAIL_COND_V_MSG(socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
 
 		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", socket_path);
 	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
