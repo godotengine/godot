@@ -17,17 +17,13 @@
 			[b]Note:[/b] Setting attenuation to [code]2.0[/code] or higher may result in distant objects receiving minimal light, even within range. For example, with a range of [code]4096[/code], an object at [code]100[/code] units is attenuated by a factor of [code]0.0001[/code]. With a default brightness of [code]1[/code], the light would not be visible at that distance.
 			[b]Note:[/b] Using negative or values higher than [code]10.0[/code] may lead to unexpected results.
 		</member>
-		<member name="area_height" type="float" setter="set_param" getter="get_param" default="1.0">
-			The height of the area in meters.
-		</member>
 		<member name="area_range" type="float" setter="set_param" getter="get_param" default="5.0">
-			The range of the area in meters. This determines the maximum distance at which the area can still emit light relative to its surface, but also to its borders (which are positioned according to [member area_width] and [member area_width].
+			The range of the area in meters. This determines the maximum distance at which the area can still emit light relative to its surface, but also to its borders (which are positioned according to [member area_size]).
 		</member>
-		<member name="area_width" type="float" setter="set_param" getter="get_param" default="1.0">
-			The width of the area in meters.
+		<member name="area_size" type="Vector2" setter="set_area_size" getter="get_area_size" default="Vector2(1, 1)">
+			The extents (width and height) of the area in meters.
 		</member>
 		<member name="light_size" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
-		<member name="light_specular" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.5" />
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
 		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
 	</members>

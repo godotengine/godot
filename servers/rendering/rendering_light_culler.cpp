@@ -100,9 +100,8 @@ bool RenderingLightCuller::_prepare_light(const RendererSceneCull::Instance &p_i
 			break;
 		case RS::LIGHT_AREA: {
 			lsource.type = LightSource::ST_AREA;
-			lsource.width = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_AREA_WIDTH);
-			lsource.height = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_AREA_HEIGHT);
-			float half_diagonal = Vector2(lsource.width, lsource.height).length() / 2.0;
+			lsource.area_size = RSG::light_storage->light_area_get_size(p_instance.base);
+			float half_diagonal = lsource.area_size.length() / 2.0;
 			lsource.range = RSG::light_storage->light_get_param(p_instance.base, RS::LIGHT_PARAM_RANGE) + half_diagonal;
 		} break;
 		case RS::LIGHT_DIRECTIONAL:
@@ -380,7 +379,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	} else if (p_light_source.type == LightSource::ST_AREA) {
 		for (int n = 0; n < 6; n++) {
 			float dist = data.frustum_planes[n].distance_to(p_light_source.pos);
-			float half_diagonal = Vector2(p_light_source.width, p_light_source.height).length() / 2.0;
+			float half_diagonal = p_light_source.area_size.length() / 2.0;
 			if (dist < 0.0f) {
 				lookup |= 1 << n;
 

@@ -95,8 +95,7 @@ private:
 		float angle; // For spotlight.
 		float range;
 
-		float width; // For area light.
-		float height;
+		Vector2 area_size; // For area light.
 	};
 
 	// Same order as godot.
