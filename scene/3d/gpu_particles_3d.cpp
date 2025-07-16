@@ -470,8 +470,8 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void GPUParticles3D::request_particles_process(real_t p_requested_process_time) {
-	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time);
+void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_trailing = 0) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_trailing);
 }
 
 void GPUParticles3D::emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags) {
@@ -811,7 +811,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
 
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process, DEFVAL(0.0));
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
