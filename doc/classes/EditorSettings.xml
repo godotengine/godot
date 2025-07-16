@@ -1499,6 +1499,27 @@
 			The script editor's comment color.
 			[b]Note:[/b] In GDScript, unlike Python, multiline strings are not considered to be comments, and will use the string highlighting color instead.
 		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/critical_color" type="Color" setter="" getter="">
+			The script editor's critical comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/critical_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/critical_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/critical_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/notice_color" type="Color" setter="" getter="">
+			The script editor's notice comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/notice_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/notice_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/notice_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/warning_color" type="Color" setter="" getter="">
+			The script editor's warning comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/warning_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/warning_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/warning_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
 		<member name="text_editor/theme/highlighting/completion_background_color" type="Color" setter="" getter="">
 			The script editor's autocompletion box background color.
 		</member>
@@ -1537,7 +1558,25 @@
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
-			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
+			[b]Note:[/b] When using the GDScript syntax highlighter, this is only used when calling some functions since function definitions and global functions have their own colors [member text_editor/theme/highlighting/gdscript/function_definition_color] and [member text_editor/theme/highlighting/gdscript/global_function_color].
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/annotation_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for annotations (e.g. [code]@export[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/function_definition_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for function definitions (e.g. the [code]_ready[/code] in [code]func _ready():[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/global_function_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for global functions, such as the ones in [@GlobalScope] (e.g. [code]preload()[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/node_path_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for [NodePath] literals (e.g. [code]^"position:x"[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/node_reference_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for node reference literals (e.g. [code]$"Sprite"[/code] and [code]%"Sprite"[/code]]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/string_name_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&gt;"example"[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
