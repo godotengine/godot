@@ -148,6 +148,6 @@ public:
 
 	String get_debug_protocol() const override { return "ws://"; }
 
-	EditorExportPlatformWeb();
+	virtual void initialize() override;
 	~EditorExportPlatformWeb();
 };

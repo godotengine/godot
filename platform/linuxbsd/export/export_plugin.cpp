@@ -612,7 +612,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 #undef CLEANUP_AND_RETURN
 }
 
-EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
+void EditorExportPlatformLinuxBSD::initialize() {
 	if (EditorNode::get_singleton()) {
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
