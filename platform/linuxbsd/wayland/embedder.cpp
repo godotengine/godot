@@ -176,7 +176,9 @@ Error WaylandEmbedder::delete_object(uint32_t p_global_id) {
 	}
 
 	bool is_server = p_global_id & 0xff000000;
-	if (!is_server) {
+	if (is_server) {
+		server_objects[p_global_id & ~(0xff000000)] = WaylandObject();
+	} else {
 		objects.free(p_global_id);
 	}
 
