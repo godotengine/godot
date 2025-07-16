@@ -507,7 +507,7 @@ void SpriteFramesEditor::_update_show_settings() {
 }
 
 void SpriteFramesEditor::_auto_slice_sprite_sheet() {
-	if (updating_split_settings) {
+	if (updating_split_settings || split_sheet_preview->get_texture()->get_image()->is_compressed()) {
 		return;
 	}
 	updating_split_settings = true;
