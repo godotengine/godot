@@ -111,7 +111,7 @@ private:
 	String theme_path;
 	Callable system_theme_changed;
 	void _system_theme_changed_callback();
-	bool _is_interface_supported(const char *p_iface);
+	bool _is_interface_supported(const char *p_iface, uint32_t minimum_version);
 
 	static void _thread_monitor(void *p_ud);
 

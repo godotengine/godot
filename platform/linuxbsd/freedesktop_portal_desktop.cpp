@@ -543,7 +543,7 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 	return true;
 }
 
-bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
+bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface, const uint32_t minimum_version) {
 	bool supported = false;
 	DBusError err;
 	dbus_error_init(&err);
@@ -570,8 +570,8 @@ bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
 					dbus_message_iter_recurse(&iter, &iter_ver);
 					dbus_uint32_t ver_code;
 					dbus_message_iter_get_basic(&iter_ver, &ver_code);
-					print_verbose(vformat("PortalDesktop: %s version %d detected.", p_iface, ver_code));
-					supported = true;
+					print_verbose(vformat("PortalDesktop: %s version %d detected, version %d required.", p_iface, ver_code, minimum_version));
+					supported = ver_code >= minimum_version;
 				}
 				dbus_message_unref(reply);
 			}
@@ -585,7 +585,7 @@ bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
 bool FreeDesktopPortalDesktop::is_file_chooser_supported() {
 	static int supported = -1;
 	if (supported == -1) {
-		supported = _is_interface_supported(BUS_INTERFACE_FILE_CHOOSER);
+		supported = _is_interface_supported(BUS_INTERFACE_FILE_CHOOSER, 3);
 	}
 	return supported;
 }
@@ -593,7 +593,7 @@ bool FreeDesktopPortalDesktop::is_file_chooser_supported() {
 bool FreeDesktopPortalDesktop::is_settings_supported() {
 	static int supported = -1;
 	if (supported == -1) {
-		supported = _is_interface_supported(BUS_INTERFACE_SETTINGS);
+		supported = _is_interface_supported(BUS_INTERFACE_SETTINGS, 1);
 	}
 	return supported;
 }
@@ -601,7 +601,7 @@ bool FreeDesktopPortalDesktop::is_settings_supported() {
 bool FreeDesktopPortalDesktop::is_screenshot_supported() {
 	static int supported = -1;
 	if (supported == -1) {
-		supported = _is_interface_supported(BUS_INTERFACE_SCREENSHOT);
+		supported = _is_interface_supported(BUS_INTERFACE_SCREENSHOT, 1);
 	}
 	return supported;
 }
