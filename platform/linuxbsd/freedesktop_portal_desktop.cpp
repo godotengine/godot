@@ -643,7 +643,7 @@ bool FreeDesktopPortalDesktop::send_request(DBusMessage *message, const String &
 		return false;
 	}
 
-	// Update request path if needed
+	// Check request path matches our expectation
 	{
 		DBusMessageIter iter;
 		if (dbus_message_iter_init(reply, &iter)) {
@@ -651,20 +651,13 @@ bool FreeDesktopPortalDesktop::send_request(DBusMessage *message, const String &
 				const char *new_path = nullptr;
 				dbus_message_iter_get_basic(&iter, &new_path);
 				if (String::utf8(new_path) != path) {
+					ERR_PRINT(vformat("Expected request path %s but actual path was %s", path, new_path));
 					dbus_bus_remove_match(monitor_connection, filter.utf8().get_data(), &err);
 					if (dbus_error_is_set(&err)) {
 						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
 						dbus_error_free(&err);
-						return false;
 					}
-					path = String::utf8(new_path);
-					filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
-					dbus_bus_add_match(monitor_connection, filter.utf8().get_data(), &err);
-					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
-						dbus_error_free(&err);
-						return false;
-					}
+					return false;
 				}
 			}
 		}
