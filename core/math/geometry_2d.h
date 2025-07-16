@@ -320,6 +320,22 @@ public:
 		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
 	}
 
+	static Vector<Vector<Point2>> merge_polygons_complex(const Vector<Vector<Point2>> &p_polygon_a, const Vector<Vector<Point2>> &p_polygon_b) {
+		return _polypaths_do_operation_complex(OPERATION_UNION, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2>> clip_polygons_complex(const Vector<Vector<Point2>> &p_polygon_a, const Vector<Vector<Point2>> &p_polygon_b) {
+		return _polypaths_do_operation_complex(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2>> intersect_polygons_complex(const Vector<Vector<Point2>> &p_polygon_a, const Vector<Vector<Point2>> &p_polygon_b) {
+		return _polypaths_do_operation_complex(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2>> exclude_polygons_complex(const Vector<Vector<Point2>> &p_polygon_a, const Vector<Vector<Point2>> &p_polygon_b) {
+		return _polypaths_do_operation_complex(OPERATION_XOR, p_polygon_a, p_polygon_b);
+	}
+
 	static Vector<Vector<Point2>> clip_polyline_with_polygon(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
 		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
 	}
@@ -509,5 +525,6 @@ public:
 
 private:
 	static Vector<Vector<Point2>> _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2>> _polypaths_do_operation_complex(PolyBooleanOperation p_op, const Vector<Vector<Point2>> &p_polypaths_a, const Vector<Vector<Point2>> &p_polypaths_b);
 	static Vector<Vector<Point2>> _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
