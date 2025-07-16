@@ -1878,7 +1878,18 @@ void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
-	if (screensaver) {
+	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
+		if (p_enable) {
+			// Attach the inhibit request to the main window, not the last focused window,
+			// on the basis that inhibiting the screensaver is global state for the application.
+			WindowID window_id = MAIN_WINDOW_ID;
+			String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+			keep_screen_on = portal_desktop->inhibit(xid);
+		} else {
+			portal_desktop->uninhibit();
+			keep_screen_on = false;
+		}
+	} else if (screensaver) {
 		if (p_enable) {
 			screensaver->inhibit();
 		} else {
