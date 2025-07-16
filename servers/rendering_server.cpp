@@ -2329,7 +2329,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(SHADER_PARTICLES);
 	BIND_ENUM_CONSTANT(SHADER_SKY);
 	BIND_ENUM_CONSTANT(SHADER_FOG);
-	BIND_ENUM_CONSTANT(SHADER_MAX);
+	BIND_ENUM_CONSTANT(SHADER_MESH_RASTERIZER);
+	ClassDB ::bind_integer_constant(get_class_static(), StringName("ShaderMode"), "SHADER_MAX", 5);
 
 	/* MATERIAL */
 
@@ -2489,6 +2490,21 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_FAST);
 	BIND_ENUM_CONSTANT(MULTIMESH_INTERP_QUALITY_HIGH);
+
+	/* TEXTURE DRAWABLE API*/
+
+	BIND_ENUM_CONSTANT(BLEND_MODE_CLEAR);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MIX);
+	BIND_ENUM_CONSTANT(BLEND_MODE_ADD);
+	BIND_ENUM_CONSTANT(BLEND_MODE_SUB);
+	BIND_ENUM_CONSTANT(BLEND_MODE_MUL);
+	BIND_ENUM_CONSTANT(BLEND_MODE_ALPHA_TO_COVERAGE);
+	BIND_ENUM_CONSTANT(BLEND_MODE_PREMULTIPLIED_ALPHA);
+	BIND_ENUM_CONSTANT(BLEND_MODE_DISABLED);
+
+	ClassDB::bind_method(D_METHOD("texture_drawable_create", "width", "height", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture_drawable"), &RenderingServer::texture_drawable_generate_mipmaps);
+	ClassDB::bind_method(D_METHOD("texture_drawable_draw_mesh", "texture_drawable", "material", "mesh", "surface_index", "blend_mode", "clear_color"), &RenderingServer::texture_drawable_draw_mesh);
 
 	/* SKELETON API */
 
