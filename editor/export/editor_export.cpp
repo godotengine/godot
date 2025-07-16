@@ -127,6 +127,7 @@ void EditorExport::_bind_methods() {
 }
 
 void EditorExport::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	p_platform->initialize();
 	export_platforms.push_back(p_platform);
 
 	should_update_presets = true;
