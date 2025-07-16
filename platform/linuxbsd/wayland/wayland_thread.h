@@ -625,7 +625,9 @@ private:
 
 	bool initialized = false;
 
+#ifdef TOOLS_ENABLED
 	WaylandEmbedder embedder;
+#endif
 
 #ifdef LIBDECOR_ENABLED
 	struct libdecor *libdecor_context = nullptr;

@@ -30,6 +30,10 @@
 
 #include "embedder.h"
 
+#ifdef WAYLAND_ENABLED
+
+#ifdef TOOLS_ENABLED
+
 // Rough general to do list:
 //
 //  - (Maybe?) Report pointer position somehow for main window when over
@@ -2514,3 +2518,7 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 		}
 	}
 }
+
+#endif // TOOLS_ENABLED
+
+#endif // WAYLAND_ENABLED

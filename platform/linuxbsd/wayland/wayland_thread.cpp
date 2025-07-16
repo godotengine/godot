@@ -4395,26 +4395,28 @@ Error WaylandThread::init() {
 
 	KeyMappingXKB::initialize();
 
-	String socket_path;
+#ifdef TOOLS_ENABLED
+	String embedder_socket_path;
 	if (Engine::get_singleton()->is_editor_hint() && !Engine::get_singleton()->is_project_manager_hint()) {
 		Error embedder_status = embedder.init();
 		ERR_FAIL_COND_V_MSG(embedder_status != OK, ERR_CANT_CREATE, "Can't initialize Wayland embedder.");
 
-		socket_path = embedder.get_socket_path();
-		ERR_FAIL_COND_V_MSG(socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
+		embedder_socket_path = embedder.get_socket_path();
+		ERR_FAIL_COND_V_MSG(embedder_socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
 
-		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", socket_path);
+		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", embedder_socket_path);
 	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
-		socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
+		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
 
 		// Debug
 		//int fd = open("/tmp/test.log", O_CREAT | O_RDWR, 0666);
 		//dup2(fd, 2);
 	}
 
-	if (!socket_path.is_empty()) {
-		OS::get_singleton()->set_environment("WAYLAND_DISPLAY", socket_path);
+	if (!embedder_socket_path.is_empty()) {
+		OS::get_singleton()->set_environment("WAYLAND_DISPLAY", embedder_socket_path);
 	}
+#endif // TOOLS_ENABLED
 
 	wl_display = wl_display_connect(nullptr);
 

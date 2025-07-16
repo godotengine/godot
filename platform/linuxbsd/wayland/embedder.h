@@ -30,6 +30,10 @@
 
 #pragma once
 
+#ifdef WAYLAND_ENABLED
+
+#ifdef TOOLS_ENABLED
+
 #include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/os/os.h"
@@ -509,3 +513,7 @@ public:
 
 	String get_socket_path() const { return socket_path; }
 };
+
+#endif // TOOLS_ENABLED
+
+#endif // WAYLAND_ENABLED
