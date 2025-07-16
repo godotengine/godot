@@ -373,10 +373,11 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	particles->pre_process_time = p_time;
 }
 
-void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_residual) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	particles->request_process_time = p_request_process_time;
+	particles->request_process_time_residual = p_request_process_time_residual;
 }
 
 void ParticlesStorage::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
@@ -820,7 +821,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
 	}
 
-	double new_phase = Math::fmod((double)p_particles->phase + (p_delta / p_particles->lifetime), 1.0);
+	double new_phase = Math::fmod((double)(p_particles->phase + (p_delta / p_particles->lifetime)), 1.0);
 
 	//move back history (if there is any)
 	for (uint32_t i = p_particles->frame_history.size() - 1; i > 0; i--) {
@@ -1442,13 +1443,13 @@ void ParticlesStorage::update_particles() {
 			particles->prev_phase = 0;
 			particles->clear = true;
 			particles->restart_request = false;
+			particles->frame_remainder = 0.;
 		}
 
 		if (particles->inactive && !particles->emitting) {
 			//go next
 			continue;
 		}
-
 		if (particles->emitting) {
 			if (particles->inactive) {
 				//restart system from scratch
@@ -1539,13 +1540,12 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-		double todo = particles->request_process_time;
-		if (particles->clear) {
-			todo += particles->pre_process_time;
-		}
+		float todo = particles->clear ? particles->pre_process_time : 0;
+		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
+		todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
 
-		if (todo > 0.0) {
-			double frame_time;
+		if (todo > 0.0001) {
+			real_t frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
@@ -1555,19 +1555,38 @@ void ParticlesStorage::update_particles() {
 			float tmp_scale = particles->speed_scale;
 			// We need this otherwise the speed scale of the particle system influences the TODO.
 			particles->speed_scale = 1.0;
-			while (todo >= 0) {
-				_particles_process(particles, frame_time);
-				todo -= frame_time;
+			if (particles->clear) {
+				todo = particles->pre_process_time;
+				while (todo > 0.00001) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
 			}
-			particles->request_process_time = 0.0;
+			if (particles->request_process_time > 0.00001) {
+				todo = particles->request_process_time;
+				while (todo > 0.00001) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
+			if (particles->request_process_time_residual > 0.00001) {
+				particles->emitting = false;
+				todo = particles->request_process_time_residual;
+				while (todo > 0.00001) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
+			}
 			particles->speed_scale = tmp_scale;
 		}
 
-		double time_scale = MAX(particles->speed_scale, 0.0);
+		particles->request_process_time = 0.0;
+		particles->request_process_time_residual = 0.0;
 
+		float time_scale = MAX(particles->speed_scale, 0.0);
 		if (fixed_fps > 0) {
-			double frame_time = 1.0 / fixed_fps;
-			double delta = RendererCompositorRD::get_singleton()->get_frame_delta_time();
+			float frame_time = 1.0 / fixed_fps;
+			float delta = (float)RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
@@ -1584,7 +1603,6 @@ void ParticlesStorage::update_particles() {
 		} else {
 			_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time() * time_scale);
 		}
-
 		// Ensure that memory is initialized (the code above should ensure that _particles_process is always called at least once upon clearing).
 		DEV_ASSERT(!particles->clear);
 
