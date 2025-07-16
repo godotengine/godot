@@ -1,0 +1,134 @@
+diff --git a/drivers/sdl/SCsub b/drivers/sdl/SCsub
+index d6b65f1cfd5..4474a980681 100644
+--- a/drivers/sdl/SCsub
++++ b/drivers/sdl/SCsub
+@@ -145,6 +145,7 @@ if env["builtin_sdl"]:
+             "thread/pthread/SDL_systls.c",
+             "timer/unix/SDL_systimer.c",
+         ]
++        env_sdl.Prepend(CPPPATH=[thirdparty_dir + "core/linux"])
+ 
+     elif env["platform"] == "macos":
+         env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_MACOS"])
+diff --git a/drivers/sdl/SDL_build_config_private.h b/drivers/sdl/SDL_build_config_private.h
+index 1282b1434d5..5ae120f2c84 100644
+--- a/drivers/sdl/SDL_build_config_private.h
++++ b/drivers/sdl/SDL_build_config_private.h
+@@ -84,16 +84,16 @@
+ #define HAVE_LINUX_INPUT_H 1
+ #define HAVE_POLL 1
+ 
+-// TODO: handle dynamic loading with SOWRAP_ENABLED
+-
+-// (even though DBus can also be loaded with SOWRAP_ENABLED, we load it
+-// statically regardless of SOWRAP_ENABLED, because otherwise SDL won't compile)
++// We don't check for SOWRAP_ENABLED here and for libudev, because
++// SDL code already loads these libraries dynamically.
+ #ifdef DBUS_ENABLED
+ #define HAVE_DBUS_DBUS_H 1
++#define SDL_USE_LIBDBUS 1
+ #endif
+ 
+-#if defined(UDEV_ENABLED) && !defined(SOWRAP_ENABLED)
++#ifdef UDEV_ENABLED
+ #define HAVE_LIBUDEV_H 1
++#define SDL_USE_LIBUDEV
+ #endif
+ 
+ #define SDL_LOADSO_DLOPEN 1
+diff --git a/platform/linuxbsd/detect.py b/platform/linuxbsd/detect.py
+index 613d62e96e7..c91f30955ee 100644
+--- a/platform/linuxbsd/detect.py
++++ b/platform/linuxbsd/detect.py
+@@ -380,17 +380,10 @@ def configure(env: "SConsEnvironment"):
+         env.Append(CPPDEFINES=["XKB_ENABLED"])
+ 
+     if platform.system() == "Linux":
+-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
+         if env["udev"]:
+-            if not env["use_sowrap"]:
+-                if os.system("pkg-config --exists libudev") == 0:  # 0 means found
+-                    env.ParseConfig("pkg-config libudev --cflags --libs")
+-                    env.Append(CPPDEFINES=["UDEV_ENABLED"])
+-                else:
+-                    print_warning("libudev development libraries not found. Disabling controller hotplugging support.")
+-                    env["udev"] = False
+-            else:
+-                env.Append(CPPDEFINES=["UDEV_ENABLED"])
++            # We don't check for SOWRAP_ENABLED here, because
++            # SDL code (that uses libudev) already loads this library dynamically anyway.
++            env.Append(CPPDEFINES=["UDEV_ENABLED"])
+     else:
+         env["udev"] = False  # Linux specific
+ 
+diff --git a/thirdparty/sdl/core/linux/SDL_udev.c b/thirdparty/sdl/core/linux/SDL_udev.c
+index 907c34c7f66..fbf2ff04440 100644
+--- a/thirdparty/sdl/core/linux/SDL_udev.c
++++ b/thirdparty/sdl/core/linux/SDL_udev.c
+@@ -38,7 +38,8 @@
+ 
+ static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
+ 
+-static SDL_UDEV_PrivateData *_this = NULL;
++SDL_UDEV_PrivateData *SDL_UDEV_PrivateData_this = NULL;
++#define _this SDL_UDEV_PrivateData_this
+ 
+ static bool SDL_UDEV_load_sym(const char *fn, void **addr);
+ static bool SDL_UDEV_load_syms(void);
+diff --git a/thirdparty/sdl/core/linux/SDL_udev.h b/thirdparty/sdl/core/linux/SDL_udev.h
+index 738f4bafe3f..50bed36248e 100644
+--- a/thirdparty/sdl/core/linux/SDL_udev.h
++++ b/thirdparty/sdl/core/linux/SDL_udev.h
+@@ -30,7 +30,8 @@
+ #define SDL_USE_LIBUDEV 1
+ #endif
+ 
+-#include <libudev.h>
++//#include <libudev.h>
++#include "thirdparty/linuxbsd_headers/udev/libudev.h"
+ #include <sys/time.h>
+ #include <sys/types.h>
+ 
+diff --git a/thirdparty/sdl/hidapi/linux/hid.c b/thirdparty/sdl/hidapi/linux/hid.c
+index dbbb3277854..51a32ef892f 100644
+--- a/thirdparty/sdl/hidapi/linux/hid.c
++++ b/thirdparty/sdl/hidapi/linux/hid.c
+@@ -40,7 +40,37 @@
+ #include <linux/hidraw.h>
+ #include <linux/version.h>
+ #include <linux/input.h>
+-#include <libudev.h>
++//#include <libudev.h>
++#include "SDL_udev.h"
++extern SDL_UDEV_PrivateData *SDL_UDEV_PrivateData_this;
++#define udev_device_get_action (SDL_UDEV_PrivateData_this->syms.udev_device_get_action)
++#define udev_device_get_devnode (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnode)
++#define udev_device_get_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_get_syspath)
++#define udev_device_get_subsystem (SDL_UDEV_PrivateData_this->syms.udev_device_get_subsystem)
++#define udev_device_get_parent_with_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_device_get_parent_with_subsystem_devtype)
++#define udev_device_get_property_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_property_value)
++#define udev_device_get_sysattr_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_sysattr_value)
++#define udev_device_new_from_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_syspath)
++#define udev_device_unref (SDL_UDEV_PrivateData_this->syms.udev_device_unref)
++#define udev_enumerate_add_match_property (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_property)
++#define udev_enumerate_add_match_subsystem (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_subsystem)
++#define udev_enumerate_get_list_entry (SDL_UDEV_PrivateData_this->syms.udev_enumerate_get_list_entry)
++#define udev_enumerate_new (SDL_UDEV_PrivateData_this->syms.udev_enumerate_new)
++#define udev_enumerate_scan_devices (SDL_UDEV_PrivateData_this->syms.udev_enumerate_scan_devices)
++#define udev_enumerate_unref (SDL_UDEV_PrivateData_this->syms.udev_enumerate_unref)
++#define udev_list_entry_get_name (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_name)
++#define udev_list_entry_get_next (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_next)
++#define udev_monitor_enable_receiving (SDL_UDEV_PrivateData_this->syms.udev_monitor_enable_receiving)
++#define udev_monitor_filter_add_match_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_monitor_filter_add_match_subsystem_devtype)
++#define udev_monitor_get_fd (SDL_UDEV_PrivateData_this->syms.udev_monitor_get_fd)
++#define udev_monitor_new_from_netlink (SDL_UDEV_PrivateData_this->syms.udev_monitor_new_from_netlink)
++#define udev_monitor_receive_device (SDL_UDEV_PrivateData_this->syms.udev_monitor_receive_device)
++#define udev_monitor_unref (SDL_UDEV_PrivateData_this->syms.udev_monitor_unref)
++#define udev_new (SDL_UDEV_PrivateData_this->syms.udev_new)
++#define udev_unref (SDL_UDEV_PrivateData_this->syms.udev_unref)
++#define udev_device_new_from_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_devnum)
++#define udev_device_get_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnum)
++#undef SDL_UDEV_SYM
+ 
+ #include "../hidapi/hidapi.h"
+ 
