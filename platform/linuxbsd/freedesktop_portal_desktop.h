@@ -113,6 +113,10 @@ private:
 	void _system_theme_changed_callback();
 	bool _is_interface_supported(const char *p_iface, uint32_t minimum_version);
 
+	Mutex inhibit_mutex;
+	String inhibit_path;
+	String inhibit_filter;
+
 	static void _thread_monitor(void *p_ud);
 
 public:
@@ -123,6 +127,7 @@ public:
 	bool is_file_chooser_supported();
 	bool is_settings_supported();
 	bool is_screenshot_supported();
+	bool is_inhibit_supported();
 
 	// org.freedesktop.portal.FileChooser methods.
 	Error file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
@@ -148,6 +153,10 @@ public:
 
 	// org.freedesktop.portal.Screenshot methods.
 	bool color_picker(const String &p_xid, const Callable &p_callback);
+
+	// org.freedesktop.portal.Inhibit methods.
+	bool inhibit(const String &p_xid);
+	void uninhibit();
 };
 
 #endif // DBUS_ENABLED
