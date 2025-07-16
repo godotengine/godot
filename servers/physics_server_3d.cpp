@@ -395,14 +395,15 @@ VariantStruct PhysicsDirectSpaceState3D::_intersect_ray_st(const Ref<PhysicsRayQ
 	// 	return res ? result : VariantStruct();
 	// }
 
-	RayResult result;
+	Inplace<RayResult> result;
+
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);
 
 	if (!res) {
 		return VariantStruct();
 	}
 
-	return NativeVariantStruct(result);
+	return result;
 }
 
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results) {
@@ -519,23 +520,14 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rest_info", "parameters"), &PhysicsDirectSpaceState3D::_get_rest_info);
 }
 
-// VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D, RayResult,
-// 		VARIANT_STRUCT_PROPERTY(position),
-// 		VARIANT_STRUCT_PROPERTY(normal),
-// 		VARIANT_STRUCT_PROPERTY(rid),
-// 		VARIANT_STRUCT_PROPERTY(collider_id),
-// 		VARIANT_STRUCT_PROPERTY(collider),
-// 		VARIANT_STRUCT_PROPERTY(shape),
-// 		VARIANT_STRUCT_PROPERTY(face_index));
-
 VARIANT_STRUCT_DEFINITION(PhysicsDirectSpaceState3D, RayResult,
-		Internal::build_native_property("position", &T::position),
-		Internal::build_native_property("normal", &T::normal),
-		Internal::build_native_property("rid", &T::rid),
-		Internal::build_native_property("collider_id", &T::collider_id),
-		Internal::build_native_property("collider", &T::collider),
-		Internal::build_native_property("shape", &T::shape),
-		Internal::build_native_property("face_index", &T::face_index));
+		VARIANT_STRUCT_PROPERTY(position),
+		VARIANT_STRUCT_PROPERTY(normal),
+		VARIANT_STRUCT_PROPERTY(rid),
+		VARIANT_STRUCT_PROPERTY(collider_id),
+		VARIANT_STRUCT_PROPERTY(collider),
+		VARIANT_STRUCT_PROPERTY(shape),
+		VARIANT_STRUCT_PROPERTY(face_index));
 
 ///////////////////////////////
 

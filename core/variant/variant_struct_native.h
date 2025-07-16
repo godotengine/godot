@@ -33,12 +33,6 @@
 #include "core/variant/variant_struct.h"
 
 #include "core/variant/binder_common.h"
-// #include "core/variant/type_info.h"
-// #include "core/variant/typed_array.h"
-// #include "core/variant/typed_dictionary.h"
-/*constepxr auto ini = std::is_trivially_constructible_v<T> ? &StructDefinition::generic_constructor : &init_struct; \
-constepxr auto cop = std::is_trivially_copy_constructible_v<T> ? &StructDefinition::generic_copy_constructor : &copy_struct; \
-constepxr auto des = std::is_trivially_destructible_v<T> ? &StructDefinition::trivial_destructor : &deinit_struct; \*/
 
 #define STRINGIFY_MACRO(s) #s
 
@@ -57,7 +51,7 @@ constepxr auto des = std::is_trivially_destructible_v<T> ? &StructDefinition::tr
 	}
 
 #define VARIANT_STRUCT_PROPERTY(m_property_name) \
-	StructDefinition::build_native_property(#m_property_name, &T::##m_property_name)
+	Internal::build_native_property(#m_property_name, &T::##m_property_name)
 
 #define REGISTER_INBUILT_STRUCT(m_parent_class, m_struct_class)                                                                          \
 	{                                                                                                                                    \
@@ -68,19 +62,16 @@ constepxr auto des = std::is_trivially_destructible_v<T> ? &StructDefinition::tr
 
 template <class T>
 size_t Internal::NativeTypeInfo<T>::size() const {
-// size_t StructDefinition::NativeTypeInfo<T>::size() const {
 	return sizeof(T);
 }
 
 template <class T>
 size_t Internal::NativeTypeInfo<T>::align() const {
-// size_t StructDefinition::NativeTypeInfo<T>::align() const {
 	return alignof(T);
 }
 
 template <class T>
 Variant::Type Internal::NativeTypeInfo<T>::get_variant_type() const {
-// Variant::Type StructDefinition::NativeTypeInfo<T>::get_variant_type() const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		return Variant::NIL;
 	} else {
@@ -90,7 +81,6 @@ Variant::Type Internal::NativeTypeInfo<T>::get_variant_type() const {
 
 template <class T>
 const StringName Internal::NativeTypeInfo<T>::get_class_name() const {
-// const StringName StructDefinition::NativeTypeInfo<T>::get_class_name() const {
 	if constexpr (std::is_base_of_v<T, Object *>) {
 		return std::remove_pointer_t<T>::get_class_static();
 	} else {
@@ -103,7 +93,6 @@ const StringName Internal::NativeTypeInfo<T>::get_class_name() const {
 
 template <class T>
 void Internal::NativeTypeInfo<T>::construct(void *p_target) const {
-// void StructDefinition::NativeTypeInfo<T>::construct(void *p_target) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else if constexpr (!std::is_trivially_constructible_v<T>) {
@@ -116,7 +105,6 @@ void Internal::NativeTypeInfo<T>::construct(void *p_target) const {
 
 template <class T>
 void Internal::NativeTypeInfo<T>::copy_construct(void *p_target, const void *p_value) const {
-// void StructDefinition::NativeTypeInfo<T>::copy_construct(void *p_target, const void *p_value) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else if constexpr (!std::is_trivially_copy_constructible_v<T>) {
@@ -128,7 +116,6 @@ void Internal::NativeTypeInfo<T>::copy_construct(void *p_target, const void *p_v
 
 template <class T>
 void Internal::NativeTypeInfo<T>::destruct(void *p_target) const {
-// void StructDefinition::NativeTypeInfo<T>::destruct(void *p_target) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else if constexpr (!std::is_trivially_destructible_v<T>) {
@@ -138,7 +125,6 @@ void Internal::NativeTypeInfo<T>::destruct(void *p_target) const {
 
 template <class T>
 Variant Internal::NativeTypeInfo<T>::read(const void *p_target) const {
-// Variant StructDefinition::NativeTypeInfo<T>::read(const void *p_target) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		return Variant(); // Return NIL
 	} else {
@@ -148,7 +134,6 @@ Variant Internal::NativeTypeInfo<T>::read(const void *p_target) const {
 
 template <class T>
 void Internal::NativeTypeInfo<T>::ptr_get(const void *p_target, void *p_into) const {
-// void StructDefinition::NativeTypeInfo<T>::ptr_get(const void *p_target, void *p_into) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else {
@@ -158,7 +143,6 @@ void Internal::NativeTypeInfo<T>::ptr_get(const void *p_target, void *p_into) co
 
 template <class T>
 void Internal::NativeTypeInfo<T>::write(void *p_target, const Variant &p_value) const {
-// void StructDefinition::NativeTypeInfo<T>::write(void *p_target, const Variant &p_value) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else if constexpr (std::is_same_v<T, ObjectID>) {
@@ -173,7 +157,6 @@ void Internal::NativeTypeInfo<T>::write(void *p_target, const Variant &p_value) 
 
 template <class T>
 void Internal::NativeTypeInfo<T>::ptr_set(void *p_target, const void *p_value) const {
-// void StructDefinition::NativeTypeInfo<T>::ptr_set(void *p_target, const void *p_value) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else {

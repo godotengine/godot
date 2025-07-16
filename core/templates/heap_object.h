@@ -34,9 +34,10 @@
 #include "core/os/memory.h"
 
 #include <initializer_list>
-// #include <utility>
 
-// (dev-note: I wrote these implementations myself - I am unsure if there is a well-known name for these patterns; if there is, these should be renamed to match)
+// (dev-note)
+// (I wrote these implementations myself - I am unsure if there is a well-known name for these patterns; if there is, these should be renamed to match)
+// (it may also be appropriate to not leave this as a template, and just move it directly into variant_struct.h)
 
 /////////////////////////
 
@@ -67,7 +68,7 @@ class VarHeapPointer {
 
 public:
 	// MemberDataPointers can be used to directly reference a part of the "unknown" heap data
-	// They are automatically adjusted at time of creation to account for the memory requirements of both the CommonT and the HeapT
+	// They are automatically adjusted at time of creation to account for the memory requirements of both CommonT and HeapT
 	// which should result in fewer operations, and means we don't need to keep a reference to the memory requirements of HeapT
 
 	struct MemberDataPointer {
@@ -76,7 +77,7 @@ public:
 		// _ALWAYS_INLINE_ MemberDataPointer() {}
 		template <class HeapT, typename MemberT>
 		_ALWAYS_INLINE_ MemberDataPointer(const MemberT HeapT::*const &p_member_pointer) {
-			// This constructor makes use of <forget the concept name> to presume the memory requirements of a member-data-pointer
+			// This constructor makes use of template type deduction to determine the memory requirements of given data-member-pointers
 			static_assert(sizeof(p_member_pointer) == sizeof(data_ptr_t), "Member Pointer size mismatch");
 			constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
 			_val = offset + *reinterpret_cast<const data_ptr_t *>(&p_member_pointer);
@@ -88,6 +89,8 @@ public:
 		}
 	};
 
+	// -- CommonT access
+
 	// Use the -> operator to to access the known common part of the data
 
 	_ALWAYS_INLINE_ CommonT *operator->() {
@@ -96,6 +99,8 @@ public:
 	_ALWAYS_INLINE_ const CommonT *operator->() const {
 		return reinterpret_cast<CommonT *>(_ptr);
 	}
+
+	// -- HeapT access
 
 	// Use `get_heap` to get a pointer to the "unknown" data
 	// For this to work, we need to know its alignment requirements
@@ -109,8 +114,7 @@ public:
 		constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
 		return reinterpret_cast<HeapT *>(_ptr + offset);
 	}
-	// (only enabled if we don't need to know the align requirements of the "unknown" object beause
-	//  the size of the known object would mean that it starts at a max-align boundary regardless)
+	// (only enabled if we don't need to know the align requirements of HeapT)
 	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
 	_ALWAYS_INLINE_ void *get_heap_() {
 		return reinterpret_cast<void *>(_ptr + sizeof(CommonT));
@@ -137,6 +141,8 @@ public:
 		return *reinterpret_cast<const T *>(_ptr + p_ptr._val);
 	}
 
+	// -- Memory functions
+
 	// Use `allocate` to change the internal pointer to a new block of memory large enough to fit both the common known and given "unknown" data
 	// Does not perform any operations on that memory (such as copying or initialisation; it is up to the caller to know what to do with that memory)
 
@@ -149,8 +155,7 @@ public:
 		constexpr size_t totalsize = calc_total(alignof(CommonT), sizeof(CommonT), alignof(HeapT), sizeof(HeapT));
 		_ptr = (uintptr_t)Memory::alloc_static(totalsize);
 	}
-	// (only enabled if we don't need to know the align requirements of the "unknown" object beause
-	//  the size of the known object would mean that it starts at a max-align boundary regardless)
+	// (only enabled if we don't need to know the align requirements of HeapT)
 	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
 	_ALWAYS_INLINE_ void allocate_(const size_t heap_size) {
 		size_t totalsize = calc_total(alignof(CommonT), sizeof(CommonT), alignof(max_align_t), heap_size);
@@ -163,6 +168,19 @@ public:
 		Memory::free_static((void *)_ptr, false);
 		_ptr = 0;
 	}
+
+	// Automatic memory allocation constructors
+
+	explicit VarHeapPointer(const size_t heap_align, const size_t heap_size) {
+		allocate(heap_align, heap_size);
+	}
+	// (only enabled if we don't need to know the align requirements of HeapT)
+	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
+	explicit VarHeapPointer(const size_t heap_size) {
+		allocate_(heap_size);
+	}
+
+	// -- Pointer functions
 
 	// Can be compared to nullptr (to detect if cleared or not) or another correctly aligned VarHeapPointer
 
@@ -185,34 +203,29 @@ public:
 		return _ptr;
 	}
 
+	// Constructors can be used to automatically allocate memory, or to explicitly cast from different pointers
+	// These need to be explicit to ensure they are done intentionally and that there is no address misaligntment
 
-	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
-	explicit VarHeapPointer(const size_t heap_align, const size_t heap_size) {
-		allocate_(heap_align, heap_size);
-	}
-	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
-	explicit VarHeapPointer(const size_t heap_size) {
-		allocate_(heap_size);
-	}
 	explicit VarHeapPointer(const std::nullptr_t) {
 		_ptr = 0;
 	}
 	explicit VarHeapPointer(CommonT *p_ptr) {
 		_ptr = *reinterpret_cast<uintptr_t *>(&p_ptr);
 	}
-	explicit VarHeapPointer(void *p_ptr) { // explicit to prevent accidental address misalignment from assigning or casting pointers to this
-		_ptr = *reinterpret_cast<uintptr_t *>(&p_ptr);
-	}
+	// explicit VarHeapPointer(void *p_ptr) {
+	// 	_ptr = *reinterpret_cast<uintptr_t *>(&p_ptr);
+	// }
+	// template <class HeapT>
+	// _ALWAYS_INLINE_ explicit VarHeapPointer(const HeapT *p_ptr) {
+	// 	constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
+	// 	_ptr = *reinterpret_cast<const uintptr_t *>(&p_ptr) - offset;
+	// }
 
-	// Can only ever be assigned to nullptr (to clear the pointer without freeing), or another correctly aligned VarHeapPointer
+	// Can be assigned nullptr (to clear the pointer without freeing)
 	_ALWAYS_INLINE_ VarHeapPointer<CommonT> &operator=(const std::nullptr_t) {
 		_ptr = 0;
 		return *this;
 	}
-	// _ALWAYS_INLINE_ VarHeapPointer<CommonT> &operator=(const VarHeapPointer<CommonT> &p_other) {
-	// 	_ptr = p_other._ptr;
-	// 	return *this;
-	// }
 	VarHeapPointer() = default;
 	VarHeapPointer(const VarHeapPointer &) = default;
 	VarHeapPointer(VarHeapPointer &&) = default;
@@ -313,12 +326,8 @@ protected:
 		VarHeapData<HeapT> &hd = *reinterpret_cast<VarHeapData<HeapT> *>(hd_ptr);
 		hd.element_count = list.size();
 		int i = 0;
-		// while (i < list.size()) {
-		// 	new (&hd[i]) HeapT(std::move(list[i]));
-		// 	i++;
-		// }
 		for (const HeapT &E : list) {
-			new (&hd[i]) HeapT(E);
+			memnew_placement(&hd[i], HeapT(E));
 			i++;
 		}
 

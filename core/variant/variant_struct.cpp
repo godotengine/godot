@@ -38,85 +38,9 @@
 
 /////////////////////////////////////
 
-
-// VarStructRef VarStructRef::allocate(const StructDefinition *p_definition) {
-// 	VarStructRef ret;
-// 	ret.instance.allocate_(p_definition->size);
-// 	ret.definition = p_definition;
-// 	ret.instance->store = InstanceMetaData::IN_HEAP;
-// 	return ret;
-// }
-
-// VarStructRef VarStructRef::duplicate(VarStructRef copy_from) {
-// 	VarStructRef ret = allocate(copy_from.definition);
-// 	ret.definition->copy_constructor(ret, copy_from.instance);
-// }
-
-// void VarStructRef::duplicate() {
-// 	InstancePtrType copy_from = instance;
-// 	new_instance(definition);
-// 	definition->copy_constructor(*this, copy_from);
-// }
-
-// void VarStructRef::new_instance(const StructDefinition *p_definition) {
-// 	if (instance) {
-// 		_unref();
-// 	}
-// 	definition = p_definition;
-// 	instance.allocate_(definition->size);
-// 	instance->refcount.init();
-// 	instance->type = Internal::VarStructMetaData::IN_HEAP;
-// }
-
-/////////////////////////////////////
-
 void VariantStruct::_copy_on_write() {
-	VarStructRef dupe = Internal::duplicate(_p);
-	_unref();
-	_ref(dupe);
+	_ref(Internal::duplicate(_p));
 }
-
-// #ifdef VSTRUCT_IS_REFERENCE_TYPE
-// VariantStruct VariantStruct::duplicate() {
-// 	VarStructPtrType copy_from = instance;
-// 	new_instance(definition);
-// 	definition->copy_constructor(instance, definition, copy_from);
-// }
-// #else
-// void VariantStruct::_copy_on_write() {
-// 	if (instance->type != Internal::VarStructMetaData::IN_HEAP) {
-// 		return;
-// 	}
-
-// 	if (instance->refcount.get() > 1) {
-// 		VarStructPtrType copy_from = instance;
-// 		new_instance(definition);
-// 		definition->copy_constructor(instance, definition, copy_from);
-// 	}
-// }
-// #endif
-
-// void VariantStruct::new_instance(const StructDefinition *p_definition) {
-// 	_unref();
-// 	definition = p_definition;
-// 	instance.allocate_(definition->size);
-// 	instance->refcount.init();
-// 	instance->type = Internal::VarStructMetaData::IN_HEAP;
-// }
-
-// void VariantStruct::_unref() {
-// 	ERR_FAIL_COND_MSG(instance->type != Internal::VarStructMetaData::IN_HEAP, "Only VariantStructs on the heap can be unreferenced");
-// 	if (instance->refcount.unref()) {
-// 		// Call the destructor for the type, then free the memory
-// 		if (definition->destructor != StructDefinition::trivial_destructor) {
-// 			definition->destructor(instance, definition);
-// 		}
-// 		instance.free(); // sets instance to nullptr
-// 	} else {
-// 		instance = nullptr;
-// 	}
-// }
-// _unref();
 
 void VariantStruct::clear() {
 	if (_p.is_refcounted()) {
@@ -222,7 +146,6 @@ Variant VariantStruct::get(const StringName &p_name, bool &r_valid) const {
 	}
 
 	const Internal::StructPropertyInfo *prop = _p.get_definition()->get_property_info(p_name);
-	// const StructDefinition::StructPropertyInfo *prop = definition->get_property_info(p_name);
 	if (prop == nullptr) {
 		r_valid = false;
 		return Variant();
@@ -242,7 +165,6 @@ Variant VariantStruct::get(const StringName &p_name, bool &r_valid) const {
 			ERR_FAIL_V(Variant());
 	}
 	return Variant();
-	// return prop->read(this);
 }
 
 /////////////////////////////////////
@@ -299,146 +221,6 @@ const StructDefinition::StructPropertyInfo *StructDefinition::get_property_info(
 	}
 	return nullptr;
 }
-
-// /////////////////////////////////////
-
-// void StructDefinition::StructPropertyInfo::construct(VarStructPtrType p_struct) const {
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->construct(p_struct->*(*this));
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			p_struct.get_data<Object *>(*this) = nullptr;
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// }
-// void StructDefinition::StructPropertyInfo::copy_construct(VarStructPtrType p_struct, VarStructPtrType p_other) const {
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->copy_construct(p_struct->*(*this), p_other->*(*this));
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			// NOTE: We do not track ref-count for Object pointers declared through native structs
-// 			p_struct.get_data<Object *>(*this) = p_other.get_data<Object *>(*this);
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// }
-// void StructDefinition::StructPropertyInfo::destruct(VarStructPtrType p_struct) const {
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->destruct(p_struct->*(*this));
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			// Do nothing
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// }
-// Variant StructDefinition::StructPropertyInfo::read(const VariantStruct *p_struct) const {
-// #ifdef VSTRUCT_IS_REFERENCE_TYPE
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			return type_info->read(p_struct->member_ptr(*this));
-// 		case NATIVE_OBJECT:
-// 			return Variant(p_struct->member_data<Object *>(*this));
-// 		default:
-// 			ERR_FAIL_V(Variant());
-// 	}
-// #else
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			return type_info->read(p_struct->member_ptr(*this));
-// 		case NATIVE_OBJECT:
-// 			return Variant(p_struct->member_r<Object *>(*this));
-// 		default:
-// 			ERR_FAIL_V(Variant());
-// 	}
-// #endif
-// }
-// void StructDefinition::StructPropertyInfo::ptr_get(const VariantStruct *p_struct, void *p_into) const {
-// #ifdef VSTRUCT_IS_REFERENCE_TYPE
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->ptr_get(p_struct->member_ptr(*this), p_into);
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			*(Object **)p_into = p_struct->member_data<Object *>(*this);
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// #else
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->ptr_get(p_struct->member_ptr(*this), p_into);
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			*(Object **)p_into = p_struct->member_r<Object *>(*this);
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// #endif
-// }
-// void StructDefinition::StructPropertyInfo::write(VariantStruct *p_struct, const Variant &p_value) const {
-// #ifdef VSTRUCT_IS_REFERENCE_TYPE
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->write(p_struct->member_ptr(*this), p_value);
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			// NOTE: We do not track ref-count for Object pointers declared through native structs
-// 			p_struct->member_data<Object *>(*this) = p_value;
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// #else
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->write(p_struct->member_ptrw(*this), p_value);
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			// NOTE: We do not track ref-count for Object pointers declared through native structs
-// 			p_struct->member_rw<Object *>(*this) = p_value;
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// #endif
-// }
-// void StructDefinition::StructPropertyInfo::ptr_set(VariantStruct *p_struct, const void *p_value) const {
-// #ifdef VSTRUCT_IS_REFERENCE_TYPE
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->ptr_set(p_struct->member_ptr(*this), p_value);
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			// NOTE: We do not track ref-count for Object pointers declared through native structs
-// 			p_struct->member_data<Object *>(*this) = *(Object **)p_value;
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// #else
-// 	switch (kind) {
-// 		case NATIVE_BUILTIN:
-// 			type_info->ptr_set(p_struct->member_ptrw(*this), p_value);
-// 		break;
-// 		case NATIVE_OBJECT:
-// 			// NOTE: We do not track ref-count for Object pointers declared through native structs
-// 			p_struct->member_rw<Object *>(*this) = *(Object **)p_value;
-// 		break;
-// 		default:
-// 			ERR_FAIL();
-// 	}
-// #endif
-// }
 
 /////////////////////////////////////
 
