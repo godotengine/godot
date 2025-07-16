@@ -3103,9 +3103,11 @@
 		<method name="particles_request_process_time">
 			<return type="void" />
 			<param index="0" name="particles" type="RID" />
-			<param index="1" name="time" type="float" />
+			<param index="1" name="process_time" type="float" />
+			<param index="2" name="process_time_residual" type="float" default="0.0" />
 			<description>
-				Requests particles to process for extra process time during a single frame.
+				Requests the particles to process for extra process time during a single frame.
+				[param process_time] defines the time that the particles will process while emitting is on. [param process_time_residual] defines the time that particles will process with emitting turned off for the simulation. When combined with the particles' speed scale set to [code]0.0[/code], this is useful to be able to seek a particle system timeline.
 			</description>
 		</method>
 		<method name="particles_restart">
