@@ -4,3 +4,5 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.editor_sources, "*.cpp")
+
+SConscript("physics/SCsub")

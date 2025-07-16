@@ -35,6 +35,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Select Xcode 16
+        run: sudo xcode-select -s /Applications/Xcode_16.2.app
+
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         with:

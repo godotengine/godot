@@ -4232,7 +4232,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] or [member Viewport.use_debanding].
+				Equivalent to [member Viewport.use_debanding]. See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
 			</description>
 		</method>
 		<method name="viewport_set_use_hdr_2d">

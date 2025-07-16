@@ -366,6 +366,7 @@ private:
 
 		bool is_transparent = false;
 		bool use_hdr = false;
+		bool use_debanding = false;
 
 		bool sdf_enabled = false;
 
@@ -759,6 +760,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override;
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override;
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override;
 
 	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region, bool p_gen_mipmaps);
 	void render_target_clear_back_buffer(RID p_render_target, const Rect2i &p_region, const Color &p_color);

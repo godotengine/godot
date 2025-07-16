@@ -471,8 +471,11 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	if (!found) {
 		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 		EditorRunBar::get_singleton()->get_pause_button()->set_disabled(true);
-		SceneTreeDock::get_singleton()->hide_remote_tree();
-		SceneTreeDock::get_singleton()->hide_tab_buttons();
+		SceneTreeDock *dock = SceneTreeDock::get_singleton();
+		if (dock->is_inside_tree()) {
+			dock->hide_remote_tree();
+			dock->hide_tab_buttons();
+		}
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
 	}
 }

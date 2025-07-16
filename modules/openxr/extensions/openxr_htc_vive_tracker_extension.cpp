@@ -57,6 +57,10 @@ PackedStringArray OpenXRHTCViveTrackerExtension::get_suggested_tracker_names() {
 		"/user/vive_tracker_htcx/role/chest",
 		"/user/vive_tracker_htcx/role/camera",
 		"/user/vive_tracker_htcx/role/keyboard",
+		"/user/vive_tracker_htcx/role/left_wrist",
+		"/user/vive_tracker_htcx/role/right_wrist",
+		"/user/vive_tracker_htcx/role/left_ankle",
+		"/user/vive_tracker_htcx/role/right_ankle",
 	};
 	return arr;
 }
@@ -82,6 +86,10 @@ void OpenXRHTCViveTrackerExtension::on_register_metadata() {
 	openxr_metadata->register_top_level_path("Chest tracker", "/user/vive_tracker_htcx/role/chest", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
 	openxr_metadata->register_top_level_path("Camera tracker", "/user/vive_tracker_htcx/role/camera", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
 	openxr_metadata->register_top_level_path("Keyboard tracker", "/user/vive_tracker_htcx/role/keyboard", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
+	openxr_metadata->register_top_level_path("Left wrist tracker", "/user/vive_tracker_htcx/role/left_wrist", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
+	openxr_metadata->register_top_level_path("Right wrist tracker", "/user/vive_tracker_htcx/role/right_wrist", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
+	openxr_metadata->register_top_level_path("Left ankle tracker", "/user/vive_tracker_htcx/role/left_ankle", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
+	openxr_metadata->register_top_level_path("Right ankle tracker", "/user/vive_tracker_htcx/role/right_ankle", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
 
 	{ // HTC Vive tracker
 		// Interestingly enough trackers don't have buttons or inputs, yet these are defined in the spec.
@@ -102,6 +110,10 @@ void OpenXRHTCViveTrackerExtension::on_register_metadata() {
 					 "/user/vive_tracker_htcx/role/chest",
 					 "/user/vive_tracker_htcx/role/camera",
 					 "/user/vive_tracker_htcx/role/keyboard",
+					 "/user/vive_tracker_htcx/role/left_wrist",
+					 "/user/vive_tracker_htcx/role/right_wrist",
+					 "/user/vive_tracker_htcx/role/left_ankle",
+					 "/user/vive_tracker_htcx/role/right_ankle",
 			 }) {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 

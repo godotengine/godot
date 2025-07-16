@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  cpu_feature_validation.c                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include <windows.h>
 
-void initialize_freetype_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+#ifdef WINDOWS_SUBSYSTEM_CONSOLE
+extern int WINAPI mainCRTStartup();
+#else
+extern int WINAPI WinMainCRTStartup();
+#endif
 
-void uninitialize_freetype_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
+#if defined(__GNUC__) || defined(__clang__)
+extern int WINAPI ShimMainCRTStartup() __attribute__((used));
+#endif
+
+extern int WINAPI ShimMainCRTStartup() {
+	if (IsProcessorFeaturePresent(PF_SSE4_2_INSTRUCTIONS_AVAILABLE)) {
+#ifdef WINDOWS_SUBSYSTEM_CONSOLE
+		return mainCRTStartup();
+#else
+		return WinMainCRTStartup();
+#endif
+	} else {
+		MessageBoxW(NULL, L"A CPU with SSE4.2 instruction set support is required.", L"Godot Engine", MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+		return -1;
 	}
 }

@@ -613,6 +613,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	item_clickable_area.position.x += theme_cache.panel_style->get_margin(SIDE_LEFT);
 	item_clickable_area.position.y += theme_cache.panel_style->get_margin(SIDE_TOP);
 	item_clickable_area.position *= win_scale;
+	item_clickable_area.size.width -= theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	item_clickable_area.size.y -= theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 	item_clickable_area.size *= win_scale;
 
@@ -626,7 +627,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
 			if (b->is_pressed()) {
 				during_grabbed_click = false;
-				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x : b->get_position().x > item_clickable_area.size.width;
+				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x - item_clickable_area.size.width : b->get_position().x > item_clickable_area.size.width + item_clickable_area.position.x;
 
 				// Hide it if the shadows have been clicked.
 				if (get_flag(FLAG_POPUP)) {

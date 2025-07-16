@@ -2943,16 +2943,15 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 		}
 	}
 
-	// probe size relative to 1 unit in world space
-	Vector3 ps = gi->voxel_gi_get_octree_size(probe) / gi->voxel_gi_get_bounds(probe).size;
-	float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z));
-
 	if (has_dynamic_object_data || p_update_light_instances || p_dynamic_objects.size()) {
 		// PROCESS MIPMAPS
 		if (mipmaps.size()) {
 			//can update mipmaps
 
 			Vector3i probe_size = gi->voxel_gi_get_octree_size(probe);
+
+			Vector3 ps = probe_size / gi->voxel_gi_get_bounds(probe).size;
+			float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space
 
 			VoxelGIPushConstant push_constant;
 
@@ -3134,6 +3133,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				}
 
 				RendererSceneRenderRD::get_singleton()->_render_material(to_world_xform * xform, cm, true, RendererSceneRenderRD::get_singleton()->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
+
+				Vector3 ps = octree_size / gi->voxel_gi_get_bounds(probe).size;
+				float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space
 
 				VoxelGIDynamicPushConstant push_constant;
 				memset(&push_constant, 0, sizeof(VoxelGIDynamicPushConstant));
