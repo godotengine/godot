@@ -62,6 +62,7 @@
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
+#include "movie_writer/obs_style_movie_writer.h"
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
@@ -125,6 +126,7 @@ static bool has_server_feature_callback(const String &p_feature) {
 
 static MovieWriterMJPEG *writer_mjpeg = nullptr;
 static MovieWriterPNGWAV *writer_pngwav = nullptr;
+static ObsStyleMovieWriter *writer_obs = nullptr;
 
 void register_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Extensions");
@@ -330,6 +332,9 @@ void register_server_types() {
 	writer_pngwav = memnew(MovieWriterPNGWAV);
 	MovieWriter::add_writer(writer_pngwav);
 
+	writer_obs = memnew(ObsStyleMovieWriter);
+	MovieWriter::add_writer(writer_obs);
+
 	OS::get_singleton()->benchmark_end_measure("Servers", "Register Extensions");
 }
 
@@ -340,6 +345,7 @@ void unregister_server_types() {
 	memdelete(shader_types);
 	memdelete(writer_mjpeg);
 	memdelete(writer_pngwav);
+	memdelete(writer_obs);
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
 }

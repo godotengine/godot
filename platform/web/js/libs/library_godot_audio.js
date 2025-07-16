@@ -782,8 +782,10 @@ class SampleNode {
 			return;
 		}
 		this.isPaused = true;
-		this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
-		this._source.stop();
+		if(GodotAudio.ctx){
+			this.pauseTime = (GodotAudio.ctx.currentTime - this._sourceStartTime) / this.getPlaybackRate();
+			this._source.stop();
+		}
 	}
 
 	/**
@@ -1172,6 +1174,9 @@ class Bus {
 
 const _GodotAudio = {
 	$GodotAudio__deps: ['$GodotRuntime', '$GodotOS'],
+	$GodotAudio__postset: [
+		'Module["getAudioContext"] = GodotAudio.get_audio_context;',
+	].join(''),
 	$GodotAudio: {
 		/**
 		 * Max number of volume channels.
@@ -1576,6 +1581,9 @@ const _GodotAudio = {
 				return;
 			}
 			bus.mute(enable);
+		},
+		get_audio_context: function () {
+			return GodotAudio.ctx;
 		},
 	},
 

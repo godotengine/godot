@@ -42,6 +42,7 @@
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
+#include "servers/audio/audio_driver_hybrid.h" // 添加包含
 
 #include <cstring>
 
@@ -327,6 +328,13 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 		todo -= to_copy;
 		to_mix -= to_copy;
 	}
+
+	// Audio capture: After all audio processing is complete, send the data to the capture interface
+	capture_mutex.lock();
+	if (audio_capture_interface) {
+		audio_capture_interface->capture_audio_data(p_buffer, p_frames, get_channel_count());
+	}
+	capture_mutex.unlock();
 
 #ifdef DEBUG_ENABLED
 	prof_time.add(OS::get_singleton()->get_ticks_usec() - prof_ticks);
@@ -2164,4 +2172,25 @@ void AudioBusLayout::_get_property_list(List<PropertyInfo> *p_list) const {
 AudioBusLayout::AudioBusLayout() {
 	buses.resize(1);
 	buses.write[0].name = SceneStringName(Master);
+}
+
+// 在文件末尾添加新的方法实现
+void AudioServer::set_audio_capture_interface(AudioCaptureInterface *p_interface) {
+	capture_mutex.lock();
+	audio_capture_interface = p_interface;
+	capture_mutex.unlock();
+	
+	if (p_interface && OS::get_singleton()->is_stdout_verbose()) {
+		print_line("AudioServer: Audio capture interface registered");
+	}
+}
+
+void AudioServer::remove_audio_capture_interface() {
+	capture_mutex.lock();
+	audio_capture_interface = nullptr;
+	capture_mutex.unlock();
+	
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		print_line("AudioServer: Audio capture interface removed");
+	}
 }
