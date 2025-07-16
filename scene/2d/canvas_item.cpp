@@ -1029,8 +1029,10 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 		}
 	}
 
+	CanvasItem **children = p_node->data.canvas_item_children.ptr();
+
 	for (uint32_t n = 0; n < p_node->data.canvas_item_children.size(); n++) {
-		CanvasItem *ci = p_node->data.canvas_item_children[n];
+		CanvasItem *ci = children[n];
 		if (!ci->toplevel) {
 			_notify_transform(ci);
 		}
