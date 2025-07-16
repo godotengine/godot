@@ -603,7 +603,6 @@ void EditorAutoloadSettings::_script_created(Ref<Script> p_script) {
 	FileSystemDock::get_singleton()->get_script_create_dialog()->hide();
 	path = p_script->get_path().get_base_dir();
 	autoload_add_path->set_text(p_script->get_path());
-	autoload_add_name->set_text(p_script->get_path().get_file().get_basename().to_pascal_case());
 	_autoload_add();
 }
 
