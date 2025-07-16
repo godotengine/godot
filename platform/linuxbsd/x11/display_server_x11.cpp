@@ -1845,13 +1845,28 @@ void DisplayServerX11::screen_set_keep_on(bool p_enable) {
 		return;
 	}
 
-	if (p_enable) {
-		screensaver->inhibit();
-	} else {
-		screensaver->uninhibit();
-	}
+	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
+		if (p_enable) {
+			WindowID window_id = last_focused_window;
 
-	keep_screen_on = p_enable;
+			if (!windows.has(window_id)) {
+				window_id = MAIN_WINDOW_ID;
+			}
+
+			String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+			keep_screen_on = portal_desktop->inhibit(xid);
+		} else {
+			portal_desktop->uninhibit();
+			keep_screen_on = false;
+		}
+	} else {
+		if (p_enable) {
+			screensaver->inhibit();
+		} else {
+			screensaver->uninhibit();
+		}
+		keep_screen_on = p_enable;
+	}
 }
 
 bool DisplayServerX11::screen_is_kept_on() const {
@@ -7348,10 +7363,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #ifdef DBUS_ENABLED
 	screensaver = memnew(FreeDesktopScreenSaver);
-	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
-
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
 	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
+
+	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 #endif // DBUS_ENABLED
 	XSetErrorHandler(&default_window_error_handler);
 

@@ -53,6 +53,10 @@
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
 #define BUS_INTERFACE_SCREENSHOT "org.freedesktop.portal.Screenshot"
+#define BUS_INTERFACE_INHIBIT "org.freedesktop.portal.Inhibit"
+#define BUS_INTERFACE_REQUEST "org.freedesktop.portal.Request"
+
+#define INHIBIT_FLAG_IDLE 8
 
 bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, ReadVariantType p_type, void *r_value) {
 	DBusMessageIter iter[3];
@@ -606,6 +610,15 @@ bool FreeDesktopPortalDesktop::is_screenshot_supported() {
 	return supported;
 }
 
+bool FreeDesktopPortalDesktop::is_inhibit_supported() {
+	static int supported = -1;
+	if (supported == -1) {
+		// If not sandboxed, prefer to use org.freedesktop.Screenshot
+		supported = OS::get_singleton()->is_sandboxed() && _is_interface_supported(BUS_INTERFACE_INHIBIT, 1);
+	}
+	return supported;
+}
+
 Error FreeDesktopPortalDesktop::make_request_token(String &token) {
 	CryptoCore::RandomGenerator rng;
 	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
@@ -766,6 +779,80 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	return OK;
 }
 
+bool FreeDesktopPortalDesktop::inhibit(const String &p_xid) {
+	if (unsupported) {
+		return false;
+	}
+
+	MutexLock lock(inhibit_mutex);
+	ERR_FAIL_COND_V_MSG(!inhibit_path.is_empty(), false, "Another inhibit request is already open");
+
+	String token;
+	if (make_request_token(token) != OK) {
+		return false;
+	}
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_INHIBIT, "Inhibit");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+
+		append_dbus_string(&iter, p_xid);
+
+		dbus_uint32_t flags = INHIBIT_FLAG_IDLE;
+		dbus_message_iter_append_basic(&iter, DBUS_TYPE_UINT32, &flags);
+
+		{
+			DBusMessageIter arr_iter;
+			dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
+
+			append_dbus_dict_string(&arr_iter, "handle_token", token);
+
+			const char *reason = "Running Godot Engine Project";
+			append_dbus_dict_string(&arr_iter, "reason", reason);
+
+			dbus_message_iter_close_container(&iter, &arr_iter);
+		}
+	}
+
+	if (!send_request(message, token, inhibit_path, inhibit_filter)) {
+		return false;
+	}
+
+	return true;
+}
+
+void FreeDesktopPortalDesktop::uninhibit() {
+	if (unsupported) {
+		return;
+	}
+
+	MutexLock lock(inhibit_mutex);
+	ERR_FAIL_COND_MSG(inhibit_path.is_empty(), "No inhibit request is active");
+
+	DBusError error;
+	dbus_error_init(&error);
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, inhibit_path.utf8().get_data(), BUS_INTERFACE_REQUEST, "Close");
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_USE_DEFAULT, &error);
+	dbus_message_unref(message);
+	if (dbus_error_is_set(&error)) {
+		ERR_PRINT(vformat("Failed to uninhibit: %s", error.message));
+		dbus_error_free(&error);
+	} else if (reply) {
+		dbus_message_unref(reply);
+	}
+
+	dbus_bus_remove_match(monitor_connection, inhibit_filter.utf8().get_data(), &error);
+	if (dbus_error_is_set(&error)) {
+		ERR_PRINT(vformat("Failed to remove match: %s", error.message));
+		dbus_error_free(&error);
+	}
+
+	inhibit_path.clear();
+	inhibit_filter.clear();
+}
+
 void FreeDesktopPortalDesktop::process_callbacks() {
 	{
 		MutexLock lock(file_dialog_mutex);
@@ -902,6 +989,20 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 
 								portal->color_pickers.remove_at(i);
 								break;
+							}
+						}
+					}
+					{
+						MutexLock lock(portal->inhibit_mutex);
+						if (portal->inhibit_path == path) {
+							DBusMessageIter iter;
+							if (dbus_message_iter_init(msg, &iter) && dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_UINT32) {
+								dbus_uint32_t resp_code;
+								dbus_message_iter_get_basic(&iter, &resp_code);
+								if (resp_code != 0) {
+									// The protocol does not give any further details
+									ERR_PRINT(vformat("Inhibit portal request failed with reason %u", resp_code));
+								}
 							}
 						}
 					}
