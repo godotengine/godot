@@ -34,6 +34,7 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
@@ -447,11 +448,45 @@ void TileSetEditor::_update_patterns_list() {
 		patterns_item_list->set_item_metadata(id, pattern);
 		patterns_item_list->set_item_tooltip(id, vformat(TTR("Index: %d"), i));
 		pattern_to_index_map[pattern] = id; // Add to optimization map
-		TilesEditorUtils::get_singleton()->queue_pattern_preview(tile_set, pattern, callable_mp(this, &TileSetEditor::_pattern_preview_done));
+		
+		// Set placeholder icon initially - lazy load actual preview later
+		patterns_item_list->set_item_icon(id, get_editor_theme_icon(SNAME("TileSet")));
 	}
 
 	// Update the label visibility.
 	patterns_help_label->set_visible(patterns_item_list->get_item_count() == 0);
+	
+	// Schedule lazy loading for visible patterns
+	_schedule_pattern_preview_updates();
+}
+
+void TileSetEditor::_schedule_pattern_preview_updates() {
+	if (!patterns_item_list || !patterns_item_list->is_visible_in_tree()) {
+		return; // Don't generate previews if patterns list is not visible
+	}
+	
+	// Only generate previews for patterns that are currently visible in the viewport
+	Rect2 visible_rect = patterns_item_list->get_global_rect();
+	int item_count = patterns_item_list->get_item_count();
+	
+	for (int i = 0; i < item_count; i++) {
+		Rect2 item_rect = patterns_item_list->get_item_rect(i);
+		if (visible_rect.intersects(item_rect)) {
+			// This pattern is visible, generate preview if not already cached
+			Ref<TileMapPattern> pattern = patterns_item_list->get_item_metadata(i);
+			if (pattern.is_valid()) {
+				String cache_key = String::num_int64(tile_set->get_instance_id()) + "_" + String::num_int64(pattern->get_instance_id());
+				
+				// Check if we already have this in cache
+				TilesEditorUtils *utils = TilesEditorUtils::get_singleton();
+				if (utils) {
+					// Check cache without locking by using a simple heuristic - 
+					// queue_pattern_preview will handle cache checking efficiently
+					utils->queue_pattern_preview(tile_set, pattern, callable_mp(this, &TileSetEditor::_pattern_preview_done));
+				}
+			}
+		}
+	}
 }
 
 void TileSetEditor::_tile_set_changed() {
@@ -461,6 +496,12 @@ void TileSetEditor::_tile_set_changed() {
 void TileSetEditor::_tab_changed(int p_tab_changed) {
 	split_container->set_visible(p_tab_changed == 0);
 	patterns_item_list->set_visible(p_tab_changed == 1);
+	
+	// When switching to Patterns tab, trigger lazy loading of visible pattern previews
+	if (p_tab_changed == 1) {
+		// Use call_deferred to ensure the patterns list is fully visible before generating previews
+		callable_mp(this, &TileSetEditor::_schedule_pattern_preview_updates).call_deferred();
+	}
 }
 
 void TileSetEditor::_move_tile_set_array_element(Object *p_undo_redo, Object *p_edited, const String &p_array_prefix, int p_from_index, int p_to_pos) {
@@ -955,6 +996,8 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	patterns_item_list->set_theme_type_variation("ItemListSecondary");
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
+	patterns_item_list->connect(SceneStringName(visibility_changed), callable_mp(this, &TileSetEditor::_schedule_pattern_preview_updates));
+	patterns_item_list->connect("item_list_changed", callable_mp(this, &TileSetEditor::_schedule_pattern_preview_updates));
 	main_vb->add_child(patterns_item_list);
 	patterns_item_list->hide();
 

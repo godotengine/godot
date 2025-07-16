@@ -98,6 +98,7 @@ private:
 	bool select_last_pattern = false;
 	HashMap<Ref<TileMapPattern>, int> pattern_to_index_map; // Optimization: O(1) pattern lookup
 	void _update_patterns_list();
+	void _schedule_pattern_preview_updates(); // Lazy loading for visible patterns
 
 	// Expanded editor.
 	PanelContainer *expanded_area = nullptr;

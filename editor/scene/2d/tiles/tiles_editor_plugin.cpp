@@ -169,9 +169,10 @@ void TilesEditorUtils::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMa
 	// Check cache first
 	{
 		MutexLock cache_lock(pattern_cache_mutex);
-		if (pattern_preview_cache.has(cache_key)) {
+		const Ref<ImageTexture> *cached_texture = pattern_preview_cache.getptr(cache_key);
+		if (cached_texture) {
 			// Cache hit - call callback immediately with cached texture
-			p_callback.call(p_pattern, pattern_preview_cache[cache_key]);
+			p_callback.call(p_pattern, *cached_texture);
 			return;
 		}
 	}
