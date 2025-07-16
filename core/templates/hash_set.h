@@ -241,11 +241,12 @@ public:
 			return;
 		}
 		uint32_t capacity = hash_table_size_primes[capacity_index];
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = EMPTY_HASH;
-		}
-		for (uint32_t i = 0; i < num_elements; i++) {
-			keys[i].~TKey();
+		memset(hashes, EMPTY_HASH, sizeof(EMPTY_HASH) * capacity);
+
+		if constexpr (!std::is_trivially_destructible_v<TKey>) {
+			for (uint32_t i = 0; i < num_elements; i++) {
+				keys[i].~TKey();
+			}
 		}
 
 		num_elements = 0;
