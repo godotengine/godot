@@ -36,10 +36,6 @@
 #include "core/os/os.h"
 #include "core/string/locales.h"
 
-#ifdef TOOLS_ENABLED
-#include "main/main.h"
-#endif
-
 Vector<TranslationServer::LocaleScriptInfo> TranslationServer::locale_script_info;
 
 HashMap<String, String> TranslationServer::language_map;
@@ -379,6 +375,10 @@ void TranslationServer::set_locale(const String &p_locale) {
 
 String TranslationServer::get_locale() const {
 	return locale;
+}
+
+void TranslationServer::set_fallback_locale(const String &p_locale) {
+	fallback = p_locale;
 }
 
 String TranslationServer::get_fallback_locale() const {

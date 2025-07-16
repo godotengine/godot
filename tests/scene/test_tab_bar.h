@@ -820,10 +820,11 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		MessageQueue::get_singleton()->flush();
 		CHECK(tab_bar->get_tab_offset() == 0);
 
-		// Horizontal size and minimum size get set to 0.
-		CHECK(tab_bar->get_minimum_size().x == 0);
+		// Horizontal size and minimum size get set to the widest tab plus arrow icons.
+		const float offset_button_size = tab_bar->get_theme_icon("decrement_icon")->get_width() + tab_bar->get_theme_icon("increment_icon")->get_width();
+		CHECK(tab_bar->get_minimum_size().x == offset_button_size + MAX(tab_rects[0].size.x, MAX(tab_rects[1].size.x, tab_rects[2].size.x)));
 		CHECK(tab_bar->get_minimum_size().y == all_tabs_size.y);
-		CHECK(tab_bar->get_size().x == 0);
+		CHECK(tab_bar->get_size().x == offset_button_size + MAX(tab_rects[0].size.x, MAX(tab_rects[1].size.x, tab_rects[2].size.x)));
 		CHECK(tab_bar->get_size().y == all_tabs_size.y);
 	}
 

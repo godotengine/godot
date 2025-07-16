@@ -107,61 +107,35 @@ Ref<ArrayMesh> Shape3D::get_debug_mesh() {
 	debug_mesh_cache.instantiate();
 
 	if (!lines.is_empty()) {
-		//make mesh
-		Vector<Vector3> array;
-		array.resize(lines.size());
-		Vector3 *v = array.ptrw();
-
-		Vector<Color> arraycol;
-		arraycol.resize(lines.size());
-		Color *c = arraycol.ptrw();
-
-		for (int i = 0; i < lines.size(); i++) {
-			v[i] = lines[i];
-			c[i] = debug_color;
-		}
+		Vector<Color> colors;
+		colors.resize(lines.size());
+		colors.fill(debug_color);
 
 		Array lines_array;
 		lines_array.resize(Mesh::ARRAY_MAX);
-		lines_array[Mesh::ARRAY_VERTEX] = array;
-		lines_array[Mesh::ARRAY_COLOR] = arraycol;
-
-		Ref<StandardMaterial3D> material = get_debug_collision_material();
+		lines_array[Mesh::ARRAY_VERTEX] = lines;
+		lines_array[Mesh::ARRAY_COLOR] = colors;
 
 		debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, lines_array);
-		debug_mesh_cache->surface_set_material(0, material);
+
+		SceneTree *scene_tree = SceneTree::get_singleton();
+		if (scene_tree) {
+			debug_mesh_cache->surface_set_material(0, scene_tree->get_debug_collision_material());
+		}
 
 		if (debug_fill) {
 			Ref<ArrayMesh> array_mesh = get_debug_arraymesh_faces(debug_color * Color(1.0, 1.0, 1.0, 0.0625));
 			if (array_mesh.is_valid() && array_mesh->get_surface_count() > 0) {
 				Array solid_array = array_mesh->surface_get_arrays(0);
 				debug_mesh_cache->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, solid_array);
-				debug_mesh_cache->surface_set_material(1, material);
+				if (scene_tree) {
+					debug_mesh_cache->surface_set_material(1, scene_tree->get_debug_collision_material());
+				}
 			}
 		}
 	}
 
 	return debug_mesh_cache;
-}
-
-Ref<Material> Shape3D::get_debug_collision_material() {
-	if (collision_material.is_valid()) {
-		return collision_material;
-	}
-
-	Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
-	material->set_albedo(Color(1.0, 1.0, 1.0));
-	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
-	material->set_cull_mode(StandardMaterial3D::CULL_BACK);
-	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-
-	collision_material = material;
-
-	return collision_material;
 }
 
 void Shape3D::_update_shape() {

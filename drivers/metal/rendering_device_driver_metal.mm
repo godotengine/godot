@@ -330,14 +330,11 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	}
 
 	if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT) {
+		ERR_FAIL_COND_V_MSG((format_caps & kMTLFmtCapsAtomic) == 0, RDD::TextureID(), "Atomic operations on this texture format are not supported.");
+		ERR_FAIL_COND_V_MSG(!device_properties->features.supports_native_image_atomics, RDD::TextureID(), "Atomic operations on textures are not supported on this OS version. Check SUPPORTS_IMAGE_ATOMIC_32_BIT.");
+		// If supports_native_image_atomics is true, this condition should always succeed, as it is set the same.
 		if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
-			if (format_caps & kMTLFmtCapsAtomic) {
-				desc.usage |= MTLTextureUsageShaderAtomic;
-			} else {
-				ERR_FAIL_V_MSG(RDD::TextureID(), "Atomic operations on this texture format are not supported.");
-			}
-		} else {
-			ERR_FAIL_V_MSG(RDD::TextureID(), "Atomic texture operations not supported on this OS version.");
+			desc.usage |= MTLTextureUsageShaderAtomic;
 		}
 	}
 
@@ -368,34 +365,8 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		is_linear = std::get<bool>(is_linear_or_err);
 	}
 
-	// Check if it is a linear format for atomic operations and therefore needs a buffer,
-	// as generally Metal does not support atomic operations on textures.
-	bool needs_buffer = is_linear;
-
-	// Check for atomic requirements.
-	if (flags::any(p_format.usage_bits, TEXTURE_USAGE_STORAGE_BIT) && p_format.array_layers == 1 && p_format.mipmaps == 1 && p_format.texture_type == TEXTURE_TYPE_2D) {
-		switch (p_format.format) {
-			case RenderingDeviceCommons::DATA_FORMAT_R32_SINT:
-			case RenderingDeviceCommons::DATA_FORMAT_R32_UINT: {
-				if (!device_properties->features.supports_image_atomic_32_bit) {
-					// We can emulate 32-bit atomic operations on textures.
-					needs_buffer = true;
-				}
-			} break;
-			case RenderingDeviceCommons::DATA_FORMAT_R32G32_SINT:
-			case RenderingDeviceCommons::DATA_FORMAT_R32G32_UINT: {
-				if (!device_properties->features.supports_image_atomic_64_bit) {
-					// No emulation for 64-bit atomics.
-					ERR_FAIL_V_MSG(TextureID(), "64-bit atomic operations are not supported.");
-				}
-			} break;
-			default:
-				break;
-		}
-	}
-
 	id<MTLTexture> obj = nil;
-	if (needs_buffer) {
+	if (is_linear) {
 		// Linear textures are restricted to 2D textures, a single mipmap level and a single array layer.
 		MTLPixelFormat pixel_format = desc.pixelFormat;
 		size_t row_alignment = get_texel_buffer_alignment_for_format(p_format.format);
@@ -2771,7 +2742,7 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 		case SUPPORTS_METALFX_TEMPORAL:
 			return device_properties->features.metal_fx_temporal;
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
-			return device_properties->features.supports_image_atomic_32_bit;
+			return device_properties->features.supports_native_image_atomics;
 		default:
 			return false;
 	}

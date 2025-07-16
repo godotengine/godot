@@ -948,17 +948,17 @@ Size2 TabContainer::get_minimum_size() const {
 
 	if (tabs_visible) {
 		ms = tab_bar->get_minimum_size();
-		ms.x += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
-		ms.y += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
+		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
 		if (!get_clip_tabs()) {
 			if (get_popup()) {
-				ms.x += theme_cache.menu_icon->get_width();
+				ms.width += theme_cache.menu_icon->get_width();
 			}
 
 			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
 					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
-				ms.x += theme_cache.side_margin;
+				ms.width += theme_cache.side_margin;
 			}
 		}
 	}
@@ -975,12 +975,12 @@ Size2 TabContainer::get_minimum_size() const {
 		Size2 cms = c->get_combined_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(cms);
 	}
-	ms.y += largest_child_min_size.y;
+	ms.height += largest_child_min_size.height;
 
 	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
 
-	ms.x = MAX(ms.x, largest_child_min_size.x + panel_ms.x);
-	ms.y += panel_ms.y;
+	ms.width = MAX(ms.width, largest_child_min_size.width + panel_ms.width);
+	ms.height += panel_ms.height;
 
 	return ms;
 }
