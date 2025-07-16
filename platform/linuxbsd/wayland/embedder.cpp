@@ -166,8 +166,6 @@ Error WaylandEmbedder::delete_object(uint32_t p_global_id) {
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("Deleting object %s g0x%x", object->interface ? object->interface->name : "UNKNOWN", p_global_id));
 
-	object->interface = nullptr;
-	object->version = 0;
 	if (object->data) {
 		memdelete(object->data);
 		object->data = nullptr;
@@ -410,13 +408,17 @@ void WaylandEmbedder::client_disconnect(size_t p_client_id) {
 		}
 
 		// FIXME: Ensure proper destruction order for stuff like surfaces.
-		bool destroyed = false;
 		for (int opcode = 0; opcode < object->interface->method_count; ++opcode) {
 			const struct wl_message &message = object->interface->methods[opcode];
 
 			int destructor_version = String::to_int(message.signature);
 
 			DEBUG_LOG_WAYLAND_EMBED(vformat("!!!!!TEST iface %s msg %s parsed_ver %d obj_ver %d", object->interface->name, message.signature, destructor_version, object->version));
+
+			if (object->destroyed) {
+				DEBUG_LOG_WAYLAND_EMBED("Already destroyed.");
+				continue;
+			}
 
 			// FIXME: Find a better way of destroying all relevant non-fake objects. The
 			// XML files have a "type" field, which can have a "destructor" value but it
@@ -441,12 +443,12 @@ void WaylandEmbedder::client_disconnect(size_t p_client_id) {
 
 				// ??????::destroy() / ??????::release() - yes this is not ideal.
 				send_wayland_message(compositor_socket, global_id, opcode, {});
-				destroyed = true;
+				object->destroyed = true;
 				break;
 			}
 		}
 
-		if (!destroyed) {
+		if (!object->destroyed) {
 			ERR_PRINT(vformat("Unreferenced object %s g0x%x (leak!)", object->interface->name, global_id));
 		}
 	}
@@ -664,6 +666,7 @@ void WaylandEmbedder::seat_name_leave_surface(uint32_t p_seat_name, uint32_t p_w
 int WaylandEmbedder::next_global_id() {
 	uint32_t id = INVALID_ID;
 	objects.request(id);
+	objects[id] = WaylandObject();
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("Allocated new global id g0x%x", id));
 
@@ -1588,6 +1591,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 		if (global_id != INVALID_ID) {
 			send_wayland_message(compositor_socket, global_id, p_opcode, {});
+			object->destroyed = true;
 		}
 
 		return true;
@@ -1959,6 +1963,17 @@ bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 
 	const struct wl_interface *interface = nullptr;
 	interface = object->interface;
+
+	if (interface == nullptr && info->raw_id & 0xff000000) {
+		// Regular clients have no confirmation about deleted server objects (why
+		// should they?) but since we share connections there's the risk of receiving
+		// messages about deleted server objects. The simplest solution is to ignore
+		// unknown server-side objects. Not the safest thing, I know, but it should do
+		// the job.
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Ignoring unknown server-side object r0x%x", info->raw_id));
+		return false;
+	}
+
 	CRASH_COND_MSG(interface == nullptr, vformat("Object r0x%x has no interface", info->raw_id));
 
 	const struct wl_message *message = nullptr;
@@ -1986,6 +2001,12 @@ bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		}
 
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Remaining FDs: %d.", fd_queue.size()));
+	}
+
+	if (object->destroyed) {
+		DEBUG_LOG_WAYLAND_EMBED("Ignoring message for inert object.");
+		// Inert object.
+		return false;
 	}
 
 	if (info->direction == ProxyDirection::COMPOSITOR) {

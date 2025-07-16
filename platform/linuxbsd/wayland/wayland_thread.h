@@ -481,6 +481,10 @@ public:
 		uint64_t last_repeat_start_msec = 0;
 		uint64_t last_repeat_msec = 0;
 
+		uint32_t mods_depressed = 0;
+		uint32_t mods_latched = 0;
+		uint32_t mods_locked = 0;
+
 		bool shift_pressed = false;
 		bool ctrl_pressed = false;
 		bool alt_pressed = false;

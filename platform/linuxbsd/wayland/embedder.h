@@ -121,6 +121,7 @@ private:
 	struct WaylandObject {
 		const struct wl_interface *interface = nullptr;
 		int version = 0;
+		bool destroyed = false; // Intert, awaiting confirmation from server.
 		WaylandObjectData *data = nullptr;
 	};
 
