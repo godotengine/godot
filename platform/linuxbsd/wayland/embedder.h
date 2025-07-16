@@ -63,6 +63,7 @@
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
 #include "protocol/tablet.gen.h"
+#include "protocol/tearing_control_v1.gen.h"
 #include "protocol/text_input.gen.h"
 #include "protocol/viewporter.gen.h"
 #include "protocol/wayland-drm.gen.h"
@@ -405,6 +406,10 @@ private:
 		// commit-timing-v1
 		&wp_commit_timing_manager_v1_interface,
 		&wp_commit_timer_v1_interface,
+
+		// tearing-control-v1
+		&wp_tearing_control_manager_v1_interface,
+		&wp_tearing_control_v1_interface,
 
 		// Our custom things.
 		&godot_embedding_compositor_interface,

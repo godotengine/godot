@@ -102,6 +102,9 @@ objects = [
     generate_from_xml(
         "linux_drm_syncobj_v1", "#thirdparty/wayland-protocols/staging/linux-drm-syncobj/linux-drm-syncobj-v1.xml"
     ),
+    generate_from_xml(
+        "tearing_control_v1", "#thirdparty/wayland-protocols/staging/tearing-control/tearing-control-v1.xml"
+    ),
     generate_from_xml("wayland-drm", "#thirdparty/mesa/src/egl/wayland/wayland-drm/wayland-drm.xml"),
     generate_from_xml("godot_embedding_compositor", "godot-embedding-compositor.xml"),
 ]
