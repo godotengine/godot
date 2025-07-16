@@ -1937,7 +1937,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 	return MessageStatus::UNHANDLED;
 }
 
-bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
+void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
 	CRASH_COND(info == nullptr);
 	CRASH_COND(fds_requested == nullptr);
 	CRASH_COND_MSG(info->direction == ProxyDirection::COMPOSITOR && client == nullptr, "Wait, where did this message come from?");
@@ -1971,7 +1971,7 @@ bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		// unknown server-side objects. Not the safest thing, I know, but it should do
 		// the job.
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Ignoring unknown server-side object r0x%x", info->raw_id));
-		return false;
+		return;
 	}
 
 	CRASH_COND_MSG(interface == nullptr, vformat("Object r0x%x has no interface", info->raw_id));
@@ -2006,13 +2006,13 @@ bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 	if (object->destroyed) {
 		DEBUG_LOG_WAYLAND_EMBED("Ignoring message for inert object.");
 		// Inert object.
-		return false;
+		return;
 	}
 
 	if (info->direction == ProxyDirection::COMPOSITOR) {
 		if (handle_request(LocalObjectHandle(client, info->raw_id), info->opcode, buf, info->size)) {
 			DEBUG_LOG_WAYLAND_EMBED("Custom handler success.");
-			return false;
+			return;
 		}
 
 		if (global_id != INVALID_ID) {
@@ -2142,14 +2142,14 @@ bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 			MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
 			if (event_status == MessageStatus::HANDLED || event_status == MessageStatus::INVALID) {
 				// We're done.
-				return false;
+				return;
 			}
 
 			// Generic passthrough.
 
 			if (client) {
 				uint32_t local_id = client->get_local_id(global_id);
-				ERR_FAIL_COND_V(local_id == INVALID_ID, false);
+				ERR_FAIL_COND(local_id == INVALID_ID);
 
 				DEBUG_LOG_WAYLAND_EMBED(vformat("%s::%s(%s) g0x%x -> l0x%x", interface->name, message->name, message->signature, global_id, local_id));
 				buf[0] = local_id;
@@ -2165,8 +2165,6 @@ bool WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Closing fd %d.", fd));
 		close(fd);
 	}
-
-	return false;
 }
 
 bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
