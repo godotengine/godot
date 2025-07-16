@@ -188,7 +188,7 @@ public:
 
 	void set_seed(uint32_t p_seed);
 	uint32_t get_seed() const;
-	void request_particles_process(real_t p_requested_process_time);
+	void request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_trailing);
 
 	enum EmitFlags {
 		EMIT_FLAG_POSITION = RS::PARTICLES_EMIT_FLAG_POSITION,

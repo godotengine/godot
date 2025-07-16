@@ -368,10 +368,11 @@ void ParticlesStorage::particles_set_pre_process_time(RID p_particles, double p_
 	particles->pre_process_time = p_time;
 }
 
-void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time) {
+void ParticlesStorage::particles_request_process_time(RID p_particles, real_t p_request_process_time, real_t p_request_process_time_trailing) {
 	Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL(particles);
 	particles->request_process_time = p_request_process_time;
+	particles->request_process_time_trailing = p_request_process_time_trailing;
 }
 
 void ParticlesStorage::particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) {
@@ -1535,10 +1536,9 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-		double todo = particles->request_process_time;
-		if (particles->clear) {
-			todo += particles->pre_process_time;
-		}
+		double todo = particles->clear ? particles->pre_process_time : 0;
+		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
+		todo = todo > particles->request_process_time_trailing ? todo : particles->request_process_time_trailing;
 
 		if (todo > 0.0) {
 			double frame_time;
@@ -1551,11 +1551,33 @@ void ParticlesStorage::update_particles() {
 			float tmp_scale = particles->speed_scale;
 			// We need this otherwise the speed scale of the particle system influences the TODO.
 			particles->speed_scale = 1.0;
-			while (todo >= 0) {
-				_particles_process(particles, frame_time);
-				todo -= frame_time;
+			bool tmp_emitting = particles->emitting;
+			if (particles->clear) {
+				todo = particles->pre_process_time;
+				while (todo > 0.) {
+					_particles_process(particles, frame_time > todo ? frame_time : todo);
+					todo -= frame_time;
+				}
+			}
+			if (particles->request_process_time > 0) {
+				todo = particles->request_process_time;
+				while (todo > 0.) {
+					_particles_process(particles, frame_time > todo ? frame_time : todo);
+					todo -= frame_time;
+				}
+			}
+			if (particles->request_process_time_trailing > 0) {
+				particles->emitting = false;
+				todo = particles->request_process_time_trailing;
+				while (todo > 0.) {
+					_particles_process(particles, frame_time > todo ? frame_time : todo);
+					todo -= frame_time;
+				}
+
+				particles->emitting = tmp_emitting;
 			}
 			particles->request_process_time = 0.0;
+			particles->request_process_time_trailing = 0.0;
 			particles->speed_scale = tmp_scale;
 		}
 
