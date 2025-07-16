@@ -141,7 +141,7 @@ bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char 
 	dbus_message_unref(message);
 	if (dbus_error_is_set(&error)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));
+			ERR_PRINT(vformat("Failed to read setting %s %s: %s", p_namespace, p_key, error.message));
 		}
 		dbus_error_free(&error);
 		dbus_connection_unref(bus);
