@@ -186,19 +186,6 @@ void ConnectDialog::_focus_currently_connected() {
 }
 
 void ConnectDialog::_unbind_count_changed(double p_count) {
-	for (Control *control : bind_controls) {
-		BaseButton *b = Object::cast_to<BaseButton>(control);
-		if (b) {
-			b->set_disabled(p_count > 0);
-		}
-
-		EditorInspector *e = Object::cast_to<EditorInspector>(control);
-		if (e) {
-			e->set_read_only(p_count > 0);
-		}
-	}
-
-	append_source->set_disabled(p_count > 0);
 }
 
 void ConnectDialog::_method_selected() {
@@ -295,10 +282,9 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 		PropertyInfo pi = p_signal.arguments[i];
 		effective_args.push_back(Pair(pi.type, pi.class_name));
 	}
-	if (unbind == 0) {
-		for (const Variant &variant : get_binds()) {
-			effective_args.push_back(Pair(variant.get_type(), StringName()));
-		}
+
+	for (const Variant &variant : get_binds()) {
+		effective_args.push_back(Pair(variant.get_type(), StringName()));
 	}
 
 	for (const MethodInfo &mi : p_methods) {
@@ -963,9 +949,8 @@ void ConnectionsDock::_make_or_edit_connection() {
 	cd.signal = connect_dialog->get_signal_name();
 	cd.method = connect_dialog->get_dst_method_name();
 	cd.unbinds = connect_dialog->get_unbinds();
-	if (cd.unbinds == 0) {
-		cd.binds = connect_dialog->get_binds();
-	}
+	cd.binds = connect_dialog->get_binds();
+
 	bool b_deferred = connect_dialog->get_deferred();
 	bool b_oneshot = connect_dialog->get_one_shot();
 	bool b_append_source = connect_dialog->get_append_source();
@@ -1639,7 +1624,8 @@ void ConnectionsDock::update_tree() {
 				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";
-				} else if (!cd.binds.is_empty()) {
+				}
+				if (!cd.binds.is_empty()) {
 					path += " binds(";
 					for (int i = 0; i < cd.binds.size(); i++) {
 						if (i > 0) {
