@@ -593,23 +593,22 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 
 		Callable callable(cto, snames[c.method]);
+
+		Array binds;
+		if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
+			binds.push_back(cfrom);
+		}
+
+		for (int bind : c.binds) {
+			binds.push_back(props[bind]);
+		}
+
+		if (!binds.is_empty()) {
+			callable = callable.bindv(binds);
+		}
+
 		if (c.unbinds > 0) {
 			callable = callable.unbind(c.unbinds);
-		} else {
-			Array binds;
-			if (c.flags & CONNECT_APPEND_SOURCE_OBJECT) {
-				binds.push_back(cfrom);
-			}
-
-			if (!c.binds.is_empty()) {
-				for (int j = 0; j < c.binds.size(); j++) {
-					binds.push_back(props[c.binds[j]]);
-				}
-			}
-
-			if (!binds.is_empty()) {
-				callable = callable.bindv(binds);
-			}
 		}
 
 		cfrom->connect(snames[c.signal], callable, CONNECT_PERSIST | c.flags | (p_edit_state == GEN_EDIT_STATE_MAIN ? 0 : CONNECT_INHERITED));
@@ -1083,19 +1082,21 @@ Error SceneState::_parse_connections(Node *p_owner, Node *p_node, HashMap<String
 				CallableCustomBind *ccb = dynamic_cast<CallableCustomBind *>(c.callable.get_custom());
 				if (ccb) {
 					binds = ccb->get_binds();
-
-					// The source object may already be bound, ignore it to avoid saving the source object.
-					if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
-						binds.remove_at(0);
-					}
+					unbinds = ccb->get_unbound_arguments_count();
 
 					base_callable = ccb->get_callable();
 				}
 
 				CallableCustomUnbind *ccu = dynamic_cast<CallableCustomUnbind *>(c.callable.get_custom());
 				if (ccu) {
+					ccu->get_bound_arguments(binds);
 					unbinds = ccu->get_unbinds();
 					base_callable = ccu->get_callable();
+				}
+
+				// The source object may already be bound, ignore it to avoid saving the source object.
+				if ((c.flags & CONNECT_APPEND_SOURCE_OBJECT) && (p_node == binds[0])) {
+					binds.remove_at(0);
 				}
 			} else {
 				base_callable = c.callable;
