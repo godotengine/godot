@@ -150,7 +150,6 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_style
 }
 
 void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
-	Slot s = slots[p_slot_index];
 	_remove_slot(p_slot_index);
 	int input_port_idx = slot_to_port_index(p_slot_index, true);
 	int output_port_idx = slot_to_port_index(p_slot_index, false);
@@ -339,7 +338,6 @@ void GraphNodeIndexed::_update_port_positions() {
 
 		if (_slot_node_map_cache.has(child->get_name())) {
 			int slot_index = _slot_node_map_cache[child->get_name()];
-			const Slot &slot = slots[slot_index];
 			GraphPort *left_port = get_input_port_by_slot(slot_index);
 			GraphPort *right_port = get_output_port_by_slot(slot_index);
 
@@ -431,25 +429,24 @@ int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabl
 	}
 	int idx = 0;
 	int slot_idx = 0;
-	for (const Slot &slot : slots) {
-		int input_port_idx = slot_idx * 2;
+	for (int i = 0; i < slots.size(); i++) {
+		int input_port_idx = i * 2;
 		int output_port_idx = input_port_idx + 1;
 		if (input_port_idx >= ports.size()) {
 			break;
 		}
 		if (ports[input_port_idx] && ports[input_port_idx]->is_enabled()) {
 			if (idx == p_port_index) {
-				return slot_idx;
+				return i;
 			}
 			idx++;
 		}
 		if (ports[output_port_idx] && ports[output_port_idx]->is_enabled()) {
 			if (idx == p_port_index) {
-				return slot_idx;
+				return i;
 			}
 			idx++;
 		}
-		slot_idx++;
 	}
 	return -1;
 }
