@@ -55,7 +55,7 @@ void ResourceImporterVideo::get_recognized_extensions(List<String> *p_extensions
 }
 
 String ResourceImporterVideo::get_save_extension() const {
-	return "theoravideostr";
+	return "ogv";
 }
 
 String ResourceImporterVideo::get_resource_type() const {
@@ -127,15 +127,8 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 
 	if (err != OK || exitcode != 0) {
 		print_verbose(str);
-		//ERR_FAIL_V_MSG(BAKE_ERROR_LIGHTMAP_CANT_PRE_BAKE_MESHES, vformat("OIDN denoiser failed, return code: %d", exitcode));
 		return FAILED;
 	}
-
-	VideoStreamTheora *stream = memnew(VideoStreamTheora);
-	stream->set_file(p_save_path + ".ogv");
-	r_gen_files->push_back(p_save_path + ".ogv");
-	Ref<VideoStreamTheora> ogv_stream = Ref<VideoStreamTheora>(stream);
-	ResourceSaver::save(ogv_stream, p_save_path + ".theoravideostr");
 
 	return OK;
 }
