@@ -38,6 +38,7 @@
 #include "../objects/jolt_body_3d.h"
 #include "../shapes/jolt_custom_shape_type.h"
 #include "../shapes/jolt_shape_3d.h"
+#include "jolt_body_activation_listener_3d.h"
 #include "jolt_contact_listener_3d.h"
 #include "jolt_layers.h"
 #include "jolt_physics_direct_space_state_3d.h"
@@ -101,6 +102,7 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
 		temp_allocator(new JoltTempAllocator()),
 		layers(new JoltLayers()),
 		contact_listener(new JoltContactListener3D(this)),
+		body_activation_listener(new JoltBodyActivationListener3D()),
 		physics_system(new JPH::PhysicsSystem()) {
 	physics_system->Init((JPH::uint)JoltProjectSettings::max_bodies, 0, (JPH::uint)JoltProjectSettings::max_body_pairs, (JPH::uint)JoltProjectSettings::max_contact_constraints, *layers, *layers, *layers);
 
@@ -124,6 +126,7 @@ JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
 	physics_system->SetGravity(JPH::Vec3::sZero());
 	physics_system->SetContactListener(contact_listener);
 	physics_system->SetSoftBodyContactListener(contact_listener);
+	physics_system->SetBodyActivationListener(body_activation_listener);
 
 	physics_system->SetSimCollideBodyVsBody([](const JPH::Body &p_body1, const JPH::Body &p_body2, JPH::Mat44Arg p_transform_com1, JPH::Mat44Arg p_transform_com2, JPH::CollideShapeSettings &p_collide_shape_settings, JPH::CollideShapeCollector &p_collector, const JPH::ShapeFilter &p_shape_filter) {
 		if (p_body1.IsSensor() || p_body2.IsSensor()) {
@@ -155,6 +158,11 @@ JoltSpace3D::~JoltSpace3D() {
 	if (physics_system != nullptr) {
 		delete physics_system;
 		physics_system = nullptr;
+	}
+
+	if (body_activation_listener != nullptr) {
+		delete body_activation_listener;
+		body_activation_listener = nullptr;
 	}
 
 	if (contact_listener != nullptr) {
@@ -436,6 +444,12 @@ void JoltSpace3D::remove_object(const JPH::BodyID &p_jolt_id) {
 	}
 
 	body_iface.DestroyBody(p_jolt_id);
+
+	// If we're never going to step this space, like in the editor viewport, we need to manually clean up Jolt's broad phase instead, otherwise performance can degrade when doing things like switching scenes.
+	// We'll never actually have zero bodies in any space though, since we always have the default area, so we check if there's one or fewer left instead.
+	if (!JoltPhysicsServer3D::get_singleton()->is_active() && physics_system->GetNumBodies() <= 1) {
+		physics_system->OptimizeBroadPhase();
+	}
 }
 
 void JoltSpace3D::flush_pending_objects() {
@@ -482,6 +496,9 @@ void JoltSpace3D::set_is_object_sleeping(const JPH::BodyID &p_jolt_id, bool p_en
 }
 
 void JoltSpace3D::enqueue_call_queries(SelfList<JoltBody3D> *p_body) {
+	// This method will be called from the body activation listener on multiple threads during the simulation step.
+	MutexLock body_call_queries_lock(body_call_queries_mutex);
+
 	if (!p_body->in_list()) {
 		body_call_queries_list.add(p_body);
 	}

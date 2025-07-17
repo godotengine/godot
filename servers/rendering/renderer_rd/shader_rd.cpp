@@ -233,14 +233,6 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 				for (const KeyValue<StringName, CharString> &E : p_version->code_sections) {
 					builder.append(String("#define ") + String(E.key) + "_CODE_USED\n");
 				}
-#if (defined(MACOS_ENABLED) || defined(APPLE_EMBEDDED_ENABLED))
-				if (RD::get_singleton()->get_device_capabilities().device_family == RDD::DEVICE_VULKAN) {
-					builder.append("#define MOLTENVK_USED\n");
-				}
-				// Image atomics are supported on Metal 3.1 but no support in MoltenVK or SPIRV-Cross yet.
-				builder.append("#define NO_IMAGE_ATOMICS\n");
-#endif
-
 				builder.append(String("#define RENDER_DRIVER_") + OS::get_singleton()->get_current_rendering_driver_name().to_upper() + "\n");
 				builder.append("#define samplerExternalOES sampler2D\n");
 				builder.append("#define textureExternalOES texture2D\n");
@@ -270,7 +262,7 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 }
 
 Vector<String> ShaderRD::_build_variant_stage_sources(uint32_t p_variant, CompileData p_data) {
-	if (!variants_enabled[p_variant]) {
+	if (!variants_enabled[p_variant] && !variants_bake_for.has(p_variant)) {
 		return Vector<String>(); // Variant is disabled, return.
 	}
 
@@ -472,7 +464,10 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 		int variant_id = group_to_variant_map[p_group][i];
 		uint32_t variant_size = f->get_32();
 		ERR_FAIL_COND_V(variant_size == 0 && variants_enabled[variant_id], false);
-		if (!variants_enabled[variant_id]) {
+		if (!variants_enabled[variant_id] && !variants_bake_for.has(variant_id)) {
+			continue;
+		}
+		if (variant_size == 0) {
 			continue;
 		}
 		Vector<uint8_t> variant_bytes;
@@ -487,10 +482,11 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
-		if (!variants_enabled[variant_id]) {
+		if ((!variants_enabled[variant_id] && !variants_bake_for.has(variant_id)) || p_version->variant_data[variant_id].is_empty()) {
 			p_version->variants.write[variant_id] = RID();
 			continue;
 		}
+		print_verbose(vformat("Loading cache for shader %s, variant %d", name, i));
 		{
 			RID shader = RD::get_singleton()->shader_create_from_bytecode_with_samplers(p_version->variant_data[variant_id], p_version->variants[variant_id], immutable_samplers);
 			if (shader.is_null()) {
@@ -579,7 +575,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 	if (!all_valid) {
 		// Clear versions if they exist.
 		for (int i = 0; i < variant_defines.size(); i++) {
-			if (!variants_enabled[i] || !group_enabled[variant_defines[i].group]) {
+			if ((!variants_enabled[i] && !variants_bake_for.has(i)) || !group_enabled[variant_defines[i].group]) {
 				continue; // Disabled.
 			}
 			if (!p_version->variants[i].is_null()) {

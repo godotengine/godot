@@ -99,6 +99,7 @@ public:
 
 	void set_locale(const String &p_locale);
 	String get_locale() const;
+	void set_fallback_locale(const String &p_locale);
 	String get_fallback_locale() const;
 	Ref<Translation> get_translation_object(const String &p_locale);
 

@@ -227,6 +227,10 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/chest,"
 			"/user/vive_tracker_htcx/role/camera,"
 			"/user/vive_tracker_htcx/role/keyboard,"
+			"/user/vive_tracker_htcx/role/left_wrist,"
+			"/user/vive_tracker_htcx/role/right_wrist,"
+			"/user/vive_tracker_htcx/role/left_ankle,"
+			"/user/vive_tracker_htcx/role/right_ankle,"
 			"/user/eyes_ext");
 	Ref<OpenXRAction> aim_pose = action_set->add_new_action("aim_pose", "Aim pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
 	Ref<OpenXRAction> grip_pose = action_set->add_new_action("grip_pose", "Grip pose", OpenXRAction::OPENXR_ACTION_POSE, "/user/hand/left,/user/hand/right");
@@ -246,7 +250,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist,"
 			"/user/vive_tracker_htcx/role/chest,"
 			"/user/vive_tracker_htcx/role/camera,"
-			"/user/vive_tracker_htcx/role/keyboard");
+			"/user/vive_tracker_htcx/role/keyboard,"
+			"/user/vive_tracker_htcx/role/left_wrist,"
+			"/user/vive_tracker_htcx/role/right_wrist,"
+			"/user/vive_tracker_htcx/role/left_ankle,"
+			"/user/vive_tracker_htcx/role/right_ankle");
 
 	// Create our interaction profiles.
 	Ref<OpenXRInteractionProfile> profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/khr/simple_controller");
@@ -508,7 +516,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist/input/grip/pose,"
 			"/user/vive_tracker_htcx/role/chest/input/grip/pose,"
 			"/user/vive_tracker_htcx/role/camera/input/grip/pose,"
-			"/user/vive_tracker_htcx/role/keyboard/input/grip/pose");
+			"/user/vive_tracker_htcx/role/keyboard/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_wrist/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_wrist/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/left_ankle/input/grip/pose,"
+			"/user/vive_tracker_htcx/role/right_ankle/input/grip/pose");
 	profile->add_new_binding(haptic,
 			// "/user/vive_tracker_htcx/role/handheld_object/output/haptic," <-- getting errors on this one.
 			"/user/vive_tracker_htcx/role/left_foot/output/haptic,"
@@ -522,7 +534,11 @@ void OpenXRActionMap::create_default_action_sets() {
 			"/user/vive_tracker_htcx/role/waist/output/haptic,"
 			"/user/vive_tracker_htcx/role/chest/output/haptic,"
 			"/user/vive_tracker_htcx/role/camera/output/haptic,"
-			"/user/vive_tracker_htcx/role/keyboard/output/haptic");
+			"/user/vive_tracker_htcx/role/keyboard/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_wrist/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_wrist/output/haptic,"
+			"/user/vive_tracker_htcx/role/left_ankle/output/haptic,"
+			"/user/vive_tracker_htcx/role/right_ankle/output/haptic");
 	add_interaction_profile(profile);
 
 	// Create our eye gaze interaction profile.

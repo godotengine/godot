@@ -1643,13 +1643,16 @@ static unsigned int cpuid = getCpuFeatures();
 
 } // namespace meshopt
 
-size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size, int level)
+size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size, int level, int version)
 {
 	using namespace meshopt;
 
 	assert(vertex_size > 0 && vertex_size <= 256);
 	assert(vertex_size % 4 == 0);
 	assert(level >= 0 && level <= 9); // only a subset of this range is used right now
+	assert(version < 0 || unsigned(version) <= kDecodeVertexVersion);
+
+	version = version < 0 ? gEncodeVertexVersion : version;
 
 #if TRACE
 	memset(vertexstats, 0, sizeof(vertexstats));
@@ -1662,8 +1665,6 @@ size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size
 
 	if (size_t(data_end - data) < 1)
 		return 0;
-
-	int version = gEncodeVertexVersion;
 
 	*data++ = (unsigned char)(kVertexHeader | version);
 
@@ -1777,7 +1778,7 @@ size_t meshopt_encodeVertexBufferLevel(unsigned char* buffer, size_t buffer_size
 
 size_t meshopt_encodeVertexBuffer(unsigned char* buffer, size_t buffer_size, const void* vertices, size_t vertex_count, size_t vertex_size)
 {
-	return meshopt_encodeVertexBufferLevel(buffer, buffer_size, vertices, vertex_count, vertex_size, meshopt::kEncodeDefaultLevel);
+	return meshopt_encodeVertexBufferLevel(buffer, buffer_size, vertices, vertex_count, vertex_size, meshopt::kEncodeDefaultLevel, meshopt::gEncodeVertexVersion);
 }
 
 size_t meshopt_encodeVertexBufferBound(size_t vertex_count, size_t vertex_size)

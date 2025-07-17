@@ -37,8 +37,8 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export.h"
+#include "editor/settings/editor_settings.h"
 
 #include <sys/stat.h>
 

@@ -360,9 +360,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < ic; j++) {
-					facesw[widx++] = vr[ir[j - 2]];
-					facesw[widx++] = vr[ir[j - 1]];
-					facesw[widx++] = vr[ir[j]];
+					if (j % 2 == 0) {
+						facesw[widx++] = vr[ir[j - 2]];
+						facesw[widx++] = vr[ir[j - 1]];
+						facesw[widx++] = vr[ir[j]];
+					} else {
+						facesw[widx++] = vr[ir[j - 2]];
+						facesw[widx++] = vr[ir[j]];
+						facesw[widx++] = vr[ir[j - 1]];
+					}
 				}
 			}
 
@@ -373,9 +379,15 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < vc; j++) {
-					facesw[widx++] = vr[j - 2];
-					facesw[widx++] = vr[j - 1];
-					facesw[widx++] = vr[j];
+					if (j % 2 == 0) {
+						facesw[widx++] = vr[j - 2];
+						facesw[widx++] = vr[j - 1];
+						facesw[widx++] = vr[j];
+					} else {
+						facesw[widx++] = vr[j - 2];
+						facesw[widx++] = vr[j];
+						facesw[widx++] = vr[j - 1];
+					}
 				}
 			}
 		}

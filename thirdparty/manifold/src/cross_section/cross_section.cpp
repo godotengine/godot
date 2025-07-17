@@ -78,6 +78,9 @@ C2::JoinType jt(CrossSection::JoinType jointype) {
     case CrossSection::JoinType::Miter:
       jt = C2::JoinType::Miter;
       break;
+    case CrossSection::JoinType::Bevel:
+      jt = C2::JoinType::Bevel;
+      break;
   };
   return jt;
 }
@@ -675,8 +678,7 @@ CrossSection CrossSection::Offset(double delta, JoinType jointype,
     // (radius) in order to get back the same number of segments in Clipper2:
     // steps_per_360 = PI / acos(1 - arc_tol / abs_delta)
     const double abs_delta = std::fabs(delta);
-    const double scaled_delta = abs_delta * std::pow(10, precision_);
-    arc_tol = (std::cos(Clipper2Lib::PI / n) - 1) * -scaled_delta;
+    arc_tol = (std::cos(Clipper2Lib::PI / n) - 1) * -abs_delta;
   }
   auto ps =
       C2::InflatePaths(GetPaths()->paths_, delta, jt(jointype),

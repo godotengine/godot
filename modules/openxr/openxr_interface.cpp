@@ -1482,9 +1482,10 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_CONTROLLER:
 				return HAND_TRACKED_SOURCE_CONTROLLER;
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_UNKNOWN:
+			case OpenXRHandTrackingExtension::OPENXR_SOURCE_NOT_TRACKED:
 				return HAND_TRACKED_SOURCE_UNKNOWN;
 			default:
-				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source returned by OpenXR");
+				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source (" + String::num_int64(source) + ") returned by OpenXR");
 		}
 	}
 

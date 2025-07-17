@@ -44,6 +44,7 @@
 
 class JoltArea3D;
 class JoltBody3D;
+class JoltBodyActivationListener3D;
 class JoltContactListener3D;
 class JoltJoint3D;
 class JoltLayers;
@@ -54,6 +55,7 @@ class JoltSoftBody3D;
 
 class JoltSpace3D {
 	Mutex pending_objects_mutex;
+	Mutex body_call_queries_mutex;
 
 	SelfList<JoltBody3D>::List body_call_queries_list;
 	SelfList<JoltArea3D>::List area_call_queries_list;
@@ -69,6 +71,7 @@ class JoltSpace3D {
 	JPH::TempAllocator *temp_allocator = nullptr;
 	JoltLayers *layers = nullptr;
 	JoltContactListener3D *contact_listener = nullptr;
+	JoltBodyActivationListener3D *body_activation_listener = nullptr;
 	JPH::PhysicsSystem *physics_system = nullptr;
 	JoltPhysicsDirectSpaceState3D *direct_state = nullptr;
 	JoltArea3D *default_area = nullptr;

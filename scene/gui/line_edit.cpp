@@ -42,7 +42,7 @@
 #include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 void LineEdit::edit() {
@@ -75,7 +75,7 @@ void LineEdit::_edit(bool p_show_virtual_keyboard) {
 	editing = true;
 	_validate_caret_can_draw();
 
-	if (p_show_virtual_keyboard) {
+	if (p_show_virtual_keyboard && !pending_select_all_on_focus) {
 		show_virtual_keyboard();
 	}
 	queue_redraw();

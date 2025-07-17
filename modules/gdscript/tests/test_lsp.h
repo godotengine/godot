@@ -46,7 +46,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/os.h"
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
 
 #include "modules/gdscript/gdscript_analyzer.h"

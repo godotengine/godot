@@ -144,8 +144,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 	Error err = expr->parse(text);
 
-	use_custom_arrow_step = false;
-
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
@@ -195,12 +193,12 @@ void SpinBox::_range_click_timeout() {
 		bool mouse_on_up_button = get_local_mouse_position().y < (get_size().height / 2);
 		// Arrow button is being pressed. Snap the value to next step.
 		double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+		temp_step = Math::snapped(temp_step, get_step());
 		double new_value = _calc_value(get_value(), temp_step);
 		if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
 			new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
 		}
 		set_value(new_value);
-		use_custom_arrow_step = true;
 
 		if (range_click_timer->is_one_shot()) {
 			range_click_timer->set_wait_time(0.075);
@@ -264,12 +262,12 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 				if (mouse_on_up_button || mouse_on_down_button) {
 					// Arrow button is being pressed. Snap the value to next step.
 					double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+					temp_step = Math::snapped(temp_step, get_step());
 					double new_value = _calc_value(get_value(), temp_step);
 					if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
 						new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
 					}
 					set_value(new_value);
-					use_custom_arrow_step = true;
 				}
 				state_cache.up_button_pressed = mouse_on_up_button;
 				state_cache.down_button_pressed = mouse_on_down_button;
@@ -285,20 +283,17 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::RIGHT: {
 				line_edit->grab_focus();
 				if (mouse_on_up_button || mouse_on_down_button) {
-					use_custom_arrow_step = false;
 					set_value(mouse_on_up_button ? get_max() : get_min());
 				}
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (line_edit->is_editing()) {
-					use_custom_arrow_step = false;
 					set_value(get_value() + step * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->is_editing()) {
-					use_custom_arrow_step = false;
 					set_value(get_value() - step * mb->get_factor());
 					accept_event();
 				}
@@ -338,7 +333,6 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
 			double diff_y = -0.01 * Math::pow(Math::abs(drag.diff_y), 1.8) * SIGN(drag.diff_y);
-			use_custom_arrow_step = false;
 			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
