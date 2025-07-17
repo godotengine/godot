@@ -70,8 +70,9 @@ public:
 
 	void set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field);
 
-	void add_to_group(const StringName &p_identifier, bool persistent);
-	void remove_from_group(const StringName &p_identifier);
+	void make_group_mask(const StringName &p_identifier, String &p_mask);
+	void add_partial_to_group(const StringName &p_identifier, bool persistent, const String &p_mask);
+	void remove_partial_from_group(const StringName &p_identifier, const String &p_mask);
 	void get_groups(List<Node::GroupInfo> *p_groups);
 
 	// If the nodes selected are the same independently of order then return true.
