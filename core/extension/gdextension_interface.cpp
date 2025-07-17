@@ -261,6 +261,7 @@ static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_ver
 }
 
 // Memory Functions
+#ifndef DISABLE_DEPRECATED
 static void *gdextension_mem_alloc(size_t p_size) {
 	return memalloc(p_size);
 }
@@ -271,6 +272,19 @@ static void *gdextension_mem_realloc(void *p_mem, size_t p_size) {
 
 static void gdextension_mem_free(void *p_mem) {
 	memfree(p_mem);
+}
+#endif
+
+static void *gdextension_mem_alloc2(size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::alloc_static(p_size, p_prepad_align);
+}
+
+static void *gdextension_mem_realloc2(void *p_mem, size_t p_size, GDExtensionBool p_prepad_align) {
+	return Memory::realloc_static(p_mem, p_size, p_prepad_align);
+}
+
+static void gdextension_mem_free2(void *p_mem, GDExtensionBool p_prepad_align) {
+	Memory::free_static(p_mem, p_prepad_align);
 }
 
 // Helper print functions.
@@ -1687,9 +1701,14 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(get_godot_version);
 #endif // DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(get_godot_version2);
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);
 	REGISTER_INTERFACE_FUNC(mem_free);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(mem_alloc2);
+	REGISTER_INTERFACE_FUNC(mem_realloc2);
+	REGISTER_INTERFACE_FUNC(mem_free2);
 	REGISTER_INTERFACE_FUNC(print_error);
 	REGISTER_INTERFACE_FUNC(print_error_with_message);
 	REGISTER_INTERFACE_FUNC(print_warning);
