@@ -45,15 +45,6 @@
 #include "scene/gui/label.h"
 #include "scene/resources/packed_scene.h"
 
-
-//It would seem that this could be more elegant by moving the `can_edit_node`
-//	method to node.h, then defining a similar method in MultiNodeEdit, and 
-//	calling them both from `_can_edit` like in `_get_groups` below. 
-//
-//	However, no-where currently does node.h reference EditorNode 
-//	as seen in `can_edit_node`, and I don't want to add a new link between them
-//	to that already very entangled header. So we'll just keep defining it here
-//	instead.
 static bool can_edit_node(Node *n, const StringName &p_group) {
 	bool can_edit = true;
 	while (n) {
@@ -569,10 +560,6 @@ void GroupsEditor::_confirm_add() {
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	
 
-	//My main idea is to split this into a condition based on the type of the object
-	//Kinda defeats the elegance of the original design I had but it makes a lot of stuff easier
-	//For example: calling different args to undo with the correct mask on the selction,
-	//	and adding context based on the first node in the selection.
 	if (Object::cast_to<Node>(current_obj)) {
 		undo_redo->create_action(TTR("Add to Group"));
 		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
