@@ -606,7 +606,7 @@ void GraphNodeIndexed::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("slot_added", PropertyInfo(Variant::INT, "slot_index")));
 	ADD_SIGNAL(MethodInfo("slot_removed", PropertyInfo(Variant::INT, "slot_index")));
-	ADD_SIGNAL(MethodInfo("slot_moved", PropertyInfo(Variant::INT, "old_slot_index")), PropertyInfo(Variant::INT, "new_slot_index"));
+	ADD_SIGNAL(MethodInfo("slot_moved", PropertyInfo(Variant::INT, "old_slot_index"), PropertyInfo(Variant::INT, "new_slot_index")));
 	ADD_SIGNAL(MethodInfo("slot_sizes_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NODE_TYPE, "GraphNodeIndexed")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel);
