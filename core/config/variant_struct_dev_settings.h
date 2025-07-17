@@ -7,7 +7,7 @@
 
 // Enabled reference-type behaviour
 // If commented out, COW behaviour is enabled
-// #define VSTRUCT_IS_REFERENCE_TYPE
+#define VSTRUCT_IS_REFERENCE_TYPE
 
 // Moves all newly defined enums to the end of their respective lists, rather than where they make more intuitive sense
 // If commented out, backwards compatability may break

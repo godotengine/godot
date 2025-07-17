@@ -381,20 +381,6 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 VariantStruct PhysicsDirectSpaceState3D::_intersect_ray_st(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
 	ERR_FAIL_COND_V(p_ray_query.is_null(), VariantStruct());
 
-	// if constexpr (false) {
-	// 	// (if it was guaranteed to be more likely than not that intersect_ray that was successful, this would be more efficient)
-	// 	// (as it stands, that is unlikely to be true, so for now code serves merely as an example)
-	// 	VariantStruct result = VariantStruct::allocate_struct<RayResult>();
-	// 	bool res = intersect_ray(p_ray_query->get_parameters(), result.get_struct<RayResult>());
-	// 	return res ? result : VariantStruct();
-	// }
-	// if constexpr (false) {
-	// 	// (this is a slightly cleaner version of the above, and functionally identical)
-	// 	NativeVariantStruct<RayResult> result(false);
-	// 	bool res = intersect_ray(p_ray_query->get_parameters(), result.get_struct());
-	// 	return res ? result : VariantStruct();
-	// }
-
 	Inplace<RayResult> result;
 
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);

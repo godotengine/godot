@@ -38,33 +38,88 @@
 
 /////////////////////////////////////
 
-void VariantStruct::_copy_on_write() {
-	_ref(Internal::duplicate(_p));
-}
-
-void VariantStruct::clear() {
-	if (_p.is_refcounted()) {
-		// _p.clear();
+void VariantStruct::_unref() {
+	ERR_FAIL_NULL(instance);
+	if (instance->store == Internal::InstanceMetaData::IN_HEAP_ROOT && instance->refcount.unref()) {
+		// Call the destructor for the type, then free the memory
+		if (definition->destructor != &StructDefinition::trivial_destructor && instance->state == Internal::InstanceMetaData::STATE_VALID) {
+			definition->destructor({ instance, definition });
+			instance->state == Internal::InstanceMetaData::STATE_CLEARED;
+		}
+		instance.free(); // sets instance to nullptr
 	} else {
-		_unref();
+		instance = nullptr;
 	}
 }
 
+void VariantStruct::_ref(VarStructRef p_struct) {
+	if (instance == p_struct.instance) {
+		return;
+	}
+
+	if (instance->store == Internal::InstanceMetaData::IN_HEAP_ROOT && !p_struct.instance->refcount.ref()) {
+		ERR_FAIL_MSG("Could not reference the given struct");
+		return;
+	}
+
+	if (instance) {
+		_unref();
+	}
+	instance = p_struct.instance;
+	definition = p_struct.definition;
+}
+
+#ifndef VSTRUCT_IS_REFERENCE_TYPE
+void VariantStruct::_copy_on_write() {
+	DEV_ASSERT(instance && definition); // should be checked before getting here
+	DEV_ASSERT(instance->state == Internal::InstanceMetaData::STATE_VALID); // should be checked before getting here
+	VarStructRef copy = definition->copy_instance({ instance, definition });
+	if (instance) {
+		_unref();
+	}
+	instance = copy.instance;
+	definition = copy.definition;
+	instance->refcount.init();
+}
+#endif
+
+void VariantStruct::clear() {
+#ifdef VSTRUCT_IS_REFERENCE_TYPE
+	// Do nothing if it has no reference
+	if (!instance) {
+		return;
+	}
+
+	// Call the destructor for the type
+	if (definition->destructor != &StructDefinition::trivial_destructor && instance->state == Internal::InstanceMetaData::STATE_VALID) {
+		definition->destructor({ instance, definition });
+		instance->state == Internal::InstanceMetaData::STATE_CLEARED;
+	}
+	_unref();
+#else
+	// (Cow-type behaviour is to unref for clear)
+	_unref();
+#endif
+}
+
 bool VariantStruct::is_empty() const {
-	return !_p;
+	if (!instance) {
+		return true;
+	}
+	return instance->state == Internal::InstanceMetaData::STATE_CLEARED;
 }
 
 /////////////////////////////////////
 
 void StructDefinition::generic_constructor(VarStructRef p_struct) {
-	for (const Internal::StructPropertyInfo &E : p_struct.get_definition()->properties) {
+	for (const Internal::StructPropertyInfo &E : p_struct.definition->properties) {
 		switch (E.kind) {
 			case Internal::StructPropertyInfo::NATIVE_BUILTIN:
-				E.type_info->construct(p_struct->*E);
+				E.type_info->construct(p_struct.instance->*E);
 				break;
 			case Internal::StructPropertyInfo::NATIVE_OBJECT:
 				// RefCount?
-				*(Object **)(p_struct->*E) = nullptr;
+				*(Object **)(p_struct.instance->*E) = nullptr;
 				break;
 			default:
 				ERR_FAIL();
@@ -73,15 +128,15 @@ void StructDefinition::generic_constructor(VarStructRef p_struct) {
 }
 
 void StructDefinition::generic_copy_constructor(VarStructRef p_struct, const VarStructRef p_other) {
-	DEV_ASSERT(p_struct.get_definition() == p_other.get_definition());
-	for (const StructDefinition::StructPropertyInfo &E : p_struct.get_definition()->properties) {
+	DEV_ASSERT(p_struct.definition == p_other.definition); // should be checked by whatever is calling this
+	for (const Internal::StructPropertyInfo &E : p_struct.definition->properties) {
 		switch (E.kind) {
 			case Internal::StructPropertyInfo::NATIVE_BUILTIN:
-				E.type_info->copy_construct(p_struct->*E, p_other->*E);
+				E.type_info->copy_construct(p_struct.instance->*E, p_other.instance->*E);
 				break;
 			case Internal::StructPropertyInfo::NATIVE_OBJECT:
 				// RefCount?
-				*(Object **)(p_struct->*E) = *(Object **)(p_other->*E);
+				*(Object **)(p_struct.instance->*E) = *(Object **)(p_other.instance->*E);
 				break;
 			default:
 				ERR_FAIL();
@@ -90,10 +145,10 @@ void StructDefinition::generic_copy_constructor(VarStructRef p_struct, const Var
 }
 
 void StructDefinition::generic_destructor(VarStructRef p_struct) {
-	for (const StructDefinition::StructPropertyInfo &E : p_struct.get_definition()->properties) {
+	for (const Internal::StructPropertyInfo &E : p_struct.definition->properties) {
 		switch (E.kind) {
 			case Internal::StructPropertyInfo::NATIVE_BUILTIN:
-				E.type_info->destruct(p_struct->*E);
+				E.type_info->destruct(p_struct.instance->*E);
 				break;
 			case Internal::StructPropertyInfo::NATIVE_OBJECT:
 				// RefCount?
@@ -110,21 +165,23 @@ void VariantStruct::set(const StringName &p_name, const Variant &p_value, bool &
 		return;
 	}
 
-	const Internal::StructPropertyInfo *prop = _p.get_definition()->get_property_info(p_name);
+	const Internal::StructPropertyInfo *prop = definition->get_property_info(p_name);
 	if (prop == nullptr) {
 		r_valid = false;
 		return;
 	}
 
-	void *my_ptr = _p->*(*prop);
+	void *my_ptr = instance->*(*prop);
 	switch (prop->kind) {
 		case Internal::StructPropertyInfo::NATIVE_BUILTIN: {
 			const Variant::Type prop_type = prop->type_info->get_variant_type();
 			const Variant::Type val_type = p_value.get_type();
 			if (prop_type == val_type) {
+#ifndef VSTRUCT_IS_REFERENCE_TYPE
 				if (_p.check_cow()) {
 					_copy_on_write();
 				}
+#endif
 				// prop->type_info->ptr_set(my_ptr, VariantInternal::get_opaque_pointer(&p_value)); // couldn't figure out why variant_internal.h was causing errors so commented out for now
 				prop->type_info->write(my_ptr, p_value);
 				r_valid = true;
@@ -145,18 +202,18 @@ Variant VariantStruct::get(const StringName &p_name, bool &r_valid) const {
 		return Variant();
 	}
 
-	const Internal::StructPropertyInfo *prop = _p.get_definition()->get_property_info(p_name);
+	const Internal::StructPropertyInfo *prop = definition->get_property_info(p_name);
 	if (prop == nullptr) {
 		r_valid = false;
 		return Variant();
 	}
 
-	const void *my_ptr = _p->*(*prop);
+	const void *my_ptr = instance->*(*prop);
 	switch (prop->kind) {
 		case Internal::StructPropertyInfo::NATIVE_BUILTIN:
 			r_valid = true;
 			return prop->type_info->read(my_ptr);
-		break;
+			break;
 		case Internal::StructPropertyInfo::NATIVE_OBJECT:
 			// RefCount?
 			r_valid = true;

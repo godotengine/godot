@@ -76,13 +76,13 @@ public:
 		// _ALWAYS_INLINE_ MemberDataPointer() = default;
 		// _ALWAYS_INLINE_ MemberDataPointer() {}
 		template <class HeapT, typename MemberT>
-		_ALWAYS_INLINE_ MemberDataPointer(const MemberT HeapT::*const &p_member_pointer) {
+		_ALWAYS_INLINE_ constexpr MemberDataPointer(const MemberT HeapT::*const &p_member_pointer) {
 			// This constructor makes use of template type deduction to determine the memory requirements of given data-member-pointers
 			static_assert(sizeof(p_member_pointer) == sizeof(data_ptr_t), "Member Pointer size mismatch");
 			constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
 			_val = offset + *reinterpret_cast<const data_ptr_t *>(&p_member_pointer);
 		}
-		MemberDataPointer(const size_t &p_heap_align, const data_ptr_t &p_member_byte_position) {
+		constexpr MemberDataPointer(const size_t &p_heap_align, const data_ptr_t &p_member_byte_position) {
 			// Otherwise, if the alignment requirements and byte-position of the member-data are known, you can explicitly give those instead
 			size_t offset = calc_start(sizeof(CommonT), p_heap_align);
 			_val = offset + p_member_byte_position;
@@ -109,14 +109,27 @@ public:
 		size_t offset = calc_start(sizeof(CommonT), heap_align);
 		return reinterpret_cast<void *>(_ptr + offset);
 	}
+	_ALWAYS_INLINE_ const void *get_heap(const size_t heap_align) const {
+		size_t offset = calc_start(sizeof(CommonT), heap_align);
+		return reinterpret_cast<void *>(_ptr + offset);
+	}
 	template <class HeapT>
 	_ALWAYS_INLINE_ HeapT *get_heap() {
+		constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
+		return reinterpret_cast<HeapT *>(_ptr + offset);
+	}
+	template <class HeapT>
+	_ALWAYS_INLINE_ const HeapT *get_heap() const {
 		constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
 		return reinterpret_cast<HeapT *>(_ptr + offset);
 	}
 	// (only enabled if we don't need to know the align requirements of HeapT)
 	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
 	_ALWAYS_INLINE_ void *get_heap_() {
+		return reinterpret_cast<void *>(_ptr + sizeof(CommonT));
+	}
+	template <typename = std::enable_if_t<sizeof(CommonT) % alignof(max_align_t) == 0>>
+	_ALWAYS_INLINE_ const void *get_heap_() const {
 		return reinterpret_cast<void *>(_ptr + sizeof(CommonT));
 	}
 
