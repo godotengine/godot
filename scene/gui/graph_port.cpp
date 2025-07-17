@@ -302,9 +302,9 @@ void GraphPort::_draw() {
 	Color rim_color = get_rim_color();
 	int s = theme_cache.rim_size;
 	if (rim_color.a > 0 && s > 0) {
-		draw_texture_rect(port_icon, Rect2(get_position() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
+		draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
 	}
-	port_icon->draw(get_canvas_item(), get_position() + icon_offset, get_color());
+	port_icon->draw(get_canvas_item(), get_position_offset() + icon_offset, get_color());
 }
 
 void GraphPort::_on_enabled() {

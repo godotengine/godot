@@ -56,13 +56,18 @@ protected:
 	};
 	void _accessibility_action_port(const Variant &p_data);
 
+	virtual void add_child_notify(Node *p_child) override;
+	virtual void move_child_notify(Node *p_child) override;
+
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
 
 	String title;
 
 	Vector<GraphPort *> ports;
-	Container *port_container;
+	Control *port_container = nullptr;
+	StringName port_container_name = StringName("PortContainer");
+	int port_container_idx = 0;
 
 	int port_count = 0;
 	int enabled_port_count = 0;
@@ -110,6 +115,12 @@ protected:
 	virtual void _port_rebuild_cache();
 	void _port_modified();
 
+	virtual void _on_replacing_by(Node *new_node);
+
+	Callable modified_callable = callable_mp(this, &GraphNode::_port_modified);
+	Callable connected_callable = callable_mp(this, &GraphNode::_on_connected);
+	Callable disconnected_callable = callable_mp(this, &GraphNode::_on_disconnected);
+
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
@@ -120,7 +131,7 @@ public:
 
 	HBoxContainer *get_titlebar_hbox();
 
-	void set_ports(TypedArray<GraphPort> p_ports);
+	void set_ports(const TypedArray<GraphPort> &p_ports);
 	TypedArray<GraphPort> get_ports();
 	TypedArray<GraphPort> get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled = true);
 	void remove_all_ports();
@@ -154,6 +165,10 @@ public:
 
 	void _on_connected(const Ref<GraphConnection> p_conn);
 	void _on_disconnected(const Ref<GraphConnection> p_conn);
+
+	void set_port_container(Control *p_container);
+	Control *get_port_container();
+	void ensure_port_container();
 
 	virtual Size2 get_minimum_size() const override;
 

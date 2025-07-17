@@ -148,9 +148,15 @@ VSGraphPort::VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirec
 void VSGraphNode::create_slot_and_ports(int p_slot_index, bool draw_stylebox) {
 	VSGraphPort *p_left = memnew(VSGraphPort(false, true, 0, GraphPort::PortDirection::INPUT));
 	VSGraphPort *p_right = memnew(VSGraphPort(false, false, 0, GraphPort::PortDirection::OUTPUT));
-	port_container->add_child(p_left);
-	port_container->add_child(p_right);
-	return create_slot(p_slot_index, p_left, p_right, draw_stylebox);
+
+	p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
+
+	int p_left_port_index = slot_to_port_index(p_slot_index, true);
+	insert_port(p_left_port_index, p_left);
+	int p_right_port_index = slot_to_port_index(p_slot_index, false);
+	insert_port(p_right_port_index, p_right);
+
+	return create_slot(p_slot_index, p_left_port_index, p_right_port_index, draw_stylebox);
 }
 
 ///////////////////
@@ -4241,20 +4247,11 @@ void VisualShaderEditor::_connection_to_empty(GraphPort *p_from_port, const Vect
 	VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
 	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), from_node);
 	if (node.is_valid()) {
-		output_port_type = node->get_output_port_type(from_slot);
-	}
-	_show_members_dialog(true, input_port_type, output_port_type);
-}
-
-void VisualShaderEditor::_connection_from_empty(GraphPort *p_to_port, const Vector2 &p_release_position) {
-	ERR_FAIL_NULL(p_to_port);
-	from_node = String(p_to_port->get_graph_node()->get_name()).to_int();
-	from_slot = p_to_port->get_filtered_port_index(false);
-	VisualShaderNode::PortType input_port_type = VisualShaderNode::PORT_TYPE_MAX;
-	VisualShaderNode::PortType output_port_type = VisualShaderNode::PORT_TYPE_MAX;
-	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), to_node);
-	if (node.is_valid()) {
-		input_port_type = node->get_input_port_type(to_slot);
+		if (p_from_port->get_direction() == GraphPort::PortDirection::INPUT) {
+			input_port_type = (VisualShaderNode::PortType)p_from_port->get_type();
+		} else {
+			output_port_type = (VisualShaderNode::PortType)p_from_port->get_type();
+		}
 	}
 	_show_members_dialog(true, input_port_type, output_port_type);
 }
@@ -6529,7 +6526,6 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("delete_nodes_request", callable_mp(this, &VisualShaderEditor::_delete_nodes_request));
 	graph->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_graph_gui_input));
 	graph->connect("connection_to_empty", callable_mp(this, &VisualShaderEditor::_connection_to_empty));
-	graph->connect("connection_from_empty", callable_mp(this, &VisualShaderEditor::_connection_from_empty));
 	graph->connect("connection_drag_ended", callable_mp(this, &VisualShaderEditor::_connection_drag_ended));
 	graph->connect(SceneStringName(visibility_changed), callable_mp(this, &VisualShaderEditor::_visibility_changed));
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SCALAR, VisualShaderNode::PORT_TYPE_SCALAR);

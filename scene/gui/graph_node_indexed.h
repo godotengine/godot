@@ -38,13 +38,13 @@ class GraphNodeIndexed : public GraphNode {
 
 protected:
 	struct Slot {
-		GraphPort *left_port = nullptr;
-		GraphPort *right_port = nullptr;
+		int left_port_index = -1;
+		int right_port_index = -1;
 		bool draw_stylebox = true;
 
 		Slot();
-		Slot(GraphPort *lp, GraphPort *rp, bool draw_sb) :
-				left_port(lp), right_port(rp), draw_stylebox(draw_sb) {}
+		Slot(int lp, int rp, bool draw_sb) :
+				left_port_index(lp), right_port_index(rp), draw_stylebox(draw_sb) {}
 	};
 	Vector<Slot> slots;
 	HashMap<StringName, int> _slot_node_map_cache;
@@ -74,39 +74,47 @@ protected:
 
 	void _set_slots(const Vector<Slot> &p_slots);
 	const Vector<Slot> &_get_slots();
-	void _set_slot(int p_slot_index, const Slot p_slot, bool p_with_ports = true);
+	void _set_slot(int p_slot_index, const Slot p_slot);
 	Slot _get_slot(int p_slot_index);
-	void _insert_slot(int p_slot_index, const Slot p_slot, bool p_with_ports = true);
-	void _remove_all_slots(bool p_with_ports = true);
-	void _remove_slot(int p_slot_index, bool p_with_ports = true);
+	void _insert_slot(int p_slot_index, const Slot p_slot);
+	void _remove_all_slots();
+	void _remove_slot(int p_slot_index);
+
+	void _set_slot_node_cache(const TypedDictionary<StringName, int> &p_slot_node_map_cache);
+	TypedDictionary<StringName, int> _get_slot_node_cache();
 
 	virtual void _resort() override;
 	virtual void _update_port_positions() override;
+
+	int _subtract_port_container(int idx);
+	int _add_port_container(int idx);
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &p_property) const;
+
+	void create_slot(int p_slot_index, int p_left_port_index, int p_right_port_index, bool draw_stylebox);
+	virtual void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
+	void remove_slot_and_ports(int p_slot_index);
+	void move_slot_with_ports(int p_old_slot_index, int p_new_slot_index);
+	void set_slot_with_ports(int p_slot_index, Slot p_slot);
+
+	void set_slots(const TypedArray<Array> &p_slots);
 
 public:
 	void _notification(int p_what);
 
-	void create_slot(int p_slot_index, GraphPort *p_left_port, GraphPort *p_right_port, bool draw_stylebox);
-	virtual void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
-
-	void set_slots(TypedArray<Array> p_slots);
 	TypedArray<Array> get_slots();
 
-	void set_slot(int p_slot_index, GraphPort *p_left_port, GraphPort *p_right_port, bool draw_stylebox);
 	Array get_slot(int p_slot_index);
 
 	void set_slot_properties(int p_slot_index, bool p_input_enabled, int p_input_type, bool p_output_enabled, int p_output_type);
 	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type);
 	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type);
 
-	void set_input_port_by_slot(int p_slot_index, GraphPort *p_port);
-	void set_output_port_by_slot(int p_slot_index, GraphPort *p_port);
 	GraphPort *get_input_port_by_slot(int p_slot_index);
 	GraphPort *get_output_port_by_slot(int p_slot_index);
 
@@ -116,6 +124,7 @@ public:
 	int get_input_port_count();
 	int get_output_port_count();
 
+	int slot_index_of_node(Node *p_node);
 	int slot_index_of_port(GraphPort *p_port);
 	int index_of_input_port(GraphPort *p_port, bool p_include_disabled = true);
 	int index_of_output_port(GraphPort *p_port, bool p_include_disabled = true);
