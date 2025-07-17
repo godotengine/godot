@@ -171,6 +171,13 @@ public:
 	OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv);
 };
 
+class OS_MacOS_Headless : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
+};
+
 #ifdef DEBUG_ENABLED
 
 class OS_MacOS_Embedded : public OS_MacOS {
