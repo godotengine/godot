@@ -3748,6 +3748,32 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
+		<method name="texture_drawable_create">
+			<return type="RID" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="texture_format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="3" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_draw_mesh">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<param index="1" name="material" type="RID" />
+			<param index="2" name="mesh" type="RID" />
+			<param index="3" name="surface_index" type="int" />
+			<param index="4" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="5" name="clear_color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="texture_drawable_generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="texture_get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<param index="0" name="texture" type="RID" />
@@ -4544,8 +4570,9 @@
 		<constant name="SHADER_FOG" value="4" enum="ShaderMode">
 			Shader is a 3D fog shader.
 		</constant>
-		<constant name="SHADER_MAX" value="5" enum="ShaderMode">
-			Represents the size of the [enum ShaderMode] enum.
+		<constant name="SHADER_MESH_RASTERIZER" value="5" enum="ShaderMode">
+		</constant>
+		<constant name="SHADER_MAX" value="5" enum="ShaderMode" deprecated="This is replaced by [constant SHADER_MESH_RASTERIZER].">
 		</constant>
 		<constant name="MATERIAL_RENDER_PRIORITY_MIN" value="-128">
 			The minimum renderpriority of all materials.
@@ -4759,6 +4786,22 @@
 		</constant>
 		<constant name="MULTIMESH_INTERP_QUALITY_HIGH" value="1" enum="MultimeshPhysicsInterpolationQuality">
 			MultiMesh physics interpolation favors quality over speed.
+		</constant>
+		<constant name="BLEND_MODE_CLEAR" value="-1" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_MIX" value="0" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_ADD" value="1" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_SUB" value="2" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_MUL" value="3" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_ALPHA_TO_COVERAGE" value="4" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_PREMULTIPLIED_ALPHA" value="5" enum="TextureDrawableBlendMode">
+		</constant>
+		<constant name="BLEND_MODE_DISABLED" value="6" enum="TextureDrawableBlendMode">
 		</constant>
 		<constant name="LIGHT_PROJECTOR_FILTER_NEAREST" value="0" enum="LightProjectorFilter">
 			Nearest-neighbor filter for light projectors (use for pixel art light projectors). No mipmaps are used for rendering, which means light projectors at a distance will look sharp but grainy. This has roughly the same performance cost as using mipmaps.

@@ -2090,6 +2090,20 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
 }
 
+/* TEXTURE DRAWABLE API */
+
+void GLES3::TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps) {
+	// TODO
+}
+
+void GLES3::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture_drawable) {
+	// TODO
+}
+
+void GLES3::TextureStorage::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
+	// TODO
+}
+
 /* RENDER TARGET API */
 
 GLuint TextureStorage::system_fbo = 0;
