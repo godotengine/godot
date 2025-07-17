@@ -323,7 +323,7 @@ void GraphNodeIndexed::_update_port_positions() {
 	int separation = theme_cache.separation;
 
 	// This helps to immediately achieve the initial y "original point" of the slots, which the sum of the titlebar height and the top margin of the panel.
-	int vertical_ofs = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height + sb_panel->get_margin(SIDE_TOP);
+	int vertical_ofs = titlebar_hbox->get_size().height + (sb_titlebar.is_valid() ? sb_titlebar->get_minimum_size().height : 0) + (sb_panel.is_valid() ? sb_panel->get_margin(SIDE_TOP) : 0);
 
 	// Node x and port x positions are uniform for all ports, so find them now
 	int node_width = get_size().width;
