@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  history_dock.h                                                        */
+/*  dock_constants.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,38 +30,26 @@
 
 #pragma once
 
-#include "editor/docks/editor_dock.h"
+namespace DockConstants {
 
-class CheckBox;
-class ConfigFile;
-class ItemList;
-class EditorUndoRedoManager;
-
-class HistoryDock : public EditorDock {
-	GDCLASS(HistoryDock, EditorDock);
-
-	EditorUndoRedoManager *ur_manager;
-	ItemList *action_list = nullptr;
-
-	CheckBox *current_scene_checkbox = nullptr;
-	CheckBox *global_history_checkbox = nullptr;
-
-	bool need_refresh = true;
-	int current_version = 0;
-
-	void on_history_changed();
-	void refresh_history();
-	void on_version_changed();
-	void refresh_version();
-
-protected:
-	void _notification(int p_notification);
-
-	virtual void save_layout_to_config(Ref<ConfigFile> &p_layout, const String &p_section) const override;
-	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
-
-public:
-	void seek_history(int p_index);
-
-	HistoryDock();
+enum DockSlot {
+	DOCK_SLOT_NONE = -1,
+	DOCK_SLOT_LEFT_UL,
+	DOCK_SLOT_LEFT_BL,
+	DOCK_SLOT_LEFT_UR,
+	DOCK_SLOT_LEFT_BR,
+	DOCK_SLOT_RIGHT_UL,
+	DOCK_SLOT_RIGHT_BL,
+	DOCK_SLOT_RIGHT_UR,
+	DOCK_SLOT_RIGHT_BR,
+	DOCK_SLOT_BOTTOM,
+	DOCK_SLOT_MAX
 };
+
+enum DockLayout {
+	DOCK_LAYOUT_VERTICAL = 1,
+	DOCK_LAYOUT_HORIZONTAL = 2,
+	DOCK_LAYOUT_FLOATING = 4,
+};
+
+}; //namespace DockConstants
