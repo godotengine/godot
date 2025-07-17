@@ -362,7 +362,6 @@ private:
 
 	Ref<Theme> theme;
 
-	Timer *system_theme_timer = nullptr;
 	bool follow_system_theme = false;
 	bool use_system_accent_color = false;
 	bool last_dark_mode_state = false;
