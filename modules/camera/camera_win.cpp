@@ -109,6 +109,12 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 	hr = imf_media_type_handler->GetMediaTypeCount(&media_type_count);
 	ERR_FAIL_COND_MSG(FAILED(hr), "Unable to get media type count");
 
+	// Track unique format combinations after RGB24 conversion
+	Vector<FormatKey> seen_formats;
+
+	// First pass: collect all formats and check for RGB24
+	Vector<TempFormat> temp_formats;
+
 	for (DWORD i = 0; i < media_type_count; i++) {
 		// Get media type
 		IMFMediaType *imf_media_type;
@@ -124,10 +130,29 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 			continue;
 		}
 
-		bool supported_fmt = (video_format == MFVideoFormat_RGB24);
-		supported_fmt = supported_fmt || (video_format == MFVideoFormat_NV12);
-		supported_fmt = supported_fmt || (video_format == MFVideoFormat_YUY2);
-		supported_fmt = supported_fmt || (video_format == MFVideoFormat_MJPG);
+		// Check if this format can be converted to RGB24
+		bool supported_fmt = false;
+
+		// Formats directly supported by BufferDecoder
+		if (video_format == MFVideoFormat_RGB24 ||
+				video_format == MFVideoFormat_NV12 ||
+				video_format == MFVideoFormat_YUY2 ||
+				video_format == MFVideoFormat_MJPG) {
+			supported_fmt = true;
+		}
+		// Additional formats commonly supported by Media Foundation conversion
+		else if (video_format == MFVideoFormat_RGB32 ||
+				video_format == MFVideoFormat_ARGB32 ||
+				video_format == MFVideoFormat_UYVY ||
+				video_format == MFVideoFormat_YVYU ||
+				video_format == MFVideoFormat_I420 ||
+				video_format == MFVideoFormat_IYUV ||
+				video_format == MFVideoFormat_YV12) {
+			supported_fmt = true;
+		}
+		// H264 requires codec availability - exclude by default
+		// Users can install Media Feature Pack if needed
+
 		if (!supported_fmt) {
 			uint32_t format = video_format.Data1;
 			if (!warned_formats.has(format)) {
@@ -161,14 +186,34 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 			continue;
 		}
 
-		// Add supported formats
+		// Store format information temporarily
+		TempFormat temp;
+		temp.video_format = video_format;
+		temp.media_type_index = i;
+		temp.is_rgb24 = (video_format == MFVideoFormat_RGB24);
+
+		// Set format string
 		FeedFormat format;
 		if (video_format == MFVideoFormat_RGB24) {
 			format.format = "RGB24";
+		} else if (video_format == MFVideoFormat_RGB32) {
+			format.format = "RGB32";
+		} else if (video_format == MFVideoFormat_ARGB32) {
+			format.format = "ARGB32";
 		} else if (video_format == MFVideoFormat_NV12) {
 			format.format = "NV12";
 		} else if (video_format == MFVideoFormat_YUY2) {
 			format.format = "YUY2";
+		} else if (video_format == MFVideoFormat_UYVY) {
+			format.format = "UYVY";
+		} else if (video_format == MFVideoFormat_YVYU) {
+			format.format = "YVYU";
+		} else if (video_format == MFVideoFormat_I420) {
+			format.format = "I420";
+		} else if (video_format == MFVideoFormat_IYUV) {
+			format.format = "IYUV";
+		} else if (video_format == MFVideoFormat_YV12) {
+			format.format = "YV12";
 		} else if (video_format == MFVideoFormat_MJPG) {
 			format.format = "MJPG";
 		}
@@ -177,11 +222,69 @@ void CameraFeedWindows::fill_formats(IMFMediaTypeHandler *imf_media_type_handler
 		format.frame_numerator = numerator;
 		format.frame_denominator = denominator;
 
-		this->formats.append(format);
-		this->format_guids.append(video_format);
-		this->format_mediatypes.append(i);
+		temp.format = format;
+		temp_formats.append(temp);
 
 		imf_media_type->Release();
+	}
+
+	// Second pass: add formats prioritizing RGB24
+	for (const TempFormat &temp : temp_formats) {
+		FormatKey key;
+		key.width = temp.format.width;
+		key.height = temp.format.height;
+		key.frame_numerator = temp.format.frame_numerator;
+		key.frame_denominator = temp.format.frame_denominator;
+		key.is_rgb24 = temp.is_rgb24;
+
+		// Check if this combination already exists
+		bool should_add = true;
+		for (const FormatKey &seen : seen_formats) {
+			if (seen == key) {
+				// If we already have this combination and it was RGB24, skip non-RGB24
+				if (seen.is_rgb24 && !temp.is_rgb24) {
+					should_add = false;
+					break;
+				}
+				// If we have non-RGB24 and this is RGB24, we'll replace it
+				else if (!seen.is_rgb24 && temp.is_rgb24) {
+					// Remove the existing non-RGB24 format
+					for (int j = formats.size() - 1; j >= 0; j--) {
+						if (formats[j].width == key.width &&
+								formats[j].height == key.height &&
+								formats[j].frame_numerator == key.frame_numerator &&
+								formats[j].frame_denominator == key.frame_denominator) {
+							formats.remove_at(j);
+							format_guids.remove_at(j);
+							format_mediatypes.remove_at(j);
+							break;
+						}
+					}
+					// Update seen_formats
+					for (int j = 0; j < seen_formats.size(); j++) {
+						if (seen_formats[j] == key) {
+							seen_formats.write[j].is_rgb24 = true;
+							break;
+						}
+					}
+				}
+				// Both are the same type, skip
+				else {
+					should_add = false;
+					break;
+				}
+			}
+		}
+
+		if (should_add) {
+			// Add to seen formats
+			seen_formats.append(key);
+
+			// Add format
+			this->formats.append(temp.format);
+			this->format_guids.append(temp.video_format);
+			this->format_mediatypes.append(temp.media_type_index);
+		}
 	}
 }
 
@@ -259,15 +362,60 @@ bool CameraFeedWindows::activate_feed() {
 
 			if (media_type_set) {
 				// Create media imf_source_reader
-				hr = MFCreateSourceReaderFromMediaSource(imf_media_source, nullptr, &imf_source_reader);
+				IMFAttributes *reader_attributes = nullptr;
+				hr = MFCreateAttributes(&reader_attributes, 1);
 				if (SUCCEEDED(hr)) {
-					result = true;
+					// Enable hardware acceleration if available
+					hr = reader_attributes->SetUINT32(MF_SOURCE_READER_ENABLE_VIDEO_PROCESSING, TRUE);
 
-					// Create buffer decoder
-					buffer_decoder = _create_buffer_decoder();
+					hr = MFCreateSourceReaderFromMediaSource(imf_media_source, reader_attributes, &imf_source_reader);
+					reader_attributes->Release();
 
-					// Start reading
-					worker = memnew(std::thread(capture, this));
+					if (SUCCEEDED(hr)) {
+						// Configure source reader to convert to RGB24
+						IMFMediaType *output_type = nullptr;
+						hr = MFCreateMediaType(&output_type);
+						if (SUCCEEDED(hr)) {
+							hr = output_type->SetGUID(MF_MT_MAJOR_TYPE, MFMediaType_Video);
+							hr = output_type->SetGUID(MF_MT_SUBTYPE, MFVideoFormat_RGB24);
+
+							// Try to set RGB24 as output format
+							hr = imf_source_reader->SetCurrentMediaType(
+									MF_SOURCE_READER_FIRST_VIDEO_STREAM,
+									nullptr,
+									output_type);
+
+							if (SUCCEEDED(hr)) {
+								result = true;
+								use_mf_conversion = true;
+								// Create CopyBufferDecoder for MF-converted RGB24 data
+								buffer_decoder = memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
+							} else {
+								// Fallback to manual conversion for formats that support it
+								const GUID &video_format = format_guids[selected_format];
+								if (video_format == MFVideoFormat_MJPG ||
+										video_format == MFVideoFormat_NV12 ||
+										video_format == MFVideoFormat_YUY2 ||
+										video_format == MFVideoFormat_RGB24) {
+									result = true;
+									use_mf_conversion = false;
+									// Create buffer decoder
+									buffer_decoder = _create_buffer_decoder();
+								} else {
+									// Format not supported by either method
+									ERR_PRINT("Format not supported by Media Foundation conversion or manual decoder");
+									result = false;
+								}
+							}
+
+							output_type->Release();
+						}
+
+						if (result) {
+							// Start reading
+							worker = memnew(std::thread(capture, this));
+						}
+					}
 				}
 			}
 		}
@@ -402,6 +550,7 @@ bool CameraFeedWindows::set_format(int p_index, const Dictionary &p_parameters) 
 BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 	const GUID &video_format = format_guids[selected_format];
 
+	// Only create decoder for formats that Media Foundation can't convert
 	if (video_format == MFVideoFormat_MJPG) {
 		return memnew(JpegBufferDecoder(this));
 	} else if (video_format == MFVideoFormat_NV12) {
@@ -412,7 +561,8 @@ BufferDecoder *CameraFeedWindows::_create_buffer_decoder() {
 		return memnew(CopyBufferDecoder(this, CopyBufferDecoder::rgb));
 	}
 
-	// Default to null decoder
+	// Default to null decoder for unsupported formats
+	// These formats will rely on Media Foundation conversion
 	return memnew(NullBufferDecoder(this));
 }
 
