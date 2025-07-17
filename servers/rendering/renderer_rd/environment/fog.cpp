@@ -47,6 +47,24 @@ Fog::~Fog() {
 	singleton = nullptr;
 }
 
+int Fog::_get_fog_variant() {
+	RenderingDevice *rd = RD::get_singleton();
+	if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+		return 0;
+	} else {
+		return 1;
+	}
+}
+
+int Fog::_get_fog_process_variant(int p_idx) {
+	RenderingDevice *rd = RD::get_singleton();
+	if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+		return p_idx;
+	} else {
+		return p_idx + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX;
+	}
+}
+
 /* FOG VOLUMES */
 
 RID Fog::fog_volume_allocate() {
@@ -143,7 +161,7 @@ Vector3 Fog::fog_volume_get_size(RID p_fog_volume) const {
 bool Fog::FogMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	uniform_set_updated = true;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, 0), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true, true);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, uniform_set, Fog::get_singleton()->volumetric_fog.shader.version_get_shader(shader_data->version, _get_fog_variant()), VolumetricFogShader::FogSet::FOG_SET_MATERIAL, true, true);
 }
 
 Fog::FogMaterialData::~FogMaterialData() {
@@ -194,7 +212,25 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		// Initialize local fog shader
 		Vector<String> volumetric_fog_modes;
 		volumetric_fog_modes.push_back("");
+		volumetric_fog_modes.push_back("#define NO_IMAGE_ATOMICS\n");
+
 		volumetric_fog.shader.initialize(volumetric_fog_modes, defines);
+
+		RenderingDevice *rd = RD::get_singleton();
+		if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+			volumetric_fog.shader.set_variant_enabled(1, false);
+		} else {
+			volumetric_fog.shader.set_variant_enabled(0, false);
+		}
+		// Always bake default (with image atomics) variant.
+		volumetric_fog.shader.set_variants_bake_for(0, "*", true, true);
+
+		// Bake no "image atomics" variant for macOS/iOS (Vulkan and Metal) and visionOS (Metal).
+		volumetric_fog.shader.set_variants_bake_for(1, "macos_forward_clustered_vulkan", true, false);
+		volumetric_fog.shader.set_variants_bake_for(1, "macos_forward_clustered_metal", true, false);
+		volumetric_fog.shader.set_variants_bake_for(1, "ios_forward_clustered_vulkan", true, false);
+		volumetric_fog.shader.set_variants_bake_for(1, "ios_forward_clustered_metal", true, false);
+		volumetric_fog.shader.set_variants_bake_for(1, "visionos_forward_clustered_metal", true, false);
 
 		material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_shader_funcs);
 		material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_material_funcs);
@@ -252,7 +288,7 @@ ALBEDO = vec3(1.0);
 		material_storage->material_set_shader(volumetric_fog.default_material, volumetric_fog.default_shader);
 
 		FogMaterialData *md = static_cast<FogMaterialData *>(material_storage->material_get_data(volumetric_fog.default_material, RendererRD::MaterialStorage::SHADER_TYPE_FOG));
-		volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, 0);
+		volumetric_fog.default_shader_rd = volumetric_fog.shader.version_get_shader(md->shader_data->version, _get_fog_variant());
 
 		Vector<RD::Uniform> uniforms;
 
@@ -282,10 +318,35 @@ ALBEDO = vec3(1.0);
 		volumetric_fog_modes.push_back("\n#define MODE_FOG\n");
 		volumetric_fog_modes.push_back("\n#define MODE_COPY\n");
 
+		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define NO_IMAGE_ATOMICS\n");
+		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define ENABLE_SDFGI\n#define NO_IMAGE_ATOMICS\n");
+		volumetric_fog_modes.push_back("\n#define MODE_FILTER\n#define NO_IMAGE_ATOMICS\n");
+		volumetric_fog_modes.push_back("\n#define MODE_FOG\n#define NO_IMAGE_ATOMICS\n");
+		volumetric_fog_modes.push_back("\n#define MODE_COPY\n#define NO_IMAGE_ATOMICS\n");
+
 		volumetric_fog.process_shader.initialize(volumetric_fog_modes, defines);
+
+		RenderingDevice *rd = RD::get_singleton();
+		for (int i = 0; i < VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX; i++) {
+			if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
+				volumetric_fog.process_shader.set_variant_enabled(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, false);
+			} else {
+				volumetric_fog.process_shader.set_variant_enabled(i, false);
+			}
+			// Always bake default (with image atomics) variant.
+			volumetric_fog.process_shader.set_variants_bake_for(i, "*", true, true);
+
+			// Bake no "image atomics" variant for macOS/iOS (Vulkan and Metal) and visionOS (Metal) only.
+			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "macos_forward_clustered_vulkan", true, false);
+			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "macos_forward_clustered_metal", true, false);
+			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "ios_forward_clustered_vulkan", true, false);
+			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "ios_forward_clustered_metal", true, false);
+			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "visionos_forward_clustered_metal", true, false);
+		}
+
 		volumetric_fog.process_shader_version = volumetric_fog.process_shader.version_create();
 		for (int i = 0; i < VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX; i++) {
-			volumetric_fog.process_pipelines[i] = RD::get_singleton()->compute_pipeline_create(volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, i));
+			volumetric_fog.process_pipelines[i] = RD::get_singleton()->compute_pipeline_create(volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(i)));
 		}
 		volumetric_fog.params_ubo = RD::get_singleton()->uniform_buffer_create(sizeof(VolumetricFogShader::ParamsUBO));
 	}
@@ -349,7 +410,7 @@ void Fog::FogShaderData::set_code(const String &p_code) {
 	ubo_offsets = gen_code.uniform_offsets;
 	texture_uniforms = gen_code.texture_uniforms;
 
-	pipeline = RD::get_singleton()->compute_pipeline_create(fog_singleton->volumetric_fog.shader.version_get_shader(version, 0));
+	pipeline = RD::get_singleton()->compute_pipeline_create(fog_singleton->volumetric_fog.shader.version_get_shader(version, _get_fog_variant()));
 
 	valid = true;
 }
@@ -941,10 +1002,10 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 		if (fog->copy_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(fog->copy_uniform_set)) {
 			RD::get_singleton()->free(fog->copy_uniform_set);
 		}
-		fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY), 0);
+		fog->copy_uniform_set = RD::get_singleton()->uniform_set_create(copy_uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_COPY)), 0);
 
 		if (!gi_dependent_sets_valid) {
-			fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
+			fog->gi_dependent_sets.process_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG)), 0);
 
 			RID aux7 = uniforms.write[7].get_id(0);
 			RID aux8 = uniforms.write[8].get_id(0);
@@ -952,11 +1013,11 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 			uniforms.write[7].set_id(0, aux8);
 			uniforms.write[8].set_id(0, aux7);
 
-			fog->gi_dependent_sets.process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG), 0);
+			fog->gi_dependent_sets.process_uniform_set2 = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_FOG)), 0);
 
 			uniforms.remove_at(8);
 			uniforms.write[7].set_id(0, aux7);
-			fog->gi_dependent_sets.process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY), 0);
+			fog->gi_dependent_sets.process_uniform_set_density = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY)), 0);
 		}
 	}
 
@@ -990,7 +1051,7 @@ void Fog::volumetric_fog_update(const VolumetricFogSettings &p_settings, const P
 				uniforms.push_back(u);
 			}
 
-			fog->sdfgi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI), 1);
+			fog->sdfgi_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, volumetric_fog.process_shader.version_get_shader(volumetric_fog.process_shader_version, _get_fog_process_variant(VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_DENSITY_WITH_SDFGI)), 1);
 		}
 	}
 

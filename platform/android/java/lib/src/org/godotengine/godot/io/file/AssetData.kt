@@ -138,7 +138,6 @@ internal class AssetData(context: Context, private val filePath: String, accessF
 				0
 			} else {
 				position += readBytes
-				endOfFile = position() >= size()
 				readBytes
 			}
 		} catch (e: IOException) {

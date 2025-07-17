@@ -397,8 +397,14 @@ void ShaderBakerExportPlugin::_customize_shader_version(ShaderRD *p_shader, RID 
 
 	for (int64_t i = 0; i < variant_count; i++) {
 		int group = p_shader->get_variant_to_group(i);
-		if (!p_shader->is_variant_enabled(i) || !groups_to_compile.has(group)) {
-			continue;
+		if (p_shader->has_variant_bake_for(i)) {
+			if (!p_shader->get_variant_bake_for(i, shader_cache_platform_name + "_" + shader_cache_renderer_name + "_" + shader_container_driver) || !groups_to_compile.has(group)) {
+				continue;
+			}
+		} else {
+			if (!p_shader->is_variant_enabled(i) || !groups_to_compile.has(group)) {
+				continue;
+			}
 		}
 
 		WorkItem work_item;

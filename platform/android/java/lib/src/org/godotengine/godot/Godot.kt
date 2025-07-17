@@ -487,7 +487,9 @@ class Godot private constructor(val context: Context) {
 
 			// Check whether the render view should be made transparent
 			val shouldBeTransparent =
-				!isProjectManagerHint() && !isEditorHint() && java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
+				!isProjectManagerHint() &&
+					!isEditorHint() &&
+					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
 			renderView = if (usesVulkan()) {
 				if (meetsVulkanRequirements(context.packageManager)) {
