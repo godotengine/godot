@@ -224,6 +224,45 @@ void DockSplitContainer::remove_child_notify(Node *p_child) {
 	_update_visibility();
 }
 
+void DockSplitContainer::set_split_offsets_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	PackedInt32Array offsets;
+	int index = 0;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || c->is_set_as_top_level()) {
+			continue;
+		}
+		// Count even if it is not visible.
+		if (c->is_visible() && p_layout->has_section_key(p_section, "dock_hsplit_" + itos(index + 1))) {
+			offsets.push_back(p_layout->get_value(p_section, "dock_hsplit_" + itos(index + 1)));
+		}
+		index++;
+	}
+	set_split_offsets(offsets);
+}
+
+PackedInt32Array DockSplitContainer::get_split_offsets_to_save_to_config() const {
+	PackedInt32Array so = get_split_offsets();
+	PackedInt32Array offsets;
+	int index = 0;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Control *c = Object::cast_to<Control>(get_child(i, false));
+		if (!c || c->is_set_as_top_level()) {
+			continue;
+		}
+		if (c->is_visible() && so.size() > index) {
+			offsets.push_back(so[index]);
+			index++;
+		} else {
+			offsets.push_back(0);
+		}
+		if (offsets.size() >= 4) {
+			break;
+		}
+	}
+	return offsets;
+}
+
 DockSplitContainer::DockSplitContainer() {
 	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
 		callable_mp((SplitContainer *)this, &SplitContainer::set_touch_dragger_enabled).call_deferred(true);
@@ -683,8 +722,9 @@ void EditorDockManager::save_docks_to_config(Ref<ConfigFile> p_layout, const Str
 		}
 	}
 
-	for (int i = 0; i < hsplits.size(); i++) {
-		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), int(hsplits[i]->get_split_offset() / EDSCALE));
+	PackedInt32Array hsplit_values = main_hsplit->get_split_offsets_to_save_to_config();
+	for (int i = 0; i < hsplit_values.size(); i++) {
+		p_layout->set_value(p_section, "dock_hsplit_" + itos(i + 1), hsplit_values[i]);
 	}
 }
 
@@ -775,13 +815,8 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 		vsplits[i]->set_split_offset(ofs);
 	}
 
-	for (int i = 0; i < hsplits.size(); i++) {
-		if (!p_layout->has_section_key(p_section, "dock_hsplit_" + itos(i + 1))) {
-			continue;
-		}
-		int ofs = p_layout->get_value(p_section, "dock_hsplit_" + itos(i + 1));
-		hsplits[i]->set_split_offset(ofs * EDSCALE);
-	}
+	main_hsplit->set_split_offsets_from_config(p_layout, p_section);
+
 	update_docks_menu();
 }
 
@@ -973,8 +1008,8 @@ void EditorDockManager::add_vsplit(DockSplitContainer *p_split) {
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
-void EditorDockManager::add_hsplit(DockSplitContainer *p_split) {
-	hsplits.push_back(p_split);
+void EditorDockManager::set_hsplit(DockSplitContainer *p_split) {
+	main_hsplit = p_split;
 	p_split->connect("dragged", callable_mp(this, &EditorDockManager::_dock_split_dragged));
 }
 
