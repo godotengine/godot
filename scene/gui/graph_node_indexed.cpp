@@ -145,6 +145,8 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_style
 	_insert_slot(p_slot_index, Slot(p_draw_stylebox));
 	insert_port(slot_to_port_index(p_slot_index, true), p_left);
 	insert_port(slot_to_port_index(p_slot_index, false), p_right);
+
+	emit_signal("slot_added", p_slot_index);
 }
 
 void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
@@ -171,6 +173,8 @@ void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
 			kv_pair.value--;
 		}
 	}
+
+	emit_signal("slot_removed", p_slot_index);
 }
 
 void GraphNodeIndexed::move_slot_with_ports(int p_old_slot_index, int p_new_slot_index) {
@@ -187,6 +191,8 @@ void GraphNodeIndexed::move_slot_with_ports(int p_old_slot_index, int p_new_slot
 		}
 	}
 	set_slot_with_ports(p_new_slot_index, swap_buffer, input_port_swap_buffer, output_port_swap_buffer);
+
+	emit_signal("slot_moved", p_old_slot_index, p_new_slot_index);
 }
 
 void GraphNodeIndexed::set_slot_with_ports(int p_slot_index, Slot p_slot, GraphPort *p_input_port, GraphPort *p_output_port) {
@@ -595,6 +601,9 @@ void GraphNodeIndexed::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_slot_node_map_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "slot_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slot_focus_mode", "get_slot_focus_mode");
 
+	ADD_SIGNAL(MethodInfo("slot_added", PropertyInfo(Variant::INT, "slot_index")));
+	ADD_SIGNAL(MethodInfo("slot_removed", PropertyInfo(Variant::INT, "slot_index")));
+	ADD_SIGNAL(MethodInfo("slot_moved", PropertyInfo(Variant::INT, "old_slot_index")), PropertyInfo(Variant::INT, "new_slot_index"));
 	ADD_SIGNAL(MethodInfo("slot_sizes_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NODE_TYPE, "GraphNodeIndexed")));
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphNodeIndexed, panel);
