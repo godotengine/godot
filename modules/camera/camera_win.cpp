@@ -41,61 +41,62 @@ Ref<CameraFeedWindows> CameraFeedWindows::create(IMFActivate *imf_camera_device)
 	HRESULT hr;
 
 	// Get camera id
-	wchar_t *camera_id;
+	wchar_t *camera_id = nullptr;
 	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_SYMBOLIC_LINK, &camera_id, &len);
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera id");
 	feed->device_id = camera_id;
 	CoTaskMemFree(camera_id);
 
 	// Get name
-	wchar_t *camera_name;
+	wchar_t *camera_name = nullptr;
 	hr = imf_camera_device->GetAllocatedString(MF_DEVSOURCE_ATTRIBUTE_FRIENDLY_NAME, &camera_name, &len);
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to get camera name");
 	feed->name = camera_name;
 	CoTaskMemFree(camera_name);
 
 	// Get media imf_media_source
-	IMFMediaSource *imf_media_source;
+	IMFMediaSource *imf_media_source = nullptr;
 	hr = imf_camera_device->ActivateObject(IID_PPV_ARGS(&imf_media_source));
 	ERR_FAIL_COND_V_MSG(FAILED(hr), {}, "Unable to activate device");
 
 	// Get information about device
-	IMFPresentationDescriptor *imf_presentation_descriptor;
+	IMFPresentationDescriptor *imf_presentation_descriptor = nullptr;
 	hr = imf_media_source->CreatePresentationDescriptor(&imf_presentation_descriptor);
 	if (FAILED(hr)) {
 		ERR_PRINT("Unable to create presentation descriptor");
-		goto release_media_source;
+		imf_media_source->Release();
+		return {};
 	}
 
 	// Get information about video stream
 	BOOL _selected;
-	IMFStreamDescriptor *imf_stream_descriptor;
+	IMFStreamDescriptor *imf_stream_descriptor = nullptr;
 	hr = imf_presentation_descriptor->GetStreamDescriptorByIndex(0, &_selected, &imf_stream_descriptor);
 	if (FAILED(hr)) {
 		ERR_PRINT("Unable to get stream descriptor");
-		goto release_presentation_descriptor;
+		imf_presentation_descriptor->Release();
+		imf_media_source->Release();
+		return {};
 	}
 
 	// Get information about supported media types
-	IMFMediaTypeHandler *imf_media_type_handler;
+	IMFMediaTypeHandler *imf_media_type_handler = nullptr;
 	hr = imf_stream_descriptor->GetMediaTypeHandler(&imf_media_type_handler);
 	if (FAILED(hr)) {
 		ERR_PRINT("Unable to get media type handler");
-		goto release_stream_descriptor;
+		imf_stream_descriptor->Release();
+		imf_presentation_descriptor->Release();
+		imf_media_source->Release();
+		return {};
 	}
 
 	// Actually fill the feed formats
 	feed->fill_formats(imf_media_type_handler);
 
+	// Release all COM objects
 	imf_media_type_handler->Release();
-
-release_stream_descriptor:
 	imf_stream_descriptor->Release();
-
-release_presentation_descriptor:
 	imf_presentation_descriptor->Release();
-
-release_media_source:
 	imf_media_source->Release();
 
 	return feed;
@@ -306,7 +307,6 @@ void CameraFeedWindows::capture(CameraFeedWindows *feed) {
 	feed->active = true;
 	while (feed->active) {
 		feed->read();
-		print_verbose("read");
 	}
 }
 
