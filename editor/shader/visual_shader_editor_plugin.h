@@ -71,7 +71,7 @@ public:
 class VSGraphNode : public GraphNodeIndexed {
 	GDCLASS(VSGraphNode, GraphNodeIndexed);
 
-	virtual void create_slot_and_ports(int p_slot_index, bool draw_stylebox) override;
+	virtual void create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, StringName p_slot_node_name) override;
 };
 
 class VSGraphPort : public GraphPort {

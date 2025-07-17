@@ -49,7 +49,6 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	int slot_index = slot_index_of_node(p_child);
 
 	// Child already exists in slot node cache - ignore and move on.
-	// This usually happens when SceneTreeDock::_replace_node is called
 	if (_slot_node_map_cache.has(child_name)) {
 		return;
 	}
@@ -62,7 +61,7 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 		return;
 	}
 
-	create_slot_and_ports(slot_index, true);
+	create_slot_and_ports(slot_index, true, child_name);
 }
 
 void GraphNodeIndexed::move_child_notify(Node *p_child) {
@@ -135,66 +134,69 @@ void GraphNodeIndexed::_notification(int p_what) {
 	}
 }
 
-void GraphNodeIndexed::create_slot(int p_slot_index, int p_left_port_index, int p_right_port_index, bool draw_stylebox) {
-	Slot new_slot = { p_left_port_index, p_right_port_index, true };
-	_insert_slot(p_slot_index, new_slot);
-}
-
-void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool draw_stylebox) {
+void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, StringName p_slot_node_name) {
 	GraphPort *p_left = memnew(GraphPort(false, true, 0, GraphPort::PortDirection::INPUT));
 	GraphPort *p_right = memnew(GraphPort(false, false, 0, GraphPort::PortDirection::OUTPUT));
-	p_left->set_name(vformat("InputPort%s", itos(p_slot_index)));
-	p_right->set_name(vformat("OutputPort%s", itos(p_slot_index)));
+	p_left->set_name(vformat("InputPort%s", String(p_slot_node_name)));
+	p_right->set_name(vformat("OutputPort%s", String(p_slot_node_name)));
 
 	p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
 
-	int p_left_port_index = slot_to_port_index(p_slot_index, true);
-	insert_port(p_left_port_index, p_left);
-	int p_right_port_index = slot_to_port_index(p_slot_index, false);
-	insert_port(p_right_port_index, p_right);
-
-	return create_slot(p_slot_index, p_left_port_index, p_right_port_index, draw_stylebox);
+	_insert_slot(p_slot_index, Slot(p_draw_stylebox));
+	insert_port(slot_to_port_index(p_slot_index, true), p_left);
+	insert_port(slot_to_port_index(p_slot_index, false), p_right);
 }
 
 void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
 	Slot s = slots[p_slot_index];
-	if (s.left_port_index > 0 && s.left_port_index < ports.size()) {
-		GraphPort *port = ports[s.left_port_index];
-		if (port && port->get_parent() == port_container) {
-			port_container->remove_child(port);
-			port->queue_free();
-		}
-	}
-	if (s.left_port_index > 0 && s.left_port_index < ports.size()) {
-		GraphPort *port = ports[s.left_port_index];
-		if (port && port->get_parent() == port_container) {
-			port_container->remove_child(port);
-			port->queue_free();
-		}
-	}
 	_remove_slot(p_slot_index);
+	int input_port_idx = slot_to_port_index(p_slot_index, true);
+	int output_port_idx = slot_to_port_index(p_slot_index, false);
+	if (output_port_idx < ports.size()) {
+		GraphPort *in_port = ports[input_port_idx];
+		GraphPort *out_port = ports[output_port_idx];
+		if (in_port && in_port->get_parent() == port_container) {
+			port_container->remove_child(in_port);
+			in_port->queue_free();
+		}
+		if (out_port && out_port->get_parent() == port_container) {
+			port_container->remove_child(out_port);
+			out_port->queue_free();
+		}
+		remove_port(output_port_idx);
+		remove_port(input_port_idx);
+	}
+	for (KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
+		if (kv_pair.value > p_slot_index) {
+			kv_pair.value--;
+		}
+	}
 }
 
 void GraphNodeIndexed::move_slot_with_ports(int p_old_slot_index, int p_new_slot_index) {
-	if (p_old_slot_index < p_new_slot_index) {
-		Slot swap_buffer = slots[p_old_slot_index];
-		for (int i = p_old_slot_index; i < p_new_slot_index; i++) {
-			set_slot_with_ports(i, slots[i + 1]);
+	Slot swap_buffer = slots[p_old_slot_index];
+	GraphPort *input_port_swap_buffer = get_input_port_by_slot(p_old_slot_index);
+	GraphPort *output_port_swap_buffer = get_output_port_by_slot(p_old_slot_index);
+	if (p_new_slot_index < p_old_slot_index) {
+		for (int i = p_old_slot_index; i > p_new_slot_index; i--) {
+			copy_slot_with_ports(i - 1, i);
 		}
-		set_slot_with_ports(p_new_slot_index, swap_buffer);
 	} else {
-		Slot swap_buffer = slots[p_new_slot_index];
-		for (int i = p_new_slot_index; i < p_old_slot_index; i++) {
-			set_slot_with_ports(i, slots[i - 1]);
+		for (int i = p_old_slot_index; i < p_new_slot_index; i++) {
+			copy_slot_with_ports(i + 1, i);
 		}
-		set_slot_with_ports(p_old_slot_index, swap_buffer);
 	}
+	set_slot_with_ports(p_new_slot_index, swap_buffer, input_port_swap_buffer, output_port_swap_buffer);
 }
 
-void GraphNodeIndexed::set_slot_with_ports(int p_slot_index, Slot p_slot) {
+void GraphNodeIndexed::set_slot_with_ports(int p_slot_index, Slot p_slot, GraphPort *p_input_port, GraphPort *p_output_port) {
 	_set_slot(p_slot_index, p_slot);
-	set_port(slot_to_port_index(p_slot_index, true), ports[p_slot.left_port_index]);
-	set_port(slot_to_port_index(p_slot_index, false), ports[p_slot.left_port_index]);
+	set_port(slot_to_port_index(p_slot_index, true), p_input_port);
+	set_port(slot_to_port_index(p_slot_index, false), p_output_port);
+}
+
+void GraphNodeIndexed::copy_slot_with_ports(int p_old_slot_index, int p_new_slot_index) {
+	set_slot_with_ports(p_new_slot_index, slots[p_old_slot_index], get_input_port_by_slot(p_old_slot_index), get_output_port_by_slot(p_old_slot_index));
 }
 
 void GraphNodeIndexed::_set_slots(const Vector<Slot> &p_slots) {
@@ -210,10 +212,8 @@ void GraphNodeIndexed::set_slots(const TypedArray<Array> &p_slots) {
 	_remove_all_slots();
 	int i = 0;
 	for (Array p_slot : p_slots) {
-		int first_port_idx = p_slot[0];
-		int second_port_idx = p_slot[1];
-		bool draw_sb = p_slot[2];
-		GraphNodeIndexed::Slot slot = Slot(first_port_idx, second_port_idx, draw_sb);
+		bool draw_sb = p_slot[0];
+		GraphNodeIndexed::Slot slot = Slot(draw_sb);
 		_insert_slot(i, slot);
 		i++;
 	}
@@ -227,8 +227,6 @@ TypedArray<Array> GraphNodeIndexed::get_slots() {
 	TypedArray<Array> ret;
 	for (GraphNodeIndexed::Slot slot : slots) {
 		Array s;
-		s.push_back(slot.left_port_index);
-		s.push_back(slot.right_port_index);
 		s.push_back(slot.draw_stylebox);
 		ret.push_back(s);
 	}
@@ -241,7 +239,7 @@ GraphNodeIndexed::Slot GraphNodeIndexed::_get_slot(int p_slot_index) {
 
 Array GraphNodeIndexed::get_slot(int p_slot_index) {
 	Slot slot = _get_slot(p_slot_index);
-	return Array({ slot.left_port_index, slot.right_port_index, slot.draw_stylebox });
+	return Array({ slot.draw_stylebox });
 }
 
 void GraphNodeIndexed::_remove_all_slots() {
@@ -259,13 +257,6 @@ void GraphNodeIndexed::_remove_slot(int p_slot_index) {
 	for (KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
 		if (kv_pair.value == p_slot_index) {
 			_slot_node_map_cache.erase(kv_pair.key);
-		} else if (kv_pair.value > p_slot_index) {
-			kv_pair.value--;
-			Slot s = slots[kv_pair.value];
-			GraphPort *left_port = ports[s.left_port_index];
-			GraphPort *right_port = ports[s.right_port_index];
-			left_port->set_name(vformat("InputPort%s", itos(kv_pair.value)));
-			right_port->set_name(vformat("OutputPort%s", itos(kv_pair.value)));
 		}
 	}
 }
@@ -290,13 +281,8 @@ void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot) {
 
 	if (p_slot_index < get_child_count(false)) {
 		for (KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
-			if (p_slot_index < kv_pair.value) {
+			if (p_slot_index <= kv_pair.value) {
 				kv_pair.value++;
-				Slot s = slots[kv_pair.value];
-				GraphPort *left_port = ports[s.left_port_index];
-				GraphPort *right_port = ports[s.right_port_index];
-				left_port->set_name(vformat("InputPort%s", itos(kv_pair.value)));
-				right_port->set_name(vformat("OutputPort%s", itos(kv_pair.value)));
 			}
 		}
 		int child_index = _add_port_container(p_slot_index);
@@ -348,8 +334,8 @@ void GraphNodeIndexed::_update_port_positions() {
 		if (_slot_node_map_cache.has(child->get_name())) {
 			int slot_index = _slot_node_map_cache[child->get_name()];
 			const Slot &slot = slots[slot_index];
-			GraphPort *left_port = ports[slot.left_port_index];
-			GraphPort *right_port = ports[slot.right_port_index];
+			GraphPort *left_port = get_input_port_by_slot(slot_index);
+			GraphPort *right_port = get_output_port_by_slot(slot_index);
 
 			if (left_port) {
 				left_port->set_position(Point2(-theme_cache.port_h_offset, port_y));
@@ -379,15 +365,7 @@ int GraphNodeIndexed::_add_port_container(int idx) {
 }
 
 int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
-	int _port_index = index_of_port(p_port);
-	int idx = 0;
-	for (const Slot &slot : slots) {
-		if (slot.left_port_index == _port_index || slot.right_port_index == _port_index) {
-			return idx;
-		}
-		idx++;
-	}
-	return -1;
+	return floor(index_of_port(p_port) / 2);
 }
 
 int GraphNodeIndexed::index_of_input_port(GraphPort *p_port, bool p_include_disabled) {
@@ -442,16 +420,24 @@ int GraphNodeIndexed::get_output_port_count() {
 }
 
 int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) {
+	if (p_include_disabled) {
+		return floor(p_port_index / 2);
+	}
 	int idx = 0;
 	int slot_idx = 0;
 	for (const Slot &slot : slots) {
-		if (slot.left_port_index > 0 && slot.left_port_index < ports.size() && ports[slot.left_port_index] && (p_include_disabled || ports[slot.left_port_index]->is_enabled())) {
+		int input_port_idx = slot_idx * 2;
+		int output_port_idx = input_port_idx + 1;
+		if (input_port_idx >= ports.size()) {
+			break;
+		}
+		if (ports[input_port_idx] && ports[input_port_idx]->is_enabled()) {
 			if (idx == p_port_index) {
 				return slot_idx;
 			}
 			idx++;
 		}
-		if (slot.right_port_index > 0 && slot.right_port_index < ports.size() && ports[slot.right_port_index] && (p_include_disabled || ports[slot.right_port_index]->is_enabled())) {
+		if (ports[output_port_idx] && ports[output_port_idx]->is_enabled()) {
 			if (idx == p_port_index) {
 				return slot_idx;
 			}
@@ -511,9 +497,7 @@ bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
 
 void GraphNodeIndexed::set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox) {
 	ERR_FAIL_INDEX(p_slot_index, slots.size());
-	Slot old_slot = slots[p_slot_index];
-	// set slot directly since ports aren't changed
-	slots.set(p_slot_index, Slot(old_slot.left_port_index, old_slot.right_port_index, p_draw_stylebox));
+	slots.set(p_slot_index, Slot(p_draw_stylebox));
 	notify_property_list_changed();
 }
 

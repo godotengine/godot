@@ -38,13 +38,11 @@ class GraphNodeIndexed : public GraphNode {
 
 protected:
 	struct Slot {
-		int left_port_index = -1;
-		int right_port_index = -1;
 		bool draw_stylebox = true;
 
 		Slot();
-		Slot(int lp, int rp, bool draw_sb) :
-				left_port_index(lp), right_port_index(rp), draw_stylebox(draw_sb) {}
+		Slot(bool draw_sb) :
+				draw_stylebox(draw_sb) {}
 	};
 	Vector<Slot> slots;
 	HashMap<StringName, int> _slot_node_map_cache;
@@ -96,11 +94,11 @@ protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
-	void create_slot(int p_slot_index, int p_left_port_index, int p_right_port_index, bool draw_stylebox);
-	virtual void create_slot_and_ports(int p_slot_index, bool draw_stylebox);
+	virtual void create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, StringName p_slot_node_name);
 	void remove_slot_and_ports(int p_slot_index);
 	void move_slot_with_ports(int p_old_slot_index, int p_new_slot_index);
-	void set_slot_with_ports(int p_slot_index, Slot p_slot);
+	void set_slot_with_ports(int p_slot_index, Slot p_slot, GraphPort *p_input_port, GraphPort *p_output_port);
+	void copy_slot_with_ports(int p_old_slot_index, int p_new_slot_index);
 
 	void set_slots(const TypedArray<Array> &p_slots);
 

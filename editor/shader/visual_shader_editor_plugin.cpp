@@ -145,18 +145,17 @@ VSGraphPort::VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirec
 
 ///////////////////
 
-void VSGraphNode::create_slot_and_ports(int p_slot_index, bool draw_stylebox) {
+void VSGraphNode::create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, StringName p_slot_node_name) {
 	VSGraphPort *p_left = memnew(VSGraphPort(false, true, 0, GraphPort::PortDirection::INPUT));
 	VSGraphPort *p_right = memnew(VSGraphPort(false, false, 0, GraphPort::PortDirection::OUTPUT));
+	p_left->set_name(vformat("InputPort%s", String(p_slot_node_name)));
+	p_right->set_name(vformat("OutputPort%s", String(p_slot_node_name)));
 
 	p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
 
-	int p_left_port_index = slot_to_port_index(p_slot_index, true);
-	insert_port(p_left_port_index, p_left);
-	int p_right_port_index = slot_to_port_index(p_slot_index, false);
-	insert_port(p_right_port_index, p_right);
-
-	return create_slot(p_slot_index, p_left_port_index, p_right_port_index, draw_stylebox);
+	_insert_slot(p_slot_index, Slot(p_draw_stylebox));
+	insert_port(slot_to_port_index(p_slot_index, true), p_left);
+	insert_port(slot_to_port_index(p_slot_index, false), p_right);
 }
 
 ///////////////////
