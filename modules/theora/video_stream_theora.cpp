@@ -644,10 +644,12 @@ double VideoStreamPlaybackTheora::get_length() const {
 }
 
 double VideoStreamPlaybackTheora::get_playback_position() const {
-	return get_time();
+	return time;
 }
 
 void VideoStreamPlaybackTheora::seek(double p_time) {
+	ERR_FAIL_COND(p_time < 0.0);
+
 	if (file.is_null()) {
 		return;
 	}
