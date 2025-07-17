@@ -133,8 +133,8 @@
 		<theme_item name="up_pressed" data_type="icon" type="Texture2D">
 			Up button icon when the button is being pressed.
 		</theme_item>
-		<theme_item name="updown" data_type="icon" type="Texture2D">
-			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. It is recommended to use individual [theme_item up] and [theme_item down] graphics for better usability. This can also be used as additional decoration between the two buttons.
+		<theme_item name="updown" data_type="icon" type="Texture2D" deprecated="Use [theme_item up] and [theme_item down] instead.">
+			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. If a valid icon is assigned, it will replace [theme_item up] and [theme_item down].
 		</theme_item>
 		<theme_item name="down_background" data_type="style" type="StyleBox">
 			Background style of the down button.
