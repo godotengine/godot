@@ -34,6 +34,8 @@
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
+#include "editor/editor_log.h"
+
 bool MultiNodeEdit::_set(const StringName &p_name, const Variant &p_value) {
 	return _set_impl(p_name, p_value, "");
 }
@@ -311,9 +313,38 @@ void MultiNodeEdit::set_property_field(const StringName &p_property, const Varia
 	_set_impl(p_property, p_value, p_field);
 }
 
-void MultiNodeEdit::add_to_group(const StringName &p_identifier, bool persistent) {
+void MultiNodeEdit::make_group_mask(const StringName &p_identifier, String &p_mask) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	for (const NodePath &E : nodes) {
+
+	p_mask.resize_uninitialized(get_node_count() + 1);
+	p_mask[get_node_count()] = '\0';
+
+	int i = 0;
+	for (int i = 0; i < get_node_count(); i++) {
+
+		const NodePath &E = get_node(i);
+		Node *node = es->get_node_or_null(E);
+		if (!node) {
+			continue;
+		}
+
+		p_mask[i] = node->is_in_group(p_identifier);
+		if (p_mask[i]) {
+			EditorNode::get_singleton()->get_log()->add_message(String("Adding node {} to mask at {}").format({ node->to_string(), i }, "{}"));
+		}
+	}
+}
+
+void MultiNodeEdit::add_partial_to_group(const StringName &p_identifier, bool persistent, const String &p_mask) {
+	Node *es = EditorNode::get_singleton()->get_edited_scene();
+	
+	for (int i = 0; i < get_node_count(); i++) {
+
+		if (i < p_mask.size() && !p_mask[i]) {
+			continue;
+		}
+
+		const NodePath &E = get_node(i);
 		Node *node = es->get_node_or_null(E);
 		if (!node) {
 			continue;
@@ -323,13 +354,20 @@ void MultiNodeEdit::add_to_group(const StringName &p_identifier, bool persistent
 	}
 }
 
-void MultiNodeEdit::remove_from_group(const StringName &p_identifier) {
+void MultiNodeEdit::remove_partial_from_group(const StringName &p_identifier, const String &p_mask) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	for (const NodePath &E : nodes) {
+
+	for (int i = 0; i < get_node_count(); i++) {
+		if (i < p_mask.size() && p_mask[i]) {
+			continue;
+		}
+
+		const NodePath &E = get_node(i);
 		Node *node = es->get_node_or_null(E);
 		if (!node) {
 			continue;
 		}
+
 
 		node->remove_from_group(p_identifier);
 	}
@@ -368,7 +406,7 @@ void MultiNodeEdit::_bind_methods() {
 	ClassDB::bind_method("_hide_metadata_from_inspector", &MultiNodeEdit::_hide_metadata_from_inspector);
 	ClassDB::bind_method("_get_editor_name", &MultiNodeEdit::_get_editor_name);
 
-	ClassDB::bind_method("add_to_group", &MultiNodeEdit::add_to_group);
-	ClassDB::bind_method("remove_from_group", &MultiNodeEdit::remove_from_group);
+	ClassDB::bind_method("add_partial_to_group", &MultiNodeEdit::add_partial_to_group);
+	ClassDB::bind_method("remove_partial_from_group", &MultiNodeEdit::remove_partial_from_group);
 }
 
