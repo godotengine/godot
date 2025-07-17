@@ -474,6 +474,7 @@ void CameraAndroid::update_feeds() {
 	}
 
 	ACameraManager_deleteCameraIdList(cameraIds);
+	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
 void CameraAndroid::remove_all_feeds() {
