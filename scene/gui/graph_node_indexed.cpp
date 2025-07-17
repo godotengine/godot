@@ -291,7 +291,7 @@ void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot) {
 				kv_pair.value++;
 			}
 		}
-		int child_index = _add_port_container(p_slot_index);
+		int child_index = slot_to_child_index(p_slot_index);
 		if (child_index < get_child_count(false)) {
 			Node *slot_node = get_child(child_index, false);
 			if (slot_node) {
@@ -305,7 +305,7 @@ void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot) {
 	slots.set(p_slot_index, p_slot);
 
 	if (p_slot_index < get_child_count(false)) {
-		_slot_node_map_cache[get_child(_add_port_container(p_slot_index), false)->get_name()] = p_slot_index;
+		_slot_node_map_cache[get_child(slot_to_child_index(p_slot_index), false)->get_name()] = p_slot_index;
 	}
 
 	notify_property_list_changed();
@@ -359,14 +359,14 @@ void GraphNodeIndexed::_update_port_positions() {
 
 int GraphNodeIndexed::slot_index_of_node(Node *p_node) {
 	int node_idx = p_node->get_index(false);
-	return _subtract_port_container(node_idx);
+	return child_to_slot_index(node_idx);
 }
 
 // helpers to account for port container when indexing children for slots
-int GraphNodeIndexed::_subtract_port_container(int idx) {
+int GraphNodeIndexed::child_to_slot_index(int idx) {
 	return port_container_idx < idx ? idx - 1 : idx;
 }
-int GraphNodeIndexed::_add_port_container(int idx) {
+int GraphNodeIndexed::slot_to_child_index(int idx) {
 	return port_container_idx <= idx ? idx + 1 : idx;
 }
 
@@ -585,6 +585,9 @@ void GraphNodeIndexed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::port_to_slot_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("slot_to_port_index", "slot_index", "is_input_port", "include_disabled"), &GraphNodeIndexed::slot_to_port_index, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("child_to_slot_index", "child_index"), &GraphNodeIndexed::child_to_slot_index);
+	ClassDB::bind_method(D_METHOD("slot_to_child_index", "slot_index"), &GraphNodeIndexed::slot_to_child_index);
 
 	ClassDB::bind_method(D_METHOD("slot_to_input_port_index", "slot_index", "include_disabled"), &GraphNodeIndexed::slot_to_input_port_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("slot_to_output_port_index", "slot_index", "include_disabled"), &GraphNodeIndexed::slot_to_output_port_index, DEFVAL(true));

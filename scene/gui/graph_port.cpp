@@ -78,7 +78,6 @@ void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, Por
 
 void GraphPort::enable() {
 	enabled = true;
-	show();
 
 	queue_redraw();
 	notify_property_list_changed();
@@ -89,7 +88,6 @@ void GraphPort::enable() {
 
 void GraphPort::disable() {
 	enabled = false;
-	hide();
 
 	queue_redraw();
 	notify_property_list_changed();

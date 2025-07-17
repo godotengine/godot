@@ -274,9 +274,9 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 			link.graph_element->add_child(vbox);
 			link.graph_element->move_child(vbox, link.preview_pos);
 
-			GraphNodeIndexed *graph_node = Object::cast_to<GraphNodeIndexed>(link.graph_element);
+			VSGraphNode *graph_node = Object::cast_to<VSGraphNode>(link.graph_element);
 			if (graph_node) {
-				graph_node->set_slot_draw_stylebox(vbox->get_index(false), false);
+				graph_node->set_slot_draw_stylebox(graph_node->child_to_slot_index(vbox->get_index(false)), false);
 			}
 
 			Control *offset = memnew(Control);

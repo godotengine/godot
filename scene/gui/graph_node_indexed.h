@@ -84,9 +84,6 @@ protected:
 	virtual void _resort() override;
 	virtual void _update_port_positions() override;
 
-	int _subtract_port_container(int idx);
-	int _add_port_container(int idx);
-
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -134,6 +131,9 @@ public:
 	int slot_to_output_port_index(int p_slot_index, bool p_include_disabled = true);
 	int input_port_to_slot_index(int p_port_index, bool p_include_disabled = true);
 	int output_port_to_slot_index(int p_port_index, bool p_include_disabled = true);
+
+	int child_to_slot_index(int idx);
+	int slot_to_child_index(int idx);
 
 	TypedArray<Ref<GraphConnection>> get_input_connections();
 	TypedArray<Ref<GraphConnection>> get_output_connections();
