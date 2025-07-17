@@ -117,9 +117,9 @@ protected:
 
 	virtual void _on_replacing_by(Node *new_node);
 
-	Callable modified_callable = callable_mp(this, &GraphNode::_port_modified);
-	Callable connected_callable = callable_mp(this, &GraphNode::_on_connected);
-	Callable disconnected_callable = callable_mp(this, &GraphNode::_on_disconnected);
+	Callable modified_callable;
+	Callable connected_callable;
+	Callable disconnected_callable;
 
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;

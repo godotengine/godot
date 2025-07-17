@@ -1011,6 +1011,10 @@ void GraphNode::_bind_methods() {
 }
 
 GraphNode::GraphNode() {
+	modified_callable = callable_mp(this, &GraphNode::_port_modified);
+	connected_callable = callable_mp(this, &GraphNode::_on_connected);
+	disconnected_callable = callable_mp(this, &GraphNode::_on_disconnected);
+
 	titlebar_hbox = memnew(HBoxContainer);
 	titlebar_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(titlebar_hbox, false, INTERNAL_MODE_FRONT);
