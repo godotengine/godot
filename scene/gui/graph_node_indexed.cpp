@@ -105,11 +105,11 @@ void GraphNodeIndexed::_notification(int p_what) {
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			for (int i = 0; i < get_child_count(false); i++) {
-				Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
-				if (!child || !child->is_visible_in_tree() || child == port_container || !_slot_node_map_cache.has(child->get_name())) {
+				Control *_child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
+				if (!_child || !_child->is_visible_in_tree() || _child == port_container || !_slot_node_map_cache.has(_child->get_name())) {
 					continue;
 				}
-				int slot_index = _slot_node_map_cache[child->get_name()];
+				int slot_index = _slot_node_map_cache[_child->get_name()];
 				const Slot slot = slots[slot_index];
 
 				// TODO: keyboard navigation override for slot selection
@@ -120,11 +120,7 @@ void GraphNodeIndexed::_notification(int p_what) {
 				}*/
 
 				if (slot.draw_stylebox) {
-					Control *child = Object::cast_to<Control>(get_child(slot_index, false));
-					if (!child || !child->is_visible_in_tree()) {
-						continue;
-					}
-					Rect2 child_rect = child->get_rect();
+					Rect2 child_rect = _child->get_rect();
 					child_rect.position.x = sb_panel->get_margin(SIDE_LEFT);
 					child_rect.size.width = width;
 					draw_style_box(sb_slot, child_rect);
@@ -428,7 +424,6 @@ int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabl
 		return floor(p_port_index / 2);
 	}
 	int idx = 0;
-	int slot_idx = 0;
 	for (int i = 0; i < slots.size(); i++) {
 		int input_port_idx = i * 2;
 		int output_port_idx = input_port_idx + 1;
