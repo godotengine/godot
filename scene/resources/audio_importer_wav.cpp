@@ -1,17 +1,13 @@
 
-#include "spx_importer_wav.h"
+#include "audio_importer_wav.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
-#include "scene/resources/audio_stream_wav.h"
-
 #include "core/io/resource_importer.h"
 
+#include "scene/resources/audio_stream_wav.h"
 #define DR_WAV_IMPLEMENTATION
-#include "core/extension/spx_importer_dr_wav.h"
-
-const float TRIM_DB_LIMIT = -50;
-const int TRIM_FADE_OUT_FRAMES = 500;
+#include "audio_importer_dr_wav.h"
 
 
 static const char *get_format_name(drwav_uint16 formatTag) {
@@ -48,7 +44,7 @@ static const char *get_format_name(drwav_uint16 formatTag) {
 			return "Unknown";
 	}
 }
-Error SpxImporterWav::import_asset(Ref<AudioStreamWAV> &sample, const String &p_source_file) {
+Error AudioImporterWav::import_asset(Ref<AudioStreamWAV> &sample, const String &p_source_file) {
 	List<ResourceImporter::ImportOption> r_options;
 	// load default option
 	r_options.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
@@ -67,7 +63,7 @@ Error SpxImporterWav::import_asset(Ref<AudioStreamWAV> &sample, const String &p_
 	}
 	return import_asset(sample, p_source_file, options_map);
 }
-Error SpxImporterWav::import_asset(Ref<AudioStreamWAV> &sample, const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
+Error AudioImporterWav::import_asset(Ref<AudioStreamWAV> &sample, const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	// Read file using dr_wav
 	String actual_path = ProjectSettings::get_singleton()->globalize_path(p_source_file);
 

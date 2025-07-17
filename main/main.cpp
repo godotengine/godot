@@ -37,7 +37,9 @@
 #include "core/extension/extension_api_dump.h"
 #include "core/extension/gdextension_interface_dump.gen.h"
 #include "core/extension/gdextension_manager.h"
-#include "core/extension/spx.h"
+#ifdef SPX_ENABLED
+#include "modules/spx/spx.h"
+#endif
 #include "core/input/input.h"
 #include "core/input/input_map.h"
 #include "core/io/dir_access.h"
@@ -712,6 +714,9 @@ Error Main::test_setup() {
 	// From `Main::setup2()`.
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	#ifdef SPX_ENABLED 
+	Spx::register_extension_functions();
+	#endif
 	register_core_extensions();
 
 	register_core_singletons();
@@ -1654,7 +1659,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--main-project-data") {
 			if (N) {
 				main_project_data = N->get();
+				#ifdef SPX_ENABLED 
 				Spx::project_data_path = main_project_data;
+				#endif
 				print_line("setup main project_data ", main_project_data);
 				N = N->next();
 			} else {
@@ -2032,6 +2039,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	register_early_core_singletons();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
+	#ifdef SPX_ENABLED 
+	Spx::register_extension_functions();
+	#endif
 	register_core_extensions(); // core extensions must be registered after globals setup and before display
 
 	ResourceUID::get_singleton()->load_from_cache(true); // load UUIDs from cache.
@@ -4015,7 +4025,9 @@ int Main::start() {
 	}
 
 	OS::get_singleton()->set_main_loop(main_loop);
+	#ifdef SPX_ENABLED 
 	Spx::register_types();
+	#endif
 	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
 	if (sml) {
 #ifdef DEBUG_ENABLED
@@ -4353,7 +4365,9 @@ int Main::start() {
 			}
 
 			OS::get_singleton()->benchmark_end_measure("Startup", "Load Game");
+			#ifdef SPX_ENABLED 
 			Spx::on_start(sml);
+			#endif
 		}
 
 #ifdef TOOLS_ENABLED
@@ -4506,7 +4520,9 @@ bool Main::iteration() {
 
 		PhysicsServer2D::get_singleton()->sync();
 		PhysicsServer2D::get_singleton()->flush_queries();
+		#ifdef SPX_ENABLED 
 		Spx::on_fixed_update(physics_step * time_scale);
+		#endif
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
 #ifndef _3D_DISABLED
 			PhysicsServer3D::get_singleton()->end_sync();
@@ -4581,7 +4597,9 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
+	#ifdef SPX_ENABLED 
 	Spx::on_update(process_step * time_scale);
+	#endif
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
@@ -4714,7 +4732,9 @@ void Main::cleanup(bool p_force) {
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
 
+	#ifdef SPX_ENABLED 
 	Spx::on_destroy();
+	#endif
 
 	OS::get_singleton()->delete_main_loop();
 

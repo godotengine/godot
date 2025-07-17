@@ -267,6 +267,8 @@ opts.Add(BoolVariable("builtin_xatlas", "Use the built-in xatlas library", True)
 opts.Add(BoolVariable("builtin_zlib", "Use the built-in zlib library", True))
 opts.Add(BoolVariable("builtin_zstd", "Use the built-in Zstd library", True))
 
+opts.Add(BoolVariable("spx", "Enable the spx library", True))
+
 # Compilation environment setup
 # CXX, CC, and LINK directly set the equivalent `env` values (which may still
 # be overridden for a specific platform), the lowercase ones are appended.
@@ -1007,6 +1009,8 @@ if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
     env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+if env["spx"]:
+    env.Append(CPPDEFINES=["SPX_ENABLED"])
 
 if not env["verbose"]:
     methods.no_verbose(env)

@@ -38,9 +38,9 @@
 #include "core/object/callable_method_pointer.h"
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
-#include "core/extension/spx.h"
-#include "core/extension/spx_engine.h"
-#include "core/extension/spx_res_mgr.h"
+#include "modules/spx/spx.h"
+#include "modules/spx/spx_engine.h"
+#include "modules/spx/spx_res_mgr.h"
 
 #ifdef GLES3_ENABLED
 #include "drivers/gles3/rasterizer_gles3.h"

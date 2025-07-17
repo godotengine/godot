@@ -43,7 +43,7 @@
 #include "scene/theme/default_theme.h"
 #include "scene/theme/theme_db.h"
 #include "spx_engine.h"
-#include "spx_importer_wav.h"
+#include "scene/resources/audio_importer_wav.h"
 #include "spx_platform_mgr.h"
 #ifdef TOOLS_ENABLED
 #include "editor/import/resource_importer_wav.h"
@@ -79,7 +79,7 @@ String SpxResMgr::_to_engine_path(const String &p_path){
 
 Ref<AudioStreamWAV> SpxResMgr::_load_wav(const String &path) {
 	Ref<AudioStreamWAV> sample;
-	SpxImporterWav::import_asset(sample, path);
+	AudioImporterWav::import_asset(sample, path);
 	return sample;
 }
 

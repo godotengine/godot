@@ -28,23 +28,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/extension/gdextension_spx_ext.h"
+#include "modules/spx/gdextension_spx_ext.h"
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/variant/variant.h"
 #include "core/extension/gdextension_interface.h"
 #include "scene/main/window.h"
-#include "core/extension/spx_engine.h"
-#include "core/extension/spx_audio_mgr.h"
-#include "core/extension/spx_camera_mgr.h"
-#include "core/extension/spx_ext_mgr.h"
-#include "core/extension/spx_input_mgr.h"
-#include "core/extension/spx_physic_mgr.h"
-#include "core/extension/spx_platform_mgr.h"
-#include "core/extension/spx_res_mgr.h"
-#include "core/extension/spx_scene_mgr.h"
-#include "core/extension/spx_sprite_mgr.h"
-#include "core/extension/spx_ui_mgr.h"
+#include "modules/spx/spx_engine.h"
+#include "modules/spx/spx_audio_mgr.h"
+#include "modules/spx/spx_camera_mgr.h"
+#include "modules/spx/spx_ext_mgr.h"
+#include "modules/spx/spx_input_mgr.h"
+#include "modules/spx/spx_physic_mgr.h"
+#include "modules/spx/spx_platform_mgr.h"
+#include "modules/spx/spx_res_mgr.h"
+#include "modules/spx/spx_scene_mgr.h"
+#include "modules/spx/spx_sprite_mgr.h"
+#include "modules/spx/spx_ui_mgr.h"
 
 #include <emscripten.h>
 #define audioMgr SpxEngine::get_singleton()->get_audio()

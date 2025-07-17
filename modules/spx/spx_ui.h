@@ -80,6 +80,7 @@ public:
 
 	Control *get_control_item() const;
 	void set_control_item(Control *ctrl);
+	virtual void on_click_internal() override;
 
 public:
 	void set_gid(GdObj id);

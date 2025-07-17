@@ -49,6 +49,7 @@ public:
 	virtual void on_start() = 0;
 	virtual int64_t get_gid() = 0;
 	virtual ~ISpxUi() = default; // Added virtual destructor to fix -Werror=non-virtual-dtor
+	virtual void on_click_internal() = 0;
 };
 
 class Control : public CanvasItem {
