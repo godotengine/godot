@@ -1539,7 +1539,8 @@ void ParticlesStorage::update_particles() {
 		double todo = particles->clear ? particles->pre_process_time : 0;
 		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
 		todo = todo > particles->request_process_time_trailing ? todo : particles->request_process_time_trailing;
-
+		bool artificial_process =  particles->request_process_time > 0 ||  particles->request_process_time_trailing > 0;
+		
 		if (todo > 0.0) {
 			double frame_time;
 			if (fixed_fps > 0) {
@@ -1551,38 +1552,38 @@ void ParticlesStorage::update_particles() {
 			float tmp_scale = particles->speed_scale;
 			// We need this otherwise the speed scale of the particle system influences the TODO.
 			particles->speed_scale = 1.0;
-			bool tmp_emitting = particles->emitting;
 			if (particles->clear) {
 				todo = particles->pre_process_time;
-				while (todo > 0.) {
-					_particles_process(particles, frame_time > todo ? frame_time : todo);
+				while (todo > 0) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
 					todo -= frame_time;
 				}
 			}
 			if (particles->request_process_time > 0) {
 				todo = particles->request_process_time;
-				while (todo > 0.) {
-					_particles_process(particles, frame_time > todo ? frame_time : todo);
+				while (todo > 0) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
 					todo -= frame_time;
 				}
 			}
 			if (particles->request_process_time_trailing > 0) {
 				particles->emitting = false;
 				todo = particles->request_process_time_trailing;
-				while (todo > 0.) {
-					_particles_process(particles, frame_time > todo ? frame_time : todo);
+				while (todo > 0) {
+					_particles_process(particles, frame_time > todo ? todo : frame_time);
 					todo -= frame_time;
 				}
 
-				particles->emitting = tmp_emitting;
+				
 			}
-			particles->request_process_time = 0.0;
-			particles->request_process_time_trailing = 0.0;
 			particles->speed_scale = tmp_scale;
 		}
+		
+		particles->request_process_time = 0.0;
+		particles->request_process_time_trailing = 0.0;
 
 		double time_scale = MAX(particles->speed_scale, 0.0);
-
+		if (! artificial_process){
 		if (fixed_fps > 0) {
 			double frame_time = 1.0 / fixed_fps;
 			double delta = RendererCompositorRD::get_singleton()->get_frame_delta_time();
@@ -1603,6 +1604,8 @@ void ParticlesStorage::update_particles() {
 			_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time() * time_scale);
 		}
 
+		
+	}
 		// Ensure that memory is initialized (the code above should ensure that _particles_process is always called at least once upon clearing).
 		DEV_ASSERT(!particles->clear);
 
