@@ -762,6 +762,9 @@ void AudioDriverPulseAudio::finish_input_device() {
 }
 
 Error AudioDriverPulseAudio::input_start() {
+	if (pa_rec_str) {
+		return ERR_ALREADY_IN_USE;
+	}
 	lock();
 	Error err = init_input_device();
 	unlock();
