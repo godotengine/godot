@@ -28,9 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.regular;
+package org.godotengine.godot.render;
 
-import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.utils.GLUtils;
 
 import javax.microedition.khronos.egl.EGL10;
@@ -40,7 +39,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 /**
  * Used to select the egl config for pancake games.
  */
-public class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
+class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 	private static final String TAG = RegularConfigChooser.class.getSimpleName();
 
 	private int[] mValue = new int[1];
