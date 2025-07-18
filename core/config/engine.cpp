@@ -383,6 +383,14 @@ String Engine::get_shader_cache_path() const {
 	return shader_cache_path;
 }
 
+void Engine::set_color_standard_output(bool p_enable) {
+	color_standard_output = p_enable;
+}
+
+bool Engine::is_coloring_standard_output() const {
+	return color_standard_output;
+}
+
 Engine *Engine::get_singleton() {
 	return singleton;
 }
