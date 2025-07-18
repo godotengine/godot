@@ -42,6 +42,7 @@
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
 #include "editor/export/export_template_manager.h"
 #include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
@@ -2273,7 +2274,16 @@ bool EditorExportPlatformAndroid::poll_export() {
 
 int EditorExportPlatformAndroid::get_options_count() const {
 	MutexLock lock(device_lock);
-	return devices.size();
+	return devices.size() + 1;
+}
+
+Ref<Texture2D> EditorExportPlatformAndroid::get_option_icon(int p_index) const {
+	if (p_index == 0) {
+		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
+		ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
+		return theme->get_icon(use_scrcpy ? SNAME("GuiChecked") : SNAME("GuiUnchecked"), EditorStringName(EditorIcons));
+	}
+	return EditorExportPlatform::get_option_icon(p_index - 1);
 }
 
 String EditorExportPlatformAndroid::get_options_tooltip() const {
@@ -2281,32 +2291,46 @@ String EditorExportPlatformAndroid::get_options_tooltip() const {
 }
 
 String EditorExportPlatformAndroid::get_option_label(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	ERR_FAIL_INDEX_V(p_index, devices.size() + 1, "");
+	if (p_index == 0) {
+		return TTR("Run using \"scrcpy\"");
+	}
 	MutexLock lock(device_lock);
-	return devices[p_index].name;
+	return devices[p_index - 1].name;
 }
 
 String EditorExportPlatformAndroid::get_option_tooltip(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	ERR_FAIL_INDEX_V(p_index, devices.size() + 1, "");
+	if (p_index == 0) {
+		return TTR("If enabled, \"scrcpy\" is used to start the project and automatically stream device display (or virtual display) content.");
+	}
 	MutexLock lock(device_lock);
-	String s = devices[p_index].description;
+	String s = devices[p_index - 1].description;
 	if (devices.size() == 1) {
 		// Tooltip will be:
 		// Name
 		// Description
-		s = devices[p_index].name + "\n\n" + s;
+		s = devices[p_index - 1].name + "\n\n" + s;
 	}
 	return s;
 }
 
 String EditorExportPlatformAndroid::get_device_architecture(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, devices.size(), "");
+	ERR_FAIL_INDEX_V(p_index, devices.size() + 1, "");
+	if (p_index == 0) {
+		return String();
+	}
 	MutexLock lock(device_lock);
-	return devices[p_index].architecture;
+	return devices[p_index - 1].architecture;
 }
 
 Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
-	ERR_FAIL_INDEX_V(p_device, devices.size(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_INDEX_V(p_device, devices.size() + 1, ERR_INVALID_PARAMETER);
+	if (p_device == 0) {
+		use_scrcpy = !use_scrcpy;
+		devices_changed.set();
+		return ERR_SKIP;
+	}
 
 	String can_export_error;
 	bool can_export_missing_templates;
@@ -2317,7 +2341,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	MutexLock lock(device_lock);
 
-	EditorProgress ep("run", vformat(TTR("Running on %s"), devices[p_device].name), 3);
+	EditorProgress ep("run", vformat(TTR("Running on %s"), devices[p_device - 1].name), 3);
 
 	String adb = get_adb_path();
 
@@ -2328,7 +2352,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 	const bool use_wifi_for_remote_debug = EDITOR_GET("export/android/use_wifi_for_remote_debug");
 	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
-	const bool use_reverse = devices[p_device].api_level >= 21 && !use_wifi_for_remote_debug;
+	const bool use_reverse = devices[p_device - 1].api_level >= 21 && !use_wifi_for_remote_debug;
 
 	if (use_reverse) {
 		p_debug_flags.set_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
@@ -2366,12 +2390,12 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
-		print_line("Uninstalling previous version: " + devices[p_device].name);
+		print_line("Uninstalling previous version: " + devices[p_device - 1].name);
 
 		args.push_back("-s");
-		args.push_back(devices[p_device].id);
+		args.push_back(devices[p_device - 1].id);
 		args.push_back("uninstall");
-		if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+		if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device - 1].api_level >= 17) {
 			args.push_back("--user");
 			args.push_back("0");
 		}
@@ -2382,16 +2406,16 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 		print_verbose(output);
 	}
 
-	print_line("Installing to device (please wait...): " + devices[p_device].name);
+	print_line("Installing to device (please wait...): " + devices[p_device - 1].name);
 	if (ep.step(TTR("Installing to device, please wait..."), 2)) {
 		CLEANUP_AND_RETURN(ERR_SKIP);
 	}
 
 	args.clear();
 	args.push_back("-s");
-	args.push_back(devices[p_device].id);
+	args.push_back(devices[p_device - 1].id);
 	args.push_back("install");
-	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device - 1].api_level >= 17) {
 		args.push_back("--user");
 		args.push_back("0");
 	}
@@ -2414,7 +2438,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 			args.clear();
 			args.push_back("-s");
-			args.push_back(devices[p_device].id);
+			args.push_back(devices[p_device - 1].id);
 			args.push_back("reverse");
 			args.push_back("--remove-all");
 			output.clear();
@@ -2425,7 +2449,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 				int dbg_port = EDITOR_GET("network/debug/remote_port");
 				args.clear();
 				args.push_back("-s");
-				args.push_back(devices[p_device].id);
+				args.push_back(devices[p_device - 1].id);
 				args.push_back("reverse");
 				args.push_back("tcp:" + itos(dbg_port));
 				args.push_back("tcp:" + itos(dbg_port));
@@ -2441,7 +2465,7 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 
 				args.clear();
 				args.push_back("-s");
-				args.push_back(devices[p_device].id);
+				args.push_back(devices[p_device - 1].id);
 				args.push_back("reverse");
 				args.push_back("tcp:" + itos(fs_port));
 				args.push_back("tcp:" + itos(fs_port));
@@ -2464,42 +2488,69 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	if (ep.step(TTR("Running on device..."), 3)) {
 		CLEANUP_AND_RETURN(ERR_SKIP);
 	}
-	args.clear();
-	args.push_back("-s");
-	args.push_back(devices[p_device].id);
-	args.push_back("shell");
-	args.push_back("am");
-	args.push_back("start");
-	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
-		args.push_back("--user");
-		args.push_back("0");
+
+	String scrcpy = "scrcpy";
+	if (!EDITOR_GET("export/android/scrcpy/path").operator String().is_empty()) {
+		scrcpy = EDITOR_GET("export/android/scrcpy/path").operator String();
 	}
-	args.push_back("-a");
-	args.push_back("android.intent.action.MAIN");
 
-	// Going with implicit launch first based on the LAUNCHER category and the app's package.
-	args.push_back("-c");
-	args.push_back("android.intent.category.LAUNCHER");
-	args.push_back(get_package_name(p_preset, package_name));
+	args.clear();
+	if (use_scrcpy) {
+		args.push_back("-s");
+		args.push_back(devices[p_device - 1].id);
+		if (EDITOR_GET("export/android/scrcpy/virtual_display").operator bool()) {
+			args.push_back("--new-display=" + EDITOR_GET("export/android/scrcpy/screen_size").operator String());
+			if (EDITOR_GET("export/android/scrcpy/local_ime").operator bool()) {
+				args.push_back("--display-ime-policy=local");
+			}
+			if (EDITOR_GET("export/android/scrcpy/no_decorations").operator bool()) {
+				args.push_back("--no-vd-system-decorations");
+			}
+		}
+		args.push_back("--start-app=+" + get_package_name(p_preset, package_name));
 
-	output.clear();
-	err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
-	print_verbose(output);
-	if (err || rv != 0 || output.contains("Error: Activity not started")) {
-		// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
-		const String component_name = get_package_name(p_preset, package_name) + "/com.godot.game.GodotApp";
-		print_line("Implicit launch failed.. Trying explicit launch using", component_name);
-		args.erase(get_package_name(p_preset, package_name));
-		args.push_back("-n");
-		args.push_back(component_name);
+		err = OS::get_singleton()->create_process(scrcpy, args);
+		if (err) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
+			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+		}
+	} else {
+		args.push_back("-s");
+		args.push_back(devices[p_device - 1].id);
+		args.push_back("shell");
+		args.push_back("am");
+		args.push_back("start");
+		if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device - 1].api_level >= 17) {
+			args.push_back("--user");
+			args.push_back("0");
+		}
+		args.push_back("-a");
+		args.push_back("android.intent.action.MAIN");
+
+		// Going with implicit launch first based on the LAUNCHER category and the app's package.
+		args.push_back("-c");
+		args.push_back("android.intent.category.LAUNCHER");
+		args.push_back(get_package_name(p_preset, package_name));
 
 		output.clear();
 		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 		print_verbose(output);
+		if (err || rv != 0 || output.contains("Error: Activity not started")) {
+			// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
+			const String component_name = get_package_name(p_preset, package_name) + "/com.godot.game.GodotApp";
+			print_line("Implicit launch failed.. Trying explicit launch using", component_name);
+			args.erase(get_package_name(p_preset, package_name));
+			args.push_back("-n");
+			args.push_back(component_name);
 
-		if (err || rv != 0 || output.begins_with("Error: Activity not started")) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
-			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+			output.clear();
+			err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+			print_verbose(output);
+
+			if (err || rv != 0 || output.begins_with("Error: Activity not started")) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
+				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+			}
 		}
 	}
 
