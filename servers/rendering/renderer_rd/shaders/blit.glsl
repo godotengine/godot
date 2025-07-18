@@ -135,10 +135,17 @@ void main() {
 
 	if (data.convert_to_srgb) {
 		color.rgb = linear_to_srgb(color.rgb); // Regular linear -> SRGB conversion.
-		// When convert_to_srgb is true, debanding was skipped in tonemap.glsl.
+
+		// Even if debanding was applied earlier in the rendering process, it must
+		// be reapplied after the linear_to_srgb floating point operations.
+		// When the linear_to_srgb operation was not performed, the source is
+		// already an 8-bit format and debanding cannot be effective. In this
+		// case, GPU driver rounding error can add noise so debanding should be
+		// skipped entirely.
 		if (data.use_debanding) {
 			color.rgb += screen_space_dither(gl_FragCoord.xy);
 		}
+
 		color.rgb = clamp(color.rgb, vec3(0.0), vec3(1.0));
 	}
 }
