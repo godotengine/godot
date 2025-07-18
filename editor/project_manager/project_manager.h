@@ -188,7 +188,6 @@ class ProjectManager : public Control {
 	void _open_selected_projects_with_migration();
 	void _open_selected_projects_check_warnings();
 	void _open_selected_projects_check_recovery_mode();
-	void _open_selected_projects_check_compatibility();
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();

@@ -667,27 +667,6 @@ void ProjectManager::_open_selected_projects_check_recovery_mode() {
 		return;
 	}
 
-	_open_selected_projects_check_compatibility();
-}
-
-void ProjectManager::_open_selected_projects_check_compatibility() {
-	Vector<ProjectList::Item> selected_projects = project_list->get_selected_projects();
-
-	if (selected_projects.is_empty()) {
-		return;
-	}
-
-	const ProjectList::Item &project = selected_projects[0];
-	if (project.missing) {
-		return;
-	}
-
-	open_in_compatibility = false;
-	if (project.unsupported_features.has("Forward Plus") || project.unsupported_features.has("Mobile")) {
-		_open_compatibility_ask(false);
-		return;
-	}
-
 	_open_selected_projects_check_warnings();
 }
 
