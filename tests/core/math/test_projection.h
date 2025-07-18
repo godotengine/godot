@@ -552,44 +552,87 @@ TEST_CASE("[Projection] Planes extraction") {
 	CHECK(plane_array[Projection::PLANE_BOTTOM].normalized().is_equal_approx(planes[Projection::PLANE_BOTTOM].normalized()));
 }
 
-TEST_CASE("[Projection] Perspective Half extents") {
+TEST_CASE("[Projection] Perspective extents") {
 	constexpr real_t sqrt3 = 1.7320508;
 	Projection persp = Projection::create_perspective(90, 1, 1, 40, false);
 	Vector2 ne = persp.get_viewport_half_extents();
 	Vector2 fe = persp.get_far_plane_half_extents();
+	Rect2 nr = persp.get_viewport_rect();
+	Rect2 fr = persp.get_far_plane_rect();
 
 	CHECK(ne.is_equal_approx(Vector2(1, 1) * 1));
 	CHECK(fe.is_equal_approx(Vector2(1, 1) * 40));
+	CHECK(nr.is_equal_approx(Rect2(-Vector2(1, 1), 2 * Vector2(1, 1))));
+	CHECK(fr.is_equal_approx(Rect2(-Vector2(1, 1) * 40, 2 * Vector2(1, 1) * 40)));
 
 	persp.set_perspective(120, sqrt3, 0.8, 10, true);
 	ne = persp.get_viewport_half_extents();
 	fe = persp.get_far_plane_half_extents();
+	nr = persp.get_viewport_rect();
+	fr = persp.get_far_plane_rect();
 
 	CHECK(ne.is_equal_approx(Vector2(sqrt3, 1.0) * 0.8));
 	CHECK(fe.is_equal_approx(Vector2(sqrt3, 1.0) * 10));
+	CHECK(nr.is_equal_approx(Rect2(-Vector2(sqrt3, 1.0) * 0.8, 2 * Vector2(sqrt3, 1.0) * 0.8)));
+	CHECK(fr.is_equal_approx(Rect2(-Vector2(sqrt3, 1.0) * 10, 2 * Vector2(sqrt3, 1.0) * 10)));
 
 	persp.set_perspective(60, 1.2, 0.5, 15, false);
 	ne = persp.get_viewport_half_extents();
 	fe = persp.get_far_plane_half_extents();
+	nr = persp.get_viewport_rect();
+	fr = persp.get_far_plane_rect();
 
 	CHECK(ne.is_equal_approx(Vector2(sqrt3 / 3 * 1.2, sqrt3 / 3) * 0.5));
 	CHECK(fe.is_equal_approx(Vector2(sqrt3 / 3 * 1.2, sqrt3 / 3) * 15));
+	CHECK(nr.is_equal_approx(Rect2(-Vector2(sqrt3 / 3 * 1.2, sqrt3 / 3) * 0.5, 2 * Vector2(sqrt3 / 3 * 1.2, sqrt3 / 3) * 0.5)));
+	CHECK(fr.is_equal_approx(Rect2(-Vector2(sqrt3 / 3 * 1.2, sqrt3 / 3) * 15, 2 * Vector2(sqrt3 / 3 * 1.2, sqrt3 / 3) * 15)));
 }
 
-TEST_CASE("[Projection] Orthographic Half extents") {
+TEST_CASE("[Projection] Orthographic extents") {
 	Projection ortho = Projection::create_orthogonal(-3, 3, -1.5, 1.5, 1.2, 15);
 	Vector2 ne = ortho.get_viewport_half_extents();
 	Vector2 fe = ortho.get_far_plane_half_extents();
+	Rect2 nr = ortho.get_viewport_rect();
+	Rect2 fr = ortho.get_far_plane_rect();
 
 	CHECK(ne.is_equal_approx(Vector2(3, 1.5)));
 	CHECK(fe.is_equal_approx(Vector2(3, 1.5)));
+	CHECK(nr.is_equal_approx(Rect2(Vector2(-3, -1.5), 2 * Vector2(3, 1.5))));
+	CHECK(fr.is_equal_approx(Rect2(Vector2(-3, -1.5), 2 * Vector2(3, 1.5))));
 
 	ortho.set_orthogonal(-7, 7, -2.5, 2.5, 0.5, 6);
 	ne = ortho.get_viewport_half_extents();
 	fe = ortho.get_far_plane_half_extents();
+	nr = ortho.get_viewport_rect();
+	fr = ortho.get_far_plane_rect();
 
 	CHECK(ne.is_equal_approx(Vector2(7, 2.5)));
 	CHECK(fe.is_equal_approx(Vector2(7, 2.5)));
+	CHECK(nr.is_equal_approx(Rect2(Vector2(-7, -2.5), 2 * Vector2(7, 2.5))));
+	CHECK(fr.is_equal_approx(Rect2(Vector2(-7, -2.5), 2 * Vector2(7, 2.5))));
+
+	ortho.set_orthogonal(-2, 6, -3.5, 0.5, 1.5, 5.5);
+	nr = ortho.get_viewport_rect();
+	fr = ortho.get_far_plane_rect();
+
+	CHECK(nr.is_equal_approx(Rect2(Vector2(-2, -3.5), Vector2(8, 4))));
+	CHECK(fr.is_equal_approx(Rect2(Vector2(-2, -3.5), Vector2(8, 4))));
+}
+
+TEST_CASE("[Projection] Frustum extents") {
+	Projection frustum = Projection::create_frustum(-3, 3, -1.5, 1.5, 1.2, 15);
+	Rect2 nr = frustum.get_viewport_rect();
+	Rect2 fr = frustum.get_far_plane_rect();
+
+	CHECK(nr.is_equal_approx(Rect2(Vector2(-3, -1.5), 2 * Vector2(3, 1.5))));
+	CHECK(fr.is_equal_approx(Rect2(12.5 * Vector2(-3, -1.5), 25 * Vector2(3, 1.5))));
+
+	frustum.set_frustum(-2, 6, -3.5, 0.5, 2, 6);
+	nr = frustum.get_viewport_rect();
+	fr = frustum.get_far_plane_rect();
+
+	CHECK(nr.is_equal_approx(Rect2(Vector2(-2, -3.5), Vector2(8, 4))));
+	CHECK(fr.is_equal_approx(Rect2(3 * Vector2(-2, -3.5), 3 * Vector2(8, 4))));
 }
 
 TEST_CASE("[Projection] Endpoints") {
