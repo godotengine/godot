@@ -165,6 +165,7 @@ class GridMapEditor : public VBoxContainer {
 		Vector3 current;
 		Vector3 begin;
 		Vector3 end;
+		Vector3 distance_from_cursor;
 		int orientation = 0;
 	};
 	PasteIndicator paste_indicator;
@@ -173,6 +174,7 @@ class GridMapEditor : public VBoxContainer {
 	Transform3D cursor_transform;
 
 	Vector3 cursor_origin;
+	Vector3i cursor_gridpos;
 
 	int display_mode = DISPLAY_THUMBNAIL;
 	int selected_palette = -1;
