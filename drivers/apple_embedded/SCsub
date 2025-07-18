@@ -10,7 +10,7 @@ env_apple_embedded.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
 
 # Use bundled Vulkan headers
 vulkan_dir = "#thirdparty/vulkan"
-env_apple_embedded.Prepend(CPPPATH=[vulkan_dir, vulkan_dir + "/include"])
+env_apple_embedded.Prepend(CPPEXTPATH=[vulkan_dir, vulkan_dir + "/include"])
 
 # Driver source files
 env_apple_embedded.add_source_files(env.drivers_sources, "*.mm")

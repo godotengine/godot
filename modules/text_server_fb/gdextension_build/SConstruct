@@ -79,7 +79,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     thirdparty_tvg_sources = [thirdparty_tvg_dir + file for file in thirdparty_tvg_sources]
 
     env_tvg.Append(
-        CPPPATH=[
+        CPPEXTPATH=[
             "../../../thirdparty/thorvg/inc",
             "../../../thirdparty/thorvg/src/common",
             "../../../thirdparty/thorvg/src/renderer",
@@ -96,7 +96,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     env_tvg.Append(CPPDEFINES=["TVG_STATIC"])
 
     env.Append(
-        CPPPATH=[
+        CPPEXTPATH=[
             "../../../thirdparty/thorvg/inc",
             "../../../thirdparty/thorvg/src/common",
             "../../../thirdparty/thorvg/src/renderer",
@@ -144,8 +144,8 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     thirdparty_msdfgen_sources = [thirdparty_msdfgen_dir + file for file in thirdparty_msdfgen_sources]
 
     env_msdfgen.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
-    env_msdfgen.Append(CPPPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
-    env.Append(CPPPATH=["../../../thirdparty/msdfgen"])
+    env_msdfgen.Append(CPPEXTPATH=["../../../thirdparty/freetype/include", "../../../thirdparty/msdfgen"])
+    env.Append(CPPEXTPATH=["../../../thirdparty/msdfgen"])
     env.Append(CPPDEFINES=[("MSDFGEN_PUBLIC", "")])
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
@@ -260,11 +260,11 @@ if env["freetype_enabled"]:
         ]
         thirdparty_freetype_sources += [thirdparty_brotli_dir + file for file in thirdparty_brotli_sources]
         env_freetype.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
-        env_freetype.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
+        env_freetype.Prepend(CPPEXTPATH=[thirdparty_brotli_dir + "include"])
         env.Append(CPPDEFINES=["FT_CONFIG_OPTION_USE_BROTLI"])
 
-    env_freetype.Append(CPPPATH=[thirdparty_freetype_dir + "/include", thirdparty_zlib_dir, thirdparty_png_dir])
-    env.Append(CPPPATH=[thirdparty_freetype_dir + "/include"])
+    env_freetype.Append(CPPEXTPATH=[thirdparty_freetype_dir + "/include", thirdparty_zlib_dir, thirdparty_png_dir])
+    env.Append(CPPEXTPATH=[thirdparty_freetype_dir + "/include"])
 
     env_freetype.Append(
         CPPDEFINES=[
