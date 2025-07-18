@@ -916,7 +916,7 @@ Ref<Texture2D> EditorExportPlatformWeb::get_run_icon() const {
 	return run_icon;
 }
 
-EditorExportPlatformWeb::EditorExportPlatformWeb() {
+void EditorExportPlatformWeb::initialize() {
 	if (EditorNode::get_singleton()) {
 		server.instantiate();
 

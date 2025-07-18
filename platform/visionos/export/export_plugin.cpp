@@ -33,13 +33,17 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+#include "editor/editor_node.h"
+
 Vector<String> EditorExportPlatformVisionOS::device_types({ "realityDevice" });
 
-EditorExportPlatformVisionOS::EditorExportPlatformVisionOS() :
-		EditorExportPlatformAppleEmbedded(_visionos_logo_svg, _visionos_run_icon_svg) {
+void EditorExportPlatformVisionOS::initialize() {
+	if (EditorNode::get_singleton()) {
+		EditorExportPlatformAppleEmbedded::_initialize(_visionos_logo_svg, _visionos_run_icon_svg);
 #ifdef MACOS_ENABLED
-	_start_remote_device_poller_thread();
+		_start_remote_device_poller_thread();
 #endif
+	}
 }
 
 EditorExportPlatformVisionOS::~EditorExportPlatformVisionOS() {
