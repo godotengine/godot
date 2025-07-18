@@ -151,8 +151,11 @@
 			- In 2D, a [CanvasItemMaterial] will need to be created and configured to use the [constant CanvasItemMaterial.BLEND_MODE_PREMULT_ALPHA] blend mode on [CanvasItem]s that use this texture. In custom [code]@canvas_item[/code] shaders, [code]render_mode blend_premul_alpha;[/code] should be used.
 			- In 3D, a [BaseMaterial3D] will need to be created and configured to use the [constant BaseMaterial3D.BLEND_MODE_PREMULT_ALPHA] blend mode on materials that use this texture. In custom [code]spatial[/code] shaders, [code]render_mode blend_premul_alpha;[/code] should be used.
 		</member>
+		<member name="process/resize_interpolation_mode" type="int" setter="" getter="" default="4">
+			Selects which interpolation mode to use when automatically resizing textures on import (see [enum Image.Interpolation]). Used in conjunction with [member process/size_limit].
+		</member>
 		<member name="process/size_limit" type="int" setter="" getter="" default="0">
-			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using cubic interpolation.
+			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is done using the interpolation mode specified in [member process/resize_interpolation_mode].
 			This can be used to reduce memory usage without affecting the source images, or avoid issues with textures not displaying on mobile/web platforms (as these usually can't display textures larger than 4096×4096).
 			[b]Note:[/b] Even if this is set to [code]0[/code], import size is limited to the following dimensions for technical reasons. Depending on [member compress/mode], textures will be downsampled on import if necessary:
 			- [b]Lossy:[/b] 16383 pixels width or height, whichever is larger;
