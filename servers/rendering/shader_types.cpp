@@ -238,7 +238,6 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("diffuse"), "lambert", "lambert_wrap", "burley", "toon" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("specular"), "schlick_ggx", "toon", "disabled" });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("skip_vertex_transform") });
-		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("world_vertex_coords") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("ensure_correct_normals") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("shadows_disabled") });
 		shader_modes[RS::SHADER_SPATIAL].modes.push_back({ PNAME("ambient_light_disabled") });
@@ -352,7 +351,6 @@ ShaderTypes::ShaderTypes() {
 		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("blend"), "mix", "add", "sub", "mul", "premul_alpha", "disabled" });
 		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("unshaded") });
 		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("light_only") });
-		shader_modes[RS::SHADER_CANVAS_ITEM].modes.push_back({ PNAME("world_vertex_coords") });
 	}
 
 	/************ PARTICLES **************************/
