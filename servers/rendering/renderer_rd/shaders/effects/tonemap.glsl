@@ -65,8 +65,9 @@ layout(set = 3, binding = 0) uniform sampler3D source_color_correction;
 #define FLAG_USE_AUTO_EXPOSURE (1 << 2)
 #define FLAG_USE_COLOR_CORRECTION (1 << 3)
 #define FLAG_USE_FXAA (1 << 4)
-#define FLAG_USE_DEBANDING (1 << 5)
-#define FLAG_CONVERT_TO_SRGB (1 << 6)
+#define FLAG_USE_8_BIT_DEBANDING (1 << 5)
+#define FLAG_USE_10_BIT_DEBANDING (1 << 6)
+#define FLAG_CONVERT_TO_SRGB (1 << 7)
 
 layout(push_constant, std430) uniform Params {
 	vec3 bcs;
@@ -819,7 +820,7 @@ vec3 do_fxaa(vec3 color, float exposure, vec2 uv_interp) {
 // NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
 // This dithering must be applied after encoding changes (linear/nonlinear) have been applied
 // as the final step before quantization from floating point to integer values.
-vec3 screen_space_dither(vec2 frag_coord) {
+vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
 	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
 	// Removed the time component to avoid passing time into this shader.
 	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
@@ -827,8 +828,7 @@ vec3 screen_space_dither(vec2 frag_coord) {
 
 	// Subtract 0.5 to avoid slightly brightening the whole viewport.
 	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
-	// Divide by 255 to align to 8-bit quantization.
-	return (dither.rgb - 0.5) / 255.0;
+	return (dither.rgb - 0.5) / bit_alignment_diviser;
 }
 
 void main() {
@@ -910,10 +910,15 @@ void main() {
 		// linear because the color correction texture sampling does this for us.
 	}
 
-	if (bool(params.flags & FLAG_USE_DEBANDING)) {
-		// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
-		// Otherwise, we're adding noise to an already-quantized image.
-		color.rgb += screen_space_dither(gl_FragCoord.xy);
+	// Debanding should be done at the end of tonemapping, but before writing to the LDR buffer.
+	// Otherwise, we're adding noise to an already-quantized image.
+
+	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
+		// Divide by 255 to align to 8-bit quantization.
+		color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
+	} else if (bool(params.flags & FLAG_USE_10_BIT_DEBANDING)) {
+		// Divide by 1023 to align to 10-bit quantization.
+		color.rgb += screen_space_dither(gl_FragCoord.xy, 1023.0);
 	}
 
 	frag_color = color;
