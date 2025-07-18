@@ -180,11 +180,11 @@ struct [[nodiscard]] Vector3 {
 	constexpr Vector3 operator-() const;
 
 	constexpr bool operator==(const Vector3 &p_v) const;
-	constexpr bool operator!=(const Vector3 &p_v) const;
 	constexpr bool operator<(const Vector3 &p_v) const;
 	constexpr bool operator<=(const Vector3 &p_v) const;
 	constexpr bool operator>(const Vector3 &p_v) const;
 	constexpr bool operator>=(const Vector3 &p_v) const;
+	bool operator==(const Vector3i &p_vector3i) const;
 
 	explicit operator String() const;
 	operator Vector3i() const;
@@ -430,10 +430,6 @@ constexpr Vector3 Vector3::operator-() const {
 
 constexpr bool Vector3::operator==(const Vector3 &p_v) const {
 	return x == p_v.x && y == p_v.y && z == p_v.z;
-}
-
-constexpr bool Vector3::operator!=(const Vector3 &p_v) const {
-	return x != p_v.x || y != p_v.y || z != p_v.z;
 }
 
 constexpr bool Vector3::operator<(const Vector3 &p_v) const {

@@ -42,7 +42,6 @@ struct Pair {
 			first(p_first), second(p_second) {}
 
 	constexpr bool operator==(const Pair &p_other) const { return first == p_other.first && second == p_other.second; }
-	constexpr bool operator!=(const Pair &p_other) const { return first != p_other.first || second != p_other.second; }
 	constexpr bool operator<(const Pair &p_other) const { return first == p_other.first ? (second < p_other.second) : (first < p_other.first); }
 	constexpr bool operator<=(const Pair &p_other) const { return first == p_other.first ? (second <= p_other.second) : (first < p_other.first); }
 	constexpr bool operator>(const Pair &p_other) const { return first == p_other.first ? (second > p_other.second) : (first > p_other.first); }
@@ -76,7 +75,6 @@ struct KeyValue {
 			key(p_pair.first), value(p_pair.second) {}
 
 	constexpr bool operator==(const KeyValue &p_other) const { return key == p_other.key && value == p_other.value; }
-	constexpr bool operator!=(const KeyValue &p_other) const { return key != p_other.key || value != p_other.value; }
 	constexpr bool operator<(const KeyValue &p_other) const { return key == p_other.key ? (value < p_other.value) : (key < p_other.key); }
 	constexpr bool operator<=(const KeyValue &p_other) const { return key == p_other.key ? (value <= p_other.value) : (key < p_other.key); }
 	constexpr bool operator>(const KeyValue &p_other) const { return key == p_other.key ? (value > p_other.value) : (key > p_other.key); }
