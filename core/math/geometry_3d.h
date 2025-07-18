@@ -292,6 +292,10 @@ public:
 			real_t den = p.normal.dot(dir);
 
 			if (Math::abs(den) <= (real_t)CMP_EPSILON) {
+				if (p.is_point_over(p_from)) {
+					// p is a separating plane.
+					return false;
+				}
 				continue; // Ignore parallel plane.
 			}
 
