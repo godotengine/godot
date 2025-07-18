@@ -598,6 +598,8 @@ private:
 	void _discard_changes(const String &p_str = String());
 	void _scene_tab_closed(int p_tab);
 	void _cancel_close_scene_tab();
+	void _close_scene_idx(int p_idx);
+	void _file_removed(const String &p_removed_file);
 
 	void _prepare_save_confirmation_popup();
 

@@ -5073,11 +5073,7 @@ bool EditorNode::close_scene() {
 	if (tab_index == 0 && get_edited_scene() == nullptr && editor_data.get_scene_path(tab_index).is_empty()) {
 		return false;
 	}
-
-	tab_closing_idx = tab_index;
-	current_menu_option = SCENE_CLOSE;
-	_discard_changes();
-	changing_scene = false;
+	_close_scene_idx(tab_index);
 	return true;
 }
 
@@ -6209,6 +6205,24 @@ void EditorNode::_cancel_close_scene_tab() {
 	}
 	changing_scene = false;
 	tabs_to_close.clear();
+}
+
+void EditorNode::_close_scene_idx(int p_idx) {
+	tab_closing_idx = p_idx;
+	current_menu_option = SCENE_CLOSE;
+	_discard_changes();
+	changing_scene = false;
+}
+
+void EditorNode::_file_removed(const String &p_removed_file) {
+	int i = 0;
+	for (const EditorData::EditedScene &scene : editor_data.get_edited_scenes()) {
+		if (scene.path == p_removed_file) {
+			_close_scene_idx(i);
+			break;
+		}
+		i++;
+	}
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
@@ -8342,6 +8356,7 @@ EditorNode::EditorNode() {
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
 	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_editor_layout));
+	filesystem_dock->connect("file_removed", callable_mp(this, &EditorNode::_file_removed));
 	get_project_settings()->connect_filesystem_dock_signals(filesystem_dock);
 
 	history_dock = memnew(HistoryDock);
