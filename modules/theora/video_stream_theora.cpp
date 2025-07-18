@@ -596,6 +596,7 @@ void VideoStreamPlaybackTheora::update(double p_delta) {
 
 	if (!video_ready && video_done && audio_done) {
 		stop();
+		seek(0);
 		return;
 	}
 
@@ -624,7 +625,6 @@ void VideoStreamPlaybackTheora::play() {
 
 void VideoStreamPlaybackTheora::stop() {
 	playing = false;
-	seek(0);
 }
 
 bool VideoStreamPlaybackTheora::is_playing() const {
