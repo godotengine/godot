@@ -189,7 +189,8 @@ void Script::_bind_methods() {
 void Script::reload_from_file() {
 #ifdef TOOLS_ENABLED
 	const String path = ResourceLoader::path_remap(get_path());
-	if (ResourceLoader::exists(path)) {
+	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+	if (!file_check->file_exists(path)) {
 		return;
 	}
 
