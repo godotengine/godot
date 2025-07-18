@@ -31,7 +31,9 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -160,6 +162,7 @@ private:
 };
 
 class Button;
+class CheckButton;
 class Tree;
 class TreeItem;
 class ProgressBar;
@@ -179,6 +182,8 @@ public:
 
 	void set_with_replace(bool with_replace);
 	void set_replace_text(const String &text);
+	bool is_keep_results() const;
+	void set_search_labels_visibility(bool p_visible);
 
 	void start_search();
 	void stop_search();
@@ -218,9 +223,11 @@ private:
 	void clear();
 
 	FindInFiles *_finder = nullptr;
+	Label *_find_label = nullptr;
 	Label *_search_text_label = nullptr;
 	Tree *_results_display = nullptr;
 	Label *_status_label = nullptr;
+	CheckButton *_keep_results_button = nullptr;
 	Button *_refresh_button = nullptr;
 	Button *_cancel_button = nullptr;
 	Button *_close_button = nullptr;
@@ -232,4 +239,47 @@ private:
 	HBoxContainer *_replace_container = nullptr;
 	LineEdit *_replace_line_edit = nullptr;
 	Button *_replace_all_button = nullptr;
+};
+
+class PopupMenu;
+class TabContainer;
+
+// Contains several FindInFilesPanels. A FindInFilesPanels contains results of a
+// `Find in Files` searching or a `Replacing in Files` searching, while a
+// FindInFilesTab can contain several FindInFilesPanels so that multiple searching
+// results can remain at the same time.
+class FindInFilesTab : public MarginContainer {
+	GDCLASS(FindInFilesTab, MarginContainer);
+
+	void _on_tab_close_pressed(int p_tab);
+	void _update_bar_visibility();
+	void _bar_menu_option(int p_option);
+	void _bar_input(const Ref<InputEvent> &p_input);
+
+	TabContainer *_tabs = nullptr;
+	bool _update_bar = true;
+	PopupMenu *_tabs_context_menu = nullptr;
+
+	FindInFilesPanel *_create_new_panel();
+	FindInFilesPanel *_get_current_panel();
+
+protected:
+	static void _bind_methods();
+	void _notification(int p_what);
+
+	void _on_find_in_files_result_selected(const String &fpath, int line_number, int begin, int end);
+	void _on_find_in_files_modified_files(const PackedStringArray &paths);
+	void _on_find_in_files_close_button_clicked(FindInFilesPanel *panel);
+
+public:
+	FindInFilesTab();
+
+	FindInFilesPanel *get_panel_for_results(const String &label);
+
+	enum {
+		PANEL_CLOSE,
+		PANEL_CLOSE_OTHERS,
+		PANEL_CLOSE_RIGHT,
+		PANEL_CLOSE_ALL,
+	};
 };
