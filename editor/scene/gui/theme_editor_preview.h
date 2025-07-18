@@ -61,7 +61,6 @@ class ThemeEditorPreview : public VBoxContainer {
 
 	void _propagate_redraw(Control *p_at);
 	void _refresh_interval();
-	void _preview_visibility_changed();
 
 	void _picker_button_cbk();
 	Control *_find_hovered_control(Control *p_parent, Vector2 p_mouse_position);

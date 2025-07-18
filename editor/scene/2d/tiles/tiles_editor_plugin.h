@@ -111,7 +111,6 @@ class TileMapEditorPlugin : public EditorPlugin {
 	GDCLASS(TileMapEditorPlugin, EditorPlugin);
 
 	TileMapLayerEditor *editor = nullptr;
-	Button *button = nullptr;
 	ObjectID tile_map_layer_id;
 	ObjectID tile_map_group_id; // Allow keeping the layer selector up to date.
 
@@ -137,9 +136,6 @@ public:
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
 
-	void hide_editor();
-	bool is_editor_visible() const;
-
 	TileMapEditorPlugin();
 	~TileMapEditorPlugin();
 };
@@ -148,7 +144,6 @@ class TileSetEditorPlugin : public EditorPlugin {
 	GDCLASS(TileSetEditorPlugin, EditorPlugin);
 
 	TileSetEditor *editor = nullptr;
-	Button *button = nullptr;
 
 	ObjectID edited_tileset;
 
