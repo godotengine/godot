@@ -292,9 +292,6 @@ private:
 
 	ConfirmationDialog *video_restart_dialog = nullptr;
 
-	int renderer_current = 0;
-	String renderer_request;
-
 	// Split containers.
 	DockSplitContainer *left_l_hsplit = nullptr;
 	DockSplitContainer *left_l_vsplit = nullptr;
@@ -627,10 +624,10 @@ private:
 	void _queue_translation_notification();
 	void _propagate_translation_notification();
 
-	void _renderer_selected(int);
+	void _renderer_selected(int p_index);
 	void _update_renderer_color();
-	void _add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden);
-	void _set_renderer_name_save_and_restart();
+	String _to_rendering_method_display_name(const String &p_rendering_method) const;
+	void _set_renderer_name_save_and_restart(const String &p_rendering_method);
 
 	void _exit_editor(int p_exit_code);
 
