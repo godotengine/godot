@@ -296,6 +296,7 @@ private:
 	void _update_name();
 	void _compute_edit(const Point2 &p_point);
 	void _clear_selected();
+	bool _is_rotation_arc_visible() const;
 	void _select_clicked(bool p_allow_locked);
 	ObjectID _select_ray(const Point2 &p_pos) const;
 	void _find_items_at_pos(const Point2 &p_pos, Vector<_RayResult> &r_results, bool p_include_locked);
@@ -390,6 +391,12 @@ private:
 		double numeric_input = 0.0;
 		bool numeric_negate = false;
 		int numeric_next_decimal = 0;
+
+		Vector3 rotation_axis;
+		double accumulated_rotation_angle = 0.0;
+		Vector3 initial_click_vector;
+		Vector3 previous_rotation_vector;
+		bool gizmo_initiated = false;
 	} _edit;
 
 	struct Cursor {
@@ -687,10 +694,10 @@ private:
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[4], scale_gizmo[3], scale_plane_gizmo[3], axis_gizmo[3];
 	Ref<StandardMaterial3D> gizmo_color[3];
 	Ref<StandardMaterial3D> plane_gizmo_color[3];
-	Ref<ShaderMaterial> rotate_gizmo_color[3];
+	Ref<ShaderMaterial> rotate_gizmo_color[4];
 	Ref<StandardMaterial3D> gizmo_color_hl[3];
 	Ref<StandardMaterial3D> plane_gizmo_color_hl[3];
-	Ref<ShaderMaterial> rotate_gizmo_color_hl[3];
+	Ref<ShaderMaterial> rotate_gizmo_color_hl[4];
 
 	Ref<Node3DGizmo> current_hover_gizmo;
 	int current_hover_gizmo_handle;
