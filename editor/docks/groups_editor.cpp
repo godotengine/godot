@@ -35,8 +35,9 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
-#include "editor/settings/editor_settings.h"
-#include "editor/settings/project_settings_editor.h"
+#include "editor/multi_node_edit.h"
+#include "editor/project_settings_editor.h"
+#include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
@@ -44,13 +45,12 @@
 #include "scene/gui/label.h"
 #include "scene/resources/packed_scene.h"
 
-static bool can_edit(Node *p_node, const String &p_group) {
-	Node *n = p_node;
+static bool can_edit_node(Node *n, const StringName &p_group) {
 	bool can_edit = true;
 	while (n) {
 		Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
 		if (ss.is_valid()) {
-			int path = ss->find_node_by_path(n->get_path_to(p_node));
+			int path = ss->find_node_by_path(n->get_path_to(n));
 			if (path != -1) {
 				if (ss->is_node_in_group(path, p_group)) {
 					can_edit = false;
@@ -61,6 +61,30 @@ static bool can_edit(Node *p_node, const String &p_group) {
 		n = n->get_owner();
 	}
 	return can_edit;
+}
+
+bool GroupsEditor::_can_edit(Object *p_object, const StringName &p_group) const {
+	if (Object::cast_to<Node>(p_object)) {
+		return can_edit_node(Object::cast_to<Node>(p_object), p_group);
+	} else if (Object::cast_to<MultiNodeEdit>(p_object)) {
+		Node* es = EditorNode::get_singleton()->get_edited_scene();
+		MultiNodeEdit *p_mne = Object::cast_to<MultiNodeEdit>(p_object);
+
+		bool can_edit = true;
+
+		for (int i = 0; i < p_mne->get_node_count(); i++) {
+			NodePath path = p_mne->get_node(i);
+			Node* p_node = es->get_node(path);
+
+			if (p_node && !can_edit_node(p_node, p_group)) {
+				can_edit = false;
+				break;
+			}
+		}
+
+		return can_edit;
+	}
+	return false;
 }
 
 struct _GroupInfoComparator {
@@ -102,7 +126,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 		return;
 	}
 
-	if (!node) {
+	if (!current_obj) {
 		return;
 	}
 
@@ -118,7 +142,7 @@ void GroupsEditor::_modify_group(Object *p_item, int p_column, int p_id, MouseBu
 
 void GroupsEditor::_load_scene_groups(Node *p_node) {
 	List<Node::GroupInfo> groups;
-	p_node->get_groups(&groups);
+	_get_groups(current_obj, &groups);
 
 	for (const GroupInfo &gi : groups) {
 		if (!gi.persistent) {
@@ -129,7 +153,7 @@ void GroupsEditor::_load_scene_groups(Node *p_node) {
 			continue;
 		}
 
-		bool is_editable = can_edit(p_node, gi.name);
+		bool is_editable = _can_edit(p_node, gi.name);
 		if (scene_groups.has(gi.name)) {
 			scene_groups[gi.name] = scene_groups[gi.name] && is_editable;
 		} else {
@@ -171,13 +195,24 @@ void GroupsEditor::_update_groups() {
 	updating_groups = false;
 }
 
+void GroupsEditor::_get_groups(Object* p_object, List<Node::GroupInfo> *groups) { 
+	if (Object::cast_to<Node>(p_object)) {
+		Node* p_node = Object::cast_to<Node>(p_object);
+		p_node->get_groups(groups);
+	}
+	else if (Object::cast_to<MultiNodeEdit>(p_object)) {
+		MultiNodeEdit* p_mne = Object::cast_to<MultiNodeEdit>(p_object);
+		p_mne->get_groups(groups);
+	}
+}
+
 void GroupsEditor::_update_tree() {
 	if (!is_visible_in_tree()) {
 		groups_dirty = true;
 		return;
 	}
 
-	if (!node) {
+	if (!current_obj) {
 		return;
 	}
 
@@ -190,7 +225,8 @@ void GroupsEditor::_update_tree() {
 	tree->clear();
 
 	List<Node::GroupInfo> groups;
-	node->get_groups(&groups);
+	
+	_get_groups(current_obj, &groups);
 	groups.sort_custom<_GroupInfoComparator>();
 
 	List<StringName> current_groups;
@@ -219,7 +255,7 @@ void GroupsEditor::_update_tree() {
 
 		TreeItem *item = tree->create_item(local_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0, can_edit(node, E));
+		item->set_editable(0, _can_edit(current_obj, E));
 		item->set_checked(0, current_groups.find(E) != nullptr);
 		item->set_text(0, E);
 		item->set_meta("__local", true);
@@ -250,7 +286,7 @@ void GroupsEditor::_update_tree() {
 
 		TreeItem *item = tree->create_item(global_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0, can_edit(node, E));
+		item->set_editable(0, _can_edit(current_obj, E));
 		item->set_checked(0, current_groups.find(E) != nullptr);
 		item->set_text(0, E);
 		item->set_meta("__local", false);
@@ -290,6 +326,7 @@ void GroupsEditor::_update_scene_groups(const ObjectID &p_id) {
 		scene_groups = I->value;
 		scene_groups_cache.remove(I);
 	} else {
+		EditorNode::get_singleton()->get_log()->add_message(String("Clearing scene grouips due to invalid object id"));
 		scene_groups = HashMap<StringName, bool>();
 	}
 }
@@ -305,39 +342,61 @@ void GroupsEditor::_cache_scene_groups(const ObjectID &p_id) {
 	}
 }
 
-void GroupsEditor::set_current(Node *p_node) {
-	if (node == p_node) {
-		return;
-	}
-	node = p_node;
-
-	if (!node) {
+void GroupsEditor::set_current(Object *p_object) {
+	if (current_obj == p_object) {
 		return;
 	}
 
-	if (scene_tree->get_edited_scene_root() != scene_root_node) {
-		scene_root_node = scene_tree->get_edited_scene_root();
-		_update_scene_groups(scene_root_node->get_instance_id());
-		_update_groups();
+	if (!p_object) {
+		current_obj = nullptr;
 	}
+	else {
+		current_obj = p_object;
 
-	_update_tree();
+		if (scene_tree->get_edited_scene_root() != scene_root_node) {
+			scene_root_node = scene_tree->get_edited_scene_root();
+			_update_scene_groups(scene_root_node->get_instance_id());
+			_update_groups();
+		}
+
+		_update_tree();
+	}
 }
 
 void GroupsEditor::_item_edited() {
+	//Change the presence of one node in one group.
+
+	//Get the editor tree of the groups editor
 	TreeItem *ti = tree->get_edited();
 	if (!ti) {
 		return;
 	}
 
+	//Get the name of the group
 	String name = ti->get_text(0);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (ti->is_checked(0)) {
-		undo_redo->create_action(TTR("Add to Group"));
 
-		undo_redo->add_do_method(node, "add_to_group", name, true);
-		undo_redo->add_undo_method(node, "remove_from_group", name);
+		//Create a commit an action to add the node to a group, and print a message to the console dock.
+
+		if (Object::cast_to<Node>(current_obj)) {
+			undo_redo->create_action(TTR("Add to Group"));
+			undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+			undo_redo->add_undo_method(current_obj, "remove_from_group", name);
+		}
+		else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+			undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+
+			MultiNodeEdit *p_mne = Object::cast_to<MultiNodeEdit>(current_obj);
+			String mask;
+			p_mne->make_group_mask(name, mask);
+
+			String blank;
+
+			undo_redo->add_do_method(current_obj, "add_partial_to_group", name, true, blank);
+			undo_redo->add_undo_method(current_obj, "remove_partial_from_group", name, mask);
+		}
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, true);
 		undo_redo->add_undo_method(this, "_set_group_checked", name, false);
@@ -349,10 +408,24 @@ void GroupsEditor::_item_edited() {
 		undo_redo->commit_action();
 
 	} else {
-		undo_redo->create_action(TTR("Remove from Group"));
+		
+		if (Object::cast_to<Node>(current_obj)) {
+			undo_redo->create_action(TTR("Remove from Group"));
+			undo_redo->add_do_method(current_obj, "remove_from_group", name);
+			undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
+		}
+		else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+			undo_redo->create_action(TTR("Remove from Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+			
+			MultiNodeEdit *p_mne = Object::cast_to<MultiNodeEdit>(current_obj);
+			String mask;
+			p_mne->make_group_mask(name, mask);
 
-		undo_redo->add_do_method(node, "remove_from_group", name);
-		undo_redo->add_undo_method(node, "add_to_group", name, true);
+			String blank;
+			
+			undo_redo->add_do_method(current_obj, "remove_partial_from_group", name, blank);
+			undo_redo->add_undo_method(current_obj, "add_partial_to_group", name, true, mask);
+		}
 
 		undo_redo->add_do_method(this, "_set_group_checked", name, false);
 		undo_redo->add_undo_method(this, "_set_group_checked", name, true);
@@ -485,10 +558,26 @@ void GroupsEditor::_confirm_add() {
 	String description = add_group_description->get_text();
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Add to Group"));
+	
 
-	undo_redo->add_do_method(node, "add_to_group", name, true);
-	undo_redo->add_undo_method(node, "remove_from_group", name);
+	if (Object::cast_to<Node>(current_obj)) {
+		undo_redo->create_action(TTR("Add to Group"));
+		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
+		undo_redo->add_undo_method(current_obj, "remove_from_group", name);
+	}
+	else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+		//UndoRedo won't implicitly get the scene context from a MultiNodeEdit, so we have to feed it by hand.
+		undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
+
+		MultiNodeEdit *p_mne = Object::cast_to<MultiNodeEdit>(current_obj);
+		String mask;
+		p_mne->make_group_mask(name, mask);
+
+		String blank;
+
+		undo_redo->add_do_method(current_obj, "add_partial_to_group", name, true, blank);
+		undo_redo->add_undo_method(p_mne, "remove_partial_from_group", name, mask);
+	}
 
 	bool is_local = !global_group_button->is_pressed();
 	if (is_local) {
@@ -832,7 +921,7 @@ void GroupsEditor::_node_removed(Node *p_node) {
 }
 
 GroupsEditor::GroupsEditor() {
-	node = nullptr;
+	current_obj = nullptr;
 	scene_tree = SceneTree::get_singleton();
 
 	ED_SHORTCUT("groups_editor/delete", TTRC("Delete"), Key::KEY_DELETE);

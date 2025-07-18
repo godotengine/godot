@@ -52,7 +52,7 @@ class GroupsEditor : public VBoxContainer {
 	bool groups_dirty = false;
 	bool update_groups_and_tree_queued = false;
 
-	Node *node = nullptr;
+	Object *current_obj = nullptr;
 	Node *scene_root_node = nullptr;
 	SceneTree *scene_tree = nullptr;
 
@@ -83,6 +83,8 @@ class GroupsEditor : public VBoxContainer {
 	HashMap<StringName, bool> scene_groups;
 	HashMap<StringName, String> global_groups;
 
+	bool _can_edit(Object* p_object, const StringName &p_identifier) const;
+
 	void _update_scene_groups(const ObjectID &p_id);
 	void _cache_scene_groups(const ObjectID &p_id);
 
@@ -97,6 +99,7 @@ class GroupsEditor : public VBoxContainer {
 	void _update_tree();
 
 	void _update_groups();
+	void _get_groups(Object *p_object, List<Node::GroupInfo> *p_groups);
 	void _load_scene_groups(Node *p_node);
 
 	void _add_scene_group(const String &p_name);
@@ -134,7 +137,7 @@ public:
 		CONVERT_GROUP,
 	};
 
-	void set_current(Node *p_node);
+	void set_current(Object *object);
 
 	GroupsEditor();
 };

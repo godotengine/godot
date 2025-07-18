@@ -34,6 +34,10 @@
 #include "editor/scene/connections_dialog.h"
 #include "editor/themes/editor_scale.h"
 
+//TODO: Remove when done debugging
+#include "editor_node.h"
+#include "editor_log.h"
+
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);
 	connections_button->set_pressed(false);
@@ -87,24 +91,31 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::set_node(Node *p_node) {
-	connections->set_node(p_node);
-	groups->set_current(p_node);
+void NodeDock::edit(Object *object) {
 
-	if (p_node) {
-		if (connections_button->is_pressed()) {
-			connections->show();
-		} else {
-			groups->show();
-		}
-
+	if (!object) {
+		mode_hb->hide();
+		groups->hide();
+		connections->hide();
+		select_a_node->show();
+	} 
+	else {
 		mode_hb->show();
 		select_a_node->hide();
-	} else {
-		connections->hide();
-		groups->hide();
-		mode_hb->hide();
-		select_a_node->show();
+	}
+
+	groups->set_current(object);
+
+	if (Object::cast_to<Node>(object)) {
+		Node* p_node = Object::cast_to<Node>(object);
+		connections->set_node(p_node);
+	} 
+	else {
+		connections->set_node(nullptr);
+	}
+
+	if (!groups->is_visible() && !connections->is_visible() && object) {
+		show_groups();
 	}
 }
 
@@ -120,7 +131,7 @@ NodeDock::NodeDock() {
 	connections_button->set_theme_type_variation(SceneStringName(FlatButton));
 	connections_button->set_text(TTRC("Signals"));
 	connections_button->set_toggle_mode(true);
-	connections_button->set_pressed(true);
+	connections_button->set_pressed(false);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	connections_button->set_clip_text(true);
 	mode_hb->add_child(connections_button);
@@ -130,31 +141,36 @@ NodeDock::NodeDock() {
 	groups_button->set_theme_type_variation(SceneStringName(FlatButton));
 	groups_button->set_text(TTRC("Groups"));
 	groups_button->set_toggle_mode(true);
-	groups_button->set_pressed(false);
+	groups_button->set_pressed(true);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
 	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
 
+
+	panel = memnew(VBoxContainer);
+	panel->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(panel);
+
 	connections = memnew(ConnectionsDock);
-	add_child(connections);
+	panel->add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
 	connections->hide();
 
 	groups = memnew(GroupsEditor);
-	add_child(groups);
+	panel->add_child(groups);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->hide();
 
 	select_a_node = memnew(Label);
 	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);
-	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups."));
+	select_a_node->set_text(TTRC("Make a selection to edit its signals and groups."));
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
 	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
-	add_child(select_a_node);
+	panel->add_child(select_a_node);
 }
 
 NodeDock::~NodeDock() {
