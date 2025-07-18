@@ -267,6 +267,14 @@ float LightmapGIData::get_baked_exposure() const {
 	return baked_exposure;
 }
 
+void LightmapGIData::set_preview_bake(bool p_preview_bake) {
+	preview_bake = p_preview_bake;
+}
+
+bool LightmapGIData::is_preview_bake() const {
+	return preview_bake;
+}
+
 void LightmapGIData::_set_probe_data(const Dictionary &p_data) {
 	ERR_FAIL_COND(!p_data.has("bounds"));
 	ERR_FAIL_COND(!p_data.has("points"));
@@ -336,11 +344,15 @@ void LightmapGIData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_probe_data", "data"), &LightmapGIData::_set_probe_data);
 	ClassDB::bind_method(D_METHOD("_get_probe_data"), &LightmapGIData::_get_probe_data);
 
+	ClassDB::bind_method(D_METHOD("set_preview_bake", "preview_bake"), &LightmapGIData::set_preview_bake);
+	ClassDB::bind_method(D_METHOD("is_preview_bake"), &LightmapGIData::is_preview_bake);
+
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "lightmap_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_lightmap_textures", "get_lightmap_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "shadowmask_textures", PROPERTY_HINT_ARRAY_TYPE, "TextureLayered", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY), "set_shadowmask_textures", "get_shadowmask_textures");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uses_spherical_harmonics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_uses_spherical_harmonics", "is_using_spherical_harmonics");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "probe_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_probe_data", "_get_probe_data");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "preview_bake", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_preview_bake", "is_preview_bake");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "_uses_packed_directional", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_uses_packed_directional", "_is_using_packed_directional");
 
 #ifndef DISABLE_DEPRECATED
@@ -805,7 +817,7 @@ void LightmapGI::_gen_new_positions_from_octree(const GenProbesOctree *p_cell, f
 	}
 }
 
-LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask) const {
+LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask, bool p_preview_bake) const {
 	Vector<Ref<Image>> images;
 	images.resize(p_is_shadowmask ? p_lightmapper->get_shadowmask_texture_count() : p_lightmapper->get_bake_texture_count());
 
@@ -857,7 +869,11 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 		config->save(config_path);
 
 		if (supersampling_enabled) {
-			texture_image->resize(texture_image->get_width() / supersampling_factor, texture_image->get_height() / supersampling_factor, Image::INTERPOLATE_TRILINEAR);
+			float effective_supersampling_factor = supersampling_factor;
+			if (p_preview_bake) {
+				effective_supersampling_factor = MIN(supersampling_factor, float(GLOBAL_GET("rendering/lightmapping/preview_bake/max_supersampling_factor")));
+			}
+			texture_image->resize(texture_image->get_width() / effective_supersampling_factor, texture_image->get_height() / effective_supersampling_factor, Image::INTERPOLATE_TRILINEAR);
 		}
 
 		// Save the file.
@@ -882,7 +898,39 @@ LightmapGI::BakeError LightmapGI::_save_and_reimport_atlas_textures(const Ref<Li
 	return LightmapGI::BAKE_ERROR_OK;
 }
 
-LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata) {
+String LightmapGI::_get_bake_quality_string(LightmapGI::BakeQuality p_quality) const {
+	switch (p_quality) {
+		case BAKE_QUALITY_LOW:
+			return "low";
+		case BAKE_QUALITY_MEDIUM:
+			return "medium";
+		case BAKE_QUALITY_HIGH:
+			return "high";
+		case BAKE_QUALITY_ULTRA:
+			return "ultra";
+		default:
+			return "unknown";
+	}
+}
+
+String LightmapGI::_get_gen_probes_string(LightmapGI::GenerateProbes p_gen_probes) const {
+	switch (p_gen_probes) {
+		case GENERATE_PROBES_DISABLED:
+			return "no";
+		case GENERATE_PROBES_SUBDIV_4:
+			return "4";
+		case GENERATE_PROBES_SUBDIV_8:
+			return "8";
+		case GENERATE_PROBES_SUBDIV_16:
+			return "16";
+		case GENERATE_PROBES_SUBDIV_32:
+			return "32";
+		default:
+			return "unknown";
+	}
+}
+
+LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_path, Lightmapper::BakeStepFunc p_bake_step, void *p_bake_userdata, bool p_preview_bake) {
 	if (p_image_data_path.is_empty()) {
 		if (get_light_data().is_null()) {
 			return BAKE_ERROR_NO_SAVE_PATH;
@@ -920,6 +968,19 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 		// create mesh data for insert
 
+		float effective_texel_scale = texel_scale;
+		if (p_preview_bake) {
+			effective_texel_scale *= float(GLOBAL_GET("rendering/lightmapping/preview_bake/texel_scale_factor"));
+		}
+
+		float effective_supersampling_factor = 1.0f;
+		if (supersampling_enabled) {
+			effective_supersampling_factor = supersampling_factor;
+			if (p_preview_bake) {
+				effective_supersampling_factor = MIN(supersampling_factor, float(GLOBAL_GET("rendering/lightmapping/preview_bake/max_supersampling_factor")));
+			}
+		}
+
 		//get the base material textures, help compute atlas size and bounds
 		for (int m_i = 0; m_i < meshes_found.size(); m_i++) {
 			if (p_bake_step) {
@@ -935,8 +996,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 				// For now set to basic size to avoid crash.
 				mesh_lightmap_size = Size2i(64, 64);
 			}
-			// Double lightmap texel density if downsampling is enabled, as the final texture size will be halved before saving lightmaps.
-			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * texel_scale) * (supersampling_enabled ? supersampling_factor : 1.0);
+			// Increase lightmap texel density if downsampling is enabled, as the final texture size will be halved before saving lightmaps.
+			Size2i lightmap_size = Size2i(Size2(mesh_lightmap_size) * mf.lightmap_scale * effective_texel_scale) * effective_supersampling_factor;
 			ERR_FAIL_COND_V(lightmap_size.x == 0 || lightmap_size.y == 0, BAKE_ERROR_LIGHTMAP_TOO_SMALL);
 
 			TypedArray<RID> overrides;
@@ -1084,7 +1145,26 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 	bounds.grow_by(bounds.size.length() * 0.001);
 
-	if (gen_probes == GENERATE_PROBES_DISABLED) {
+	LightmapGI::BakeQuality effective_bake_quality = bake_quality;
+	int effective_bounces = bounces;
+	float effective_texel_scale = texel_scale;
+	float effective_supersampling_factor = 1.0f;
+	if (supersampling_enabled) {
+		effective_supersampling_factor = supersampling_factor;
+		if (p_preview_bake) {
+			effective_supersampling_factor = MIN(supersampling_factor, float(GLOBAL_GET("rendering/lightmapping/preview_bake/max_supersampling_factor")));
+		}
+	}
+	LightmapGI::GenerateProbes effective_gen_probes = gen_probes;
+	if (p_preview_bake) {
+		// Use lower-quality settings for quick iteration.
+		effective_texel_scale *= float(GLOBAL_GET("rendering/lightmapping/preview_bake/texel_scale_factor"));
+		effective_bake_quality = MIN(bake_quality, LightmapGI::BakeQuality(int(GLOBAL_GET("rendering/lightmapping/preview_bake/max_quality"))));
+		effective_bounces = MIN(bounces, int(GLOBAL_GET("rendering/lightmapping/preview_bake/max_bounces")));
+		effective_gen_probes = MIN(gen_probes, LightmapGI::GenerateProbes(int(GLOBAL_GET("rendering/lightmapping/preview_bake/generate_probes_max_subdiv"))));
+	}
+
+	if (effective_gen_probes == GENERATE_PROBES_DISABLED) {
 		// generate 8 probes on bound endpoints
 		for (int i = 0; i < 8; i++) {
 			probes_found.push_back(bounds.get_endpoint(i));
@@ -1092,7 +1172,7 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	} else {
 		// detect probes from geometry
 		static const int subdiv_values[6] = { 0, 4, 8, 16, 32 };
-		int subdiv = subdiv_values[gen_probes];
+		int subdiv = subdiv_values[effective_gen_probes];
 
 		float subdiv_cell_size;
 		Vector3i bound_limit;
@@ -1264,9 +1344,37 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		}
 	}
 
-	Lightmapper::BakeError bake_err = lightmapper->bake(Lightmapper::BakeQuality(bake_quality), use_denoiser, denoiser_strength, denoiser_range, bounces,
-			bounce_indirect_energy, bias, max_texture_size, directional, shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE, use_texture_for_bounces,
-			Lightmapper::GenerateProbes(gen_probes), environment_image, environment_transform, _lightmap_bake_step_function, &bsud, exposure_normalization, (supersampling_enabled ? supersampling_factor : 1));
+	print_line(vformat(U"Baking %slightmaps: %s quality, %s supersampling, %d bounces, %s probe subdivision, %.2f× texel scale%s%s%s",
+			p_preview_bake ? "preview " : "",
+			_get_bake_quality_string(effective_bake_quality),
+			(effective_supersampling_factor > 1.0f) ? vformat(U"%.2f×", effective_supersampling_factor) : "no",
+			effective_bounces,
+			_get_gen_probes_string(effective_gen_probes),
+			effective_texel_scale,
+			directional ? ", directional" : "",
+			use_denoiser ? ", with denoiser" : "",
+			shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE ? ", with shadowmask" : ""));
+
+	Lightmapper::BakeError bake_err;
+	bake_err = lightmapper->bake(
+			Lightmapper::BakeQuality(effective_bake_quality),
+			use_denoiser,
+			denoiser_strength,
+			denoiser_range,
+			effective_bounces,
+			bounce_indirect_energy,
+			bias,
+			max_texture_size,
+			directional,
+			shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE,
+			use_texture_for_bounces,
+			Lightmapper::GenerateProbes(effective_gen_probes),
+			environment_image,
+			environment_transform,
+			_lightmap_bake_step_function,
+			&bsud,
+			exposure_normalization,
+			effective_supersampling_factor);
 
 	if (bake_err == Lightmapper::BAKE_ERROR_TEXTURE_EXCEEDS_MAX_SIZE) {
 		return BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL;
@@ -1287,12 +1395,12 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	const bool save_shadowmask = shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE && shadowmask_texture_count > 0;
 
 	// Save the lightmap atlases.
-	BakeError save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename, lightmap_textures, false);
+	BakeError save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename, lightmap_textures, false, p_preview_bake);
 	ERR_FAIL_COND_V(save_err != BAKE_ERROR_OK, save_err);
 
 	if (save_shadowmask) {
 		// Save the shadowmask atlases.
-		save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename + "_shadow", shadowmask_textures, true);
+		save_err = _save_and_reimport_atlas_textures(lightmapper, texture_filename + "_shadow", shadowmask_textures, true, p_preview_bake);
 		ERR_FAIL_COND_V(save_err != BAKE_ERROR_OK, save_err);
 	}
 
@@ -1472,6 +1580,10 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 	if (err != OK) {
 		return BAKE_ERROR_CANT_CREATE_IMAGE;
 	}
+
+	// Only change the preview bake status when everything is completed.
+	// If the user cancels the bake, the preview bake status shouldn't change.
+	gi_data->set_preview_bake(p_preview_bake);
 
 	set_light_data(gi_data);
 	update_configuration_warnings();
@@ -1788,6 +1900,10 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 
 	if (shadowmask_mode != LightmapGIData::SHADOWMASK_MODE_NONE && light_data.is_valid() && !light_data->has_shadowmask_textures()) {
 		warnings.push_back(RTR("The lightmap has no baked shadowmask textures. Please rebake with the Shadowmask Mode set to anything other than None."));
+	}
+
+	if (get_light_data().is_valid() && get_light_data()->is_preview_bake()) {
+		warnings.push_back(RTR("This LightmapGI's data uses a preview bake which has lower quality than a \"final\" bake.\nRemember to use the Bake Lightmaps button at the top of the 3D editor viewport (instead of Preview Bake) before distributing your project."));
 	}
 
 #elif defined(ANDROID_ENABLED) || defined(APPLE_EMBEDDED_ENABLED)
