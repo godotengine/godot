@@ -1966,7 +1966,6 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<
 		base_path.push_back(n->get_name());
 		n = n->get_parent();
 	}
-	base_path.reverse();
 
 	Vector<StringName> new_base_path;
 	if (p_new_parent) {
@@ -1976,8 +1975,14 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<
 			n = n->get_parent();
 		}
 
+		// For the case Reparent to New Node, the new parent has not yet been added to the tree.
+		if (!p_new_parent->is_inside_tree()) {
+			new_base_path.append_array(base_path);
+		}
+
 		new_base_path.reverse();
 	}
+	base_path.reverse();
 
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
