@@ -162,10 +162,11 @@ void GridMapEditor::_menu_option(int p_option) {
 			}
 
 			input_action = INPUT_PASTE;
-			paste_indicator.click = selection.begin;
-			paste_indicator.current = selection.begin;
+			paste_indicator.click = selection.click;
+			paste_indicator.current = cursor_gridpos;
 			paste_indicator.begin = selection.begin;
 			paste_indicator.end = selection.end;
+			paste_indicator.distance_from_cursor = cursor_gridpos - paste_indicator.begin;
 			paste_indicator.orientation = 0;
 			_update_paste_indicator();
 		} break;
@@ -371,25 +372,24 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 		}
 	}
 
-	int cell[3];
 	Vector3 cell_size = node->get_cell_size();
 
 	for (int i = 0; i < 3; i++) {
 		if (i == edit_axis) {
-			cell[i] = edit_floor[i];
+			cursor_gridpos[i] = edit_floor[i];
 		} else {
-			cell[i] = inters[i] / cell_size[i];
+			cursor_gridpos[i] = inters[i] / cell_size[i];
 			if (inters[i] < 0) {
-				cell[i] -= 1; // Compensate negative.
+				cursor_gridpos[i] -= 1; // Compensate negative.
 			}
-			grid_ofs[i] = cell[i] * cell_size[i];
+			grid_ofs[i] = cursor_gridpos[i] * cell_size[i];
 		}
 	}
 
 	RS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
 
 	if (cursor_instance.is_valid()) {
-		cursor_origin = (Vector3(cell[0], cell[1], cell[2]) + Vector3(0.5 * node->get_center_x(), 0.5 * node->get_center_y(), 0.5 * node->get_center_z())) * node->get_cell_size();
+		cursor_origin = (Vector3(cursor_gridpos) + Vector3(0.5 * node->get_center_x(), 0.5 * node->get_center_y(), 0.5 * node->get_center_z())) * node->get_cell_size();
 		cursor_visible = true;
 
 		if (input_action == INPUT_PASTE) {
@@ -404,11 +404,11 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 	}
 
 	if (input_action == INPUT_PASTE) {
-		paste_indicator.current = Vector3i(cell[0], cell[1], cell[2]);
+		paste_indicator.current = cursor_gridpos;
 		_update_paste_indicator();
 
 	} else if (input_action == INPUT_SELECT) {
-		selection.current = Vector3i(cell[0], cell[1], cell[2]);
+		selection.current = cursor_gridpos;
 		if (p_click) {
 			selection.click = selection.current;
 		}
@@ -417,7 +417,7 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 
 		return true;
 	} else if (input_action == INPUT_PICK) {
-		int item = node->get_cell_item(Vector3i(cell[0], cell[1], cell[2]));
+		int item = node->get_cell_item(cursor_gridpos);
 		if (item >= 0) {
 			selected_palette = item;
 
@@ -437,23 +437,23 @@ bool GridMapEditor::do_input_action(Camera3D *p_camera, const Point2 &p_point, b
 
 	if (input_action == INPUT_PAINT) {
 		SetItem si;
-		si.position = Vector3i(cell[0], cell[1], cell[2]);
+		si.position = cursor_gridpos;
 		si.new_value = selected_palette;
 		si.new_orientation = cursor_rot;
-		si.old_value = node->get_cell_item(Vector3i(cell[0], cell[1], cell[2]));
-		si.old_orientation = node->get_cell_item_orientation(Vector3i(cell[0], cell[1], cell[2]));
+		si.old_value = node->get_cell_item(cursor_gridpos);
+		si.old_orientation = node->get_cell_item_orientation(cursor_gridpos);
 		set_items.push_back(si);
-		node->set_cell_item(Vector3i(cell[0], cell[1], cell[2]), selected_palette, cursor_rot);
+		node->set_cell_item(cursor_gridpos, selected_palette, cursor_rot);
 		return true;
 	} else if (input_action == INPUT_ERASE) {
 		SetItem si;
-		si.position = Vector3i(cell[0], cell[1], cell[2]);
+		si.position = cursor_gridpos;
 		si.new_value = -1;
 		si.new_orientation = 0;
-		si.old_value = node->get_cell_item(Vector3i(cell[0], cell[1], cell[2]));
-		si.old_orientation = node->get_cell_item_orientation(Vector3i(cell[0], cell[1], cell[2]));
+		si.old_value = node->get_cell_item(cursor_gridpos);
+		si.old_orientation = node->get_cell_item_orientation(cursor_gridpos);
 		set_items.push_back(si);
-		node->set_cell_item(Vector3i(cell[0], cell[1], cell[2]), -1);
+		node->set_cell_item(cursor_gridpos, -1);
 		return true;
 	}
 
@@ -558,7 +558,7 @@ void GridMapEditor::_update_paste_indicator() {
 	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
 	Transform3D xf;
 	xf.scale(scale);
-	xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
+	xf.origin = (paste_indicator.current - paste_indicator.distance_from_cursor + center) * node->get_cell_size();
 	Basis rot;
 	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 	xf.basis = rot * xf.basis;
@@ -571,7 +571,7 @@ void GridMapEditor::_update_paste_indicator() {
 			continue;
 		}
 		xf = Transform3D();
-		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
+		xf.origin = (paste_indicator.current - paste_indicator.distance_from_cursor + center) * node->get_cell_size();
 		xf.basis = rot * xf.basis;
 		xf.translate_local(item.grid_offset * node->get_cell_size());
 
@@ -590,12 +590,11 @@ void GridMapEditor::_do_paste() {
 	Basis rot;
 	rot = node->get_basis_with_orthogonal_index(paste_indicator.orientation);
 
-	Vector3 ofs = paste_indicator.current - paste_indicator.click;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("GridMap Paste Selection"));
 
 	for (const ClipboardItem &item : clipboard_items) {
-		Vector3 position = rot.xform(item.grid_offset) + paste_indicator.begin + ofs;
+		Vector3 position = rot.xform(item.grid_offset) + paste_indicator.current - paste_indicator.distance_from_cursor;
 
 		Basis orm;
 		orm = node->get_basis_with_orthogonal_index(item.orientation);
@@ -607,8 +606,8 @@ void GridMapEditor::_do_paste() {
 
 	if (reselect) {
 		// We need to rotate the paste_indicator to find the selection begin and end:
-		Vector3 temp_end = rot.xform(paste_indicator.end - paste_indicator.begin) + paste_indicator.begin + ofs;
-		Vector3 temp_begin = paste_indicator.begin + ofs;
+		Vector3 temp_end = rot.xform(paste_indicator.end - paste_indicator.begin) + paste_indicator.current - paste_indicator.distance_from_cursor;
+		Vector3 temp_begin = paste_indicator.current - paste_indicator.distance_from_cursor;
 		// _set_selection expects that selection_begin is the corner closer to the origin:
 		for (int i = 0; i < 3; ++i) {
 			if (temp_begin[i] > temp_end[i]) {
