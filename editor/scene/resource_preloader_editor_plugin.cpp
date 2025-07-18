@@ -201,7 +201,7 @@ void ResourcePreloaderEditor::_update_library() {
 		ERR_CONTINUE(r.is_null());
 
 		String type = r->get_class();
-		ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(type, "Object"));
+		ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
 		ti->set_tooltip_text(0, TTR("Instance:") + " " + r->get_path() + "\n" + TTR("Type:") + " " + type);
 
 		ti->set_text(1, r->get_path());
