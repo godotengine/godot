@@ -2077,6 +2077,14 @@ TypedArray<Image> RenderingServer::_bake_render_uv2(RID p_base, const TypedArray
 	return bake_render_uv2(p_base, mat_overrides, p_image_size);
 }
 
+void RenderingServer::base_material_3d_set_default_filter(RenderingServer::MaterialFilter p_filter) {
+	if (base_material_3d_default_filter == p_filter) {
+		return;
+	}
+
+	base_material_3d_default_filter = p_filter;
+}
+
 void RenderingServer::_particles_set_trail_bind_poses(RID p_particles, const TypedArray<Transform3D> &p_bind_poses) {
 	Vector<Transform3D> tbposes;
 	tbposes.resize(p_bind_poses.size());
@@ -2340,6 +2348,8 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("material_set_render_priority", "material", "priority"), &RenderingServer::material_set_render_priority);
 
 	ClassDB::bind_method(D_METHOD("material_set_next_pass", "material", "next_material"), &RenderingServer::material_set_next_pass);
+
+	ClassDB::bind_method(D_METHOD("base_material_3d_set_default_filter", "filter"), &RenderingServer::base_material_3d_set_default_filter);
 
 	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MIN);
 	BIND_CONSTANT(MATERIAL_RENDER_PRIORITY_MAX);
@@ -3663,6 +3673,8 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST("rendering/driver/depth_prepass/enable", true);
 	GLOBAL_DEF_RST("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
+
+	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::INT, "rendering/textures/default_filters/base_material_3d_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), 3);
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
