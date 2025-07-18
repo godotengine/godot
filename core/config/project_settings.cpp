@@ -345,6 +345,10 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 	}
 
+	if (p_name == StringName("threading/worker_pool/max_threads") && int(p_value) == 0) {
+		props[p_name].variant = -1;
+	}
+
 	_queue_changed();
 	return true;
 }
