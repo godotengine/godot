@@ -2195,6 +2195,12 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("permissions"), String(*perms).to_lower())), false));
 		perms++;
 	}
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "debug/use_scrcpy"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "debug/scrcpy/virtual_display"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "debug/scrcpy/no_decorations"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "debug/scrcpy/local_ime"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "debug/scrcpy/screen_size", PROPERTY_HINT_PLACEHOLDER_TEXT, "WIDTHxHEIGHT/DPI"), "1920x1080/120"));
 }
 
 bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
@@ -2464,42 +2470,70 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	if (ep.step(TTR("Running on device..."), 3)) {
 		CLEANUP_AND_RETURN(ERR_SKIP);
 	}
-	args.clear();
-	args.push_back("-s");
-	args.push_back(devices[p_device].id);
-	args.push_back("shell");
-	args.push_back("am");
-	args.push_back("start");
-	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
-		args.push_back("--user");
-		args.push_back("0");
+	bool use_scrspy = p_preset->get("debug/use_scrcpy");
+
+	String scrcpy = "scrcpy";
+	if (!EDITOR_GET("export/android/scrcpy_path").operator String().is_empty()) {
+		scrcpy = EDITOR_GET("export/android/scrcpy_path").operator String();
 	}
-	args.push_back("-a");
-	args.push_back("android.intent.action.MAIN");
 
-	// Going with implicit launch first based on the LAUNCHER category and the app's package.
-	args.push_back("-c");
-	args.push_back("android.intent.category.LAUNCHER");
-	args.push_back(get_package_name(p_preset, package_name));
+	args.clear();
+	if (use_scrspy) {
+		args.push_back("-s");
+		args.push_back(devices[p_device].id);
+		if (p_preset->get("debug/scrcpy/virtual_display").operator bool()) {
+			args.push_back("--new-display=" + p_preset->get("debug/scrcpy/screen_size").operator String());
+		}
+		if (p_preset->get("debug/scrcpy/local_ime").operator bool()) {
+			args.push_back("--display-ime-policy=local");
+		}
+		if (p_preset->get("debug/scrcpy/no_decorations").operator bool()) {
+			args.push_back("--no-vd-system-decorations");
+		}
+		args.push_back("--start-app=+" + get_package_name(p_preset, package_name));
 
-	output.clear();
-	err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
-	print_verbose(output);
-	if (err || rv != 0 || output.contains("Error: Activity not started")) {
-		// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
-		const String component_name = get_package_name(p_preset, package_name) + "/com.godot.game.GodotApp";
-		print_line("Implicit launch failed.. Trying explicit launch using", component_name);
-		args.erase(get_package_name(p_preset, package_name));
-		args.push_back("-n");
-		args.push_back(component_name);
+		err = OS::get_singleton()->create_process(scrcpy, args);
+		if (err) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
+			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+		}
+	} else {
+		args.push_back("-s");
+		args.push_back(devices[p_device].id);
+		args.push_back("shell");
+		args.push_back("am");
+		args.push_back("start");
+		if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+			args.push_back("--user");
+			args.push_back("0");
+		}
+		args.push_back("-a");
+		args.push_back("android.intent.action.MAIN");
+
+		// Going with implicit launch first based on the LAUNCHER category and the app's package.
+		args.push_back("-c");
+		args.push_back("android.intent.category.LAUNCHER");
+		args.push_back(get_package_name(p_preset, package_name));
 
 		output.clear();
 		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 		print_verbose(output);
+		if (err || rv != 0 || output.contains("Error: Activity not started")) {
+			// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
+			const String component_name = get_package_name(p_preset, package_name) + "/com.godot.game.GodotApp";
+			print_line("Implicit launch failed.. Trying explicit launch using", component_name);
+			args.erase(get_package_name(p_preset, package_name));
+			args.push_back("-n");
+			args.push_back(component_name);
 
-		if (err || rv != 0 || output.begins_with("Error: Activity not started")) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
-			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+			output.clear();
+			err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+			print_verbose(output);
+
+			if (err || rv != 0 || output.begins_with("Error: Activity not started")) {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
+				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+			}
 		}
 	}
 

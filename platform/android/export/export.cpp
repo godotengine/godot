@@ -60,6 +60,13 @@ void register_android_exporter() {
 	EDITOR_DEF_BASIC("export/android/android_sdk_path", OS::get_singleton()->has_environment("ANDROID_HOME") ? OS::get_singleton()->get_environment("ANDROID_HOME") : get_default_android_sdk_path());
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/android_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 
+	EDITOR_DEF_BASIC("export/android/scrcpy_path", "");
+#ifdef WINDOWS_ENABLED
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy_path", PROPERTY_HINT_GLOBAL_FILE, "*.exe"));
+#else
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/scrcpy_path", PROPERTY_HINT_GLOBAL_FILE));
+#endif
+
 	EDITOR_DEF("export/android/force_system_user", false);
 
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);
