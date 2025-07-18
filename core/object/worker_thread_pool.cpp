@@ -76,6 +76,7 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 		p_task->pool_thread_index = pool_thread_index;
 		prev_task = curr_thread.current_task;
 		curr_thread.current_task = p_task;
+		curr_thread.has_pump_task = p_task->is_pump_task;
 		if (p_task->pending_notify_yield_over) {
 			curr_thread.yield_is_over = true;
 		}
@@ -218,11 +219,11 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 	}
 }
 
-void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock) {
+void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high_priority, MutexLock<BinaryMutex> &p_lock, bool p_pump_task) {
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
-	bool process_on_calling_thread = threads.is_empty();
+	bool process_on_calling_thread = threads.is_empty() && p_high_priority && !p_pump_task; // Pump tasks can never run on the main thread.
 	if (process_on_calling_thread) {
 		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
@@ -339,7 +340,7 @@ WorkerThreadPool::TaskID WorkerThreadPool::add_native_task(void (*p_func)(void *
 	return _add_task(Callable(), p_func, p_userdata, nullptr, p_high_priority, p_description);
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description) {
+WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable, void (*p_func)(void *), void *p_userdata, BaseTemplateUserdata *p_template_userdata, bool p_high_priority, const String &p_description, bool p_pump_task) {
 	MutexLock<BinaryMutex> lock(task_mutex);
 
 	// Get a free task
@@ -351,15 +352,23 @@ WorkerThreadPool::TaskID WorkerThreadPool::_add_task(const Callable &p_callable,
 	task->native_func_userdata = p_userdata;
 	task->description = p_description;
 	task->template_userdata = p_template_userdata;
+	task->is_pump_task = p_pump_task;
 	tasks.insert(id, task);
 
-	_post_tasks(&task, 1, p_high_priority, lock);
+	if (p_pump_task) {
+		pump_task_count++;
+		if (pump_task_count > get_thread_count()) {
+			CRASH_NOW_MSG("A greater number of dedicated threads were requested than threads available. Please increase the number of available worker task threads.")
+		}
+	}
+
+	_post_tasks(&task, 1, p_high_priority, lock, p_pump_task);
 
 	return id;
 }
 
-WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description) {
-	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description);
+WorkerThreadPool::TaskID WorkerThreadPool::add_task(const Callable &p_action, bool p_high_priority, const String &p_description, bool p_pump_task) {
+	return _add_task(p_action, nullptr, nullptr, nullptr, p_high_priority, p_description, p_pump_task);
 }
 
 bool WorkerThreadPool::is_task_completed(TaskID p_task_id) const {
@@ -510,7 +519,11 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 
 			if (p_caller_pool_thread->pool->task_queue.first()) {
 				task_to_process = task_queue.first()->self();
-				task_queue.remove(task_queue.first());
+				if ((p_task == ThreadData::YIELDING || p_caller_pool_thread->has_pump_task == true) && task_to_process->is_pump_task) {
+					task_to_process = nullptr;
+				} else {
+					task_queue.remove(task_queue.first());
+				}
 			}
 
 			if (!task_to_process) {
@@ -661,7 +674,7 @@ WorkerThreadPool::GroupID WorkerThreadPool::_add_group_task(const Callable &p_ca
 
 	groups[id] = group;
 
-	_post_tasks(tasks_posted, p_tasks, p_high_priority, lock);
+	_post_tasks(tasks_posted, p_tasks, p_high_priority, lock, false);
 
 	return id;
 }
