@@ -185,9 +185,6 @@ void ConnectDialog::_focus_currently_connected() {
 	tree->set_selected(source);
 }
 
-void ConnectDialog::_unbind_count_changed(double p_count) {
-}
-
 void ConnectDialog::_method_selected() {
 	TreeItem *selected_item = method_tree->get_selected();
 	dst_method->set_text(selected_item->get_metadata(0));
@@ -673,7 +670,6 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 
 	unbind_count->set_max(p_signal_args.size());
 	unbind_count->set_value(p_cd.unbinds);
-	_unbind_count_changed(p_cd.unbinds);
 
 	cdbinds->params.clear();
 	cdbinds->params = p_cd.binds;
@@ -858,7 +854,6 @@ ConnectDialog::ConnectDialog() {
 	unbind_count = memnew(SpinBox);
 	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
 	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments:"));
-	unbind_count->connect(SceneStringName(value_changed), callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
