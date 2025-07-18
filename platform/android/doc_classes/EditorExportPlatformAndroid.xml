@@ -44,6 +44,21 @@
 			Path to an APK file to use as a custom export template for release exports. If left empty, default template is used.
 			[b]Note:[/b] This is only used if [member EditorExportPlatformAndroid.gradle_build/use_gradle_build] is disabled.
 		</member>
+		<member name="debug/scrcpy/local_ime" type="bool" setter="" getter="">
+			If [code]true[/code], IME appears on the virtual display, otherwise on the default device display.
+		</member>
+		<member name="debug/scrcpy/no_decorations" type="bool" setter="" getter="">
+			If [code]true[/code], virtual display system decorations are disabled.
+		</member>
+		<member name="debug/scrcpy/screen_size" type="bool" setter="" getter="">
+			Virtual display screen size and DPI.
+		</member>
+		<member name="debug/scrcpy/virtual_display" type="bool" setter="" getter="">
+			If [code]true[/code], project is started on the new virtual display, otherwise on the default device display.
+		</member>
+		<member name="debug/use_scrcpy" type="bool" setter="" getter="">
+			If [code]true[/code], [url=https://github.com/Genymobile/scrcpy]scrcpy[/url] is used to start the project and automatically stream device display (or virtual display) content.
+		</member>
 		<member name="gesture/swipe_to_dismiss" type="bool" setter="" getter="">
 			If [code]true[/code], [url=https://developer.android.com/design/ui/wear/guides/components/swipe-to-dismiss]Swipe to dismiss[/url] will be enabled.
 			This functionality is intended for smartwatches and is generally ignored on standard Android devices. However, some devices may not ignore it. Therefore, it is recommended to keep this feature disabled for standard Android apps to avoid unexpected behavior.
