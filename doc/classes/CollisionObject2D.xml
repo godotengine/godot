@@ -152,6 +152,13 @@
 				Returns the parent object of the given shape owner.
 			</description>
 		</method>
+		<method name="shape_owner_get_physics_material" qualifiers="const">
+			<return type="PhysicsMaterial" />
+			<param index="0" name="owner_id" type="int" />
+			<description>
+				Returns the [PhysicsMaterial] (if any) set on the shape owner.
+			</description>
+		</method>
 		<method name="shape_owner_get_shape" qualifiers="const">
 			<return type="Shape2D" />
 			<param index="0" name="owner_id" type="int" />
@@ -212,6 +219,14 @@
 			<param index="1" name="margin" type="float" />
 			<description>
 				Sets the [code]one_way_collision_margin[/code] of the shape owner identified by given [param owner_id] to [param margin] pixels.
+			</description>
+		</method>
+		<method name="shape_owner_set_physics_material">
+			<return type="void" />
+			<param index="0" name="owner_id" type="int" />
+			<param index="1" name="material" type="PhysicsMaterial" />
+			<description>
+				Sets the [PhysicsMaterial] for the shape owner.
 			</description>
 		</method>
 		<method name="shape_owner_set_transform">

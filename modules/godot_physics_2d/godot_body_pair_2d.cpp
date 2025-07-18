@@ -239,12 +239,32 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 	return true;
 }
 
-real_t combine_bounce(GodotBody2D *A, GodotBody2D *B) {
-	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
+real_t combine_bounce(GodotBody2D *p_body_a, GodotBody2D *p_body_b, int p_shape_idx_a, int p_shape_idx_b) {
+	real_t bounce_a = p_body_a->get_shape_bounce(p_shape_idx_a);
+	if (Math::is_nan(bounce_a)) {
+		bounce_a = p_body_a->get_bounce();
+	}
+
+	real_t bounce_b = p_body_b->get_shape_bounce(p_shape_idx_b);
+	if (Math::is_nan(bounce_b)) {
+		bounce_b = p_body_b->get_bounce();
+	}
+
+	return CLAMP(bounce_a + bounce_b, 0, 1);
 }
 
-real_t combine_friction(GodotBody2D *A, GodotBody2D *B) {
-	return Math::abs(MIN(A->get_friction(), B->get_friction()));
+real_t combine_friction(GodotBody2D *p_body_a, GodotBody2D *p_body_b, int p_shape_idx_a, int p_shape_idx_b) {
+	real_t friction_a = p_body_a->get_shape_friction(p_shape_idx_a);
+	if (Math::is_nan(friction_a)) {
+		friction_a = p_body_a->get_friction();
+	}
+
+	real_t friction_b = p_body_b->get_shape_friction(p_shape_idx_b);
+	if (Math::is_nan(friction_b)) {
+		friction_b = p_body_b->get_friction();
+	}
+
+	return Math::abs(MIN(friction_a, friction_b));
 }
 
 bool GodotBodyPair2D::setup(real_t p_step) {
@@ -488,7 +508,7 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		}
 #endif
 
-		c.bounce = combine_bounce(A, B);
+		c.bounce = combine_bounce(A, B, shape_A, shape_B);
 		if (c.bounce) {
 			Vector2 crA(-A->get_prev_angular_velocity() * c.rA.y, A->get_prev_angular_velocity() * c.rA.x);
 			Vector2 crB(-B->get_prev_angular_velocity() * c.rB.y, B->get_prev_angular_velocity() * c.rB.x);
@@ -574,7 +594,7 @@ void GodotBodyPair2D::solve(real_t p_step) {
 		real_t jnOld = c.acc_normal_impulse;
 		c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
 
-		real_t friction = combine_friction(A, B);
+		real_t friction = combine_friction(A, B, shape_A, shape_B);
 
 		real_t jtMax = friction * c.acc_normal_impulse;
 		real_t jt = -vt * c.mass_tangent;
