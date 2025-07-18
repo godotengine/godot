@@ -6207,6 +6207,8 @@ void EditorNode::_cancel_close_scene_tab() {
 	if (_is_closing_editor()) {
 		tab_closing_menu_option = -1;
 	}
+	changing_scene = false;
+	tabs_to_close.clear();
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
