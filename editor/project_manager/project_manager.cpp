@@ -525,6 +525,13 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--recovery-mode");
 		}
 
+		if (open_in_compatibility) {
+			args.push_back("--rendering-method");
+			args.push_back("gl_compatibility");
+			args.push_back("--rendering-driver");
+			args.push_back("opengl3");
+		}
+
 		if (open_in_verbose_mode) {
 			args.push_back("--verbose");
 		}
@@ -657,6 +664,27 @@ void ProjectManager::_open_selected_projects_check_recovery_mode() {
 	// Check if the project failed to load during last startup.
 	if (project.recovery_mode) {
 		_open_recovery_mode_ask(false);
+		return;
+	}
+
+	_open_selected_projects_check_compatibility();
+}
+
+void ProjectManager::_open_selected_projects_check_compatibility() {
+	Vector<ProjectList::Item> selected_projects = project_list->get_selected_projects();
+
+	if (selected_projects.is_empty()) {
+		return;
+	}
+
+	const ProjectList::Item &project = selected_projects[0];
+	if (project.missing) {
+		return;
+	}
+
+	open_in_compatibility = false;
+	if (project.unsupported_features.has("Forward Plus") || project.unsupported_features.has("Mobile")) {
+		_open_compatibility_ask(false);
 		return;
 	}
 
@@ -825,6 +853,24 @@ void ProjectManager::_open_recovery_mode_ask(bool manual) {
 	open_recovery_mode_ask->popup_centered(Size2(550, 70) * EDSCALE);
 }
 
+void ProjectManager::_open_compatibility_ask(bool manual) {
+	String compatibility_details;
+
+	if (!manual) {
+		compatibility_details +=
+				TTR("It looks like your device not to support RenderingDevice backend but this project is using Forward+/Mobile rendering method. You can try to open it in Compatibility rendering method.") +
+				String::utf8("\n\n");
+	}
+
+	compatibility_details +=
+			TTR("Compatibility is the least advanced renderer, suited for low-end desktop and mobile platforms. Used by default on the web platform. This renderer uses OpenGL as the rendering driver.") +
+			String::utf8("\n\n") + TTR("This option is intended only for temporary editing on devices that lack RenderingDevice supports, and it might break visuals in projects that use Forward+/Mobile") +
+			String::utf8("\n\n") + TTR("Edit the project in Compatibility?");
+
+	open_compatibility_ask->set_text(compatibility_details);
+	open_compatibility_ask->popup_centered(Size2(550, 70) * EDSCALE);
+}
+
 void ProjectManager::_on_projects_updated() {
 	Vector<ProjectList::Item> selected_projects = project_list->get_selected_projects();
 	int index = 0;
@@ -847,6 +893,9 @@ void ProjectManager::_on_open_options_selected(int p_option) {
 		case 1: // Edit in recovery mode.
 			_open_recovery_mode_ask(true);
 			break;
+		case 2: // Edit in Compatibility.
+			_open_compatibility_ask(true);
+			break;
 	}
 }
 
@@ -858,6 +907,17 @@ void ProjectManager::_on_recovery_mode_popup_open_normal() {
 
 void ProjectManager::_on_recovery_mode_popup_open_recovery() {
 	open_in_recovery_mode = true;
+	_open_selected_projects_check_warnings();
+}
+
+void ProjectManager::_on_compatibility_popup_open_normal() {
+	open_compatibility_ask->hide();
+	open_in_compatibility = false;
+	_open_selected_projects_check_warnings();
+}
+
+void ProjectManager::_on_compatibility_popup_open_compatibility() {
+	open_in_compatibility = true;
 	_open_selected_projects_check_warnings();
 }
 
@@ -1582,6 +1642,7 @@ ProjectManager::ProjectManager() {
 			open_options_popup = memnew(PopupMenu);
 			open_options_popup->add_item(TTRC("Edit in verbose mode"));
 			open_options_popup->add_item(TTRC("Edit in recovery mode"));
+			open_options_popup->add_item(TTRC("Edit in Compatibility"));
 			open_options_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectManager::_on_open_options_selected));
 			open_options_btn->add_child(open_options_popup);
 
@@ -1715,6 +1776,14 @@ ProjectManager::ProjectManager() {
 		open_recovery_mode_ask->set_ok_button_text(TTRC("Edit in Recovery Mode"));
 		open_recovery_mode_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_recovery_mode_popup_open_recovery));
 		add_child(open_recovery_mode_ask);
+
+		open_compatibility_ask = memnew(ConfirmationDialog);
+		open_compatibility_ask->set_min_size(Size2(550, 70) * EDSCALE);
+		open_compatibility_ask->set_autowrap(true);
+		open_compatibility_ask->add_button(TTRC("Edit normally"))->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_compatibility_popup_open_normal));
+		open_compatibility_ask->set_ok_button_text(TTRC("Edit in Compatibility"));
+		open_compatibility_ask->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_on_compatibility_popup_open_compatibility));
+		add_child(open_compatibility_ask);
 
 		ask_update_settings = memnew(ConfirmationDialog);
 		add_child(ask_update_settings);

@@ -177,6 +177,7 @@ class ProjectManager : public Control {
 	ConfirmationDialog *multi_open_ask = nullptr;
 	ConfirmationDialog *multi_run_ask = nullptr;
 	ConfirmationDialog *open_recovery_mode_ask = nullptr;
+	ConfirmationDialog *open_compatibility_ask = nullptr;
 
 	ProjectDialog *project_dialog = nullptr;
 
@@ -187,6 +188,7 @@ class ProjectManager : public Control {
 	void _open_selected_projects_with_migration();
 	void _open_selected_projects_check_warnings();
 	void _open_selected_projects_check_recovery_mode();
+	void _open_selected_projects_check_compatibility();
 
 	void _install_project(const String &p_zip_path, const String &p_title);
 	void _import_project();
@@ -201,6 +203,7 @@ class ProjectManager : public Control {
 	void _update_project_buttons();
 	void _open_options_popup();
 	void _open_recovery_mode_ask(bool manual = false);
+	void _open_compatibility_ask(bool manual = false);
 
 	void _on_project_created(const String &dir, bool edit);
 	void _on_project_duplicated(const String &p_original_path, const String &p_duplicate_path, bool p_edit);
@@ -208,6 +211,8 @@ class ProjectManager : public Control {
 	void _on_open_options_selected(int p_option);
 	void _on_recovery_mode_popup_open_normal();
 	void _on_recovery_mode_popup_open_recovery();
+	void _on_compatibility_popup_open_normal();
+	void _on_compatibility_popup_open_compatibility();
 
 	void _on_order_option_changed(int p_idx);
 	void _on_search_term_changed(const String &p_term);
@@ -248,6 +253,7 @@ class ProjectManager : public Control {
 
 	String version_convert_feature;
 	bool open_in_recovery_mode = false;
+	bool open_in_compatibility = false;
 	bool open_in_verbose_mode = false;
 
 #ifndef DISABLE_DEPRECATED
