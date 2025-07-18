@@ -223,6 +223,10 @@ private:
 
 	Callable system_theme_changed;
 
+	Dictionary themed_icons;
+
+	void _update_themed_icon();
+
 	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect);
 	void _update_window_style(WindowData p_wd, WindowID p_window);
 
@@ -301,6 +305,7 @@ public:
 
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual Dictionary get_system_icon_theme() const override;
 	virtual Color get_accent_color() const override;
 	virtual Color get_base_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
@@ -453,6 +458,7 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+	virtual void set_themed_icons(const Dictionary &p_icons) override;
 
 	virtual IndicatorID create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) override;
 	virtual void status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) override;
