@@ -8043,6 +8043,15 @@ void Node3DEditor::_selection_changed() {
 		selected->update_gizmos();
 		selected = nullptr;
 	}
+
+	const List<Node *> &top_selected = editor_selection->get_top_selected_node_list();
+	if (top_selected.size() == 1) {
+		Node3D *new_selected = Object::cast_to<Node3D>(top_selected.back()->get());
+		if (new_selected != selected) {
+			edit(new_selected);
+		}
+	}
+
 	update_transform_gizmo();
 }
 
