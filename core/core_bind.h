@@ -314,6 +314,8 @@ public:
 	void add_logger(const Ref<Logger> &p_logger);
 	void remove_logger(const Ref<Logger> &p_logger);
 
+	void disable_crash_handler();
+
 	static OS *get_singleton() { return singleton; }
 
 	OS();
