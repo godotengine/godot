@@ -202,6 +202,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 				node->connect(SceneStringName(tree_entered), callable_mp(this, &Area2D::_body_enter_tree).bind(objid));
 				node->connect(SceneStringName(tree_exiting), callable_mp(this, &Area2D::_body_exit_tree).bind(objid));
 				if (E->value.in_tree) {
+					GDVIRTUAL_CALL(_body_entered, Object::cast_to<Node2D>(node));
 					emit_signal(SceneStringName(body_entered), node);
 				}
 			}
@@ -229,6 +230,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &Area2D::_body_enter_tree));
 				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Area2D::_body_exit_tree));
 				if (in_tree) {
+					GDVIRTUAL_CALL(_body_exited, Object::cast_to<Node2D>(node));
 					emit_signal(SceneStringName(body_exited), obj);
 				}
 			}
@@ -313,6 +315,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 				node->connect(SceneStringName(tree_entered), callable_mp(this, &Area2D::_area_enter_tree).bind(objid));
 				node->connect(SceneStringName(tree_exiting), callable_mp(this, &Area2D::_area_exit_tree).bind(objid));
 				if (E->value.in_tree) {
+					GDVIRTUAL_CALL(_area_entered, Object::cast_to<Area2D>(node));
 					emit_signal(SceneStringName(area_entered), node);
 				}
 			}
@@ -340,6 +343,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &Area2D::_area_enter_tree));
 				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Area2D::_area_exit_tree));
 				if (in_tree) {
+					GDVIRTUAL_CALL(_area_exited, Object::cast_to<Area2D>(node));
 					emit_signal(SceneStringName(area_exited), obj);
 				}
 			}
@@ -380,6 +384,7 @@ void Area2D::_clear_monitoring() {
 				emit_signal(SceneStringName(body_shape_exited), E.value.rid, node, E.value.shapes[i].body_shape, E.value.shapes[i].area_shape);
 			}
 
+			GDVIRTUAL_CALL(_body_exited, Object::cast_to<Node2D>(node));
 			emit_signal(SceneStringName(body_exited), obj);
 		}
 	}
@@ -408,6 +413,7 @@ void Area2D::_clear_monitoring() {
 				emit_signal(SceneStringName(area_shape_exited), E.value.rid, node, E.value.shapes[i].area_shape, E.value.shapes[i].self_shape);
 			}
 
+			GDVIRTUAL_CALL(_area_exited, Object::cast_to<Area2D>(node));
 			emit_signal(SceneStringName(area_exited), obj);
 		}
 	}
@@ -674,6 +680,11 @@ void Area2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
+
+	GDVIRTUAL_BIND(_body_entered, "body");
+	GDVIRTUAL_BIND(_body_exited, "body");
+	GDVIRTUAL_BIND(_area_entered, "area");
+	GDVIRTUAL_BIND(_area_exited, "area");
 }
 
 Area2D::Area2D() :

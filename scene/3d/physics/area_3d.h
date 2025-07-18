@@ -149,6 +149,11 @@ protected:
 
 	virtual void _space_changed(const RID &p_new_space) override;
 
+	GDVIRTUAL1(_body_entered, Node3D *);
+	GDVIRTUAL1(_body_exited, Node3D *);
+	GDVIRTUAL1(_area_entered, Area3D *);
+	GDVIRTUAL1(_area_exited, Area3D *);
+
 public:
 	void set_gravity_space_override_mode(SpaceOverride p_mode);
 	SpaceOverride get_gravity_space_override_mode() const;
