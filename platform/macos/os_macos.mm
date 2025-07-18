@@ -42,6 +42,7 @@
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
@@ -1063,6 +1064,8 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
@@ -1086,6 +1089,9 @@ void OS_MacOS_NSApp::start_main() {
 				pre_wait_observer = CFRunLoopObserverCreateWithHandler(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, ^(CFRunLoopObserverRef observer, CFRunLoopActivity activity) {
 					@autoreleasepool {
 						@try {
+							GodotProfileFrameMark;
+							GodotProfileZone("macOS main loop");
+
 							if (ds_mac) {
 								ds_mac->_process_events(false);
 							} else if (ds) {
@@ -1259,6 +1265,9 @@ void OS_MacOS_Embedded::run() {
 		while (true) {
 			@autoreleasepool {
 				@try {
+					GodotProfileFrameMark;
+					GodotProfileZone("macOS embedded main loop");
+
 					ds->process_events();
 
 					if (Main::iteration()) {

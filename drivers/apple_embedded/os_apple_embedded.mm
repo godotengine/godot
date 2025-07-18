@@ -42,6 +42,7 @@
 #include "core/io/file_access.h"
 #import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 
 #import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
@@ -203,6 +204,9 @@ bool OS_AppleEmbedded::iterate() {
 	if (!main_loop) {
 		return true;
 	}
+
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_AppleEmbedded::iterate");
 
 	if (DisplayServer::get_singleton()) {
 		DisplayServer::get_singleton()->process_events();
