@@ -135,6 +135,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	EditorData *editor_data = nullptr;
 	EditorSelection *editor_selection = nullptr;
+	LocalVector<Node *> node_previous_selection;
+	bool update_script_button_queued = false;
 
 	List<Node *> node_clipboard;
 	HashSet<Node *> node_clipboard_edited_scene_owned;
@@ -248,6 +250,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool _validate_no_instance();
 	void _selection_changed();
 	void _update_script_button();
+	void _queue_update_script_button();
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, HashMap<Node *, NodePath> *p_renames);
 	bool _has_tracks_to_delete(Node *p_node, List<Node *> &p_to_delete) const;
