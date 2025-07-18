@@ -7280,6 +7280,10 @@ DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_drive
 							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
 							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
+#ifdef TOOLS_ENABLED
+							"Or you can also click the \"Edit in Compatibility\" sub-option\n"
+							"under the \"Edit\" button in the Project Manager.\n\n"
+#endif
 							"If you have recently updated your video card drivers, try rebooting.",
 							String(" or ").join(drivers),
 							executable_name),
