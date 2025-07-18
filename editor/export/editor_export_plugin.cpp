@@ -172,7 +172,7 @@ void EditorExportPlugin::_export_file_script(const String &p_path, const String 
 	GDVIRTUAL_CALL(_export_file, p_path, p_type, p_features);
 }
 
-void EditorExportPlugin::_export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
+void EditorExportPlugin::_export_begin_script(const Vector<String> &p_features, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	GDVIRTUAL_CALL(_export_begin, p_features, p_debug, p_path, p_flags);
 }
 
@@ -325,7 +325,7 @@ Dictionary EditorExportPlugin::_get_export_options_overrides(const Ref<EditorExp
 void EditorExportPlugin::_export_file(const String &p_path, const String &p_type, const HashSet<String> &p_features) {
 }
 
-void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) {
+void EditorExportPlugin::_export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 }
 
 void EditorExportPlugin::_export_end() {}

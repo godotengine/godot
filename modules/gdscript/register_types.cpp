@@ -82,7 +82,7 @@ class EditorExportGDScript : public EditorExportPlugin {
 	int script_mode = DEFAULT_SCRIPT_MODE;
 
 protected:
-	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, int p_flags) override {
+	virtual void _export_begin(const HashSet<String> &p_features, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) override {
 		script_mode = DEFAULT_SCRIPT_MODE;
 
 		const Ref<EditorExportPreset> &preset = get_export_preset();
