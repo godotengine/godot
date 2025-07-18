@@ -188,7 +188,7 @@
 			<param index="1" name="buffer" type="PackedByteArray" />
 			<param index="2" name="size_bytes" type="int" />
 			<description>
-				Sets the push constant data to [param buffer] for the specified [param compute_list]. The shader determines how this binary data is used. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]).
+				Sets the push constant data to [param buffer] for the specified [param compute_list]. The shader determines how this binary data is used. The buffer must be 16 byte aligned. The buffer's size in bytes must also be specified in [param size_bytes] (this can be obtained by calling the [method PackedByteArray.size] method on the passed [param buffer]). 
 			</description>
 		</method>
 		<method name="compute_pipeline_create">
