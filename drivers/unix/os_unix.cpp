@@ -756,6 +756,11 @@ Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &
 	}
 
 	if (pid == 0) {
+		// The new process
+		// Create a new session-ID so parent won't wait for it.
+		// This ensures the process won't go zombie at the end.
+		setsid();
+
 		// The child process.
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());

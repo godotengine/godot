@@ -216,6 +216,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["ik"] = "IK";
 	capitalize_string_remaps["image@2x"] = "Image @2x";
 	capitalize_string_remaps["image@3x"] = "Image @3x";
+	capitalize_string_remaps["ime"] = "IME";
 	capitalize_string_remaps["iod"] = "IOD";
 	capitalize_string_remaps["ios"] = "iOS";
 	capitalize_string_remaps["ip"] = "IP";
@@ -269,6 +270,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["rv64"] = "rv64";
 	capitalize_string_remaps["s3tc"] = "S3TC";
 	capitalize_string_remaps["scp"] = "SCP";
+	capitalize_string_remaps["scrcpy"] = "scrcpy";
 	capitalize_string_remaps["sdf"] = "SDF";
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";
