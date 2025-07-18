@@ -271,7 +271,11 @@ Error AudioDriverOpenSL::input_start() {
 	}
 
 	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
-		return init_input_device();
+		Error err = init_input_device();
+		if (err != OK) {
+			input_stop();
+		}
+		return err;
 	}
 
 	WARN_PRINT("Unable to start audio capture - No RECORD_AUDIO permission");
@@ -279,20 +283,18 @@ Error AudioDriverOpenSL::input_start() {
 }
 
 Error AudioDriverOpenSL::input_stop() {
-	if (!recordItf || !recordBufferQueueItf) {
-		return ERR_CANT_OPEN;
+	if (recordItf) {
+		(*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
+		recordItf = nullptr;
 	}
 
-	SLuint32 state;
-	SLresult res = (*recordItf)->GetRecordState(recordItf, &state);
-	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
-
-	if (state != SL_RECORDSTATE_STOPPED) {
-		res = (*recordItf)->SetRecordState(recordItf, SL_RECORDSTATE_STOPPED);
-		ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
-
-		res = (*recordBufferQueueItf)->Clear(recordBufferQueueItf);
-		ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);
+	if (recordBufferQueueItf) {
+		(*recordBufferQueueItf)->Clear(recordBufferQueueItf);
+		recordBufferQueueItf = nullptr;
+	}
+	if (recorder) {
+		(*recorder)->Destroy(recorder);
+		recorder = nullptr;
 	}
 
 	return OK;
