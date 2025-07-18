@@ -496,6 +496,16 @@ void InspectorDock::_notification(int p_what) {
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
+				property_name_style = EditorPropertyNameProcessor::get_default_inspector_style();
+				inspector->set_property_name_style(property_name_style);
+
+				bool disable_folding = EDITOR_GET("interface/inspector/disable_folding");
+				inspector->set_use_folding(!disable_folding);
+			}
+		} break;
 	}
 }
 
