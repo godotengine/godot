@@ -18,7 +18,7 @@ thirdparty_obj = []
 if env["platform"] == "android":
     # may need to set OPENXR_ANDROID_VERSION_SUFFIX
     env_openxr.AppendUnique(CPPDEFINES=["XR_OS_ANDROID", "XR_USE_PLATFORM_ANDROID"])
-    env_openxr.AppendUnique(CPPDEFINES=["JSON_USE_EXCEPTION=0"])
+    env_openxr.AppendUnique(CPPDEFINES=[("JSON_USE_EXCEPTION", 0)])
 
     # may need to include java parts of the openxr loader
 elif env["platform"] == "linuxbsd":
