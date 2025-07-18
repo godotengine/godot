@@ -9484,6 +9484,7 @@ Node3DEditor::Node3DEditor() {
 	snap_translate->set_min(0.0);
 	snap_translate->set_step(0.001);
 	snap_translate->set_max(10.0);
+	snap_translate->set_suffix("m");
 	snap_translate->set_allow_greater(true);
 	snap_translate->set_accessibility_name(TTRC("Translate Snap"));
 	snap_dialog_vbc->add_margin_child(TTR("Translate Snap:"), snap_translate);
