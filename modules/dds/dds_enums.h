@@ -195,7 +195,7 @@ static const DDSFormatInfo dds_format_info[DDS_MAX] = {
 	{ "BGRA8", false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "BGRX8", false, 1, 4, Image::FORMAT_RGB8 },
 	{ "BGR5A1", false, 1, 2, Image::FORMAT_RGBA8 },
-	{ "BGR565", false, 1, 2, Image::FORMAT_RGB8 },
+	{ "BGR565", false, 1, 2, Image::FORMAT_RGB565 },
 	{ "B2GR3", false, 1, 1, Image::FORMAT_RGB8 },
 	{ "B2GR3A8", false, 1, 2, Image::FORMAT_RGBA8 },
 	{ "BGR10A2", false, 1, 4, Image::FORMAT_RGBA8 },
