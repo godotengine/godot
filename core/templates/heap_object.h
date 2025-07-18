@@ -94,11 +94,13 @@ public:
 	// Use the -> operator to to access the known common part of the data
 
 	_ALWAYS_INLINE_ CommonT *operator->() {
-		return reinterpret_cast<CommonT *>(_ptr);
+		return _c_ptr;
 	}
 	_ALWAYS_INLINE_ const CommonT *operator->() const {
-		return reinterpret_cast<CommonT *>(_ptr);
+		return _c_ptr;
 	}
+
+	// Is implicitly castable to a pointer to CommonT
 
 	// -- HeapT access
 
@@ -210,35 +212,24 @@ public:
 		return _ptr == p_other._ptr;
 	}
 
-	// Can be casted to bool for checking if not nullptr, like you would any other pointer
+	// Can be casted to bool for checking if not nullptr (like any other pointer)
 
 	_ALWAYS_INLINE_ operator bool() const {
 		return _ptr;
 	}
 
-	// Constructors can be used to automatically allocate memory, or to explicitly cast from different pointers
-	// These need to be explicit to ensure they are done intentionally and that there is no address misaligntment
+	// Can be constructed with nullptr; or assigned to nullptr (which clears the pointer without freeing)
 
-	explicit VarHeapPointer(const std::nullptr_t) {
+	explicit constexpr VarHeapPointer(const std::nullptr_t) {
 		_ptr = 0;
 	}
-	explicit VarHeapPointer(CommonT *p_ptr) {
-		_ptr = *reinterpret_cast<uintptr_t *>(&p_ptr);
-	}
-	// explicit VarHeapPointer(void *p_ptr) {
-	// 	_ptr = *reinterpret_cast<uintptr_t *>(&p_ptr);
-	// }
-	// template <class HeapT>
-	// _ALWAYS_INLINE_ explicit VarHeapPointer(const HeapT *p_ptr) {
-	// 	constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
-	// 	_ptr = *reinterpret_cast<const uintptr_t *>(&p_ptr) - offset;
-	// }
-
-	// Can be assigned nullptr (to clear the pointer without freeing)
 	_ALWAYS_INLINE_ VarHeapPointer<CommonT> &operator=(const std::nullptr_t) {
 		_ptr = 0;
 		return *this;
 	}
+
+	// Ensure that VarHeapPointer is trivial (like any pointer)
+
 	VarHeapPointer() = default;
 	VarHeapPointer(const VarHeapPointer &) = default;
 	VarHeapPointer(VarHeapPointer &&) = default;
@@ -324,6 +315,7 @@ protected:
 	_FORCE_INLINE_ static void *heap_allocate(const VarHeapData<HeapT> DerivedT::*const &p_member_pointer, std::initializer_list<HeapT> list) {
 		static_assert(sizeof(p_member_pointer) == sizeof(data_ptr_t), "Member Pointer size mismatch");
 		const data_ptr_t heap_data_position = *reinterpret_cast<const data_ptr_t *>(&p_member_pointer);
+
 #if DEV_ENABLED
 		const size_t heap_data_size = sizeof(VarHeapData<HeapT>);
 		const size_t derived_class_size = sizeof(DerivedT);

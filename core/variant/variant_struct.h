@@ -45,35 +45,16 @@ namespace Internal {
 struct InstanceMetaData {
 	SafeRefCount refcount; // 4 bytes
 
-	enum StoreType : uint8_t {
-		IN_PLACE,
-		IN_HEAP_ROOT,
-#ifndef VSTRUCT_IS_REFERENCE_TYPE
-		IN_PLACE_IN_HEAP,
-#endif
-	};
-	StoreType store; // 1 byte
-
-	enum DataState : uint8_t {
-		STATE_UNINITIALISED,
+	enum DataState : uint16_t {
 		STATE_VALID,
 		STATE_CLEARED,
 	};
-	DataState state; // 1 byte
+	DataState state; // 2 bytes
 
 	uint16_t __padding__; // 2 bytes
 };
 using StructPtrType = VarHeapPointer<InstanceMetaData>;
 using MemberPtrType = VarHeapPointer<InstanceMetaData>::MemberDataPointer;
-
-// Represents a pairing between the pointer to an instance and a pointer to the definition for that instance
-// It is a trivial type (which should allow for quick and easy easy transfer between functions)
-// Primary purpose is to ensure that there is no way a pointer to an instance can be separated from its definition
-// This doesn't count as a "true reference" (as in, it should have no bearing on refcount)
-struct VarStructRef {
-	StructPtrType instance; // 8 bytes
-	const StructDefinition *definition; // 8 bytes
-};
 
 /////////////////////////////////////
 
@@ -84,7 +65,6 @@ struct AbstractTypeInfo {
 	virtual size_t size() const = 0;
 	virtual size_t align() const = 0;
 	virtual Variant::Type get_variant_type() const = 0;
-	virtual const StringName get_class_name() const = 0;
 
 	// operations
 	virtual void construct(void *p_target) const = 0;
@@ -106,7 +86,6 @@ struct NativeTypeInfo : public AbstractTypeInfo {
 	size_t size() const override;
 	size_t align() const override;
 	Variant::Type get_variant_type() const override;
-	const StringName get_class_name() const override;
 
 	// operations
 	void construct(void *p_target) const override;
@@ -122,7 +101,10 @@ struct NativeTypeInfo : public AbstractTypeInfo {
 
 /////////////////////////////////////
 
-struct StructPropertyInfo : public MemberPtrType {
+class StructPropertyInfo : public MemberPtrType {
+	friend class VariantStruct;
+	friend class StructDefinition;
+
 	enum Kind : uint32_t {
 		NATIVE_BUILTIN,
 		NATIVE_OBJECT,
@@ -131,7 +113,8 @@ struct StructPropertyInfo : public MemberPtrType {
 
 	// (should be aligned to take up a very minimal 24 bytes)
 	// (4 for MemberDataPointer + 4 for Kind // 8 for union pointers // 8 for StringName)
-	// MemberPtrType address; // (used as base class to simplify code; is positioned here)
+
+	// MemberPtrType address; // 4 bytes - (used as base class to simplify code; is positioned here)
 	Kind kind;
 	union {
 		VPointer<AbstractTypeInfo> type_info;
@@ -139,19 +122,9 @@ struct StructPropertyInfo : public MemberPtrType {
 	};
 	StringName name;
 
+public:
 	_ALWAYS_INLINE_ StringName get_name() const {
 		return name;
-	}
-
-	_FORCE_INLINE_ Variant::Type get_variant_type() const {
-		switch (kind) {
-			case NATIVE_BUILTIN:
-				return type_info->get_variant_type();
-			case NATIVE_OBJECT:
-				return Variant::Type::OBJECT;
-			default:
-				ERR_FAIL_V(Variant::Type::NIL);
-		}
 	}
 
 	StructPropertyInfo(const StringName &p_name, const MemberPtrType &p_address, const VPointer<AbstractTypeInfo> &p_type) :
@@ -164,7 +137,7 @@ struct StructPropertyInfo : public MemberPtrType {
 				type_info = p_other.type_info;
 				break;
 			case NATIVE_OBJECT:
-				new (&class_name) StringName(p_other.class_name);
+				memnew_placement(&class_name, StringName(p_other.class_name));
 				break;
 			default:
 				ERR_FAIL();
@@ -186,24 +159,18 @@ struct StructPropertyInfo : public MemberPtrType {
 	}
 };
 
-template <typename ST, typename MT>
-_ALWAYS_INLINE_ static StructPropertyInfo build_native_property(StringName const &p_name, const MT ST::*const &p_member_pointer) {
-	return StructPropertyInfo(p_name, p_member_pointer, NativeTypeInfo<MT>());
-}
-
 } //namespace Internal
 
 /////////////////////////////////////
 
 class StructDefinition : public VarHeapObject {
 	using StructPropertyInfo = Internal::StructPropertyInfo;
-	using VarStructRef = Internal::VarStructRef;
 	using StructPtrType = Internal::StructPtrType;
 
 public:
-	typedef void (*StructConstructor)(VarStructRef);
-	typedef void (*StructCopyConstructor)(VarStructRef, const VarStructRef);
-	typedef void (*StructDestructor)(VarStructRef);
+	typedef void (*StructConstructor)(const StructDefinition *, StructPtrType);
+	typedef void (*StructCopyConstructor)(const StructDefinition *, StructPtrType, const StructPtrType);
+	typedef void (*StructDestructor)(const StructDefinition *, StructPtrType);
 
 	// StructDefinition Properties
 	StringName qualified_name;
@@ -227,11 +194,11 @@ public:
 	static void clean_struct_definitions();
 
 	// Generic struct constructors; for non-native structs, or for safely creating native structs that don't have constructors
-	static void generic_constructor(VarStructRef p_struct);
-	static void generic_copy_constructor(VarStructRef p_struct, const VarStructRef);
+	static void generic_constructor(const StructDefinition *p_definition, StructPtrType p_target);
+	static void generic_copy_constructor(const StructDefinition *p_definition, StructPtrType p_target, const StructPtrType p_other);
 	// Generic struct destructors; for non-native structs
-	static void generic_destructor(VarStructRef p_struct);
-	static void trivial_destructor(VarStructRef p_struct) {}
+	static void generic_destructor(const StructDefinition *p_definition, StructPtrType p_target);
+	static void trivial_destructor(const StructDefinition *p_definition, StructPtrType p_target) {}
 
 private:
 	StructDefinition(StringName p_qualified_name, size_t p_size, StructConstructor p_constructor, StructCopyConstructor p_copy_constructor, StructDestructor p_destructor) :
@@ -244,62 +211,39 @@ public:
 		return (StructDefinition *)ptr;
 	}
 
-	_FORCE_INLINE_ VarStructRef allocate_instance() const {
-		StructPtrType instance(size);
-		instance->store = Internal::InstanceMetaData::IN_HEAP_ROOT;
-		instance->state = Internal::InstanceMetaData::STATE_UNINITIALISED;
-		return VarStructRef{ instance, this };
-	}
-	_FORCE_INLINE_ VarStructRef construct_instance() const {
-		VarStructRef ret = allocate_instance();
-		constructor(ret);
-		ret.instance->state = Internal::InstanceMetaData::STATE_VALID;
-		return ret;
-	}
-	_FORCE_INLINE_ VarStructRef copy_instance(VarStructRef p_struct) const {
-		DEV_ASSERT(p_struct.instance->state == Internal::InstanceMetaData::STATE_VALID); // should be checked before getting here
-		DEV_ASSERT(this == p_struct.definition); // should be checked before getting here
-		VarStructRef ret = allocate_instance();
-		copy_constructor(ret, p_struct);
-		return ret;
-	}
+	VariantStruct create_instance() const;
 };
 
 ///////////////////////////////
 
 class VariantStruct {
 	using StructPtrType = Internal::StructPtrType;
-	using VarStructRef = Internal::VarStructRef;
+	friend class StructDefinition;
 
 protected:
 	// Needs to fit on Variant, so should not have any other properties
 	StructPtrType instance;
 	const StructDefinition *definition;
 
-	void _ref(VarStructRef p_struct);
+	void _init(const StructDefinition *p_definition);
+	void _ref(StructPtrType p_ptr, const StructDefinition *p_definition);
 	void _unref();
-
-#ifndef VSTRUCT_IS_REFERENCE_TYPE
-	_ALWAYS_INLINE_ _cow_check() {
-		DEV_ASSERT()
-	}
-	void _copy_on_write();
-#endif
 
 public:
 	void set(const StringName &p_name, const Variant &p_value, bool &r_valid);
 	Variant get(const StringName &p_name, bool &r_valid) const;
-
 	void clear();
 	bool is_empty() const;
+	VariantStruct duplicate(bool deep = false) const;
+	VariantStruct recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
-	//
+	// Basic Constructors
 
-	VariantStruct() :
+	constexpr VariantStruct() :
 			instance(nullptr), definition(nullptr) {}
 	VariantStruct(const VariantStruct &p_struct) :
 			instance(p_struct.instance), definition(p_struct.definition) {
-		if (instance->store == Internal::InstanceMetaData::IN_HEAP_ROOT) {
+		if (instance) {
 			instance->refcount.ref();
 		}
 	}
@@ -308,18 +252,12 @@ public:
 		p_struct.instance = nullptr;
 	}
 
-	explicit VariantStruct(VarStructRef p_ref) :
-			instance(p_ref.instance), definition(p_ref.definition) {
-		if (instance->store == Internal::InstanceMetaData::IN_HEAP_ROOT) {
-			instance->refcount.ref();
-		}
-	}
+	// Basic assignment
 
 	_FORCE_INLINE_ VariantStruct &operator=(const VariantStruct &p_other) {
-		_ref({ p_other.instance, p_other.definition });
+		_ref(p_other.instance, p_other.definition);
 		return *this;
 	}
-
 	_FORCE_INLINE_ VariantStruct &operator=(VariantStruct &&p_other) {
 		std::swap(instance, p_other.instance);
 		std::swap(definition, p_other.definition);
@@ -333,5 +271,18 @@ public:
 	}
 
 	template <class T>
+	_ALWAYS_INLINE_ T &is_struct();
+	template <class T>
 	_ALWAYS_INLINE_ T &get_struct();
+
+protected:
+#ifndef VSTRUCT_IS_REFERENCE_TYPE
+	_ALWAYS_INLINE_ void _cow_check() {
+		DEV_ASSERT(instance && definition); // should be checked before getting here
+		DEV_ASSERT(instance->state == Internal::InstanceMetaData::STATE_VALID); // should be checked before getting here
+		if (instance->refcount.get() > 1) {
+			*this = duplicate(false);
+		}
+	}
+#endif
 };

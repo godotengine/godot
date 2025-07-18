@@ -2025,6 +2025,8 @@ Variant Variant::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_de
 			return operator Vector<Color>().duplicate();
 		case PACKED_VECTOR4_ARRAY:
 			return operator Vector<Vector4>().duplicate();
+		case STRUCT:
+			return operator VariantStruct().recursive_duplicate(p_deep, p_deep_subresources_mode, recursion_count);
 		default:
 			return *this;
 	}

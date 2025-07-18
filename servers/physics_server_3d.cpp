@@ -381,7 +381,7 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 VariantStruct PhysicsDirectSpaceState3D::_intersect_ray_st(const Ref<PhysicsRayQueryParameters3D> &p_ray_query) {
 	ERR_FAIL_COND_V(p_ray_query.is_null(), VariantStruct());
 
-	Inplace<RayResult> result;
+	RayResult result;
 
 	bool res = intersect_ray(p_ray_query->get_parameters(), result);
 
@@ -389,7 +389,7 @@ VariantStruct PhysicsDirectSpaceState3D::_intersect_ray_st(const Ref<PhysicsRayQ
 		return VariantStruct();
 	}
 
-	return result;
+	return NativeVariantStruct(result);
 }
 
 TypedArray<Dictionary> PhysicsDirectSpaceState3D::_intersect_point(const Ref<PhysicsPointQueryParameters3D> &p_point_query, int p_max_results) {

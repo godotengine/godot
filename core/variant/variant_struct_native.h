@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/variant/variant_struct.h"
+#include "variant_struct.h"
 
 #include "core/variant/binder_common.h"
 
@@ -56,26 +56,13 @@ Variant::Type Internal::NativeTypeInfo<T>::get_variant_type() const {
 }
 
 template <class T>
-const StringName Internal::NativeTypeInfo<T>::get_class_name() const {
-	if constexpr (std::is_base_of_v<T, Object *>) {
-		return std::remove_pointer_t<T>::get_class_static();
-	} else {
-		// Only pointers to Object have class names
-		// (dev-note: not sure if we want to fail)
-		// ERR_FAIL_V_MSG(StringName(),"Cannot get class name for struct properties that are not Object pointers");
-		return StringName();
-	}
-}
-
-template <class T>
 void Internal::NativeTypeInfo<T>::construct(void *p_target) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else if constexpr (!std::is_trivially_constructible_v<T>) {
 		memnew_placement(p_target, T);
 	} else {
-		// TODO: assign default values for various types
-		// (should use same logic, like how Variant ints are always 0)
+		*(T *)p_target = 0;
 	}
 }
 
@@ -83,10 +70,8 @@ template <class T>
 void Internal::NativeTypeInfo<T>::copy_construct(void *p_target, const void *p_value) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
-	} else if constexpr (!std::is_trivially_copy_constructible_v<T>) {
-		memnew_placement(p_target, T(*(T *)p_value));
 	} else {
-		*reinterpret_cast<T *>(p_target) = *reinterpret_cast<const T *>(p_value);
+		memnew_placement(p_target, T(*(const T *)p_value));
 	}
 }
 
@@ -95,7 +80,7 @@ void Internal::NativeTypeInfo<T>::destruct(void *p_target) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else if constexpr (!std::is_trivially_destructible_v<T>) {
-		reinterpret_cast<T *>(p_target)->~T();
+		((T *)p_target)->~T();
 	}
 }
 
@@ -104,7 +89,7 @@ Variant Internal::NativeTypeInfo<T>::read(const void *p_target) const {
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		return Variant(); // Return NIL
 	} else {
-		return Variant(*reinterpret_cast<const T *>(p_target));
+		return Variant(*(const T *)p_target);
 	}
 }
 
@@ -113,7 +98,7 @@ void Internal::NativeTypeInfo<T>::ptr_get(const void *p_target, void *p_into) co
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else {
-		*reinterpret_cast<T *>(p_into) = *reinterpret_cast<const T *>(p_target);
+		*(T *)p_into = *(const T *)p_target;
 	}
 }
 
@@ -125,9 +110,9 @@ void Internal::NativeTypeInfo<T>::write(void *p_target, const Variant &p_value) 
 		// TODO: analyze why this is necessary
 		// Something about ambiguous casting?
 		// Should check with the maintainers on if this is intentional before making any changes to the engine
-		*reinterpret_cast<ObjectID *>(p_target) = static_cast<ObjectID>(static_cast<uint64_t>(p_value));
+		*(ObjectID *)p_target = static_cast<ObjectID>(static_cast<uint64_t>(p_value));
 	} else {
-		*reinterpret_cast<T *>(p_target) = static_cast<T>(p_value);
+		*(T *)p_target = static_cast<const T>(p_value);
 	}
 }
 
@@ -136,7 +121,7 @@ void Internal::NativeTypeInfo<T>::ptr_set(void *p_target, const void *p_value) c
 	if constexpr (std::is_same_v<T, nullptr_t>) {
 		// Do Nothing
 	} else {
-		*reinterpret_cast<T *>(p_target) = *reinterpret_cast<const T *>(p_value);
+		*(T *)p_target = *(const T *)p_value;
 	}
 }
 
@@ -144,28 +129,25 @@ void Internal::NativeTypeInfo<T>::ptr_set(void *p_target, const void *p_value) c
 
 template <class T>
 struct NativeStructDefinition {
+	using StructPtrType = Internal::StructPtrType;
 	friend class VariantStruct;
-	using VarStructRef = Internal::VarStructRef;
 
 private:
 	static StructDefinition *sdef;
 	static StructDefinition *build_definition();
 
 	// If there are any non-trivial properties, C++ should be able to handle these operations faster than the generic variants above
-	static void init_struct(VarStructRef p_struct) {
+	static void init_struct(const StructDefinition *p_definition, StructPtrType p_target) {
 		if constexpr (!std::is_trivially_constructible_v<T>) {
-			memnew_placement(p_struct.instance.get_heap_(), T());
+			memnew_placement(p_target.get_heap_(), T());
 		}
 	}
-	static void copy_struct(VarStructRef p_struct, const VarStructRef p_other) {
-		memnew_placement(p_struct.instance.get_heap_(), T(*p_other.instance.get_heap<T>()));
+	static void copy_struct(const StructDefinition *p_definition, StructPtrType p_target, const StructPtrType p_other) {
+		memnew_placement(p_target.get_heap_(), T(*p_other.get_heap<T>()));
 	}
-	static void assign_struct(VarStructRef p_struct, const VarStructRef p_other) {
-		*p_struct.instance.get_heap<T>() = *p_other.instance.get_heap<T>();
-	}
-	static void deinit_struct(VarStructRef p_struct) {
+	static void deinit_struct(const StructDefinition *p_definition, StructPtrType p_target) {
 		if constexpr (!std::is_trivially_destructible_v<T>) {
-			p_struct.instance.get_heap<T>()->~T();
+			p_target.get_heap<T>()->~T();
 		}
 	}
 
@@ -184,12 +166,8 @@ StructDefinition *NativeStructDefinition<T>::sdef = nullptr;
 
 /////////////////////////////////////
 
-#ifdef VSTRUCT_IS_REFERENCE_TYPE
 template <class T>
 class NativeVariantStruct : public VariantStruct {
-	using StructPtrType = Internal::StructPtrType;
-	using VarStructRef = Internal::VarStructRef;
-
 public:
 	_ALWAYS_INLINE_ T *operator->() {
 		return (T *)(instance.get_heap_());
@@ -198,49 +176,40 @@ public:
 		return *(T *)(instance.get_heap_());
 	}
 
-	_ALWAYS_INLINE_ explicit NativeVariantStruct(bool p_should_construct) {
-		VarStructRef ref = NativeStructDefinition<T>::get_definition()->allocate_instance();
-		instance = ref.instance;
-		definition = ref.definition;
-		instance->refcount.init();
-		instance->state = Internal::InstanceMetaData::STATE_VALID;
-		if (p_should_construct) {
-			memnew_placement(instance.get_heap_(), T);
-		}
-	}
+	// Copy an existing struct instance into the heap
 	_ALWAYS_INLINE_ NativeVariantStruct(const T &p_struct) {
-		VarStructRef ref = NativeStructDefinition<T>::get_definition()->allocate_instance();
-		instance = ref.instance;
-		definition = ref.definition;
-		instance->refcount.init();
-		instance->state = Internal::InstanceMetaData::STATE_VALID;
+		_init(NativeStructDefinition<T>::get_definition());
 		memnew_placement(instance.get_heap_(), T(p_struct));
 	}
 	_ALWAYS_INLINE_ NativeVariantStruct(T &&p_struct) {
-		VarStructRef ref = NativeStructDefinition<T>::get_definition()->allocate_instance();
-		instance = ref.instance;
-		definition = ref.definition;
-		instance->refcount.init();
-		instance->state = Internal::InstanceMetaData::STATE_VALID;
+		_init(NativeStructDefinition<T>::get_definition());
 		memnew_placement(instance.get_heap_(), T(std::move(p_struct)));
+	}
+
+	// or *must* be constructed in one of the following ways
+	_ALWAYS_INLINE_ explicit NativeVariantStruct(void) {
+		_init(NativeStructDefinition<T>::get_definition());
+		if constexpr (!std::is_trivially_constructible_v<T>) {
+			memnew_placement(instance.get_heap_(), T());
+		}
+	}
+	template <typename... VarArgs>
+	_ALWAYS_INLINE_ explicit NativeVariantStruct(VarArgs... p_args) {
+		_init(NativeStructDefinition<T>::get_definition());
+		memnew_placement(instance.get_heap_(), T(p_args...));
 	}
 
 	_ALWAYS_INLINE_ NativeVariantStruct(const VariantStruct &p_struct) :
 			VariantStruct(p_struct) {
-		DEV_ASSERT(definition == NativeStructDefinition<T>::get_definition());
+		DEV_ASSERT(is_empty() || definition == NativeStructDefinition<T>::get_definition());
 	}
 	_ALWAYS_INLINE_ NativeVariantStruct(VariantStruct &&p_struct) :
 			VariantStruct(std::move(p_struct)) {
-		DEV_ASSERT(definition == NativeStructDefinition<T>::get_definition());
-	}
-
-	_ALWAYS_INLINE_ explicit NativeVariantStruct(VarStructRef p_ref) :
-			VariantStruct(p_ref) {
-		DEV_ASSERT(definition == NativeStructDefinition<T>::get_definition());
+		DEV_ASSERT(is_empty() || definition == NativeStructDefinition<T>::get_definition());
 	}
 
 	_ALWAYS_INLINE_ NativeVariantStruct<T> &operator=(const NativeStructDefinition<T> &p_other) {
-		_ref({ p_other.instance, p_other.definition });
+		_ref(p_other.instance, p_other.definition);
 		return *this;
 	}
 	_ALWAYS_INLINE_ NativeVariantStruct<T> &operator=(NativeStructDefinition<T> &&p_other) {
@@ -249,47 +218,32 @@ public:
 		return *this;
 	}
 };
-#endif
 
-// /////////////////////////////////////
+/////////////////////////////////////
 
-// Inplace is a helpful template for creating an instance of a struct that can be easily converted to VariantStruct
-// It will instance the struct on the stack as normal, and then copy the data to the heap when cast to VariantStruct
-template <class T>
-class Inplace : private Internal::InstanceMetaData, public T {
-public:
-	_ALWAYS_INLINE_ Inplace() {
-		state = Internal::InstanceMetaData::STATE_VALID;
-		store = Internal::InstanceMetaData::IN_PLACE;
-	}
-	template <typename... VarArgs>
-	_ALWAYS_INLINE_ Inplace(VarArgs... p_args) :
-			T(p_args...) {
-		state = Internal::InstanceMetaData::STATE_VALID;
-		store = Internal::InstanceMetaData::IN_PLACE;
-	}
-	// Can be directly cast to VariantStruct by copying to the heap through NativeVariantStruct
-	_ALWAYS_INLINE_ operator VariantStruct() {
-		return NativeVariantStruct(static_cast<T &>(*this));
-	}
-};
+namespace Internal {
+template <typename ST, typename MT>
+_ALWAYS_INLINE_ static StructPropertyInfo build_native_property(StringName const &p_name, const MT ST::*const &p_member_pointer) {
+	return StructPropertyInfo(p_name, p_member_pointer, NativeTypeInfo<MT>());
+}
+} //namespace Internal
 
 /////////////////////////////////////
 
 #define STRINGIFY_MACRO(s) #s
 
-#define VARIANT_STRUCT_DEFINITION(m_parent_class, m_struct_class, ...)                                                     \
-	template <>                                                                                                            \
-	StructDefinition *NativeStructDefinition<m_parent_class::m_struct_class>::build_definition() {                         \
-		using T = m_parent_class::m_struct_class;                                                                          \
-		StructDefinition *sd = StructDefinition::create(                                                                   \
-				{##__VA_ARGS__##},                                                                                         \
-				STRINGIFY_MACRO(m_parent_class.m_struct_class),                                                            \
-				sizeof(m_parent_class::m_struct_class),                                                                    \
-				(!std::is_trivially_constructible_v<T> ? &init_struct : &StructDefinition::generic_constructor),           \
-				(!std::is_trivially_copy_constructible_v<T> ? &copy_struct : &StructDefinition::generic_copy_constructor), \
-				(!std::is_trivially_destructible_v<T> ? &deinit_struct : &StructDefinition::trivial_destructor));          \
-		return sd;                                                                                                         \
+#define VARIANT_STRUCT_DEFINITION(m_parent_class, m_struct_class, ...)                                            \
+	template <>                                                                                                   \
+	StructDefinition *NativeStructDefinition<m_parent_class::m_struct_class>::build_definition() {                \
+		using T = m_parent_class::m_struct_class;                                                                 \
+		StructDefinition *sd = StructDefinition::create(                                                          \
+				{##__VA_ARGS__##},                                                                                \
+				STRINGIFY_MACRO(m_parent_class.m_struct_class),                                                   \
+				sizeof(m_parent_class::m_struct_class),                                                           \
+				(!std::is_trivially_constructible_v<T> ? &init_struct : &StructDefinition::generic_constructor),  \
+				(&copy_struct),                                                                                   \
+				(!std::is_trivially_destructible_v<T> ? &deinit_struct : &StructDefinition::trivial_destructor)); \
+		return sd;                                                                                                \
 	}
 
 #define VARIANT_STRUCT_PROPERTY(m_property_name) \
@@ -303,10 +257,16 @@ public:
 /////////////////////////////////////
 
 template <class T>
-_ALWAYS_INLINE_ T &VariantStruct::get_struct() {
-	if (NativeStructDefinition<T>::get_definition() != definition) {
-		ERR_FAIL_MSG("Type Mis-match");
+T &VariantStruct::is_struct() {
+	if (is_empty()) {
+		return false;
 	}
+	return NativeStructDefinition<T>::get_definition() == definition;
+}
+
+template <class T>
+T &VariantStruct::get_struct() {
+	CRASH_COND_MSG(!is_struct<T>(), "Type Mis-match. Should have called is_struct<T>().");
 
 	return *(T *)(instance.get_heap_());
 }

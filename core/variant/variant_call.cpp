@@ -2490,6 +2490,7 @@ static void _register_variant_builtin_methods_misc() {
 	/* Struct */
 
 	bind_method(VariantStruct, is_empty, sarray(), varray());
+	bind_method(VariantStruct, duplicate, sarray("deep"), varray(false));
 }
 
 static void _register_variant_builtin_methods_array() {
