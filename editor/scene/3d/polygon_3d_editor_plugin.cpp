@@ -325,7 +325,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 			Vector2 cpoint(spoint.x, spoint.y);
 
-			if (snap_ignore && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			if (snap_ignore && !Input::get_singleton()->is_command_or_control_pressed()) {
 				snap_ignore = false;
 			}
 

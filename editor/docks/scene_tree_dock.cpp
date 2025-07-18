@@ -3650,7 +3650,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+	if (Input::get_singleton()->is_command_or_control_pressed()) {
 		Object *obj = ClassDB::instantiate(scr->get_instance_base_type());
 		ERR_FAIL_NULL(obj);
 

@@ -2238,7 +2238,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	String text_to_drop;
 
-	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool drop_modifier_pressed = Input::get_singleton()->is_command_or_control_pressed();
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
