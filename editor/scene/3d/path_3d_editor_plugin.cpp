@@ -409,6 +409,8 @@ void Path3DGizmo::redraw() {
 
 		_secondary_handles_info.resize(c->get_point_count() * 3);
 
+		const float disk_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size");
+
 		for (int idx = 0; idx < c->get_point_count(); idx++) {
 			// Collect primary-handles.
 			const Vector3 pos = c->get_point_position(idx);
@@ -539,9 +541,8 @@ void Path3DGizmo::_update_transform_gizmo() {
 	Node3DEditor::get_singleton()->update_transform_gizmo();
 }
 
-Path3DGizmo::Path3DGizmo(Path3D *p_path, float p_disk_size) {
+Path3DGizmo::Path3DGizmo(Path3D *p_path) {
 	path = p_path;
-	disk_size = p_disk_size;
 	set_node_3d(p_path);
 	orig_in_length = 0;
 	orig_out_length = 0;
@@ -685,6 +686,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 			}
 
 		} else if (mb->is_pressed() && ((mb->get_button_index() == MouseButton::LEFT && curve_del->is_pressed()) || (mb->get_button_index() == MouseButton::RIGHT && curve_edit->is_pressed()))) {
+			const float disk_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size");
 			for (int i = 0; i < c->get_point_count(); i++) {
 				real_t dist_to_p = viewport->point_to_screen(gt.xform(c->get_point_position(i))).distance_to(mbpos);
 				real_t dist_to_p_out = viewport->point_to_screen(gt.xform(c->get_point_position(i) + c->get_point_out(i))).distance_to(mbpos);
@@ -891,6 +893,30 @@ void Path3DEditorPlugin::_update_toolbar() {
 	create_curve_button->set_visible(!has_curve);
 }
 
+void Path3DEditorPlugin::_editor_settings_changed() {
+	if (!EditorSettings::get_singleton()->get_changed_settings().has("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size")) {
+		return;
+	}
+
+	if (!path) {
+		return;
+	}
+
+	path->update_gizmos();
+}
+
+void Path3DEditorPlugin::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Path3DEditorPlugin::_editor_settings_changed));
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			EditorSettings::get_singleton()->disconnect("settings_changed", callable_mp(this, &Path3DEditorPlugin::_editor_settings_changed));
+		} break;
+	}
+}
+
 void Path3DEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_toolbar"), &Path3DEditorPlugin::_update_toolbar);
 	ClassDB::bind_method(D_METHOD("_clear_curve_points"), &Path3DEditorPlugin::_clear_curve_points);
@@ -902,9 +928,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 
-	disk_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size");
-
-	Ref<Path3DGizmoPlugin> gizmo_plugin = memnew(Path3DGizmoPlugin(disk_size));
+	Ref<Path3DGizmoPlugin> gizmo_plugin = memnew(Path3DGizmoPlugin());
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 	path_3d_gizmo_plugin = gizmo_plugin;
 
@@ -1007,7 +1031,7 @@ Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 
 	Path3D *path = Object::cast_to<Path3D>(p_spatial);
 	if (path) {
-		ref.instantiate(path, disk_size);
+		ref.instantiate(path);
 	}
 
 	return ref;
@@ -1185,10 +1209,9 @@ int Path3DGizmoPlugin::get_priority() const {
 	return -1;
 }
 
-Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
+Path3DGizmoPlugin::Path3DGizmoPlugin() {
 	Color path_color = SceneTree::get_singleton()->get_debug_paths_color();
 	Color path_tilt_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/path_tilt");
-	disk_size = p_disk_size;
 
 	create_material("path_material", path_color);
 	create_material("path_thin_material", Color(0.6, 0.6, 0.6));
