@@ -38,35 +38,37 @@
 namespace TestConvertTransformModifier3D {
 
 Transform3D make_random_transform_3d(int p_seed) {
-	RandomNumberGenerator rng;
-	rng.set_seed(p_seed);
+	Ref<RandomNumberGenerator> rng;
+	rng.instantiate();
+
+	rng->set_seed(p_seed);
 
 	Vector3 pos;
-	pos.x = rng.randf_range(-10.0, 10.0);
-	rng.set_seed(++p_seed);
-	pos.y = rng.randf_range(-10.0, 10.0);
-	rng.set_seed(++p_seed);
-	pos.z = rng.randf_range(-10.0, 10.0);
-	rng.set_seed(++p_seed);
+	pos.x = rng->randf_range(-10.0, 10.0);
+	rng->set_seed(++p_seed);
+	pos.y = rng->randf_range(-10.0, 10.0);
+	rng->set_seed(++p_seed);
+	pos.z = rng->randf_range(-10.0, 10.0);
+	rng->set_seed(++p_seed);
 
 	Quaternion rot;
-	rot.x = rng.randf_range(-1.0, 1.0);
-	rng.set_seed(++p_seed);
-	rot.y = rng.randf_range(-1.0, 1.0);
-	rng.set_seed(++p_seed);
-	rot.z = rng.randf_range(-1.0, 1.0);
-	rng.set_seed(++p_seed);
-	rot.w = rng.randf_range(-1.0, 1.0);
-	rng.set_seed(++p_seed);
+	rot.x = rng->randf_range(-1.0, 1.0);
+	rng->set_seed(++p_seed);
+	rot.y = rng->randf_range(-1.0, 1.0);
+	rng->set_seed(++p_seed);
+	rot.z = rng->randf_range(-1.0, 1.0);
+	rng->set_seed(++p_seed);
+	rot.w = rng->randf_range(-1.0, 1.0);
+	rng->set_seed(++p_seed);
 	rot = rot.normalized();
 
 	Vector3 scl;
-	scl.x = rng.randf_range(0.5, 2.0);
-	rng.set_seed(++p_seed);
-	scl.y = rng.randf_range(0.5, 2.0);
-	rng.set_seed(++p_seed);
-	scl.z = rng.randf_range(0.5, 2.0);
-	rng.set_seed(++p_seed);
+	scl.x = rng->randf_range(0.5, 2.0);
+	rng->set_seed(++p_seed);
+	scl.y = rng->randf_range(0.5, 2.0);
+	rng->set_seed(++p_seed);
+	scl.z = rng->randf_range(0.5, 2.0);
+	rng->set_seed(++p_seed);
 
 	return Transform3D(Basis(rot).scaled(scl), pos);
 }
