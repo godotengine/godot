@@ -55,6 +55,8 @@
 #include "audio_server.h"
 #include "camera/camera_feed.h"
 #include "camera_server.h"
+#include "microphone/microphone_feed.h"
+#include "microphone_server.h"
 #include "debugger/servers_debugger.h"
 #include "display/native_menu.h"
 #include "display_server.h"
@@ -160,6 +162,8 @@ void register_server_types() {
 	GDREGISTER_CLASS(NativeMenu);
 
 	GDREGISTER_CLASS(CameraServer);
+
+	GDREGISTER_CLASS(MicrophoneServer);
 
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
 
@@ -369,6 +373,7 @@ void register_server_singletons() {
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton(), "AudioServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("CameraServer", CameraServer::get_singleton(), "CameraServer"));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("MicrophoneServer", MicrophoneServer::get_singleton(), "MicrophoneServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServer", DisplayServer::get_singleton(), "DisplayServer"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("NativeMenu", NativeMenu::get_singleton(), "NativeMenu"));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("RenderingServer", RenderingServer::get_singleton(), "RenderingServer"));

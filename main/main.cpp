@@ -69,6 +69,7 @@
 #include "servers/audio/audio_driver_dummy.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
+#include "servers/microphone_server.h"
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/register_server_types.h"
@@ -171,6 +172,7 @@ static SteamTracker *steam_tracker = nullptr;
 // Initialized in setup2()
 static AudioServer *audio_server = nullptr;
 static CameraServer *camera_server = nullptr;
+static MicrophoneServer *microphone_server = nullptr;
 static DisplayServer *display_server = nullptr;
 static RenderingServer *rendering_server = nullptr;
 static TextServerManager *tsman = nullptr;
@@ -3666,6 +3668,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	camera_server = CameraServer::create();
 
+	microphone_server = MicrophoneServer::create();
+
 	MAIN_PRINT("Main: Load Physics");
 
 	initialize_physics();
@@ -5023,6 +5027,10 @@ void Main::cleanup(bool p_force) {
 
 	if (camera_server) {
 		memdelete(camera_server);
+	}
+
+	if (microphone_server) {
+		memdelete(microphone_server);
 	}
 
 	OS::get_singleton()->finalize();
