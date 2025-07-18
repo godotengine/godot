@@ -9492,15 +9492,17 @@ Node3DEditor::Node3DEditor() {
 	snap_rotate->set_min(0.0);
 	snap_rotate->set_step(0.1);
 	snap_rotate->set_max(360);
+	snap_rotate->set_suffix(U"°");
 	snap_rotate->set_accessibility_name(TTRC("Rotate Snap"));
-	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap (deg.):"), snap_rotate);
+	snap_dialog_vbc->add_margin_child(TTR("Rotate Snap:"), snap_rotate);
 
 	snap_scale = memnew(EditorSpinSlider);
 	snap_scale->set_min(0.0);
 	snap_scale->set_step(1.0);
 	snap_scale->set_max(100);
+	snap_scale->set_suffix("%");
 	snap_scale->set_accessibility_name(TTRC("Scale Snap"));
-	snap_dialog_vbc->add_margin_child(TTR("Scale Snap (%):"), snap_scale);
+	snap_dialog_vbc->add_margin_child(TTR("Scale Snap:"), snap_scale);
 
 	/* SETTINGS DIALOG */
 
