@@ -39,6 +39,7 @@
 #ifdef METAL_ENABLED
 #include "servers/rendering/renderer_rd/effects/metal_fx.h"
 #endif
+#include "servers/rendering/renderer_rd/effects/sgsr1.h"
 #include "servers/rendering/renderer_rd/effects/smaa.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
@@ -65,6 +66,7 @@ protected:
 	RendererRD::SMAA *smaa = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
+	RendererRD::SGSR1 *sgsr1 = nullptr;
 	RendererRD::VRS *vrs = nullptr;
 #ifdef METAL_ENABLED
 	RendererRD::MFXSpatialEffect *mfx_spatial = nullptr;
