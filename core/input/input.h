@@ -110,6 +110,7 @@ private:
 		uint64_t released_physics_frame = UINT64_MAX;
 		uint64_t released_process_frame = UINT64_MAX;
 		bool exact = true;
+		bool disabled = false;
 
 		struct DeviceState {
 			bool pressed[MAX_EVENT] = { false };
@@ -349,6 +350,8 @@ public:
 
 	void action_press(const StringName &p_action, float p_strength = 1.f);
 	void action_release(const StringName &p_action);
+	void set_action_disabled(const StringName &p_action, bool p_disable);
+	bool is_action_disabled(const StringName &p_action);
 
 	void set_emulate_touch_from_mouse(bool p_emulate);
 	bool is_emulating_touch_from_mouse() const;
