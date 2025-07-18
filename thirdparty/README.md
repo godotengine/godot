@@ -356,7 +356,7 @@ Files extracted from upstream source:
 ## glad
 
 - Upstream: https://github.com/Dav1dde/glad
-- Version: 2.0.4 (d08b1aa01f8fe57498f04d47b5fa8c48725be877, 2023)
+- Version: 2.0.8 (73db193f853e2ee079bf3ca8a64aa2eaf6459043, 2024)
 - License: CC0 1.0 and Apache 2.0
 
 Files extracted from upstream source:
@@ -372,12 +372,13 @@ Files generated from [upstream web instance](https://gen.glad.sh/):
 - `glx.c`
 - `glad/glx.h`
 
-See the permalinks in `glad/gl.h` and `glad/glx.h` to regenerate the files with
-a new version of the web instance.
+See the permalinks in `glad/egl.h`, `glad/gl.h` and `glad/glx.h`
+to regenerate the files with a new version of the web instance.
 
 Patches:
 
 - `0001-enable-both-gl-and-gles.patch` (GH-72831)
+- `0002-revert-egl_static-removal.patch` (GH-107312)
 
 
 ## glslang
