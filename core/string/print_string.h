@@ -61,12 +61,15 @@ extern void print_error(const String &p_string);
 extern bool is_print_verbose_enabled();
 
 // This version avoids processing the text to be printed until it actually has to be printed, saving some CPU usage.
-#define print_verbose(m_text)             \
+#define PRINT_VERBOSE(m_text)             \
 	{                                     \
 		if (is_print_verbose_enabled()) { \
 			print_line(m_text);           \
 		}                                 \
 	}
+
+// For compatibility, and for parity with the print_line() function, also provide as lowercase.
+#define print_verbose PRINT_VERBOSE
 
 inline void print_line(const Variant &v) {
 	__print_line(stringify_variants(v));
