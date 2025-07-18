@@ -200,6 +200,29 @@ public:
 VARIANT_ENUM_CAST(DirectionalLight3D::ShadowMode)
 VARIANT_ENUM_CAST(DirectionalLight3D::SkyMode)
 
+class RectLight3D : public Light3D {
+	GDCLASS(RectLight3D, Light3D);
+
+private:
+	// rect light parameters
+	float width, height;
+
+protected:
+	static void _bind_methods();
+
+public:
+
+	void set_width(float p_width);
+	void set_height(float p_height);
+
+	float get_width() const;
+	float get_height() const;
+
+	PackedStringArray get_configuration_warnings() const override;
+
+	RectLight3D();
+};
+
 class OmniLight3D : public Light3D {
 	GDCLASS(OmniLight3D, Light3D);
 

@@ -459,6 +459,9 @@ Light3D::Light3D(RenderingServer::LightType p_type) {
 		case RS::LIGHT_SPOT:
 			light = RenderingServer::get_singleton()->spot_light_create();
 			break;
+		case RS::LIGHT_RECT:
+			light = RenderingServer::get_singleton()->rect_light_create();
+			break;
 		default: {
 		};
 	}
@@ -648,6 +651,31 @@ void OmniLight3D::_bind_methods() {
 OmniLight3D::OmniLight3D() :
 		Light3D(RenderingServer::LIGHT_OMNI) {
 	set_shadow_mode(SHADOW_CUBE);
+}
+
+RectLight3D::RectLight3D() :
+		Light3D(RenderingServer::LIGHT_RECT) {
+	set_width(1.0);
+	set_height(1.0);
+	}
+
+void RectLight3D::_bind_methods() {
+
+	ADD_GROUP("Rect", "rect_");
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "rect_width", PROPERTY_HINT_RANGE, "0,4069,0.001,or_grater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "rect_height", PROPERTY_HINT_RANGE, "0,4069,0.001,or_grater,exp,suffix:m"), "set_param", "get_param", PARAM_RANGE);
+}
+
+void RectLight3D::set_width(float p_width) {
+	width = p_width;
+}
+
+float RectLight3D::get_width() const {
+	return width;
+}
+
+float RectLight3D::get_height() const {
+	return height;
 }
 
 PackedStringArray SpotLight3D::get_configuration_warnings() const {

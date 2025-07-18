@@ -2506,6 +2506,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("directional_light_create"), &RenderingServer::directional_light_create);
 	ClassDB::bind_method(D_METHOD("omni_light_create"), &RenderingServer::omni_light_create);
 	ClassDB::bind_method(D_METHOD("spot_light_create"), &RenderingServer::spot_light_create);
+	ClassDB::bind_method(D_METHOD("rect_light_create"), &RenderingServer::rect_light_create);
 
 	ClassDB::bind_method(D_METHOD("light_set_color", "light", "color"), &RenderingServer::light_set_color);
 	ClassDB::bind_method(D_METHOD("light_set_param", "light", "param", "value"), &RenderingServer::light_set_param);

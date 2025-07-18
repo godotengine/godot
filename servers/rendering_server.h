@@ -532,7 +532,8 @@ public:
 	enum LightType {
 		LIGHT_DIRECTIONAL,
 		LIGHT_OMNI,
-		LIGHT_SPOT
+		LIGHT_SPOT,
+		LIGHT_RECT
 	};
 
 	enum LightParam {
@@ -563,6 +564,7 @@ public:
 	virtual RID directional_light_create() = 0;
 	virtual RID omni_light_create() = 0;
 	virtual RID spot_light_create() = 0;
+	virtual RID rect_light_create() = 0;
 
 	virtual void light_set_color(RID p_light, const Color &p_color) = 0;
 	virtual void light_set_param(RID p_light, LightParam p_param, float p_value) = 0;
