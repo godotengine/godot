@@ -63,6 +63,7 @@ void RectangleShape2D::set_size(const Size2 &p_size) {
 		return;
 	}
 	size = p_size;
+	halfsize = { p_size.x / 2, p_size.y / 2 };
 	_update_shape();
 }
 
@@ -94,6 +95,14 @@ Rect2 RectangleShape2D::get_rect() const {
 
 real_t RectangleShape2D::get_enclosing_radius() const {
 	return size.length() / 2;
+}
+
+bool RectangleShape2D::contains_point(const Vector2 &p_point) const {
+	real_t x = p_point.x;
+	real_t y = p_point.y;
+	real_t edge_x = halfsize.x;
+	real_t edge_y = halfsize.y;
+	return (x >= -edge_x) && (x < edge_x) && (y >= -edge_y) && (y < edge_y);
 }
 
 void RectangleShape2D::_bind_methods() {
