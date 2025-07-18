@@ -147,9 +147,6 @@ private:
 			if (hashes[pos] == EMPTY_HASH) {
 				elements[pos] = value;
 				hashes[pos] = hash;
-
-				num_elements++;
-
 				return;
 			}
 
@@ -177,7 +174,6 @@ private:
 		HashMapElement<TKey, TValue> **old_elements = elements;
 		uint32_t *old_hashes = hashes;
 
-		num_elements = 0;
 		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
 		hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 		elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
@@ -230,7 +226,30 @@ private:
 		}
 
 		_insert_element(p_hash, elem);
+		num_elements++;
+
 		return elem;
+	}
+
+	/// Remove the hash and element pointer at the given index.
+	/// The caller is responsible for destructing the corresponding element before the call, if needed.
+	void _erase_element(uint32_t p_idx) {
+		const uint32_t capacity = hash_table_size_primes[capacity_index];
+		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
+
+		uint32_t idx = p_idx;
+		uint32_t next_idx = idx;
+		_increment_mod(next_idx, capacity);
+
+		while (hashes[next_idx] != EMPTY_HASH && _get_probe_length(next_idx, hashes[next_idx], capacity, capacity_inv) != 0) {
+			hashes[idx] = hashes[next_idx];
+			elements[idx] = elements[next_idx];
+			idx = next_idx;
+			_increment_mod(next_idx, capacity);
+		}
+
+		hashes[idx] = EMPTY_HASH;
+		elements[idx] = nullptr;
 	}
 
 public:
@@ -319,42 +338,26 @@ public:
 
 	bool erase(const TKey &p_key) {
 		uint32_t pos = 0;
-		bool exists = _lookup_pos(p_key, pos);
-
-		if (!exists) {
+		if (!_lookup_pos(p_key, pos)) {
 			return false;
 		}
 
-		const uint32_t capacity = hash_table_size_primes[capacity_index];
-		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
-		uint32_t next_pos = fastmod((pos + 1), capacity_inv, capacity);
-		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity, capacity_inv) != 0) {
-			SWAP(hashes[next_pos], hashes[pos]);
-			SWAP(elements[next_pos], elements[pos]);
-			pos = next_pos;
-			_increment_mod(next_pos, capacity);
+		HashMapElement<TKey, TValue> *element = elements[pos];
+		_erase_element(pos);
+
+		if (head_element == element) {
+			head_element = element->next;
+		} else {
+			element->prev->next = element->next;
 		}
 
-		hashes[pos] = EMPTY_HASH;
-
-		if (head_element == elements[pos]) {
-			head_element = elements[pos]->next;
+		if (tail_element == element) {
+			tail_element = element->prev;
+		} else {
+			element->next->prev = element->prev;
 		}
 
-		if (tail_element == elements[pos]) {
-			tail_element = elements[pos]->prev;
-		}
-
-		if (elements[pos]->prev) {
-			elements[pos]->prev->next = elements[pos]->next;
-		}
-
-		if (elements[pos]->next) {
-			elements[pos]->next->prev = elements[pos]->prev;
-		}
-
-		Allocator::delete_allocation(elements[pos]);
-		elements[pos] = nullptr;
+		Allocator::delete_allocation(element);
 
 		num_elements--;
 		return true;
@@ -364,29 +367,16 @@ public:
 	// p_old_key must exist in the map and p_new_key must not, unless it is equal to p_old_key.
 	bool replace_key(const TKey &p_old_key, const TKey &p_new_key) {
 		ERR_FAIL_COND_V(elements == nullptr || num_elements == 0, false);
-		if (p_old_key == p_new_key) {
+		if (Comparator::compare(p_old_key, p_new_key)) {
 			return true;
 		}
 		const uint32_t new_hash = _hash(p_new_key);
 		uint32_t pos = 0;
 		ERR_FAIL_COND_V(_lookup_pos_unchecked(p_new_key, new_hash, pos), false);
 		ERR_FAIL_COND_V(!_lookup_pos(p_old_key, pos), false);
-		HashMapElement<TKey, TValue> *element = elements[pos];
 
-		// Delete the old entries in hashes and elements.
-		const uint32_t capacity = hash_table_size_primes[capacity_index];
-		const uint64_t capacity_inv = hash_table_size_primes_inv[capacity_index];
-		uint32_t next_pos = fastmod((pos + 1), capacity_inv, capacity);
-		while (hashes[next_pos] != EMPTY_HASH && _get_probe_length(next_pos, hashes[next_pos], capacity, capacity_inv) != 0) {
-			SWAP(hashes[next_pos], hashes[pos]);
-			SWAP(elements[next_pos], elements[pos]);
-			pos = next_pos;
-			_increment_mod(next_pos, capacity);
-		}
-		hashes[pos] = EMPTY_HASH;
-		elements[pos] = nullptr;
-		// _insert_element will increment this again.
-		num_elements--;
+		HashMapElement<TKey, TValue> *element = elements[pos];
+		_erase_element(pos);
 
 		// Update the HashMapElement with the new key and reinsert it.
 		const_cast<TKey &>(element->data.key) = p_new_key;
