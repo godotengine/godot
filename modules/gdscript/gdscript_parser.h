@@ -186,6 +186,9 @@ public:
 		_FORCE_INLINE_ bool has_container_element_types() const {
 			return !container_element_types.is_empty();
 		}
+		String _build_nested_container_hint() const;
+		String _get_property_hint_string() const;
+		bool can_reference_nested(const DataType &p_other) const;
 
 		bool is_typed_container_type() const;
 
@@ -1347,6 +1350,9 @@ private:
 	Node *list = nullptr;
 	List<ParserError> errors;
 
+	// Helper method to calculate container type nesting depth
+	int get_container_type_depth(TypeNode *p_type) const;
+
 #ifdef DEBUG_ENABLED
 	struct PendingWarning {
 		const Node *source = nullptr;
@@ -1614,6 +1620,11 @@ public:
 		// TODO: Keep track of deps.
 		return List<String>();
 	}
+	// Helper methods for nested container support
+	String _build_container_type_hint(const DataType &p_type) const;
+	int get_nested_container_depth(const DataType &p_type) const;
+	bool validate_nested_container_export(const DataType &p_type, AnnotationNode *p_annotation);
+
 #ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &get_warnings() const { return warnings; }
 	const HashSet<int> &get_unsafe_lines() const { return unsafe_lines; }

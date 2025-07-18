@@ -36,6 +36,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/math/math_defs.h"
+#include "core/variant/container_type_validate.h"
 #include "scene/main/multiplayer_api.h"
 
 #ifdef DEBUG_ENABLED
@@ -3771,7 +3772,7 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 	type->type_chain.push_back(type_element);
 
 	if (match(GDScriptTokenizer::Token::BRACKET_OPEN)) {
-		// Typed collection (like Array[int], Dictionary[String, int]).
+		// Typed collection (like Array[int], Dictionary[String, int], Array[Array[int]]).
 		bool first_pass = true;
 		do {
 			TypeNode *container_type = parse_type(false); // Don't allow void for element type.
@@ -3780,9 +3781,15 @@ GDScriptParser::TypeNode *GDScriptParser::parse_type(bool p_allow_void) {
 				complete_extents(type);
 				type = nullptr;
 				break;
-			} else if (container_type->container_types.size() > 0) {
-				push_error("Nested typed collections are not supported.");
 			} else {
+				// Allow nested typed collections, but check depth limit
+				int depth = get_container_type_depth(container_type);
+				if (depth > ContainerTypeValidate::MAX_NESTING_DEPTH) {
+					push_error(vformat("Nested container depth exceeds maximum allowed (%d levels).", ContainerTypeValidate::MAX_NESTING_DEPTH));
+					complete_extents(type);
+					type = nullptr;
+					break;
+				}
 				type->container_types.append(container_type);
 			}
 			first_pass = false;
@@ -4630,11 +4637,11 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	}
 
 	bool is_dict = false;
-	if (export_type.builtin_type == Variant::DICTIONARY && export_type.has_container_element_types()) {
+	if (export_type.builtin_type == Variant::DICTIONARY && export_type.kind != DataType::ENUM && export_type.has_container_element_types()) {
 		is_dict = true;
 		DataType inner_type = export_type.get_container_element_type_or_variant(1);
 		export_type = export_type.get_container_element_type_or_variant(0);
-		export_type.set_container_element_type(0, inner_type); // Store earlier extracted value within key to separately parse after.
+		export_type.set_container_element_type(0, inner_type);
 	}
 
 	bool use_default_variable_type_check = true;
@@ -4733,76 +4740,107 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		}
 
 		if (is_dict) {
-			String key_prefix = itos(variable->export_info.type);
-			if (variable->export_info.hint) {
-				key_prefix += "/" + itos(variable->export_info.hint);
-			}
-			key_prefix += ":" + variable->export_info.hint_string;
+			// For nested dictionaries, we need to recursively build the hint string
+			DataType key_type = export_type.get_container_element_type_or_variant(0);
+			DataType value_type = export_type.get_container_element_type_or_variant(1);
 
-			// Now parse value.
+			String key_hint = _build_container_type_hint(key_type);
+			String value_hint = _build_container_type_hint(value_type);
+
+			variable->export_info.type = Variant::DICTIONARY;
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = key_hint + ";" + value_hint;
+			variable->export_info.usage = PROPERTY_USAGE_DEFAULT;
+			variable->export_info.class_name = StringName();
+
+			// For dictionaries, we're done processing - return early
+			return true;
+		}
+
+		// Check if this is an enum meta type treated as dictionary
+		if (export_type.kind == DataType::ENUM && export_type.is_meta_type &&
+				variable->export_info.type == Variant::DICTIONARY) {
+			// Enum meta types don't have container element types, so we're done
+			return true;
+		}
+
+		String key_prefix = itos(variable->export_info.type);
+		if (variable->export_info.hint) {
+			key_prefix += "/" + itos(variable->export_info.hint);
+		}
+		key_prefix += ":" + variable->export_info.hint_string;
+
+		// Now parse value - but only if container element types exist
+		if (export_type.has_container_element_type(0)) {
 			export_type = export_type.get_container_element_type(0);
+		} else if (!is_array) {
+			// No container element types available - we're done processing
+			return true;
+		}
 
-			if (export_type.is_variant() || export_type.has_no_type()) {
-				export_type.kind = GDScriptParser::DataType::BUILTIN;
-			}
-			switch (export_type.kind) {
-				case GDScriptParser::DataType::BUILTIN:
-					variable->export_info.type = export_type.builtin_type;
-					variable->export_info.hint = PROPERTY_HINT_NONE;
-					variable->export_info.hint_string = String();
-					break;
-				case GDScriptParser::DataType::NATIVE:
-				case GDScriptParser::DataType::SCRIPT:
-				case GDScriptParser::DataType::CLASS: {
-					const StringName class_name = _find_narrowest_native_or_global_class(export_type);
-					if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
-						variable->export_info.type = Variant::OBJECT;
-						variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
-						variable->export_info.hint_string = class_name;
-					} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
-						variable->export_info.type = Variant::OBJECT;
-						variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
-						variable->export_info.hint_string = class_name;
-					} else {
-						push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
-						return false;
-					}
-				} break;
-				case GDScriptParser::DataType::ENUM: {
-					if (export_type.is_meta_type) {
-						variable->export_info.type = Variant::DICTIONARY;
-					} else {
-						variable->export_info.type = Variant::INT;
-						variable->export_info.hint = PROPERTY_HINT_ENUM;
-
-						String enum_hint_string;
-						bool first = true;
-						for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
-							if (!first) {
-								enum_hint_string += ",";
-							} else {
-								first = false;
-							}
-							enum_hint_string += E.key.operator String().capitalize().xml_escape();
-							enum_hint_string += ":";
-							enum_hint_string += String::num_int64(E.value).xml_escape();
-						}
-
-						variable->export_info.hint_string = enum_hint_string;
-						variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
-						variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
-					}
-				} break;
-				default:
+		if (export_type.is_variant() || export_type.has_no_type()) {
+			export_type.kind = GDScriptParser::DataType::BUILTIN;
+		}
+		switch (export_type.kind) {
+			case GDScriptParser::DataType::BUILTIN:
+				variable->export_info.type = export_type.builtin_type;
+				variable->export_info.hint = PROPERTY_HINT_NONE;
+				variable->export_info.hint_string = String();
+				break;
+			case GDScriptParser::DataType::NATIVE:
+			case GDScriptParser::DataType::SCRIPT:
+			case GDScriptParser::DataType::CLASS: {
+				const StringName class_name = _find_narrowest_native_or_global_class(export_type);
+				if (ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_RESOURCE_TYPE;
+					variable->export_info.hint_string = class_name;
+				} else if (ClassDB::is_parent_class(export_type.native_type, SNAME("Node"))) {
+					variable->export_info.type = Variant::OBJECT;
+					variable->export_info.hint = PROPERTY_HINT_NODE_TYPE;
+					variable->export_info.hint_string = class_name;
+				} else {
 					push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 					return false;
-			}
+				}
+			} break;
+			case GDScriptParser::DataType::ENUM: {
+				if (export_type.is_meta_type) {
+					variable->export_info.type = Variant::DICTIONARY;
+				} else {
+					variable->export_info.type = Variant::INT;
+					variable->export_info.hint = PROPERTY_HINT_ENUM;
 
-			if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
-				push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
+					String enum_hint_string;
+					bool first = true;
+					for (const KeyValue<StringName, int64_t> &E : export_type.enum_values) {
+						if (!first) {
+							enum_hint_string += ",";
+						} else {
+							first = false;
+						}
+						enum_hint_string += E.key.operator String().capitalize().xml_escape();
+						enum_hint_string += ":";
+						enum_hint_string += String::num_int64(E.value).xml_escape();
+					}
+
+					variable->export_info.hint_string = enum_hint_string;
+					variable->export_info.usage |= PROPERTY_USAGE_CLASS_IS_ENUM;
+					variable->export_info.class_name = String(export_type.native_type).replace("::", ".");
+				}
+			} break;
+			default:
+				push_error(R"(Export type can only be built-in, a resource, a node, or an enum.)", p_annotation);
 				return false;
-			}
+		}
 
+		if (variable->export_info.hint == PROPERTY_HINT_NODE_TYPE && !ClassDB::is_parent_class(p_class->base_type.native_type, SNAME("Node"))) {
+			push_error(vformat(R"(Node export is only supported in Node-derived classes, but the current class inherits "%s".)", p_class->base_type.to_string()), p_annotation);
+			return false;
+		}
+
+		// Only convert to dictionary format for actual nested containers, not simple packed arrays
+		if (export_type.has_container_element_type(0) || (is_dict && export_type.has_container_element_types())) {
 			String value_prefix = itos(variable->export_info.type);
 			if (variable->export_info.hint) {
 				value_prefix += "/" + itos(variable->export_info.hint);
@@ -5306,7 +5344,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 					case UNRESOLVED:
 						break;
 				}
-			} else if (builtin_type == Variant::DICTIONARY && has_container_element_types()) {
+			} else if (builtin_type == Variant::DICTIONARY && kind != ENUM && has_container_element_types()) {
 				const DataType key_type = get_container_element_type_or_variant(0);
 				const DataType value_type = get_container_element_type_or_variant(1);
 				if ((key_type.kind == VARIANT && value_type.kind == VARIANT) || key_type.kind == RESOLVING ||
@@ -5499,6 +5537,83 @@ bool GDScriptParser::DataType::can_reference(const GDScriptParser::DataType &p_o
 
 	return true;
 }
+bool GDScriptParser::DataType::can_reference_nested(const GDScriptParser::DataType &p_other) const {
+	if (builtin_type != p_other.builtin_type) {
+		return false;
+	}
+
+	if (builtin_type == Variant::ARRAY) {
+		if (has_container_element_type(0) && p_other.has_container_element_type(0)) {
+			return get_container_element_type(0).can_reference_nested(p_other.get_container_element_type(0));
+		} else if (has_container_element_type(0) || p_other.has_container_element_type(0)) {
+			// One is typed, one is not - not compatible
+			return false;
+		}
+		// Both untyped arrays are compatible
+		return true;
+	} else if (builtin_type == Variant::DICTIONARY) {
+		if (has_container_element_types() && p_other.has_container_element_types()) {
+			// Both are typed dictionaries - check key and value types
+			bool key_compatible = get_container_element_type_or_variant(0).can_reference_nested(
+					p_other.get_container_element_type_or_variant(0));
+			bool value_compatible = get_container_element_type_or_variant(1).can_reference_nested(
+					p_other.get_container_element_type_or_variant(1));
+			return key_compatible && value_compatible;
+		} else if (has_container_element_types() || p_other.has_container_element_types()) {
+			// One is typed, one is not - not compatible
+			return false;
+		}
+		// Both untyped dictionaries are compatible
+		return true;
+	}
+
+	// For non-container types, use the existing logic
+	return can_reference(p_other);
+}
+
+// Enhanced container depth validation
+int GDScriptParser::get_nested_container_depth(const DataType &p_type) const {
+	if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type(0)) {
+		return 1 + get_nested_container_depth(p_type.get_container_element_type(0));
+	} else if (p_type.builtin_type == Variant::DICTIONARY && p_type.has_container_element_types()) {
+		int key_depth = get_nested_container_depth(p_type.get_container_element_type_or_variant(0));
+		int value_depth = get_nested_container_depth(p_type.get_container_element_type_or_variant(1));
+		return 1 + MAX(key_depth, value_depth);
+	}
+	return 0;
+}
+
+// Enhanced container type checking for export annotations
+bool GDScriptParser::validate_nested_container_export(const DataType &p_type, AnnotationNode *p_annotation) {
+	if (get_nested_container_depth(p_type) > ContainerTypeValidate::MAX_NESTING_DEPTH) {
+		push_error(vformat("Nested container depth exceeds maximum allowed (%d levels).", ContainerTypeValidate::MAX_NESTING_DEPTH), p_annotation);
+		return false;
+	}
+
+	// Validate that all nested types are exportable
+	if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type(0)) {
+		return validate_nested_container_export(p_type.get_container_element_type(0), p_annotation);
+	} else if (p_type.builtin_type == Variant::DICTIONARY && p_type.has_container_element_types()) {
+		bool key_valid = validate_nested_container_export(p_type.get_container_element_type_or_variant(0), p_annotation);
+		bool value_valid = validate_nested_container_export(p_type.get_container_element_type_or_variant(1), p_annotation);
+		return key_valid && value_valid;
+	}
+
+	// Check if the base type is exportable
+	switch (p_type.kind) {
+		case DataType::BUILTIN:
+		case DataType::NATIVE:
+		case DataType::SCRIPT:
+		case DataType::CLASS:
+		case DataType::ENUM:
+			return true;
+		case DataType::VARIANT:
+			return true; // Variant is always exportable
+		default:
+			push_error(vformat("Type '%s' cannot be exported.", p_type.to_string()), p_annotation);
+			return false;
+	}
+}
 
 void GDScriptParser::complete_extents(Node *p_node) {
 	while (!nodes_in_progress.is_empty() && nodes_in_progress.back()->get() != p_node) {
@@ -5532,6 +5647,75 @@ void GDScriptParser::reset_extents(Node *p_node, Node *p_from) {
 	p_node->end_line = p_from->end_line;
 	p_node->start_column = p_from->start_column;
 	p_node->end_column = p_from->end_column;
+}
+
+int GDScriptParser::get_container_type_depth(TypeNode *p_type) const {
+	if (!p_type || p_type->container_types.is_empty()) {
+		return 0;
+	}
+
+	int max_depth = 0;
+	for (TypeNode *nested_type : p_type->container_types) {
+		max_depth = MAX(max_depth, get_container_type_depth(nested_type));
+	}
+	return max_depth + 1;
+}
+String GDScriptParser::_build_container_type_hint(const DataType &p_type) const {
+	String hint_prefix = itos(p_type.builtin_type);
+
+	switch (p_type.kind) {
+		case DataType::BUILTIN: {
+			if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type(0)) {
+				// Nested array
+				String element_hint = _build_container_type_hint(p_type.get_container_element_type(0));
+				hint_prefix += "/" + itos(PROPERTY_HINT_TYPE_STRING);
+				hint_prefix += ":" + element_hint;
+			} else if (p_type.builtin_type == Variant::DICTIONARY && p_type.has_container_element_types()) {
+				// Nested dictionary
+				String key_hint = _build_container_type_hint(p_type.get_container_element_type_or_variant(0));
+				String value_hint = _build_container_type_hint(p_type.get_container_element_type_or_variant(1));
+				hint_prefix += "/" + itos(PROPERTY_HINT_TYPE_STRING);
+				hint_prefix += ":" + key_hint + ";" + value_hint;
+			}
+		} break;
+		case DataType::NATIVE:
+		case DataType::SCRIPT:
+		case DataType::CLASS: {
+			const StringName class_name = _find_narrowest_native_or_global_class(p_type);
+			if (ClassDB::is_parent_class(p_type.native_type, SNAME("Resource"))) {
+				hint_prefix = itos(Variant::OBJECT) + "/" + itos(PROPERTY_HINT_RESOURCE_TYPE) + ":" + class_name;
+			} else if (ClassDB::is_parent_class(p_type.native_type, SNAME("Node"))) {
+				hint_prefix = itos(Variant::OBJECT) + "/" + itos(PROPERTY_HINT_NODE_TYPE) + ":" + class_name;
+			} else {
+				hint_prefix = itos(Variant::OBJECT) + "/0:" + class_name;
+			}
+		} break;
+		case DataType::ENUM: {
+			if (p_type.is_meta_type) {
+				hint_prefix = itos(Variant::DICTIONARY);
+			} else {
+				String enum_hint_string;
+				bool first = true;
+				for (const KeyValue<StringName, int64_t> &E : p_type.enum_values) {
+					if (!first) {
+						enum_hint_string += ",";
+					} else {
+						first = false;
+					}
+					enum_hint_string += E.key.operator String().capitalize().xml_escape();
+					enum_hint_string += ":";
+					enum_hint_string += String::num_int64(E.value).xml_escape();
+				}
+				hint_prefix = itos(Variant::INT) + "/" + itos(PROPERTY_HINT_ENUM) + ":" + enum_hint_string;
+			}
+		} break;
+		default:
+			// For VARIANT, RESOLVING, UNRESOLVED, etc.
+			hint_prefix = itos(Variant::NIL);
+			break;
+	}
+
+	return hint_prefix;
 }
 
 /*---------- PRETTY PRINT FOR DEBUG ----------*/
