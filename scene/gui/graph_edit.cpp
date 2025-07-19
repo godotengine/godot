@@ -2514,7 +2514,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_intersecting_with_r
 TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(GraphNode *p_node) const {
 	TypedArray<Ref<GraphConnection>> connections_from_node;
 	for (GraphPort *port : p_node->ports) {
-		if (!port) {
+		if (!port || !connection_map.has(port)) {
 			continue;
 		}
 		connections_from_node.append_array(connection_map[port]);
@@ -2524,7 +2524,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(GraphNode *
 
 TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_port(GraphPort *p_port) const {
 	TypedArray<Ref<GraphConnection>> connections_from_port;
-	if (!p_port) {
+	if (!p_port || !connection_map.has(p_port)) {
 		return connections_from_port;
 	}
 	connections_from_port.append_array(connection_map[p_port]);

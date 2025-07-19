@@ -33,42 +33,46 @@
 #include "scene/gui/graph_node.h"
 
 GraphPort *GraphConnection::get_other_port(GraphPort *p_port) {
+	ERR_FAIL_NULL_V(p_port, nullptr);
 	if (p_port == first_port) {
 		return second_port;
 	} else if (p_port == second_port) {
 		return first_port;
 	} else {
-		ERR_FAIL_V_MSG(nullptr, "Connection does not contain port");
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to port %s", p_port->get_name()));
 	}
 }
 
 GraphPort *GraphConnection::get_other_port_by_node(GraphNode *p_node) {
+	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
 		return first_port;
 	} else if (p_node == get_second_node()) {
 		return second_port;
 	} else {
-		ERR_FAIL_V_MSG(nullptr, "Connection does not connect to node");
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
 	}
 }
 
 GraphNode *GraphConnection::get_other_node(GraphNode *p_node) {
+	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
 		return get_first_node();
 	} else if (p_node == get_second_node()) {
 		return get_second_node();
 	} else {
-		ERR_FAIL_V_MSG(nullptr, "Connection does not connect to node");
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
 	}
 }
 
 GraphNode *GraphConnection::get_other_node_by_port(GraphPort *p_port) {
+	ERR_FAIL_NULL_V(p_port, nullptr);
 	if (p_port == first_port) {
 		return get_first_node();
 	} else if (p_port == second_port) {
 		return get_second_node();
 	} else {
-		ERR_FAIL_V_MSG(nullptr, "Connection does not contain port");
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to port %s", p_port->get_name()));
 	}
 }
 
@@ -80,8 +84,12 @@ Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() {
 }
 
 bool GraphConnection::matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port) {
-	ERR_FAIL_NULL_V(first_port, false);
-	ERR_FAIL_NULL_V(second_port, false);
+	if (!first_port) {
+		return p_first_port < 0;
+	}
+	if (!second_port) {
+		return p_second_port < 0;
+	}
 	ERR_FAIL_NULL_V(first_port->graph_node, false);
 	ERR_FAIL_NULL_V(second_port->graph_node, false);
 	return first_port->get_filtered_port_index(false) == p_first_port &&
