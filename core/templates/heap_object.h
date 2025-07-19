@@ -159,7 +159,7 @@ public:
 	// -- Memory functions
 
 	// Use `allocate` to change the internal pointer to a new block of memory large enough to fit both the common known and given "unknown" data
-	// Does not perform any operations on that memory (such as copying or initialisation; it is up to the caller to know what to do with that memory)
+	// Does not perform any operations on that memory (such as copying or initialization; it is up to the caller to know what to do with that memory)
 
 	_ALWAYS_INLINE_ void allocate(const size_t heap_align, const size_t heap_size) {
 		size_t totalsize = calc_total(alignof(CommonT), sizeof(CommonT), alignof(max_align_t), heap_size);
@@ -240,7 +240,7 @@ public:
 /////////////////////////
 
 // VarHeapObject is useful for allowing an object to store an array of data near to itself in the heap
-// Only useful if the array of data doesn't change size after the object is initialised, but is an unknown at compile time or a variable size
+// Only useful if the array of data doesn't change size after the object is initialized, but is an unknown at compile time or a variable size
 // Storing them near to each other in memory can reduce cache misses and improve efficiency
 
 // NOTE: for VarHeapObject to work, derived classes must use a VarHeapData property, and this property should be the last property
@@ -309,7 +309,7 @@ protected:
 
 	VarHeapObject() {}
 
-	// Forces initialisation of the heap data member through this implementation
+	// Forces initialization of the heap data member through this implementation
 	// This ensures that there is a VarHeapData property on any and all derived types and that they are implemented correctly
 	template <class HeapT, class DerivedT>
 	_FORCE_INLINE_ static void *heap_allocate(VarHeapData<HeapT> DerivedT::*p_member_pointer, std::initializer_list<HeapT> list) {
@@ -326,7 +326,7 @@ protected:
 		size_t to_allocate = sizeof(DerivedT) + sizeof(HeapT) * (list.size() > 1 ? (list.size() - 1) : 1);
 		void *ptr = Memory::alloc_static(to_allocate);
 
-		// Initialise the heap data and copy from the initialiser list
+		// Initialize the heap data and copy from the initialiser list
 		uintptr_t hd_ptr = *reinterpret_cast<uintptr_t *>(&ptr) + heap_data_position;
 		VarHeapData<HeapT> &hd = *reinterpret_cast<VarHeapData<HeapT> *>(hd_ptr);
 		hd.element_count = list.size();

@@ -241,6 +241,8 @@ public:
 	Variant get(const StringName &p_name, bool &r_valid) const;
 	void clear();
 	bool is_empty() const;
+	uint32_t hash() const;
+	uint32_t recursive_hash(int recursion_count) const;
 	VariantStruct duplicate(bool deep = false) const;
 	VariantStruct recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 

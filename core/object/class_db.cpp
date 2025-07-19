@@ -1355,24 +1355,6 @@ void ClassDB::bind_struct(const StringName &p_class, const StringName &p_name, S
 	type->struct_map.insert(p_name, p_definition);
 }
 
-void ClassDB::get_struct_list(const StringName &p_class, List<StringName> *p_structs) {
-	Locker::Lock lock(Locker::STATE_READ);
-
-	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL(type);
-
-	for (KeyValue<StringName, StructDefinitionGetter> &E : type->struct_map) {
-		p_structs->push_back(E.key);
-	}
-}
-
-bool ClassDB::has_struct(const StringName &p_class, const StringName &p_name) {
-	Locker::Lock lock(Locker::STATE_READ);
-	ClassInfo *type = classes.getptr(p_class);
-	ERR_FAIL_NULL_V(type, false);
-	return type->struct_map.has(p_name);
-}
-
 const StructDefinition *ClassDB::get_struct(const StringName &p_class, const StringName &p_name) {
 	Locker::Lock lock(Locker::STATE_READ);
 

@@ -785,7 +785,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			}
 
 		} break;
-
 		case Variant::CALLABLE: {
 			r_variant = Callable();
 		} break;
@@ -1815,7 +1814,6 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 
 		} break;
-
 		case Variant::CALLABLE: {
 		} break;
 		case Variant::SIGNAL: {

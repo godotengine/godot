@@ -12,6 +12,3 @@
 // Moves all newly defined enums to the end of their respective lists, rather than where they make more intuitive sense
 // If commented out, backwards compatability may break
 #define ENUMS_SHOULD_NOT_BREAK_APIS
-
-// Should also be noted that this, and certain other changes, intentionally break the style checker
-// That is so these can server as reminders

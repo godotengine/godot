@@ -291,7 +291,7 @@ T &VariantStruct::is_struct() {
 
 template <class T>
 T &VariantStruct::get_struct() {
-	CRASH_COND_MSG(!is_struct<T>(), "Type Mis-match. Should have called is_struct<T>().");
+	CRASH_COND_MSG(!is_struct<T>(), "Type Mismatch. Should have called is_struct<T>().");
 
 	return *(T *)(instance.get_heap_());
 }

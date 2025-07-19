@@ -1885,7 +1885,6 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			}
 
 		} break;
-
 		case Variant::CALLABLE: {
 			f->store_32(VARIANT_CALLABLE);
 			WARN_PRINT("Can't save Callables.");

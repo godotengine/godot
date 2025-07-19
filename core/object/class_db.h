@@ -497,8 +497,6 @@ public:
 	static bool is_enum_bitfield(const StringName &p_class, const StringName &p_name, bool p_no_inheritance = false);
 
 	static void bind_struct(const StringName &p_class, const StringName &p_name, StructDefinitionGetter p_definition);
-	static void get_struct_list(const StringName &p_class, List<StringName> *p_structs);
-	static bool has_struct(const StringName &p_class, const StringName &p_name);
 	static const StructDefinition *get_struct(const StringName &p_class, const StringName &p_name);
 
 	static void set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values);

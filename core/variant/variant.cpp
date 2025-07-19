@@ -30,6 +30,8 @@
 
 #include "variant.h"
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/debugger/engine_debugger.h"
 #include "core/io/json.h"
 #include "core/io/resource.h"
@@ -3198,6 +3200,9 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 
 			return hash;
 		} break;
+		case STRUCT:
+			return reinterpret_cast<const VariantStruct *>(_data._mem)->recursive_hash(recursion_count);
+			break;
 		default: {
 		}
 	}
@@ -3509,7 +3514,9 @@ bool Variant::is_type_shared(Variant::Type p_type) {
 		case OBJECT:
 		case ARRAY:
 		case DICTIONARY:
+#ifdef VSTRUCT_IS_REFERENCE_TYPE
 		case STRUCT:
+#endif
 			return true;
 		default: {
 		}

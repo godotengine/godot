@@ -94,7 +94,7 @@ void VariantStruct::clear() {
 	instance->state = Internal::InstanceMetaData::STATE_CLEARED;
 	_unref();
 #else
-	// (Cow-type behaviour is to simply unref on clear)
+	// (Cow-type behavior is to simply unref on clear)
 	_unref();
 #endif
 }
@@ -112,6 +112,10 @@ VariantStruct VariantStruct::duplicate(bool deep) const {
 	}
 
 	return recursive_duplicate(deep, RESOURCE_DEEP_DUPLICATE_NONE, 0);
+}
+
+uint32_t VariantStruct::hash() const {
+	return recursive_hash(0);
 }
 
 VariantStruct VariantStruct::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const {
@@ -162,6 +166,38 @@ VariantStruct VariantStruct::recursive_duplicate(bool p_deep, ResourceDeepDuplic
 	}
 
 	return ret;
+}
+
+uint32_t VariantStruct::recursive_hash(int recursion_count) const {
+	if (recursion_count > MAX_RECURSION) {
+		ERR_PRINT("Max recursion reached");
+		return 0;
+	}
+
+	uint32_t h = hash_murmur3_one_32(Variant::STRUCT);
+
+	recursion_count++;
+	for (const Internal::StructPropertyInfo &E : definition->properties) {
+		const void *ptr = instance->*E;
+		using K = Internal::StructPropertyInfo::Kind;
+		switch (E.kind) {
+			case K::NATIVE_BUILTIN: {
+				h = hash_murmur3_one_32(E.type_info->read(ptr).recursive_hash(recursion_count), h);
+			} break;
+			case K::NATIVE_OBJECT_WEAK: {
+				Variant v(*(Object **)ptr);
+				h = hash_murmur3_one_32(v.recursive_hash(recursion_count), h);
+			} break;
+			case K::NATIVE_OBJECT_REF: {
+				Variant v(*(Ref<RefCounted> *)ptr);
+				h = hash_murmur3_one_32(v.recursive_hash(recursion_count), h);
+			}
+			default:
+				DEV_ASSERT(false);
+		}
+	}
+
+	return hash_fmix32(h);
 }
 
 /////////////////////////////////////
