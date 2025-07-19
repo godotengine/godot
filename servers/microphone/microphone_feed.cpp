@@ -29,12 +29,23 @@
 /**************************************************************************/
 
 #include "microphone_feed.h"
+#include "servers/audio_server.h"
+#include "core/config/project_settings.h"
 
 void MicrophoneFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &MicrophoneFeed::get_name);
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &MicrophoneFeed::set_name);
 
+	ClassDB::bind_method(D_METHOD("is_active"), &MicrophoneFeed::is_active);
+	ClassDB::bind_method(D_METHOD("set_active", "active"), &MicrophoneFeed::set_active);
+
+	ClassDB::bind_method(D_METHOD("start_microphone"), &MicrophoneFeed::start_microphone);
+	ClassDB::bind_method(D_METHOD("stop_microphone"), &MicrophoneFeed::stop_microphone);
+	ClassDB::bind_method(D_METHOD("get_frames_available"), &MicrophoneFeed::get_frames_available);
+	ClassDB::bind_method(D_METHOD("get_buffer", "frames"), &MicrophoneFeed::get_buffer);
+
 	ADD_GROUP("Feed", "feed_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
 }
 
 String MicrophoneFeed::get_name() const {
@@ -56,4 +67,75 @@ MicrophoneFeed::MicrophoneFeed(String p_name) {
 }
 
 MicrophoneFeed::~MicrophoneFeed() {
+}
+
+bool MicrophoneFeed::is_active() const {
+	return active;
+}
+
+Error MicrophoneFeed::start_microphone() {
+	if (!GLOBAL_GET("audio/driver/enable_input")) {
+		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
+		return FAILED;
+	}
+
+	microphone_buffer_ofs = 0;
+	return AudioDriver::get_singleton()->input_start();
+}
+
+Error MicrophoneFeed::stop_microphone() {
+	return AudioDriver::get_singleton()->input_stop();
+}
+
+void MicrophoneFeed::set_active(bool p_is_active) {
+	Error e = OK;
+	if (p_is_active == active) {
+		// all good
+	} else if (p_is_active) {
+		// attempt to activate this feed
+		e = start_microphone();
+		if (e == OK) {
+			active = true;
+		}
+	} else {
+		// just deactivate it
+		e = stop_microphone();
+		active = false;
+	}
+	if (e != OK) {
+		WARN_PRINT("MicrophoneFeed set_active encounteded error " + itos(e) + ".");
+	}
+}
+
+int MicrophoneFeed::get_frames_available() {
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+	if (input_position < microphone_buffer_ofs) {
+		Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+		input_position += buf.size();
+	}
+	return (input_position - microphone_buffer_ofs) / 2;
+}
+
+PackedVector2Array MicrophoneFeed::get_buffer(int p_frames) {
+	PackedVector2Array ret;
+	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
+	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+	if (input_position < microphone_buffer_ofs) {
+		input_position += buf.size();
+	}
+	if ((microphone_buffer_ofs + p_frames * 2 <= input_position) && (p_frames >= 0)) {
+		ret.resize(p_frames);
+		for (int i = 0; i < p_frames; i++) {
+			float l = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;
+			if (microphone_buffer_ofs >= buf.size()) {
+				microphone_buffer_ofs = 0;
+			}
+			float r = (buf[microphone_buffer_ofs++] >> 16) / 32768.f;
+			if (microphone_buffer_ofs >= buf.size()) {
+				microphone_buffer_ofs = 0;
+			}
+			ret.write[i] = Vector2(l, r);
+		}
+	}
+	return ret;
 }
