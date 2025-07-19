@@ -1942,28 +1942,72 @@ static String marked_documentation(const String &p_bbcode) {
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
-	bool in_code_block = false;
-	int code_block_indent = -1;
+	bool in_codeblock_tag = false;
+	// This is for handling the special [codeblocks] syntax used by the built-in class reference,
+	bool in_codeblocks_tag = false;
+	bool in_codeblocks_gdscript_tag = false;
 
 	markdown = "";
 	for (int i = 0; i < lines.size(); i++) {
 		String line = lines[i];
-		int block_start = line.find("[codeblock]");
+
+		// For [codeblocks] tags we locate a child [gdscript] tag and turn that
+		// into a GDScript code listing. Other languages and the surrounding tag
+		// are skipped.
+		if (line.contains("[codeblocks]")) {
+			in_codeblocks_tag = true;
+			continue;
+		}
+		if (in_codeblocks_tag && line.contains("[/codeblocks]")) {
+			in_codeblocks_tag = false;
+			continue;
+		}
+		if (in_codeblocks_tag) {
+			if (line.contains("[gdscript]")) {
+				in_codeblocks_gdscript_tag = true;
+				line = "```gdscript";
+			} else if (in_codeblocks_gdscript_tag && line.contains("[/gdscript]")) {
+				line = "```";
+				in_codeblocks_gdscript_tag = false;
+			} else if (!in_codeblocks_gdscript_tag) {
+				continue;
+			}
+		}
+
+		// We need to account for both [codeblock] or [codeblock lang=...]
+		String code_block_lang = "gdscript";
+		int block_start = line.find("[codeblock");
 		if (block_start != -1) {
-			code_block_indent = block_start;
-			in_code_block = true;
-			line = "\n";
-		} else if (in_code_block) {
-			line = "\t" + line.substr(code_block_indent);
+			int bracket_pos = line.find("]", block_start);
+			if (bracket_pos != -1) {
+				int lang_start = line.find("lang=", block_start);
+				if (lang_start != -1 && lang_start < bracket_pos) {
+					const int LANG_PARAM_LENGTH = 5;
+					int lang_value_start = lang_start + LANG_PARAM_LENGTH;
+					int lang_end = bracket_pos;
+					if (lang_value_start < lang_end) {
+						code_block_lang = line.substr(lang_value_start, lang_end - lang_value_start);
+					}
+				}
+				in_codeblock_tag = true;
+				line = "```" + code_block_lang;
+			}
 		}
 
-		if (in_code_block && line.contains("[/codeblock]")) {
-			line = "\n";
-			in_code_block = false;
+		if (in_codeblock_tag && line.contains("[/codeblock]")) {
+			line = "```";
+			in_codeblock_tag = false;
 		}
 
-		if (!in_code_block) {
+		if (!in_codeblock_tag) {
 			line = line.strip_edges();
+			line = line.replace("[br]", "\n");
+
+			// These are bracket literals, which we want to preserve
+			// TODO: verify, in some rare cases, they might conflict with patterns like [Node2D]
+			line = line.replace("[lb]", "[");
+			line = line.replace("[rb]", "]");
+
 			line = line.replace("[code]", "`");
 			line = line.replace("[/code]", "`");
 			line = line.replace("[i]", "*");
@@ -1972,15 +2016,120 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[/b]", "**");
 			line = line.replace("[u]", "__");
 			line = line.replace("[/u]", "__");
-			line = line.replace("[method ", "`");
-			line = line.replace("[member ", "`");
-			line = line.replace("[signal ", "`");
-			line = line.replace("[enum ", "`");
-			line = line.replace("[constant ", "`");
-			line = line.replace_chars("[]", '`');
+			line = line.replace("[s]", "~~");
+			line = line.replace("[/s]", "~~");
+			line = line.replace("[kbd]", "`");
+			line = line.replace("[/kbd]", "`");
+			line = line.replace("[center]", "");
+			line = line.replace("[/center]", "");
+
+			static const int URL_OPEN_TAG_LENGTH = 5; // Length of "[url="
+			static const int URL_CLOSE_TAG_LENGTH = 6; // Length of "[/url]"
+
+			// This is for the case [url=$url]$text[/url]
+			int pos = 0;
+			while ((pos = line.find("[url=", pos)) != -1) {
+				int url_end = line.find("]", pos);
+				int close_start = line.find("[/url]", url_end);
+				if (url_end != -1 && close_start != -1) {
+					String url = line.substr(pos + URL_OPEN_TAG_LENGTH, url_end - pos - URL_OPEN_TAG_LENGTH);
+					String text = line.substr(url_end + 1, close_start - url_end - 1);
+					String replacement = "[" + text + "](" + url + ")";
+					line = line.substr(0, pos) + replacement + line.substr(close_start + URL_CLOSE_TAG_LENGTH);
+					pos += replacement.length();
+				} else {
+					break;
+				}
+			}
+
+			// This is for the case [url]$url[/url]
+			pos = 0;
+			while ((pos = line.find("[url]", pos)) != -1) {
+				int close_pos = line.find("[/url]", pos);
+				if (close_pos != -1) {
+					String url = line.substr(pos + URL_OPEN_TAG_LENGTH, close_pos - pos - URL_OPEN_TAG_LENGTH);
+					String replacement = "[" + url + "](" + url + ")";
+					line = line.substr(0, pos) + replacement + line.substr(close_pos + URL_CLOSE_TAG_LENGTH);
+					pos += replacement.length();
+				} else {
+					break;
+				}
+			}
+
+			// Replace the various link types with inline code. For example, [class MyNode] becomes `MyNode`
+			// Uses a while loop because there can occasionally be multiple links of the same type in a single line
+			const Vector<String> link_start_patterns = {
+				"[class ", "[method ", "[member ", "[signal ", "[enum ", "[constant ",
+				"[annotation ", "[constructor ", "[operator ", "[theme_item ", "[param "
+			};
+			for (const String &pattern : link_start_patterns) {
+				int pattern_pos = 0;
+				while ((pattern_pos = line.find(pattern, pattern_pos)) != -1) {
+					int end_pos = line.find("]", pattern_pos);
+					if (end_pos != -1) {
+						String content = line.substr(pattern_pos + pattern.length(), end_pos - pattern_pos - pattern.length());
+						String replacement = "`" + content + "`";
+						line = line.substr(0, pattern_pos) + replacement + line.substr(end_pos + 1);
+						pattern_pos += replacement.length();
+					} else {
+						break;
+					}
+				}
+			}
+
+			// Remove tags with attributes like [color=red] as they don't have a
+			// direct markdown equivalent supported by external tools.
+			const String attribute_tags[] = {
+				"color", "font", "img"
+			};
+			for (const String &tag_name : attribute_tags) {
+				int tag_pos = 0;
+				while ((tag_pos = line.find("[" + tag_name + "=", tag_pos)) != -1) {
+					int end_pos = line.find("]", tag_pos);
+					if (end_pos != -1) {
+						line = line.substr(0, tag_pos) + line.substr(end_pos + 1);
+					} else {
+						break;
+					}
+				}
+				line = line.replace("[/" + tag_name + "]", "");
+			}
+
+			// Convert remaining simple bracketed class names to backticks and literal brackets.
+			// This handles cases like [Node2D], [Sprite2D], etc. and [lb] and [rb].
+			pos = 0;
+			while ((pos = line.find("[", pos)) != -1) {
+				// Replace the special cases for [lb] and [rb] first and walk
+				// past them to avoid conflicts with class names.
+				const bool is_within_bounds = pos + 4 <= line.length();
+				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
+					line = line.substr(0, pos) + "[" + line.substr(pos + 4);
+					pos += 1;
+					continue;
+				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
+					line = line.substr(0, pos) + "]" + line.substr(pos + 4);
+					pos += 1;
+					continue;
+				}
+
+				// Replace class names in brackets
+				int end_pos = line.find("]", pos);
+				if (end_pos != -1) {
+					String content = line.substr(pos + 1, end_pos - pos - 1);
+					// We only convert if it looks like a simple class name (no spaces, no special chars)
+					if (content.find(" ") == -1 && content.find("=") == -1) {
+						line = line.substr(0, pos) + "`" + content + "`" + line.substr(end_pos + 1);
+						pos += content.length() + 2;
+					} else {
+						pos = end_pos + 1;
+					}
+				} else {
+					break;
+				}
+			}
 		}
 
-		if (!in_code_block && i < lines.size() - 1) {
+		if (!in_codeblock_tag && i < lines.size() - 1) {
 			line += "\n\n";
 		} else if (i < lines.size() - 1) {
 			line += "\n";
