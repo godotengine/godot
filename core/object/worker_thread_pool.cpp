@@ -780,7 +780,7 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 
 	runlevel = RUNLEVEL_NORMAL;
 
-	if (p_thread_count < 0) {
+	if (p_thread_count <= 0) {
 		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
 	}
 
