@@ -145,6 +145,8 @@ private:
 		WaylandEmbedder *embedder = nullptr;
 
 		int socket = -1;
+
+		// NOTE: PIDs are not unique per client!
 		pid_t pid = 0;
 
 		// FIXME: Names suck.
@@ -428,7 +430,11 @@ private:
 	int compositor_socket = -1;
 
 	LocalVector<struct pollfd> pollfds;
-	LocalVector<Client> clients;
+
+	// Key is socket.
+	AHashMap<int, Client> clients;
+
+	Client *main_client = nullptr;
 
 	PooledList<WaylandObject> objects;
 	// Proxies allocated by the compositor. Their ID starts from 0xff000000.
@@ -489,7 +495,7 @@ private:
 	WaylandObject *get_object(uint32_t id);
 	Error delete_object(uint32_t id);
 
-	void client_disconnect(size_t p_client_id);
+	void client_disconnect(int p_socket);
 
 	void sync();
 
@@ -501,7 +507,7 @@ private:
 
 	bool handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id = INVALID_ID);
 	void handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested);
-	bool handle_sock(int p_fd, int p_id);
+	bool handle_sock(int p_fd);
 	void handle_fd(int p_fd, int p_revents);
 
 	static void _thread_loop(void *p_data);

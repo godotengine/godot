@@ -44,6 +44,8 @@
 //  - Track and report state for all non-destructible objects on instancing
 //    (luckily there are few of them)
 //
+//  - Cleanup all state on shutdown
+//
 //  - Keep cleaning up this mess (code still sucks)
 //
 //  - Do the mario (swing your arms from side to side)
@@ -367,11 +369,12 @@ void WaylandEmbedder::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalD
 	send_wayland_message(socket, p_id, WL_DRM_CAPABILITIES, { p_state->capabilities });
 }
 
-void WaylandEmbedder::client_disconnect(size_t p_client_id) {
-	ERR_FAIL_UNSIGNED_INDEX(p_client_id, clients.size());
-	Client &client = clients[p_client_id];
+void WaylandEmbedder::client_disconnect(int p_socket) {
+	ERR_FAIL_COND(!clients.has(p_socket));
 
-	DEBUG_LOG_WAYLAND_EMBED(vformat("Disconnecting client #%d (socket %d)", p_client_id, client.socket));
+	Client &client = clients[p_socket];
+
+	DEBUG_LOG_WAYLAND_EMBED(vformat("Disconnecting client %d (pid %d)", client.socket, client.pid));
 
 	close(client.socket);
 
@@ -461,9 +464,9 @@ void WaylandEmbedder::client_disconnect(size_t p_client_id) {
 
 	uint32_t eclient_id = client.embedded_client_id;
 
-	client = Client();
+	clients.erase(client.socket);
 
-	WaylandObject *eclient = clients[0].get_object(eclient_id);
+	WaylandObject *eclient = main_client->get_object(eclient_id);
 	ERR_FAIL_NULL(eclient);
 
 	EmbeddedClientData *eclient_data = (EmbeddedClientData *)eclient->data;
@@ -471,7 +474,7 @@ void WaylandEmbedder::client_disconnect(size_t p_client_id) {
 
 	if (!eclient_data->disconnected) {
 		// godot_embedded_client::disconnected
-		send_wayland_message(clients[0].socket, eclient_id, 0, {});
+		send_wayland_message(main_client->socket, eclient_id, 0, {});
 	}
 
 	eclient_data->disconnected = true;
@@ -629,9 +632,9 @@ void WaylandEmbedder::seat_name_enter_surface(uint32_t p_seat_name, uint32_t p_w
 		}
 	}
 
-	if (client != &clients[0]) {
+	if (client->socket != main_client->socket) {
 		// godot_embedded_client::window_focus_in
-		send_wayland_message(clients[0].socket, client->embedded_client_id, 2, {});
+		send_wayland_message(main_client->socket, client->embedded_client_id, 2, {});
 	}
 }
 
@@ -663,9 +666,9 @@ void WaylandEmbedder::seat_name_leave_surface(uint32_t p_seat_name, uint32_t p_w
 		}
 	}
 
-	if (client != &clients[0]) {
+	if (client != main_client) {
 		// godot_embedded_client::window_focus_out
-		send_wayland_message(clients[0].socket, client->embedded_client_id, 3, {});
+		send_wayland_message(main_client->socket, client->embedded_client_id, 3, {});
 	}
 }
 
@@ -929,7 +932,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			RegistryGlobalInfo &global_info = registry_globals[global_name];
 			const struct wl_interface *global_interface = global_info.interface;
 
-			if (client != &clients[0] && (global_interface == &zxdg_decoration_manager_v1_interface || global_interface == &zxdg_exporter_v1_interface || global_interface == &zxdg_exporter_v2_interface || global_interface == &godot_embedding_compositor_interface)) {
+			if (client != main_client && (global_interface == &zxdg_decoration_manager_v1_interface || global_interface == &zxdg_exporter_v1_interface || global_interface == &zxdg_exporter_v2_interface || global_interface == &godot_embedding_compositor_interface)) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Skipped global announcement %s for embedded client.", global_interface->name));
 				continue;
 			}
@@ -1215,7 +1218,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 			uint32_t global_surface_id = client->get_global_id(surface_id);
 
-			bool fake = (client != &clients[0]);
+			bool fake = (client != main_client);
 
 			XdgSurfaceData *data = memnew(XdgSurfaceData);
 			data->wl_surface_id = global_surface_id;
@@ -1330,7 +1333,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				client->embedded_window_id = new_local_id;
 
 				// godot_embedded_client::window_embedded()
-				send_wayland_message(clients[0].socket, client->embedded_client_id, 1, {});
+				send_wayland_message(main_client->socket, client->embedded_client_id, 1, {});
 			} else {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_toplevel_interface, object->version, data);
 
@@ -1458,12 +1461,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 		if (p_opcode == GODOT_EMBEDDED_CLIENT_DESTROY) {
 			if (!eclient_data->disconnected) {
-				// FIXME: Switch to index-based client addressing for everything else.
-				for (size_t i = 0; i < clients.size(); ++i) {
-					if (clients[i].pid == eclient->pid) {
-						client_disconnect(i);
-					}
-				}
+				client_disconnect(eclient->socket);
 			}
 
 			client->delete_object(local_id);
@@ -1547,7 +1545,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			new_sub_object->version = get_object(wl_subcompositor_id)->version;
 
 			toplevel_data->wl_subsurface_id = new_sub_id;
-			toplevel_data->parent_handle = LocalObjectHandle(&clients[0], main_client_parent_id);
+			toplevel_data->parent_handle = LocalObjectHandle(main_client, main_client_parent_id);
 
 			DEBUG_LOG_WAYLAND_EMBED(vformat("Binding subsurface g0x%x.", new_sub_id));
 
@@ -2042,13 +2040,14 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		if (shared_objects.has(interface)) {
 			bool handled = false;
 
-			for (Client &c : clients) {
+			for (KeyValue<int, Client> &pair : clients) {
+				Client &c = pair.value;
 				if (is_global) {
 					if (!c.registry_globals_instances.has(global_name)) {
 						continue;
 					}
 
-					DEBUG_LOG_WAYLAND_EMBED(vformat("Broadcasting to all global instances for client %d", c.pid));
+					DEBUG_LOG_WAYLAND_EMBED(vformat("Broadcasting to all global instances for client %d (socket %d)", c.pid, c.socket));
 					for (uint32_t instance_id : c.registry_globals_instances[global_name]) {
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Global instance l0x%x", instance_id));
 						if (c.socket < 0) {
@@ -2173,7 +2172,7 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 	}
 }
 
-bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
+bool WaylandEmbedder::handle_sock(int p_fd) {
 	ERR_FAIL_COND_V(p_fd < 0, false);
 
 	struct msg_info info = {};
@@ -2201,7 +2200,7 @@ bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
 		info.raw_id = header[0];
 		info.size = header[1] >> 16;
 		info.opcode = header[1] & 0xFFFF;
-		info.direction = p_id >= 0 ? ProxyDirection::COMPOSITOR : ProxyDirection::CLIENT;
+		info.direction = p_fd != compositor_socket ? ProxyDirection::COMPOSITOR : ProxyDirection::CLIENT;
 	}
 
 	if (msg_buf.size() < info.words()) {
@@ -2254,7 +2253,7 @@ bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
 					int fd = cmsg_fds[i];
 
 					if (info.direction == ProxyDirection::COMPOSITOR) {
-						clients[p_id].fds.push_back(fd);
+						clients[p_fd].fds.push_back(fd);
 					} else {
 						compositor_fds.push_back(fd);
 					}
@@ -2279,26 +2278,23 @@ bool WaylandEmbedder::handle_sock(int p_fd, int p_id) {
 
 	int fds_requested = 0;
 
-	int client_id = p_id;
 	Client *client = nullptr;
+	if (p_fd == compositor_socket) {
+		// Let's figure out the recipient of the message.
+		for (KeyValue<int, Client> &pair : clients) {
+			Client &c = pair.value;
 
-	if (client_id < 0) {
-		// A negative id means that it's coming from the compositor; Let's figure out
-		// the recipient of the message.
-		for (size_t i = 0; i < clients.size(); ++i) {
-			if (clients[i].local_ids.has(info.raw_id)) {
-				client_id = i;
-				break;
+			if (c.local_ids.has(info.raw_id)) {
+				client = &c;
 			}
 		}
+	} else {
+		CRASH_COND(!clients.has(p_fd));
+		client = &clients[p_fd];
 	}
 
-	if (client_id >= 0) {
-		client = &clients[client_id];
-	}
-
-	if (client_id >= 0) {
-		DEBUG_LOG_WAYLAND_EMBED(vformat("Client: %d.", client_id));
+	if (client) {
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Client: %d (pid %d).", client->socket, client->pid));
 	} else {
 		DEBUG_LOG_WAYLAND_EMBED("No client found to forward to.");
 	}
@@ -2435,86 +2431,75 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 		socklen_t cred_size = sizeof cred;
 		getsockopt(new_fd, SOL_SOCKET, SO_PEERCRED, &cred, &cred_size);
 
-		Client *client = nullptr;
-		int client_id = -1;
-		for (size_t i = 0; i < clients.size(); ++i) {
-			Client &test_client = clients[i];
-			if (test_client.socket < 0) {
-				client = &test_client;
-				client_id = i;
-				break;
-			}
-		}
-
-		if (client == nullptr) {
-			clients.push_back({});
-			client_id = clients.size() - 1;
-			client = &clients[client_id];
-		}
+		Client &client = clients.insert_new(new_fd, {})->value;
 
 		pollfds.push_back({ new_fd, POLLIN, 0 });
 
-		client->embedder = this;
+		client.embedder = this;
 
-		client->pid = cred.pid;
-		client->socket = new_fd;
+		client.socket = new_fd;
 
-		client->global_ids[DISPLAY_ID] = DISPLAY_ID;
-		client->local_ids[DISPLAY_ID] = DISPLAY_ID;
+		client.pid = cred.pid;
 
-		client->get_object(DISPLAY_ID)->interface = &wl_display_interface;
+		client.global_ids[DISPLAY_ID] = DISPLAY_ID;
+		client.local_ids[DISPLAY_ID] = DISPLAY_ID;
 
-		Client &main_client = clients[0];
-		if (client_id != 0 && main_client.registry_globals_instances.has(godot_embedding_compositor_name)) {
-			uint32_t new_local_id = main_client.allocate_server_id();
+		client.get_object(DISPLAY_ID)->interface = &wl_display_interface;
 
-			client->embedded_client_id = new_local_id;
+		if (main_client == nullptr) {
+			main_client = &client;
+		}
 
-			for (uint32_t local_id : main_client.registry_globals_instances[godot_embedding_compositor_name]) {
+		if (new_fd != main_client->socket && main_client->registry_globals_instances.has(godot_embedding_compositor_name)) {
+			uint32_t new_local_id = main_client->allocate_server_id();
+
+			client.embedded_client_id = new_local_id;
+
+			for (uint32_t local_id : main_client->registry_globals_instances[godot_embedding_compositor_name]) {
 				EmbeddedClientData *eclient_data = memnew(EmbeddedClientData);
-				eclient_data->client = client;
+				eclient_data->client = &client;
 
-				main_client.new_fake_object(new_local_id, &godot_embedded_client_interface, 1, eclient_data);
+				main_client->new_fake_object(new_local_id, &godot_embedded_client_interface, 1, eclient_data);
 
 				// godot_embedding_compositor::client(nu)
-				send_wayland_message(main_client.socket, local_id, 0, { new_local_id, (uint32_t)cred.pid });
+				send_wayland_message(main_client->socket, local_id, 0, { new_local_id, (uint32_t)cred.pid });
 			}
 		}
 
-		DEBUG_LOG_WAYLAND_EMBED(vformat("New client #%d (pid %d, socket %d) initialized.", client_id, cred.pid, client->socket));
+		DEBUG_LOG_WAYLAND_EMBED(vformat("New client %d (pid %d) initialized.", client.socket, cred.pid));
 		return;
 	}
 
 	if (p_fd == compositor_socket && p_revents & POLLIN) {
-		handle_sock(compositor_socket, -1);
+		handle_sock(compositor_socket);
 		return;
 	}
 
-	for (size_t i = 0; i < clients.size(); ++i) {
-		Client &client = clients[i];
+	for (KeyValue<int, Client> &pair : clients) {
+		const Client &client = pair.value;
 
 		if (client.socket < 0 || p_fd != client.socket) {
 			continue;
 		}
 
 		if (p_revents & POLLIN) {
-			if (!handle_sock(client.socket, i)) {
+			if (!handle_sock(client.socket)) {
 				DEBUG_LOG_WAYLAND_EMBED("disconnecting");
-				client_disconnect(i);
+				client_disconnect(p_fd);
 			}
 			return;
 		} else if (p_revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			if (p_revents & POLLHUP) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d hangup.", i));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d hangup.", p_fd));
 			}
 			if (p_revents & POLLERR) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d error.", i));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d error.", p_fd));
 			}
 			if (p_revents & POLLNVAL) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d invalid fd.", i));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d invalid fd.", p_fd));
 			}
 
-			client_disconnect(i);
+			client_disconnect(client.socket);
 
 			return;
 		}
