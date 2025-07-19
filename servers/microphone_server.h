@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  microphone_server.h                                                       */
+/*  microphone_server.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -37,7 +37,7 @@
 #include "core/variant/variant.h"
 
 /**
-	The microphone server is a singleton object that gives access to the 
+	The microphone server is a singleton object that gives access to th
 	audio input buffer.
 **/
 
@@ -62,7 +62,7 @@ protected:
 
 	static void _bind_methods();
 
- public:
+public:
 	static MicrophoneServer *get_singleton();
 
 	static MicrophoneServer *create() {
