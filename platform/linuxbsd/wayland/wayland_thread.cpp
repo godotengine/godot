@@ -3036,6 +3036,7 @@ void WaylandThread::_godot_embedded_client_on_disconnected(void *data, struct go
 	ERR_FAIL_NULL(ecomp_state);
 
 	ecomp_state->clients.erase_unordered(godot_embedded_client);
+	ecomp_state->mapped_clients.erase(state->pid);
 
 	memfree(state);
 	godot_embedded_client_destroy(godot_embedded_client);
