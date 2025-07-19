@@ -30,12 +30,9 @@
 
 #pragma once
 
-#include "servers/microphone_server.h"
-
-/**
-	The camera server is a singleton object that gives access to the various
-	camera feeds that can be used as the background for our environment.
-**/
+#include "core/object/class_db.h"
+#include "core/object/ref_counted.h"
+#include "core/variant/typed_array.h"
 
 class MicrophoneFeed : public RefCounted {
 	GDCLASS(MicrophoneFeed, RefCounted);
@@ -44,7 +41,19 @@ class MicrophoneFeed : public RefCounted {
 
 	static void _bind_methods();
 
+protected:
+	unsigned int microphone_buffer_ofs = 0;
+	bool active;
+	Error start_microphone();
+	Error stop_microphone();
+
 public:
+	bool is_active() const;
+	void set_active(bool p_is_active);
+
+	int get_frames_available();
+	PackedVector2Array get_buffer(int p_frames);
+
 	String get_name() const;
 	void set_name(String p_name);
 
