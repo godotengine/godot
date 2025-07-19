@@ -1942,38 +1942,64 @@ static String marked_documentation(const String &p_bbcode) {
 	String markdown = p_bbcode.strip_edges();
 
 	Vector<String> lines = markdown.split("\n");
-	bool in_code_block = false;
-	String current_code_block_language = "";
+	bool in_codeblock_tag = false;
+	// This is for handling the special [codeblocks] syntax used by the built-in class reference,
+	bool in_codeblocks_tag = false;
+	bool in_codeblocks_gdscript_tag = false;
 
 	markdown = "";
 	for (int i = 0; i < lines.size(); i++) {
 		String line = lines[i];
+
+		// For [codeblocks] tags we locate a child [gdscript] tag and turn that
+		// into a GDScript code listing. Other languages and the surrounding tag
+		// are skipped.
+		if (line.contains("[codeblocks]")) {
+			in_codeblocks_tag = true;
+			continue;
+		}
+		if (in_codeblocks_tag && line.contains("[/codeblocks]")) {
+			in_codeblocks_tag = false;
+			continue;
+		}
+		if (in_codeblocks_tag) {
+			if (line.contains("[gdscript]")) {
+				in_codeblocks_gdscript_tag = true;
+				line = "```gdscript";
+			} else if (in_codeblocks_gdscript_tag && line.contains("[/gdscript]")) {
+				line = "```";
+				in_codeblocks_gdscript_tag = false;
+			} else if (!in_codeblocks_gdscript_tag) {
+				continue;
+			}
+		}
+
 		// We need to account for both [codeblock] or [codeblock lang=...]
+		String code_block_lang = "gdscript";
 		int block_start = line.find("[codeblock");
 		if (block_start != -1) {
 			int bracket_pos = line.find("]", block_start);
 			if (bracket_pos != -1) {
-				code_block_language = "gdscript";
 				int lang_start = line.find("lang=", block_start);
 				if (lang_start != -1 && lang_start < bracket_pos) {
 					const int LANG_PARAM_LENGTH = 5;
 					int lang_value_start = lang_start + LANG_PARAM_LENGTH;
 					int lang_end = bracket_pos;
 					if (lang_value_start < lang_end) {
-						code_block_language = line.substr(lang_value_start, lang_end - lang_value_start);
+						code_block_lang = line.substr(lang_value_start, lang_end - lang_value_start);
 					}
 				}
-				in_code_block = true;
-				line = "```" + code_block_language;
+				in_codeblock_tag = true;
+				line = "```" + code_block_lang;
 			}
 		}
 
-		if (in_code_block && line.contains("[/codeblock]")) {
+		if (in_codeblock_tag && line.contains("[/codeblock]")) {
 			line = "```";
-			in_code_block = false;
+			in_codeblock_tag = false;
 		}
 
-		if (!in_code_block) {
+		if (!in_codeblock_tag) {
 			line = line.strip_edges();
 			line = line.replace("[br]", "\n");
 
@@ -2103,7 +2129,7 @@ static String marked_documentation(const String &p_bbcode) {
 			}
 		}
 
-		if (!in_code_block && i < lines.size() - 1) {
+		if (!in_codeblock_tag && i < lines.size() - 1) {
 			line += "\n\n";
 		} else if (i < lines.size() - 1) {
 			line += "\n";
