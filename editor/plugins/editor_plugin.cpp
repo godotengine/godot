@@ -44,17 +44,19 @@
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_title_bar.h"
-#include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/script/script_editor_plugin.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/translations/editor_translation_parser.h"
-#include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
+
+// 3D.
+#include "editor/import/3d/resource_importer_scene.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
@@ -114,7 +116,6 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 			Node3DEditor::get_singleton()->add_control_to_menu_panel(p_control);
-
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
 			Node3DEditor::get_singleton()->add_control_to_left_panel(p_control);
@@ -124,11 +125,10 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 			Node3DEditor::get_singleton()->get_shader_split()->add_child(p_control);
-
 		} break;
+
 		case CONTAINER_CANVAS_EDITOR_MENU: {
 			CanvasItemEditor::get_singleton()->add_control_to_menu_panel(p_control);
-
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
 			CanvasItemEditor::get_singleton()->add_control_to_left_panel(p_control);
@@ -138,20 +138,17 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
 			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
-
 		} break;
+
 		case CONTAINER_INSPECTOR_BOTTOM: {
 			InspectorDock::get_singleton()->get_addon_area()->add_child(p_control);
-
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_LEFT: {
 			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
 			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 0);
-
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
 			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
-
 		} break;
 	}
 }
@@ -166,7 +163,6 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 			Node3DEditor::get_singleton()->remove_control_from_menu_panel(p_control);
-
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_SIDE_LEFT: {
 			Node3DEditor::get_singleton()->remove_control_from_left_panel(p_control);
@@ -176,11 +172,10 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 		} break;
 		case CONTAINER_SPATIAL_EDITOR_BOTTOM: {
 			Node3DEditor::get_singleton()->get_shader_split()->remove_child(p_control);
-
 		} break;
+
 		case CONTAINER_CANVAS_EDITOR_MENU: {
 			CanvasItemEditor::get_singleton()->remove_control_from_menu_panel(p_control);
-
 		} break;
 		case CONTAINER_CANVAS_EDITOR_SIDE_LEFT: {
 			CanvasItemEditor::get_singleton()->remove_control_from_left_panel(p_control);
@@ -190,16 +185,14 @@ void EditorPlugin::remove_control_from_container(CustomControlContainer p_locati
 		} break;
 		case CONTAINER_CANVAS_EDITOR_BOTTOM: {
 			CanvasItemEditor::get_singleton()->get_bottom_split()->remove_child(p_control);
-
 		} break;
+
 		case CONTAINER_INSPECTOR_BOTTOM: {
 			InspectorDock::get_singleton()->get_addon_area()->remove_child(p_control);
-
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_LEFT:
 		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
 			ProjectSettingsEditor::get_singleton()->get_tabs()->remove_child(p_control);
-
 		} break;
 	}
 }
@@ -459,16 +452,6 @@ void EditorPlugin::remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin
 	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
-void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(p_plugin.is_null());
-	EditorInspector::add_inspector_plugin(p_plugin);
-}
-
-void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(p_plugin.is_null());
-	EditorInspector::remove_inspector_plugin(p_plugin);
-}
-
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
 	ERR_FAIL_COND(p_importer.is_null());
 	ResourceImporterScene::add_scene_importer(p_importer, p_first_priority);
@@ -485,6 +468,16 @@ void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportP
 
 void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
 	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
+}
+
+void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	EditorInspector::add_inspector_plugin(p_plugin);
+}
+
+void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
+	ERR_FAIL_COND(p_plugin.is_null());
+	EditorInspector::remove_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
@@ -618,16 +611,10 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer", "first_priority"), &EditorPlugin::add_import_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
-	ClassDB::bind_method(D_METHOD("add_scene_format_importer_plugin", "scene_format_importer", "first_priority"), &EditorPlugin::add_scene_format_importer_plugin, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
-	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_platform", "platform"), &EditorPlugin::add_export_platform);
 	ClassDB::bind_method(D_METHOD("remove_export_platform", "platform"), &EditorPlugin::remove_export_platform);
-	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
-	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("remove_inspector_plugin", "plugin"), &EditorPlugin::remove_inspector_plugin);
 	ClassDB::bind_method(D_METHOD("add_resource_conversion_plugin", "plugin"), &EditorPlugin::add_resource_conversion_plugin);
@@ -636,6 +623,13 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
 	ClassDB::bind_method(D_METHOD("add_context_menu_plugin", "slot", "plugin"), &EditorPlugin::add_context_menu_plugin);
 	ClassDB::bind_method(D_METHOD("remove_context_menu_plugin", "plugin"), &EditorPlugin::remove_context_menu_plugin);
+
+	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
+	ClassDB::bind_method(D_METHOD("add_scene_format_importer_plugin", "scene_format_importer", "first_priority"), &EditorPlugin::add_scene_format_importer_plugin, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
+	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);
