@@ -256,7 +256,8 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef ADD_QUAD
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	const real_t icon_size = EDITOR_GET("editors/3d/camera_gizmo_icon_size");
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 	p_gizmo->add_collision_segments(lines);
 
 	if (!handles.is_empty()) {
@@ -290,3 +291,11 @@ float Camera3DGizmoPlugin::_find_closest_angle_to_half_pi_arc(const Vector3 &p_f
 	float a = (Math::PI * 0.5) - Vector2(min_p.x, -min_p.z).angle();
 	return Math::rad_to_deg(a);
 }
+
+// void Camera3DGizmoPlugin::_notification(int p_what) {
+// 	switch (p_what) {
+// 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+// 			// redraw()
+// 		} break;
+// 	}
+// } notification_editor_settings_changed
