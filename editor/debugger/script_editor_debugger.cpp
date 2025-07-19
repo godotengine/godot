@@ -48,12 +48,10 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector/editor_property_name_processor.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/performance.h"
-#include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
@@ -67,6 +65,10 @@
 #include "scene/gui/tree.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display_server.h"
+
+// 3D.
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/3d/camera_3d.h"
 
 using CameraOverride = EditorDebuggerNode::CameraOverride;
 

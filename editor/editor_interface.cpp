@@ -45,7 +45,6 @@
 #include "editor/inspector/editor_resource_preview.h"
 #include "editor/inspector/property_selector.h"
 #include "editor/run/editor_run_bar.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/scene_tree_editor.h"
 #include "editor/settings/editor_command_palette.h"
@@ -53,12 +52,16 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/theme.h"
+
+// 3D.
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "scene/3d/light_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
 

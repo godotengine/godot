@@ -50,10 +50,6 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/translations/editor_translation_preview_button.h"
 #include "editor/translations/editor_translation_preview_menu.h"
-#include "scene/2d/audio_stream_player_2d.h"
-#include "scene/2d/physics/touch_screen_button.h"
-#include "scene/2d/polygon_2d.h"
-#include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
 #include "scene/gui/base_button.h"
 #include "scene/gui/flow_container.h"
@@ -66,6 +62,12 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/style_box_texture.h"
+
+// Node2D-based nodes not needed for general CanvasItem logic.
+#include "scene/2d/audio_stream_player_2d.h"
+#include "scene/2d/physics/touch_screen_button.h"
+#include "scene/2d/polygon_2d.h"
+#include "scene/2d/skeleton_2d.h"
 
 #define DRAG_THRESHOLD (8 * EDSCALE)
 constexpr real_t SCALE_HANDLE_DISTANCE = 25;
@@ -4912,7 +4914,6 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				undo_redo->add_undo_method(this, "_set_owner_for_node_and_children", n2d, editor_root);
 			}
 			undo_redo->commit_action();
-
 		} break;
 	}
 }
