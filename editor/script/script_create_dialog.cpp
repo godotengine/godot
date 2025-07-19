@@ -231,6 +231,9 @@ bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 }
 
 String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist, bool *r_path_valid) {
+	missing_base_dir = false;
+	missing_base_dir_path = "";
+
 	String p = p_path.strip_edges();
 	if (r_path_valid) {
 		*r_path_valid = false;
@@ -258,7 +261,9 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 	{
 		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 		if (da->change_dir(p.get_base_dir()) != OK) {
-			return TTR("Base path is invalid.");
+			missing_base_dir = true;
+			missing_base_dir_path = p.get_base_dir();
+			return "";
 		}
 	}
 
@@ -347,6 +352,20 @@ void ScriptCreateDialog::_template_changed(int p_template) {
 }
 
 void ScriptCreateDialog::ok_pressed() {
+	if (missing_base_dir) {
+		Error err = EditorFileSystem::get_singleton()->make_dir_recursive(missing_base_dir_path);
+		if (err != OK) {
+			alert->set_text(TTR("Could not create the directory."));
+			alert->popup_centered();
+			return;
+		}
+		path_error = _validate_path(file_path->get_text(), false, &is_path_valid);
+		if (!path_error.is_empty()) {
+			validation_panel->update();
+			return;
+		}
+	}
+
 	if (is_new_script_created) {
 		_create_new();
 		if (_can_be_built_in()) {
@@ -619,7 +638,7 @@ void ScriptCreateDialog::_update_dialog() {
 	// Is script path/name valid (order from top to bottom)?
 
 	if (!is_built_in && !is_path_valid) {
-		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Invalid path."), EditorValidationPanel::MSG_ERROR);
+		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Base path is invalid, the target folder will be created automatically."), EditorValidationPanel::MSG_WARNING);
 	}
 
 	if (!is_parent_name_valid && is_new_script_created) {
