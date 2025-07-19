@@ -743,7 +743,7 @@ bool NavigationAgent3D::is_target_reachable() {
 }
 
 bool NavigationAgent3D::_is_target_reachable() const {
-	return target_desired_distance >= _get_final_position().distance_to(target_position);
+	return _is_within_target_distance(_get_final_position());
 }
 
 bool NavigationAgent3D::is_navigation_finished() {
@@ -919,7 +919,7 @@ bool NavigationAgent3D::_is_within_waypoint_distance(const Vector3 &p_origin) co
 }
 
 bool NavigationAgent3D::_is_within_target_distance(const Vector3 &p_origin) const {
-	return p_origin.distance_to(target_position) < target_desired_distance;
+	return p_origin.distance_to(target_position) <= target_desired_distance;
 }
 
 void NavigationAgent3D::_trigger_waypoint_reached() {
