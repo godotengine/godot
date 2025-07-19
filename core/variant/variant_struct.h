@@ -105,12 +105,15 @@ class StructPropertyInfo : public MemberPtrType {
 	friend class VariantStruct;
 	friend class StructDefinition;
 
+public:
 	enum Kind : uint32_t {
 		NATIVE_BUILTIN,
-		NATIVE_OBJECT,
+		NATIVE_OBJECT_WEAK,
+		NATIVE_OBJECT_REF,
 		KIND_MAX,
 	};
 
+private:
 	// (should be aligned to take up a very minimal 24 bytes)
 	// (4 for MemberDataPointer + 4 for Kind // 8 for union pointers // 8 for StringName)
 
@@ -128,19 +131,23 @@ public:
 	}
 
 	StructPropertyInfo(const StringName &p_name, const MemberPtrType &p_address, const VPointer<AbstractTypeInfo> &p_type) :
-			kind(NATIVE_BUILTIN), MemberPtrType(p_address), name(p_name), type_info(p_type) {}
+			kind(NATIVE_BUILTIN), name(p_name), MemberPtrType(p_address), type_info(p_type) {}
+
+	StructPropertyInfo(Kind p_kind, const StringName &p_name, const MemberPtrType &p_address, const StringName &p_class) :
+			kind(p_kind), name(p_name), MemberPtrType(p_address), class_name(p_class) {}
 
 	StructPropertyInfo(const StructPropertyInfo &p_other) :
-			kind(p_other.kind), MemberPtrType(p_other), name(p_other.name) {
+			kind(p_other.kind), name(p_other.name), MemberPtrType(p_other) {
 		switch (kind) {
 			case NATIVE_BUILTIN:
 				type_info = p_other.type_info;
 				break;
-			case NATIVE_OBJECT:
+			case NATIVE_OBJECT_WEAK:
+			case NATIVE_OBJECT_REF:
 				memnew_placement(&class_name, StringName(p_other.class_name));
 				break;
 			default:
-				ERR_FAIL();
+				DEV_ASSERT(false);
 		}
 	}
 
@@ -149,12 +156,12 @@ public:
 			case NATIVE_BUILTIN:
 				type_info.~VPointer<AbstractTypeInfo>();
 				break;
-			case NATIVE_OBJECT:
+			case NATIVE_OBJECT_WEAK:
+			case NATIVE_OBJECT_REF:
 				class_name.~StringName();
 				break;
 			default:
-				ERR_FAIL();
-				break;
+				DEV_ASSERT(false);
 		}
 	}
 };
@@ -222,8 +229,8 @@ class VariantStruct {
 
 protected:
 	// Needs to fit on Variant, so should not have any other properties
-	StructPtrType instance;
-	const StructDefinition *definition;
+	StructPtrType instance = nullptr;
+	const StructDefinition *definition = nullptr;
 
 	void _init(const StructDefinition *p_definition);
 	void _ref(StructPtrType p_ptr, const StructDefinition *p_definition);
@@ -239,8 +246,7 @@ public:
 
 	// Basic Constructors
 
-	constexpr VariantStruct() :
-			instance(nullptr), definition(nullptr) {}
+	constexpr VariantStruct() {}
 	VariantStruct(const VariantStruct &p_struct) :
 			instance(p_struct.instance), definition(p_struct.definition) {
 		if (instance) {

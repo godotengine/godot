@@ -76,7 +76,7 @@ public:
 		// _ALWAYS_INLINE_ MemberDataPointer() = default;
 		// _ALWAYS_INLINE_ MemberDataPointer() {}
 		template <class HeapT, typename MemberT>
-		_ALWAYS_INLINE_ constexpr MemberDataPointer(const MemberT HeapT::*const &p_member_pointer) {
+		_ALWAYS_INLINE_ constexpr MemberDataPointer(MemberT HeapT::*p_member_pointer) {
 			// This constructor makes use of template type deduction to determine the memory requirements of given data-member-pointers
 			static_assert(sizeof(p_member_pointer) == sizeof(data_ptr_t), "Member Pointer size mismatch");
 			constexpr size_t offset = calc_start(sizeof(CommonT), alignof(HeapT));
@@ -220,7 +220,7 @@ public:
 
 	// Can be constructed with nullptr; or assigned to nullptr (which clears the pointer without freeing)
 
-	explicit constexpr VarHeapPointer(const std::nullptr_t) {
+	constexpr VarHeapPointer(const std::nullptr_t) {
 		_ptr = 0;
 	}
 	_ALWAYS_INLINE_ VarHeapPointer<CommonT> &operator=(const std::nullptr_t) {
@@ -312,9 +312,9 @@ protected:
 	// Forces initialisation of the heap data member through this implementation
 	// This ensures that there is a VarHeapData property on any and all derived types and that they are implemented correctly
 	template <class HeapT, class DerivedT>
-	_FORCE_INLINE_ static void *heap_allocate(const VarHeapData<HeapT> DerivedT::*const &p_member_pointer, std::initializer_list<HeapT> list) {
+	_FORCE_INLINE_ static void *heap_allocate(VarHeapData<HeapT> DerivedT::*p_member_pointer, std::initializer_list<HeapT> list) {
 		static_assert(sizeof(p_member_pointer) == sizeof(data_ptr_t), "Member Pointer size mismatch");
-		const data_ptr_t heap_data_position = *reinterpret_cast<const data_ptr_t *>(&p_member_pointer);
+		const data_ptr_t heap_data_position = *reinterpret_cast<data_ptr_t *>(&p_member_pointer);
 
 #if DEV_ENABLED
 		const size_t heap_data_size = sizeof(VarHeapData<HeapT>);

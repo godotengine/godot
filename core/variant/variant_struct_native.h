@@ -222,10 +222,35 @@ public:
 /////////////////////////////////////
 
 namespace Internal {
-template <typename ST, typename MT>
-_ALWAYS_INLINE_ static StructPropertyInfo build_native_property(StringName const &p_name, const MT ST::*const &p_member_pointer) {
-	return StructPropertyInfo(p_name, p_member_pointer, NativeTypeInfo<MT>());
+
+template <class _Ty, typename = void>
+struct remove_ref {
+	using type = _Ty;
+	using _Const_thru_ref_type = _Ty;
+};
+template <class _Ty>
+struct remove_ref<Ref<_Ty>, std::enable_if_t<std::is_base_of_v<_Ty, RefCounted>>> {
+	using type = _Ty;
+	using _Const_thru_ref_type = Ref<_Ty>;
+};
+template <class _Ty>
+struct is_ref {
+	constexpr static bool v = !std::is_same_v<remove_ref<_Ty>::type, _Ty>;
+};
+
+template <class ST, typename MT>
+_ALWAYS_INLINE_ static StructPropertyInfo build_native_property(StringName const &p_name, const MT ST::*p_member_pointer) {
+	if constexpr (std::is_pointer_v<MT> && std::is_base_of_v<Object, std::remove_pointer_t<MT>>) {
+		return StructPropertyInfo(StructPropertyInfo::NATIVE_OBJECT_WEAK, p_name, p_member_pointer, std::remove_pointer_t<MT>::get_class_static());
+
+	} else if constexpr (is_ref<MT>::v) {
+		return StructPropertyInfo(StructPropertyInfo::NATIVE_OBJECT_REF, p_name, p_member_pointer, remove_ref<MT>::type::get_class_static());
+
+	} else {
+		return StructPropertyInfo(p_name, p_member_pointer, NativeTypeInfo<MT>());
+	}
 }
+
 } //namespace Internal
 
 /////////////////////////////////////
