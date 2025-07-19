@@ -1943,7 +1943,7 @@ static String marked_documentation(const String &p_bbcode) {
 
 	Vector<String> lines = markdown.split("\n");
 	bool in_code_block = false;
-	int code_block_indent = -1;
+	String current_code_block_language = "";
 
 	markdown = "";
 	for (int i = 0; i < lines.size(); i++) {
@@ -1953,16 +1953,23 @@ static String marked_documentation(const String &p_bbcode) {
 		if (block_start != -1) {
 			int bracket_pos = line.find("]", block_start);
 			if (bracket_pos != -1) {
-				code_block_indent = block_start;
+				code_block_language = "gdscript";
+				int lang_start = line.find("lang=", block_start);
+				if (lang_start != -1 && lang_start < bracket_pos) {
+					const int LANG_PARAM_LENGTH = 5;
+					int lang_value_start = lang_start + LANG_PARAM_LENGTH;
+					int lang_end = bracket_pos;
+					if (lang_value_start < lang_end) {
+						code_block_language = line.substr(lang_value_start, lang_end - lang_value_start);
+					}
+				}
 				in_code_block = true;
-				line = "\n";
+				line = "```" + code_block_language;
 			}
-		} else if (in_code_block) {
-			line = "\t" + line.substr(code_block_indent);
 		}
 
 		if (in_code_block && line.contains("[/codeblock]")) {
-			line = "\n";
+			line = "```";
 			in_code_block = false;
 		}
 
