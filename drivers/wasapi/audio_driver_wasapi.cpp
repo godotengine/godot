@@ -1004,6 +1004,10 @@ void AudioDriverWASAPI::finish() {
 }
 
 Error AudioDriverWASAPI::input_start() {
+	if (audio_input.active.is_set()) {
+		return ERR_ALREADY_IN_USE;
+	}
+
 	Error err = init_input_device();
 	if (err != OK) {
 		ERR_PRINT("WASAPI: init_input_device error");
@@ -1023,11 +1027,9 @@ Error AudioDriverWASAPI::input_stop() {
 	if (audio_input.active.is_set()) {
 		audio_input.audio_client->Stop();
 		audio_input.active.clear();
-
-		return OK;
 	}
 
-	return FAILED;
+	return OK;
 }
 
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {
