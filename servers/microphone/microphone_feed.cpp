@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "microphone_feed.h"
-#include "servers/audio_server.h"
 #include "core/config/project_settings.h"
+#include "servers/audio_server.h"
 
 void MicrophoneFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &MicrophoneFeed::get_name);
@@ -39,10 +39,9 @@ void MicrophoneFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_active"), &MicrophoneFeed::is_active);
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &MicrophoneFeed::set_active);
 
-	ClassDB::bind_method(D_METHOD("start_microphone"), &MicrophoneFeed::start_microphone);
-	ClassDB::bind_method(D_METHOD("stop_microphone"), &MicrophoneFeed::stop_microphone);
 	ClassDB::bind_method(D_METHOD("get_frames_available"), &MicrophoneFeed::get_frames_available);
-	ClassDB::bind_method(D_METHOD("get_buffer", "frames"), &MicrophoneFeed::get_buffer);
+	ClassDB::bind_method(D_METHOD("get_frames", "frames"), &MicrophoneFeed::get_frames);
+	ClassDB::bind_method(D_METHOD("get_buffer_length_frames"), &MicrophoneFeed::get_buffer_length_frames);
 
 	ADD_GROUP("Feed", "feed_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "feed_is_active"), "set_active", "is_active");
@@ -116,7 +115,12 @@ int MicrophoneFeed::get_frames_available() {
 	return (input_position - microphone_buffer_ofs) / 2;
 }
 
-PackedVector2Array MicrophoneFeed::get_buffer(int p_frames) {
+int MicrophoneFeed::get_buffer_length_frames() {
+	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+	return buf.size() / 2;
+}
+
+PackedVector2Array MicrophoneFeed::get_frames(int p_frames) {
 	PackedVector2Array ret;
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
 	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
@@ -139,3 +143,4 @@ PackedVector2Array MicrophoneFeed::get_buffer(int p_frames) {
 	}
 	return ret;
 }
+

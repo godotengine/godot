@@ -52,7 +52,8 @@ public:
 	void set_active(bool p_is_active);
 
 	int get_frames_available();
-	PackedVector2Array get_buffer(int p_frames);
+	PackedVector2Array get_frames(int p_frames);
+	int get_buffer_length_frames();
 
 	String get_name() const;
 	void set_name(String p_name);

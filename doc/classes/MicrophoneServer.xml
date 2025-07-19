@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MicrophoneServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Server keeping track of different microphones accessible in Godot.
+	</brief_description>
+	<description>
+		The [MicrophoneServer] keeps track of different microphones accessible in Godot.
+		[b]Note:[/b] There is currently only one default microphone implemented across all the platforms.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_feed">
+			<return type="MicrophoneFeed" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [MicrophoneFeed] corresponding to the microphone with the given [param index].
+			</description>
+		</method>
+		<method name="get_feed_count">
+			<return type="int" />
+			<description>
+				Returns the number of [MicrophoneFeed]s registered.
+			</description>
+		</method>
+	</methods>
+</class>
