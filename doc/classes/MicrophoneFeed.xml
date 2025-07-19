@@ -4,7 +4,7 @@
 		A microphone feed gives you access to a single physical microphone attached to your device.
 	</brief_description>
 	<description>
-		A microphone feed gives you access to a single physical microphone attached to your device. 
+		A microphone feed gives you access to a single physical microphone attached to your device.
 		When enabled, Godot will start acquiring stereo sample frames at the [method AudioServer.get_input_mix_rate]
 		and writing them into an internal buffer of size [method get_input_buffer_size].
 	</description>
@@ -15,7 +15,7 @@
 			<return type="int" />
 			<description>
 				Returns the absolute size of the microphone input buffer.
-				This is set as some multiple of the audio latency and can be used to 
+				This is set as some multiple of the audio latency and can be used to
 				estimate the minimum rate at which the frames are fetched.
 			</description>
 		</method>
