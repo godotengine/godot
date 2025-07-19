@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/object/object_id.h"
 #include "core/templates/simple_type.h"
 #include "core/typedefs.h"
@@ -208,6 +210,10 @@ template <>
 struct PtrToArg<NodePath> : Internal::PtrToArgDirect<NodePath> {};
 template <>
 struct PtrToArg<RID> : Internal::PtrToArgDirect<RID> {};
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+template <>
+struct PtrToArg<VariantStruct> : Internal::PtrToArgDirect<VariantStruct> {};
+#endif
 // Object doesn't need this.
 template <>
 struct PtrToArg<Callable> : Internal::PtrToArgDirect<Callable> {};
@@ -237,6 +243,10 @@ template <>
 struct PtrToArg<PackedColorArray> : Internal::PtrToArgDirect<PackedColorArray> {};
 template <>
 struct PtrToArg<PackedVector4Array> : Internal::PtrToArgDirect<PackedVector4Array> {};
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+template <>
+struct PtrToArg<VariantStruct> : Internal::PtrToArgDirect<VariantStruct> {};
+#endif
 template <>
 struct PtrToArg<Variant> : Internal::PtrToArgByReference<Variant> {};
 
