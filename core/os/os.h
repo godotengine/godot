@@ -294,6 +294,7 @@ public:
 	virtual String get_temp_path() const;
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
+	virtual String get_bundle_icon_name() const;
 
 	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;
