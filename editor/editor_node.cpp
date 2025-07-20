@@ -4100,6 +4100,7 @@ void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	if (p_change_tab) {
 		_set_current_scene(new_index);
 	}
+	SceneTreeDock::get_singleton()->close_edited_scene();
 	editor_data.remove_scene(old_index);
 	_update_title();
 	scene_tabs->update_scene_tabs();

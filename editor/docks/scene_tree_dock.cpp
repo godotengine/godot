@@ -3361,6 +3361,10 @@ void SceneTreeDock::set_edited_scene(Node *p_scene) {
 	edited_scene = p_scene;
 }
 
+void SceneTreeDock::close_edited_scene() {
+	node_previous_selection.clear();
+}
+
 static bool _is_same_selection(const Vector<Node *> &p_first, const List<Node *> &p_second) {
 	if (p_first.size() != p_second.size()) {
 		return false;

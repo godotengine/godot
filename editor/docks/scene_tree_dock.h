@@ -322,6 +322,7 @@ public:
 
 	void add_root_node(Node *p_node);
 	void set_edited_scene(Node *p_scene);
+	void close_edited_scene();
 	void instantiate(const String &p_file);
 	void instantiate_scenes(const Vector<String> &p_files, Node *p_parent = nullptr);
 	void set_selection(const Vector<Node *> &p_nodes);
