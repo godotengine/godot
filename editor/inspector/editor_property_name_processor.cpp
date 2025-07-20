@@ -148,6 +148,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["aa"] = "AA";
 	capitalize_string_remaps["aabb"] = "AABB";
 	capitalize_string_remaps["adb"] = "ADB";
+	capitalize_string_remaps["actool"] = "actool";
 	capitalize_string_remaps["ao"] = "AO";
 	capitalize_string_remaps["api"] = "API";
 	capitalize_string_remaps["apk"] = "APK";

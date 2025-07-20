@@ -38,6 +38,11 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
+		<member name="application/liquid_glass_icon" type="String" setter="" getter="">
+			macOS 26 Liquid Glass icon source file. Use [url=https://developer.apple.com/icon-composer/]Icon Composer[/url] to create Liquid Glass icons.
+			[b]Note:[/b] Supported when exporting from macOS only, Xcode 26+ required.
+			[b]Note:[/b] Liquid Glass icons are supported on macOS 26 only, use [member application/icon] to set the icon for older macOS versions.
+		</member>
 		<member name="application/min_macos_version_arm64" type="String" setter="" getter="">
 			Minimum version of macOS required for this application to run on Apple Silicon Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
