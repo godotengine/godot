@@ -388,8 +388,12 @@ void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_COND(p_connection.is_null());
 
-	connection_map[p_connection->first_port].erase(p_connection);
-	connection_map[p_connection->second_port].erase(p_connection);
+	if (p_connection->first_port) {
+		connection_map[p_connection->first_port].erase(p_connection);
+	}
+	if (p_connection->second_port) {
+		connection_map[p_connection->second_port].erase(p_connection);
+	}
 	graph_connections.erase(p_connection);
 	p_connection->_cache.line->queue_free();
 
