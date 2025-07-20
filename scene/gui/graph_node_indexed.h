@@ -138,6 +138,8 @@ public:
 	int child_to_slot_index(int idx);
 	int slot_to_child_index(int idx);
 
+	Node *get_child_by_slot_index(int p_slot_index);
+
 	TypedArray<Ref<GraphConnection>> get_input_connections();
 	TypedArray<Ref<GraphConnection>> get_output_connections();
 

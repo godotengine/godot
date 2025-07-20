@@ -378,9 +378,14 @@ int GraphNodeIndexed::child_to_slot_index(int idx) {
 	return slot_index_of_node(get_child(idx, false));
 }
 int GraphNodeIndexed::slot_to_child_index(int idx) {
-	ERR_FAIL_INDEX_V(idx, slots.size(), -1);
-	Node *child = get_node_or_null(NodePath(slots[idx].node_name));
+	Node *child = get_child_by_slot_index(idx);
+	ERR_FAIL_NULL_V(child, -1);
 	return child->get_index(false);
+}
+
+Node *GraphNodeIndexed::get_child_by_slot_index(int p_slot_index) {
+	ERR_FAIL_INDEX_V(p_slot_index, slots.size(), nullptr);
+	return get_node_or_null(NodePath(slots[p_slot_index].node_name));
 }
 
 int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
@@ -457,6 +462,8 @@ int GraphNodeIndexed::get_output_port_count() {
 }
 
 int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) {
+	ERR_FAIL_INDEX_V(p_port_index, ports.size(), -1);
+	ERR_FAIL_INDEX_V(p_port_index, slots.size() * 2, -1);
 	if (p_include_disabled) {
 		return floor(p_port_index / 2);
 	}
@@ -464,9 +471,6 @@ int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabl
 	for (int i = 0; i < slots.size(); i++) {
 		int input_port_idx = i * 2;
 		int output_port_idx = input_port_idx + 1;
-		if (input_port_idx >= ports.size()) {
-			break;
-		}
 		if (ports[input_port_idx] && ports[input_port_idx]->is_enabled()) {
 			if (idx == p_port_index) {
 				return i;
@@ -488,6 +492,7 @@ int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input, bool p_
 	if (p_include_disabled) {
 		return idx;
 	} else {
+		ERR_FAIL_INDEX_V(idx, ports.size(), -1);
 		GraphPort *port = Object::cast_to<GraphPort>(ports[idx]);
 		return port->get_port_index(false);
 	}
@@ -628,6 +633,8 @@ void GraphNodeIndexed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_slot_focus_mode", "focus_mode"), &GraphNodeIndexed::set_slot_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_slot_focus_mode"), &GraphNodeIndexed::get_slot_focus_mode);
+
+	ClassDB::bind_method(D_METHOD("get_child_by_slot_index", "slot"), &GraphNodeIndexed::get_child_by_slot_index);
 
 	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNodeIndexed::get_input_connections);
 	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
