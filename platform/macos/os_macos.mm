@@ -469,6 +469,19 @@ String OS_MacOS::get_bundle_icon_path() const {
 	return ret;
 }
 
+String OS_MacOS::get_bundle_icon_name() const {
+	String ret;
+
+	NSBundle *main = [NSBundle mainBundle];
+	if (main) {
+		NSString *icon_name = [[main infoDictionary] objectForKey:@"CFBundleIconName"];
+		if (icon_name) {
+			ret.append_utf8([icon_name UTF8String]);
+		}
+	}
+	return ret;
+}
+
 // Get properly capitalized engine name for system paths
 String OS_MacOS::get_godot_dir_name() const {
 	return String(GODOT_VERSION_SHORT_NAME).capitalize();
