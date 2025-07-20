@@ -3064,10 +3064,10 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_minimap_button"), "set_show_minimap_button", "is_showing_minimap_button");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_arrange_button"), "set_show_arrange_button", "is_showing_arrange_button");
 
-	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "to_port", PROPERTY_HINT_NODE_TYPE, "GraphPort")));
+	ADD_SIGNAL(MethodInfo("connection_request", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::OBJECT, "to_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort")));
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
-	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::VECTOR2, "release_position")));
-	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_NODE_TYPE, "GraphPort"), PropertyInfo(Variant::BOOL, "is_output")));
+	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_drag_started", PropertyInfo(Variant::OBJECT, "from_port", PROPERTY_HINT_RESOURCE_TYPE, "GraphPort"), PropertyInfo(Variant::BOOL, "is_output")));
 	ADD_SIGNAL(MethodInfo("connection_drag_ended"));
 
 	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
