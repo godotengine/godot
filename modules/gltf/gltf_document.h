@@ -108,8 +108,6 @@ public:
 
 private:
 	void _build_parent_hierarchy(Ref<GLTFState> p_state);
-	double _filter_number(double p_float);
-	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
 	String _get_component_type_name(const GLTFAccessor::GLTFComponentType p_component_type);
 	int _get_component_type_size(const GLTFAccessor::GLTFComponentType p_component_type);
 	Error _parse_scenes(Ref<GLTFState> p_state);
@@ -134,7 +132,6 @@ private:
 	void _compute_node_heights(Ref<GLTFState> p_state);
 	Error _parse_buffers(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_buffer_views(Ref<GLTFState> p_state);
-	GLTFAccessor::GLTFAccessorType _get_accessor_type_from_str(const String &p_string);
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	Error _decode_buffer_view(Ref<GLTFState> p_state, double *p_dst,
 			const GLTFBufferViewIndex p_buffer_view,
@@ -183,11 +180,6 @@ private:
 			const GLTFAccessorIndex p_accessor,
 			Variant::Type p_variant_type,
 			GLTFAccessor::GLTFAccessorType p_accessor_type);
-	GLTFAccessorIndex _encode_accessor_as_variant(Ref<GLTFState> p_state,
-			Vector<Variant> p_attribs,
-			Variant::Type p_variant_type,
-			GLTFAccessor::GLTFAccessorType p_accessor_type,
-			GLTFAccessor::GLTFComponentType p_component_type = GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT);
 	Error _parse_meshes(Ref<GLTFState> p_state);
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);
@@ -230,59 +222,6 @@ private:
 	T _interpolate_track(const Vector<double> &p_times, const Vector<T> &p_values,
 			const float p_time,
 			const GLTFAnimation::Interpolation p_interp);
-	GLTFAccessorIndex _encode_accessor_as_quaternions(Ref<GLTFState> p_state,
-			const Vector<Quaternion> p_attribs,
-			const bool p_for_vertex);
-	GLTFAccessorIndex _encode_accessor_as_weights(Ref<GLTFState> p_state,
-			const Vector<Color> p_attribs,
-			const bool p_for_vertex);
-	GLTFAccessorIndex _encode_accessor_as_joints(Ref<GLTFState> p_state,
-			const Vector<Color> p_attribs,
-			const bool p_for_vertex);
-	GLTFAccessorIndex _encode_accessor_as_floats(Ref<GLTFState> p_state,
-			const Vector<double> p_attribs,
-			const bool p_for_vertex);
-	GLTFAccessorIndex _encode_accessor_as_vec2(Ref<GLTFState> p_state,
-			const Vector<Vector2> p_attribs,
-			const bool p_for_vertex);
-
-	void _calc_accessor_vec2_min_max(int p_i, const int64_t p_element_count, Vector<double> &p_type_max, Vector2 p_attribs, Vector<double> &p_type_min) {
-		if (p_i == 0) {
-			for (int64_t type_i = 0; type_i < p_element_count; type_i++) {
-				p_type_max.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
-				p_type_min.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
-			}
-		}
-		for (int64_t type_i = 0; type_i < p_element_count; type_i++) {
-			p_type_max.write[type_i] = MAX(p_attribs[(p_i * p_element_count) + type_i], p_type_max[type_i]);
-			p_type_min.write[type_i] = MIN(p_attribs[(p_i * p_element_count) + type_i], p_type_min[type_i]);
-			p_type_max.write[type_i] = _filter_number(p_type_max.write[type_i]);
-			p_type_min.write[type_i] = _filter_number(p_type_min.write[type_i]);
-		}
-	}
-
-	GLTFAccessorIndex _encode_accessor_as_vec3(Ref<GLTFState> p_state,
-			const Vector<Vector3> p_attribs,
-			const bool p_for_vertex);
-	GLTFAccessorIndex _encode_sparse_accessor_as_vec3(Ref<GLTFState> p_state, const Vector<Vector3> p_attribs, const Vector<Vector3> p_reference_attribs, const float p_reference_multiplier, const bool p_for_vertex, const GLTFAccessorIndex p_reference_accessor);
-	GLTFAccessorIndex _encode_accessor_as_color(Ref<GLTFState> p_state,
-			const Vector<Color> p_attribs,
-			const bool p_for_vertex);
-
-	void _calc_accessor_min_max(int p_i, const int64_t p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min);
-
-	GLTFAccessorIndex _encode_accessor_as_ints(Ref<GLTFState> p_state,
-			const Vector<int32_t> p_attribs,
-			const bool p_for_vertex,
-			const bool p_for_indices);
-	GLTFAccessorIndex _encode_accessor_as_xform(Ref<GLTFState> p_state,
-			const Vector<Transform3D> p_attribs,
-			const bool p_for_vertex);
-	Error _encode_accessor_into_buffer_view(Ref<GLTFState> p_state, const double *p_src,
-			const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
-			const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized,
-			const int64_t p_byte_offset, const bool p_for_vertex,
-			GLTFBufferViewIndex &r_buffer_view, const bool p_for_indices = false);
 
 	Error _encode_accessors(Ref<GLTFState> p_state);
 	Error _encode_buffer_views(Ref<GLTFState> p_state);
