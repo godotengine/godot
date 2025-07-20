@@ -331,7 +331,7 @@ private:
 	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;
 	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
 	PackedVector2Array _get_connection_line_bind_compat_86158(const Vector2 &p_from, const Vector2 &p_to);
-	Error _connect_node_bind_compat_97449(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	Ref<GraphConnection> _connect_node_bind_compat_97449(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 #endif
 
 protected:
@@ -367,9 +367,9 @@ public:
 	void _update_graph_frame(GraphFrame *p_frame);
 
 	// Connection related methods.
-	Error connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid = true);
-	Error connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool p_clear_if_invalid = true);
-	Error connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool p_keep_alive = false);
+	Ref<GraphConnection> connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid = true);
+	Ref<GraphConnection> connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool p_clear_if_invalid = true);
+	Ref<GraphConnection> connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool p_keep_alive = false);
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
 	void disconnect_by_connection(const Ref<GraphConnection> p_connection);

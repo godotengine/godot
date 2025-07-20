@@ -262,9 +262,10 @@ PackedStringArray GraphEdit::get_configuration_warnings() const {
 	return warnings;
 }
 
-Error GraphEdit::connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid) {
+Ref<GraphConnection> GraphEdit::connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid) {
 	Ref<GraphConnection> c = memnew(GraphConnection(p_first_port, p_second_port, p_clear_if_invalid));
-	return _add_connection(c);
+	_add_connection(c);
+	return c;
 }
 
 Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
@@ -343,21 +344,21 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 	return OK;
 }
 
-Error GraphEdit::connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool p_clear_if_invalid) {
+Ref<GraphConnection> GraphEdit::connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool p_clear_if_invalid) {
 	GraphNode *first_node = Object::cast_to<GraphNode>(get_node_or_null(NodePath(p_first_node)));
 	GraphNode *second_node = Object::cast_to<GraphNode>(get_node_or_null(NodePath(p_second_node)));
-	ERR_FAIL_NULL_V(first_node, FAILED);
-	ERR_FAIL_NULL_V(second_node, FAILED);
+	ERR_FAIL_NULL_V(first_node, Ref<GraphConnection>());
+	ERR_FAIL_NULL_V(second_node, Ref<GraphConnection>());
 	return connect_nodes(first_node->get_port(p_first_port), second_node->get_port(p_second_port), p_clear_if_invalid);
 }
 
 // These legacy methods are used by the visual shader system, which tracks connections using per-side port indices.
 // Ideally, visual shaders will be overhauled in the future to behave better, but for now, the goal is to get this feature done without breaking visual shaders.
-Error GraphEdit::connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool keep_alive) {
+Ref<GraphConnection> GraphEdit::connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool keep_alive) {
 	GraphNodeIndexed *first_node = Object::cast_to<GraphNodeIndexed>(get_node_or_null(NodePath(p_from_node)));
 	GraphNodeIndexed *second_node = Object::cast_to<GraphNodeIndexed>(get_node_or_null(NodePath(p_to_node)));
-	ERR_FAIL_NULL_V(first_node, FAILED);
-	ERR_FAIL_NULL_V(second_node, FAILED);
+	ERR_FAIL_NULL_V(first_node, Ref<GraphConnection>());
+	ERR_FAIL_NULL_V(second_node, Ref<GraphConnection>());
 	return connect_nodes(first_node->get_filtered_port(p_from_port, GraphPort::OUTPUT, false), second_node->get_filtered_port(p_to_port, GraphPort::INPUT, false), !keep_alive);
 }
 
