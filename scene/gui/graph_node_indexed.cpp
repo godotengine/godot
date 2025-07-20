@@ -388,6 +388,10 @@ Node *GraphNodeIndexed::get_child_by_slot_index(int p_slot_index) {
 	return get_node_or_null(NodePath(slots[p_slot_index].node_name));
 }
 
+Node *GraphNodeIndexed::get_child_by_port(GraphPort *p_port) {
+	return get_child_by_slot_index(slot_index_of_port(p_port));
+}
+
 int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
 	return floor(index_of_port(p_port) / 2);
 }
@@ -635,6 +639,7 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_slot_focus_mode"), &GraphNodeIndexed::get_slot_focus_mode);
 
 	ClassDB::bind_method(D_METHOD("get_child_by_slot_index", "slot"), &GraphNodeIndexed::get_child_by_slot_index);
+	ClassDB::bind_method(D_METHOD("get_child_by_port", "port"), &GraphNodeIndexed::get_child_by_port);
 
 	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNodeIndexed::get_input_connections);
 	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
