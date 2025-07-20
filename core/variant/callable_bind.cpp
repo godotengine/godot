@@ -170,6 +170,19 @@ CallableCustomBind::CallableCustomBind(const Callable &p_callable, const Vector<
 CallableCustomBind::~CallableCustomBind() {
 }
 
+void CallableCustomPrebind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
+	const Variant **args = (const Variant **)alloca(sizeof(Variant *) * (binds.size() + p_argcount));
+	for (int i = 0; i < binds.size(); i++) {
+		args[i] = (const Variant *)&binds[i];
+	}
+	int bind_count = binds.size();
+	for (int i = 0; i < p_argcount; i++) {
+		args[i + bind_count] = (const Variant *)p_arguments[i];
+	}
+
+	callable.callp(args, p_argcount + binds.size(), r_return_value, r_call_error);
+}
+
 //////////////////////////////////
 
 uint32_t CallableCustomUnbind::hash() const {
