@@ -434,7 +434,7 @@ bool TextServerAdvanced::_has(const RID &p_rid) {
 bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 	_THREAD_SAFE_METHOD_
 
-#ifdef ICU_STATIC_DATA
+#if defined(ICU_STATIC_DATA) || !defined(HAVE_ICU_BUILTIN)
 	if (!icu_data_loaded) {
 		UErrorCode err = U_ZERO_ERROR;
 		u_init(&err); // Do not check for errors, since we only load part of the data.
