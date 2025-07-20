@@ -44,6 +44,7 @@
 #include "servers/audio/effects/audio_effect_compressor.h"
 
 #ifdef TOOLS_ENABLED
+#include "servers/display_server.h"
 #define MARK_EDITED set_edited(true);
 #else
 #define MARK_EDITED
@@ -221,6 +222,15 @@ void AudioDriverManager::initialize(int p_driver) {
 	if (p_driver >= 0 && p_driver < driver_count) {
 		if (drivers[p_driver]->init() == OK) {
 			drivers[p_driver]->set_singleton();
+			// Print message for explicitly selected Dummy driver
+#ifdef TOOLS_ENABLED
+			if (String(drivers[p_driver]->get_name()) == "Dummy") {
+				if (!DisplayServer::get_singleton() ||
+						DisplayServer::get_singleton()->get_name() != "headless") {
+					print_line("No audio (using dummy audio driver)");
+				}
+			}
+#endif
 			return;
 		} else {
 			failed_driver = p_driver;
@@ -236,12 +246,12 @@ void AudioDriverManager::initialize(int p_driver) {
 
 		if (drivers[i]->init() == OK) {
 			drivers[i]->set_singleton();
+			// Check if Dummy driver is loaded as fallback
+			if (String(drivers[i]->get_name()) == "Dummy" && driver_count > 1) {
+				WARN_PRINT("All audio drivers failed, falling back to the dummy driver.");
+			}
 			break;
 		}
-	}
-
-	if (driver_count > 1 && String(AudioDriver::get_singleton()->get_name()) == "Dummy") {
-		WARN_PRINT("All audio drivers failed, falling back to the dummy driver.");
 	}
 }
 
