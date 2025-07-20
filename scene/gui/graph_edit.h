@@ -370,9 +370,10 @@ public:
 	Ref<GraphConnection> connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid = true);
 	Ref<GraphConnection> connect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port, bool p_clear_if_invalid = true);
 	Ref<GraphConnection> connect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port, bool p_keep_alive = false);
+	Error add_connection(Ref<GraphConnection> p_connection);
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
-	void disconnect_by_connection(const Ref<GraphConnection> p_connection);
+	void remove_connection(const Ref<GraphConnection> p_connection);
 	void disconnect_all_by_port(GraphPort *p_port);
 	void disconnect_all_by_node(GraphNode *p_node);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);

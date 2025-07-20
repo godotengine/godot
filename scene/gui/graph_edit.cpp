@@ -268,6 +268,10 @@ Ref<GraphConnection> GraphEdit::connect_nodes(GraphPort *p_first_port, GraphPort
 	return c;
 }
 
+Error GraphEdit::add_connection(Ref<GraphConnection> p_connection) {
+	return _add_connection(p_connection);
+}
+
 Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_NULL_V_MSG(connections_layer, FAILED, "connections_layer is missing.");
 
@@ -380,7 +384,7 @@ void GraphEdit::disconnect_nodes_indexed_legacy(String p_from_node, int p_from_p
 	disconnect_nodes(first_node->get_filtered_port(p_from_port, GraphPort::OUTPUT, false), second_node->get_filtered_port(p_to_port, GraphPort::INPUT, false));
 }
 
-void GraphEdit::disconnect_by_connection(Ref<GraphConnection> p_connection) {
+void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_COND(p_connection.is_null());
 
@@ -403,7 +407,7 @@ void GraphEdit::disconnect_all_by_port(GraphPort *p_port) {
 		if (conn.is_null()) {
 			continue;
 		}
-		disconnect_by_connection(conn);
+		remove_connection(conn);
 	}
 }
 
@@ -420,7 +424,7 @@ void GraphEdit::disconnect_all_by_node(GraphNode *p_node) {
 }
 
 void GraphEdit::disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port) {
-	disconnect_by_connection(get_connection(p_first_port, p_second_port));
+	remove_connection(get_connection(p_first_port, p_second_port));
 }
 
 void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
@@ -431,7 +435,7 @@ void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
 		if (conn.is_null()) {
 			continue;
 		}
-		disconnect_by_connection(conn);
+		remove_connection(conn);
 		connect_nodes(p_to_port, conn->get_other_port(p_from_port));
 	}
 }
@@ -2912,7 +2916,8 @@ void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("connect_nodes", "first_port", "second_port", "keep_alive"), &GraphEdit::connect_nodes, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "first_port", "second_port"), &GraphEdit::disconnect_nodes);
-	ClassDB::bind_method(D_METHOD("disconnect_by_connection", "connection"), &GraphEdit::disconnect_by_connection);
+	ClassDB::bind_method(D_METHOD("add_connection", "connection"), &GraphEdit::add_connection);
+	ClassDB::bind_method(D_METHOD("remove_connection", "connection"), &GraphEdit::remove_connection);
 	ClassDB::bind_method(D_METHOD("disconnect_all_by_port", "port"), &GraphEdit::disconnect_all_by_port);
 	ClassDB::bind_method(D_METHOD("disconnect_all_by_node", "node"), &GraphEdit::disconnect_all_by_node);
 	ClassDB::bind_method(D_METHOD("ports_connected", "first_port", "second_port"), &GraphEdit::ports_connected);
