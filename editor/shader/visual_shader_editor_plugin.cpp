@@ -153,7 +153,7 @@ void VSGraphNode::create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, 
 
 	p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
 
-	_insert_slot(p_slot_index, Slot(p_draw_stylebox));
+	_insert_slot(p_slot_index, Slot(p_draw_stylebox, p_slot_node_name));
 	insert_port(slot_to_port_index(p_slot_index, true), p_left);
 	insert_port(slot_to_port_index(p_slot_index, false), p_right);
 }

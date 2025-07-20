@@ -46,18 +46,25 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	}
 
 	StringName child_name = p_child->get_name();
-	int slot_index = slot_index_of_node(p_child);
 
 	// Child already exists in slot node cache - ignore and move on.
-	if (_slot_node_map_cache.has(child_name)) {
+	if (_node_to_slot_cache.has(child_name)) {
+		// edge case: node name not assigned, overwrite it
+		int slot_idx = _node_to_slot_cache[child_name];
+		if (slots[slot_idx].node_name.is_empty()) {
+			slots.set(slot_idx, Slot(slots[slot_idx].draw_stylebox, child_name));
+		}
 		return;
 	}
+
+	int slot_index = slot_index_of_node(p_child);
+	ERR_FAIL_COND_MSG(slot_index < 0, "Added child to GraphNodeIndexed, but couldn't find it in the node's children?? Failed to assign slot index, aborting!");
 
 	if (!is_ready() && slots.size() > slot_index) {
 		// Not ready yet! This should only happen when the node is instantiated along with children.
 		// Properties are assigned before children are created, and a slot already exists for this child, so don't create a new one.
 		// This keeps ports from being overridden/recreated on scene instantiation
-		_slot_node_map_cache[child_name] = slot_index;
+		_node_to_slot_cache[child_name] = slot_index;
 		return;
 	}
 
@@ -72,8 +79,9 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 	}
 
 	StringName child_name = p_child->get_name();
+	ERR_FAIL_COND_MSG(!_node_to_slot_cache.has(child_name), "Moved child of GraphNodeIndexed that was never assigned a slot index?? Failed to swap slots, aborting!");
+	int old_index = _node_to_slot_cache[child_name];
 	int new_index = slot_index_of_node(p_child);
-	int old_index = _slot_node_map_cache[child_name];
 
 	move_slot_with_ports(old_index, new_index);
 }
@@ -81,11 +89,11 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	GraphNode::remove_child_notify(p_child);
 
-	if (p_child->is_internal() || !is_ready() || p_child == port_container || !Object::cast_to<Control>(p_child) || !_slot_node_map_cache.has(p_child->get_name()) || port_container->get_parent() != this) {
+	if (p_child->is_internal() || !is_ready() || p_child == port_container || !Object::cast_to<Control>(p_child) || !_node_to_slot_cache.has(p_child->get_name()) || (port_container && port_container->get_parent() != this)) {
 		return;
 	}
 
-	int index = _slot_node_map_cache[p_child->get_name()];
+	int index = _node_to_slot_cache[p_child->get_name()];
 	ERR_FAIL_INDEX(index, slots.size());
 
 	remove_slot_and_ports(index);
@@ -106,10 +114,10 @@ void GraphNodeIndexed::_notification(int p_what) {
 
 			for (int i = 0; i < get_child_count(false); i++) {
 				Control *_child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
-				if (!_child || !_child->is_visible_in_tree() || _child == port_container || !_slot_node_map_cache.has(_child->get_name())) {
+				if (!_child || !_child->is_visible_in_tree() || _child == port_container || !_node_to_slot_cache.has(_child->get_name())) {
 					continue;
 				}
-				int slot_index = _slot_node_map_cache[_child->get_name()];
+				int slot_index = _node_to_slot_cache[_child->get_name()];
 				const Slot slot = slots[slot_index];
 
 				// TODO: keyboard navigation override for slot selection
@@ -138,7 +146,7 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_style
 
 	p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
 
-	_insert_slot(p_slot_index, Slot(p_draw_stylebox));
+	_insert_slot(p_slot_index, Slot(p_draw_stylebox, p_slot_node_name));
 	insert_port(slot_to_port_index(p_slot_index, true), p_left);
 	insert_port(slot_to_port_index(p_slot_index, false), p_right);
 
@@ -163,7 +171,7 @@ void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
 		remove_port(output_port_idx);
 		remove_port(input_port_idx);
 	}
-	for (KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
+	for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
 		if (kv_pair.value > p_slot_index) {
 			kv_pair.value--;
 		}
@@ -214,7 +222,11 @@ void GraphNodeIndexed::set_slots(const TypedArray<Array> &p_slots) {
 	int i = 0;
 	for (Array p_slot : p_slots) {
 		bool draw_sb = p_slot[0];
-		GraphNodeIndexed::Slot slot = Slot(draw_sb);
+		StringName n_name = StringName();
+		if (p_slot.size() > 1) {
+			n_name = p_slot[1];
+		}
+		GraphNodeIndexed::Slot slot = Slot(draw_sb, n_name);
 		_insert_slot(i, slot);
 		i++;
 	}
@@ -229,6 +241,7 @@ TypedArray<Array> GraphNodeIndexed::get_slots() {
 	for (GraphNodeIndexed::Slot slot : slots) {
 		Array s;
 		s.push_back(slot.draw_stylebox);
+		s.push_back(slot.node_name);
 		ret.push_back(s);
 	}
 	return ret;
@@ -255,23 +268,23 @@ void GraphNodeIndexed::_remove_all_slots() {
 void GraphNodeIndexed::_remove_slot(int p_slot_index) {
 	slots.remove_at(p_slot_index);
 
-	for (KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
+	for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
 		if (kv_pair.value == p_slot_index) {
-			_slot_node_map_cache.erase(kv_pair.key);
+			_node_to_slot_cache.erase(kv_pair.key);
 		}
 	}
 }
 
 void GraphNodeIndexed::_set_slot_node_cache(const TypedDictionary<StringName, int> &p_slot_node_map_cache) {
-	_slot_node_map_cache.clear();
+	_node_to_slot_cache.clear();
 	for (const KeyValue<Variant, Variant> &kv : p_slot_node_map_cache) {
-		_slot_node_map_cache[kv.key] = kv.value;
+		_node_to_slot_cache[kv.key] = kv.value;
 	}
 }
 
 TypedDictionary<StringName, int> GraphNodeIndexed::_get_slot_node_cache() {
 	TypedDictionary<StringName, int> ret;
-	for (const KeyValue<StringName, int> &kv : _slot_node_map_cache) {
+	for (const KeyValue<StringName, int> &kv : _node_to_slot_cache) {
 		ret[kv.key] = kv.value;
 	}
 	return ret;
@@ -279,31 +292,19 @@ TypedDictionary<StringName, int> GraphNodeIndexed::_get_slot_node_cache() {
 
 void GraphNodeIndexed::_insert_slot(int p_slot_index, const Slot p_slot) {
 	slots.insert(p_slot_index, p_slot);
-
 	if (p_slot_index < get_child_count(false)) {
-		for (KeyValue<StringName, int> &kv_pair : _slot_node_map_cache) {
+		for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
 			if (p_slot_index <= kv_pair.value) {
 				kv_pair.value++;
 			}
 		}
-		int child_index = slot_to_child_index(p_slot_index);
-		if (child_index < get_child_count(false)) {
-			Node *slot_node = get_child(child_index, false);
-			if (slot_node) {
-				_slot_node_map_cache[slot_node->get_name()] = p_slot_index;
-			}
-		}
 	}
+	_node_to_slot_cache[p_slot.node_name] = p_slot_index;
 }
 
 void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot) {
 	slots.set(p_slot_index, p_slot);
-
-	if (p_slot_index < get_child_count(false)) {
-		_slot_node_map_cache[get_child(slot_to_child_index(p_slot_index), false)->get_name()] = p_slot_index;
-	}
-
-	notify_property_list_changed();
+	_node_to_slot_cache[p_slot.node_name] = p_slot_index;
 }
 
 void GraphNodeIndexed::_resort() {
@@ -332,8 +333,8 @@ void GraphNodeIndexed::_update_port_positions() {
 		Size2i size = child->get_size();
 		int port_y = vertical_ofs + size.height * 0.5;
 
-		if (_slot_node_map_cache.has(child->get_name())) {
-			int slot_index = _slot_node_map_cache[child->get_name()];
+		if (_node_to_slot_cache.has(child->get_name())) {
+			int slot_index = _node_to_slot_cache[child->get_name()];
 			GraphPort *left_port = get_input_port_by_slot(slot_index);
 			GraphPort *right_port = get_output_port_by_slot(slot_index);
 
@@ -351,17 +352,35 @@ void GraphNodeIndexed::_update_port_positions() {
 	GraphNode::_update_port_positions();
 }
 
+// Notably, this method does not query or update _node_to_slot_cache
 int GraphNodeIndexed::slot_index_of_node(Node *p_node) {
-	int node_idx = p_node->get_index(false);
-	return child_to_slot_index(node_idx);
+	ERR_FAIL_NULL_V(p_node, -1);
+	ERR_FAIL_COND_V(!is_ancestor_of(p_node), -1);
+
+	// Count control nodes above this node in the hierarchy to get the slot index
+	int slot_counter = 0;
+	for (int i = 0; i < get_child_count(false); i++) {
+		Node *child = get_child(i, false);
+		if (child == port_container || !cast_to<Control>(child)) {
+			continue;
+		}
+		if (child == p_node) {
+			return slot_counter;
+		}
+		slot_counter++;
+	}
+	return -1;
 }
 
 // helpers to account for port container when indexing children for slots
 int GraphNodeIndexed::child_to_slot_index(int idx) {
-	return port_container_idx < idx ? idx - 1 : idx;
+	ERR_FAIL_INDEX_V(idx, get_child_count(false), -1);
+	return slot_index_of_node(get_child(idx, false));
 }
 int GraphNodeIndexed::slot_to_child_index(int idx) {
-	return port_container_idx <= idx ? idx + 1 : idx;
+	ERR_FAIL_INDEX_V(idx, slots.size(), -1);
+	Node *child = get_node_or_null(NodePath(slots[idx].node_name));
+	return child->get_index(false);
 }
 
 int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
@@ -495,7 +514,8 @@ bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
 
 void GraphNodeIndexed::set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox) {
 	ERR_FAIL_INDEX(p_slot_index, slots.size());
-	slots.set(p_slot_index, Slot(p_draw_stylebox));
+	Slot old_slot = slots[p_slot_index];
+	slots.set(p_slot_index, Slot(p_draw_stylebox, old_slot.node_name));
 	notify_property_list_changed();
 }
 
@@ -554,7 +574,7 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slots", "slots"), &GraphNodeIndexed::set_slots);
 	ClassDB::bind_method(D_METHOD("get_slots"), &GraphNodeIndexed::get_slots);
 
-	ClassDB::bind_method(D_METHOD("_set_slot_node_cache", "_slot_node_map_cache"), &GraphNodeIndexed::_set_slot_node_cache);
+	ClassDB::bind_method(D_METHOD("_set_slot_node_cache", "_node_to_slot_cache"), &GraphNodeIndexed::_set_slot_node_cache);
 	ClassDB::bind_method(D_METHOD("_get_slot_node_cache"), &GraphNodeIndexed::_get_slot_node_cache);
 
 	ClassDB::bind_method(D_METHOD("set_slot_properties", "slot_index", "input_enabled", "input_type", "output_enabled", "output_type"), &GraphNodeIndexed::set_slot_properties);
@@ -593,7 +613,7 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_slots", "get_slots");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_slot_node_map_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_node_to_slot_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "slot_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slot_focus_mode", "get_slot_focus_mode");
 
 	ADD_SIGNAL(MethodInfo("slot_added", PropertyInfo(Variant::INT, "slot_index")));

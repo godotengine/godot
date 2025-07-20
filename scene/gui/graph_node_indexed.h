@@ -39,13 +39,14 @@ class GraphNodeIndexed : public GraphNode {
 protected:
 	struct Slot {
 		bool draw_stylebox = true;
+		StringName node_name;
 
 		Slot();
-		Slot(bool draw_sb) :
-				draw_stylebox(draw_sb) {}
+		Slot(bool p_draw_sb, StringName p_node_name) :
+				draw_stylebox(p_draw_sb), node_name(p_node_name) {}
 	};
 	Vector<Slot> slots;
-	HashMap<StringName, int> _slot_node_map_cache;
+	HashMap<StringName, int> _node_to_slot_cache;
 	Vector<float> _slot_y_cache;
 
 	int selected_slot = -1;

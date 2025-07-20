@@ -414,13 +414,12 @@ const Vector<GraphPort *> &GraphNode::_get_ports() {
 
 void GraphNode::_add_port(GraphPort *p_port) {
 	ports.push_back(p_port);
-	if (!p_port->get_parent()) {
-		ensure_port_container();
-		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-		p_port->set_owner(this);
-	}
-
 	if (p_port) {
+		if (!p_port->get_parent()) {
+			ensure_port_container();
+			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
+			p_port->set_owner(this);
+		}
 		p_port->graph_node = this;
 		if (!p_port->is_connected("modified", modified_callable)) {
 			p_port->connect("modified", modified_callable);
@@ -436,11 +435,6 @@ void GraphNode::_add_port(GraphPort *p_port) {
 
 void GraphNode::_insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
 	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled) + 1);
-	if (!p_port->get_parent()) {
-		ensure_port_container();
-		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-		p_port->set_owner(this);
-	}
 
 	int idx = p_port_index;
 	if (!p_include_disabled) {
@@ -451,6 +445,11 @@ void GraphNode::_insert_port(int p_port_index, GraphPort *p_port, bool p_include
 	ports.insert(idx, p_port);
 
 	if (p_port) {
+		if (!p_port->get_parent()) {
+			ensure_port_container();
+			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
+			p_port->set_owner(this);
+		}
 		p_port->graph_node = this;
 		if (!p_port->is_connected("modified", modified_callable)) {
 			p_port->connect("modified", modified_callable);
