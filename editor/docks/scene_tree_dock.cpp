@@ -2925,8 +2925,11 @@ void SceneTreeDock::_selection_changed() {
 	}
 
 	// Untrack script changes in previously selected nodes.
-	for (Node *node : node_previous_selection) {
-		node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	for (ObjectID instance_id : node_previous_selection) {
+		Node *node = ObjectDB::get_instance<Node>(instance_id);
+		if (node) {
+			node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+		}
 	}
 
 	// Track script changes in newly selected nodes.
@@ -2934,7 +2937,7 @@ void SceneTreeDock::_selection_changed() {
 	node_previous_selection.reserve(editor_selection->get_selection().size());
 	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
 		Node *node = E.key;
-		node_previous_selection.push_back(node);
+		node_previous_selection.push_back(node->get_instance_id());
 		node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
 	}
 	_queue_update_script_button();
