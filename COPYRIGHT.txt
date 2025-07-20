@@ -181,6 +181,12 @@ Copyright: 2013, Jorge Jimenez
  2013, Diego Gutierrez
 License: Expat
 
+Files: servers/audio/effects/audio_effect_pitch_shift.cpp
+Copyright: 2014-present Godot Engine contributors
+ 2007-2014 Juan Linietsky, Ariel Manzur
+ 1999-2015 Stephan M. Bernsee <s.bernsee [AT] zynaptiq [DOT] com>
+License: Expat and WOL
+
 Files: thirdparty/accesskit/*
 Comment: AccessKit
 Copyright: 2023, The AccessKit Authors.
@@ -2289,3 +2295,12 @@ License: Zlib
  2. Altered source versions must be plainly marked as such, and must not be
     misrepresented as being the original software.
  3. This notice may not be removed or altered from any source distribution.
+
+License: WOL
+                          The Wide Open License (WOL)
+ .
+ Permission to use, copy, modify, distribute and sell this software and its
+ documentation for any purpose is hereby granted without fee, provided that
+ the above copyright notice and this license appear in all source copies.
+ THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF
+ ANY KIND. See https://dspguru.com/wide-open-license/ for more information.
