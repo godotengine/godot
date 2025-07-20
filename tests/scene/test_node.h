@@ -916,4 +916,85 @@ TEST_CASE("[SceneTree][Node] Test the process priority") {
 	memdelete(node4);
 }
 
+class TestNodeOwner : public Node {
+	GDCLASS(TestNodeOwner, Node);
+
+public:
+	struct Counters {
+		int valid_at_notification_exit_tree_counter = 0;
+		int valid_at_tree_exiting_counter = 0;
+	};
+
+	class InnerNode : public Node {
+		GDCLASS(InnerNode, Node);
+
+	protected:
+		void _notification(int p_what) {
+			if (p_what == NOTIFICATION_EXIT_TREE && get_owner() && counters) {
+				++counters->valid_at_notification_exit_tree_counter;
+			}
+		}
+
+	public:
+		void _tree_exiting() {
+			if (get_owner() && counters) {
+				++counters->valid_at_tree_exiting_counter;
+			}
+		}
+
+		InnerNode(Counters *p_counters = nullptr) :
+				counters{ p_counters } {}
+
+		Counters *counters;
+	};
+
+	InnerNode *child;
+	Counters *counters;
+
+	TestNodeOwner(Counters *p_counters = nullptr) :
+			counters{ p_counters } {
+		child = memnew(InnerNode(counters));
+		add_child(child);
+		child->set_owner(this);
+
+		child->connect(SceneStringName(tree_exiting), callable_mp(child, &InnerNode::_tree_exiting));
+		this->connect(SceneStringName(tree_exiting), callable_mp(child, &InnerNode::_tree_exiting));
+	}
+};
+
+TEST_CASE("[SceneTree][Node] Test owner is still through tree exit") {
+	GDREGISTER_CLASS(TestNodeOwner);
+	GDREGISTER_CLASS(TestNodeOwner::InnerNode);
+
+	SUBCASE("Owner is valid, via removal") {
+		TestNodeOwner::Counters counters;
+		TestNodeOwner *node = memnew(TestNodeOwner(&counters));
+
+		CHECK(counters.valid_at_notification_exit_tree_counter == 0);
+		CHECK(counters.valid_at_tree_exiting_counter == 0);
+
+		SceneTree::get_singleton()->get_root()->add_child(node);
+		SceneTree::get_singleton()->get_root()->remove_child(node);
+
+		CHECK(counters.valid_at_notification_exit_tree_counter == 1);
+		CHECK(counters.valid_at_tree_exiting_counter == 2);
+
+		memdelete(node);
+	}
+
+	SUBCASE("Owner is valid, via free") {
+		TestNodeOwner::Counters counters;
+		TestNodeOwner *node = memnew(TestNodeOwner(&counters));
+
+		CHECK(counters.valid_at_notification_exit_tree_counter == 0);
+		CHECK(counters.valid_at_tree_exiting_counter == 0);
+
+		SceneTree::get_singleton()->get_root()->add_child(node);
+		memdelete(node);
+
+		CHECK(counters.valid_at_notification_exit_tree_counter == 1);
+		CHECK(counters.valid_at_tree_exiting_counter == 2);
+	}
+}
+
 } // namespace TestNode
