@@ -102,5 +102,9 @@
 		<member name="locale" type="String" setter="set_locale" getter="get_locale" default="&quot;en&quot;">
 			The locale of the translation.
 		</member>
+		<member name="plural_rules_override" type="String" setter="set_plural_rules_override" getter="get_plural_rules_override" default="&quot;&quot;">
+			The plural rules string to enforce. See [url=https://www.gnu.org/software/gettext/manual/html_node/Plural-forms.html]GNU gettext[/url] for examples and more info.
+			If empty or invalid, default plural rules from [method TranslationServer.get_plural_rules] are used. The English plural rules are used as a fallback.
+		</member>
 	</members>
 </class>

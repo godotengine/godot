@@ -112,22 +112,38 @@ TEST_CASE("[TranslationPO] Messages with context") {
 }
 
 TEST_CASE("[TranslationPO] Plural messages") {
-	Ref<TranslationPO> translation = memnew(TranslationPO);
-	translation->set_locale("fr");
-	translation->set_plural_rule("Plural-Forms: nplurals=2; plural=(n >= 2);");
-	CHECK(translation->get_plural_forms() == 2);
+	{
+		Ref<TranslationPO> translation = memnew(TranslationPO);
+		translation->set_locale("fr");
+		CHECK(translation->get_plural_forms() == 3);
+		CHECK(translation->get_plural_rule() == "(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2)");
+	}
 
-	PackedStringArray plurals;
-	plurals.push_back("Il y a %d pomme");
-	plurals.push_back("Il y a %d pommes");
-	translation->add_plural_message("There are %d apples", plurals);
-	ERR_PRINT_OFF;
-	// This is invalid, as the number passed to `get_plural_message()` may not be negative.
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", -1), -1) == "");
-	ERR_PRINT_ON;
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 0), 0) == "Il y a 0 pomme");
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 1), 1) == "Il y a 1 pomme");
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
+	{
+		Ref<TranslationPO> translation = memnew(TranslationPO);
+		translation->set_locale("invalid");
+		CHECK(translation->get_plural_forms() == 2);
+		CHECK(translation->get_plural_rule() == "(n != 1)");
+	}
+
+	{
+		Ref<TranslationPO> translation = memnew(TranslationPO);
+		translation->set_plural_rules_override("Plural-Forms: nplurals=2; plural=(n >= 2);");
+		CHECK(translation->get_plural_forms() == 2);
+		CHECK(translation->get_plural_rule() == "(n >= 2)");
+
+		PackedStringArray plurals;
+		plurals.push_back("Il y a %d pomme");
+		plurals.push_back("Il y a %d pommes");
+		translation->add_plural_message("There are %d apples", plurals);
+		ERR_PRINT_OFF;
+		// This is invalid, as the number passed to `get_plural_message()` may not be negative.
+		CHECK(vformat(translation->get_plural_message("There are %d apples", "", -1), -1) == "");
+		ERR_PRINT_ON;
+		CHECK(vformat(translation->get_plural_message("There are %d apples", "", 0), 0) == "Il y a 0 pomme");
+		CHECK(vformat(translation->get_plural_message("There are %d apples", "", 1), 1) == "Il y a 1 pomme");
+		CHECK(vformat(translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
+	}
 }
 
 TEST_CASE("[TranslationPO] Plural rules parsing") {

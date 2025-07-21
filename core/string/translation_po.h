@@ -34,8 +34,6 @@
 
 #include "core/string/translation.h"
 
-class PluralRules;
-
 class TranslationPO : public Translation {
 	GDCLASS(TranslationPO, Translation);
 
@@ -45,8 +43,6 @@ class TranslationPO : public Translation {
 	// Otherwise index 0 matches to msgstr in a singular translation.
 	// Strings without context have "" as first key.
 	HashMap<StringName, HashMap<StringName, Vector<StringName>>> translation_map;
-
-	PluralRules *plural_rules = nullptr;
 
 	Vector<String> _get_message_list() const override;
 	Dictionary _get_messages() const override;
@@ -65,13 +61,10 @@ public:
 	StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const override;
 	void erase_message(const StringName &p_src_text, const StringName &p_context = "") override;
 
-	void set_plural_rule(const String &p_plural_rule);
 	int get_plural_forms() const;
 	String get_plural_rule() const;
 
 #ifdef DEBUG_TRANSLATION_PO
 	void print_translation_map();
 #endif
-
-	~TranslationPO();
 };
