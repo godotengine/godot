@@ -107,7 +107,10 @@ void StringName::cleanup() {
 }
 
 void StringName::unref() {
-	ERR_FAIL_COND(!configured);
+	if (unlikely(!configured)) {
+		fprintf(stderr, "Failed to unreference StringName. Its global state has either not been set up or has already been cleaned up.\n");
+		return;
+	}
 
 	if (_data && _data->refcount.unref()) {
 		MutexLock lock(Table::mutex);
@@ -194,7 +197,10 @@ StringName &StringName::operator=(const StringName &p_name) {
 StringName::StringName(const StringName &p_name) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	if (unlikely(!configured)) {
+		fprintf(stderr, "Failed to create StringName. Its global state has either not been set up or has already been cleaned up.\n");
+		return;
+	}
 
 	if (p_name._data && p_name._data->refcount.ref()) {
 		_data = p_name._data;
@@ -204,7 +210,10 @@ StringName::StringName(const StringName &p_name) {
 StringName::StringName(const char *p_name, bool p_static) {
 	_data = nullptr;
 
-	ERR_FAIL_COND(!configured);
+	if (unlikely(!configured)) {
+		fprintf(stderr, "Failed to create StringName. Its global state has either not been set up or has already been cleaned up.\n");
+		return;
+	}
 
 	if (!p_name || p_name[0] == 0) {
 		return; //empty, ignore
