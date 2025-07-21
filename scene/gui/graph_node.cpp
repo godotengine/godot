@@ -900,7 +900,7 @@ void GraphNode::disconnect_all() {
 void GraphNode::disconnect_filtered(GraphPort::PortDirection p_filter_direction) {
 	ERR_FAIL_NULL(graph_edit);
 	for (GraphPort *port : ports) {
-		if (!port || !port->direction == p_filter_direction) {
+		if (!port || port->direction != p_filter_direction) {
 			continue;
 		}
 		graph_edit->disconnect_all_by_port(port);
