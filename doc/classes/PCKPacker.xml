@@ -34,6 +34,15 @@
 				Adds the [param source_path] file to the current PCK package at the [param target_path] internal path. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally. File content is immediately written to the PCK.
 			</description>
 		</method>
+		<method name="add_file_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="target_path" type="String" />
+			<param index="1" name="data" type="PackedByteArray" />
+			<param index="2" name="encrypt" type="bool" default="false" />
+			<description>
+				Adds the [param data] to the current PCK package at the [param target_path] internal path. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally. File content is immediately written to the PCK.
+			</description>
+		</method>
 		<method name="add_file_removal">
 			<return type="int" enum="Error" />
 			<param index="0" name="target_path" type="String" />

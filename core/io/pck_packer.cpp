@@ -49,6 +49,7 @@ static int _get_pad(int p_alignment, int p_n) {
 void PCKPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pck_start", "pck_path", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(32), DEFVAL("0000000000000000000000000000000000000000000000000000000000000000"), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_file", "target_path", "source_path", "encrypt"), &PCKPacker::add_file, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_file_from_buffer", "target_path", "data", "encrypt"), &PCKPacker::add_file_from_buffer, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_file_removal", "target_path"), &PCKPacker::add_file_removal);
 	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
 }
@@ -152,6 +153,17 @@ Error PCKPacker::add_file(const String &p_target_path, const String &p_source_pa
 	if (f.is_null()) {
 		return ERR_FILE_CANT_OPEN;
 	}
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_source_path);
+
+	return _add_file(p_target_path, p_source_path, data, p_encrypt);
+}
+
+Error PCKPacker::add_file_from_buffer(const String &p_target_path, const Vector<uint8_t> &p_data, bool p_encrypt) {
+	return _add_file(p_target_path, "<PackedByteArray>", p_data, p_encrypt);
+}
+
+Error PCKPacker::_add_file(const String &p_target_path, const String &p_source_path, const Vector<uint8_t> &p_data, bool p_encrypt) {
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	File pf;
 	// Simplify path here and on every 'files' access so that paths that have extra '/'
@@ -159,12 +171,11 @@ Error PCKPacker::add_file(const String &p_target_path, const String &p_source_pa
 	pf.path = p_target_path.simplify_path().trim_prefix("res://");
 	pf.src_path = p_source_path;
 	pf.ofs = file->get_position();
-	pf.size = f->get_length();
+	pf.size = p_data.size();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_source_path);
 	{
 		unsigned char hash[16];
-		CryptoCore::md5(data.ptr(), data.size(), hash);
+		CryptoCore::md5(p_data.ptr(), p_data.size(), hash);
 		pf.md5.resize(16);
 		for (int i = 0; i < 16; i++) {
 			pf.md5.write[i] = hash[i];
@@ -184,7 +195,7 @@ Error PCKPacker::add_file(const String &p_target_path, const String &p_source_pa
 		ftmp = fae;
 	}
 
-	ftmp->store_buffer(data);
+	ftmp->store_buffer(p_data);
 
 	if (fae.is_valid()) {
 		ftmp.unref();
@@ -256,7 +267,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		fhead->store_32(flags);
 
 		if (p_verbose) {
-			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", i, file_num, float(i) / file_num * 100, files[i].src_path, files[i].path));
+			print_line(vformat("[%d/%d - %d%%] PCKPacker flush: %s -> %s", i + 1, file_num, float(i + 1) / file_num * 100, files[i].src_path, files[i].path));
 		}
 	}
 
