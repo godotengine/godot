@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/string/optimized_translation.h"
+#include "core/string/plural_rules.h"
 #include "core/string/translation.h"
 #include "core/string/translation_po.h"
 #include "core/string/translation_server.h"
@@ -127,6 +128,54 @@ TEST_CASE("[TranslationPO] Plural messages") {
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 0), 0) == "Il y a 0 pomme");
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 1), 1) == "Il y a 1 pomme");
 	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
+}
+
+TEST_CASE("[TranslationPO] Plural rules parsing") {
+	ERR_PRINT_OFF;
+	{
+		CHECK(PluralRules::parse("") == nullptr);
+
+		CHECK(PluralRules::parse("plurals=(n != 1);") == nullptr);
+		CHECK(PluralRules::parse("nplurals; plurals=(n != 1);") == nullptr);
+		CHECK(PluralRules::parse("nplurals=; plurals=(n != 1);") == nullptr);
+		CHECK(PluralRules::parse("nplurals=0; plurals=(n != 1);") == nullptr);
+		CHECK(PluralRules::parse("nplurals=-1; plurals=(n != 1);") == nullptr);
+
+		CHECK(PluralRules::parse("nplurals=2;") == nullptr);
+		CHECK(PluralRules::parse("nplurals=2; plurals;") == nullptr);
+		CHECK(PluralRules::parse("nplurals=2; plurals=;") == nullptr);
+	}
+	ERR_PRINT_ON;
+
+	{
+		PluralRules *pr = PluralRules::parse("nplurals=3; plural=(n==0 ? 0 : n==1 ? 1 : 2);");
+		REQUIRE(pr != nullptr);
+
+		CHECK(pr->get_nplurals() == 3);
+		CHECK(pr->get_plural() == "(n==0 ? 0 : n==1 ? 1 : 2)");
+
+		CHECK(pr->evaluate(0) == 0);
+		CHECK(pr->evaluate(1) == 1);
+		CHECK(pr->evaluate(2) == 2);
+		CHECK(pr->evaluate(3) == 2);
+
+		memdelete(pr);
+	}
+
+	{
+		PluralRules *pr = PluralRules::parse("nplurals=1; plural=0;");
+		REQUIRE(pr != nullptr);
+
+		CHECK(pr->get_nplurals() == 1);
+		CHECK(pr->get_plural() == "0");
+
+		CHECK(pr->evaluate(0) == 0);
+		CHECK(pr->evaluate(1) == 0);
+		CHECK(pr->evaluate(2) == 0);
+		CHECK(pr->evaluate(3) == 0);
+
+		memdelete(pr);
+	}
 }
 
 #ifdef TOOLS_ENABLED
