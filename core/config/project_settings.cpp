@@ -643,11 +643,16 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef OVERRIDE_DISABLED
 		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(p_main_pack.get_base_dir().path_join("override.cfg"));
+			}
 		}
+#endif
 		return err;
 	}
 
@@ -693,12 +698,17 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// If we opened our package, try and load our project.
 		if (found) {
 			Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef OVERRIDE_DISABLED
 			if (err == OK && !p_ignore_override) {
 				// Load overrides from the PCK and the executable location.
 				// Optional, we don't mind if either fails.
-				_load_settings_text("res://override.cfg");
-				_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+				if (!disable_override) {
+					_load_settings_text("res://override.cfg");
+					_load_settings_text(exec_path.get_base_dir().path_join("override.cfg"));
+				}
 			}
+#endif
 			return err;
 		}
 	}
@@ -713,10 +723,15 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 
 	if (!OS::get_singleton()->get_resource_dir().is_empty()) {
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
+#ifndef OVERRIDE_DISABLED
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text("res://override.cfg");
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text("res://override.cfg");
+			}
 		}
+#endif
 		return err;
 	}
 
@@ -736,7 +751,12 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(resource_path.path_join("project.godot"), resource_path.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(resource_path.path_join("override.cfg"));
+#ifndef OVERRIDE_DISABLED
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(resource_path.path_join("override.cfg"));
+			}
+#endif
 			return err;
 		}
 	}
@@ -760,7 +780,12 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(current_dir.path_join("project.godot"), current_dir.path_join("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.path_join("override.cfg"));
+#ifndef OVERRIDE_DISABLED
+			bool disable_override = GLOBAL_GET("application/config/disable_project_settings_override");
+			if (!disable_override) {
+				_load_settings_text(current_dir.path_join("override.cfg"));
+			}
+#endif
 			found = true;
 			break;
 		}
@@ -1569,6 +1594,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("application/config/use_custom_user_dir", false);
 	GLOBAL_DEF("application/config/custom_user_dir_name", "");
 	GLOBAL_DEF("application/config/project_settings_override", "");
+	GLOBAL_DEF("application/config/disable_project_settings_override", false);
 
 	GLOBAL_DEF("application/run/main_loop_type", "SceneTree");
 	GLOBAL_DEF("application/config/auto_accept_quit", true);
@@ -1667,6 +1693,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "internationalization/rendering/root_node_layout_direction", PROPERTY_HINT_ENUM, "Based on Application Locale,Left-to-Right,Right-to-Left,Based on System Locale"), 0);
 	GLOBAL_DEF_BASIC("internationalization/rendering/root_node_auto_translate", true);
+
+	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "internationalization/locale/custom_language_codes", PROPERTY_HINT_TYPE_STRING, "String;String"), Dictionary());
+	GLOBAL_DEF(PropertyInfo(Variant::DICTIONARY, "internationalization/locale/custom_country_codes", PROPERTY_HINT_TYPE_STRING, "String;String"), Dictionary());
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/tooltip_delay_sec", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 0.5);
