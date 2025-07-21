@@ -295,7 +295,20 @@ void SceneShaderForwardMobile::ShaderData::_create_pipeline(PipelineKey p_pipeli
 			"WIREFRAME:", p_pipeline_key.wireframe);
 #endif
 
-	RD::PipelineColorBlendState::Attachment blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode));
+	RD::PipelineColorBlendState::Attachment blend_attachment;
+	// On mobile, 0.5 is pure white. Compensate when multiplying by doubling the result.
+	if (BlendMode(blend_mode) == BLEND_MODE_MUL) {
+		blend_attachment.enable_blend = true;
+		blend_attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+		blend_attachment.color_blend_op = RD::BLEND_OP_ADD;
+		blend_attachment.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
+		blend_attachment.dst_color_blend_factor = RD::BLEND_FACTOR_SRC_COLOR;
+		blend_attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
+		blend_attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+	} else {
+		blend_attachment = blend_mode_to_blend_attachment(BlendMode(blend_mode));
+	}
+
 	RD::PipelineColorBlendState blend_state_blend;
 	blend_state_blend.attachments.push_back(blend_attachment);
 	RD::PipelineColorBlendState blend_state_opaque = RD::PipelineColorBlendState::create_disabled(1);
