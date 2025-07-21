@@ -190,6 +190,8 @@ private:
 	RID spot_light_buffer;
 	RID area_light_buffer;
 
+	ForwardIDType _light_type_to_forward_id_type(RS::LightType p_type);
+
 	/* DIRECTIONAL LIGHT DATA */
 
 	struct DirectionalLightData {
