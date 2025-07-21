@@ -76,6 +76,17 @@ void JSON::_stringify(String &r_result, const Variant &p_var, const String &p_in
 		case Variant::FLOAT: {
 			const double num = p_var;
 
+			// JSON does not support NaN or Infinity, so use extremely large numbers for infinity.
+			if (!Math::is_finite(num)) {
+				if (num == Math::INF) {
+					r_result += "1e99999";
+				} else if (num == -Math::INF) {
+					r_result += "-1e99999";
+				} else {
+					r_result += "\"NaN\"";
+				}
+				return;
+			}
 			// Only for exactly 0. If we have approximately 0 let the user decide how much
 			// precision they want.
 			if (num == double(0.0)) {
