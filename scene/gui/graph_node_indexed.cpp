@@ -457,12 +457,12 @@ TypedArray<GraphPort> GraphNodeIndexed::get_output_ports(bool p_include_disabled
 	return get_filtered_ports(GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
-int GraphNodeIndexed::get_input_port_count() {
-	return get_filtered_port_count(GraphPort::PortDirection::INPUT);
+int GraphNodeIndexed::get_input_port_count(bool p_include_disabled) {
+	return get_filtered_port_count(GraphPort::PortDirection::INPUT, p_include_disabled);
 }
 
-int GraphNodeIndexed::get_output_port_count() {
-	return get_filtered_port_count(GraphPort::PortDirection::OUTPUT);
+int GraphNodeIndexed::get_output_port_count(bool p_include_disabled) {
+	return get_filtered_port_count(GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
 int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) {
@@ -616,8 +616,8 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_ports", "include_disabled"), &GraphNodeIndexed::get_input_ports, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_output_ports", "include_disabled"), &GraphNodeIndexed::get_output_ports, DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("get_input_port_count"), &GraphNodeIndexed::get_input_port_count);
-	ClassDB::bind_method(D_METHOD("get_output_port_count"), &GraphNodeIndexed::get_output_port_count);
+	ClassDB::bind_method(D_METHOD("get_input_port_count", "include_disabled"), &GraphNodeIndexed::get_input_port_count, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_output_port_count", "include_disabled"), &GraphNodeIndexed::get_output_port_count, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("slot_index_of_node", "node"), &GraphNodeIndexed::slot_index_of_node);
 	ClassDB::bind_method(D_METHOD("slot_index_of_port", "port"), &GraphNodeIndexed::slot_index_of_port);

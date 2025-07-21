@@ -119,8 +119,8 @@ public:
 	TypedArray<GraphPort> get_input_ports(bool p_include_disabled = true);
 	TypedArray<GraphPort> get_output_ports(bool p_include_disabled = true);
 
-	int get_input_port_count();
-	int get_output_port_count();
+	int get_input_port_count(bool p_include_disabled = true);
+	int get_output_port_count(bool p_include_disabled = true);
 
 	int slot_index_of_node(Node *p_node);
 	int slot_index_of_port(GraphPort *p_port);
