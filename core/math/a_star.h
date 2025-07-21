@@ -113,6 +113,7 @@ class AStar3D : public RefCounted {
 	AHashMap<int64_t, Point *> points;
 	HashSet<Segment, Segment> segments;
 	Point *last_closest_point = nullptr;
+	bool neighbor_filter_enabled = false;
 
 	bool _solve(Point *begin_point, Point *end_point, bool p_allow_partial_path);
 
@@ -122,6 +123,7 @@ protected:
 	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
+	GDVIRTUAL2RC(bool, _filter_neighbor, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
@@ -143,6 +145,9 @@ public:
 	bool has_point(int64_t p_id) const;
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
+
+	bool is_neighbor_filter_enabled() const;
+	void set_neighbor_filter_enabled(bool p_enabled);
 
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
@@ -178,6 +183,7 @@ protected:
 	virtual real_t _estimate_cost(int64_t p_from_id, int64_t p_end_id);
 	virtual real_t _compute_cost(int64_t p_from_id, int64_t p_to_id);
 
+	GDVIRTUAL2RC(bool, _filter_neighbor, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _estimate_cost, int64_t, int64_t)
 	GDVIRTUAL2RC(real_t, _compute_cost, int64_t, int64_t)
 
@@ -199,6 +205,9 @@ public:
 	bool has_point(int64_t p_id) const;
 	Vector<int64_t> get_point_connections(int64_t p_id);
 	PackedInt64Array get_point_ids();
+
+	bool is_neighbor_filter_enabled() const;
+	void set_neighbor_filter_enabled(bool p_enabled);
 
 	void set_point_disabled(int64_t p_id, bool p_disabled = true);
 	bool is_point_disabled(int64_t p_id) const;
