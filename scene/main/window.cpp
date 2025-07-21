@@ -2111,6 +2111,14 @@ bool Window::has_focus() const {
 	return focused;
 }
 
+bool Window::has_focus_or_active_popup() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_focused(window_id) || (DisplayServer::get_singleton()->window_get_active_popup() == window_id);
+	}
+	return focused;
+}
+
 void Window::start_drag() {
 	ERR_MAIN_THREAD_GUARD;
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
