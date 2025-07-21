@@ -116,6 +116,24 @@ bool LightStorage::free(RID p_rid) {
 
 /* LIGHT */
 
+ForwardIDType LightStorage::_light_type_to_forward_id_type(RS::LightType p_type) {
+	switch (p_type) {
+		case RS::LIGHT_OMNI: {
+			return FORWARD_ID_TYPE_OMNI_LIGHT;
+		} break;
+		case RS::LIGHT_SPOT: {
+			return FORWARD_ID_TYPE_SPOT_LIGHT;
+		} break;
+		case RS::LIGHT_AREA: {
+			return FORWARD_ID_TYPE_AREA_LIGHT;
+		} break;
+		default: {
+			CRASH_NOW_MSG("Supplied LightType has no equivalent forward type.");
+		} break;
+	}
+	return FORWARD_ID_TYPE_OMNI_LIGHT; // unreachable
+}
+
 void LightStorage::_light_initialize(RID p_light, RS::LightType p_type) {
 	Light light;
 	light.type = p_type;
@@ -495,7 +513,8 @@ RID LightStorage::light_instance_create(RID p_light) {
 	light_instance->light = p_light;
 	light_instance->light_type = light_get_type(p_light);
 	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		light_instance->forward_id = ForwardIDStorage::get_singleton()->allocate_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT);
+		ForwardIDType forward_id_type = _light_type_to_forward_id_type(light_instance->light_type);
+		light_instance->forward_id = ForwardIDStorage::get_singleton()->allocate_forward_id(forward_id_type);
 	}
 
 	return li;
@@ -523,7 +542,8 @@ void LightStorage::light_instance_free(RID p_light) {
 	}
 
 	if (light_instance->light_type != RS::LIGHT_DIRECTIONAL) {
-		ForwardIDStorage::get_singleton()->free_forward_id(light_instance->light_type == RS::LIGHT_OMNI ? FORWARD_ID_TYPE_OMNI_LIGHT : FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id);
+		ForwardIDType forward_id_type = _light_type_to_forward_id_type(light_instance->light_type);
+		ForwardIDStorage::get_singleton()->free_forward_id(forward_id_type, light_instance->forward_id);
 	}
 	light_instance_owner.free(p_light);
 }
@@ -928,7 +948,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		}
 
 		if (using_forward_ids) {
-			forward_id_storage->map_forward_id(type == RS::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index, light_instance->last_pass);
+			ForwardIDType forward_id_type = _light_type_to_forward_id_type(light_instance->light_type);
+			forward_id_storage->map_forward_id(forward_id_type, light_instance->forward_id, index, light_instance->last_pass);
 		}
 
 		LightData &light_data = *light_data_ptr;
