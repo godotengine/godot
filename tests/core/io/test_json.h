@@ -75,7 +75,18 @@ TEST_CASE("[JSON] Stringify arrays") {
 	full_precision_array.push_back(0.123456789012345677);
 	CHECK(JSON::stringify(full_precision_array, "", true, true) == "[0.123456789012345677]");
 
+	Array non_finite_array;
+	non_finite_array.push_back(Math::INF);
+	non_finite_array.push_back(-Math::INF);
+	non_finite_array.push_back(Math::NaN);
+	CHECK(JSON::stringify(non_finite_array) == "[1e99999,-1e99999,\"NaN\"]");
+
 	ERR_PRINT_OFF
+	Array non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_array));
+	CHECK(non_finite_round_trip[0] == Variant(Math::INF));
+	CHECK(non_finite_round_trip[1] == Variant(-Math::INF));
+	CHECK(non_finite_round_trip[2].get_type() == Variant::STRING);
+
 	Array self_array;
 	self_array.push_back(self_array);
 	CHECK(JSON::stringify(self_array) == "[\"[...]\"]");
@@ -113,7 +124,18 @@ TEST_CASE("[JSON] Stringify dictionaries") {
 	full_precision_dictionary["key"] = 0.123456789012345677;
 	CHECK(JSON::stringify(full_precision_dictionary, "", true, true) == "{\"key\":0.123456789012345677}");
 
+	Dictionary non_finite_dictionary;
+	non_finite_dictionary["-inf"] = -Math::INF;
+	non_finite_dictionary["inf"] = Math::INF;
+	non_finite_dictionary["nan"] = Math::NaN;
+	CHECK(JSON::stringify(non_finite_dictionary) == "{\"-inf\":-1e99999,\"inf\":1e99999,\"nan\":\"NaN\"}");
+
 	ERR_PRINT_OFF
+	Dictionary non_finite_round_trip = JSON::parse_string(JSON::stringify(non_finite_dictionary));
+	CHECK(non_finite_round_trip["-inf"] == Variant(-Math::INF));
+	CHECK(non_finite_round_trip["inf"] == Variant(Math::INF));
+	CHECK(non_finite_round_trip["nan"].get_type() == Variant::STRING);
+
 	Dictionary self_dictionary;
 	self_dictionary["key"] = self_dictionary;
 	CHECK(JSON::stringify(self_dictionary) == "{\"key\":\"{...}\"}");
