@@ -31,6 +31,7 @@
 #include "translation.h"
 
 #include "core/os/thread.h"
+#include "core/string/plural_rules.h"
 #include "core/string/translation_server.h"
 
 Dictionary Translation::_get_messages() const {
@@ -73,6 +74,11 @@ void Translation::_set_messages(const Dictionary &p_messages) {
 
 void Translation::set_locale(const String &p_locale) {
 	locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
+
+	if (plural_rules_cache && plural_rules_override.is_empty()) {
+		memdelete(plural_rules_cache);
+		plural_rules_cache = nullptr;
+	}
 }
 
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {
@@ -131,6 +137,44 @@ int Translation::get_message_count() const {
 	return translation_map.size();
 }
 
+PluralRules *Translation::_get_plural_rules() const {
+	if (plural_rules_cache) {
+		return plural_rules_cache;
+	}
+
+	if (!plural_rules_override.is_empty()) {
+		plural_rules_cache = PluralRules::parse(plural_rules_override);
+	}
+
+	if (!plural_rules_cache) {
+		// Locale's default plural rules.
+		const String &default_rule = TranslationServer::get_singleton()->get_plural_rules(locale);
+		if (!default_rule.is_empty()) {
+			plural_rules_cache = PluralRules::parse(default_rule);
+		}
+
+		// Use English plural rules as a fallback.
+		if (!plural_rules_cache) {
+			plural_rules_cache = PluralRules::parse("nplurals=2; plural=(n != 1);");
+		}
+	}
+
+	DEV_ASSERT(plural_rules_cache != nullptr);
+	return plural_rules_cache;
+}
+
+void Translation::set_plural_rules_override(const String &p_rules) {
+	plural_rules_override = p_rules;
+	if (plural_rules_cache) {
+		memdelete(plural_rules_cache);
+		plural_rules_cache = nullptr;
+	}
+}
+
+String Translation::get_plural_rules_override() const {
+	return plural_rules_override;
+}
+
 void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_locale", "locale"), &Translation::set_locale);
 	ClassDB::bind_method(D_METHOD("get_locale"), &Translation::get_locale);
@@ -144,10 +188,20 @@ void Translation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_message_count"), &Translation::get_message_count);
 	ClassDB::bind_method(D_METHOD("_set_messages", "messages"), &Translation::_set_messages);
 	ClassDB::bind_method(D_METHOD("_get_messages"), &Translation::_get_messages);
+	ClassDB::bind_method(D_METHOD("set_plural_rules_override", "rules"), &Translation::set_plural_rules_override);
+	ClassDB::bind_method(D_METHOD("get_plural_rules_override"), &Translation::get_plural_rules_override);
 
 	GDVIRTUAL_BIND(_get_plural_message, "src_message", "src_plural_message", "n", "context");
 	GDVIRTUAL_BIND(_get_message, "src_message", "context");
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "messages", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_messages", "_get_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "locale"), "set_locale", "get_locale");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "plural_rules_override"), "set_plural_rules_override", "get_plural_rules_override");
+}
+
+Translation::~Translation() {
+	if (plural_rules_cache) {
+		memdelete(plural_rules_cache);
+		plural_rules_cache = nullptr;
+	}
 }

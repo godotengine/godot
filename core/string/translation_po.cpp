@@ -131,13 +131,6 @@ Vector<String> TranslationPO::_get_message_list() const {
 	return v;
 }
 
-void TranslationPO::set_plural_rule(const String &p_plural_rule) {
-	if (plural_rules) {
-		memdelete(plural_rules);
-	}
-	plural_rules = PluralRules::parse(p_plural_rule);
-}
-
 void TranslationPO::add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
@@ -150,8 +143,7 @@ void TranslationPO::add_message(const StringName &p_src_text, const StringName &
 }
 
 void TranslationPO::add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context) {
-	ERR_FAIL_NULL_MSG(plural_rules, "Plural rules are not set. Please call set_plural_rule() before calling add_plural_message().");
-	ERR_FAIL_COND_MSG(p_plural_xlated_texts.size() != plural_rules->get_nplurals(), vformat("Trying to add plural texts that don't match the required number of plural forms for locale \"%s\".", get_locale()));
+	ERR_FAIL_COND_MSG(p_plural_xlated_texts.size() != _get_plural_rules()->get_nplurals(), vformat("Trying to add plural texts that don't match the required number of plural forms for locale \"%s\".", get_locale()));
 
 	HashMap<StringName, Vector<StringName>> &map_id_str = translation_map[p_context];
 
@@ -166,11 +158,11 @@ void TranslationPO::add_plural_message(const StringName &p_src_text, const Vecto
 }
 
 int TranslationPO::get_plural_forms() const {
-	return plural_rules ? plural_rules->get_nplurals() : 0;
+	return _get_plural_rules()->get_nplurals();
 }
 
 String TranslationPO::get_plural_rule() const {
-	return plural_rules ? plural_rules->get_plural() : String();
+	return _get_plural_rules()->get_plural();
 }
 
 StringName TranslationPO::get_message(const StringName &p_src_text, const StringName &p_context) const {
@@ -184,14 +176,13 @@ StringName TranslationPO::get_message(const StringName &p_src_text, const String
 
 StringName TranslationPO::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
 	ERR_FAIL_COND_V_MSG(p_n < 0, StringName(), "N passed into translation to get a plural message should not be negative. For negative numbers, use singular translation please. Search \"gettext PO Plural Forms\" online for the documentation on translating negative numbers.");
-	ERR_FAIL_NULL_V_MSG(plural_rules, StringName(), "Plural rules are not set. Please call set_plural_rule() before calling get_plural_message().");
 
 	if (!translation_map.has(p_context) || !translation_map[p_context].has(p_src_text)) {
 		return StringName();
 	}
 	ERR_FAIL_COND_V_MSG(translation_map[p_context][p_src_text].is_empty(), StringName(), vformat("Source text \"%s\" is registered but doesn't have a translation. Please report this bug.", String(p_src_text)));
 
-	int plural_index = plural_rules->evaluate(p_n);
+	int plural_index = _get_plural_rules()->evaluate(p_n);
 	ERR_FAIL_COND_V_MSG(plural_index < 0 || translation_map[p_context][p_src_text].size() < plural_index + 1, StringName(), "Plural index returned or number of plural translations is not valid. Please report this bug.");
 
 	return translation_map[p_context][p_src_text][plural_index];
@@ -233,11 +224,4 @@ int TranslationPO::get_message_count() const {
 void TranslationPO::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_plural_forms"), &TranslationPO::get_plural_forms);
 	ClassDB::bind_method(D_METHOD("get_plural_rule"), &TranslationPO::get_plural_rule);
-}
-
-TranslationPO::~TranslationPO() {
-	if (plural_rules) {
-		memdelete(plural_rules);
-		plural_rules = nullptr;
-	}
 }

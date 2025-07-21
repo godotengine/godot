@@ -33,6 +33,8 @@
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 
+class PluralRules;
+
 class Translation : public Resource {
 	GDCLASS(Translation, Resource);
 	OBJ_SAVE_TYPE(Translation);
@@ -41,12 +43,17 @@ class Translation : public Resource {
 	String locale = "en";
 	HashMap<StringName, StringName> translation_map;
 
+	mutable PluralRules *plural_rules_cache = nullptr;
+	String plural_rules_override;
+
 	virtual Vector<String> _get_message_list() const;
 	virtual Dictionary _get_messages() const;
 	virtual void _set_messages(const Dictionary &p_messages);
 
 protected:
 	static void _bind_methods();
+
+	PluralRules *_get_plural_rules() const;
 
 	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
 	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
@@ -64,5 +71,8 @@ public:
 	virtual int get_message_count() const;
 	virtual Vector<String> get_translated_message_list() const;
 
-	Translation() {}
+	void set_plural_rules_override(const String &p_rules);
+	String get_plural_rules_override() const;
+
+	~Translation();
 };
