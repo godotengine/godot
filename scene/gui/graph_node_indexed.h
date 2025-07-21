@@ -52,6 +52,10 @@ protected:
 	int selected_slot = -1;
 	Control::FocusMode slot_focus_mode = Control::FOCUS_ACCESSIBILITY;
 
+	Control *port_container = nullptr;
+	StringName port_container_name = StringName("PortContainer");
+	int port_container_idx = 0;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel;
 		Ref<StyleBox> panel_selected;
@@ -100,6 +104,9 @@ protected:
 
 	void set_slots(const TypedArray<Array> &p_slots);
 
+	virtual void _add_port(GraphPort *p_port) override;
+	virtual void _insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true) override;
+
 public:
 	void _notification(int p_what);
 
@@ -116,16 +123,8 @@ public:
 	GraphPort *get_input_port_by_node(Node *p_node);
 	GraphPort *get_output_port_by_node(Node *p_node);
 
-	TypedArray<GraphPort> get_input_ports(bool p_include_disabled = true);
-	TypedArray<GraphPort> get_output_ports(bool p_include_disabled = true);
-
-	int get_input_port_count(bool p_include_disabled = true);
-	int get_output_port_count(bool p_include_disabled = true);
-
 	int slot_index_of_node(Node *p_node);
 	int slot_index_of_port(GraphPort *p_port);
-	int index_of_input_port(GraphPort *p_port, bool p_include_disabled = true);
-	int index_of_output_port(GraphPort *p_port, bool p_include_disabled = true);
 
 	int port_to_slot_index(int p_port_index, bool p_include_disabled = true);
 	int slot_to_port_index(int p_slot_index, bool p_input, bool p_include_disabled = true);
@@ -141,9 +140,6 @@ public:
 	Node *get_child_by_slot_index(int p_slot_index);
 	Node *get_child_by_port(GraphPort *p_port);
 
-	TypedArray<Ref<GraphConnection>> get_input_connections();
-	TypedArray<Ref<GraphConnection>> get_output_connections();
-
 	bool get_slot_draw_stylebox(int p_slot_index);
 	void set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox);
 
@@ -151,6 +147,10 @@ public:
 	Control::FocusMode get_slot_focus_mode() const;
 
 	virtual Size2 get_minimum_size() const override;
+
+	void set_port_container(Control *p_container);
+	Control *get_port_container();
+	void ensure_port_container();
 
 	GraphNodeIndexed();
 };

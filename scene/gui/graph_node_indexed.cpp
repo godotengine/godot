@@ -41,7 +41,20 @@
 void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	GraphNode::add_child_notify(p_child);
 
-	if (p_child->is_internal() || !Object::cast_to<Control>(p_child) || p_child == port_container) {
+	if (p_child->is_internal() || !cast_to<Control>(p_child)) {
+		return;
+	}
+	if (p_child == port_container) {
+		port_container_idx = p_child->get_index(false);
+		return;
+	}
+	if (p_child->get_name() == port_container_name) {
+		// Grab existing PortContainer here when it's loaded in
+		set_port_container((Container *)p_child);
+		port_container_idx = p_child->get_index(false);
+	}
+	// Check this after port container checks because other nodes might be tagged with this
+	if (p_child->has_meta(ignore_node_meta_tag)) {
 		return;
 	}
 
@@ -74,7 +87,15 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 void GraphNodeIndexed::move_child_notify(Node *p_child) {
 	GraphNode::move_child_notify(p_child);
 
-	if (p_child->is_internal() || !is_ready() || !Object::cast_to<Control>(p_child) || p_child == port_container) {
+	if (p_child->is_internal() || !is_ready() || !cast_to<Control>(p_child)) {
+		return;
+	}
+	if (p_child == port_container) {
+		port_container_idx = p_child->get_index(false);
+		return;
+	}
+	// Check this after port container checks because other nodes might be tagged with this
+	if (p_child->has_meta(ignore_node_meta_tag)) {
 		return;
 	}
 
@@ -89,7 +110,7 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	GraphNode::remove_child_notify(p_child);
 
-	if (p_child->is_internal() || !is_ready() || p_child == port_container || !Object::cast_to<Control>(p_child) || !_node_to_slot_cache.has(p_child->get_name()) || (port_container && port_container->get_parent() != this)) {
+	if (p_child->is_internal() || !is_ready() || !cast_to<Control>(p_child) || p_child == port_container || p_child->has_meta(ignore_node_meta_tag) || !_node_to_slot_cache.has(p_child->get_name()) || (port_container && port_container->get_parent() != this)) {
 		return;
 	}
 
@@ -101,6 +122,11 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 
 void GraphNodeIndexed::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_RESIZED: {
+			if (port_container) {
+				port_container->set_rect(Rect2(0, 0, get_size().width, get_size().height));
+			}
+		} break;
 		case NOTIFICATION_DRAW: {
 			// Used for layout calculations.
 			Ref<StyleBox> sb_panel = theme_cache.panel;
@@ -114,7 +140,7 @@ void GraphNodeIndexed::_notification(int p_what) {
 
 			for (int i = 0; i < get_child_count(false); i++) {
 				Control *_child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
-				if (!_child || !_child->is_visible_in_tree() || _child == port_container || !_node_to_slot_cache.has(_child->get_name())) {
+				if (!_child || !_child->is_visible_in_tree() || _child->has_meta(ignore_node_meta_tag) || !_node_to_slot_cache.has(_child->get_name())) {
 					continue;
 				}
 				int slot_index = _node_to_slot_cache[_child->get_name()];
@@ -160,12 +186,16 @@ void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
 	if (output_port_idx < ports.size()) {
 		GraphPort *in_port = ports[input_port_idx];
 		GraphPort *out_port = ports[output_port_idx];
-		if (in_port && in_port->get_parent() == port_container) {
-			port_container->remove_child(in_port);
+		if (in_port) {
+			if (in_port->get_parent()) {
+				in_port->get_parent()->remove_child(in_port);
+			}
 			in_port->queue_free();
 		}
-		if (out_port && out_port->get_parent() == port_container) {
-			port_container->remove_child(out_port);
+		if (out_port) {
+			if (out_port->get_parent()) {
+				out_port->get_parent()->remove_child(out_port);
+			}
 			out_port->queue_free();
 		}
 		remove_port(output_port_idx);
@@ -229,6 +259,26 @@ void GraphNodeIndexed::set_slots(const TypedArray<Array> &p_slots) {
 		GraphNodeIndexed::Slot slot = Slot(draw_sb, n_name);
 		_insert_slot(i, slot);
 		i++;
+	}
+}
+
+void GraphNodeIndexed::_add_port(GraphPort *p_port) {
+	GraphNode::_add_port(p_port);
+
+	if (p_port && !p_port->get_parent()) {
+		ensure_port_container();
+		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
+		p_port->set_owner(this);
+	}
+}
+
+void GraphNodeIndexed::_insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	GraphNode::_insert_port(p_port_index, p_port, p_include_disabled);
+
+	if (p_port && !p_port->get_parent()) {
+		ensure_port_container();
+		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
+		p_port->set_owner(this);
 	}
 }
 
@@ -309,6 +359,12 @@ void GraphNodeIndexed::_set_slot(int p_slot_index, const Slot p_slot) {
 
 void GraphNodeIndexed::_resort() {
 	GraphNode::_resort();
+
+	// Special case: stretch port container to fill node
+	if (port_container) {
+		port_container->set_rect(Rect2(0, 0, get_size().width, get_size().height));
+	}
+
 	emit_signal(SNAME("slot_sizes_changed"), this);
 }
 
@@ -326,7 +382,7 @@ void GraphNodeIndexed::_update_port_positions() {
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
-		if (!child || child == port_container) {
+		if (!child || child->has_meta(ignore_node_meta_tag)) {
 			continue;
 		}
 
@@ -360,8 +416,8 @@ int GraphNodeIndexed::slot_index_of_node(Node *p_node) {
 	// Count control nodes above this node in the hierarchy to get the slot index
 	int slot_counter = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
-		Node *child = get_child(i, false);
-		if (child == port_container || !cast_to<Control>(child)) {
+		Control *child = cast_to<Control>(get_child(i, false));
+		if (!child || child->has_meta(ignore_node_meta_tag)) {
 			continue;
 		}
 		if (child == p_node) {
@@ -394,14 +450,6 @@ Node *GraphNodeIndexed::get_child_by_port(GraphPort *p_port) {
 
 int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
 	return floor(index_of_port(p_port) / 2);
-}
-
-int GraphNodeIndexed::index_of_input_port(GraphPort *p_port, bool p_include_disabled) {
-	return filtered_index_of_port(p_port, p_include_disabled);
-}
-
-int GraphNodeIndexed::index_of_output_port(GraphPort *p_port, bool p_include_disabled) {
-	return filtered_index_of_port(p_port, p_include_disabled);
 }
 
 void GraphNodeIndexed::set_slot_properties(int p_slot_index, bool p_input_enabled, int p_input_type, bool p_output_enabled, int p_output_type) {
@@ -447,22 +495,6 @@ GraphPort *GraphNodeIndexed::get_output_port_by_node(Node *p_node) {
 		return nullptr;
 	}
 	return get_output_port_by_slot(slot_idx);
-}
-
-TypedArray<GraphPort> GraphNodeIndexed::get_input_ports(bool p_include_disabled) {
-	return get_filtered_ports(GraphPort::PortDirection::INPUT, p_include_disabled);
-}
-
-TypedArray<GraphPort> GraphNodeIndexed::get_output_ports(bool p_include_disabled) {
-	return get_filtered_ports(GraphPort::PortDirection::OUTPUT, p_include_disabled);
-}
-
-int GraphNodeIndexed::get_input_port_count(bool p_include_disabled) {
-	return get_filtered_port_count(GraphPort::PortDirection::INPUT, p_include_disabled);
-}
-
-int GraphNodeIndexed::get_output_port_count(bool p_include_disabled) {
-	return get_filtered_port_count(GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
 int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) {
@@ -524,14 +556,6 @@ int GraphNodeIndexed::input_port_to_slot_index(int p_port_index, bool p_include_
 int GraphNodeIndexed::output_port_to_slot_index(int p_port_index, bool p_include_disabled) {
 	GraphPort *port = get_filtered_port(p_port_index, GraphPort::PortDirection::OUTPUT, p_include_disabled);
 	return slot_index_of_port(port);
-}
-
-TypedArray<Ref<GraphConnection>> GraphNodeIndexed::get_input_connections() {
-	return get_filtered_connections(GraphPort::INPUT);
-}
-
-TypedArray<Ref<GraphConnection>> GraphNodeIndexed::get_output_connections() {
-	return get_filtered_connections(GraphPort::OUTPUT);
 }
 
 bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
@@ -597,6 +621,35 @@ Size2 GraphNodeIndexed::get_minimum_size() const {
 	return minsize;
 }
 
+void GraphNodeIndexed::set_port_container(Control *p_container) {
+	ERR_FAIL_NULL(p_container);
+	if (port_container == p_container) {
+		return;
+	}
+	port_container = p_container;
+	port_container->set_meta(ignore_node_meta_tag, true);
+}
+
+Control *GraphNodeIndexed::get_port_container() {
+	return port_container;
+}
+
+void GraphNodeIndexed::ensure_port_container() {
+	if (!port_container) {
+		port_container = memnew(Control);
+		port_container->set_name(port_container_name);
+		port_container->set_focus_mode(Control::FOCUS_NONE);
+		port_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+		port_container->set_h_size_flags(SIZE_EXPAND_FILL);
+		port_container->set_anchors_preset(Control::PRESET_TOP_WIDE);
+		port_container->set_meta(ignore_node_meta_tag, true);
+		add_child(port_container, true, Node::INTERNAL_MODE_DISABLED);
+		move_child(port_container, 0);
+		port_container->set_owner(this);
+		port_container->set_rect(Rect2(0, 0, get_size().width, get_size().height));
+	}
+}
+
 void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slots", "slots"), &GraphNodeIndexed::set_slots);
 	ClassDB::bind_method(D_METHOD("get_slots"), &GraphNodeIndexed::get_slots);
@@ -613,16 +666,8 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_port_by_node", "node"), &GraphNodeIndexed::get_input_port_by_node);
 	ClassDB::bind_method(D_METHOD("get_output_port_by_node", "node"), &GraphNodeIndexed::get_output_port_by_node);
 
-	ClassDB::bind_method(D_METHOD("get_input_ports", "include_disabled"), &GraphNodeIndexed::get_input_ports, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_output_ports", "include_disabled"), &GraphNodeIndexed::get_output_ports, DEFVAL(true));
-
-	ClassDB::bind_method(D_METHOD("get_input_port_count", "include_disabled"), &GraphNodeIndexed::get_input_port_count, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_output_port_count", "include_disabled"), &GraphNodeIndexed::get_output_port_count, DEFVAL(true));
-
 	ClassDB::bind_method(D_METHOD("slot_index_of_node", "node"), &GraphNodeIndexed::slot_index_of_node);
 	ClassDB::bind_method(D_METHOD("slot_index_of_port", "port"), &GraphNodeIndexed::slot_index_of_port);
-	ClassDB::bind_method(D_METHOD("index_of_input_port", "port", "include_disabled"), &GraphNodeIndexed::index_of_input_port, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("index_of_output_port", "port", "include_disabled"), &GraphNodeIndexed::index_of_output_port, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("port_to_slot_index", "port_index", "include_disabled"), &GraphNodeIndexed::port_to_slot_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("slot_to_port_index", "slot_index", "is_input_port", "include_disabled"), &GraphNodeIndexed::slot_to_port_index, DEFVAL(true));
@@ -641,12 +686,13 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_child_by_slot_index", "slot"), &GraphNodeIndexed::get_child_by_slot_index);
 	ClassDB::bind_method(D_METHOD("get_child_by_port", "port"), &GraphNodeIndexed::get_child_by_port);
 
-	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNodeIndexed::get_input_connections);
-	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
+	ClassDB::bind_method(D_METHOD("set_port_container", "port_container"), &GraphNodeIndexed::set_port_container);
+	ClassDB::bind_method(D_METHOD("get_port_container"), &GraphNodeIndexed::get_port_container);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_slots", "get_slots");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_node_to_slot_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "slot_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slot_focus_mode", "get_slot_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "port_container", PROPERTY_HINT_NODE_TYPE, "Container", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_port_container", "get_port_container");
 
 	ADD_SIGNAL(MethodInfo("slot_added", PropertyInfo(Variant::INT, "slot_index")));
 	ADD_SIGNAL(MethodInfo("slot_removed", PropertyInfo(Variant::INT, "slot_index")));

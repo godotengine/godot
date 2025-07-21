@@ -89,6 +89,34 @@ void GraphPort::enable() {
 void GraphPort::disable() {
 	enabled = false;
 
+	ERR_FAIL_NULL(graph_edit);
+	switch (on_disabled_behaviour) {
+		case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
+			if (!graph_node) {
+				WARN_PRINT("Port is not assigned to a graph node, should not use DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT");
+				break;
+			}
+			GraphPort *prev_port = graph_node->get_previous_matching_port(this, false);
+			if (prev_port) {
+				graph_edit->move_connections(this, prev_port);
+			}
+		} break;
+		case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
+			if (!graph_node) {
+				WARN_PRINT("Port is not assigned to a graph node, should not use DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT");
+				break;
+			}
+			GraphPort *next_port = graph_node->get_next_matching_port(this, false);
+			if (next_port) {
+				graph_edit->move_connections(this, next_port);
+			}
+		} break;
+		case GraphPort::DisconnectBehaviour::DISCONNECT_ALL:
+		default:
+			break;
+	}
+	graph_edit->disconnect_all_by_port(this);
+
 	queue_redraw();
 	notify_property_list_changed();
 
@@ -219,31 +247,6 @@ int GraphPort::get_filtered_port_index(bool p_include_disabled) {
 
 void GraphPort::disconnect_all() {
 	ERR_FAIL_NULL(graph_edit);
-	switch (on_disabled_behaviour) {
-		case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
-			int prev_port_idx = get_port_index() - 1;
-			if (prev_port_idx >= 0) {
-				GraphPort *prev_port = graph_node->get_port(prev_port_idx);
-				if (prev_port) {
-					graph_edit->move_connections(this, prev_port);
-					break;
-				}
-			}
-		} break;
-		case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
-			int next_port_idx = get_port_index() + 1;
-			if (next_port_idx < graph_node->get_port_count()) {
-				GraphPort *next_port = graph_node->get_port(next_port_idx);
-				if (next_port) {
-					graph_edit->move_connections(this, next_port);
-					break;
-				}
-			}
-		} break;
-		case GraphPort::DisconnectBehaviour::DISCONNECT_ALL:
-		default:
-			break;
-	}
 	graph_edit->disconnect_all_by_port(this);
 }
 
@@ -354,6 +357,7 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_first_connection"), &GraphPort::get_first_connection);
 	ClassDB::bind_method(D_METHOD("get_first_connected_port"), &GraphPort::get_first_connected_port);
 	ClassDB::bind_method(D_METHOD("get_first_connected_node"), &GraphPort::get_first_connected_node);
+	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphPort::disconnect_all);
 
 	ClassDB::bind_method(D_METHOD("get_port_index", "include_disabled"), &GraphPort::get_port_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_index", "include_disabled"), &GraphPort::get_filtered_port_index, DEFVAL(true));

@@ -54,32 +54,26 @@ protected:
 		ACTION_CONNECT,
 		ACTION_FOLLOW,
 	};
-	void _accessibility_action_port(const Variant &p_data);
 
-	virtual void add_child_notify(Node *p_child) override;
-	virtual void move_child_notify(Node *p_child) override;
+	GraphEdit *graph_edit = nullptr;
 
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
-
 	String title;
 
 	Vector<GraphPort *> ports;
-	Control *port_container = nullptr;
-	StringName port_container_name = StringName("PortContainer");
-	int port_container_idx = 0;
-
+	GraphPort *selected_port = nullptr;
 	int port_count = 0;
 	int enabled_port_count = 0;
 	PackedByteArray directed_port_count = { 0, 0, 0 };
 	PackedByteArray directed_enabled_port_count = { 0, 0, 0 };
-	GraphPort *selected_port = nullptr;
 
 	Control::FocusMode port_focus_mode = Control::FOCUS_ACCESSIBILITY;
 	bool port_pos_dirty = true;
 	bool updating_port_pos = false;
 
 	bool ignore_invalid_connection_type = false;
+	const StringName ignore_node_meta_tag = StringName("GraphNodeIgnored");
 
 	struct ThemeCache {
 		Ref<StyleBox> panel;
@@ -98,14 +92,14 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-
 	virtual void _resort() override;
+	void _accessibility_action_port(const Variant &p_data);
 
 	void _set_ports(const Vector<GraphPort *> &p_ports);
 	const Vector<GraphPort *> &_get_ports();
 
-	void _add_port(GraphPort *p_port);
-	void _insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
+	virtual void _add_port(GraphPort *p_port);
+	virtual void _insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	void _remove_port(int p_port_index, bool p_include_disabled = true);
 	void _set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	void _remove_all_ports();
@@ -134,10 +128,15 @@ public:
 	void set_ports(const TypedArray<GraphPort> &p_ports);
 	TypedArray<GraphPort> get_ports();
 	TypedArray<GraphPort> get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled = true);
+	TypedArray<GraphPort> get_input_ports(bool p_include_disabled = true);
+	TypedArray<GraphPort> get_output_ports(bool p_include_disabled = true);
 	void remove_all_ports();
+
 	void set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
 	GraphPort *get_port(int p_port_index, bool p_include_disabled = true);
 	GraphPort *get_filtered_port(int p_port_index, GraphPort::PortDirection p_direction, bool p_include_disabled = true);
+	GraphPort *get_input_port(int p_port_index, bool p_include_disabled = true);
+	GraphPort *get_output_port(int p_port_index, bool p_include_disabled = true);
 	GraphPort *get_next_matching_port(GraphPort *p_port, bool p_include_disabled = true);
 	GraphPort *get_previous_matching_port(GraphPort *p_port, bool p_include_disabled = true);
 	void add_port(GraphPort *port);
@@ -146,8 +145,12 @@ public:
 
 	int get_port_count(bool p_include_disabled = true);
 	int get_filtered_port_count(GraphPort::PortDirection p_filter_direction, bool p_include_disabled = true);
+	int get_input_port_count(bool p_include_disabled = true);
+	int get_output_port_count(bool p_include_disabled = true);
+
 	int index_of_port(GraphPort *p_port, bool p_include_disabled = true);
 	int filtered_index_of_port(GraphPort *p_port, bool p_include_disabled = true);
+
 	int enabled_index_to_port_index(int p_port_index);
 	int port_index_to_enabled_index(int p_port_index);
 
@@ -160,15 +163,21 @@ public:
 	bool has_connection();
 	TypedArray<Ref<GraphConnection>> get_connections();
 	TypedArray<Ref<GraphConnection>> get_filtered_connections(GraphPort::PortDirection p_filter_direction);
+	TypedArray<Ref<GraphConnection>> get_input_connections();
+	TypedArray<Ref<GraphConnection>> get_output_connections();
+
 	TypedArray<GraphNode> get_connected_nodes();
 	TypedArray<GraphNode> get_filtered_connected_nodes(GraphPort::PortDirection p_filter_direction);
+	TypedArray<GraphNode> get_input_connected_nodes();
+	TypedArray<GraphNode> get_output_connected_nodes();
+
+	void disconnect_all();
+	void disconnect_filtered(GraphPort::PortDirection p_filter_direction);
+	void disconnect_input();
+	void disconnect_output();
 
 	void _on_connected(const Ref<GraphConnection> p_conn);
 	void _on_disconnected(const Ref<GraphConnection> p_conn);
-
-	void set_port_container(Control *p_container);
-	Control *get_port_container();
-	void ensure_port_container();
 
 	virtual Size2 get_minimum_size() const override;
 

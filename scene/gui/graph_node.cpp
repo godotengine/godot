@@ -61,7 +61,7 @@ void GraphNode::_resort() {
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
-		if (!child || child == port_container) {
+		if (!child || child->has_meta(ignore_node_meta_tag)) {
 			continue;
 		}
 
@@ -99,7 +99,7 @@ void GraphNode::_resort() {
 
 		for (int i = 0; i < get_child_count(false); i++) {
 			Control *child = as_sortable_control(get_child(i, false));
-			if (!child || child == port_container) {
+			if (!child || child->has_meta(ignore_node_meta_tag)) {
 				continue;
 			}
 
@@ -135,7 +135,7 @@ void GraphNode::_resort() {
 	int valid_children_idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
-		if (!child || child == port_container) {
+		if (!child || child->has_meta(ignore_node_meta_tag)) {
 			continue;
 		}
 
@@ -161,11 +161,6 @@ void GraphNode::_resort() {
 
 		ofs_y = to_y_pos;
 		valid_children_idx++;
-	}
-
-	// Special case: stretch port container to fill node
-	if (port_container) {
-		port_container->set_rect(Rect2(0, 0, new_size.width, new_size.height));
 	}
 
 	queue_accessibility_update();
@@ -197,33 +192,6 @@ void GraphNode::_accessibility_action_port(const Variant &p_data) {
 				target->grab_focus();
 			}
 			break;
-	}
-}
-
-void GraphNode::add_child_notify(Node *p_child) {
-	GraphElement::add_child_notify(p_child);
-
-	if (p_child->is_internal() || !Object::cast_to<Control>(p_child)) {
-		return;
-	}
-
-	if (p_child == port_container) {
-		port_container_idx = p_child->get_index(false);
-		return;
-	}
-
-	if (p_child->get_name() == port_container_name) {
-		// Grab existing PortContainer here when it's loaded in
-		set_port_container((Container *)p_child);
-		port_container_idx = p_child->get_index(false);
-	}
-}
-
-void GraphNode::move_child_notify(Node *p_child) {
-	GraphElement::move_child_notify(p_child);
-
-	if (p_child == port_container) {
-		port_container_idx = p_child->get_index(false);
 	}
 }
 
@@ -307,6 +275,12 @@ Control *GraphNode::get_accessibility_node_by_port(int p_port_idx) {
 
 void GraphNode::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			graph_edit = cast_to<GraphEdit>(get_parent());
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			graph_edit = nullptr;
+		} break;
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
 			RID ae = get_accessibility_element();
 			ERR_FAIL_COND(ae.is_null());
@@ -354,11 +328,6 @@ void GraphNode::_notification(int p_what) {
 		case NOTIFICATION_FOCUS_EXIT: {
 			selected_port = nullptr;
 			queue_redraw();
-		} break;
-		case NOTIFICATION_RESIZED: {
-			if (port_container) {
-				port_container->set_rect(Rect2(0, 0, get_size().width, get_size().height));
-			}
 		} break;
 		case NOTIFICATION_DRAW: {
 			// Used for layout calculations.
@@ -415,11 +384,6 @@ const Vector<GraphPort *> &GraphNode::_get_ports() {
 void GraphNode::_add_port(GraphPort *p_port) {
 	ports.push_back(p_port);
 	if (p_port) {
-		if (!p_port->get_parent()) {
-			ensure_port_container();
-			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-			p_port->set_owner(this);
-		}
 		p_port->graph_node = this;
 		if (!p_port->is_connected("modified", modified_callable)) {
 			p_port->connect("modified", modified_callable);
@@ -445,11 +409,6 @@ void GraphNode::_insert_port(int p_port_index, GraphPort *p_port, bool p_include
 	ports.insert(idx, p_port);
 
 	if (p_port) {
-		if (!p_port->get_parent()) {
-			ensure_port_container();
-			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-			p_port->set_owner(this);
-		}
 		p_port->graph_node = this;
 		if (!p_port->is_connected("modified", modified_callable)) {
 			p_port->connect("modified", modified_callable);
@@ -602,6 +561,14 @@ GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection
 	ERR_FAIL_V_MSG(nullptr, "filtered port index out of bounds - fewer than p_port_index ports with the given direction are enabled.");
 }
 
+GraphPort *GraphNode::get_input_port(int p_port_index, bool p_include_disabled) {
+	return get_filtered_port(p_port_index, GraphPort::PortDirection::INPUT, p_include_disabled);
+}
+
+GraphPort *GraphNode::get_output_port(int p_port_index, bool p_include_disabled) {
+	return get_filtered_port(p_port_index, GraphPort::PortDirection::OUTPUT, p_include_disabled);
+}
+
 GraphPort *GraphNode::get_next_matching_port(GraphPort *p_port, bool p_include_disabled) {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	int filtered_selected_port_idx = filtered_index_of_port(p_port, false);
@@ -648,6 +615,14 @@ TypedArray<GraphPort> GraphNode::get_filtered_ports(GraphPort::PortDirection p_d
 	return _ports;
 }
 
+TypedArray<GraphPort> GraphNode::get_input_ports(bool p_include_disabled) {
+	return get_filtered_ports(GraphPort::PortDirection::INPUT, p_include_disabled);
+}
+
+TypedArray<GraphPort> GraphNode::get_output_ports(bool p_include_disabled) {
+	return get_filtered_ports(GraphPort::PortDirection::OUTPUT, p_include_disabled);
+}
+
 int GraphNode::index_of_port(GraphPort *p_port, bool p_include_disabled) {
 	ERR_FAIL_NULL_V(p_port, -1);
 	return p_port->get_port_index(p_include_disabled);
@@ -664,6 +639,14 @@ int GraphNode::get_port_count(bool p_include_disabled) {
 
 int GraphNode::get_filtered_port_count(GraphPort::PortDirection p_filter_direction, bool p_include_disabled) {
 	return p_include_disabled ? directed_port_count[p_filter_direction] : directed_enabled_port_count[p_filter_direction];
+}
+
+int GraphNode::get_input_port_count(bool p_include_disabled) {
+	return get_filtered_port_count(GraphPort::PortDirection::INPUT, p_include_disabled);
+}
+
+int GraphNode::get_output_port_count(bool p_include_disabled) {
+	return get_filtered_port_count(GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
 int GraphNode::enabled_index_to_port_index(int p_enabled_port_index) {
@@ -893,38 +876,50 @@ TypedArray<GraphNode> GraphNode::get_filtered_connected_nodes(GraphPort::PortDir
 	return ret;
 }
 
+TypedArray<GraphNode> GraphNode::get_input_connected_nodes() {
+	return get_filtered_connected_nodes(GraphPort::PortDirection::INPUT);
+}
+
+TypedArray<GraphNode> GraphNode::get_output_connected_nodes() {
+	return get_filtered_connected_nodes(GraphPort::PortDirection::OUTPUT);
+}
+
+TypedArray<Ref<GraphConnection>> GraphNode::get_input_connections() {
+	return get_filtered_connections(GraphPort::INPUT);
+}
+
+TypedArray<Ref<GraphConnection>> GraphNode::get_output_connections() {
+	return get_filtered_connections(GraphPort::OUTPUT);
+}
+
+void GraphNode::disconnect_all() {
+	ERR_FAIL_NULL(graph_edit);
+	graph_edit->disconnect_all_by_node(this);
+}
+
+void GraphNode::disconnect_filtered(GraphPort::PortDirection p_filter_direction) {
+	ERR_FAIL_NULL(graph_edit);
+	for (GraphPort *port : ports) {
+		if (!port || !port->direction == p_filter_direction) {
+			continue;
+		}
+		graph_edit->disconnect_all_by_port(port);
+	}
+}
+
+void GraphNode::disconnect_input() {
+	disconnect_filtered(GraphPort::INPUT);
+}
+
+void GraphNode::disconnect_output() {
+	disconnect_filtered(GraphPort::OUTPUT);
+}
+
 void GraphNode::_on_connected(const Ref<GraphConnection> p_conn) {
 	emit_signal(SNAME("connected"), p_conn);
 }
 void GraphNode::_on_disconnected(const Ref<GraphConnection> p_conn) {
 	emit_signal(SNAME("disconnected"), p_conn);
-}
-
-void GraphNode::set_port_container(Control *p_container) {
-	ERR_FAIL_NULL(p_container);
-	if (port_container == p_container) {
-		return;
-	}
-	port_container = p_container;
-}
-
-Control *GraphNode::get_port_container() {
-	return port_container;
-}
-
-void GraphNode::ensure_port_container() {
-	if (!port_container) {
-		port_container = memnew(Control);
-		port_container->set_name(port_container_name);
-		port_container->set_focus_mode(Control::FOCUS_NONE);
-		port_container->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
-		port_container->set_h_size_flags(SIZE_EXPAND_FILL);
-		port_container->set_anchors_preset(Control::PRESET_TOP_WIDE);
-		add_child(port_container, true, Node::INTERNAL_MODE_DISABLED);
-		move_child(port_container, 0);
-		port_container->set_owner(this);
-		port_container->set_rect(Rect2(0, 0, get_size().width, get_size().height));
-	}
 }
 
 void GraphNode::_on_replacing_by(Node *new_node) {
@@ -951,13 +946,17 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
 
 	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::set_ports);
-	ClassDB::bind_method(D_METHOD("get_filtered_ports", "filter_direction", "include_disabled"), &GraphNode::get_filtered_ports, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("remove_all_ports"), &GraphNode::remove_all_ports);
 	ClassDB::bind_method(D_METHOD("get_ports"), &GraphNode::get_ports);
+	ClassDB::bind_method(D_METHOD("get_filtered_ports", "filter_direction", "include_disabled"), &GraphNode::get_filtered_ports, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_input_ports", "include_disabled"), &GraphNodeIndexed::get_input_ports, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_output_ports", "include_disabled"), &GraphNodeIndexed::get_output_ports, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("remove_all_ports"), &GraphNode::remove_all_ports);
 
 	ClassDB::bind_method(D_METHOD("set_port", "port_index", "port", "include_disabled"), &GraphNode::set_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_port", "port_index", "include_disabled"), &GraphNode::get_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port", "port_index", "filter_direction", "include_disabled"), &GraphNode::get_filtered_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_input_port", "port_index", "include_disabled"), &GraphNode::get_input_port, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_output_port", "port_index", "include_disabled"), &GraphNode::get_output_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_next_matching_port", "port", "include_disabled"), &GraphNode::get_next_matching_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_previous_matching_port", "port", "include_disabled"), &GraphNode::get_previous_matching_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("add_port", "port"), &GraphNode::add_port);
@@ -966,6 +965,9 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_port_count", "include_disabled"), &GraphNode::get_port_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_count", "filter_direction", "include_disabled"), &GraphNode::get_filtered_port_count, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_input_port_count", "include_disabled"), &GraphNodeIndexed::get_input_port_count, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_output_port_count", "include_disabled"), &GraphNodeIndexed::get_output_port_count, DEFVAL(true));
+
 	ClassDB::bind_method(D_METHOD("index_of_port", "port", "include_disabled"), &GraphNode::index_of_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("filtered_index_of_port", "port", "include_disabled"), &GraphNode::filtered_index_of_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("enabled_index_to_port_index", "enabled_port_index"), &GraphNode::enabled_index_to_port_index);
@@ -974,8 +976,18 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_connection"), &GraphNode::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphNode::get_connections);
 	ClassDB::bind_method(D_METHOD("get_filtered_connections", "filter_direction"), &GraphNode::get_filtered_connections);
+	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNodeIndexed::get_input_connections);
+	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
+
 	ClassDB::bind_method(D_METHOD("get_connected_nodes"), &GraphNode::get_connected_nodes);
 	ClassDB::bind_method(D_METHOD("get_filtered_connected_nodes", "filter_direction"), &GraphNode::get_filtered_connected_nodes);
+	ClassDB::bind_method(D_METHOD("get_input_connected_nodes"), &GraphNode::get_input_connected_nodes);
+	ClassDB::bind_method(D_METHOD("get_output_connected_nodes"), &GraphNode::get_output_connected_nodes);
+
+	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphNode::disconnect_all);
+	ClassDB::bind_method(D_METHOD("disconnect_filtered", "filter_direction"), &GraphNode::disconnect_filtered);
+	ClassDB::bind_method(D_METHOD("disconnect_input"), &GraphNode::disconnect_input);
+	ClassDB::bind_method(D_METHOD("disconnect_output"), &GraphNode::disconnect_output);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
@@ -983,14 +995,10 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_port_focus_mode", "focus_mode"), &GraphNode::set_port_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_port_focus_mode"), &GraphNode::get_port_focus_mode);
 
-	ClassDB::bind_method(D_METHOD("set_port_container", "port_container"), &GraphNode::set_port_container);
-	ClassDB::bind_method(D_METHOD("get_port_container"), &GraphNode::get_port_container);
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_TYPE_STRING, MAKE_NODE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_port_focus_mode", "get_port_focus_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "port_container", PROPERTY_HINT_NODE_TYPE, "Container", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_port_container", "get_port_container");
 
 	ADD_SIGNAL(MethodInfo("connected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
 	ADD_SIGNAL(MethodInfo("disconnected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
