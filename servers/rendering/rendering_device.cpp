@@ -3144,7 +3144,7 @@ RenderingDevice::VertexFormatID RenderingDevice::vertex_format_create(const Vect
 	}
 
 	RDD::VertexFormatID driver_id = driver->vertex_format_create(p_vertex_descriptions);
-	ERR_FAIL_COND_V(!driver_id, 0);
+	ERR_FAIL_COND_V(!driver_id, INVALID_ID);
 
 	VertexFormatID id = (vertex_format_cache.size() | ((int64_t)ID_TYPE_VERTEX_FORMAT << ID_BASE_SHIFT));
 	vertex_format_cache[key] = id;
