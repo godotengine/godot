@@ -847,6 +847,8 @@ void GraphEdit::_graph_node_ports_updated(GraphNode *p_node) {
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
+	callable_mp(this, &GraphEdit::_invalidate_graph_node_connections).bind(p_node).call_deferred();
+	callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw).call_deferred();
 	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
 }
 
@@ -1323,7 +1325,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 			}
 
 			for (GraphPort *port : graph_node->ports) {
-				if (!port) {
+				if (!port || !port->enabled) {
 					continue;
 				}
 
@@ -1351,7 +1353,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 				}
 
 				for (GraphPort *port : graph_node->ports) {
-					if (!port) {
+					if (!port || !port->enabled) {
 						continue;
 					}
 					if (is_in_port_hotzone(port, mm->get_position() / zoom)) {
@@ -2572,14 +2574,13 @@ void GraphEdit::_invalidate_connection_line_cache() {
 void GraphEdit::_invalidate_graph_node_connections(GraphNode *p_node) {
 	ERR_FAIL_NULL(p_node);
 	for (GraphPort *port : p_node->ports) {
-		if (!port) {
+		if (!port || !port->enabled || !connection_map.has(port)) {
 			continue;
 		}
 		for (const Ref<GraphConnection> conn : connection_map[port]) {
-			if (conn.is_null()) {
-				continue;
+			if (conn.is_valid()) {
+				conn->_cache.dirty = true;
 			}
-			conn->_cache.dirty = true;
 		}
 	}
 }
