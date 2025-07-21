@@ -17,6 +17,9 @@ const EngineConfig = {}; // eslint-disable-line no-unused-vars
  * @ignore
  */
 const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-vars
+	const emscriptenPoolSize = Math.max(navigator.hardwareConcurrency, 6);
+	const godotPoolSize = Math.max(3, Math.floor(emscriptenPoolSize / 4));
+
 	const cfg = /** @lends {InternalConfig.prototype} */ {
 		/**
 		 * Whether to unload the engine automatically after the instance is initialized.
@@ -137,12 +140,12 @@ const InternalConfig = function (initConfig) { // eslint-disable-line no-unused-
 		 * @ignore
 		 * @type {number}
 		 */
-		emscriptenPoolSize: 8,
+		emscriptenPoolSize,
 		/**
 		 * @ignore
 		 * @type {number}
 		 */
-		godotPoolSize: 4,
+		godotPoolSize,
 		/**
 		 * A callback function for handling Godot's ``OS.execute`` calls.
 		 *

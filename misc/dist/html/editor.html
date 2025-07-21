@@ -425,7 +425,7 @@ let setStatusMode;
 let setStatusNotice;
 let video_driver = '';
 
-function clearPersistence() { // eslint-disable-line no-unused-vars
+async function clearPersistence() { // eslint-disable-line no-unused-vars
 	function deleteDB(path) {
 		return new Promise(function (resolve, reject) {
 			const req = indexedDB.deleteDatabase(path);
@@ -440,16 +440,30 @@ function clearPersistence() { // eslint-disable-line no-unused-vars
 			};
 		});
 	}
+	async function removeServiceWorkerAndCache() {
+		const registrations = await navigator.serviceWorker.getRegistrations();
+		for (const registration of registrations) {
+			// eslint-disable-next-line no-await-in-loop
+			for (const key of await (caches?.keys() ?? [])) {
+				await caches.delete(key); // eslint-disable-line no-await-in-loop
+			}
+			await registration.unregister(); // eslint-disable-line no-await-in-loop
+		}
+	}
 	if (!window.confirm('Are you sure you want to delete all the locally stored files?\nClicking "OK" will permanently remove your projects and editor settings!')) {
 		return;
 	}
-	Promise.all([
-		deleteDB('/home/web_user'),
-	]).then(function (results) {
+	try {
+		await Promise.all([
+			deleteDB('/home/web_user'),
+			removeServiceWorkerAndCache(),
+		]);
 		alert('Done.');
-	}).catch(function (err) {
+		window.location.reload();
+	} catch (error) {
+		console.error('Error deleting local files:', error);
 		alert('Error deleting local files. Please retry after reloading the page.');
-	});
+	}
 }
 
 function selectVideoMode() {

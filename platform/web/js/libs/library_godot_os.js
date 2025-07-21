@@ -71,6 +71,7 @@ const GodotConfig = {
 			GodotConfig.locale = p_opts['locale'] || GodotConfig.locale;
 			GodotConfig.virtual_keyboard = p_opts['virtualKeyboard'];
 			GodotConfig.persistent_drops = !!p_opts['persistentDrops'];
+			GodotConfig.emscripten_pool_size = p_opts['emscriptenPoolSize'];
 			GodotConfig.godot_pool_size = p_opts['godotPoolSize'];
 			GodotConfig.on_execute = p_opts['onExecute'];
 			GodotConfig.on_exit = p_opts['onExit'];
@@ -343,9 +344,13 @@ const GodotOS = {
 	godot_js_os_hw_concurrency_get__proxy: 'sync',
 	godot_js_os_hw_concurrency_get__sig: 'i',
 	godot_js_os_hw_concurrency_get: function () {
+		if (typeof PThread === 'undefined') {
+			// Threads aren't supported, so default to `1`.
+			return 1;
+		}
+
 		// TODO Godot core needs fixing to avoid spawning too many threads (> 24).
-		const concurrency = navigator.hardwareConcurrency || 1;
-		return concurrency < 2 ? concurrency : 2;
+		return Math.max(GodotConfig.emscripten_pool_size, 2);
 	},
 
 	godot_js_os_thread_pool_size_get__proxy: 'sync',
