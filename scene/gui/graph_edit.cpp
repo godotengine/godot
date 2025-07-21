@@ -545,7 +545,7 @@ const Ref<GraphConnection> GraphEdit::get_first_connection_by_port(GraphPort *p_
 const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
 	TypedArray<Ref<GraphConnection>> ret;
 	for (GraphPort *port : p_node->ports) {
-		if (!port || port->direction != p_filter_direction) {
+		if (!port || port->direction != p_filter_direction || !connection_map.has(port)) {
 			continue;
 		}
 		ret.append_array(connection_map[port]);
@@ -2917,6 +2917,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connections_by_port", "port"), &GraphEdit::_get_connections_by_port);
 	ClassDB::bind_method(D_METHOD("get_first_connection_by_port", "port"), &GraphEdit::get_first_connection_by_port);
 	ClassDB::bind_method(D_METHOD("get_connections_by_node", "node"), &GraphEdit::_get_connections_by_node);
+	ClassDB::bind_method(D_METHOD("get_filtered_connections_by_node", "node", "filter_direction"), &GraphEdit::get_filtered_connections_by_node);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("get_connection_count", "port"), &GraphEdit::get_connection_count);
 
