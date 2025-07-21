@@ -1144,12 +1144,12 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 		return; // vertex is behind light
 	}
 
-	float theta = acos(dot(normal, eye_vec));
+	half theta = acos(dot(normal, eye_vec));
 
 	vec4 M_brdf_abcd;
 	vec3 M_brdf_e_mag_fres;
 
-	vec2 lut_uv = vec2(max(roughness, 0.02), theta / (0.5 * M_PI));
+	vec2 lut_uv = vec2(max(roughness, half(0.02)), theta / half(0.5 * M_PI));
 	float LTC_LUT_SIZE = 64.0;
 	lut_uv = lut_uv * (63.0 / LTC_LUT_SIZE) + vec2(0.5 / LTC_LUT_SIZE); // offset by 1 pixel
 	M_brdf_abcd = texture(ltc_lut1, lut_uv);
@@ -1168,14 +1168,13 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	points[2] = area_lights.data[idx].position + area_width + area_height - vertex;
 	points[3] = area_lights.data[idx].position + area_height - vertex;
 
-	vec3 ltc_diffuse = max(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points), vec3(0));
-	vec3 ltc_specular = max(ltc_evaluate(vertex, normal, eye_vec, M_inv, points), vec3(0));
+	hvec3 ltc_diffuse = max(hvec3(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points)), hvec3(0));
+	hvec3 ltc_specular = max(hvec3(ltc_evaluate(vertex, normal, eye_vec, M_inv, points)), hvec3(0));
 
 	float a_len = length(area_width);
 	float b_len = length(area_height);
 	float a_half_len = a_len / 2.0;
 	float b_half_len = b_len / 2.0;
-	float half_diag = length(vec2(a_half_len, b_half_len));
 	float inv_center_range = area_lights.data[idx].cone_attenuation;
 
 	mat4 light_mat = mat4(
@@ -1189,7 +1188,7 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	float dist = length(closest_point_local_to_light - pos_local_to_light);
 
 	float light_length = max(0, dist);
-	float light_attenuation = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
+	half light_attenuation = get_omni_attenuation(light_length, area_lights.data[idx].inv_radius, area_lights.data[idx].attenuation);
 	half shadow = half(1.0);
 
 #ifndef SHADOWS_DISABLED
@@ -1308,18 +1307,18 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 	}
 #endif
 
-	vec3 color = area_lights.data[idx].color;
+	hvec3 color = hvec3(area_lights.data[idx].color);
 
-	light_attenuation = clamp(light_attenuation * shadow, 0, 1);
+	light_attenuation = clamp(light_attenuation * shadow, half(0.0), half(1.0));
 
 	if (metallic < 1.0) {
-		diffuse_light += ltc_diffuse * area_lights.data[idx].color / (2 * M_PI) * light_attenuation;
+		diffuse_light += ltc_diffuse * color / half(2.0 * M_PI) * light_attenuation;
 	}
-	vec3 spec = ltc_specular * area_lights.data[idx].color;
-	vec3 spec_color = mix(vec3(0.04), albedo, vec3(metallic));
+	hvec3 spec = ltc_specular * color;
+	hvec3 spec_color = mix(hvec3(0.04), albedo, hvec3(metallic));
 
-	spec *= spec_color * max(M_brdf_e_mag_fres.y, 0.0) + (1.0 - spec_color) * max(M_brdf_e_mag_fres.z, 0.0); // TODO
-	specular_light += spec / (2 * M_PI) * area_lights.data[idx].specular_amount * light_attenuation;
+	spec *= spec_color * max(half(M_brdf_e_mag_fres.y), half(0.0)) + (half(1.0) - spec_color) * max(half(M_brdf_e_mag_fres.z), half(0.0));
+	specular_light += spec / half(2.0 * M_PI) * half(area_lights.data[idx].specular_amount) * light_attenuation;
 	//alpha = ?; // ... SHADOW_TO_OPACITY might affect this.
 }
 
