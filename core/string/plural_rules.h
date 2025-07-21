@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  translation_po.h                                                      */
+/*  plural_rules.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,48 +30,43 @@
 
 #pragma once
 
-//#define DEBUG_TRANSLATION_PO
+#include "core/object/ref_counted.h"
+#include "core/templates/lru.h"
 
-#include "core/string/translation.h"
+class Expression;
 
-class PluralRules;
+class PluralRules : public Object {
+	GDSOFTCLASS(PluralRules, Object);
 
-class TranslationPO : public Translation {
-	GDCLASS(TranslationPO, Translation);
+	mutable LRUCache<int, int> cache;
 
-	// TLDR: Maps context to a list of source strings and translated strings. In PO terms, maps msgctxt to a list of msgid and msgstr.
-	// The first key corresponds to context, and the second key (of the contained HashMap) corresponds to source string.
-	// The value Vector<StringName> in the second map stores the translated strings. Index 0, 1, 2 matches msgstr[0], msgstr[1], msgstr[2]... in the case of plurals.
-	// Otherwise index 0 matches to msgstr in a singular translation.
-	// Strings without context have "" as first key.
-	HashMap<StringName, HashMap<StringName, Vector<StringName>>> translation_map;
+	// These two fields are initialized in the constructor.
+	const int nplurals;
+	const String plural;
 
-	PluralRules *plural_rules = nullptr;
+	// Cache temporary variables related to `evaluate()` to make it faster.
+	class EQNode : public RefCounted {
+		GDSOFTCLASS(EQNode, RefCounted);
 
-	Vector<String> _get_message_list() const override;
-	Dictionary _get_messages() const override;
-	void _set_messages(const Dictionary &p_messages) override;
+	public:
+		String regex;
+		Ref<EQNode> left;
+		Ref<EQNode> right;
+	};
+	Ref<EQNode> equi_tests;
+	Ref<Expression> expr;
 
-protected:
-	static void _bind_methods();
+	int _find_unquoted(const String &p_src, char32_t p_chr) const;
+	int _eq_test(const Array &p_input_val, const Ref<EQNode> &p_node, const Variant &p_result) const;
+	void _cache_plural_tests(const String &p_plural_rule, Ref<EQNode> &p_node);
+
+	PluralRules(int p_nplurals, const String &p_plural);
 
 public:
-	Vector<String> get_translated_message_list() const override;
-	void get_message_list(List<StringName> *r_messages) const override;
-	int get_message_count() const override;
-	void add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context = "") override;
-	void add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context = "") override;
-	StringName get_message(const StringName &p_src_text, const StringName &p_context = "") const override;
-	StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const override;
-	void erase_message(const StringName &p_src_text, const StringName &p_context = "") override;
+	int evaluate(int p_n) const;
 
-	void set_plural_rule(const String &p_plural_rule);
-	int get_plural_forms() const;
-	String get_plural_rule() const;
+	int get_nplurals() const { return nplurals; }
+	String get_plural() const { return plural; }
 
-#ifdef DEBUG_TRANSLATION_PO
-	void print_translation_map();
-#endif
-
-	~TranslationPO();
+	static PluralRules *parse(const String &p_rules);
 };
