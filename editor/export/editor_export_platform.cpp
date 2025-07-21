@@ -417,9 +417,9 @@ Error EditorExportPlatform::_save_zip_patch_file(void *p_userdata, const String 
 	return _save_zip_file(p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed);
 }
 
-Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
+Ref<Texture2D> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
+	ERR_FAIL_COND_V(theme.is_null(), Ref<Texture2D>());
 	return theme->get_icon(SNAME("Play"), EditorStringName(EditorIcons));
 }
 

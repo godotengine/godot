@@ -647,8 +647,8 @@ bool EditorExportPlatformWeb::poll_export() {
 	return remote_debug_state != prev_remote_debug_state;
 }
 
-Ref<ImageTexture> EditorExportPlatformWeb::get_option_icon(int p_index) const {
-	Ref<ImageTexture> play_icon = EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformWeb::get_option_icon(int p_index) const {
+	Ref<Texture2D> play_icon = EditorExportPlatform::get_option_icon(p_index);
 
 	switch (remote_debug_state) {
 		case REMOTE_DEBUG_STATE_UNAVAILABLE: {

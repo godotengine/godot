@@ -2325,10 +2325,10 @@ String EditorExportPlatformAppleEmbedded::get_options_tooltip() const {
 	return TTR("Select device from the list");
 }
 
-Ref<ImageTexture> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
+Ref<Texture2D> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
 	MutexLock lock(device_lock);
 
-	Ref<ImageTexture> icon;
+	Ref<Texture2D> icon;
 	if (p_index >= 0 || p_index < devices.size()) {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
