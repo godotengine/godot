@@ -81,6 +81,7 @@ void ResourceImporterVideo::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "video_quality", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), 0.75));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "audio_quality", PROPERTY_HINT_RANGE, "-0.1,1.0,0.01"), 0.5));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "keyframe_interval", PROPERTY_HINT_RANGE, "1,1024,1"), 64));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "encoding_speed", PROPERTY_HINT_ENUM, "Fastest (Lowest Efficiency):4,Fast (Low Efficiency):3,Slow (High Efficiency):2,Slowest (Highest Efficiency):1,"), 4));
 }
 
 Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -114,6 +115,9 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 
 	args.push_back("-g:v");
 	args.push_back(p_options["keyframe_interval"]);
+
+	args.push_back("-speed_level");
+	args.push_back(p_options["encoding_speed"]);
 
 	args.push_back("-y");
 
