@@ -104,8 +104,10 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 		filter += "split=2[bg][fg];[bg]drawbox=c=#" + Color(p_options["alpha_to_color"]).to_html(false) + ":replace=1:t=fill[bg];[bg][fg]overlay=format=auto";
 	}
 
-	args.push_back("-filter_complex");
-	args.push_back(filter);
+	if (filter != "") {
+		args.push_back("-filter_complex");
+		args.push_back(filter);
+	}
 
 	args.push_back("-q:v");
 	args.push_back(Variant((float)(p_options["video_quality"]) * 10.0));
