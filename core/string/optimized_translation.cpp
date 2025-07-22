@@ -44,11 +44,27 @@ struct CompressedString {
 
 void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 	// This method compresses a Translation instance.
-	// Right now, it doesn't handle context or plurals, so Translation subclasses using plurals or context (i.e TranslationPO) shouldn't be compressed.
+	// Right now, it doesn't handle context or plurals.
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND(p_from.is_null());
+
 	List<StringName> keys;
-	p_from->get_message_list(&keys);
+	{
+		List<StringName> raw_keys;
+		p_from->get_message_list(&raw_keys);
+
+		for (const StringName &key : raw_keys) {
+			const String key_str = key.operator String();
+			int p = key_str.find_char(0x04);
+			if (p == -1) {
+				keys.push_back(key);
+			} else {
+				const String &msgctxt = key_str.substr(0, p);
+				const String &msgid = key_str.substr(p + 1);
+				WARN_PRINT(vformat("OptimizedTranslation does not support context, ignoring message '%s' with context '%s'.", msgid, msgctxt));
+			}
+		}
+	}
 
 	int size = Math::larger_prime(keys.size());
 

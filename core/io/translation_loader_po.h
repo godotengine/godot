@@ -32,7 +32,6 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/string/translation.h"
 
 class TranslationLoaderPO : public ResourceFormatLoader {
 	GDSOFTCLASS(TranslationLoaderPO, ResourceFormatLoader);

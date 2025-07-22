@@ -30,41 +30,8 @@
 
 #pragma once
 
-//#define DEBUG_TRANSLATION_PO
-
 #include "core/string/translation.h"
 
 class TranslationPO : public Translation {
 	GDCLASS(TranslationPO, Translation);
-
-	// TLDR: Maps context to a list of source strings and translated strings. In PO terms, maps msgctxt to a list of msgid and msgstr.
-	// The first key corresponds to context, and the second key (of the contained HashMap) corresponds to source string.
-	// The value Vector<StringName> in the second map stores the translated strings. Index 0, 1, 2 matches msgstr[0], msgstr[1], msgstr[2]... in the case of plurals.
-	// Otherwise index 0 matches to msgstr in a singular translation.
-	// Strings without context have "" as first key.
-	HashMap<StringName, HashMap<StringName, Vector<StringName>>> translation_map;
-
-	Vector<String> _get_message_list() const override;
-	Dictionary _get_messages() const override;
-	void _set_messages(const Dictionary &p_messages) override;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Vector<String> get_translated_message_list() const override;
-	void get_message_list(List<StringName> *r_messages) const override;
-	int get_message_count() const override;
-	void add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context = "") override;
-	void add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context = "") override;
-	StringName get_message(const StringName &p_src_text, const StringName &p_context = "") const override;
-	StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const override;
-	void erase_message(const StringName &p_src_text, const StringName &p_context = "") override;
-
-	int get_plural_forms() const;
-	String get_plural_rule() const;
-
-#ifdef DEBUG_TRANSLATION_PO
-	void print_translation_map();
-#endif
 };
