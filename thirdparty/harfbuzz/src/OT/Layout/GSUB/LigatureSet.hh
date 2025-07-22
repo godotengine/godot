@@ -11,11 +11,11 @@ namespace GSUB_impl {
 template <typename Types>
 struct LigatureSet
 {
-  protected:
+  public:
   Array16OfOffset16To<Ligature<Types>>
                 ligature;               /* Array LigatureSet tables
                                          * ordered by preference */
-  public:
+  
   DEFINE_SIZE_ARRAY (2, ligature);
 
   bool sanitize (hb_sanitize_context_t *c) const

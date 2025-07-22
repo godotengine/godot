@@ -84,6 +84,14 @@
 #define HAVE_LINUX_INPUT_H 1
 #define HAVE_POLL 1
 
+#ifdef __linux__
+#define HAVE_INOTIFY 1
+#define HAVE_INOTIFY_INIT1 1
+#define HAVE_GETENV 1
+#define HAVE_SETENV 1
+#define HAVE_UNSETENV 1
+#endif
+
 // TODO: handle dynamic loading with SOWRAP_ENABLED
 
 // (even though DBus can also be loaded with SOWRAP_ENABLED, we load it

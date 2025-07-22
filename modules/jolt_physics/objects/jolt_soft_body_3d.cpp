@@ -128,6 +128,10 @@ bool JoltSoftBody3D::_ref_shared_data() {
 	if (iter_shared_data == mesh_to_shared.end()) {
 		RenderingServer *rendering = RenderingServer::get_singleton();
 
+		// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
+		// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
+		// This method blocks on the main thread to return data, but the main thread may be
+		// blocked waiting on us in PhysicsServer3D::sync().
 		const Array mesh_data = rendering->mesh_surface_get_arrays(mesh, 0);
 		ERR_FAIL_COND_V(mesh_data.is_empty(), false);
 

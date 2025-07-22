@@ -2548,32 +2548,94 @@ struct SparseVarRegionAxis
   DEFINE_SIZE_STATIC (8);
 };
 
-#define REGION_CACHE_ITEM_CACHE_INVALID INT_MIN
-#define REGION_CACHE_ITEM_MULTIPLIER (float (1 << ((sizeof (int) * 8) - 2)))
-#define REGION_CACHE_ITEM_DIVISOR (1.f / float (1 << ((sizeof (int) * 8) - 2)))
+struct hb_scalar_cache_t
+{
+  private:
+  static constexpr unsigned STATIC_LENGTH = 16;
+  static constexpr int INVALID = INT_MIN;
+  static constexpr float MULTIPLIER = 1 << ((sizeof (int) * 8) - 2);
+  static constexpr float DIVISOR = 1.f / MULTIPLIER;
+
+  public:
+  hb_scalar_cache_t () : length (STATIC_LENGTH) { clear (); }
+
+  hb_scalar_cache_t (const hb_scalar_cache_t&) = delete;
+  hb_scalar_cache_t (hb_scalar_cache_t&&) = delete;
+  hb_scalar_cache_t& operator= (const hb_scalar_cache_t&) = delete;
+  hb_scalar_cache_t& operator= (hb_scalar_cache_t&&) = delete;
+
+  static hb_scalar_cache_t *create (unsigned int count,
+				    hb_scalar_cache_t *scratch_cache = nullptr)
+  {
+    if (!count) return (hb_scalar_cache_t *) &Null(hb_scalar_cache_t);
+
+    if (scratch_cache && count <= scratch_cache->length)
+    {
+      scratch_cache->clear ();
+      return scratch_cache;
+    }
+
+    auto *cache = (hb_scalar_cache_t *) hb_malloc (sizeof (hb_scalar_cache_t) - sizeof (values) + sizeof (values[0]) * count);
+    if (unlikely (!cache)) return (hb_scalar_cache_t *) &Null(hb_scalar_cache_t);
+
+    cache->length = count;
+    cache->clear ();
+
+    return cache;
+  }
+
+  static void destroy (hb_scalar_cache_t *cache,
+		       hb_scalar_cache_t *scratch_cache = nullptr)
+  {
+    if (cache != &Null(hb_scalar_cache_t) && cache != scratch_cache)
+      hb_free (cache);
+  }
+
+  void clear ()
+  {
+    for (unsigned i = 0; i < length; i++)
+      values[i] = INVALID;
+  }
+
+  HB_ALWAYS_INLINE
+  bool get (unsigned i, float *value) const
+  {
+    if (unlikely (i >= length))
+    {
+      *value = 0.f;
+      return true;
+    }
+    auto *cached_value = &values[i];
+    if (*cached_value != INVALID)
+    {
+      *value = *cached_value ? *cached_value * DIVISOR : 0.f;
+      return true;
+    }
+    return false;
+  }
+
+  HB_ALWAYS_INLINE
+  void set (unsigned i, float value)
+  {
+    if (unlikely (i >= length)) return;
+    auto *cached_value = &values[i];
+    *cached_value = roundf(value * MULTIPLIER);
+  }
+
+  private:
+  unsigned length;
+  mutable hb_atomic_t<int> values[STATIC_LENGTH];
+};
 
 struct VarRegionList
 {
-  using cache_t = hb_atomic_t<int>;
-
-  float evaluate (unsigned int region_index,
-		  const int *coords, unsigned int coord_len,
-		  cache_t *cache = nullptr) const
+  private:
+  float evaluate_impl (unsigned int region_index,
+		       const int *coords, unsigned int coord_len) const
   {
-    if (unlikely (region_index >= regionCount))
-      return 0.;
-
-    cache_t *cached_value = nullptr;
-    if (cache)
-    {
-      cached_value = &(cache[region_index]);
-      if (*cached_value != REGION_CACHE_ITEM_CACHE_INVALID)
-	return *cached_value * REGION_CACHE_ITEM_DIVISOR;
-    }
-
     const VarRegionAxis *axes = axesZ.arrayZ + (region_index * axisCount);
+    float v = 1.f;
 
-    float v = 1.;
     unsigned int count = axisCount;
     for (unsigned int i = 0; i < count; i++)
     {
@@ -2581,15 +2643,32 @@ struct VarRegionList
       float factor = axes[i].evaluate (coord);
       if (factor == 0.f)
       {
-        if (cache)
-	  *cached_value = 0.;
-	return 0.;
+	v = 0.f;
+	break;
       }
       v *= factor;
     }
 
+    return v;
+  }
+
+  public:
+  HB_ALWAYS_INLINE
+  float evaluate (unsigned int region_index,
+		  const int *coords, unsigned int coord_len,
+		  hb_scalar_cache_t *cache = nullptr) const
+  {
+    if (unlikely (region_index >= regionCount))
+      return 0.;
+
+    float v;
+    if (cache && cache->get (region_index, &v))
+      return v;
+
+    v = evaluate_impl (region_index, coords, coord_len);
+
     if (cache)
-      *cached_value = v * REGION_CACHE_ITEM_MULTIPLIER;
+      cache->set (region_index, v);
     return v;
   }
 
@@ -2732,29 +2811,24 @@ struct SparseVariationRegion : Array16Of<SparseVarRegionAxis>
 
 struct SparseVarRegionList
 {
-  using cache_t = hb_atomic_t<int>;
-
+  HB_ALWAYS_INLINE
   float evaluate (unsigned int region_index,
 		  const int *coords, unsigned int coord_len,
-		  cache_t *cache = nullptr) const
+		  hb_scalar_cache_t *cache = nullptr) const
   {
     if (unlikely (region_index >= regions.len))
       return 0.;
 
-    cache_t *cached_value = nullptr;
-    if (cache)
-    {
-      cached_value = &(cache[region_index]);
-      if (*cached_value != REGION_CACHE_ITEM_CACHE_INVALID)
-	return *cached_value * REGION_CACHE_ITEM_DIVISOR;
-    }
+    float v;
+    if (cache && cache->get (region_index, &v))
+      return v;
 
     const SparseVariationRegion &region = this+regions[region_index];
 
-    float v = region.evaluate (coords, coord_len);
-
+    v = region.evaluate (coords, coord_len);
     if (cache)
-      *cached_value = v * REGION_CACHE_ITEM_MULTIPLIER;
+      cache->set (region_index, v);
+
     return v;
   }
 
@@ -2792,46 +2866,62 @@ struct VarData
 	 + itemCount * get_row_size ();
   }
 
-  float get_delta (unsigned int inner,
-		   const int *coords, unsigned int coord_count,
-		   const VarRegionList &regions,
-		   VarRegionList::cache_t *cache = nullptr) const
+  float _get_delta (unsigned int inner,
+		    const int *coords, unsigned int coord_count,
+		    const VarRegionList &regions,
+		    hb_scalar_cache_t *cache = nullptr) const
   {
     if (unlikely (inner >= itemCount))
       return 0.;
+    bool is_long = longWords ();
+    unsigned int count = regionIndices.len;
+    unsigned word_count = wordCount ();
+    unsigned int scount = is_long ? count : word_count;
+    unsigned int lcount = is_long ? word_count : 0;
 
-   unsigned int count = regionIndices.len;
-   bool is_long = longWords ();
-   unsigned word_count = wordCount ();
-   unsigned int scount = is_long ? count : word_count;
-   unsigned int lcount = is_long ? word_count : 0;
+    const HBUINT8 *bytes = get_delta_bytes ();
+    const HBUINT8 *row = bytes + inner * get_row_size ();
 
-   const HBUINT8 *bytes = get_delta_bytes ();
-   const HBUINT8 *row = bytes + inner * get_row_size ();
+    float delta = 0.;
+    unsigned int i = 0;
 
-   float delta = 0.;
-   unsigned int i = 0;
+    const HBINT32 *lcursor = reinterpret_cast<const HBINT32 *> (row);
+    for (; i < lcount; i++)
+    {
+      float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
+      if (scalar)
+        delta += scalar * *lcursor;
+      lcursor++;
+    }
+    const HBINT16 *scursor = reinterpret_cast<const HBINT16 *> (lcursor);
+    for (; i < scount; i++)
+    {
+      float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
+      if (scalar)
+       delta += scalar * *scursor;
+      scursor++;
+    }
+    const HBINT8 *bcursor = reinterpret_cast<const HBINT8 *> (scursor);
+    for (; i < count; i++)
+    {
+      float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
+      if (scalar)
+        delta += scalar * *bcursor;
+      bcursor++;
+    }
 
-   const HBINT32 *lcursor = reinterpret_cast<const HBINT32 *> (row);
-   for (; i < lcount; i++)
-   {
-     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
-     delta += scalar * *lcursor++;
-   }
-   const HBINT16 *scursor = reinterpret_cast<const HBINT16 *> (lcursor);
-   for (; i < scount; i++)
-   {
-     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
-     delta += scalar * *scursor++;
-   }
-   const HBINT8 *bcursor = reinterpret_cast<const HBINT8 *> (scursor);
-   for (; i < count; i++)
-   {
-     float scalar = regions.evaluate (regionIndices.arrayZ[i], coords, coord_count, cache);
-     delta += scalar * *bcursor++;
-   }
+    return delta;
+  }
 
-   return delta;
+  HB_ALWAYS_INLINE
+  float get_delta (unsigned int inner,
+		   const int *coords, unsigned int coord_count,
+		   const VarRegionList &regions,
+		   hb_scalar_cache_t *cache = nullptr) const
+  {
+    unsigned int count = regionIndices.len;
+    if (!count) return 0.f; // This is quite common, so optimize it.
+    return _get_delta (inner, coords, coord_count, regions, cache);
   }
 
   void get_region_scalars (const int *coords, unsigned int coord_count,
@@ -2869,7 +2959,7 @@ struct VarData
       return false;
     }
 
-    if (unlikely (!c->extend_min (this))) return_trace (false);    
+    if (unlikely (!c->extend_min (this))) return_trace (false);
     itemCount = row_count;
 
     int min_threshold = has_long ? -65536 : -128;
@@ -3150,7 +3240,7 @@ struct MultiVarData
 		  const int *coords, unsigned int coord_count,
 		  const SparseVarRegionList &regions,
 		  hb_array_t<float> out,
-		  SparseVarRegionList::cache_t *cache = nullptr) const
+		  hb_scalar_cache_t *cache = nullptr) const
   {
     auto &deltaSets = StructAfter<decltype (deltaSetsX)> (regionIndices);
 
@@ -3187,31 +3277,24 @@ struct MultiVarData
 struct ItemVariationStore
 {
   friend struct item_variations_t;
-  using cache_t = VarRegionList::cache_t;
 
-  cache_t *create_cache () const
+  hb_scalar_cache_t *create_cache () const
   {
 #ifdef HB_NO_VAR
-    return nullptr;
+    return hb_scalar_cache_t::create (0);
 #endif
-    unsigned count = (this+regions).regionCount;
-    if (!count) return nullptr;
-
-    cache_t *cache = (cache_t *) hb_malloc (sizeof (float) * count);
-    if (unlikely (!cache)) return nullptr;
-
-    for (unsigned i = 0; i < count; i++)
-      cache[i] = REGION_CACHE_ITEM_CACHE_INVALID;
-
-    return cache;
+    return hb_scalar_cache_t::create ((this+regions).regionCount);
   }
 
-  static void destroy_cache (cache_t *cache) { hb_free (cache); }
+  static void destroy_cache (hb_scalar_cache_t *cache)
+  {
+    hb_scalar_cache_t::destroy (cache);
+  }
 
   private:
   float get_delta (unsigned int outer, unsigned int inner,
 		   const int *coords, unsigned int coord_count,
-		   VarRegionList::cache_t *cache = nullptr) const
+		   hb_scalar_cache_t *cache = nullptr) const
   {
 #ifdef HB_NO_VAR
     return 0.f;
@@ -3229,7 +3312,7 @@ struct ItemVariationStore
   public:
   float get_delta (unsigned int index,
 		   const int *coords, unsigned int coord_count,
-		   VarRegionList::cache_t *cache = nullptr) const
+		   hb_scalar_cache_t *cache = nullptr) const
   {
     unsigned int outer = index >> 16;
     unsigned int inner = index & 0xFFFF;
@@ -3237,7 +3320,7 @@ struct ItemVariationStore
   }
   float get_delta (unsigned int index,
 		   hb_array_t<const int> coords,
-		   VarRegionList::cache_t *cache = nullptr) const
+		   hb_scalar_cache_t *cache = nullptr) const
   {
     return get_delta (index,
 		      coords.arrayZ, coords.length,
@@ -3445,43 +3528,28 @@ struct ItemVariationStore
 
 struct MultiItemVariationStore
 {
-  using cache_t = SparseVarRegionList::cache_t;
-
-  cache_t *create_cache (hb_array_t<cache_t> static_cache = hb_array_t<cache_t> ()) const
+  hb_scalar_cache_t *create_cache (hb_scalar_cache_t *static_cache = nullptr) const
   {
 #ifdef HB_NO_VAR
-    return nullptr;
+    return hb_scalar_cache_t::create (0);
 #endif
     auto &r = this+regions;
     unsigned count = r.regions.len;
 
-    cache_t *cache;
-    if (count <= static_cache.length)
-      cache = static_cache.arrayZ;
-    else
-    {
-      cache = (cache_t *) hb_malloc (sizeof (float) * count);
-      if (unlikely (!cache)) return nullptr;
-    }
-
-    for (unsigned i = 0; i < count; i++)
-      cache[i] = REGION_CACHE_ITEM_CACHE_INVALID;
-
-    return cache;
+    return hb_scalar_cache_t::create (count, static_cache);
   }
 
-  static void destroy_cache (cache_t *cache,
-			     hb_array_t<cache_t> static_cache = hb_array_t<cache_t> ())
+  static void destroy_cache (hb_scalar_cache_t *cache,
+			     hb_scalar_cache_t *static_cache = nullptr)
   {
-    if (cache != static_cache.arrayZ)
-      hb_free (cache);
+    hb_scalar_cache_t::destroy (cache, static_cache);
   }
 
   private:
   void get_delta (unsigned int outer, unsigned int inner,
 		  const int *coords, unsigned int coord_count,
 		  hb_array_t<float> out,
-		  VarRegionList::cache_t *cache = nullptr) const
+		  hb_scalar_cache_t *cache = nullptr) const
   {
 #ifdef HB_NO_VAR
     return;
@@ -3501,7 +3569,7 @@ struct MultiItemVariationStore
   void get_delta (unsigned int index,
 		  const int *coords, unsigned int coord_count,
 		  hb_array_t<float> out,
-		  VarRegionList::cache_t *cache = nullptr) const
+		  hb_scalar_cache_t *cache = nullptr) const
   {
     unsigned int outer = index >> 16;
     unsigned int inner = index & 0xFFFF;
@@ -3510,7 +3578,7 @@ struct MultiItemVariationStore
   void get_delta (unsigned int index,
 		  hb_array_t<const int> coords,
 		  hb_array_t<float> out,
-		  VarRegionList::cache_t *cache = nullptr) const
+		  hb_scalar_cache_t *cache = nullptr) const
   {
     return get_delta (index,
 		      coords.arrayZ, coords.length,
@@ -3539,8 +3607,6 @@ struct MultiItemVariationStore
   public:
   DEFINE_SIZE_ARRAY_SIZED (8, dataSets);
 };
-
-#undef REGION_CACHE_ITEM_CACHE_INVALID
 
 template <typename MapCountT>
 struct DeltaSetIndexMapFormat01
@@ -3592,13 +3658,19 @@ struct DeltaSetIndexMapFormat01
     return_trace (true);
   }
 
+  HB_ALWAYS_INLINE
   uint32_t map (unsigned int v) const /* Returns 16.16 outer.inner. */
   {
     /* If count is zero, pass value unchanged.  This takes
      * care of direct mapping for advance map. */
     if (!mapCount)
       return v;
+    return _map (v);
+  }
 
+  HB_HOT
+  uint32_t _map (unsigned int v) const /* Returns 16.16 outer.inner. */
+  {
     if (v >= mapCount)
       v = mapCount - 1;
 
@@ -3736,7 +3808,7 @@ struct ItemVarStoreInstancer
   ItemVarStoreInstancer (const ItemVariationStore *varStore_,
 			 const DeltaSetIndexMap *varIdxMap,
 			 hb_array_t<const int> coords,
-			 VarRegionList::cache_t *cache = nullptr) :
+			 hb_scalar_cache_t *cache = nullptr) :
     varStore (varStore_), varIdxMap (varIdxMap), coords (coords), cache (cache)
   {
     if (!varStore)
@@ -3762,7 +3834,7 @@ struct ItemVarStoreInstancer
   const ItemVariationStore *varStore;
   const DeltaSetIndexMap *varIdxMap;
   hb_array_t<const int> coords;
-  VarRegionList::cache_t *cache;
+  hb_scalar_cache_t *cache;
 };
 
 struct MultiItemVarStoreInstancer
@@ -3770,7 +3842,7 @@ struct MultiItemVarStoreInstancer
   MultiItemVarStoreInstancer (const MultiItemVariationStore *varStore,
 			      const DeltaSetIndexMap *varIdxMap,
 			      hb_array_t<const int> coords,
-			      SparseVarRegionList::cache_t *cache = nullptr) :
+			      hb_scalar_cache_t *cache = nullptr) :
     varStore (varStore), varIdxMap (varIdxMap), coords (coords), cache (cache)
   {
     if (!varStore)
@@ -3803,7 +3875,7 @@ struct MultiItemVarStoreInstancer
   const MultiItemVariationStore *varStore;
   const DeltaSetIndexMap *varIdxMap;
   hb_array_t<const int> coords;
-  SparseVarRegionList::cache_t *cache;
+  hb_scalar_cache_t *cache;
 };
 
 
@@ -4783,13 +4855,13 @@ struct VariationDevice
 
   hb_position_t get_x_delta (hb_font_t *font,
 			     const ItemVariationStore &store,
-			     ItemVariationStore::cache_t *store_cache = nullptr) const
-  { return !font->num_coords ? 0 : font->em_scalef_x (get_delta (font, store, store_cache)); }
+			     hb_scalar_cache_t *store_cache = nullptr) const
+  { return !font->has_nonzero_coords ? 0 : font->em_scalef_x (get_delta (font, store, store_cache)); }
 
   hb_position_t get_y_delta (hb_font_t *font,
 			     const ItemVariationStore &store,
-			     ItemVariationStore::cache_t *store_cache = nullptr) const
-  { return !font->num_coords ? 0 : font->em_scalef_y (get_delta (font, store, store_cache)); }
+			     hb_scalar_cache_t *store_cache = nullptr) const
+  { return !font->has_nonzero_coords ? 0 : font->em_scalef_y (get_delta (font, store, store_cache)); }
 
   VariationDevice* copy (hb_serialize_context_t *c,
                          const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *layout_variation_idx_delta_map) const
@@ -4823,9 +4895,9 @@ struct VariationDevice
 
   float get_delta (hb_font_t *font,
 		   const ItemVariationStore &store,
-		   ItemVariationStore::cache_t *store_cache = nullptr) const
+		   hb_scalar_cache_t *store_cache = nullptr) const
   {
-    return store.get_delta (varIdx, font->coords, font->num_coords, (ItemVariationStore::cache_t *) store_cache);
+    return store.get_delta (varIdx, font->coords, font->num_coords, store_cache);
   }
 
   protected:
@@ -4850,7 +4922,7 @@ struct Device
 {
   hb_position_t get_x_delta (hb_font_t *font,
 			     const ItemVariationStore &store=Null (ItemVariationStore),
-			     ItemVariationStore::cache_t *store_cache = nullptr) const
+			     hb_scalar_cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {
@@ -4868,7 +4940,7 @@ struct Device
   }
   hb_position_t get_y_delta (hb_font_t *font,
 			     const ItemVariationStore &store=Null (ItemVariationStore),
-			     ItemVariationStore::cache_t *store_cache = nullptr) const
+			     hb_scalar_cache_t *store_cache = nullptr) const
   {
     switch (u.b.format)
     {
@@ -4951,6 +5023,18 @@ struct Device
 #endif
     default:
       return HB_OT_LAYOUT_NO_VARIATIONS_INDEX;
+    }
+  }
+
+  bool is_variation_device () const
+  {
+    switch (u.b.format) {
+#ifndef HB_NO_VAR
+    case 0x8000:
+      return true;
+#endif
+    default:
+      return false;
     }
   }
 

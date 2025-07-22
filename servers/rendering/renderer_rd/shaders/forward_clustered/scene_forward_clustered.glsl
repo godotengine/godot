@@ -1719,7 +1719,7 @@ void fragment_shader(in SceneData scene_data) {
 								 c[3] * lightmap_captures.data[index].sh[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
 								 c[2] * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
 								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
-				scene_data.emissive_exposure_normalization;
+				scene_data.IBL_exposure_normalization;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);

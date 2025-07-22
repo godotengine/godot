@@ -172,8 +172,11 @@ void print_overflows (graph_t& graph,
 template <typename O> inline void
 serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
                         char* head,
+                        unsigned size,
                         hb_serialize_context_t* c)
 {
+  assert(link.position + link.width <= size);
+
   OT::Offset<O>* offset = reinterpret_cast<OT::Offset<O>*> (head + link.position);
   *offset = 0;
   c->add_link (*offset,
@@ -187,6 +190,7 @@ serialize_link_of_type (const hb_serialize_context_t::object_t::link_t& link,
 inline
 void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
                      char* head,
+                     unsigned size,
                      hb_serialize_context_t* c)
 {
   switch (link.width)
@@ -197,21 +201,21 @@ void serialize_link (const hb_serialize_context_t::object_t::link_t& link,
     case 4:
       if (link.is_signed)
       {
-        serialize_link_of_type<OT::HBINT32> (link, head, c);
+        serialize_link_of_type<OT::HBINT32> (link, head, size, c);
       } else {
-        serialize_link_of_type<OT::HBUINT32> (link, head, c);
+        serialize_link_of_type<OT::HBUINT32> (link, head, size, c);
       }
       return;
     case 2:
       if (link.is_signed)
       {
-        serialize_link_of_type<OT::HBINT16> (link, head, c);
+        serialize_link_of_type<OT::HBINT16> (link, head, size, c);
       } else {
-        serialize_link_of_type<OT::HBUINT16> (link, head, c);
+        serialize_link_of_type<OT::HBUINT16> (link, head, size, c);
       }
       return;
     case 3:
-      serialize_link_of_type<OT::HBUINT24> (link, head, c);
+      serialize_link_of_type<OT::HBUINT24> (link, head, size, c);
       return;
     default:
       // Unexpected link width.
@@ -251,7 +255,7 @@ inline hb_blob_t* serialize (const graph_t& graph)
 
     // Only real links needs to be serialized.
     for (const auto& link : vertices[i].obj.real_links)
-      serialize_link (link, start, &c);
+      serialize_link (link, start, size, &c);
 
     // All duplications are already encoded in the graph, so don't
     // enable sharing during packing.

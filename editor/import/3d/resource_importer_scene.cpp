@@ -1386,6 +1386,13 @@ Node *ResourceImporterScene::_replace_node_with_type_and_script(Node *p_node, St
 			p_script = ResourceLoader::load(ScriptServer::get_global_class_path(p_node_type));
 		}
 		p_node_type = ScriptServer::get_global_class_base(p_node_type);
+		while (!p_node_type.is_empty()) {
+			if (ScriptServer::is_global_class(p_node_type)) {
+				p_node_type = ScriptServer::get_global_class_base(p_node_type);
+			} else {
+				break;
+			}
+		}
 	}
 	if (!p_node_type.is_empty() && p_node->get_class_name() != p_node_type) {
 		// If the user specified a Godot node type that does not match
