@@ -598,13 +598,18 @@ bool OpenXRAPI::create_instance() {
 		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
+	// We explicitly set the version to 1.0.48 in order to workaround a bug (see #108850) in Meta's runtime.
+	// Once that is fixed, restore this to using XR_API_VERSION_1_0, which is the version associated with the
+	// OpenXR headers that we're using.
+	XrVersion openxr_version = XR_MAKE_VERSION(1, 0, 48);
+
 	// Create our OpenXR instance
 	XrApplicationInfo application_info{
 		"Godot Engine", // applicationName, if we're running a game we'll update this down below.
 		1, // applicationVersion, we don't currently have this
 		"Godot Engine", // engineName
 		GODOT_VERSION_MAJOR * 10000 + GODOT_VERSION_MINOR * 100 + GODOT_VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
-		XR_API_VERSION_1_0 // apiVersion
+		openxr_version, // apiVersion
 	};
 
 	void *next_pointer = nullptr;
