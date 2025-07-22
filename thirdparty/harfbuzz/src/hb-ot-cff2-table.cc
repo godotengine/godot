@@ -202,7 +202,11 @@ struct cff2_cs_opset_path_t : cff2_cs_opset_t<cff2_cs_opset_path_t, cff2_path_pa
 
 bool OT::cff2::accelerator_t::get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const
 {
-  return get_path_at (font, glyph, draw_session, hb_array (font->coords, font->num_coords));
+  return get_path_at (font,
+		      glyph,
+		      draw_session,
+		      hb_array (font->coords,
+				font->has_nonzero_coords ? font->num_coords : 0));
 }
 
 bool OT::cff2::accelerator_t::get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const
