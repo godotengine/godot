@@ -298,6 +298,7 @@ private:
 	void _invalidate_graph_node_connections(GraphNode *p_node);
 	void _update_top_connection_layer();
 	void _update_connections();
+	void _request_connection(GraphPort *p_first_port, GraphPort *p_second_port);
 
 	void _top_layer_draw();
 	void _minimap_draw();
@@ -374,18 +375,22 @@ public:
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
 	void remove_connection(const Ref<GraphConnection> p_connection);
-	void disconnect_all_by_port(GraphPort *p_port);
-	void disconnect_all_by_node(GraphNode *p_node);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
-	bool ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
+	bool are_nodes_connected(GraphNode *p_first_node, GraphNode *p_second_node);
+	bool are_ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
 	bool is_node_connected(GraphNode *p_node);
 	bool is_port_connected(GraphPort *p_port);
 	TypedArray<GraphPort> get_connected_ports(GraphPort *p_port);
-	int get_connection_count(GraphPort *p_port);
+	TypedArray<GraphNode> get_connected_nodes(GraphNode *p_node);
+	int get_connection_count_by_port(GraphPort *p_port);
+	int get_connection_count_by_node(GraphNode *p_node);
 	GraphNode *get_connection_target(GraphPort *p_port);
 	String get_connections_description(GraphPort *p_port);
 
 	void set_connections(const TypedArray<Ref<GraphConnection>> p_connections);
+	void set_port_connections(GraphPort *p_port, const TypedArray<Ref<GraphConnection>> p_connections);
+	void set_node_connections(GraphNode *p_node, const TypedArray<Ref<GraphConnection>> p_connections);
+	void add_connections(const TypedArray<Ref<GraphConnection>> p_connections);
 	const TypedArray<Ref<GraphConnection>> get_connections() const;
 	const TypedArray<Ref<GraphConnection>> get_connections_by_port(GraphPort *p_port) const;
 	const TypedArray<Ref<GraphConnection>> get_connections_by_node(GraphNode *p_node) const;
@@ -393,6 +398,8 @@ public:
 	const TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
 	void move_connections(GraphPort *p_from_port, GraphPort *p_to_port);
 	void clear_connections();
+	void clear_port_connections(GraphPort *p_port);
+	void clear_node_connections(GraphNode *p_node);
 	const Ref<GraphConnection> get_connection(GraphPort *p_first_port, GraphPort *p_second_port);
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
 	Ref<GraphConnection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;

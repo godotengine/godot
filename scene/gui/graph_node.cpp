@@ -422,13 +422,13 @@ void GraphNode::_insert_port(int p_port_index, GraphPort *p_port, bool p_include
 	}
 }
 
-void GraphNode::_remove_port(int p_port_index, bool p_include_disabled) {
-	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled));
+GraphPort *GraphNode::_remove_port(int p_port_index, bool p_include_disabled) {
+	ERR_FAIL_INDEX_V(p_port_index, get_port_count(p_include_disabled), nullptr);
 
 	int idx = p_port_index;
 	if (!p_include_disabled) {
 		idx = enabled_index_to_port_index(p_port_index);
-		ERR_FAIL_COND_MSG(idx == -1, "port index out of bounds - fewer than p_port_index ports are enabled.");
+		ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "port index out of bounds - fewer than p_port_index ports are enabled.");
 	}
 
 	GraphPort *old_port = ports[idx];
@@ -445,18 +445,23 @@ void GraphNode::_remove_port(int p_port_index, bool p_include_disabled) {
 			old_port->disconnect("disconnected", disconnected_callable);
 		}
 	}
+
+	return old_port;
 }
 
-void GraphNode::_set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
-	ERR_FAIL_INDEX(p_port_index, get_port_count(p_include_disabled));
+GraphPort *GraphNode::_set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	ERR_FAIL_INDEX_V(p_port_index, get_port_count(p_include_disabled), nullptr);
 
 	int idx = p_port_index;
 	if (!p_include_disabled) {
 		idx = enabled_index_to_port_index(p_port_index);
-		ERR_FAIL_COND_MSG(idx == -1, "port index out of bounds - fewer than p_port_index ports are enabled.");
+		ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "port index out of bounds - fewer than p_port_index ports are enabled.");
 	}
 
 	GraphPort *old_port = ports[idx];
+	if (old_port == p_port) {
+		return p_port;
+	}
 	ports.set(idx, p_port);
 
 	if (old_port) {
@@ -482,6 +487,8 @@ void GraphNode::_set_port(int p_port_index, GraphPort *p_port, bool p_include_di
 			p_port->connect("disconnected", disconnected_callable);
 		}
 	}
+
+	return old_port;
 }
 
 void GraphNode::_remove_all_ports() {
@@ -513,14 +520,18 @@ void GraphNode::insert_port(int p_port_index, GraphPort *p_port, bool p_include_
 	_port_modified();
 }
 
-void GraphNode::set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
-	_set_port(p_port_index, p_port, p_include_disabled);
-	_port_modified();
+GraphPort *GraphNode::set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	GraphPort *ret = _set_port(p_port_index, p_port, p_include_disabled);
+	if (ret != p_port) {
+		_port_modified();
+	}
+	return ret;
 }
 
-void GraphNode::remove_port(int p_port_index, bool p_include_disabled) {
-	_remove_port(p_port_index, p_include_disabled);
+GraphPort *GraphNode::remove_port(int p_port_index, bool p_include_disabled) {
+	GraphPort *ret = _remove_port(p_port_index, p_include_disabled);
 	_port_modified();
+	return ret;
 }
 
 void GraphNode::remove_all_ports() {
@@ -834,22 +845,36 @@ Control::FocusMode GraphNode::get_port_focus_mode() const {
 	return port_focus_mode;
 }
 
+void GraphNode::add_connection(Ref<GraphConnection> p_connection) {
+	ERR_FAIL_NULL(graph_edit);
+	ERR_FAIL_COND_MSG(p_connection->get_first_node() != this && p_connection->get_second_node() != this, "Failed to add GraphConnection to GraphNode: neither connection port is part of the GraphNode!");
+	graph_edit->add_connection(p_connection);
+}
+
+void GraphNode::remove_connection(Ref<GraphConnection> p_connection) {
+	ERR_FAIL_NULL(graph_edit);
+	ERR_FAIL_COND_MSG(p_connection->get_first_node() != this && p_connection->get_second_node() != this, "Failed to remove GraphConnection from GraphNode: neither connection port is part of the GraphNode!");
+	graph_edit->remove_connection(p_connection);
+}
+
+bool GraphNode::is_connected_to(GraphNode *p_node) {
+	ERR_FAIL_NULL_V(graph_edit, false);
+	return graph_edit->are_nodes_connected(this, p_node);
+}
+
 bool GraphNode::has_connection() {
-	GraphEdit *graph = cast_to<GraphEdit>(get_parent());
-	ERR_FAIL_NULL_V(graph, false);
-	return graph->is_node_connected(this);
+	ERR_FAIL_NULL_V(graph_edit, false);
+	return graph_edit->is_node_connected(this);
 }
 
 TypedArray<Ref<GraphConnection>> GraphNode::get_connections() {
-	GraphEdit *graph = cast_to<GraphEdit>(get_parent());
-	ERR_FAIL_NULL_V(graph, TypedArray<Ref<GraphConnection>>());
-	return graph->get_connections_by_node(this);
+	ERR_FAIL_NULL_V(graph_edit, TypedArray<Ref<GraphConnection>>());
+	return graph_edit->get_connections_by_node(this);
 }
 
 TypedArray<Ref<GraphConnection>> GraphNode::get_filtered_connections(GraphPort::PortDirection p_filter_direction) {
-	GraphEdit *graph = cast_to<GraphEdit>(get_parent());
-	ERR_FAIL_NULL_V(graph, TypedArray<Ref<GraphConnection>>());
-	return graph->get_filtered_connections_by_node(this, p_filter_direction);
+	ERR_FAIL_NULL_V(graph_edit, TypedArray<Ref<GraphConnection>>());
+	return graph_edit->get_filtered_connections_by_node(this, p_filter_direction);
 }
 
 TypedArray<GraphNode> GraphNode::get_connected_nodes() {
@@ -892,27 +917,32 @@ TypedArray<Ref<GraphConnection>> GraphNode::get_output_connections() {
 	return get_filtered_connections(GraphPort::OUTPUT);
 }
 
-void GraphNode::disconnect_all() {
+void GraphNode::set_connections(const TypedArray<Ref<GraphConnection>> &p_connections) {
 	ERR_FAIL_NULL(graph_edit);
-	graph_edit->disconnect_all_by_node(this);
+	graph_edit->set_node_connections(this, p_connections);
 }
 
-void GraphNode::disconnect_filtered(GraphPort::PortDirection p_filter_direction) {
+void GraphNode::clear_connections() {
+	ERR_FAIL_NULL(graph_edit);
+	graph_edit->clear_node_connections(this);
+}
+
+void GraphNode::clear_filtered_connections(GraphPort::PortDirection p_filter_direction) {
 	ERR_FAIL_NULL(graph_edit);
 	for (GraphPort *port : ports) {
 		if (!port || port->direction != p_filter_direction) {
 			continue;
 		}
-		graph_edit->disconnect_all_by_port(port);
+		graph_edit->clear_port_connections(port);
 	}
 }
 
-void GraphNode::disconnect_input() {
-	disconnect_filtered(GraphPort::INPUT);
+void GraphNode::clear_input_connections() {
+	clear_filtered_connections(GraphPort::INPUT);
 }
 
-void GraphNode::disconnect_output() {
-	disconnect_filtered(GraphPort::OUTPUT);
+void GraphNode::clear_output_connections() {
+	clear_filtered_connections(GraphPort::OUTPUT);
 }
 
 void GraphNode::_on_connected(const Ref<GraphConnection> p_conn) {
@@ -965,29 +995,33 @@ void GraphNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_port_count", "include_disabled"), &GraphNode::get_port_count, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_count", "filter_direction", "include_disabled"), &GraphNode::get_filtered_port_count, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_input_port_count", "include_disabled"), &GraphNodeIndexed::get_input_port_count, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("get_output_port_count", "include_disabled"), &GraphNodeIndexed::get_output_port_count, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_input_port_count", "include_disabled"), &GraphNode::get_input_port_count, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_output_port_count", "include_disabled"), &GraphNode::get_output_port_count, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("index_of_port", "port", "include_disabled"), &GraphNode::index_of_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("filtered_index_of_port", "port", "include_disabled"), &GraphNode::filtered_index_of_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("enabled_index_to_port_index", "enabled_port_index"), &GraphNode::enabled_index_to_port_index);
 	ClassDB::bind_method(D_METHOD("port_index_to_enabled_index", "port_index"), &GraphNode::port_index_to_enabled_index);
 
-	ClassDB::bind_method(D_METHOD("has_connection"), &GraphNode::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphNode::get_connections);
 	ClassDB::bind_method(D_METHOD("get_filtered_connections", "filter_direction"), &GraphNode::get_filtered_connections);
-	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNodeIndexed::get_input_connections);
-	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNodeIndexed::get_output_connections);
+	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNode::get_input_connections);
+	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNode::get_output_connections);
+	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphNode::set_connections);
+	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphNode::clear_connections);
+	ClassDB::bind_method(D_METHOD("clear_filtered_connections", "filter_direction"), &GraphNode::clear_filtered_connections);
+	ClassDB::bind_method(D_METHOD("clear_input_connections"), &GraphNode::clear_input_connections);
+	ClassDB::bind_method(D_METHOD("clear_output_connections"), &GraphNode::clear_output_connections);
+
+	ClassDB::bind_method(D_METHOD("add_connection", "connection"), &GraphNode::add_connection);
+	ClassDB::bind_method(D_METHOD("remove_connection", "connection"), &GraphNode::remove_connection);
+	ClassDB::bind_method(D_METHOD("has_connection"), &GraphNode::has_connection);
+	ClassDB::bind_method(D_METHOD("is_connected_to", "node"), &GraphNode::is_connected_to);
 
 	ClassDB::bind_method(D_METHOD("get_connected_nodes"), &GraphNode::get_connected_nodes);
 	ClassDB::bind_method(D_METHOD("get_filtered_connected_nodes", "filter_direction"), &GraphNode::get_filtered_connected_nodes);
 	ClassDB::bind_method(D_METHOD("get_input_connected_nodes"), &GraphNode::get_input_connected_nodes);
 	ClassDB::bind_method(D_METHOD("get_output_connected_nodes"), &GraphNode::get_output_connected_nodes);
-
-	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphNode::disconnect_all);
-	ClassDB::bind_method(D_METHOD("disconnect_filtered", "filter_direction"), &GraphNode::disconnect_filtered);
-	ClassDB::bind_method(D_METHOD("disconnect_input"), &GraphNode::disconnect_input);
-	ClassDB::bind_method(D_METHOD("disconnect_output"), &GraphNode::disconnect_output);
 
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);

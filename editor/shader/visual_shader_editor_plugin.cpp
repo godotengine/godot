@@ -1383,7 +1383,7 @@ void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, b
 		GraphNode *graph_node = Object::cast_to<GraphNode>(links[p_id].graph_element);
 		Array ports;
 		if (graph_node) {
-			graph_edit->disconnect_all_by_node(graph_node);
+			graph_edit->clear_node_connections(graph_node);
 			ports = Array(graph_node->get_ports());
 		}
 

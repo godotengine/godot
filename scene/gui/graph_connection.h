@@ -107,4 +107,5 @@ public:
 
 	GraphConnection();
 	GraphConnection(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid);
+	~GraphConnection();
 };

@@ -58,7 +58,7 @@ void GraphPort::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (graph_edit) {
-				graph_edit->disconnect_all_by_port(this);
+				graph_edit->clear_port_connections(this);
 			}
 			graph_edit = nullptr;
 			graph_node = nullptr;
@@ -115,7 +115,7 @@ void GraphPort::disable() {
 		default:
 			break;
 	}
-	graph_edit->disconnect_all_by_port(this);
+	graph_edit->clear_port_connections(this);
 
 	queue_redraw();
 	notify_property_list_changed();
@@ -247,7 +247,24 @@ int GraphPort::get_filtered_port_index(bool p_include_disabled) {
 
 void GraphPort::disconnect_all() {
 	ERR_FAIL_NULL(graph_edit);
-	graph_edit->disconnect_all_by_port(this);
+	graph_edit->clear_port_connections(this);
+}
+
+void GraphPort::add_connection(Ref<GraphConnection> p_connection) {
+	ERR_FAIL_NULL(graph_edit);
+	ERR_FAIL_COND_MSG(p_connection->first_port != this && p_connection->second_port != this, "Failed to add GraphConnection to GraphNode: neither connection port is part of the GraphNode!");
+	graph_edit->add_connection(p_connection);
+}
+
+void GraphPort::remove_connection(Ref<GraphConnection> p_connection) {
+	ERR_FAIL_NULL(graph_edit);
+	ERR_FAIL_COND_MSG(p_connection->first_port != this && p_connection->second_port != this, "Failed to add GraphConnection to GraphNode: neither connection port is part of the GraphNode!");
+	graph_edit->remove_connection(p_connection);
+}
+
+void GraphPort::connect_to_port(GraphPort *p_port, bool p_clear_if_invalid) {
+	ERR_FAIL_NULL(graph_edit);
+	graph_edit->connect_nodes(this, p_port, p_clear_if_invalid);
 }
 
 bool GraphPort::has_connection() {
@@ -260,9 +277,24 @@ TypedArray<Ref<GraphConnection>> GraphPort::get_connections() {
 	return graph_edit->get_connections_by_port(this);
 }
 
+void GraphPort::set_connections(const TypedArray<Ref<GraphConnection>> &p_connections) {
+	ERR_FAIL_NULL(graph_edit);
+	graph_edit->set_port_connections(this, p_connections);
+}
+
+void GraphPort::clear_connections() {
+	ERR_FAIL_NULL(graph_edit);
+	graph_edit->clear_port_connections(this);
+}
+
 Ref<GraphConnection> GraphPort::get_first_connection() {
 	ERR_FAIL_NULL_V(graph_edit, Ref<GraphConnection>(nullptr));
 	return graph_edit->get_first_connection_by_port(this);
+}
+
+bool GraphPort::is_connected_to(GraphPort *p_port) {
+	ERR_FAIL_NULL_V(graph_edit, false);
+	return graph_edit->are_ports_connected(this, p_port);
 }
 
 TypedArray<GraphPort> GraphPort::get_connected_ports() {
@@ -351,13 +383,21 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disabled_behaviour", "on_disabled_behaviour"), &GraphPort::set_disabled_behaviour);
 	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
 
-	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
-	ClassDB::bind_method(D_METHOD("get_connected_ports"), &GraphPort::get_connected_ports);
+	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphPort::disconnect_all);
+	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphPort::set_connections);
+	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphPort::clear_connections);
+
+	ClassDB::bind_method(D_METHOD("add_connection", "connection"), &GraphPort::add_connection);
+	ClassDB::bind_method(D_METHOD("connect_to_port", "port"), &GraphPort::connect_to_port);
+	ClassDB::bind_method(D_METHOD("remove_connection", "connection"), &GraphPort::remove_connection);
+	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
 	ClassDB::bind_method(D_METHOD("get_first_connection"), &GraphPort::get_first_connection);
+	ClassDB::bind_method(D_METHOD("is_connected_to", "port"), &GraphPort::is_connected_to);
+
+	ClassDB::bind_method(D_METHOD("get_connected_ports"), &GraphPort::get_connected_ports);
 	ClassDB::bind_method(D_METHOD("get_first_connected_port"), &GraphPort::get_first_connected_port);
 	ClassDB::bind_method(D_METHOD("get_first_connected_node"), &GraphPort::get_first_connected_node);
-	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphPort::disconnect_all);
 
 	ClassDB::bind_method(D_METHOD("get_port_index", "include_disabled"), &GraphPort::get_port_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_filtered_port_index", "include_disabled"), &GraphPort::get_filtered_port_index, DEFVAL(true));

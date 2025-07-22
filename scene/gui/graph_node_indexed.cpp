@@ -140,7 +140,7 @@ void GraphNodeIndexed::_notification(int p_what) {
 
 			for (int i = 0; i < get_child_count(false); i++) {
 				Control *_child = as_sortable_control(get_child(i, false), SortableVisibilityMode::VISIBLE_IN_TREE);
-				if (!_child || !_child->is_visible_in_tree() || _child->has_meta(ignore_node_meta_tag) || !_node_to_slot_cache.has(_child->get_name())) {
+				if (!_child || _child->has_meta(ignore_node_meta_tag) || !_node_to_slot_cache.has(_child->get_name())) {
 					continue;
 				}
 				int slot_index = _node_to_slot_cache[_child->get_name()];
@@ -184,20 +184,6 @@ void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
 	int input_port_idx = slot_to_port_index(p_slot_index, true);
 	int output_port_idx = slot_to_port_index(p_slot_index, false);
 	if (output_port_idx < ports.size()) {
-		GraphPort *in_port = ports[input_port_idx];
-		GraphPort *out_port = ports[output_port_idx];
-		if (in_port) {
-			if (in_port->get_parent()) {
-				in_port->get_parent()->remove_child(in_port);
-			}
-			in_port->queue_free();
-		}
-		if (out_port) {
-			if (out_port->get_parent()) {
-				out_port->get_parent()->remove_child(out_port);
-			}
-			out_port->queue_free();
-		}
 		remove_port(output_port_idx);
 		remove_port(input_port_idx);
 	}
@@ -230,8 +216,20 @@ void GraphNodeIndexed::move_slot_with_ports(int p_old_slot_index, int p_new_slot
 
 void GraphNodeIndexed::set_slot_with_ports(int p_slot_index, Slot p_slot, GraphPort *p_input_port, GraphPort *p_output_port) {
 	_set_slot(p_slot_index, p_slot);
-	set_port(slot_to_port_index(p_slot_index, true), p_input_port);
-	set_port(slot_to_port_index(p_slot_index, false), p_output_port);
+	set_ports_at_slot(p_slot_index, p_input_port, p_output_port);
+}
+
+void GraphNodeIndexed::set_ports_at_slot(int p_slot_index, GraphPort *p_input_port, GraphPort *p_output_port) {
+	set_input_port_at_slot(p_slot_index, p_input_port);
+	set_output_port_at_slot(p_slot_index, p_output_port);
+}
+
+GraphPort *GraphNodeIndexed::set_output_port_at_slot(int p_slot_index, GraphPort *p_port) {
+	return set_port(slot_to_port_index(p_slot_index, false), p_port);
+}
+
+GraphPort *GraphNodeIndexed::set_input_port_at_slot(int p_slot_index, GraphPort *p_port) {
+	return set_port(slot_to_port_index(p_slot_index, true), p_port);
 }
 
 void GraphNodeIndexed::copy_slot_with_ports(int p_old_slot_index, int p_new_slot_index) {
@@ -262,24 +260,65 @@ void GraphNodeIndexed::set_slots(const TypedArray<Array> &p_slots) {
 	}
 }
 
-void GraphNodeIndexed::_add_port(GraphPort *p_port) {
-	GraphNode::_add_port(p_port);
+GraphPort *GraphNodeIndexed::set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	GraphPort *old_port = GraphNode::_set_port(p_port_index, p_port, p_include_disabled);
 
-	if (p_port && !p_port->get_parent()) {
-		ensure_port_container();
-		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-		p_port->set_owner(this);
+	if (old_port == p_port) {
+		return old_port;
 	}
+	if (!old_port || !p_port || old_port->get_parent() != p_port->get_parent()) {
+		if (old_port && old_port->get_parent()) {
+			//WARN_PRINT("hello i am removing on _set_port");
+			old_port->get_parent()->remove_child(old_port);
+		}
+		if (p_port && (!port_container || p_port->get_parent() != port_container)) {
+			//WARN_PRINT("hello i am adding on _set_port");
+			ensure_port_container();
+			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
+			p_port->set_owner(this);
+		}
+	}
+
+	_port_modified();
+	return old_port;
 }
 
-void GraphNodeIndexed::_insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
-	GraphNode::_insert_port(p_port_index, p_port, p_include_disabled);
+void GraphNodeIndexed::add_port(GraphPort *p_port) {
+	GraphNode::_add_port(p_port);
 
-	if (p_port && !p_port->get_parent()) {
+	if (p_port && (!port_container || p_port->get_parent() != port_container)) {
+		//WARN_PRINT("hello i am working on _add_port");
 		ensure_port_container();
 		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
 		p_port->set_owner(this);
 	}
+
+	_port_modified();
+}
+
+void GraphNodeIndexed::insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled) {
+	GraphNode::_insert_port(p_port_index, p_port, p_include_disabled);
+
+	if (p_port && (!port_container || p_port->get_parent() != port_container)) {
+		//WARN_PRINT("hello i am working on _insert_port");
+		ensure_port_container();
+		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
+		p_port->set_owner(this);
+	}
+
+	_port_modified();
+}
+
+GraphPort *GraphNodeIndexed::remove_port(int p_port_index, bool p_include_disabled) {
+	GraphPort *ret = GraphNode::_remove_port(p_port_index, p_include_disabled);
+
+	if (ret && ret->get_parent()) {
+		//WARN_PRINT("uhhh i am _remove_port and this shit's cursed");
+		ret->get_parent()->remove_child(ret);
+	}
+
+	_port_modified();
+	return ret;
 }
 
 const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
@@ -688,6 +727,10 @@ void GraphNodeIndexed::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_port_container", "port_container"), &GraphNodeIndexed::set_port_container);
 	ClassDB::bind_method(D_METHOD("get_port_container"), &GraphNodeIndexed::get_port_container);
+
+	ClassDB::bind_method(D_METHOD("set_ports_at_slot", "slot", "input_port", "output_port"), &GraphNodeIndexed::set_ports_at_slot);
+	ClassDB::bind_method(D_METHOD("set_input_port_at_slot", "slot", "port"), &GraphNodeIndexed::set_input_port_at_slot);
+	ClassDB::bind_method(D_METHOD("set_output_port_at_slot", "slot", "port"), &GraphNodeIndexed::set_output_port_at_slot);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_slots", "get_slots");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_node_to_slot_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");

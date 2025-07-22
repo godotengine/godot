@@ -162,3 +162,9 @@ GraphConnection::GraphConnection(GraphPort *p_first_port, GraphPort *p_second_po
 	second_port = p_second_port;
 	clear_if_invalid = p_clear_if_invalid;
 }
+
+GraphConnection::~GraphConnection() {
+	if (_cache.line) {
+		_cache.line->queue_free();
+	}
+}

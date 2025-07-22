@@ -104,8 +104,11 @@ protected:
 
 	void set_slots(const TypedArray<Array> &p_slots);
 
-	virtual void _add_port(GraphPort *p_port) override;
-	virtual void _insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true) override;
+	virtual void add_port(GraphPort *p_port) override;
+	virtual void insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true) override;
+	virtual GraphPort *remove_port(int p_port_index, bool p_include_disabled = true) override;
+
+	virtual GraphPort *set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true) override;
 
 public:
 	void _notification(int p_what);
@@ -117,6 +120,10 @@ public:
 	void set_slot_properties(int p_slot_index, bool p_input_enabled, int p_input_type, bool p_output_enabled, int p_output_type);
 	void set_input_port_properties(int p_slot_index, bool p_enabled, int p_type);
 	void set_output_port_properties(int p_slot_index, bool p_enabled, int p_type);
+
+	void set_ports_at_slot(int p_slot_index, GraphPort *p_input_port, GraphPort *p_output_port);
+	GraphPort *set_input_port_at_slot(int p_slot_index, GraphPort *p_port);
+	GraphPort *set_output_port_at_slot(int p_slot_index, GraphPort *p_port);
 
 	GraphPort *get_input_port_by_slot(int p_slot_index);
 	GraphPort *get_output_port_by_slot(int p_slot_index);

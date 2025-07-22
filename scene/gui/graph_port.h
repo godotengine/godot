@@ -142,9 +142,17 @@ public:
 
 	void disconnect_all();
 
-	bool has_connection();
 	TypedArray<Ref<GraphConnection>> get_connections();
+	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
+	void clear_connections();
+
+	void add_connection(Ref<GraphConnection> p_connection);
+	void remove_connection(Ref<GraphConnection> p_connection);
+	void connect_to_port(GraphPort *p_port, bool p_clear_if_invalid = true);
+	bool has_connection();
 	Ref<GraphConnection> get_first_connection();
+	bool is_connected_to(GraphPort *p_port);
+
 	TypedArray<GraphPort> get_connected_ports();
 	GraphPort *get_first_connected_port();
 	GraphNode *get_first_connected_node();
