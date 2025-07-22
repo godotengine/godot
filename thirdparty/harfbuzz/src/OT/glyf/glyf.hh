@@ -220,7 +220,8 @@ struct glyf_accelerator_t
   template<typename T>
   bool get_points (hb_font_t *font, hb_codepoint_t gid, T consumer,
 		   hb_array_t<const int> coords,
-		   hb_glyf_scratch_t &scratch) const
+		   hb_glyf_scratch_t &scratch,
+		   hb_scalar_cache_t *gvar_cache = nullptr) const
   {
     if (gid >= num_glyphs) return false;
 
@@ -228,7 +229,7 @@ struct glyf_accelerator_t
     all_points.resize (0);
 
     bool phantom_only = !consumer.is_consuming_contour_points ();
-    if (unlikely (!glyph_for_gid (gid).get_points (font, *this, all_points, scratch, nullptr, nullptr, nullptr, true, true, phantom_only, coords)))
+    if (unlikely (!glyph_for_gid (gid).get_points (font, *this, all_points, scratch, nullptr, nullptr, nullptr, true, true, phantom_only, coords, gvar_cache)))
       return false;
 
     unsigned count = all_points.length;
@@ -371,28 +372,28 @@ struct glyf_accelerator_t
     contour_point_t *get_phantoms_sink () { return phantoms; }
   };
 
+#ifndef HB_NO_VAR
   unsigned
-  get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t gid, bool is_vertical) const
+  get_advance_with_var_unscaled (hb_codepoint_t gid,
+				 hb_font_t *font,
+				 bool is_vertical,
+				  hb_glyf_scratch_t &scratch,
+				 hb_scalar_cache_t *gvar_cache = nullptr) const
   {
     if (unlikely (gid >= num_glyphs)) return 0;
 
     bool success = false;
 
     contour_point_t phantoms[glyf_impl::PHANTOM_COUNT];
-    if (font->num_coords)
-    {
-      hb_glyf_scratch_t scratch;
-      success = get_points (font, gid, points_aggregator_t (font, nullptr, phantoms, false),
-			    hb_array (font->coords, font->num_coords),
-			    scratch);
-    }
-
+    success = get_points (font, gid, points_aggregator_t (font, nullptr, phantoms, false),
+			  hb_array (font->coords,
+				    font->has_nonzero_coords ? font->num_coords : 0),
+			  scratch, gvar_cache);
     if (unlikely (!success))
-      return
-#ifndef HB_NO_VERTICAL
-	is_vertical ? vmtx->get_advance_without_var_unscaled (gid) :
-#endif
-	hmtx->get_advance_without_var_unscaled (gid);
+    {
+      unsigned upem = font->face->get_upem ();
+      return is_vertical ? upem : upem / 2;
+    }
 
     float result = is_vertical
 		 ? phantoms[glyf_impl::PHANTOM_TOP].y - phantoms[glyf_impl::PHANTOM_BOTTOM].y
@@ -400,40 +401,38 @@ struct glyf_accelerator_t
     return hb_clamp (roundf (result), 0.f, (float) UINT_MAX / 2);
   }
 
-  bool get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t gid, bool is_vertical, int *lsb) const
+  float
+  get_v_origin_with_var_unscaled (hb_codepoint_t gid,
+				  hb_font_t *font,
+				  hb_glyf_scratch_t &scratch,
+				  hb_scalar_cache_t *gvar_cache = nullptr) const
   {
-    if (unlikely (gid >= num_glyphs)) return false;
+    if (unlikely (gid >= num_glyphs)) return 0;
 
-    hb_glyph_extents_t extents;
-    hb_glyf_scratch_t scratch;
+    bool success = false;
+
     contour_point_t phantoms[glyf_impl::PHANTOM_COUNT];
-    if (unlikely (!get_points (font, gid, points_aggregator_t (font, &extents, phantoms, false),
-			       hb_array (font->coords, font->num_coords),
-			       scratch)))
-      return false;
+    success = get_points (font, gid, points_aggregator_t (font, nullptr, phantoms, false),
+			  hb_array (font->coords,
+				    font->has_nonzero_coords ? font->num_coords : 0),
+			  scratch, gvar_cache);
+    if (unlikely (!success))
+    {
+      return font->face->get_upem ();
+    }
 
-    *lsb = is_vertical
-	 ? roundf (phantoms[glyf_impl::PHANTOM_TOP].y) - extents.y_bearing
-	 : roundf (phantoms[glyf_impl::PHANTOM_LEFT].x);
-    return true;
+    return phantoms[glyf_impl::PHANTOM_TOP].y;
   }
 #endif
-
-  bool get_leading_bearing_without_var_unscaled (hb_codepoint_t gid, bool is_vertical, int *lsb) const
-  {
-    if (unlikely (gid >= num_glyphs)) return false;
-    if (is_vertical) return false; // TODO Humm, what to do here?
-
-    *lsb = glyph_for_gid (gid).get_header ()->xMin;
-    return true;
-  }
+#endif
 
   public:
 
   bool get_extents (hb_font_t *font,
 		    hb_codepoint_t gid,
 		    hb_glyph_extents_t *extents) const
-  { return get_extents_at (font, gid, extents, hb_array (font->coords, font->num_coords)); }
+  { return get_extents_at (font, gid, extents, hb_array (font->coords,
+							 font->has_nonzero_coords ? font->num_coords : 0)); }
 
   bool get_extents_at (hb_font_t *font,
 		       hb_codepoint_t gid,
@@ -445,12 +444,16 @@ struct glyf_accelerator_t
 #ifndef HB_NO_VAR
     if (coords)
     {
-      hb_glyf_scratch_t scratch;
-      return get_points (font,
-			 gid,
-			 points_aggregator_t (font, extents, nullptr, true),
-			 coords,
-			 scratch);
+      hb_glyf_scratch_t *scratch = acquire_scratch ();
+      if (unlikely (!scratch))
+        return false;
+      bool ret = get_points (font,
+			     gid,
+			     points_aggregator_t (font, extents, nullptr, true),
+			     coords,
+			     *scratch);
+      release_scratch (scratch);
+      return ret;
     }
 #endif
     return glyph_for_gid (gid).get_extents_without_var_scaled (font, *this, extents);
@@ -485,33 +488,21 @@ struct glyf_accelerator_t
   }
 
   bool
-  get_path (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session) const
+  get_path (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session, hb_scalar_cache_t *gvar_cache = nullptr) const
   {
     if (!has_data ()) return false;
 
-    hb_glyf_scratch_t *scratch;
-
-    // Borrow the cached strach buffer.
-    {
-      scratch = cached_scratch.get_acquire ();
-      if (!scratch || unlikely (!cached_scratch.cmpexch (scratch, nullptr)))
-      {
-	scratch = (hb_glyf_scratch_t *) hb_calloc (1, sizeof (hb_glyf_scratch_t));
-	if (unlikely (!scratch))
-	  return true;
-      }
-    }
+    hb_glyf_scratch_t *scratch = acquire_scratch ();
+    if (unlikely (!scratch))
+      return true;
 
     bool ret = get_points (font, gid, glyf_impl::path_builder_t (font, draw_session),
-			   hb_array (font->coords, font->num_coords),
-			   *scratch);
+			   hb_array (font->coords,
+				     font->has_nonzero_coords ? font->num_coords : 0),
+			   *scratch,
+			    gvar_cache);
 
-    // Put it back.
-    if (!cached_scratch.cmpexch (nullptr, scratch))
-    {
-      scratch->~hb_glyf_scratch_t ();
-      hb_free (scratch);
-    }
+    release_scratch (scratch);
 
     return ret;
   }
@@ -519,12 +510,35 @@ struct glyf_accelerator_t
   bool
   get_path_at (hb_font_t *font, hb_codepoint_t gid, hb_draw_session_t &draw_session,
 	       hb_array_t<const int> coords,
-	       hb_glyf_scratch_t &scratch) const
+	       hb_glyf_scratch_t &scratch,
+	       hb_scalar_cache_t *gvar_cache = nullptr) const
   {
     if (!has_data ()) return false;
     return get_points (font, gid, glyf_impl::path_builder_t (font, draw_session),
 		       coords,
-		       scratch);
+		       scratch,
+		       gvar_cache);
+  }
+
+
+  hb_glyf_scratch_t *acquire_scratch () const
+  {
+    hb_glyf_scratch_t *scratch = cached_scratch.get_acquire ();
+    if (!scratch || unlikely (!cached_scratch.cmpexch (scratch, nullptr)))
+    {
+      scratch = (hb_glyf_scratch_t *) hb_calloc (1, sizeof (hb_glyf_scratch_t));
+      if (unlikely (!scratch))
+	return nullptr;
+    }
+    return scratch;
+  }
+  void release_scratch (hb_glyf_scratch_t *scratch) const
+  {
+    if (!cached_scratch.cmpexch (nullptr, scratch))
+    {
+      scratch->~hb_glyf_scratch_t ();
+      hb_free (scratch);
+    }
   }
 
 #ifndef HB_NO_VAR
