@@ -726,12 +726,12 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 					}
 				} else {
 					// Check if we are picking a tile.
-					if (picker_button->is_pressed() || (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
+					if (picker_button->is_pressed() || (Input::get_singleton()->is_command_or_control_pressed() && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 						drag_type = DRAG_TYPE_PICK;
 						drag_start_mouse_pos = mpos;
 					} else {
 						// Paint otherwise.
-						if (tool_buttons_group->get_pressed_button() == paint_tool_button && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+						if (tool_buttons_group->get_pressed_button() == paint_tool_button && !Input::get_singleton()->is_command_or_control_pressed() && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 							drag_type = DRAG_TYPE_PAINT;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
@@ -747,11 +747,11 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 								edited_layer->set_cell(coords, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 							}
 							_fix_invalid_tiles_in_tile_map_selection();
-						} else if (tool_buttons_group->get_pressed_button() == line_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+						} else if (tool_buttons_group->get_pressed_button() == line_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_command_or_control_pressed())) {
 							drag_type = DRAG_TYPE_LINE;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
-						} else if (tool_buttons_group->get_pressed_button() == rect_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+						} else if (tool_buttons_group->get_pressed_button() == rect_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_command_or_control_pressed())) {
 							drag_type = DRAG_TYPE_RECT;
 							drag_start_mouse_pos = mpos;
 							drag_modified.clear();
@@ -813,7 +813,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 	// Draw the selection.
 	if ((tiles_bottom_panel->is_visible_in_tree() || patterns_bottom_panel->is_visible_in_tree()) && tool_buttons_group->get_pressed_button() == select_tool_button) {
 		// In select mode, we only draw the current selection if we are modifying it (pressing control or shift).
-		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
+		if (drag_type == DRAG_TYPE_MOVE || (drag_type == DRAG_TYPE_SELECT && !Input::get_singleton()->is_command_or_control_pressed() && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			// Do nothing.
 		} else {
 			Color grid_color = EDITOR_GET("editors/tiles_editor/grid_color");
@@ -883,7 +883,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 				Vector2i coords = tile_set->map_pattern(tile_set->local_to_map(mpos - mouse_offset), clipboard_used_cells[i], tile_map_clipboard);
 				preview[coords] = TileMapCell(tile_map_clipboard->get_cell_source_id(clipboard_used_cells[i]), tile_map_clipboard->get_cell_atlas_coords(clipboard_used_cells[i]), tile_map_clipboard->get_cell_alternative_tile(clipboard_used_cells[i]));
 			}
-		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
+		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_command_or_control_pressed() && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
 			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a single pattern.
@@ -1284,14 +1284,14 @@ void TileMapLayerEditorTilesPlugin::_stop_dragging() {
 			undo_redo->create_action_for_history(TTR("Change selection"), EditorNode::get_editor_data().get_current_edited_scene_history_id(), UndoRedo::MERGE_DISABLE, false, false);
 			undo_redo->add_undo_method(this, "_set_tile_map_selection", _get_tile_map_selection());
 
-			if (!Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			if (!Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_command_or_control_pressed()) {
 				tile_map_selection.clear();
 			}
 			Rect2i rect = Rect2i(tile_set->local_to_map(drag_start_mouse_pos), tile_set->local_to_map(mpos) - tile_set->local_to_map(drag_start_mouse_pos)).abs();
 			for (int x = rect.position.x; x <= rect.get_end().x; x++) {
 				for (int y = rect.position.y; y <= rect.get_end().y; y++) {
 					Vector2i coords = Vector2i(x, y);
-					if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+					if (Input::get_singleton()->is_command_or_control_pressed()) {
 						if (tile_map_selection.has(coords)) {
 							tile_map_selection.erase(coords);
 						}
@@ -3054,7 +3054,7 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 					drag_type = DRAG_TYPE_PICK;
 				} else {
 					// Paint otherwise.
-					if (tool_buttons_group->get_pressed_button() == paint_tool_button && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
+					if (tool_buttons_group->get_pressed_button() == paint_tool_button && !Input::get_singleton()->is_command_or_control_pressed() && !Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
@@ -3069,14 +3069,14 @@ bool TileMapLayerEditorTerrainsPlugin::forward_canvas_gui_input(const Ref<InputE
 							drag_modified[E.key] = edited_layer->get_cell(E.key);
 							edited_layer->set_cell(E.key, E.value.source_id, E.value.get_atlas_coords(), E.value.alternative_tile);
 						}
-					} else if (tool_buttons_group->get_pressed_button() == line_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+					} else if (tool_buttons_group->get_pressed_button() == line_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && !Input::get_singleton()->is_command_or_control_pressed())) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
 						drag_type = DRAG_TYPE_LINE;
 						drag_start_mouse_pos = mpos;
 						drag_modified.clear();
-					} else if (tool_buttons_group->get_pressed_button() == rect_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL))) {
+					} else if (tool_buttons_group->get_pressed_button() == rect_tool_button || (tool_buttons_group->get_pressed_button() == paint_tool_button && Input::get_singleton()->is_key_pressed(Key::SHIFT) && Input::get_singleton()->is_command_or_control_pressed())) {
 						if (selected_terrain_set < 0 || selected_terrain < 0 || (selected_type == SELECTED_TYPE_PATTERN && !selected_terrains_pattern.is_valid())) {
 							return true;
 						}
@@ -3147,7 +3147,7 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 				tile_xform.set_scale(tile_shape_size);
 				tile_set->draw_tile_shape(p_overlay, xform * tile_xform, Color(1.0, 1.0, 1.0), false);
 			}
-		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
+		} else if (!picker_button->is_pressed() && !(drag_type == DRAG_TYPE_NONE && Input::get_singleton()->is_command_or_control_pressed() && !Input::get_singleton()->is_key_pressed(Key::SHIFT))) {
 			bool expand_grid = false;
 			if (tool_buttons_group->get_pressed_button() == paint_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a single tile.

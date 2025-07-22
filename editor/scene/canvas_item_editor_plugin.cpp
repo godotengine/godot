@@ -365,7 +365,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;
 
-	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	bool is_snap_active = smart_snap_active ^ Input::get_singleton()->is_command_or_control_pressed();
 
 	// Smart snap using the canvas position
 	Vector2 output = p_target;
@@ -491,7 +491,7 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsig
 }
 
 real_t CanvasItemEditor::snap_angle(real_t p_target, real_t p_start) const {
-	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) && snap_rotation_step != 0) {
+	if (((smart_snap_active || snap_rotation) ^ Input::get_singleton()->is_command_or_control_pressed()) && snap_rotation_step != 0) {
 		if (snap_relative) {
 			return Math::snapped(p_target - snap_rotation_offset, snap_rotation_step) + snap_rotation_offset + (p_start - (int)(p_start / snap_rotation_step) * snap_rotation_step);
 		} else {
@@ -3702,7 +3702,7 @@ void CanvasItemEditor::_draw_selection() {
 		CanvasItem *ci = selection.front()->get();
 
 		Transform2D xform = transform * ci->get_screen_transform();
-		bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+		bool is_ctrl = Input::get_singleton()->is_command_or_control_pressed();
 		bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 
 		// Draw the move handles.

@@ -4923,11 +4923,11 @@ bool AnimationTrackEditor::is_key_clipboard_active() const {
 }
 
 bool AnimationTrackEditor::is_snap_timeline_enabled() const {
-	return snap_timeline->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	return snap_timeline->is_pressed() ^ Input::get_singleton()->is_command_or_control_pressed();
 }
 
 bool AnimationTrackEditor::is_snap_keys_enabled() const {
-	return snap_keys->is_pressed() ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	return snap_keys->is_pressed() ^ Input::get_singleton()->is_command_or_control_pressed();
 }
 
 bool AnimationTrackEditor::is_bezier_editor_active() const {

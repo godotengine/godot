@@ -1997,7 +1997,7 @@ void TextEdit::_notification(int p_what) {
 			remove_drag_caret();
 			if (selection_drag_attempt && is_drag_successful()) {
 				// Dropped elsewhere.
-				if (is_editable() && !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+				if (is_editable() && !Input::get_singleton()->is_command_or_control_pressed()) {
 					delete_selection();
 				} else if (deselect_on_focus_loss_enabled) {
 					deselect();
@@ -3535,7 +3535,7 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		Point2i pos = get_line_column_at_pos(get_local_mouse_pos());
 		int drop_at_line = pos.y;
 		int drop_at_column = pos.x;
-		int selection_index = get_selection_at_line_column(drop_at_line, drop_at_column, !Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL));
+		int selection_index = get_selection_at_line_column(drop_at_line, drop_at_column, !Input::get_singleton()->is_command_or_control_pressed());
 
 		// Remove drag caret before the complex operation starts so it won't appear in undo.
 		remove_caret(drag_caret_index);
@@ -3551,7 +3551,7 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 		if (selection_drag_attempt) {
 			// Drop from self.
 			selection_drag_attempt = false;
-			if (!Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
+			if (!Input::get_singleton()->is_command_or_control_pressed()) {
 				// Delete all selections.
 				int temp_caret = add_caret(drop_at_line, drop_at_column);
 
