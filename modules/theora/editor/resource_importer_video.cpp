@@ -82,6 +82,7 @@ void ResourceImporterVideo::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "audio_quality", PROPERTY_HINT_RANGE, "-0.1,1.0,0.01"), 0.5));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "keyframe_interval", PROPERTY_HINT_RANGE, "1,1024,1"), 64));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "encoding_speed", PROPERTY_HINT_ENUM, "Fastest (Lowest Efficiency):4,Fast (Low Efficiency):3,Slow (High Efficiency):2,Slowest (Highest Efficiency):1,"), 4));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "additional_arguments", PROPERTY_HINT_NONE, ""), ""));
 }
 
 Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
@@ -89,6 +90,13 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 
 	args.push_back("-i");
 	args.push_back(ProjectSettings::get_singleton()->globalize_path(p_source_file));
+
+	if (p_options["additional_arguments"] != "") {
+		Vector<String> additional_arguments = String(p_options["additional_arguments"]).split(" ", false);
+		for (const String &additional_argument : additional_arguments) {
+			args.push_back(additional_argument);
+		}
+	}
 
 	int scale_width = p_options["scale_width"];
 	int scale_height = p_options["scale_height"];

@@ -10,6 +10,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="additional_arguments" type="String" setter="" getter="" default="&quot;&quot;">
+			If filled, it will be added to the command line, after the input file and before any other arguments.
+		</member>
 		<member name="alpha_to_color" type="Color" setter="" getter="" default="Color(0, 0, 0, 1)">
 			Replace the alpha channel with a color for applying the Chroma key effect.
 		</member>
