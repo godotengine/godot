@@ -1079,6 +1079,11 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 	texture.allowed_shared_formats = format.shareable_formats;
 	texture.has_initial_data = !data.is_empty();
 
+	if (driver->api_trait_get(RDD::API_TRAIT_TEXTURE_OUTPUTS_REQUIRE_CLEARS)) {
+		// Check if a clear for this texture must be performed the first time it's used if the driver requires explicit clears after initialization.
+		texture.pending_clear = !texture.has_initial_data && (format.usage_bits & (TEXTURE_USAGE_STORAGE_BIT | TEXTURE_USAGE_COLOR_ATTACHMENT_BIT));
+	}
+
 	if ((format.usage_bits & (TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_RESOLVE_ATTACHMENT_BIT))) {
 		texture.read_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
 		texture.barrier_aspect_flags.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
@@ -1931,6 +1936,50 @@ uint32_t RenderingDevice::_texture_vrs_method_to_usage_bits() const {
 	}
 }
 
+void RenderingDevice::_texture_check_pending_clear(RID p_texture_rid, Texture *p_texture) {
+	DEV_ASSERT(p_texture != nullptr);
+
+	if (!p_texture->pending_clear) {
+		return;
+	}
+
+	bool clear = true;
+	p_texture->pending_clear = false;
+
+	if (p_texture->owner.is_valid()) {
+		// Check the owner texture instead if it exists.
+		p_texture_rid = p_texture->owner;
+		p_texture = texture_owner.get_or_null(p_texture_rid);
+		clear = p_texture->pending_clear;
+	}
+
+	if (p_texture != nullptr && clear) {
+		_texture_clear(p_texture_rid, p_texture, Color(), 0, p_texture->mipmaps, 0, p_texture->layers);
+		p_texture->pending_clear = false;
+	}
+}
+
+void RenderingDevice::_texture_clear(RID p_texture_rid, Texture *p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers) {
+	_check_transfer_worker_texture(p_texture);
+
+	RDD::TextureSubresourceRange range;
+	range.aspect = p_texture->read_aspect_flags;
+	range.base_mipmap = p_texture->base_mipmap + p_base_mipmap;
+	range.mipmap_count = p_mipmaps;
+	range.base_layer = p_texture->base_layer + p_base_layer;
+	range.layer_count = p_layers;
+
+	// Indicate the texture will get modified for the shared texture fallback.
+	_texture_update_shared_fallback(p_texture_rid, p_texture, true);
+
+	if (_texture_make_mutable(p_texture, p_texture_rid)) {
+		// The texture must be mutable to be used as a clear destination.
+		draw_graph.add_synchronization();
+	}
+
+	draw_graph.add_texture_clear(p_texture->driver_id, p_texture->draw_tracker, p_color, range);
+}
+
 Vector<uint8_t> RenderingDevice::texture_get_data(RID p_texture, uint32_t p_layer) {
 	ERR_RENDER_THREAD_GUARD_V(Vector<uint8_t>());
 
@@ -2391,24 +2440,7 @@ Error RenderingDevice::texture_clear(RID p_texture, const Color &p_color, uint32
 	ERR_FAIL_COND_V(p_base_mipmap + p_mipmaps > src_tex->mipmaps, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_base_layer + p_layers > src_tex->layers, ERR_INVALID_PARAMETER);
 
-	_check_transfer_worker_texture(src_tex);
-
-	RDD::TextureSubresourceRange range;
-	range.aspect = src_tex->read_aspect_flags;
-	range.base_mipmap = src_tex->base_mipmap + p_base_mipmap;
-	range.mipmap_count = p_mipmaps;
-	range.base_layer = src_tex->base_layer + p_base_layer;
-	range.layer_count = p_layers;
-
-	// Indicate the texture will get modified for the shared texture fallback.
-	_texture_update_shared_fallback(p_texture, src_tex, true);
-
-	if (_texture_make_mutable(src_tex, p_texture)) {
-		// The texture must be mutable to be used as a clear destination.
-		draw_graph.add_synchronization();
-	}
-
-	draw_graph.add_texture_clear(src_tex->driver_id, src_tex->draw_tracker, p_color, range);
+	_texture_clear(p_texture, src_tex, p_color, p_base_mipmap, p_mipmaps, p_base_layer, p_layers);
 
 	return OK;
 }
@@ -3584,6 +3616,21 @@ void RenderingDevice::_uniform_set_update_shared(UniformSet *p_uniform_set) {
 	}
 }
 
+void RenderingDevice::_uniform_set_update_clears(UniformSet *p_uniform_set) {
+	if (p_uniform_set->pending_clear_textures.is_empty()) {
+		return;
+	}
+
+	for (RID texture_id : p_uniform_set->pending_clear_textures) {
+		Texture *texture = texture_owner.get_or_null(texture_id);
+		if (texture != nullptr) {
+			_texture_check_pending_clear(texture_id, texture);
+		}
+	}
+
+	p_uniform_set->pending_clear_textures.clear();
+}
+
 RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
 	_THREAD_SAFE_METHOD_
 
@@ -3613,6 +3660,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 	Vector<RDG::ResourceUsage> draw_trackers_usage;
 	HashMap<RID, RDG::ResourceUsage> untracked_usage;
 	Vector<UniformSet::SharedTexture> shared_textures_to_update;
+	LocalVector<RID> pending_clear_textures;
 
 	for (uint32_t i = 0; i < set_uniform_count; i++) {
 		const ShaderUniform &set_uniform = set_uniforms[i];
@@ -3682,6 +3730,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 						attachable_textures.push_back(attachable_texture);
 					}
 
+					if (texture->pending_clear) {
+						pending_clear_textures.push_back(texture_id);
+					}
+
 					RDD::TextureID driver_id = texture->driver_id;
 					RDG::ResourceTracker *tracker = texture->draw_tracker;
 					if (texture->shared_fallback != nullptr && texture->shared_fallback->texture.id != 0) {
@@ -3728,6 +3780,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 						attachable_textures.push_back(attachable_texture);
 					}
 
+					if (texture->pending_clear) {
+						pending_clear_textures.push_back(texture_id);
+					}
+
 					RDD::TextureID driver_id = texture->driver_id;
 					RDG::ResourceTracker *tracker = texture->draw_tracker;
 					if (texture->shared_fallback != nullptr && texture->shared_fallback->texture.id != 0) {
@@ -3770,6 +3826,10 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 
 					if (texture->owner.is_null() && texture->shared_fallback != nullptr) {
 						shared_textures_to_update.push_back({ true, texture_id });
+					}
+
+					if (texture->pending_clear) {
+						pending_clear_textures.push_back(texture_id);
 					}
 
 					if (_texture_make_mutable(texture, texture_id)) {
@@ -3966,6 +4026,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 	uniform_set.draw_trackers_usage = draw_trackers_usage;
 	uniform_set.untracked_usage = untracked_usage;
 	uniform_set.shared_textures_to_update = shared_textures_to_update;
+	uniform_set.pending_clear_textures = pending_clear_textures;
 	uniform_set.shader_set = p_shader_set;
 	uniform_set.shader_id = p_shader;
 
@@ -4482,6 +4543,9 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, 
 			continue;
 		}
 
+		// Clear the texture if the driver requires it during its first use.
+		_texture_check_pending_clear(texture_rid, texture);
+
 		// Indicate the texture will get modified for the shared texture fallback.
 		_texture_update_shared_fallback(texture_rid, texture, true);
 
@@ -4965,6 +5029,8 @@ void RenderingDevice::draw_list_draw(DrawListID p_list, bool p_use_indices, uint
 
 				UniformSet *uniform_set = uniform_set_owner.get_or_null(draw_list.state.sets[i].uniform_set);
 				_uniform_set_update_shared(uniform_set);
+				_uniform_set_update_clears(uniform_set);
+
 				draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 				draw_list.state.sets[i].bound = true;
 
@@ -5105,6 +5171,7 @@ void RenderingDevice::draw_list_draw_indirect(DrawListID p_list, bool p_use_indi
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(draw_list.state.sets[i].uniform_set);
 			_uniform_set_update_shared(uniform_set);
+			_uniform_set_update_clears(uniform_set);
 
 			draw_graph.add_draw_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 
@@ -5502,6 +5569,7 @@ void RenderingDevice::compute_list_dispatch(ComputeListID p_list, uint32_t p_x_g
 			}
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(compute_list.state.sets[i].uniform_set);
 			_uniform_set_update_shared(uniform_set);
+			_uniform_set_update_clears(uniform_set);
 
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 			compute_list.state.sets[i].bound = true;
@@ -5638,6 +5706,7 @@ void RenderingDevice::compute_list_dispatch_indirect(ComputeListID p_list, RID p
 
 			UniformSet *uniform_set = uniform_set_owner.get_or_null(compute_list.state.sets[i].uniform_set);
 			_uniform_set_update_shared(uniform_set);
+			_uniform_set_update_clears(uniform_set);
 
 			draw_graph.add_compute_list_usages(uniform_set->draw_trackers, uniform_set->draw_trackers_usage);
 			compute_list.state.sets[i].bound = true;
