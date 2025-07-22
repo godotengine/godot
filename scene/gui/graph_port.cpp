@@ -389,7 +389,7 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphPort::clear_connections);
 
 	ClassDB::bind_method(D_METHOD("add_connection", "connection"), &GraphPort::add_connection);
-	ClassDB::bind_method(D_METHOD("connect_to_port", "port"), &GraphPort::connect_to_port);
+	ClassDB::bind_method(D_METHOD("connect_to_port", "port", "clear_if_invalid"), &GraphPort::connect_to_port, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("remove_connection", "connection"), &GraphPort::remove_connection);
 	ClassDB::bind_method(D_METHOD("has_connection"), &GraphPort::has_connection);
 	ClassDB::bind_method(D_METHOD("get_first_connection"), &GraphPort::get_first_connection);

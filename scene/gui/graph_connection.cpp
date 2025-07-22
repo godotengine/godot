@@ -46,9 +46,9 @@ GraphPort *GraphConnection::get_other_port(GraphPort *p_port) {
 GraphPort *GraphConnection::get_other_port_by_node(GraphNode *p_node) {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
-		return first_port;
-	} else if (p_node == get_second_node()) {
 		return second_port;
+	} else if (p_node == get_second_node()) {
+		return first_port;
 	} else {
 		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
 	}
@@ -57,15 +57,37 @@ GraphPort *GraphConnection::get_other_port_by_node(GraphNode *p_node) {
 GraphNode *GraphConnection::get_other_node(GraphNode *p_node) {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
-		return get_first_node();
-	} else if (p_node == get_second_node()) {
 		return get_second_node();
+	} else if (p_node == get_second_node()) {
+		return get_first_node();
 	} else {
 		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
 	}
 }
 
 GraphNode *GraphConnection::get_other_node_by_port(GraphPort *p_port) {
+	ERR_FAIL_NULL_V(p_port, nullptr);
+	if (p_port == first_port) {
+		return get_second_node();
+	} else if (p_port == second_port) {
+		return get_first_node();
+	} else {
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to port %s", p_port->get_name()));
+	}
+}
+
+GraphPort *GraphConnection::get_port_by_node(GraphNode *p_node) {
+	ERR_FAIL_NULL_V(p_node, nullptr);
+	if (p_node == get_first_node()) {
+		return first_port;
+	} else if (p_node == get_second_node()) {
+		return second_port;
+	} else {
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
+	}
+}
+
+GraphNode *GraphConnection::get_node_by_port(GraphPort *p_port) {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	if (p_port == first_port) {
 		return get_first_node();
@@ -145,6 +167,8 @@ void GraphConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_other_port_by_node", "node"), &GraphConnection::get_other_port_by_node);
 	ClassDB::bind_method(D_METHOD("get_other_node", "node"), &GraphConnection::get_other_node);
 	ClassDB::bind_method(D_METHOD("get_other_node_by_port", "port"), &GraphConnection::get_other_node_by_port);
+	ClassDB::bind_method(D_METHOD("get_port_by_node", "node"), &GraphConnection::get_port_by_node);
+	ClassDB::bind_method(D_METHOD("get_node_by_port", "port"), &GraphConnection::get_node_by_port);
 
 	ClassDB::bind_method(D_METHOD("set_clear_if_invalid", "clear_if_invalid"), &GraphConnection::set_clear_if_invalid);
 	ClassDB::bind_method(D_METHOD("get_clear_if_invalid"), &GraphConnection::get_clear_if_invalid);
