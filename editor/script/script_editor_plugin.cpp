@@ -4283,7 +4283,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	buttons_hbox->add_child(filename);
 
 	members_overview_alphabeta_sort_button = memnew(Button);
-	members_overview_alphabeta_sort_button->set_flat(true);
+	members_overview_alphabeta_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
 	members_overview_alphabeta_sort_button->set_tooltip_text(TTRC("Toggle alphabetical sorting of the method list."));
 	members_overview_alphabeta_sort_button->set_toggle_mode(true);
 	members_overview_alphabeta_sort_button->set_pressed(EDITOR_GET("text_editor/script_list/sort_members_outline_alphabetically"));
@@ -4340,6 +4340,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	set_process_shortcut_input(true);
 
 	file_menu = memnew(MenuButton);
+	file_menu->set_flat(false);
+	file_menu->set_theme_type_variation("FlatMenuButton");
 	file_menu->set_text(TTRC("File"));
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_shortcut_context(this);
@@ -4408,6 +4410,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->connect("popup_hide", callable_mp(this, &ScriptEditor::_file_menu_closed));
 
 	script_search_menu = memnew(MenuButton);
+	script_search_menu->set_flat(false);
+	script_search_menu->set_theme_type_variation("FlatMenuButton");
 	script_search_menu->set_text(TTRC("Search"));
 	script_search_menu->set_switch_on_hover(true);
 	script_search_menu->set_shortcut_context(this);
@@ -4415,6 +4419,8 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(script_search_menu);
 
 	MenuButton *debug_menu_btn = memnew(MenuButton);
+	debug_menu_btn->set_flat(false);
+	debug_menu_btn->set_theme_type_variation("FlatMenuButton");
 	menu_hb->add_child(debug_menu_btn);
 	debug_menu_btn->hide(); // Handled by EditorDebuggerNode below.
 
@@ -4441,13 +4447,13 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_spacer();
 
 	site_search = memnew(Button);
+	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->set_accessibility_name(TTRC("Site Search"));
-	site_search->set_flat(true);
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_WEBSITE));
 	menu_hb->add_child(site_search);
 
 	help_search = memnew(Button);
-	help_search->set_flat(true);
+	help_search->set_theme_type_variation(SceneStringName(FlatButton));
 	help_search->set_text(TTRC("Search Help"));
 	help_search->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_menu_option).bind(SEARCH_HELP));
 	menu_hb->add_child(help_search);
@@ -4456,14 +4462,14 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(memnew(VSeparator));
 
 	script_back = memnew(Button);
-	script_back->set_flat(true);
+	script_back->set_theme_type_variation(SceneStringName(FlatButton));
 	script_back->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_back));
 	menu_hb->add_child(script_back);
 	script_back->set_disabled(true);
 	script_back->set_tooltip_text(TTRC("Go to previous edited document."));
 
 	script_forward = memnew(Button);
-	script_forward->set_flat(true);
+	script_forward->set_theme_type_variation(SceneStringName(FlatButton));
 	script_forward->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditor::_history_forward));
 	menu_hb->add_child(script_forward);
 	script_forward->set_disabled(true);
@@ -4472,7 +4478,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	menu_hb->add_child(memnew(VSeparator));
 
 	make_floating = memnew(ScreenSelect);
-	make_floating->set_flat(true);
 	make_floating->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 
