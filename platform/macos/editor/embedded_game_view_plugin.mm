@@ -116,6 +116,14 @@ bool GameViewDebuggerMacOS::_msg_joy_stop(const Array &p_args) {
 	return true;
 }
 
+bool GameViewDebuggerMacOS::_msg_warp_mouse(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, false, "warp_mouse: invalid number of arguments");
+
+	Vector2i pos = p_args[0];
+	embedded_process->get_layer_host()->warp_mouse(pos);
+	return true;
+}
+
 void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:set_context_id"] = &GameViewDebuggerMacOS::_msg_set_context_id;
 	parse_message_handlers["game_view:cursor_set_shape"] = &GameViewDebuggerMacOS::_msg_cursor_set_shape;
@@ -125,6 +133,7 @@ void GameViewDebuggerMacOS::_init_capture_message_handlers() {
 	parse_message_handlers["game_view:window_set_ime_position"] = &GameViewDebuggerMacOS::_msg_window_set_ime_position;
 	parse_message_handlers["game_view:joy_start"] = &GameViewDebuggerMacOS::_msg_joy_start;
 	parse_message_handlers["game_view:joy_stop"] = &GameViewDebuggerMacOS::_msg_joy_stop;
+	parse_message_handlers["game_view:warp_mouse"] = &GameViewDebuggerMacOS::_msg_warp_mouse;
 }
 
 bool GameViewDebuggerMacOS::capture(const String &p_message, const Array &p_data, int p_session) {

@@ -320,6 +320,11 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
+void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+	_THREAD_SAFE_METHOD_
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+}
+
 Point2i DisplayServerEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
@@ -470,19 +475,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_IME:
-			// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
-			// case FEATURE_MOUSE:
-			// case FEATURE_MOUSE_WARP:
+		case FEATURE_MOUSE:
+		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
 			// case FEATURE_WINDOW_TRANSPARENCY:
-			// case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD:
 			// case FEATURE_KEEP_SCREEN_ON:
 			// case FEATURE_ORIENTATION:
 			// case FEATURE_VIRTUAL_KEYBOARD:
-			// case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_TEXT_TO_SPEECH:
 			// case FEATURE_TOUCHSCREEN:
 			return true;
 		default:
