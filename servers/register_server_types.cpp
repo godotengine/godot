@@ -260,6 +260,8 @@ void register_server_types() {
 
 	GDREGISTER_CLASS(CameraFeed);
 
+	GDREGISTER_CLASS(MicrophoneFeed);
+
 	GDREGISTER_VIRTUAL_CLASS(MovieWriter);
 
 	ServersDebugger::initialize();
