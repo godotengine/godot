@@ -501,10 +501,6 @@ struct CmapSubtableFormat4
     this->length = c->length () - table_initpos;
     if ((long long) this->length != (long long) c->length () - table_initpos)
     {
-      // Length overflowed. Discard the current object before setting the error condition, otherwise
-      // discard is a noop which prevents the higher level code from reverting the serializer to the
-      // pre-error state in cmap4 overflow handling code.
-      c->pop_discard ();
       c->err (HB_SERIALIZE_ERROR_INT_OVERFLOW);
       return;
     }
@@ -1646,7 +1642,7 @@ struct EncodingRecord
       CmapSubtable *cmapsubtable = c->push<CmapSubtable> ();
       unsigned origin_length = c->length ();
       cmapsubtable->serialize (c, it, format, plan, &(base+subtable));
-      if (c->length () - origin_length > 0) *objidx = c->pop_pack ();
+      if (c->length () - origin_length > 0 && !c->in_error()) *objidx = c->pop_pack ();
       else c->pop_discard ();
     }
 

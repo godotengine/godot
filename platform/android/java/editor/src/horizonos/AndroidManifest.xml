@@ -76,7 +76,7 @@
         <!-- Supported Meta devices -->
         <meta-data
             android:name="com.oculus.supportedDevices"
-            android:value="quest3|questpro"
+            android:value="quest2|quest3|questpro"
             tools:replace="android:value" />
 
         <!-- Enable system splash screen -->

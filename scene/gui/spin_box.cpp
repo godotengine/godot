@@ -144,8 +144,6 @@ void SpinBox::_text_submitted(const String &p_string) {
 
 	Error err = expr->parse(text);
 
-	use_custom_arrow_step = false;
-
 	if (err != OK) {
 		// If the expression failed try without converting commas to dots - they might have been for parameter separation.
 		text = p_string;
@@ -195,12 +193,12 @@ void SpinBox::_range_click_timeout() {
 		bool mouse_on_up_button = get_local_mouse_position().y < (get_size().height / 2);
 		// Arrow button is being pressed. Snap the value to next step.
 		double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+		temp_step = Math::snapped(temp_step, get_step());
 		double new_value = _calc_value(get_value(), temp_step);
 		if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
 			new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
 		}
 		set_value(new_value);
-		use_custom_arrow_step = true;
 
 		if (range_click_timer->is_one_shot()) {
 			range_click_timer->set_wait_time(0.075);
@@ -264,12 +262,12 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 				if (mouse_on_up_button || mouse_on_down_button) {
 					// Arrow button is being pressed. Snap the value to next step.
 					double temp_step = get_custom_arrow_step() != 0.0 ? get_custom_arrow_step() : get_step();
+					temp_step = Math::snapped(temp_step, get_step());
 					double new_value = _calc_value(get_value(), temp_step);
 					if ((mouse_on_up_button && new_value <= get_value() + CMP_EPSILON) || (!mouse_on_up_button && new_value >= get_value() - CMP_EPSILON)) {
 						new_value = _calc_value(get_value() + (mouse_on_up_button ? temp_step : -temp_step), temp_step);
 					}
 					set_value(new_value);
-					use_custom_arrow_step = true;
 				}
 				state_cache.up_button_pressed = mouse_on_up_button;
 				state_cache.down_button_pressed = mouse_on_down_button;
@@ -285,20 +283,17 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::RIGHT: {
 				line_edit->grab_focus();
 				if (mouse_on_up_button || mouse_on_down_button) {
-					use_custom_arrow_step = false;
 					set_value(mouse_on_up_button ? get_max() : get_min());
 				}
 			} break;
 			case MouseButton::WHEEL_UP: {
 				if (line_edit->is_editing()) {
-					use_custom_arrow_step = false;
 					set_value(get_value() + step * mb->get_factor());
 					accept_event();
 				}
 			} break;
 			case MouseButton::WHEEL_DOWN: {
 				if (line_edit->is_editing()) {
-					use_custom_arrow_step = false;
 					set_value(get_value() - step * mb->get_factor());
 					accept_event();
 				}
@@ -338,7 +333,6 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 		if (drag.enabled) {
 			drag.diff_y += mm->get_relative().y;
 			double diff_y = -0.01 * Math::pow(Math::abs(drag.diff_y), 1.8) * SIGN(drag.diff_y);
-			use_custom_arrow_step = false;
 			set_value(CLAMP(drag.base_val + step * diff_y, get_min(), get_max()));
 		} else if (drag.allowed && drag.capture_pos.distance_to(mm->get_position()) > 2) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
@@ -405,7 +399,9 @@ inline void SpinBox::_compute_sizes() {
 
 inline int SpinBox::_get_widest_button_icon_width() {
 	int max = 0;
+#ifndef DISABLE_DEPRECATED
 	max = MAX(max, theme_cache.updown_icon->get_width());
+#endif
 	max = MAX(max, theme_cache.up_icon->get_width());
 	max = MAX(max, theme_cache.up_hover_icon->get_width());
 	max = MAX(max, theme_cache.up_pressed_icon->get_width());
@@ -423,7 +419,6 @@ void SpinBox::_notification(int p_what) {
 			_update_text(true);
 			_compute_sizes();
 
-			RID ci = get_canvas_item();
 			Size2i size = get_size();
 
 			Ref<StyleBox> up_stylebox = theme_cache.up_base_stylebox;
@@ -463,9 +458,6 @@ void SpinBox::_notification(int p_what) {
 				down_icon_modulate = theme_cache.down_hover_icon_modulate;
 			}
 
-			int updown_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - theme_cache.updown_icon->get_width()) / 2;
-			int updown_icon_top = (size.height - theme_cache.updown_icon->get_height()) / 2;
-
 			// Compute center icon positions once we know which one is used.
 			int up_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - up_icon->get_width()) / 2;
 			int up_icon_top = (sizing_cache.button_up_height - up_icon->get_height()) / 2;
@@ -480,8 +472,16 @@ void SpinBox::_notification(int p_what) {
 			draw_style_box(up_stylebox, Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height));
 			draw_style_box(down_stylebox, Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height));
 
+#ifndef DISABLE_DEPRECATED
+			if (theme_cache.is_updown_assigned) {
+				int updown_icon_left = sizing_cache.buttons_left + (sizing_cache.buttons_width - theme_cache.updown_icon->get_width()) / 2;
+				int updown_icon_top = (size.height - theme_cache.updown_icon->get_height()) / 2;
+
+				theme_cache.updown_icon->draw(get_canvas_item(), Point2i(updown_icon_left, updown_icon_top));
+				break; // If updown is a valid texture, skip other arrows (for compatibility).
+			}
+#endif
 			// Draw arrows.
-			theme_cache.updown_icon->draw(ci, Point2i(updown_icon_left, updown_icon_top));
 			draw_texture(up_icon, Point2i(up_icon_left, up_icon_top), up_icon_modulate);
 			draw_texture(down_icon, Point2i(down_icon_left, down_icon_top), down_icon_modulate);
 
@@ -509,6 +509,9 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+#ifndef DISABLE_DEPRECATED
+			theme_cache.is_updown_assigned = !theme_cache.updown_icon->get_size().is_zero_approx();
+#endif
 			callable_mp((Control *)this, &Control::update_minimum_size).call_deferred();
 			callable_mp((Control *)get_line_edit(), &Control::update_minimum_size).call_deferred();
 		} break;
@@ -653,9 +656,9 @@ void SpinBox::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, buttons_width);
 #ifndef DISABLE_DEPRECATED
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SpinBox, set_min_buttons_width_from_icons);
-#endif
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, updown_icon, "updown");
+#endif
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, up_icon, "up");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, up_hover_icon, "up_hover");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SpinBox, up_pressed_icon, "up_pressed");

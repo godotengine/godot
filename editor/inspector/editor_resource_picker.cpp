@@ -737,9 +737,11 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
 		Vector<String> files = drag_data["files"];
 
-		// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
 		if (files.size() == 1) {
-			res = ResourceLoader::load(files[0]);
+			if (ResourceLoader::exists(files[0])) {
+				// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
+				res = ResourceLoader::load(files[0]);
+			}
 		}
 	}
 

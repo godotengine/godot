@@ -811,7 +811,14 @@ DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
 }
 
 void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	WARN_PRINT_ONCE("Custom cursor images are not supported in embedded mode.");
+	PackedByteArray data;
+	if (p_cursor.is_valid()) {
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
+		if (image.is_valid()) {
+			data = image->save_png_to_buffer();
+		}
+	}
+	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
 void DisplayServerEmbedded::swap_buffers() {
