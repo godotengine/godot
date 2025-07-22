@@ -33,7 +33,6 @@
 #include "core/string/optimized_translation.h"
 #include "core/string/plural_rules.h"
 #include "core/string/translation.h"
-#include "core/string/translation_po.h"
 #include "core/string/translation_server.h"
 
 #ifdef TOOLS_ENABLED
@@ -46,7 +45,8 @@
 namespace TestTranslation {
 
 TEST_CASE("[Translation] Messages") {
-	Ref<Translation> translation = memnew(Translation);
+	Ref<Translation> translation;
+	translation.instantiate();
 	translation->set_locale("fr");
 	translation->add_message("Hello", "Bonjour");
 	CHECK(translation->get_message("Hello") == "Bonjour");
@@ -71,8 +71,9 @@ TEST_CASE("[Translation] Messages") {
 	CHECK(messages.find("Hello3"));
 }
 
-TEST_CASE("[TranslationPO] Messages with context") {
-	Ref<TranslationPO> translation = memnew(TranslationPO);
+TEST_CASE("[Translation] Messages with context") {
+	Ref<Translation> translation;
+	translation.instantiate();
 	translation->set_locale("fr");
 	translation->add_message("Hello", "Bonjour");
 	translation->add_message("Hello", "Salut", "friendly");
@@ -90,11 +91,8 @@ TEST_CASE("[TranslationPO] Messages with context") {
 	List<StringName> messages;
 	translation->get_message_list(&messages);
 
-	// `get_message_count()` takes all contexts into account.
 	CHECK(translation->get_message_count() == 1);
-	// Only the default context is taken into account.
-	// Since "Hello" is now only present in a non-default context, it is not counted in the list of messages.
-	CHECK(messages.size() == 0);
+	CHECK(messages.size() == 1);
 
 	translation->add_message("Hello2", "Bonjour2");
 	translation->add_message("Hello2", "Salut2", "friendly");
@@ -102,35 +100,35 @@ TEST_CASE("[TranslationPO] Messages with context") {
 	messages.clear();
 	translation->get_message_list(&messages);
 
-	// `get_message_count()` takes all contexts into account.
 	CHECK(translation->get_message_count() == 4);
-	// Only the default context is taken into account.
-	CHECK(messages.size() == 2);
+	CHECK(messages.size() == 4);
 	// Messages are stored in a Map, don't assume ordering.
 	CHECK(messages.find("Hello2"));
 	CHECK(messages.find("Hello3"));
+	// Context and untranslated string are separated by EOT.
+	CHECK(messages.find("friendly\x04Hello2"));
 }
 
-TEST_CASE("[TranslationPO] Plural messages") {
+TEST_CASE("[Translation] Plural messages") {
 	{
-		Ref<TranslationPO> translation = memnew(TranslationPO);
+		Ref<Translation> translation;
+		translation.instantiate();
 		translation->set_locale("fr");
-		CHECK(translation->get_plural_forms() == 3);
-		CHECK(translation->get_plural_rule() == "(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2)");
+		CHECK(translation->get_nplurals() == 3);
 	}
 
 	{
-		Ref<TranslationPO> translation = memnew(TranslationPO);
+		Ref<Translation> translation;
+		translation.instantiate();
 		translation->set_locale("invalid");
-		CHECK(translation->get_plural_forms() == 2);
-		CHECK(translation->get_plural_rule() == "(n != 1)");
+		CHECK(translation->get_nplurals() == 2);
 	}
 
 	{
-		Ref<TranslationPO> translation = memnew(TranslationPO);
+		Ref<Translation> translation;
+		translation.instantiate();
 		translation->set_plural_rules_override("Plural-Forms: nplurals=2; plural=(n >= 2);");
-		CHECK(translation->get_plural_forms() == 2);
-		CHECK(translation->get_plural_rule() == "(n >= 2)");
+		CHECK(translation->get_nplurals() == 2);
 
 		PackedStringArray plurals;
 		plurals.push_back("Il y a %d pomme");
@@ -146,7 +144,7 @@ TEST_CASE("[TranslationPO] Plural messages") {
 	}
 }
 
-TEST_CASE("[TranslationPO] Plural rules parsing") {
+TEST_CASE("[Translation] Plural rules parsing") {
 	ERR_PRINT_OFF;
 	{
 		CHECK(PluralRules::parse("") == nullptr);

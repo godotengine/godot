@@ -31,7 +31,7 @@
 #include "translation_loader_po.h"
 
 #include "core/io/file_access.h"
-#include "core/string/translation_po.h"
+#include "core/string/translation.h"
 
 Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_error) {
 	if (r_error) {
@@ -39,7 +39,8 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 	}
 
 	const String path = f->get_path();
-	Ref<TranslationPO> translation = Ref<TranslationPO>(memnew(TranslationPO));
+	Ref<Translation> translation;
+	translation.instantiate();
 	String config;
 
 	uint32_t magic = f->get_32();
@@ -229,7 +230,7 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 					if (p_start != -1) {
 						int p_end = config.find_char('\n', p_start);
 						translation->set_plural_rules_override(config.substr(p_start, p_end - p_start));
-						plural_forms = translation->get_plural_forms();
+						plural_forms = translation->get_nplurals();
 					}
 				}
 
