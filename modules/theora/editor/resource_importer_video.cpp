@@ -91,7 +91,7 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 	args.push_back("-i");
 	args.push_back(ProjectSettings::get_singleton()->globalize_path(p_source_file));
 
-	if (p_options["additional_arguments"] != "") {
+	if (!String(p_options["additional_arguments"]).is_empty()) {
 		Vector<String> additional_arguments = String(p_options["additional_arguments"]).split(" ", false);
 		for (const String &additional_argument : additional_arguments) {
 			args.push_back(additional_argument);
@@ -106,13 +106,13 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 	}
 
 	if (p_options["alpha_to_color"] != Color()) {
-		if (filter != "") {
+		if (!filter.is_empty()) {
 			filter += "[s];[s]";
 		}
 		filter += "split=2[bg][fg];[bg]drawbox=c=#" + Color(p_options["alpha_to_color"]).to_html(false) + ":replace=1:t=fill[bg];[bg][fg]overlay=format=auto";
 	}
 
-	if (filter != "") {
+	if (!filter.is_empty()) {
 		args.push_back("-filter_complex");
 		args.push_back(filter);
 	}
