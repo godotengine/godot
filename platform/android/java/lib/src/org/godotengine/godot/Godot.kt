@@ -38,7 +38,6 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
-import android.graphics.Rect
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
@@ -79,6 +78,8 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -135,6 +136,16 @@ class Godot private constructor(val context: Context) {
 	val fileAccessHandler = FileAccessHandler(context)
 	val netUtils = GodotNetUtils(context)
 	private val godotInputHandler = GodotInputHandler(context, this)
+
+	private val hasClipboardCallable = Callable {
+		mClipboard?.hasPrimaryClip() == true
+	}
+
+	private val getClipboardCallable = Callable {
+		val clipData = mClipboard?.primaryClip
+		val text = clipData?.getItemAt(0)?.text
+		text?.toString() ?: ""
+	}
 
 	/**
 	 * Task to run when the engine terminates.
@@ -934,19 +945,31 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	fun hasClipboard(): Boolean {
-		return mClipboard?.hasPrimaryClip() == true
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || Looper.getMainLooper().thread == Thread.currentThread()) {
+			hasClipboardCallable.call()
+		} else {
+			val task = FutureTask(hasClipboardCallable)
+			runOnHostThread(task)
+			task.get()
+		}
 	}
 
 	@Keep
 	fun getClipboard(): String {
-		val clipData = mClipboard?.primaryClip ?: return ""
-		val text = clipData.getItemAt(0).text ?: return ""
-		return text.toString()
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || Looper.getMainLooper().thread == Thread.currentThread()) {
+			getClipboardCallable.call()
+		} else {
+			val task = FutureTask(getClipboardCallable)
+			runOnHostThread(task)
+			task.get()
+		}
 	}
 
 	@Keep
 	fun setClipboard(text: String?) {
-		mClipboard?.setPrimaryClip(ClipData.newPlainText("myLabel", text))
+		runOnHostThread {
+			mClipboard?.setPrimaryClip(ClipData.newPlainText("myLabel", text))
+		}
 	}
 
 	@Keep
