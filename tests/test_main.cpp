@@ -173,6 +173,7 @@
 #include "tests/scene/test_convert_transform_modifier_3d.h"
 #include "tests/scene/test_copy_transform_modifier_3d.h"
 #include "tests/scene/test_gltf_document.h"
+#include "tests/scene/test_occluder_3d.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
