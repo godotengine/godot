@@ -136,26 +136,6 @@ ClusterBuilderSharedDataRD::ClusterBuilderSharedDataRD() {
 			cluster_render.cluster_render_shader.set_variant_enabled(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, false);
 		}
 #endif
-		// Do not bake default (with "gl_HelperInvocation" and image atomics) variants for macOS/iOS Vulkan, but bake it for the rest of configs (including Metal).
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL, "macos_forward_clustered_vulkan", false, true);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL, "ios_forward_clustered_vulkan", false, true);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT, "macos_forward_clustered_vulkan", false, true);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT, "ios_forward_clustered_vulkan", false, true);
-
-		// Bake no "gl_HelperInvocation" and no "image atomics" variants for macOS/iOS Vulkan only.
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL_MOLTENVK, "macos_forward_clustered_vulkan", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL_MOLTENVK, "ios_forward_clustered_vulkan", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, "macos_forward_clustered_vulkan", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT_MOLTENVK, "ios_forward_clustered_vulkan", true, false);
-
-		// Bake no "image atomics" variants for macOS/iOS/visionOS Metal only.
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL_NO_ATOMICS, "macos_forward_clustered_metal", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL_NO_ATOMICS, "ios_forward_clustered_metal", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_NORMAL_NO_ATOMICS, "visionos_forward_clustered_metal", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, "macos_forward_clustered_metal", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, "ios_forward_clustered_metal", true, false);
-		cluster_render.cluster_render_shader.set_variants_bake_for(ClusterRender::SHADER_USE_ATTACHMENT_NO_ATOMICS, "visionos_forward_clustered_metal", true, false);
-
 		cluster_render.shader_version = cluster_render.cluster_render_shader.version_create();
 		cluster_render.shader = cluster_render.cluster_render_shader.version_get_shader(cluster_render.shader_version, shader_variant);
 		cluster_render.shader_pipelines[ClusterRender::PIPELINE_NORMAL] = RD::get_singleton()->render_pipeline_create(cluster_render.shader, fb_format, vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rasterization_state, RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
