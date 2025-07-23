@@ -255,8 +255,8 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 #undef ADD_TRIANGLE
 #undef ADD_QUAD
 
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
 	p_gizmo->add_lines(lines, material);
-	const real_t icon_size = EDITOR_GET("editors/3d/camera_gizmo_icon_size");
 	p_gizmo->add_unscaled_billboard(icon, icon_size);
 	p_gizmo->add_collision_segments(lines);
 

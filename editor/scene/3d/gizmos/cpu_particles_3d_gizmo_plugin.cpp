@@ -103,5 +103,6 @@ void CPUParticles3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	Ref<Material> icon = get_material("particles_icon", p_gizmo);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 }

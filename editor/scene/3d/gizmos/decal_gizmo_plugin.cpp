@@ -124,8 +124,9 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Vector<Vector3> handles = helper->box_get_handles(decal->get_size());
 	Ref<Material> material = get_material("decal_material", p_gizmo);
 	const Ref<Material> icon = get_material("decal_icon", p_gizmo);
+	const real_t icon_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/icon_size");
 
 	p_gizmo->add_lines(lines, material);
-	p_gizmo->add_unscaled_billboard(icon, 0.05);
+	p_gizmo->add_unscaled_billboard(icon, icon_size);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }

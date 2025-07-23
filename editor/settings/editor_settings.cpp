@@ -891,6 +891,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d_gizmos/gizmo_settings/bone_shape", 1, "Wire,Octahedron");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size", 0.4, "0.0,1.0,0.001,or_greater", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d_gizmos/gizmo_settings/icon_size", 0.05, "0.01,0.1,0.01", PROPERTY_USAGE_DEFAULT);
 
 	// If a line is a multiple of this, it uses the primary grid color.
 	// Use a power of 2 value by default as it's more common to use powers of 2 in level design.
@@ -948,7 +949,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Manipulator
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_size", 80, "16,160,1");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/manipulator_gizmo_opacity", 0.9, "0,1,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
-	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/camera_gizmo_icon_size", 0.05, "0.01,0.1,0.01", PROPERTY_USAGE_DEFAULT);
 
 	// 2D
 	_initial_set("editors/2d/grid_color", Color(1.0, 1.0, 1.0, 0.07), true);

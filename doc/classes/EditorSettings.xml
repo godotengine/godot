@@ -363,8 +363,8 @@
 		<member name="editors/3d/manipulator_gizmo_size" type="int" setter="" getter="">
 			Size of the default gizmo for moving, rotating, and scaling 3D nodes.
 		</member>
-		<member name="editors/3d/camera_gizmo_icon_size" type="int" setter="" getter="">
-			Size of the camera gizmo icon.
+		<member name="editors/3d_gizmos/gizmo_settings/icon_size" type="float" setter="" getter="">
+			Size of the 3D gizmo icons.
 		</member>
 		<member name="editors/3d/navigation/emulate_3_button_mouse" type="bool" setter="" getter="">
 			If [code]true[/code], enables 3-button mouse emulation mode. This is useful on laptops when using a trackpad.
