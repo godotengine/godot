@@ -632,14 +632,15 @@ public:
 	 * The constructors must not depend on other overloads
 	 */
 
-	_FORCE_INLINE_ String() {}
-	_FORCE_INLINE_ String(const String &p_str) = default;
-	_FORCE_INLINE_ String(String &&p_str) = default;
+	_FORCE_INLINE_ constexpr String() = default;
+	_FORCE_INLINE_ constexpr String(const String &p_str) { _cowdata = p_str._cowdata; }
+	_FORCE_INLINE_ constexpr String(String &&p_str) = default;
+	consteval String(const CowData<char32_t> &cowdata) { _cowdata = cowdata; }
 #ifdef SIZE_EXTRA
 	_NO_INLINE_ ~String() {}
 #endif
 	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata = p_str._cowdata; }
-	_FORCE_INLINE_ void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
+	_FORCE_INLINE_ constexpr void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 
 	Vector<uint8_t> to_ascii_buffer() const;
 	Vector<uint8_t> to_utf8_buffer() const;
@@ -780,3 +781,12 @@ template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 	return Vector<String>({ String(p_args)... });
 }
+
+template <CowBuffer buf>
+struct ComptimeString {
+private:
+	inline static constinit CowBuffer storage = buf;
+
+public:
+	inline static constexpr String value{ storage };
+};
