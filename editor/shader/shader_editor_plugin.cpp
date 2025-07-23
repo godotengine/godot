@@ -798,6 +798,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 	VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(p_editor);
 	if (vs_editor) {
 		file_menu->get_parent()->remove_child(file_menu);
+		file_menu->set_switch_on_hover(false);
 		bar->add_child(file_menu);
 		bar->move_child(file_menu, 2); // Toggle Files Panel button + separator.
 
@@ -811,6 +812,7 @@ void ShaderEditorPlugin::_switch_to_editor(ShaderEditor *p_editor) {
 		// Just swapped from a visual shader editor.
 		if (file_menu->get_parent() != menu_hb) {
 			file_menu->get_parent()->remove_child(file_menu);
+			file_menu->set_switch_on_hover(true);
 			menu_hb->add_child(file_menu);
 			menu_hb->move_child(file_menu, 0);
 
@@ -902,6 +904,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_container->add_child(menu_hb);
 	file_menu = memnew(MenuButton);
 	file_menu->set_text(TTR("File"));
+	file_menu->set_switch_on_hover(true);
 	file_menu->set_shortcut_context(files_split);
 	_setup_popup_menu(FILE, file_menu->get_popup());
 	file_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &ShaderEditorPlugin::_menu_item_pressed));
