@@ -121,6 +121,9 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 		}
 	}
 
+	args.push_back("-loglevel");
+	args.push_back("warning");
+
 	args.push_back("-i");
 	args.push_back(ProjectSettings::get_singleton()->globalize_path(p_source_file));
 
