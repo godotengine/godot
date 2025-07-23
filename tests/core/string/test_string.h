@@ -43,6 +43,13 @@ int u32scmp(const char32_t *l, const char32_t *r) {
 	return *l - *r;
 }
 
+TEST_CASE("[String] Constexpr String") {
+	static constexpr String s = ComptimeString<"Hello">().value;
+	static constexpr String s3 = ComptimeString<U"Hello 32">().value;
+	CHECK(u32scmp(s.get_data(), U"Hello") == 0);
+	CHECK(u32scmp(s3.get_data(), U"Hello 32") == 0);
+}
+
 TEST_CASE("[String] Assign Latin-1 char string") {
 	String s = "Hello";
 	CHECK(u32scmp(s.get_data(), U"Hello") == 0);

@@ -35,6 +35,8 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/span.h"
 
+#include <bit>
+#include <concepts>
 #include <initializer_list>
 #include <type_traits>
 
@@ -51,6 +53,9 @@ public:
 	typedef uint64_t USize;
 	static constexpr USize MAX_INT = INT64_MAX;
 
+	template <typename U, CowData<U>::USize N>
+	friend struct CowBuffer;
+
 private:
 	// Alignment:  ↓ max_align_t           ↓ USize          ↓ max_align_t
 	//             ┌────────────────────┬──┬─────────────┬──┬───────────...
@@ -63,7 +68,7 @@ private:
 	static constexpr size_t SIZE_OFFSET = ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize) == 0) ? (REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) : ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) + alignof(USize) - ((REF_COUNT_OFFSET + sizeof(SafeNumeric<USize>)) % alignof(USize)));
 	static constexpr size_t DATA_OFFSET = ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t) == 0) ? (SIZE_OFFSET + sizeof(USize)) : ((SIZE_OFFSET + sizeof(USize)) + alignof(max_align_t) - ((SIZE_OFFSET + sizeof(USize)) % alignof(max_align_t)));
 
-	mutable T *_ptr = nullptr;
+	T *_ptr = nullptr;
 
 	// internal helpers
 
@@ -139,13 +144,21 @@ private:
 	Error _realloc(USize p_alloc_size);
 
 public:
-	void operator=(const CowData<T> &p_from) { _ref(p_from); }
-	void operator=(CowData<T> &&p_from) {
+	constexpr void operator=(const CowData<T> &p_from) {
+		if (std::is_constant_evaluated()) {
+			_ptr = p_from._ptr;
+		} else {
+			_ref(p_from);
+		}
+	}
+	constexpr void operator=(CowData<T> &&p_from) {
 		if (_ptr == p_from._ptr) {
 			return;
 		}
 
-		_unref();
+		if (!std::is_constant_evaluated()) {
+			_unref();
+		}
 		_ptr = p_from._ptr;
 		p_from._ptr = nullptr;
 	}
@@ -220,11 +233,16 @@ public:
 	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
 	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
 
-	_FORCE_INLINE_ CowData() {}
-	_FORCE_INLINE_ ~CowData() { _unref(); }
+	_FORCE_INLINE_ constexpr CowData() = default;
+	_FORCE_INLINE_ constexpr ~CowData() {
+		if (!std::is_constant_evaluated()) {
+			_unref();
+		}
+	}
+	consteval CowData(T *ptr) { _ptr = ptr; }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
 	_FORCE_INLINE_ CowData(const CowData<T> &p_from) { _ref(p_from); }
-	_FORCE_INLINE_ CowData(CowData<T> &&p_from) {
+	_FORCE_INLINE_ constexpr CowData(CowData<T> &&p_from) {
 		_ptr = p_from._ptr;
 		p_from._ptr = nullptr;
 	}
@@ -320,7 +338,7 @@ Error CowData<T>::_fork_allocate(USize p_size) {
 		// Create a temporary CowData to hold ownership over our _ptr.
 		// It will be used to copy elements from the old buffer over to our new buffer.
 		// At the end of the block, it will be automatically destructed by going out of scope.
-		const CowData prev_data;
+		CowData prev_data;
 		prev_data._ptr = _ptr;
 		_ptr = nullptr;
 
@@ -441,6 +459,63 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 }
 
 GODOT_GCC_WARNING_POP
+
+template <typename T, CowData<T>::USize N>
+struct CowBuffer {
+	using USize = CowData<T>::USize;
+	inline static constexpr USize COMPREFCOUNT = UINT32_MAX;
+	inline static constexpr size_t REF_COUNT_START = CowData<T>::REF_COUNT_OFFSET / sizeof(T);
+	inline static constexpr size_t SIZE_START = CowData<T>::SIZE_OFFSET / sizeof(T);
+	inline static constexpr size_t DATA_START = CowData<T>::DATA_OFFSET / sizeof(T);
+	inline static constexpr size_t REF_COUNT_LENGTH = sizeof(SafeNumeric<USize>) / sizeof(T);
+	inline static constexpr size_t SIZE_LENGTH = sizeof(USize) / sizeof(T);
+
+	alignas(max_align_t) T buf[DATA_START + N];
+
+	consteval operator CowData<T>() const { return CowData<T>(const_cast<T *>(&buf[DATA_START])); }
+
+private:
+	template <USize _Size>
+	struct _Array {
+		T data[_Size];
+	};
+
+	consteval void write_header() {
+		static_assert(sizeof(USize) == sizeof(SafeNumeric<USize>) && alignof(USize) == alignof(SafeNumeric<USize>),
+				"SafeNumeric<USize> has different bit representation from USize");
+		_Array<REF_COUNT_LENGTH> ref = std::bit_cast<_Array<REF_COUNT_LENGTH>>(COMPREFCOUNT);
+		for (size_t i = 0; i < REF_COUNT_LENGTH; i++) {
+			buf[REF_COUNT_START + i] = ref.data[i];
+		}
+		_Array<SIZE_LENGTH> size = std::bit_cast<_Array<SIZE_LENGTH>>(N);
+		for (size_t i = 0; i < SIZE_LENGTH; i++) {
+			buf[SIZE_START + i] = size.data[i];
+		}
+	}
+
+public:
+	consteval CowBuffer(const T (&src)[N]) :
+			buf{} {
+		write_header();
+		for (size_t i = 0; i < N; i++) {
+			buf[DATA_START + i] = src[i];
+		}
+	}
+
+	consteval CowBuffer(const char (&src)[N])
+		requires std::same_as<T, char32_t>
+			:
+			buf{} {
+		write_header();
+		for (size_t i = 0; i < N; i++) {
+			buf[DATA_START + i] = static_cast<uint8_t>(src[i]);
+		}
+	}
+};
+
+// Allow instantiating `ComptimeString` from ascii string literal.
+template <size_t N>
+CowBuffer(const char (&)[N]) -> CowBuffer<char32_t, N>;
 
 // Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
 template <typename T>
