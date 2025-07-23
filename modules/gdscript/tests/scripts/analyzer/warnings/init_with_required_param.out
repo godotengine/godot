@@ -1,0 +1,6 @@
+GDTEST_OK
+~~ WARNING at line 3: (INIT_WITH_REQUIRED_PARAM) Using parameters without default values prevents implicit construction. Instances can only be created by calling "new()". This causes errors when loading resources and scenes. Will also cause errors with some functions and behaviours, such as with "duplicate()".
+~~ WARNING at line 4: (INIT_WITH_REQUIRED_PARAM) Using parameters without default values prevents implicit construction. Instances can only be created by calling "new()". This causes errors when loading resources and scenes. Will also cause errors with some functions and behaviours, such as with "duplicate()".
+~~ WARNING at line 8: (INIT_WITH_REQUIRED_PARAM) Using parameters without default values prevents implicit construction. Instances can only be created by calling "new()". This causes errors when loading resources and scenes. Will also cause errors with some functions and behaviours, such as with "duplicate()".
+~~ WARNING at line 9: (INIT_WITH_REQUIRED_PARAM) Using parameters without default values prevents implicit construction. Instances can only be created by calling "new()". This causes errors when loading resources and scenes. Will also cause errors with some functions and behaviours, such as with "duplicate()".
+warn

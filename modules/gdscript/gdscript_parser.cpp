@@ -1613,6 +1613,9 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 					push_error("Cannot have mandatory parameters after optional parameters.");
 					continue;
 				}
+				if (current_class && p_function->identifier && p_function->identifier->name == "_init") {
+					current_class->allows_implicit_new = false;
+				}
 			}
 
 			if (p_function->parameters_indices.has(parameter->identifier->name)) {

@@ -151,6 +151,20 @@ func test_unsafe_void_return() -> void:
 func get_class():
 	pass
 
+class B extends Node:
+	var l: Node
+	@warning_ignore("init_with_required_param")
+	func _init(_a:int):
+		@warning_ignore("init_with_required_param")
+		l = self.duplicate()
+
+class C extends Resource:
+	var l: Resource
+	@warning_ignore("init_with_required_param")
+	func _init(_a:int):
+		@warning_ignore("init_with_required_param")
+		l = self.duplicate()
+
 # We don't want to execute it because of errors, just analyze.
 func test():
 	pass

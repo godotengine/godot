@@ -750,6 +750,7 @@ public:
 		bool is_abstract = false;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
+		bool allows_implicit_new = true;
 		String extends_path;
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
