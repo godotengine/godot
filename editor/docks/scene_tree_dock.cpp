@@ -2930,12 +2930,9 @@ void SceneTreeDock::_selection_changed() {
 	}
 
 	// Untrack script changes in previously selected nodes.
-	for (Node *node : node_previous_selection) {
-		node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
-	}
+	clear_previous_node_selection();
 
 	// Track script changes in newly selected nodes.
-	node_previous_selection.clear();
 	node_previous_selection.reserve(editor_selection->get_selection().size());
 	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
 		Node *node = E.key;
@@ -3376,6 +3373,13 @@ static bool _is_same_selection(const Vector<Node *> &p_first, const List<Node *>
 		}
 	}
 	return true;
+}
+
+void SceneTreeDock::clear_previous_node_selection() {
+	for (Node *node : node_previous_selection) {
+		node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	}
+	node_previous_selection.clear();
 }
 
 void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
