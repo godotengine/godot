@@ -33,6 +33,7 @@
 #include "video_stream_theora.h"
 
 #ifdef TOOLS_ENABLED
+#include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/movie_writer_ogv.h"
 #include "editor/resource_importer_video.h"
@@ -73,9 +74,11 @@ void initialize_theora_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(ResourceImporterVideo);
-
-		EditorNode::add_init_callback(_editor_init);
+		GLOBAL_DEF_RST_BASIC("filesystem/import/ffmpeg/enabled", true);
+		if (GLOBAL_GET_CACHED(bool, "filesystem/import/ffmpeg/enabled")) {
+			GDREGISTER_CLASS(ResourceImporterVideo);
+			EditorNode::add_init_callback(_editor_init);
+		}
 	}
 #endif
 }
