@@ -85,8 +85,41 @@ void ResourceImporterVideo::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "additional_arguments", PROPERTY_HINT_NONE, ""), ""));
 }
 
+bool ResourceImporterVideo::check_ffmpeg_version() {
+	List<String> args;
+
+	args.push_back("-loglevel");
+	args.push_back("quiet");
+	args.push_back("-h");
+	args.push_back("encoder=libtheora");
+
+	String str;
+	int exitcode = 0;
+
+	String ffmpeg_path = EDITOR_GET("filesystem/import/video/ffmpeg_path");
+	Error err = OS::get_singleton()->execute(ffmpeg_path, args, &str, &exitcode, true);
+
+	if (err != OK || exitcode != 0) {
+		print_verbose(str);
+		return false;
+	}
+
+	return str.contains("-speed_level");
+}
+
 Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	List<String> args;
+	String ffmpeg_path = EDITOR_GET("filesystem/import/video/ffmpeg_path");
+
+	if (ffmpeg_path.is_empty() || !FileAccess::exists(ffmpeg_path)) {
+		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, vformat("Failed to import %s, set the path to the FFmpeg binary in the editor setting `filesystem/import/video/ffmpeg_path`.", p_source_file));
+	}
+
+	if (int(p_options["encoding_speed"]) != 1) {
+		if (!check_ffmpeg_version()) {
+			WARN_PRINT(vformat("The configured FFmpeg version doesn't support changing the encoding speed. Update FFmpeg or use Slowest to disable this warning. Resource: %s", p_source_file));
+		}
+	}
 
 	args.push_back("-i");
 	args.push_back(ProjectSettings::get_singleton()->globalize_path(p_source_file));
@@ -136,8 +169,7 @@ Error ResourceImporterVideo::import(ResourceUID::ID p_source_id, const String &p
 	String str;
 	int exitcode = 0;
 
-	String ffmpeg_exec = EDITOR_GET("filesystem/import/video/ffmpeg_path");
-	Error err = OS::get_singleton()->execute(ffmpeg_exec, args, &str, &exitcode, true);
+	Error err = OS::get_singleton()->execute(ffmpeg_path, args, &str, &exitcode, true);
 
 	if (err != OK || exitcode != 0) {
 		print_verbose(str);

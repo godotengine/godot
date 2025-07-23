@@ -35,6 +35,8 @@
 class ResourceImporterVideo : public ResourceImporter {
 	GDCLASS(ResourceImporterVideo, ResourceImporter);
 
+	bool check_ffmpeg_version();
+
 public:
 	virtual String get_importer_name() const override;
 	virtual String get_visible_name() const override;
