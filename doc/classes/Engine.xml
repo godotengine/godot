@@ -346,7 +346,7 @@
 		<member name="time_scale" type="float" setter="set_time_scale" getter="get_time_scale" default="1.0">
 			The speed multiplier at which the in-game clock updates, compared to real time. For example, if set to [code]2.0[/code] the game runs twice as fast, and if set to [code]0.5[/code] the game runs half as fast.
 			This value affects [Timer], [SceneTreeTimer], and all other simulations that make use of [code]delta[/code] time (such as [method Node._process] and [method Node._physics_process]).
-			[b]Note:[/b] It's recommended to keep this property above [code]0.0[/code], as the game may behave unexpectedly otherwise.
+			[b]Note:[/b] Any negative value will be ignored.
 			[b]Note:[/b] This does not affect audio playback speed. Use [member AudioServer.playback_speed_scale] to adjust audio playback speed independently of [member Engine.time_scale].
 			[b]Note:[/b] This does not automatically adjust [member physics_ticks_per_second]. With values above [code]1.0[/code] physics simulation may become less precise, as each physics tick will stretch over a larger period of engine time. If you're modifying [member Engine.time_scale] to speed up simulation by a large factor, consider also increasing [member physics_ticks_per_second] to make the simulation more reliable.
 		</member>

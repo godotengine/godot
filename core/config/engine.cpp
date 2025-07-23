@@ -112,6 +112,9 @@ uint32_t Engine::get_frame_delay() const {
 }
 
 void Engine::set_time_scale(double p_scale) {
+	if (p_scale < 0) {
+		return;
+	}
 	_time_scale = p_scale;
 }
 

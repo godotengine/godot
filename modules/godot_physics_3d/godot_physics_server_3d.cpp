@@ -1671,7 +1671,7 @@ void GodotPhysicsServer3D::init() {
 }
 
 void GodotPhysicsServer3D::step(real_t p_step) {
-	if (!active) {
+	if (!active || Math::is_zero_approx(p_step)) {
 		return;
 	}
 
