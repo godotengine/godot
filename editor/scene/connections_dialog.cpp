@@ -223,12 +223,8 @@ void ConnectDialog::_add_bind() {
 /*
  * Remove parameter bind from connection.
  */
-void ConnectDialog::_remove_bind() {
-	String st = bind_editor->get_selected_path();
-	if (st.is_empty()) {
-		return;
-	}
-	int idx = st.get_slicec('/', 1).to_int() - 1;
+void ConnectDialog::_remove_bind(const String &p_bind) {
+	int idx = p_bind.get_slicec('/', 1).to_int() - 1;
 
 	ERR_FAIL_INDEX(idx, cdbinds->params.size());
 	cdbinds->params.remove_at(idx);
@@ -855,17 +851,13 @@ ConnectDialog::ConnectDialog() {
 	add_bind->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_add_bind));
 	bind_controls.push_back(add_bind);
 
-	Button *del_bind = memnew(Button);
-	del_bind->set_text(TTR("Remove"));
-	add_bind_hb->add_child(del_bind);
-	del_bind->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_remove_bind));
-	bind_controls.push_back(del_bind);
-
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
 	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments:"));
+	bind_editor->set_use_deletable_properties(true);
 	bind_controls.push_back(bind_editor);
+	bind_editor->connect("property_deleted", callable_mp(this, &ConnectDialog::_remove_bind));
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
