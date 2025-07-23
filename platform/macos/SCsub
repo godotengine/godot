@@ -39,7 +39,7 @@ if env.editor_build:
         "editor/embedded_process_macos.mm",
     ]
 
-prog = env.add_program("#bin/godot", files)
+prog = env.add_program(f"#{env['output_path']}" if env["output_path"] else "#bin/godot", files)
 
 if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
