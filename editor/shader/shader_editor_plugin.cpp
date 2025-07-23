@@ -266,7 +266,7 @@ void ShaderEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	}
 
 	_update_shader_list();
-	_shader_selected(selected_shader_idx);
+	_shader_selected(selected_shader_idx, false);
 
 	_set_text_shader_zoom_factor(p_layout->get_value("ShaderEditor", "text_shader_zoom_factor", 1.0f));
 }
@@ -370,7 +370,7 @@ void ShaderEditorPlugin::apply_changes() {
 	}
 }
 
-void ShaderEditorPlugin::_shader_selected(int p_index) {
+void ShaderEditorPlugin::_shader_selected(int p_index, bool p_push_item) {
 	if (p_index >= (int)edited_shaders.size()) {
 		return;
 	}
@@ -383,11 +383,13 @@ void ShaderEditorPlugin::_shader_selected(int p_index) {
 	shader_tabs->set_current_tab(p_index);
 	shader_list->select(p_index);
 
-	// Avoid `Shader` being edited when editing `ShaderInclude` due to inspector refreshing.
-	if (edited_shaders[p_index].shader.is_valid()) {
-		EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader.ptr());
-	} else {
-		EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader_inc.ptr());
+	if (p_push_item) {
+		// Avoid `Shader` being edited when editing `ShaderInclude` due to inspector refreshing.
+		if (edited_shaders[p_index].shader.is_valid()) {
+			EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader.ptr());
+		} else {
+			EditorNode::get_singleton()->push_item_no_inspector(edited_shaders[p_index].shader_inc.ptr());
+		}
 	}
 }
 
@@ -930,7 +932,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_list->set_theme_type_variation("ItemListSecondary");
 	shader_list->set_custom_minimum_size(Size2(100, 60) * EDSCALE);
 	files_split->add_child(shader_list);
-	shader_list->connect(SceneStringName(item_selected), callable_mp(this, &ShaderEditorPlugin::_shader_selected));
+	shader_list->connect(SceneStringName(item_selected), callable_mp(this, &ShaderEditorPlugin::_shader_selected).bind(true));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
 	shader_list->set_allow_rmb_select(true);
 	SET_DRAG_FORWARDING_GCD(shader_list, ShaderEditorPlugin);
