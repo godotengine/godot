@@ -6015,6 +6015,11 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 	return singleton->immediate_dialog_confirmed;
 }
 
+bool EditorNode::is_cmdline_mode() {
+	ERR_FAIL_NULL_V(singleton, false);
+	return singleton->cmdline_mode;
+}
+
 void EditorNode::cleanup() {
 	_init_callbacks.clear();
 }
