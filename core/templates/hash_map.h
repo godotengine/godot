@@ -180,8 +180,9 @@ private:
 
 		_size = 0;
 		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+
 		_hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
-		_elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
+		_elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static(sizeof(HashMapElement<TKey, TValue> *) * capacity));
 
 		if (old_capacity == 0) {
 			// Nothing to do.
@@ -207,7 +208,7 @@ private:
 
 			static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
 			_hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
-			_elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
+			_elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static(sizeof(HashMapElement<TKey, TValue> *) * capacity));
 		}
 
 		if (_size + 1 > MAX_OCCUPANCY * capacity) {
@@ -234,6 +235,15 @@ private:
 		return elem;
 	}
 
+	void _clear_data() {
+		HashMapElement<TKey, TValue> *current = _tail_element;
+		while (current != nullptr) {
+			HashMapElement<TKey, TValue> *prev = current->prev;
+			Allocator::delete_allocation(current);
+			current = prev;
+		}
+	}
+
 public:
 	_FORCE_INLINE_ uint32_t get_capacity() const { return hash_table_size_primes[_capacity_idx]; }
 	_FORCE_INLINE_ uint32_t size() const { return _size; }
@@ -248,16 +258,9 @@ public:
 		if (_elements == nullptr || _size == 0) {
 			return;
 		}
-		uint32_t capacity = hash_table_size_primes[_capacity_idx];
-		for (uint32_t i = 0; i < capacity; i++) {
-			if (_hashes[i] == EMPTY_HASH) {
-				continue;
-			}
 
-			_hashes[i] = EMPTY_HASH;
-			Allocator::delete_allocation(_elements[i]);
-			_elements[i] = nullptr;
-		}
+		_clear_data();
+		memset(_hashes, EMPTY_HASH, get_capacity() * sizeof(uint32_t));
 
 		_tail_element = nullptr;
 		_head_element = nullptr;
@@ -355,7 +358,6 @@ public:
 		}
 
 		Allocator::delete_allocation(_elements[idx]);
-		_elements[idx] = nullptr;
 
 		_size--;
 		return true;
@@ -384,8 +386,9 @@ public:
 			idx = next_idx;
 			_increment_mod(next_idx, capacity);
 		}
+
 		_hashes[idx] = EMPTY_HASH;
-		_elements[idx] = nullptr;
+
 		// _insert_element will increment this again.
 		_size--;
 
@@ -641,7 +644,7 @@ public:
 	}
 
 	~HashMap() {
-		clear();
+		_clear_data();
 
 		if (_elements != nullptr) {
 			Memory::free_static(_elements);
