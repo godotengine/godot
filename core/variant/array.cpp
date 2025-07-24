@@ -36,7 +36,6 @@
 #include "core/templates/hashfuncs.h"
 #include "core/templates/vector.h"
 #include "core/variant/callable.h"
-#include "core/variant/dictionary.h"
 
 struct ArrayPrivate {
 	SafeRefCount refcount;
@@ -225,9 +224,9 @@ void Array::assign(const Array &p_array) {
 	const Variant *source = p_array._p->array.ptr();
 	int size = p_array._p->array.size();
 
-	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) || (source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
-		// from variants to objects or
-		// from base classes to subclasses
+	if ((source_typed.type == Variant::NIL && typed.type == Variant::OBJECT) ||
+			(source_typed.type == Variant::OBJECT && source_typed.can_reference(typed))) {
+		// from variants to objects or from base classes to subclasses
 		for (int i = 0; i < size; i++) {
 			const Variant &element = source[i];
 			if (element.get_type() != Variant::NIL && (element.get_type() != Variant::OBJECT || !typed.validate_object(element, "assign"))) {
@@ -870,6 +869,17 @@ Array::Array(const Array &p_from, uint32_t p_type, const StringName &p_class_nam
 
 void Array::set_typed(const ContainerType &p_element_type) {
 	set_typed(p_element_type.builtin_type, p_element_type.class_name, p_element_type.script);
+	// Store nested types if present
+	if (!p_element_type.nested_types.is_empty()) {
+		for (const ContainerType &nested : p_element_type.nested_types) {
+			ContainerTypeValidate validator;
+			validator.type = nested.builtin_type;
+			validator.class_name = nested.class_name;
+			validator.script = nested.script;
+			validator.where = "NestedType";
+			_p->typed.nested_types.push_back(validator);
+		}
+	}
 }
 
 void Array::set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script) {
@@ -904,6 +914,16 @@ ContainerType Array::get_element_type() const {
 	type.builtin_type = _p->typed.type;
 	type.class_name = _p->typed.class_name;
 	type.script = _p->typed.script;
+
+	// Simple conversion for nested types
+	for (const ContainerTypeValidate &nested : _p->typed.nested_types) {
+		ContainerType nested_type;
+		nested_type.builtin_type = nested.type;
+		nested_type.class_name = nested.class_name;
+		nested_type.script = nested.script;
+		type.nested_types.push_back(nested_type);
+	}
+
 	return type;
 }
 

@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/templates/vector.h"
 #include "core/typedefs.h"
 #include "core/variant/variant_deep_duplicate.h"
 
@@ -42,6 +43,7 @@ class Variant;
 
 struct ArrayPrivate;
 struct ContainerType;
+struct ContainerTypeValidate;
 
 class Array {
 	mutable ArrayPrivate *_p;
