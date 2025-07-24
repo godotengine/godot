@@ -128,9 +128,6 @@ void register_core_types() {
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
-	ObjectDB::setup();
-
-	StringName::setup();
 	_time = memnew(Time);
 	ResourceLoader::initialize();
 
