@@ -2277,6 +2277,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		case GDScriptParser::IdentifierNode::MEMBER_CLASS:
 		case GDScriptParser::IdentifierNode::INHERITED_VARIABLE:
 		case GDScriptParser::IdentifierNode::STATIC_VARIABLE:
+		case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 			can_be_local = false;
 			break;
 		default:
