@@ -34,10 +34,6 @@
 #include "editor/scene/connections_dialog.h"
 #include "editor/themes/editor_scale.h"
 
-//TODO: Remove when done debugging
-#include "editor_node.h"
-#include "editor_log.h"
-
 void NodeDock::show_groups() {
 	groups_button->set_pressed(true);
 	connections_button->set_pressed(false);
@@ -98,8 +94,7 @@ void NodeDock::edit(Object *object) {
 		groups->hide();
 		connections->hide();
 		select_a_node->show();
-	} 
-	else {
+	} else {
 		mode_hb->show();
 		select_a_node->hide();
 	}
@@ -107,10 +102,9 @@ void NodeDock::edit(Object *object) {
 	groups->set_current(object);
 
 	if (Object::cast_to<Node>(object)) {
-		Node* p_node = Object::cast_to<Node>(object);
+		Node *p_node = Object::cast_to<Node>(object);
 		connections->set_node(p_node);
-	} 
-	else {
+	} else {
 		connections->set_node(nullptr);
 	}
 

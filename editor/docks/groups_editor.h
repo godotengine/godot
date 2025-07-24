@@ -83,7 +83,7 @@ class GroupsEditor : public VBoxContainer {
 	HashMap<StringName, bool> scene_groups;
 	HashMap<StringName, String> global_groups;
 
-	bool _can_edit(Object* p_object, const StringName &p_identifier) const;
+	bool _can_edit(Object *p_object, const StringName &p_identifier) const;
 
 	void _update_scene_groups(const ObjectID &p_id);
 	void _cache_scene_groups(const ObjectID &p_id);
