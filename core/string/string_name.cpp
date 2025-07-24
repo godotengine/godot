@@ -39,18 +39,10 @@ struct StringName::Table {
 	constexpr static uint32_t TABLE_LEN = 1 << TABLE_BITS;
 	constexpr static uint32_t TABLE_MASK = TABLE_LEN - 1;
 
-	static inline _Data *table[TABLE_LEN];
+	static inline _Data *table[TABLE_LEN] = { nullptr };
 	static inline BinaryMutex mutex;
 	static inline PagedAllocator<_Data> allocator;
 };
-
-void StringName::setup() {
-	ERR_FAIL_COND(configured);
-	for (uint32_t i = 0; i < Table::TABLE_LEN; i++) {
-		Table::table[i] = nullptr;
-	}
-	configured = true;
-}
 
 void StringName::cleanup() {
 	MutexLock lock(Table::mutex);

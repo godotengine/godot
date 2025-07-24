@@ -1043,7 +1043,6 @@ class ObjectDB {
 	static void remove_instance(Object *p_object);
 
 	friend void register_core_types();
-	static void setup();
 
 public:
 	typedef void (*DebugFunc)(Object *p_obj);

@@ -60,10 +60,9 @@ class [[nodiscard]] StringName {
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
-	static inline bool configured = false;
+	static inline bool configured = true;
 #ifdef DEBUG_ENABLED
 	struct DebugSortReferences {
 		bool operator()(const _Data *p_left, const _Data *p_right) const {
