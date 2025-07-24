@@ -969,6 +969,8 @@ Patches:
 
 - `0001-remove-unnecessary-subsystems.patch` (GH-106218)
 - `0002-msvc-constants-fpstrict.patch` (GH-106218)
+- `0003-std-include.patch` (GH-108144)
+- `0004-errno-include.patch` (GH-108354)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.
