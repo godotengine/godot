@@ -1306,6 +1306,7 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["BACKLIGHT"] = "backlight";
 		actions.renames["AO"] = "ao";
 		actions.renames["AO_LIGHT_AFFECT"] = "ao_light_affect";
+		actions.renames["MICRO_SHADOWS"] = "micro_shadows";
 		actions.renames["EMISSION"] = "emission";
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
@@ -1354,6 +1355,7 @@ MaterialStorage::MaterialStorage() {
 		actions.usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
 		actions.usage_defines["AO"] = "#define AO_USED\n";
 		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define AO_USED\n";
+		actions.usage_defines["MICRO_SHADOWS"] = "#define MICRO_SHADOWS_USED\n";
 		actions.usage_defines["UV"] = "#define UV_USED\n";
 		actions.usage_defines["UV2"] = "#define UV2_USED\n";
 		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";
