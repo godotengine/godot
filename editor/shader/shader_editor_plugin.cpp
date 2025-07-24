@@ -635,14 +635,16 @@ void ShaderEditorPlugin::_menu_item_pressed(int p_index) {
 			shader_list->set_visible(!shader_list->is_visible());
 
 			int index = shader_tabs->get_current_tab();
-			ERR_FAIL_INDEX(index, shader_tabs->get_tab_count());
-			TextShaderEditor *editor = Object::cast_to<TextShaderEditor>(edited_shaders[index].shader_editor);
-			if (editor) {
-				editor->get_code_editor()->update_toggle_files_button();
-			} else {
-				VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
-				if (vs_editor) {
-					vs_editor->update_toggle_files_button();
+			if (index != -1) {
+				ERR_FAIL_INDEX(index, (int)edited_shaders.size());
+				TextShaderEditor *editor = Object::cast_to<TextShaderEditor>(edited_shaders[index].shader_editor);
+				if (editor) {
+					editor->get_code_editor()->update_toggle_files_button();
+				} else {
+					VisualShaderEditor *vs_editor = Object::cast_to<VisualShaderEditor>(edited_shaders[index].shader_editor);
+					if (vs_editor) {
+						vs_editor->update_toggle_files_button();
+					}
 				}
 			}
 		} break;
