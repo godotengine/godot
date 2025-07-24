@@ -473,6 +473,13 @@ struct CowBuffer {
 	alignas(max_align_t) T buf[DATA_START + N];
 
 	consteval operator CowData<T>() const { return CowData<T>(const_cast<T *>(&buf[DATA_START])); }
+	consteval uint32_t hash() const {
+		uint32_t hashv = 5381;
+		for (USize i = 0; i < N - 1; i++) {
+			hashv = ((hashv << 5) + hashv) + buf[DATA_START + i]; /* hash * 33 + c */
+		}
+		return hashv;
+	}
 
 private:
 	template <USize _Size>
