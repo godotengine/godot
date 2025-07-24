@@ -61,6 +61,20 @@
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
+		<method name="get_autoload_list" qualifiers="const">
+			<return type="PackedStringArray" />
+			<param index="0" name="global_variable_only" type="bool" default="true" />
+			<description>
+				Returns an array of autoload names. If [param global_variable_only] is [code]true[/code], only autoloads with global variable enabled are included.
+			</description>
+		</method>
+		<method name="get_autoload_path" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the file path of the autoload with the given [param name]. Prints an error and returns an empty string if the autoload does not exist.
+			</description>
+		</method>
 		<method name="get_global_class_list">
 			<return type="Dictionary[]" />
 			<description>
@@ -145,12 +159,26 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="has_autoload" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is an autoload with the given name.
+			</description>
+		</method>
 		<method name="has_setting" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
 				Returns [code]true[/code] if a configuration value is present.
 				[b]Note:[/b] In order to be be detected, custom settings have to be either defined with [method set_setting], or exist in the [code]project.godot[/code] file. This is especially relevant when using [method set_initial_value].
+			</description>
+		</method>
+		<method name="is_autoload_global_variable" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if there is an autoload with the given name and global variable is enabled for it.
 			</description>
 		</method>
 		<method name="load_resource_pack">

@@ -279,13 +279,13 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);
-		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
-			if (autoloads.has(node_name)) {
-				remove_autoload(node_name);
-			}
-		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slicec('/', 1);
+
+		const String &name_str = p_name;
+		if (name_str.begins_with("autoload/")) {
+			const String &autoload_name = name_str.get_slicec('/', 1);
+			autoloads.erase(autoload_name);
+		} else if (name_str.begins_with("global_group/")) {
+			String group_name = name_str.get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -325,20 +325,20 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
-		if (p_name.operator String().begins_with("autoload/")) {
-			String node_name = p_name.operator String().get_slicec('/', 1);
-			AutoloadInfo autoload;
-			autoload.name = node_name;
-			String path = p_value;
-			if (path.begins_with("*")) {
-				autoload.is_singleton = true;
-				autoload.path = path.substr(1).simplify_path();
+
+		const String &name_str = p_name;
+		const String &value_str = p_value;
+		if (name_str.begins_with("autoload/")) {
+			const String &autoload_name = name_str.get_slicec('/', 1);
+			if (autoload_name.is_empty()) {
+				ERR_PRINT("Autoload name cannot be empty.");
 			} else {
-				autoload.path = path.simplify_path();
+				AutoloadInfo &autoload_info = autoloads[autoload_name];
+				autoload_info.is_global_variable = value_str.begins_with("*");
+				autoload_info.path = (autoload_info.is_global_variable ? value_str.substr(1) : value_str).simplify_path();
 			}
-			add_autoload(autoload);
-		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slicec('/', 1);
+		} else if (name_str.begins_with("global_group/")) {
+			String group_name = name_str.get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
@@ -1366,27 +1366,41 @@ bool ProjectSettings::has_custom_feature(const String &p_feature) const {
 	return custom_features.has(p_feature);
 }
 
-const HashMap<StringName, ProjectSettings::AutoloadInfo> &ProjectSettings::get_autoload_list() const {
-	return autoloads;
+Vector<String> ProjectSettings::_get_autoload_list_bind(bool p_global_variable_only) const {
+	Vector<String> list;
+	for (const KeyValue<StringName, AutoloadInfo> &E : autoloads) {
+		if (p_global_variable_only && !E.value.is_global_variable) {
+			continue;
+		}
+		list.push_back(E.key);
+	}
+	return list;
 }
 
-void ProjectSettings::add_autoload(const AutoloadInfo &p_autoload) {
-	ERR_FAIL_COND_MSG(p_autoload.name == StringName(), "Trying to add autoload with no name.");
-	autoloads[p_autoload.name] = p_autoload;
+Vector<StringName> ProjectSettings::get_autoload_list(bool p_global_variable_only) const {
+	Vector<StringName> list;
+	for (const KeyValue<StringName, AutoloadInfo> &E : autoloads) {
+		if (p_global_variable_only && !E.value.is_global_variable) {
+			continue;
+		}
+		list.push_back(E.key);
+	}
+	return list;
 }
 
-void ProjectSettings::remove_autoload(const StringName &p_autoload) {
-	ERR_FAIL_COND_MSG(!autoloads.has(p_autoload), "Trying to remove non-existent autoload.");
-	autoloads.erase(p_autoload);
+bool ProjectSettings::has_autoload(const StringName &p_name) const {
+	return autoloads.has(p_name);
 }
 
-bool ProjectSettings::has_autoload(const StringName &p_autoload) const {
-	return autoloads.has(p_autoload);
+String ProjectSettings::get_autoload_path(const StringName &p_name) const {
+	const AutoloadInfo *autoload = autoloads.getptr(p_name);
+	ERR_FAIL_NULL_V_MSG(autoload, String(), vformat("Trying to get path of non-existent autoload: '%s'.", p_name));
+	return autoload->path;
 }
 
-ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_name) const {
-	ERR_FAIL_COND_V_MSG(!autoloads.has(p_name), AutoloadInfo(), "Trying to get non-existent autoload.");
-	return autoloads[p_name];
+bool ProjectSettings::is_autoload_global_variable(const StringName &p_name) const {
+	const AutoloadInfo *autoload = autoloads.getptr(p_name);
+	return autoload ? autoload->is_global_variable : false;
 }
 
 const HashMap<StringName, String> &ProjectSettings::get_global_groups_list() const {
@@ -1508,6 +1522,11 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
+
+	ClassDB::bind_method(D_METHOD("get_autoload_list", "global_variable_only"), &ProjectSettings::_get_autoload_list_bind, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_autoload_path", "name"), &ProjectSettings::get_autoload_path);
+	ClassDB::bind_method(D_METHOD("is_autoload_global_variable", "name"), &ProjectSettings::is_autoload_global_variable);
+	ClassDB::bind_method(D_METHOD("has_autoload", "name"), &ProjectSettings::has_autoload);
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }

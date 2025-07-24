@@ -49,49 +49,40 @@
 namespace GDScriptTests {
 
 void init_autoloads() {
-	HashMap<StringName, ProjectSettings::AutoloadInfo> autoloads = ProjectSettings::get_singleton()->get_autoload_list();
+	const Vector<StringName> global_variable_names = ProjectSettings::get_singleton()->get_autoload_list(true);
 
 	// First pass, add the constants so they exist before any script is loaded.
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-		const ProjectSettings::AutoloadInfo &info = E.value;
-
-		if (info.is_singleton) {
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				ScriptServer::get_language(i)->add_global_constant(info.name, Variant());
-			}
+	for (const StringName &name : global_variable_names) {
+		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+			ScriptServer::get_language(i)->add_global_constant(name, Variant());
 		}
 	}
 
 	// Second pass, load into global constants.
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-		const ProjectSettings::AutoloadInfo &info = E.value;
-
-		if (!info.is_singleton) {
-			// Skip non-singletons since we don't have a scene tree here anyway.
-			continue;
-		}
+	for (const StringName &name : global_variable_names) {
+		const String &autoload_path = ProjectSettings::get_singleton()->get_autoload_path(name);
 
 		Node *n = nullptr;
-		if (ResourceLoader::get_resource_type(info.path) == "PackedScene") {
+		if (ResourceLoader::get_resource_type(autoload_path) == "PackedScene") {
 			// Cache the scene reference before loading it (for cyclic references)
 			Ref<PackedScene> scn;
 			scn.instantiate();
-			scn->set_path(info.path);
+			scn->set_path(autoload_path);
 			scn->reload_from_file();
-			ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
+			ERR_CONTINUE_MSG(scn.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", autoload_path));
 
 			if (scn.is_valid()) {
 				n = scn->instantiate();
 			}
 		} else {
-			Ref<Resource> res = ResourceLoader::load(info.path);
-			ERR_CONTINUE_MSG(res.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", info.path));
+			Ref<Resource> res = ResourceLoader::load(autoload_path);
+			ERR_CONTINUE_MSG(res.is_null(), vformat("Failed to instantiate an autoload, can't load from path: %s.", autoload_path));
 
 			Ref<Script> scr = res;
 			if (scr.is_valid()) {
 				StringName ibt = scr->get_instance_base_type();
 				bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-				ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script '%s' does not inherit from 'Node'.", info.path));
+				ERR_CONTINUE_MSG(!valid_type, vformat("Failed to instantiate an autoload, script '%s' does not inherit from 'Node'.", autoload_path));
 
 				Object *obj = ClassDB::instantiate(ibt);
 				ERR_CONTINUE_MSG(!obj, vformat("Failed to instantiate an autoload, cannot instantiate '%s'.", ibt));
@@ -101,11 +92,11 @@ void init_autoloads() {
 			}
 		}
 
-		ERR_CONTINUE_MSG(!n, vformat("Failed to instantiate an autoload, path is not pointing to a scene or a script: %s.", info.path));
-		n->set_name(info.name);
+		ERR_CONTINUE_MSG(!n, vformat("Failed to instantiate an autoload, path is not pointing to a scene or a script: %s.", autoload_path));
+		n->set_name(name);
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			ScriptServer::get_language(i)->add_global_constant(info.name, n);
+			ScriptServer::get_language(i)->add_global_constant(name, n);
 		}
 	}
 }

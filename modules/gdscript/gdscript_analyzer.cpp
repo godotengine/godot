@@ -399,7 +399,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 			push_error(vformat(R"(Class "%s" hides a native class.)", class_name), p_class->identifier);
 		} else if (ScriptServer::is_global_class(class_name) && (!GDScript::is_canonically_equal_paths(ScriptServer::get_global_class_path(class_name), parser->script_path) || p_class != parser->head)) {
 			push_error(vformat(R"(Class "%s" hides a global script class.)", class_name), p_class->identifier);
-		} else if (ProjectSettings::get_singleton()->has_autoload(class_name) && ProjectSettings::get_singleton()->get_autoload(class_name).is_singleton) {
+		} else if (ProjectSettings::get_singleton()->is_autoload_global_variable(class_name)) {
 			push_error(vformat(R"(Class "%s" hides an autoload singleton.)", class_name), p_class->identifier);
 		}
 	}
@@ -490,16 +490,16 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 
 					base = base_parser->get_parser()->head->get_datatype();
 				}
-			} else if (ProjectSettings::get_singleton()->has_autoload(name) && ProjectSettings::get_singleton()->get_autoload(name).is_singleton) {
-				const ProjectSettings::AutoloadInfo &info = ProjectSettings::get_singleton()->get_autoload(name);
-				if (info.path.get_extension().to_lower() != GDScriptLanguage::get_singleton()->get_extension()) {
-					push_error(vformat(R"(Singleton %s is not a GDScript.)", info.name), id);
+			} else if (ProjectSettings::get_singleton()->is_autoload_global_variable(name)) {
+				const String &singleton_path = ProjectSettings::get_singleton()->get_autoload_path(name);
+				if (singleton_path.get_extension().to_lower() != GDScriptLanguage::get_singleton()->get_extension()) {
+					push_error(vformat(R"(Singleton %s is not a GDScript.)", name), id);
 					return ERR_PARSE_ERROR;
 				}
 
-				Ref<GDScriptParserRef> info_parser = parser->get_depended_parser_for(info.path);
+				Ref<GDScriptParserRef> info_parser = parser->get_depended_parser_for(singleton_path);
 				if (info_parser.is_null()) {
-					push_error(vformat(R"(Could not parse singleton from "%s".)", info.path), id);
+					push_error(vformat(R"(Could not parse singleton from "%s".)", singleton_path), id);
 					return ERR_PARSE_ERROR;
 				}
 
@@ -801,13 +801,13 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					result = make_script_meta_type(ResourceLoader::load(path, "Script"));
 				}
 			}
-		} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
-			const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(first);
+		} else if (ProjectSettings::get_singleton()->is_autoload_global_variable(first)) {
+			const String &autoload_path = ProjectSettings::get_singleton()->get_autoload_path(first);
 			String script_path;
-			if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
+			if (ResourceLoader::get_resource_type(autoload_path) == "PackedScene") {
 				// Try to get script from scene if possible.
-				if (GDScriptLanguage::get_singleton()->has_any_global_constant(autoload.name)) {
-					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(autoload.name);
+				if (GDScriptLanguage::get_singleton()->has_any_global_constant(first)) {
+					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(first);
 					Node *node = Object::cast_to<Node>(constant);
 					if (node != nullptr) {
 						Ref<GDScript> scr = node->get_script();
@@ -816,8 +816,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 						}
 					}
 				}
-			} else if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
-				script_path = autoload.path;
+			} else if (ResourceLoader::get_resource_type(autoload_path) == "GDScript") {
+				script_path = autoload_path;
 			}
 			if (script_path.is_empty()) {
 				return bad_type;
@@ -4555,45 +4555,44 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 	// Try singletons.
 	// Do this before globals because this might be a singleton loading another one before it's compiled.
-	if (ProjectSettings::get_singleton()->has_autoload(name)) {
-		const ProjectSettings::AutoloadInfo &autoload = ProjectSettings::get_singleton()->get_autoload(name);
-		if (autoload.is_singleton) {
-			// Singleton exists, so it's at least a Node.
-			GDScriptParser::DataType result;
-			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-			result.kind = GDScriptParser::DataType::NATIVE;
-			result.builtin_type = Variant::OBJECT;
-			result.native_type = SNAME("Node");
-			if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
-				Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(autoload.path);
-				if (single_parser.is_valid()) {
-					Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
-					if (err == OK) {
-						result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
-					}
+	if (ProjectSettings::get_singleton()->is_autoload_global_variable(name)) {
+		const String &singleton_path = ProjectSettings::get_singleton()->get_autoload_path(name);
+
+		// Singleton exists, so it's at least a Node.
+		GDScriptParser::DataType result;
+		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		result.kind = GDScriptParser::DataType::NATIVE;
+		result.builtin_type = Variant::OBJECT;
+		result.native_type = SNAME("Node");
+		if (ResourceLoader::get_resource_type(singleton_path) == "GDScript") {
+			Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(singleton_path);
+			if (single_parser.is_valid()) {
+				Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+				if (err == OK) {
+					result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
 				}
-			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
-				if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
-					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
-					Node *node = Object::cast_to<Node>(constant);
-					if (node != nullptr) {
-						Ref<GDScript> scr = node->get_script();
-						if (scr.is_valid()) {
-							Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(scr->get_script_path());
-							if (single_parser.is_valid()) {
-								Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
-								if (err == OK) {
-									result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
-								}
+			}
+		} else if (ResourceLoader::get_resource_type(singleton_path) == "PackedScene") {
+			if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
+				Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
+				Node *node = Object::cast_to<Node>(constant);
+				if (node != nullptr) {
+					Ref<GDScript> scr = node->get_script();
+					if (scr.is_valid()) {
+						Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(scr->get_script_path());
+						if (single_parser.is_valid()) {
+							Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+							if (err == OK) {
+								result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
 							}
 						}
 					}
 				}
 			}
-			result.is_constant = true;
-			p_identifier->set_datatype(result);
-			return;
 		}
+		result.is_constant = true;
+		p_identifier->set_datatype(result);
+		return;
 	}
 
 	if (CoreConstants::is_global_constant(name)) {

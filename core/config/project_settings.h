@@ -59,13 +59,12 @@ public:
 	const static PackedStringArray get_unsupported_features(const PackedStringArray &p_project_features);
 #endif // TOOLS_ENABLED
 
+protected:
 	struct AutoloadInfo {
-		StringName name;
 		String path;
-		bool is_singleton = false;
+		bool is_global_variable = false;
 	};
 
-protected:
 	struct VariantContainer {
 		int order = 0;
 		bool persist = false;
@@ -148,6 +147,8 @@ protected:
 
 	void _add_builtin_input_map();
 
+	Vector<String> _get_autoload_list_bind(bool p_global_variable_only) const;
+
 protected:
 	static void _bind_methods();
 
@@ -209,11 +210,12 @@ public:
 
 	bool has_custom_feature(const String &p_feature) const;
 
-	const HashMap<StringName, AutoloadInfo> &get_autoload_list() const;
-	void add_autoload(const AutoloadInfo &p_autoload);
-	void remove_autoload(const StringName &p_autoload);
-	bool has_autoload(const StringName &p_autoload) const;
-	AutoloadInfo get_autoload(const StringName &p_name) const;
+	// Autoloads are edited via `autoload/*` properties.
+	// This class only manages the data for autoloads. It is not responsible for the corresponding nodes.
+	Vector<StringName> get_autoload_list(bool p_singleton_only) const;
+	String get_autoload_path(const StringName &p_name) const;
+	bool is_autoload_global_variable(const StringName &p_name) const;
+	bool has_autoload(const StringName &p_name) const;
 
 	const HashMap<StringName, String> &get_global_groups_list() const;
 	void add_global_group(const StringName &p_name, const String &p_description);

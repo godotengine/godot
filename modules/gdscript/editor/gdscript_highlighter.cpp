@@ -741,11 +741,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	}
 
 	/* Autoloads. */
-	for (const KeyValue<StringName, ProjectSettings::AutoloadInfo> &E : ProjectSettings::get_singleton()->get_autoload_list()) {
-		const ProjectSettings::AutoloadInfo &info = E.value;
-		if (info.is_singleton) {
-			class_names[info.name] = usertype_color;
-		}
+	for (const StringName &global_variable_name : ProjectSettings::get_singleton()->get_autoload_list(true)) {
+		class_names[global_variable_name] = usertype_color;
 	}
 
 	const GDScriptLanguage *gdscript = GDScriptLanguage::get_singleton();
