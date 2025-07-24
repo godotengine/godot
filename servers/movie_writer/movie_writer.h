@@ -41,6 +41,9 @@ class MovieWriter : public Object {
 	uint64_t mix_rate = 0;
 	uint32_t audio_channels = 0;
 
+	// The first frame's resolution, used as a base for resizing all subsequent frames.
+	Vector2i base_resolution;
+
 	float cpu_time = 0.0f;
 	float gpu_time = 0.0f;
 	uint64_t encoding_time_usec = 0;
