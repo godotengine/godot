@@ -2479,10 +2479,6 @@ void ObjectDB::remove_instance(Object *p_object) {
 	spin_lock.unlock();
 }
 
-void ObjectDB::setup() {
-	//nothing to do now
-}
-
 void ObjectDB::cleanup() {
 	spin_lock.lock();
 
