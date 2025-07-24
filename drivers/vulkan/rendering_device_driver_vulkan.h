@@ -133,6 +133,8 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	StorageBufferCapabilities storage_buffer_capabilities;
 	RenderingShaderContainerFormatVulkan shader_container_format;
 	bool buffer_device_address_support = false;
+	bool vulkan_memory_model_support = false;
+	bool vulkan_memory_model_device_scope_support = false;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
 #if defined(VK_TRACK_DEVICE_MEMORY)
