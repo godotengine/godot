@@ -3172,6 +3172,9 @@
 		<member name="rendering/lights_and_shadows/multi_bounce_occlusion/enabled" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], approximates local multi-bounce global illumination in ambient occlusion by integrating albedo information.
 		</member>
+		<member name="rendering/lights_and_shadows/micro_shadows/enabled" type="bool" setter="" getter="" default="true">
+			If [code]false[/code], disable micro-shadowing globally for all [BaseMaterial3D] and [ShaderMaterial] instances.
+		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_16_bits" type="bool" setter="" getter="" default="true">
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>

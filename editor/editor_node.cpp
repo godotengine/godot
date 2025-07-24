@@ -8434,6 +8434,7 @@ HashMap<String, Variant> EditorNode::get_initial_settings() {
 	settings["physics/3d/physics_engine"] = "Jolt Physics";
 	settings["rendering/rendering_device/driver.windows"] = "d3d12";
 	settings["rendering/lights_and_shadows/multi_bounce_occlusion/enabled"] = true;
+	settings["rendering/lights_and_shadows/micro_shadows/enabled"] = true;
 	return settings;
 }
 
