@@ -5249,6 +5249,11 @@ RenderForwardClustered::RenderForwardClustered() {
 			defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 		}
 
+		bool micro_shadows = GLOBAL_GET("rendering/lights_and_shadows/micro_shadows/enabled");
+		if (!micro_shadows) {
+			defines += "\n#define MICRO_SHADOWS_DISABLED\n";
+		}
+
 #ifdef MODULE_TEXTURE_STREAMING_ENABLED
 		bool texture_streaming = GLOBAL_GET("rendering/textures/streaming/enabled");
 		if (texture_streaming) {
