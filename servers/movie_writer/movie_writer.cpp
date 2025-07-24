@@ -97,20 +97,9 @@ void MovieWriter::get_supported_extensions(List<String> *r_extensions) const {
 
 void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path) {
 	project_name = GLOBAL_GET("application/config/name");
+	movie_size = p_movie_size;
 
-	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
-
-	// When using Display/Window/Stretch/Mode = Viewport, use the project's
-	// configured viewport size instead of the size of the window in the OS
-	Size2i actual_movie_size = p_movie_size;
-	String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
-	if (stretch_mode == "viewport") {
-		actual_movie_size.width = GLOBAL_GET("display/window/size/viewport_width");
-		actual_movie_size.height = GLOBAL_GET("display/window/size/viewport_height");
-
-		print_line(vformat("Movie Maker mode using project viewport size: %dx%d",
-				actual_movie_size.width, actual_movie_size.height));
-	}
+	print_line(vformat(U"Movie Maker mode enabled, recording movie in %s×%s @ %d FPS...", movie_size.width, movie_size.height, p_fps));
 
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -139,7 +128,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 	audio_channels = AudioDriverDummy::get_dummy_singleton()->get_channels();
 	audio_mix_buffer.resize(mix_rate * audio_channels / fps);
 
-	write_begin(actual_movie_size, p_fps, p_base_path);
+	write_begin(movie_size, p_fps, p_base_path);
 }
 
 void MovieWriter::_bind_methods() {
@@ -206,6 +195,37 @@ void MovieWriter::add_frame() {
 	RID main_vp_rid = RenderingServer::get_singleton()->viewport_find_from_screen_attachment(DisplayServer::MAIN_WINDOW_ID);
 	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
 	Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
+
+	if (vp_tex->get_size() != movie_size) {
+		// Resize the texture to the output resolution if it differs from the current viewport size.
+		// This ensures all frames have the same resolution, as not all video formats and players
+		// support resolution changes during playback.
+
+		const float src_aspect = vp_tex->get_size().aspect();
+		const float dst_aspect = movie_size.aspect();
+
+		int crop_width = vp_tex->get_size().width;
+		int crop_height = vp_tex->get_size().height;
+		int crop_x = 0;
+		int crop_y = 0;
+
+		// If the aspect ratio differs, crop the image to cover the base resolution's aspect ratio
+		// in a way similar to `TextureRect.STRETCH_KEEP_ASPECT_COVERED`.
+		if (src_aspect > dst_aspect) {
+			// Source is wider, crop horizontally.
+			crop_width = int(vp_tex->get_size().height * dst_aspect);
+			crop_x = (vp_tex->get_size().width - crop_width) / 2;
+			vp_tex->crop_from_point(crop_x, crop_y, crop_width, crop_height);
+		} else if (src_aspect < dst_aspect) {
+			// Source is taller, crop vertically.
+			crop_height = int(vp_tex->get_size().width / dst_aspect);
+			crop_y = (vp_tex->get_size().height - crop_height) / 2;
+			vp_tex->crop_from_point(crop_x, crop_y, crop_width, crop_height);
+		}
+
+		vp_tex->resize(movie_size.width, movie_size.height, Image::INTERPOLATE_BILINEAR);
+	}
+
 	if (RenderingServer::get_singleton()->viewport_is_using_hdr_2d(main_vp_rid)) {
 		vp_tex->convert(Image::FORMAT_RGBA8);
 		vp_tex->linear_to_srgb();
