@@ -3454,6 +3454,11 @@ RenderForwardMobile::RenderForwardMobile() {
 		defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 	}
 
+	bool micro_shadows = GLOBAL_GET("rendering/lights_and_shadows/micro_shadows/enabled");
+	if (!micro_shadows) {
+		defines += "\n#define MICRO_SHADOWS_DISABLED\n";
+	}
+
 	{
 		//lightmaps
 		scene_state.max_lightmaps = MAX_LIGHTMAPS;
