@@ -317,7 +317,6 @@ void MultiNodeEdit::make_group_mask(const StringName &p_identifier, String &p_ma
 	p_mask.resize_uninitialized(get_node_count() + 1);
 	p_mask[get_node_count()] = '\0';
 
-	int i = 0;
 	for (int i = 0; i < get_node_count(); i++) {
 
 		const NodePath &E = get_node(i);
@@ -337,7 +336,6 @@ void MultiNodeEdit::add_partial_to_group(const StringName &p_identifier, bool pe
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	
 	for (int i = 0; i < get_node_count(); i++) {
-
 		if (i < p_mask.size() && !p_mask[i]) {
 			continue;
 		}
@@ -366,13 +364,11 @@ void MultiNodeEdit::remove_partial_from_group(const StringName &p_identifier, co
 			continue;
 		}
 
-
 		node->remove_from_group(p_identifier);
 	}
 }
 
 void MultiNodeEdit::get_groups(List<Node::GroupInfo> *p_groups) {
-
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
 	for (const NodePath &E : nodes) {
 		Node *node = es->get_node_or_null(E);
@@ -407,4 +403,3 @@ void MultiNodeEdit::_bind_methods() {
 	ClassDB::bind_method("add_partial_to_group", &MultiNodeEdit::add_partial_to_group);
 	ClassDB::bind_method("remove_partial_from_group", &MultiNodeEdit::remove_partial_from_group);
 }
-

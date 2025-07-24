@@ -805,8 +805,6 @@ public:
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
-	//Mutators on the current selection and item history. Used to affect the 
-	//	context of any dock that relies on the current selection in a scene tree. 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void push_item_no_inspector(Object *p_object);
 	void edit_previous_item();
