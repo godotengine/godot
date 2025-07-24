@@ -222,15 +222,6 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 		} else {
 			volumetric_fog.shader.set_variant_enabled(0, false);
 		}
-		// Always bake default (with image atomics) variant.
-		volumetric_fog.shader.set_variants_bake_for(0, "*", true, true);
-
-		// Bake no "image atomics" variant for macOS/iOS (Vulkan and Metal) and visionOS (Metal).
-		volumetric_fog.shader.set_variants_bake_for(1, "macos_forward_clustered_vulkan", true, false);
-		volumetric_fog.shader.set_variants_bake_for(1, "macos_forward_clustered_metal", true, false);
-		volumetric_fog.shader.set_variants_bake_for(1, "ios_forward_clustered_vulkan", true, false);
-		volumetric_fog.shader.set_variants_bake_for(1, "ios_forward_clustered_metal", true, false);
-		volumetric_fog.shader.set_variants_bake_for(1, "visionos_forward_clustered_metal", true, false);
 
 		material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_shader_funcs);
 		material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_material_funcs);
@@ -333,15 +324,6 @@ ALBEDO = vec3(1.0);
 			} else {
 				volumetric_fog.process_shader.set_variant_enabled(i, false);
 			}
-			// Always bake default (with image atomics) variant.
-			volumetric_fog.process_shader.set_variants_bake_for(i, "*", true, true);
-
-			// Bake no "image atomics" variant for macOS/iOS (Vulkan and Metal) and visionOS (Metal) only.
-			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "macos_forward_clustered_vulkan", true, false);
-			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "macos_forward_clustered_metal", true, false);
-			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "ios_forward_clustered_vulkan", true, false);
-			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "ios_forward_clustered_metal", true, false);
-			volumetric_fog.process_shader.set_variants_bake_for(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, "visionos_forward_clustered_metal", true, false);
 		}
 
 		volumetric_fog.process_shader_version = volumetric_fog.process_shader.version_create();
