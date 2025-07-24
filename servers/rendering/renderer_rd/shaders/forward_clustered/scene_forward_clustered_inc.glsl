@@ -485,6 +485,17 @@ vec3 get_energy_compensation(vec3 f0, float env) {
 	return 1.0 + f0 * (1.0 / env - 1.0);
 }
 
+// Micro-Shadowing Analytical approach
+// see https://irradiance.ca/posts/microshadowing-part1/#micro-shadowing
+float compute_micro_shadowing(float NoL, float ao, float opacity) {
+	float xx = ao * ao;
+	float ao5 = xx * xx * ao;
+
+	float cosThetaPrime = inversesqrt(1.0 - ao5);
+	float micro_shadows = pow(clamp(NoL * cosThetaPrime, 0.0, 1.0), 0.75f / max(ao, 0.0001));
+	return mix(1.0, micro_shadows, opacity);
+}
+
 /* Set 2 Skeleton & Instancing (can change per item) */
 
 layout(set = 2, binding = 0, std430) restrict readonly buffer Transforms {

@@ -4448,6 +4448,9 @@ RasterizerSceneGLES3::RasterizerSceneGLES3() {
 		if (!config->specular_occlusion) {
 			global_defines += "\n#define SPECULAR_OCCLUSION_DISABLED\n";
 		}
+		if (config->micro_shadows) {
+			global_defines += "\n#define ENABLE_MICRO_SHADOWS\n";
+		}
 		material_storage->shaders.scene_shader.initialize(global_defines);
 		scene_globals.shader_default_version = material_storage->shaders.scene_shader.version_create();
 		material_storage->shaders.scene_shader.version_bind_shader(scene_globals.shader_default_version, SceneShaderGLES3::MODE_COLOR);

@@ -291,6 +291,14 @@
 		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="BaseMaterial3D.TextureChannel" default="0">
 			Specifies the channel of the [member metallic_texture] in which the metallic information is stored. This is useful when you store the information for multiple effects in a single texture. For example if you stored metallic in the red channel, roughness in the blue, and ambient occlusion in the green you could reduce the number of textures you use.
 		</member>
+		<member name="micro_shadows_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
+			If [code]true[/code] and [member ProjectSettings.rendering/lights_and_shadows/micro_shadows/enabled] is [code]true[/code], micro-shadows are enabled. Micro-shadows can help improve the appearance of ambient occlusion by simulating small details embedded in the materials. This property serves as a physically-based alternative to [member ao_light_affect].
+		</member>
+		<member name="micro_shadows_strength" type="float" setter="set_micro_shadows_strength" getter="get_micro_shadows_strength" default="0.85">
+			Amount of micro shadowing applied to ambient occlusion. Higher values result in more shadowing in crevices and corners, while lower values result in less shadowing.
+			[b]Note:[/b] This setting only has an effect if directional lights are present in the scene. It does not affect light rendering with [OmniLight3D] and [SpotLight3D].
+			[b]Note:[/b] For best results, this setting requires an [member ao_texture] and a [member normal_texture] generated with the same pipeline.
+		</member>
 		<member name="msdf_outline_size" type="float" setter="set_msdf_outline_size" getter="get_msdf_outline_size" default="0.0">
 			The width of the shape outline.
 		</member>
@@ -647,7 +655,10 @@
 		<constant name="FEATURE_BENT_NORMAL_MAPPING" value="12" enum="Feature">
 			Constant for setting [member bent_normal_enabled].
 		</constant>
-		<constant name="FEATURE_MAX" value="13" enum="Feature">
+		<constant name="FEATURE_MICRO_SHADOWS" value="13" enum="Feature">
+			Constant for setting [member micro_shadows_enabled].
+		</constant>
+		<constant name="FEATURE_MAX" value="14" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 		<constant name="BLEND_MODE_MIX" value="0" enum="BlendMode">
