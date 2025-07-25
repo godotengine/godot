@@ -149,9 +149,6 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["fileSizes"] = p_file_sizes;
 	config["ensureCrossOriginIsolationHeaders"] = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
 
-	config["godotPoolSize"] = p_preset->get("threads/godot_pool_size");
-	config["emscriptenPoolSize"] = p_preset->get("threads/emscripten_pool_size");
-
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
 		head_include += "<link id=\"-gd-engine-icon\" rel=\"icon\" type=\"image/png\" href=\"" + p_name + ".icon.png\" />\n";
@@ -386,19 +383,12 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
-
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/emscripten_pool_size"), 8));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/godot_pool_size"), 4));
 }
 
 bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
 	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		return advanced_options_enabled;
-	}
-
-	if (p_option == "threads/godot_pool_size" || p_option == "threads/emscripten_pool_size") {
-		return p_preset->get("variant/thread_support").operator bool();
 	}
 
 	return true;
