@@ -74,6 +74,7 @@ enum SceneUniformLocation {
 	SCENE_EMPTY1, // Unused, put here to avoid conflicts with SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
 	SCENE_OMNILIGHT_UNIFORM_LOCATION,
 	SCENE_SPOTLIGHT_UNIFORM_LOCATION,
+	SCENE_AREALIGHT_UNIFORM_LOCATION,
 	SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
 	SCENE_MULTIVIEW_UNIFORM_LOCATION,
 	SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION,
@@ -89,10 +90,11 @@ enum SkyUniformLocation {
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
 	SKY_EMPTY2, // Unused, put here to avoid conflicts with SCENE_OMNILIGHT_UNIFORM_LOCATION.
 	SKY_EMPTY3, // Unused, put here to avoid conflicts with SCENE_SPOTLIGHT_UNIFORM_LOCATION.
-	SKY_EMPTY4, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
-	SKY_EMPTY5, // Unused, put here to avoid conflicts with SCENE_MULTIVIEW_UNIFORM_LOCATION.
-	SKY_EMPTY6, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
-	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
+	SKY_EMPTY4, // Unused, put here to avoid conflicts with SCENE_AREALIGHT_UNIFORM_LOCATION.
+	SKY_EMPTY5, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_LIGHT_UNIFORM_LOCATION.
+	SKY_EMPTY6, // Unused, put here to avoid conflicts with SCENE_MULTIVIEW_UNIFORM_LOCATION.
+	SKY_EMPTY7, // Unused, put here to avoid conflicts with SCENE_POSITIONAL_SHADOW_UNIFORM_LOCATION.
+	SKY_EMPTY8, // Unused, put here to avoid conflicts with SCENE_DIRECTIONAL_SHADOW_UNIFORM_LOCATION.
 	SKY_MULTIVIEW_UNIFORM_LOCATION,
 };
 
@@ -136,6 +138,7 @@ struct RenderDataGLES3 {
 
 	uint32_t spot_light_count = 0;
 	uint32_t omni_light_count = 0;
+	uint32_t area_light_count = 0;
 
 	float luminance_multiplier = 1.0;
 
@@ -174,6 +177,11 @@ private:
 	GLES3::SceneMaterialData *default_material_data_ptr = nullptr;
 	GLES3::SceneMaterialData *overdraw_material_data_ptr = nullptr;
 
+	struct LTC {
+		RID lut1_texture;
+		RID lut2_texture;
+	} ltc;
+
 	/* LIGHT INSTANCE */
 
 	struct LightData {
@@ -193,6 +201,9 @@ private:
 
 		float pad[3];
 		uint32_t bake_mode;
+
+		float area_width[4]; // 4th is padding
+		float area_height[4];
 	};
 	static_assert(sizeof(LightData) % 16 == 0, "LightData size must be a multiple of 16 bytes");
 
@@ -317,17 +328,20 @@ private:
 			int32_t light_id = -1; // Position in the light uniform buffer.
 			int32_t shadow_id = -1; // Position in the shadow uniform buffer.
 			RID light_instance_rid;
-			bool is_omni = false;
+			RS::LightType type;
 		};
 
 		LocalVector<LightPass> light_passes;
 
 		uint32_t paired_omni_light_count = 0;
 		uint32_t paired_spot_light_count = 0;
+		uint32_t paired_area_light_count = 0;
 		LocalVector<RID> paired_omni_lights;
 		LocalVector<RID> paired_spot_lights;
+		LocalVector<RID> paired_area_lights;
 		LocalVector<uint32_t> omni_light_gl_cache;
 		LocalVector<uint32_t> spot_light_gl_cache;
+		LocalVector<uint32_t> area_light_gl_cache;
 
 		LocalVector<RID> paired_reflection_probes;
 		LocalVector<RID> reflection_probe_rid_cache;
@@ -625,15 +639,19 @@ private:
 
 		LightData *omni_lights = nullptr;
 		LightData *spot_lights = nullptr;
+		LightData *area_lights = nullptr;
 		ShadowData *positional_shadows = nullptr;
 
 		InstanceSort<GLES3::LightInstance> *omni_light_sort;
 		InstanceSort<GLES3::LightInstance> *spot_light_sort;
+		InstanceSort<GLES3::LightInstance> *area_light_sort;
 		GLuint omni_light_buffer = 0;
 		GLuint spot_light_buffer = 0;
+		GLuint area_light_buffer = 0;
 		GLuint positional_shadow_buffer = 0;
 		uint32_t omni_light_count = 0;
 		uint32_t spot_light_count = 0;
+		uint32_t area_light_count = 0;
 		RS::ShadowQuality positional_shadow_quality = RS::ShadowQuality::SHADOW_QUALITY_SOFT_LOW;
 
 		DirectionalLightData *directional_lights = nullptr;
@@ -717,7 +735,7 @@ private:
 
 	RenderList render_list[RENDER_LIST_MAX];
 
-	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_directional_shadow_count);
+	void _setup_lights(const RenderDataGLES3 *p_render_data, bool p_using_shadows, uint32_t &r_directional_light_count, uint32_t &r_omni_light_count, uint32_t &r_spot_light_count, uint32_t &r_area_light_count, uint32_t &r_directional_shadow_count);
 	void _setup_environment(const RenderDataGLES3 *p_render_data, bool p_no_fog, const Size2i &p_screen_size, bool p_flip_y, const Color &p_default_bg_color, bool p_pancake_shadows, float p_shadow_bias = 0.0);
 	void _fill_render_list(RenderListType p_render_list, const RenderDataGLES3 *p_render_data, PassMode p_pass_mode, bool p_append = false);
 	void _render_shadows(const RenderDataGLES3 *p_render_data, const Size2i &p_viewport_size = Size2i(1, 1));
