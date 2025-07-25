@@ -41,6 +41,7 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
+#include "scene/3d/light_3d.h"
 #include "scene/gui/line_edit.h"
 
 #ifdef WINDOWS_ENABLED
@@ -146,6 +147,18 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	parameters_map["export_keep_originals"] = unpack_original_images;
 	parameters_map["export_format"] = "GLTF_SEPARATE";
 	parameters_map["export_yup"] = true;
+
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+		// This makes Blender export light intensity values in Blender's own watts, which are
+		// converted into Godot-compatible lumens at the end of this function.
+		// NOTE: After #73624 is fixed, this should be changed to "SPEC" and the watt->lumen
+		// conversion step should be removed.
+		parameters_map["export_import_convert_lighting_mode"] = "RAW";
+	} else {
+		// This matches the "Unitless" export option in Blender, which results in correct light
+		// energy values when not using physical light units.
+		parameters_map["export_import_convert_lighting_mode"] = "COMPAT";
+	}
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
 		parameters_map["export_extras"] = true;
@@ -325,12 +338,34 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 	ERR_FAIL_COND_V(!p_options.has("animation/fps"), nullptr);
 
+	Node *scene;
 #ifndef DISABLE_DEPRECATED
 	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, false);
+	scene = gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, false);
 #else
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], false);
+	scene = gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], false);
 #endif
+
+	// See the note above: when using physical light units, the light values are in watts, which need conversion.
+	if (GLOBAL_GET_CACHED(bool, "rendering/lights_and_shadows/use_physical_light_units")) {
+		TypedArray<Light3D> light_nodes = scene->find_children("*", "Light3D");
+		for (Variant light_node : light_nodes) {
+			Light3D *light = cast_to<Light3D>(light_node);
+			// The only difference between Blender and Godot lights (when using physical units) is
+			// that Blender uses radiometric units, and Godot uses photometric units. To convert
+			// between these, we need to know the luminous efficacy of each light. In an attempt to
+			// be consistent with Blender's own take on this conversion, we use the same luminous
+			// efficacy as Blender uses when parsing IES profiles, in the other direction.
+			// See: https://github.com/blender/blender/blob/f3399a41e231dfeb5e0894b9d041588b6c92dc5c/intern/cycles/util/ies.cpp#L168-L174
+			constexpr real_t luminous_efficacy = 177.82;
+			real_t blender_light_units = light->get_param(Light3D::PARAM_ENERGY);
+			real_t godot_light_units = blender_light_units * luminous_efficacy;
+			light->set_param(Light3D::PARAM_INTENSITY, godot_light_units);
+			light->set_param(Light3D::PARAM_ENERGY, 1.0);
+		}
+	}
+
+	return scene;
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
