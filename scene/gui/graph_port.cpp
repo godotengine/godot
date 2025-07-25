@@ -135,11 +135,11 @@ void GraphPort::set_enabled(bool p_enabled) {
 	}
 }
 
-bool GraphPort::is_enabled() {
+bool GraphPort::is_enabled() const {
 	return enabled;
 }
 
-int GraphPort::get_type() {
+int GraphPort::get_type() const {
 	return type;
 }
 
@@ -153,7 +153,7 @@ void GraphPort::set_type(int p_type) {
 	_on_modified();
 }
 
-Color GraphPort::get_color() {
+Color GraphPort::get_color() const {
 	Color base_col = selected ? theme_cache.selected_color : theme_cache.color;
 	if (!graph_edit) {
 		return base_col;
@@ -166,7 +166,7 @@ Color GraphPort::get_rim_color() {
 	return selected ? theme_cache.selected_rim_color : theme_cache.rim_color;
 }
 
-bool GraphPort::get_exclusive() {
+bool GraphPort::get_exclusive() const {
 	return exclusive;
 }
 
@@ -203,11 +203,11 @@ void GraphPort::set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconne
 	_on_modified();
 }
 
-GraphNode *GraphPort::get_graph_node() {
+GraphNode *GraphPort::get_graph_node() const {
 	return graph_node;
 }
 
-Rect2 GraphPort::get_hotzone() {
+Rect2 GraphPort::get_hotzone() const {
 	Vector2 pos = get_position();
 
 	Ref<Texture2D> icon = theme_cache.icon;
@@ -237,11 +237,11 @@ Rect2 GraphPort::get_hotzone() {
 	return Rect2(pos.x + theme_cache.hotzone_offset_h - size.x / 2, pos.y + theme_cache.hotzone_offset_v - size.y / 2, size.x, size.y);
 }
 
-int GraphPort::get_port_index(bool p_include_disabled) {
+int GraphPort::get_port_index(bool p_include_disabled) const {
 	return p_include_disabled ? _index : _enabled_index;
 }
 
-int GraphPort::get_filtered_port_index(bool p_include_disabled) {
+int GraphPort::get_filtered_port_index(bool p_include_disabled) const {
 	return p_include_disabled ? _filtered_index : _filtered_enabled_index;
 }
 
@@ -267,12 +267,12 @@ void GraphPort::connect_to_port(GraphPort *p_port, bool p_clear_if_invalid) {
 	graph_edit->connect_nodes(this, p_port, p_clear_if_invalid);
 }
 
-bool GraphPort::has_connection() {
+bool GraphPort::has_connection() const {
 	ERR_FAIL_NULL_V(graph_edit, false);
 	return graph_edit->is_port_connected(this);
 }
 
-TypedArray<Ref<GraphConnection>> GraphPort::get_connections() {
+TypedArray<Ref<GraphConnection>> GraphPort::get_connections() const {
 	ERR_FAIL_NULL_V(graph_edit, TypedArray<Ref<GraphConnection>>());
 	return graph_edit->get_connections_by_port(this);
 }
@@ -287,22 +287,22 @@ void GraphPort::clear_connections() {
 	graph_edit->clear_port_connections(this);
 }
 
-Ref<GraphConnection> GraphPort::get_first_connection() {
+Ref<GraphConnection> GraphPort::get_first_connection() const {
 	ERR_FAIL_NULL_V(graph_edit, Ref<GraphConnection>(nullptr));
 	return graph_edit->get_first_connection_by_port(this);
 }
 
-bool GraphPort::is_connected_to(GraphPort *p_port) {
+bool GraphPort::is_connected_to(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(graph_edit, false);
 	return graph_edit->are_ports_connected(this, p_port);
 }
 
-TypedArray<GraphPort> GraphPort::get_connected_ports() {
+TypedArray<GraphPort> GraphPort::get_connected_ports() const {
 	ERR_FAIL_NULL_V(graph_edit, TypedArray<GraphPort>());
 	return graph_edit->get_connected_ports(this);
 }
 
-GraphPort *GraphPort::get_first_connected_port() {
+GraphPort *GraphPort::get_first_connected_port() const {
 	const Ref<GraphConnection> first_conn = get_first_connection();
 	if (first_conn.is_null()) {
 		return nullptr;
@@ -310,7 +310,7 @@ GraphPort *GraphPort::get_first_connected_port() {
 	return first_conn->get_other_port(this);
 }
 
-GraphNode *GraphPort::get_first_connected_node() {
+GraphNode *GraphPort::get_first_connected_node() const {
 	GraphPort *other_port = get_first_connected_port();
 	if (!other_port) {
 		return nullptr;

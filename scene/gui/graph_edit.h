@@ -164,9 +164,9 @@ private:
 	bool connecting = false;
 	bool connecting_valid = false;
 	bool connecting_target_valid = false;
-	GraphPort *connecting_from_port = nullptr;
+	const GraphPort *connecting_from_port = nullptr;
 	Vector2 connecting_to_point; // In local screen space.
-	GraphPort *connecting_to_port = nullptr;
+	const GraphPort *connecting_to_port = nullptr;
 
 	bool just_disconnected = false;
 
@@ -201,7 +201,7 @@ private:
 	bool awaiting_scroll_offset_update = false;
 
 	TypedArray<Ref<GraphConnection>> graph_connections;
-	HashMap<GraphPort *, TypedArray<Ref<GraphConnection>>> connection_map;
+	HashMap<const GraphPort *, TypedArray<Ref<GraphConnection>>> connection_map;
 	Ref<GraphConnection> hovered_connection;
 
 	float lines_thickness = 4.0f;
@@ -292,13 +292,12 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
 
-	float _get_shader_line_width();
+	float _get_shader_line_width() const;
 	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color);
 	void _invalidate_connection_line_cache();
 	void _invalidate_graph_node_connections(GraphNode *p_node);
 	void _update_top_connection_layer();
 	void _update_connections();
-	void _request_connection(GraphPort *p_first_port, GraphPort *p_second_port);
 
 	void _top_layer_draw();
 	void _minimap_draw();
@@ -307,11 +306,11 @@ private:
 	const TypedArray<Ref<GraphConnection>> _get_connections() const;
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
-	TypedArray<Ref<GraphConnection>> _get_connections_by_node(GraphNode *p_node) const;
-	TypedArray<Ref<GraphConnection>> _get_connections_by_port(GraphPort *p_port) const;
+	TypedArray<Ref<GraphConnection>> _get_connections_by_node(const GraphNode *p_node) const;
+	TypedArray<Ref<GraphConnection>> _get_connections_by_port(const GraphPort *p_port) const;
 	Error _add_connection(Ref<GraphConnection> p_connection);
-	bool _is_connection_valid(GraphPort *p_port);
-	void _mark_connections_dirty_by_port(GraphPort *p_port);
+	bool _is_connection_valid(const GraphPort *p_port) const;
+	void _mark_connections_dirty_by_port(const GraphPort *p_port);
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
@@ -326,7 +325,7 @@ private:
 	friend class GraphEditMinimap;
 	void _minimap_toggled();
 
-	bool _check_clickable_control(Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset);
+	bool _check_clickable_control(const Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset) const;
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;
@@ -347,11 +346,11 @@ protected:
 	static void _bind_compatibility_methods();
 #endif
 
-	bool is_in_port_hotzone(GraphPort *p_port, const Vector2 &p_local_pos);
+	bool is_in_port_hotzone(const GraphPort *p_port, const Vector2 &p_local_pos) const;
 
 	GDVIRTUAL2RC(Vector<Vector2>, _get_connection_line, Vector2, Vector2)
-	GDVIRTUAL2R(bool, _is_in_port_hotzone, GraphPort *, Vector2)
-	GDVIRTUAL2R(bool, _is_node_hover_valid, GraphPort *, GraphPort *);
+	GDVIRTUAL2R(bool, _is_in_port_hotzone, const GraphPort *, Vector2)
+	GDVIRTUAL2R(bool, _is_node_hover_valid, const GraphPort *, const GraphPort *);
 
 public:
 	static void init_shaders();
@@ -374,41 +373,41 @@ public:
 	Error add_connection(Ref<GraphConnection> p_connection);
 	void disconnect_nodes_indexed(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 	void disconnect_nodes_indexed_legacy(String p_from_node, int p_from_port, String p_to_node, int p_to_port);
-	void remove_connection(const Ref<GraphConnection> p_connection);
+	void remove_connection(Ref<GraphConnection> p_connection);
 	void disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port);
-	bool are_nodes_connected(GraphNode *p_first_node, GraphNode *p_second_node);
-	bool are_ports_connected(GraphPort *p_first_port, GraphPort *p_second_port);
-	bool is_node_connected(GraphNode *p_node);
-	bool is_port_connected(GraphPort *p_port);
-	TypedArray<GraphPort> get_connected_ports(GraphPort *p_port);
-	TypedArray<GraphNode> get_connected_nodes(GraphNode *p_node);
-	int get_connection_count_by_port(GraphPort *p_port);
-	int get_connection_count_by_node(GraphNode *p_node);
-	GraphNode *get_connection_target(GraphPort *p_port);
-	String get_connections_description(GraphPort *p_port);
+	bool are_nodes_connected(const GraphNode *p_first_node, const GraphNode *p_second_node) const;
+	bool are_ports_connected(const GraphPort *p_first_port, const GraphPort *p_second_port) const;
+	bool is_node_connected(const GraphNode *p_node) const;
+	bool is_port_connected(const GraphPort *p_port) const;
+	TypedArray<GraphPort> get_connected_ports(const GraphPort *p_port) const;
+	TypedArray<GraphNode> get_connected_nodes(const GraphNode *p_node) const;
+	int get_connection_count_by_port(const GraphPort *p_port) const;
+	int get_connection_count_by_node(const GraphNode *p_node) const;
+	GraphNode *get_connection_target(const GraphPort *p_port) const;
+	String get_connections_description(const GraphPort *p_port) const;
 
 	void set_connections(const TypedArray<Ref<GraphConnection>> p_connections);
-	void set_port_connections(GraphPort *p_port, const TypedArray<Ref<GraphConnection>> p_connections);
-	void set_node_connections(GraphNode *p_node, const TypedArray<Ref<GraphConnection>> p_connections);
+	void set_port_connections(const GraphPort *p_port, const TypedArray<Ref<GraphConnection>> p_connections);
+	void set_node_connections(const GraphNode *p_node, const TypedArray<Ref<GraphConnection>> p_connections);
 	void add_connections(const TypedArray<Ref<GraphConnection>> p_connections);
 	const TypedArray<Ref<GraphConnection>> get_connections() const;
-	const TypedArray<Ref<GraphConnection>> get_connections_by_port(GraphPort *p_port) const;
-	const TypedArray<Ref<GraphConnection>> get_connections_by_node(GraphNode *p_node) const;
-	const Ref<GraphConnection> get_first_connection_by_port(GraphPort *p_port) const;
-	const TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
+	const TypedArray<Ref<GraphConnection>> get_connections_by_port(const GraphPort *p_port) const;
+	const TypedArray<Ref<GraphConnection>> get_connections_by_node(const GraphNode *p_node) const;
+	const Ref<GraphConnection> get_first_connection_by_port(const GraphPort *p_port) const;
+	const TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
 	void move_connections(GraphPort *p_from_port, GraphPort *p_to_port);
 	void clear_connections();
-	void clear_port_connections(GraphPort *p_port);
-	void clear_node_connections(GraphNode *p_node);
-	const Ref<GraphConnection> get_connection(GraphPort *p_first_port, GraphPort *p_second_port);
+	void clear_port_connections(const GraphPort *p_port);
+	void clear_node_connections(const GraphNode *p_node);
+	Ref<GraphConnection> get_connection(const GraphPort *p_first_port, const GraphPort *p_second_port) const;
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
 	Ref<GraphConnection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 	void force_connection_drag_end();
 
 	bool is_keyboard_connecting() const { return keyboard_connecting; }
-	void start_connecting(GraphPort *p_port, bool is_keyboard);
-	void end_connecting(GraphPort *p_port, bool is_keyboard);
+	void start_connecting(const GraphPort *p_port, bool is_keyboard);
+	void end_connecting(const GraphPort *p_port, bool is_keyboard);
 
 	Dictionary get_type_names() const;
 	void set_type_names(const Dictionary &p_names);
@@ -416,7 +415,7 @@ public:
 	const TypedArray<Color> &get_type_colors();
 	void set_type_colors(const TypedArray<Color> &p_type_colors);
 
-	virtual bool is_node_hover_valid(GraphPort *p_first_port, GraphPort *p_second_port);
+	virtual bool is_node_hover_valid(const GraphPort *p_first_port, const GraphPort *p_second_port);
 
 	void set_connection_activity(Ref<GraphConnection> p_conn, float p_activity);
 	void set_connection_activity_indexed_legacy(String p_first_node, int p_first_port, String p_second_node, int p_second_port, float p_activity);
@@ -428,8 +427,8 @@ public:
 	// GraphFrame related methods.
 	void attach_graph_element_to_frame(const StringName &p_graph_element, const StringName &p_parent_frame);
 	void detach_graph_element_from_frame(const StringName &p_graph_element);
-	GraphFrame *get_element_frame(const StringName &p_attached_graph_element);
-	TypedArray<StringName> get_attached_nodes_of_frame(const StringName &p_graph_frame);
+	GraphFrame *get_element_frame(const StringName &p_attached_graph_element) const;
+	TypedArray<StringName> get_attached_nodes_of_frame(const StringName &p_graph_frame) const;
 
 	void set_panning_scheme(PanningScheme p_scheme);
 	PanningScheme get_panning_scheme() const;
@@ -514,8 +513,8 @@ public:
 	void set_connection_lines_antialiased(bool p_antialiased);
 	bool is_connection_lines_antialiased() const;
 
-	HBoxContainer *get_menu_hbox();
-	Ref<ViewPanner> get_panner();
+	HBoxContainer *get_menu_hbox() const;
+	Ref<ViewPanner> get_panner() const;
 	void set_warped_panning(bool p_warped);
 	void update_warped_panning();
 

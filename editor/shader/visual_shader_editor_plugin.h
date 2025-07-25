@@ -484,7 +484,7 @@ class VisualShaderEditor : public ShaderEditor {
 	void _nodes_dragged();
 
 	void _connection_request(GraphPort *p_from_port, GraphPort *p_to_port);
-	void _disconnection_request(GraphPort *p_from_port, GraphPort *p_to_port);
+	void _disconnection_request(const Ref<GraphConnection> p_connection);
 
 	void _scroll_offset_changed(const Vector2 &p_scroll);
 	void _node_selected(Object *p_node);

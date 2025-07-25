@@ -254,10 +254,9 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_accept", true)) {
 			if (selected_port) {
-				Control *accessible_node = get_accessibility_node_by_port(selected_port->get_port_index());
-				if (accessible_node) {
+				if (selected_port->graph_node) {
+					selected_port->graph_node->grab_focus();
 					selected_port = nullptr;
-					accessible_node->grab_focus();
 				}
 				accept_event();
 			}
@@ -269,7 +268,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 	GraphElement::gui_input(p_event);
 }
 
-Control *GraphNode::get_accessibility_node_by_port(int p_port_idx) {
+const Control *GraphNode::get_accessibility_node_by_port(int p_port_idx) const {
 	return this;
 }
 
@@ -547,7 +546,7 @@ bool GraphNode::is_ignoring_valid_connection_type() const {
 	return ignore_invalid_connection_type;
 }
 
-GraphPort *GraphNode::get_port(int p_port_idx, bool p_include_disabled) {
+GraphPort *GraphNode::get_port(int p_port_idx, bool p_include_disabled) const {
 	ERR_FAIL_INDEX_V(p_port_idx, get_port_count(p_include_disabled), nullptr);
 	int idx = p_port_idx;
 	if (!p_include_disabled) {
@@ -557,7 +556,7 @@ GraphPort *GraphNode::get_port(int p_port_idx, bool p_include_disabled) {
 	return ports[idx];
 }
 
-GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection p_direction, bool p_include_disabled) {
+GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection p_direction, bool p_include_disabled) const {
 	ERR_FAIL_INDEX_V(p_port_idx, get_filtered_port_count(p_direction, p_include_disabled), nullptr);
 	int filtered_idx = 0;
 	for (GraphPort *port : ports) {
@@ -572,15 +571,15 @@ GraphPort *GraphNode::get_filtered_port(int p_port_idx, GraphPort::PortDirection
 	ERR_FAIL_V_MSG(nullptr, "filtered port index out of bounds - fewer than p_port_index ports with the given direction are enabled.");
 }
 
-GraphPort *GraphNode::get_input_port(int p_port_index, bool p_include_disabled) {
+GraphPort *GraphNode::get_input_port(int p_port_index, bool p_include_disabled) const {
 	return get_filtered_port(p_port_index, GraphPort::PortDirection::INPUT, p_include_disabled);
 }
 
-GraphPort *GraphNode::get_output_port(int p_port_index, bool p_include_disabled) {
+GraphPort *GraphNode::get_output_port(int p_port_index, bool p_include_disabled) const {
 	return get_filtered_port(p_port_index, GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
-GraphPort *GraphNode::get_next_matching_port(GraphPort *p_port, bool p_include_disabled) {
+GraphPort *GraphNode::get_next_matching_port(const GraphPort *p_port, bool p_include_disabled) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	int filtered_selected_port_idx = filtered_index_of_port(p_port, false);
 	if (filtered_selected_port_idx + 1 >= get_filtered_port_count(p_port->direction, false)) {
@@ -589,7 +588,7 @@ GraphPort *GraphNode::get_next_matching_port(GraphPort *p_port, bool p_include_d
 	return get_filtered_port(filtered_selected_port_idx + 1, p_port->direction, false);
 }
 
-GraphPort *GraphNode::get_previous_matching_port(GraphPort *p_port, bool p_include_disabled) {
+GraphPort *GraphNode::get_previous_matching_port(const GraphPort *p_port, bool p_include_disabled) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	int filtered_selected_port_idx = filtered_index_of_port(p_port, false);
 	if (filtered_selected_port_idx - 1 < 0) {
@@ -607,7 +606,7 @@ void GraphNode::set_ports(const TypedArray<GraphPort> &p_ports) {
 	_port_modified();
 }
 
-TypedArray<GraphPort> GraphNode::get_ports() {
+TypedArray<GraphPort> GraphNode::get_ports() const {
 	TypedArray<GraphPort> _ports;
 	for (GraphPort *port : ports) {
 		_ports.append(port);
@@ -615,7 +614,7 @@ TypedArray<GraphPort> GraphNode::get_ports() {
 	return _ports;
 }
 
-TypedArray<GraphPort> GraphNode::get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled) {
+TypedArray<GraphPort> GraphNode::get_filtered_ports(GraphPort::PortDirection p_direction, bool p_include_disabled) const {
 	TypedArray<GraphPort> _ports;
 	for (GraphPort *port : ports) {
 		if (!port || port->direction != p_direction) {
@@ -626,41 +625,41 @@ TypedArray<GraphPort> GraphNode::get_filtered_ports(GraphPort::PortDirection p_d
 	return _ports;
 }
 
-TypedArray<GraphPort> GraphNode::get_input_ports(bool p_include_disabled) {
+TypedArray<GraphPort> GraphNode::get_input_ports(bool p_include_disabled) const {
 	return get_filtered_ports(GraphPort::PortDirection::INPUT, p_include_disabled);
 }
 
-TypedArray<GraphPort> GraphNode::get_output_ports(bool p_include_disabled) {
+TypedArray<GraphPort> GraphNode::get_output_ports(bool p_include_disabled) const {
 	return get_filtered_ports(GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
-int GraphNode::index_of_port(GraphPort *p_port, bool p_include_disabled) {
+int GraphNode::index_of_port(const GraphPort *p_port, bool p_include_disabled) const {
 	ERR_FAIL_NULL_V(p_port, -1);
 	return p_port->get_port_index(p_include_disabled);
 }
 
-int GraphNode::filtered_index_of_port(GraphPort *p_port, bool p_include_disabled) {
+int GraphNode::filtered_index_of_port(const GraphPort *p_port, bool p_include_disabled) const {
 	ERR_FAIL_NULL_V(p_port, -1);
 	return p_port->get_filtered_port_index(p_include_disabled);
 }
 
-int GraphNode::get_port_count(bool p_include_disabled) {
+int GraphNode::get_port_count(bool p_include_disabled) const {
 	return p_include_disabled ? port_count : enabled_port_count;
 }
 
-int GraphNode::get_filtered_port_count(GraphPort::PortDirection p_filter_direction, bool p_include_disabled) {
+int GraphNode::get_filtered_port_count(GraphPort::PortDirection p_filter_direction, bool p_include_disabled) const {
 	return p_include_disabled ? directed_port_count[p_filter_direction] : directed_enabled_port_count[p_filter_direction];
 }
 
-int GraphNode::get_input_port_count(bool p_include_disabled) {
+int GraphNode::get_input_port_count(bool p_include_disabled) const {
 	return get_filtered_port_count(GraphPort::PortDirection::INPUT, p_include_disabled);
 }
 
-int GraphNode::get_output_port_count(bool p_include_disabled) {
+int GraphNode::get_output_port_count(bool p_include_disabled) const {
 	return get_filtered_port_count(GraphPort::PortDirection::OUTPUT, p_include_disabled);
 }
 
-int GraphNode::enabled_index_to_port_index(int p_enabled_port_index) {
+int GraphNode::enabled_index_to_port_index(int p_enabled_port_index) const {
 	ERR_FAIL_INDEX_V(p_enabled_port_index, enabled_port_count, -1);
 	int idx = 0;
 	for (GraphPort *port : ports) {
@@ -676,7 +675,7 @@ int GraphNode::enabled_index_to_port_index(int p_enabled_port_index) {
 	return -1;
 }
 
-int GraphNode::port_index_to_enabled_index(int p_port_index) {
+int GraphNode::port_index_to_enabled_index(int p_port_index) const {
 	ERR_FAIL_INDEX_V(p_port_index, ports.size(), -1);
 	GraphPort *port = get_port(p_port_index, true);
 	ERR_FAIL_NULL_V(port, -1);
@@ -795,7 +794,7 @@ String GraphNode::get_title() const {
 	return title;
 }
 
-HBoxContainer *GraphNode::get_titlebar_hbox() {
+HBoxContainer *GraphNode::get_titlebar_hbox() const {
 	return titlebar_hbox;
 }
 
@@ -857,27 +856,27 @@ void GraphNode::remove_connection(Ref<GraphConnection> p_connection) {
 	graph_edit->remove_connection(p_connection);
 }
 
-bool GraphNode::is_connected_to(GraphNode *p_node) {
+bool GraphNode::is_connected_to(GraphNode *p_node) const {
 	ERR_FAIL_NULL_V(graph_edit, false);
 	return graph_edit->are_nodes_connected(this, p_node);
 }
 
-bool GraphNode::has_connection() {
+bool GraphNode::has_connection() const {
 	ERR_FAIL_NULL_V(graph_edit, false);
 	return graph_edit->is_node_connected(this);
 }
 
-TypedArray<Ref<GraphConnection>> GraphNode::get_connections() {
+TypedArray<Ref<GraphConnection>> GraphNode::get_connections() const {
 	ERR_FAIL_NULL_V(graph_edit, TypedArray<Ref<GraphConnection>>());
 	return graph_edit->get_connections_by_node(this);
 }
 
-TypedArray<Ref<GraphConnection>> GraphNode::get_filtered_connections(GraphPort::PortDirection p_filter_direction) {
+TypedArray<Ref<GraphConnection>> GraphNode::get_filtered_connections(GraphPort::PortDirection p_filter_direction) const {
 	ERR_FAIL_NULL_V(graph_edit, TypedArray<Ref<GraphConnection>>());
 	return graph_edit->get_filtered_connections_by_node(this, p_filter_direction);
 }
 
-TypedArray<GraphNode> GraphNode::get_connected_nodes() {
+TypedArray<GraphNode> GraphNode::get_connected_nodes() const {
 	const TypedArray<Ref<GraphConnection>> conns = get_connections();
 	TypedArray<GraphNode> ret;
 	for (const Ref<GraphConnection> conn : conns) {
@@ -889,7 +888,7 @@ TypedArray<GraphNode> GraphNode::get_connected_nodes() {
 	return ret;
 }
 
-TypedArray<GraphNode> GraphNode::get_filtered_connected_nodes(GraphPort::PortDirection p_filter_direction) {
+TypedArray<GraphNode> GraphNode::get_filtered_connected_nodes(GraphPort::PortDirection p_filter_direction) const {
 	const TypedArray<Ref<GraphConnection>> conns = get_filtered_connections(p_filter_direction);
 	TypedArray<GraphNode> ret;
 	for (const Ref<GraphConnection> conn : conns) {
@@ -901,19 +900,19 @@ TypedArray<GraphNode> GraphNode::get_filtered_connected_nodes(GraphPort::PortDir
 	return ret;
 }
 
-TypedArray<GraphNode> GraphNode::get_input_connected_nodes() {
+TypedArray<GraphNode> GraphNode::get_input_connected_nodes() const {
 	return get_filtered_connected_nodes(GraphPort::PortDirection::INPUT);
 }
 
-TypedArray<GraphNode> GraphNode::get_output_connected_nodes() {
+TypedArray<GraphNode> GraphNode::get_output_connected_nodes() const {
 	return get_filtered_connected_nodes(GraphPort::PortDirection::OUTPUT);
 }
 
-TypedArray<Ref<GraphConnection>> GraphNode::get_input_connections() {
+TypedArray<Ref<GraphConnection>> GraphNode::get_input_connections() const {
 	return get_filtered_connections(GraphPort::INPUT);
 }
 
-TypedArray<Ref<GraphConnection>> GraphNode::get_output_connections() {
+TypedArray<Ref<GraphConnection>> GraphNode::get_output_connections() const {
 	return get_filtered_connections(GraphPort::OUTPUT);
 }
 

@@ -79,7 +79,16 @@ protected:
 	} _cache;
 
 	void set_clear_if_invalid(bool p_clear_if_invalid);
-	bool get_clear_if_invalid();
+	bool get_clear_if_invalid() const;
+
+	void set_line_material(const Ref<ShaderMaterial> p_line_material);
+	Ref<ShaderMaterial> get_line_material() const;
+
+	void set_line_width(float width);
+
+	Ref<Gradient> get_line_gradient() const;
+
+	void update_cache();
 
 	static void _bind_methods();
 
@@ -89,22 +98,22 @@ public:
 	bool clear_if_invalid = true;
 
 	void set_first_port(GraphPort *p_port);
-	GraphPort *get_first_port();
+	GraphPort *get_first_port() const;
 
 	void set_second_port(GraphPort *p_port);
-	GraphPort *get_second_port();
+	GraphPort *get_second_port() const;
 
-	GraphNode *get_first_node();
-	GraphNode *get_second_node();
+	GraphNode *get_first_node() const;
+	GraphNode *get_second_node() const;
 
-	GraphPort *get_other_port(GraphPort *p_port);
-	GraphPort *get_other_port_by_node(GraphNode *p_node);
-	GraphNode *get_other_node(GraphNode *p_node);
-	GraphNode *get_other_node_by_port(GraphPort *p_port);
-	GraphPort *get_port_by_node(GraphNode *p_node);
-	GraphNode *get_node_by_port(GraphPort *p_port);
+	GraphPort *get_other_port(const GraphPort *p_port) const;
+	GraphPort *get_other_port_by_node(const GraphNode *p_node) const;
+	GraphNode *get_other_node(const GraphNode *p_node) const;
+	GraphNode *get_other_node_by_port(const GraphPort *p_port) const;
+	GraphPort *get_port_by_node(const GraphNode *p_node) const;
+	GraphNode *get_node_by_port(const GraphPort *p_port) const;
 
-	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data();
+	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data() const;
 	bool matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port);
 
 	GraphConnection();

@@ -116,15 +116,15 @@ public:
 	void enable();
 	void disable();
 	void set_enabled(bool p_enabled);
-	bool is_enabled();
+	bool is_enabled() const;
 
-	int get_type();
+	int get_type() const;
 	void set_type(int p_type);
 
-	Color get_color();
+	Color get_color() const;
 	Color get_rim_color();
 
-	bool get_exclusive();
+	bool get_exclusive() const;
 	void set_exclusive(bool p_exclusive);
 
 	PortDirection get_direction() const;
@@ -133,29 +133,29 @@ public:
 	DisconnectBehaviour get_disabled_behaviour() const;
 	void set_disabled_behaviour(DisconnectBehaviour p_disconnect_behaviour);
 
-	GraphNode *get_graph_node();
+	GraphNode *get_graph_node() const;
 
-	Rect2 get_hotzone();
+	Rect2 get_hotzone() const;
 
-	int get_port_index(bool p_include_disabled = true);
-	int get_filtered_port_index(bool p_include_disabled = true);
+	int get_port_index(bool p_include_disabled = true) const;
+	int get_filtered_port_index(bool p_include_disabled = true) const;
 
 	void disconnect_all();
 
-	TypedArray<Ref<GraphConnection>> get_connections();
+	TypedArray<Ref<GraphConnection>> get_connections() const;
 	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
 	void clear_connections();
 
 	void add_connection(Ref<GraphConnection> p_connection);
 	void remove_connection(Ref<GraphConnection> p_connection);
 	void connect_to_port(GraphPort *p_port, bool p_clear_if_invalid = true);
-	bool has_connection();
-	Ref<GraphConnection> get_first_connection();
-	bool is_connected_to(GraphPort *p_port);
+	bool has_connection() const;
+	Ref<GraphConnection> get_first_connection() const;
+	bool is_connected_to(const GraphPort *p_port) const;
 
-	TypedArray<GraphPort> get_connected_ports();
-	GraphPort *get_first_connected_port();
-	GraphNode *get_first_connected_node();
+	TypedArray<GraphPort> get_connected_ports() const;
+	GraphPort *get_first_connected_port() const;
+	GraphNode *get_first_connected_node() const;
 
 	GraphPort();
 	GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);

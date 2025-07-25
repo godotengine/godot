@@ -4208,13 +4208,16 @@ void VisualShaderEditor::_connection_request(GraphPort *p_from_port, GraphPort *
 	last_to_port = -1;
 }
 
-void VisualShaderEditor::_disconnection_request(GraphPort *p_from_port, GraphPort *p_to_port) {
-	ERR_FAIL_NULL(p_from_port);
-	ERR_FAIL_NULL(p_to_port);
-	int _from = String(p_from_port->get_graph_node()->get_name()).to_int();
-	int _to = String(p_to_port->get_graph_node()->get_name()).to_int();
-	int _from_index = p_from_port->get_filtered_port_index(false);
-	int _to_index = p_to_port->get_filtered_port_index(false);
+void VisualShaderEditor::_disconnection_request(const Ref<GraphConnection> p_connection) {
+	ERR_FAIL_COND(p_connection.is_null());
+	ERR_FAIL_NULL(p_connection->first_port);
+	ERR_FAIL_NULL(p_connection->second_port);
+	ERR_FAIL_NULL(p_connection->get_first_node());
+	ERR_FAIL_NULL(p_connection->get_second_node());
+	int _from = String(p_connection->get_first_node()->get_name()).to_int();
+	int _to = String(p_connection->get_second_node()->get_name()).to_int();
+	int _from_index = p_connection->first_port->get_filtered_port_index(false);
+	int _to_index = p_connection->second_port->get_filtered_port_index(false);
 
 	VisualShader::Type type = get_current_shader_type();
 

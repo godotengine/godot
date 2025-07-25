@@ -325,7 +325,7 @@ const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
 	return slots;
 }
 
-TypedArray<Array> GraphNodeIndexed::get_slots() {
+TypedArray<Array> GraphNodeIndexed::get_slots() const {
 	TypedArray<Array> ret;
 	for (GraphNodeIndexed::Slot slot : slots) {
 		Array s;
@@ -448,7 +448,7 @@ void GraphNodeIndexed::_update_port_positions() {
 }
 
 // Notably, this method does not query or update _node_to_slot_cache
-int GraphNodeIndexed::slot_index_of_node(Node *p_node) {
+int GraphNodeIndexed::slot_index_of_node(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, -1);
 	ERR_FAIL_COND_V(!is_ancestor_of(p_node), -1);
 
@@ -468,26 +468,26 @@ int GraphNodeIndexed::slot_index_of_node(Node *p_node) {
 }
 
 // helpers to account for port container when indexing children for slots
-int GraphNodeIndexed::child_to_slot_index(int idx) {
+int GraphNodeIndexed::child_to_slot_index(int idx) const {
 	ERR_FAIL_INDEX_V(idx, get_child_count(false), -1);
 	return slot_index_of_node(get_child(idx, false));
 }
-int GraphNodeIndexed::slot_to_child_index(int idx) {
+int GraphNodeIndexed::slot_to_child_index(int idx) const {
 	Node *child = get_child_by_slot_index(idx);
 	ERR_FAIL_NULL_V(child, -1);
 	return child->get_index(false);
 }
 
-Node *GraphNodeIndexed::get_child_by_slot_index(int p_slot_index) {
+Node *GraphNodeIndexed::get_child_by_slot_index(int p_slot_index) const {
 	ERR_FAIL_INDEX_V(p_slot_index, slots.size(), nullptr);
 	return get_node_or_null(NodePath(slots[p_slot_index].node_name));
 }
 
-Node *GraphNodeIndexed::get_child_by_port(GraphPort *p_port) {
+Node *GraphNodeIndexed::get_child_by_port(const GraphPort *p_port) const {
 	return get_child_by_slot_index(slot_index_of_port(p_port));
 }
 
-int GraphNodeIndexed::slot_index_of_port(GraphPort *p_port) {
+int GraphNodeIndexed::slot_index_of_port(const GraphPort *p_port) const {
 	return floor(index_of_port(p_port) / 2);
 }
 
@@ -508,17 +508,17 @@ void GraphNodeIndexed::set_output_port_properties(int p_slot_index, bool p_enabl
 	port->set_properties(p_enabled, false, p_type, GraphPort::PortDirection::OUTPUT);
 }
 
-GraphPort *GraphNodeIndexed::get_input_port_by_slot(int p_slot_index) {
+GraphPort *GraphNodeIndexed::get_input_port_by_slot(int p_slot_index) const {
 	int port_index = slot_to_port_index(p_slot_index, true);
 	return get_port(port_index);
 }
 
-GraphPort *GraphNodeIndexed::get_output_port_by_slot(int p_slot_index) {
+GraphPort *GraphNodeIndexed::get_output_port_by_slot(int p_slot_index) const {
 	int port_index = slot_to_port_index(p_slot_index, false);
 	return get_port(port_index);
 }
 
-GraphPort *GraphNodeIndexed::get_input_port_by_node(Node *p_node) {
+GraphPort *GraphNodeIndexed::get_input_port_by_node(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	int slot_idx = slot_index_of_node(p_node);
 	if (slot_idx < 0) {
@@ -527,7 +527,7 @@ GraphPort *GraphNodeIndexed::get_input_port_by_node(Node *p_node) {
 	return get_input_port_by_slot(slot_idx);
 }
 
-GraphPort *GraphNodeIndexed::get_output_port_by_node(Node *p_node) {
+GraphPort *GraphNodeIndexed::get_output_port_by_node(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	int slot_idx = slot_index_of_node(p_node);
 	if (slot_idx < 0) {
@@ -536,7 +536,7 @@ GraphPort *GraphNodeIndexed::get_output_port_by_node(Node *p_node) {
 	return get_output_port_by_slot(slot_idx);
 }
 
-int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) {
+int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabled) const {
 	ERR_FAIL_INDEX_V(p_port_index, ports.size(), -1);
 	ERR_FAIL_INDEX_V(p_port_index, slots.size() * 2, -1);
 	if (p_include_disabled) {
@@ -562,7 +562,7 @@ int GraphNodeIndexed::port_to_slot_index(int p_port_index, bool p_include_disabl
 	return -1;
 }
 
-int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input, bool p_include_disabled) {
+int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input, bool p_include_disabled) const {
 	int idx = p_slot_index * 2 + (p_input ? 0 : 1);
 	if (p_include_disabled) {
 		return idx;
@@ -573,31 +573,31 @@ int GraphNodeIndexed::slot_to_port_index(int p_slot_index, bool p_input, bool p_
 	}
 }
 
-int GraphNodeIndexed::slot_to_input_port_index(int p_slot_index, bool p_include_disabled) {
+int GraphNodeIndexed::slot_to_input_port_index(int p_slot_index, bool p_include_disabled) const {
 	ERR_FAIL_INDEX_V(p_slot_index * 2, ports.size(), -1);
 	GraphPort *port = Object::cast_to<GraphPort>(ports[p_slot_index * 2]);
 	ERR_FAIL_NULL_V(port, -1);
 	return port->get_filtered_port_index(p_include_disabled);
 }
 
-int GraphNodeIndexed::slot_to_output_port_index(int p_slot_index, bool p_include_disabled) {
+int GraphNodeIndexed::slot_to_output_port_index(int p_slot_index, bool p_include_disabled) const {
 	ERR_FAIL_INDEX_V(p_slot_index * 2 + 1, ports.size(), -1);
 	GraphPort *port = Object::cast_to<GraphPort>(ports[p_slot_index * 2 + 1]);
 	ERR_FAIL_NULL_V(port, -1);
 	return port->get_filtered_port_index(p_include_disabled);
 }
 
-int GraphNodeIndexed::input_port_to_slot_index(int p_port_index, bool p_include_disabled) {
+int GraphNodeIndexed::input_port_to_slot_index(int p_port_index, bool p_include_disabled) const {
 	GraphPort *port = get_filtered_port(p_port_index, GraphPort::PortDirection::INPUT, p_include_disabled);
 	return slot_index_of_port(port);
 }
 
-int GraphNodeIndexed::output_port_to_slot_index(int p_port_index, bool p_include_disabled) {
+int GraphNodeIndexed::output_port_to_slot_index(int p_port_index, bool p_include_disabled) const {
 	GraphPort *port = get_filtered_port(p_port_index, GraphPort::PortDirection::OUTPUT, p_include_disabled);
 	return slot_index_of_port(port);
 }
 
-bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) {
+bool GraphNodeIndexed::get_slot_draw_stylebox(int p_slot_index) const {
 	ERR_FAIL_INDEX_V(p_slot_index, slots.size(), false);
 	return slots[p_slot_index].draw_stylebox;
 }
@@ -669,7 +669,7 @@ void GraphNodeIndexed::set_port_container(Control *p_container) {
 	port_container->set_meta(ignore_node_meta_tag, true);
 }
 
-Control *GraphNodeIndexed::get_port_container() {
+Control *GraphNodeIndexed::get_port_container() const {
 	return port_container;
 }
 

@@ -263,7 +263,8 @@ PackedStringArray GraphEdit::get_configuration_warnings() const {
 }
 
 Ref<GraphConnection> GraphEdit::connect_nodes(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid) {
-	Ref<GraphConnection> c = memnew(GraphConnection(p_first_port, p_second_port, p_clear_if_invalid));
+	Ref<GraphConnection> c;
+	c.instantiate(p_first_port, p_second_port, p_clear_if_invalid);
 	_add_connection(c);
 	return c;
 }
@@ -273,6 +274,8 @@ Error GraphEdit::add_connection(Ref<GraphConnection> p_connection) {
 }
 
 Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
+	// Note that this method has a lot of redundant null checks.
+	// We want this method to fail through, and we want execution order and state to make make sense when that happens, so things look wonky
 	ERR_FAIL_NULL_V_MSG(connections_layer, FAILED, "connections_layer is missing.");
 
 	// Lots of edge cases here to allow users to create temporarily-invalid connections in the inspector without throwing tons of errors
@@ -303,9 +306,7 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 		return OK;
 	}
 
-	graph_connections.push_back(p_connection);
-
-	Line2D *line = memnew(Line2D);
+	Line2D *line = p_connection->_cache.line;
 	line->set_texture_mode(Line2D::LineTextureMode::LINE_TEXTURE_STRETCH);
 
 	Ref<ShaderMaterial> line_material;
@@ -314,24 +315,42 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 
 	float line_width = _get_shader_line_width();
 	line_material->set_shader_parameter("line_width", line_width);
-	line_material->set_shader_parameter("first_type", first_port ? first_port->get_type() : 0);
-	line_material->set_shader_parameter("second_type", second_port ? second_port->get_type() : 0);
 
 	Ref<StyleBoxFlat> bg_panel = theme_cache.panel;
 	Color connection_line_rim_color = bg_panel.is_valid() ? bg_panel->get_bg_color() : Color(0.0, 0.0, 0.0, 0.0);
 	line_material->set_shader_parameter("rim_color", connection_line_rim_color);
-	line->set_material(line_material);
+	p_connection->set_line_material(line_material);
 
+	// If ports are exclusive, request disconnect their existing connections
+	if (first_port) {
+		if (first_port->exclusive && is_port_connected(first_port)) {
+			for (const Ref<GraphConnection> conn : connection_map[first_port]) {
+				if (conn.is_null()) {
+					continue;
+				}
+				emit_signal(SNAME("disconnection_request"), conn);
+			}
+		}
+	}
+	if (second_port) {
+		if (second_port->exclusive && is_port_connected(second_port)) {
+			for (const Ref<GraphConnection> conn : connection_map[second_port]) {
+				if (conn.is_null()) {
+					continue;
+				}
+				emit_signal(SNAME("disconnection_request"), conn);
+			}
+		}
+	}
+
+	// Finally, add the new connection
+	graph_connections.push_back(p_connection);
 	connections_layer->add_child(line);
-	p_connection->_cache.line = line;
-
 	if (first_port) {
 		connection_map[first_port].push_back(p_connection);
-		first_port->_on_connected(p_connection);
 	}
 	if (second_port) {
 		connection_map[second_port].push_back(p_connection);
-		second_port->_on_connected(p_connection);
 	}
 
 	minimap->queue_redraw();
@@ -340,6 +359,13 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 	callable_mp(this, &GraphEdit::_invalidate_connection_line_cache).call_deferred();
 	callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw).call_deferred();
 	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+
+	if (first_port) {
+		first_port->_on_connected(p_connection);
+	}
+	if (second_port) {
+		second_port->_on_connected(p_connection);
+	}
 
 	return OK;
 }
@@ -390,8 +416,8 @@ void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 	if (p_connection->second_port) {
 		connection_map[p_connection->second_port].erase(p_connection);
 	}
-	if (p_connection->_cache.line) {
-		p_connection->_cache.line->queue_free();
+	if (p_connection->_cache.line && p_connection->_cache.line->get_parent()) {
+		p_connection->_cache.line->get_parent()->remove_child(p_connection->_cache.line);
 	}
 	graph_connections.erase(p_connection);
 
@@ -402,11 +428,13 @@ void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 }
 
 void GraphEdit::disconnect_nodes(GraphPort *p_first_port, GraphPort *p_second_port) {
-	remove_connection(get_connection(p_first_port, p_second_port));
+	const Ref<GraphConnection> target_conn = get_connection(p_first_port, p_second_port);
+	ERR_FAIL_COND(target_conn.is_null());
+	remove_connection(target_conn);
 }
 
 void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
-	if (!connection_map.has(p_from_port)) {
+	if (!is_port_connected(p_from_port)) {
 		return;
 	}
 	for (const Ref<GraphConnection> conn : connection_map[p_from_port]) {
@@ -418,7 +446,7 @@ void GraphEdit::move_connections(GraphPort *p_from_port, GraphPort *p_to_port) {
 	}
 }
 
-bool GraphEdit::are_nodes_connected(GraphNode *p_first_node, GraphNode *p_second_node) {
+bool GraphEdit::are_nodes_connected(const GraphNode *p_first_node, const GraphNode *p_second_node) const {
 	if (!p_first_node || !p_second_node) {
 		return false;
 	}
@@ -434,8 +462,8 @@ bool GraphEdit::are_nodes_connected(GraphNode *p_first_node, GraphNode *p_second
 	return false;
 }
 
-bool GraphEdit::are_ports_connected(GraphPort *p_first_port, GraphPort *p_second_port) {
-	if (!p_first_port || !p_second_port || !connection_map.has(p_first_port) || !connection_map.has(p_second_port)) {
+bool GraphEdit::are_ports_connected(const GraphPort *p_first_port, const GraphPort *p_second_port) const {
+	if (!p_first_port || !p_second_port || !is_port_connected(p_first_port) || !is_port_connected(p_second_port)) {
 		return false;
 	}
 	for (const Ref<GraphConnection> conn : connection_map[p_first_port]) {
@@ -449,26 +477,26 @@ bool GraphEdit::are_ports_connected(GraphPort *p_first_port, GraphPort *p_second
 	return false;
 }
 
-bool GraphEdit::is_node_connected(GraphNode *p_node) {
+bool GraphEdit::is_node_connected(const GraphNode *p_node) const {
 	if (!p_node) {
 		return false;
 	}
 	for (GraphPort *port : p_node->ports) {
-		if (port && connection_map.has(port) && !connection_map[port].is_empty()) {
+		if (is_port_connected(port)) {
 			return true;
 		}
 	}
 	return false;
 }
 
-bool GraphEdit::is_port_connected(GraphPort *p_port) {
+bool GraphEdit::is_port_connected(const GraphPort *p_port) const {
 	if (!p_port || !connection_map.has(p_port)) {
 		return false;
 	}
 	return !connection_map[p_port].is_empty();
 }
 
-TypedArray<GraphPort> GraphEdit::get_connected_ports(GraphPort *p_port) {
+TypedArray<GraphPort> GraphEdit::get_connected_ports(const GraphPort *p_port) const {
 	TypedArray<GraphPort> ret;
 	ERR_FAIL_NULL_V(p_port, ret);
 	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
@@ -480,12 +508,12 @@ TypedArray<GraphPort> GraphEdit::get_connected_ports(GraphPort *p_port) {
 	return ret;
 }
 
-TypedArray<GraphNode> GraphEdit::get_connected_nodes(GraphNode *p_node) {
+TypedArray<GraphNode> GraphEdit::get_connected_nodes(const GraphNode *p_node) const {
 	TypedArray<GraphNode> ret;
 	ERR_FAIL_NULL_V(p_node, ret);
 	HashSet<GraphNode *> node_set;
 	for (GraphPort *port : p_node->ports) {
-		if (!port || !connection_map.has(port)) {
+		if (!port || !is_port_connected(port)) {
 			continue;
 		}
 		for (const Ref<GraphConnection> conn : connection_map[port]) {
@@ -502,8 +530,8 @@ TypedArray<GraphNode> GraphEdit::get_connected_nodes(GraphNode *p_node) {
 	return ret;
 }
 
-const Ref<GraphConnection> GraphEdit::get_connection(GraphPort *p_first_port, GraphPort *p_second_port) {
-	if (!connection_map.has(p_first_port) || !connection_map.has(p_second_port)) {
+Ref<GraphConnection> GraphEdit::get_connection(const GraphPort *p_first_port, const GraphPort *p_second_port) const {
+	if (!is_port_connected(p_first_port) || !is_port_connected(p_second_port)) {
 		return Ref<GraphConnection>(nullptr);
 	}
 	for (const Ref<GraphConnection> conn : connection_map[p_first_port]) {
@@ -521,14 +549,14 @@ const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections() const {
 	return graph_connections;
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_port(GraphPort *p_port) const {
-	if (!p_port || !connection_map.has(p_port)) {
+const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_port(const GraphPort *p_port) const {
+	if (!p_port || !is_port_connected(p_port)) {
 		return TypedArray<Ref<GraphConnection>>();
 	}
 	return connection_map[p_port];
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_node(GraphNode *p_node) const {
+const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_node(const GraphNode *p_node) const {
 	TypedArray<Ref<GraphConnection>> ret;
 	for (GraphPort *port : p_node->ports) {
 		if (!port) {
@@ -539,8 +567,8 @@ const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_node(GraphN
 	return ret;
 }
 
-const Ref<GraphConnection> GraphEdit::get_first_connection_by_port(GraphPort *p_port) const {
-	if (!p_port || !connection_map.has(p_port)) {
+const Ref<GraphConnection> GraphEdit::get_first_connection_by_port(const GraphPort *p_port) const {
+	if (!p_port || !is_port_connected(p_port)) {
 		return Ref<GraphConnection>(nullptr);
 	}
 	const TypedArray<Ref<GraphConnection>> &_ports = connection_map[p_port];
@@ -550,7 +578,7 @@ const Ref<GraphConnection> GraphEdit::get_first_connection_by_port(GraphPort *p_
 	return _ports.front();
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
+const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
 	TypedArray<Ref<GraphConnection>> ret;
 	for (GraphPort *port : p_node->ports) {
 		if (!port || port->direction != p_filter_direction || !connection_map.has(port)) {
@@ -561,7 +589,7 @@ const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_no
 	return ret;
 }
 
-int GraphEdit::get_connection_count_by_port(GraphPort *p_port) {
+int GraphEdit::get_connection_count_by_port(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, 0);
 	if (!connection_map.has(p_port)) {
 		return 0;
@@ -569,7 +597,7 @@ int GraphEdit::get_connection_count_by_port(GraphPort *p_port) {
 	return connection_map[p_port].size();
 }
 
-int GraphEdit::get_connection_count_by_node(GraphNode *p_node) {
+int GraphEdit::get_connection_count_by_node(const GraphNode *p_node) const {
 	ERR_FAIL_NULL_V(p_node, 0);
 	int ret = 0;
 	for (GraphPort *port : p_node->ports) {
@@ -581,7 +609,7 @@ int GraphEdit::get_connection_count_by_node(GraphNode *p_node) {
 	return ret;
 }
 
-GraphNode *GraphEdit::get_connection_target(GraphPort *p_port) {
+GraphNode *GraphEdit::get_connection_target(const GraphPort *p_port) const {
 	if (!connection_map.has(p_port)) {
 		return nullptr;
 	}
@@ -597,7 +625,7 @@ GraphNode *GraphEdit::get_connection_target(GraphPort *p_port) {
 	return nullptr;
 }
 
-String GraphEdit::get_connections_description(GraphPort *p_port) {
+String GraphEdit::get_connections_description(const GraphPort *p_port) const {
 	String out;
 	if (!connection_map.has(p_port)) {
 		return out;
@@ -1237,7 +1265,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 	return false;
 }
 
-void GraphEdit::start_connecting(GraphPort *p_port, bool is_keyboard) {
+void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 	ERR_FAIL_NULL(p_port);
 	ERR_FAIL_NULL(p_port->graph_node);
 
@@ -1278,7 +1306,7 @@ void GraphEdit::start_connecting(GraphPort *p_port, bool is_keyboard) {
 	emit_signal(SNAME("connection_drag_started"), p_port, true);
 }
 
-bool GraphEdit::_is_connection_valid(GraphPort *p_port) {
+bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, false);
 	ERR_FAIL_NULL_V(connecting_from_port, false);
 	ERR_FAIL_NULL_V(connecting_from_port->graph_node, false);
@@ -1289,7 +1317,7 @@ bool GraphEdit::_is_connection_valid(GraphPort *p_port) {
 			valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type));
 }
 
-void GraphEdit::_mark_connections_dirty_by_port(GraphPort *p_port) {
+void GraphEdit::_mark_connections_dirty_by_port(const GraphPort *p_port) {
 	ERR_FAIL_NULL(p_port);
 	for (Ref<GraphConnection> conn : get_connections_by_port(p_port)) {
 		if (conn.is_valid()) {
@@ -1298,7 +1326,7 @@ void GraphEdit::_mark_connections_dirty_by_port(GraphPort *p_port) {
 	}
 }
 
-void GraphEdit::end_connecting(GraphPort *p_port, bool is_keyboard) {
+void GraphEdit::end_connecting(const GraphPort *p_port, bool is_keyboard) {
 	connecting_to_port = p_port;
 
 	connecting_target_valid = _is_connection_valid(p_port);
@@ -1307,7 +1335,7 @@ void GraphEdit::end_connecting(GraphPort *p_port, bool is_keyboard) {
 	}
 
 	if (connecting && connecting_target_valid) {
-		_request_connection(connecting_from_port, connecting_to_port);
+		emit_signal(SNAME("connection_request"), connecting_from_port, connecting_to_port);
 	} else if (!just_disconnected) {
 		emit_signal(SNAME("connection_to_empty"), connecting_from_port, Vector2());
 	}
@@ -1403,7 +1431,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		if (connecting_valid) {
 			if (connecting && connecting_target_valid) {
-				_request_connection(connecting_from_port, connecting_to_port);
+				emit_signal(SNAME("connection_request"), connecting_from_port, connecting_to_port);
 			} else if (!just_disconnected) {
 				emit_signal(SNAME("connection_to_empty"), connecting_from_port, mb->get_position());
 			}
@@ -1417,7 +1445,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos, const Vector2 &p_offset) {
+bool GraphEdit::_check_clickable_control(const Control *p_control, const Vector2 &mpos, const Vector2 &p_offset) const {
 	if (p_control->is_set_as_top_level() || !p_control->is_visible() || !p_control->is_inside_tree()) {
 		return false;
 	}
@@ -1430,7 +1458,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter_with_override() == MOUSE_FILTER_IGNORE) {
 		// Test children.
 		for (int i = 0; i < p_control->get_child_count(); i++) {
-			Control *child_rect = Object::cast_to<Control>(p_control->get_child(i));
+			const Control *child_rect = Object::cast_to<Control>(p_control->get_child(i));
 			if (!child_rect) {
 				continue;
 			}
@@ -1445,7 +1473,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	}
 }
 
-bool GraphEdit::is_in_port_hotzone(GraphPort *p_port, const Vector2 &p_mouse_pos) {
+bool GraphEdit::is_in_port_hotzone(const GraphPort *p_port, const Vector2 &p_mouse_pos) const {
 	ERR_FAIL_NULL_V(p_port, false);
 
 	Rect2 hotzone = p_port->get_hotzone();
@@ -1591,42 +1619,14 @@ void GraphEdit::_update_connections() {
 				continue;
 			}
 
-			GraphPort *p1 = conn->first_port;
-			GraphPort *p2 = conn->second_port;
+			conn->update_cache();
 
-			Vector2 from_pos = p1->get_position();
-			if (p1->graph_node) {
-				from_pos += p1->graph_node->get_position_offset();
-			}
-			Vector2 to_pos = p2->get_position();
-			if (p2->graph_node) {
-				to_pos += p2->graph_node->get_position_offset();
-			}
-
-			const Color from_color = p1->get_color();
-			const Color to_color = p2->get_color();
-
-			const int from_type = p1->get_type();
-			const int to_type = p2->get_type();
-
-			conn->_cache.from_pos = from_pos;
-			conn->_cache.to_pos = to_pos;
-			conn->_cache.from_color = from_color;
-			conn->_cache.to_color = to_color;
-
-			PackedVector2Array line_points = get_connection_line(from_pos * zoom, to_pos * zoom);
+			PackedVector2Array line_points = get_connection_line(conn->_cache.from_pos * zoom, conn->_cache.to_pos * zoom);
 			conn->_cache.line->set_points(line_points);
 
-			Ref<ShaderMaterial> line_material = conn->_cache.line->get_material();
-			if (line_material.is_null()) {
-				line_material.instantiate();
-				conn->_cache.line->set_material(line_material);
-			}
+			conn->set_line_width(_get_shader_line_width());
 
-			float line_width = _get_shader_line_width();
-			line_material->set_shader_parameter("line_width", line_width);
-			line_material->set_shader_parameter("from_type", from_type);
-			line_material->set_shader_parameter("to_type", to_type);
+			Ref<ShaderMaterial> line_material = conn->get_line_material();
 			line_material->set_shader_parameter("rim_color", theme_cache.connection_rim_color);
 
 			// Compute bounding box of the line, including the line width.
@@ -1659,19 +1659,15 @@ void GraphEdit::_update_connections() {
 			to_color = to_color.blend(theme_cache.connection_hover_tint_color);
 		}
 
-		// Update Line2D node.
-		Ref<Gradient> line_gradient = memnew(Gradient);
-
 		float line_width = _get_shader_line_width();
 		if (conn == hovered_connection) {
 			line_width *= 1.0f + (theme_cache.connection_hover_thickness / 100.0f);
 		}
+		conn->set_line_width(line_width);
 
-		conn->_cache.line->set_width(line_width);
+		Ref<Gradient> line_gradient = conn->get_line_gradient();
 		line_gradient->set_color(0, from_color);
 		line_gradient->set_color(1, to_color);
-
-		conn->_cache.line->set_gradient(line_gradient);
 	}
 
 	for (const Ref<GraphConnection> &dead_conn : dead_connections) {
@@ -1681,30 +1677,11 @@ void GraphEdit::_update_connections() {
 		if (dead_conn->second_port) {
 			connection_map.erase(dead_conn->second_port);
 		}
-
-		dead_conn->_cache.line->queue_free();
+		if (dead_conn->_cache.line->get_parent()) {
+			dead_conn->_cache.line->get_parent()->remove_child(dead_conn->_cache.line);
+		}
 		graph_connections.erase(dead_conn);
 	}
-}
-
-void GraphEdit::_request_connection(GraphPort *p_first_port, GraphPort *p_second_port) {
-	if (p_first_port->exclusive && connection_map.has(p_first_port)) {
-		for (const Ref<GraphConnection> &conn : connection_map[p_first_port]) {
-			if (conn.is_null()) {
-				continue;
-			}
-			emit_signal(SNAME("disconnection_request"), conn);
-		}
-	}
-	if (p_second_port->exclusive && connection_map.has(p_second_port)) {
-		for (const Ref<GraphConnection> &conn : connection_map[p_second_port]) {
-			if (conn.is_null()) {
-				continue;
-			}
-			emit_signal(SNAME("disconnection_request"), conn);
-		}
-	}
-	emit_signal(SNAME("connection_request"), p_first_port, p_second_port);
 }
 
 void GraphEdit::_top_layer_draw() {
@@ -2346,7 +2323,7 @@ void GraphEdit::reset_all_connection_activity() {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 
 	bool changed = false;
-	for (Ref<GraphConnection> conn : graph_connections) {
+	for (const Ref<GraphConnection> conn : graph_connections) {
 		if (conn.is_null()) {
 			continue;
 		}
@@ -2367,7 +2344,10 @@ void GraphEdit::clear_connections() {
 	if (graph_connections.is_empty()) {
 		return;
 	}
-	for (Ref<GraphConnection> conn : graph_connections) {
+	for (const Ref<GraphConnection> conn : graph_connections) {
+		if (conn.is_null()) {
+			continue;
+		}
 		remove_connection(conn);
 	}
 
@@ -2376,19 +2356,22 @@ void GraphEdit::clear_connections() {
 	connections_layer->queue_redraw();
 }
 
-void GraphEdit::clear_port_connections(GraphPort *p_port) {
+void GraphEdit::clear_port_connections(const GraphPort *p_port) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_NULL(p_port);
 	if (!connection_map.has(p_port)) {
 		return;
 	}
 
-	for (Ref<GraphConnection> conn : connection_map[p_port]) {
+	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
+		if (conn.is_null()) {
+			continue;
+		}
 		remove_connection(conn);
 	}
 }
 
-void GraphEdit::clear_node_connections(GraphNode *p_node) {
+void GraphEdit::clear_node_connections(const GraphNode *p_node) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_NULL(p_node);
 
@@ -2416,7 +2399,7 @@ void GraphEdit::force_connection_drag_end() {
 	emit_signal(SNAME("connection_drag_ended"));
 }
 
-bool GraphEdit::is_node_hover_valid(GraphPort *p_from_port, GraphPort *p_to_port) {
+bool GraphEdit::is_node_hover_valid(const GraphPort *p_from_port, const GraphPort *p_to_port) {
 	bool valid = true;
 	GDVIRTUAL_CALL(_is_node_hover_valid, p_from_port, p_to_port, valid);
 	return valid;
@@ -2558,13 +2541,13 @@ void GraphEdit::set_connections(const TypedArray<Ref<GraphConnection>> p_connect
 	add_connections(p_connections);
 }
 
-void GraphEdit::set_port_connections(GraphPort *p_port, const TypedArray<Ref<GraphConnection>> p_connections) {
+void GraphEdit::set_port_connections(const GraphPort *p_port, const TypedArray<Ref<GraphConnection>> p_connections) {
 	//WARN_PRINT(vformat("setting port connections with size %s", itos(p_connections.size())));
 	clear_port_connections(p_port);
 	add_connections(p_connections);
 }
 
-void GraphEdit::set_node_connections(GraphNode *p_node, const TypedArray<Ref<GraphConnection>> p_connections) {
+void GraphEdit::set_node_connections(const GraphNode *p_node, const TypedArray<Ref<GraphConnection>> p_connections) {
 	clear_node_connections(p_node);
 	add_connections(p_connections);
 }
@@ -2604,7 +2587,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_intersecting_with_r
 	return get_connections_intersecting_with_rect(p_rect);
 }
 
-TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(GraphNode *p_node) const {
+TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(const GraphNode *p_node) const {
 	TypedArray<Ref<GraphConnection>> connections_from_node;
 	for (GraphPort *port : p_node->ports) {
 		if (!port || !connection_map.has(port)) {
@@ -2615,7 +2598,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(GraphNode *
 	return connections_from_node;
 }
 
-TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_port(GraphPort *p_port) const {
+TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_port(const GraphPort *p_port) const {
 	TypedArray<Ref<GraphConnection>> connections_from_port;
 	if (!p_port || !connection_map.has(p_port)) {
 		return connections_from_port;
@@ -2665,7 +2648,7 @@ void GraphEdit::_invalidate_graph_node_connections(GraphNode *p_node) {
 	}
 }
 
-float GraphEdit::_get_shader_line_width() {
+float GraphEdit::_get_shader_line_width() const {
 	return lines_thickness * theme_cache.base_scale + 4.0;
 }
 
@@ -2713,7 +2696,7 @@ void GraphEdit::detach_graph_element_from_frame(const StringName &p_graph_elemen
 	_update_graph_frame(frame);
 }
 
-GraphFrame *GraphEdit::get_element_frame(const StringName &p_attached_graph_element) {
+GraphFrame *GraphEdit::get_element_frame(const StringName &p_attached_graph_element) const {
 	if (!linked_parent_map.has(p_attached_graph_element)) {
 		return nullptr;
 	}
@@ -2723,7 +2706,7 @@ GraphFrame *GraphEdit::get_element_frame(const StringName &p_attached_graph_elem
 	return Object::cast_to<GraphFrame>(parent);
 }
 
-TypedArray<StringName> GraphEdit::get_attached_nodes_of_frame(const StringName &p_graph_frame) {
+TypedArray<StringName> GraphEdit::get_attached_nodes_of_frame(const StringName &p_graph_frame) const {
 	if (!frame_attached_nodes.has(p_graph_frame)) {
 		return TypedArray<StringName>();
 	}
@@ -2971,11 +2954,11 @@ bool GraphEdit::is_connection_lines_antialiased() const {
 	return lines_antialiased;
 }
 
-HBoxContainer *GraphEdit::get_menu_hbox() {
+HBoxContainer *GraphEdit::get_menu_hbox() const {
 	return menu_hbox;
 }
 
-Ref<ViewPanner> GraphEdit::get_panner() {
+Ref<ViewPanner> GraphEdit::get_panner() const {
 	return panner;
 }
 

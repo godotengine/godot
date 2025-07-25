@@ -32,7 +32,7 @@
 
 #include "scene/gui/graph_node.h"
 
-GraphPort *GraphConnection::get_other_port(GraphPort *p_port) {
+GraphPort *GraphConnection::get_other_port(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	if (p_port == first_port) {
 		return second_port;
@@ -43,7 +43,7 @@ GraphPort *GraphConnection::get_other_port(GraphPort *p_port) {
 	}
 }
 
-GraphPort *GraphConnection::get_other_port_by_node(GraphNode *p_node) {
+GraphPort *GraphConnection::get_other_port_by_node(const GraphNode *p_node) const {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
 		return second_port;
@@ -54,7 +54,7 @@ GraphPort *GraphConnection::get_other_port_by_node(GraphNode *p_node) {
 	}
 }
 
-GraphNode *GraphConnection::get_other_node(GraphNode *p_node) {
+GraphNode *GraphConnection::get_other_node(const GraphNode *p_node) const {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
 		return get_second_node();
@@ -65,7 +65,7 @@ GraphNode *GraphConnection::get_other_node(GraphNode *p_node) {
 	}
 }
 
-GraphNode *GraphConnection::get_other_node_by_port(GraphPort *p_port) {
+GraphNode *GraphConnection::get_other_node_by_port(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	if (p_port == first_port) {
 		return get_second_node();
@@ -76,7 +76,7 @@ GraphNode *GraphConnection::get_other_node_by_port(GraphPort *p_port) {
 	}
 }
 
-GraphPort *GraphConnection::get_port_by_node(GraphNode *p_node) {
+GraphPort *GraphConnection::get_port_by_node(const GraphNode *p_node) const {
 	ERR_FAIL_NULL_V(p_node, nullptr);
 	if (p_node == get_first_node()) {
 		return first_port;
@@ -87,7 +87,7 @@ GraphPort *GraphConnection::get_port_by_node(GraphNode *p_node) {
 	}
 }
 
-GraphNode *GraphConnection::get_node_by_port(GraphPort *p_port) {
+GraphNode *GraphConnection::get_node_by_port(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
 	if (p_port == first_port) {
 		return get_first_node();
@@ -99,7 +99,7 @@ GraphNode *GraphConnection::get_node_by_port(GraphPort *p_port) {
 }
 
 // This legacy method is exclusively used by visual shaders, which use legacy port indices and expect GraphNodeIndexed's behavior
-Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() {
+Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() const {
 	ERR_FAIL_NULL_V(first_port->graph_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
 	ERR_FAIL_NULL_V(second_port->graph_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
 	return Pair(Pair(String(first_port->graph_node->get_name()), first_port->get_filtered_port_index(false)), Pair(String(second_port->graph_node->get_name()), second_port->get_filtered_port_index(false)));
@@ -124,7 +124,7 @@ void GraphConnection::set_first_port(GraphPort *p_port) {
 	first_port = p_port;
 }
 
-GraphPort *GraphConnection::get_first_port() {
+GraphPort *GraphConnection::get_first_port() const {
 	return first_port;
 }
 
@@ -132,16 +132,16 @@ void GraphConnection::set_second_port(GraphPort *p_port) {
 	second_port = p_port;
 }
 
-GraphPort *GraphConnection::get_second_port() {
+GraphPort *GraphConnection::get_second_port() const {
 	return second_port;
 }
 
-GraphNode *GraphConnection::get_first_node() {
+GraphNode *GraphConnection::get_first_node() const {
 	ERR_FAIL_NULL_V(first_port, nullptr);
 	return first_port->graph_node;
 }
 
-GraphNode *GraphConnection::get_second_node() {
+GraphNode *GraphConnection::get_second_node() const {
 	ERR_FAIL_NULL_V(second_port, nullptr);
 	return second_port->graph_node;
 }
@@ -150,8 +150,57 @@ void GraphConnection::set_clear_if_invalid(bool p_clear_if_invalid) {
 	clear_if_invalid = p_clear_if_invalid;
 }
 
-bool GraphConnection::get_clear_if_invalid() {
+bool GraphConnection::get_clear_if_invalid() const {
 	return clear_if_invalid;
+}
+
+void GraphConnection::set_line_material(const Ref<ShaderMaterial> p_line_material) {
+	p_line_material->set_shader_parameter("first_type", first_port ? first_port->get_type() : 0);
+	p_line_material->set_shader_parameter("second_type", second_port ? second_port->get_type() : 0);
+	_cache.line->set_material(p_line_material);
+}
+
+Ref<ShaderMaterial> GraphConnection::get_line_material() const {
+	return _cache.line->get_material();
+}
+
+void GraphConnection::set_line_width(float p_width) {
+	_cache.line->set_width(p_width);
+}
+
+Ref<Gradient> GraphConnection::get_line_gradient() const {
+	return _cache.line->get_gradient();
+}
+
+void GraphConnection::update_cache() {
+	Vector2 from_pos = first_port->get_position();
+	if (first_port->graph_node) {
+		from_pos += first_port->graph_node->get_position_offset();
+	}
+	Vector2 to_pos = second_port->get_position();
+	if (second_port->graph_node) {
+		to_pos += second_port->graph_node->get_position_offset();
+	}
+
+	const Color from_color = first_port->get_color();
+	const Color to_color = second_port->get_color();
+
+	const int from_type = first_port->get_type();
+	const int to_type = second_port->get_type();
+
+	_cache.from_pos = from_pos;
+	_cache.to_pos = to_pos;
+	_cache.from_color = from_color;
+	_cache.to_color = to_color;
+
+	Ref<ShaderMaterial> line_material = _cache.line->get_material();
+	if (line_material.is_null()) {
+		line_material.instantiate();
+		set_line_material(line_material);
+	}
+
+	line_material->set_shader_parameter("from_type", from_type);
+	line_material->set_shader_parameter("to_type", to_type);
 }
 
 void GraphConnection::_bind_methods() {
@@ -179,16 +228,28 @@ void GraphConnection::_bind_methods() {
 }
 
 GraphConnection::GraphConnection() {
+	Line2D *line = memnew(Line2D);
+	line->set_texture_mode(Line2D::LineTextureMode::LINE_TEXTURE_STRETCH);
+
+	Ref<Gradient> line_gradient = memnew(Gradient);
+	line->set_gradient(line_gradient);
+
+	_cache.line = line;
 }
 
 GraphConnection::GraphConnection(GraphPort *p_first_port, GraphPort *p_second_port, bool p_clear_if_invalid) {
+	Line2D *line = memnew(Line2D);
+	line->set_texture_mode(Line2D::LineTextureMode::LINE_TEXTURE_STRETCH);
+
+	Ref<Gradient> line_gradient = memnew(Gradient);
+	line->set_gradient(line_gradient);
+
+	_cache.line = line;
+
 	first_port = p_first_port;
 	second_port = p_second_port;
 	clear_if_invalid = p_clear_if_invalid;
 }
 
 GraphConnection::~GraphConnection() {
-	if (_cache.line) {
-		_cache.line->queue_free();
-	}
 }
