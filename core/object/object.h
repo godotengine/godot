@@ -197,7 +197,7 @@ struct PropertyInfo {
 		}
 	}
 
-	PropertyInfo(const StringName &p_class_name) :
+	constexpr PropertyInfo(const StringName &p_class_name) :
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
@@ -502,12 +502,8 @@ public:                                                                         
 	virtual const StringName *_get_class_namev() const override {                                                                           \
 		return &get_class_static();                                                                                                         \
 	}                                                                                                                                       \
-	static const StringName &get_class_static() {                                                                                           \
-		static StringName _class_name_static;                                                                                               \
-		if (unlikely(!_class_name_static)) {                                                                                                \
-			assign_class_name_static(ComptimeString<#m_class>().value, _class_name_static);                                                 \
-		}                                                                                                                                   \
-		return _class_name_static;                                                                                                          \
+	static constexpr const StringName &get_class_static() {                                                                                 \
+		return ComptimeStringName<#m_class>().value;                                                                                        \
 	}                                                                                                                                       \
 	virtual bool is_class(const String &p_class) const override {                                                                           \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
@@ -823,14 +819,8 @@ public:
 	};
 
 	/* TYPE API */
-	static void assign_class_name_static(const String &p_name, StringName &r_target);
-
-	static const StringName &get_class_static() {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			assign_class_name_static(ComptimeString<"Object">().value, _class_name_static);
-		}
-		return _class_name_static;
+	static constexpr const StringName &get_class_static() {
+		return ComptimeStringName<"Object">().value;
 	}
 
 	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
