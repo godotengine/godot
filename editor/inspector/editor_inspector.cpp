@@ -4959,7 +4959,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			_edit_request_change(object, p_name);
 		}
 
-		emit_signal(_prop_edited, p_name); 
+		emit_signal(_prop_edited, p_name);
 	} else if (Object::cast_to<MultiNodeEdit>(object)) {
 		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
@@ -4971,7 +4971,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	} else {
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS, nullptr, false, mark_unsaved);
 		undo_redo->add_do_property(object, p_name, p_value);
-		
+
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		if (valid) {

@@ -195,7 +195,7 @@ void GroupsEditor::_update_groups() {
 	updating_groups = false;
 }
 
-void GroupsEditor::_get_groups(Object *p_object, List<Node::GroupInfo> *groups) { 
+void GroupsEditor::_get_groups(Object *p_object, List<Node::GroupInfo> *groups) {
 	if (Object::cast_to<Node>(p_object)) {
 		Node *p_node = Object::cast_to<Node>(p_object);
 		p_node->get_groups(groups);
@@ -374,9 +374,7 @@ void GroupsEditor::_item_edited() {
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (ti->is_checked(0)) {
-
 		//Create a commit an action to add the node to a group, and print a message to the console dock.
-
 		if (Object::cast_to<Node>(current_obj)) {
 			undo_redo->create_action(TTR("Add to Group"));
 			undo_redo->add_do_method(current_obj, "add_to_group", name, true);
@@ -404,20 +402,19 @@ void GroupsEditor::_item_edited() {
 		undo_redo->commit_action();
 
 	} else {
-		
 		if (Object::cast_to<Node>(current_obj)) {
 			undo_redo->create_action(TTR("Remove from Group"));
 			undo_redo->add_do_method(current_obj, "remove_from_group", name);
 			undo_redo->add_undo_method(current_obj, "add_to_group", name, true);
 		} else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
 			undo_redo->create_action(TTR("Remove from Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
-			
+
 			MultiNodeEdit *p_mne = Object::cast_to<MultiNodeEdit>(current_obj);
 			String mask;
 			p_mne->make_group_mask(name, mask);
 
 			String blank;
-			
+
 			undo_redo->add_do_method(current_obj, "remove_partial_from_group", name, blank);
 			undo_redo->add_undo_method(current_obj, "add_partial_to_group", name, true, mask);
 		}
@@ -559,8 +556,7 @@ void GroupsEditor::_confirm_add() {
 		undo_redo->create_action(TTR("Add to Group"));
 		undo_redo->add_do_method(current_obj, "add_to_group", name, true);
 		undo_redo->add_undo_method(current_obj, "remove_from_group", name);
-	}
-	else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
+	} else if (Object::cast_to<MultiNodeEdit>(current_obj)) {
 		//UndoRedo won't implicitly get the scene context from a MultiNodeEdit, so we have to feed it by hand.
 		undo_redo->create_action(TTR("Add to Group"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
 

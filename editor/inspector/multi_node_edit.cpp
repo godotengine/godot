@@ -318,7 +318,6 @@ void MultiNodeEdit::make_group_mask(const StringName &p_identifier, String &p_ma
 	p_mask[get_node_count()] = '\0';
 
 	for (int i = 0; i < get_node_count(); i++) {
-
 		const NodePath &E = get_node(i);
 		Node *node = es->get_node_or_null(E);
 		if (!node) {
@@ -334,7 +333,7 @@ void MultiNodeEdit::make_group_mask(const StringName &p_identifier, String &p_ma
 
 void MultiNodeEdit::add_partial_to_group(const StringName &p_identifier, bool persistent, const String &p_mask) {
 	Node *es = EditorNode::get_singleton()->get_edited_scene();
-	
+
 	for (int i = 0; i < get_node_count(); i++) {
 		if (i < p_mask.size() && !p_mask[i]) {
 			continue;
@@ -380,7 +379,7 @@ void MultiNodeEdit::get_groups(List<Node::GroupInfo> *p_groups) {
 		node->get_groups(&temp);
 		for (const Node::GroupInfo &g : temp) {
 			bool found = false;
-			
+
 			for (const Node::GroupInfo &h : *p_groups) {
 				if (h.name == g.name) {
 					found = true;

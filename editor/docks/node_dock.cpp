@@ -88,7 +88,6 @@ void NodeDock::update_lists() {
 }
 
 void NodeDock::edit(Object *object) {
-
 	if (!object) {
 		mode_hb->hide();
 		groups->hide();
@@ -140,7 +139,6 @@ NodeDock::NodeDock() {
 	groups_button->set_clip_text(true);
 	mode_hb->add_child(groups_button);
 	groups_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_groups));
-
 
 	panel = memnew(VBoxContainer);
 	panel->set_v_size_flags(SIZE_EXPAND_FILL);
