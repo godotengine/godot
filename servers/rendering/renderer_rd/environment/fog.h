@@ -48,6 +48,7 @@ class Fog : public RendererFog {
 private:
 	static Fog *singleton;
 
+	static int _get_fog_shader_group();
 	static int _get_fog_variant();
 	static int _get_fog_process_variant(int p_idx);
 
@@ -76,6 +77,13 @@ private:
 
 	/* Volumetric Fog */
 	struct VolumetricFogShader {
+		enum ShaderGroup {
+			SHADER_GROUP_BASE,
+			SHADER_GROUP_NO_ATOMICS,
+			SHADER_GROUP_VULKAN_MEMORY_MODEL,
+			SHADER_GROUP_VULKAN_MEMORY_MODEL_NO_ATOMICS,
+		};
+
 		enum FogSet {
 			FOG_SET_BASE,
 			FOG_SET_UNIFORMS,

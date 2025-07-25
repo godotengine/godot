@@ -2743,6 +2743,8 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return device_properties->features.metal_fx_temporal;
 		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
 			return device_properties->features.supports_native_image_atomics;
+		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return true;
 		default:
 			return false;
 	}

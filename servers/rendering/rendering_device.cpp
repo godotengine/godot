@@ -1391,13 +1391,33 @@ uint32_t RenderingDevice::_texture_layer_count(Texture *p_texture) const {
 	}
 }
 
+uint32_t greatest_common_denominator(uint32_t a, uint32_t b) {
+	// Euclidean algorithm.
+	uint32_t t;
+	while (b != 0) {
+		t = b;
+		b = a % b;
+		a = t;
+	}
+
+	return a;
+}
+
+uint32_t least_common_multiple(uint32_t a, uint32_t b) {
+	if (a == 0 || b == 0) {
+		return 0;
+	}
+
+	return (a / greatest_common_denominator(a, b)) * b;
+}
+
 uint32_t RenderingDevice::_texture_alignment(Texture *p_texture) const {
 	uint32_t alignment = get_compressed_image_format_block_byte_size(p_texture->format);
 	if (alignment == 1) {
 		alignment = get_image_format_pixel_size(p_texture->format);
 	}
 
-	return STEPIFY(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
+	return least_common_multiple(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
 }
 
 Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_immediate_flush) {

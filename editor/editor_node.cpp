@@ -851,7 +851,7 @@ void EditorNode::_notification(int p_what) {
 
 			command_palette->register_shortcuts_as_command();
 
-			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
+			_begin_first_scan();
 
 			last_dark_mode_state = DisplayServer::get_singleton()->is_dark_mode();
 			last_system_accent_color = DisplayServer::get_singleton()->get_accent_color();

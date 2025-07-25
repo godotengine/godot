@@ -47,22 +47,29 @@ Fog::~Fog() {
 	singleton = nullptr;
 }
 
+int Fog::_get_fog_shader_group() {
+	RenderingDevice *rd = RD::get_singleton();
+	bool use_32_bit_atomics = rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT);
+	bool use_vulkan_memory_model = rd->has_feature(RD::SUPPORTS_VULKAN_MEMORY_MODEL);
+	if (use_vulkan_memory_model) {
+		return use_32_bit_atomics ? VolumetricFogShader::SHADER_GROUP_VULKAN_MEMORY_MODEL : VolumetricFogShader::SHADER_GROUP_VULKAN_MEMORY_MODEL_NO_ATOMICS;
+	} else {
+		return use_32_bit_atomics ? VolumetricFogShader::SHADER_GROUP_BASE : VolumetricFogShader::SHADER_GROUP_NO_ATOMICS;
+	}
+}
+
 int Fog::_get_fog_variant() {
 	RenderingDevice *rd = RD::get_singleton();
-	if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-		return 0;
-	} else {
-		return 1;
-	}
+	bool use_32_bit_atomics = rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT);
+	bool use_vulkan_memory_model = rd->has_feature(RD::SUPPORTS_VULKAN_MEMORY_MODEL);
+	return (use_vulkan_memory_model ? 2 : 0) + (use_32_bit_atomics ? 0 : 1);
 }
 
 int Fog::_get_fog_process_variant(int p_idx) {
 	RenderingDevice *rd = RD::get_singleton();
-	if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-		return p_idx;
-	} else {
-		return p_idx + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX;
-	}
+	bool use_32_bit_atomics = rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT);
+	bool use_vulkan_memory_model = rd->has_feature(RD::SUPPORTS_VULKAN_MEMORY_MODEL);
+	return (use_vulkan_memory_model ? (VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX * 2) : 0) + (use_32_bit_atomics ? 0 : VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX) + p_idx;
 }
 
 /* FOG VOLUMES */
@@ -210,18 +217,14 @@ void Fog::init_fog_shader(uint32_t p_max_directional_lights, int p_roughness_lay
 	{
 		String defines = "#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
 		// Initialize local fog shader
-		Vector<String> volumetric_fog_modes;
-		volumetric_fog_modes.push_back("");
-		volumetric_fog_modes.push_back("#define NO_IMAGE_ATOMICS\n");
+		Vector<ShaderRD::VariantDefine> volumetric_fog_modes;
+		volumetric_fog_modes.push_back(ShaderRD::VariantDefine(VolumetricFogShader::SHADER_GROUP_BASE, "", false));
+		volumetric_fog_modes.push_back(ShaderRD::VariantDefine(VolumetricFogShader::SHADER_GROUP_NO_ATOMICS, "#define NO_IMAGE_ATOMICS\n", false));
+		volumetric_fog_modes.push_back(ShaderRD::VariantDefine(VolumetricFogShader::SHADER_GROUP_VULKAN_MEMORY_MODEL, "#define USE_VULKAN_MEMORY_MODEL\n", false));
+		volumetric_fog_modes.push_back(ShaderRD::VariantDefine(VolumetricFogShader::SHADER_GROUP_VULKAN_MEMORY_MODEL_NO_ATOMICS, "#define USE_VULKAN_MEMORY_MODEL\n#define NO_IMAGE_ATOMICS\n", false));
 
 		volumetric_fog.shader.initialize(volumetric_fog_modes, defines);
-
-		RenderingDevice *rd = RD::get_singleton();
-		if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-			volumetric_fog.shader.set_variant_enabled(1, false);
-		} else {
-			volumetric_fog.shader.set_variant_enabled(0, false);
-		}
+		volumetric_fog.shader.enable_group(_get_fog_shader_group());
 
 		material_storage->shader_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_shader_funcs);
 		material_storage->material_set_data_request_function(RendererRD::MaterialStorage::SHADER_TYPE_FOG, _create_fog_material_funcs);
@@ -302,29 +305,23 @@ ALBEDO = vec3(1.0);
 		if (p_is_using_radiance_cubemap_array) {
 			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
 		}
-		Vector<String> volumetric_fog_modes;
-		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n");
-		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define ENABLE_SDFGI\n");
-		volumetric_fog_modes.push_back("\n#define MODE_FILTER\n");
-		volumetric_fog_modes.push_back("\n#define MODE_FOG\n");
-		volumetric_fog_modes.push_back("\n#define MODE_COPY\n");
-
-		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define NO_IMAGE_ATOMICS\n");
-		volumetric_fog_modes.push_back("\n#define MODE_DENSITY\n#define ENABLE_SDFGI\n#define NO_IMAGE_ATOMICS\n");
-		volumetric_fog_modes.push_back("\n#define MODE_FILTER\n#define NO_IMAGE_ATOMICS\n");
-		volumetric_fog_modes.push_back("\n#define MODE_FOG\n#define NO_IMAGE_ATOMICS\n");
-		volumetric_fog_modes.push_back("\n#define MODE_COPY\n#define NO_IMAGE_ATOMICS\n");
-
-		volumetric_fog.process_shader.initialize(volumetric_fog_modes, defines);
-
-		RenderingDevice *rd = RD::get_singleton();
-		for (int i = 0; i < VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX; i++) {
-			if (rd->has_feature(RD::SUPPORTS_IMAGE_ATOMIC_32_BIT)) {
-				volumetric_fog.process_shader.set_variant_enabled(i + VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX, false);
-			} else {
-				volumetric_fog.process_shader.set_variant_enabled(i, false);
+		Vector<ShaderRD::VariantDefine> volumetric_fog_modes;
+		int shader_group = 0;
+		for (int vk_memory_model = 0; vk_memory_model < 2; vk_memory_model++) {
+			for (int no_atomics = 0; no_atomics < 2; no_atomics++) {
+				String base_define = vk_memory_model ? "\n#define USE_VULKAN_MEMORY_MODEL" : "";
+				base_define += no_atomics ? "\n#define NO_IMAGE_ATOMICS" : "";
+				volumetric_fog_modes.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_DENSITY\n", false));
+				volumetric_fog_modes.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_DENSITY\n#define ENABLE_SDFGI\n", false));
+				volumetric_fog_modes.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_FILTER\n", false));
+				volumetric_fog_modes.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_FOG\n", false));
+				volumetric_fog_modes.push_back(ShaderRD::VariantDefine(shader_group, base_define + "\n#define MODE_COPY\n", false));
+				shader_group++;
 			}
 		}
+
+		volumetric_fog.process_shader.initialize(volumetric_fog_modes, defines);
+		volumetric_fog.process_shader.enable_group(_get_fog_shader_group());
 
 		volumetric_fog.process_shader_version = volumetric_fog.process_shader.version_create();
 		for (int i = 0; i < VolumetricFogShader::VOLUMETRIC_FOG_PROCESS_SHADER_MAX; i++) {
