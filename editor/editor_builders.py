@@ -120,14 +120,19 @@ inline constexpr const unsigned char _{category}_translation_{name}_compressed[]
             xl_names.append([name, len(buffer), decomp_size])
 
         file.write(f"""\
-struct {category.capitalize()}TranslationList {{
+#ifndef EDITOR_TRANSLATION_LIST
+#define EDITOR_TRANSLATION_LIST
+
+struct EditorTranslationList {{
 	const char* lang;
 	int comp_size;
 	int uncomp_size;
 	const unsigned char* data;
 }};
 
-inline constexpr {category.capitalize()}TranslationList _{category}_translations[] = {{
+#endif // EDITOR_TRANSLATION_LIST
+
+inline constexpr EditorTranslationList _{category}_translations[] = {{
 """)
 
         for x in xl_names:
