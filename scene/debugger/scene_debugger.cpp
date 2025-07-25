@@ -204,6 +204,13 @@ Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	return OK;
 }
 
+Error SceneDebugger::_msg_override_debug_draw(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+	Viewport::DebugDraw debug_draw = p_args[0];
+	SceneTree::get_singleton()->get_root()->set_debug_draw(debug_draw);
+	return OK;
+}
+
 Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	Transform2D transform = p_args[0];
@@ -501,6 +508,7 @@ void SceneDebugger::_init_message_handlers() {
 	message_handlers["next_frame"] = _msg_next_frame;
 	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
 	message_handlers["override_cameras"] = _msg_override_cameras;
+	message_handlers["override_debug_draw"] = _msg_override_debug_draw;
 	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
 	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;

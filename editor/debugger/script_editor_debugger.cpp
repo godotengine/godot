@@ -1634,6 +1634,13 @@ void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
 	camera_override = p_override;
 }
 
+void ScriptEditorDebugger::set_debug_draw_override(Viewport::DebugDraw p_override) {
+	Array msg = { p_override };
+	_put_msg("scene:override_debug_draw", msg);
+
+	debug_draw_override = p_override;
+}
+
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
 	Array msg = { p_path, p_line, p_enabled };
 	_put_msg("breakpoint", msg, debugging_thread_id != Thread::UNASSIGNED_ID ? debugging_thread_id : Thread::MAIN_ID);

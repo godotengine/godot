@@ -33,6 +33,7 @@
 #include "core/object/script_language.h"
 #include "editor/debugger/editor_debugger_server.h"
 #include "scene/gui/margin_container.h"
+#include "scene/main/viewport.h"
 
 class Button;
 class DebugAdapterParser;
@@ -116,6 +117,7 @@ private:
 	bool debug_mute_audio = false;
 
 	CameraOverride camera_override = OVERRIDE_NONE;
+	Viewport::DebugDraw debug_draw_override = Viewport::DEBUG_DRAW_DISABLED;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
@@ -221,6 +223,9 @@ public:
 
 	void set_camera_override(CameraOverride p_override);
 	CameraOverride get_camera_override();
+
+	void set_debug_draw_override(Viewport::DebugDraw p_override);
+	Viewport::DebugDraw get_debug_draw_override();
 
 	String get_server_uri() const;
 
