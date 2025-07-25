@@ -42,7 +42,8 @@ class Animation : public Resource {
 public:
 	typedef uint32_t TypeHash;
 
-	static inline String PARAMETERS_BASE_PATH = "parameters/";
+	static constexpr String PARAMETERS_BASE_PATH = ComptimeString<"parameters/">().value;
+	static constexpr StringName PARAMETERS_BASE_PATH_SNAME = ComptimeStringName<"parameters/">().value;
 	static constexpr real_t DEFAULT_STEP = 1.0 / 30;
 
 	enum TrackType : uint8_t {

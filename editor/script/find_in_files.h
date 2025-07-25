@@ -38,7 +38,7 @@ class FindInFiles : public Node {
 	GDCLASS(FindInFiles, Node);
 
 public:
-	static const char *SIGNAL_RESULT_FOUND;
+	static constexpr char SIGNAL_RESULT_FOUND[] = "result_found";
 	static const char *SIGNAL_FINISHED;
 
 	void set_search_text(const String &p_pattern);
@@ -105,8 +105,8 @@ public:
 		REPLACE_MODE
 	};
 
-	static const char *SIGNAL_FIND_REQUESTED;
-	static const char *SIGNAL_REPLACE_REQUESTED;
+	static constexpr char SIGNAL_FIND_REQUESTED[] = "find_requested";
+	static constexpr char SIGNAL_REPLACE_REQUESTED[] = "replace_requested";
 
 	FindInFilesDialog();
 
@@ -169,9 +169,9 @@ class FindInFilesPanel : public Control {
 	GDCLASS(FindInFilesPanel, Control);
 
 public:
-	static const char *SIGNAL_RESULT_SELECTED;
-	static const char *SIGNAL_FILES_MODIFIED;
-	static const char *SIGNAL_CLOSE_BUTTON_CLICKED;
+	static constexpr char SIGNAL_RESULT_SELECTED[] = "result_selected";
+	static constexpr char SIGNAL_FILES_MODIFIED[] = "files_modified";
+	static constexpr char SIGNAL_CLOSE_BUTTON_CLICKED[] = "close_button_clicked";
 
 	FindInFilesPanel();
 
