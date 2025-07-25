@@ -157,12 +157,10 @@ int VideoStreamPlayback::mix_audio(int num_frames, PackedFloat32Array buffer, in
 
 Ref<VideoStreamPlayback> VideoStream::instantiate_playback() {
 	Ref<VideoStreamPlayback> ret;
-	if (GDVIRTUAL_CALL(_instantiate_playback, ret)) {
-		ERR_FAIL_COND_V_MSG(ret.is_null(), nullptr, "Plugin returned null playback");
-		ret->set_audio_track(audio_track);
-		return ret;
-	}
-	return nullptr;
+	GDVIRTUAL_CALL(_instantiate_playback, ret);
+	ERR_FAIL_COND_V_MSG(ret.is_null(), nullptr, "Plugin returned null playback");
+	ret->set_audio_track(audio_track);
+	return ret;
 }
 
 void VideoStream::set_file(const String &p_file) {

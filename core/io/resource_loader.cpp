@@ -160,21 +160,18 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 
 Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Variant res;
-	if (GDVIRTUAL_CALL(_load, p_path, p_original_path, p_use_sub_threads, p_cache_mode, res)) {
-		if (res.get_type() == Variant::INT) { // Error code, abort.
-			if (r_error) {
-				*r_error = (Error)res.operator int64_t();
-			}
-			return Ref<Resource>();
-		} else { // Success, pass on result.
-			if (r_error) {
-				*r_error = OK;
-			}
-			return res;
+	GDVIRTUAL_CALL(_load, p_path, p_original_path, p_use_sub_threads, p_cache_mode, res);
+	if (res.get_type() == Variant::INT) { // Error code, abort.
+		if (r_error) {
+			*r_error = (Error)res.operator int64_t();
 		}
+		return Ref<Resource>();
+	} else { // Success, pass on result.
+		if (r_error) {
+			*r_error = OK;
+		}
+		return res;
 	}
-
-	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Failed to load resource '%s'. ResourceFormatLoader::load was not implemented for this resource type.", p_path));
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
