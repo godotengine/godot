@@ -313,10 +313,6 @@ void AnimationNodeBlendTreeEditor::update_theme() {
 	Ref<Font> label_bold_font = EditorNode::get_singleton()->get_editor_theme()->get_font("main_bold_msdf", EditorStringName(EditorFonts));
 	ab_msdf_fonts_theme->set_font(SceneStringName(font), "Label", label_font);
 	ab_msdf_fonts_theme->set_font(SceneStringName(font), "GraphNodeTitleLabel", label_bold_font);
-	if (!EditorThemeManager::is_dark_theme()) {
-		// Override the color to white for light themes.
-		ab_msdf_fonts_theme->set_color(SceneStringName(font_color), "GraphNodeTitleLabel", Color(1, 1, 1));
-	}
 	ab_msdf_fonts_theme->set_font(SceneStringName(font), "LineEdit", label_font);
 	ab_msdf_fonts_theme->set_font(SceneStringName(font), "Button", label_font);
 }
