@@ -971,6 +971,7 @@ void AnimationNodeBlendTreeEditor::_notification(int p_what) {
 			if (is_visible_in_tree()) {
 				update_graph();
 			}
+			update_theme();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
