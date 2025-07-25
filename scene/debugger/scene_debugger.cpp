@@ -2666,11 +2666,14 @@ void RuntimeNodeSelect::_find_3d_items_at_rect(const Rect2 &p_rect, Vector<Selec
 
 	// Start with physical objects.
 	PhysicsDirectSpaceState3D *ss = root->get_world_3d()->get_direct_space_state();
-	PhysicsDirectSpaceState3D::ShapeResult result;
+	PhysicsDirectSpaceState3D::ShapeResult results[32];
 	PhysicsDirectSpaceState3D::ShapeParameters shape_params;
 	shape_params.shape_rid = shape->get_rid();
 	shape_params.collide_with_areas = true;
-	if (ss->intersect_shape(shape_params, &result, 32)) {
+
+	const int num_hits = ss->intersect_shape(shape_params, results, 32);
+	for (int i = 0; i < num_hits; i++) {
+		const PhysicsDirectSpaceState3D::ShapeResult &result = results[i];
 		SelectResult res;
 		res.item = Object::cast_to<Node>(result.collider);
 		res.order = -dist_pos.distance_to(Object::cast_to<Node3D>(res.item)->get_global_transform().origin);
