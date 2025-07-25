@@ -281,7 +281,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			f->store_32(Image::find_optimized_format(p_image->get_format(), p_channels));
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data;
@@ -303,7 +303,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_16(p_image->get_width());
 			f->store_16(p_image->get_height());
 			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
+			f->store_32(Image::find_optimized_format(p_image->get_format(), p_channels));
 
 			for (int i = 0; i < p_image->get_mipmap_count() + 1; i++) {
 				Vector<uint8_t> data = Image::webp_lossy_packer(i ? p_image->get_image_from_mipmap(i) : p_image, p_lossy_quality);
@@ -327,13 +327,15 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 
 		} break;
 		case COMPRESS_VRAM_UNCOMPRESSED: {
-			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
-			f->store_16(p_image->get_width());
-			f->store_16(p_image->get_height());
-			f->store_32(p_image->get_mipmap_count());
-			f->store_32(p_image->get_format());
-			f->store_buffer(p_image->get_data());
+			Ref<Image> image = p_image->duplicate();
+			image->optimize_from_channels(p_channels);
 
+			f->store_32(CompressedTexture2D::DATA_FORMAT_IMAGE);
+			f->store_16(image->get_width());
+			f->store_16(image->get_height());
+			f->store_32(image->get_mipmap_count());
+			f->store_32(image->get_format());
+			f->store_buffer(image->get_data());
 		} break;
 		case COMPRESS_BASIS_UNIVERSAL: {
 			f->store_32(CompressedTexture2D::DATA_FORMAT_BASIS_UNIVERSAL);
@@ -417,21 +419,14 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		image->generate_mipmap_roughness(p_roughness_channel, p_normal);
 	}
 
-	// Optimization: Only check for color channels when compressing as BasisU or VRAM.
-	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
-
-	if (p_compress_mode == COMPRESS_BASIS_UNIVERSAL || p_compress_mode == COMPRESS_VRAM_COMPRESSED) {
-		Image::CompressSource comp_source = Image::COMPRESS_SOURCE_GENERIC;
-		if (p_force_normal) {
-			comp_source = Image::COMPRESS_SOURCE_NORMAL;
-		} else if (p_srgb_friendly) {
-			comp_source = Image::COMPRESS_SOURCE_SRGB;
-		}
-
-		used_channels = image->detect_used_channels(comp_source);
+	Image::CompressSource comp_source = Image::COMPRESS_SOURCE_GENERIC;
+	if (p_force_normal) {
+		comp_source = Image::COMPRESS_SOURCE_NORMAL;
+	} else if (p_srgb_friendly) {
+		comp_source = Image::COMPRESS_SOURCE_SRGB;
 	}
 
-	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality, p_basisu_params);
+	save_to_ctex_format(f, image, p_compress_mode, image->detect_used_channels(comp_source), p_vram_compression, p_lossy_quality, p_basisu_params);
 }
 
 void ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, const String &p_to_path) {

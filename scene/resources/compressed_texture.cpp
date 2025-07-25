@@ -310,8 +310,6 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 		Vector<Ref<Image>> mipmap_images;
 		uint64_t total_size = 0;
 
-		bool first = true;
-
 		for (uint32_t i = 0; i < mipmaps + 1; i++) {
 			uint32_t size = f->get_32();
 
@@ -341,14 +339,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 				ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
 			}
 
-			if (first) {
-				//format will actually be the format of the first image,
-				//as it may have changed on compression
-				format = img->get_format();
-				first = false;
-			} else if (img->get_format() != format) {
-				img->convert(format); //all needs to be the same format
-			}
+			img->convert(format); //all needs to be the same format
 
 			total_size += img->get_data().size();
 
@@ -357,8 +348,6 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 			sw = MAX(sw >> 1, 1);
 			sh = MAX(sh >> 1, 1);
 		}
-
-		//print_line("mipmap read total: " + itos(mipmap_images.size()));
 
 		Ref<Image> image;
 		image.instantiate();
