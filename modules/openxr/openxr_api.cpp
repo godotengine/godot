@@ -1230,6 +1230,96 @@ bool OpenXRAPI::obtain_swapchain_formats() {
 	return true;
 }
 
+Vector3i OpenXRAPI::get_viewport_setup(RID p_render_target) const {
+	ERR_FAIL_COND_V(view_configuration_views.is_empty(), Vector3i());
+
+	Vector3i result;
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		if (wrapper->owns_viewport(p_render_target)) {
+			Size2i size = wrapper->get_viewport_size();
+			result.x = size.x;
+			result.y = size.y;
+			result.z = wrapper->get_viewport_view_count();
+			return result;
+		}
+	}
+
+	Size2 size = get_recommended_target_size();
+	result.x = size.x;
+	result.y = size.y;
+	result.z = get_main_view_count();
+
+	return result;
+}
+
+uint32_t OpenXRAPI::get_view_count() {
+	if (render_state.render_target_wrapper) {
+		// We're rendering this viewport right now, so we need it's viewcount.
+		return render_state.render_target_wrapper->get_viewport_view_count();
+	} else {
+		// Return our main viewport view count.
+		return get_main_view_count();
+	}
+}
+
+uint32_t OpenXRAPI::get_main_view_count() const {
+	switch (view_configuration) {
+		case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_MONO: {
+			return 1;
+		} break;
+		case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO: {
+			return 2;
+		} break;
+		case XR_VIEW_CONFIGURATION_TYPE_PRIMARY_QUAD_VARJO: {
+			// We have 4 views, but only the first two are part of our main view.
+			// The other two views are handled by OpenXRVarjoQuadViewExtension.
+			return 2;
+		} break;
+		default: {
+			ERR_FAIL_V_MSG(2, "OpenXR: Unsupported view configuration selected");
+		} break;
+	}
+}
+
+void OpenXRAPI::set_projection_image(uint32_t p_view, uint32_t p_image_index, Size2i p_size, XrSwapchain p_color_swapchain, XrSwapchain p_depth_swapchain) {
+	render_state.projection_views[p_view].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
+	render_state.projection_views[p_view].next = nullptr;
+	render_state.projection_views[p_view].subImage.swapchain = p_color_swapchain;
+	render_state.projection_views[p_view].subImage.imageArrayIndex = p_image_index;
+	render_state.projection_views[p_view].subImage.imageRect.offset.x = 0;
+	render_state.projection_views[p_view].subImage.imageRect.offset.y = 0;
+	render_state.projection_views[p_view].subImage.imageRect.extent.width = p_size.width;
+	render_state.projection_views[p_view].subImage.imageRect.extent.height = p_size.height;
+
+	if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && p_depth_swapchain != XR_NULL_HANDLE) {
+		render_state.projection_views[p_view].next = &render_state.depth_views[p_view];
+
+		render_state.depth_views[p_view].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
+		render_state.depth_views[p_view].next = nullptr;
+		render_state.depth_views[p_view].subImage.swapchain = p_depth_swapchain;
+		render_state.depth_views[p_view].subImage.imageArrayIndex = p_image_index;
+		render_state.depth_views[p_view].subImage.imageRect.offset.x = 0;
+		render_state.depth_views[p_view].subImage.imageRect.offset.y = 0;
+		render_state.depth_views[p_view].subImage.imageRect.extent.width = p_size.width;
+		render_state.depth_views[p_view].subImage.imageRect.extent.height = p_size.height;
+		// OpenXR spec says that: minDepth < maxDepth.
+		render_state.depth_views[p_view].minDepth = 0.0;
+		render_state.depth_views[p_view].maxDepth = 1.0;
+		// But we can reverse near and far for reverse-Z.
+		render_state.depth_views[p_view].nearZ = 4096.0; // Near and far Z will be set to the correct values in fill_projection_matrix
+		render_state.depth_views[p_view].farZ = 0.01;
+	}
+}
+
+void OpenXRAPI::set_view_depth(uint32_t p_view, double p_z_near, double p_z_far) {
+	if (submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
+		// We reverse near and far for reverse-Z.
+		render_state.depth_views[p_view].nearZ = p_z_far;
+		render_state.depth_views[p_view].farZ = p_z_near;
+	}
+}
+
 bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 	ERR_FAIL_NULL_V(graphics_extension, false);
@@ -1252,10 +1342,13 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 
 	render_state.main_swapchain_size = p_size;
 	uint32_t sample_count = 1;
+	uint32_t main_view_count = get_main_view_count();
+
+	ERR_FAIL_COND_V(main_view_count > render_state.views.size(), false);
 
 	// We start with our color swapchain...
 	if (color_swapchain_format != 0) {
-		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, color_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
+		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT | XR_SWAPCHAIN_USAGE_MUTABLE_FORMAT_BIT, color_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, main_view_count)) {
 			return false;
 		}
 
@@ -1267,7 +1360,7 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 	// - we support our depth layer extension
 	// - we have our spacewarp extension (not yet implemented)
 	if (depth_swapchain_format != 0 && submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
-		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, view_configuration_views.size())) {
+		if (!render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].create(0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, depth_swapchain_format, render_state.main_swapchain_size.width, render_state.main_swapchain_size.height, sample_count, main_view_count)) {
 			return false;
 		}
 
@@ -1280,37 +1373,8 @@ bool OpenXRAPI::create_main_swapchains(Size2i p_size) {
 		// TBD
 	}
 
-	for (uint32_t i = 0; i < render_state.views.size(); i++) {
-		render_state.views[i].type = XR_TYPE_VIEW;
-		render_state.views[i].next = nullptr;
-
-		render_state.projection_views[i].type = XR_TYPE_COMPOSITION_LAYER_PROJECTION_VIEW;
-		render_state.projection_views[i].next = nullptr;
-		render_state.projection_views[i].subImage.swapchain = render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain();
-		render_state.projection_views[i].subImage.imageArrayIndex = i;
-		render_state.projection_views[i].subImage.imageRect.offset.x = 0;
-		render_state.projection_views[i].subImage.imageRect.offset.y = 0;
-		render_state.projection_views[i].subImage.imageRect.extent.width = render_state.main_swapchain_size.width;
-		render_state.projection_views[i].subImage.imageRect.extent.height = render_state.main_swapchain_size.height;
-
-		if (render_state.submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available() && !render_state.depth_views.is_empty()) {
-			render_state.projection_views[i].next = &render_state.depth_views[i];
-
-			render_state.depth_views[i].type = XR_TYPE_COMPOSITION_LAYER_DEPTH_INFO_KHR;
-			render_state.depth_views[i].next = nullptr;
-			render_state.depth_views[i].subImage.swapchain = render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain();
-			render_state.depth_views[i].subImage.imageArrayIndex = i;
-			render_state.depth_views[i].subImage.imageRect.offset.x = 0;
-			render_state.depth_views[i].subImage.imageRect.offset.y = 0;
-			render_state.depth_views[i].subImage.imageRect.extent.width = render_state.main_swapchain_size.width;
-			render_state.depth_views[i].subImage.imageRect.extent.height = render_state.main_swapchain_size.height;
-			// OpenXR spec says that: minDepth < maxDepth.
-			render_state.depth_views[i].minDepth = 0.0;
-			render_state.depth_views[i].maxDepth = 1.0;
-			// But we can reverse near and far for reverse-Z.
-			render_state.depth_views[i].nearZ = 100.0; // Near and far Z will be set to the correct values in fill_projection_matrix
-			render_state.depth_views[i].farZ = 0.01;
-		}
+	for (uint32_t i = 0; i < main_view_count; i++) {
+		set_projection_image(i, i, render_state.main_swapchain_size, render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain(), !render_state.depth_views.is_empty() ? render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_swapchain() : XR_NULL_HANDLE);
 	};
 
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
@@ -1521,8 +1585,9 @@ void OpenXRAPI::set_form_factor(XrFormFactor p_form_factor) {
 	form_factor = p_form_factor;
 }
 
-uint32_t OpenXRAPI::get_view_count() {
-	return view_configuration_views.size();
+const XrViewConfigurationType *OpenXRAPI::get_supported_view_configuration_types(uint32_t &count) {
+	count = supported_view_configuration_types.size();
+	return supported_view_configuration_types.ptr();
 }
 
 void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configuration) {
@@ -1835,10 +1900,23 @@ XrHandTrackerEXT OpenXRAPI::get_hand_tracker(int p_hand_index) {
 	return hand_tracking->get_hand_tracker(hand)->hand_tracker;
 }
 
-Size2 OpenXRAPI::get_recommended_target_size() {
+XrViewConfigurationView OpenXRAPI::get_view_configuration_view(uint32_t p_index) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, view_configuration_views.size(), XrViewConfigurationView());
+
+	return view_configuration_views[p_index];
+}
+
+XrView OpenXRAPI::get_view(uint32_t p_index) const {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_index, render_state.views.size(), XrView());
+
+	return render_state.views[p_index];
+}
+
+Size2 OpenXRAPI::get_recommended_target_size() const {
 	RenderingServer *rendering_server = RenderingServer::get_singleton();
 	ERR_FAIL_COND_V(view_configuration_views.is_empty(), Size2());
 
+	// Return our main viewport size
 	Size2 target_size;
 
 	if (rendering_server && rendering_server->is_on_render_thread()) {
@@ -1919,8 +1997,12 @@ bool OpenXRAPI::get_view_transform(uint32_t p_view, Transform3D &r_transform) {
 		return false;
 	}
 
-	// Note, the timing of this is set right before rendering, which is what we need here.
-	r_transform = transform_from_pose(render_state.views[p_view].pose);
+	if (render_state.render_target_wrapper) {
+		render_state.render_target_wrapper->get_view_transform(p_view, frame_state.predictedDisplayTime, r_transform);
+	} else {
+		// Note, the timing of this is set right before rendering, which is what we need here.
+		r_transform = transform_from_pose(render_state.views[p_view].pose);
+	}
 
 	return true;
 }
@@ -1950,8 +2032,15 @@ bool OpenXRAPI::get_view_projection(uint32_t p_view, double p_z_near, double p_z
 	render_state.z_near = p_z_near;
 	render_state.z_far = p_z_far;
 
-	// now update our projection
-	return graphics_extension->create_projection_fov(render_state.views[p_view].fov, p_z_near, p_z_far, p_camera_matrix);
+	if (render_state.render_target_wrapper) {
+		return render_state.render_target_wrapper->get_view_projection(p_view, p_z_near, p_z_far, frame_state.predictedDisplayTime, p_camera_matrix);
+	} else {
+		// if we're using depth views, make sure we update our near and far there...
+		set_view_depth(p_view, p_z_near, p_z_far);
+
+		// now update our projection
+		return graphics_extension->create_projection_fov(render_state.views[p_view].fov, p_z_near, p_z_far, p_camera_matrix);
+	}
 }
 
 Vector2 OpenXRAPI::get_eye_focus(uint32_t p_view, float p_aspect) {
@@ -2118,6 +2207,12 @@ void OpenXRAPI::_allocate_view_buffers(uint32_t p_view_count, bool p_submit_dept
 
 	if (p_submit_depth_buffer && OpenXRCompositionLayerDepthExtension::get_singleton()->is_available()) {
 		openxr_api->render_state.depth_views.resize(p_view_count);
+	}
+
+	// Init view type
+	for (uint32_t i = 0; i < p_view_count; i++) {
+		openxr_api->render_state.views[i].type = XR_TYPE_VIEW;
+		openxr_api->render_state.views[i].next = nullptr;
 	}
 }
 
@@ -2340,16 +2435,35 @@ void OpenXRAPI::pre_render() {
 	}
 }
 
+bool OpenXRAPI::is_main_viewport(RID p_render_target) {
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		if (wrapper->owns_viewport(p_render_target)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD_V(false);
 
-	// We found an XR viewport!
-	render_state.has_xr_viewport = true;
-
-	if (instance == XR_NULL_HANDLE || session == XR_NULL_HANDLE || !render_state.running || !render_state.view_pose_valid || !render_state.should_render) {
+	// Are we skipping this frame?
+	if (!can_render()) {
 		return false;
 	}
+
+	// If one of our wrappers "owns" this viewport, let it handle this.
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		if (wrapper->owns_viewport(p_render_target)) {
+			render_state.render_target_wrapper = wrapper;
+			return render_state.render_target_wrapper->on_pre_draw_viewport(p_render_target);
+		}
+	}
+
+	// We found our main XR viewport!
+	render_state.has_xr_viewport = true;
 
 	// Acquire our images
 	for (int i = 0; i < OPENXR_SWAPCHAIN_MAX; i++) {
@@ -2360,34 +2474,41 @@ bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
 		}
 	}
 
-	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		wrapper->on_pre_draw_viewport(p_render_target);
-	}
-
 	return true;
 }
 
 XrSwapchain OpenXRAPI::get_color_swapchain() {
 	ERR_NOT_ON_RENDER_THREAD_V(XR_NULL_HANDLE);
-
-	return render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain();
+	if (render_state.render_target_wrapper) {
+		return render_state.render_target_wrapper->get_color_swapchain();
+	} else {
+		return render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_swapchain();
+	}
 }
 
 RID OpenXRAPI::get_color_texture() {
 	ERR_NOT_ON_RENDER_THREAD_V(RID());
 
-	return render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_image();
+	if (render_state.render_target_wrapper) {
+		return render_state.render_target_wrapper->get_color_texture();
+	} else {
+		return render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_image();
+	}
 }
 
 RID OpenXRAPI::get_depth_texture() {
 	ERR_NOT_ON_RENDER_THREAD_V(RID());
 
 	// Note, image will not be acquired if we didn't have a suitable swap chain format.
-	if (render_state.submit_depth_buffer && render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].is_image_acquired()) {
-		return render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_image();
-	} else {
-		return RID();
+	if (render_state.submit_depth_buffer) {
+		if (render_state.render_target_wrapper) {
+			return render_state.render_target_wrapper->get_depth_texture();
+		} else if (render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].is_image_acquired()) {
+			return render_state.main_swapchains[OPENXR_SWAPCHAIN_DEPTH].get_image();
+		}
 	}
+
+	return RID();
 }
 
 RID OpenXRAPI::get_density_map_texture() {
@@ -2439,8 +2560,15 @@ void OpenXRAPI::post_draw_viewport(RID p_render_target) {
 		return;
 	}
 
-	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		wrapper->on_post_draw_viewport(p_render_target);
+	if (render_state.render_target_wrapper != nullptr) {
+		// Only let ouor owning extension know we've finished with this viewport.
+		render_state.render_target_wrapper->on_post_draw_viewport(p_render_target);
+		render_state.render_target_wrapper = nullptr;
+	} else {
+		// Always let all extension know we've finished with our primary viewport.
+		for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+			wrapper->on_post_draw_viewport(p_render_target);
+		}
 	}
 }
 
@@ -2454,6 +2582,10 @@ void OpenXRAPI::end_frame() {
 
 	if (!render_state.running) {
 		return;
+	}
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_end_frame();
 	}
 
 	if (render_state.should_render && render_state.view_pose_valid) {
@@ -2742,10 +2874,10 @@ OpenXRAPI::OpenXRAPI() {
 			case 1: {
 				view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 			} break;
-			/* we don't support quad and observer configurations (yet)
 			case 2: {
 				view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_QUAD_VARJO;
 			} break;
+			/* we don't support observer configurations (yet)
 			case 3: {
 				view_configuration = XR_VIEW_CONFIGURATION_TYPE_SECONDARY_MONO_FIRST_PERSON_OBSERVER_MSFT;
 			} break;
