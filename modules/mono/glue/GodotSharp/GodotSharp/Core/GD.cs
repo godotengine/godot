@@ -61,6 +61,25 @@ namespace Godot
         }
 
         /// <summary>
+        /// Allocates a unique ID which can be used by the implementation to construct an RID. This is used mainly from native extensions to implement servers.
+        /// </summary>
+        /// <returns>The allocated ID </returns>
+        public static ulong RidAllocateId()
+        {
+            return NativeFuncs.godotsharp_rid_allocate_id();
+        }
+
+        /// <summary>
+        /// Creates an RID from a <paramref name="base"/>. This is used mainly from native extensions to build servers.
+        /// </summary>
+        /// <param name="base">The ID to create <see cref="Rid"/></param>
+        /// <returns>The <see cref="Rid"/></returns>
+        public static Rid RidFromInt64(ulong @base)
+        {
+            return new Rid(@base);
+        }
+
+        /// <summary>
         /// Returns the integer hash of the passed <paramref name="var"/>.
         /// </summary>
         /// <example>
