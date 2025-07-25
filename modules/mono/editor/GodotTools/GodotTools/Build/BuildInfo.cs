@@ -18,6 +18,7 @@ namespace GodotTools.Build
         public bool Restore { get; private set; }
         public bool Rebuild { get; private set; }
         public bool OnlyClean { get; private set; }
+        public bool SelfContained { get; private set; }
 
         // TODO Use List once we have proper serialization
         public Godot.Collections.Array CustomProperties { get; private set; } = new();
@@ -32,6 +33,7 @@ namespace GodotTools.Build
                 other.Configuration == Configuration && other.RuntimeIdentifier == RuntimeIdentifier &&
                 other.PublishOutputDir == PublishOutputDir && other.Restore == Restore &&
                 other.Rebuild == Rebuild && other.OnlyClean == OnlyClean &&
+                other.SelfContained == SelfContained &&
                 other.CustomProperties == CustomProperties &&
                 other.LogsDirPath == LogsDirPath;
         }
@@ -47,6 +49,7 @@ namespace GodotTools.Build
             hash.Add(Restore);
             hash.Add(Rebuild);
             hash.Add(OnlyClean);
+            hash.Add(SelfContained);
             hash.Add(CustomProperties);
             hash.Add(LogsDirPath);
             return hash.ToHashCode();
@@ -60,7 +63,8 @@ namespace GodotTools.Build
             Configuration = string.Empty;
         }
 
-        public BuildInfo(string solution, string project, string configuration, bool restore, bool rebuild, bool onlyClean)
+        public BuildInfo(string solution, string project, string configuration, bool restore, bool rebuild, bool onlyClean,
+            bool selfContained)
         {
             Solution = solution;
             Project = project;
@@ -68,10 +72,11 @@ namespace GodotTools.Build
             Restore = restore;
             Rebuild = rebuild;
             OnlyClean = onlyClean;
+            SelfContained = selfContained;
         }
 
         public BuildInfo(string solution, string project, string configuration, string runtimeIdentifier,
-            string publishOutputDir, bool restore, bool rebuild, bool onlyClean)
+            string publishOutputDir, bool restore, bool rebuild, bool onlyClean, bool selfContained)
         {
             Solution = solution;
             Project = project;
@@ -81,6 +86,7 @@ namespace GodotTools.Build
             Restore = restore;
             Rebuild = rebuild;
             OnlyClean = onlyClean;
+            SelfContained = selfContained;
         }
     }
 }
