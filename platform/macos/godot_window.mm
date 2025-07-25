@@ -41,6 +41,17 @@
 	return self;
 }
 
+- (NSRect)constrainFrameRect:(NSRect)frameRect toScreen:(NSScreen *)screen {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		if (wd.wallpaper) {
+			return frameRect;
+		}
+	}
+	return [super constrainFrameRect:frameRect toScreen:screen];
+}
+
 - (void)setAnimDuration:(NSTimeInterval)duration {
 	anim_duration = duration;
 }
