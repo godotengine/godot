@@ -203,6 +203,13 @@ bool CollisionShape2D::is_disabled() const {
 	return disabled;
 }
 
+bool CollisionShape2D::contains_point(const Vector2 &p_point) const {
+	if (!collision_object || !Object::cast_to<Node2D>(collision_object->shape_owner_get_owner(owner_id))) {
+		return false;
+	}
+	return shape->contains_point(to_local(p_point));
+}
+
 void CollisionShape2D::set_one_way_collision(bool p_enable) {
 	one_way_collision = p_enable;
 	queue_redraw();
@@ -283,6 +290,11 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
+
+	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
+	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
+	ClassDB::bind_method(D_METHOD("contains_point", "point"), &CollisionShape2D::contains_point);
+
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
