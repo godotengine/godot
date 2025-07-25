@@ -1063,6 +1063,15 @@ void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	memdelete(swap_chain);
 }
 
+Error RenderingDeviceDriverMetal::swap_chain_wait_for_present(DisplayServer::WindowID p_window, SwapChainID p_swap_chain, uint32_t p_max_frame_delay) {
+	return ERR_UNAVAILABLE;
+}
+
+BitField<RDD::PacingMethod> RenderingDeviceDriverMetal::get_available_pacing_methods() const {
+	BitField<PacingMethod> methods = 0;
+	return methods;
+}
+
 #pragma mark - Frame buffer
 
 RDD::FramebufferID RenderingDeviceDriverMetal::framebuffer_create(RenderPassID p_render_pass, VectorView<TextureID> p_attachments, uint32_t p_width, uint32_t p_height) {
