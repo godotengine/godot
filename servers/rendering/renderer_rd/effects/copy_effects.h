@@ -41,6 +41,7 @@
 #include "servers/rendering/renderer_rd/shaders/effects/cubemap_filter_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/cubemap_roughness.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/cubemap_roughness_raster.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/sh_from_cubemap.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/specular_merge.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
@@ -314,6 +315,13 @@ private:
 
 	} specular_merge;
 
+	struct SHfromCubemap {
+		ShFromCubemapShaderRD shader; // Compute Shader.
+		RID shader_version;
+		RID compute_pipeline;
+		RID uniform_set;
+	} sh_from_cubemap;
+
 	static CopyEffects *singleton;
 
 public:
@@ -354,6 +362,8 @@ public:
 	void cubemap_roughness_raster(RID p_source_rd_texture, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
 
 	void merge_specular(RID p_dest_framebuffer, RID p_specular, RID p_base, RID p_reflection, uint32_t p_view_count);
+
+	void calculate_sh_from_cubemap(RID p_src_cubemap_texture, RID p_output_storage_buffer, bool p_compute_l2);
 };
 
 } // namespace RendererRD
