@@ -816,7 +816,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 		p_particles->particles_material_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, particles_shader.default_shader_rd, 1);
 	}
 
-	double new_phase = Math::fmod((double)p_particles->phase + (p_delta / p_particles->lifetime), 1.0);
+	double new_phase = Math::fmod((double)(p_particles->phase + (p_delta / p_particles->lifetime)), 1.0);
+	
 
 	//move back history (if there is any)
 	for (uint32_t i = p_particles->frame_history.size() - 1; i > 0; i--) {
@@ -1536,13 +1537,13 @@ void ParticlesStorage::update_particles() {
 			}
 		}
 
-		double todo = particles->clear ? particles->pre_process_time : 0;
+		float todo = particles->clear ? particles->pre_process_time : 0;
 		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
 		todo = todo > particles->request_process_time_trailing ? todo : particles->request_process_time_trailing;
 		bool artificial_process =  particles->request_process_time > 0 ||  particles->request_process_time_trailing > 0;
 		
-		if (todo > 0.0) {
-			double frame_time;
+		if (todo > 0.0001) {
+			real_t  frame_time;
 			if (fixed_fps > 0) {
 				frame_time = 1.0 / fixed_fps;
 			} else {
@@ -1554,22 +1555,22 @@ void ParticlesStorage::update_particles() {
 			particles->speed_scale = 1.0;
 			if (particles->clear) {
 				todo = particles->pre_process_time;
-				while (todo > 0) {
+				while (todo > 0.00001) {
 					_particles_process(particles, frame_time > todo ? todo : frame_time);
 					todo -= frame_time;
 				}
 			}
-			if (particles->request_process_time > 0) {
+			if (particles->request_process_time > 0.00001) {
 				todo = particles->request_process_time;
-				while (todo > 0) {
+				while (todo > 0.00001) {
 					_particles_process(particles, frame_time > todo ? todo : frame_time);
 					todo -= frame_time;
 				}
 			}
-			if (particles->request_process_time_trailing > 0) {
+			if (particles->request_process_time_trailing > 0.00001) {
 				particles->emitting = false;
 				todo = particles->request_process_time_trailing;
-				while (todo > 0) {
+				while (todo > 0.00001) {
 					_particles_process(particles, frame_time > todo ? todo : frame_time);
 					todo -= frame_time;
 				}
@@ -1582,11 +1583,11 @@ void ParticlesStorage::update_particles() {
 		particles->request_process_time = 0.0;
 		particles->request_process_time_trailing = 0.0;
 
-		double time_scale = MAX(particles->speed_scale, 0.0);
+		float time_scale = MAX(particles->speed_scale, 0.0);
 		if (! artificial_process){
 		if (fixed_fps > 0) {
-			double frame_time = 1.0 / fixed_fps;
-			double delta = RendererCompositorRD::get_singleton()->get_frame_delta_time();
+			float frame_time = 1.0 / fixed_fps;
+			float delta = (float)RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..

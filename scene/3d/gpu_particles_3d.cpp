@@ -472,7 +472,7 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 
 void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_trailing = 0) {
 	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_trailing);
-	if (p_request_process_time_trailing > 0){
+	if (p_request_process_time_trailing > 0.0){
 		emitting = false;
 	}
 }
