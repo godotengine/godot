@@ -325,9 +325,6 @@ void MultiNodeEdit::make_group_mask(const StringName &p_identifier, String &p_ma
 		}
 
 		p_mask[i] = node->is_in_group(p_identifier);
-		if (p_mask[i]) {
-			EditorNode::get_singleton()->get_log()->add_message(String("Adding node {} to mask at {}").format({ node->to_string(), i }, "{}"));
-		}
 	}
 }
 
