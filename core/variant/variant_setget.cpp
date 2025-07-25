@@ -32,6 +32,7 @@
 #include "variant_callable.h"
 
 #include "core/io/resource.h"
+#include "core/variant/variant_struct.h"
 
 struct VariantSetterGetterInfo {
 	void (*setter)(Variant *base, const Variant *value, bool &valid);
@@ -258,6 +259,9 @@ void Variant::set_named(const StringName &p_member, const Variant &p_value, bool
 	} else if (type == Variant::DICTIONARY) {
 		Dictionary &dict = *VariantGetInternalPtr<Dictionary>::get_ptr(this);
 		r_valid = dict.set(p_member, p_value);
+	} else if (type == Variant::STRUCT) {
+		VariantStruct &stru = *VariantGetInternalPtr<VariantStruct>::get_ptr(this);
+		stru.set(p_member, p_value, r_valid);
 	} else {
 		r_valid = false;
 	}
@@ -292,6 +296,10 @@ Variant Variant::get_named(const StringName &p_member, bool &r_valid) const {
 				r_valid = true;
 				return *v;
 			}
+		} break;
+		case Variant::STRUCT: {
+			const VariantStruct &stru = *VariantGetInternalPtr<VariantStruct>::get_ptr(this);
+			return stru.get(p_member, r_valid);
 		} break;
 		default: {
 			if (Variant::has_builtin_method(type, p_member)) {
@@ -2017,6 +2025,8 @@ Variant Variant::recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_de
 			return operator Vector<Color>().duplicate();
 		case PACKED_VECTOR4_ARRAY:
 			return operator Vector<Vector4>().duplicate();
+		case STRUCT:
+			return operator VariantStruct().recursive_duplicate(p_deep, p_deep_subresources_mode, recursion_count);
 		default:
 			return *this;
 	}
