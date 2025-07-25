@@ -990,6 +990,8 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			// Convert from Luminous Power to Luminous Intensity
 			if (type == RS::LIGHT_OMNI) {
 				energy *= 1.0 / (Math::PI * 4.0);
+			} else if (type == RS::LIGHT_AREA) {
+				energy *= 1.0 / (Math::PI * 2.0);
 			} else {
 				// Spot Lights are not physically accurate, Luminous Intensity should change in relation to the cone angle.
 				// We make this assumption to keep them easy to control.

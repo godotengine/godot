@@ -12,6 +12,7 @@ DISABLE_LIGHTMAP = false
 DISABLE_LIGHT_DIRECTIONAL = false
 DISABLE_LIGHT_OMNI = false
 DISABLE_LIGHT_SPOT = false
+DISABLE_LIGHT_AREA = false
 DISABLE_REFLECTION_PROBE = true
 DISABLE_FOG = false
 USE_DEPTH_FOG = false
@@ -35,6 +36,7 @@ APPLY_TONEMAPPING = true
 // these are false, we are doing a directional light pass.
 ADDITIVE_OMNI = false
 ADDITIVE_SPOT = false
+ADDITIVE_AREA = false
 RENDER_MATERIAL = false
 SECOND_REFLECTION_PROBE = false
 LIGHTMAP_BICUBIC_FILTER = false
@@ -246,7 +248,7 @@ struct PositionalShadowData {
 	highp float shadow_atlas_pixel_size;
 };
 
-layout(std140) uniform PositionalShadows { // ubo:9
+layout(std140) uniform PositionalShadows { // ubo:10
 	PositionalShadowData positional_shadows[MAX_LIGHT_DATA_STRUCTS];
 };
 
@@ -268,7 +270,7 @@ struct DirectionalShadowData {
 	mediump vec2 pad;
 };
 
-layout(std140) uniform DirectionalShadows { // ubo:10
+layout(std140) uniform DirectionalShadows { // ubo:11
 	DirectionalShadowData directional_shadows[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -301,7 +303,7 @@ struct DirectionalLightData {
 	highp uint mask;
 };
 
-layout(std140) uniform DirectionalLights { // ubo:7
+layout(std140) uniform DirectionalLights { // ubo:8
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -310,8 +312,8 @@ layout(std140) uniform DirectionalLights { // ubo:7
 #define DIRECTIONAL_LIGHT_BAKE_DYNAMIC uint(1 << 2)
 #endif // !DISABLE_LIGHT_DIRECTIONAL
 
-// Omni and spot light data.
-#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
+// Omni, spot, and area light data.
+#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || (defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA) && defined(USE_ADDITIVE_LIGHTING))
 
 struct LightData { // This structure needs to be as packed as possible.
 	highp vec3 position;
@@ -330,6 +332,9 @@ struct LightData { // This structure needs to be as packed as possible.
 
 	lowp vec3 pad;
 	lowp uint bake_mode;
+
+	mediump vec4 area_width;
+	mediump vec4 area_height;
 };
 
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
@@ -351,7 +356,18 @@ uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint spot_light_count;
 #endif // BASE_PASS
 #endif // DISABLE_LIGHT_SPOT
-#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
+
+#if !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_AREA)
+layout(std140) uniform AreaLightData { // ubo:7
+	LightData area_lights[MAX_LIGHT_DATA_STRUCTS];
+};
+#if defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+uniform uint area_light_indices[MAX_FORWARD_LIGHTS];
+uniform uint area_light_count;
+#endif // defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+#endif // !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_AREA)
+
+#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || (!defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA) && defined(USE_ADDITIVE_LIGHTING))
 
 #ifdef USE_ADDITIVE_LIGHTING
 #ifdef ADDITIVE_OMNI
@@ -359,6 +375,9 @@ uniform lowp uint omni_light_index;
 #endif
 #ifdef ADDITIVE_SPOT
 uniform lowp uint spot_light_index;
+#endif
+#ifdef ADDITIVE_AREA
+uniform lowp uint area_light_index;
 #endif
 #endif // USE_ADDITIVE_LIGHTING
 
@@ -445,6 +464,20 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 			diffuse_light, specular_light);
 }
 #endif // !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
+
+#if !defined(DISABLE_LIGHT_AREA) || (defined(ADDITIVE_AREA) && defined(USE_ADDITIVE_LIGHTING))
+void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness,
+		inout vec3 diffuse_light, inout vec3 specular_light) {
+	vec3 light_rel_vec = area_lights[idx].position - vertex;
+	float light_length = length(light_rel_vec);
+	float area_attenuation = get_area_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
+	vec3 color = area_lights[idx].color * area_attenuation; // No light shaders here, so combine.
+
+	light_compute(normal, normalize(light_rel_vec), eye_vec, color, false, roughness,
+			diffuse_light,
+			specular_light);
+}
+#endif // !defined(DISABLE_LIGHT_AREA) || (defined(ADDITIVE_AREA) && defined(USE_ADDITIVE_LIGHTING))
 
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 
@@ -851,6 +884,13 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 				diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
 #endif // !DISABLE_LIGHT_SPOT
+
+#ifndef DISABLE_LIGHT_AREA
+	for (uint i = 0u; i < area_light_count; i++) {
+		light_process_area(area_light_indices[i], vertex_interp, view, normal_interp, roughness,
+				diffuse_light_interp.rgb, specular_light_interp.rgb);
+	}
+#endif // !DISABLE_LIGHT_SPOT
 #endif // BASE_PASS
 
 /* ADDITIVE LIGHTING PASS */
@@ -875,6 +915,11 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	light_process_spot(spot_light_index, vertex_interp, view, normal_interp, roughness,
 			additive_diffuse_light_interp.rgb, additive_specular_light_interp.rgb);
 #endif // ADDITIVE_SPOT
+
+#ifdef ADDITIVE_AREA
+	light_process_area(area_light_index, vertex_interp, view, normal_interp, roughness,
+			additive_diffuse_light_interp.rgb, additive_specular_light_interp.rgb);
+#endif // ADDITIVE_AREA
 
 #endif // USE_ADDITIVE_LIGHTING
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
@@ -1232,7 +1277,7 @@ struct DirectionalLightData {
 	highp uint mask;
 };
 
-layout(std140) uniform DirectionalLights { // ubo:7
+layout(std140) uniform DirectionalLights { // ubo:8
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -1243,8 +1288,8 @@ uniform highp sampler2DShadow directional_shadow_atlas; // texunit:-3
 
 #endif // !DISABLE_LIGHT_DIRECTIONAL || USE_SUN_SCATTER
 
-// Omni and spot light data.
-#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+// Omni, spot, and area light data.
+#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA)
 
 struct LightData { // This structure needs to be as packed as possible.
 	highp vec3 position;
@@ -1263,6 +1308,9 @@ struct LightData { // This structure needs to be as packed as possible.
 
 	lowp vec3 pad;
 	lowp uint bake_mode;
+
+	mediump vec4 area_width;
+	mediump vec4 area_height;
 };
 
 #if !defined(DISABLE_LIGHT_OMNI) || defined(ADDITIVE_OMNI)
@@ -1284,7 +1332,21 @@ uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
 uniform uint spot_light_count;
 #endif // defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
 #endif // !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
-#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+
+#if !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_AREA)
+layout(std140) uniform AreaLightData { // ubo:7
+	LightData area_lights[MAX_LIGHT_DATA_STRUCTS];
+};
+uniform highp sampler2D ltc_lut1; // texunit:-10
+uniform highp sampler2D ltc_lut2; // texunit:-11
+
+#if defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+uniform uint area_light_indices[MAX_FORWARD_LIGHTS];
+uniform uint area_light_count;
+#endif // defined(BASE_PASS) && !defined(USE_VERTEX_LIGHTING)
+#endif // !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_AREA)
+
+#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA)
 
 #ifdef USE_ADDITIVE_LIGHTING
 #ifdef ADDITIVE_OMNI
@@ -1305,7 +1367,7 @@ struct PositionalShadowData {
 	highp float shadow_atlas_pixel_size;
 };
 
-layout(std140) uniform PositionalShadows { // ubo:9
+layout(std140) uniform PositionalShadows { // ubo:10
 	PositionalShadowData positional_shadows[MAX_LIGHT_DATA_STRUCTS];
 };
 
@@ -1325,7 +1387,7 @@ struct DirectionalShadowData {
 	mediump vec2 pad;
 };
 
-layout(std140) uniform DirectionalShadows { // ubo:10
+layout(std140) uniform DirectionalShadows { // ubo:11
 	DirectionalShadowData directional_shadows[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
@@ -1707,6 +1769,403 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 			specular_light);
 }
 #endif // !DISABLE_LIGHT_OMNI
+
+#if !defined(DISABLE_LIGHT_AREA) || defined(ADDITIVE_AREA)
+float integrate_edge_hill(vec3 p0, vec3 p1) {
+	// Approximation suggested by Hill and Heitz, calculating the integral of the spherical cosine distribution over the line between p0 and p1.
+	// Runs faster than the exact formula of Baum et al. (1989).
+	float cosTheta = dot(p0, p1);
+
+	float x = cosTheta;
+	float y = abs(x);
+	float a = 5.42031 + (3.12829 + 0.0902326 * y) * y;
+	float b = 3.45068 + (4.18814 + y) * y;
+	float theta_sintheta = a / b;
+
+	if (x < 0.0) {
+		theta_sintheta = M_PI * inversesqrt(1.0 - x * x) - theta_sintheta;
+	}
+	return theta_sintheta * cross(p0, p1).y;
+}
+
+float integrate_edge(vec3 p_proj0, vec3 p_proj1, vec3 p0, vec3 p1) {
+	float epsilon = 0.00001;
+	bool opposite_sides = dot(p_proj0, p_proj1) < -1.0 + epsilon;
+	if (opposite_sides) {
+		// calculate the point on the line p0 to p1 that is closest to the vertex (origin)
+		vec3 half_point_t = p0 + normalize(p1 - p0) * dot(p0, normalize(p0 - p1));
+		vec3 half_point = normalize(half_point_t);
+		return integrate_edge_hill(p_proj0, half_point) + integrate_edge_hill(half_point, p_proj1);
+	}
+	return integrate_edge_hill(p_proj0, p_proj1);
+}
+
+void clip_quad_to_horizon(inout vec3 L[5], out int vertex_count) {
+	// detect clipping config
+	int config = 0;
+	if (L[0].y > 0.0) {
+		config += 1;
+	}
+	if (L[1].y > 0.0) {
+		config += 2;
+	}
+	if (L[2].y > 0.0) {
+		config += 4;
+	}
+	if (L[3].y > 0.0) {
+		config += 8;
+	}
+
+	// clip
+	vertex_count = 0;
+
+	if (config == 0) {
+		// clip all
+	} else if (config == 1) // V1 clip V2 V3 V4
+	{
+		vertex_count = 3;
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+		L[2] = -L[3].y * L[0] + L[0].y * L[3];
+	} else if (config == 2) // V2 clip V1 V3 V4
+	{
+		vertex_count = 3;
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+	} else if (config == 3) // V1 V2 clip V3 V4
+	{
+		vertex_count = 4;
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+		L[3] = -L[3].y * L[0] + L[0].y * L[3];
+	} else if (config == 4) // V3 clip V1 V2 V4
+	{
+		vertex_count = 3;
+		L[0] = -L[3].y * L[2] + L[2].y * L[3];
+		L[1] = -L[1].y * L[2] + L[2].y * L[1];
+	} else if (config == 5) // V1 V3 clip V2 V4) impossible
+	{
+		vertex_count = 0;
+	} else if (config == 6) // V2 V3 clip V1 V4
+	{
+		vertex_count = 4;
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+		L[3] = -L[3].y * L[2] + L[2].y * L[3];
+	} else if (config == 7) // V1 V2 V3 clip V4
+	{
+		vertex_count = 5;
+		L[4] = -L[3].y * L[0] + L[0].y * L[3];
+		L[3] = -L[3].y * L[2] + L[2].y * L[3];
+	} else if (config == 8) // V4 clip V1 V2 V3
+	{
+		vertex_count = 3;
+		L[0] = -L[0].y * L[3] + L[3].y * L[0];
+		L[1] = -L[2].y * L[3] + L[3].y * L[2];
+		L[2] = L[3];
+	} else if (config == 9) // V1 V4 clip V2 V3
+	{
+		vertex_count = 4;
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+		L[2] = -L[2].y * L[3] + L[3].y * L[2];
+	} else if (config == 10) // V2 V4 clip V1 V3) impossible
+	{
+		vertex_count = 0;
+	} else if (config == 11) // V1 V2 V4 clip V3
+	{
+		vertex_count = 5;
+		L[4] = L[3];
+		L[3] = -L[2].y * L[3] + L[3].y * L[2];
+		L[2] = -L[2].y * L[1] + L[1].y * L[2];
+	} else if (config == 12) // V3 V4 clip V1 V2
+	{
+		vertex_count = 4;
+		L[1] = -L[1].y * L[2] + L[2].y * L[1];
+		L[0] = -L[0].y * L[3] + L[3].y * L[0];
+	} else if (config == 13) // V1 V3 V4 clip V2
+	{
+		vertex_count = 5;
+		L[4] = L[3];
+		L[3] = L[2];
+		L[2] = -L[1].y * L[2] + L[2].y * L[1];
+		L[1] = -L[1].y * L[0] + L[0].y * L[1];
+	} else if (config == 14) // V2 V3 V4 clip V1
+	{
+		vertex_count = 5;
+		L[4] = -L[0].y * L[3] + L[3].y * L[0];
+		L[0] = -L[0].y * L[1] + L[1].y * L[0];
+	} else if (config == 15) // V1 V2 V3 V4
+	{
+		vertex_count = 4;
+	}
+
+	if (vertex_count == 3) {
+		L[3] = L[0];
+	}
+	if (vertex_count == 4) {
+		L[4] = L[0];
+	}
+}
+
+vec3 ltc_evaluate(vec3 vertex, vec3 normal, vec3 eye_vec, mat3 M_inv, vec3 points[4]) {
+	// construct the orthonormal basis around the normal vector
+	vec3 x, z;
+	z = -normalize(eye_vec - normal * dot(eye_vec, normal)); // expanding the angle between view and normal vector to 90 degrees, this gives a normal vector, unless view=normal. TODO: in that case, we have a problem.
+	x = cross(normal, z);
+
+	// rotate area light in (T1, normal, T2) basis
+	M_inv = M_inv * transpose(mat3(x, normal, z));
+
+	vec3 L[5];
+	L[0] = M_inv * points[0];
+	L[1] = M_inv * points[1];
+	L[2] = M_inv * points[2];
+	L[3] = M_inv * points[3];
+
+	int n = 0;
+	clip_quad_to_horizon(L, n);
+	if (n == 0) {
+		return vec3(0, 0, 0);
+	}
+
+	vec3 L_proj[5];
+	// project onto unit sphere
+	L_proj[0] = normalize(L[0]);
+	L_proj[1] = normalize(L[1]);
+	L_proj[2] = normalize(L[2]);
+	L_proj[3] = normalize(L[3]);
+	L_proj[4] = normalize(L[4]);
+
+	// Prevent abnormal values when the light goes through (or close to) the fragment
+	vec3 pnorm = normalize(cross(L_proj[0] - L_proj[1], L_proj[2] - L_proj[1]));
+	if (abs(dot(pnorm, L_proj[0])) < 1e-10) {
+		// we could just return black, but that would lead to some black pixels in front of the light.
+		// Better, we check if the fragment is on the light, and return white if so.
+		vec3 r10 = points[0] - points[1];
+		vec3 r12 = points[2] - points[1];
+		float alpha = -dot(points[1], r10) / dot(r10, r10);
+		float beta = -dot(points[1], r12) / dot(r12, r12);
+		if (0.0 < alpha && alpha < 1.0 && 0.0 < beta && beta < 1.0) { // fragment is on light {
+			return vec3(2 * M_PI);
+		} else {
+			return vec3(0.0);
+		}
+	}
+
+	float I;
+	I = integrate_edge(L_proj[0], L_proj[1], L[0], L[1]);
+	I += integrate_edge(L_proj[1], L_proj[2], L[1], L[2]);
+	I += integrate_edge(L_proj[2], L_proj[3], L[2], L[3]);
+	if (n >= 4) {
+		I += integrate_edge(L_proj[3], L_proj[4], L[3], L[4]);
+	}
+	if (n == 5) {
+		I += integrate_edge(L_proj[4], L_proj[0], L[4], L[0]);
+	}
+
+	return vec3(abs(I));
+}
+
+// implementation of area lights with Linearly Transformed Cosines (LTC): https://eheitzresearch.wordpress.com/415-2/
+void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha, vec2 screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+		vec3 backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+		float rim, float rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+		float clearcoat, float clearcoat_roughness, vec3 vertex_normal,
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+		vec3 binormal, vec3 tangent, float anisotropy,
+#endif
+		inout vec3 diffuse_light, inout vec3 specular_light) {
+	float EPSILON = 1e-4f;
+	vec3 area_width = area_lights[idx].area_width.xyz;
+	vec3 area_height = area_lights[idx].area_height.xyz;
+	vec3 area_direction = area_lights[idx].direction;
+
+	if (dot(area_width, area_width) < EPSILON || dot(area_height, area_height) < EPSILON) { // area is 0
+		return;
+	}
+	if (dot(area_direction, vertex - area_lights[idx].position) <= 0) {
+		return; // vertex is behind light
+	}
+
+	float theta = acos(dot(normal, eye_vec));
+
+	vec4 M_brdf_abcd;
+	vec3 M_brdf_e_mag_fres;
+
+	vec2 lut_uv = vec2(max(roughness, 0.02), theta / (0.5 * M_PI));
+	float LTC_LUT_SIZE = 64.0;
+	lut_uv = lut_uv * (63.0 / LTC_LUT_SIZE) + vec2(0.5 / LTC_LUT_SIZE); // offset by 1 pixel
+	M_brdf_abcd = texture(ltc_lut1, lut_uv);
+	M_brdf_e_mag_fres = texture(ltc_lut2, lut_uv).xyz;
+
+	float scale = 1.0 / (M_brdf_abcd.x * M_brdf_e_mag_fres.x - M_brdf_abcd.y * M_brdf_abcd.w);
+
+	mat3 M_inv = mat3(
+			vec3(0, 0, 1.0 / M_brdf_abcd.z),
+			vec3(-M_brdf_abcd.w * scale, M_brdf_abcd.x * scale, 0),
+			vec3(-M_brdf_e_mag_fres.x * scale, M_brdf_abcd.y * scale, 0));
+
+	vec3 points[4];
+	points[0] = area_lights[idx].position - vertex;
+	points[1] = area_lights[idx].position + area_width - vertex;
+	points[2] = area_lights[idx].position + area_width + area_height - vertex;
+	points[3] = area_lights[idx].position + area_height - vertex;
+
+	vec3 ltc_diffuse = max(vec3(ltc_evaluate(vertex, normal, eye_vec, mat3(1), points)), vec3(0));
+	vec3 ltc_specular = max(vec3(ltc_evaluate(vertex, normal, eye_vec, M_inv, points)), vec3(0));
+
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	float inv_center_range = area_lights[idx].cone_attenuation;
+
+	mat4 light_mat = mat4(
+			vec4(normalize(area_width), 0),
+			vec4(normalize(area_height), 0),
+			vec4(-area_direction, 0),
+			vec4(area_lights[idx].position + (area_width + area_height) / 2.0, 1));
+	mat4 light_mat_inv = inverse(light_mat);
+	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+	float dist = length(closest_point_local_to_light - pos_local_to_light);
+
+	float light_length = max(0, dist);
+	float light_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
+	//shadow = 1.0;
+
+#ifndef SHADOWS_DISABLED
+	// Area light shadow.
+	/*if (light_attenuation > HALF_FLT_MIN && area_lights[idx].shadow_opacity > 0.001) {
+		// there is a shadowmap
+		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
+		vec4 base_uv_rect = area_lights[idx].atlas_rect;
+		base_uv_rect.xy += texel_size;
+		base_uv_rect.zw -= texel_size * 2.0;
+
+		vec3 local_vert = (area_lights[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
+
+		float shadow_len = length(local_vert); //need to remember shadow len from here
+		vec3 shadow_dir = normalize(local_vert);
+
+		vec3 local_normal = normalize(mat3(area_lights[idx].shadow_matrix) * vec3(normal));
+		vec3 normal_bias = local_normal * area_lights[idx].shadow_normal_bias * (1.0 - abs(dot(local_normal, shadow_dir)));
+
+		if (sc_use_light_soft_shadows() && area_lights[idx].soft_shadow_size > 0.0) {
+			//soft shadow
+
+			//find blocker
+
+			float blocker_count = 0.0;
+			float blocker_average = 0.0;
+
+			mat2 disk_rotation;
+			{
+				float r = quick_hash(gl_FragCoord.xy + vec2(taa_frame_count * 5.588238)) * 2.0 * M_PI;
+				float sr = sin(r);
+				float cr = cos(r);
+				disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
+			}
+
+			vec3 basis_normal = shadow_dir;
+			vec3 v0 = abs(basis_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
+			vec3 tangent = normalize(cross(v0, basis_normal));
+			vec3 bitangent = normalize(cross(tangent, basis_normal));
+			float z_norm = 1.0 - shadow_len * inv_center_range;
+
+			shadow = 1.0;
+			SPEC_CONSTANT_LOOP_ANNOTATION
+			for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
+				vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
+
+				vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
+
+				pos = normalize(pos);
+
+				vec4 uv_rect = base_uv_rect;
+
+				pos.z = 1.0 + abs(pos.z);
+				pos.xy /= pos.z;
+
+				pos.xy = pos.xy * 0.5 + 0.5;
+				pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+
+				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos.xy, 0.0).r;
+				if (d > z_norm) {
+					blocker_average += d;
+					blocker_count += 1.0;
+				}
+			}
+
+			if (blocker_count > 0.0) {
+				//blockers found, do soft shadow
+				blocker_average /= blocker_count;
+				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
+				tangent *= penumbra;
+				bitangent *= penumbra;
+
+				z_norm += inv_center_range * area_lights[idx].shadow_bias;
+
+				shadow = 0.0;
+
+				SPEC_CONSTANT_LOOP_ANNOTATION
+				for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
+					vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
+					vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
+
+					pos = normalize(pos);
+					pos = normalize(pos + normal_bias);
+
+					vec4 uv_rect = base_uv_rect;
+
+					pos.z = 1.0 + abs(pos.z);
+					pos.xy /= pos.z;
+
+					pos.xy = pos.xy * 0.5 + 0.5;
+					pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(pos.xy, z_norm, 1.0));
+				}
+
+				shadow /= sc_penumbra_shadow_samples();
+				shadow = mix(1.0, shadow, area_lights[idx].shadow_opacity);
+
+			} else {
+				//no blockers found, so no shadow
+				shadow = 1.0;
+			}
+		} else {
+			vec4 uv_rect = base_uv_rect;
+
+			vec3 shadow_sample = normalize(shadow_dir + normal_bias);
+
+			shadow_sample.z = 1.0 + abs(shadow_sample.z);
+			vec2 pos = shadow_sample.xy / shadow_sample.z;
+			float depth = shadow_len - area_lights[idx].shadow_bias;
+			depth *= inv_center_range;
+			depth = 1.0 - depth;
+			shadow = mix(1.0, sample_omni_pcf_shadow(shadow_atlas, area_lights[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, vec2(0), depth, taa_frame_count), area_lights[idx].shadow_opacity);
+		}
+	}*/
+#endif
+
+	vec3 color = area_lights[idx].color;
+
+	light_attenuation = clamp(light_attenuation * shadow, 0.0, 1.0);
+
+	if (metallic < 1.0) {
+		diffuse_light += ltc_diffuse * color / (2.0 * M_PI) * light_attenuation;
+	}
+	vec3 spec = ltc_specular * color;
+	vec3 spec_color = mix(vec3(0.04), albedo, vec3(metallic));
+
+	spec *= spec_color * max(M_brdf_e_mag_fres.y, 0.0) + (1.0 - spec_color) * max(M_brdf_e_mag_fres.z, 0.0);
+	specular_light += spec / (2.0 * M_PI) * area_lights[idx].specular_amount * light_attenuation;
+	//alpha = ?; // ... SHADOW_TO_OPACITY might affect this.
+}
+#endif // !DISABLE_LIGHT_AREA
 
 #if !defined(DISABLE_LIGHT_SPOT) || defined(ADDITIVE_SPOT)
 void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha, vec2 screen_uv,
@@ -2461,6 +2920,32 @@ void main() {
 				diffuse_light, specular_light);
 	}
 #endif // !DISABLE_LIGHT_SPOT
+
+#ifndef DISABLE_LIGHT_AREA
+	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
+		if (i >= area_light_count) {
+			break;
+		}
+
+		light_process_area(area_light_indices[i], vertex, view, normal, f0, roughness, metallic, 1.0, albedo, alpha, screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+				backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+				rim,
+				rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+				clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
+#ifdef LIGHT_ANISOTROPY_USED
+				tangent,
+				binormal, anisotropy,
+#endif
+				diffuse_light, specular_light);
+	}
+#endif // !DISABLE_LIGHT_AREA
+
 #endif // !USE_VERTEX_LIGHTING
 #endif // BASE_PASS
 #endif // !MODE_UNSHADED
@@ -2797,6 +3282,37 @@ void main() {
 #endif // !USE_VERTEX_LIGHTING
 
 #endif // ADDITIVE_SPOT
+
+#ifdef ADDITIVE_AREA
+	float area_shadow = 1.0f;
+#ifndef SHADOWS_DISABLED
+	vec3 light_ray = ((positional_shadows[positional_shadow_index].shadow_matrix * vec4(shadow_coord.xyz, 1.0))).xyz;
+	area_shadow = texture(area_shadow_texture, vec4(light_ray, 1.0 - length(light_ray) * area_lights[area_light_index].inv_radius));
+	area_shadow = mix(1.0, area_shadow, area_lights[area_light_index].shadow_opacity);
+#endif // SHADOWS_DISABLED
+
+#ifndef USE_VERTEX_LIGHTING
+	light_process_area(area_light_index, vertex, view, normal, f0, roughness, metallic, area_shadow, albedo, alpha, screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+			backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+			rim,
+			rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+			clearcoat, clearcoat_roughness, geo_normal,
+#endif // LIGHT_CLEARCOAT_USED
+#ifdef LIGHT_ANISOTROPY_USED
+			binormal, tangent, anisotropy,
+#endif
+			diffuse_light, specular_light);
+#else
+	// Just apply shadows to vertex lighting.
+	diffuse_light *= area_shadow;
+	specular_light *= area_shadow;
+#endif // !USE_VERTEX_LIGHTING
+#endif // ADDITIVE_AREA
 
 	diffuse_light *= albedo;
 	diffuse_light *= 1.0 - metallic;
