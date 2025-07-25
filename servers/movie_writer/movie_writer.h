@@ -43,7 +43,7 @@ class MovieWriter : public Object {
 
 	// The output resolution, which can differ from the window size.
 	// Used as a base for resizing all subsequent frames if their resolution differs.
-	Vector2i actual_movie_size;
+	Vector2i movie_size;
 
 	float cpu_time = 0.0f;
 	float gpu_time = 0.0f;
