@@ -2227,16 +2227,6 @@ void Object::detach_from_objectdb() {
 	}
 }
 
-void Object::assign_class_name_static(const String &p_name, StringName &r_target) {
-	static BinaryMutex _mutex;
-	MutexLock lock(_mutex);
-	if (r_target) {
-		// Already assigned while we were waiting for the mutex.
-		return;
-	}
-	r_target = StringName(p_name, true);
-}
-
 Object::~Object() {
 	if (script_instance) {
 		memdelete(script_instance);
