@@ -1,0 +1,5 @@
+GDTEST_OK
+~~ WARNING at line 1: (SHADOWED_GLOBAL_IDENTIFIER) The constant "Node2D" has the same name as a native class.
+~~ WARNING at line 7: (SHADOWED_GLOBAL_IDENTIFIER) The constant "Node3D" has the same name as a native class.
+Custom type member
+Custom type local
