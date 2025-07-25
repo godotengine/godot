@@ -112,9 +112,27 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	native_menu_icons.insert("PackedScene");
 	native_menu_icons.insert("FileAccess");
 	native_menu_icons.insert("Folder");
-	native_menu_icons.insert("AnimationTrackList");
-	native_menu_icons.insert("Object");
+	native_menu_icons.insert("Inspector");
+	native_menu_icons.insert("SignalsAndGroups");
 	native_menu_icons.insert("History");
+	native_menu_icons.insert("Debug");
+	native_menu_icons.insert("Terminal");
+	native_menu_icons.insert("Animation");
+	native_menu_icons.insert("Search");
+	native_menu_icons.insert("AudioStreamPlayer");
+	native_menu_icons.insert("AnimationTreeIcon");
+	native_menu_icons.insert("ResourcePreloader");
+	native_menu_icons.insert("Shader");
+	native_menu_icons.insert("ShaderGlobalsOverride");
+	native_menu_icons.insert("SpriteFrames");
+	native_menu_icons.insert("Paint");
+	native_menu_icons.insert("Polygon");
+	native_menu_icons.insert("TileSet");
+	native_menu_icons.insert("TileMapLayerIcon");
+	native_menu_icons.insert("MultiplayerSynchronizer");
+	native_menu_icons.insert("GridMapIcon");
+	native_menu_icons.insert("VcsBranches");
+	native_menu_icons.insert("Joypad");
 
 	// The names of the icons to exclude from the standard color conversion.
 	HashSet<StringName> conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();

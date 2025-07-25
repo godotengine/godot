@@ -32,9 +32,9 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/settings/editor_command_palette.h"
@@ -140,13 +140,9 @@ void Polygon2DEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (is_visible()) {
-				dock_button->show();
-				EditorNode::get_bottom_panel()->make_item_visible(polygon_edit);
+				EditorDockManager::get_singleton()->focus_dock(polygon_edit);
 			} else {
-				dock_button->hide();
-				if (polygon_edit->is_visible_in_tree()) {
-					EditorNode::get_bottom_panel()->hide_bottom_panel();
-				}
+				// EditorDockManager::get_singleton()->close_dock(polygon_edit);
 			}
 		} break;
 	}
@@ -1490,8 +1486,9 @@ Polygon2DEditor::Polygon2DEditor() {
 	error = memnew(AcceptDialog);
 	add_child(error);
 
-	dock_button = EditorNode::get_bottom_panel()->add_item(TTRC("Polygon"), polygon_edit, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTR("Toggle Polygon Bottom Panel")));
-	dock_button->hide();
+	EditorDockManager::get_singleton()->add_dock(polygon_edit, TTRC("Polygon"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_polygon_2d_bottom_panel", TTRC("Toggle Polygon Bottom Panel")), "Polygon");
+	EditorDockManager::get_singleton()->set_dock_contextual(polygon_edit, true);
+	EditorDockManager::get_singleton()->close_dock(polygon_edit);
 }
 
 Polygon2DEditorPlugin::Polygon2DEditorPlugin() :
