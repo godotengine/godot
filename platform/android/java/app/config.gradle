@@ -15,7 +15,7 @@ ext.versions = [
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
     ndkVersion         : '28.1.13356709',
     splashscreenVersion: '1.0.1',
-    openxrVendorsVersion: '4.1.0-stable'
+    openxrVendorsVersion: '4.1.1-stable'
 
 ]
 
