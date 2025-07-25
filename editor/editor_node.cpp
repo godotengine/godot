@@ -49,7 +49,6 @@
 #include "editor/inspector/editor_context_menu_plugin.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
-#include "scene/3d/bone_attachment_3d.h"
 #include "scene/animation/animation_tree.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/dialogs.h"
@@ -110,10 +109,6 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/progress_dialog.h"
 #include "editor/gui/window_wrapper.h"
-#include "editor/import/3d/editor_import_collada.h"
-#include "editor/import/3d/resource_importer_obj.h"
-#include "editor/import/3d/resource_importer_scene.h"
-#include "editor/import/3d/scene_import_settings.h"
 #include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/fbx_importer_manager.h"
@@ -143,9 +138,6 @@
 #include "editor/run/editor_run.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/run/game_view_plugin.h"
-#include "editor/scene/3d/mesh_library_editor_plugin.h"
-#include "editor/scene/3d/node_3d_editor_plugin.h"
-#include "editor/scene/3d/root_motion_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
 #include "editor/scene/editor_scene_tabs.h"
 #include "editor/scene/material_editor_plugin.h"
@@ -186,6 +178,15 @@
 #include "servers/physics_server_2d.h"
 #endif // PHYSICS_2D_DISABLED
 
+// 3D.
+#include "editor/import/3d/editor_import_collada.h"
+#include "editor/import/3d/resource_importer_obj.h"
+#include "editor/import/3d/resource_importer_scene.h"
+#include "editor/import/3d/scene_import_settings.h"
+#include "editor/scene/3d/mesh_library_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/root_motion_editor_plugin.h"
+#include "scene/3d/bone_attachment_3d.h"
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
@@ -2431,7 +2432,6 @@ void EditorNode::_dialog_action(String p_file) {
 				// Make sure MeshLibrary is updated in the editor.
 				ResourceLoader::load(p_file)->reload_from_file();
 			}
-
 		} break;
 
 		case PROJECT_PACK_AS_ZIP: {
@@ -4734,9 +4734,9 @@ void EditorNode::get_preload_scene_modification_table(
 				new_additive_node_entry.owner = p_node->get_owner();
 				new_additive_node_entry.index = p_node->get_index();
 
-				Node2D *node_2d = Object::cast_to<Node2D>(p_node);
-				if (node_2d) {
-					new_additive_node_entry.transform_2d = node_2d->get_transform();
+				CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_node);
+				if (canvas_item) {
+					new_additive_node_entry.transform_2d = canvas_item->get_transform();
 				}
 				Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 				if (node_3d) {
@@ -7705,13 +7705,13 @@ EditorNode::EditorNode() {
 		import_wav.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_wav);
 
-		Ref<ResourceImporterOBJ> import_obj;
-		import_obj.instantiate();
-		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
-
 		Ref<ResourceImporterShaderFile> import_shader_file;
 		import_shader_file.instantiate();
 		ResourceFormatImporter::get_singleton()->add_importer(import_shader_file);
+
+		Ref<ResourceImporterOBJ> import_obj;
+		import_obj.instantiate();
+		ResourceFormatImporter::get_singleton()->add_importer(import_obj);
 
 		Ref<ResourceImporterScene> import_scene = memnew(ResourceImporterScene("PackedScene", true));
 		ResourceFormatImporter::get_singleton()->add_importer(import_scene);
@@ -8633,14 +8633,6 @@ EditorNode::EditorNode() {
 	resource_preview->add_preview_generator(Ref<EditorGradientPreviewPlugin>(memnew(EditorGradientPreviewPlugin)));
 
 	{
-		Ref<StandardMaterial3DConversionPlugin> spatial_mat_convert;
-		spatial_mat_convert.instantiate();
-		resource_conversion_plugins.push_back(spatial_mat_convert);
-
-		Ref<ORMMaterial3DConversionPlugin> orm_mat_convert;
-		orm_mat_convert.instantiate();
-		resource_conversion_plugins.push_back(orm_mat_convert);
-
 		Ref<CanvasItemMaterialConversionPlugin> canvas_item_mat_convert;
 		canvas_item_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(canvas_item_mat_convert);
@@ -8648,6 +8640,14 @@ EditorNode::EditorNode() {
 		Ref<ParticleProcessMaterialConversionPlugin> particles_mat_convert;
 		particles_mat_convert.instantiate();
 		resource_conversion_plugins.push_back(particles_mat_convert);
+
+		Ref<StandardMaterial3DConversionPlugin> spatial_mat_convert;
+		spatial_mat_convert.instantiate();
+		resource_conversion_plugins.push_back(spatial_mat_convert);
+
+		Ref<ORMMaterial3DConversionPlugin> orm_mat_convert;
+		orm_mat_convert.instantiate();
+		resource_conversion_plugins.push_back(orm_mat_convert);
 
 		Ref<ProceduralSkyMaterialConversionPlugin> procedural_sky_mat_convert;
 		procedural_sky_mat_convert.instantiate();
@@ -8808,7 +8808,7 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/editor_prev", TTRC("Open the previous Editor"));
 
 	// Apply setting presets in case the editor_settings file is missing values.
-	EditorSettingsDialog::update_navigation_preset();
+	EditorSettingsDialog::update_3d_navigation_preset();
 
 	screenshot_timer = memnew(Timer);
 	screenshot_timer->set_one_shot(true);
