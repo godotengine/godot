@@ -70,7 +70,7 @@ protected:
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const;
 
 public:
-	void set_mesh(const Ref<Mesh> &p_mesh);
+	virtual void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
 
 	void set_skin(const Ref<Skin> &p_skin);
