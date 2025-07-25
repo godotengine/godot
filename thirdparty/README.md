@@ -436,7 +436,7 @@ Patches:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 11.2.1 (33a3f8de60dcad7535f14f07d6710144548853ac, 2025)
+- Version: 11.3.2 (4e3df1c1383481ed5717603d5dd3453a04fb16ba, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -444,7 +444,7 @@ Files extracted from upstream source:
 - `AUTHORS`, `COPYING`, `THANKS`
 - From the `src` folder, recursively:
   - All the `.cc`, `.h`, `.hh` files
-  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `wasm/*`
+  - Except `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`, `hb-wasm*.*`, `hb-harfrust.cc`, `wasm/*`, `ms-use/*`, `rust/*`
 
 
 ## hidapi
@@ -969,6 +969,8 @@ Patches:
 
 - `0001-remove-unnecessary-subsystems.patch` (GH-106218)
 - `0002-msvc-constants-fpstrict.patch` (GH-106218)
+- `0003-std-include.patch` (GH-108144)
+- `0004-errno-include.patch` (GH-108354)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.

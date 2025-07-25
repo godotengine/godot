@@ -789,8 +789,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 			}
 
-			undo_redo->add_do_method(this, "_update_script_button");
-			undo_redo->add_undo_method(this, "_update_script_button");
+			undo_redo->add_do_method(this, "_queue_update_script_button");
+			undo_redo->add_undo_method(this, "_queue_update_script_button");
 
 			undo_redo->commit_action();
 		} break;
@@ -1966,7 +1966,6 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<
 		base_path.push_back(n->get_name());
 		n = n->get_parent();
 	}
-	base_path.reverse();
 
 	Vector<StringName> new_base_path;
 	if (p_new_parent) {
@@ -1976,8 +1975,14 @@ void SceneTreeDock::fill_path_renames(Node *p_node, Node *p_new_parent, HashMap<
 			n = n->get_parent();
 		}
 
+		// For the case Reparent to New Node, the new parent has not yet been added to the tree.
+		if (!p_new_parent->is_inside_tree()) {
+			new_base_path.append_array(base_path);
+		}
+
 		new_base_path.reverse();
 	}
+	base_path.reverse();
 
 	_fill_path_renames(base_path, new_base_path, p_node, p_renames);
 }
@@ -2578,8 +2583,8 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 		undo_redo->add_undo_method(E, "set_script", existing);
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", E);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", E);
-		undo_redo->add_do_method(this, "_update_script_button");
-		undo_redo->add_undo_method(this, "_update_script_button");
+		undo_redo->add_do_method(this, "_queue_update_script_button");
+		undo_redo->add_undo_method(this, "_queue_update_script_button");
 	}
 	undo_redo->commit_action();
 
@@ -2587,7 +2592,7 @@ void SceneTreeDock::_script_created(Ref<Script> p_script) {
 	Object *edited_object = InspectorDock::get_inspector_singleton()->get_edited_object();
 
 	_push_item(p_script.ptr());
-	_update_script_button();
+	_queue_update_script_button();
 
 	InspectorDock::get_inspector_singleton()->edit(edited_object);
 }
@@ -2901,6 +2906,16 @@ void SceneTreeDock::_update_script_button() {
 	button_create_script->set_visible(can_create_script);
 	button_detach_script->set_visible(can_detach_script);
 	button_extend_script->set_visible(can_extend_script);
+
+	update_script_button_queued = false;
+}
+
+void SceneTreeDock::_queue_update_script_button() {
+	if (update_script_button_queued) {
+		return;
+	}
+	update_script_button_queued = true;
+	callable_mp(this, &SceneTreeDock::_update_script_button).call_deferred();
 }
 
 void SceneTreeDock::_selection_changed() {
@@ -2914,7 +2929,17 @@ void SceneTreeDock::_selection_changed() {
 		_push_item(nullptr);
 	}
 
-	_update_script_button();
+	// Untrack script changes in previously selected nodes.
+	clear_previous_node_selection();
+
+	// Track script changes in newly selected nodes.
+	node_previous_selection.reserve(editor_selection->get_selection().size());
+	for (const KeyValue<Node *, Object *> &E : editor_selection->get_selection()) {
+		Node *node = E.key;
+		node_previous_selection.push_back(node);
+		node->connect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	}
+	_queue_update_script_button();
 }
 
 Node *SceneTreeDock::_do_create(Node *p_parent) {
@@ -3350,6 +3375,13 @@ static bool _is_same_selection(const Vector<Node *> &p_first, const List<Node *>
 	return true;
 }
 
+void SceneTreeDock::clear_previous_node_selection() {
+	for (Node *node : node_previous_selection) {
+		node->disconnect(CoreStringName(script_changed), callable_mp(this, &SceneTreeDock::_queue_update_script_button));
+	}
+	node_previous_selection.clear();
+}
+
 void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
 	// If the nodes selected are the same independently of order then return early.
 	if (_is_same_selection(p_nodes, editor_selection->get_full_selected_node_list())) {
@@ -3682,8 +3714,8 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 		undo_redo->add_undo_method(n, "set_script", n->get_script());
 		undo_redo->add_do_method(InspectorDock::get_singleton(), "apply_script_properties", n);
 		undo_redo->add_undo_method(InspectorDock::get_singleton(), "apply_script_properties", n);
-		undo_redo->add_do_method(this, "_update_script_button");
-		undo_redo->add_undo_method(this, "_update_script_button");
+		undo_redo->add_do_method(this, "_queue_update_script_button");
+		undo_redo->add_undo_method(this, "_queue_update_script_button");
 		undo_redo->commit_action();
 	}
 }
@@ -4456,7 +4488,7 @@ void SceneTreeDock::_feature_profile_changed() {
 		profile_allow_script_editing = true;
 	}
 
-	_update_script_button();
+	_queue_update_script_button();
 }
 
 void SceneTreeDock::_clear_clipboard() {
@@ -4631,7 +4663,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_root"), &SceneTreeDock::_reparent_nodes_to_root);
 	ClassDB::bind_method(D_METHOD("_reparent_nodes_to_paths_with_transform_and_name"), &SceneTreeDock::_reparent_nodes_to_paths_with_transform_and_name);
 
-	ClassDB::bind_method(D_METHOD("_update_script_button"), &SceneTreeDock::_update_script_button);
+	ClassDB::bind_method(D_METHOD("_queue_update_script_button"), &SceneTreeDock::_queue_update_script_button);
 
 	ClassDB::bind_method(D_METHOD("instantiate"), &SceneTreeDock::instantiate);
 	ClassDB::bind_method(D_METHOD("get_tree_editor"), &SceneTreeDock::get_tree_editor);
@@ -4653,7 +4685,6 @@ void SceneTreeDock::_update_configuration_warning() {
 SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data) {
 	singleton = this;
 	set_name("Scene");
-	edited_scene = nullptr;
 	editor_data = &p_editor_data;
 	editor_selection = p_editor_selection;
 	scene_root = p_scene_root;

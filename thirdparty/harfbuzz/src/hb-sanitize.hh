@@ -120,8 +120,8 @@
 struct hb_sanitize_context_t :
        hb_dispatch_context_t<hb_sanitize_context_t, bool, HB_DEBUG_SANITIZE>
 {
-  hb_sanitize_context_t () :
-	start (nullptr), end (nullptr),
+  hb_sanitize_context_t (const char *start_ = nullptr, const char *end_ = nullptr) :
+	start (start_), end (end_),
 	length (0),
 	max_ops (0), max_subtables (0),
         recursion_depth (0),
@@ -212,14 +212,22 @@ struct hb_sanitize_context_t :
 
   void reset_object ()
   {
-    this->start = this->blob->data;
-    this->end = this->start + this->blob->length;
+    if (this->blob)
+    {
+      this->start = this->blob->data;
+      this->end = this->start + this->blob->length;
+    }
     this->length = this->end - this->start;
     assert (this->start <= this->end); /* Must not overflow. */
   }
 
-  void start_processing ()
+  void start_processing (const char *start_ = nullptr, const char *end_ = nullptr)
   {
+    if (start_)
+    {
+      this->start = start_;
+      this->end = end_;
+    }
     reset_object ();
     unsigned m;
     if (unlikely (hb_unsigned_mul_overflows (this->end - this->start, HB_SANITIZE_MAX_OPS_FACTOR, &m)))
@@ -463,9 +471,11 @@ struct hb_sanitize_context_t :
     }
     else
     {
-      if (edit_count && !writable) {
-	start = hb_blob_get_data_writable (blob, nullptr);
-	end = start + blob->length;
+      if (edit_count && !writable)
+      {
+        unsigned length;
+	start = hb_blob_get_data_writable (blob, &length);
+	end = start + length;
 
 	if (start)
 	{

@@ -262,7 +262,7 @@ void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, c
 }
 
 Vector<String> ShaderRD::_build_variant_stage_sources(uint32_t p_variant, CompileData p_data) {
-	if (!variants_enabled[p_variant] && !variants_bake_for.has(p_variant)) {
+	if (!variants_enabled[p_variant]) {
 		return Vector<String>(); // Variant is disabled, return.
 	}
 
@@ -463,11 +463,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
 		uint32_t variant_size = f->get_32();
-		ERR_FAIL_COND_V(variant_size == 0 && variants_enabled[variant_id], false);
-		if (!variants_enabled[variant_id] && !variants_bake_for.has(variant_id)) {
-			continue;
-		}
-		if (variant_size == 0) {
+		if (!variants_enabled[variant_id] || variant_size == 0) {
 			continue;
 		}
 		Vector<uint8_t> variant_bytes;
@@ -482,7 +478,7 @@ bool ShaderRD::_load_from_cache(Version *p_version, int p_group) {
 
 	for (uint32_t i = 0; i < variant_count; i++) {
 		int variant_id = group_to_variant_map[p_group][i];
-		if ((!variants_enabled[variant_id] && !variants_bake_for.has(variant_id)) || p_version->variant_data[variant_id].is_empty()) {
+		if (!variants_enabled[variant_id]) {
 			p_version->variants.write[variant_id] = RID();
 			continue;
 		}
@@ -575,7 +571,7 @@ void ShaderRD::_compile_version_end(Version *p_version, int p_group) {
 	if (!all_valid) {
 		// Clear versions if they exist.
 		for (int i = 0; i < variant_defines.size(); i++) {
-			if ((!variants_enabled[i] && !variants_bake_for.has(i)) || !group_enabled[variant_defines[i].group]) {
+			if (!variants_enabled[i] || !group_enabled[variant_defines[i].group]) {
 				continue; // Disabled.
 			}
 			if (!p_version->variants[i].is_null()) {

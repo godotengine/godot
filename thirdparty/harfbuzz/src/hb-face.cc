@@ -329,7 +329,7 @@ hb_face_create_from_file_or_fail (const char   *file_name,
   return face;
 }
 
-static struct supported_face_loaders_t {
+static const struct supported_face_loaders_t {
 	char name[16];
 	hb_face_t * (*from_file) (const char *font_file, unsigned face_index);
 	hb_face_t * (*from_blob) (hb_blob_t *blob, unsigned face_index);

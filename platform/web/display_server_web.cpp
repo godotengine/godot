@@ -634,18 +634,18 @@ Point2i DisplayServerWeb::mouse_get_position() const {
 }
 
 // Wheel
-int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_x, p_delta_y);
+		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_mode, p_delta_x, p_delta_y);
 		return true;
 	}
 #endif
 
-	return _mouse_wheel_callback(p_delta_x, p_delta_y);
+	return _mouse_wheel_callback(p_delta_mode, p_delta_x, p_delta_y);
 }
 
-int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::_mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 	if (!godot_js_display_canvas_is_focused() && !godot_js_is_ime_focused()) {
 		if (get_singleton()->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
@@ -665,20 +665,43 @@ int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) 
 	ev->set_ctrl_pressed(input->is_key_pressed(Key::CTRL));
 	ev->set_meta_pressed(input->is_key_pressed(Key::META));
 
+	enum DeltaMode {
+		DELTA_MODE_PIXEL = 0,
+		DELTA_MODE_LINE = 1,
+		DELTA_MODE_PAGE = 2,
+	};
+	const float MOUSE_WHEEL_PIXEL_FACTOR = 0.03f;
+	const float MOUSE_WHEEL_LINE_FACTOR = 0.3f;
+	const float MOUSE_WHEEL_PAGE_FACTOR = 1.0f;
+	float mouse_wheel_factor;
+
+	switch (p_delta_mode) {
+		case DELTA_MODE_PIXEL: {
+			mouse_wheel_factor = MOUSE_WHEEL_PIXEL_FACTOR;
+		} break;
+		case DELTA_MODE_LINE: {
+			mouse_wheel_factor = MOUSE_WHEEL_LINE_FACTOR;
+		} break;
+		case DELTA_MODE_PAGE: {
+			mouse_wheel_factor = MOUSE_WHEEL_PAGE_FACTOR;
+		} break;
+	}
+
 	if (p_delta_y < 0) {
 		ev->set_button_index(MouseButton::WHEEL_UP);
+		ev->set_factor(-p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_y > 0) {
 		ev->set_button_index(MouseButton::WHEEL_DOWN);
+		ev->set_factor(p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_x > 0) {
 		ev->set_button_index(MouseButton::WHEEL_LEFT);
+		ev->set_factor(p_delta_x * mouse_wheel_factor);
 	} else if (p_delta_x < 0) {
 		ev->set_button_index(MouseButton::WHEEL_RIGHT);
+		ev->set_factor(-p_delta_x * mouse_wheel_factor);
 	} else {
 		return false;
 	}
-
-	// Different browsers give wildly different delta values, and we can't
-	// interpret deltaMode, so use default value for wheel events' factor.
 
 	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
 	BitField<MouseButtonMask> button_mask = input->get_mouse_button_mask();

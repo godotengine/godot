@@ -122,8 +122,8 @@ private:
 	static int _mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
 	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
-	WASM_EXPORT static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
-	static int _mouse_wheel_callback(double p_delta_x, double p_delta_y);
+	WASM_EXPORT static int mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
+	static int _mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
 	WASM_EXPORT static void touch_callback(int p_type, int p_count);
 	static void _touch_callback(int p_type, int p_count);
 	WASM_EXPORT static void key_callback(int p_pressed, int p_repeat, int p_modifiers);

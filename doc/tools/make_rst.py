@@ -2151,6 +2151,12 @@ def format_text_block(
                                         state,
                                     )
 
+                                elif class_def.properties[target_name].overrides is not None:
+                                    print_error(
+                                        f'{state.current_class}.xml: Invalid member reference "{link_target}" in {context_name}. The reference must point to the original definition, not to the override.',
+                                        state,
+                                    )
+
                             elif tag_state.name == "signal" and target_name not in class_def.signals:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved signal reference "{link_target}" in {context_name}.',

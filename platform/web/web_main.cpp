@@ -108,7 +108,8 @@ void print_web_header() {
 	// Emscripten.
 	char *emscripten_version_char = godot_js_emscripten_get_version();
 	String emscripten_version = vformat("Emscripten %s", emscripten_version_char);
-	memfree(emscripten_version_char);
+	// `free()` is used here because it's not memory that was allocated by Godot.
+	free(emscripten_version_char);
 
 	// Build features.
 	String thread_support = OS::get_singleton()->has_feature("threads")

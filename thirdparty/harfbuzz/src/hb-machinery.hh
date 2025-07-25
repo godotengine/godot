@@ -66,13 +66,15 @@ static inline Type& StructAtOffsetUnaligned(void *P, unsigned int offset)
 }
 
 /* StructAfter<T>(X) returns the struct T& that is placed after X.
- * Works with X of variable size also.  X must implement get_size() */
-template<typename Type, typename TObject>
-static inline const Type& StructAfter(const TObject &X)
-{ return StructAtOffset<Type>(&X, X.get_size()); }
-template<typename Type, typename TObject>
-static inline Type& StructAfter(TObject &X)
-{ return StructAtOffset<Type>(&X, X.get_size()); }
+ * Works with X of variable size also.  X must implement get_size().
+ * Any extra arguments are forwarded to get_size, so for example
+ * it can work with UnsizedArrayOf<> as well. */
+template <typename Type, typename TObject, typename ...Ts>
+static inline const Type& StructAfter(const TObject &X, Ts... args)
+{ return StructAtOffset<Type>(&X, X.get_size(args...)); }
+template <typename Type, typename TObject, typename ...Ts>
+static inline Type& StructAfter(TObject &X, Ts... args)
+{ return StructAtOffset<Type>(&X, X.get_size(args...)); }
 
 
 /*
@@ -130,7 +132,6 @@ static inline Type& StructAfter(TObject &X)
 #define DEFINE_SIZE_ARRAY_SIZED(size, array) \
   unsigned int get_size () const { return (size - (array).min_size + (array).get_size ()); } \
   DEFINE_SIZE_ARRAY(size, array)
-
 
 
 /*
