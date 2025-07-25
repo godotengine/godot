@@ -338,7 +338,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared() - 1) <= Mathf.Epsilon;
+            return Mathf.IsEqualApprox(LengthSquared(), 1, Mathf.Epsilon);
         }
 
         public readonly Quaternion Log()
