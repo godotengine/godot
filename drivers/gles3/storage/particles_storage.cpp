@@ -444,6 +444,42 @@ AABB ParticlesStorage::particles_get_current_aabb(RID p_particles) {
 	return aabb;
 }
 
+PackedVector3Array ParticlesStorage::particles_get_current_positions(RID p_particles) const {
+	const Particles *particles = particles_owner.get_or_null(p_particles);
+	ERR_FAIL_NULL_V(particles, PackedVector3Array());
+
+	int total_amount = particles->amount;
+
+	// If available, read from the sort buffer which should be 2 frames out of date.
+	// This will help alleviate GPU stalls.
+	GLuint read_buffer = particles->sort_buffer_filled ? particles->sort_buffer : particles->back_instance_buffer;
+
+	Vector<uint8_t> buffer = Utilities::buffer_get_data(GL_ARRAY_BUFFER, read_buffer, total_amount * sizeof(ParticleInstanceData3D));
+	ERR_FAIL_COND_V(buffer.size() != (int)(total_amount * sizeof(ParticleInstanceData3D)), PackedVector3Array());
+
+	Transform3D inv = particles->emission_transform.affine_inverse();
+
+	PackedVector3Array positions;
+	if (buffer.size()) {
+		const uint8_t *data_ptr = (const uint8_t *)buffer.ptr();
+		uint32_t particle_data_size = sizeof(ParticleInstanceData3D);
+
+		for (int i = 0; i < total_amount; i++) {
+			const ParticleInstanceData3D &particle_data = *(const ParticleInstanceData3D *)&data_ptr[particle_data_size * i];
+			// If scale is 0.0, we assume the particle is inactive.
+			if (particle_data.xform[0] > 0.0) {
+				Vector3 pos = Vector3(particle_data.xform[3], particle_data.xform[7], particle_data.xform[11]);
+				if (!particles->use_local_coords) {
+					pos = inv.xform(pos);
+				}
+				positions.push_back(pos);
+			}
+		}
+	}
+
+	return positions;
+}
+
 AABB ParticlesStorage::particles_get_aabb(RID p_particles) const {
 	const Particles *particles = particles_owner.get_or_null(p_particles);
 	ERR_FAIL_NULL_V(particles, AABB());
