@@ -344,7 +344,7 @@ void register_server_types() {
 	GDREGISTER_ABSTRACT_CLASS(XRTracker);
 #endif // XR_DISABLED
 
-	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		writer_pngwav = memnew(MovieWriterPNGWAV);
 		MovieWriter::add_writer(writer_pngwav);
 	}
@@ -357,7 +357,7 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
-	if (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
+	if constexpr (GD_IS_CLASS_ENABLED(MovieWriterPNGWAV)) {
 		memdelete(writer_pngwav);
 	}
 
