@@ -14,6 +14,7 @@ ios_lib = [
     "godot_view_ios.mm",
     "main_ios.mm",
     "os_ios.mm",
+    "virtual_controller_ios.mm",
 ]
 
 env_ios = env.Clone()
