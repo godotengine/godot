@@ -35,8 +35,9 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_validation_panel.h"
-#include "editor/settings/editor_settings.h"
-#include "editor/settings/project_settings_editor.h"
+#include "editor/multi_node_edit.h"
+#include "editor/project_settings_editor.h"
+#include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_button.h"
@@ -47,18 +48,21 @@
 //TODO: Remove when done debugging.
 #include "editor/editor_log.h"
 
-//checking if an item is editable should depend individual objects in a
-	//	multi-select. If 3 objects are selected, and only one is editable, 
-	//	selecting them all and changing the group should make the item
-	//	not editable. This will reduce confusion versus setting groups on a set
-	//	of objects that misses a few due to the individual editing states.
-static bool can_edit(Node *p_node, const String &p_group) {
-	Node *n = p_node;
+
+//It would seem that this could be more elegant by moving the `can_edit_node`
+//	method to node.h, then defining a similar method in MultiNodeEdit, and 
+//	calling them both from `_can_edit` like in `_get_groups` below. 
+//
+//	However, no-where currently does node.h reference EditorNode 
+//	as seen in `can_edit_node`, and I don't want to add a new link between them
+//	to that already very entangled header. So we'll just keep defining it here
+//	instead.
+static bool can_edit_node(Node *n, const StringName &p_group) {
 	bool can_edit = true;
 	while (n) {
 		Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
 		if (ss.is_valid()) {
-			int path = ss->find_node_by_path(n->get_path_to(p_node));
+			int path = ss->find_node_by_path(n->get_path_to(n));
 			if (path != -1) {
 				if (ss->is_node_in_group(path, p_group)) {
 					can_edit = false;
@@ -69,6 +73,30 @@ static bool can_edit(Node *p_node, const String &p_group) {
 		n = n->get_owner();
 	}
 	return can_edit;
+}
+
+bool GroupsEditor::_can_edit(Object *p_object, const StringName &p_group) const {
+	if (Object::cast_to<Node>(p_object)) {
+		return can_edit_node(Object::cast_to<Node>(p_object), p_group);
+	} else if (Object::cast_to<MultiNodeEdit>(p_object)) {
+		Node* es = EditorNode::get_singleton()->get_edited_scene();
+		MultiNodeEdit *p_mne = Object::cast_to<MultiNodeEdit>(p_object);
+
+		bool can_edit = true;
+
+		for (int i = 0; i < p_mne->get_node_count(); i++) {
+			NodePath path = p_mne->get_node(i);
+			Node* p_node = es->get_node(path);
+
+			if (p_node && !can_edit_node(p_node, p_group)) {
+				can_edit = false;
+				break;
+			}
+		}
+
+		return can_edit;
+	}
+	return false;
 }
 
 struct _GroupInfoComparator {
@@ -137,7 +165,7 @@ void GroupsEditor::_load_scene_groups(Node *p_node) {
 			continue;
 		}
 
-		bool is_editable = can_edit(p_node, gi.name);
+		bool is_editable = _can_edit(p_node, gi.name);
 		if (scene_groups.has(gi.name)) {
 			scene_groups[gi.name] = scene_groups[gi.name] && is_editable;
 		} else {
@@ -147,14 +175,6 @@ void GroupsEditor::_load_scene_groups(Node *p_node) {
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_load_scene_groups(p_node->get_child(i));
-	}
-}
-
-// Get the current groups occupied by a selection.
-void GroupsEditor::_get_groups(Object *p_object, List<Node::GroupInfo> *p_groups) {
-	if (Object::cast_to<Node>(p_object)) {
-		Node* p_node = Object::cast_to<Node>(p_object);
-		p_node->get_groups(p_groups);
 	}
 }
 
@@ -185,6 +205,17 @@ void GroupsEditor::_update_groups() {
 	}
 
 	updating_groups = false;
+}
+
+void GroupsEditor::_get_groups(Object* p_object, List<Node::GroupInfo> *groups) { 
+	if (Object::cast_to<Node>(p_object)) {
+		Node* p_node = Object::cast_to<Node>(p_object);
+		p_node->get_groups(groups);
+	}
+	else if (Object::cast_to<MultiNodeEdit>(p_object)) {
+		MultiNodeEdit* p_mne = Object::cast_to<MultiNodeEdit>(p_object);
+		p_mne->get_groups(groups);
+	}
 }
 
 void GroupsEditor::_update_tree() {
@@ -236,7 +267,7 @@ void GroupsEditor::_update_tree() {
 
 		TreeItem *item = tree->create_item(local_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0, can_edit(current_obj, E));
+		item->set_editable(0, _can_edit(current_obj, E));
 		item->set_checked(0, current_groups.find(E) != nullptr);
 		item->set_text(0, E);
 		item->set_meta("__local", true);
@@ -267,7 +298,7 @@ void GroupsEditor::_update_tree() {
 
 		TreeItem *item = tree->create_item(global_root);
 		item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-		item->set_editable(0, can_edit(current_obj, E));
+		item->set_editable(0, _can_edit(current_obj, E));
 		item->set_checked(0, current_groups.find(E) != nullptr);
 		item->set_text(0, E);
 		item->set_meta("__local", false);
@@ -329,12 +360,11 @@ void GroupsEditor::set_current(Object *p_object) {
 		}
 		current_obj = nullptr;
 	}
-	else if (Object::cast_to<Node>(p_object)) {
-		Node *p_node = Object::cast_to<Node>(p_object);
-		if (current_obj == p_node) {
+	else {
+		if (current_obj == p_object) {
 			return;
 		}
-		current_obj = p_node;
+		current_obj = p_object;
 
 		if (scene_tree->get_edited_scene_root() != scene_root_node) {
 			scene_root_node = scene_tree->get_edited_scene_root();
@@ -343,9 +373,6 @@ void GroupsEditor::set_current(Object *p_object) {
 		}
 
 		_update_tree();
-	}
-	else {
-		EditorNode::get_log()->add_message(String("TODO: groups editor cannot accept object {} that is not of type Node.").format({p_object->to_string()}, "{}"));
 	}
 }
 
