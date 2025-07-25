@@ -1206,6 +1206,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					E->apply(parser, member.function, p_class);
 				}
 				resolve_function_signature(member.function, p_source);
+				if (!p_class->allows_implicit_new && member.function->identifier->name == GDScriptLanguage::get_singleton()->strings._init && (ClassDB::is_parent_class(p_class->get_datatype().native_type, SNAME("Node")) || ClassDB::is_parent_class(p_class->get_datatype().native_type, SNAME("Resource")))) {
+					parser->push_warning(member.function, GDScriptWarning::INIT_WITH_REQUIRED_PARAM);
+				}
 				break;
 			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
 				member.enum_value.identifier->set_datatype(resolving_datatype);
@@ -3625,6 +3628,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			} else if (method_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED)) {
 				push_error(vformat(R"*(Cannot call the parent class' abstract function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
 			}
+		}
+
+		if (base_type.class_type && !base_type.class_type->allows_implicit_new && (p_call->function_name == SNAME("duplicate") || p_call->function_name == SNAME("duplicate_deep"))) {
+			parser->push_warning(p_call, GDScriptWarning::INIT_WITH_REQUIRED_PARAM);
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
