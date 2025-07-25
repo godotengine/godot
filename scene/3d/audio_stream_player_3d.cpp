@@ -305,6 +305,10 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 #ifndef PHYSICS_3D_DISABLED
 // Interacts with PhysicsServer3D, so can only be called during _physics_process
 Area3D *AudioStreamPlayer3D::_get_overriding_area() {
+	if (area_mask == 0) {
+		return nullptr;
+	}
+
 	//check if any area is diverting sound into a bus
 	Ref<World3D> world_3d = get_world_3d();
 	ERR_FAIL_COND_V(world_3d.is_null(), nullptr);
