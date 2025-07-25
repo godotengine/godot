@@ -185,6 +185,7 @@ private:
 		Ref<Texture2D> filter_box;
 		Ref<Texture2D> file_sort_button;
 
+		Ref<Texture2D> file;
 		Ref<Texture2D> folder;
 		Color folder_icon_color;
 
