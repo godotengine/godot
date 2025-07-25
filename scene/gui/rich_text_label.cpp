@@ -2174,11 +2174,19 @@ void RichTextLabel::_accessibility_action_menu(const Variant &p_data) {
 }
 
 void RichTextLabel::_accessibility_scroll_down(const Variant &p_data) {
-	vscroll->set_value(vscroll->get_value() + vscroll->get_page() / 4);
+	if ((uint8_t)p_data == 0) {
+		vscroll->set_value(vscroll->get_value() + vscroll->get_page() / 4);
+	} else {
+		vscroll->set_value(vscroll->get_value() + vscroll->get_page());
+	}
 }
 
 void RichTextLabel::_accessibility_scroll_up(const Variant &p_data) {
-	vscroll->set_value(vscroll->get_value() - vscroll->get_page() / 4);
+	if ((uint8_t)p_data == 0) {
+		vscroll->set_value(vscroll->get_value() - vscroll->get_page() / 4);
+	} else {
+		vscroll->set_value(vscroll->get_value() - vscroll->get_page());
+	}
 }
 
 void RichTextLabel::_accessibility_scroll_set(const Variant &p_data) {

@@ -2833,22 +2833,22 @@
 			Scroll backward action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction">
-			Scroll down action, callback argument is not set.
+			Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction">
 			Scroll forward action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction">
-			Scroll left action, callback argument is not set.
+			Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction">
-			Scroll right action, callback argument is not set.
+			Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction">
-			Scroll up action, callback argument is not set.
+			Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction">
-			Scroll into view action, callback argument is not set.
+			Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
 		</constant>
 		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction">
 			Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
@@ -2873,6 +2873,30 @@
 		</constant>
 		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode">
 			Indicates that updates to the live region have the highest priority and should be presented immediately.
+		</constant>
+		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit">
+			The amount by which to scroll. A single item of a list, line of text.
+		</constant>
+		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit">
+			The amount by which to scroll. A single page.
+		</constant>
+		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Top-left edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Top edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Bottom edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Left edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Right edge of the scroll container.
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
