@@ -328,6 +328,7 @@ Error ResourceUID::update_cache() {
 }
 
 String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string) {
+	const int64_t uid_from_string = singleton->text_to_id(p_uid_string);
 	const uint32_t entry_count = p_cache_file->get_32();
 	CharString cs;
 	for (uint32_t i = 0; i < entry_count; i++) {
@@ -339,7 +340,7 @@ String ResourceUID::get_path_from_cache(Ref<FileAccess> &p_cache_file, const Str
 		int32_t rl = p_cache_file->get_buffer((uint8_t *)cs.ptrw(), len);
 		ERR_FAIL_COND_V(rl != len, String());
 
-		if (singleton->id_to_text(id) == p_uid_string) {
+		if (id == uid_from_string) {
 			return String::utf8(cs.get_data());
 		}
 	}
