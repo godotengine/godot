@@ -617,6 +617,7 @@ public:
 	virtual int get_alternative_tiles_count(const Vector2i p_atlas_coords) const = 0;
 	virtual int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const = 0;
 	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const = 0;
+	virtual bool has_tile_with_alternative(const Vector2i p_atlas_coords, int p_alternative_tile) const = 0;
 };
 
 class TileSetAtlasSource : public TileSetSource {
@@ -650,7 +651,7 @@ private:
 		LocalVector<real_t> animation_frames_durations;
 
 		// Alternatives
-		HashMap<int, TileData *> alternatives;
+		AHashMap<int, TileData *, HashHasher> alternatives = 4;
 		Vector<int> alternatives_ids;
 		int next_alternative_id = 1;
 	};
@@ -771,6 +772,7 @@ public:
 	void remove_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile);
 	void set_alternative_tile_id(const Vector2i p_atlas_coords, int p_alternative_tile, int p_new_id);
 	virtual bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
+	virtual bool has_tile_with_alternative(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
 	int get_next_alternative_tile_id(const Vector2i p_atlas_coords) const;
 
 	virtual int get_alternative_tiles_count(const Vector2i p_atlas_coords) const override;
@@ -829,6 +831,7 @@ public:
 	int get_alternative_tiles_count(const Vector2i p_atlas_coords) const override;
 	int get_alternative_tile_id(const Vector2i p_atlas_coords, int p_index) const override;
 	bool has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
+	virtual bool has_tile_with_alternative(const Vector2i p_atlas_coords, int p_alternative_tile) const override;
 
 	// Scenes accessors. Lot are similar to "Alternative tiles".
 	int get_scene_tiles_count() { return get_alternative_tiles_count(Vector2i()); }
