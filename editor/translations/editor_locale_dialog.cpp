@@ -31,53 +31,487 @@
 #include "editor_locale_dialog.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/translation_server.h"
-#include "editor/editor_undo_redo_manager.h"
+#include "editor/editor_node.h"
+#include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
 
-void EditorLocaleDialog::_notification(int p_what) {
-	if (p_what == NOTIFICATION_TRANSLATION_CHANGED) {
-		// TRANSLATORS: This is the label for a list of writing systems.
-		script_label1->set_text(TTR("Script:", "Locale"));
-		// TRANSLATORS: This refers to a writing system.
-		script_label2->set_text(TTR("Script", "Locale"));
+/**************************************************************************/
+/* EditorAddCustomLocaleDialog                                            */
+/**************************************************************************/
 
-		script_list->set_accessibility_name(TTR("Script", "Locale"));
-		script_code->set_accessibility_name(TTR("Script", "Locale"));
+void EditorAddCustomLocaleDialog::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("remove_code", PropertyInfo(Variant::STRING, "code")));
+	ADD_SIGNAL(MethodInfo("add_code", PropertyInfo(Variant::STRING, "code"), PropertyInfo(Variant::STRING, "name")));
+}
+
+void EditorAddCustomLocaleDialog::ok_pressed() {
+	if (edit && !old_code.is_empty() && (old_code != code->get_text() || old_name != name->get_text())) {
+		emit_signal(SNAME("remove_code"), old_code, true);
+	}
+	if (!code->get_text().is_empty() && (old_code != code->get_text() || old_name != name->get_text())) {
+		emit_signal(SNAME("add_code"), code->get_text(), name->get_text());
+	}
+	hide();
+}
+
+void EditorAddCustomLocaleDialog::set_data(const String &p_code, const String &p_name, bool p_is_lang, bool p_edit) {
+	old_code = p_code;
+	old_name = p_name;
+	is_lang = p_is_lang;
+	edit = p_edit;
+	code->set_text(p_code);
+	name->set_text(p_name);
+
+	_validate_code(code->get_text());
+}
+
+void EditorAddCustomLocaleDialog::_validate_code(const String &p_text) {
+	if (is_lang) {
+		if (!TranslationServer::get_singleton()->is_language_code_free(p_text)) {
+			warn_lbl->set_text(TTR("Invalid custom language code, this code is already in use."));
+			get_ok_button()->set_disabled(true);
+		} else if (!TranslationServer::is_language_code(p_text)) {
+			warn_lbl->set_text(TTR("Invalid custom language code, language code should be two lower case Latin letters (Alpha-2 code) or three lower case Latin letters (Alpha-3 code)."));
+			get_ok_button()->set_disabled(true);
+		} else {
+			warn_lbl->set_text("");
+			get_ok_button()->set_disabled(false);
+		}
+	} else {
+		if (!TranslationServer::get_singleton()->is_country_code_free(p_text)) {
+			warn_lbl->set_text(TTR("Invalid custom country code, this code is already in use."));
+			get_ok_button()->set_disabled(true);
+		} else if (!TranslationServer::is_country_code(p_text)) {
+			warn_lbl->set_text(TTR("Invalid custom country code, country code should be two upper case Latin letters (Alpha-2 code), three upper case Latin letters (Alpha-3 code), or three digits (UN M49 area code)."));
+			get_ok_button()->set_disabled(true);
+		} else {
+			warn_lbl->set_text("");
+			get_ok_button()->set_disabled(false);
+		}
 	}
 }
+
+EditorAddCustomLocaleDialog::EditorAddCustomLocaleDialog() {
+	VBoxContainer *vb = memnew(VBoxContainer);
+	add_child(vb);
+
+	HBoxContainer *hb_main = memnew(HBoxContainer);
+	vb->add_child(hb_main);
+
+	Label *code_lbl = memnew(Label);
+	code_lbl->set_text(TTR("Code:"));
+	hb_main->add_child(code_lbl);
+
+	code = memnew(LineEdit);
+	code->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	code->connect(SceneStringName(text_changed), callable_mp(this, &EditorAddCustomLocaleDialog::_validate_code));
+	hb_main->add_child(code);
+
+	Label *name_lbl = memnew(Label);
+	name_lbl->set_text(TTR("Name:"));
+	hb_main->add_child(name_lbl);
+
+	name = memnew(LineEdit);
+	name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hb_main->add_child(name);
+
+	warn_lbl = memnew(Label);
+	warn_lbl->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor)));
+	vb->add_child(warn_lbl);
+}
+
+/**************************************************************************/
+/* EditorLocaleDialog                                                     */
+/**************************************************************************/
 
 void EditorLocaleDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("locale_selected", PropertyInfo(Variant::STRING, "locale")));
 }
 
 void EditorLocaleDialog::ok_pressed() {
-	if (edit_filters->is_pressed()) {
-		return; // Do not update, if in filter edit mode.
-	}
-
-	String locale;
-	if (lang_code->get_text().is_empty()) {
-		return; // Language code is required.
-	}
-	locale = lang_code->get_text();
-
-	if (!script_code->get_text().is_empty()) {
-		locale += "_" + script_code->get_text();
-	}
-	if (!country_code->get_text().is_empty()) {
-		locale += "_" + country_code->get_text();
-	}
-	if (!variant_code->get_text().is_empty()) {
-		locale += "_" + variant_code->get_text();
-	}
-
-	emit_signal(SNAME("locale_selected"), TranslationServer::get_singleton()->standardize_locale(locale));
+	emit_signal(SNAME("locale_selected"), locale.operator String());
 	hide();
+}
+
+void EditorLocaleDialog::_post_popup() {
+	ConfirmationDialog::_post_popup();
+}
+
+void EditorLocaleDialog::set_locale(const String &p_locale) {
+	locale_valid = !p_locale.is_empty();
+	locale = TranslationServer::Locale(p_locale, false);
+
+	_lang_search(lang_search->get_text());
+	_script_search(script_search->get_text());
+	_country_search(country_search->get_text());
+	variant_code->set_text(locale.variant);
+	_item_selected();
+}
+
+void EditorLocaleDialog::popup_locale_dialog() {
+	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+}
+
+void EditorLocaleDialog::_toggle_advanced(bool p_checked) {
+	script_vb->set_visible(p_checked);
+	variant_code->set_visible(p_checked);
+	variant_lbl->set_visible(p_checked);
+}
+
+void EditorLocaleDialog::_update_cache() {
+	if (updating_settings) {
+		return;
+	}
+	translation_cache.clear();
+}
+
+void EditorLocaleDialog::_lang_search(const String &p_text) {
+	updating_lists = true;
+	lang_list->clear();
+
+	TreeItem *root = lang_list->create_item(nullptr);
+	lang_list->set_hide_root(true);
+	bool current_found = false;
+
+	// 1. Add search results.
+	TreeItem *search_root = lang_list->create_item(root);
+	search_root->set_icon(0, get_editor_theme_icon(SNAME("Search")));
+	search_root->set_selectable(0, false);
+	search_root->set_text(0, TTR("Search results"));
+	const PackedStringArray &search_results = TranslationServer::get_singleton()->find_language(p_text);
+	for (const String &code : search_results) {
+		const String &name = TranslationServer::get_singleton()->get_language_name(code);
+		TreeItem *t = lang_list->create_item(search_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Favorites")), BUTTON_FAVORITE_LANG, false, TTR("Add to favorites"));
+		if (locale_valid && code == locale.language) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (search_root->get_child_count() == 0) {
+		search_root->set_visible(false);
+	}
+
+	// 2. Add translations.
+	TreeItem *trans_root = lang_list->create_item(root);
+	trans_root->set_icon(0, get_editor_theme_icon(SNAME("Translation")));
+	trans_root->set_selectable(0, false);
+	trans_root->set_text(0, TTR("Project translations"));
+	const PackedStringArray &translations = GLOBAL_GET("internationalization/locale/translations");
+	for (const String &path : translations) {
+		if (!translation_cache.has(path)) {
+			Ref<Translation> tr = ResourceLoader::load(path);
+			if (tr.is_null()) {
+				continue;
+			}
+			translation_cache[path] = tr->get_locale();
+		}
+		TranslationServer::Locale loc(translation_cache[path], false);
+		const String &code = loc.language;
+		const String &name = TranslationServer::get_singleton()->get_language_name(code);
+		TreeItem *t = lang_list->create_item(trans_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		if (locale_valid && code == locale.language) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (trans_root->get_child_count() == 0) {
+		trans_root->set_visible(false);
+	}
+
+	// 3. Add favorites.
+	TreeItem *fav_root = lang_list->create_item(root);
+	fav_root->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
+	fav_root->set_selectable(0, false);
+	fav_root->set_text(0, TTR("Favorites"));
+	const PackedStringArray &favorites = EDITOR_GET("interface/editor/favorite_language_codes");
+	for (const String &code : favorites) {
+		const String &name = TranslationServer::get_singleton()->get_language_name(code);
+		TreeItem *t = lang_list->create_item(fav_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Unfavorite")), BUTTON_UNFAVORITE_LANG, false, TTR("Remove from favorites"));
+		if (locale_valid && code == locale.language) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (fav_root->get_child_count() == 0) {
+		fav_root->set_visible(false);
+	}
+
+	//4. Add project custom codes.
+	TreeItem *user_root = lang_list->create_item(root);
+	user_root->set_icon(0, get_editor_theme_icon(SNAME("User")));
+	user_root->set_selectable(0, false);
+	user_root->set_text(0, TTR("Custom"));
+	user_root->add_button(0, get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_LANG, false, TTR("Add"));
+	const Dictionary &custom = TranslationServer::get_singleton()->get_custom_language_codes();
+	for (const Variant *key = custom.next(nullptr); key; key = custom.next(key)) {
+		const String &code = *key;
+		const String &name = custom[*key];
+		TreeItem *t = lang_list->create_item(user_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_LANG, false, TTR("Edit"));
+		t->add_button(0, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_LANG, false, TTR("Remove"));
+		if (locale_valid && code == locale.language) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+
+	//5. Add current.
+	if (!current_found && locale_valid) {
+		search_root->set_visible(true);
+
+		const String &name = TranslationServer::get_singleton()->get_language_name(locale.language);
+		TreeItem *t = lang_list->create_item(search_root, 0);
+		t->set_text(0, vformat("%s [%s]", name, locale.language));
+		t->set_metadata(0, locale.language);
+		t->select(0);
+	}
+
+	updating_lists = false;
+}
+
+void EditorLocaleDialog::_script_search(const String &p_text) {
+	updating_lists = true;
+	script_list->clear();
+
+	TreeItem *root = script_list->create_item(nullptr);
+	script_list->set_hide_root(true);
+	bool current_found = false;
+
+	// 0. Add "Default/Unspecified".
+	TreeItem *default_root = script_list->create_item(root);
+	default_root->set_text(0, TTR("Default/Unspecified"));
+	default_root->set_icon(0, get_editor_theme_icon(SNAME("Marker")));
+	default_root->set_metadata(0, "");
+	if (locale.script.is_empty()) {
+		default_root->select(0);
+		current_found = true;
+	}
+
+	// 1. Add search results.
+	TreeItem *search_root = script_list->create_item(root);
+	search_root->set_icon(0, get_editor_theme_icon(SNAME("Search")));
+	search_root->set_selectable(0, false);
+	search_root->set_text(0, TTR("Search results"));
+	const PackedStringArray &search_results = TranslationServer::get_singleton()->find_script(p_text);
+	for (const String &code : search_results) {
+		const String &name = TranslationServer::get_singleton()->get_script_name(code);
+		TreeItem *t = script_list->create_item(search_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Favorites")), BUTTON_FAVORITE_SCRIPT, false, TTR("Add to favorites"));
+		if (locale_valid && code == locale.script) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (search_root->get_child_count() == 0) {
+		search_root->set_visible(false);
+	}
+
+	// 2. Add translations.
+	TreeItem *trans_root = script_list->create_item(root);
+	trans_root->set_icon(0, get_editor_theme_icon(SNAME("Translation")));
+	trans_root->set_selectable(0, false);
+	trans_root->set_text(0, TTR("Project translations"));
+	const PackedStringArray &translations = GLOBAL_GET("internationalization/locale/translations");
+	for (const String &path : translations) {
+		if (!translation_cache.has(path)) {
+			Ref<Translation> tr = ResourceLoader::load(path);
+			if (tr.is_null()) {
+				continue;
+			}
+			translation_cache[path] = tr->get_locale();
+		}
+		TranslationServer::Locale loc(translation_cache[path], false);
+		const String &code = loc.script;
+		if (!code.is_empty()) {
+			const String &name = TranslationServer::get_singleton()->get_script_name(code);
+			TreeItem *t = script_list->create_item(trans_root);
+			t->set_text(0, vformat("%s [%s]", name, code));
+			t->set_metadata(0, code);
+			if (locale_valid && code == locale.script) {
+				t->select(0);
+				current_found = true;
+			}
+		}
+	}
+	if (trans_root->get_child_count() == 0) {
+		trans_root->set_visible(false);
+	}
+
+	// 3. Add favorites.
+	TreeItem *fav_root = script_list->create_item(root);
+	fav_root->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
+	fav_root->set_selectable(0, false);
+	fav_root->set_text(0, TTR("Favorites"));
+	const PackedStringArray &favorites = EDITOR_GET("interface/editor/favorite_script_codes");
+	for (const String &code : favorites) {
+		const String &name = TranslationServer::get_singleton()->get_script_name(code);
+		TreeItem *t = script_list->create_item(fav_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Unfavorite")), BUTTON_UNFAVORITE_SCRIPT, false, TTR("Remove from favorites"));
+		if (locale_valid && code == locale.script) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (fav_root->get_child_count() == 0) {
+		fav_root->set_visible(false);
+	}
+
+	//4. Add current.
+	if (!current_found && locale_valid && !locale.script.is_empty()) {
+		search_root->set_visible(true);
+
+		const String &name = TranslationServer::get_singleton()->get_script_name(locale.script);
+		TreeItem *t = script_list->create_item(search_root, 0);
+		t->set_text(0, vformat("%s [%s]", name, locale.script));
+		t->set_metadata(0, locale.script);
+		t->select(0);
+	}
+
+	updating_lists = false;
+}
+
+void EditorLocaleDialog::_country_search(const String &p_text) {
+	updating_lists = true;
+	country_list->clear();
+
+	TreeItem *root = country_list->create_item(nullptr);
+	country_list->set_hide_root(true);
+	bool current_found = false;
+
+	// 0. Add "Default/Unspecified".
+	TreeItem *default_root = country_list->create_item(root);
+	default_root->set_text(0, TTR("Default/Unspecified"));
+	default_root->set_icon(0, get_editor_theme_icon(SNAME("Marker")));
+	default_root->set_metadata(0, "");
+	if (locale.country.is_empty()) {
+		default_root->select(0);
+		current_found = true;
+	}
+
+	// 1. Add search results.
+	TreeItem *search_root = country_list->create_item(root);
+	search_root->set_icon(0, get_editor_theme_icon(SNAME("Search")));
+	search_root->set_selectable(0, false);
+	search_root->set_text(0, TTR("Search results"));
+	const PackedStringArray &search_results = TranslationServer::get_singleton()->find_country(p_text);
+	for (const String &code : search_results) {
+		const String &name = TranslationServer::get_singleton()->get_country_name(code);
+		TreeItem *t = country_list->create_item(search_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Favorites")), BUTTON_FAVORITE_COUNTRY, false, TTR("Add to favorites"));
+		if (locale_valid && code == locale.country) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (search_root->get_child_count() == 0) {
+		search_root->set_visible(false);
+	}
+
+	// 2. Add translations.
+	TreeItem *trans_root = country_list->create_item(root);
+	trans_root->set_icon(0, get_editor_theme_icon(SNAME("Translation")));
+	trans_root->set_selectable(0, false);
+	trans_root->set_text(0, TTR("Project translations"));
+	const PackedStringArray &translations = GLOBAL_GET("internationalization/locale/translations");
+	for (const String &path : translations) {
+		if (!translation_cache.has(path)) {
+			Ref<Translation> tr = ResourceLoader::load(path);
+			if (tr.is_null()) {
+				continue;
+			}
+			translation_cache[path] = tr->get_locale();
+		}
+		TranslationServer::Locale loc(translation_cache[path], false);
+		const String &code = loc.country;
+		if (!code.is_empty()) {
+			const String &name = TranslationServer::get_singleton()->get_country_name(code);
+			TreeItem *t = country_list->create_item(trans_root);
+			t->set_text(0, vformat("%s [%s]", name, code));
+			t->set_metadata(0, code);
+			if (locale_valid && code == locale.country) {
+				t->select(0);
+				current_found = true;
+			}
+		}
+	}
+	if (trans_root->get_child_count() == 0) {
+		trans_root->set_visible(false);
+	}
+
+	// 3. Add favorites.
+	TreeItem *fav_root = country_list->create_item(root);
+	fav_root->set_icon(0, get_editor_theme_icon(SNAME("Favorites")));
+	fav_root->set_selectable(0, false);
+	fav_root->set_text(0, TTR("Favorites"));
+	const PackedStringArray &favorites = EDITOR_GET("interface/editor/favorite_country_codes");
+	for (const String &code : favorites) {
+		const String &name = TranslationServer::get_singleton()->get_country_name(code);
+		TreeItem *t = country_list->create_item(fav_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Unfavorite")), BUTTON_UNFAVORITE_COUNTRY, false, TTR("Remove from favorites"));
+		if (locale_valid && code == locale.country) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+	if (fav_root->get_child_count() == 0) {
+		fav_root->set_visible(false);
+	}
+
+	//4. Add project custom codes.
+	TreeItem *user_root = country_list->create_item(root);
+	user_root->set_icon(0, get_editor_theme_icon(SNAME("User")));
+	user_root->set_selectable(0, false);
+	user_root->set_text(0, TTR("Custom"));
+	user_root->add_button(0, get_editor_theme_icon(SNAME("Add")), BUTTON_ADD_COUNTRY, false, TTR("Add"));
+	const Dictionary &custom = TranslationServer::get_singleton()->get_custom_country_codes();
+	for (const Variant *key = custom.next(nullptr); key; key = custom.next(key)) {
+		const String &code = *key;
+		const String &name = custom[*key];
+		TreeItem *t = country_list->create_item(user_root);
+		t->set_text(0, vformat("%s [%s]", name, code));
+		t->set_metadata(0, code);
+		t->add_button(0, get_editor_theme_icon(SNAME("Edit")), BUTTON_EDIT_COUNTRY, false, TTR("Edit"));
+		t->add_button(0, get_editor_theme_icon(SNAME("Remove")), BUTTON_REMOVE_COUNTRY, false, TTR("Remove"));
+		if (locale_valid && code == locale.country) {
+			t->select(0);
+			current_found = true;
+		}
+	}
+
+	//5. Add current.
+	if (!current_found && locale_valid && !locale.country.is_empty()) {
+		search_root->set_visible(true);
+
+		const String &name = TranslationServer::get_singleton()->get_country_name(locale.country);
+		TreeItem *t = country_list->create_item(search_root, 0);
+		t->set_text(0, vformat("%s [%s]", name, locale.country));
+		t->set_metadata(0, locale.country);
+		t->select(0);
+	}
+
+	updating_lists = false;
 }
 
 void EditorLocaleDialog::_item_selected() {
@@ -85,492 +519,307 @@ void EditorLocaleDialog::_item_selected() {
 		return;
 	}
 
-	if (edit_filters->is_pressed()) {
-		return; // Do not update, if in filter edit mode.
+	TreeItem *lang_item = lang_list->get_selected();
+	if (lang_item) {
+		locale.language = lang_item->get_metadata(0);
 	}
 
-	TreeItem *l = lang_list->get_selected();
-	if (l) {
-		lang_code->set_text(l->get_metadata(0).operator String());
-	}
-
-	TreeItem *s = script_list->get_selected();
-	if (s) {
-		script_code->set_text(s->get_metadata(0).operator String());
-	}
-
-	TreeItem *c = cnt_list->get_selected();
-	if (c) {
-		country_code->set_text(c->get_metadata(0).operator String());
-	}
-}
-
-void EditorLocaleDialog::_toggle_advanced(bool p_checked) {
-	if (!p_checked) {
-		script_code->set_text("");
-		variant_code->set_text("");
-	}
-	_update_tree();
-}
-
-void EditorLocaleDialog::_post_popup() {
-	ConfirmationDialog::_post_popup();
-
-	if (!locale_set) {
-		lang_code->set_text("");
-		script_code->set_text("");
-		country_code->set_text("");
-		variant_code->set_text("");
-	}
-	edit_filters->set_pressed(false);
-	_update_tree();
-}
-
-void EditorLocaleDialog::_filter_lang_option_changed() {
-	TreeItem *t = lang_list->get_edited();
-	String lang = t->get_metadata(0);
-	bool checked = t->is_checked(0);
-
-	Variant prev;
-	Array f_lang_all;
-
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/language_filter")) {
-		f_lang_all = GLOBAL_GET("internationalization/locale/language_filter");
-		prev = f_lang_all;
-	}
-
-	int l_idx = f_lang_all.find(lang);
-
-	if (checked) {
-		if (l_idx == -1) {
-			f_lang_all.append(lang);
-		}
+	TreeItem *script_item = script_list->get_selected();
+	if (script_item) {
+		locale.script = script_item->get_metadata(0);
 	} else {
-		if (l_idx != -1) {
-			f_lang_all.remove_at(l_idx);
-		}
+		locale.script = StringName();
 	}
 
-	f_lang_all.sort();
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Changed Locale Language Filter"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/language_filter", f_lang_all);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/language_filter", prev);
-	undo_redo->commit_action();
-}
-
-void EditorLocaleDialog::_filter_script_option_changed() {
-	TreeItem *t = script_list->get_edited();
-	String scr_code = t->get_metadata(0);
-	bool checked = t->is_checked(0);
-
-	Variant prev;
-	Array f_script_all;
-
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/script_filter")) {
-		f_script_all = GLOBAL_GET("internationalization/locale/script_filter");
-		prev = f_script_all;
-	}
-
-	int l_idx = f_script_all.find(scr_code);
-
-	if (checked) {
-		if (l_idx == -1) {
-			f_script_all.append(scr_code);
-		}
+	TreeItem *country_item = country_list->get_selected();
+	if (country_item) {
+		locale.country = country_item->get_metadata(0);
 	} else {
-		if (l_idx != -1) {
-			f_script_all.remove_at(l_idx);
-		}
+		locale.country = StringName();
 	}
 
-	f_script_all.sort();
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Changed Locale Script Filter"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/script_filter", f_script_all);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/script_filter", prev);
-	undo_redo->commit_action();
+	locale.variant = variant_code->get_text();
+	locale_display->set_text(TTR("Locale Code") + ": " + locale.operator String());
 }
 
-void EditorLocaleDialog::_filter_cnt_option_changed() {
-	TreeItem *t = cnt_list->get_edited();
-	String cnt = t->get_metadata(0);
-	bool checked = t->is_checked(0);
+void EditorLocaleDialog::_add_lang(const String &p_code, const String &p_name) {
+	Dictionary custom = TranslationServer::get_singleton()->get_custom_language_codes();
+	custom[p_code] = p_name;
+	TranslationServer::get_singleton()->set_custom_language_codes(custom);
 
-	Variant prev;
-	Array f_cnt_all;
-
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/country_filter")) {
-		f_cnt_all = GLOBAL_GET("internationalization/locale/country_filter");
-		prev = f_cnt_all;
-	}
-
-	int l_idx = f_cnt_all.find(cnt);
-
-	if (checked) {
-		if (l_idx == -1) {
-			f_cnt_all.append(cnt);
-		}
-	} else {
-		if (l_idx != -1) {
-			f_cnt_all.remove_at(l_idx);
-		}
-	}
-
-	f_cnt_all.sort();
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Changed Locale Country Filter"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/country_filter", f_cnt_all);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/country_filter", prev);
-	undo_redo->commit_action();
+	updating_settings = true;
+	ProjectSettings::get_singleton()->set("internationalization/locale/custom_language_codes", custom);
+	ProjectSettings::get_singleton()->save();
+	updating_settings = false;
+	_lang_search(lang_search->get_text());
 }
 
-void EditorLocaleDialog::_filter_mode_changed(int p_mode) {
-	int f_mode = filter_mode->get_selected_id();
-	Variant prev;
+void EditorLocaleDialog::_remove_lang(const String &p_code, bool p_edit) {
+	Dictionary custom = TranslationServer::get_singleton()->get_custom_language_codes();
+	custom.erase(p_code);
+	TranslationServer::get_singleton()->set_custom_language_codes(custom);
 
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/locale_filter_mode")) {
-		prev = GLOBAL_GET("internationalization/locale/locale_filter_mode");
-	}
-
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Changed Locale Filter Mode"));
-	undo_redo->add_do_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter_mode", f_mode);
-	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "internationalization/locale/locale_filter_mode", prev);
-	undo_redo->commit_action();
-
-	_update_tree();
-}
-
-void EditorLocaleDialog::_edit_filters(bool p_checked) {
-	_update_tree();
-}
-
-void EditorLocaleDialog::_update_tree() {
-	updating_lists = true;
-
-	int filter = SHOW_ALL_LOCALES;
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/locale_filter_mode")) {
-		filter = GLOBAL_GET_CACHED(int, "internationalization/locale/locale_filter_mode");
-	}
-	Array f_lang_all;
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/language_filter")) {
-		f_lang_all = GLOBAL_GET("internationalization/locale/language_filter");
-	}
-	Array f_cnt_all;
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/country_filter")) {
-		f_cnt_all = GLOBAL_GET("internationalization/locale/country_filter");
-	}
-	Array f_script_all;
-	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/script_filter")) {
-		f_script_all = GLOBAL_GET("internationalization/locale/script_filter");
-	}
-	bool is_edit_mode = edit_filters->is_pressed();
-
-	filter_mode->select(filter);
-
-	// Hide text advanced edit and disable OK button if in filter edit mode.
-	advanced->set_visible(!is_edit_mode);
-	hb_locale->set_visible(!is_edit_mode && advanced->is_pressed());
-	vb_script_list->set_visible(advanced->is_pressed());
-	get_ok_button()->set_disabled(is_edit_mode);
-
-	// Update language list.
-	lang_list->clear();
-	TreeItem *l_root = lang_list->create_item(nullptr);
-	lang_list->set_hide_root(true);
-
-	Vector<String> languages = TranslationServer::get_singleton()->get_all_languages();
-	for (const String &E : languages) {
-		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_lang_all.has(E) || f_lang_all.is_empty()) {
-			const String &lang = TranslationServer::get_singleton()->get_language_name(E);
-			TreeItem *t = lang_list->create_item(l_root);
-			if (is_edit_mode) {
-				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				t->set_editable(0, true);
-				t->set_checked(0, f_lang_all.has(E));
-			} else if (lang_code->get_text() == E) {
-				t->select(0);
-			}
-			t->set_text(0, vformat("%s [%s]", lang, E));
-			t->set_metadata(0, E);
-		}
-	}
-
-	// Update script list.
-	script_list->clear();
-	TreeItem *s_root = script_list->create_item(nullptr);
-	script_list->set_hide_root(true);
-
-	if (!is_edit_mode) {
-		TreeItem *t = script_list->create_item(s_root);
-		t->set_text(0, TTRC("[Default]"));
-		t->set_metadata(0, "");
-	}
-
-	Vector<String> scripts = TranslationServer::get_singleton()->get_all_scripts();
-	for (const String &E : scripts) {
-		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_script_all.has(E) || f_script_all.is_empty()) {
-			const String &scr_code = TranslationServer::get_singleton()->get_script_name(E);
-			TreeItem *t = script_list->create_item(s_root);
-			if (is_edit_mode) {
-				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				t->set_editable(0, true);
-				t->set_checked(0, f_script_all.has(E));
-			} else if (script_code->get_text() == E) {
-				t->select(0);
-			}
-			t->set_text(0, vformat("%s [%s]", scr_code, E));
-			t->set_metadata(0, E);
-		}
-	}
-
-	// Update country list.
-	cnt_list->clear();
-	TreeItem *c_root = cnt_list->create_item(nullptr);
-	cnt_list->set_hide_root(true);
-
-	if (!is_edit_mode) {
-		TreeItem *t = cnt_list->create_item(c_root);
-		t->set_text(0, TTRC("[Default]"));
-		t->set_metadata(0, "");
-	}
-
-	Vector<String> countries = TranslationServer::get_singleton()->get_all_countries();
-	for (const String &E : countries) {
-		if (is_edit_mode || (filter == SHOW_ALL_LOCALES) || f_cnt_all.has(E) || f_cnt_all.is_empty()) {
-			const String &cnt = TranslationServer::get_singleton()->get_country_name(E);
-			TreeItem *t = cnt_list->create_item(c_root);
-			if (is_edit_mode) {
-				t->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-				t->set_editable(0, true);
-				t->set_checked(0, f_cnt_all.has(E));
-			} else if (country_code->get_text() == E) {
-				t->select(0);
-			}
-			t->set_text(0, vformat("%s [%s]", cnt, E));
-			t->set_metadata(0, E);
-		}
-	}
-	updating_lists = false;
-}
-
-void EditorLocaleDialog::set_locale(const String &p_locale) {
-	const String &locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
-	if (locale.is_empty()) {
-		locale_set = false;
-
-		lang_code->set_text("");
-		script_code->set_text("");
-		country_code->set_text("");
-		variant_code->set_text("");
-	} else {
-		locale_set = true;
-
-		Vector<String> locale_elements = p_locale.split("_");
-		lang_code->set_text(locale_elements[0]);
-		if (locale_elements.size() >= 2) {
-			if (locale_elements[1].length() == 4 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_lower_case(locale_elements[1][1]) && is_ascii_lower_case(locale_elements[1][2]) && is_ascii_lower_case(locale_elements[1][3])) {
-				script_code->set_text(locale_elements[1]);
-				advanced->set_pressed(true);
-			}
-			if (locale_elements[1].length() == 2 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_upper_case(locale_elements[1][1])) {
-				country_code->set_text(locale_elements[1]);
-			}
-		}
-		if (locale_elements.size() >= 3) {
-			if (locale_elements[2].length() == 2 && is_ascii_upper_case(locale_elements[2][0]) && is_ascii_upper_case(locale_elements[2][1])) {
-				country_code->set_text(locale_elements[2]);
-			} else {
-				variant_code->set_text(locale_elements[2].to_lower());
-				advanced->set_pressed(true);
-			}
-		}
-		if (locale_elements.size() >= 4) {
-			variant_code->set_text(locale_elements[3].to_lower());
-			advanced->set_pressed(true);
-		}
+	if (!p_edit) {
+		updating_settings = true;
+		ProjectSettings::get_singleton()->set("internationalization/locale/custom_language_codes", custom);
+		ProjectSettings::get_singleton()->save();
+		updating_settings = false;
+		_lang_search(lang_search->get_text());
 	}
 }
 
-void EditorLocaleDialog::popup_locale_dialog() {
-	popup_centered_clamped(Size2(1050, 700) * EDSCALE, 0.8);
+void EditorLocaleDialog::_add_country(const String &p_code, const String &p_name) {
+	Dictionary custom = TranslationServer::get_singleton()->get_custom_country_codes();
+	custom[p_code] = p_name;
+	TranslationServer::get_singleton()->set_custom_country_codes(custom);
+
+	updating_settings = true;
+	ProjectSettings::get_singleton()->set("internationalization/locale/custom_country_codes", custom);
+	ProjectSettings::get_singleton()->save();
+	updating_settings = false;
+	_country_search(country_search->get_text());
+}
+
+void EditorLocaleDialog::_remove_country(const String &p_code, bool p_edit) {
+	Dictionary custom = TranslationServer::get_singleton()->get_custom_country_codes();
+	custom.erase(p_code);
+	TranslationServer::get_singleton()->set_custom_country_codes(custom);
+
+	if (!p_edit) {
+		updating_settings = true;
+		ProjectSettings::get_singleton()->set("internationalization/locale/custom_country_codes", custom);
+		ProjectSettings::get_singleton()->save();
+		updating_settings = false;
+		_country_search(country_search->get_text());
+	}
+}
+
+void EditorLocaleDialog::_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_mouse_button_index) {
+	ERR_FAIL_COND(!p_item);
+
+	const String &code = p_item->get_metadata(0);
+	switch (p_id) {
+		case BUTTON_FAVORITE_LANG: {
+			PackedStringArray favorites = EDITOR_GET("interface/editor/favorite_language_codes");
+			if (!favorites.has(code)) {
+				favorites.push_back(code);
+				EditorSettings::get_singleton()->set("interface/editor/favorite_language_codes", favorites);
+
+				_lang_search(lang_search->get_text());
+			}
+		} break;
+		case BUTTON_UNFAVORITE_LANG: {
+			PackedStringArray favorites = EDITOR_GET("interface/editor/favorite_language_codes");
+			if (favorites.has(code)) {
+				favorites.erase(code);
+				EditorSettings::get_singleton()->set("interface/editor/favorite_language_codes", favorites);
+
+				_lang_search(lang_search->get_text());
+			}
+		} break;
+		case BUTTON_ADD_LANG: {
+			add_dialog_lang->set_title(TTR("Add Custom Language Code"));
+			add_dialog_lang->set_data(String(), String(), true, false);
+			add_dialog_lang->popup_centered();
+		} break;
+		case BUTTON_EDIT_LANG: {
+			add_dialog_lang->set_title(TTR("Edit Custom Language Code"));
+			add_dialog_lang->set_data(code, TranslationServer::get_singleton()->get_language_name(code), true, true);
+			add_dialog_lang->popup_centered();
+		} break;
+		case BUTTON_REMOVE_LANG: {
+			_remove_lang(code, false);
+		} break;
+		case BUTTON_FAVORITE_COUNTRY: {
+			PackedStringArray favorites = EDITOR_GET("interface/editor/favorite_country_codes");
+			if (!favorites.has(code)) {
+				favorites.push_back(code);
+				EditorSettings::get_singleton()->set("interface/editor/favorite_country_codes", favorites);
+
+				_country_search(country_search->get_text());
+			}
+		} break;
+		case BUTTON_UNFAVORITE_COUNTRY: {
+			PackedStringArray favorites = EDITOR_GET("interface/editor/favorite_country_codes");
+			if (favorites.has(code)) {
+				favorites.erase(code);
+				EditorSettings::get_singleton()->set("interface/editor/favorite_country_codes", favorites);
+
+				_country_search(country_search->get_text());
+			}
+		} break;
+		case BUTTON_ADD_COUNTRY: {
+			add_dialog_country->set_title(TTR("Add Custom Country Code"));
+			add_dialog_country->set_data(String(), String(), false, false);
+			add_dialog_country->popup_centered();
+		} break;
+		case BUTTON_EDIT_COUNTRY: {
+			add_dialog_country->set_title(TTR("Edit Custom Country Code"));
+			add_dialog_country->set_data(code, TranslationServer::get_singleton()->get_country_name(code), false, true);
+			add_dialog_country->popup_centered();
+		} break;
+		case BUTTON_REMOVE_COUNTRY: {
+			_remove_country(code, false);
+		} break;
+		case BUTTON_FAVORITE_SCRIPT: {
+			PackedStringArray favorites = EDITOR_GET("interface/editor/favorite_script_codes");
+			if (!favorites.has(code)) {
+				favorites.push_back(code);
+				EditorSettings::get_singleton()->set("interface/editor/favorite_script_codes", favorites);
+
+				_script_search(script_search->get_text());
+			}
+		} break;
+		case BUTTON_UNFAVORITE_SCRIPT: {
+			PackedStringArray favorites = EDITOR_GET("interface/editor/favorite_script_codes");
+			if (favorites.has(code)) {
+				favorites.erase(code);
+				EditorSettings::get_singleton()->set("interface/editor/favorite_script_codes", favorites);
+
+				_script_search(script_search->get_text());
+			}
+		} break;
+		default:
+			break;
+	}
+}
+
+void EditorLocaleDialog::_varinat_selected(const String &p_text) {
+	_item_selected();
+}
+
+void EditorLocaleDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_update_cache();
+			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorLocaleDialog::_update_cache));
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			[[fallthrough]];
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			lang_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			script_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+			country_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+
+			_lang_search(lang_search->get_text());
+			_script_search(script_search->get_text());
+			_country_search(country_search->get_text());
+			_item_selected();
+		} break;
+		default: {
+		} break;
+	}
 }
 
 EditorLocaleDialog::EditorLocaleDialog() {
 	set_title(TTRC("Select a Locale"));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
-	{
-		HBoxContainer *hb_filter = memnew(HBoxContainer);
-		{
-			filter_mode = memnew(OptionButton);
-			filter_mode->set_accessibility_name(TTRC("Locale Filter"));
-			filter_mode->add_item(TTRC("Show All Locales"), SHOW_ALL_LOCALES);
-			filter_mode->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			filter_mode->add_item(TTRC("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
-			filter_mode->select(0);
-			filter_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorLocaleDialog::_filter_mode_changed));
-			hb_filter->add_child(filter_mode);
-		}
-		{
-			edit_filters = memnew(CheckButton);
-			edit_filters->set_text(TTRC("Edit Filters"));
-			edit_filters->set_toggle_mode(true);
-			edit_filters->set_pressed(false);
-			edit_filters->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_edit_filters));
-			hb_filter->add_child(edit_filters);
-		}
-		{
-			advanced = memnew(CheckButton);
-			advanced->set_text(TTRC("Advanced"));
-			advanced->set_toggle_mode(true);
-			advanced->set_pressed(false);
-			advanced->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
-			hb_filter->add_child(advanced);
-		}
-		vb->add_child(hb_filter);
-	}
-	{
-		HBoxContainer *hb_lists = memnew(HBoxContainer);
-		hb_lists->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-		{
-			VBoxContainer *vb_lang_list = memnew(VBoxContainer);
-			vb_lang_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			{
-				Label *lang_lbl = memnew(Label);
-				lang_lbl->set_text(TTRC("Language:"));
-				vb_lang_list->add_child(lang_lbl);
-			}
-			{
-				lang_list = memnew(Tree);
-				lang_list->set_accessibility_name(TTRC("Language:"));
-				lang_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-				lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-				lang_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
-				lang_list->set_columns(1);
-				lang_list->connect("item_edited", callable_mp(this, &EditorLocaleDialog::_filter_lang_option_changed));
-				vb_lang_list->add_child(lang_list);
-			}
-			hb_lists->add_child(vb_lang_list);
-		}
-		{
-			vb_script_list = memnew(VBoxContainer);
-			vb_script_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			{
-				script_label1 = memnew(Label);
-				script_label1->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-				vb_script_list->add_child(script_label1);
-			}
-			{
-				script_list = memnew(Tree);
-				script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-				script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-				script_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
-				script_list->set_columns(1);
-				script_list->connect("item_edited", callable_mp(this, &EditorLocaleDialog::_filter_script_option_changed));
-				vb_script_list->add_child(script_list);
-			}
-			hb_lists->add_child(vb_script_list);
-		}
-		{
-			VBoxContainer *vb_cnt_list = memnew(VBoxContainer);
-			vb_cnt_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-			{
-				Label *cnt_lbl = memnew(Label);
-				cnt_lbl->set_text(TTRC("Country:"));
-				vb_cnt_list->add_child(cnt_lbl);
-			}
-			{
-				cnt_list = memnew(Tree);
-				cnt_list->set_accessibility_name(TTRC("Country:"));
-				cnt_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-				cnt_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-				cnt_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
-				cnt_list->set_columns(1);
-				cnt_list->connect("item_edited", callable_mp(this, &EditorLocaleDialog::_filter_cnt_option_changed));
-				vb_cnt_list->add_child(cnt_list);
-			}
-			hb_lists->add_child(vb_cnt_list);
-		}
-		vb->add_child(hb_lists);
-	}
-	{
-		hb_locale = memnew(HBoxContainer);
-		hb_locale->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		{
-			{
-				VBoxContainer *vb_language = memnew(VBoxContainer);
-				vb_language->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				{
-					Label *language_lbl = memnew(Label);
-					language_lbl->set_text(TTRC("Language"));
-					vb_language->add_child(language_lbl);
-				}
-				{
-					lang_code = memnew(LineEdit);
-					lang_code->set_max_length(3);
-					lang_code->set_accessibility_name("Language");
-					vb_language->add_child(lang_code);
-				}
-				hb_locale->add_child(vb_language);
-			}
-			{
-				VBoxContainer *vb_script = memnew(VBoxContainer);
-				vb_script->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				{
-					script_label2 = memnew(Label);
-					script_label2->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-					vb_script->add_child(script_label2);
-				}
-				{
-					script_code = memnew(LineEdit);
-					script_code->set_max_length(4);
-					vb_script->add_child(script_code);
-				}
-				hb_locale->add_child(vb_script);
-			}
-			{
-				VBoxContainer *vb_country = memnew(VBoxContainer);
-				vb_country->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				{
-					Label *country_lbl = memnew(Label);
-					country_lbl->set_text(TTRC("Country"));
-					vb_country->add_child(country_lbl);
-				}
-				{
-					country_code = memnew(LineEdit);
-					country_code->set_max_length(2);
-					country_code->set_tooltip_text("Country");
-					vb_country->add_child(country_code);
-				}
-				hb_locale->add_child(vb_country);
-			}
-			{
-				VBoxContainer *vb_variant = memnew(VBoxContainer);
-				vb_variant->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-				{
-					Label *variant_lbl = memnew(Label);
-					variant_lbl->set_text(TTRC("Variant"));
-					vb_variant->add_child(variant_lbl);
-				}
-				{
-					variant_code = memnew(LineEdit);
-					variant_code->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-					variant_code->set_placeholder("Variant");
-					variant_code->set_accessibility_name("Variant");
-					vb_variant->add_child(variant_code);
-				}
-				hb_locale->add_child(vb_variant);
-			}
-		}
-		vb->add_child(hb_locale);
-	}
 	add_child(vb);
-	_update_tree();
 
-	set_ok_button_text(TTRC("Select"));
+	HBoxContainer *hb_main = memnew(HBoxContainer);
+	hb_main->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(hb_main);
+
+	VBoxContainer *lang_vb = memnew(VBoxContainer);
+	lang_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hb_main->add_child(lang_vb);
+	Label *lang_lbl = memnew(Label);
+	lang_lbl->set_text(TTR("Language"));
+	lang_vb->add_child(lang_lbl);
+	lang_search = memnew(LineEdit);
+	lang_search->set_placeholder(TTR("Language"));
+	lang_search->set_accessibility_name(TTR("Language Filter"));
+	lang_search->connect(SceneStringName(text_changed), callable_mp(this, &EditorLocaleDialog::_lang_search));
+	lang_vb->add_child(lang_search);
+	lang_list = memnew(Tree);
+	lang_list->set_accessibility_name(TTR("Language List"));
+	lang_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	lang_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	lang_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
+	lang_list->connect("button_clicked", callable_mp(this, &EditorLocaleDialog::_button_clicked));
+	lang_list->set_hide_folding(true);
+	lang_list->set_columns(1);
+	lang_vb->add_child(lang_list);
+
+	script_vb = memnew(VBoxContainer);
+	script_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hb_main->add_child(script_vb);
+	Label *script_lbl = memnew(Label);
+	script_lbl->set_text(TTR("Script"));
+	script_vb->add_child(script_lbl);
+	script_search = memnew(LineEdit);
+	script_search->set_placeholder(TTR("Script"));
+	script_search->set_accessibility_name(TTR("Script Filter"));
+	script_search->connect(SceneStringName(text_changed), callable_mp(this, &EditorLocaleDialog::_script_search));
+	script_vb->add_child(script_search);
+	script_list = memnew(Tree);
+	script_list->set_accessibility_name(TTR("Script List"));
+	script_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	script_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	script_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
+	script_list->connect("button_clicked", callable_mp(this, &EditorLocaleDialog::_button_clicked));
+	script_list->set_hide_folding(true);
+	script_list->set_columns(1);
+	script_vb->add_child(script_list);
+	script_vb->set_visible(false);
+
+	VBoxContainer *country_vb = memnew(VBoxContainer);
+	country_vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hb_main->add_child(country_vb);
+	Label *country_lbl = memnew(Label);
+	country_lbl->set_text(TTR("Country"));
+	country_vb->add_child(country_lbl);
+	country_search = memnew(LineEdit);
+	country_search->set_placeholder(TTR("Country"));
+	country_search->set_accessibility_name(TTR("Country Filter"));
+	country_search->connect(SceneStringName(text_changed), callable_mp(this, &EditorLocaleDialog::_country_search));
+	country_vb->add_child(country_search);
+	country_list = memnew(Tree);
+	country_list->set_accessibility_name(TTR("Country List"));
+	country_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	country_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	country_list->connect("cell_selected", callable_mp(this, &EditorLocaleDialog::_item_selected));
+	country_list->connect("button_clicked", callable_mp(this, &EditorLocaleDialog::_button_clicked));
+	country_list->set_hide_folding(true);
+	country_list->set_columns(1);
+	country_vb->add_child(country_list);
+
+	variant_lbl = memnew(Label);
+	variant_lbl->set_text(TTR("Variant"));
+	variant_lbl->set_visible(false);
+	country_vb->add_child(variant_lbl);
+	variant_code = memnew(LineEdit);
+	variant_code->set_accessibility_name(TTR("Variant"));
+	variant_code->connect(SceneStringName(text_changed), callable_mp(this, &EditorLocaleDialog::_varinat_selected));
+	variant_code->set_visible(false);
+	country_vb->add_child(variant_code);
+
+	HBoxContainer *hb_bottom = memnew(HBoxContainer);
+	vb->add_child(hb_bottom);
+
+	locale_display = memnew(Label);
+	locale_display->set_accessibility_name(TTR("Locale Code"));
+	locale_display->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	hb_bottom->add_child(locale_display);
+
+	advanced = memnew(CheckButton);
+	advanced->set_text(TTR("Advanced"));
+	advanced->set_toggle_mode(true);
+	advanced->set_pressed(false);
+	advanced->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
+	hb_bottom->add_child(advanced);
+
+	add_dialog_lang = memnew(EditorAddCustomLocaleDialog);
+	add_dialog_lang->connect("add_code", callable_mp(this, &EditorLocaleDialog::_add_lang));
+	add_dialog_lang->connect("remove_code", callable_mp(this, &EditorLocaleDialog::_remove_lang));
+	add_child(add_dialog_lang);
+
+	add_dialog_country = memnew(EditorAddCustomLocaleDialog);
+	add_dialog_country->connect("add_code", callable_mp(this, &EditorLocaleDialog::_add_country));
+	add_dialog_country->connect("remove_code", callable_mp(this, &EditorLocaleDialog::_remove_country));
+	add_child(add_dialog_country);
+
+	set_ok_button_text(TTR("Select"));
 }
