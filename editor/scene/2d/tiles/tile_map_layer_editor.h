@@ -39,6 +39,7 @@
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/split_container.h"
@@ -47,6 +48,7 @@
 
 class TileMapLayer;
 class TileMapLayerEditor;
+class TileMapSceneProperties;
 
 class TileMapLayerSubEditorPlugin : public Object {
 protected:
@@ -82,6 +84,8 @@ public:
 	};
 
 private:
+	inline static TileMapLayerEditorTilesPlugin *singleton = nullptr;
+
 	///// Toolbar /////
 	HBoxContainer *toolbar = nullptr;
 
@@ -207,6 +211,8 @@ private:
 
 	// Scenes collection sources.
 	ItemList *scene_tiles_list = nullptr;
+	HSplitContainer *scene_tile_properies_split_container = nullptr;
+	TileMapSceneProperties *tile_map_scene_properties = nullptr;
 
 	void _update_scenes_collection_view();
 	void _scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud);
@@ -233,6 +239,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	static TileMapLayerEditorTilesPlugin *get_singleton();
+	void set_tools_disabled(bool p_disabled);
+	bool is_advanced_tool_enabled();
+	void select_tool(String p_name);
+
 	virtual Vector<TabData> get_tabs() const override;
 	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override;
@@ -337,6 +348,8 @@ class TileMapLayerEditor : public VBoxContainer {
 	GDCLASS(TileMapLayerEditor, VBoxContainer);
 
 private:
+	inline static TileMapLayerEditor *singleton = nullptr;
+
 	bool tile_map_layer_changed_needs_update = false;
 
 	ObjectID edited_tile_map_layer_id;
@@ -385,6 +398,9 @@ private:
 	MenuButton *advanced_menu_button = nullptr;
 	void _advanced_menu_button_id_pressed(int p_id);
 
+	Button *advanced_tool_button = nullptr;
+	void _on_advanced_tool_toggled(bool p_pressed);
+
 	// Bottom panel.
 	Label *cant_edit_label = nullptr;
 	TabBar *tabs_bar = nullptr;
@@ -411,6 +427,11 @@ protected:
 	void _draw_shape(Control *p_control, Rect2 p_region, TileSet::TileShape p_shape, TileSet::TileOffsetAxis p_offset_axis, Color p_color);
 
 public:
+	static TileMapLayerEditor *get_singleton();
+
+	void set_advanced_tool_visible(bool p_visible);
+	bool is_advanced_tool_visible();
+
 	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
 	void forward_canvas_draw_over_viewport(Control *p_overlay);
 
@@ -422,6 +443,52 @@ public:
 
 	// Static functions.
 	static Vector<Vector2i> get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell);
+};
+
+class TileMapSceneProperties : public VBoxContainer {
+	GDCLASS(TileMapSceneProperties, VBoxContainer);
+
+	inline static TileMapSceneProperties *singleton = nullptr;
+	bool advanced_tool_enabled = false;
+
+	String scene_path;
+	Ref<PackedScene> scene = nullptr;
+	Dictionary scene_properties;
+
+	TextureRect *scene_icon = nullptr;
+	Label *scene_class_name = nullptr;
+	Button *open_scene_button = nullptr;
+
+	VBoxContainer *v_container = nullptr;
+
+	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
+	void _on_open_scene_button_pressed();
+
+protected:
+	void _notification(int p_what);
+
+public:
+	static TileMapSceneProperties *get_singleton();
+
+	void set_icon(Ref<Texture2D> p_texture);
+	void set_class_name(StringName p_name);
+	void set_scene_path(String p_path);
+
+	void set_advanced_tool_enabled(bool p_enabled);
+	bool is_advanced_tool_enabled();
+
+	void set_scene(Ref<PackedScene> p_scene);
+	Ref<PackedScene> get_scene();
+	bool has_scene();
+
+	Dictionary get_scene_properties() const;
+
+	void update_properies();
+
+	void clear_properies();
+
+	TileMapSceneProperties();
+	~TileMapSceneProperties();
 };
 
 VARIANT_ENUM_CAST(TileMapLayerEditorTilesPlugin::TileTransformType);
