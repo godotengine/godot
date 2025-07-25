@@ -91,6 +91,7 @@
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/transform_container.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/video_stream_player.h"
 #include "scene/main/canvas_item.h"
@@ -486,6 +487,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(HFlowContainer);
 	GDREGISTER_CLASS(VFlowContainer);
 	GDREGISTER_CLASS(MarginContainer);
+	GDREGISTER_CLASS(TransformContainer);
 
 	OS::get_singleton()->yield(); // may take time to init
 
