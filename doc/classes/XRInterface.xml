@@ -23,6 +23,12 @@
 				Returns a combination of [enum Capabilities] flags providing information about the capabilities of this interface.
 			</description>
 		</method>
+		<method name="get_layer_count">
+			<return type="int" />
+			<description>
+				Returns the number of layers we require for rendering. Each layer may have different resolution, view count and camera data.
+			</description>
+		</method>
 		<method name="get_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
@@ -37,16 +43,18 @@
 		</method>
 		<method name="get_projection_for_view">
 			<return type="Projection" />
-			<param index="0" name="view" type="int" />
-			<param index="1" name="aspect" type="float" />
-			<param index="2" name="near" type="float" />
-			<param index="3" name="far" type="float" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="view" type="int" />
+			<param index="2" name="aspect" type="float" />
+			<param index="3" name="near" type="float" />
+			<param index="4" name="far" type="float" />
 			<description>
 				Returns the projection matrix for a view/eye.
 			</description>
 		</method>
 		<method name="get_render_target_size">
 			<return type="Vector2" />
+			<param index="0" name="layer" type="int" default="0" />
 			<description>
 				Returns the resolution at which we should render our intermediate results before things like lens distortion are applied by the VR platform.
 			</description>
@@ -72,8 +80,9 @@
 		</method>
 		<method name="get_transform_for_view">
 			<return type="Transform3D" />
-			<param index="0" name="view" type="int" />
-			<param index="1" name="cam_transform" type="Transform3D" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="view" type="int" />
+			<param index="2" name="cam_transform" type="Transform3D" />
 			<description>
 				Returns the transform for a view/eye.
 				[param view] is the view/eye index.
@@ -82,6 +91,7 @@
 		</method>
 		<method name="get_view_count">
 			<return type="int" />
+			<param index="0" name="layer" type="int" default="0" />
 			<description>
 				Returns the number of views that need to be rendered for this device. 1 for Monoscopic, 2 for Stereoscopic.
 			</description>

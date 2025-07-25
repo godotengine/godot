@@ -134,16 +134,17 @@ public:
 	virtual void process() = 0;
 
 	// These methods can be called from both main and render thread.
-	virtual Size2 get_render_target_size() = 0; /* returns the recommended render target size per eye for this device */
-	virtual uint32_t get_view_count() = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
+	virtual uint32_t get_layer_count() { return 1; } /* Returns the number of layers we need. */
+	virtual Size2 get_render_target_size(uint32_t p_layer = 0) = 0; /* returns the recommended render target size per eye for this device */
+	virtual uint32_t get_view_count(uint32_t p_layer = 0) = 0; /* returns the view count we need (1 is monoscopic, 2 is stereoscopic but can be more) */
 
 	// These methods are called from the rendering thread.
-	virtual Transform3D get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
-	virtual Projection get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
-	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
-	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
-	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
-	virtual RID get_velocity_depth_texture();
+	virtual Transform3D get_transform_for_view(uint32_t p_layer, uint32_t p_view, const Transform3D &p_cam_transform) = 0; /* get each views transform */
+	virtual Projection get_projection_for_view(uint32_t p_layer, uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) = 0; /* get each view projection matrix */
+	virtual RID get_color_texture(uint32_t p_layer = 0); /* obtain color output texture (if applicable) */
+	virtual RID get_depth_texture(uint32_t p_layer = 0); /* obtain depth output texture (if applicable, used for reprojection) */
+	virtual RID get_velocity_texture(uint32_t p_layer = 0); /* obtain velocity output texture (if applicable, used for spacewarp) */
+	virtual RID get_velocity_depth_texture(uint32_t p_layer = 0);
 	virtual Size2i get_velocity_target_size();
 	virtual Rect2i get_render_region();
 	virtual void pre_render() {}
