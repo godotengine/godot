@@ -102,7 +102,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 
 	// When using Display/Window/Stretch/Mode = Viewport, use the project's
 	// configured viewport size instead of the size of the window in the OS
-	Size2i actual_movie_size = p_movie_size;
+	actual_movie_size = p_movie_size;
 	String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
 	if (stretch_mode == "viewport") {
 		actual_movie_size.width = GLOBAL_GET("display/window/size/viewport_width");
@@ -206,20 +206,13 @@ void MovieWriter::add_frame() {
 	RID main_vp_texture = RenderingServer::get_singleton()->viewport_get_texture(main_vp_rid);
 	Ref<Image> vp_tex = RenderingServer::get_singleton()->texture_2d_get(main_vp_texture);
 
-	if (base_resolution == Vector2i()) {
-		// If the base resolution is not set yet, set it according to the first recorded frame.
-		// This is used later on to resize differently-sized frames, in cases where the viewport size
-		// changes during recording (e.g. because the user resized the window).
-		base_resolution = vp_tex->get_size();
-	}
-
-	if (vp_tex->get_size() != base_resolution) {
-		// Resize the texture to the base resolution if it differs from the current viewport size.
+	if (vp_tex->get_size() != actual_movie_size) {
+		// Resize the texture to the output resolution if it differs from the current viewport size.
 		// This ensures all frames have the same resolution, as not all video formats and players
 		// support resolution changes during playback.
 
 		const float src_aspect = vp_tex->get_size().aspect();
-		const float dst_aspect = base_resolution.aspect();
+		const float dst_aspect = actual_movie_size.aspect();
 
 		int crop_width = vp_tex->get_size().width;
 		int crop_height = vp_tex->get_size().height;
@@ -240,7 +233,7 @@ void MovieWriter::add_frame() {
 			vp_tex->crop_from_point(crop_x, crop_y, crop_width, crop_height);
 		}
 
-		vp_tex->resize(base_resolution.width, base_resolution.height, Image::INTERPOLATE_BILINEAR);
+		vp_tex->resize(actual_movie_size.width, actual_movie_size.height, Image::INTERPOLATE_BILINEAR);
 	}
 
 	if (RenderingServer::get_singleton()->viewport_is_using_hdr_2d(main_vp_rid)) {
