@@ -123,8 +123,11 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
 
 	tonemap.push_constant.flags |= p_settings.use_fxaa ? TONEMAP_FLAG_USE_FXAA : 0;
-	// When convert_to_srgb is false: postpone debanding until convert_to_srgb is true (usually during blit).
-	tonemap.push_constant.flags |= (p_settings.use_debanding && p_settings.convert_to_srgb) ? TONEMAP_FLAG_USE_DEBANDING : 0;
+	if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_8_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_8_BIT_DEBANDING;
+	} else if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_10_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_10_BIT_DEBANDING;
+	}
 	tonemap.push_constant.pixel_size[0] = 1.0 / p_settings.texture_size.x;
 	tonemap.push_constant.pixel_size[1] = 1.0 / p_settings.texture_size.y;
 
@@ -208,8 +211,11 @@ void ToneMapper::tonemapper(RD::DrawListID p_subpass_draw_list, RID p_source_col
 	tonemap.push_constant.auto_exposure_scale = p_settings.auto_exposure_scale;
 
 	tonemap.push_constant.flags |= p_settings.use_color_correction ? TONEMAP_FLAG_USE_COLOR_CORRECTION : 0;
-	// When convert_to_srgb is false: postpone debanding until convert_to_srgb is true (usually during blit).
-	tonemap.push_constant.flags |= (p_settings.use_debanding && p_settings.convert_to_srgb) ? TONEMAP_FLAG_USE_DEBANDING : 0;
+	if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_8_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_8_BIT_DEBANDING;
+	} else if (p_settings.debanding_mode == TonemapSettings::DEBANDING_MODE_10_BIT) {
+		tonemap.push_constant.flags |= TONEMAP_FLAG_USE_10_BIT_DEBANDING;
+	}
 	tonemap.push_constant.luminance_multiplier = p_settings.luminance_multiplier;
 
 	tonemap.push_constant.flags |= p_settings.convert_to_srgb ? TONEMAP_FLAG_CONVERT_TO_SRGB : 0;
