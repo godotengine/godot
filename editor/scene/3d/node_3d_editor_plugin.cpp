@@ -2473,6 +2473,9 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/align_rotation_with_view", p_event)) {
 			_menu_option(VIEW_ALIGN_ROTATION_WITH_VIEW);
 		}
+		if (ED_IS_SHORTCUT("spatial_editor/align_view_with_transform", p_event)) {
+			_menu_option(VIEW_ALIGN_VIEW_WITH_TRANSFORM);
+		}
 		if (ED_IS_SHORTCUT("spatial_editor/insert_anim_key", p_event)) {
 			if (!get_selected_count() || _edit.mode != TRANSFORM_NONE) {
 				return;
@@ -3739,6 +3742,36 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 
 				undo_redo->add_do_method(sp, "set_rotation", basis.get_euler_normalized());
 				undo_redo->add_undo_method(sp, "set_rotation", sp->get_rotation());
+			}
+			undo_redo->commit_action();
+
+		} break;
+		case VIEW_ALIGN_VIEW_WITH_TRANSFORM: {
+			if (!get_selected_count()) {
+				break;
+			}
+			
+			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
+			
+			undo_redo->create_action(TTR("Align Rotation with View"));
+			for (Node *E : selection) {
+				Node3D *sp = Object::cast_to<Node3D>(E);
+				if (!sp) {
+					continue;
+				}
+				
+				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+				if (!se) {
+					continue;
+				}
+				
+				Transform3D node_transform = sp->get_global_transform();
+				Basis basis = node_transform.basis;
+
+				undo_redo->add_do_method(camera, "set_rotation", basis.get_euler_normalized());
+				undo_redo->add_do_method(camera, "set_position", sp->get_position());
+				undo_redo->add_undo_method(camera, "set_rotation", camera->get_rotation());
+				undo_redo->add_undo_method(camera, "set_position", camera->get_position());
 			}
 			undo_redo->commit_action();
 
@@ -5781,6 +5814,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/focus_selection"), VIEW_CENTER_TO_SELECTION);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
+	view_display_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_view_with_transform"), VIEW_ALIGN_VIEW_WITH_TRANSFORM);
 	view_display_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	display_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &Node3DEditorViewport::_menu_option));
 	view_display_menu->set_disable_shortcuts(true);
@@ -9372,6 +9406,7 @@ Node3DEditor::Node3DEditor() {
 			{ int32_t(KeyModifierMask::ALT | KeyModifierMask::META | Key::KP_0),
 					int32_t(KeyModifierMask::ALT | KeyModifierMask::META | Key::G) });
 	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTRC("Align Rotation with View"), KeyModifierMask::ALT + KeyModifierMask::CMD_OR_CTRL + Key::F);
+	ED_SHORTCUT("spatial_editor/align_view_with_transform", TTRC("Align View with Transform"), KeyModifierMask::SHIFT + KeyModifierMask::CMD_OR_CTRL + Key::F);
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTRC("Toggle Freelook"), KeyModifierMask::SHIFT + Key::F);
 	ED_SHORTCUT("spatial_editor/decrease_fov", TTRC("Decrease Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::EQUAL); // Usually direct access key for `KEY_PLUS`.
 	ED_SHORTCUT("spatial_editor/increase_fov", TTRC("Increase Field of View"), KeyModifierMask::CMD_OR_CTRL + Key::MINUS);
