@@ -209,7 +209,7 @@ struct is_zero_constructible<StringName> : std::true_type {};
  * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
  */
 
-#define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = StringName(m_arg, true); return sname; })()
+#define SNAME(m_arg) ComptimeStringName<m_arg>().value
 
 template <CowBuffer buf>
 struct ComptimeStringName {
