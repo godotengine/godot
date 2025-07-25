@@ -4665,87 +4665,98 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 		case VIEW_DISPLAY_DEBUG_OCCLUDERS:
 		case VIEW_DISPLAY_MOTION_VECTORS:
 		case VIEW_DISPLAY_INTERNAL_BUFFER: {
-			static const int display_options[] = {
-				VIEW_DISPLAY_NORMAL,
-				VIEW_DISPLAY_WIREFRAME,
-				VIEW_DISPLAY_OVERDRAW,
-				VIEW_DISPLAY_UNSHADED,
-				VIEW_DISPLAY_LIGHTING,
-				VIEW_DISPLAY_NORMAL_BUFFER,
-				VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
-				VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
-				VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
-				VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
-				VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
-				VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
-				VIEW_DISPLAY_DEBUG_SSAO,
-				VIEW_DISPLAY_DEBUG_SSIL,
-				VIEW_DISPLAY_DEBUG_GI_BUFFER,
-				VIEW_DISPLAY_DEBUG_DISABLE_LOD,
-				VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
-				VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
-				VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
-				VIEW_DISPLAY_DEBUG_SDFGI,
-				VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
-				VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
-				VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
-				VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
-				VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
-				VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
-				VIEW_DISPLAY_DEBUG_OCCLUDERS,
-				VIEW_DISPLAY_MOTION_VECTORS,
-				VIEW_DISPLAY_INTERNAL_BUFFER,
-				VIEW_MAX
-			};
-			static const Viewport::DebugDraw debug_draw_modes[] = {
-				Viewport::DEBUG_DRAW_DISABLED,
-				Viewport::DEBUG_DRAW_WIREFRAME,
-				Viewport::DEBUG_DRAW_OVERDRAW,
-				Viewport::DEBUG_DRAW_UNSHADED,
-				Viewport::DEBUG_DRAW_LIGHTING,
-				Viewport::DEBUG_DRAW_NORMAL_BUFFER,
-				Viewport::DEBUG_DRAW_SHADOW_ATLAS,
-				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
-				Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO,
-				Viewport::DEBUG_DRAW_VOXEL_GI_LIGHTING,
-				Viewport::DEBUG_DRAW_VOXEL_GI_EMISSION,
-				Viewport::DEBUG_DRAW_SCENE_LUMINANCE,
-				Viewport::DEBUG_DRAW_SSAO,
-				Viewport::DEBUG_DRAW_SSIL,
-				Viewport::DEBUG_DRAW_GI_BUFFER,
-				Viewport::DEBUG_DRAW_DISABLE_LOD,
-				Viewport::DEBUG_DRAW_PSSM_SPLITS,
-				Viewport::DEBUG_DRAW_DECAL_ATLAS,
-				Viewport::DEBUG_DRAW_AREA_LIGHT_ATLAS,
-				Viewport::DEBUG_DRAW_SDFGI,
-				Viewport::DEBUG_DRAW_SDFGI_PROBES,
-				Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
-				Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
-				Viewport::DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
-				Viewport::DEBUG_DRAW_CLUSTER_DECALS,
-				Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
-				Viewport::DEBUG_DRAW_OCCLUDERS,
-				Viewport::DEBUG_DRAW_MOTION_VECTORS,
-				Viewport::DEBUG_DRAW_INTERNAL_BUFFER,
-			};
-
-			for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
-				int id = display_options[idx];
-				int item_idx = view_display_menu->get_popup()->get_item_index(id);
-				if (item_idx != -1) {
-					view_display_menu->get_popup()->set_item_checked(item_idx, id == p_option);
-				}
-				item_idx = display_submenu->get_item_index(id);
-				if (item_idx != -1) {
-					display_submenu->set_item_checked(item_idx, id == p_option);
-				}
-
-				if (id == p_option) {
-					viewport->set_debug_draw(debug_draw_modes[idx]);
-				}
-			}
+			select_debug_draw_mode(p_option, view_display_menu, display_submenu, callable_mp(this, &Node3DEditorViewport::set_debug_draw_mode));
 		} break;
 	}
+}
+
+void Node3DEditorViewport::select_debug_draw_mode(int p_option, MenuButton *p_view_display_menu, PopupMenu *p_display_submenu, Callable p_callable) {
+	static const int display_options[] = {
+		VIEW_DISPLAY_NORMAL,
+		VIEW_DISPLAY_WIREFRAME,
+		VIEW_DISPLAY_OVERDRAW,
+		VIEW_DISPLAY_UNSHADED,
+		VIEW_DISPLAY_LIGHTING,
+		VIEW_DISPLAY_NORMAL_BUFFER,
+		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
+		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
+		VIEW_DISPLAY_DEBUG_SSAO,
+		VIEW_DISPLAY_DEBUG_SSIL,
+		VIEW_DISPLAY_DEBUG_GI_BUFFER,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
+		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
+		VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
+		VIEW_DISPLAY_DEBUG_SDFGI,
+		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
+		VIEW_DISPLAY_DEBUG_OCCLUDERS,
+		VIEW_DISPLAY_MOTION_VECTORS,
+		VIEW_DISPLAY_INTERNAL_BUFFER,
+		VIEW_MAX
+	};
+	static const Viewport::DebugDraw debug_draw_modes[] = {
+		Viewport::DEBUG_DRAW_DISABLED,
+		Viewport::DEBUG_DRAW_WIREFRAME,
+		Viewport::DEBUG_DRAW_OVERDRAW,
+		Viewport::DEBUG_DRAW_UNSHADED,
+		Viewport::DEBUG_DRAW_LIGHTING,
+		Viewport::DEBUG_DRAW_NORMAL_BUFFER,
+		Viewport::DEBUG_DRAW_SHADOW_ATLAS,
+		Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
+		Viewport::DEBUG_DRAW_VOXEL_GI_ALBEDO,
+		Viewport::DEBUG_DRAW_VOXEL_GI_LIGHTING,
+		Viewport::DEBUG_DRAW_VOXEL_GI_EMISSION,
+		Viewport::DEBUG_DRAW_SCENE_LUMINANCE,
+		Viewport::DEBUG_DRAW_SSAO,
+		Viewport::DEBUG_DRAW_SSIL,
+		Viewport::DEBUG_DRAW_GI_BUFFER,
+		Viewport::DEBUG_DRAW_DISABLE_LOD,
+		Viewport::DEBUG_DRAW_PSSM_SPLITS,
+		Viewport::DEBUG_DRAW_DECAL_ATLAS,
+		Viewport::DEBUG_DRAW_AREA_LIGHT_ATLAS,
+		Viewport::DEBUG_DRAW_SDFGI,
+		Viewport::DEBUG_DRAW_SDFGI_PROBES,
+		Viewport::DEBUG_DRAW_CLUSTER_OMNI_LIGHTS,
+		Viewport::DEBUG_DRAW_CLUSTER_SPOT_LIGHTS,
+		Viewport::DEBUG_DRAW_CLUSTER_AREA_LIGHTS,
+		Viewport::DEBUG_DRAW_CLUSTER_DECALS,
+		Viewport::DEBUG_DRAW_CLUSTER_REFLECTION_PROBES,
+		Viewport::DEBUG_DRAW_OCCLUDERS,
+		Viewport::DEBUG_DRAW_MOTION_VECTORS,
+		Viewport::DEBUG_DRAW_INTERNAL_BUFFER,
+	};
+
+	for (int idx = 0; display_options[idx] != VIEW_MAX; idx++) {
+		int id = display_options[idx];
+		int item_idx = p_view_display_menu->get_popup()->get_item_index(id);
+		if (item_idx != -1) {
+			p_view_display_menu->get_popup()->set_item_checked(item_idx, id == p_option);
+		}
+		item_idx = p_display_submenu->get_item_index(id);
+		if (item_idx != -1) {
+			p_display_submenu->set_item_checked(item_idx, id == p_option);
+		}
+
+		if (id == p_option) {
+			// Call the provided callable to set the debug draw mode.
+			// The game view relies on the debugger protocol to set the debug draw mode,
+			// so we can't pass a Viewport instance directly.
+			p_callable.call(debug_draw_modes[idx]);
+		}
+	}
+}
+
+void Node3DEditorViewport::set_debug_draw_mode(Viewport::DebugDraw p_mode) {
+	viewport->set_debug_draw(p_mode);
 }
 
 void Node3DEditorViewport::_preview_exited_scene() {
@@ -6706,9 +6717,72 @@ void Node3DEditorViewport::_set_lock_view_rotation(bool p_lock_rotation) {
 }
 
 void Node3DEditorViewport::_add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods, const String &p_tooltip) {
-	display_submenu->add_radio_check_item(p_name, p_value);
+	p_popup->add_radio_check_item(p_name, p_value);
 	Array item_data = { p_rendering_methods, p_tooltip };
-	display_submenu->set_item_metadata(-1, item_data); // Tooltip is assigned in NOTIFICATION_TRANSLATION_CHANGED.
+	p_popup->set_item_metadata(-1, item_data); // Tooltip is assigned in NOTIFICATION_TRANSLATION_CHANGED.
+}
+
+PopupMenu *Node3DEditorViewport::get_advanced_debug_draw_menu() {
+	PopupMenu *display_submenu = memnew(PopupMenu);
+	display_submenu->set_hide_on_checkable_item_selection(false);
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Directional Shadow Splits"), VIEW_DISPLAY_DEBUG_PSSM_SPLITS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
+			TTRC("Displays directional shadow splits in different colors to make adjusting split thresholds easier. \nRed: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, Yellow: 4th split (furthest from the camera)"));
+	display_submenu->add_separator();
+	// TRANSLATORS: "Normal" as in "normal vector", not "normal life".
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Normal Buffer"), VIEW_DISPLAY_NORMAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS);
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Shadow Atlas"), VIEW_DISPLAY_DEBUG_SHADOW_ATLAS, SupportedRenderingMethods::ALL,
+			TTRC("Displays the shadow atlas used for positional (omni/spot) shadow mapping.\nRequires a visible OmniLight3D or SpotLight3D node with shadows enabled to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Directional Shadow Map"), VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS, SupportedRenderingMethods::ALL,
+			TTRC("Displays the shadow map used for directional shadow mapping.\nRequires a visible DirectionalLight3D node with shadows enabled to have a visible effect."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Atlas"), VIEW_DISPLAY_DEBUG_DECAL_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Atlas"), VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Lighting"), VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Albedo"), VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Emission"), VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
+			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SSAO"), VIEW_DISPLAY_DEBUG_SSAO, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Displays the screen-space ambient occlusion buffer. Requires SSAO to be enabled in Environment to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SSIL"), VIEW_DISPLAY_DEBUG_SSIL, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Displays the screen-space indirect lighting buffer. Requires SSIL to be enabled in Environment to have a visible effect."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI/SDFGI Buffer"), VIEW_DISPLAY_DEBUG_GI_BUFFER, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Requires SDFGI or VoxelGI to be enabled to have a visible effect."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Disable Mesh LOD"), VIEW_DISPLAY_DEBUG_DISABLE_LOD, SupportedRenderingMethods::ALL,
+			TTRC("Renders all meshes with their highest level of detail regardless of their distance from the camera."));
+	display_submenu->add_separator();
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("OmniLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one OmniLight3D. Warmer colors are used to indicate tiles affected by more lights."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SpotLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one SpotLight3D. Warmer colors are used to indicate tiles affected by more lights."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one AreaLight3D. Warmer colors are used to indicate tiles affected by more lights."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_DECALS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one Decal."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("ReflectionProbe Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Highlights tiles of pixels that are affected by at least one ReflectionProbe."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Occlusion Culling Buffer"), VIEW_DISPLAY_DEBUG_OCCLUDERS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
+			TTRC("Represents occluders with black pixels. Requires occlusion culling to be enabled to have a visible effect."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Motion Vectors"), VIEW_DISPLAY_MOTION_VECTORS, SupportedRenderingMethods::FORWARD_PLUS,
+			TTRC("Represents motion vectors with colored lines in the direction of motion. Gray dots represent areas with no per-pixel motion."));
+	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Internal Buffer"), VIEW_DISPLAY_INTERNAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
+			TTRC("Shows the scene rendered in linear colorspace before any tonemapping or post-processing."));
+
+	return display_submenu;
 }
 
 void Node3DEditorViewport::_load_viewport_inputs() {
@@ -6815,64 +6889,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_display_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTRC("Display Unshaded")), VIEW_DISPLAY_UNSHADED);
 	view_display_menu->get_popup()->set_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
 
-	display_submenu = memnew(PopupMenu);
-	display_submenu->set_hide_on_checkable_item_selection(false);
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Directional Shadow Splits"), VIEW_DISPLAY_DEBUG_PSSM_SPLITS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
-			TTRC("Displays directional shadow splits in different colors to make adjusting split thresholds easier. \nRed: 1st split (closest to the camera), Green: 2nd split, Blue: 3rd split, Yellow: 4th split (furthest from the camera)"));
-	display_submenu->add_separator();
-	// TRANSLATORS: "Normal" as in "normal vector", not "normal life".
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Normal Buffer"), VIEW_DISPLAY_NORMAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS);
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Shadow Atlas"), VIEW_DISPLAY_DEBUG_SHADOW_ATLAS, SupportedRenderingMethods::ALL,
-			TTRC("Displays the shadow atlas used for positional (omni/spot) shadow mapping.\nRequires a visible OmniLight3D or SpotLight3D node with shadows enabled to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Directional Shadow Map"), VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS, SupportedRenderingMethods::ALL,
-			TTRC("Displays the shadow map used for directional shadow mapping.\nRequires a visible DirectionalLight3D node with shadows enabled to have a visible effect."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Atlas"), VIEW_DISPLAY_DEBUG_DECAL_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Atlas"), VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE);
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Lighting"), VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Albedo"), VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI Emission"), VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires a visible VoxelGI node that has been baked to have a visible effect."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Cascades"), VIEW_DISPLAY_DEBUG_SDFGI, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires SDFGI to be enabled in Environment to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SDFGI Probes"), VIEW_DISPLAY_DEBUG_SDFGI_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Left-click a SDFGI probe to display its occlusion information (white = not occluded, red = fully occluded).\nRequires SDFGI to be enabled in Environment to have a visible effect."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Scene Luminance"), VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
-			TTRC("Displays the scene luminance computed from the 3D buffer. This is used for Auto Exposure calculation.\nRequires Auto Exposure to be enabled in CameraAttributes to have a visible effect."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SSAO"), VIEW_DISPLAY_DEBUG_SSAO, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Displays the screen-space ambient occlusion buffer. Requires SSAO to be enabled in Environment to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SSIL"), VIEW_DISPLAY_DEBUG_SSIL, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Displays the screen-space indirect lighting buffer. Requires SSIL to be enabled in Environment to have a visible effect."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("VoxelGI/SDFGI Buffer"), VIEW_DISPLAY_DEBUG_GI_BUFFER, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Requires SDFGI or VoxelGI to be enabled to have a visible effect."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Disable Mesh LOD"), VIEW_DISPLAY_DEBUG_DISABLE_LOD, SupportedRenderingMethods::ALL,
-			TTRC("Renders all meshes with their highest level of detail regardless of their distance from the camera."));
-	display_submenu->add_separator();
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("OmniLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Highlights tiles of pixels that are affected by at least one OmniLight3D."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("SpotLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Highlights tiles of pixels that are affected by at least one SpotLight3D."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("AreaLight3D Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Highlights tiles of pixels that are affected by at least one AreaLight3D."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Decal Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_DECALS, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Highlights tiles of pixels that are affected by at least one Decal."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("ReflectionProbe Cluster"), VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Highlights tiles of pixels that are affected by at least one ReflectionProbe."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Occlusion Culling Buffer"), VIEW_DISPLAY_DEBUG_OCCLUDERS, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
-			TTRC("Represents occluders with black pixels. Requires occlusion culling to be enabled to have a visible effect."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Motion Vectors"), VIEW_DISPLAY_MOTION_VECTORS, SupportedRenderingMethods::FORWARD_PLUS,
-			TTRC("Represents motion vectors with colored lines in the direction of motion. Gray dots represent areas with no per-pixel motion."));
-	_add_advanced_debug_draw_mode_item(display_submenu, TTRC("Internal Buffer"), VIEW_DISPLAY_INTERNAL_BUFFER, SupportedRenderingMethods::FORWARD_PLUS_MOBILE,
-			TTRC("Shows the scene rendered in linear colorspace before any tonemapping or post-processing."));
+	display_submenu = Node3DEditorViewport::get_advanced_debug_draw_menu();
 	view_display_menu->get_popup()->add_submenu_node_item(TTRC("Display Advanced..."), display_submenu, VIEW_DISPLAY_ADVANCED);
 
 	view_display_menu->get_popup()->add_separator();

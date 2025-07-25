@@ -115,6 +115,8 @@ class Node3DEditorViewport : public Control {
 	friend class Node3DEditor;
 	friend class ViewportNavigationControl;
 	friend class ViewportRotationControl;
+
+public:
 	enum {
 		VIEW_TOP,
 		VIEW_BOTTOM,
@@ -140,38 +142,38 @@ class Node3DEditorViewport : public Control {
 		VIEW_FRAME_TIME,
 
 		// < Keep in sync with menu.
-		VIEW_DISPLAY_NORMAL,
-		VIEW_DISPLAY_WIREFRAME,
-		VIEW_DISPLAY_OVERDRAW,
-		VIEW_DISPLAY_LIGHTING,
-		VIEW_DISPLAY_UNSHADED,
-		VIEW_DISPLAY_ADVANCED,
+		VIEW_DISPLAY_NORMAL = 100,
+		VIEW_DISPLAY_WIREFRAME = 101,
+		VIEW_DISPLAY_OVERDRAW = 102,
+		VIEW_DISPLAY_LIGHTING = 103,
+		VIEW_DISPLAY_UNSHADED = 104,
+		VIEW_DISPLAY_ADVANCED = 105,
 		// Advanced menu:
-		VIEW_DISPLAY_DEBUG_PSSM_SPLITS,
-		VIEW_DISPLAY_NORMAL_BUFFER,
-		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
-		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
-		VIEW_DISPLAY_DEBUG_DECAL_ATLAS,
-		VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS,
-		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO,
-		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING,
-		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION,
-		VIEW_DISPLAY_DEBUG_SDFGI,
-		VIEW_DISPLAY_DEBUG_SDFGI_PROBES,
-		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE,
-		VIEW_DISPLAY_DEBUG_SSAO,
-		VIEW_DISPLAY_DEBUG_SSIL,
-		VIEW_DISPLAY_DEBUG_GI_BUFFER,
-		VIEW_DISPLAY_DEBUG_DISABLE_LOD,
-		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS,
-		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS,
-		VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS,
-		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS,
-		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES,
-		VIEW_DISPLAY_DEBUG_OCCLUDERS,
-		VIEW_DISPLAY_MOTION_VECTORS,
-		VIEW_DISPLAY_INTERNAL_BUFFER,
-		VIEW_DISPLAY_MAX,
+		VIEW_DISPLAY_DEBUG_PSSM_SPLITS = 106,
+		VIEW_DISPLAY_NORMAL_BUFFER = 107,
+		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS = 108,
+		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS = 109,
+		VIEW_DISPLAY_DEBUG_DECAL_ATLAS = 110,
+		VIEW_DISPLAY_DEBUG_AREA_LIGHT_ATLAS = 111,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_ALBEDO = 112,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_LIGHTING = 113,
+		VIEW_DISPLAY_DEBUG_VOXEL_GI_EMISSION = 114,
+		VIEW_DISPLAY_DEBUG_SDFGI = 115,
+		VIEW_DISPLAY_DEBUG_SDFGI_PROBES = 116,
+		VIEW_DISPLAY_DEBUG_SCENE_LUMINANCE = 117,
+		VIEW_DISPLAY_DEBUG_SSAO = 118,
+		VIEW_DISPLAY_DEBUG_SSIL = 119,
+		VIEW_DISPLAY_DEBUG_GI_BUFFER = 120,
+		VIEW_DISPLAY_DEBUG_DISABLE_LOD = 121,
+		VIEW_DISPLAY_DEBUG_CLUSTER_OMNI_LIGHTS = 122,
+		VIEW_DISPLAY_DEBUG_CLUSTER_SPOT_LIGHTS = 123,
+		VIEW_DISPLAY_DEBUG_CLUSTER_AREA_LIGHTS = 124,
+		VIEW_DISPLAY_DEBUG_CLUSTER_DECALS = 125,
+		VIEW_DISPLAY_DEBUG_CLUSTER_REFLECTION_PROBES = 126,
+		VIEW_DISPLAY_DEBUG_OCCLUDERS = 127,
+		VIEW_DISPLAY_MOTION_VECTORS = 128,
+		VIEW_DISPLAY_INTERNAL_BUFFER = 129,
+		VIEW_DISPLAY_MAX = 130,
 		// > Keep in sync with menu.
 
 		VIEW_LOCK_ROTATION,
@@ -180,7 +182,13 @@ class Node3DEditorViewport : public Control {
 		VIEW_MAX
 	};
 
-public:
+	// Supported rendering methods for advanced debug draw mode items.
+	enum SupportedRenderingMethods {
+		ALL,
+		FORWARD_PLUS,
+		FORWARD_PLUS_MOBILE,
+	};
+
 	static constexpr int32_t GIZMO_BASE_LAYER = 27;
 	static constexpr int32_t GIZMO_EDIT_LAYER = 26;
 	static constexpr int32_t GIZMO_GRID_LAYER = 25;
@@ -497,15 +505,8 @@ private:
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
-	// Supported rendering methods for advanced debug draw mode items.
-	enum SupportedRenderingMethods {
-		ALL,
-		FORWARD_PLUS,
-		FORWARD_PLUS_MOBILE,
-	};
-
 	void _set_lock_view_rotation(bool p_lock_rotation);
-	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
+	static void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
 protected:
 	void _notification(int p_what);
@@ -515,6 +516,10 @@ public:
 	void update_surface() { surface->queue_redraw(); }
 	void update_transform_gizmo_view();
 	void update_transform_gizmo_highlight();
+
+	static PopupMenu *get_advanced_debug_draw_menu();
+	static void select_debug_draw_mode(int p_option, MenuButton *p_view_display_menu, PopupMenu *p_display_submenu, Callable p_callable);
+	void set_debug_draw_mode(Viewport::DebugDraw p_mode);
 
 	void set_can_preview(Camera3D *p_preview);
 	void switch_preview_camera(Camera3D *p_new_camera);
