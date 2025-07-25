@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/os/thread_safe.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 /**
 	The XR tracker object is a common base for all different types of XR trackers.
