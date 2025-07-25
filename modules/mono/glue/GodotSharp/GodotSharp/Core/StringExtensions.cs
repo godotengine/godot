@@ -430,8 +430,8 @@ namespace Godot
         {
             int pos = instance.RFind(".");
 
-            if (pos < 0)
-                return instance;
+            if (pos < 0 || pos < Math.Max(instance.RFind("/"), instance.RFind("\\")))
+                return string.Empty;
 
             return instance.Substring(pos + 1);
         }

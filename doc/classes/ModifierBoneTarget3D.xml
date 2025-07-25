@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ModifierBoneTarget3D" inherits="SkeletonModifier3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		А node that dynamically copies the 3D transform of a bone in its parent [Skeleton3D].
+	</brief_description>
+	<description>
+		This node selects a bone in a [Skeleton3D] and attaches to it. This means that the [ModifierBoneTarget3D] node will dynamically copy the 3D transform of the selected bone.
+		The functionality is similar to [BoneAttachment3D], but this node adopts the [SkeletonModifier3D] cycle and is intended to be used as another [SkeletonModifier3D]'s target.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="bone" type="int" setter="set_bone" getter="get_bone" default="-1">
+			The index of the attached bone.
+		</member>
+		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
+			The name of the attached bone.
+		</member>
+	</members>
+</class>

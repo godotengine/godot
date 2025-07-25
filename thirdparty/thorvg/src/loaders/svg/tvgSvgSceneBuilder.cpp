@@ -752,12 +752,22 @@ static unique_ptr<Scene> _useBuildHelper(SvgLoaderData& loaderData, const SvgNod
             }
             viewBoxClip->transform(mClipTransform);
 
-            scene->clip(std::move(viewBoxClip));
+            auto clippingLayer = Scene::gen();
+            clippingLayer->clip(std::move(viewBoxClip));
+            clippingLayer->push(std::move(scene));
+            return clippingLayer;
         }
-    } else {
-        scene->transform(mUseTransform);
+        return scene;
     }
 
+    if (auto clipper = scene->Paint::pImpl->clipper) {
+        auto clipTransform = clipper->transform();
+        Matrix inv;
+        if (node->transform && inverse(node->transform, &inv)) clipTransform = inv * clipTransform;
+        clipper->transform(mUseTransform * clipTransform);
+    }
+
+    scene->transform(mUseTransform);
     return scene;
 }
 

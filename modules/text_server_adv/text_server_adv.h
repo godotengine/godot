@@ -152,7 +152,15 @@ class TextServerAdvanced : public TextServerExtension {
 	HashMap<StringName, int32_t> feature_sets;
 	HashMap<int32_t, FeatureInfo> feature_sets_inv;
 
+	enum LineBreakStrictness {
+		LB_AUTO,
+		LB_LOOSE,
+		LB_NORMAL,
+		LB_STRICT,
+	};
+
 	SafeNumeric<TextServer::FontLCDSubpixelLayout> lcd_subpixel_layout{ TextServer::FontLCDSubpixelLayout::FONT_LCD_SUBPIXEL_LAYOUT_NONE };
+	LineBreakStrictness lb_strictness = LB_AUTO;
 	void _update_settings();
 
 	void _insert_num_systems_lang();
@@ -336,6 +344,7 @@ class TextServerAdvanced : public TextServerExtension {
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
+		double oversampling_override = 0.0;
 		double embolden = 0.0;
 		Transform2D transform;
 
@@ -379,8 +388,8 @@ class TextServerAdvanced : public TextServerExtension {
 #ifdef MODULE_FREETYPE_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
+	bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling = 0) const;
+	bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent = false, uint32_t p_oversampling = 0) const;
 	_FORCE_INLINE_ bool _font_validate(const RID &p_font_rid) const;
 	_FORCE_INLINE_ void _font_clear_cache(FontAdvanced *p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
@@ -543,8 +552,8 @@ class TextServerAdvanced : public TextServerExtension {
 		TrimData overrun_trim_data;
 		bool fit_width_minimum_reached = false;
 
-		Vector<Glyph> glyphs;
-		Vector<Glyph> glyphs_logical;
+		LocalVector<Glyph> glyphs;
+		LocalVector<Glyph> glyphs_logical;
 
 		/* Intermediate data */
 		Char16String utf16;
@@ -840,6 +849,9 @@ public:
 
 	MODBIND2(font_set_variation_coordinates, const RID &, const Dictionary &);
 	MODBIND1RC(Dictionary, font_get_variation_coordinates, const RID &);
+
+	MODBIND2(font_set_oversampling, const RID &, double);
+	MODBIND1RC(double, font_get_oversampling, const RID &);
 
 	MODBIND2(font_set_hinting, const RID &, TextServer::Hinting);
 	MODBIND1RC(TextServer::Hinting, font_get_hinting, const RID &);

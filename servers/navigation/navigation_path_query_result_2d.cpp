@@ -110,6 +110,14 @@ void NavigationPathQueryResult2D::set_data(const LocalVector<Vector2> &p_path, c
 	}
 }
 
+void NavigationPathQueryResult2D::set_path_length(float p_length) {
+	path_length = p_length;
+}
+
+float NavigationPathQueryResult2D::get_path_length() const {
+	return path_length;
+}
+
 void NavigationPathQueryResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path", "path"), &NavigationPathQueryResult2D::set_path);
 	ClassDB::bind_method(D_METHOD("get_path"), &NavigationPathQueryResult2D::get_path);
@@ -123,12 +131,16 @@ void NavigationPathQueryResult2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_owner_ids", "path_owner_ids"), &NavigationPathQueryResult2D::set_path_owner_ids);
 	ClassDB::bind_method(D_METHOD("get_path_owner_ids"), &NavigationPathQueryResult2D::get_path_owner_ids);
 
+	ClassDB::bind_method(D_METHOD("set_path_length", "length"), &NavigationPathQueryResult2D::set_path_length);
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationPathQueryResult2D::get_path_length);
+
 	ClassDB::bind_method(D_METHOD("reset"), &NavigationPathQueryResult2D::reset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "path"), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "path_types"), "set_path_types", "get_path_types");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "path_rids", PROPERTY_HINT_ARRAY_TYPE, "RID"), "set_path_rids", "get_path_rids");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT64_ARRAY, "path_owner_ids"), "set_path_owner_ids", "get_path_owner_ids");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_length"), "set_path_length", "get_path_length");
 
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_REGION);
 	BIND_ENUM_CONSTANT(PATH_SEGMENT_TYPE_LINK);

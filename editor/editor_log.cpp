@@ -34,9 +34,9 @@
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -484,7 +484,7 @@ EditorLog::EditorLog() {
 	clear_button = memnew(Button);
 	clear_button->set_accessibility_name(TTRC("Clear Log"));
 	clear_button->set_theme_type_variation(SceneStringName(FlatButton));
-	clear_button->set_focus_mode(FOCUS_NONE);
+	clear_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	clear_button->set_shortcut(ED_SHORTCUT("editor/clear_output", TTRC("Clear Output"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::ALT | Key::K));
 	clear_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_clear_request));
 	hb_tools->add_child(clear_button);
@@ -493,7 +493,7 @@ EditorLog::EditorLog() {
 	copy_button = memnew(Button);
 	copy_button->set_accessibility_name(TTRC("Copy Selection"));
 	copy_button->set_theme_type_variation(SceneStringName(FlatButton));
-	copy_button->set_focus_mode(FOCUS_NONE);
+	copy_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	copy_button->set_shortcut(ED_SHORTCUT("editor/copy_output", TTRC("Copy Selection"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	copy_button->set_shortcut_context(this);
 	copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorLog::_copy_request));
@@ -510,9 +510,8 @@ EditorLog::EditorLog() {
 	// Collapse.
 	collapse_button = memnew(Button);
 	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
-	collapse_button->set_focus_mode(FOCUS_NONE);
+	collapse_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
-	collapse_button->set_accessibility_name(TTRC("Collapse Duplicate Messages"));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));
@@ -522,7 +521,7 @@ EditorLog::EditorLog() {
 	show_search_button = memnew(Button);
 	show_search_button->set_accessibility_name(TTRC("Show Search"));
 	show_search_button->set_theme_type_variation(SceneStringName(FlatButton));
-	show_search_button->set_focus_mode(FOCUS_NONE);
+	show_search_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	show_search_button->set_toggle_mode(true);
 	show_search_button->set_pressed(true);
 	show_search_button->set_shortcut(ED_SHORTCUT("editor/open_search", TTRC("Focus Search/Filter Bar"), KeyModifierMask::CMD_OR_CTRL | Key::F));

@@ -541,6 +541,9 @@ StringName Area2D::get_audio_bus_name() const {
 }
 
 void Area2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "audio_bus_name") {
 		String options;
 		for (int i = 0; i < AudioServer::get_singleton()->get_bus_count(); i++) {

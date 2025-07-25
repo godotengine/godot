@@ -76,7 +76,6 @@ class SpinBox : public Range {
 	String suffix;
 	String last_text_value;
 	double custom_arrow_step = 0.0;
-	bool use_custom_arrow_step = false;
 
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 
@@ -103,7 +102,6 @@ class SpinBox : public Range {
 	inline int _get_widest_button_icon_width();
 
 	struct ThemeCache {
-		Ref<Texture2D> updown_icon;
 		Ref<Texture2D> up_icon;
 		Ref<Texture2D> up_hover_icon;
 		Ref<Texture2D> up_pressed_icon;
@@ -138,13 +136,14 @@ class SpinBox : public Range {
 		int field_and_buttons_separation = 0;
 		int buttons_width = 0;
 #ifndef DISABLE_DEPRECATED
+		Ref<Texture2D> updown_icon;
+		bool is_updown_assigned = false;
 		bool set_min_buttons_width_from_icons = false;
 #endif
 	} theme_cache;
 
 	void _mouse_exited();
 	void _update_buttons_state_for_current_value();
-	void _set_step_no_signal(double p_step);
 
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

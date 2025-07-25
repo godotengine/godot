@@ -53,6 +53,9 @@ class GLManagerEmbedded {
 	/// Triple-buffering is used to avoid stuttering.
 	static constexpr uint32_t BUFFER_COUNT = 3;
 
+	// The display ID for which vsync is used. If this value is -1, vsync is disabled.
+	constexpr static uint32_t INVALID_DISPLAY_ID = static_cast<uint32_t>(-1);
+
 	struct FrameBuffer {
 		IOSurfaceRef surface = nullptr;
 		unsigned int tex = 0;
@@ -86,11 +89,24 @@ class GLManagerEmbedded {
 	CGLTexImageIOSurface2DPtr CGLTexImageIOSurface2D = nullptr;
 	CGLErrorStringPtr CGLErrorString = nullptr;
 
+	uint32_t display_id = INVALID_DISPLAY_ID;
+	CVDisplayLinkRef display_link = nullptr;
+	bool vsync_enabled = false;
+	bool display_link_running = false;
+	dispatch_semaphore_t display_semaphore = nullptr;
+
+	void create_display_link();
+	void release_display_link();
+
 public:
 	Error window_create(DisplayServer::WindowID p_window_id, CALayer *p_layer, int p_width, int p_height);
 	void window_destroy(DisplayServer::WindowID p_window_id);
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 	Size2i window_get_size(DisplayServer::WindowID p_window_id) const;
+
+	void set_display_id(uint32_t p_display_id);
+	void set_vsync_enabled(bool p_enabled);
+	bool is_vsync_enabled() const { return vsync_enabled; }
 
 	void release_current();
 	void swap_buffers();

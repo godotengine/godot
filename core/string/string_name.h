@@ -37,7 +37,7 @@
 
 class Main;
 
-class StringName {
+class [[nodiscard]] StringName {
 	struct Table;
 
 	struct _Data {
@@ -133,10 +133,6 @@ public:
 
 		return String();
 	}
-
-	static StringName search(const char *p_name);
-	static StringName search(const char32_t *p_name);
-	static StringName search(const String &p_name);
 
 	struct AlphCompare {
 		template <typename LT, typename RT>

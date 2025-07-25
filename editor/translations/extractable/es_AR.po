@@ -21,6 +21,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Todos Reconocidos"
 
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Clear"
+msgstr "Limpiar"
+
 msgid "Add current color as a preset."
 msgstr "Agregar color actual como preset."
 
@@ -32,9 +38,6 @@ msgstr "Abrir"
 
 msgid "Select Current Folder"
 msgstr "Seleccionar Carpeta Actual"
-
-msgid "Save"
-msgstr "Guardar"
 
 msgid "Select This Folder"
 msgstr "Seleccionar Esta Carpeta"
@@ -69,11 +72,11 @@ msgstr "Ruta:"
 msgid "Refresh files."
 msgstr "Refrescar archivos."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Mostrar/Ocultar archivos ocultos."
-
 msgid "Directories & Files:"
 msgstr "Directorios y Archivos:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Mostrar/Ocultar archivos ocultos."
 
 msgid "File:"
 msgstr "Archivo:"
@@ -107,9 +110,6 @@ msgstr "Pegar"
 
 msgid "Select All"
 msgstr "Seleccionar Todo"
-
-msgid "Clear"
-msgstr "Limpiar"
 
 msgid "Undo"
 msgstr "Deshacer"

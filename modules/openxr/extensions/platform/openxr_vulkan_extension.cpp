@@ -320,6 +320,10 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			format = RenderingDevice::DATA_FORMAT_B8G8R8A8_UINT;
 			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 			break;
+		case VK_FORMAT_R16G16B16A16_SFLOAT:
+			format = RenderingDevice::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			usage_flags |= RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+			break;
 		case VK_FORMAT_D32_SFLOAT:
 			format = RenderingDevice::DATA_FORMAT_D32_SFLOAT;
 			usage_flags |= RenderingDevice::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -382,7 +386,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 				p_width,
 				p_height,
 				1,
-				p_array_size);
+				p_array_size,
+				1);
 
 		texture_rids.push_back(image_rid);
 
@@ -396,7 +401,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 					density_images[i].width,
 					density_images[i].height,
 					1,
-					p_array_size);
+					p_array_size,
+					1);
 
 			density_map_rids.push_back(density_map_rid);
 		} else {

@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+
+env_apple_embedded = env.Clone()
+
+# Enable module support
+env_apple_embedded.Append(CCFLAGS=["-fmodules", "-fcxx-modules"])
+
+# Use bundled Vulkan headers
+vulkan_dir = "#thirdparty/vulkan"
+env_apple_embedded.Prepend(CPPPATH=[vulkan_dir, vulkan_dir + "/include"])
+
+# Driver source files
+env_apple_embedded.add_source_files(env.drivers_sources, "*.mm")

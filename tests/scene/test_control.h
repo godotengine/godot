@@ -1096,38 +1096,6 @@ TEST_CASE("[SceneTree][Control] Anchoring") {
 	memdelete(test_control);
 }
 
-TEST_CASE("[SceneTree][Control] Set position does not cause size side-effects") {
-	Control *test_control = memnew(Control);
-	test_control->set_size(Size2(1, 1));
-	test_control->set_custom_minimum_size(Size2(2, 2));
-	Window *root = SceneTree::get_singleton()->get_root();
-	root->add_child(test_control);
-
-	SUBCASE("Shrinks after setting position and smaller custom minimum size (without keeping offsets)") {
-		test_control->set_position(Point2(10, 10), false);
-		SceneTree::get_singleton()->process(0);
-
-		test_control->set_custom_minimum_size(Size2(0, 0));
-		SceneTree::get_singleton()->process(0);
-		CHECK_MESSAGE(
-				test_control->get_size().is_equal_approx(Vector2(1, 1)),
-				"Should shrink to original size after setting a smaller custom minimum size.");
-	}
-
-	SUBCASE("Shrinks after setting position and smaller custom minimum size (while keeping offsets)") {
-		test_control->set_position(Point2(10, 10), true);
-		SceneTree::get_singleton()->process(0);
-
-		test_control->set_custom_minimum_size(Size2(0, 0));
-		SceneTree::get_singleton()->process(0);
-		CHECK_MESSAGE(
-				test_control->get_size().is_equal_approx(Vector2(1, 1)),
-				"Should shrink to original size after setting a smaller custom minimum size.");
-	}
-
-	memdelete(test_control);
-}
-
 TEST_CASE("[SceneTree][Control] Custom minimum size") {
 	Control *test_control = memnew(Control);
 	test_control->set_custom_minimum_size(Size2(4, 2));

@@ -106,7 +106,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
 		MAX_LIGHTS_PER_ITEM = 16,
-		DEFAULT_MAX_LIGHTS_PER_RENDER = 256
+		MAX_LIGHTS_PER_RENDER = 256,
 	};
 
 	/****************/
@@ -169,6 +169,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RID get_shader(ShaderVariant p_shader_variant, bool p_ubershader) const;
 		uint64_t get_vertex_input_mask(ShaderVariant p_shader_variant, bool p_ubershader);
 		bool is_valid() const;
@@ -550,8 +551,8 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 			uint32_t directional_light_count;
 			float tex_to_sdf;
+			float shadow_pixel_size;
 			uint32_t flags;
-			uint32_t pad2;
 		};
 
 		DataBuffer canvas_instance_data_buffers[BATCH_DATA_BUFFER_COUNT];
@@ -570,7 +571,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 
 		LightUniform *light_uniforms = nullptr;
 
-		RID lights_uniform_buffer;
+		RID lights_storage_buffer;
 		RID canvas_state_buffer;
 		RID shadow_sampler;
 		RID shadow_texture;
@@ -583,8 +584,6 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		RID shadow_ocluder_uniform_set;
 
 		RID default_transforms_uniform_set;
-
-		uint32_t max_lights_per_render;
 
 		double time;
 
@@ -638,7 +637,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 	void _update_occluder_buffer(uint32_t p_size);
 
 public:
-	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) override;
+	PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>(), int p_count = -1) override;
 	void free_polygon(PolygonID p_polygon) override;
 
 	RID light_create() override;

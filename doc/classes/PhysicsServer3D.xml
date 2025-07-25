@@ -606,7 +606,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mode" type="int" enum="PhysicsServer3D.BodyMode" />
 			<description>
-				Sets the body mode, from one of the [enum BodyMode] constants.
+				Sets the body mode.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
@@ -675,7 +675,7 @@
 			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
 			<param index="2" name="value" type="Variant" />
 			<description>
-				Sets a body state (see [enum BodyState] constants).
+				Sets a body state.
 			</description>
 		</method>
 		<method name="body_set_state_sync_callback">
@@ -718,7 +718,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
 			<description>
-				Gets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
+				Gets a cone twist joint parameter.
 			</description>
 		</method>
 		<method name="cone_twist_joint_set_param">
@@ -727,7 +727,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.ConeTwistJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets a cone_twist_joint parameter (see [enum ConeTwistJointParam] constants).
+				Sets a cone twist joint parameter.
 			</description>
 		</method>
 		<method name="convex_polygon_shape_create">
@@ -758,7 +758,7 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<description>
-				Returns the value of a generic 6DOF joint flag. See [enum G6DOFJointAxisFlag] for the list of available flags.
+				Returns the value of a generic 6DOF joint flag.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_get_param" qualifiers="const">
@@ -767,7 +767,7 @@
 			<param index="1" name="axis" type="int" enum="Vector3.Axis" />
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<description>
-				Returns the value of a generic 6DOF joint parameter. See [enum G6DOFJointAxisParam] for the list of available parameters.
+				Returns the value of a generic 6DOF joint parameter.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_flag">
@@ -777,7 +777,7 @@
 			<param index="2" name="flag" type="int" enum="PhysicsServer3D.G6DOFJointAxisFlag" />
 			<param index="3" name="enable" type="bool" />
 			<description>
-				Sets the value of a given generic 6DOF joint flag. See [enum G6DOFJointAxisFlag] for the list of available flags.
+				Sets the value of a given generic 6DOF joint flag.
 			</description>
 		</method>
 		<method name="generic_6dof_joint_set_param">
@@ -787,14 +787,14 @@
 			<param index="2" name="param" type="int" enum="PhysicsServer3D.G6DOFJointAxisParam" />
 			<param index="3" name="value" type="float" />
 			<description>
-				Sets the value of a given generic 6DOF joint parameter. See [enum G6DOFJointAxisParam] for the list of available parameters.
+				Sets the value of a given generic 6DOF joint parameter.
 			</description>
 		</method>
 		<method name="get_process_info">
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
 			<description>
-				Returns information about the current state of the 3D physics engine. See [enum ProcessInfo] for a list of available states.
+				Returns the value of a physics engine state specified by [param process_info].
 			</description>
 		</method>
 		<method name="heightmap_shape_create">
@@ -807,7 +807,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
 			<description>
-				Gets a hinge_joint flag (see [enum HingeJointFlag] constants).
+				Gets a hinge joint flag.
 			</description>
 		</method>
 		<method name="hinge_joint_get_param" qualifiers="const">
@@ -815,7 +815,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
 			<description>
-				Gets a hinge_joint parameter (see [enum HingeJointParam]).
+				Gets a hinge joint parameter.
 			</description>
 		</method>
 		<method name="hinge_joint_set_flag">
@@ -824,7 +824,7 @@
 			<param index="1" name="flag" type="int" enum="PhysicsServer3D.HingeJointFlag" />
 			<param index="2" name="enabled" type="bool" />
 			<description>
-				Sets a hinge_joint flag (see [enum HingeJointFlag] constants).
+				Sets a hinge joint flag.
 			</description>
 		</method>
 		<method name="hinge_joint_set_param">
@@ -833,7 +833,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.HingeJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets a hinge_joint parameter (see [enum HingeJointParam] constants).
+				Sets a hinge joint parameter.
 			</description>
 		</method>
 		<method name="joint_clear">
@@ -954,7 +954,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
 			<description>
-				Gets a pin_joint parameter (see [enum PinJointParam] constants).
+				Gets a pin joint parameter.
 			</description>
 		</method>
 		<method name="pin_joint_set_local_a">
@@ -979,7 +979,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.PinJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets a pin_joint parameter (see [enum PinJointParam] constants).
+				Sets a pin joint parameter.
 			</description>
 		</method>
 		<method name="separation_ray_shape_create">
@@ -1013,7 +1013,7 @@
 			<return type="int" enum="PhysicsServer3D.ShapeType" />
 			<param index="0" name="shape" type="RID" />
 			<description>
-				Returns the type of shape (see [enum ShapeType] constants).
+				Returns the type of shape.
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -1038,7 +1038,7 @@
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
 			<description>
-				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
+				Gets a slider joint parameter.
 			</description>
 		</method>
 		<method name="slider_joint_set_param">
@@ -1047,7 +1047,7 @@
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.SliderJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Gets a slider_joint parameter (see [enum SliderJointParam] constants).
+				Gets a slider joint parameter.
 			</description>
 		</method>
 		<method name="soft_body_add_collision_exception">
@@ -1056,6 +1056,42 @@
 			<param index="1" name="body_b" type="RID" />
 			<description>
 				Adds the given body to the list of bodies exempt from collisions.
+			</description>
+		</method>
+		<method name="soft_body_apply_central_force">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="force" type="Vector3" />
+			<description>
+				Distributes and applies a force to all points. A force is time dependent and meant to be applied every physics update.
+			</description>
+		</method>
+		<method name="soft_body_apply_central_impulse">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="impulse" type="Vector3" />
+			<description>
+				Distributes and applies an impulse to all points.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
+			</description>
+		</method>
+		<method name="soft_body_apply_point_force">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<param index="2" name="force" type="Vector3" />
+			<description>
+				Applies a force to a point. A force is time dependent and meant to be applied every physics update.
+			</description>
+		</method>
+		<method name="soft_body_apply_point_impulse">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="point_index" type="int" />
+			<param index="2" name="impulse" type="Vector3" />
+			<description>
+				Applies an impulse to a point.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_force" functions otherwise).
 			</description>
 		</method>
 		<method name="soft_body_create">
@@ -1121,6 +1157,13 @@
 				Returns the pressure coefficient of the given soft body.
 			</description>
 		</method>
+		<method name="soft_body_get_shrinking_factor" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+				Returns the shrinking factor of the given soft body.
+			</description>
+		</method>
 		<method name="soft_body_get_simulation_precision" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
@@ -1140,7 +1183,7 @@
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
 			<description>
-				Returns the given soft body state (see [enum BodyState] constants).
+				Returns the given soft body state.
 				[b]Note:[/b] Godot's default physics implementation does not support [constant BODY_STATE_LINEAR_VELOCITY], [constant BODY_STATE_ANGULAR_VELOCITY], [constant BODY_STATE_SLEEPING], or [constant BODY_STATE_CAN_SLEEP].
 			</description>
 		</method>
@@ -1258,6 +1301,14 @@
 				Sets whether the given soft body will be pickable when using object picking.
 			</description>
 		</method>
+		<method name="soft_body_set_shrinking_factor">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shrinking_factor" type="float" />
+			<description>
+				Sets the shrinking factor of the given soft body.
+			</description>
+		</method>
 		<method name="soft_body_set_simulation_precision">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
@@ -1280,7 +1331,7 @@
 			<param index="1" name="state" type="int" enum="PhysicsServer3D.BodyState" />
 			<param index="2" name="variant" type="Variant" />
 			<description>
-				Sets the given body state for the given body (see [enum BodyState] constants).
+				Sets the given body state for the given body.
 				[b]Note:[/b] Godot's default physics implementation does not support [constant BODY_STATE_LINEAR_VELOCITY], [constant BODY_STATE_ANGULAR_VELOCITY], [constant BODY_STATE_SLEEPING], or [constant BODY_STATE_CAN_SLEEP].
 			</description>
 		</method>

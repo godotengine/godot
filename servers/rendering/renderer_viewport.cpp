@@ -732,9 +732,6 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	Ref<XRInterface> xr_interface;
 	XRServer *xr_server = XRServer::get_singleton();
 	if (xr_server != nullptr) {
-		// let our XR server know we're about to render our frames so we can get our frame timing
-		xr_server->pre_render();
-
 		// retrieve the interface responsible for rendering
 		xr_interface = xr_server->get_primary_interface();
 	}
@@ -971,8 +968,12 @@ void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
-	ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR && OS::get_singleton()->get_current_rendering_method() != "forward_plus", "FSR1 is only available when using the Forward+ renderer.");
-	ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 && OS::get_singleton()->get_current_rendering_method() != "forward_plus", "FSR2 is only available when using the Forward+ renderer.");
+	const String rendering_method = OS::get_singleton()->get_current_rendering_method();
+	if (rendering_method != "forward_plus") {
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR, "FSR1 is only available when using the Forward+ renderer.");
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2, "FSR2 is only available when using the Forward+ renderer.");
+		ERR_FAIL_COND_EDMSG(p_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL, "MetalFX Temporal is only available when using the Forward+ renderer.");
+	}
 
 	if (viewport->scaling_3d_mode == p_mode) {
 		return;
@@ -1363,6 +1364,7 @@ bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
 void RendererViewport::viewport_set_screen_space_aa(RID p_viewport, RS::ViewportScreenSpaceAA p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_NULL(viewport);
+	ERR_FAIL_COND_EDMSG(p_mode != RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility", "Screen space AA is currently unavailable on the Compatibility renderer.");
 
 	if (viewport->screen_space_aa == p_mode) {
 		return;
@@ -1399,6 +1401,7 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 		return;
 	}
 	viewport->use_debanding = p_use_debanding;
+	RSG::texture_storage->render_target_set_use_debanding(viewport->render_target, p_use_debanding);
 	_configure_3d_render_buffers(viewport);
 }
 

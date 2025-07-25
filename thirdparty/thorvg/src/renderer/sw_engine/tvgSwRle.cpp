@@ -1025,7 +1025,7 @@ void rleFree(SwRle* rle)
 bool rleClip(SwRle *rle, const SwRle *clip)
 {
     if (rle->size == 0 || clip->size == 0) return false;
-    auto spanCnt = rle->size > clip->size ? rle->size : clip->size;
+    auto spanCnt = 2 * (rle->size > clip->size ? rle->size : clip->size); //factor 2 added for safety (no real cases observed where the factor exceeded 1.4)
     auto spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * (spanCnt)));
     auto spansEnd = _intersectSpansRegion(clip, rle, spans, spanCnt);
 

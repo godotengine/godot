@@ -1858,9 +1858,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 				if (buf) {
 					buf += len;
 				}
-				const Variant *value = dict.getptr(kv.key);
-				ERR_FAIL_NULL_V(value, ERR_BUG);
-				err = encode_variant(*value, buf, len, p_full_objects, p_depth + 1);
+				err = encode_variant(kv.value, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;

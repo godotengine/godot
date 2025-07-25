@@ -12,6 +12,7 @@
 #include "mbedtls/private_access.h"
 
 #include "mbedtls/build_info.h"
+#include "mbedtls/platform_util.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -928,7 +929,7 @@ int mbedtls_mpi_exp_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  *                 be relevant in applications like deterministic ECDSA.
  */
 int mbedtls_mpi_fill_random(mbedtls_mpi *X, size_t size,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /** Generate a random number uniformly in a range.
@@ -966,7 +967,7 @@ int mbedtls_mpi_fill_random(mbedtls_mpi *X, size_t size,
 int mbedtls_mpi_random(mbedtls_mpi *X,
                        mbedtls_mpi_sint min,
                        const mbedtls_mpi *N,
-                       int (*f_rng)(void *, unsigned char *, size_t),
+                       mbedtls_f_rng_t *f_rng,
                        void *p_rng);
 
 /**
@@ -1030,7 +1031,7 @@ int mbedtls_mpi_inv_mod(mbedtls_mpi *X, const mbedtls_mpi *A,
  * \return         Another negative error code on other kinds of failure.
  */
 int mbedtls_mpi_is_prime_ext(const mbedtls_mpi *X, int rounds,
-                             int (*f_rng)(void *, unsigned char *, size_t),
+                             mbedtls_f_rng_t *f_rng,
                              void *p_rng);
 /**
  * \brief Flags for mbedtls_mpi_gen_prime()
@@ -1063,7 +1064,7 @@ typedef enum {
  *                 \c 3 and #MBEDTLS_MPI_MAX_BITS.
  */
 int mbedtls_mpi_gen_prime(mbedtls_mpi *X, size_t nbits, int flags,
-                          int (*f_rng)(void *, unsigned char *, size_t),
+                          mbedtls_f_rng_t *f_rng,
                           void *p_rng);
 
 #if defined(MBEDTLS_SELF_TEST)

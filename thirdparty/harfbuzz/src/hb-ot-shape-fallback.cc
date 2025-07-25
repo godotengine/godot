@@ -427,8 +427,13 @@ position_cluster (const hb_ot_shape_plan_t *plan,
       /* Find mark glyphs */
       unsigned int j;
       for (j = i + 1; j < end; j++)
+      {
+        if (_hb_glyph_info_is_hidden (&info[j]) ||
+	    _hb_glyph_info_is_default_ignorable (&info[j]))
+	  continue;
 	if (!_hb_glyph_info_is_unicode_mark (&info[j]))
 	  break;
+      }
 
       position_around_base (plan, font, buffer, i, j, adjust_offsets_when_zeroing);
 
@@ -455,7 +460,9 @@ _hb_ot_shape_fallback_mark_position (const hb_ot_shape_plan_t *plan,
   unsigned int count = buffer->len;
   hb_glyph_info_t *info = buffer->info;
   for (unsigned int i = 1; i < count; i++)
-    if (likely (!_hb_glyph_info_is_unicode_mark (&info[i]))) {
+    if (likely (!_hb_glyph_info_is_unicode_mark (&info[i]) &&
+		!_hb_glyph_info_is_hidden (&info[i]) &&
+		!_hb_glyph_info_is_default_ignorable (&info[i]))) {
       position_cluster (plan, font, buffer, start, i, adjust_offsets_when_zeroing);
       start = i;
     }

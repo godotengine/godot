@@ -1328,7 +1328,7 @@ png_image_read_header(png_voidp argument)
 
 #ifdef PNG_STDIO_SUPPORTED
 int PNGAPI
-png_image_begin_read_from_stdio(png_imagep image, FILE* file)
+png_image_begin_read_from_stdio(png_imagep image, FILE *file)
 {
    if (image != NULL && image->version == PNG_IMAGE_VERSION)
    {

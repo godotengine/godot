@@ -41,17 +41,7 @@
 #undef AS
 #endif
 
-#if (WINVER < _WIN32_WINNT_WIN8) && defined(_MSC_VER)
-#pragma push_macro("NTDDI_VERSION")
-#pragma push_macro("WINVER")
-#undef NTDDI_VERSION
-#undef WINVER
-#define NTDDI_VERSION NTDDI_WIN8
-#define WINVER _WIN32_WINNT_WIN8
-#include <dcomp.h>
-#pragma pop_macro("WINVER")
-#pragma pop_macro("NTDDI_VERSION")
-#else
+#ifdef DCOMP_ENABLED
 #include <dcomp.h>
 #endif
 
@@ -104,14 +94,18 @@ public:
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+#ifdef DCOMP_ENABLED
 		ComPtr<IDCompositionDevice> composition_device;
 		ComPtr<IDCompositionTarget> composition_target;
 		ComPtr<IDCompositionVisual> composition_visual;
+#endif
 	};
 
 	HMODULE lib_d3d12 = nullptr;
 	HMODULE lib_dxgi = nullptr;
+#ifdef DCOMP_ENABLED
 	HMODULE lib_dcomp = nullptr;
+#endif
 
 	IDXGIAdapter1 *create_adapter(uint32_t p_adapter_index) const;
 	ID3D12DeviceFactory *device_factory_get() const;

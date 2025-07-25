@@ -118,7 +118,7 @@ private:
 
 	TabContainer *tabs = nullptr;
 
-	Label *reason = nullptr;
+	RichTextLabel *reason = nullptr;
 
 	Button *skip_breakpoints = nullptr;
 	Button *ignore_error_breaks = nullptr;
@@ -231,6 +231,7 @@ private:
 
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
+	void _update_reason_content_height();
 	void _update_buttons_state();
 	void _remote_object_selected(ObjectID p_object);
 	void _remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);

@@ -1764,6 +1764,20 @@
 #define MBEDTLS_SSL_KEEP_PEER_CERTIFICATE
 
 /**
+ * \def MBEDTLS_SSL_KEYING_MATERIAL_EXPORT
+ *
+ * When this option is enabled, the client and server can extract additional
+ * shared symmetric keys after an SSL handshake using the function
+ * mbedtls_ssl_export_keying_material().
+ *
+ * The process for deriving the keys is specified in RFC 5705 for TLS 1.2 and
+ * in RFC 8446, Section 7.5, for TLS 1.3.
+ *
+ * Comment this macro to disable mbedtls_ssl_export_keying_material().
+ */
+#define MBEDTLS_SSL_KEYING_MATERIAL_EXPORT
+
+/**
  * \def MBEDTLS_SSL_RENEGOTIATION
  *
  * Enable support for TLS renegotiation.

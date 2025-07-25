@@ -51,10 +51,11 @@
 // These must go after the Wayland client include to work properly.
 #include "wayland/protocol/idle_inhibit.gen.h"
 #include "wayland/protocol/primary_selection.gen.h"
-// These three protocol headers name wl_pointer method arguments as `pointer`,
+// These four protocol headers name wl_pointer method arguments as `pointer`,
 // which is the same name as X11's pointer typedef. This trips some very
 // annoying shadowing warnings. A `#define` works around this issue.
 #define pointer wl_pointer
+#include "wayland/protocol/cursor_shape.gen.h"
 #include "wayland/protocol/pointer_constraints.gen.h"
 #include "wayland/protocol/pointer_gestures.gen.h"
 #include "wayland/protocol/relative_pointer.gen.h"
@@ -186,6 +187,9 @@ public:
 
 		struct wp_fractional_scale_manager_v1 *wp_fractional_scale_manager = nullptr;
 		uint32_t wp_fractional_scale_manager_name = 0;
+
+		struct wp_cursor_shape_manager_v1 *wp_cursor_shape_manager = nullptr;
+		uint32_t wp_cursor_shape_manager_name = 0;
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
@@ -416,6 +420,8 @@ public:
 
 		uint32_t pointer_enter_serial = 0;
 
+		struct wp_cursor_shape_device_v1 *wp_cursor_shape_device = nullptr;
+
 		struct zwp_relative_pointer_v1 *wp_relative_pointer = nullptr;
 		struct zwp_locked_pointer_v1 *wp_locked_pointer = nullptr;
 		struct zwp_confined_pointer_v1 *wp_confined_pointer = nullptr;
@@ -547,9 +553,32 @@ private:
 	// especially as usually screen scales don't change continuously.
 	int cursor_scale = 1;
 
+	// Use cursor-shape-v1 protocol if the compositor supports it.
+	wp_cursor_shape_device_v1_shape standard_cursors[DisplayServer::CURSOR_MAX] = {
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT, //CURSOR_ARROW
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_TEXT, //CURSOR_IBEAM
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_POINTER, //CURSOR_POINTING_HAND
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_CROSSHAIR, //CURSOR_CROSS
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_WAIT, //CURSOR_WAIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_PROGRESS, //CURSOR_BUSY
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRAB, //CURSOR_DRAG
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_GRABBING, //CURSOR_CAN_DROP
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NO_DROP, //CURSOR_FORBIDDEN
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NS_RESIZE, //CURSOR_VSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_EW_RESIZE, //CURSOR_HSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NESW_RESIZE, //CURSOR_BDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_NWSE_RESIZE, //CURSOR_FDIAGSIZE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_MOVE, //CURSOR_MOVE
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_ROW_RESIZE, //CURSOR_VSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_COL_RESIZE, //CURSOR_HSPLIT
+		wp_cursor_shape_device_v1_shape::WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_HELP, //CURSOR_HELP
+	};
+
+	// Fallback to reading $XCURSOR and system themes if the compositor does not.
 	struct wl_cursor_theme *wl_cursor_theme = nullptr;
 	struct wl_cursor *wl_cursors[DisplayServer::CURSOR_MAX] = {};
 
+	// User-defined cursor overrides. Take precedence over standard and wl cursors.
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
 	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;

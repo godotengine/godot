@@ -165,7 +165,7 @@
 			<return type="void" />
 			<param index="0" name="mode" type="int" enum="Mesh.BlendShapeMode" />
 			<description>
-				Sets the blend shape mode to one of [enum Mesh.BlendShapeMode].
+				Sets the blend shape mode.
 			</description>
 		</method>
 		<method name="set_lightmap_size_hint">

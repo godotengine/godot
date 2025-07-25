@@ -108,7 +108,7 @@ void OpenXRDpadBindingModifier::_bind_methods() {
 }
 
 OpenXRDpadBindingModifier::OpenXRDpadBindingModifier() {
-	ERR_FAIL_COND(dpad_bindings_data.resize_zeroed(sizeof(XrInteractionProfileDpadBindingEXT)) != OK);
+	ERR_FAIL_COND(dpad_bindings_data.resize_initialized(sizeof(XrInteractionProfileDpadBindingEXT)) != OK);
 	dpad_bindings = (XrInteractionProfileDpadBindingEXT *)dpad_bindings_data.ptrw();
 
 	dpad_bindings->type = XR_TYPE_INTERACTION_PROFILE_DPAD_BINDING_EXT;

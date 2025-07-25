@@ -481,6 +481,8 @@ public:
 #ifdef TOOLS_ENABLED
 	void bezier_track_set_key_handle_mode(int p_track, int p_index, HandleMode p_mode, HandleSetMode p_set_mode = HANDLE_SET_MODE_NONE);
 	HandleMode bezier_track_get_key_handle_mode(int p_track, int p_index) const;
+	bool bezier_track_calculate_handles(int p_track, int p_index, HandleMode p_mode, HandleSetMode p_set_mode, Vector2 *r_in_handle, Vector2 *r_out_handle);
+	bool bezier_track_calculate_handles(float p_time, float p_prev_time, float p_prev_value, float p_next_time, float p_next_value, HandleMode p_mode, HandleSetMode p_set_mode, Vector2 *r_in_handle, Vector2 *r_out_handle);
 #endif // TOOLS_ENABLED
 
 	real_t bezier_track_interpolate(int p_track, double p_time) const;
@@ -540,6 +542,7 @@ public:
 
 	// Helper functions for Variant.
 	static bool is_variant_interpolatable(const Variant p_value);
+	static bool validate_type_match(const Variant &p_from, Variant &r_to);
 
 	static Variant cast_to_blendwise(const Variant p_value);
 	static Variant cast_from_blendwise(const Variant p_value, const Variant::Type p_type);

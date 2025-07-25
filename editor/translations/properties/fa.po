@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-14 14:07+0000\n"
+"PO-Revision-Date: 2025-06-04 16:52+0000\n"
 "Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -118,6 +118,9 @@ msgstr "پذیرش خودکار خروج"
 
 msgid "Quit on Go Back"
 msgstr "خروج در بازگشت"
+
+msgid "General"
+msgstr "عمومی"
 
 msgid "Display"
 msgstr "نمایشگر"
@@ -199,9 +202,6 @@ msgstr "اتوبوس ها"
 
 msgid "Default Bus Layout"
 msgstr "چیدمان پیش‌فرض باس"
-
-msgid "General"
-msgstr "عمومی"
 
 msgid "Default Playback Type"
 msgstr "گونهٔ پیش‌فرض بازنواخت"
@@ -388,6 +388,24 @@ msgstr "دستگاه‌های درونداد"
 
 msgid "Enable Long Press as Right Click"
 msgstr "به‌کاراندازی فشار دراز به‌عنوان راست کلیک"
+
+msgid "Navigation"
+msgstr "ناوبری"
+
+msgid "World"
+msgstr "جهان"
+
+msgid "Avoidance"
+msgstr "پرهیز"
+
+msgid "Pathfinding"
+msgstr "مسیریابی"
+
+msgid "Max Threads"
+msgstr "بیشینه‌‌ی ریسه‌ها"
+
+msgid "Baking"
+msgstr "پخت"
 
 msgid "Low Processor Usage Mode"
 msgstr "حالت کاربرد کم پردازنده"
@@ -650,9 +668,6 @@ msgstr "ریسه‌بندی"
 msgid "Worker Pool"
 msgstr "خزینهٔ کارگر"
 
-msgid "Max Threads"
-msgstr "بیشینه‌‌ی ریسه‌ها"
-
 msgid "Low Priority Thread Ratio"
 msgstr "نسبت ریسهٔ اولویت پایین"
 
@@ -794,6 +809,9 @@ msgstr "صفحهٔ ویراستار"
 msgid "Project Manager Screen"
 msgstr "صفحه مدیر پروژه"
 
+msgid "Connection"
+msgstr "اتصال"
+
 msgid "Use Embedded Menu"
 msgstr "به‌کارگیری گزینگان نهادینه‌شده"
 
@@ -899,6 +917,9 @@ msgstr "نمایش دکمه اسکریپت"
 msgid "Restore Scenes on Load"
 msgstr "برگرداندن صحنه‌ها هنگام بارکردن"
 
+msgid "Multi Window"
+msgstr "چندپنجرگی"
+
 msgid "FileSystem"
 msgstr "سامانهٔ پرونده"
 
@@ -989,9 +1010,6 @@ msgstr "بازهٔ نوگردانی خودکار"
 msgid "Text Editor"
 msgstr "ویراستار متن"
 
-msgid "Line Spacing"
-msgstr "فاصله خطوط"
-
 msgid "Color Theme"
 msgstr "رنگ زمینه"
 
@@ -1016,11 +1034,11 @@ msgstr "حالت پوشانیدن خودکار"
 msgid "Draw Spaces"
 msgstr "کشیدن فاصله‌ها"
 
+msgid "Line Spacing"
+msgstr "فاصله خطوط"
+
 msgid "Behavior"
 msgstr "رفتار"
-
-msgid "Navigation"
-msgstr "ناوبری"
 
 msgid "Move Caret on Right Click"
 msgstr "جابه‌جایی هشتک هنگام راست‌کلیک"
@@ -1289,6 +1307,9 @@ msgstr "ذخیره خودکار"
 msgid "Save Before Running"
 msgstr "ذخیره پیش از اجرا"
 
+msgid "Bottom Panel"
+msgstr "پهنهٔ پایینی"
+
 msgid "Output"
 msgstr "برونداد"
 
@@ -1373,6 +1394,9 @@ msgstr "رنگ عدد"
 msgid "Function Color"
 msgstr "رنگ تابع"
 
+msgid "Warning Color"
+msgstr "رنگ هشدار"
+
 msgid "Bookmark Color"
 msgstr "رنگ نشانک"
 
@@ -1399,6 +1423,27 @@ msgstr "قالب شخصی"
 
 msgid "Release"
 msgstr "انتشار"
+
+msgid "Architectures"
+msgstr "معماری‌ها"
+
+msgid "Short Version"
+msgstr "نسخهٔ کوتاه"
+
+msgid "Plugins"
+msgstr "افزایه‌ها"
+
+msgid "Capabilities"
+msgstr "توانایی‌ها"
+
+msgid "Access Wi-Fi"
+msgstr "دسترسی به وای‌فای"
+
+msgid "Enabled"
+msgstr "بکارافتاده"
+
+msgid "Icons"
+msgstr "آیکون‌ها"
 
 msgid "Binary Format"
 msgstr "چارچوب باینری"
@@ -1496,9 +1541,6 @@ msgstr "بلندا"
 msgid "Radius"
 msgstr "شعاع"
 
-msgid "Enabled"
-msgstr "بکارافتاده"
-
 msgid "LODs"
 msgstr "LODs"
 
@@ -1556,9 +1598,6 @@ msgstr "میدان فاصله امضا شده چند کاناله"
 msgid "Hinting"
 msgstr "اشاره"
 
-msgid "Oversampling"
-msgstr "بیش‌نمونه‌گیری"
-
 msgid "Metadata Overrides"
 msgstr "بازنویسی فراداده"
 
@@ -1597,6 +1636,12 @@ msgstr "محدودیت"
 
 msgid "Layout"
 msgstr "چیدمان"
+
+msgid "Base Scale"
+msgstr "مقیاس پایه"
+
+msgid "Saturation"
+msgstr "سیری"
 
 msgid "Process"
 msgstr "فرآیند"
@@ -1875,9 +1920,6 @@ msgstr "رنگ بازبرد گره"
 msgid "String Name Color"
 msgstr "رنگ نام رشته"
 
-msgid "Warning Color"
-msgstr "رنگ هشدار"
-
 msgid "Warning List"
 msgstr "فهرست هشدارها"
 
@@ -1916,6 +1958,9 @@ msgstr "درون‌بردگر مش"
 
 msgid "Image Format"
 msgstr "چارچوب تصویر"
+
+msgid "Visibility Mode"
+msgstr "حالت پدیداری"
 
 msgid "Json"
 msgstr "جی‌سان"
@@ -2052,6 +2097,9 @@ msgstr "نرخ نوگردانی نمایشگر"
 msgid "Layer Viewport"
 msgstr "دیدگسترهٔ لایه"
 
+msgid "Border Color"
+msgstr "رنگ مرز"
+
 msgid "Aspect Ratio"
 msgstr "نسبت نما"
 
@@ -2085,12 +2133,6 @@ msgstr "پس‌زمینهٔ سازوار ۴۳۲ در ۴۳۲"
 msgid "Export Format"
 msgstr "چارچوب برون‌برد"
 
-msgid "Plugins"
-msgstr "افزایه‌ها"
-
-msgid "Architectures"
-msgstr "معماری‌ها"
-
 msgid "Debug User"
 msgstr "کاربر اشکال‌زدایی"
 
@@ -2121,9 +2163,6 @@ msgstr "اجازه دادن"
 msgid "Salt"
 msgstr "نمک"
 
-msgid "Icons"
-msgstr "آیکون‌ها"
-
 msgid "Spotlight 80 X 80"
 msgstr "اِسپات‌لایت ۸۰ × ۸۰"
 
@@ -2141,15 +2180,6 @@ msgstr "آی‌پَد ۱۵۲ × ۱۵۲"
 
 msgid "App Store 1024 X 1024"
 msgstr "اَپ‌اِستور ۱۰۲۴ × ۱۰۲۴"
-
-msgid "Short Version"
-msgstr "نسخهٔ کوتاه"
-
-msgid "Capabilities"
-msgstr "توانایی‌ها"
-
-msgid "Access Wi-Fi"
-msgstr "دسترسی به وای‌فای"
 
 msgid "Architecture"
 msgstr "معماری"
@@ -2205,6 +2235,9 @@ msgstr "کلید اِی.پی.آی"
 msgid "API Key ID"
 msgstr "شناسهٔ کلید اِی.پی.آی"
 
+msgid "Web"
+msgstr "وب"
+
 msgid "HTTP Host"
 msgstr "میزبان اچ‌تی‌تی‌پی"
 
@@ -2234,6 +2267,9 @@ msgstr "برای گوشی"
 
 msgid "HTML"
 msgstr "HTML"
+
+msgid "Windows"
+msgstr "ویندوز"
 
 msgid "File Version"
 msgstr "نسخهٔ پرونده"
@@ -2487,9 +2523,6 @@ msgstr "حالت مفصل"
 msgid "Border"
 msgstr "مرز"
 
-msgid "Pathfinding"
-msgstr "مسیریابی"
-
 msgid "Navigation Layers"
 msgstr "لایه‌های ناوبری"
 
@@ -2507,9 +2540,6 @@ msgstr "ساده‌سازی مسیر"
 
 msgid "Simplify Epsilon"
 msgstr "ساده‌سازی اپسیلون"
-
-msgid "Avoidance"
-msgstr "پرهیز"
 
 msgid "Avoidance Enabled"
 msgstr "پرهیزِ به‌کارافتاده"
@@ -2582,9 +2612,6 @@ msgstr "پیمایش"
 
 msgid "Base Offset"
 msgstr "بازه از مبدا پایه"
-
-msgid "Base Scale"
-msgstr "مقیاس پایه"
 
 msgid "Limit Begin"
 msgstr "کران آغاز"
@@ -2690,6 +2717,9 @@ msgstr "ازکارانداخته"
 
 msgid "One Way Collision"
 msgstr "برخورد یک‌وری"
+
+msgid "Margin"
+msgstr "لبه"
 
 msgid "Debug Color"
 msgstr "رنگ اشکال‌زدایی"
@@ -2800,14 +2830,20 @@ msgstr "نیرو"
 msgid "Torque"
 msgstr "گشتاور"
 
-msgid "Margin"
-msgstr "لبه"
-
 msgid "Constant Linear Velocity"
 msgstr "سرعت خطی ثابت"
 
 msgid "Constant Angular Velocity"
 msgstr "سرعت زاویه‌ای ثابت"
+
+msgid "Texture Normal"
+msgstr "بهنجاری بافت"
+
+msgid "Texture Pressed"
+msgstr "فشرده شدن بافت"
+
+msgid "Shape Visible"
+msgstr "پدیداری شکل"
 
 msgid "UV"
 msgstr "فرابنفش"
@@ -2847,21 +2883,6 @@ msgstr "به‌کاراندازی برخوردگاه"
 
 msgid "Use Kinematic Bodies"
 msgstr "بکاربردن بدن‌های جنبشی"
-
-msgid "Navigation Enabled"
-msgstr "ناوبری بکارانداخته شده"
-
-msgid "Texture Normal"
-msgstr "بهنجاری بافت"
-
-msgid "Texture Pressed"
-msgstr "فشرده شدن بافت"
-
-msgid "Shape Visible"
-msgstr "پدیداری شکل"
-
-msgid "Visibility Mode"
-msgstr "حالت پدیداری"
 
 msgid "Node Path"
 msgstr "مسیر گره"
@@ -3058,6 +3079,9 @@ msgstr "کواترنیون"
 msgid "Visibility"
 msgstr "پدیداری"
 
+msgid "Debug Shape"
+msgstr "شکل اشکال‌زدایی"
+
 msgid "Force Magnitude"
 msgstr "بزرگی نیرو"
 
@@ -3090,9 +3114,6 @@ msgstr "حالت میرایی خطی"
 
 msgid "Angular Damp Mode"
 msgstr "حالت میرایی زاویه‌ای"
-
-msgid "Debug Shape"
-msgstr "شکل اشکال‌زدایی"
 
 msgid "Spring Length"
 msgstr "درازای فنر"
@@ -3325,6 +3346,9 @@ msgstr "تنوع نوع"
 msgid "Autowrap"
 msgstr "پوشاندن خودکار"
 
+msgid "Title"
+msgstr "عنوان"
+
 msgid "Show Grid"
 msgstr "نمایش توری"
 
@@ -3345,9 +3369,6 @@ msgstr "کشاندنی"
 
 msgid "Selected"
 msgstr "برگزیده"
-
-msgid "Title"
-msgstr "عنوان"
 
 msgid "Autoshrink Enabled"
 msgstr "تنجش خودکار بکارافتاد"
@@ -3402,9 +3423,6 @@ msgstr "گام"
 
 msgid "Page"
 msgstr "صفحه"
-
-msgid "Border Color"
-msgstr "رنگ مرز"
 
 msgid "Border Width"
 msgstr "پهنای مرز"
@@ -3606,6 +3624,9 @@ msgstr "به‌کاراندازی سه‌بعدی"
 
 msgid "Disable Input"
 msgstr "ازکاراندازی درونداد"
+
+msgid "Oversampling"
+msgstr "بیش‌نمونه‌گیری"
 
 msgid "Size 2D Override"
 msgstr "بازنویسی اندازهٔ دوبعدی"
@@ -3841,9 +3862,6 @@ msgstr "مه گنجایشی"
 msgid "Brightness"
 msgstr "روشنایی"
 
-msgid "Saturation"
-msgstr "سیری"
-
 msgid "Features"
 msgstr "ویژگی‌ها"
 
@@ -3882,9 +3900,6 @@ msgstr "روی فرابنفش ۲"
 
 msgid "Max Layers"
 msgstr "لایه‌های بیشینه‌"
-
-msgid "Subsurface Scattering"
-msgstr "پراکندگی زیر سطحی"
 
 msgid "UV Layer"
 msgstr "لایهٔ فرابنفش"
@@ -4210,12 +4225,6 @@ msgstr "پرچم‌های فراداده"
 msgid "Default Link Connection Radius"
 msgstr "شعاع پیش‌فرض پیوند اتصال"
 
-msgid "World"
-msgstr "جهان"
-
-msgid "Baking"
-msgstr "پخت"
-
 msgid "Link Connection Color"
 msgstr "رنگ پیوند اتصال"
 
@@ -4323,6 +4332,9 @@ msgstr "اچ.دی.آر دوبعدی"
 
 msgid "Decals"
 msgstr "برگردان‌ها"
+
+msgid "Subsurface Scattering"
+msgstr "پراکندگی زیر سطحی"
 
 msgid "Global Shader Variables"
 msgstr "متغیر‌های جهانی سایه‌زن"

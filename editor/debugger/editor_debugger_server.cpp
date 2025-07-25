@@ -34,7 +34,7 @@
 #include "core/os/thread.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 class EditorDebuggerServerTCP : public EditorDebuggerServer {
 private:

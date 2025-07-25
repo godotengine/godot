@@ -32,7 +32,7 @@
 		<method name="get_tracker_hand" qualifiers="const">
 			<return type="int" enum="XRPositionalTracker.TrackerHand" />
 			<description>
-				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
+				Returns the hand holding this controller, if known.
 			</description>
 		</method>
 		<method name="get_vector2" qualifiers="const">

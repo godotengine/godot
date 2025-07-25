@@ -65,27 +65,27 @@ void GLTFBufferView::set_buffer(GLTFBufferIndex p_buffer) {
 	buffer = p_buffer;
 }
 
-int GLTFBufferView::get_byte_offset() const {
+int64_t GLTFBufferView::get_byte_offset() const {
 	return byte_offset;
 }
 
-void GLTFBufferView::set_byte_offset(int p_byte_offset) {
+void GLTFBufferView::set_byte_offset(int64_t p_byte_offset) {
 	byte_offset = p_byte_offset;
 }
 
-int GLTFBufferView::get_byte_length() const {
+int64_t GLTFBufferView::get_byte_length() const {
 	return byte_length;
 }
 
-void GLTFBufferView::set_byte_length(int p_byte_length) {
+void GLTFBufferView::set_byte_length(int64_t p_byte_length) {
 	byte_length = p_byte_length;
 }
 
-int GLTFBufferView::get_byte_stride() const {
+int64_t GLTFBufferView::get_byte_stride() const {
 	return byte_stride;
 }
 
-void GLTFBufferView::set_byte_stride(int p_byte_stride) {
+void GLTFBufferView::set_byte_stride(int64_t p_byte_stride) {
 	byte_stride = p_byte_stride;
 }
 

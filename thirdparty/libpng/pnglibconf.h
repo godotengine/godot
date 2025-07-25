@@ -1,6 +1,6 @@
 /* pnglibconf.h - library build configuration */
 
-/* libpng version 1.6.47 */
+/* libpng version 1.6.48 */
 
 /* Copyright (c) 2018-2025 Cosmin Truta */
 /* Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson */

@@ -98,19 +98,14 @@ void unpack_weights(
 	if (!is_dual_plane)
 	{
 		// Build full 64-entry weight lookup table
-		vint4 tab0 = vint4::load(scb.weights +  0);
-		vint4 tab1 = vint4::load(scb.weights + 16);
-		vint4 tab2 = vint4::load(scb.weights + 32);
-		vint4 tab3 = vint4::load(scb.weights + 48);
-
-		vint tab0p, tab1p, tab2p, tab3p;
-		vtable_prepare(tab0, tab1, tab2, tab3, tab0p, tab1p, tab2p, tab3p);
+		vtable_64x8 table;
+		vtable_prepare(table, scb.weights);
 
 		for (unsigned int i = 0; i < bsd.texel_count; i += ASTCENC_SIMD_WIDTH)
 		{
 			vint summed_value(8);
 			vint weight_count(di.texel_weight_count + i);
-			int max_weight_count = hmax(weight_count).lane<0>();
+			int max_weight_count = hmax_s(weight_count);
 
 			promise(max_weight_count > 0);
 			for (int j = 0; j < max_weight_count; j++)
@@ -118,7 +113,7 @@ void unpack_weights(
 				vint texel_weights(di.texel_weights_tr[j] + i);
 				vint texel_weights_int(di.texel_weight_contribs_int_tr[j] + i);
 
-				summed_value += vtable_8bt_32bi(tab0p, tab1p, tab2p, tab3p, texel_weights) * texel_weights_int;
+				summed_value += vtable_lookup_32bit(table, texel_weights) * texel_weights_int;
 			}
 
 			store(lsr<4>(summed_value), weights_plane1 + i);
@@ -128,16 +123,12 @@ void unpack_weights(
 	{
 		// Build a 32-entry weight lookup table per plane
 		// Plane 1
-		vint4 tab0_plane1 = vint4::load(scb.weights +  0);
-		vint4 tab1_plane1 = vint4::load(scb.weights + 16);
-		vint tab0_plane1p, tab1_plane1p;
-		vtable_prepare(tab0_plane1, tab1_plane1, tab0_plane1p, tab1_plane1p);
+		vtable_32x8 tab_plane1;
+		vtable_prepare(tab_plane1, scb.weights);
 
 		// Plane 2
-		vint4 tab0_plane2 = vint4::load(scb.weights + 32);
-		vint4 tab1_plane2 = vint4::load(scb.weights + 48);
-		vint tab0_plane2p, tab1_plane2p;
-		vtable_prepare(tab0_plane2, tab1_plane2, tab0_plane2p, tab1_plane2p);
+		vtable_32x8 tab_plane2;
+		vtable_prepare(tab_plane2, scb.weights + 32);
 
 		for (unsigned int i = 0; i < bsd.texel_count; i += ASTCENC_SIMD_WIDTH)
 		{
@@ -145,7 +136,7 @@ void unpack_weights(
 			vint sum_plane2(8);
 
 			vint weight_count(di.texel_weight_count + i);
-			int max_weight_count = hmax(weight_count).lane<0>();
+			int max_weight_count = hmax_s(weight_count);
 
 			promise(max_weight_count > 0);
 			for (int j = 0; j < max_weight_count; j++)
@@ -153,8 +144,8 @@ void unpack_weights(
 				vint texel_weights(di.texel_weights_tr[j] + i);
 				vint texel_weights_int(di.texel_weight_contribs_int_tr[j] + i);
 
-				sum_plane1 += vtable_8bt_32bi(tab0_plane1p, tab1_plane1p, texel_weights) * texel_weights_int;
-				sum_plane2 += vtable_8bt_32bi(tab0_plane2p, tab1_plane2p, texel_weights) * texel_weights_int;
+				sum_plane1 += vtable_lookup_32bit(tab_plane1, texel_weights) * texel_weights_int;
+				sum_plane2 += vtable_lookup_32bit(tab_plane2, texel_weights) * texel_weights_int;
 			}
 
 			store(lsr<4>(sum_plane1), weights_plane1 + i);

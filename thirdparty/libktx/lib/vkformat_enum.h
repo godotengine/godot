@@ -1,12 +1,13 @@
+// clang-format off: CI is complicated if formatting checks on generated files are enforced.
 #if !defined(_VKFORMAT_ENUM_H_) && !defined(VULKAN_CORE_H_)
 #define _VKFORMAT_ENUM_H_
 
 /***************************** Do not edit.  *****************************
- Automatically generated from vulkan_core.h version 267 by mkvkformatfiles.
+ Automatically generated from vulkan_core.h version 287 by mkvkformatfiles.
  *************************************************************************/
 
 /*
-** Copyright 2015-2023 The Khronos Group Inc.
+** Copyright 2015-2024 The Khronos Group Inc.
 **
 ** SPDX-License-Identifier: Apache-2.0
 */
@@ -296,7 +297,7 @@ typedef enum VkFormat {
     VK_FORMAT_ASTC_6x6x6_UNORM_BLOCK_EXT = 1000288027,
     VK_FORMAT_ASTC_6x6x6_SRGB_BLOCK_EXT = 1000288028,
     VK_FORMAT_ASTC_6x6x6_SFLOAT_BLOCK_EXT = 1000288029,
-    VK_FORMAT_R16G16_S10_5_NV = 1000464000,
+    VK_FORMAT_R16G16_SFIXED5_NV = 1000464000,
     VK_FORMAT_A1B5G5R5_UNORM_PACK16_KHR = 1000470000,
     VK_FORMAT_A8_UNORM_KHR = 1000470001,
     VK_FORMAT_MAX_ENUM = 0x7FFFFFFF
@@ -312,3 +313,4 @@ typedef uint64_t VkFlags64;
 #define VK_FORMAT_MAX_STANDARD_ENUM 184
 
 #endif /* _VKFORMAT_ENUM_H_ */
+// clang-format on

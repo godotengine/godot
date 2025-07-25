@@ -48,6 +48,7 @@ RID World2D::get_navigation_map() const {
 		navigation_map = NavigationServer2D::get_singleton()->map_create();
 		NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
 		NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_GET("navigation/2d/default_cell_size"));
+		NavigationServer2D::get_singleton()->map_set_merge_rasterizer_cell_scale(navigation_map, GLOBAL_GET("navigation/2d/merge_rasterizer_cell_scale"));
 		NavigationServer2D::get_singleton()->map_set_use_edge_connections(navigation_map, GLOBAL_GET("navigation/2d/use_edge_connections"));
 		NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_GET("navigation/2d/default_edge_connection_margin"));
 		NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_GET("navigation/2d/default_link_connection_radius"));

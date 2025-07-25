@@ -141,8 +141,8 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 		vec4 sun_scatter = vec4(0.0);
 		float sun_total = 0.0;
 		for (uint i = 0u; i < directional_light_count; i++) {
-			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
-			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			vec3 light_color = srgb_to_linear(directional_lights.data[i].color_size.xyz) * directional_lights.data[i].direction_energy.w;
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0) * M_PI;
 			fog_color += light_color * light_amount * fog_sun_scatter;
 		}
 	}

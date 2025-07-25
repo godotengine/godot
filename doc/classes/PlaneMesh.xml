@@ -14,7 +14,7 @@
 			Offset of the generated plane. Useful for particles.
 		</member>
 		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="PlaneMesh.Orientation" default="1">
-			Direction that the [PlaneMesh] is facing. See [enum Orientation] for options.
+			Direction that the [PlaneMesh] is facing.
 		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(2, 2)">
 			Size of the generated plane.

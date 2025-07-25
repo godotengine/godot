@@ -39,7 +39,7 @@
 #include "core/version.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_help.h"
+#include "editor/doc/editor_help.h"
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {

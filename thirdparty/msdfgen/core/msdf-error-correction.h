@@ -22,12 +22,16 @@ void msdfFastDistanceErrorCorrection(const BitmapRef<float, 3> &sdf, const SDFTr
 void msdfFastDistanceErrorCorrection(const BitmapRef<float, 4> &sdf, const SDFTransformation &transformation, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 void msdfFastDistanceErrorCorrection(const BitmapRef<float, 3> &sdf, const Projection &projection, Range range, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 void msdfFastDistanceErrorCorrection(const BitmapRef<float, 4> &sdf, const Projection &projection, Range range, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
+void msdfFastDistanceErrorCorrection(const BitmapRef<float, 3> &sdf, Range pxRange, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
+void msdfFastDistanceErrorCorrection(const BitmapRef<float, 4> &sdf, Range pxRange, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 
 /// Applies the simplified error correction to edges only (EDGE_ONLY mode). Does not need shape or translation.
 void msdfFastEdgeErrorCorrection(const BitmapRef<float, 3> &sdf, const SDFTransformation &transformation, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 void msdfFastEdgeErrorCorrection(const BitmapRef<float, 4> &sdf, const SDFTransformation &transformation, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 void msdfFastEdgeErrorCorrection(const BitmapRef<float, 3> &sdf, const Projection &projection, Range range, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 void msdfFastEdgeErrorCorrection(const BitmapRef<float, 4> &sdf, const Projection &projection, Range range, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
+void msdfFastEdgeErrorCorrection(const BitmapRef<float, 3> &sdf, Range pxRange, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
+void msdfFastEdgeErrorCorrection(const BitmapRef<float, 4> &sdf, Range pxRange, double minDeviationRatio = ErrorCorrectionConfig::defaultMinDeviationRatio);
 
 /// The original version of the error correction algorithm.
 void msdfErrorCorrection_legacy(const BitmapRef<float, 3> &output, const Vector2 &threshold);

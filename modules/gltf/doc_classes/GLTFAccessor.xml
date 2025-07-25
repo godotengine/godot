@@ -21,7 +21,7 @@
 		<member name="byte_offset" type="int" setter="set_byte_offset" getter="get_byte_offset" default="0">
 			The offset relative to the start of the buffer view in bytes.
 		</member>
-		<member name="component_type" type="int" setter="set_component_type" getter="get_component_type" default="0">
+		<member name="component_type" type="int" setter="set_component_type" getter="get_component_type" enum="GLTFAccessor.GLTFComponentType" default="0">
 			The glTF component type as an enum. See [enum GLTFComponentType] for possible values. Within the core glTF specification, a value of 5125 or "UNSIGNED_INT" must not be used for any accessor that is not referenced by mesh.primitive.indices.
 		</member>
 		<member name="count" type="int" setter="set_count" getter="get_count" default="0">
@@ -45,7 +45,7 @@
 		<member name="sparse_indices_byte_offset" type="int" setter="set_sparse_indices_byte_offset" getter="get_sparse_indices_byte_offset" default="0">
 			The offset relative to the start of the buffer view in bytes.
 		</member>
-		<member name="sparse_indices_component_type" type="int" setter="set_sparse_indices_component_type" getter="get_sparse_indices_component_type" default="0">
+		<member name="sparse_indices_component_type" type="int" setter="set_sparse_indices_component_type" getter="get_sparse_indices_component_type" enum="GLTFAccessor.GLTFComponentType" default="0">
 			The indices component data type as an enum. Possible values are 5121 for "UNSIGNED_BYTE", 5123 for "UNSIGNED_SHORT", and 5125 for "UNSIGNED_INT".
 		</member>
 		<member name="sparse_values_buffer_view" type="int" setter="set_sparse_values_buffer_view" getter="get_sparse_values_buffer_view" default="0">

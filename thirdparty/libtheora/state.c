@@ -5,13 +5,13 @@
  * GOVERNED BY A BSD-STYLE SOURCE LICENSE INCLUDED WITH THIS SOURCE *
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
- * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation and contributors http://www.xiph.org/ *
+ * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009,2025           *
+ * by the Xiph.Org Foundation and contributors                      *
+ * https://www.xiph.org/                                            *
  *                                                                  *
  ********************************************************************
 
   function:
-    last mod: $Id$
 
  ********************************************************************/
 
@@ -388,7 +388,7 @@ static void oc_state_border_init(oc_theora_state *_state){
         /*Otherwise, check to see if it straddles the border.*/
         else if(x<crop_x0&&crop_x0<x+8||x<crop_xf&&crop_xf<x+8||
          y<crop_y0&&crop_y0<y+8||y<crop_yf&&crop_yf<y+8){
-          ogg_int64_t mask;
+          ogg_uint64_t mask;
           int         npixels;
           int         i;
           mask=npixels=0;
@@ -396,7 +396,7 @@ static void oc_state_border_init(oc_theora_state *_state){
             int j;
             for(j=0;j<8;j++){
               if(x+j>=crop_x0&&x+j<crop_xf&&y+i>=crop_y0&&y+i<crop_yf){
-                mask|=(ogg_int64_t)1<<(i<<3|j);
+                mask|=(ogg_uint64_t)1<<(i<<3|j);
                 npixels++;
               }
             }
@@ -651,7 +651,7 @@ static int oc_state_ref_bufs_init(oc_theora_state *_state,int _nrefs){
         frag_buf_offs[fragi]=hpix-ref_frame_data;
         hpix+=8;
       }
-      vpix+=stride<<3;
+      vpix+=stride*8;
     }
   }
   /*Initialize the reference frame pointers and indices.*/
@@ -1053,7 +1053,7 @@ void oc_loop_filter_init_c(signed char _bv[256],int _flimit){
   _fragy0:    The Y coordinate of the first fragment row to filter.
   _fragy_end: The Y coordinate of the fragment row to stop filtering at.*/
 void oc_state_loop_filter_frag_rows_c(const oc_theora_state *_state,
- signed char *_bv,int _refi,int _pli,int _fragy0,int _fragy_end){
+ signed char _bvarray[256],int _refi,int _pli,int _fragy0,int _fragy_end){
   const oc_fragment_plane *fplane;
   const oc_fragment       *frags;
   const ptrdiff_t         *frag_buf_offs;
@@ -1064,7 +1064,7 @@ void oc_state_loop_filter_frag_rows_c(const oc_theora_state *_state,
   ptrdiff_t                fragi0_end;
   int                      ystride;
   int                      nhfrags;
-  _bv+=127;
+  signed char             *_bv = &_bvarray[127];
   fplane=_state->fplanes+_pli;
   nhfrags=fplane->nhfrags;
   fragi_top=fplane->froffset;
@@ -1095,7 +1095,7 @@ void oc_state_loop_filter_frag_rows_c(const oc_theora_state *_state,
           loop_filter_h(ref+8,ystride,_bv);
         }
         if(fragi+nhfrags<fragi_bot&&!frags[fragi+nhfrags].coded){
-          loop_filter_v(ref+(ystride<<3),ystride,_bv);
+          loop_filter_v(ref+(ystride*8),ystride,_bv);
         }
       }
       fragi++;

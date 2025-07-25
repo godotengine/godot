@@ -28,7 +28,8 @@
 
 #ifdef HAVE_CORETEXT
 
-#include "hb-coretext.h"
+#include "hb-coretext.hh"
+#include "hb-aat-layout-trak-table.hh"
 
 #include "hb-draw.hh"
 #include "hb-font.hh"
@@ -42,24 +43,17 @@
 #  define kCTFontOrientationVertical kCTFontVerticalOrientation
 #endif
 
-#define MAX_GLYPHS 64u
-
-static void
-_hb_coretext_font_destroy (void *font_data)
-{
-  CTFontRef ct_font = (CTFontRef) font_data;
-
-  CFRelease (ct_font);
-}
+#define MAX_GLYPHS 256u
 
 static hb_bool_t
-hb_coretext_get_nominal_glyph (hb_font_t *font HB_UNUSED,
-			       void *font_data,
+hb_coretext_get_nominal_glyph (hb_font_t *font,
+			       void *font_data HB_UNUSED,
 			       hb_codepoint_t unicode,
 			       hb_codepoint_t *glyph,
 			       void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
+
   UniChar ch[2];
   CGGlyph cg_glyph[2];
   unsigned count = 0;
@@ -85,7 +79,7 @@ hb_coretext_get_nominal_glyph (hb_font_t *font HB_UNUSED,
 }
 
 static unsigned int
-hb_coretext_get_nominal_glyphs (hb_font_t *font HB_UNUSED,
+hb_coretext_get_nominal_glyphs (hb_font_t *font,
 				void *font_data,
 				unsigned int count,
 				const hb_codepoint_t *first_unicode,
@@ -94,6 +88,8 @@ hb_coretext_get_nominal_glyphs (hb_font_t *font HB_UNUSED,
 				unsigned int glyph_stride,
 				void *user_data HB_UNUSED)
 {
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
+
   // If any non-BMP codepoint is requested, use the slow path.
   bool slow_path = false;
   auto *unicode = first_unicode;
@@ -118,8 +114,6 @@ hb_coretext_get_nominal_glyphs (hb_font_t *font HB_UNUSED,
     }
     return count;
   }
-
-  CTFontRef ct_font = (CTFontRef) font_data;
 
   UniChar ch[MAX_GLYPHS];
   CGGlyph cg_glyph[MAX_GLYPHS];
@@ -152,14 +146,14 @@ hb_coretext_get_nominal_glyphs (hb_font_t *font HB_UNUSED,
 }
 
 static hb_bool_t
-hb_coretext_get_variation_glyph (hb_font_t *font HB_UNUSED,
-				 void *font_data,
+hb_coretext_get_variation_glyph (hb_font_t *font,
+				 void *font_data HB_UNUSED,
 				 hb_codepoint_t unicode,
 				 hb_codepoint_t variation_selector,
 				 hb_codepoint_t *glyph,
 				 void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   UniChar ch[4];
   CGGlyph cg_glyph[4];
@@ -194,12 +188,17 @@ hb_coretext_get_variation_glyph (hb_font_t *font HB_UNUSED,
     if (cg_glyph[i])
       return false;
 
+  // Humm. CoreText falls back to the default glyph if the variation selector
+  // is not supported.  We cannot truly detect that case. So, in essence,
+  // we are always returning true here...
+
   *glyph = cg_glyph[0];
   return true;
 }
 
 static void
-hb_coretext_get_glyph_h_advances (hb_font_t* font, void* font_data,
+hb_coretext_get_glyph_h_advances (hb_font_t* font,
+				  void* font_data HB_UNUSED,
 				  unsigned count,
 				  const hb_codepoint_t *first_glyph,
 				  unsigned glyph_stride,
@@ -207,10 +206,11 @@ hb_coretext_get_glyph_h_advances (hb_font_t* font, void* font_data,
 				  unsigned advance_stride,
 				  void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat x_mult = (CGFloat) font->x_scale / ct_font_size;
+  hb_position_t tracking = font->face->table.trak->get_tracking (font, HB_DIRECTION_LTR, 0.f);
 
   CGGlyph cg_glyph[MAX_GLYPHS];
   CGSize advances[MAX_GLYPHS];
@@ -225,7 +225,7 @@ hb_coretext_get_glyph_h_advances (hb_font_t* font, void* font_data,
     CTFontGetAdvancesForGlyphs (ct_font, kCTFontOrientationHorizontal, cg_glyph, advances, c);
     for (unsigned j = 0; j < c; j++)
     {
-      *first_advance = round (advances[j].width * x_mult);
+      *first_advance = round (advances[j].width * x_mult) - tracking;
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
   }
@@ -233,7 +233,8 @@ hb_coretext_get_glyph_h_advances (hb_font_t* font, void* font_data,
 
 #ifndef HB_NO_VERTICAL
 static void
-hb_coretext_get_glyph_v_advances (hb_font_t* font, void* font_data,
+hb_coretext_get_glyph_v_advances (hb_font_t* font,
+				  void* font_data HB_UNUSED,
 				  unsigned count,
 				  const hb_codepoint_t *first_glyph,
 				  unsigned glyph_stride,
@@ -241,10 +242,11 @@ hb_coretext_get_glyph_v_advances (hb_font_t* font, void* font_data,
 				  unsigned advance_stride,
 				  void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat y_mult = (CGFloat) -font->y_scale / ct_font_size;
+  hb_position_t tracking = font->face->table.trak->get_tracking (font, HB_DIRECTION_TTB, 0.f);
 
   CGGlyph cg_glyph[MAX_GLYPHS];
   CGSize advances[MAX_GLYPHS];
@@ -259,23 +261,21 @@ hb_coretext_get_glyph_v_advances (hb_font_t* font, void* font_data,
     CTFontGetAdvancesForGlyphs (ct_font, kCTFontOrientationVertical, cg_glyph, advances, c);
     for (unsigned j = 0; j < c; j++)
     {
-      *first_advance = round (advances[j].width * y_mult);
+      *first_advance = round (advances[j].width * y_mult) - tracking;
       first_advance = &StructAtOffset<hb_position_t> (first_advance, advance_stride);
     }
   }
 }
-#endif
 
-#ifndef HB_NO_VERTICAL
 static hb_bool_t
 hb_coretext_get_glyph_v_origin (hb_font_t *font,
-				void *font_data,
+				void *font_data HB_UNUSED,
 				hb_codepoint_t glyph,
 				hb_position_t *x,
 				hb_position_t *y,
 				void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat x_mult = (CGFloat) -font->x_scale / ct_font_size;
@@ -294,12 +294,12 @@ hb_coretext_get_glyph_v_origin (hb_font_t *font,
 
 static hb_bool_t
 hb_coretext_get_glyph_extents (hb_font_t *font,
-			       void *font_data,
+			       void *font_data HB_UNUSED,
 			       hb_codepoint_t glyph,
 			       hb_glyph_extents_t *extents,
 			       void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat x_mult = (CGFloat) font->x_scale / ct_font_size;
@@ -310,20 +310,21 @@ hb_coretext_get_glyph_extents (hb_font_t *font,
 						    kCTFontOrientationDefault, glyphs, NULL, 1);
 
   extents->x_bearing = round (bounds.origin.x * x_mult);
-  extents->y_bearing = round (bounds.origin.y * y_mult);
+  extents->y_bearing = round ((bounds.origin.y + bounds.size.height) * y_mult);
   extents->width = round (bounds.size.width * x_mult);
-  extents->height = round (bounds.size.height * y_mult);
+  extents->height = round (bounds.origin.y * y_mult) - extents->y_bearing;
 
   return true;
 }
 
 static hb_bool_t
 hb_coretext_get_font_h_extents (hb_font_t *font,
-				void *font_data,
+				void *font_data HB_UNUSED,
 				hb_font_extents_t *metrics,
 				void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
+
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat y_mult = (CGFloat) font->y_scale / ct_font_size;
 
@@ -364,14 +365,14 @@ ct_apply_func (void *info, const CGPathElement *element)
   }
 }
 
-static void
-hb_coretext_draw_glyph (hb_font_t *font,
-			void *font_data HB_UNUSED,
-			hb_codepoint_t glyph,
-			hb_draw_funcs_t *draw_funcs, void *draw_data,
-			void *user_data)
+static hb_bool_t
+hb_coretext_draw_glyph_or_fail (hb_font_t *font,
+				void *font_data HB_UNUSED,
+				hb_codepoint_t glyph,
+				hb_draw_funcs_t *draw_funcs, void *draw_data,
+				void *user_data)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   CGFloat ct_font_size = CTFontGetSize (ct_font);
   CGFloat x_mult = (CGFloat) font->x_scale / ct_font_size;
@@ -382,13 +383,15 @@ hb_coretext_draw_glyph (hb_font_t *font,
 
   CGPathRef path = CTFontCreatePathForGlyph (ct_font, glyph, &transform);
   if (!path)
-    return;
+    return false;
 
-  hb_draw_session_t drawing = {draw_funcs, draw_data, font->slant};
+  hb_draw_session_t drawing {draw_funcs, draw_data};
 
   CGPathApply (path, &drawing, ct_apply_func);
 
   CFRelease (path);
+
+  return true;
 }
 #endif
 
@@ -415,17 +418,20 @@ hb_coretext_get_glyph_name (hb_font_t *font,
 		    (UInt8 *) name, size, &len);
 
   name[len] = '\0';
+
+  CFRelease (cf_name);
+
   return true;
 }
 
 static hb_bool_t
-hb_coretext_get_glyph_from_name (hb_font_t *font HB_UNUSED,
-				 void *font_data,
+hb_coretext_get_glyph_from_name (hb_font_t *font,
+				 void *font_data HB_UNUSED,
 				 const char *name, int len,
 				 hb_codepoint_t *glyph,
 				 void *user_data HB_UNUSED)
 {
-  CTFontRef ct_font = (CTFontRef) font_data;
+  CTFontRef ct_font = (CTFontRef) (const void *) font->data.coretext;
 
   if (len == -1)
     len = strlen (name);
@@ -458,16 +464,14 @@ static struct hb_coretext_font_funcs_lazy_loader_t : hb_font_funcs_lazy_loader_t
 
     hb_font_funcs_set_font_h_extents_func (funcs, hb_coretext_get_font_h_extents, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advances_func (funcs, hb_coretext_get_glyph_h_advances, nullptr, nullptr);
-    //hb_font_funcs_set_glyph_h_origin_func (funcs, hb_coretext_get_glyph_h_origin, nullptr, nullptr);
 
 #ifndef HB_NO_VERTICAL
-    //hb_font_funcs_set_font_v_extents_func (funcs, hb_coretext_get_font_v_extents, nullptr, nullptr);
     hb_font_funcs_set_glyph_v_advances_func (funcs, hb_coretext_get_glyph_v_advances, nullptr, nullptr);
     hb_font_funcs_set_glyph_v_origin_func (funcs, hb_coretext_get_glyph_v_origin, nullptr, nullptr);
 #endif
 
 #ifndef HB_NO_DRAW
-    hb_font_funcs_set_draw_glyph_func (funcs, hb_coretext_draw_glyph, nullptr, nullptr);
+    hb_font_funcs_set_draw_glyph_or_fail_func (funcs, hb_coretext_draw_glyph_or_fail, nullptr, nullptr);
 #endif
 
     hb_font_funcs_set_glyph_extents_func (funcs, hb_coretext_get_glyph_extents, nullptr, nullptr);
@@ -530,8 +534,7 @@ hb_coretext_font_set_funcs (hb_font_t *font)
 
   hb_font_set_funcs (font,
 		     _hb_coretext_get_font_funcs (),
-		     (void *) CFRetain (ct_font),
-		     _hb_coretext_font_destroy);
+		     nullptr, nullptr);
 }
 
 #undef MAX_GLYPHS

@@ -60,7 +60,7 @@
 			[b]Note:[/b] PCSS for directional lights is only supported in the Forward+ rendering method, not Mobile or Compatibility.
 		</member>
 		<member name="light_bake_mode" type="int" setter="set_bake_mode" getter="get_bake_mode" enum="Light3D.BakeMode" default="2" keywords="global_illumination_mode, gi_mode">
-			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering. See [enum BakeMode].
+			The light's bake mode. This will affect the global illumination techniques that have an effect on the light's rendering.
 			[b]Note:[/b] Meshes' global illumination mode will also affect the global illumination rendering. See [member GeometryInstance3D.gi_mode].
 		</member>
 		<member name="light_color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">

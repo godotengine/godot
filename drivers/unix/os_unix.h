@@ -71,7 +71,7 @@ class OS_Unix : public OS {
 	void _load_iconv();
 #endif
 
-	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options);
+	static int _wait_for_pid_completion(const pid_t p_pid, int *r_status, int p_options, pid_t *r_pid = nullptr);
 	bool _check_pid_is_running(const pid_t p_pid, int *r_status) const;
 
 protected:

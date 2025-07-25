@@ -16,22 +16,21 @@
 # "Aquiles T. M." <aquiles.sonido@gmail.com>, 2024.
 # Guachipoto <guachipoto993@gmail.com>, 2024.
 # "Miguel A. Bouzada" <mbouzada@gmail.com>, 2025.
+# xuars <yago.rana.gayoso@gmail.com>, 2025.
+# Yago Raña Gayoso <yago.rana.gayoso@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-02-11 01:02+0000\n"
-"Last-Translator: \"Miguel A. Bouzada\" <mbouzada@gmail.com>\n"
+"PO-Revision-Date: 2025-05-06 15:05+0000\n"
+"Last-Translator: Yago Raña Gayoso <yago.rana.gayoso@gmail.com>\n"
 "Language-Team: Galician <https://hosted.weblate.org/projects/godot-engine/"
 "godot/gl/>\n"
 "Language: gl\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
-
-msgid "Main Thread"
-msgstr "Fío principal"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -496,6 +495,9 @@ msgstr "Nome:"
 msgid "Type:"
 msgstr "Tipo:"
 
+msgid "Metadata name can't be empty."
+msgstr "O nome do metadato non pode estar baleiro."
+
 msgid "Time:"
 msgstr "Tempo:"
 
@@ -639,9 +641,6 @@ msgstr "Lonxitude da Animacion (en fotogramas)"
 
 msgid "Animation length (seconds)"
 msgstr "Lonxitude da Animación (en segundos)"
-
-msgid "Add Track"
-msgstr "Engadir Pista"
 
 msgid "Animation Looping"
 msgstr "Animación en Bucle"
@@ -845,6 +844,9 @@ msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
 msgstr ""
 "As pistas de posición/rotación/escala 3D solo se aplican a nodos basados en "
 "3D."
+
+msgid "Add Track"
+msgstr "Engadir Pista"
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -1058,6 +1060,10 @@ msgid "Cubic"
 msgstr "Cúbica"
 
 msgctxt "Transition Type"
+msgid "Bounce"
+msgstr "Rebote"
+
+msgctxt "Transition Type"
 msgid "Back"
 msgstr "Regreso"
 
@@ -1092,6 +1098,9 @@ msgstr "Selecciona as Pistas a Copiar"
 
 msgid "Select All/None"
 msgstr "Seleccionar Todas/Ningunha"
+
+msgid "Copy Selection"
+msgstr "Copiar Selección"
 
 msgid "Animation Change Keyframe Time"
 msgstr "Cambiar Tempo do Fotograma Clave da Animación"
@@ -1147,9 +1156,6 @@ msgstr "Substituír Todo"
 
 msgid "Selection Only"
 msgstr "Só a Selección"
-
-msgid "Toggle Scripts Panel"
-msgstr "Act./Desact. Panel de Scripts"
 
 msgid "Zoom In"
 msgstr "Aumentar Zoom"
@@ -1211,6 +1217,9 @@ msgstr "Só Métodos de Script"
 
 msgid "Compatible Methods Only"
 msgstr "Só Métodos Compatibles"
+
+msgid "Type"
+msgstr "Tipo"
 
 msgid "Remove"
 msgstr "Eliminar"
@@ -1311,11 +1320,17 @@ msgstr "Crear Novo %s"
 msgid "No results for \"%s\"."
 msgstr "Non houbo resultado para \"%s\"."
 
+msgid "Favorites"
+msgstr "Favoritos"
+
 msgid "Favorites:"
 msgstr "Favoritos:"
 
 msgid "Recent:"
 msgstr "Recente:"
+
+msgid "Search"
+msgstr "Buscar"
 
 msgid "(Un)favorite selected item."
 msgstr "(Des)marcar como favorito el ítem seleccionado."
@@ -1326,11 +1341,36 @@ msgstr "Buscar:"
 msgid "Matches:"
 msgstr "Coincidencias:"
 
+msgid "Description"
+msgstr "Descrición"
+
 msgid "Description:"
 msgstr "Descrición:"
 
-msgid "Remote %s:"
-msgstr "Remoto %s:"
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "Administrador de Proxectos"
+
+msgid "Project Founders"
+msgstr "Fundadores do Proxecto"
+
+msgid "Lead Developer"
+msgstr "Desenvolvedor Líder"
+
+msgid "Developers"
+msgstr "Desenvolvedores"
+
+msgid "Patrons"
+msgstr "Mecenas"
+
+msgid "Platinum Sponsors"
+msgstr "Patrocinadores Platino"
+
+msgid "Gold Sponsors"
+msgstr "Patrocinadores Ouro"
+
+msgid "Silver Sponsors"
+msgstr "Patrocinadores Prata"
 
 msgid "Debugger"
 msgstr "Depurador"
@@ -1386,6 +1426,9 @@ msgstr "Fotograma %"
 msgid "Physics Frame %"
 msgstr "Fotograma de Física %"
 
+msgid "Time"
+msgstr "Tempo"
+
 msgid "Inclusive"
 msgstr "Inclusivo"
 
@@ -1398,14 +1441,14 @@ msgstr "Fotograma #:"
 msgid "Name"
 msgstr "Nome"
 
-msgid "Time"
-msgstr "Tempo"
-
 msgid "Calls"
 msgstr "Chamadas"
 
 msgid "Fit to Frame"
 msgstr "Axustar ao Marco"
+
+msgid "Main Thread"
+msgstr "Fío principal"
 
 msgid "Bytes:"
 msgstr "Bytes:"
@@ -1463,9 +1506,6 @@ msgstr "Perfilador Visual"
 
 msgid "Total:"
 msgstr "Total:"
-
-msgid "Type"
-msgstr "Tipo"
 
 msgid "Format"
 msgstr "Formato"
@@ -1600,42 +1640,17 @@ msgstr "Un cartafol con ese nome xa existe."
 msgid "Folder name is valid."
 msgstr "O nome do cartafol é válido."
 
+msgid "Godot Engine contributors"
+msgstr "Colaboradores de Godot Engine"
+
 msgid "Double-click to open in browser."
 msgstr "Dobre-clic para abrir no navegador."
 
 msgid "Thanks from the Godot community!"
 msgstr "Moitas grazas de parte da comunidade de Godot!"
 
-msgid "Godot Engine contributors"
-msgstr "Colaboradores de Godot Engine"
-
-msgid "Project Founders"
-msgstr "Fundadores do Proxecto"
-
-msgid "Lead Developer"
-msgstr "Desenvolvedor Líder"
-
-msgctxt "Job Title"
-msgid "Project Manager"
-msgstr "Administrador de Proxectos"
-
-msgid "Developers"
-msgstr "Desenvolvedores"
-
 msgid "Authors"
 msgstr "Autores"
-
-msgid "Patrons"
-msgstr "Mecenas"
-
-msgid "Platinum Sponsors"
-msgstr "Patrocinadores Platino"
-
-msgid "Gold Sponsors"
-msgstr "Patrocinadores Ouro"
-
-msgid "Silver Sponsors"
-msgstr "Patrocinadores Prata"
 
 msgid "Donors"
 msgstr "Doadores"
@@ -1745,6 +1760,9 @@ msgstr "Silenciar"
 
 msgid "Bypass"
 msgstr "Omitir"
+
+msgid "Volume"
+msgstr "Volume"
 
 msgid "Bus Options"
 msgstr "Opcións de Bus"
@@ -1866,15 +1884,6 @@ msgstr "Variable global"
 msgid "3D Engine"
 msgstr "Motor 3D"
 
-msgid "2D Physics"
-msgstr "Física 2D"
-
-msgid "3D Physics"
-msgstr "Física 3D"
-
-msgid "Navigation"
-msgstr "Navegación"
-
 msgid "RenderingDevice"
 msgstr "Dispositivo de Renderizado"
 
@@ -1883,9 +1892,6 @@ msgstr "OpenGL"
 
 msgid "WOFF2 Fonts"
 msgstr "Fontes WOFF2"
-
-msgid "Navigation, both 2D and 3D."
-msgstr "Navigation, tanto en 2D como en 3D."
 
 msgid "General Features:"
 msgstr "Características Xerais:"
@@ -2117,9 +2123,6 @@ msgstr "Herda de:"
 msgid "Inherited by:"
 msgstr "Herdado de:"
 
-msgid "Description"
-msgstr "Descrición"
-
 msgid "Online Tutorials"
 msgstr "Tutoriales en liña"
 
@@ -2178,9 +2181,6 @@ msgstr "Sinal"
 msgid "File"
 msgstr "Arquivo"
 
-msgid "%d matches."
-msgstr "%d coincidencias."
-
 msgid "Search Help"
 msgstr "Buscar na Axuda"
 
@@ -2214,16 +2214,19 @@ msgstr "Só Propiedades de Temas"
 msgid "Member Type"
 msgstr "Tipo do Membro"
 
+msgid "On"
+msgstr "Activado"
+
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "(% cambio)"
 msgstr[1] "(% cambios)"
 
+msgid "Move"
+msgstr "Mover"
+
 msgid "Resize Array"
 msgstr "Redimensionar Array"
-
-msgid "Favorites"
-msgstr "Favoritos"
 
 msgid "Creating Mesh Previews"
 msgstr "Creando Previsualización de Mallas"
@@ -2245,9 +2248,6 @@ msgstr "Linguaxe:"
 
 msgid "Clear Output"
 msgstr "Limpar Saída"
-
-msgid "Copy Selection"
-msgstr "Copiar Selección"
 
 msgid "Unnamed Project"
 msgstr "Proxecto Sen Nome"
@@ -2274,14 +2274,8 @@ msgstr "Gardando Escena"
 msgid "Analyzing"
 msgstr "Analizando"
 
-msgid "Creating Thumbnail"
-msgstr "Creando Miniatura"
-
 msgid "Save scene before running..."
 msgstr "Garda a escena antes de executala..."
-
-msgid "Save All Scenes"
-msgstr "Gardar Todas as Escenas"
 
 msgid "Can't overwrite scene that is still open!"
 msgstr "Non se pode sobreescribir escena que sigue aberta!"
@@ -2347,17 +2341,6 @@ msgstr "Gardar Escena Como..."
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Non se pode volver a cargar unha escena que nunca foi gardada."
-
-msgid "Reload Saved Scene"
-msgstr "Recargar Escena Gardada"
-
-msgid ""
-"The current scene has unsaved changes.\n"
-"Reload the saved scene anyway? This action cannot be undone."
-msgstr ""
-"A escena actual ten cambios non gardados.\n"
-"Quere volver a cargar a escena cargada de todos os modos? Esta acción non se "
-"pode deshacer."
 
 msgid "Save & Quit"
 msgstr "Gardar e Saír"
@@ -2439,9 +2422,6 @@ msgstr "Act./Desact. modo sen distraccións."
 msgid "Scene"
 msgstr "Escena"
 
-msgid "Operations with scene files."
-msgstr "Operacións con arquivos de escenas."
-
 msgid "Copy Text"
 msgstr "Copiar Texto"
 
@@ -2463,6 +2443,9 @@ msgstr "Abrir Recente"
 msgid "Save Scene"
 msgstr "Gardar Escena"
 
+msgid "Save All Scenes"
+msgstr "Gardar Todas as Escenas"
+
 msgid "Quick Open..."
 msgstr "Apertura Rápida..."
 
@@ -2471,6 +2454,9 @@ msgstr "Apertura Rápida de Escena..."
 
 msgid "Quick Open Script..."
 msgstr "Apertura Rápida de Script..."
+
+msgid "Reload Saved Scene"
+msgstr "Recargar Escena Gardada"
 
 msgid "Close Scene"
 msgstr "Pechar Escena"
@@ -2483,6 +2469,9 @@ msgstr "Configuración do Editor..."
 
 msgid "Project"
 msgstr "Proxecto"
+
+msgid "Find in Files..."
+msgstr "Buscar en Arquivos.."
 
 msgid "Version Control"
 msgstr "Control de Versións"
@@ -2589,8 +2578,8 @@ msgstr "Aviso!"
 msgid "Edit Text:"
 msgstr "Editar Texto:"
 
-msgid "On"
-msgstr "Activado"
+msgid "Locale"
+msgstr "Linguaxe"
 
 msgid "No name provided."
 msgstr "Nome non proporcionado."
@@ -2629,11 +2618,11 @@ msgstr "Nova Chave:"
 msgid "New Value:"
 msgstr "Novo Valor:"
 
-msgid "Remove Item"
-msgstr "Eliminar Elemento"
-
 msgid "Add Key/Value Pair"
 msgstr "Engadir Parella Chave/Valor"
+
+msgid "Remove Translation"
+msgstr "Eliminar Tradución"
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this property "
@@ -2650,9 +2639,6 @@ msgstr "Facer Único"
 
 msgid "Save As..."
 msgstr "Gardar Como..."
-
-msgid "New %s"
-msgstr "Novo %s"
 
 msgid "New Script..."
 msgstr "Novo Script..."
@@ -2698,6 +2684,9 @@ msgstr "Non se encontrou un modelo de depuración personalizado."
 
 msgid "Custom release template not found."
 msgstr "Non se encontrou un modelo release personalizado."
+
+msgid "Run"
+msgstr "Executar"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Na exportación de 32 bits o PCK integrado non pode ser maior de 4 GiB."
@@ -2882,9 +2871,6 @@ msgstr "Ir ao cartafol previamente seleccionado."
 msgid "Go to next selected folder/file."
 msgstr "Ir ao seguinte cartafol seleccionado."
 
-msgid "Re-Scan Filesystem"
-msgstr "Reexaminar Sistema de Arquivos"
-
 msgid ""
 "Scanning Files,\n"
 "Please Wait..."
@@ -2940,9 +2926,6 @@ msgstr "Eliminar do Grupo"
 
 msgid "Expand Bottom Panel"
 msgstr "Estender Panel Inferior"
-
-msgid "Move"
-msgstr "Mover"
 
 msgid "Select Current Folder"
 msgstr "Seleccionar Cartafol Actual"
@@ -3078,6 +3061,9 @@ msgstr ""
 "Mantén pulsado %s para redondear a enteiros. \n"
 "Mantén pulsado Shift para cambios máis precisos."
 
+msgid "Remove Item"
+msgstr "Eliminar Elemento"
+
 msgid "(unknown)"
 msgstr "(descoñecido)"
 
@@ -3109,6 +3095,9 @@ msgstr "Importar Escena"
 msgid "Saving..."
 msgstr "Gardando..."
 
+msgid "Animation"
+msgstr "Animación"
+
 msgid "Status"
 msgstr "Estado"
 
@@ -3133,6 +3122,9 @@ msgstr "Dispositivo:"
 msgid "Failed to load resource."
 msgstr "Fallou a carga do Recurso."
 
+msgid "Load Resource"
+msgstr "Cargar Recurso"
+
 msgid "Copy Resource"
 msgstr "Copiar Recurso"
 
@@ -3148,9 +3140,6 @@ msgstr "Historial de obxectos editados recentemente."
 msgid "Open documentation for this object."
 msgstr "Abrir documentación para este obxecto."
 
-msgid "Remove Translation"
-msgstr "Eliminar Tradución"
-
 msgid "Translations"
 msgstr "Traducións"
 
@@ -3159,9 +3148,6 @@ msgstr "Traducións:"
 
 msgid "Resources:"
 msgstr "Recursos:"
-
-msgid "Locale"
-msgstr "Linguaxe"
 
 msgid "Set %s on %d nodes"
 msgstr "Establecer %s en %d nodos"
@@ -3297,9 +3283,6 @@ msgstr "Duplicar Animación"
 msgid "Animation Tools"
 msgstr "Ferramentas de Animación"
 
-msgid "Animation"
-msgstr "Animación"
-
 msgid "Edit Transitions..."
 msgstr "Editar Transicións..."
 
@@ -3350,9 +3333,6 @@ msgstr "Conectar nodos."
 
 msgid "Play Mode:"
 msgstr "Modo de Reprodución:"
-
-msgid "Delete Selected"
-msgstr "Eliminar Selección"
 
 msgid "Version:"
 msgstr "Versión:"
@@ -3480,6 +3460,11 @@ msgstr "Eliminar Guía Horizontal"
 msgid "Create Horizontal and Vertical Guides"
 msgstr "Crear Guías Horizontais e Verticais"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
+"incluindo bloqueados."
+
 msgid "Group Selected"
 msgstr "Agrupar Selección"
 
@@ -3494,11 +3479,6 @@ msgstr "Limpar Guías"
 
 msgid "Select Mode"
 msgstr "Elixir Modo"
-
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Clic Dereito: Amosa unha lista de nodos na posición na que se fixo clic, "
-"incluindo bloqueados."
 
 msgid "Move Mode"
 msgstr "Mover Modo"
@@ -3527,6 +3507,9 @@ msgstr "Act./Desact. axuste de cuadrícula."
 
 msgid "Use Grid Snap"
 msgstr "Usar Axuste de Cuadrícula"
+
+msgid "Grid Snap"
+msgstr "Axuste de Cuadrícula"
 
 msgid "Snapping Options"
 msgstr "Opcións de Axuste de Cuadrícula"
@@ -3628,9 +3611,6 @@ msgstr "Engadindo %s..."
 
 msgid "Create Node"
 msgstr "Crear Nodo"
-
-msgid "Change Default Type"
-msgstr "Cambiar Tipo por Defecto"
 
 msgid "Top Left"
 msgstr "Arriba á Esquerda"
@@ -3805,9 +3785,6 @@ msgstr "Cantidade:"
 
 msgid "Populate"
 msgstr "Encher"
-
-msgid "Please Confirm..."
-msgstr "Por favor, confirma..."
 
 msgid "Orthogonal"
 msgstr "Ortogonal"
@@ -4021,14 +3998,14 @@ msgstr "GPUParticles2D"
 msgid "Convert to CPUParticles2D"
 msgstr "Converter a CPUParticles2D"
 
-msgid "Volume"
-msgstr "Volume"
-
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
 
 msgid "Delete Point"
 msgstr "Eliminar Puntos"
+
+msgid "Please Confirm..."
+msgstr "Por favor, confirma..."
 
 msgid "Edit a Plugin"
 msgstr "Editar unha Característica Adicional (Plugin)"
@@ -4136,9 +4113,6 @@ msgstr "Eliminar Recurso"
 msgid "Paste Resource"
 msgstr "Pegar Recurso"
 
-msgid "Load Resource"
-msgstr "Cargar Recurso"
-
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 "Non se puido abrir '%s'. Pode ser que o arquivo fose movido ou eliminado."
@@ -4203,12 +4177,6 @@ msgstr "Pechar Todo"
 msgid "Close Docs"
 msgstr "Pechar Documentación"
 
-msgid "Run"
-msgstr "Executar"
-
-msgid "Search"
-msgstr "Buscar"
-
 msgid "Search the reference documentation."
 msgstr "Buscar na documentación de referencia."
 
@@ -4242,11 +4210,11 @@ msgstr "Obxectivo"
 msgid "[Ignore]"
 msgstr "[Ignorar]"
 
-msgid "Go to Function"
-msgstr "Ir a Función"
-
 msgid "Pick Color"
 msgstr "Elexir Cor"
+
+msgid "Go to Function"
+msgstr "Ir a Función"
 
 msgid "Line"
 msgstr "Liña"
@@ -4295,9 +4263,6 @@ msgstr "Convertir Identación a Tabulacións"
 
 msgid "Auto Indent"
 msgstr "Auto Indentar"
-
-msgid "Find in Files..."
-msgstr "Buscar en Arquivos.."
 
 msgid "Contextual Help"
 msgstr "Axuda Contextual"
@@ -4386,9 +4351,6 @@ msgstr "Modo de Axuste:"
 msgid "Pixel Snap"
 msgstr "Axustar aos Píxeles"
 
-msgid "Grid Snap"
-msgstr "Axuste de Cuadrícula"
-
 msgid "1 color"
 msgid_plural "{num} colors"
 msgstr[0] "1 Cor"
@@ -4427,11 +4389,17 @@ msgstr "Subárbore"
 msgid "Has,Many,Options"
 msgstr "Ten,Moitas,Opcións"
 
+msgid "Navigation"
+msgstr "Navegación"
+
 msgid "Yes"
 msgstr "Si"
 
 msgid "Error"
 msgstr "Erro"
+
+msgid "Remote"
+msgstr "Remoto"
 
 msgid "Modified"
 msgstr "Modificado"
@@ -4787,9 +4755,6 @@ msgstr "Esta operación precisa un único nodo seleccionado."
 
 msgid "Sub-Resources"
 msgstr "Sub-Recursos"
-
-msgid "Remote"
-msgstr "Remoto"
 
 msgid "Local"
 msgstr "Local"

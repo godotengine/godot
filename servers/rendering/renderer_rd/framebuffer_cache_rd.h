@@ -137,16 +137,6 @@ class FramebufferCacheRD : public Object {
 		return _compare_args(idx + 1, textures, args...);
 	}
 
-	_FORCE_INLINE_ void _create_args(Vector<RID> &textures, const RID &arg) {
-		textures.push_back(arg);
-	}
-
-	template <typename... Args>
-	_FORCE_INLINE_ void _create_args(Vector<RID> &textures, const RID &arg, Args... args) {
-		textures.push_back(arg);
-		_create_args(textures, args...);
-	}
-
 	static FramebufferCacheRD *singleton;
 
 	uint32_t cache_instances_used = 0;
@@ -216,10 +206,7 @@ public:
 
 		// Not in cache, create:
 
-		Vector<RID> textures;
-		_create_args(textures, args...);
-
-		return _allocate_from_data(1, h, table_idx, textures, Vector<RD::FramebufferPass>());
+		return _allocate_from_data(1, h, table_idx, Vector<RID>{ args... }, Vector<RD::FramebufferPass>());
 	}
 
 	template <typename... Args>
@@ -244,10 +231,7 @@ public:
 
 		// Not in cache, create:
 
-		Vector<RID> textures;
-		_create_args(textures, args...);
-
-		return _allocate_from_data(p_views, h, table_idx, textures, Vector<RD::FramebufferPass>());
+		return _allocate_from_data(p_views, h, table_idx, Vector<RID>{ args... }, Vector<RD::FramebufferPass>());
 	}
 
 	RID get_cache_multipass(const Vector<RID> &p_textures, const Vector<RD::FramebufferPass> &p_passes, uint32_t p_views = 1) {

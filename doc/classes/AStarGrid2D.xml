@@ -27,6 +27,7 @@
 		To remove a point from the pathfinding grid, it must be set as "solid" with [method set_point_solid].
 	</description>
 	<tutorials>
+		<link title="Grid-based Navigation with AStarGrid2D Demo">https://godotengine.org/asset-library/asset/2723</link>
 	</tutorials>
 	<methods>
 		<method name="_compute_cost" qualifiers="virtual const">

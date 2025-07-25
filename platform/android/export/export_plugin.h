@@ -73,6 +73,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	};
 
 	struct APKExportData {
+		EditorExportPlatform::PackData pd;
 		zipFile apk;
 		EditorProgress *ep = nullptr;
 	};
@@ -163,6 +164,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
 
+	bool _is_transparency_allowed(const Ref<EditorExportPreset> &p_preset) const;
+
 	void _fix_themes_xml(const Ref<EditorExportPreset> &p_preset);
 
 	void _fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet);
@@ -190,6 +193,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
 	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
+
+	Error _generate_sparse_pck_metadata(const Ref<EditorExportPreset> &p_preset, PackData &p_pack_data, Vector<uint8_t> &r_data);
 
 protected:
 	void _notification(int p_what);

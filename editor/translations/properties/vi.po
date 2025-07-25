@@ -103,6 +103,9 @@ msgstr "Tự động Đồng ý Thoát"
 msgid "Quit on Go Back"
 msgstr "Trở lại"
 
+msgid "General"
+msgstr "Tổng quan"
+
 msgid "Display"
 msgstr "Hiển thị"
 
@@ -180,9 +183,6 @@ msgstr "Xe buýt"
 
 msgid "Default Bus Layout"
 msgstr "Bố trí xe buýt mặc định"
-
-msgid "General"
-msgstr "Tổng quan"
 
 msgid "Default Playback Type"
 msgstr "Loại phát lại mặc định"
@@ -345,6 +345,18 @@ msgstr "Kích hoạt Cử chỉ Xoay và Thu phóng"
 
 msgid "Rotary Input Scroll Axis"
 msgstr "Trục cuộn đầu vào quay"
+
+msgid "Navigation"
+msgstr "Điều hướng"
+
+msgid "Avoidance Use High Priority Threads"
+msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
+
+msgid "Use Crash Prevention Checks"
+msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
+
+msgid "Baking Use High Priority Threads"
+msgstr "Baking Sử dụng luồng có mức độ ưu tiên cao"
 
 msgid "Low Processor Usage Mode"
 msgstr "Chế độ tiết kiệm của bộ vi xử lý"
@@ -706,9 +718,6 @@ msgstr "Màn hình cảm ứng"
 msgid "Scale Gizmo Handles"
 msgstr "Tay cầm Gizmo Thu phóng"
 
-msgid "Increase Scrollbar Touch Area"
-msgstr "Tăng Vùng cảm ứng Thanh cuộn"
-
 msgid "Scene Tabs"
 msgstr "Thẻ cảnh"
 
@@ -784,9 +793,6 @@ msgstr "Tự động Làm mới Khoảng thời gian"
 msgid "Text Editor"
 msgstr "Trình soạn thảo"
 
-msgid "Line Spacing"
-msgstr "Khoảng cách dòng"
-
 msgid "Appearance"
 msgstr "Ngoại hình"
 
@@ -835,11 +841,11 @@ msgstr "Gập mã"
 msgid "Whitespace"
 msgstr "Khoảng trắng"
 
+msgid "Line Spacing"
+msgstr "Khoảng cách dòng"
+
 msgid "Behavior"
 msgstr "Hành vi"
-
-msgid "Navigation"
-msgstr "Điều hướng"
 
 msgid "Move Caret on Right Click"
 msgstr "Di chuyển Dấu nháy khi Nhấp chuột phải"
@@ -1192,6 +1198,48 @@ msgstr "Bản mẫu tuỳ chỉnh"
 msgid "Release"
 msgstr "Phát hành"
 
+msgid "App Store Team ID"
+msgstr "ID nhóm App Store"
+
+msgid "Code Sign Identity Debug"
+msgstr "Gỡ lỗi nhận dạng ký hiệu mã"
+
+msgid "Code Sign Identity Release"
+msgstr "Phát hành nhận dạng ký hiệu mã"
+
+msgid "Provisioning Profile UUID Debug"
+msgstr "Gỡ lỗi UUID hồ sơ cung cấp"
+
+msgid "Provisioning Profile UUID Release"
+msgstr "Phát hành UUID hồ sơ cung cấp"
+
+msgid "Delete Old Export Files Unconditionally"
+msgstr "Xóa các tệp xuất cũ vô điều kiện"
+
+msgid "Plugins"
+msgstr "Tiện ích"
+
+msgid "Performance Gaming Tier"
+msgstr "Hiệu suất chơi game Cấp độ"
+
+msgid "Performance A 12"
+msgstr "Hiệu suất A 12"
+
+msgid "Enabled"
+msgstr "Bật"
+
+msgid "Accessible From Files App"
+msgstr "Có thể truy cập từ ứng dụng Tệp"
+
+msgid "Accessible From iTunes Sharing"
+msgstr "Có thể truy cập từ iTunes Chia sẻ"
+
+msgid "Privacy"
+msgstr "Quyền riêng tư"
+
+msgid "Icons"
+msgstr "Biểu tượng"
+
 msgid "Binary Format"
 msgstr "Định dạng nhị phân"
 
@@ -1276,9 +1324,6 @@ msgstr "Chiều cao"
 msgid "Radius"
 msgstr "Bán kính"
 
-msgid "Enabled"
-msgstr "Bật"
-
 msgid "LODs"
 msgstr "Lightmap UV"
 
@@ -1308,9 +1353,6 @@ msgstr "Trường khoảng cách có dấu đa kênh"
 
 msgid "Hinting"
 msgstr "Buộc tự động gợi ý"
-
-msgid "Oversampling"
-msgstr "Định vị điểm ảnh phụ"
 
 msgid "Fallbacks"
 msgstr "Fallbacks"
@@ -1924,12 +1966,6 @@ msgstr "Sử dụng Gradle Build"
 msgid "Android Source Template"
 msgstr "Mẫu nguồn Android"
 
-msgid "Compress Native Libraries"
-msgstr "Nén thư viện gốc"
-
-msgid "Plugins"
-msgstr "Tiện ích"
-
 msgid "Debug Password"
 msgstr "Gỡ lỗi mật khẩu"
 
@@ -1954,8 +1990,11 @@ msgstr "Salt"
 msgid "iOS Deploy"
 msgstr "Triển khai iOS"
 
-msgid "Icons"
-msgstr "Biểu tượng"
+msgid "Targeted Device Family"
+msgstr "Họ thiết bị mục tiêu"
+
+msgid "Storyboard"
+msgstr "Storyboard"
 
 msgid "Spotlight 80 X 80"
 msgstr "Spotlight 80 X 80"
@@ -1974,45 +2013,6 @@ msgstr "iPad 152 X 152"
 
 msgid "App Store 1024 X 1024"
 msgstr "App Store 1024 X 1024"
-
-msgid "App Store Team ID"
-msgstr "ID nhóm App Store"
-
-msgid "Code Sign Identity Debug"
-msgstr "Gỡ lỗi nhận dạng ký hiệu mã"
-
-msgid "Code Sign Identity Release"
-msgstr "Phát hành nhận dạng ký hiệu mã"
-
-msgid "Provisioning Profile UUID Debug"
-msgstr "Gỡ lỗi UUID hồ sơ cung cấp"
-
-msgid "Provisioning Profile UUID Release"
-msgstr "Phát hành UUID hồ sơ cung cấp"
-
-msgid "Targeted Device Family"
-msgstr "Họ thiết bị mục tiêu"
-
-msgid "Delete Old Export Files Unconditionally"
-msgstr "Xóa các tệp xuất cũ vô điều kiện"
-
-msgid "Performance Gaming Tier"
-msgstr "Hiệu suất chơi game Cấp độ"
-
-msgid "Performance A 12"
-msgstr "Hiệu suất A 12"
-
-msgid "Accessible From Files App"
-msgstr "Có thể truy cập từ ứng dụng Tệp"
-
-msgid "Accessible From iTunes Sharing"
-msgstr "Có thể truy cập từ iTunes Chia sẻ"
-
-msgid "Privacy"
-msgstr "Quyền riêng tư"
-
-msgid "Storyboard"
-msgstr "Storyboard"
 
 msgid "SSH Remote Deploy"
 msgstr "SSH triển khai từ xa"
@@ -2386,6 +2386,12 @@ msgstr "Góc"
 msgid "Torque"
 msgstr "Mô men xoắn"
 
+msgid "Bitmask"
+msgstr "Bitmask"
+
+msgid "Passby Press"
+msgstr "Nhấn qua"
+
 msgid "UV"
 msgstr "UV"
 
@@ -2409,12 +2415,6 @@ msgstr "Thứ tự vẽ X bị đảo ngược"
 
 msgid "Use Kinematic Bodies"
 msgstr "Sử dụng Vật thể động học"
-
-msgid "Bitmask"
-msgstr "Bitmask"
-
-msgid "Passby Press"
-msgstr "Nhấn qua"
 
 msgid "Unit Size"
 msgstr "Kích thước đơn vị"
@@ -2599,6 +2599,21 @@ msgstr "Góc Z"
 msgid "Hit Back Faces"
 msgstr "Đánh mặt sau"
 
+msgid "Spatial Attachment Path"
+msgstr "Đường dẫn tệp đính kèm không gian"
+
+msgid "Linear Stiffness"
+msgstr "Độ cứng tuyến tính"
+
+msgid "Pressure Coefficient"
+msgstr "Hệ số áp suất"
+
+msgid "Damping Coefficient"
+msgstr "Hệ số giảm chấn"
+
+msgid "Drag Coefficient"
+msgstr "Hệ số kéo"
+
 msgid "Spring Length"
 msgstr "Chiều dài lò xo"
 
@@ -2634,21 +2649,6 @@ msgstr "Nam châm"
 
 msgid "Influence"
 msgstr "Ảnh hưởng"
-
-msgid "Spatial Attachment Path"
-msgstr "Đường dẫn tệp đính kèm không gian"
-
-msgid "Linear Stiffness"
-msgstr "Độ cứng tuyến tính"
-
-msgid "Pressure Coefficient"
-msgstr "Hệ số áp suất"
-
-msgid "Damping Coefficient"
-msgstr "Hệ số giảm chấn"
-
-msgid "Drag Coefficient"
-msgstr "Hệ số kéo"
 
 msgid "Use AABB Center"
 msgstr "Sử dụng AABB Trung tâm"
@@ -2773,14 +2773,14 @@ msgstr "Chuột"
 msgid "Dialog"
 msgstr "Văn bản nút OK"
 
+msgid "Title"
+msgstr "Đã chọn"
+
 msgid "Show Grid"
 msgstr "Điền ngược"
 
 msgid "Toolbar Menu"
 msgstr "Bước thu nhỏ"
-
-msgid "Title"
-msgstr "Đã chọn"
 
 msgid "Ignore Invalid Connection Type"
 msgstr "Bỏ qua Loại kết nối không hợp lệ"
@@ -3060,6 +3060,9 @@ msgstr "Quad 3"
 
 msgid "Canvas Cull Mask"
 msgstr "Mặt nạ loại bỏ Canvas"
+
+msgid "Oversampling"
+msgstr "Định vị điểm ảnh phụ"
 
 msgid "Current Screen"
 msgstr "Màn hình hiện có"
@@ -3351,9 +3354,6 @@ msgstr "Sâu Parallax"
 
 msgid "Flip Tangent"
 msgstr "Lật Tangent"
-
-msgid "Subsurface Scattering"
-msgstr "Phân tán dưới bề mặt"
 
 msgid "Boost"
 msgstr "Tăng cường"
@@ -3691,21 +3691,6 @@ msgstr "Cờ siêu dữ liệu"
 msgid "Path Owner IDs"
 msgstr "ID chủ sở hữu đường dẫn"
 
-msgid "Merge Rasterizer Cell Scale"
-msgstr "Hợp nhất Tỷ lệ ô Rasterizer"
-
-msgid "Avoidance Use High Priority Threads"
-msgstr "Tránh sử dụng luồng có mức độ ưu tiên cao"
-
-msgid "Use Crash Prevention Checks"
-msgstr "Sử dụng Kiểm tra phòng ngừa sự cố"
-
-msgid "Baking Use High Priority Threads"
-msgstr "Baking Sử dụng luồng có mức độ ưu tiên cao"
-
-msgid "Enable Edge Lines X-Ray"
-msgstr "Bật đường cạnh X-Ray"
-
 msgid "Obstacles Radius Color"
 msgstr "Màu bán kính chướng ngại vật"
 
@@ -3723,6 +3708,12 @@ msgstr "Màu đẩy cạnh tĩnh chướng ngại vật"
 
 msgid "Enable Obstacles Static"
 msgstr "Bật Chướng ngại vật tĩnh"
+
+msgid "Merge Rasterizer Cell Scale"
+msgstr "Hợp nhất Tỷ lệ ô Rasterizer"
+
+msgid "Enable Edge Lines X-Ray"
+msgstr "Bật đường cạnh X-Ray"
 
 msgid "Inverse Mass"
 msgstr "Khối lượng nghịch đảo"
@@ -3849,6 +3840,9 @@ msgstr "Hình dán"
 
 msgid "Occlusion Rays per Thread"
 msgstr "Tia che khuất trên mỗi luồng"
+
+msgid "Subsurface Scattering"
+msgstr "Phân tán dưới bề mặt"
 
 msgid "Subsurface Scattering Quality"
 msgstr "Chất lượng tán xạ dưới bề mặt"

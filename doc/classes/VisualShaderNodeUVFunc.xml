@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeUVFunc.Function" default="0">
-			A function to be applied to the texture coordinates. See [enum Function] for options.
+			A function to be applied to the texture coordinates.
 		</member>
 	</members>
 	<constants>

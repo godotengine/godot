@@ -6,6 +6,12 @@ Import("env_modules")
 
 env_jolt = env_modules.Clone()
 
+# Platform specific flags.
+if env["platform"] == "web" and env["wasm_simd"]:
+    # Enable SSE 4.2 so that WebAssembly SIMD can benefit from it.
+    # SSE 4.2 is the highest version supported by WebAssembly SIMD.
+    env_jolt.Append(CCFLAGS=["-msse4.2"])
+
 # Thirdparty source files
 
 thirdparty_dir = "#thirdparty/jolt_physics/"

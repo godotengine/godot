@@ -13,10 +13,10 @@
 			The [Cubemap] texture to sample when using [constant SOURCE_TEXTURE] as [member source].
 		</member>
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeCubemap.Source" default="0">
-			Defines which source should be used for the sampling. See [enum Source] for options.
+			Defines which source should be used for the sampling.
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeCubemap.TextureType" default="0">
-			Defines the type of data provided by the source texture. See [enum TextureType] for options.
+			Defines the type of data provided by the source texture.
 		</member>
 	</members>
 	<constants>

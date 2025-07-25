@@ -47,7 +47,6 @@ void OpenXRActionEditor::_theme_changed() {
 
 void OpenXRActionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			_theme_changed();
 		} break;
@@ -166,7 +165,6 @@ OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
 
 	rem_action = memnew(Button);
 	rem_action->set_tooltip_text(TTR("Remove action"));
-	rem_action->set_accessibility_name(TTRC("Remove action"));
 	rem_action->connect(SceneStringName(pressed), callable_mp(this, &OpenXRActionEditor::_on_remove_action));
 	rem_action->set_flat(true);
 	add_child(rem_action);

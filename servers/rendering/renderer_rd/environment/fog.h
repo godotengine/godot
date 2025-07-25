@@ -48,6 +48,9 @@ class Fog : public RendererFog {
 private:
 	static Fog *singleton;
 
+	static int _get_fog_variant();
+	static int _get_fog_process_variant(int p_idx);
+
 	/* FOG VOLUMES */
 
 	struct FogVolume {
@@ -202,6 +205,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		FogShaderData() {}
 		virtual ~FogShaderData();
@@ -314,6 +318,9 @@ public:
 		RID sky_uniform_set;
 
 		int last_shadow_filter = -1;
+
+		// If the device doesn't support image atomics, use storage buffers instead.
+		RD::UniformType atomic_type = RD::UNIFORM_TYPE_IMAGE;
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override {}

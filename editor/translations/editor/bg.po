@@ -21,13 +21,15 @@
 # 100daysummer <bobbydochev@gmail.com>, 2023, 2024.
 # Филип Узунов <filkata@gmail.com>, 2024.
 # "П@₿€л" <pavel.veselinov.georgiev@gmail.com>, 2024.
+# Макар Разин <makarrazin14@gmail.com>, 2025.
+# Ivan Dortulov <ivandortulov@yahoo.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-10-02 07:34+0000\n"
-"Last-Translator: \"П@₿€л\" <pavel.veselinov.georgiev@gmail.com>\n"
+"PO-Revision-Date: 2025-06-03 10:16+0000\n"
+"Last-Translator: Ivan Dortulov <ivandortulov@yahoo.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -35,10 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
-
-msgid "Main Thread"
-msgstr "Главна нишка"
+"X-Generator: Weblate 5.12-dev\n"
 
 msgid "Unset"
 msgstr "Незададен"
@@ -117,6 +116,21 @@ msgstr "Неизвестна ос на джойпада"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
 msgstr "Движение на джойстика по ос %d (%s) със стойност %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Действие надолу, Sony: Кръг, Xbox: A, Nintendo: B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Дясно действие, Sony Кръг, Xbox B, Nintento A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Ляво действие, Sony Квадрат, Xbox A, Nintento B"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Действие нагоре, Sony Триъгълник, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Назад, Sony Селект, Xbox назад, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Ръководство, Sony PS, Xbox Начало"
@@ -326,6 +340,12 @@ msgstr "Курсор в началото на документа"
 msgid "Caret Document End"
 msgstr "Курсор в края документа"
 
+msgid "Caret Add Below"
+msgstr "Курсор добавяне отдолу"
+
+msgid "Caret Add Above"
+msgstr "Курсор добавяне отгоре"
+
 msgid "Scroll Up"
 msgstr "Превъртане нагоре"
 
@@ -341,11 +361,17 @@ msgstr "Избиране на думата под курсора"
 msgid "Add Selection for Next Occurrence"
 msgstr "Добавяне на следващото срещане към избраното"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Пропускане на следващото срещане"
+
 msgid "Clear Carets and Selection"
 msgstr "Изчистване на курсорите и избраното"
 
 msgid "Toggle Insert Mode"
 msgstr "Превключване на режима на вмъкване"
+
+msgid "Submit Text"
+msgstr "Изпращане на текст"
 
 msgid "Duplicate Nodes"
 msgstr "Дублиране на обектите"
@@ -353,11 +379,20 @@ msgstr "Дублиране на обектите"
 msgid "Delete Nodes"
 msgstr "Изтриване на обектите"
 
+msgid "Go Up One Level"
+msgstr "Качване едно ниво по-нагоре"
+
+msgid "Refresh"
+msgstr "Опресни"
+
 msgid "Show Hidden"
 msgstr "Показване на скритите"
 
 msgid "Swap Input Direction"
 msgstr "Промяна на направлението на въвеждане"
+
+msgid "Start Unicode Character Input"
+msgstr "Въвеждане на Unicode символ"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Неправилен входен параметър %d (не е подаден) в израза"
@@ -418,11 +453,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Вече съществува действие с името „%s“."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Отмяната е невъзможна – действието е същото като началното"
+
 msgid "Revert Action"
 msgstr "Отмяна на действието"
 
 msgid "Add Event"
 msgstr "Добавяне на събитие"
+
+msgid "Remove Action"
+msgstr "Премахване на действие"
 
 msgid "Cannot Remove Action"
 msgstr "Действието не може да се премахне"
@@ -448,8 +489,14 @@ msgstr "Добавяне на ново действие"
 msgid "Add"
 msgstr "Добавяне"
 
+msgid "Show Built-in Actions"
+msgstr "Показвай вградените действия"
+
 msgid "Action"
 msgstr "Действие"
+
+msgid "Deadzone"
+msgstr "Мъртва зона"
 
 msgid "Name:"
 msgstr "Име:"
@@ -457,8 +504,25 @@ msgstr "Име:"
 msgid "Type:"
 msgstr "Тип:"
 
+msgid "Metadata name is valid."
+msgstr "Името на метаданните е валидно."
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Добавяне на свойство на метаданни за \"%s\""
+
+msgid "Metadata name can't be empty."
+msgstr "Името на метаданните не може да е празно."
+
 msgid "Metadata name must be a valid identifier."
 msgstr "Името на мета-данните трябва да бъде правилен идентификатор."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Вече съществуват метаданни с името „%s“."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr ""
+"Имената, започващи с _ , са запазени за метаданни, използвани само от "
+"редактора."
 
 msgid "Time:"
 msgstr "Време:"
@@ -466,11 +530,23 @@ msgstr "Време:"
 msgid "Value:"
 msgstr "Стойност:"
 
+msgid "Update Selected Key Handles"
+msgstr "Обновяване на избраните контролни точки"
+
 msgid "Insert Key Here"
 msgstr "Вмъкване на ключ тук"
 
 msgid "Duplicate Selected Key(s)"
 msgstr "Дупликат на избран(и) ключ(ове)"
+
+msgid "Cut Selected Key(s)"
+msgstr "Изрязване на избран(и) ключ(ове)"
+
+msgid "Copy Selected Key(s)"
+msgstr "Копиране на избран(и) ключ(ове)"
+
+msgid "Paste Key(s)"
+msgstr "Поставяне на избран(и) ключ(ове)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Изтриване на избран(и) ключ(ове)"
@@ -498,9 +574,6 @@ msgstr "Продължителност на анимацията (в кадри)
 
 msgid "Animation length (seconds)"
 msgstr "Продължителност на анимацията (в секунди)"
-
-msgid "Add Track"
-msgstr "Добавяне на пътечка"
 
 msgid "Animation Looping"
 msgstr "Повтаряне на анимацията"
@@ -627,6 +700,9 @@ msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
 msgstr ""
 "Пътечките за форма на смесване могат да работят само с обекти от тип "
 "MeshInstance3D."
+
+msgid "Add Track"
+msgstr "Добавяне на пътечка"
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -765,6 +841,9 @@ msgstr "Изберете пътечки за копиране"
 msgid "Select All/None"
 msgstr "Избиране на всичко/нищо"
 
+msgid "Copy Selection"
+msgstr "Копиране на избраното"
+
 msgid "Close"
 msgstr "Затваряне"
 
@@ -808,9 +887,6 @@ msgstr "Замяна на всички"
 msgid "Selection Only"
 msgstr "Само избраното"
 
-msgid "Toggle Scripts Panel"
-msgstr "Превключване на панела за скриптове"
-
 msgid "Zoom In"
 msgstr "Приближаване"
 
@@ -852,6 +928,9 @@ msgstr "Само методи от скрипта"
 
 msgid "Compatible Methods Only"
 msgstr "Само съвместими методи"
+
+msgid "Type"
+msgstr "Тип"
 
 msgid "Remove"
 msgstr "Премахване"
@@ -916,11 +995,17 @@ msgstr "Промяна на типа на „%s“"
 msgid "Create New %s"
 msgstr "Създаване на %s"
 
+msgid "Favorites"
+msgstr "Любими"
+
 msgid "Favorites:"
 msgstr "Любими:"
 
 msgid "Recent:"
 msgstr "Последни:"
+
+msgid "Search"
+msgstr "Търсене"
 
 msgid "Search:"
 msgstr "Търсене:"
@@ -928,11 +1013,17 @@ msgstr "Търсене:"
 msgid "Matches:"
 msgstr "Съвпадения:"
 
+msgid "Description"
+msgstr "Описание"
+
 msgid "Description:"
 msgstr "Описание:"
 
-msgid "Remote %s:"
-msgstr "Отдалечено %s:"
+msgid "Project Founders"
+msgstr "Основатели на проекта"
+
+msgid "Lead Developer"
+msgstr "Главен разработчик"
 
 msgid "Debugger"
 msgstr "Дебъгер"
@@ -949,11 +1040,14 @@ msgstr "Стойност"
 msgid "Frame Time (ms)"
 msgstr "Продължителност на кадъра (мсек)"
 
+msgid "Time"
+msgstr "Време"
+
 msgid "Name"
 msgstr "Име"
 
-msgid "Time"
-msgstr "Време"
+msgid "Main Thread"
+msgstr "Главна нишка"
 
 msgid "Error:"
 msgstr "Грешка:"
@@ -1035,9 +1129,6 @@ msgstr "Профайлър"
 
 msgid "Export list to a CSV file"
 msgstr "Изнасяне на списъка като файл CSV"
-
-msgid "Type"
-msgstr "Тип"
 
 msgid "Misc"
 msgstr "Разни"
@@ -1137,12 +1228,6 @@ msgstr "Показване на зависимостите"
 msgid "Thanks from the Godot community!"
 msgstr "Благодарности от общността на Godot!"
 
-msgid "Project Founders"
-msgstr "Основатели на проекта"
-
-msgid "Lead Developer"
-msgstr "Главен разработчик"
-
 msgid "Authors"
 msgstr "Автори"
 
@@ -1172,6 +1257,9 @@ msgstr "Готово!"
 
 msgid "Install"
 msgstr "Инсталиране"
+
+msgid "Volume"
+msgstr "Обем"
 
 msgid "Bus Options"
 msgstr "Настройки на шината"
@@ -1214,12 +1302,6 @@ msgstr "Име на обекта:"
 
 msgid "Global Variable"
 msgstr "Глобална променлива"
-
-msgid "Navigation"
-msgstr "Навигация"
-
-msgid "Navigation, both 2D and 3D."
-msgstr "Навигация (2- и 3-измерна)."
 
 msgid ""
 "Text Server implementation powered by ICU and HarfBuzz libraries.\n"
@@ -1398,9 +1480,6 @@ msgstr "Наследява:"
 msgid "Inherited by:"
 msgstr "Наследява се от:"
 
-msgid "Description"
-msgstr "Описание"
-
 msgid "overrides %s:"
 msgstr "заменя %s:"
 
@@ -1470,9 +1549,6 @@ msgstr "Анотация"
 msgid "File"
 msgstr "Файл"
 
-msgid "%d matches."
-msgstr "%d съвпадения."
-
 msgid "Search Help"
 msgstr "Търсене в помощната информация"
 
@@ -1515,11 +1591,19 @@ msgstr "Преоразмеряване на масива…"
 msgid "Resize Array"
 msgstr "Преоразмеряване на масива"
 
-msgid "Favorites"
-msgstr "Любими"
+msgid "Size"
+msgstr "Размер"
 
 msgid "Copy Property Path"
 msgstr "Копиране на пътя на свойството"
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "Писменост:"
+
+msgctxt "Locale"
+msgid "Script"
+msgstr "Писменост"
 
 msgid "[Default]"
 msgstr "[По подразбиране]"
@@ -1539,19 +1623,11 @@ msgstr "Редактиране на филтрите"
 msgid "Language:"
 msgstr "Език:"
 
-msgctxt "Locale"
-msgid "Script:"
-msgstr "Писменост:"
-
-msgid "Country:"
-msgstr "Страна:"
-
 msgid "Language"
 msgstr "Език"
 
-msgctxt "Locale"
-msgid "Script"
-msgstr "Писменост"
+msgid "Country:"
+msgstr "Страна:"
 
 msgid "Country"
 msgstr "Страна"
@@ -1564,9 +1640,6 @@ msgstr "Филтриране на съобщенията"
 
 msgid "Clear Output"
 msgstr "Изчистване на изхода"
-
-msgid "Copy Selection"
-msgstr "Копиране на избраното"
 
 msgid "Toggle visibility of standard output messages."
 msgstr "Превключване на видимостта на стандартните съобщения."
@@ -1588,9 +1661,6 @@ msgstr "Запазване на сцената"
 
 msgid "Analyzing"
 msgstr "Анализиране"
-
-msgid "Save All Scenes"
-msgstr "Запазване на всички сцени"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "Прилагане на трансформациите на MeshInstance"
@@ -1630,17 +1700,6 @@ msgstr "Повторение в сцената: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Сцена, която никога не е била запазвана, не може да бъде презаредена."
-
-msgid "Reload Saved Scene"
-msgstr "Презареждане на запазената сцена"
-
-msgid ""
-"The current scene has unsaved changes.\n"
-"Reload the saved scene anyway? This action cannot be undone."
-msgstr ""
-"Има не запазени промени в текущата сцена.\n"
-"Да се презареди ли въпреки това запазеното ѝ състояние? Това действие е "
-"необратимо."
 
 msgid "Save & Reload"
 msgstr "Запазване и презареждане"
@@ -1727,6 +1786,9 @@ msgstr "Повторно отваряне на затворена сцена"
 msgid "Save Scene"
 msgstr "Запазване на сцената"
 
+msgid "Save All Scenes"
+msgstr "Запазване на всички сцени"
+
 msgid "Quick Open..."
 msgstr "Бързо отваряне..."
 
@@ -1742,6 +1804,9 @@ msgstr "Изнасяне като…"
 msgid "MeshLibrary..."
 msgstr "Библиотека с полигонни мрежи…"
 
+msgid "Reload Saved Scene"
+msgstr "Презареждане на запазената сцена"
+
 msgid "Close Scene"
 msgstr "Затваряне на сцената"
 
@@ -1756,6 +1821,9 @@ msgstr "Проект"
 
 msgid "Project Settings"
 msgstr "Настройки на проекта"
+
+msgid "Find in Files..."
+msgstr "Търсене във файловете…"
 
 msgid "Version Control"
 msgstr "Контрол на версиите"
@@ -1838,11 +1906,17 @@ msgstr "Внимание!"
 msgid "Edit Text:"
 msgstr "Редактиране на текста:"
 
+msgid "Locale"
+msgstr "Локал"
+
 msgid "New Value:"
 msgstr "Нова стойност:"
 
 msgid "Size:"
 msgstr "Размер:"
+
+msgid "Remove Translation"
+msgstr "Премахване на превода"
 
 msgid "Load..."
 msgstr "Зареждане..."
@@ -1877,17 +1951,26 @@ msgstr "Завършено с предупредителни съобщения.
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Файловете на проекта не могат да бъдат изнесени като проект на gradle."
 
-msgid "Failed to export project files."
-msgstr "Файловете на проекта не бяха изнесени успешно."
-
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Файлът не може да бъде отворен за запис към пътя „%s“."
+
+msgid "Failed to export project files."
+msgstr "Файловете на проекта не бяха изнесени успешно."
 
 msgid "Can't open encrypted file to write."
 msgstr "Не може да бъде отворен шифрован файл за запис."
 
-msgid "Can't open file to read from path \"%s\"."
-msgstr "Не може да бъде отворен файл за четене от пътя „%s“."
+msgid "Export template not found."
+msgstr "Шаблонът за изнасяне не е намерен."
+
+msgid "Select device from the list"
+msgstr "Изберете устройство от списъка"
+
+msgid "Run"
+msgstr "Пускане"
+
+msgid "Running on %s"
+msgstr "Изпълнение на %s"
 
 msgid "Template file not found: \"%s\"."
 msgstr "Шаблонният файл не е намерен: „%s“."
@@ -2352,6 +2435,9 @@ msgstr "Извличане на материалите"
 msgid "Materials"
 msgstr "Материали"
 
+msgid "Animation"
+msgstr "Анимация"
+
 msgid "Save Extension:"
 msgstr "Разширение:"
 
@@ -2378,9 +2464,6 @@ msgstr "Настройки за изчертаване"
 
 msgid "Configuration:"
 msgstr "Конфигурация:"
-
-msgid "Add configuration"
-msgstr "Добавяне на конфигурация"
 
 msgid "2D"
 msgstr "2D"
@@ -2445,9 +2528,6 @@ msgstr "Управление на свойствата на обекта."
 msgid "This cannot be undone. Are you sure?"
 msgstr "Това действие е необратимо. Наистина ли го искате?"
 
-msgid "Remove Translation"
-msgstr "Премахване на превода"
-
 msgid "Remove file from POT generation"
 msgstr "Премахване на файла от процеса за създаване на POT"
 
@@ -2465,9 +2545,6 @@ msgstr "Преводи:"
 
 msgid "Resources:"
 msgstr "Ресурси:"
-
-msgid "Locale"
-msgstr "Локал"
 
 msgid "POT Generation"
 msgstr "Създаване на POT"
@@ -2808,9 +2885,6 @@ msgstr ""
 msgid "Animation Tools"
 msgstr "Инструменти за анимациите"
 
-msgid "Animation"
-msgstr "Анимация"
-
 msgid "Manage Animations..."
 msgstr "Управление на анимациите…"
 
@@ -3130,6 +3204,14 @@ msgstr "Групирано"
 msgid "Scaling:"
 msgstr "Скалиране:"
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+Десен бутон: показване на списък с всички обекти на щракнатата позиция, "
+"включително заключените."
+
+msgid "RMB: Add node at position clicked."
+msgstr "Десен бутон: добавяне на обект на щракнатата позиция."
+
 msgid "Lock Selected"
 msgstr "Заключване на избраното"
 
@@ -3163,14 +3245,6 @@ msgstr "Мащабиране на 800%"
 msgid "Select Mode"
 msgstr "Режим на избиране"
 
-msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
-msgstr ""
-"Alt+Десен бутон: показване на списък с всички обекти на щракнатата позиция, "
-"включително заключените."
-
-msgid "RMB: Add node at position clicked."
-msgstr "Десен бутон: добавяне на обект на щракнатата позиция."
-
 msgid "Move Mode"
 msgstr "Режим на преместване"
 
@@ -3191,6 +3265,9 @@ msgstr "Превключване на умното прилепване."
 
 msgid "Toggle grid snapping."
 msgstr "Превключване на прилепването към решетката."
+
+msgid "Grid Snap"
+msgstr "Прилепване към решетката"
 
 msgid "Snap to Node Sides"
 msgstr "Прилепване към страните на обекта"
@@ -3375,9 +3452,6 @@ msgstr "Източник за полигонна мрежа:"
 
 msgid "Mesh Up Axis:"
 msgstr "Ос сочеща нагоре за полигонната мрежа:"
-
-msgid "Please Confirm..."
-msgstr "Моля, потвърдете..."
 
 msgid "Objects: %d\n"
 msgstr "Обекти: %d\n"
@@ -3662,14 +3736,14 @@ msgstr "Точки на повърхността"
 msgid "Surface Points+Normal (Directed)"
 msgstr "Точки на повърхността + нормали (насочени)"
 
-msgid "Volume"
-msgstr "Обем"
-
 msgid "Emission Source:"
 msgstr "Източник на излъчването:"
 
 msgid "Delete Point"
 msgstr "Изтриване на точка"
+
+msgid "Please Confirm..."
+msgstr "Моля, потвърдете..."
 
 msgid "Move Joint"
 msgstr "Преместване на ставата"
@@ -3832,12 +3906,6 @@ msgstr "Затваряне на всичко"
 msgid "Close Docs"
 msgstr "Затваряне на документацията"
 
-msgid "Run"
-msgstr "Пускане"
-
-msgid "Search"
-msgstr "Търсене"
-
 msgid "Go to previous edited document."
 msgstr "Към предходния променен документ."
 
@@ -3892,9 +3960,6 @@ msgstr "Изчисляване на избраното"
 msgid "Trim Trailing Whitespace"
 msgstr "Премахване на празните места в края на редовете"
 
-msgid "Find in Files..."
-msgstr "Търсене във файловете…"
-
 msgid "Replace in Files..."
 msgstr "Замяна във файловете…"
 
@@ -3924,6 +3989,12 @@ msgstr "Към следващата точка на прекъсване"
 
 msgid "Go to Previous Breakpoint"
 msgstr "Към предходната точка на прекъсване"
+
+msgid "Shader Editor"
+msgstr "Редактор на шейдъри"
+
+msgid "Toggle Shader Editor Bottom Panel"
+msgstr "Активиране или деактивиране на долния панел на редактора на шейдъри"
 
 msgid "Create Rest Pose from Bones"
 msgstr "Създаване на поза на покоя от костите"
@@ -4040,9 +4111,6 @@ msgstr "Връщане на оригиналния мащаб"
 msgid "Select Frames"
 msgstr "Избиране на кадри"
 
-msgid "Size"
-msgstr "Размер"
-
 msgid "Auto Slice"
 msgstr "Автоматично отрязване"
 
@@ -4060,9 +4128,6 @@ msgstr "Режим на прилепване:"
 
 msgid "Pixel Snap"
 msgstr "Прилепване към пикселите"
-
-msgid "Grid Snap"
-msgstr "Прилепване към решетката"
 
 msgid "Step:"
 msgstr "Стъпка:"
@@ -4321,6 +4386,9 @@ msgstr "Разпръскване:"
 msgid "To Source"
 msgstr "Към източник"
 
+msgid "Navigation"
+msgstr "Навигация"
+
 msgid "Select tiles."
 msgstr "Избиране на плочки."
 
@@ -4425,6 +4493,9 @@ msgstr "Премахване на клона"
 
 msgid "Branch Name"
 msgstr "Име на клона"
+
+msgid "Remote"
+msgstr "Отдалечен"
 
 msgid "Remotes"
 msgstr "Отдалечени хранилища"
@@ -4564,6 +4635,9 @@ msgstr "Сканиране за проекти"
 msgid "Loading, please wait..."
 msgstr "Зареждане. Моля, изчакайте…"
 
+msgid "Last Edited"
+msgstr "Последна промяна"
+
 msgid "Create New Project"
 msgstr "Създаване на нов проект"
 
@@ -4610,6 +4684,12 @@ msgstr "Път до проекта:"
 
 msgid "Project Installation Path:"
 msgstr "Път на инсталация на проекта:"
+
+msgid "This project was last edited in a different Godot version: "
+msgstr "Проектът е последно модифициран в друга версия на Godot: "
+
+msgid "Last edited timestamp"
+msgstr "Времева маркировка на последното редактиране"
 
 msgid "Missing Project"
 msgstr "Проектът липсва"
@@ -4775,9 +4855,6 @@ msgstr "Изтриване (без потвърждение)"
 msgid "Add/Create a New Node."
 msgstr "Добавяне/създаване на нов обект."
 
-msgid "Remote"
-msgstr "Отдалечен"
-
 msgid "Filename is invalid."
 msgstr "Името на файла е неправилно."
 
@@ -4828,6 +4905,11 @@ msgstr "Неправилен базов път."
 
 msgid "Wrong extension chosen."
 msgstr "Избрано е грешно разширение."
+
+msgid "Note: Built-in shaders can't be edited using an external editor."
+msgstr ""
+"Забележка: Вградените шейдъри не могат да бъдат редактирани с помощта на "
+"външен редактор."
 
 msgid "Previous Floor"
 msgstr "Предходен под"
@@ -4881,12 +4963,6 @@ msgstr "Неправилен публичен ключ за разширение
 msgid "Invalid package name:"
 msgstr "Неправилно име на пакет:"
 
-msgid "Select device from the list"
-msgstr "Изберете устройство от списъка"
-
-msgid "Running on %s"
-msgstr "Изпълнение на %s"
-
 msgid "Exporting APK..."
 msgstr "Изнасяне на APK..."
 
@@ -4929,9 +5005,6 @@ msgstr "Липсва папката „build-tools“!"
 
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Не е намерена командата „apksigner “ от Android SDK – build-tools."
-
-msgid "Could not find keystore, unable to export."
-msgstr "Не е намерено хранилище за ключове. Изнасянето е невъзможно."
 
 msgid "'apksigner' returned with error #%d"
 msgstr "„apksigner“ завърши с грешка #%d"
@@ -4977,9 +5050,6 @@ msgstr "Добавяне на файлове..."
 
 msgid "Could not export project files."
 msgstr "Файловете на проекта не могат да бъдат изнесени."
-
-msgid "Export template not found."
-msgstr "Шаблонът за изнасяне не е намерен."
 
 msgid "Could not open file \"%s\"."
 msgstr "Файлът „%s“ не може да бъде отворен."
@@ -5146,3 +5216,12 @@ msgstr ""
 
 msgid "Constants cannot be modified."
 msgstr "Константите не могат да бъдат променени."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Превишено е ограничението за разширяване на макроси."
+
+msgid "Invalid macro argument list."
+msgstr "Невалиден списък с аргументи на макроса."
+
+msgid "Invalid macro argument."
+msgstr "Невалиден аргумент на макроса."

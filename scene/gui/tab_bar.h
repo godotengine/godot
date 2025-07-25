@@ -201,6 +201,7 @@ public:
 	Variant _handle_get_drag_data(const String &p_type, const Point2 &p_point);
 	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
 	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
+	void _draw_tab_drop(RID p_canvas_item);
 
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
@@ -260,6 +261,9 @@ public:
 	int get_current_tab() const;
 	int get_previous_tab() const;
 	int get_hovered_tab() const;
+
+	int get_previous_available(int p_idx = -1) const;
+	int get_next_available(int p_idx = -1) const;
 
 	bool select_previous_available();
 	bool select_next_available();

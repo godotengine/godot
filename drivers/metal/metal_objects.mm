@@ -53,6 +53,7 @@
 #import "metal_utils.h"
 #import "pixel_formats.h"
 #import "rendering_device_driver_metal.h"
+#import "rendering_shader_container_metal.h"
 
 #import <os/signpost.h>
 
@@ -61,8 +62,8 @@
 #undef MAX
 
 void MDCommandBuffer::begin() {
-	DEV_ASSERT(commandBuffer == nil);
-	commandBuffer = queue.commandBuffer;
+	DEV_ASSERT(commandBuffer == nil && !state_begin);
+	state_begin = true;
 }
 
 void MDCommandBuffer::end() {
@@ -82,6 +83,7 @@ void MDCommandBuffer::commit() {
 	end();
 	[commandBuffer commit];
 	commandBuffer = nil;
+	state_begin = false;
 }
 
 void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
@@ -135,7 +137,7 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 				render.desc.colorAttachments[0].resolveTexture = res_tex;
 			}
 #endif
-			render.encoder = [commandBuffer renderCommandEncoderWithDescriptor:render.desc];
+			render.encoder = [command_buffer() renderCommandEncoderWithDescriptor:render.desc];
 		}
 
 		if (render.pipeline != rp) {
@@ -159,9 +161,44 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 		DEV_ASSERT(type == MDCommandBufferStateType::None);
 		type = MDCommandBufferStateType::Compute;
 
-		compute.pipeline = (MDComputePipeline *)p;
-		compute.encoder = commandBuffer.computeCommandEncoder;
-		[compute.encoder setComputePipelineState:compute.pipeline->state];
+		if (compute.pipeline != p) {
+			compute.dirty.set_flag(ComputeState::DIRTY_PIPELINE);
+			compute.mark_uniforms_dirty();
+			compute.pipeline = (MDComputePipeline *)p;
+		}
+	}
+}
+
+void MDCommandBuffer::encode_push_constant_data(RDD::ShaderID p_shader, VectorView<uint32_t> p_data) {
+	switch (type) {
+		case MDCommandBufferStateType::Render: {
+			MDRenderShader *shader = (MDRenderShader *)(p_shader.id);
+			if (shader->push_constants.vert.binding == -1 && shader->push_constants.frag.binding == -1) {
+				return;
+			}
+			render.push_constant_bindings[0] = shader->push_constants.vert.binding;
+			render.push_constant_bindings[1] = shader->push_constants.frag.binding;
+			void const *ptr = p_data.ptr();
+			render.push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			DEV_ASSERT(render.push_constant_data_len <= sizeof(RenderState::push_constant_data));
+			memcpy(render.push_constant_data, ptr, render.push_constant_data_len);
+			render.mark_push_constants_dirty();
+		} break;
+		case MDCommandBufferStateType::Compute: {
+			MDComputeShader *shader = (MDComputeShader *)(p_shader.id);
+			if (shader->push_constants.binding == -1) {
+				return;
+			}
+			compute.push_constant_bindings[0] = shader->push_constants.binding;
+			void const *ptr = p_data.ptr();
+			compute.push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			DEV_ASSERT(compute.push_constant_data_len <= sizeof(ComputeState::push_constant_data));
+			memcpy(compute.push_constant_data, ptr, compute.push_constant_data_len);
+			compute.mark_push_constants_dirty();
+		} break;
+		case MDCommandBufferStateType::Blit:
+		case MDCommandBufferStateType::None:
+			return;
 	}
 }
 
@@ -180,7 +217,7 @@ id<MTLBlitCommandEncoder> MDCommandBuffer::blit_command_encoder() {
 	}
 
 	type = MDCommandBufferStateType::Blit;
-	blit.encoder = commandBuffer.blitCommandEncoder;
+	blit.encoder = command_buffer().blitCommandEncoder;
 	return blit.encoder;
 }
 
@@ -199,7 +236,7 @@ void MDCommandBuffer::encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDesc
 			break;
 	}
 
-	id<MTLRenderCommandEncoder> enc = [commandBuffer renderCommandEncoderWithDescriptor:p_desc];
+	id<MTLRenderCommandEncoder> enc = [command_buffer() renderCommandEncoderWithDescriptor:p_desc];
 	if (p_label != nil) {
 		[enc pushDebugGroup:p_label];
 		[enc popDebugGroup];
@@ -342,6 +379,19 @@ void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> 
 
 void MDCommandBuffer::_render_set_dirty_state() {
 	_render_bind_uniform_sets();
+
+	if (render.dirty.has_flag(RenderState::DIRTY_PUSH)) {
+		if (render.push_constant_bindings[0] != (uint32_t)-1) {
+			[render.encoder setVertexBytes:render.push_constant_data
+									length:render.push_constant_data_len
+								   atIndex:render.push_constant_bindings[0]];
+		}
+		if (render.push_constant_bindings[1] != (uint32_t)-1) {
+			[render.encoder setFragmentBytes:render.push_constant_data
+									  length:render.push_constant_data_len
+									 atIndex:render.push_constant_bindings[1]];
+		}
+	}
 
 	MDSubpass const &subpass = render.get_subpass();
 	if (subpass.view_count > 1) {
@@ -551,7 +601,7 @@ uint32_t MDCommandBuffer::_populate_vertices(simd::float4 *p_vertices, uint32_t 
 }
 
 void MDCommandBuffer::render_begin_pass(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_frameBuffer, RDD::CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RDD::RenderPassClearValue> p_clear_values) {
-	DEV_ASSERT(commandBuffer != nil);
+	DEV_ASSERT(command_buffer() != nil);
 	end();
 
 	MDRenderPass *pass = (MDRenderPass *)(p_render_pass.id);
@@ -597,41 +647,48 @@ void MDCommandBuffer::_render_clear_render_area() {
 	MDRenderPass const &pass = *render.pass;
 	MDSubpass const &subpass = render.get_subpass();
 
-	// First determine attachments that should be cleared.
-	LocalVector<RDD::AttachmentClear> clears;
-	clears.reserve(subpass.color_references.size() + /* possible depth stencil clear */ 1);
-
-	for (uint32_t i = 0; i < subpass.color_references.size(); i++) {
-		uint32_t idx = subpass.color_references[i].attachment;
-		if (idx != RDD::AttachmentReference::UNUSED && pass.attachments[idx].shouldClear(subpass, false)) {
-			clears.push_back({ .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] });
-		}
-	}
 	uint32_t ds_index = subpass.depth_stencil_reference.attachment;
-	bool shouldClearDepth = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, false));
-	bool shouldClearStencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
-	if (shouldClearDepth || shouldClearStencil) {
-		MDAttachment const &attachment = pass.attachments[ds_index];
-		BitField<RDD::TextureAspectBits> bits = {};
-		if (shouldClearDepth && attachment.type & MDAttachmentType::Depth) {
-			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
-		}
-		if (shouldClearStencil && attachment.type & MDAttachmentType::Stencil) {
-			bits.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
-		}
+	bool clear_depth = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, false));
+	bool clear_stencil = (ds_index != RDD::AttachmentReference::UNUSED && pass.attachments[ds_index].shouldClear(subpass, true));
 
-		clears.push_back({ .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] });
-	}
-
-	if (clears.is_empty()) {
+	uint32_t color_count = subpass.color_references.size();
+	uint32_t clears_size = color_count + (clear_depth || clear_stencil ? 1 : 0);
+	if (clears_size == 0) {
 		return;
 	}
 
-	render_clear_attachments(clears, { render.render_area });
+	RDD::AttachmentClear *clears = ALLOCA_ARRAY(RDD::AttachmentClear, clears_size);
+	uint32_t clears_count = 0;
+
+	for (uint32_t i = 0; i < color_count; i++) {
+		uint32_t idx = subpass.color_references[i].attachment;
+		if (idx != RDD::AttachmentReference::UNUSED && pass.attachments[idx].shouldClear(subpass, false)) {
+			clears[clears_count++] = { .aspect = RDD::TEXTURE_ASPECT_COLOR_BIT, .color_attachment = idx, .value = render.clear_values[idx] };
+		}
+	}
+
+	if (clear_depth || clear_stencil) {
+		MDAttachment const &attachment = pass.attachments[ds_index];
+		BitField<RDD::TextureAspectBits> bits = {};
+		if (clear_depth && attachment.type & MDAttachmentType::Depth) {
+			bits.set_flag(RDD::TEXTURE_ASPECT_DEPTH_BIT);
+		}
+		if (clear_stencil && attachment.type & MDAttachmentType::Stencil) {
+			bits.set_flag(RDD::TEXTURE_ASPECT_STENCIL_BIT);
+		}
+
+		clears[clears_count++] = { .aspect = bits, .color_attachment = ds_index, .value = render.clear_values[ds_index] };
+	}
+
+	if (clears_count == 0) {
+		return;
+	}
+
+	render_clear_attachments(VectorView(clears, clears_count), { render.render_area });
 }
 
 void MDCommandBuffer::render_next_subpass() {
-	DEV_ASSERT(commandBuffer != nil);
+	DEV_ASSERT(command_buffer() != nil);
 
 	if (render.current_subpass == UINT32_MAX) {
 		render.current_subpass = 0;
@@ -718,7 +775,7 @@ void MDCommandBuffer::render_next_subpass() {
 		// the defaultRasterSampleCount from the pipeline's sample count.
 		render.desc = desc;
 	} else {
-		render.encoder = [commandBuffer renderCommandEncoderWithDescriptor:desc];
+		render.encoder = [command_buffer() renderCommandEncoderWithDescriptor:desc];
 
 		if (!render.is_rendering_entire_area) {
 			_render_clear_render_area();
@@ -887,6 +944,7 @@ void MDCommandBuffer::RenderState::reset() {
 	dirty = DIRTY_NONE;
 	uniform_sets.clear();
 	uniform_set_mask = 0;
+	push_constant_data_len = 0;
 	clear_values.clear();
 	viewports.clear();
 	scissors.clear();
@@ -952,28 +1010,107 @@ void MDCommandBuffer::ComputeState::end_encoding() {
 
 #pragma mark - Compute
 
+void MDCommandBuffer::_compute_set_dirty_state() {
+	if (compute.dirty.has_flag(ComputeState::DIRTY_PIPELINE)) {
+		compute.encoder = [command_buffer() computeCommandEncoderWithDispatchType:MTLDispatchTypeConcurrent];
+		[compute.encoder setComputePipelineState:compute.pipeline->state];
+	}
+
+	_compute_bind_uniform_sets();
+
+	if (compute.dirty.has_flag(ComputeState::DIRTY_PUSH)) {
+		if (compute.push_constant_bindings[0] != (uint32_t)-1) {
+			[compute.encoder setBytes:compute.push_constant_data
+							   length:compute.push_constant_data_len
+							  atIndex:compute.push_constant_bindings[0]];
+		}
+	}
+
+	compute.dirty.clear();
+}
+
+void MDCommandBuffer::_compute_bind_uniform_sets() {
+	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
+	if (!compute.dirty.has_flag(ComputeState::DIRTY_UNIFORMS)) {
+		return;
+	}
+
+	compute.dirty.clear_flag(ComputeState::DIRTY_UNIFORMS);
+	uint64_t set_uniforms = compute.uniform_set_mask;
+	compute.uniform_set_mask = 0;
+
+	MDComputeShader *shader = compute.pipeline->shader;
+
+	while (set_uniforms != 0) {
+		// Find the index of the next set bit.
+		uint32_t index = (uint32_t)__builtin_ctzll(set_uniforms);
+		// Clear the set bit.
+		set_uniforms &= (set_uniforms - 1);
+		MDUniformSet *set = compute.uniform_sets[index];
+		if (set == nullptr || index >= (uint32_t)shader->sets.size()) {
+			continue;
+		}
+		set->bind_uniforms(shader, compute, index);
+	}
+}
+
+void MDCommandBuffer::ComputeState::reset() {
+	pipeline = nil;
+	encoder = nil;
+	dirty = DIRTY_NONE;
+	uniform_sets.clear();
+	uniform_set_mask = 0;
+	push_constant_data_len = 0;
+	// Keep the keys, as they are likely to be used again.
+	for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
+		kv.value.clear();
+	}
+}
+
 void MDCommandBuffer::compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-	MDShader *shader = (MDShader *)(p_shader.id);
 	MDUniformSet *set = (MDUniformSet *)(p_uniform_set.id);
-	set->bind_uniforms(shader, compute, p_set_index);
+	if (compute.uniform_sets.size() <= p_set_index) {
+		uint32_t s = render.uniform_sets.size();
+		compute.uniform_sets.resize(p_set_index + 1);
+		// Set intermediate values to null.
+		std::fill(&compute.uniform_sets[s], &compute.uniform_sets[p_set_index] + 1, nullptr);
+	}
+
+	if (compute.uniform_sets[p_set_index] != set) {
+		compute.dirty.set_flag(ComputeState::DIRTY_UNIFORMS);
+		compute.uniform_set_mask |= 1ULL << p_set_index;
+		compute.uniform_sets[p_set_index] = set;
+	}
 }
 
 void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-	MDShader *shader = (MDShader *)(p_shader.id);
-
-	// TODO(sgc): Bind multiple buffers using [encoder setBuffers:offsets:withRange:]
-	for (size_t i = 0u; i < p_set_count; ++i) {
+	for (size_t i = 0; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);
-		set->bind_uniforms(shader, compute, p_first_set_index + i);
+
+		uint32_t index = p_first_set_index + i;
+		if (compute.uniform_sets.size() <= index) {
+			uint32_t s = compute.uniform_sets.size();
+			compute.uniform_sets.resize(index + 1);
+			// Set intermediate values to null.
+			std::fill(&compute.uniform_sets[s], &compute.uniform_sets[index] + 1, nullptr);
+		}
+
+		if (compute.uniform_sets[index] != set) {
+			compute.dirty.set_flag(ComputeState::DIRTY_UNIFORMS);
+			compute.uniform_set_mask |= 1ULL << index;
+			compute.uniform_sets[index] = set;
+		}
 	}
 }
 
 void MDCommandBuffer::compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
+
+	_compute_set_dirty_state();
 
 	MTLRegion region = MTLRegionMake3D(0, 0, 0, p_x_groups, p_y_groups, p_z_groups);
 
@@ -983,6 +1120,8 @@ void MDCommandBuffer::compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups,
 
 void MDCommandBuffer::compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
+
+	_compute_set_dirty_state();
 
 	id<MTLBuffer> indirectBuffer = rid::get(p_indirect_buffer);
 
@@ -1013,20 +1152,6 @@ MDComputeShader::MDComputeShader(CharString p_name,
 		MDShader(p_name, p_sets, p_uses_argument_buffers), kernel(p_kernel) {
 }
 
-void MDComputeShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) {
-	DEV_ASSERT(p_cb->type == MDCommandBufferStateType::Compute);
-	if (push_constants.binding == (uint32_t)-1) {
-		return;
-	}
-
-	id<MTLComputeCommandEncoder> enc = p_cb->compute.encoder;
-
-	void const *ptr = p_data.ptr();
-	size_t length = p_data.size() * sizeof(uint32_t);
-
-	[enc setBytes:ptr length:length atIndex:push_constants.binding];
-}
-
 MDRenderShader::MDRenderShader(CharString p_name,
 		Vector<UniformSet> p_sets,
 		bool p_needs_view_mask_buffer,
@@ -1036,22 +1161,6 @@ MDRenderShader::MDRenderShader(CharString p_name,
 		needs_view_mask_buffer(p_needs_view_mask_buffer),
 		vert(p_vert),
 		frag(p_frag) {
-}
-
-void MDRenderShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) {
-	DEV_ASSERT(p_cb->type == MDCommandBufferStateType::Render);
-	id<MTLRenderCommandEncoder> __unsafe_unretained enc = p_cb->render.encoder;
-
-	void const *ptr = p_data.ptr();
-	size_t length = p_data.size() * sizeof(uint32_t);
-
-	if (push_constants.vert.binding > -1) {
-		[enc setVertexBytes:ptr length:length atIndex:push_constants.vert.binding];
-	}
-
-	if (push_constants.frag.binding > -1) {
-		[enc setFragmentBytes:ptr length:length atIndex:push_constants.frag.binding];
-	}
 }
 
 void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index) {
@@ -1448,9 +1557,9 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 
 			for (uint32_t i = 0; i < uniforms.size(); i++) {
 				RDD::BoundUniform const &uniform = uniforms[i];
-				UniformInfo ui = set.uniforms[i];
+				const UniformInfo &ui = set.uniforms[i];
 
-				BindingInfo *bi = ui.bindings.getptr(stage);
+				const BindingInfo *bi = ui.bindings.getptr(stage);
 				if (bi == nullptr) {
 					// No binding for this stage.
 					continue;
@@ -1481,7 +1590,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 							textures[j] = texture;
 							add_usage(texture, stage, bi->usage);
 						}
-						BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
+						const BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
 						if (sbi) {
 							[enc setSamplerStates:samplers withRange:NSMakeRange(sbi->index, count)];
 						}
@@ -1510,7 +1619,7 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 							id<MTLTexture> obj = rid::get(uniform.ids[0]);
 							[enc setTexture:obj atIndex:bi->index];
 							add_usage(obj, stage, bi->usage);
-							BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
+							const BindingInfo *sbi = ui.bindings_secondary.getptr(stage);
 							if (sbi) {
 								id<MTLTexture> tex = obj.parentTexture ? obj.parentTexture : obj;
 								id<MTLBuffer> buf = tex.buffer;
@@ -1571,14 +1680,13 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 		}
 	}
 
-	SearchArray<__unsafe_unretained id<MTLResource>> search;
 	ResourceUsageMap usage_to_resources;
 	for (KeyValue<id<MTLResource>, StageResourceUsage> const &keyval : bound_resources) {
 		ResourceVector *resources = usage_to_resources.getptr(keyval.value);
 		if (resources == nullptr) {
 			resources = &usage_to_resources.insert(keyval.value, ResourceVector())->value;
 		}
-		int64_t pos = search.bisect(resources->ptr(), resources->size(), keyval.key, true);
+		int64_t pos = resources->span().bisect(keyval.key, true);
 		if (pos == resources->size() || (*resources)[pos] != keyval.key) {
 			resources->insert(pos, keyval.key);
 		}
@@ -1935,7 +2043,11 @@ void ShaderCacheEntry::notify_free() const {
 }
 
 @interface MDLibrary ()
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry;
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+#ifdef DEV_ENABLED
+							source:(NSString *)source;
+#endif
+;
 @end
 
 /// Loads the MTLLibrary when the library is first accessed.
@@ -1969,6 +2081,18 @@ void ShaderCacheEntry::notify_free() const {
 						   options:(MTLCompileOptions *)options;
 @end
 
+@interface MDBinaryLibrary : MDLibrary {
+	id<MTLLibrary> _library;
+	NSError *_error;
+}
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+							device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+							source:(NSString *)source
+#endif
+							  data:(dispatch_data_t)data;
+@end
+
 @implementation MDLibrary
 
 + (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
@@ -1977,7 +2101,7 @@ void ShaderCacheEntry::notify_free() const {
 								 options:(MTLCompileOptions *)options
 								strategy:(ShaderLoadStrategy)strategy {
 	switch (strategy) {
-		case ShaderLoadStrategy::DEFAULT:
+		case ShaderLoadStrategy::IMMEDIATE:
 			[[fallthrough]];
 		default:
 			return [[MDImmediateLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
@@ -1985,6 +2109,26 @@ void ShaderCacheEntry::notify_free() const {
 			return [[MDLazyLibrary alloc] initWithCacheEntry:entry device:device source:source options:options];
 	}
 }
+
++ (instancetype)newLibraryWithCacheEntry:(ShaderCacheEntry *)entry
+								  device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+								  source:(NSString *)source
+#endif
+									data:(dispatch_data_t)data {
+	return [[MDBinaryLibrary alloc] initWithCacheEntry:entry
+												device:device
+#ifdef DEV_ENABLED
+												source:source
+#endif
+												  data:data];
+}
+
+#ifdef DEV_ENABLED
+- (NSString *)originalSource {
+	return _original_source;
+}
+#endif
 
 - (id<MTLLibrary>)library {
 	CRASH_NOW_MSG("Not implemented");
@@ -1999,10 +2143,17 @@ void ShaderCacheEntry::notify_free() const {
 - (void)setLabel:(NSString *)label {
 }
 
-- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry {
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+#ifdef DEV_ENABLED
+							source:(NSString *)source
+#endif
+{
 	self = [super init];
 	_entry = entry;
 	_entry->library = self;
+#ifdef DEV_ENABLED
+	_original_source = source;
+#endif
 	return self;
 }
 
@@ -2018,7 +2169,11 @@ void ShaderCacheEntry::notify_free() const {
 							device:(id<MTLDevice>)device
 							source:(NSString *)source
 						   options:(MTLCompileOptions *)options {
-	self = [super initWithCacheEntry:entry];
+	self = [super initWithCacheEntry:entry
+#ifdef DEV_ENABLED
+							  source:source
+#endif
+	];
 	_complete = false;
 	_ready = false;
 
@@ -2070,7 +2225,11 @@ void ShaderCacheEntry::notify_free() const {
 							device:(id<MTLDevice>)device
 							source:(NSString *)source
 						   options:(MTLCompileOptions *)options {
-	self = [super initWithCacheEntry:entry];
+	self = [super initWithCacheEntry:entry
+#ifdef DEV_ENABLED
+							  source:source
+#endif
+	];
 	_device = device;
 	_source = source;
 	_options = options;
@@ -2111,6 +2270,39 @@ void ShaderCacheEntry::notify_free() const {
 
 - (NSError *)error {
 	[self load];
+	return _error;
+}
+
+@end
+
+@implementation MDBinaryLibrary
+
+- (instancetype)initWithCacheEntry:(ShaderCacheEntry *)entry
+							device:(id<MTLDevice>)device
+#ifdef DEV_ENABLED
+							source:(NSString *)source
+#endif
+							  data:(dispatch_data_t)data {
+	self = [super initWithCacheEntry:entry
+#ifdef DEV_ENABLED
+							  source:source
+#endif
+	];
+	NSError *error = nil;
+	_library = [device newLibraryWithData:data error:&error];
+	if (error != nil) {
+		_error = error;
+		NSString *desc = [error description];
+		ERR_PRINT(vformat("Unable to load shader library: %s", desc.UTF8String));
+	}
+	return self;
+}
+
+- (id<MTLLibrary>)library {
+	return _library;
+}
+
+- (NSError *)error {
 	return _error;
 }
 

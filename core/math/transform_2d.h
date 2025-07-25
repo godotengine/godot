@@ -130,7 +130,7 @@ struct [[nodiscard]] Transform2D {
 	_FORCE_INLINE_ Vector<Vector2> xform(const Vector<Vector2> &p_array) const;
 	_FORCE_INLINE_ Vector<Vector2> xform_inv(const Vector<Vector2> &p_array) const;
 
-	operator String() const;
+	explicit operator String() const;
 
 	constexpr Transform2D(real_t p_xx, real_t p_xy, real_t p_yx, real_t p_yy, real_t p_ox, real_t p_oy) :
 			columns{

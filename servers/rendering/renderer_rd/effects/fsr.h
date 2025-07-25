@@ -38,17 +38,20 @@
 namespace RendererRD {
 
 class FSR : public SpatialUpscaler {
-	String name = "FSR 1.0 Upscale";
-
 public:
 	FSR();
 	~FSR();
 
-	virtual String get_label() const final { return name; }
+	virtual const Span<char> get_label() const final { return "FSR 1.0 Upscale"; }
 	virtual void ensure_context(Ref<RenderSceneBuffersRD> p_render_buffers) final {}
 	virtual void process(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_source_rd_texture, RID p_destination_texture) final;
 
 private:
+	enum FSRShaderVariant {
+		FSR_SHADER_VARIANT_NORMAL,
+		FSR_SHADER_VARIANT_FALLBACK,
+	};
+
 	enum FSRUpscalePass {
 		FSR_UPSCALE_PASS_EASU = 0,
 		FSR_UPSCALE_PASS_RCAS = 1

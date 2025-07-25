@@ -147,7 +147,7 @@ RID MaterialStorage::shader_allocate() {
 	return shader_owner.allocate_rid();
 }
 
-void MaterialStorage::shader_initialize(RID p_rid) {
+void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	shader_owner.initialize_rid(p_rid, DummyShader());
 }
 

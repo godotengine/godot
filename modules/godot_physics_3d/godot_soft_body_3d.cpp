@@ -136,6 +136,10 @@ void GodotSoftBody3D::set_mesh(RID p_mesh) {
 		return;
 	}
 
+	// TODO: calling RenderingServer::mesh_surface_get_arrays() from the physics thread
+	// is not safe and can deadlock when physics/3d/run_on_separate_thread is enabled.
+	// This method blocks on the main thread to return data, but the main thread may be
+	// blocked waiting on us in PhysicsServer3D::sync().
 	Array arrays = RenderingServer::get_singleton()->mesh_surface_get_arrays(soft_mesh, 0);
 	ERR_FAIL_COND(arrays.is_empty());
 
@@ -272,8 +276,10 @@ void GodotSoftBody3D::update_area() {
 }
 
 void GodotSoftBody3D::reset_link_rest_lengths() {
+	float multiplier = 1.0 - shrinking_factor;
 	for (Link &link : links) {
 		link.rl = (link.n[0]->x - link.n[1]->x).length();
+		link.rl *= multiplier;
 		link.c1 = link.rl * link.rl;
 	}
 }
@@ -444,6 +450,30 @@ void GodotSoftBody3D::apply_node_impulse(uint32_t p_node_index, const Vector3 &p
 	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
 	Node &node = nodes[p_node_index];
 	node.v += p_impulse * node.im;
+}
+
+void GodotSoftBody3D::apply_node_force(uint32_t p_node_index, const Vector3 &p_force) {
+	ERR_FAIL_UNSIGNED_INDEX(p_node_index, nodes.size());
+	Node &node = nodes[p_node_index];
+	node.f += p_force;
+}
+
+void GodotSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
+	const Vector3 impulse = p_impulse / nodes.size();
+	for (Node &node : nodes) {
+		if (node.im > 0) {
+			node.v += impulse * node.im;
+		}
+	}
+}
+
+void GodotSoftBody3D::apply_central_force(const Vector3 &p_force) {
+	const Vector3 force = p_force / nodes.size();
+	for (Node &node : nodes) {
+		if (node.im > 0) {
+			node.f += force;
+		}
+	}
 }
 
 void GodotSoftBody3D::apply_node_bias_impulse(uint32_t p_node_index, const Vector3 &p_impulse) {
@@ -837,6 +867,7 @@ void GodotSoftBody3D::append_link(uint32_t p_node1, uint32_t p_node2) {
 	link.n[0] = node1;
 	link.n[1] = node2;
 	link.rl = (node1->x - node2->x).length();
+	link.rl *= 1.0 - shrinking_factor;
 
 	links.push_back(link);
 }
@@ -892,6 +923,10 @@ void GodotSoftBody3D::set_collision_margin(real_t p_val) {
 
 void GodotSoftBody3D::set_linear_stiffness(real_t p_val) {
 	linear_stiffness = p_val;
+}
+
+void GodotSoftBody3D::set_shrinking_factor(real_t p_val) {
+	shrinking_factor = p_val;
 }
 
 void GodotSoftBody3D::set_pressure_coefficient(real_t p_val) {

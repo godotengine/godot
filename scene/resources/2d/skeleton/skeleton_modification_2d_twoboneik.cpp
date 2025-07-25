@@ -32,7 +32,7 @@
 #include "scene/2d/skeleton_2d.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif // TOOLS_ENABLED
 
 bool SkeletonModification2DTwoBoneIK::_set(const StringName &p_path, const Variant &p_value) {

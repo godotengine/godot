@@ -104,15 +104,16 @@ struct SVG
       if (blob == hb_blob_get_empty ())
         return false;
 
-      funcs->image (data,
-		    blob,
-		    0, 0,
-		    HB_PAINT_IMAGE_FORMAT_SVG,
-		    font->slant_xy,
-		    nullptr);
+      bool ret = funcs->image (data,
+			       blob,
+			       0, 0,
+			       HB_PAINT_IMAGE_FORMAT_SVG,
+			       0.f,
+			       nullptr);
 
       hb_blob_destroy (blob);
-      return true;
+
+      return ret;
     }
 
     private:

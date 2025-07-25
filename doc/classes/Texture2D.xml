@@ -48,13 +48,13 @@
 				[b]Note:[/b] This is only used in 2D rendering, not 3D.
 			</description>
 		</method>
-		<method name="_get_height" qualifiers="virtual const">
+		<method name="_get_height" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture2D]'s height is queried.
 			</description>
 		</method>
-		<method name="_get_width" qualifiers="virtual const">
+		<method name="_get_width" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [Texture2D]'s width is queried.

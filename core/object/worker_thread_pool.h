@@ -274,6 +274,7 @@ public:
 	static WorkerThreadPool *get_singleton() { return singleton; }
 	int get_thread_index() const;
 	TaskID get_caller_task_id() const;
+	GroupID get_caller_group_id() const;
 
 #ifdef THREADS_ENABLED
 	_ALWAYS_INLINE_ static uint32_t thread_enter_unlock_allowance_zone(const MutexLock<BinaryMutex> &p_lock) { return _thread_enter_unlock_allowance_zone(p_lock._get_lock()); }

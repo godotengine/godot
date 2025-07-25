@@ -89,6 +89,7 @@ local.properties
 *.iml
 .gradletasknamecache
 project.properties
+platform/android/java/build/
 platform/android/java/*/.cxx/
 platform/android/java/*/build/
 platform/android/java/*/libs/
@@ -217,6 +218,9 @@ xcuserdata/
 *.xccheckout
 *.xcodeproj/*
 !misc/misc/dist/ios_xcode/godot_ios.xcodeproj/project.pbxproj
+
+# Zed
+.zed/
 
 ##############################
 ### Visual Studio specific ###

@@ -14,18 +14,18 @@
 		extends EditorTranslationParserPlugin
 
 		func _parse_file(path):
-		    var ret: Array[PackedStringArray] = []
-		    var file = FileAccess.open(path, FileAccess.READ)
-		    var text = file.get_as_text()
-		    var split_strs = text.split(",", false)
-		    for s in split_strs:
-		        ret.append(PackedStringArray([s]))
-		        #print("Extracted string: " + s)
+			var ret: Array[PackedStringArray] = []
+			var file = FileAccess.open(path, FileAccess.READ)
+			var text = file.get_as_text()
+			var split_strs = text.split(",", false)
+			for s in split_strs:
+				ret.append(PackedStringArray([s]))
+				#print("Extracted string: " + s)
 
-		    return ret
+			return ret
 
 		func _get_recognized_extensions():
-		    return ["csv"]
+			return ["csv"]
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -33,24 +33,24 @@
 		[Tool]
 		public partial class CustomParser : EditorTranslationParserPlugin
 		{
-		    public override Godot.Collections.Array&lt;string[]&gt; _ParseFile(string path)
-		    {
-		        Godot.Collections.Array&lt;string[]&gt; ret;
-		        using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
-		        string text = file.GetAsText();
-		        string[] splitStrs = text.Split(",", allowEmpty: false);
-		        foreach (string s in splitStrs)
-		        {
-		            ret.Add([s]);
-		            //GD.Print($"Extracted string: {s}");
-		        }
-		        return ret;
-		    }
+			public override Godot.Collections.Array&lt;string[]&gt; _ParseFile(string path)
+			{
+				Godot.Collections.Array&lt;string[]&gt; ret;
+				using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
+				string text = file.GetAsText();
+				string[] splitStrs = text.Split(",", allowEmpty: false);
+				foreach (string s in splitStrs)
+				{
+					ret.Add([s]);
+					//GD.Print($"Extracted string: {s}");
+				}
+				return ret;
+			}
 
-		    public override string[] _GetRecognizedExtensions()
-		    {
-		        return ["csv"];
-		    }
+			public override string[] _GetRecognizedExtensions()
+			{
+				return ["csv"];
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -77,24 +77,24 @@
 		[codeblocks]
 		[gdscript]
 		func _parse_file(path):
-		    var res = ResourceLoader.load(path, "Script")
-		    var text = res.source_code
-		    # Parsing logic.
+			var res = ResourceLoader.load(path, "Script")
+			var text = res.source_code
+			# Parsing logic.
 
 		func _get_recognized_extensions():
-		    return ["gd"]
+			return ["gd"]
 		[/gdscript]
 		[csharp]
 		public override Godot.Collections.Array&lt;string[]&gt; _ParseFile(string path)
 		{
-		    var res = ResourceLoader.Load&lt;Script&gt;(path, "Script");
-		    string text = res.SourceCode;
-		    // Parsing logic.
+			var res = ResourceLoader.Load&lt;Script&gt;(path, "Script");
+			string text = res.SourceCode;
+			// Parsing logic.
 		}
 
 		public override string[] _GetRecognizedExtensions()
 		{
-		    return ["gd"];
+			return ["gd"];
 		}
 		[/csharp]
 		[/codeblocks]

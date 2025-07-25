@@ -84,6 +84,12 @@ void msdfFastDistanceErrorCorrection(const BitmapRef<float, 3> &sdf, const Proje
 void msdfFastDistanceErrorCorrection(const BitmapRef<float, 4> &sdf, const Projection &projection, Range range, double minDeviationRatio) {
     msdfErrorCorrectionShapeless(sdf, SDFTransformation(projection, range), minDeviationRatio, false);
 }
+void msdfFastDistanceErrorCorrection(const BitmapRef<float, 3> &sdf, Range pxRange, double minDeviationRatio) {
+    msdfErrorCorrectionShapeless(sdf, SDFTransformation(Projection(), pxRange), minDeviationRatio, false);
+}
+void msdfFastDistanceErrorCorrection(const BitmapRef<float, 4> &sdf, Range pxRange, double minDeviationRatio) {
+    msdfErrorCorrectionShapeless(sdf, SDFTransformation(Projection(), pxRange), minDeviationRatio, false);
+}
 
 void msdfFastEdgeErrorCorrection(const BitmapRef<float, 3> &sdf, const SDFTransformation &transformation, double minDeviationRatio) {
     msdfErrorCorrectionShapeless(sdf, transformation, minDeviationRatio, true);
@@ -96,6 +102,12 @@ void msdfFastEdgeErrorCorrection(const BitmapRef<float, 3> &sdf, const Projectio
 }
 void msdfFastEdgeErrorCorrection(const BitmapRef<float, 4> &sdf, const Projection &projection, Range range, double minDeviationRatio) {
     msdfErrorCorrectionShapeless(sdf, SDFTransformation(projection, range), minDeviationRatio, true);
+}
+void msdfFastEdgeErrorCorrection(const BitmapRef<float, 3> &sdf, Range pxRange, double minDeviationRatio) {
+    msdfErrorCorrectionShapeless(sdf, SDFTransformation(Projection(), pxRange), minDeviationRatio, true);
+}
+void msdfFastEdgeErrorCorrection(const BitmapRef<float, 4> &sdf, Range pxRange, double minDeviationRatio) {
+    msdfErrorCorrectionShapeless(sdf, SDFTransformation(Projection(), pxRange), minDeviationRatio, true);
 }
 
 

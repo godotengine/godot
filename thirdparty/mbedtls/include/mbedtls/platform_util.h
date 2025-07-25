@@ -159,6 +159,56 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
 void mbedtls_platform_zeroize(void *buf, size_t len);
 #endif
 
+/** \brief              The type of custom random generator (RNG) callbacks.
+ *
+ *                      Many Mbed TLS functions take two parameters
+ *                      `mbedtls_f_rng_t *f_rng, void *p_rng`. The
+ *                      library will call \c f_rng to generate
+ *                      random values.
+ *
+ * \note                This is typically one of the following:
+ *                      - mbedtls_ctr_drbg_random() with \c p_rng
+ *                        pointing to a #mbedtls_ctr_drbg_context;
+ *                      - mbedtls_hmac_drbg_random() with \c p_rng
+ *                        pointing to a #mbedtls_hmac_drbg_context;
+ *                      - mbedtls_psa_get_random() with
+ *                        `prng = MBEDTLS_PSA_RANDOM_STATE`.
+ *
+ * \note                Generally, given a call
+ *                      `mbedtls_foo(f_rng, p_rng, ....)`, the RNG callback
+ *                      and the context only need to remain valid until
+ *                      the call to `mbedtls_foo` returns. However, there
+ *                      are a few exceptions where the callback is stored
+ *                      in for future use. Check the documentation of
+ *                      the calling function.
+ *
+ * \warning             In a multithreaded environment, calling the
+ *                      function should be thread-safe. The standard
+ *                      functions provided by the library are thread-safe
+ *                      when #MBEDTLS_THREADING_C is enabled.
+ *
+ * \warning             This function must either provide as many
+ *                      bytes as requested of **cryptographic quality**
+ *                      random data, or return a negative error code.
+ *
+ * \param p_rng         The \c p_rng argument that was passed along \c f_rng.
+ *                      The library always passes \c p_rng unchanged.
+ *                      This is typically a pointer to the random generator
+ *                      state, or \c NULL if the custom random generator
+ *                      doesn't need a context-specific state.
+ * \param[out] output   On success, this must be filled with \p output_size
+ *                      bytes of cryptographic-quality random data.
+ * \param output_size   The number of bytes to output.
+ *
+ * \return              \c 0 on success, or a negative error code on failure.
+ *                      Library functions will generally propagate this
+ *                      error code, so \c MBEDTLS_ERR_xxx values are
+ *                      recommended. #MBEDTLS_ERR_ENTROPY_SOURCE_FAILED is
+ *                      typically sensible for RNG failures.
+ */
+typedef int mbedtls_f_rng_t(void *p_rng,
+                            unsigned char *output, size_t output_size);
+
 #if defined(MBEDTLS_HAVE_TIME_DATE)
 /**
  * \brief      Platform-specific implementation of gmtime_r()

@@ -45,6 +45,10 @@ RenderingContextDriverMetal::~RenderingContextDriverMetal() {
 }
 
 Error RenderingContextDriverMetal::initialize() {
+	if (OS::get_singleton()->get_environment("MTL_CAPTURE_ENABLED") == "1") {
+		capture_available = true;
+	}
+
 	metal_device = MTLCreateSystemDefaultDevice();
 #if TARGET_OS_OSX
 	if (@available(macOS 13.3, *)) {

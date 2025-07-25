@@ -267,7 +267,7 @@
 				Returns the result of the linear interpolation between this vector and [param to] by amount [param weight]. [param weight] is on the range of [code]0.0[/code] to [code]1.0[/code], representing the amount of interpolation.
 			</description>
 		</method>
-		<method name="limit_length" qualifiers="const" keywords="truncate">
+		<method name="limit_length" qualifiers="const" keywords="clamp, saturate, truncate">
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>

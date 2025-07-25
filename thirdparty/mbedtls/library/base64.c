@@ -14,6 +14,7 @@
 #include "mbedtls/base64.h"
 #include "base64_internal.h"
 #include "constant_time_internal.h"
+#include "mbedtls/error.h"
 
 #include <stdint.h>
 
@@ -183,49 +184,72 @@ int mbedtls_base64_decode(unsigned char *dst, size_t dlen, size_t *olen,
         n++;
     }
 
-    if (n == 0) {
-        *olen = 0;
-        return 0;
+    /* In valid base64, the number of digits (n-equals) is always of the form
+     * 4*k, 4*k+2 or *4k+3. Also, the number n of digits plus the number of
+     * equal signs at the end is always a multiple of 4. */
+    if ((n - equals) % 4 == 1) {
+        return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
+    }
+    if (n % 4 != 0) {
+        return MBEDTLS_ERR_BASE64_INVALID_CHARACTER;
     }
 
-    /* The following expression is to calculate the following formula without
-     * risk of integer overflow in n:
-     *     n = ( ( n * 6 ) + 7 ) >> 3;
+    /* We've determined that the input is valid, and that it contains
+     * exactly k blocks of digits-or-equals, with n = 4 * k,
+     * and equals only present at the end of the last block if at all.
+     * Now we can calculate the length of the output.
+     *
+     * Each block of 4 digits in the input map to 3 bytes of output.
+     * For the last block:
+     * - abcd (where abcd are digits) is a full 3-byte block;
+     * - abc= means 1 byte less than a full 3-byte block of output;
+     * - ab== means 2 bytes less than a full 3-byte block of output;
+     * - a==== and ==== is rejected above.
      */
-    n = (6 * (n >> 3)) + ((6 * (n & 0x7) + 7) >> 3);
-    n -= equals;
+    *olen = (n / 4) * 3 - equals;
 
-    if (dst == NULL || dlen < n) {
-        *olen = n;
+    /* If the output buffer is too small, signal this and stop here.
+     * Also, as documented, stop here if `dst` is null, independently of
+     * `dlen`.
+     *
+     * There is an edge case when the output is empty: in this case,
+     * `dlen == 0` with `dst == NULL` is valid (on some platforms,
+     * `malloc(0)` returns `NULL`). Since the call is valid, we return
+     * 0 in this case.
+     */
+    if ((*olen != 0 && dst == NULL) || dlen < *olen) {
         return MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL;
     }
 
-    equals = 0;
     for (x = 0, p = dst; i > 0; i--, src++) {
         if (*src == '\r' || *src == '\n' || *src == ' ') {
             continue;
         }
-
-        x = x << 6;
         if (*src == '=') {
-            ++equals;
-        } else {
-            x |= mbedtls_ct_base64_dec_value(*src);
+            /* We already know from the first loop that equal signs are
+             * only at the end. */
+            break;
         }
+        x = x << 6;
+        x |= mbedtls_ct_base64_dec_value(*src);
 
         if (++accumulated_digits == 4) {
             accumulated_digits = 0;
             *p++ = MBEDTLS_BYTE_2(x);
-            if (equals <= 1) {
-                *p++ = MBEDTLS_BYTE_1(x);
-            }
-            if (equals <= 0) {
-                *p++ = MBEDTLS_BYTE_0(x);
-            }
+            *p++ = MBEDTLS_BYTE_1(x);
+            *p++ = MBEDTLS_BYTE_0(x);
         }
     }
+    if (accumulated_digits == 3) {
+        *p++ = MBEDTLS_BYTE_2(x << 6);
+        *p++ = MBEDTLS_BYTE_1(x << 6);
+    } else if (accumulated_digits == 2) {
+        *p++ = MBEDTLS_BYTE_2(x << 12);
+    }
 
-    *olen = (size_t) (p - dst);
+    if (*olen != (size_t) (p - dst)) {
+        return MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    }
 
     return 0;
 }

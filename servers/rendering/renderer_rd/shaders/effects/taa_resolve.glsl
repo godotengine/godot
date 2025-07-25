@@ -32,19 +32,13 @@
 // Based on Spartan Engine's TAA implementation (without TAA upscale).
 // <https://github.com/PanosK92/SpartanEngine/blob/a8338d0609b85dc32f3732a5c27fb4463816a3b9/Data/shaders/temporal_antialiasing.hlsl>
 
-#ifndef MOLTENVK_USED
-#define USE_SUBGROUPS
-#endif // MOLTENVK_USED
-
 #define GROUP_SIZE 8
 #define FLT_MIN 0.00000001
 #define FLT_MAX 32767.0
 #define RPC_9 0.11111111111
 #define RPC_16 0.0625
 
-#ifdef USE_SUBGROUPS
 layout(local_size_x = GROUP_SIZE, local_size_y = GROUP_SIZE, local_size_z = 1) in;
-#endif
 
 layout(rgba16f, set = 0, binding = 0) uniform restrict readonly image2D color_buffer;
 layout(set = 0, binding = 1) uniform sampler2D depth_buffer;
@@ -92,7 +86,6 @@ float get_depth(ivec2 thread_id) {
 	return texelFetch(depth_buffer, thread_id, 0).r;
 }
 
-#ifdef USE_SUBGROUPS
 shared vec3 tile_color[kTileDimension][kTileDimension];
 shared float tile_depth[kTileDimension][kTileDimension];
 
@@ -141,15 +134,6 @@ void populate_group_shared_memory(uvec2 group_id, uint group_index) {
 	groupMemoryBarrier();
 	barrier();
 }
-#else
-vec3 load_color(uvec2 screen_pos) {
-	return imageLoad(color_buffer, ivec2(screen_pos)).rgb;
-}
-
-float load_depth(uvec2 screen_pos) {
-	return get_depth(ivec2(screen_pos));
-}
-#endif
 
 /*------------------------------------------------------------------------------
 								VELOCITY
@@ -380,22 +364,15 @@ vec3 temporal_antialiasing(uvec2 pos_group_top_left, uvec2 pos_group, uvec2 pos_
 }
 
 void main() {
-#ifdef USE_SUBGROUPS
 	populate_group_shared_memory(gl_WorkGroupID.xy, gl_LocalInvocationIndex);
-#endif
 
 	// Out of bounds check
 	if (any(greaterThanEqual(vec2(gl_GlobalInvocationID.xy), params.resolution))) {
 		return;
 	}
 
-#ifdef USE_SUBGROUPS
 	const uvec2 pos_group = gl_LocalInvocationID.xy;
 	const uvec2 pos_group_top_left = gl_WorkGroupID.xy * kGroupSize - kBorderSize;
-#else
-	const uvec2 pos_group = gl_GlobalInvocationID.xy;
-	const uvec2 pos_group_top_left = uvec2(0, 0);
-#endif
 	const uvec2 pos_screen = gl_GlobalInvocationID.xy;
 	const vec2 uv = (gl_GlobalInvocationID.xy + 0.5f) / params.resolution;
 

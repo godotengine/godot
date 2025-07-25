@@ -183,7 +183,7 @@ int mbedtls_dhm_read_params(mbedtls_dhm_context *ctx,
  */
 int mbedtls_dhm_make_params(mbedtls_dhm_context *ctx, int x_size,
                             unsigned char *output, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -250,7 +250,7 @@ int mbedtls_dhm_read_public(mbedtls_dhm_context *ctx,
  */
 int mbedtls_dhm_make_public(mbedtls_dhm_context *ctx, int x_size,
                             unsigned char *output, size_t olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**
@@ -281,7 +281,7 @@ int mbedtls_dhm_make_public(mbedtls_dhm_context *ctx, int x_size,
  */
 int mbedtls_dhm_calc_secret(mbedtls_dhm_context *ctx,
                             unsigned char *output, size_t output_size, size_t *olen,
-                            int (*f_rng)(void *, unsigned char *, size_t),
+                            mbedtls_f_rng_t *f_rng,
                             void *p_rng);
 
 /**

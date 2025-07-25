@@ -56,6 +56,8 @@ class PixelFormats;
 class MDResourceCache;
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
+	bool capture_available = false;
+
 protected:
 #ifdef __OBJC__
 	id<MTLDevice> metal_device = nullptr;
@@ -80,7 +82,7 @@ public:
 	void surface_set_needs_resize(SurfaceID p_surface, bool p_needs_resize) final override;
 	bool surface_get_needs_resize(SurfaceID p_surface) const final override;
 	void surface_destroy(SurfaceID p_surface) final override;
-	bool is_debug_utils_enabled() const final override { return true; }
+	bool is_debug_utils_enabled() const final override { return capture_available; }
 
 #pragma mark - Metal-specific methods
 

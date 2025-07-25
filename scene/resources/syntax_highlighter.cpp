@@ -606,9 +606,9 @@ void CodeHighlighter::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "function_color"), "set_function_color", "get_function_color");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "member_variable_color"), "set_member_variable_color", "get_member_variable_color");
 
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "keyword_colors"), "set_keyword_colors", "get_keyword_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "member_keyword_colors"), "set_member_keyword_colors", "get_member_keyword_colors");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_regions"), "set_color_regions", "get_color_regions");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "keyword_colors", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_keyword_colors", "get_keyword_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "member_keyword_colors", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_member_keyword_colors", "get_member_keyword_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_regions", PROPERTY_HINT_TYPE_STRING, "String;Color"), "set_color_regions", "get_color_regions");
 }
 
 void CodeHighlighter::set_uint_suffix_enabled(bool p_enabled) {

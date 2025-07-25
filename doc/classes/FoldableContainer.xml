@@ -57,10 +57,10 @@
 			The container's title text.
 		</member>
 		<member name="title_alignment" type="int" setter="set_title_alignment" getter="get_title_alignment" enum="HorizontalAlignment" default="0">
-			Title's horizontal text alignment as defined in the [enum HorizontalAlignment] enum.
+			Title's horizontal text alignment.
 		</member>
 		<member name="title_position" type="int" setter="set_title_position" getter="get_title_position" enum="FoldableContainer.TitlePosition" default="0">
-			Title's position as defined in the [enum TitlePosition] enum.
+			Title's position.
 		</member>
 		<member name="title_text_direction" type="int" setter="set_title_text_direction" getter="get_title_text_direction" enum="Control.TextDirection" default="0">
 			Title text writing direction.

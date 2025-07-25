@@ -50,16 +50,6 @@ public:
 	Variant function1_latest_arg0;
 };
 
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
 TEST_SUITE("[Navigation3D]") {
 	TEST_CASE("[NavigationServer3D] Server should be empty when initialized") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
@@ -546,6 +536,7 @@ TEST_SUITE("[Navigation3D]") {
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
 		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
@@ -565,7 +556,7 @@ TEST_SUITE("[Navigation3D]") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
 			SIGNAL_CHECK_FALSE("map_changed");
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", build_array(build_array(map)));
+			SIGNAL_CHECK("map_changed", { { map } });
 			SIGNAL_UNWATCH(navigation_server, "map_changed");
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 		}
@@ -642,6 +633,7 @@ TEST_SUITE("[Navigation3D]") {
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
 		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.
@@ -661,7 +653,7 @@ TEST_SUITE("[Navigation3D]") {
 			SIGNAL_WATCH(navigation_server, "map_changed");
 			SIGNAL_CHECK_FALSE("map_changed");
 			navigation_server->physics_process(0.0); // Give server some cycles to commit.
-			SIGNAL_CHECK("map_changed", build_array(build_array(map)));
+			SIGNAL_CHECK("map_changed", { { map } });
 			SIGNAL_UNWATCH(navigation_server, "map_changed");
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 		}
@@ -691,6 +683,7 @@ TEST_SUITE("[Navigation3D]") {
 		RID region = navigation_server->region_create();
 		navigation_server->map_set_active(map, true);
 		navigation_server->map_set_use_async_iterations(map, false);
+		navigation_server->region_set_use_async_iterations(region, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->physics_process(0.0); // Give server some cycles to commit.

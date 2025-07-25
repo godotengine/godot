@@ -135,6 +135,10 @@ protected:
 
 	void _set_debugger_break_language();
 
+	Variant _get_rpc_config_bind() const {
+		return get_rpc_config().duplicate(true);
+	}
+
 public:
 	virtual void reload_from_file() override;
 
@@ -191,7 +195,7 @@ public:
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
-	virtual Variant get_rpc_config() const = 0;
+	virtual const Variant get_rpc_config() const = 0;
 
 	Script() {}
 };
@@ -214,7 +218,6 @@ public:
 	/* EDITOR FUNCTIONS */
 	struct Warning {
 		int start_line = -1, end_line = -1;
-		int leftmost_column = -1, rightmost_column = -1;
 		int code;
 		String string_code;
 		String message;
@@ -255,11 +258,11 @@ public:
 	};
 
 	void get_core_type_words(List<String> *p_core_type_words) const;
-	virtual void get_reserved_words(List<String> *p_words) const = 0;
+	virtual Vector<String> get_reserved_words() const = 0;
 	virtual bool is_control_flow_keyword(const String &p_string) const = 0;
-	virtual void get_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_doc_comment_delimiters(List<String> *p_delimiters) const = 0;
-	virtual void get_string_delimiters(List<String> *p_delimiters) const = 0;
+	virtual Vector<String> get_comment_delimiters() const = 0;
+	virtual Vector<String> get_doc_comment_delimiters() const = 0;
+	virtual Vector<String> get_string_delimiters() const = 0;
 	virtual Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const { return Ref<Script>(); }
 	virtual Vector<ScriptTemplate> get_built_in_templates(const StringName &p_object) { return Vector<ScriptTemplate>(); }
 	virtual bool is_using_templates() { return false; }

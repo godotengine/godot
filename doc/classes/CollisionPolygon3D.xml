@@ -21,7 +21,7 @@
 			Length that the resulting collision extends in either direction perpendicular to its 2D polygon.
 		</member>
 		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
-			If [code]true[/code], no collision will be produced.
+			If [code]true[/code], no collision will be produced. This property should be changed with [method Object.set_deferred].
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.04">
 			The collision margin for the generated [Shape3D]. See [member Shape3D.margin] for more details.

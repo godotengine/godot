@@ -33,7 +33,7 @@
 #include "core/input/input.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/theme/theme_db.h"
 
@@ -453,7 +453,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 void EditorSpinSlider::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			grabbing_spinner_speed = EditorSettings::get_singleton()->get("interface/inspector/float_drag_speed");
+			grabbing_spinner_speed = EDITOR_GET("interface/inspector/float_drag_speed");
 			_update_value_input_stylebox();
 		} break;
 

@@ -20,7 +20,8 @@
 #include <chrono>
 #endif
 
-#include "manifold/linalg.h"
+#include "linalg.h"
+#include "optional_assert.h"
 
 namespace manifold {
 /** @addtogroup Math
@@ -548,7 +549,7 @@ class Quality {
     int nSegL = 2.0 * radius * kPi / circularEdgeLength_;
     int nSeg = fmin(nSegA, nSegL) + 3;
     nSeg -= nSeg % 4;
-    return std::max(nSeg, 3);
+    return std::max(nSeg, 4);
   }
 
   /**
@@ -577,21 +578,62 @@ struct ExecutionParams {
   /// Perform extra sanity checks and assertions on the intermediate data
   /// structures.
   bool intermediateChecks = false;
-  /// Verbose output primarily of the Boolean, including timing info and vector
-  /// sizes.
-  bool verbose = false;
+  /// Perform 3D mesh self-intersection test on intermediate boolean results to
+  /// test for ϵ-validity. For debug purposes only.
+  bool selfIntersectionChecks = false;
   /// If processOverlaps is false, a geometric check will be performed to assert
   /// all triangles are CCW.
   bool processOverlaps = true;
   /// Suppresses printed errors regarding CW triangles. Has no effect if
   /// processOverlaps is true.
   bool suppressErrors = false;
-  /// Perform optional but recommended triangle cleanups in SimplifyTopology()
+  /// Deprecated! This value no longer has any effect, as cleanup now only
+  /// occurs on intersected triangles.
   bool cleanupTriangles = true;
+  /// Verbose level:
+  /// - 0 for no verbose output
+  /// - 1 for verbose output for the Boolean, including timing info and vector
+  /// sizes.
+  /// - 2 for verbose output with triangulator action as well.
+  int verbose = 0;
 };
 /** @} */
 
 #ifdef MANIFOLD_DEBUG
+template <class T>
+std::ostream& operator<<(std::ostream& out, const la::vec<T, 1>& v) {
+  return out << '{' << v[0] << '}';
+}
+template <class T>
+std::ostream& operator<<(std::ostream& out, const la::vec<T, 2>& v) {
+  return out << '{' << v[0] << ',' << v[1] << '}';
+}
+template <class T>
+std::ostream& operator<<(std::ostream& out, const la::vec<T, 3>& v) {
+  return out << '{' << v[0] << ',' << v[1] << ',' << v[2] << '}';
+}
+template <class T>
+std::ostream& operator<<(std::ostream& out, const la::vec<T, 4>& v) {
+  return out << '{' << v[0] << ',' << v[1] << ',' << v[2] << ',' << v[3] << '}';
+}
+
+template <class T, int M>
+std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 1>& m) {
+  return out << '{' << m[0] << '}';
+}
+template <class T, int M>
+std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 2>& m) {
+  return out << '{' << m[0] << ',' << m[1] << '}';
+}
+template <class T, int M>
+std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 3>& m) {
+  return out << '{' << m[0] << ',' << m[1] << ',' << m[2] << '}';
+}
+template <class T, int M>
+std::ostream& operator<<(std::ostream& out, const la::mat<T, M, 4>& m) {
+  return out << '{' << m[0] << ',' << m[1] << ',' << m[2] << ',' << m[3] << '}';
+}
+
 inline std::ostream& operator<<(std::ostream& stream, const Box& box) {
   return stream << "min: " << box.min << ", "
                 << "max: " << box.max;
@@ -600,6 +642,11 @@ inline std::ostream& operator<<(std::ostream& stream, const Box& box) {
 inline std::ostream& operator<<(std::ostream& stream, const Rect& box) {
   return stream << "min: " << box.min << ", "
                 << "max: " << box.max;
+}
+
+inline std::ostream& operator<<(std::ostream& stream, const Smoothness& s) {
+  return stream << "halfedge: " << s.halfedge << ", "
+                << "smoothness: " << s.smoothness;
 }
 
 /**

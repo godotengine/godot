@@ -35,10 +35,12 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 class Variant;
 
 struct ContainerType;
+struct ContainerTypeValidate;
 struct DictionaryPrivate;
 struct StringLikeVariantComparator;
 struct VariantHasher;
@@ -98,7 +100,8 @@ public:
 	Array values() const;
 
 	Dictionary duplicate(bool p_deep = false) const;
-	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
+	Dictionary duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Dictionary recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	void set_typed(const ContainerType &p_key_type, const ContainerType &p_value_type);
 	void set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script);
@@ -106,6 +109,7 @@ public:
 	bool is_typed() const;
 	bool is_typed_key() const;
 	bool is_typed_value() const;
+	bool is_same_instance(const Dictionary &p_other) const;
 	bool is_same_typed(const Dictionary &p_other) const;
 	bool is_same_typed_key(const Dictionary &p_other) const;
 	bool is_same_typed_value(const Dictionary &p_other) const;
@@ -118,6 +122,8 @@ public:
 	StringName get_typed_value_class_name() const;
 	Variant get_typed_key_script() const;
 	Variant get_typed_value_script() const;
+	const ContainerTypeValidate &get_key_validator() const;
+	const ContainerTypeValidate &get_value_validator() const;
 
 	void make_read_only();
 	bool is_read_only() const;

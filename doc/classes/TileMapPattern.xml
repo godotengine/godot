@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		This resource holds a set of cells to help bulk manipulations of [TileMap].
-		A pattern always start at the [code](0,0)[/code] coordinates and cannot have cells with negative coordinates.
+		A pattern always starts at the [code](0, 0)[/code] coordinates and cannot have cells with negative coordinates.
 	</description>
 	<tutorials>
 	</tutorials>

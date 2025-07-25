@@ -93,6 +93,7 @@ void Memory::free_aligned_static(void *p_memory) {
 	free(p);
 }
 
+template <bool p_ensure_zero>
 void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 #ifdef DEBUG_ENABLED
 	bool prepad = true;
@@ -100,7 +101,12 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 	bool prepad = p_pad_align;
 #endif
 
-	void *mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
+	void *mem;
+	if constexpr (p_ensure_zero) {
+		mem = calloc(1, p_bytes + (prepad ? DATA_OFFSET : 0));
+	} else {
+		mem = malloc(p_bytes + (prepad ? DATA_OFFSET : 0));
+	}
 
 	ERR_FAIL_NULL_V(mem, nullptr);
 
@@ -119,6 +125,9 @@ void *Memory::alloc_static(size_t p_bytes, bool p_pad_align) {
 		return mem;
 	}
 }
+
+template void *Memory::alloc_static<true>(size_t p_bytes, bool p_pad_align);
+template void *Memory::alloc_static<false>(size_t p_bytes, bool p_pad_align);
 
 void *Memory::realloc_static(void *p_memory, size_t p_bytes, bool p_pad_align) {
 	if (p_memory == nullptr) {

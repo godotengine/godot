@@ -19,44 +19,44 @@
 		[codeblocks]
 		[gdscript]
 		func dir_contents(path):
-		    var dir = DirAccess.open(path)
-		    if dir:
-		        dir.list_dir_begin()
-		        var file_name = dir.get_next()
-		        while file_name != "":
-		            if dir.current_is_dir():
-		                print("Found directory: " + file_name)
-		            else:
-		                print("Found file: " + file_name)
-		            file_name = dir.get_next()
-		    else:
-		        print("An error occurred when trying to access the path.")
+			var dir = DirAccess.open(path)
+			if dir:
+				dir.list_dir_begin()
+				var file_name = dir.get_next()
+				while file_name != "":
+					if dir.current_is_dir():
+						print("Found directory: " + file_name)
+					else:
+						print("Found file: " + file_name)
+					file_name = dir.get_next()
+			else:
+				print("An error occurred when trying to access the path.")
 		[/gdscript]
 		[csharp]
 		public void DirContents(string path)
 		{
-		    using var dir = DirAccess.Open(path);
-		    if (dir != null)
-		    {
-		        dir.ListDirBegin();
-		        string fileName = dir.GetNext();
-		        while (fileName != "")
-		        {
-		            if (dir.CurrentIsDir())
-		            {
-		                GD.Print($"Found directory: {fileName}");
-		            }
-		            else
-		            {
-		                GD.Print($"Found file: {fileName}");
-		            }
-		            fileName = dir.GetNext();
-		        }
-		    }
-		    else
-		    {
-		        GD.Print("An error occurred when trying to access the path.");
-		    }
+			using var dir = DirAccess.Open(path);
+			if (dir != null)
+			{
+				dir.ListDirBegin();
+				string fileName = dir.GetNext();
+				while (fileName != "")
+				{
+					if (dir.CurrentIsDir())
+					{
+						GD.Print($"Found directory: {fileName}");
+					}
+					else
+					{
+						GD.Print($"Found file: {fileName}");
+					}
+					fileName = dir.GetNext();
+				}
+			}
+			else
+			{
+				GD.Print("An error occurred when trying to access the path.");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -211,6 +211,13 @@
 				Returns a [PackedStringArray] containing filenames of the directory contents, excluding directories, at the given [param path]. The array is sorted alphabetically.
 				Use [method get_files] if you want more control of what gets included.
 				[b]Note:[/b] When used on a [code]res://[/code] path in an exported project, only the files included in the PCK at the given folder level are returned. In practice, this means that since imported resources are stored in a top-level [code].godot/[/code] folder, only paths to [code].gd[/code] and [code].import[/code] files are returned (plus a few other files, such as [code]project.godot[/code] or [code]project.binary[/code] and the project icon). In an exported project, the list of returned files will also vary depending on [member ProjectSettings.editor/export/convert_text_resources_to_binary].
+			</description>
+		</method>
+		<method name="get_filesystem_type" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns file system type name of the current directory's disk. Returned values are uppercase strings like [code]NTFS[/code], [code]FAT32[/code], [code]EXFAT[/code], [code]APFS[/code], [code]EXT4[/code], [code]BTRFS[/code], and so on.
+				[b]Note:[/b] This method is implemented on macOS, Linux, Windows and for PCK virtual file system.
 			</description>
 		</method>
 		<method name="get_next">

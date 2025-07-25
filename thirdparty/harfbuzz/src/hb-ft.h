@@ -88,6 +88,10 @@ HB_EXTERN hb_face_t *
 hb_ft_face_create_from_file_or_fail (const char   *file_name,
 				     unsigned int  index);
 
+HB_EXTERN hb_face_t *
+hb_ft_face_create_from_blob_or_fail (hb_blob_t    *blob,
+				     unsigned int  index);
+
 /*
  * hb-font from ft-face.
  */

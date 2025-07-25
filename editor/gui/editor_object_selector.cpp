@@ -99,10 +99,7 @@ void EditorObjectSelector::_show_popup() {
 	Point2 gp = get_screen_position();
 	gp.y += size.y;
 
-	sub_objects_menu->set_position(gp);
-	sub_objects_menu->set_size(Size2(size.width, 1));
-
-	sub_objects_menu->popup();
+	sub_objects_menu->popup(Rect2(gp, Size2(size.width, 0)));
 }
 
 void EditorObjectSelector::_about_to_show() {
@@ -190,7 +187,6 @@ void EditorObjectSelector::_id_pressed(int p_idx) {
 
 void EditorObjectSelector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 

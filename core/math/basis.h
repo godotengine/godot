@@ -149,7 +149,7 @@ struct [[nodiscard]] Basis {
 	Basis slerp(const Basis &p_to, real_t p_weight) const;
 	void rotate_sh(real_t *p_values);
 
-	operator String() const;
+	explicit operator String() const;
 
 	/* create / set */
 

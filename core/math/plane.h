@@ -78,7 +78,7 @@ struct [[nodiscard]] Plane {
 
 	constexpr bool operator==(const Plane &p_plane) const;
 	constexpr bool operator!=(const Plane &p_plane) const;
-	operator String() const;
+	explicit operator String() const;
 
 	Plane() = default;
 	constexpr Plane(real_t p_a, real_t p_b, real_t p_c, real_t p_d) :

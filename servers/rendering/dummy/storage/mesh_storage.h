@@ -103,6 +103,7 @@ public:
 	virtual void mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 	virtual void mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
+	virtual void mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) override {}
 
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) override {}
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const override { return RID(); }

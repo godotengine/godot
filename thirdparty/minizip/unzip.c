@@ -1558,6 +1558,7 @@ extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos) {
 
         pfile_in_zip_read_info->stream.avail_in = (uInt)0;
         pfile_in_zip_read_info->stream.total_out = pos;
+        pfile_in_zip_read_info->total_out_64 = pos;
 
         return ZSEEK64(pfile_in_zip_read_info->z_filefunc,
                        pfile_in_zip_read_info->filestream,
@@ -1581,6 +1582,7 @@ extern int ZEXPORT unzSeekCurrentFile(unzFile file, int pos) {
 
             pfile_in_zip_read_info->stream.avail_in = (uInt)0;
             pfile_in_zip_read_info->stream.total_out = 0;
+            pfile_in_zip_read_info->total_out_64 = 0;
             pfile_in_zip_read_info->stream.next_in = 0;
         }
 

@@ -95,6 +95,20 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_simplify_epsilon", "epsilon"), &NavigationAgent2D::set_simplify_epsilon);
 	ClassDB::bind_method(D_METHOD("get_simplify_epsilon"), &NavigationAgent2D::get_simplify_epsilon);
 
+	ClassDB::bind_method(D_METHOD("set_path_return_max_length", "length"), &NavigationAgent2D::set_path_return_max_length);
+	ClassDB::bind_method(D_METHOD("get_path_return_max_length"), &NavigationAgent2D::get_path_return_max_length);
+
+	ClassDB::bind_method(D_METHOD("set_path_return_max_radius", "radius"), &NavigationAgent2D::set_path_return_max_radius);
+	ClassDB::bind_method(D_METHOD("get_path_return_max_radius"), &NavigationAgent2D::get_path_return_max_radius);
+
+	ClassDB::bind_method(D_METHOD("set_path_search_max_polygons", "max_polygons"), &NavigationAgent2D::set_path_search_max_polygons);
+	ClassDB::bind_method(D_METHOD("get_path_search_max_polygons"), &NavigationAgent2D::get_path_search_max_polygons);
+
+	ClassDB::bind_method(D_METHOD("set_path_search_max_distance", "distance"), &NavigationAgent2D::set_path_search_max_distance);
+	ClassDB::bind_method(D_METHOD("get_path_search_max_distance"), &NavigationAgent2D::get_path_search_max_distance);
+
+	ClassDB::bind_method(D_METHOD("get_path_length"), &NavigationAgent2D::get_path_length);
+
 	ClassDB::bind_method(D_METHOD("get_next_path_position"), &NavigationAgent2D::get_next_path_position);
 
 	ClassDB::bind_method(D_METHOD("set_velocity_forced", "velocity"), &NavigationAgent2D::set_velocity_forced);
@@ -137,6 +151,10 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater,suffix:px"), "set_simplify_epsilon", "get_simplify_epsilon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_return_max_length", PROPERTY_HINT_RANGE, "0.0,10240.0,0.001,or_greater,suffix:px"), "set_path_return_max_length", "get_path_return_max_length");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_return_max_radius", PROPERTY_HINT_RANGE, "0.0,10240.0,0.001,or_greater,suffix:px"), "set_path_return_max_radius", "get_path_return_max_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_search_max_polygons", PROPERTY_HINT_RANGE, "0,4096,1,or_greater"), "set_path_search_max_polygons", "get_path_search_max_polygons");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_search_max_distance"), "set_path_search_max_distance", "get_path_search_max_distance");
 
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
@@ -398,7 +416,9 @@ void NavigationAgent2D::set_navigation_layers(uint32_t p_navigation_layers) {
 
 	navigation_layers = p_navigation_layers;
 
-	_request_repath();
+	if (target_position_submitted) {
+		_request_repath();
+	}
 }
 
 uint32_t NavigationAgent2D::get_navigation_layers() const {
@@ -461,6 +481,46 @@ real_t NavigationAgent2D::get_simplify_epsilon() const {
 	return simplify_epsilon;
 }
 
+void NavigationAgent2D::set_path_return_max_length(float p_length) {
+	path_return_max_length = MAX(0.0, p_length);
+	navigation_query->set_path_return_max_length(path_return_max_length);
+}
+
+float NavigationAgent2D::get_path_return_max_length() const {
+	return path_return_max_length;
+}
+
+void NavigationAgent2D::set_path_return_max_radius(float p_radius) {
+	path_return_max_radius = MAX(0.0, p_radius);
+	navigation_query->set_path_return_max_radius(path_return_max_radius);
+}
+
+float NavigationAgent2D::get_path_return_max_radius() const {
+	return path_return_max_radius;
+}
+
+void NavigationAgent2D::set_path_search_max_polygons(int p_max_polygons) {
+	path_search_max_polygons = p_max_polygons;
+	navigation_query->set_path_search_max_polygons(path_search_max_polygons);
+}
+
+int NavigationAgent2D::get_path_search_max_polygons() const {
+	return path_search_max_polygons;
+}
+
+void NavigationAgent2D::set_path_search_max_distance(float p_distance) {
+	path_search_max_distance = MAX(0.0, p_distance);
+	navigation_query->set_path_search_max_distance(path_search_max_distance);
+}
+
+float NavigationAgent2D::get_path_search_max_distance() const {
+	return path_search_max_distance;
+}
+
+float NavigationAgent2D::get_path_length() const {
+	return navigation_result->get_path_length();
+}
+
 void NavigationAgent2D::set_path_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_path_metadata_flags) {
 	if (path_metadata_flags == p_path_metadata_flags) {
 		return;
@@ -477,7 +537,9 @@ void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
 	map_override = p_navigation_map;
 
 	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
-	_request_repath();
+	if (target_position_submitted) {
+		_request_repath();
+	}
 }
 
 RID NavigationAgent2D::get_navigation_map() const {
@@ -652,9 +714,8 @@ void NavigationAgent2D::set_velocity(const Vector2 p_velocity) {
 	velocity_submitted = true;
 }
 
-void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
-	const Vector2 new_safe_velocity = Vector2(p_new_velocity.x, p_new_velocity.z);
-	safe_velocity = new_safe_velocity;
+void NavigationAgent2D::_avoidance_done(Vector2 p_new_velocity) {
+	safe_velocity = p_new_velocity;
 	emit_signal(SNAME("velocity_computed"), safe_velocity);
 }
 

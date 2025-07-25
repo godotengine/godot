@@ -115,7 +115,7 @@
 		</constant>
 		<constant name="MIPMAP_MODE_DISABLED" value="0" enum="MipmapMode">
 			Disable mipmapping.
-			[b]Note:[/b] Mipmapping can only be disabled in the compatibility renderer.
+			[b]Note:[/b] Mipmapping can only be disabled in the Compatibility renderer.
 		</constant>
 		<constant name="MIPMAP_MODE_NEAREST" value="1" enum="MipmapMode">
 			Use the mipmap of the nearest resolution.
@@ -137,7 +137,7 @@
 		</constant>
 		<constant name="WRAP_MIRROR_CLAMP_TO_EDGE" value="4" enum="Wrap">
 			Mirror the texture once and then clamp the texture to its edge color.
-			[b]Note:[/b] This wrap mode is not available in the compatibility renderer.
+			[b]Note:[/b] This wrap mode is not available in the Compatibility renderer.
 		</constant>
 		<constant name="SWIZZLE_RED" value="0" enum="Swizzle">
 			Maps a color channel to the value of the red channel.

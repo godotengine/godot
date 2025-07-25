@@ -4,8 +4,11 @@ on:
 
 # Global Settings
 env:
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+    "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.16.0/"
   GODOT_CPP_BRANCH: 4.4
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes "accesskit_sdk_path=${{ github.workspace }}/accesskit-c-0.15.1/"
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   TSAN_OPTIONS: suppressions=${{ github.workspace }}/misc/error_suppressions/tsan.txt
@@ -24,10 +27,9 @@ jobs:
           - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
-            sconsflags: module_mono_enabled=yes
+            scons-flags: module_mono_enabled=yes
             bin: ./bin/godot.linuxbsd.editor.x86_64.mono
             build-mono: true
-            tests: false # Disabled due freeze caused by mix Mono build and CI
             doc-test: true
             proj-conv: true
             api-compat: true
@@ -35,64 +37,72 @@ jobs:
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=mold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=mold
+            scons-flags: >-
+              dev_build=yes
+              scu_build=yes
+              debug_symbols=no
+              precision=double
+              use_asan=yes
+              use_ubsan=yes
+              linker=mold
             bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
-            build-mono: false
-            tests: true
             proj-test: true
-            # Skip 2GiB artifact speeding up action.
-            artifact: false
 
-          - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
+          - name: Editor with clang sanitizers (target=editor, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
             target: editor
-            sconsflags: dev_build=yes use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
+            scons-flags: >-
+              dev_build=yes
+              use_asan=yes
+              use_ubsan=yes
+              use_llvm=yes
+              linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
-            build-mono: false
-            tests: true
-            # Skip 2GiB artifact speeding up action.
-            artifact: false
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
 
-          - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
+          - name: Editor with ThreadSanitizer (target=editor, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
             target: editor
-            tests: true
-            sconsflags: dev_build=yes use_tsan=yes use_llvm=yes linker=lld
+            scons-flags: >-
+              dev_build=yes
+              use_tsan=yes
+              use_llvm=yes
+              linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
-            build-mono: false
-            # Skip 2GiB artifact speeding up action.
-            artifact: false
 
-          - name: Template w/ Mono, release (target=template_release, tests=yes)
+          - name: Template w/ Mono, release (target=template_release)
             cache-name: linux-template-mono
             target: template_release
-            sconsflags: module_mono_enabled=yes
+            scons-flags: module_mono_enabled=yes
             bin: ./bin/godot.linuxbsd.template_release.x86_64.mono
-            build-mono: false
-            tests: true
             artifact: true
 
-          - name: Template w/ Mono, debug (target=template_debug, tests=yes)
+          - name: Template w/ Mono, debug (target=template_debug)
             cache-name: linux-template-mono-debug
             target: template_debug
-            sconsflags: module_mono_enabled=yes
+            scons-flags: module_mono_enabled=yes
             bin: ./bin/godot.linuxbsd.template_debug.x86_64.mono
-            build-mono: false
-            tests: true
             artifact: true
 
-          - name: Minimal template (target=template_release, tests=yes, everything disabled)
+          - name: Minimal template (target=template_release, everything disabled)
             cache-name: linux-template-minimal
             target: template_release
-            sconsflags: modules_enabled_by_default=no disable_3d=yes disable_advanced_gui=yes disable_physics_2d=yes disable_physics_3d=yes deprecated=no minizip=no
+            scons-flags: >-
+              modules_enabled_by_default=no
+              module_text_server_fb_enabled=no
+              disable_3d=yes
+              disable_advanced_gui=yes
+              disable_physics_2d=yes
+              disable_physics_3d=yes
+              deprecated=no
+              minizip=no
+              brotli=no
             bin: ./bin/godot.linuxbsd.template_release.x86_64
-            tests: true
             artifact: true
 
     steps:
@@ -152,12 +162,12 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: AccessKit/accesskit-c
-          version: tags/0.15.1
-          file: accesskit-c-0.15.1.zip
-          target: accesskit-c-0.15.1/accesskit_c.zip
+          version: tags/0.16.0
+          file: accesskit-c-0.16.0.zip
+          target: accesskit-c-0.16.0/accesskit_c.zip
 
       - name: Extract pre-built AccessKit
-        run: unzip -o accesskit-c-0.15.1/accesskit_c.zip
+        run: unzip -o accesskit-c-0.16.0/accesskit_c.zip
 
       - name: Install mold linker
         if: matrix.proj-test
@@ -166,10 +176,9 @@ jobs:
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
-          sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
           platform: linuxbsd
           target: ${{ matrix.target }}
-          tests: ${{ matrix.tests }}
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
@@ -209,7 +218,6 @@ jobs:
           name: ${{ matrix.cache-name }}
 
       - name: Unit tests
-        if: matrix.tests
         run: |
           ${{ matrix.bin }} --version
           ${{ matrix.bin }} --help

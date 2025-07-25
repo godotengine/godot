@@ -152,8 +152,11 @@ GPOS::position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
     for (unsigned i = 0; i < len; i++)
       propagate_attachment_offsets (pos, len, i, direction);
 
-  if (unlikely (font->slant))
+  if (unlikely (font->slant_xy) &&
+      HB_DIRECTION_IS_HORIZONTAL (direction))
   {
+    /* Slanting shaping results is only supported for horizontal text,
+     * as it gets weird otherwise. */
     for (unsigned i = 0; i < len; i++)
       if (unlikely (pos[i].y_offset))
         pos[i].x_offset += roundf (font->slant_xy * pos[i].y_offset);

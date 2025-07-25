@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/io/dir_access.h"
-#include "editor/file_info.h"
+#include "editor/file_system/file_info.h"
 #include "scene/gui/dialogs.h"
 #include "scene/property_list_helper.h"
 
@@ -301,8 +301,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	Color get_dir_icon_color(const String &p_dir_path);
-
 	virtual void set_visible(bool p_visible) override;
 	virtual void popup(const Rect2i &p_rect = Rect2i()) override;
 

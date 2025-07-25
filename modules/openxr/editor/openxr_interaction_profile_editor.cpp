@@ -181,7 +181,6 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase() {
 	binding_modifiers_btn = memnew(Button);
 	binding_modifiers_btn->set_tooltip_text(TTR("Edit binding modifiers"));
 	binding_modifiers_btn->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditorBase::_on_open_binding_modifiers));
-	binding_modifiers_btn->set_accessibility_name(TTRC("Edit"));
 	// TODO show visual difference if there are binding modifiers for this interaction profile
 	toolbar_vb->add_child(binding_modifiers_btn);
 }

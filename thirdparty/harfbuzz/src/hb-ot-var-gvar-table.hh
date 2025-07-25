@@ -53,10 +53,6 @@ struct hb_glyf_scratch_t
   contour_point_vector_t deltas;
   hb_vector_t<unsigned int> shared_indices;
   hb_vector_t<unsigned int> private_indices;
-
-  // VARC
-  hb_vector_t<unsigned> axisIndices;
-  hb_vector_t<float> axisValues;
 };
 
 namespace OT {
@@ -586,6 +582,17 @@ struct gvar_GVAR
   public:
   struct accelerator_t
   {
+
+    hb_scalar_cache_t *create_cache () const
+    {
+      return hb_scalar_cache_t::create (table->sharedTupleCount);
+    }
+
+    static void destroy_cache (hb_scalar_cache_t *cache)
+    {
+      hb_scalar_cache_t::destroy (cache);
+    }
+
     bool has_data () const { return table->has_data (); }
 
     accelerator_t (hb_face_t *face)
@@ -593,36 +600,6 @@ struct gvar_GVAR
       table = hb_sanitize_context_t ().reference_table<gvar_GVAR> (face);
       /* If sanitize failed, set glyphCount to 0. */
       glyphCount = table->version.to_int () ? face->get_num_glyphs () : 0;
-
-      /* For shared tuples that only have one axis active, shared the index of
-       * that axis as a cache. This will speed up caclulate_scalar() a lot
-       * for fonts with lots of axes and many "monovar" tuples. */
-      hb_array_t<const F2DOT14> shared_tuples = (table+table->sharedTuples).as_array (table->sharedTupleCount * table->axisCount);
-      unsigned count = table->sharedTupleCount;
-      if (unlikely (!shared_tuple_active_idx.resize (count, false))) return;
-      unsigned axis_count = table->axisCount;
-      for (unsigned i = 0; i < count; i++)
-      {
-	hb_array_t<const F2DOT14> tuple = shared_tuples.sub_array (axis_count * i, axis_count);
-	int idx1 = -1, idx2 = -1;
-	for (unsigned j = 0; j < axis_count; j++)
-	{
-	  const F2DOT14 &peak = tuple.arrayZ[j];
-	  if (peak.to_int () != 0)
-	  {
-	    if (idx1 == -1)
-	      idx1 = j;
-	    else if (idx2 == -1)
-	      idx2 = j;
-	    else
-	    {
-	      idx1 = idx2 = -1;
-	      break;
-	    }
-	  }
-	}
-	shared_tuple_active_idx.arrayZ[i] = {idx1, idx2};
-      }
     }
     ~accelerator_t () { table.destroy (); }
 
@@ -659,6 +636,7 @@ struct gvar_GVAR
 				 hb_array_t<const int> coords,
 				 const hb_array_t<contour_point_t> points,
 				 hb_glyf_scratch_t &scratch,
+				 hb_scalar_cache_t *gvar_cache = nullptr,
 				 bool phantom_only = false) const
     {
       if (unlikely (glyph >= glyphCount)) return true;
@@ -694,10 +672,12 @@ struct gvar_GVAR
 
       unsigned count = points.length;
       bool flush = false;
+
       do
       {
 	float scalar = iterator.current_tuple->calculate_scalar (coords, num_coords, shared_tuples,
-								 &shared_tuple_active_idx);
+								 gvar_cache);
+
 	if (scalar == 0.f) continue;
 	const HBUINT8 *p = iterator.get_serialized_data ();
 	unsigned int length = iterator.current_tuple->get_data_size ();
@@ -721,11 +701,12 @@ struct gvar_GVAR
 	const hb_array_t<unsigned int> &indices = has_private_points ? private_indices : shared_indices;
 
 	bool apply_to_all = (indices.length == 0);
-	unsigned int num_deltas = apply_to_all ? points.length : indices.length;
+	unsigned num_deltas = apply_to_all ? points.length : indices.length;
+	unsigned start_deltas = (phantom_only && num_deltas >= 4 ? num_deltas - 4 : 0);
 	if (unlikely (!x_deltas.resize (num_deltas, false))) return false;
-	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end))) return false;
+	if (unlikely (!GlyphVariationData::decompile_deltas (p, x_deltas, end, false, start_deltas))) return false;
 	if (unlikely (!y_deltas.resize (num_deltas, false))) return false;
-	if (unlikely (!GlyphVariationData::decompile_deltas (p, y_deltas, end))) return false;
+	if (unlikely (!GlyphVariationData::decompile_deltas (p, y_deltas, end, false, start_deltas))) return false;
 
 	if (!apply_to_all)
 	{
@@ -888,7 +869,6 @@ struct gvar_GVAR
     private:
     hb_blob_ptr_t<gvar_GVAR> table;
     unsigned glyphCount;
-    hb_vector_t<hb_pair_t<int, int>> shared_tuple_active_idx;
   };
 
   protected:

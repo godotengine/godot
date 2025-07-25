@@ -237,8 +237,6 @@ void SVGTexture::_clear() {
 
 void SVGTexture::_update_texture() {
 	_clear();
-	_ensure_scale(1.0);
-
 	emit_changed();
 }
 
@@ -252,10 +250,12 @@ Ref<Image> SVGTexture::get_image() const {
 }
 
 int SVGTexture::get_width() const {
+	_ensure_scale(1.0);
 	return size.x;
 }
 
 int SVGTexture::get_height() const {
+	_ensure_scale(1.0);
 	return size.y;
 }
 
@@ -342,7 +342,10 @@ void SVGTexture::set_size_override(const Size2i &p_size) {
 		return;
 	}
 	size_override = p_size;
-	size = base_size;
+	if (size_override.x == 0 || size_override.y == 0) {
+		_ensure_scale(1.0);
+		size = base_size;
+	}
 	if (size_override.x != 0) {
 		size.x = size_override.x;
 	}

@@ -636,6 +636,9 @@ Point2 TextureProgressBar::get_radial_center_offset() {
 }
 
 void TextureProgressBar::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name.begins_with("stretch_margin_") && !nine_patch_stretch) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

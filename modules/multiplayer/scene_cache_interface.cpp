@@ -116,7 +116,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	ERR_FAIL_NULL(node);
 	const bool valid_rpc_checksum = multiplayer->get_rpc_md5(node) == methods_md5;
 	if (valid_rpc_checksum == false) {
-		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
+		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + String(path));
 	}
 
 	peers_info[p_from].recv_nodes.insert(id, RecvNode(node->get_instance_id(), path));
@@ -154,7 +154,7 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	if (valid_rpc_checksum == false) {
 		const Node *node = ObjectDB::get_instance<Node>(*oid);
 		ERR_FAIL_NULL(node); // Bug.
-		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + node->get_path());
+		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + String(node->get_path()));
 	}
 
 	NodeCache *cache = nodes_cache.getptr(*oid);

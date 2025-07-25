@@ -2400,8 +2400,11 @@ psa_status_t psa_hash_setup(psa_hash_operation_t *operation,
         goto exit;
     }
 
-    /* Ensure all of the context is zeroized, since PSA_HASH_OPERATION_INIT only
-     * directly zeroes the int-sized dummy member of the context union. */
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
     memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_driver_wrapper_hash_setup(operation, alg);
@@ -2596,6 +2599,13 @@ psa_status_t psa_hash_clone(const psa_hash_operation_t *source_operation,
         return PSA_ERROR_BAD_STATE;
     }
 
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&target_operation->ctx, 0, sizeof(target_operation->ctx));
+
     psa_status_t status = psa_driver_wrapper_hash_clone(source_operation,
                                                         target_operation);
     if (status != PSA_SUCCESS) {
@@ -2692,6 +2702,13 @@ static psa_status_t psa_mac_setup(psa_mac_operation_t *operation,
         status = PSA_ERROR_BAD_STATE;
         goto exit;
     }
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_get_and_lock_key_slot_with_policy(
         key,
@@ -3619,6 +3636,13 @@ psa_status_t psa_sign_hash_start(
         return PSA_ERROR_BAD_STATE;
     }
 
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
+
     status = psa_sign_verify_check_alg(0, alg);
     if (status != PSA_SUCCESS) {
         operation->error_occurred = 1;
@@ -3778,6 +3802,13 @@ psa_status_t psa_verify_hash_start(
     if (operation->id != 0 || operation->error_occurred) {
         return PSA_ERROR_BAD_STATE;
     }
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
 
     status = psa_sign_verify_check_alg(0, alg);
     if (status != PSA_SUCCESS) {
@@ -4446,6 +4477,14 @@ static psa_status_t psa_cipher_setup(psa_cipher_operation_t *operation,
     }
     operation->default_iv_length = PSA_CIPHER_IV_LENGTH(slot->attr.type, alg);
 
+
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
+
     /* Try doing the operation through a driver before using software fallback. */
     if (cipher_operation == MBEDTLS_ENCRYPT) {
         status = psa_driver_wrapper_cipher_encrypt_setup(operation,
@@ -5079,6 +5118,13 @@ static psa_status_t psa_aead_setup(psa_aead_operation_t *operation,
         goto exit;
     }
 
+    /* Make sure the driver-dependent part of the operation is zeroed.
+     * This is a guarantee we make to drivers. Initializing the operation
+     * does not necessarily take care of it, since the context is a
+     * union and initializing a union does not necessarily initialize
+     * all of its members. */
+    memset(&operation->ctx, 0, sizeof(operation->ctx));
+
     if (is_encrypt) {
         key_usage = PSA_KEY_USAGE_ENCRYPT;
     } else {
@@ -5585,7 +5631,7 @@ psa_status_t psa_aead_abort(psa_aead_operation_t *operation)
 }
 
 /****************************************************************/
-/* Generators */
+/* Key derivation: output generation */
 /****************************************************************/
 
 #if defined(BUILTIN_ALG_ANY_HKDF) || \
@@ -5599,6 +5645,17 @@ psa_status_t psa_aead_abort(psa_aead_operation_t *operation)
 #if defined(BUILTIN_ALG_ANY_HKDF) || \
     defined(MBEDTLS_PSA_BUILTIN_ALG_TLS12_PRF) || \
     defined(MBEDTLS_PSA_BUILTIN_ALG_TLS12_PSK_TO_MS)
+
+/** Internal helper to set up an HMAC operation with a key passed directly.
+ *
+ * \param[in,out] operation     A MAC operation object. It does not need to
+ *                              be initialized.
+ * \param hash_alg              The hash algorithm used for HMAC.
+ * \param hmac_key              The HMAC key.
+ * \param hmac_key_length       Length of \p hmac_key in bytes.
+ *
+ * \return A PSA status code.
+ */
 static psa_status_t psa_key_derivation_start_hmac(
     psa_mac_operation_t *operation,
     psa_algorithm_t hash_alg,
@@ -5610,6 +5667,14 @@ static psa_status_t psa_key_derivation_start_hmac(
     psa_set_key_type(&attributes, PSA_KEY_TYPE_HMAC);
     psa_set_key_bits(&attributes, PSA_BYTES_TO_BITS(hmac_key_length));
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+
+    /* Make sure the whole the operation is zeroed.
+     * It isn't enough to require the caller to initialize operation to
+     * PSA_MAC_OPERATION_INIT, since one field is a union and initializing
+     * a union does not necessarily initialize all of its members.
+     * psa_mac_setup() would handle PSA_MAC_OPERATION_INIT, but here we
+     * bypass it and call lower-level functions directly. */
+    memset(operation, 0, sizeof(*operation));
 
     operation->is_sign = 1;
     operation->mac_size = PSA_HASH_LENGTH(hash_alg);
@@ -5835,7 +5900,7 @@ static psa_status_t psa_key_derivation_tls12_prf_generate_next_block(
 {
     psa_algorithm_t hash_alg = PSA_ALG_HKDF_GET_HASH(alg);
     uint8_t hash_length = PSA_HASH_LENGTH(hash_alg);
-    psa_mac_operation_t hmac = PSA_MAC_OPERATION_INIT;
+    psa_mac_operation_t hmac;
     size_t hmac_output_length;
     psa_status_t status, cleanup_status;
 
@@ -6036,7 +6101,14 @@ static psa_status_t psa_key_derivation_pbkdf2_generate_block(
     psa_key_attributes_t *attributes)
 {
     psa_status_t status;
-    psa_mac_operation_t mac_operation = PSA_MAC_OPERATION_INIT;
+    psa_mac_operation_t mac_operation;
+    /* Make sure the whole the operation is zeroed.
+     * PSA_MAC_OPERATION_INIT does not necessarily do it fully,
+     * since one field is a union and initializing a union does not
+     * necessarily initialize all of its members.
+     * psa_mac_setup() would do it, but here we bypass it and call
+     * lower-level functions directly. */
+    memset(&mac_operation, 0, sizeof(mac_operation));
     size_t mac_output_length;
     uint8_t U_i[PSA_MAC_MAX_SIZE];
     uint8_t *U_accumulator = pbkdf2->output_block;
@@ -6667,7 +6739,7 @@ psa_status_t psa_key_derivation_output_key(
 
 
 /****************************************************************/
-/* Key derivation */
+/* Key derivation: operation management */
 /****************************************************************/
 
 #if defined(AT_LEAST_ONE_BUILTIN_KDF)
@@ -8222,6 +8294,8 @@ psa_status_t psa_generate_key(const psa_key_attributes_t *attributes,
                                    key);
 }
 
+
+
 /****************************************************************/
 /* Module setup */
 /****************************************************************/
@@ -8497,6 +8571,12 @@ exit:
     return status;
 }
 
+
+
+/****************************************************************/
+/* PAKE */
+/****************************************************************/
+
 #if defined(PSA_WANT_ALG_SOME_PAKE)
 psa_status_t psa_crypto_driver_pake_get_password_len(
     const psa_crypto_driver_pake_inputs_t *inputs,
@@ -8621,7 +8701,11 @@ psa_status_t psa_pake_setup(
         goto exit;
     }
 
-    memset(&operation->data.inputs, 0, sizeof(operation->data.inputs));
+    /* Make sure the variable-purpose part of the operation is zeroed.
+     * Initializing the operation does not necessarily take care of it,
+     * since the context is a union and initializing a union does not
+     * necessarily initialize all of its members. */
+    memset(&operation->data, 0, sizeof(operation->data));
 
     operation->alg = cipher_suite->algorithm;
     operation->primitive = PSA_PAKE_PRIMITIVE(cipher_suite->type,

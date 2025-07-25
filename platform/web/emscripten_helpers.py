@@ -125,5 +125,9 @@ def add_js_pre(env, js_pre):
     env.Append(JS_PRE=env.File(js_pre))
 
 
+def add_js_post(env, js_post):
+    env.Append(JS_POST=env.File(js_post))
+
+
 def add_js_externs(env, externs):
     env.Append(JS_EXTERNS=env.File(externs))

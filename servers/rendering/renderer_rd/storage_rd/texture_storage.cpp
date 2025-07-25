@@ -182,22 +182,11 @@ TextureStorage::TextureStorage() {
 			RD::get_singleton()->texture_update(default_rd_textures[DEFAULT_RD_TEXTURE_DEPTH], 0, sv);
 		}
 
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
+		memset(pv.ptrw(), 0, 16 * 4);
 		default_rd_textures[DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER] = RD::get_singleton()->texture_buffer_create(16, RD::DATA_FORMAT_R8G8B8A8_UNORM, pv);
 
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
+		// Can be skipped, is still 0 from the previous call.
+		//memset(pv.ptrw(), 0, 16 * 4);
 		{
 			tformat.format = RD::DATA_FORMAT_R8G8B8A8_UINT;
 			Vector<Vector<uint8_t>> vpv;
@@ -1296,7 +1285,7 @@ RID TextureStorage::texture_create_from_native_handle(RS::TextureType p_type, Im
 	// Assumed to be a color attachment - see note above.
 	uint64_t usage_flags = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	RID rd_texture = RD::get_singleton()->texture_create_from_extension(type, format, RD::TEXTURE_SAMPLES_1, usage_flags, p_native_handle, p_width, p_height, p_depth, p_layers);
+	RID rd_texture = RD::get_singleton()->texture_create_from_extension(type, format, RD::TEXTURE_SAMPLES_1, usage_flags, p_native_handle, p_width, p_height, p_depth, p_layers, 1);
 
 	RID texture = texture_allocate();
 	texture_rd_initialize(texture, rd_texture, p_layered_type);
@@ -2655,6 +2644,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break; // astc 8x8
+		case RD::DATA_FORMAT_D16_UNORM: {
+			r_format.image_format = Image::FORMAT_RH;
+			r_format.rd_format = RD::DATA_FORMAT_D16_UNORM;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_D32_SFLOAT: {
+			r_format.image_format = Image::FORMAT_RF;
+			r_format.rd_format = RD::DATA_FORMAT_D32_SFLOAT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 
 		default: {
 			ERR_FAIL_MSG("Unsupported image format");
@@ -2744,7 +2749,7 @@ void TextureStorage::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
 	Decal *decal = decal_owner.get_or_null(p_decal);
 	ERR_FAIL_NULL(decal);
 	decal->cull_mask = p_layers;
-	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_DECAL);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_CULL_MASK);
 }
 
 void TextureStorage::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
@@ -3526,6 +3531,7 @@ void TextureStorage::render_target_set_override(RID p_render_target, RID p_color
 	rt->overridden.color = p_color_texture;
 	rt->overridden.depth = p_depth_texture;
 	rt->overridden.velocity = p_velocity_texture;
+	rt->overridden.velocity_depth = p_velocity_depth_texture;
 }
 
 RID TextureStorage::render_target_get_override_color(RID p_render_target) const {
@@ -3585,6 +3591,13 @@ RID TextureStorage::render_target_get_override_velocity_slice(RID p_render_targe
 
 		return rt->overridden.cached_slices[key];
 	}
+}
+
+RID TextureStorage::render_target_get_override_velocity_depth(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, RID());
+
+	return rt->overridden.velocity_depth;
 }
 
 void RendererRD::TextureStorage::render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) {
@@ -3694,6 +3707,20 @@ bool TextureStorage::render_target_is_using_hdr(RID p_render_target) const {
 	ERR_FAIL_NULL_V(rt, false);
 
 	return rt->use_hdr;
+}
+
+void TextureStorage::render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->use_debanding = p_use_debanding;
+}
+
+bool TextureStorage::render_target_is_using_debanding(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, false);
+
+	return rt->use_debanding;
 }
 
 RID TextureStorage::render_target_get_rd_framebuffer(RID p_render_target) {

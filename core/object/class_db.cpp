@@ -35,7 +35,7 @@
 #include "core/object/script_language.h"
 #include "core/version.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
 	MethodDefinition md;
@@ -47,7 +47,7 @@ MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint3
 	return md;
 }
 
-#endif
+#endif // DEBUG_ENABLED
 
 ClassDB::APIType ClassDB::current_api = API_CORE;
 HashMap<ClassDB::APIType, uint32_t> ClassDB::api_hashes_cache;
@@ -368,7 +368,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 }
 
 uint32_t ClassDB::get_api_hash(APIType p_api) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	Locker::Lock lock(Locker::STATE_WRITE);
 
 	if (api_hashes_cache.has(p_api)) {
@@ -513,7 +513,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 	return hash;
 #else
 	return 0;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 bool ClassDB::class_exists(const StringName &p_class) {
@@ -898,7 +898,7 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 			continue;
 		}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
 			p_methods->push_back(E);
 		}
@@ -919,7 +919,7 @@ void ClassDB::get_method_list(const StringName &p_class, List<MethodInfo> *p_met
 			MethodInfo minfo = info_from_bind(m);
 			p_methods->push_back(minfo);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		if (p_no_inheritance) {
 			break;
@@ -944,7 +944,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			continue;
 		}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		for (const MethodInfo &E : type->virtual_methods) {
 			Pair<MethodInfo, uint32_t> pair(E, E.get_compatibility_hash());
 			p_methods->push_back(pair);
@@ -969,7 +969,7 @@ void ClassDB::get_method_list_with_compatibility(const StringName &p_class, List
 			Pair<MethodInfo, uint32_t> pair(minfo, method->get_hash());
 			p_methods->push_back(pair);
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		for (const KeyValue<StringName, LocalVector<MethodBind *, unsigned int, false, false>> &E : type->method_map_compatibility) {
 			LocalVector<MethodBind *> compat = E.value;
@@ -1004,7 +1004,7 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			continue;
 		}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		MethodBind **method = type->method_map.getptr(p_method);
 		if (method && *method) {
 			if (r_info != nullptr) {
@@ -1027,7 +1027,7 @@ bool ClassDB::get_method_info(const StringName &p_class, const StringName &p_met
 			}
 			return true;
 		}
-#endif
+#endif // DEBUG_ENABLED
 
 		if (p_no_inheritance) {
 			break;
@@ -1140,9 +1140,9 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 		}
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	type->constant_order.push_back(p_name);
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance) {
@@ -1151,7 +1151,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 	ClassInfo *type = classes.getptr(p_class);
 
 	while (type) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		for (const StringName &E : type->constant_order) {
 			p_constants->push_back(E);
 		}
@@ -1161,7 +1161,7 @@ void ClassDB::get_integer_constant_list(const StringName &p_class, List<String> 
 			p_constants->push_back(E.key);
 		}
 
-#endif
+#endif // DEBUG_ENABLED
 		if (p_no_inheritance) {
 			break;
 		}
@@ -1278,18 +1278,18 @@ void ClassDB::get_enum_constants(const StringName &p_class, const StringName &p_
 }
 
 void ClassDB::set_method_error_return_values(const StringName &p_class, const StringName &p_method, const Vector<Error> &p_values) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ClassInfo *type = classes.getptr(p_class);
 
 	ERR_FAIL_NULL(type);
 
 	type->method_error_values[p_method] = p_values;
-#endif
+#endif // DEBUG_ENABLED
 }
 
 Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class, const StringName &p_method) {
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	Locker::Lock lock(Locker::STATE_READ);
 	ClassInfo *type = classes.getptr(p_class);
 
@@ -1301,7 +1301,7 @@ Vector<Error> ClassDB::get_method_error_return_values(const StringName &p_class,
 	return type->method_error_values[p_method];
 #else
 	return Vector<Error>();
-#endif
+#endif // DEBUG_ENABLED
 }
 
 bool ClassDB::has_enum(const StringName &p_class, const StringName &p_name, bool p_no_inheritance) {
@@ -1350,13 +1350,13 @@ void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) 
 
 	StringName sname = p_signal.name;
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ClassInfo *check = type;
 	while (check) {
 		ERR_FAIL_COND_MSG(check->signal_map.has(sname), vformat("Class '%s' already has signal '%s'.", String(p_class), String(sname)));
 		check = check->inherits_ptr;
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	type->signal_map[sname] = p_signal;
 }
@@ -1465,41 +1465,41 @@ void ClassDB::add_property(const StringName &p_class, const PropertyInfo &p_pinf
 	MethodBind *mb_set = nullptr;
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 		ERR_FAIL_NULL_MSG(mb_set, vformat("Invalid setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
 
 		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, vformat("Invalid function for setter '%s::%s' for property '%s'.", p_class, p_setter, p_pinfo.name));
-#endif
+#endif // DEBUG_ENABLED
 	}
 
 	MethodBind *mb_get = nullptr;
 	if (p_getter) {
 		mb_get = get_method(p_class, p_getter);
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 		ERR_FAIL_NULL_MSG(mb_get, vformat("Invalid getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
 
 		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
 		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, vformat("Invalid function for getter '%s::%s' for property '%s'.", p_class, p_getter, p_pinfo.name));
-#endif
+#endif // DEBUG_ENABLED
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), vformat("Object '%s' already has property '%s'.", p_class, p_pinfo.name));
-#endif
+#endif // DEBUG_ENABLED
 
 	type->property_list.push_back(p_pinfo);
 	type->property_map[p_pinfo.name] = p_pinfo;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	if (mb_get) {
 		type->methods_in_properties.insert(p_getter);
 	}
 	if (mb_set) {
 		type->methods_in_properties.insert(p_setter);
 	}
-#endif
+#endif // DEBUG_ENABLED
 	PropertySetGet psg;
 	psg.setter = p_setter;
 	psg.getter = p_getter;
@@ -1887,9 +1887,9 @@ void ClassDB::_bind_method_custom(const StringName &p_class, MethodBind *p_metho
 		ERR_FAIL_MSG(vformat("Method already bound '%s::%s'.", p_class, method_name));
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	type->method_order.push_back(method_name);
-#endif
+#endif // DEBUG_ENABLED
 
 	type->method_map[method_name] = p_method;
 }
@@ -1918,22 +1918,22 @@ MethodBind *ClassDB::_bind_vararg_method(MethodBind *p_bind, const StringName &p
 		ERR_FAIL_V_MSG(nullptr, vformat("Method already bound: '%s::%s'.", instance_type, p_name));
 	}
 	type->method_map[p_name] = bind;
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	// FIXME: <reduz> set_return_type is no longer in MethodBind, so I guess it should be moved to vararg method bind
 	//bind->set_return_type("Variant");
 	type->method_order.push_back(p_name);
-#endif
+#endif // DEBUG_ENABLED
 
 	return bind;
 }
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const MethodDefinition &method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = method_name.name;
 #else
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
 	StringName mdname = StringName(method_name);
-#endif
+#endif // DEBUG_ENABLED
 
 	Locker::Lock lock(Locker::STATE_WRITE);
 	ERR_FAIL_NULL_V(p_bind, nullptr);
@@ -1944,7 +1944,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 #ifdef DEBUG_ENABLED
 
 	ERR_FAIL_COND_V_MSG(!p_compatibility && has_method(instance_type, mdname), nullptr, vformat("Class '%s' already has a method '%s'.", String(instance_type), String(mdname)));
-#endif
+#endif // DEBUG_ENABLED
 
 	ClassInfo *type = classes.getptr(instance_type);
 	if (!type) {
@@ -1958,7 +1958,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 		ERR_FAIL_V_MSG(nullptr, vformat("Method already bound '%s::%s'.", instance_type, mdname));
 	}
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 	if (method_name.args.size() > p_bind->get_argument_count()) {
 		memdelete(p_bind);
@@ -1975,7 +1975,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 	if (!p_compatibility) {
 		type->method_order.push_back(mdname);
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	if (p_compatibility) {
 		_bind_compatibility(type, p_bind);
@@ -2000,7 +2000,7 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 
 	Locker::Lock lock(Locker::STATE_WRITE);
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	MethodInfo mi = p_method;
 	if (p_virtual) {
 		mi.flags |= METHOD_FLAG_VIRTUAL;
@@ -2026,7 +2026,7 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 	classes[p_class].virtual_methods.push_back(mi);
 	classes[p_class].virtual_methods_map[p_method.name] = mi;
 
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void ClassDB::add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual, const Vector<String> &p_arg_names, bool p_object_core) {
@@ -2048,7 +2048,7 @@ void ClassDB::add_virtual_compatibility_method(const StringName &p_class, const 
 void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -2063,7 +2063,7 @@ void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p
 		check = check->inherits_ptr;
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 }
 
 Vector<uint32_t> ClassDB::get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name) {
@@ -2088,7 +2088,7 @@ Vector<uint32_t> ClassDB::get_virtual_method_compatibility_hashes(const StringNa
 void ClassDB::add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info) {
 	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	PackedStringArray arg_names;
 
 	MethodInfo mi;
@@ -2104,7 +2104,7 @@ void ClassDB::add_extension_class_virtual_method(const StringName &p_class, cons
 	}
 
 	add_virtual_method(p_class, mi, true, arg_names);
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void ClassDB::set_class_enabled(const StringName &p_class, bool p_enable) {
@@ -2151,6 +2151,30 @@ bool ClassDB::is_class_runtime(const StringName &p_class) {
 	ERR_FAIL_NULL_V_MSG(ti, false, vformat("Cannot get class '%s'.", String(p_class)));
 	return ti->is_runtime;
 }
+
+#ifdef TOOLS_ENABLED
+void ClassDB::add_class_dependency(const StringName &p_class, const StringName &p_dependency) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
+	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
+	if (classes[p_class].dependency_list.find(p_dependency)) {
+		ERR_FAIL();
+	}
+
+	classes[p_class].dependency_list.push_back(p_dependency);
+}
+
+void ClassDB::get_class_dependencies(const StringName &p_class, List<StringName> *r_rependencies) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_MSG(ti, vformat("Cannot get class '%s'.", String(p_class)));
+
+	for (const StringName &dep : ti->dependency_list) {
+		r_rependencies->push_back(dep);
+	}
+}
+#endif // TOOLS_ENABLED
 
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
 	if (resource_base_extensions.has(p_extension)) {
@@ -2250,7 +2274,7 @@ Variant ClassDB::class_get_default_property_value(const StringName &p_class, con
 			WARN_PRINT(vformat("Instantiated %s used as default value for %s's \"%s\" property.", obj->get_class(), p_class, p_property));
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	return var;
 }

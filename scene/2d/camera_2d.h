@@ -90,7 +90,6 @@ protected:
 	void _update_scroll();
 
 #ifdef TOOLS_ENABLED
-	bool _is_dragging_limit_rect() const;
 	void _project_settings_changed();
 #endif
 
@@ -98,8 +97,6 @@ protected:
 	void _reset_just_exited() { just_exited_tree = false; }
 
 	void _update_process_internal_for_smoothing();
-
-	void _set_limit_rect(const Rect2 &p_limit_rect);
 
 	bool screen_drawing_enabled = true;
 	bool limit_drawing_enabled = false;
@@ -122,26 +119,10 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-#ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
-
-	virtual void _edit_set_position(const Point2 &p_position) override;
-	virtual Point2 _edit_get_position() const override;
-
-	virtual void _edit_set_rect(const Rect2 &p_rect) override;
-	virtual Size2 _edit_get_minimum_size() const override { return Size2(); }
-#endif // TOOLS_ENABLED
-
-#ifdef DEBUG_ENABLED
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
-#endif // DEBUG_ENABLED
-
-	Rect2 get_limit_rect() const;
+	void set_limit_rect(const Rect2i &p_limit_rect);
+	Rect2i get_limit_rect() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
@@ -202,6 +183,7 @@ public:
 	Vector2 get_zoom() const;
 
 	Point2 get_camera_screen_center() const;
+	real_t get_screen_rotation() const;
 
 	void set_custom_viewport(Node *p_viewport);
 	Node *get_custom_viewport() const;

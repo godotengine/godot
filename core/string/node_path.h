@@ -33,7 +33,7 @@
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 
-class NodePath {
+class [[nodiscard]] NodePath {
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;
@@ -78,7 +78,7 @@ public:
 		return data->hash_cache;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	bool is_empty() const;
 
 	bool operator==(const NodePath &p_path) const;

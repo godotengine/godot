@@ -90,7 +90,13 @@ struct hb_vector_t
   {
     auto iter = hb_iter (o);
     if (iter.is_random_access_iterator || iter.has_fast_len)
-      alloc (hb_len (iter), true);
+    {
+      if (unlikely (!alloc (hb_len (iter), true)))
+	return;
+      unsigned count = hb_len (iter);
+      for (unsigned i = 0; i < count; i++)
+	push_has_room (*iter++);
+    }
     while (iter)
     {
       if (unlikely (!alloc (length + 1)))
@@ -435,7 +441,6 @@ struct hb_vector_t
       while (size > new_allocated)
 	new_allocated += (new_allocated >> 1) + 8;
     }
-
 
     /* Reallocate */
 

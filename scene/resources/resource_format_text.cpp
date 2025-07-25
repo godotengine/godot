@@ -34,6 +34,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
+#include "scene/property_utils.h"
 
 void ResourceLoaderText::_printerr() {
 	ERR_PRINT(vformat("%s:%d - Parse Error: %s.", res_path, lines, error_text));
@@ -1223,14 +1224,9 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			return error;
 		}
 
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			_printerr();
-			return error;
+		if (next_tag.fields.has("type")) {
+			r_classes->insert(next_tag.fields["type"]);
 		}
-
-		r_classes->insert(next_tag.fields["type"]);
 
 		while (true) {
 			String assign;
@@ -1447,9 +1443,9 @@ bool ResourceFormatLoaderText::handles_type(const String &p_type) const {
 }
 
 void ResourceFormatLoaderText::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
-	String ext = p_path.get_extension().to_lower();
-	if (ext == "tscn") {
-		r_classes->insert("PackedScene");
+	const String type = get_resource_type(p_path);
+	if (!type.is_empty()) {
+		r_classes->insert(type);
 	}
 
 	// ...for anything else must test...
@@ -1935,7 +1931,8 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 					}
 				}
 
-				Variant default_value = ClassDB::class_get_default_property_value(res->get_class(), name);
+				bool is_script = name == CoreStringName(script);
+				Variant default_value = is_script ? Variant() : PropertyUtils::get_property_default_value(res.ptr(), name);
 
 				if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
 					continue;

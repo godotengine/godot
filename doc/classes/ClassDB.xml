@@ -35,7 +35,7 @@
 			<return type="int" enum="ClassDB.APIType" />
 			<param index="0" name="class" type="StringName" />
 			<description>
-				Returns the API type of [param class]. See [enum APIType].
+				Returns the API type of the specified [param class].
 			</description>
 		</method>
 		<method name="class_get_enum_constants" qualifiers="const">

@@ -286,7 +286,8 @@ void CollisionShape2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
+	ADD_GROUP("One Way Collision", "one_way_collision");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision", PROPERTY_HINT_GROUP_ENABLE), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
 
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);

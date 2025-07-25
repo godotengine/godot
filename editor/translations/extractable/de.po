@@ -30,24 +30,14 @@ msgstr "Eine Farbe vom Bildschirm auswählen."
 msgid "Pick a color from the application window."
 msgstr "Eine Farbe innerhalb des Anwendungsfensters auswählen."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Farbe: #%s\n"
-"LMT: Farbe anwenden\n"
-"RMT: Vorgabe entfernen"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Farbe: #%s\n"
-"LMT: Farbe anwenden"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Einen Hex-Code („#ff0000“) oder einen Farbnamen („red“) eingeben."
+
+msgid "Save"
+msgstr "Speichern"
+
+msgid "Clear"
+msgstr "Löschen"
 
 msgid "Select a picker shape."
 msgstr "Auswahl-Geometrie wählen."
@@ -76,9 +66,6 @@ msgstr "Öffnen"
 
 msgid "Select Current Folder"
 msgstr "Aktuellen Ordner auswählen"
-
-msgid "Save"
-msgstr "Speichern"
 
 msgid "Select This Folder"
 msgstr "Diesen Ordner auswählen"
@@ -119,11 +106,11 @@ msgstr "Pfad:"
 msgid "Refresh files."
 msgstr "Dateien neu lesen."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Versteckte Dateien ein-/ausblenden."
-
 msgid "Directories & Files:"
 msgstr "Verzeichnisse und Dateien:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Versteckte Dateien ein-/ausblenden."
 
 msgid "File:"
 msgstr "Datei:"
@@ -235,9 +222,6 @@ msgstr "Einfügen"
 
 msgid "Select All"
 msgstr "Alles auswählen"
-
-msgid "Clear"
-msgstr "Löschen"
 
 msgid "Undo"
 msgstr "Rückgängig"

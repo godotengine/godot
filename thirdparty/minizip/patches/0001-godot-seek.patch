@@ -127,7 +127,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
  
      s->pfile_in_zip_read = pfile_in_zip_read_info;
                  s->encrypted = 0;
-@@ -1510,6 +1530,82 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
+@@ -1510,6 +1530,84 @@ extern int ZEXPORT unzOpenCurrentFile3(unzFile file, int* method,
      return UNZ_OK;
  }
  
@@ -159,6 +159,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
 +
 +        pfile_in_zip_read_info->stream.avail_in = (uInt)0;
 +        pfile_in_zip_read_info->stream.total_out = pos;
++        pfile_in_zip_read_info->total_out_64 = pos;
 +
 +        return ZSEEK64(pfile_in_zip_read_info->z_filefunc,
 +                       pfile_in_zip_read_info->filestream,
@@ -182,6 +183,7 @@ index ea05b7d62a..7e8a6ac2d3 100644
 +
 +            pfile_in_zip_read_info->stream.avail_in = (uInt)0;
 +            pfile_in_zip_read_info->stream.total_out = 0;
++            pfile_in_zip_read_info->total_out_64 = 0;
 +            pfile_in_zip_read_info->stream.next_in = 0;
 +        }
 +

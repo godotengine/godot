@@ -44,8 +44,10 @@
 #include "hb-ot-face.hh"
 
 #include "hb-set.hh"
+#include "hb-unicode.hh"
 
 #include "hb-aat-layout.hh"
+#include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-stat-table.hh"
 
 
@@ -84,6 +86,7 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
 						props (props),
 						map (face, props)
 #ifndef HB_NO_AAT_SHAPE
+						, aat_map (face, props)
 						, apply_morx (_hb_apply_morx (face, props))
 #endif
 {
@@ -106,6 +109,10 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
   plan.props = props;
   plan.shaper = shaper;
   map.compile (plan.map, key);
+#ifndef HB_NO_AAT_SHAPE
+  if (apply_morx)
+    aat_map.compile (plan.aat_map);
+#endif
 
 #ifndef HB_NO_OT_SHAPE_FRACTIONS
   plan.frac_mask = plan.map.get_1_mask (HB_TAG ('f','r','a','c'));
@@ -205,6 +212,14 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
      https://github.com/harfbuzz/harfbuzz/issues/2967. */
   if (plan.apply_morx)
     plan.adjust_mark_positioning_when_zeroing = false;
+
+  /* According to Ned, trak is applied by default for "modern fonts", as detected by presence of STAT table. */
+#ifndef HB_NO_STYLE
+  plan.apply_trak = hb_aat_layout_has_tracking (face) && face->table.STAT->has_data ();
+#else
+  plan.apply_trak = false;
+#endif
+
 #endif
 }
 
@@ -269,6 +284,11 @@ hb_ot_shape_plan_t::position (hb_font_t   *font,
 #endif
   else if (this->apply_fallback_kern)
     _hb_ot_shape_fallback_kern (this, font, buffer);
+
+#ifndef HB_NO_AAT_SHAPE
+  if (this->apply_trak)
+    hb_aat_layout_track (this, font, buffer);
+#endif
 }
 
 
@@ -405,17 +425,21 @@ _hb_ot_shaper_face_data_destroy (hb_ot_face_data_t *data)
  * shaper font data
  */
 
-struct hb_ot_font_data_t {};
+struct hb_ot_font_data_t {
+  OT::hb_scalar_cache_t unused; // Just for alignment
+};
 
 hb_ot_font_data_t *
-_hb_ot_shaper_font_data_create (hb_font_t *font HB_UNUSED)
+_hb_ot_shaper_font_data_create (hb_font_t *font)
 {
-  return (hb_ot_font_data_t *) HB_SHAPER_DATA_SUCCEEDED;
+  const OT::ItemVariationStore &var_store = font->face->table.GDEF->table->get_var_store ();
+  return (hb_ot_font_data_t *) var_store.create_cache ();
 }
 
 void
-_hb_ot_shaper_font_data_destroy (hb_ot_font_data_t *data HB_UNUSED)
+_hb_ot_shaper_font_data_destroy (hb_ot_font_data_t *data)
 {
+  OT::ItemVariationStore::destroy_cache ((OT::hb_scalar_cache_t *) data);
 }
 
 
@@ -551,7 +575,7 @@ hb_form_clusters (hb_buffer_t *buffer)
   if (!(buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_NON_ASCII))
     return;
 
-  if (buffer->cluster_level == HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES)
+  if (HB_BUFFER_CLUSTER_LEVEL_IS_GRAPHEMES (buffer->cluster_level))
     foreach_grapheme (buffer, start, end)
       buffer->merge_clusters (start, end);
   else
@@ -609,7 +633,7 @@ hb_ensure_native_direction (hb_buffer_t *buffer)
    * Ogham fonts are supposed to be implemented BTT or not.  Need to research that
    * first. */
   if ((HB_DIRECTION_IS_HORIZONTAL (direction) &&
-       direction != horiz_dir && horiz_dir != HB_DIRECTION_INVALID) ||
+       direction != horiz_dir && HB_DIRECTION_IS_VALID (horiz_dir)) ||
       (HB_DIRECTION_IS_VERTICAL   (direction) &&
        direction != HB_DIRECTION_TTB))
   {
@@ -622,59 +646,6 @@ hb_ensure_native_direction (hb_buffer_t *buffer)
 /*
  * Substitute
  */
-
-#ifndef HB_NO_VERTICAL
-static hb_codepoint_t
-hb_vert_char_for (hb_codepoint_t u)
-{
-  switch (u >> 8)
-  {
-    case 0x20: switch (u) {
-      case 0x2013u: return 0xfe32u; // EN DASH
-      case 0x2014u: return 0xfe31u; // EM DASH
-      case 0x2025u: return 0xfe30u; // TWO DOT LEADER
-      case 0x2026u: return 0xfe19u; // HORIZONTAL ELLIPSIS
-    } break;
-    case 0x30: switch (u) {
-      case 0x3001u: return 0xfe11u; // IDEOGRAPHIC COMMA
-      case 0x3002u: return 0xfe12u; // IDEOGRAPHIC FULL STOP
-      case 0x3008u: return 0xfe3fu; // LEFT ANGLE BRACKET
-      case 0x3009u: return 0xfe40u; // RIGHT ANGLE BRACKET
-      case 0x300au: return 0xfe3du; // LEFT DOUBLE ANGLE BRACKET
-      case 0x300bu: return 0xfe3eu; // RIGHT DOUBLE ANGLE BRACKET
-      case 0x300cu: return 0xfe41u; // LEFT CORNER BRACKET
-      case 0x300du: return 0xfe42u; // RIGHT CORNER BRACKET
-      case 0x300eu: return 0xfe43u; // LEFT WHITE CORNER BRACKET
-      case 0x300fu: return 0xfe44u; // RIGHT WHITE CORNER BRACKET
-      case 0x3010u: return 0xfe3bu; // LEFT BLACK LENTICULAR BRACKET
-      case 0x3011u: return 0xfe3cu; // RIGHT BLACK LENTICULAR BRACKET
-      case 0x3014u: return 0xfe39u; // LEFT TORTOISE SHELL BRACKET
-      case 0x3015u: return 0xfe3au; // RIGHT TORTOISE SHELL BRACKET
-      case 0x3016u: return 0xfe17u; // LEFT WHITE LENTICULAR BRACKET
-      case 0x3017u: return 0xfe18u; // RIGHT WHITE LENTICULAR BRACKET
-    } break;
-    case 0xfe: switch (u) {
-      case 0xfe4fu: return 0xfe34u; // WAVY LOW LINE
-    } break;
-    case 0xff: switch (u) {
-      case 0xff01u: return 0xfe15u; // FULLWIDTH EXCLAMATION MARK
-      case 0xff08u: return 0xfe35u; // FULLWIDTH LEFT PARENTHESIS
-      case 0xff09u: return 0xfe36u; // FULLWIDTH RIGHT PARENTHESIS
-      case 0xff0cu: return 0xfe10u; // FULLWIDTH COMMA
-      case 0xff1au: return 0xfe13u; // FULLWIDTH COLON
-      case 0xff1bu: return 0xfe14u; // FULLWIDTH SEMICOLON
-      case 0xff1fu: return 0xfe16u; // FULLWIDTH QUESTION MARK
-      case 0xff3bu: return 0xfe47u; // FULLWIDTH LEFT SQUARE BRACKET
-      case 0xff3du: return 0xfe48u; // FULLWIDTH RIGHT SQUARE BRACKET
-      case 0xff3fu: return 0xfe33u; // FULLWIDTH LOW LINE
-      case 0xff5bu: return 0xfe37u; // FULLWIDTH LEFT CURLY BRACKET
-      case 0xff5du: return 0xfe38u; // FULLWIDTH RIGHT CURLY BRACKET
-    } break;
-  }
-
-  return u;
-}
-#endif
 
 static inline void
 hb_ot_rotate_chars (const hb_ot_shape_context_t *c)
@@ -701,7 +672,7 @@ hb_ot_rotate_chars (const hb_ot_shape_context_t *c)
   if (HB_DIRECTION_IS_VERTICAL (c->target_direction) && !c->plan->has_vert)
   {
     for (unsigned int i = 0; i < count; i++) {
-      hb_codepoint_t codepoint = hb_vert_char_for (info[i].codepoint);
+      hb_codepoint_t codepoint = hb_unicode_funcs_t::vertical_char_for (info[i].codepoint);
       if (unlikely (codepoint != info[i].codepoint && c->font->has_glyph (codepoint)))
 	info[i].codepoint = codepoint;
     }
@@ -1026,23 +997,16 @@ hb_ot_position_default (const hb_ot_shape_context_t *c)
   {
     c->font->get_glyph_h_advances (count, &info[0].codepoint, sizeof(info[0]),
 				   &pos[0].x_advance, sizeof(pos[0]));
-    /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
-    if (c->font->has_glyph_h_origin_func ())
-      for (unsigned int i = 0; i < count; i++)
-	c->font->subtract_glyph_h_origin (info[i].codepoint,
-					  &pos[i].x_offset,
-					  &pos[i].y_offset);
+    // h_origin defaults to zero; only apply it if the font has it.
+    if (c->font->has_glyph_h_origin_func () || c->font->has_glyph_h_origins_func ())
+      c->font->subtract_glyph_h_origins (c->buffer);
   }
   else
   {
     c->font->get_glyph_v_advances (count, &info[0].codepoint, sizeof(info[0]),
 				   &pos[0].y_advance, sizeof(pos[0]));
-    for (unsigned int i = 0; i < count; i++)
-    {
-      c->font->subtract_glyph_v_origin (info[i].codepoint,
-					&pos[i].x_offset,
-					&pos[i].y_offset);
-    }
+    // v_origin defaults to non-zero; apply even if only fallback is there.
+    c->font->subtract_glyph_v_origins (c->buffer);
   }
   if (c->buffer->scratch_flags & HB_BUFFER_SCRATCH_FLAG_HAS_SPACE_FALLBACK)
     _hb_ot_shape_fallback_spaces (c->plan, c->font, c->buffer);
@@ -1051,10 +1015,6 @@ hb_ot_position_default (const hb_ot_shape_context_t *c)
 static inline void
 hb_ot_position_plan (const hb_ot_shape_context_t *c)
 {
-  unsigned int count = c->buffer->len;
-  hb_glyph_info_t *info = c->buffer->info;
-  hb_glyph_position_t *pos = c->buffer->pos;
-
   /* If the font has no GPOS and direction is forward, then when
    * zeroing mark widths, we shift the mark with it, such that the
    * mark is positioned hanging over the previous glyph.  When
@@ -1069,12 +1029,9 @@ hb_ot_position_plan (const hb_ot_shape_context_t *c)
 
   /* We change glyph origin to what GPOS expects (horizontal), apply GPOS, change it back. */
 
-  /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
-  if (c->font->has_glyph_h_origin_func ())
-    for (unsigned int i = 0; i < count; i++)
-      c->font->add_glyph_h_origin (info[i].codepoint,
-				   &pos[i].x_offset,
-				   &pos[i].y_offset);
+  // h_origin defaults to zero; only apply it if the font has it.
+  if (c->font->has_glyph_h_origin_func () || c->font->has_glyph_h_origins_func ())
+    c->font->add_glyph_h_origins (c->buffer);
 
   hb_ot_layout_position_start (c->font, c->buffer);
 
@@ -1109,18 +1066,11 @@ hb_ot_position_plan (const hb_ot_shape_context_t *c)
   /* Finish off.  Has to follow a certain order. */
   hb_ot_layout_position_finish_advances (c->font, c->buffer);
   hb_ot_zero_width_default_ignorables (c->buffer);
-#ifndef HB_NO_AAT_SHAPE
-  if (c->plan->apply_morx)
-    hb_aat_layout_zero_width_deleted_glyphs (c->buffer);
-#endif
   hb_ot_layout_position_finish_offsets (c->font, c->buffer);
 
-  /* The nil glyph_h_origin() func returns 0, so no need to apply it. */
-  if (c->font->has_glyph_h_origin_func ())
-    for (unsigned int i = 0; i < count; i++)
-      c->font->subtract_glyph_h_origin (info[i].codepoint,
-					&pos[i].x_offset,
-					&pos[i].y_offset);
+  // h_origin defaults to zero; only apply it if the font has it.
+  if (c->font->has_glyph_h_origin_func () || c->font->has_glyph_h_origins_func ())
+    c->font->subtract_glyph_h_origins (c->buffer);
 
   if (c->plan->fallback_mark_positioning)
     _hb_ot_shape_fallback_mark_position (c->plan, c->font, c->buffer,

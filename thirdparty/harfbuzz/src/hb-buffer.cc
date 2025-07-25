@@ -370,6 +370,18 @@ hb_buffer_t::add_info (const hb_glyph_info_t &glyph_info)
 
   len++;
 }
+void
+hb_buffer_t::add_info_and_pos (const hb_glyph_info_t &glyph_info,
+			       const hb_glyph_position_t &glyph_pos)
+{
+  if (unlikely (!ensure (len + 1))) return;
+
+  info[len] = glyph_info;
+  assert (have_positions);
+  pos[len] = glyph_pos;
+
+  len++;
+}
 
 
 void
@@ -518,7 +530,7 @@ void
 hb_buffer_t::merge_clusters_impl (unsigned int start,
 				  unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
   {
     unsafe_to_break (start, end);
     return;
@@ -551,7 +563,7 @@ void
 hb_buffer_t::merge_out_clusters (unsigned int start,
 				 unsigned int end)
 {
-  if (cluster_level == HB_BUFFER_CLUSTER_LEVEL_CHARACTERS)
+  if (!HB_BUFFER_CLUSTER_LEVEL_IS_MONOTONE (cluster_level))
     return;
 
   if (unlikely (end - start < 2))

@@ -30,6 +30,8 @@
 
 #include "gradient.h"
 
+#include "core/config/engine.h"
+
 Gradient::Gradient() {
 	//Set initial gradient transition from black to white
 	points.resize(2);
@@ -88,6 +90,9 @@ void Gradient::_bind_methods() {
 }
 
 void Gradient::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "interpolation_color_space" && interpolation_mode == GRADIENT_INTERPOLATE_CONSTANT) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

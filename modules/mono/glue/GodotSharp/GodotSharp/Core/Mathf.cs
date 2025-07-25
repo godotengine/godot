@@ -1665,8 +1665,8 @@ namespace Godot
         /// <returns>The position of the first non-zero digit.</returns>
         public static int StepDecimals(double step)
         {
-            double[] sd = new double[]
-            {
+            ReadOnlySpan<double> sd =
+            [
                 0.9999,
                 0.09999,
                 0.009999,
@@ -1676,7 +1676,7 @@ namespace Godot
                 0.0000009999,
                 0.00000009999,
                 0.000000009999,
-            };
+            ];
             double abs = Math.Abs(step);
             double decs = abs - (int)abs; // Strip away integer part
             for (int i = 0; i < sd.Length; i++)
