@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphNodeIndexed" inherits="GraphNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [GraphNode] that creates ports for its children automatically.
+	</brief_description>
+	<description>
+		[GraphNodeIndexed] is an opinionated version of [GraphNode] that associates its children with so-called slots, which are used to create [GraphPort]s.
+		To be given a slot, a child node must be a [Control] node, and may not be marked as internal. Children of children, as well as nodes marked with the "GraphNodeIgnored" meta tag, are ignored. For technical reasons, nodes named "PortContainer" are also ignored.
+		Each slot is defined by its index, and provides the [GraphNode] with two [GraphPort]s: one on the left (input), and one on the right (output). These ports are laid out to align with the node associated with the slot, and have some of their properties configured automatically. Ports are named by the convention "InputPort*SLOT_NODE_NAME*" and "OutputPort*SLOT_NODE_NAME*"
+		When created, this node also creates a child [Control] node called "PortContainer", which it will use as the parent for all [GraphPort]s created for slots. Removing this node may result in unexpected behavior, but will usually trigger a replacement to be created when needed. Fair warning: this may be a bit janky, as it is not typical for a native node to create child nodes without marking them as internal.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="child_to_slot_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="child_index" type="int" />
+			<param index="1" name="include_internal" type="bool" default="false" />
+			<description>
+				Finds the child at [param child_index], then return its associated slot index. Equivalent to calling [code]slot_index_of_node(get_child(child_index, include_internal))[/code]
+				These indices are not equivalent, as there are many ways a child node might be ignored by slots. See the class description for more details.
+			</description>
+		</method>
+		<method name="get_child_by_port" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Finds the child associated with the slot that contains the given [param port]. Fails if the [param port] is not attached to this node or properly associated with a slot.
+			</description>
+		</method>
+		<method name="get_child_by_slot_index" qualifiers="const">
+			<return type="Node" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Finds the child associated with the given [param slot_index], if one exists.
+			</description>
+		</method>
+		<method name="get_input_port_by_node" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Finds the slot associated with the given child [param node] and returns the input port in that slot. Fails if the [param node] is not a child of this node or is not associated with a slot.
+			</description>
+		</method>
+		<method name="get_input_port_by_slot" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the input port of the slot at [param slot_index].
+			</description>
+		</method>
+		<method name="get_output_port_by_node" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Finds the slot associated with the given child [param node] and returns the output port in that slot. Fails if the [param node] is not a child of this node or is not associated with a slot.
+			</description>
+		</method>
+		<method name="get_output_port_by_slot" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Returns the output port of the slot at [param slot_index].
+			</description>
+		</method>
+		<method name="get_port_container" qualifiers="const">
+			<return type="Control" />
+			<description>
+				Returns the [Control] node used to store ports created by this node.
+			</description>
+		</method>
+		<method name="input_port_to_slot_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Finds the input port at the given [param port_index], then returns the index of the slot that contains that port. Equivalent to calling [code]slot_index_of_port(get_filtered_port(port_index, GraphPort.INPUT, include_disabled))[/code].
+				If [param include_disabled] is [code]false[/code], this indexes over only enabled ports.
+				See also [method port_to_slot_index] and [method output_port_to_slot_index].
+			</description>
+		</method>
+		<method name="output_port_to_slot_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Finds the output port at the given [param port_index], then returns the index of the slot that contains that port. Equivalent to calling [code]slot_index_of_port(get_filtered_port(port_index, GraphPort.OUTPUT, include_disabled))[/code].
+				If [param include_disabled] is [code]false[/code], this indexes over only enabled ports.
+				See also [method port_to_slot_index] and [method input_port_to_slot_index].
+			</description>
+		</method>
+		<method name="port_to_slot_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Finds the port at the given [param port_index], then returns the index of the slot that contains that port.
+				If [param include_disabled] is [code]false[/code], this indexes over only enabled ports. If [param include_disabled] is [code]true[/code], this is equivalent to calling [code]floor(port_index / 2)[/code].
+				See also [method input_port_to_slot_index] and [method output_port_to_slot_index].
+			</description>
+		</method>
+		<method name="set_input_port_at_slot">
+			<return type="GraphPort" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="port" type="GraphPort" />
+			<description>
+				Sets the input port of the slot at [param slot_index] to [param port]. This will also reparent [param port] to the port container.
+			</description>
+		</method>
+		<method name="set_input_port_properties">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<param index="2" name="type" type="int" />
+			<description>
+				Sets some properties of the input port of the slot at [param slot_index].
+			</description>
+		</method>
+		<method name="set_output_port_at_slot">
+			<return type="GraphPort" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="port" type="GraphPort" />
+			<description>
+				Sets the output port of the slot at [param slot_index] to [param port]. This will also reparent [param port] to the port container.
+			</description>
+		</method>
+		<method name="set_output_port_properties">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="enabled" type="bool" />
+			<param index="2" name="type" type="int" />
+			<description>
+				Sets some properties of the output port of the slot at [param slot_index].
+			</description>
+		</method>
+		<method name="set_port_container">
+			<return type="void" />
+			<param index="0" name="port_container" type="Control" />
+			<description>
+				Replaces this node's port container with [param port_container]. Will also add the "GraphNodeIgnored" meta tag to [param port_container].
+			</description>
+		</method>
+		<method name="set_ports_at_slot">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="input_port" type="GraphPort" />
+			<param index="2" name="output_port" type="GraphPort" />
+			<description>
+				Sets the input and output ports of the slot at [param slot_index]. This will also reparent both [param input_port] and [param output_port] to the port container.
+			</description>
+		</method>
+		<method name="set_slot_properties">
+			<return type="void" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="input_enabled" type="bool" />
+			<param index="2" name="input_type" type="int" />
+			<param index="3" name="output_enabled" type="bool" />
+			<param index="4" name="output_type" type="int" />
+			<description>
+				Sets some properties of both the input and output ports of the slot at [param slot_index].
+			</description>
+		</method>
+		<method name="slot_index_of_node" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Returns the index of the slot associated with the given child [param node]. Fails if the [param node] is not a child of this node or is not associated with a slot.
+			</description>
+		</method>
+		<method name="slot_index_of_port" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the index of the slot that contains the given [param port]. Fails if the [param port] is not part of a slot on this node.
+			</description>
+		</method>
+		<method name="slot_to_child_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="include_internal" type="bool" default="false" />
+			<description>
+				Gets the child node associated with the slot at [param slot_index], then returns its index. Equivalent to calling [code]get_child_by_slot_index(slot_index).get_index(p_include_internal)[/code].
+			</description>
+		</method>
+		<method name="slot_to_input_port_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the index of the input port in the slot at the given [param slot_index]. Equivalent to [code]ports[p_slot_index * 2].get_filtered_port_index(true)[/code].
+			</description>
+		</method>
+		<method name="slot_to_output_port_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the index of the output port in the slot at the given [param slot_index]. Equivalent to [code]ports[p_slot_index * 2 + 1].get_filtered_port_index(true)[/code].
+				See also:
+			</description>
+		</method>
+		<method name="slot_to_port_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="slot_index" type="int" />
+			<param index="1" name="is_input_port" type="bool" />
+			<param index="2" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns index of the port in the slot at the given [param slot_index] that matches [param is_input_port].
+				If [param is_input_port] is [code]true[/code], equivalent to [method slot_to_input_port_index]. Otherwise, equivalent to [method slot_to_output_port_index].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="_node_to_slot_cache" type="Dictionary[StringName, int]" setter="_set_slot_node_cache" getter="_get_slot_node_cache" default="{}">
+		</member>
+		<member name="slot_focus_mode" type="int" setter="set_slot_focus_mode" getter="get_slot_focus_mode" enum="Control.FocusMode" default="3">
+			Accessibility focus mode for slots. TODO: implement keyboard focus and behavior.
+		</member>
+		<member name="slots" type="Array[]" setter="set_slots" getter="get_slots" default="[]">
+			Slots are stored as an [Array], where each element is an [Array] of two elements:
+			0: [code]draw_stylebox[/code], a bool determining whether the slot's stylebox is drawn.
+			1: [code]node_name[/code], the [StringName] of the child node associated with this slot.
+		</member>
+	</members>
+	<signals>
+		<signal name="slot_added">
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Emitted when a slot is added to the node.
+			</description>
+		</signal>
+		<signal name="slot_moved">
+			<param index="0" name="old_slot_index" type="int" />
+			<param index="1" name="new_slot_index" type="int" />
+			<description>
+				Emitted when a slot changes indices in the node.
+			</description>
+		</signal>
+		<signal name="slot_removed">
+			<param index="0" name="slot_index" type="int" />
+			<description>
+				Emitted when a slot is removed from the node.
+			</description>
+		</signal>
+		<signal name="slot_sizes_changed">
+			<param index="0" name="node" type="GraphNodeIndexed" />
+			<description>
+				Emitted when any children associated with slots change sizes.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="port" data_type="icon" type="Texture2D">
+		</theme_item>
+		<theme_item name="port_selected" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="slot" data_type="style" type="StyleBox">
+		</theme_item>
+		<theme_item name="slot_selected" data_type="style" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>
