@@ -41,7 +41,8 @@
 void GraphNodeIndexed::add_child_notify(Node *p_child) {
 	GraphNode::add_child_notify(p_child);
 
-	if (p_child->is_internal() || !cast_to<Control>(p_child)) {
+	Control *control = cast_to<Control>(p_child);
+	if (p_child->is_internal() || !control) {
 		return;
 	}
 	if (p_child == port_container) {
@@ -58,6 +59,9 @@ void GraphNodeIndexed::add_child_notify(Node *p_child) {
 		return;
 	}
 
+	if (!control->is_connected("resized", callable_mp((GraphNode *)this, &GraphNode::_deferred_resort))) {
+		control->connect("resized", callable_mp((GraphNode *)this, &GraphNode::_deferred_resort));
+	}
 	StringName child_name = p_child->get_name();
 
 	// Child already exists in slot node cache - ignore and move on.
@@ -110,7 +114,8 @@ void GraphNodeIndexed::move_child_notify(Node *p_child) {
 void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	GraphNode::remove_child_notify(p_child);
 
-	if (p_child->is_internal() || !is_ready() || !cast_to<Control>(p_child) || p_child == port_container || p_child->has_meta(ignore_node_meta_tag) || !_node_to_slot_cache.has(p_child->get_name()) || (port_container && port_container->get_parent() != this)) {
+	Control *control = cast_to<Control>(p_child);
+	if (p_child->is_internal() || !is_ready() || !control || p_child == port_container || p_child->has_meta(ignore_node_meta_tag) || !_node_to_slot_cache.has(p_child->get_name()) || (port_container && port_container->get_parent() != this)) {
 		return;
 	}
 
@@ -118,6 +123,10 @@ void GraphNodeIndexed::remove_child_notify(Node *p_child) {
 	ERR_FAIL_INDEX(index, slots.size());
 
 	remove_slot_and_ports(index);
+
+	if (control->is_connected("resized", callable_mp((GraphNode *)this, &GraphNode::_deferred_resort))) {
+		control->disconnect("resized", callable_mp((GraphNode *)this, &GraphNode::_deferred_resort));
+	}
 }
 
 void GraphNodeIndexed::_notification(int p_what) {
@@ -275,7 +284,11 @@ GraphPort *GraphNodeIndexed::set_port(int p_port_index, GraphPort *p_port, bool 
 			//WARN_PRINT("hello i am adding on _set_port");
 			ensure_port_container();
 			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-			p_port->set_owner(this);
+			if (get_owner()) {
+				p_port->set_owner(get_owner());
+			} else {
+				p_port->set_owner(this);
+			}
 		}
 	}
 
@@ -290,7 +303,11 @@ void GraphNodeIndexed::add_port(GraphPort *p_port) {
 		//WARN_PRINT("hello i am working on _add_port");
 		ensure_port_container();
 		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-		p_port->set_owner(this);
+		if (get_owner()) {
+			p_port->set_owner(get_owner());
+		} else {
+			p_port->set_owner(this);
+		}
 	}
 
 	_port_modified();
@@ -303,7 +320,11 @@ void GraphNodeIndexed::insert_port(int p_port_index, GraphPort *p_port, bool p_i
 		//WARN_PRINT("hello i am working on _insert_port");
 		ensure_port_container();
 		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
-		p_port->set_owner(this);
+		if (get_owner()) {
+			p_port->set_owner(get_owner());
+		} else {
+			p_port->set_owner(this);
+		}
 	}
 
 	_port_modified();
@@ -687,7 +708,11 @@ void GraphNodeIndexed::ensure_port_container() {
 		port_container->set_meta(ignore_node_meta_tag, true);
 		add_child(port_container, true, Node::INTERNAL_MODE_DISABLED);
 		move_child(port_container, 0);
-		port_container->set_owner(this);
+		if (get_owner()) {
+			port_container->set_owner(get_owner());
+		} else {
+			port_container->set_owner(this);
+		}
 		port_container->set_rect(Rect2(0, 0, get_size().width, get_size().height));
 	}
 }
@@ -788,6 +813,7 @@ void GraphNodeIndexed::_validate_property(PropertyInfo &p_property) const {
 }
 
 GraphNodeIndexed::GraphNodeIndexed() {
+	callable_mp(this, &GraphNodeIndexed::ensure_port_container).call_deferred();
 }
 
 GraphNodeIndexed::Slot::Slot() {

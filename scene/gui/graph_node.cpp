@@ -168,6 +168,11 @@ void GraphNode::_resort() {
 	port_pos_dirty = true;
 }
 
+void GraphNode::_deferred_resort() {
+	callable_mp(this, &GraphNode::_resort).call_deferred();
+	callable_mp(this, &GraphNode::_queue_update_port_positions).call_deferred();
+}
+
 void GraphNode::_accessibility_action_port(const Variant &p_data) {
 	CustomAccessibilityAction action = (CustomAccessibilityAction)p_data.operator int();
 	if (!selected_port) {

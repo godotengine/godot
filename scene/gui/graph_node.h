@@ -42,6 +42,7 @@ class GraphNode : public GraphElement {
 	GDCLASS(GraphNode, GraphElement);
 
 	friend GraphEdit;
+	friend class GraphNodeIndexed;
 
 protected:
 	struct _MinSizeCache {
@@ -92,6 +93,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _resort() override;
+	void _deferred_resort();
 	void _accessibility_action_port(const Variant &p_data);
 
 	void _set_ports(const Vector<GraphPort *> &p_ports);
