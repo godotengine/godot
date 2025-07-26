@@ -36,9 +36,6 @@
 
 // Rough general to do list:
 //
-//  - (Maybe?) Report pointer position somehow for main window when over
-//    embedded window
-//
 //  - Implement custom focusing logic for tablet
 //
 //  - Track and report state for all non-destructible objects on instancing
@@ -114,6 +111,8 @@
 #define WL_DRM_AUTHENTICATED 2
 #define WL_DRM_CAPABILITIES 3
 
+#define XDG_POPUP_CONFIGURE 0
+
 size_t WaylandEmbedder::wl_array_word_offset(uint32_t p_size) {
 	constexpr size_t word_size = sizeof(uint32_t);
 
@@ -152,7 +151,7 @@ struct WaylandEmbedder::WaylandObject *WaylandEmbedder::get_object(uint32_t p_gl
 		}
 #endif
 
-		CRASH_NOW_MSG("Max ID reached. This might indicate a leak.");
+		CRASH_NOW_MSG(vformat("Tried to access ID bigger than debug cap (%d > %d).", p_global_id, WAYLAND_EMBED_ID_MAX));
 	}
 
 	if (is_server) {
@@ -573,6 +572,8 @@ void WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_t
 uint32_t WaylandEmbedder::new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
 	uint32_t new_global_id = next_global_id();
 
+	DEBUG_LOG_WAYLAND_EMBED(vformat("New object g%d %s", new_global_id, p_interface->name));
+
 	WaylandObject *new_object = get_object(new_global_id);
 	new_object->interface = p_interface;
 	new_object->version = p_version;
@@ -741,8 +742,6 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 		if (sym >= '0' && sym <= '?') {
 			// We don't care about version notices and nullability symbols. We can skip
 			// those.
-
-			// FIXME: No `++arg_idx`?
 			continue;
 		}
 
@@ -1246,8 +1245,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 		bool is_embedded = client->fake_objects.has(local_id);
 
-		// FIXME: Adjust positioner for embedded windows.
-		if (p_opcode == XDG_SURFACE_GET_POPUP && is_embedded) {
+		if (p_opcode == XDG_SURFACE_GET_POPUP) {
 			// [Request] xdg_surface::get_popup(no?o).
 
 			uint32_t new_local_id = body[0];
@@ -1256,19 +1254,32 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 			surface_data->role_object_handle = LocalObjectHandle(client, new_local_id);
 
+			XdgPopupData *popup_data = memnew(XdgPopupData);
+			popup_data->parent_handle = LocalObjectHandle(client, local_parent_id);
+
+			if (!is_embedded) {
+				uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version, popup_data);
+
+				uint32_t global_parent_id = client->get_global_id(local_parent_id);
+				uint32_t global_positioner_id = client->get_global_id(local_positioner_id);
+				send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id, global_parent_id, global_positioner_id });
+
+				return true;
+			}
+
 			{
 				// Popups are real, time to actually instantiate an xdg_surface.
 				WaylandObject copy = *object;
 				client->fake_objects.erase(local_id);
 
 				global_id = client->new_object(local_id, copy.interface, copy.version, copy.data);
-				object = get_object(new_local_id);
+				object = get_object(global_id);
 
 				// xdg_wm_base::get_xdg_surface(no);
 				send_wayland_message(compositor_socket, xdg_wm_base_id, 2, { global_id, xdg_surf_data->wl_surface_id });
 			}
 
-			uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version);
+			uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version, popup_data);
 
 			uint32_t global_parent_id = INVALID_ID;
 			if (local_parent_id != INVALID_ID) {
@@ -1280,6 +1291,9 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 				WaylandObject *parent_role_obj = parent_surface_data->role_object_handle.get();
 				CRASH_COND(parent_role_obj == nullptr);
+
+				XdgPositionerData *pos_data = (XdgPositionerData *)client->get_object(local_positioner_id)->data;
+				CRASH_COND(pos_data == nullptr);
 
 				if (parent_role_obj->interface == &xdg_toplevel_interface) {
 					XdgToplevelData *parent_toplevel_data = (XdgToplevelData *)parent_role_obj->data;
@@ -1298,13 +1312,6 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 						WaylandSubsurfaceData *subsurf_data = (WaylandSubsurfaceData *)get_object(parent_toplevel_data->wl_subsurface_id)->data;
 						CRASH_COND(subsurf_data == nullptr);
 
-						XdgPositionerData *pos_data = (XdgPositionerData *)client->get_object(local_positioner_id)->data;
-						CRASH_COND(pos_data == nullptr);
-
-						// FIXME: Clients receive skewed data on popup configure. This is helpful
-						// for getting child popups already in place "for free" but this is
-						// obviously wrong. Fixing this will require some state tracking for popups
-						// but first I'd really, /really/ like to tidy up state handling.
 						Point2i adj_pos = subsurf_data->position + pos_data->anchor_rect.position;
 
 						// xdg_positioner::set_anchor_rect
@@ -1814,6 +1821,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 	CRASH_COND(client == nullptr);
 
 	WaylandObject *object = p_local_handle.get();
+	uint32_t local_id = p_local_handle.get_local_id();
 
 	if (global_object->interface == &wl_display_interface) {
 		if (p_opcode == WL_DISPLAY_DELETE_ID) {
@@ -1936,6 +1944,48 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 		}
 
 		return MessageStatus::UNHANDLED;
+	}
+
+	if (object->interface == &xdg_popup_interface) {
+		if (p_opcode == XDG_POPUP_CONFIGURE) {
+			// [Event] xdg_popup::configure(iiii);
+			int32_t x = body[0];
+			int32_t y = body[1];
+			int32_t width = body[2];
+			int32_t height = body[3];
+
+			XdgPopupData *data = (XdgPopupData *)object->data;
+			CRASH_COND(data == nullptr);
+
+			XdgSurfaceData *parent_xdg_surf_data = (XdgSurfaceData *)data->parent_handle.get()->data;
+			CRASH_COND(parent_xdg_surf_data == nullptr);
+
+			WaylandSurfaceData *parent_surface_data = (WaylandSurfaceData *)get_object(parent_xdg_surf_data->wl_surface_id)->data;
+			CRASH_COND(parent_surface_data == nullptr);
+
+			WaylandObject *parent_role_obj = parent_surface_data->role_object_handle.get();
+			CRASH_COND(parent_role_obj == nullptr);
+
+			if (parent_role_obj->interface == &xdg_toplevel_interface) {
+				XdgToplevelData *parent_toplevel_data = (XdgToplevelData *)parent_role_obj->data;
+				CRASH_COND(parent_toplevel_data == nullptr);
+
+				if (parent_toplevel_data->is_embedded()) {
+					WaylandSubsurfaceData *subsurf_data = (WaylandSubsurfaceData *)get_object(parent_toplevel_data->wl_subsurface_id)->data;
+					CRASH_COND(subsurf_data == nullptr);
+
+					// The coordinates passed will be shifted by the embedded window position,
+					// so we need to fix them back.
+					Point2i fixed_position = Point2i(x, y) - subsurf_data->position;
+
+					DEBUG_LOG_WAYLAND_EMBED(vformat("Correcting popup configure position to %s", fixed_position));
+
+					send_wayland_message(client->socket, local_id, p_opcode, { (uint32_t)fixed_position.x, (uint32_t)fixed_position.y, (uint32_t)width, (uint32_t)height });
+
+					return MessageStatus::HANDLED;
+				}
+			}
+		}
 	}
 
 	return MessageStatus::UNHANDLED;

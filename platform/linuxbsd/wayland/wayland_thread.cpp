@@ -4419,9 +4419,13 @@ Error WaylandThread::init() {
 	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
 		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
 
+#if 0
 		// Debug
-		//int fd = open("/tmp/test.log", O_CREAT | O_RDWR, 0666);
-		//dup2(fd, 2);
+		OS::get_singleton()->set_environment("WAYLAND_DEBUG", "1");
+		int fd = open("/tmp/gdembedded.log", O_CREAT | O_RDWR, 0666);
+		dup2(fd, 1);
+		dup2(fd, 2);
+#endif
 	}
 
 	if (!embedder_socket_path.is_empty()) {

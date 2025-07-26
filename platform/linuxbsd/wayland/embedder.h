@@ -255,6 +255,10 @@ private:
 		constexpr bool is_embedded() const { return wl_subsurface_id != INVALID_ID; }
 	};
 
+	struct XdgPopupData : WaylandObjectData {
+		LocalObjectHandle parent_handle;
+	};
+
 	struct XdgPositionerData : WaylandObjectData {
 		Rect2i anchor_rect;
 	};
