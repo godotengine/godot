@@ -112,6 +112,14 @@ void LightStorage::spot_light_initialize(RID p_rid) {
 	_light_initialize(p_rid, RS::LIGHT_SPOT);
 }
 
+RID LightStorage::area_light_allocate() {
+	return light_owner.allocate_rid();
+}
+
+void LightStorage::area_light_initialize(RID p_rid) {
+	_light_initialize(p_rid, RS::LIGHT_AREA);
+}
+
 void LightStorage::light_free(RID p_rid) {
 	light_set_projector(p_rid, RID()); //clear projector
 
@@ -166,7 +174,11 @@ void LightStorage::light_set_param(RID p_light, RS::LightParam p_param, float p_
 void LightStorage::light_set_shadow(RID p_light, bool p_enabled) {
 	Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL(light);
-	light->shadow = p_enabled;
+	if (light->type == RS::LIGHT_AREA) {
+		light->shadow = false;
+	} else {
+		light->shadow = p_enabled;
+	}
 
 	light->version++;
 	light->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_LIGHT);
@@ -322,6 +334,16 @@ RS::LightDirectionalShadowMode LightStorage::light_directional_get_shadow_mode(R
 	return light->directional_shadow_mode;
 }
 
+void LightStorage::light_area_set_size(RID p_light, const Vector2 &p_size) {
+	Light *light = light_owner.get_or_null(p_light);
+	light->area_size = Vector2(MAX(p_size.x, 0), MAX(p_size.y, 0));
+}
+
+Vector2 LightStorage::light_area_get_size(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	return light->area_size;
+}
+
 RS::LightBakeMode LightStorage::light_get_bake_mode(RID p_light) {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_NULL_V(light, RS::LIGHT_BAKE_DISABLED);
@@ -356,6 +378,14 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 		case RS::LIGHT_OMNI: {
 			float r = light->param[RS::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
+		};
+		case RS::LIGHT_AREA: {
+			float len = light->param[RS::LIGHT_PARAM_RANGE];
+
+			float width = light->area_size.x / 2.0 + len;
+			float height = light->area_size.y / 2.0 + len;
+
+			return AABB(-Vector3(width, height, 0), Vector3(width * 2, height * 2, -len));
 		};
 		case RS::LIGHT_DIRECTIONAL: {
 			return AABB();
