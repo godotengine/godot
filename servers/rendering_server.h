@@ -39,6 +39,8 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+class RasterizerBlendState;
+
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
@@ -218,7 +220,8 @@ public:
 		SHADER_PARTICLES,
 		SHADER_SKY,
 		SHADER_FOG,
-		SHADER_MAX
+		SHADER_MESH_RASTERIZER,
+		SHADER_MAX,
 	};
 
 	enum CullMode {
@@ -1174,6 +1177,23 @@ public:
 	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
+	/* TEXTURE DRAWABLE API*/
+
+	enum TextureDrawableBlendMode {
+		BLEND_MODE_CLEAR = -1,
+		BLEND_MODE_MIX,
+		BLEND_MODE_ADD,
+		BLEND_MODE_SUB,
+		BLEND_MODE_MUL,
+		BLEND_MODE_ALPHA_TO_COVERAGE,
+		BLEND_MODE_PREMULTIPLIED_ALPHA,
+		BLEND_MODE_DISABLED
+	};
+
+	virtual RID texture_drawable_create(int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable) = 0;
+	virtual void texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) = 0;
+
 	/* SKY API */
 
 	enum SkyMode {
@@ -1956,6 +1976,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSUpdateMode);
+VARIANT_ENUM_CAST(RenderingServer::TextureDrawableBlendMode);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectCallbackType);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectFlags);
