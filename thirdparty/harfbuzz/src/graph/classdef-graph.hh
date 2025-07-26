@@ -74,7 +74,7 @@ struct ClassDef : public OT::ClassDef
     class_def_link->width = SmallTypes::size;
     class_def_link->objidx = class_def_prime_id;
     class_def_link->position = link_position;
-    class_def_prime_vertex.add_parent (parent_id);
+    class_def_prime_vertex.add_parent (parent_id, false);
 
     return true;
   }

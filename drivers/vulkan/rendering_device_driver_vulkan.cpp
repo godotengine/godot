@@ -533,6 +533,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
@@ -756,6 +757,7 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 		VkPhysicalDeviceVulkan12Features device_features_vk_1_2 = {};
 		VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
 		VkPhysicalDeviceBufferDeviceAddressFeaturesKHR buffer_device_address_features = {};
+		VkPhysicalDeviceVulkanMemoryModelFeaturesKHR vulkan_memory_model_features = {};
 		VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
 		VkPhysicalDeviceFragmentDensityMapFeaturesEXT fdm_features = {};
 		VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
@@ -777,6 +779,11 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 				buffer_device_address_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES_KHR;
 				buffer_device_address_features.pNext = next_features;
 				next_features = &buffer_device_address_features;
+			}
+			if (enabled_device_extension_names.has(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME)) {
+				vulkan_memory_model_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES_KHR;
+				vulkan_memory_model_features.pNext = next_features;
+				next_features = &vulkan_memory_model_features;
 			}
 		}
 
@@ -826,6 +833,10 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			if (enabled_device_extension_names.has(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
 				buffer_device_address_support = device_features_vk_1_2.bufferDeviceAddress;
 			}
+			if (enabled_device_extension_names.has(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME)) {
+				vulkan_memory_model_support = device_features_vk_1_2.vulkanMemoryModel;
+				vulkan_memory_model_device_scope_support = device_features_vk_1_2.vulkanMemoryModelDeviceScope;
+			}
 		} else {
 			if (enabled_device_extension_names.has(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
 				shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
@@ -833,6 +844,10 @@ Error RenderingDeviceDriverVulkan::_check_device_capabilities() {
 			}
 			if (enabled_device_extension_names.has(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
 				buffer_device_address_support = buffer_device_address_features.bufferDeviceAddress;
+			}
+			if (enabled_device_extension_names.has(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME)) {
+				vulkan_memory_model_support = vulkan_memory_model_features.vulkanMemoryModel;
+				vulkan_memory_model_device_scope_support = vulkan_memory_model_features.vulkanMemoryModelDeviceScope;
 			}
 		}
 
@@ -1076,6 +1091,15 @@ Error RenderingDeviceDriverVulkan::_initialize_device(const LocalVector<VkDevice
 		buffer_device_address_features.pNext = create_info_next;
 		buffer_device_address_features.bufferDeviceAddress = buffer_device_address_support;
 		create_info_next = &buffer_device_address_features;
+	}
+
+	VkPhysicalDeviceVulkanMemoryModelFeaturesKHR vulkan_memory_model_features = {};
+	if (vulkan_memory_model_support && vulkan_memory_model_device_scope_support) {
+		vulkan_memory_model_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES_KHR;
+		vulkan_memory_model_features.pNext = create_info_next;
+		vulkan_memory_model_features.vulkanMemoryModel = vulkan_memory_model_support;
+		vulkan_memory_model_features.vulkanMemoryModelDeviceScope = vulkan_memory_model_device_scope_support;
+		create_info_next = &vulkan_memory_model_features;
 	}
 
 	VkPhysicalDeviceFragmentShadingRateFeaturesKHR fsr_features = {};
@@ -5901,6 +5925,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 #else
 			return true;
 #endif
+		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
 		default:
 			return false;
 	}

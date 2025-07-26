@@ -40,6 +40,7 @@
 class Variant;
 
 struct ContainerType;
+struct ContainerTypeValidate;
 struct DictionaryPrivate;
 struct StringLikeVariantComparator;
 struct VariantHasher;
@@ -121,6 +122,8 @@ public:
 	StringName get_typed_value_class_name() const;
 	Variant get_typed_key_script() const;
 	Variant get_typed_value_script() const;
+	const ContainerTypeValidate &get_key_validator() const;
+	const ContainerTypeValidate &get_value_validator() const;
 
 	void make_read_only();
 	bool is_read_only() const;

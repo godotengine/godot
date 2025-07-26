@@ -162,6 +162,58 @@ _hb_directwrite_table_data_release (void *data)
 }
 
 static hb_blob_t *
+_hb_directwrite_get_file_blob (IDWriteFontFace *dw_face)
+{
+  UINT32 file_count;
+  if (FAILED (dw_face->GetFiles(&file_count, NULL)))
+    return nullptr;
+
+  IDWriteFontFile **files = new IDWriteFontFile*[file_count];
+  if (FAILED (dw_face->GetFiles(&file_count, files)))
+  {
+    delete [] files;
+    return nullptr;
+  }
+
+  hb_blob_t *blob = nullptr;
+  for (UINT32 i = 0; i < file_count; i++)
+  {
+    LPCVOID reference_key;
+    UINT32 reference_key_size;
+    if (FAILED (files[i]->GetReferenceKey(&reference_key, &reference_key_size)))
+      continue;
+
+    IDWriteFontFileLoader *loader;
+    if (FAILED (files[i]->GetLoader(&loader)))
+      continue;
+    
+    IDWriteFontFileStream *stream;
+    if (FAILED (loader->CreateStreamFromKey (reference_key, reference_key_size, &stream)))
+    {
+      loader->Release ();
+      continue;
+    }
+
+    UINT64 file_size;
+    const void *fragment;
+    void *context;
+    if (FAILED (stream->GetFileSize(&file_size)) ||
+        FAILED (stream->ReadFileFragment (&fragment, 0, file_size, &context)))
+    {
+      loader->Release ();
+      continue;
+    }
+    blob = hb_blob_create ((const char *) fragment, file_size, HB_MEMORY_MODE_DUPLICATE, NULL, NULL);
+    stream->ReleaseFileFragment (context);
+    loader->Release ();
+    break;
+  }
+
+  delete [] files;
+  return blob;
+}
+
+static hb_blob_t *
 _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *user_data)
 {
   IDWriteFontFace *dw_face = ((IDWriteFontFace *) user_data);
@@ -169,6 +221,9 @@ _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *
   uint32_t length;
   void *table_context;
   BOOL exists;
+  if (tag == HB_TAG_NONE)
+    return _hb_directwrite_get_file_blob (dw_face);
+
   if (FAILED (dw_face->TryGetFontTable (hb_uint32_swap (tag), &data,
 					&length, &table_context, &exists)))
     return nullptr;

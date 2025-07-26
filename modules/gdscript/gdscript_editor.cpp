@@ -44,6 +44,7 @@
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
 #include "core/math/expression.h"
+#include "core/variant/container_type_validate.h"
 
 #ifdef TOOLS_ENABLED
 #include "core/config/project_settings.h"
@@ -2099,13 +2100,22 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 						break;
 					}
 
-					{
-						bool valid;
-						Variant value = base.value.get(index.value, &valid);
-						if (valid) {
-							r_type = _type_from_variant(value, p_context);
-							found = true;
-							break;
+					if (base.type.is_constant && index.type.is_constant) {
+						if (base.value.get_type() == Variant::DICTIONARY) {
+							Dictionary base_dict = base.value.operator Dictionary();
+							if (base_dict.get_key_validator().test_validate(index.value) && base_dict.has(index.value)) {
+								r_type = _type_from_variant(base_dict[index.value], p_context);
+								found = true;
+								break;
+							}
+						} else {
+							bool valid;
+							Variant value = base.value.get(index.value, &valid);
+							if (valid) {
+								r_type = _type_from_variant(value, p_context);
+								found = true;
+								break;
+							}
 						}
 					}
 
@@ -2277,6 +2287,7 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 		case GDScriptParser::IdentifierNode::MEMBER_CLASS:
 		case GDScriptParser::IdentifierNode::INHERITED_VARIABLE:
 		case GDScriptParser::IdentifierNode::STATIC_VARIABLE:
+		case GDScriptParser::IdentifierNode::NATIVE_CLASS:
 			can_be_local = false;
 			break;
 		default:
@@ -3807,6 +3818,8 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 			}
 		} break;
+		case GDScriptParser::COMPLETION_SUPER:
+			break;
 		case GDScriptParser::COMPLETION_SUPER_METHOD: {
 			if (!completion_context.current_class) {
 				break;
@@ -4365,6 +4378,13 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			base_type.is_meta_type = true;
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
 				return OK;
+			}
+		} break;
+		case GDScriptParser::COMPLETION_SUPER: {
+			if (context.current_class && context.current_function) {
+				if (_lookup_symbol_from_base(context.current_class->base_type, context.current_function->info.name, r_result) == OK) {
+					return OK;
+				}
 			}
 		} break;
 		case GDScriptParser::COMPLETION_SUPER_METHOD:

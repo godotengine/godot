@@ -722,6 +722,14 @@ Variant Dictionary::get_typed_value_script() const {
 	return _p->typed_value.script;
 }
 
+const ContainerTypeValidate &Dictionary::get_key_validator() const {
+	return _p->typed_key;
+}
+
+const ContainerTypeValidate &Dictionary::get_value_validator() const {
+	return _p->typed_value;
+}
+
 void Dictionary::operator=(const Dictionary &p_dictionary) {
 	if (this == &p_dictionary) {
 		return;

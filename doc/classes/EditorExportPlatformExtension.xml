@@ -149,7 +149,7 @@
 			</description>
 		</method>
 		<method name="_get_option_icon" qualifiers="virtual const">
-			<return type="ImageTexture" />
+			<return type="Texture2D" />
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns the item icon for the specified [param device] in the one-click deploy menu. The icon should be 16×16 pixels, adjusted for the current editor scale (see [method EditorInterface.get_editor_scale]).

@@ -229,7 +229,8 @@ void Node3D::_notification(int p_what) {
 			}
 
 #ifdef TOOLS_ENABLED
-			if (is_part_of_edited_scene()) {
+			if (is_part_of_edited_scene() && !data.gizmos_requested) {
+				data.gizmos_requested = true;
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
 			}
 #endif
@@ -841,7 +842,10 @@ void Node3D::update_gizmos() {
 	}
 
 	if (data.gizmos.is_empty()) {
-		get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
+		if (!data.gizmos_requested) {
+			data.gizmos_requested = true;
+			get_tree()->call_group_flags(SceneTree::GROUP_CALL_DEFERRED, SceneStringName(_spatial_editor_group), SNAME("_request_gizmo_for_id"), get_instance_id());
+		}
 		return;
 	}
 	if (data.gizmos_dirty) {
@@ -1542,6 +1546,7 @@ Node3D::Node3D() :
 	data.fti_processed = false;
 
 #ifdef TOOLS_ENABLED
+	data.gizmos_requested = false;
 	data.gizmos_disabled = false;
 	data.gizmos_dirty = false;
 	data.transform_gizmo_visible = true;

@@ -50,7 +50,8 @@
 			Changes the alignment of the underlying [LineEdit].
 		</member>
 		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
-			If not [code]0[/code], [member Range.value] will always be rounded to a multiple of [member custom_arrow_step] when interacting with the arrow buttons of the [SpinBox].
+			If not [code]0[/code], sets the step when interacting with the arrow buttons of the [SpinBox].
+			[b]Note:[/b] [member Range.value] will still be rounded to a multiple of [member Range.step].
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
@@ -132,8 +133,8 @@
 		<theme_item name="up_pressed" data_type="icon" type="Texture2D">
 			Up button icon when the button is being pressed.
 		</theme_item>
-		<theme_item name="updown" data_type="icon" type="Texture2D">
-			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. It is recommended to use individual [theme_item up] and [theme_item down] graphics for better usability. This can also be used as additional decoration between the two buttons.
+		<theme_item name="updown" data_type="icon" type="Texture2D" deprecated="Use [theme_item up] and [theme_item down] instead.">
+			Single texture representing both the up and down buttons icons. It is displayed in the middle of the buttons and does not change upon interaction. If a valid icon is assigned, it will replace [theme_item up] and [theme_item down].
 		</theme_item>
 		<theme_item name="down_background" data_type="style" type="StyleBox">
 			Background style of the down button.

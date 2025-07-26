@@ -33,6 +33,7 @@
 #include "core/error/error_macros.h"
 #include "core/io/resource_loader.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_fonts.h"
@@ -2633,111 +2634,132 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 	}
 }
 
+void _load_text_editor_theme() {
+	EditorSettings *settings = EditorSettings::get_singleton();
+	const String theme_name = settings->get_setting("text_editor/theme/color_theme");
+
+	ERR_FAIL_COND(EditorSettings::is_default_text_editor_theme(theme_name.get_file().to_lower()));
+
+	const String theme_path = EditorPaths::get_singleton()->get_text_editor_themes_dir().path_join(theme_name + ".tet");
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	Error err = cf->load(theme_path);
+	ERR_FAIL_COND_MSG(err != OK, vformat("Failed to load text editor theme file '%s': %s", theme_name, error_names[err]));
+
+	const PackedStringArray keys = cf->get_section_keys("color_theme");
+
+	for (const String &key : keys) {
+		const String setting_key = "text_editor/theme/highlighting/" + key;
+		// Don't load if it's not an actual setting, or if it isn't a color setting.
+		if (!settings->has_setting(setting_key) || !key.contains("color")) {
+			continue;
+		}
+		const String val = cf->get_value("color_theme", key);
+		// Make sure it is actually a color.
+		if (val.is_valid_html_color()) {
+			const Color color_value = Color::html(val);
+			// Change manually to prevent settings_changed spam.
+			settings->set_initial_value(setting_key, color_value);
+			settings->set_manually(setting_key, color_value);
+		}
+	}
+	// If it doesn't load a setting just use what is currently loaded.
+}
+
 void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_theme, ThemeConfiguration &p_config) {
-	String text_editor_color_theme = EDITOR_GET("text_editor/theme/color_theme");
-	if (text_editor_color_theme == "Default" || text_editor_color_theme == "Custom") {
-		// Adaptive colors for comments and elements with lower relevance.
-		const Color dim_color = Color(p_config.font_color, 0.5);
-		const float mono_value = p_config.mono_color.r;
-		const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
-		const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
-		const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.27);
-
-		/* clang-format off */
-		// Syntax highlight token colors.
-		const Color symbol_color =               p_config.dark_theme ? Color(0.67, 0.79, 1)      : Color(0, 0, 0.61);
-		const Color keyword_color =              p_config.dark_theme ? Color(1.0, 0.44, 0.52)    : Color(0.9, 0.135, 0.51);
-		const Color control_flow_keyword_color = p_config.dark_theme ? Color(1.0, 0.55, 0.8)     : Color(0.743, 0.12, 0.8);
-		const Color base_type_color =            p_config.dark_theme ? Color(0.26, 1.0, 0.76)    : Color(0, 0.6, 0.2);
-		const Color engine_type_color =          p_config.dark_theme ? Color(0.56, 1, 0.86)      : Color(0.11, 0.55, 0.4);
-		const Color user_type_color =            p_config.dark_theme ? Color(0.78, 1, 0.93)      : Color(0.18, 0.45, 0.4);
-		const Color comment_color =              p_config.dark_theme ? dim_color                 : Color(0.08, 0.08, 0.08, 0.5);
-		const Color doc_comment_color =          p_config.dark_theme ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
-		const Color string_color =               p_config.dark_theme ? Color(1, 0.93, 0.63)      : Color(0.6, 0.42, 0);
-
-		// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
-		const Color te_background_color =             p_config.dark_theme ? p_config.dark_color_2 : p_config.dark_color_3;
-		const Color completion_background_color =     p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
-		const Color completion_selected_color =       alpha1;
-		const Color completion_existing_color =       alpha2;
-		// Same opacity as the scroll grabber editor icon.
-		const Color completion_scroll_color =         Color(mono_value, mono_value, mono_value, 0.29);
-		const Color completion_scroll_hovered_color = Color(mono_value, mono_value, mono_value, 0.4);
-		const Color completion_font_color =           p_config.font_color;
-		const Color text_color =                      p_config.font_color;
-		const Color line_number_color =               dim_color;
-		const Color safe_line_number_color =          p_config.dark_theme ? (dim_color * Color(1, 1.2, 1, 1.5)) : Color(0, 0.4, 0, 0.75);
-		const Color caret_color =                     p_config.mono_color;
-		const Color caret_background_color =          p_config.mono_color.inverted();
-		const Color text_selected_color =             Color(0, 0, 0, 0);
-		const Color selection_color =                 p_config.selection_color;
-		const Color brace_mismatch_color =            p_config.dark_theme ? p_config.error_color : Color(1, 0.08, 0, 1);
-		const Color current_line_color =              alpha1;
-		const Color line_length_guideline_color =     p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
-		const Color word_highlighted_color =          alpha1;
-		const Color number_color =                    p_config.dark_theme ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
-		const Color function_color =                  p_config.dark_theme ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
-		const Color member_variable_color =           p_config.dark_theme ? Color(0.34, 0.7, 1.0).lerp(p_config.mono_color, 0.6) : Color(0, 0.4, 0.68, 1);
-		const Color mark_color =                      Color(p_config.error_color.r, p_config.error_color.g, p_config.error_color.b, 0.3);
-		const Color warning_color =                   Color(p_config.warning_color.r, p_config.warning_color.g, p_config.warning_color.b, 0.15);
-		const Color bookmark_color =                  Color(0.08, 0.49, 0.98);
-		const Color breakpoint_color =                p_config.dark_theme ? p_config.error_color : Color(1, 0.27, 0.2, 1);
-		const Color executing_line_color =            Color(0.98, 0.89, 0.27);
-		const Color code_folding_color =              alpha3;
-		const Color folded_code_region_color =        Color(0.68, 0.46, 0.77, 0.2);
-		const Color search_result_color =             alpha1;
-		const Color search_result_border_color =      p_config.dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
-		/* clang-format on */
-
+	const String text_editor_color_theme = EDITOR_GET("text_editor/theme/color_theme");
+	const bool is_default_theme = text_editor_color_theme == "Default";
+	const bool is_godot2_theme = text_editor_color_theme == "Godot 2";
+	const bool is_custom_theme = text_editor_color_theme == "Custom";
+	if (is_default_theme || is_godot2_theme || is_custom_theme) {
 		HashMap<StringName, Color> colors;
-		colors["text_editor/theme/highlighting/symbol_color"] = symbol_color;
-		colors["text_editor/theme/highlighting/keyword_color"] = keyword_color;
-		colors["text_editor/theme/highlighting/control_flow_keyword_color"] = control_flow_keyword_color;
-		colors["text_editor/theme/highlighting/base_type_color"] = base_type_color;
-		colors["text_editor/theme/highlighting/engine_type_color"] = engine_type_color;
-		colors["text_editor/theme/highlighting/user_type_color"] = user_type_color;
-		colors["text_editor/theme/highlighting/comment_color"] = comment_color;
-		colors["text_editor/theme/highlighting/doc_comment_color"] = doc_comment_color;
-		colors["text_editor/theme/highlighting/string_color"] = string_color;
-		colors["text_editor/theme/highlighting/background_color"] = te_background_color;
-		colors["text_editor/theme/highlighting/completion_background_color"] = completion_background_color;
-		colors["text_editor/theme/highlighting/completion_selected_color"] = completion_selected_color;
-		colors["text_editor/theme/highlighting/completion_existing_color"] = completion_existing_color;
-		colors["text_editor/theme/highlighting/completion_scroll_color"] = completion_scroll_color;
-		colors["text_editor/theme/highlighting/completion_scroll_hovered_color"] = completion_scroll_hovered_color;
-		colors["text_editor/theme/highlighting/completion_font_color"] = completion_font_color;
-		colors["text_editor/theme/highlighting/text_color"] = text_color;
-		colors["text_editor/theme/highlighting/line_number_color"] = line_number_color;
-		colors["text_editor/theme/highlighting/safe_line_number_color"] = safe_line_number_color;
-		colors["text_editor/theme/highlighting/caret_color"] = caret_color;
-		colors["text_editor/theme/highlighting/caret_background_color"] = caret_background_color;
-		colors["text_editor/theme/highlighting/text_selected_color"] = text_selected_color;
-		colors["text_editor/theme/highlighting/selection_color"] = selection_color;
-		colors["text_editor/theme/highlighting/brace_mismatch_color"] = brace_mismatch_color;
-		colors["text_editor/theme/highlighting/current_line_color"] = current_line_color;
-		colors["text_editor/theme/highlighting/line_length_guideline_color"] = line_length_guideline_color;
-		colors["text_editor/theme/highlighting/word_highlighted_color"] = word_highlighted_color;
-		colors["text_editor/theme/highlighting/number_color"] = number_color;
-		colors["text_editor/theme/highlighting/function_color"] = function_color;
-		colors["text_editor/theme/highlighting/member_variable_color"] = member_variable_color;
-		colors["text_editor/theme/highlighting/mark_color"] = mark_color;
-		colors["text_editor/theme/highlighting/warning_color"] = warning_color;
-		colors["text_editor/theme/highlighting/bookmark_color"] = bookmark_color;
-		colors["text_editor/theme/highlighting/breakpoint_color"] = breakpoint_color;
-		colors["text_editor/theme/highlighting/executing_line_color"] = executing_line_color;
-		colors["text_editor/theme/highlighting/code_folding_color"] = code_folding_color;
-		colors["text_editor/theme/highlighting/folded_code_region_color"] = folded_code_region_color;
-		colors["text_editor/theme/highlighting/search_result_color"] = search_result_color;
-		colors["text_editor/theme/highlighting/search_result_border_color"] = search_result_border_color;
+		if (is_default_theme || is_custom_theme) {
+			// Adaptive colors for comments and elements with lower relevance.
+			const Color dim_color = Color(p_config.font_color, 0.5);
+			const float mono_value = p_config.mono_color.r;
+			const Color alpha1 = Color(mono_value, mono_value, mono_value, 0.07);
+			const Color alpha2 = Color(mono_value, mono_value, mono_value, 0.14);
+			const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.27);
 
+			// Syntax highlight token colors.
+			colors["text_editor/theme/highlighting/symbol_color"] = p_config.dark_theme ? Color(0.67, 0.79, 1) : Color(0, 0, 0.61);
+			colors["text_editor/theme/highlighting/keyword_color"] = p_config.dark_theme ? Color(1.0, 0.44, 0.52) : Color(0.9, 0.135, 0.51);
+			colors["text_editor/theme/highlighting/control_flow_keyword_color"] = p_config.dark_theme ? Color(1.0, 0.55, 0.8) : Color(0.743, 0.12, 0.8);
+			colors["text_editor/theme/highlighting/base_type_color"] = p_config.dark_theme ? Color(0.26, 1.0, 0.76) : Color(0, 0.6, 0.2);
+			colors["text_editor/theme/highlighting/engine_type_color"] = p_config.dark_theme ? Color(0.56, 1, 0.86) : Color(0.11, 0.55, 0.4);
+			colors["text_editor/theme/highlighting/user_type_color"] = p_config.dark_theme ? Color(0.78, 1, 0.93) : Color(0.18, 0.45, 0.4);
+			colors["text_editor/theme/highlighting/comment_color"] = p_config.dark_theme ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
+			colors["text_editor/theme/highlighting/doc_comment_color"] = p_config.dark_theme ? Color(0.6, 0.7, 0.8, 0.8) : Color(0.15, 0.15, 0.4, 0.7);
+			colors["text_editor/theme/highlighting/string_color"] = p_config.dark_theme ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
+
+			// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
+			colors["text_editor/theme/highlighting/background_color"] = p_config.dark_theme ? p_config.dark_color_2 : p_config.dark_color_3;
+			colors["text_editor/theme/highlighting/completion_background_color"] = p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
+			colors["text_editor/theme/highlighting/completion_selected_color"] = alpha1;
+			colors["text_editor/theme/highlighting/completion_existing_color"] = alpha2;
+			// Same opacity as the scroll grabber editor icon.
+			colors["text_editor/theme/highlighting/completion_scroll_color"] = Color(mono_value, mono_value, mono_value, 0.29);
+			colors["text_editor/theme/highlighting/completion_scroll_hovered_color"] = Color(mono_value, mono_value, mono_value, 0.4);
+			colors["text_editor/theme/highlighting/completion_font_color"] = p_config.font_color;
+			colors["text_editor/theme/highlighting/text_color"] = p_config.font_color;
+			colors["text_editor/theme/highlighting/line_number_color"] = dim_color;
+			colors["text_editor/theme/highlighting/safe_line_number_color"] = p_config.dark_theme ? (dim_color * Color(1, 1.2, 1, 1.5)) : Color(0, 0.4, 0, 0.75);
+			colors["text_editor/theme/highlighting/caret_color"] = p_config.mono_color;
+			colors["text_editor/theme/highlighting/caret_background_color"] = p_config.mono_color.inverted();
+			colors["text_editor/theme/highlighting/text_selected_color"] = Color(0, 0, 0, 0);
+			colors["text_editor/theme/highlighting/selection_color"] = p_config.selection_color;
+			colors["text_editor/theme/highlighting/brace_mismatch_color"] = p_config.dark_theme ? p_config.error_color : Color(1, 0.08, 0, 1);
+			colors["text_editor/theme/highlighting/current_line_color"] = alpha1;
+			colors["text_editor/theme/highlighting/line_length_guideline_color"] = p_config.dark_theme ? p_config.base_color : p_config.dark_color_2;
+			colors["text_editor/theme/highlighting/word_highlighted_color"] = alpha1;
+			colors["text_editor/theme/highlighting/number_color"] = p_config.dark_theme ? Color(0.63, 1, 0.88) : Color(0, 0.55, 0.28, 1);
+			colors["text_editor/theme/highlighting/function_color"] = p_config.dark_theme ? Color(0.34, 0.7, 1.0) : Color(0, 0.225, 0.9, 1);
+			colors["text_editor/theme/highlighting/member_variable_color"] = p_config.dark_theme ? Color(0.34, 0.7, 1.0).lerp(p_config.mono_color, 0.6) : Color(0, 0.4, 0.68, 1);
+			colors["text_editor/theme/highlighting/mark_color"] = Color(p_config.error_color.r, p_config.error_color.g, p_config.error_color.b, 0.3);
+			colors["text_editor/theme/highlighting/warning_color"] = Color(p_config.warning_color.r, p_config.warning_color.g, p_config.warning_color.b, 0.15);
+			colors["text_editor/theme/highlighting/bookmark_color"] = Color(0.08, 0.49, 0.98);
+			colors["text_editor/theme/highlighting/breakpoint_color"] = p_config.dark_theme ? p_config.error_color : Color(1, 0.27, 0.2, 1);
+			colors["text_editor/theme/highlighting/executing_line_color"] = Color(0.98, 0.89, 0.27);
+			colors["text_editor/theme/highlighting/code_folding_color"] = alpha3;
+			colors["text_editor/theme/highlighting/folded_code_region_color"] = Color(0.68, 0.46, 0.77, 0.2);
+			colors["text_editor/theme/highlighting/search_result_color"] = alpha1;
+			colors["text_editor/theme/highlighting/search_result_border_color"] = p_config.dark_theme ? Color(0.41, 0.61, 0.91, 0.38) : Color(0, 0.4, 1, 0.38);
+
+			if (p_config.dark_theme) {
+				colors["text_editor/theme/highlighting/gdscript/function_definition_color"] = Color(0.4, 0.9, 1.0);
+				colors["text_editor/theme/highlighting/gdscript/global_function_color"] = Color(0.64, 0.64, 0.96);
+				colors["text_editor/theme/highlighting/gdscript/node_path_color"] = Color(0.72, 0.77, 0.49);
+				colors["text_editor/theme/highlighting/gdscript/node_reference_color"] = Color(0.39, 0.76, 0.35);
+				colors["text_editor/theme/highlighting/gdscript/annotation_color"] = Color(1.0, 0.7, 0.45);
+				colors["text_editor/theme/highlighting/gdscript/string_name_color"] = Color(1.0, 0.76, 0.65);
+				colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.77, 0.35, 0.35);
+				colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.72, 0.61, 0.48);
+				colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.56, 0.67, 0.51);
+			} else {
+				colors["text_editor/theme/highlighting/gdscript/function_definition_color"] = Color(0, 0.6, 0.6);
+				colors["text_editor/theme/highlighting/gdscript/global_function_color"] = Color(0.36, 0.18, 0.72);
+				colors["text_editor/theme/highlighting/gdscript/node_path_color"] = Color(0.18, 0.55, 0);
+				colors["text_editor/theme/highlighting/gdscript/node_reference_color"] = Color(0.0, 0.5, 0);
+				colors["text_editor/theme/highlighting/gdscript/annotation_color"] = Color(0.8, 0.37, 0);
+				colors["text_editor/theme/highlighting/gdscript/string_name_color"] = Color(0.8, 0.56, 0.45);
+				colors["text_editor/theme/highlighting/comment_markers/critical_color"] = Color(0.8, 0.14, 0.14);
+				colors["text_editor/theme/highlighting/comment_markers/warning_color"] = Color(0.75, 0.39, 0.03);
+				colors["text_editor/theme/highlighting/comment_markers/notice_color"] = Color(0.24, 0.54, 0.09);
+			}
+		} else if (is_godot2_theme) {
+			colors = EditorSettings::get_godot2_text_editor_theme();
+		}
+		EditorSettings *settings = EditorSettings::get_singleton();
 		for (const KeyValue<StringName, Color> &setting : colors) {
-			EditorSettings::get_singleton()->set_initial_value(setting.key, setting.value);
-			if (text_editor_color_theme == "Default") {
-				EditorSettings::get_singleton()->set_manually(setting.key, setting.value);
+			settings->set_initial_value(setting.key, setting.value);
+			if (is_default_theme || is_godot2_theme) {
+				settings->set_manually(setting.key, setting.value);
 			}
 		}
-	} else if (text_editor_color_theme == "Godot 2") {
-		EditorSettings::get_singleton()->load_text_editor_theme();
+	} else {
+		// Custom user theme.
+		_load_text_editor_theme();
 	}
 
 	// Now theme is loaded, apply it to CodeEdit.

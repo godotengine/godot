@@ -176,7 +176,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node_or_null(skeleton_path)); // skeleton_path may be outdated when reparenting.
 		if (skeleton) {
 			if (skin_internal.is_null()) {
 				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());

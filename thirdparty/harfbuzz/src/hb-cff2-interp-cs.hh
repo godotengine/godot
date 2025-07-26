@@ -77,7 +77,7 @@ struct cff2_cs_interp_env_t : cs_interp_env_t<ELEM, CFF2Subrs>
     coords = coords_;
     num_coords = num_coords_;
     varStore = acc.varStore;
-    do_blend = num_coords && coords && varStore->size;
+    do_blend = num_coords && varStore->size;
     set_ivs (acc.privateDicts[fd].ivs);
   }
 

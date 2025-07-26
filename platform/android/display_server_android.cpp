@@ -596,6 +596,7 @@ void DisplayServerAndroid::window_set_flag(DisplayServer::WindowFlags p_flag, bo
 }
 
 bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, DisplayServer::WindowID p_window) const {
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, false);
 	switch (p_flag) {
 		case WindowFlags::WINDOW_FLAG_TRANSPARENT:
 			return is_window_transparency_available();

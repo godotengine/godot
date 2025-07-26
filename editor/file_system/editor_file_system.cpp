@@ -1284,7 +1284,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->class_info = _get_global_script_class(fi->type, path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_md5 = "";
+				fi->import_md5 = FileAccess::get_md5(path + ".import");
 				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 
@@ -2285,8 +2285,10 @@ void EditorFileSystem::_process_update_pending() {
 	_update_script_classes();
 	// Parse documentation second, as it requires the class names to be loaded
 	// because _update_script_documentation loads the scripts completely.
-	_update_script_documentation();
-	_update_pending_scene_groups();
+	if (!EditorNode::is_cmdline_mode()) {
+		_update_script_documentation();
+		_update_pending_scene_groups();
+	}
 }
 
 void EditorFileSystem::_queue_update_script_class(const String &p_path, const ScriptClassInfoUpdate &p_script_update) {

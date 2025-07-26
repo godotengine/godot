@@ -4,6 +4,7 @@ plugins {
 }
 
 ext {
+    DEBUG_PUBLISH_ARTIFACT_ID = 'godot-debug'
     PUBLISH_ARTIFACT_ID = 'godot'
     TOOLS_PUBLISH_ARTIFACT_ID = 'godot-tools'
 }
@@ -184,6 +185,10 @@ android {
     }
 
     publishing {
+        singleVariant("templateDebug") {
+            withSourcesJar()
+            withJavadocJar()
+        }
         singleVariant("templateRelease") {
             withSourcesJar()
             withJavadocJar()

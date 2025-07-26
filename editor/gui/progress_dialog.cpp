@@ -166,6 +166,14 @@ void ProgressDialog::_popup() {
 
 	center_panel->set_custom_minimum_size(ms);
 
+	if (is_ready()) {
+		_reparent_and_show();
+	} else {
+		callable_mp(this, &ProgressDialog::_reparent_and_show).call_deferred();
+	}
+}
+
+void ProgressDialog::_reparent_and_show() {
 	Window *current_window = SceneTree::get_singleton()->get_root()->get_last_exclusive_window();
 	ERR_FAIL_NULL(current_window);
 	reparent(current_window);

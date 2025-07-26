@@ -2104,7 +2104,7 @@ void main() {
 								 c3 * lightmap_captures[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
 								 c2 * lightmap_captures[7].rgb * wnormal.x * wnormal.z +
 								 c4 * lightmap_captures[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
-				scene_data.emissive_exposure_normalization;
+				scene_data.IBL_exposure_normalization;
 	}
 #else
 #ifdef USE_LIGHTMAP

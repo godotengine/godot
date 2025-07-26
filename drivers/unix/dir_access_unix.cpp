@@ -524,7 +524,7 @@ String DirAccessUnix::get_filesystem_type() const {
 	if (statfs(current_dir.utf8().get_data(), &fs) != 0) {
 		return "";
 	}
-	switch (fs.f_type) {
+	switch (static_cast<unsigned int>(fs.f_type)) {
 		case 0x0000adf5:
 			return "ADFS";
 		case 0x0000adff:

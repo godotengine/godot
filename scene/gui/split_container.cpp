@@ -376,6 +376,10 @@ void SplitContainer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
+			if (touch_dragger) {
+				touch_dragger->set_modulate(theme_cache.touch_dragger_color);
+				touch_dragger->set_texture(_get_touch_dragger_icon());
+			}
 		} break;
 	}
 }
@@ -542,7 +546,7 @@ void SplitContainer::set_touch_dragger_enabled(bool p_enabled) {
 		touch_dragger->set_texture(_get_touch_dragger_icon());
 		touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 		touch_dragger->set_default_cursor_shape(vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
-		touch_dragger->set_modulate(Color(1, 1, 1, 0.3));
+		touch_dragger->set_modulate(theme_cache.touch_dragger_color);
 		touch_dragger->connect(SceneStringName(gui_input), callable_mp(this, &SplitContainer::_touch_dragger_gui_input));
 		touch_dragger->connect(SceneStringName(mouse_exited), callable_mp(this, &SplitContainer::_touch_dragger_mouse_exited));
 		dragging_area_control->add_child(touch_dragger, false, Node::INTERNAL_MODE_FRONT);
@@ -561,7 +565,7 @@ bool SplitContainer::is_touch_dragger_enabled() const {
 
 void SplitContainer::_touch_dragger_mouse_exited() {
 	if (!dragging_area_control->dragging) {
-		touch_dragger->set_modulate(Color(1, 1, 1, 0.3));
+		touch_dragger->set_modulate(theme_cache.touch_dragger_color);
 	}
 }
 
@@ -571,17 +575,16 @@ void SplitContainer::_touch_dragger_gui_input(const Ref<InputEvent> &p_event) {
 	}
 	Ref<InputEventMouseMotion> mm = p_event;
 	Ref<InputEventMouseButton> mb = p_event;
-
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
-			touch_dragger->set_modulate(Color(1, 1, 1, 1));
+			touch_dragger->set_modulate(theme_cache.touch_dragger_pressed_color);
 		} else {
-			touch_dragger->set_modulate(Color(1, 1, 1, 0.3));
+			touch_dragger->set_modulate(theme_cache.touch_dragger_color);
 		}
 	}
 
 	if (mm.is_valid() && !dragging_area_control->dragging) {
-		touch_dragger->set_modulate(Color(1, 1, 1, 0.6));
+		touch_dragger->set_modulate(theme_cache.touch_dragger_hover_color);
 	}
 }
 
@@ -640,6 +643,9 @@ void SplitContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN_COLLAPSED);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_hover_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, minimum_grab_thickness);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, autohide);

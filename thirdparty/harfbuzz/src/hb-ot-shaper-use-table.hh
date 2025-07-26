@@ -101,8 +101,9 @@
 
 #ifndef HB_OPTIMIZE_SIZE
 
-static const uint8_t
-hb_use_u8[3345] =
+#include <stdint.h>
+
+static const uint8_t hb_use_u8[3345]=
 {
      16,   50,   51,   51,   51,   52,   51,   83,  118,  131,   57,   58,   59,  195,  211,   62,
      51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,
@@ -315,8 +316,7 @@ hb_use_u8[3345] =
       J,   HR,    G,    G,   HM,   HM,   HM,    G,    O, MPre, MPre, MPst,VMAbv, MBlw, VBlw,    O,
    VBlw,
 };
-static const uint16_t
-hb_use_u16[856] =
+static const uint16_t hb_use_u16[856]=
 {
     0,  0,  1,  2,  0,  3,  0,  3,  0,  0,  4,  5,  0,  6,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  7,  0,  0,  0,
@@ -374,22 +374,21 @@ hb_use_u16[856] =
   163,163,163,163,163,163,163,130,
 };
 
-static inline unsigned
-hb_use_b4 (const uint8_t* a, unsigned i)
+static inline uint8_t hb_use_b4 (const uint8_t* a, unsigned i)
 {
-  return (a[i>>1]>>((i&1u)<<2))&15u;
+  return (a[i>>1]>>((i&1)<<2))&15;
 }
-static inline uint_fast8_t
-hb_use_get_category (unsigned u)
+static inline uint8_t hb_use_get_category (unsigned u)
 {
-  return u<921600u?hb_use_u8[2953+(((hb_use_u8[625+(((hb_use_u16[((hb_use_u8[113+(((hb_use_b4(hb_use_u8,u>>1>>3>>3>>5))<<5)+((u>>1>>3>>3)&31u))])<<3)+((u>>1>>3)&7u)])<<3)+((u>>1)&7u))])<<1)+((u)&1u))]:O;
+  return u<921600 ? hb_use_u8[2953u+(((hb_use_u8[625u+(((hb_use_u16[((hb_use_u8[113u+(((hb_use_b4(hb_use_u8,u>>1>>3>>3>>5))<<5)+((u>>1>>3>>3)&31))])<<3)+((u>>1>>3)&7)])<<3)+((u>>1)&7))])<<1)+((u)&1))] : O;
 }
 
 
 #else
 
-static const uint8_t
-hb_use_u8[3657] =
+#include <stdint.h>
+
+static const uint8_t hb_use_u8[3657]=
 {
      16,   50,   51,   51,   51,   52,   51,   83,  118,  131,   57,   58,   59,  195,  211,   62,
      51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,   51,
@@ -621,8 +620,7 @@ hb_use_u8[3657] =
   VMPst,    G,    G,    J,    J,    J,   SB,   SE,    J,   HR,    G,    G,   HM,   HM,   HM,    G,
       O, MPre, MPre, MPst,VMAbv, MBlw, VBlw,    O, VBlw,
 };
-static const uint16_t
-hb_use_u16[486] =
+static const uint16_t hb_use_u16[486]=
 {
     0,  0,  1,  2,  0,  3,  4,  5,  0,  6,  7,  0,  8,  0,  9, 10,
    11, 12, 10, 13, 14, 10, 10, 15, 16, 17, 18, 19, 20, 21, 22, 23,
@@ -657,15 +655,13 @@ hb_use_u16[486] =
   130,130,163,163,163,130,
 };
 
-static inline unsigned
-hb_use_b4 (const uint8_t* a, unsigned i)
+static inline uint8_t hb_use_b4 (const uint8_t* a, unsigned i)
 {
-  return (a[i>>1]>>((i&1u)<<2))&15u;
+  return (a[i>>1]>>((i&1)<<2))&15;
 }
-static inline uint_fast8_t
-hb_use_get_category (unsigned u)
+static inline uint8_t hb_use_get_category (unsigned u)
 {
-  return u<921600u?hb_use_u8[3265+(((hb_use_u8[937+(((hb_use_u16[((hb_use_u8[369+(((hb_use_u8[113+(((hb_use_b4(hb_use_u8,u>>1>>3>>1>>3>>4))<<4)+((u>>1>>3>>1>>3)&15u))])<<3)+((u>>1>>3>>1)&7u))])<<1)+((u>>1>>3)&1u)])<<3)+((u>>1)&7u))])<<1)+((u)&1u))]:O;
+  return u<921600 ? hb_use_u8[3265u+(((hb_use_u8[937u+(((hb_use_u16[((hb_use_u8[369u+(((hb_use_u8[113u+(((hb_use_b4(hb_use_u8,u>>1>>3>>1>>3>>4))<<4)+((u>>1>>3>>1>>3)&15))])<<3)+((u>>1>>3>>1)&7))])<<1)+((u>>1>>3)&1)])<<3)+((u>>1)&7))])<<1)+((u)&1))] : O;
 }
 
 #endif

@@ -669,6 +669,7 @@ public:
 	GLuint render_target_get_fbo(RID p_render_target) const;
 	GLuint render_target_get_color(RID p_render_target) const;
 	GLuint render_target_get_depth(RID p_render_target) const;
+	bool render_target_get_depth_has_stencil(RID p_render_target) const;
 	void render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const;
 	bool render_target_is_reattach_textures(RID p_render_target) const;
 

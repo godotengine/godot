@@ -167,7 +167,8 @@ struct Manifold::Impl {
       runIndex.push_back(runEnd);
     }
 
-    const auto startID = Impl::ReserveIDs(meshGL.runOriginalID.size());
+    const auto startID =
+        Impl::ReserveIDs(std::max(1_uz, meshGL.runOriginalID.size()));
     auto runOriginalID = meshGL.runOriginalID;
     if (runOriginalID.empty()) {
       runOriginalID.push_back(startID);

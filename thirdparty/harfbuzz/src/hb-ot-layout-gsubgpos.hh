@@ -700,7 +700,7 @@ struct hb_ot_apply_context_t :
   const GDEF::accelerator_t &gdef_accel;
   const hb_ot_layout_lookup_accelerator_t *lookup_accel = nullptr;
   const ItemVariationStore &var_store;
-  ItemVariationStore::cache_t *var_store_cache;
+  hb_scalar_cache_t *var_store_cache;
   hb_set_digest_t digest;
 
   hb_direction_t direction;
@@ -723,7 +723,7 @@ struct hb_ot_apply_context_t :
 			 hb_font_t *font_,
 			 hb_buffer_t *buffer_,
 			 hb_blob_t *table_blob_,
-			 ItemVariationStore::cache_t *var_store_cache_ = nullptr) :
+			 hb_scalar_cache_t *var_store_cache_ = nullptr) :
 			table_index (table_index_),
 			font (font_), face (font->face), buffer (buffer_),
 			sanitizer (table_blob_),

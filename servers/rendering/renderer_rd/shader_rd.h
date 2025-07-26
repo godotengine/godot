@@ -60,8 +60,6 @@ private:
 	CharString general_defines;
 	Vector<VariantDefine> variant_defines;
 	Vector<bool> variants_enabled;
-	HashMap<int, HashMap<String, bool>> variants_bake_for;
-	HashMap<int, bool> variants_bake_for_def;
 	Vector<uint32_t> variant_to_group;
 	HashMap<int, LocalVector<int>> group_to_variant_map;
 	Vector<bool> group_enabled;
@@ -217,25 +215,6 @@ public:
 	bool is_variant_enabled(int p_variant) const;
 	int64_t get_variant_count() const;
 	int get_variant_to_group(int p_variant) const;
-
-	bool has_variant_bake_for(int p_variant) const {
-		return variants_bake_for.has(p_variant);
-	}
-
-	bool get_variant_bake_for(int p_variant, const String &p_name) const {
-		if (!variants_bake_for.has(p_variant)) {
-			return is_variant_enabled(p_variant);
-		}
-		if (!variants_bake_for[p_variant].has(p_name.to_lower())) {
-			return variants_bake_for_def[p_variant];
-		}
-		return variants_bake_for[p_variant][p_name.to_lower()];
-	}
-
-	void set_variants_bake_for(int p_variant, const String &p_name, bool p_enable, bool p_default) {
-		variants_bake_for[p_variant][p_name.to_lower()] = p_enable;
-		variants_bake_for_def[p_variant] = p_default;
-	}
 
 	// Enable/disable groups for things that might be enabled at run time.
 	void enable_group(int p_group);
