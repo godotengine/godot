@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/resources/visual_shader.h"
+#include "scene/resources/visual_shader/visual_shader.h"
 
 #include "tests/test_macros.h"
 

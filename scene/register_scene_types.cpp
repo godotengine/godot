@@ -155,11 +155,13 @@
 #include "scene/resources/texture_rd.h"
 #include "scene/resources/theme.h"
 #include "scene/resources/video_stream.h"
-#include "scene/resources/visual_shader.h"
-#include "scene/resources/visual_shader_nodes.h"
-#include "scene/resources/visual_shader_particle_nodes.h"
-#include "scene/resources/visual_shader_sdf_nodes.h"
 #include "scene/theme/theme_db.h"
+#ifdef VISUAL_SHADER_ENABLED
+#include "scene/resources/visual_shader/visual_shader.h"
+#include "scene/resources/visual_shader/visual_shader_nodes.h"
+#include "scene/resources/visual_shader/visual_shader_particle_nodes.h"
+#include "scene/resources/visual_shader/visual_shader_sdf_nodes.h"
+#endif
 #ifndef DISABLE_DEPRECATED
 #include "scene/resources/animated_texture.h"
 #endif
@@ -728,8 +730,10 @@ void register_scene_types() {
 	/* REGISTER SHADER */
 
 	GDREGISTER_CLASS(Shader);
-	GDREGISTER_CLASS(VisualShader);
 	GDREGISTER_CLASS(ShaderInclude);
+
+#ifdef VISUAL_SHADER_ENABLED
+	GDREGISTER_CLASS(VisualShader);
 	GDREGISTER_ABSTRACT_CLASS(VisualShaderNode);
 	GDREGISTER_CLASS(VisualShaderNodeCustom);
 	GDREGISTER_CLASS(VisualShaderNodeInput);
@@ -845,6 +849,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParticleRandomness);
 	GDREGISTER_CLASS(VisualShaderNodeParticleAccelerator);
 	GDREGISTER_CLASS(VisualShaderNodeParticleEmit);
+#endif
 
 	GDREGISTER_VIRTUAL_CLASS(Material);
 	GDREGISTER_CLASS(PlaceholderMaterial);
