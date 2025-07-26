@@ -58,6 +58,14 @@ RichTextLabel::ItemCustomFX::~ItemCustomFX() {
 	custom_effect.unref();
 }
 
+Rect2i _merge_or_copy_rect(const Rect2i &p_a, const Rect2i &p_b) {
+	if (!p_a.has_area()) {
+		return p_b;
+	} else {
+		return p_a.merge(p_b);
+	}
+}
+
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item *p_item, bool p_free) const {
 	if (!p_item) {
 		return nullptr;
@@ -986,8 +994,10 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									Size2 pad_size = rect.size.min(img->image->get_size());
 									Vector2 pad_off = (rect.size - pad_size) / 2;
 									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off + pad_off, pad_size), false, img->color);
+									visible_rect = _merge_or_copy_rect(visible_rect, Rect2(p_ofs + rect.position + off + pad_off, pad_size));
 								} else {
 									img->image->draw_rect(ci, Rect2(p_ofs + rect.position + off, rect.size), false, img->color);
+									visible_rect = _merge_or_copy_rect(visible_rect, Rect2(p_ofs + rect.position + off, rect.size));
 								}
 							} break;
 							case ITEM_TABLE: {
@@ -1358,6 +1368,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						if (!skip) {
 							if (txt_visible) {
 								has_visible_chars = true;
+								visible_rect = _merge_or_copy_rect(visible_rect, Rect2i(fx_offset + char_off - Vector2i(0, l_ascent), Point2i(glyphs[i].advance, l_size.y)));
 								if (step == DRAW_STEP_TEXT) {
 									if (frid != RID()) {
 										TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
@@ -1661,7 +1672,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									}
 									if (crect.has_point(p_click)) {
 										for (int j = 0; j < (int)frame->lines.size(); j++) {
-											_find_click_in_line(frame, j, rect.position + Vector2(frame->padding.position.x, frame->lines[j].offset.y), rect.size.x, 0, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
+											_find_click_in_line(frame, j, rect.position + Vector2(0.0, frame->lines[j].offset.y), rect.size.x, 0, p_click, &table_click_frame, &table_click_line, &table_click_item, &table_click_char, true, p_meta);
 											if (table_click_frame && table_click_item) {
 												// Save cell detected cell hit data.
 												table_range = Vector2i(INT32_MAX, 0);
@@ -1687,7 +1698,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				}
 			}
 		}
-		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)) - p_frame->padding.position, TS->shaped_text_get_size(rid) + p_frame->padding.position + p_frame->padding.size);
+		Rect2 rect = Rect2(p_ofs + off - Vector2(0, TS->shaped_text_get_ascent(rid)), TS->shaped_text_get_size(rid) + p_frame->padding.size);
 		if (p_table) {
 			rect.size.y += theme_cache.table_v_separation;
 		}
@@ -1704,10 +1715,21 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 						const Glyph *glyphs = TS->shaped_text_get_glyphs(rid);
 						if (glyphs[glyph_idx].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) {
 							// Emebedded object.
+							Vector2 obj_off = p_ofs + off;
 							for (int i = 0; i < objects.size(); i++) {
 								if (TS->shaped_text_get_object_glyph(rid, objects[i]) == glyph_idx) {
 									Rect2 obj_rect = TS->shaped_text_get_object_rect(rid, objects[i]);
-									obj_rect.position.y += baseline_y;
+									obj_rect.position += obj_off;
+									Item *it = items.get_or_null(objects[i]);
+									if (it && it->type == ITEM_IMAGE) {
+										ItemImage *img = reinterpret_cast<ItemImage *>(it);
+										if (img && img->pad && img->image.is_valid()) {
+											Size2 pad_size = rect.size.min(img->image->get_size());
+											Vector2 pad_off = (rect.size - pad_size) / 2;
+											obj_rect.position += pad_off;
+											obj_rect.size = pad_size;
+										}
+									}
 									if (p_click.y >= obj_rect.position.y && p_click.y <= obj_rect.position.y + obj_rect.size.y) {
 										char_pos = glyphs[glyph_idx].start;
 										char_clicked = true;
@@ -2501,6 +2523,7 @@ void RichTextLabel::_notification(int p_what) {
 
 			visible_paragraph_count = 0;
 			visible_line_count = 0;
+			visible_rect = Rect2i();
 
 			// New cache draw.
 			Point2 ofs = text_rect.get_position() + Vector2(0, vbegin + main->lines[from_line].offset.y - vofs);
@@ -2515,6 +2538,9 @@ void RichTextLabel::_notification(int p_what) {
 				}
 				ofs.y += main->lines[from_line].text_buf->get_size().y + (main->lines[from_line].text_buf->get_line_count() - 1) * (theme_cache.line_separation + vsep) + (theme_cache.paragraph_separation + vsep);
 				from_line++;
+			}
+			if (scroll_follow_visible_characters && scroll_active) {
+				vscroll->set_visible(follow_vc_pos > 0);
 			}
 			if (has_focus() && get_tree()->is_accessibility_enabled()) {
 				RID ae;
@@ -5019,6 +5045,31 @@ bool RichTextLabel::is_scroll_following() const {
 	return scroll_follow;
 }
 
+void RichTextLabel::_update_follow_vc() {
+	if (!scroll_follow_visible_characters) {
+		return;
+	}
+	int vc = (visible_characters < 0 ? get_total_character_count() : MIN(visible_characters, get_total_character_count())) - 1;
+	int voff = get_character_line(vc) + 1;
+	if (voff <= get_line_count() - 1) {
+		follow_vc_pos = get_line_offset(voff) - _get_text_rect().size.y;
+	} else {
+		follow_vc_pos = vscroll->get_max();
+	}
+	vscroll->scroll_to(follow_vc_pos);
+}
+
+void RichTextLabel::set_scroll_follow_visible_characters(bool p_follow) {
+	if (scroll_follow_visible_characters != p_follow) {
+		scroll_follow_visible_characters = p_follow;
+		_update_follow_vc();
+	}
+}
+
+bool RichTextLabel::is_scroll_following_visible_characters() const {
+	return scroll_follow_visible_characters;
+}
+
 void RichTextLabel::parse_bbcode(const String &p_bbcode) {
 	clear();
 	append_text(p_bbcode);
@@ -7207,6 +7258,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 				total_height = _calculate_line_vertical_offset(main->lines[i]);
 			}
 		}
+		_update_follow_vc();
 		queue_redraw();
 	}
 }
@@ -7256,6 +7308,10 @@ int RichTextLabel::get_content_height() const {
 		}
 	}
 	return total_height;
+}
+
+Rect2i RichTextLabel::get_visible_content_rect() const {
+	return visible_rect;
 }
 
 int RichTextLabel::get_content_width() const {
@@ -7397,6 +7453,9 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_scroll_active", "active"), &RichTextLabel::set_scroll_active);
 	ClassDB::bind_method(D_METHOD("is_scroll_active"), &RichTextLabel::is_scroll_active);
 
+	ClassDB::bind_method(D_METHOD("set_scroll_follow_visible_characters", "follow"), &RichTextLabel::set_scroll_follow_visible_characters);
+	ClassDB::bind_method(D_METHOD("is_scroll_following_visible_characters"), &RichTextLabel::is_scroll_following_visible_characters);
+
 	ClassDB::bind_method(D_METHOD("set_scroll_follow", "follow"), &RichTextLabel::set_scroll_follow);
 	ClassDB::bind_method(D_METHOD("is_scroll_following"), &RichTextLabel::is_scroll_following);
 
@@ -7480,6 +7539,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_height", "line"), &RichTextLabel::get_line_height);
 	ClassDB::bind_method(D_METHOD("get_line_width", "line"), &RichTextLabel::get_line_width);
 
+	ClassDB::bind_method(D_METHOD("get_visible_content_rect"), &RichTextLabel::get_visible_content_rect);
+
 	ClassDB::bind_method(D_METHOD("get_line_offset", "line"), &RichTextLabel::get_line_offset);
 	ClassDB::bind_method(D_METHOD("get_paragraph_offset", "paragraph"), &RichTextLabel::get_paragraph_offset);
 
@@ -7501,6 +7562,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content"), "set_fit_content", "is_fit_content_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_active"), "set_scroll_active", "is_scroll_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_following"), "set_scroll_follow", "is_scroll_following");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_following_visible_characters"), "set_scroll_follow_visible_characters", "is_scroll_following_visible_characters");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_size", PROPERTY_HINT_RANGE, "0,24,1"), "set_tab_size", "get_tab_size");
@@ -7682,6 +7744,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				total_height = _calculate_line_vertical_offset(main->lines[i]);
 			}
 		}
+		_update_follow_vc();
 		queue_redraw();
 	}
 }

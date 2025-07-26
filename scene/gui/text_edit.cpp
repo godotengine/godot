@@ -255,7 +255,7 @@ inline bool is_inline_info_valid(const Variant &p_info) {
 		return false;
 	}
 	Dictionary info = p_info;
-	if (!info.get_valid("column").is_num() || !info.get_valid("line").is_num() || !info.get_valid("width_ratio").is_num()) {
+	if (!info.get_valid("column").is_num() || !info.get_valid("width_ratio").is_num()) {
 		return false;
 	}
 	return true;
@@ -300,7 +300,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 		int from = 0;
 		if (inline_object_parser.is_valid()) {
 			// Insert inline object.
-			Variant parsed_result = inline_object_parser.call(text_with_ime, p_line);
+			Variant parsed_result = inline_object_parser.call(text_with_ime);
 			if (parsed_result.is_array()) {
 				Array object_infos = parsed_result;
 				for (Variant val : object_infos) {
@@ -760,10 +760,11 @@ void TextEdit::_notification(int p_what) {
 				const Ref<TextParagraph> &ac_buf = text.get_line_data(i);
 				const Vector<RID> &text_aes = text.get_accessibility_elements(i);
 				int first_indent_line = 0;
+				float indent_ofs = 0.0;
 				if (text.is_indent_wrapped_lines()) {
 					_get_wrapped_indent_level(i, first_indent_line);
+					indent_ofs = MIN(text.get_indent_offset(i, rtl), wrap_at_column * 0.6);
 				}
-				float indent_ofs = MIN(text.get_indent_offset(i, rtl), wrap_at_column * 0.6);
 				for (int j = 0; j < text_aes.size(); j++) {
 					float text_off_x = 0.0;
 					float text_off_y = 0.0;
@@ -1304,6 +1305,9 @@ void TextEdit::_notification(int p_what) {
 				bottom_limit_y -= theme_cache.style_normal->get_margin(SIDE_BOTTOM);
 			}
 
+			// Draw guidelines.
+			_draw_guidelines();
+
 			// Draw main text.
 			line_drawing_cache.clear();
 			int row_height = draw_placeholder ? placeholder_line_height + theme_cache.line_spacing : get_line_height();
@@ -1342,10 +1346,11 @@ void TextEdit::_notification(int p_what) {
 				int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(line);
 
 				int first_indent_line = 0;
+				float indent_ofs = 0.0;
 				if (text.is_indent_wrapped_lines()) {
 					_get_wrapped_indent_level(line, first_indent_line);
+					indent_ofs = MIN(text.get_indent_offset(line, rtl), wrap_at_column * 0.6);
 				}
-				float indent_ofs = MIN(text.get_indent_offset(line, rtl), wrap_at_column * 0.6);
 				for (int line_wrap_index = 0; line_wrap_index <= line_wrap_amount; line_wrap_index++) {
 					if (line_wrap_index != 0) {
 						i++;
@@ -2379,19 +2384,16 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (inline_object_click_handler.is_valid()) {
 					int xmargin_beg = Math::ceil(theme_cache.style_normal->get_margin(SIDE_LEFT)) + gutters_width + gutter_padding;
 					int wrap_i = get_line_wrap_index_at_column(pos.y, pos.x);
-					int first_indent_line = 0;
-					if (text.is_indent_wrapped_lines()) {
-						_get_wrapped_indent_level(pos.y, first_indent_line);
-					}
-					float wrap_indent = wrap_i > first_indent_line ? MIN(text.get_indent_offset(pos.y, is_layout_rtl()), wrap_at_column * 0.6) : 0.0;
+					const float wrap_indent = _get_wrap_indent_offset(pos.y, wrap_i, is_layout_rtl());
 
 					Ref<TextParagraph> ldata = text.get_line_data(line);
-					for (Variant k : ldata->get_line_objects(wrap_i)) {
-						if (!is_inline_info_valid(k)) {
+					for (const Variant &inline_key : ldata->get_line_objects(wrap_i)) {
+						if (!is_inline_info_valid(inline_key)) {
 							continue;
 						}
-						Dictionary info = k;
-						Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, k);
+						Dictionary info = inline_key.duplicate();
+						info["line"] = line;
+						Rect2 obj_rect = ldata->get_line_object_rect(wrap_i, inline_key);
 						obj_rect.position.x += xmargin_beg + wrap_indent - first_visible_col;
 
 						if (mpos.x > obj_rect.position.x && mpos.x < obj_rect.get_end().x) {
@@ -3606,11 +3608,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		Point2i pos = get_line_column_at_pos(p_pos);
 		int xmargin_beg = Math::ceil(theme_cache.style_normal->get_margin(SIDE_LEFT)) + gutters_width + gutter_padding;
 		int wrap_i = get_line_wrap_index_at_column(pos.y, pos.x);
-		int first_indent_line = 0;
-		if (text.is_indent_wrapped_lines()) {
-			_get_wrapped_indent_level(pos.y, first_indent_line);
-		}
-		float wrap_indent = wrap_i > first_indent_line ? MIN(text.get_indent_offset(pos.y, is_layout_rtl()), wrap_at_column * 0.6) : 0.0;
+		const float wrap_indent = _get_wrap_indent_offset(pos.y, wrap_i, is_layout_rtl());
 
 		Ref<TextParagraph> ldata = text.get_line_data(pos.y);
 		for (Variant k : ldata->get_line_objects(wrap_i)) {
@@ -4105,6 +4103,18 @@ int TextEdit::_get_wrapped_indent_level(int p_line, int &r_first_wrap) const {
 		}
 	}
 	return tab_count * text.get_tab_size() + whitespace_count;
+}
+
+float TextEdit::_get_wrap_indent_offset(int p_line, int p_wrap_index, bool p_rtl) const {
+	if (!text.is_indent_wrapped_lines()) {
+		return 0;
+	}
+	int first_indent_line = 0;
+	_get_wrapped_indent_level(p_line, first_indent_line);
+	if (p_wrap_index > first_indent_line) {
+		return MIN(text.get_indent_offset(p_line, p_rtl), wrap_at_column * 0.6);
+	}
+	return 0;
 }
 
 int TextEdit::get_indent_level(int p_line) const {
@@ -4995,11 +5005,8 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
 
 	bool rtl = is_layout_rtl();
-	int first_indent_line = 0;
-	if (text.is_indent_wrapped_lines()) {
-		_get_wrapped_indent_level(row, first_indent_line);
-	}
-	float wrap_indent = wrap_index > first_indent_line ? MIN(text.get_indent_offset(row, rtl), wrap_at_column * 0.6) : 0.0;
+	const float wrap_indent = _get_wrap_indent_offset(row, wrap_index, rtl);
+
 	if (rtl) {
 		colx = TS->shaped_text_get_size(text_rid).x - colx + wrap_indent;
 	} else {
@@ -5052,9 +5059,11 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 		return Rect2i(-1, -1, 0, 0);
 	}
 
+	const float wrap_indent = _get_wrap_indent_offset(p_line, wrap_index, is_layout_rtl());
+
 	Point2i pos, size;
 	pos.y = cache_entry.y_offset + get_line_height() * wrap_index;
-	pos.x = get_total_gutter_width() + Math::ceil(theme_cache.style_normal->get_margin(SIDE_LEFT)) - get_h_scroll();
+	pos.x = get_total_gutter_width() + Math::ceil(theme_cache.style_normal->get_margin(SIDE_LEFT)) + wrap_indent - get_h_scroll();
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
 	Vector2 col_bounds = TS->shaped_text_get_grapheme_bounds(text_rid, p_column);
@@ -8164,11 +8173,8 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 	p_wrap_index = MIN(p_wrap_index, text.get_line_data(p_line)->get_line_count() - 1);
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(p_wrap_index);
-	int first_indent_line = 0;
-	if (text.is_indent_wrapped_lines()) {
-		_get_wrapped_indent_level(p_line, first_indent_line);
-	}
-	float wrap_indent = p_wrap_index > first_indent_line ? MIN(text.get_indent_offset(p_line, is_layout_rtl()), wrap_at_column * 0.6) : 0.0;
+	const float wrap_indent = _get_wrap_indent_offset(p_line, p_wrap_index, is_layout_rtl());
+
 	if (is_layout_rtl()) {
 		p_px = TS->shaped_text_get_size(text_rid).x - p_px + wrap_indent;
 	} else {
@@ -8227,22 +8233,19 @@ void TextEdit::_toggle_draw_caret() {
 int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column) const {
 	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
 
-	int row = 0;
-	Vector<Vector2i> rows2 = text.get_line_wrap_ranges(p_line);
-	for (int i = 0; i < rows2.size(); i++) {
-		if ((p_char >= rows2[i].x) && (p_char < rows2[i].y || (i == rows2.size() - 1 && p_char == rows2[i].y))) {
-			row = i;
+	int wrap_index = 0;
+	Vector<Vector2i> wrap_ranges = text.get_line_wrap_ranges(p_line);
+	for (int i = 0; i < wrap_ranges.size(); i++) {
+		if ((p_char >= wrap_ranges[i].x) && (p_char < wrap_ranges[i].y || (i == wrap_ranges.size() - 1 && p_char == wrap_ranges[i].y))) {
+			wrap_index = i;
 			break;
 		}
 	}
 
-	RID text_rid = text.get_line_data(p_line)->get_line_rid(row);
+	RID text_rid = text.get_line_data(p_line)->get_line_rid(wrap_index);
 	bool rtl = is_layout_rtl();
-	int first_indent_line = 0;
-	if (text.is_indent_wrapped_lines()) {
-		_get_wrapped_indent_level(p_line, first_indent_line);
-	}
-	float wrap_indent = row > first_indent_line ? MIN(text.get_indent_offset(p_line, rtl), wrap_at_column * 0.6) : 0.0;
+	const float wrap_indent = _get_wrap_indent_offset(p_line, wrap_index, rtl);
+
 	CaretInfo ts_caret = TS->shaped_text_get_carets(text_rid, p_column);
 	if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
 		return ts_caret.l_caret.position.x + (rtl ? -wrap_indent : wrap_indent);

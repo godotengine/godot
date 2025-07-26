@@ -2059,6 +2059,7 @@
 			<return type="int" />
 			<description>
 				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
+				[b]Note:[/b] On Android 7 and 8, the keyboard height may return 0 the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
@@ -3074,7 +3075,8 @@
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
 			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
-			[b]Note:[/b] Transparency support is implemented on Android, Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Android, but can only be enabled via [member ProjectSettings.display/window/per_pixel_transparency/allowed]. This flag has no effect on Android.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.

@@ -223,13 +223,52 @@ static void test_directory(const String &p_dir) {
 	}
 }
 
+static void setup_global_classes(const String &p_dir) {
+	Error err = OK;
+	Ref<DirAccess> dir = DirAccess::open(p_dir, &err);
+
+	if (err != OK) {
+		FAIL("Invalid test directory.");
+		return;
+	}
+
+	String path = dir->get_current_dir();
+
+	dir->list_dir_begin();
+	String next = dir->get_next();
+
+	while (!next.is_empty()) {
+		if (dir->current_is_dir() && next != "." && next != "..") {
+			setup_global_classes(path.path_join(next));
+		} else if (next.ends_with(".gd")) {
+			String base_type;
+			bool is_abstract;
+			bool is_tool;
+			String source_file = path.path_join(next);
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
+			if (class_name.is_empty()) {
+				next = dir->get_next();
+				continue;
+			}
+			ERR_FAIL_COND_MSG(ScriptServer::is_global_class(class_name),
+					"Class name \"" + class_name + "\" from \"" + source_file + "\" is already used in \"" + ScriptServer::get_global_class_path(class_name) + "\".");
+
+			ScriptServer::add_global_class(class_name, base_type, GDScriptLanguage::get_singleton()->get_name(), source_file, is_abstract, is_tool);
+		}
+		next = dir->get_next();
+	}
+}
+
 TEST_SUITE("[Modules][GDScript][Completion]") {
 	TEST_CASE("[Editor] Check suggestion list") {
 		// Set all editor settings that code completion relies on.
 		EditorSettings::get_singleton()->set_setting("text_editor/completion/use_single_quotes", false);
 		init_language("modules/gdscript/tests/scripts");
 
+		setup_global_classes("modules/gdscript/tests/scripts/completion");
 		test_directory("modules/gdscript/tests/scripts/completion");
+
+		finish_language();
 	}
 }
 } // namespace GDScriptTests

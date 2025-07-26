@@ -6,8 +6,8 @@
  *
  * on files with these headers:
  *
- * <meta name="updated_at" content="2024-12-06 06:35 AM" />
- * File-Date: 2025-01-21
+ * <meta name="updated_at" content="2024-12-06T06:35:00Z" />
+ * File-Date: 2025-03-10
  */
 
 #ifndef HB_OT_TAG_TABLE_HH

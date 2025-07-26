@@ -112,7 +112,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
-	Vector2 color_position;
+	Vector3i color_position;
 	String color_args;
 
 	bool theme_loaded = false;
@@ -205,7 +205,7 @@ protected:
 	void _warning_clicked(const Variant &p_line);
 
 	bool _is_valid_color_info(const Dictionary &p_info);
-	Array _inline_object_parse(const String &p_text, int p_line);
+	Array _inline_object_parse(const String &p_text);
 	void _inline_object_draw(const Dictionary &p_info, const Rect2 &p_rect);
 	void _inline_object_handle_click(const Dictionary &p_info, const Rect2 &p_rect);
 	String _picker_color_stringify(const Color &p_color, COLOR_MODE p_mode);

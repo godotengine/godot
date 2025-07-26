@@ -1391,13 +1391,33 @@ uint32_t RenderingDevice::_texture_layer_count(Texture *p_texture) const {
 	}
 }
 
+uint32_t greatest_common_denominator(uint32_t a, uint32_t b) {
+	// Euclidean algorithm.
+	uint32_t t;
+	while (b != 0) {
+		t = b;
+		b = a % b;
+		a = t;
+	}
+
+	return a;
+}
+
+uint32_t least_common_multiple(uint32_t a, uint32_t b) {
+	if (a == 0 || b == 0) {
+		return 0;
+	}
+
+	return (a / greatest_common_denominator(a, b)) * b;
+}
+
 uint32_t RenderingDevice::_texture_alignment(Texture *p_texture) const {
 	uint32_t alignment = get_compressed_image_format_block_byte_size(p_texture->format);
 	if (alignment == 1) {
 		alignment = get_image_format_pixel_size(p_texture->format);
 	}
 
-	return STEPIFY(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
+	return least_common_multiple(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
 }
 
 Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_immediate_flush) {
@@ -3577,6 +3597,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 
 		const Uniform &uniform = uniforms[uniform_idx];
 
+		ERR_FAIL_INDEX_V(uniform.uniform_type, RD::UNIFORM_TYPE_MAX, RID());
 		ERR_FAIL_COND_V_MSG(uniform.uniform_type != set_uniform.type, RID(),
 				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + "). Expected '" + SHADER_UNIFORM_NAMES[set_uniform.type] + "', supplied: '" + SHADER_UNIFORM_NAMES[uniform.uniform_type] + "'.");
 
@@ -7979,6 +8000,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_TEMPORAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_BUFFER_DEVICE_ADDRESS);
+	BIND_ENUM_CONSTANT(SUPPORTS_IMAGE_ATOMIC_32_BIT);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);

@@ -1356,7 +1356,9 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 
 			if (is_commented) {
 				int delimiter_column = text_editor->get_line(line).find(delimiter);
-				text_editor->remove_text(line, delimiter_column, line, delimiter_column + delimiter.length());
+				if (delimiter_column != -1) {
+					text_editor->remove_text(line, delimiter_column, line, delimiter_column + delimiter.length());
+				}
 			} else {
 				text_editor->insert_text(delimiter, line, text_editor->get_first_non_whitespace_column(line));
 			}

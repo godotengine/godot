@@ -544,7 +544,11 @@ bool SpriteFramesEditor::_matches_background_color(const Color &p_background_col
 
 Size2i SpriteFramesEditor::_estimate_sprite_sheet_size(const Ref<Texture2D> p_texture) {
 	Ref<Image> image = p_texture->get_image();
-	Size2i size = p_texture->get_size();
+	if (image->is_compressed()) {
+		image = image->duplicate();
+		ERR_FAIL_COND_V(image->decompress() != OK, p_texture->get_size());
+	}
+	Size2i size = image->get_size();
 
 	Color assumed_background_color = image->get_pixel(0, 0);
 	Size2i sheet_size;

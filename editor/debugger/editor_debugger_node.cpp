@@ -311,7 +311,9 @@ void EditorDebuggerNode::stop(bool p_force) {
 
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->_stop_and_notify();
+		if (dbg->is_session_active()) {
+			dbg->_stop_and_notify();
+		}
 	});
 	_break_state_changed();
 	breakpoints.clear();
@@ -471,8 +473,11 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	if (!found) {
 		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 		EditorRunBar::get_singleton()->get_pause_button()->set_disabled(true);
-		SceneTreeDock::get_singleton()->hide_remote_tree();
-		SceneTreeDock::get_singleton()->hide_tab_buttons();
+		SceneTreeDock *dock = SceneTreeDock::get_singleton();
+		if (dock->is_inside_tree()) {
+			dock->hide_remote_tree();
+			dock->hide_tab_buttons();
+		}
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
 	}
 }

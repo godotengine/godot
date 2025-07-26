@@ -301,12 +301,10 @@ class ScriptEditor : public PanelContainer {
 
 		SEARCH_HELP,
 		SEARCH_WEBSITE,
-	};
 
-	enum ThemeMenu {
+		// Theme.
 		THEME_IMPORT,
 		THEME_RELOAD,
-		THEME_SAVE,
 		THEME_SAVE_AS,
 	};
 
@@ -361,8 +359,6 @@ class ScriptEditor : public PanelContainer {
 	ScriptCreateDialog *script_create_dialog = nullptr;
 	Button *scripts_visible = nullptr;
 	FindReplaceBar *find_replace_bar = nullptr;
-
-	String current_theme;
 
 	float zoom_factor = 1.0f;
 

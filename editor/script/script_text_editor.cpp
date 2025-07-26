@@ -404,83 +404,103 @@ bool ScriptTextEditor::_is_valid_color_info(const Dictionary &p_info) {
 	return true;
 }
 
-Array ScriptTextEditor::_inline_object_parse(const String &p_text, int p_line) {
+Array ScriptTextEditor::_inline_object_parse(const String &p_text) {
 	Array result;
 	int i_end_previous = 0;
 	int i_start = p_text.find("Color");
 
 	while (i_start != -1) {
 		// Ignore words that just have "Color" in them.
-		if (i_start == 0 || !("_" + p_text.substr(i_start - 1, 1)).is_valid_ascii_identifier()) {
-			int i_par_start = p_text.find_char('(', i_start + 5);
-			if (i_par_start != -1) {
-				int i_par_end = p_text.find_char(')', i_start + 5);
-				if (i_par_end != -1) {
-					Dictionary color_info;
-					color_info["line"] = p_line;
-					color_info["column"] = i_start;
-					color_info["width_ratio"] = 1.0;
-					color_info["color_end"] = i_par_end;
+		if (i_start != 0 && ('_' + p_text.substr(i_start - 1, 1)).is_valid_ascii_identifier()) {
+			i_end_previous = MAX(i_end_previous, i_start);
+			i_start = p_text.find("Color", i_start + 1);
+			continue;
+		}
 
-					String fn_name = p_text.substr(i_start + 5, i_par_start - i_start - 5);
-					String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
-					bool has_added_color = false;
+		const int i_par_start = p_text.find_char('(', i_start + 5);
+		const int i_par_end = p_text.find_char(')', i_start + 5);
+		if (i_par_start == -1 || i_par_end == -1) {
+			i_end_previous = MAX(i_end_previous, i_start);
+			i_start = p_text.find("Color", i_start + 1);
+			continue;
+		}
 
-					if (fn_name.is_empty()) {
-						String stripped = s_params.strip_edges(true, true);
-						// String constructor.
-						if (stripped.length() > 0 && (stripped[0] == '\"')) {
-							String color_string = stripped.substr(1, stripped.length() - 2);
-							color_info["color"] = Color(color_string);
-							color_info["color_mode"] = MODE_STRING;
-							has_added_color = true;
-						}
-						// Hex constructor.
-						else if (stripped.length() == 10 && stripped.substr(0, 2) == "0x") {
-							color_info["color"] = Color(stripped.substr(2, stripped.length() - 2));
-							color_info["color_mode"] = MODE_HEX;
-							has_added_color = true;
-						}
-						// Empty Color() constructor.
-						else if (stripped.is_empty()) {
-							color_info["color"] = Color();
-							color_info["color_mode"] = MODE_RGB;
-							has_added_color = true;
-						}
-					}
-					// Float & int parameters.
-					if (!has_added_color && s_params.size() > 0) {
-						PackedFloat64Array params = s_params.split_floats(",", false);
-						if (params.size() == 3) {
-							params.resize(4);
-							params.set(3, 1.0);
-						}
-						if (params.size() == 4) {
-							has_added_color = true;
-							if (fn_name == ".from_ok_hsl") {
-								color_info["color"] = Color::from_ok_hsl(params[0], params[1], params[2], params[3]);
-								color_info["color_mode"] = MODE_OKHSL;
-							} else if (fn_name == ".from_hsv") {
-								color_info["color"] = Color::from_hsv(params[0], params[1], params[2], params[3]);
-								color_info["color_mode"] = MODE_HSV;
-							} else if (fn_name == ".from_rgba8") {
-								color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
-								color_info["color_mode"] = MODE_RGB8;
-							} else if (fn_name.is_empty()) {
-								color_info["color"] = Color(params[0], params[1], params[2], params[3]);
-								color_info["color_mode"] = MODE_RGB;
-							} else {
-								has_added_color = false;
-							}
-						}
-					}
+		Dictionary color_info;
+		color_info["column"] = i_start;
+		color_info["width_ratio"] = 1.0;
+		color_info["color_end"] = i_par_end;
 
-					if (has_added_color) {
-						result.push_back(color_info);
-						i_end_previous = i_par_end + 1;
+		const String fn_name = p_text.substr(i_start + 5, i_par_start - i_start - 5);
+		const String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
+		bool has_added_color = false;
+
+		if (fn_name.is_empty()) {
+			String stripped = s_params.strip_edges(true, true);
+			if (stripped.length() > 1 && (stripped[0] == '"' || stripped[0] == '\'')) {
+				// String constructor.
+				const char32_t string_delimiter = stripped[0];
+				if (stripped[stripped.length() - 1] == string_delimiter) {
+					const String color_string = stripped.substr(1, stripped.length() - 2);
+					if (!color_string.contains_char(string_delimiter)) {
+						color_info["color"] = Color::from_string(color_string, Color());
+						color_info["color_mode"] = MODE_STRING;
+						has_added_color = true;
 					}
 				}
+			} else if (stripped.length() == 10 && stripped.begins_with("0x")) {
+				// Hex constructor.
+				const String color_string = stripped.substr(2);
+				if (color_string.is_valid_hex_number(false)) {
+					color_info["color"] = Color::from_string(color_string, Color());
+					color_info["color_mode"] = MODE_HEX;
+					has_added_color = true;
+				}
+			} else if (stripped.is_empty()) {
+				// Empty Color() constructor.
+				color_info["color"] = Color();
+				color_info["color_mode"] = MODE_RGB;
+				has_added_color = true;
 			}
+		}
+		// Float & int parameters.
+		if (!has_added_color && s_params.size() > 0) {
+			const PackedStringArray s_params_split = s_params.split(",", false, 4);
+			PackedFloat64Array params;
+			bool valid_floats = true;
+			for (const String &s_param : s_params_split) {
+				// Only allow float literals, expressions won't be evaluated and could get replaced.
+				if (!s_param.strip_edges().is_valid_float()) {
+					valid_floats = false;
+					break;
+				}
+				params.push_back(s_param.to_float());
+			}
+			if (valid_floats && params.size() == 3) {
+				params.push_back(1.0);
+			}
+			if (valid_floats && params.size() == 4) {
+				has_added_color = true;
+				if (fn_name == ".from_ok_hsl") {
+					color_info["color"] = Color::from_ok_hsl(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_OKHSL;
+				} else if (fn_name == ".from_hsv") {
+					color_info["color"] = Color::from_hsv(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_HSV;
+				} else if (fn_name == ".from_rgba8") {
+					color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
+					color_info["color_mode"] = MODE_RGB8;
+				} else if (fn_name.is_empty()) {
+					color_info["color"] = Color(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_RGB;
+				} else {
+					has_added_color = false;
+				}
+			}
+		}
+
+		if (has_added_color) {
+			result.push_back(color_info);
+			i_end_previous = i_par_end + 1;
 		}
 		i_end_previous = MAX(i_end_previous, i_start);
 		i_start = p_text.find("Color", i_start + 1);
@@ -2208,20 +2228,24 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	int drop_at_column = pos.x;
 	int selection_index = te->get_selection_at_line_column(drop_at_line, drop_at_column);
 
-	bool line_will_be_empty = false;
+	bool is_empty_line = false;
 	if (selection_index >= 0) {
 		// Dropped on a selection, it will be replaced.
 		drop_at_line = te->get_selection_from_line(selection_index);
 		drop_at_column = te->get_selection_from_column(selection_index);
-		line_will_be_empty = drop_at_column <= te->get_first_non_whitespace_column(drop_at_line) && te->get_selection_to_column(selection_index) == te->get_line(te->get_selection_to_line(selection_index)).length();
+		is_empty_line = drop_at_column <= te->get_first_non_whitespace_column(drop_at_line) && te->get_selection_to_column(selection_index) == te->get_line(te->get_selection_to_line(selection_index)).length();
 	}
-
-	String text_to_drop;
 
 	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
-	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
+
+	if (selection_index < 0) {
+		is_empty_line = line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
+	}
+
+	String text_to_drop;
+	bool add_new_line = false;
 
 	const String type = d.get("type", "");
 	if (type == "resource") {
@@ -2290,6 +2314,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		if (drop_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
+			add_new_line = !is_empty_line && drop_at_column != 0;
 
 			for (int i = 0; i < nodes.size(); i++) {
 				NodePath np = nodes[i];
@@ -2317,10 +2342,17 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 							class_name = global_node_script_name;
 						}
 					}
-					text_to_drop += vformat("@onready var %s: %s = %c%s\n", variable_name, class_name, is_unique ? '%' : '$', path);
+					text_to_drop += vformat("@onready var %s: %s = %c%s", variable_name, class_name, is_unique ? '%' : '$', path);
 				} else {
-					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
+					text_to_drop += vformat("@onready var %s = %c%s", variable_name, is_unique ? '%' : '$', path);
 				}
+				if (i < nodes.size() - 1) {
+					text_to_drop += "\n";
+				}
+			}
+
+			if (!is_empty_line && drop_at_column == 0) {
+				text_to_drop += "\n";
 			}
 		} else {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2368,7 +2400,12 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	te->remove_secondary_carets();
 	te->deselect();
 	te->set_caret_line(drop_at_line);
-	te->set_caret_column(drop_at_column);
+	if (add_new_line) {
+		te->set_caret_column(te->get_line(drop_at_line).length());
+		text_to_drop = "\n" + text_to_drop;
+	} else {
+		te->set_caret_column(drop_at_column);
+	}
 	te->insert_text_at_caret(text_to_drop);
 	te->end_complex_operation();
 	te->grab_focus();
@@ -2439,7 +2476,6 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		if (has_color) {
 			String line = tx->get_line(mouse_line);
 			color_position.x = mouse_line;
-			color_position.y = mouse_column;
 
 			int begin = -1;
 			int end = -1;
@@ -2507,6 +2543,8 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 			}
 			if (has_color) {
 				color_panel->set_position(get_screen_position() + local_pos);
+				color_position.y = begin;
+				color_position.z = end;
 			}
 		}
 		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
@@ -2523,7 +2561,7 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	}
 
 	String line = code_editor->get_text_editor()->get_line(color_position.x);
-	String line_with_replaced_args = line.replace(color_args, new_args);
+	String line_with_replaced_args = line.substr(0, color_position.y) + line.substr(color_position.y, color_position.z - color_position.y).replace(color_args, new_args) + line.substr(color_position.z);
 
 	color_args = new_args;
 	code_editor->get_text_editor()->begin_complex_operation();

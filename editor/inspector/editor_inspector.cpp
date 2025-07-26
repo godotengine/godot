@@ -445,17 +445,30 @@ void EditorProperty::_notification(int p_what) {
 					checkbox = get_editor_theme_icon(SNAME("GuiUnchecked"));
 				}
 
+				check_rect = Rect2(ofs, 0, checkbox->get_width() + padding, size.height);
+
+				Point2 rtl_pos;
+				if (rtl) {
+					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + (1 * EDSCALE)), check_rect.position.y);
+				}
+
 				Color color2(1, 1, 1);
 				if (check_hover) {
 					color2.r *= 1.2;
 					color2.g *= 1.2;
 					color2.b *= 1.2;
+
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					if (rtl) {
+						draw_style_box(sb_hover, Rect2(rtl_pos, check_rect.size));
+					} else {
+						draw_style_box(sb_hover, check_rect);
+					}
 				}
-				check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
 				if (rtl) {
-					draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
+					draw_texture(checkbox, rtl_pos + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				} else {
-					draw_texture(checkbox, check_rect.position, color2);
+					draw_texture(checkbox, check_rect.position + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				}
 				int check_ofs = checkbox->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				ofs += check_ofs;
@@ -469,7 +482,7 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= reload_icon->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
 				}
@@ -531,7 +544,7 @@ void EditorProperty::_notification(int p_what) {
 				ofs -= key->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				keying_rect = Rect2(ofs, 0, key->get_width() + padding, size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - keying_rect.position.x - (key->get_width() + padding), keying_rect.position.y);
 				}
@@ -568,7 +581,7 @@ void EditorProperty::_notification(int p_what) {
 				ofs -= close->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				delete_rect = Rect2(ofs, 0, close->get_width() + padding, size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - delete_rect.position.x - (close->get_width() + padding), delete_rect.position.y);
 				}
@@ -1893,8 +1906,8 @@ void EditorInspectorSection::_notification(int p_what) {
 			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
 			Color c = bg_color;
 			c.a *= 0.4;
-			if (foldable && header_rect.has_point(get_local_mouse_position())) {
-				c = c.lightened((can_click_unfold && Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) ? -0.05 : 0.2);
+			if (header_hover) {
+				c = c.lightened(Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT) ? -0.05 : 0.2);
 			}
 			draw_rect(header_rect, c);
 
@@ -2059,14 +2072,18 @@ void EditorInspectorSection::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
+		case NOTIFICATION_MOUSE_EXIT_SELF:
 		case NOTIFICATION_MOUSE_EXIT: {
 			if (dropping_for_unfold) {
 				dropping_unfold_timer->stop();
 			}
 
-			check_hover = false;
-			keying_hover = false;
-			queue_redraw();
+			if (header_hover || check_hover || keying_hover) {
+				header_hover = false;
+				check_hover = false;
+				keying_hover = false;
+				queue_redraw();
+			}
 		} break;
 	}
 }
@@ -2166,11 +2183,11 @@ void EditorInspectorSection::setup(const String &p_section, const String &p_labe
 
 void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
-	bool has_children_to_show = vbox->get_child_count(false) != 0;
+	bool can_click_unfold = vbox->get_child_count(false) != 0 && !(!checkbox_only && checkable && !checked);
 
-	Ref<InputEventMouse> me = p_event;
-	if (me.is_valid()) {
-		Vector2 mpos = me->get_position();
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Vector2 mpos = mm->get_position();
 
 		bool new_check_hover = check_rect.has_point(mpos);
 		if (new_check_hover != check_hover) {
@@ -2183,11 +2200,17 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 			keying_hover = new_keying_hover;
 			queue_redraw();
 		}
+
+		bool new_header_hover = foldable && can_click_unfold && (get_local_mouse_position().y < _get_header_height());
+		if (new_header_hover != header_hover) {
+			header_hover = new_header_hover;
+			queue_redraw();
+		}
 	}
 
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid() && k->is_pressed()) {
-		if (foldable && has_children_to_show && !(checkable && !checked && !checkbox_only) && k->is_action("ui_accept", true)) {
+		if (foldable && can_click_unfold && k->is_action("ui_accept", true)) {
 			accept_event();
 
 			bool should_unfold = !object->editor_is_section_unfolded(section);
@@ -2224,7 +2247,7 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		} else if (keying && keying_rect.has_point(pos)) {
 			emit_signal(SNAME("property_keyed"), related_enable_property, false);
 		} else if (foldable) {
-			bool should_unfold = has_children_to_show && !(checkable && !checked && !checkbox_only) && !object->editor_is_section_unfolded(section);
+			bool should_unfold = can_click_unfold && !object->editor_is_section_unfolded(section);
 			if (should_unfold) {
 				unfold();
 			} else {
@@ -2233,15 +2256,6 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
-	}
-
-	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid()) {
-		int header_height = _get_header_height();
-		Vector2 previous = mm->get_position() - mm->get_relative();
-		if (has_children_to_show && ((mm->get_position().y >= header_height) != (previous.y >= header_height))) {
-			queue_redraw();
-		}
 	}
 }
 
@@ -3475,8 +3489,6 @@ void EditorInspector::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_p
 }
 
 void EditorInspector::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(inspector_plugin_count == MAX_PLUGINS);
-
 	int idx = -1;
 	for (int i = 0; i < inspector_plugin_count; i++) {
 		if (inspector_plugins[i] == p_plugin) {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  soft_body_3d_gizmo_plugin.h                                           */
+/*  cpu_feature_validation.c                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,24 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include <windows.h>
 
-#include "editor/scene/3d/node_3d_editor_gizmos.h"
+#ifdef WINDOWS_SUBSYSTEM_CONSOLE
+extern int WINAPI mainCRTStartup();
+#else
+extern int WINAPI WinMainCRTStartup();
+#endif
 
-class SoftBody3DGizmoPlugin : public EditorNode3DGizmoPlugin {
-	GDCLASS(SoftBody3DGizmoPlugin, EditorNode3DGizmoPlugin);
+#if defined(__GNUC__) || defined(__clang__)
+extern int WINAPI ShimMainCRTStartup() __attribute__((used));
+#endif
 
-public:
-	bool has_gizmo(Node3D *p_spatial) override;
-	String get_gizmo_name() const override;
-	int get_priority() const override;
-	bool is_selectable_when_hidden() const override;
-	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	String get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	Variant get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
-	bool is_handle_highlighted(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const override;
-
-	SoftBody3DGizmoPlugin();
-};
+extern int WINAPI ShimMainCRTStartup() {
+	if (IsProcessorFeaturePresent(PF_SSE4_2_INSTRUCTIONS_AVAILABLE)) {
+#ifdef WINDOWS_SUBSYSTEM_CONSOLE
+		return mainCRTStartup();
+#else
+		return WinMainCRTStartup();
+#endif
+	} else {
+		MessageBoxW(NULL, L"A CPU with SSE4.2 instruction set support is required.", L"Godot Engine", MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+		return -1;
+	}
+}

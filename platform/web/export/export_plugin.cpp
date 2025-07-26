@@ -143,13 +143,14 @@ void EditorExportPlatformWeb::_fix_html(Vector<uint8_t> &p_html, const Ref<Edito
 	config["canvasResizePolicy"] = p_preset->get("html/canvas_resize_policy");
 	config["experimentalVK"] = p_preset->get("html/experimental_virtual_keyboard");
 	config["focusCanvas"] = p_preset->get("html/focus_canvas_on_start");
-	config["godotPoolSize"] = p_preset->get("variant/godot_pool_size");
 	config["gdextensionLibs"] = libs;
 	config["executable"] = p_name;
 	config["args"] = args;
 	config["fileSizes"] = p_file_sizes;
 	config["ensureCrossOriginIsolationHeaders"] = (bool)p_preset->get("progressive_web_app/ensure_cross_origin_isolation_headers");
-	config["emscriptenPoolSize"] = p_preset->get("variant/emscripten_pool_size");
+
+	config["godotPoolSize"] = p_preset->get("threads/godot_pool_size");
+	config["emscriptenPoolSize"] = p_preset->get("threads/emscripten_pool_size");
 
 	String head_include;
 	if (p_preset->get("html/export_icon")) {
@@ -366,9 +367,7 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/extensions_support"), false)); // GDExtension support.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false)); // Thread support (i.e. run with or without COEP/COOP headers).
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "variant/emscripten_pool_size"), 8));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "variant/godot_pool_size"), 4));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "variant/thread_support"), false, true)); // Thread support (i.e. run with or without COEP/COOP headers).
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 
@@ -387,13 +386,19 @@ void EditorExportPlatformWeb::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_180x180", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "progressive_web_app/icon_512x512", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "progressive_web_app/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/emscripten_pool_size"), 8));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "threads/godot_pool_size"), 4));
 }
 
 bool EditorExportPlatformWeb::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option) const {
 	bool advanced_options_enabled = p_preset->are_advanced_options_enabled();
-	if (p_option == "custom_template/debug" ||
-			p_option == "custom_template/release") {
+	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		return advanced_options_enabled;
+	}
+
+	if (p_option == "threads/godot_pool_size" || p_option == "threads/emscripten_pool_size") {
+		return p_preset->get("variant/thread_support").operator bool();
 	}
 
 	return true;
@@ -642,8 +647,8 @@ bool EditorExportPlatformWeb::poll_export() {
 	return remote_debug_state != prev_remote_debug_state;
 }
 
-Ref<ImageTexture> EditorExportPlatformWeb::get_option_icon(int p_index) const {
-	Ref<ImageTexture> play_icon = EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformWeb::get_option_icon(int p_index) const {
+	Ref<Texture2D> play_icon = EditorExportPlatform::get_option_icon(p_index);
 
 	switch (remote_debug_state) {
 		case REMOTE_DEBUG_STATE_UNAVAILABLE: {

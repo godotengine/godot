@@ -647,6 +647,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
@@ -667,6 +669,7 @@ public:
 	GLuint render_target_get_fbo(RID p_render_target) const;
 	GLuint render_target_get_color(RID p_render_target) const;
 	GLuint render_target_get_depth(RID p_render_target) const;
+	bool render_target_get_depth_has_stencil(RID p_render_target) const;
 	void render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const;
 	bool render_target_is_reattach_textures(RID p_render_target) const;
 

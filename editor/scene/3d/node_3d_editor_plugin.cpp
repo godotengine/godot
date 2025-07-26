@@ -48,16 +48,12 @@
 #include "editor/scene/3d/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/audio_stream_player_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/camera_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/collision_object_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/collision_polygon_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/collision_shape_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/cpu_particles_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/decal_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/fog_volume_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/geometry_instance_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/gpu_particles_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/gpu_particles_collision_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/joint_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/label_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/light_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/lightmap_gi_gizmo_plugin.h"
@@ -66,15 +62,19 @@
 #include "editor/scene/3d/gizmos/mesh_instance_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/occluder_instance_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/particles_3d_emission_shape_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/physics_bone_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/ray_cast_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/collision_object_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/collision_polygon_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/collision_shape_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/joint_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/physics_bone_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/ray_cast_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/shape_cast_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/soft_body_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/spring_arm_3d_gizmo_plugin.h"
+#include "editor/scene/3d/gizmos/physics/vehicle_body_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/reflection_probe_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/shape_cast_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/soft_body_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/spring_arm_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/spring_bone_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/sprite_base_3d_gizmo_plugin.h"
-#include "editor/scene/3d/gizmos/vehicle_body_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/visible_on_screen_notifier_3d_gizmo_plugin.h"
 #include "editor/scene/3d/gizmos/voxel_gi_gizmo_plugin.h"
 #include "editor/scene/3d/node_3d_editor_gizmos.h"
@@ -2029,7 +2029,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (_edit.gizmo.is_valid()) {
-						_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
+						// Certain gizmo plugins should be able to commit handles without dragging them.
+						if (_edit.original_mouse_pos != _edit.mouse_pos || _edit.gizmo->get_plugin()->can_commit_handle_on_click()) {
+							_edit.gizmo->commit_handle(_edit.gizmo_handle, _edit.gizmo_handle_secondary, _edit.gizmo_initial_value, false);
+						}
+
 						spatial_editor->get_single_selected_node()->update_gizmos();
 						_edit.gizmo = Ref<EditorNode3DGizmo>();
 						break;

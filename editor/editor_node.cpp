@@ -450,6 +450,11 @@ void EditorNode::_update_from_settings() {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
+	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
+	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
+		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
+		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+	}
 
 	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
@@ -764,6 +769,7 @@ bool EditorNode::_is_project_data_missing() {
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_title();
 			callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
 		} break;
 
@@ -845,7 +851,7 @@ void EditorNode::_notification(int p_what) {
 
 			command_palette->register_shortcuts_as_command();
 
-			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
+			_begin_first_scan();
 
 			last_dark_mode_state = DisplayServer::get_singleton()->is_dark_mode();
 			last_system_accent_color = DisplayServer::get_singleton()->get_accent_color();
@@ -3306,8 +3312,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				p_confirmed = false;
 			}
 
+			if (p_confirmed && stop_project_confirmation && project_run_bar->is_playing()) {
+				project_run_bar->stop_playing();
+				stop_project_confirmation = false;
+				p_confirmed = false;
+			}
+
 			if (!p_confirmed) {
-				if (project_run_bar->is_playing()) {
+				if (!stop_project_confirmation && project_run_bar->is_playing()) {
 					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
 						confirmation->set_text(TTR("Stop running project before reloading the current project?"));
 						confirmation->set_ok_button_text(TTR("Stop & Reload"));
@@ -3318,6 +3330,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					confirmation->reset_size();
 					confirmation->popup_centered();
 					confirmation_button->hide();
+					stop_project_confirmation = true;
 					break;
 				}
 
@@ -4235,6 +4248,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 	Node *old_scene = get_editor_data().get_edited_scene_root();
 
 	editor_selection->clear();
+	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 	editor_data.set_edited_scene(p_idx);
 
 	Node *new_scene = editor_data.get_edited_scene_root();
@@ -6001,6 +6015,11 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 	return singleton->immediate_dialog_confirmed;
 }
 
+bool EditorNode::is_cmdline_mode() {
+	ERR_FAIL_NULL_V(singleton, false);
+	return singleton->cmdline_mode;
+}
+
 void EditorNode::cleanup() {
 	_init_callbacks.clear();
 }
@@ -6201,6 +6220,12 @@ void EditorNode::_cancel_close_scene_tab() {
 	if (_is_closing_editor()) {
 		tab_closing_menu_option = -1;
 	}
+	changing_scene = false;
+	tabs_to_close.clear();
+}
+
+void EditorNode::_cancel_confirmation() {
+	stop_project_confirmation = false;
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
@@ -8404,6 +8429,7 @@ EditorNode::EditorNode() {
 	confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 	confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
+	confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_confirmation));
 
 	save_confirmation = memnew(ConfirmationDialog);
 	save_confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");

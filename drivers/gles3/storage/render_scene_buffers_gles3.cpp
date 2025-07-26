@@ -58,19 +58,19 @@ RenderSceneBuffersGLES3::~RenderSceneBuffersGLES3() {
 	free_render_buffer_data();
 }
 
-void RenderSceneBuffersGLES3::_rt_attach_textures(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count) {
+void RenderSceneBuffersGLES3::_rt_attach_textures(GLuint p_color, GLuint p_depth, GLsizei p_samples, uint32_t p_view_count, bool p_depth_has_stencil) {
 	if (p_view_count > 1) {
 		if (p_samples > 1) {
 #if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
 			glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, p_color, 0, p_samples, 0, p_view_count);
-			glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, p_depth, 0, p_samples, 0, p_view_count);
+			glFramebufferTextureMultisampleMultiviewOVR(GL_FRAMEBUFFER, p_depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, p_depth, 0, p_samples, 0, p_view_count);
 #else
 			ERR_PRINT_ONCE("Multiview MSAA isn't supported on this platform.");
 #endif
 		} else {
 #ifndef IOS_ENABLED
 			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, p_color, 0, 0, p_view_count);
-			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, p_depth, 0, 0, p_view_count);
+			glFramebufferTextureMultiviewOVR(GL_FRAMEBUFFER, p_depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, p_depth, 0, 0, p_view_count);
 #else
 			ERR_PRINT_ONCE("Multiview isn't supported on this platform.");
 #endif
@@ -79,13 +79,13 @@ void RenderSceneBuffersGLES3::_rt_attach_textures(GLuint p_color, GLuint p_depth
 		if (p_samples > 1) {
 #ifdef ANDROID_ENABLED
 			glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_color, 0, p_samples);
-			glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, p_depth, 0, p_samples);
+			glFramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, p_depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_depth, 0, p_samples);
 #else
 			ERR_PRINT_ONCE("MSAA via EXT_multisampled_render_to_texture isn't supported on this platform.");
 #endif
 		} else {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_color, 0);
-			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, p_depth, 0);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, p_depth_has_stencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, p_depth, 0);
 		}
 	}
 }
@@ -107,7 +107,7 @@ GLuint RenderSceneBuffersGLES3::_rt_get_cached_fbo(GLuint p_color, GLuint p_dept
 	glGenFramebuffers(1, &new_fbo.fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, new_fbo.fbo);
 
-	_rt_attach_textures(p_color, p_depth, p_samples, p_view_count);
+	_rt_attach_textures(p_color, p_depth, p_samples, p_view_count, true);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -383,7 +383,7 @@ void RenderSceneBuffersGLES3::_check_render_buffers() {
 			glGenFramebuffers(1, &msaa3d.fbo);
 			glBindFramebuffer(GL_FRAMEBUFFER, msaa3d.fbo);
 
-			_rt_attach_textures(internal3d.color, internal3d.depth, msaa3d.samples, view_count);
+			_rt_attach_textures(internal3d.color, internal3d.depth, msaa3d.samples, view_count, true);
 
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 			if (status != GL_FRAMEBUFFER_COMPLETE) {
@@ -662,9 +662,10 @@ GLuint RenderSceneBuffersGLES3::get_render_fbo() {
 	if (texture_storage->render_target_is_reattach_textures(render_target)) {
 		GLuint color = texture_storage->render_target_get_color(render_target);
 		GLuint depth = texture_storage->render_target_get_depth(render_target);
+		bool depth_has_stencil = texture_storage->render_target_get_depth_has_stencil(render_target);
 
 		glBindFramebuffer(GL_FRAMEBUFFER, rt_fbo);
-		_rt_attach_textures(color, depth, msaa3d.samples, view_count);
+		_rt_attach_textures(color, depth, msaa3d.samples, view_count, depth_has_stencil);
 		glBindFramebuffer(GL_FRAMEBUFFER, texture_storage->system_fbo);
 	}
 
