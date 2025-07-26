@@ -1326,6 +1326,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_tapered_capsule_shape_create" qualifiers="virtual required">
+			<return type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_world_boundary_shape_create" qualifiers="virtual required">
 			<return type="RID" />
 			<description>

@@ -140,6 +140,7 @@ public:
 	virtual RID sphere_shape_create() override { return RID(); }
 	virtual RID box_shape_create() override { return RID(); }
 	virtual RID capsule_shape_create() override { return RID(); }
+	virtual RID tapered_capsule_shape_create() override { return RID(); }
 	virtual RID cylinder_shape_create() override { return RID(); }
 	virtual RID convex_polygon_shape_create() override { return RID(); }
 	virtual RID concave_polygon_shape_create() override { return RID(); }
