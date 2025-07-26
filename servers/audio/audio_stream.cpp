@@ -799,10 +799,13 @@ AudioStreamRandomizer::AudioStreamRandomizer() {
 void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 	playing = playback;
 	{
-		float range_from = 1.0 / randomizer->random_pitch_scale;
-		float range_to = randomizer->random_pitch_scale;
+		// GH-10238 : Pitch_scale is multiplicative, so picking a random number for it without log
+		// conversion will bias it towards higher pitches (0.5 is down one octave, 2.0 is up one octave).
+		// See: https://pressbooks.pub/sound/chapter/pitch-and-frequency-in-music/
+		float range_from = Math::log(1.0f / randomizer->random_pitch_scale);
+		float range_to = Math::log(randomizer->random_pitch_scale);
 
-		pitch_scale = range_from + Math::randf() * (range_to - range_from);
+		pitch_scale = Math::exp(range_from + Math::randf() * (range_to - range_from));
 	}
 	{
 		float range_from = -randomizer->random_volume_offset_db;
