@@ -850,21 +850,6 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 				}
 
 				if (info->direction == ProxyDirection::CLIENT) {
-					// FIXME: Make sure that this code is still useful. It's originates from a
-					// very old prototype of this code.
-					uint32_t *global_name = registry_globals_names.getptr(obj_id);
-					if (global_name) {
-						if (!client->registry_globals_instances.has(*global_name)) {
-							DEBUG_LOG_WAYLAND_EMBED(vformat("Object argument g0x%x points to global but client does not have it. Marking packet as invalid.", obj_id));
-							valid = false;
-							break;
-						}
-						uint32_t new_local_id = *client->registry_globals_instances[*global_name].begin();
-						DEBUG_LOG_WAYLAND_EMBED(vformat("Redirecting object argument g0x%x to local registry object l0x%x.", obj_id, new_local_id));
-						body[buf_idx] = new_local_id;
-						break;
-					}
-
 					if (!client->local_ids.has(obj_id)) {
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Object argument g0x%x not found, marking packet as invalid.", obj_id));
 						valid = false;
