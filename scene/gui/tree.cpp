@@ -2466,7 +2466,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 
 			Point2i text_pos = item_rect.position;
-			text_pos.y += Math::floor(p_draw_ofs.y) - _get_title_button_height();
+			text_pos.y += Math::floor((item_rect.size.y - p_item->cells[i].text_buf->get_size().y) * 0.5);
 
 			switch (p_item->cells[i].mode) {
 				case TreeItem::CELL_MODE_STRING: {
