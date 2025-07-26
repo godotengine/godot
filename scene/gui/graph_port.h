@@ -85,7 +85,7 @@ protected:
 
 	bool enabled = false;
 	bool exclusive = false;
-	int type = 0;
+	int port_type = 0;
 	PortDirection direction = PortDirection::UNDIRECTED;
 	DisconnectBehaviour on_disabled_behaviour = DisconnectBehaviour::DISCONNECT_ALL;
 
@@ -118,8 +118,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 
-	int get_type() const;
-	void set_type(int p_type);
+	int get_port_type() const;
+	void set_port_type(int p_type);
 
 	Color get_color() const;
 	Color get_rim_color();

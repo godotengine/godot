@@ -138,9 +138,15 @@ void VSGraphPort::_draw() {
 }
 
 VSGraphPort::VSGraphPort() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 }
 
 VSGraphPort::VSGraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
+	enabled = p_enabled;
+	exclusive = p_exclusive;
+	port_type = p_type;
+	direction = p_direction;
 }
 
 ///////////////////
@@ -4250,9 +4256,9 @@ void VisualShaderEditor::_connection_to_empty(GraphPort *p_from_port, const Vect
 	Ref<VisualShaderNode> node = visual_shader->get_node(get_current_shader_type(), from_node);
 	if (node.is_valid()) {
 		if (p_from_port->get_direction() == GraphPort::PortDirection::INPUT) {
-			input_port_type = (VisualShaderNode::PortType)p_from_port->get_type();
+			input_port_type = (VisualShaderNode::PortType)p_from_port->get_port_type();
 		} else {
-			output_port_type = (VisualShaderNode::PortType)p_from_port->get_type();
+			output_port_type = (VisualShaderNode::PortType)p_from_port->get_port_type();
 		}
 	}
 	_show_members_dialog(true, input_port_type, output_port_type);

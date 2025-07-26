@@ -110,6 +110,7 @@ public:
 	GraphPort *get_other_port_by_node(const GraphNode *p_node) const;
 	GraphNode *get_other_node(const GraphNode *p_node) const;
 	GraphNode *get_other_node_by_port(const GraphPort *p_port) const;
+	GraphPort *get_port_by_node(const GraphNode *p_node) const;
 
 	Pair<Pair<String, int>, Pair<String, int>> _to_legacy_data() const;
 	bool matches_legacy_data(String p_first_node, int p_first_port, String p_second_node, int p_second_port);

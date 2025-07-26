@@ -614,19 +614,11 @@ int GraphEdit::get_connection_count_by_node(const GraphNode *p_node) const {
 
 GraphNode *GraphEdit::get_connection_target(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
-	if (!is_port_connected(p_port)) {
+	const Ref<GraphConnection> conn = get_first_connection_by_port(p_port);
+	if (conn.is_null()) {
 		return nullptr;
 	}
-	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
-		if (conn.is_null()) {
-			continue;
-		}
-		GraphNode *other = conn->get_other_port(p_port)->graph_node;
-		if (other) {
-			return other;
-		}
-	}
-	return nullptr;
+	return conn->get_other_node_by_port(p_port);
 }
 
 String GraphEdit::get_connections_description(const GraphPort *p_port) const {
@@ -1283,14 +1275,14 @@ void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 	bool can_disconnect;
 	switch (p_port->get_direction()) {
 		case GraphPort::PortDirection::INPUT:
-			can_disconnect = input_disconnects && valid_input_disconnect_types.has(p_port->get_type());
+			can_disconnect = input_disconnects && valid_input_disconnect_types.has(p_port->get_port_type());
 			break;
 		case GraphPort::PortDirection::OUTPUT:
-			can_disconnect = valid_output_disconnect_types.has(p_port->get_type());
+			can_disconnect = valid_output_disconnect_types.has(p_port->get_port_type());
 			break;
 		case GraphPort::PortDirection::UNDIRECTED:
 		default:
-			can_disconnect = valid_undirected_disconnect_types.has(p_port->get_type());
+			can_disconnect = valid_undirected_disconnect_types.has(p_port->get_port_type());
 			break;
 	}
 	just_disconnected = false;
@@ -1314,8 +1306,8 @@ bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, false);
 	ERR_FAIL_NULL_V(connecting_from_port, false);
 	ERR_FAIL_NULL_V(connecting_from_port->graph_node, false);
-	int from_type = connecting_from_port->get_type();
-	int to_type = p_port->get_type();
+	int from_type = connecting_from_port->get_port_type();
+	int to_type = p_port->get_port_type();
 	if (p_port->direction == GraphPort::PortDirection::OUTPUT || connecting_from_port->direction == GraphPort::PortDirection::INPUT) {
 		int swap_type = from_type;
 		from_type = to_type;
@@ -1707,7 +1699,7 @@ void GraphEdit::_update_top_connection_layer() {
 	if (connecting_from_port->graph_node) {
 		from_pos += connecting_from_port->graph_node->get_position() / zoom;
 	}
-	int from_type = connecting_from_port->get_type();
+	int from_type = connecting_from_port->get_port_type();
 	Color from_color = connecting_from_port->get_color();
 
 	Vector2 to_pos = connecting_to_point / zoom;
@@ -1715,7 +1707,7 @@ void GraphEdit::_update_top_connection_layer() {
 	Color to_color = from_color;
 	if (connecting_target_valid) {
 		ERR_FAIL_NULL(connecting_to_port);
-		to_type = connecting_to_port->get_type();
+		to_type = connecting_to_port->get_port_type();
 		to_color = connecting_to_port->get_color();
 
 		// Highlight the line to the mouse cursor when it's over a valid target port.

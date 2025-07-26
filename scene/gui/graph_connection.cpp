@@ -76,6 +76,17 @@ GraphNode *GraphConnection::get_other_node_by_port(const GraphPort *p_port) cons
 	}
 }
 
+GraphPort *GraphConnection::get_port_by_node(const GraphNode *p_node) const {
+	ERR_FAIL_NULL_V(p_node, nullptr);
+	if (p_node == get_first_node()) {
+		return first_port;
+	} else if (p_node == get_second_node()) {
+		return second_port;
+	} else {
+		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
+	}
+}
+
 // This legacy method is exclusively used by visual shaders, which use legacy port indices and expect GraphNodeIndexed's behavior
 Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() const {
 	ERR_FAIL_NULL_V(first_port->graph_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
@@ -133,8 +144,8 @@ bool GraphConnection::get_clear_if_invalid() const {
 }
 
 void GraphConnection::set_line_material(const Ref<ShaderMaterial> p_line_material) {
-	p_line_material->set_shader_parameter("first_type", first_port ? first_port->get_type() : 0);
-	p_line_material->set_shader_parameter("second_type", second_port ? second_port->get_type() : 0);
+	p_line_material->set_shader_parameter("first_type", first_port ? first_port->get_port_type() : 0);
+	p_line_material->set_shader_parameter("second_type", second_port ? second_port->get_port_type() : 0);
 	_cache.line->set_material(p_line_material);
 }
 
@@ -163,8 +174,8 @@ void GraphConnection::update_cache() {
 	const Color from_color = first_port->get_color();
 	const Color to_color = second_port->get_color();
 
-	const int from_type = first_port->get_type();
-	const int to_type = second_port->get_type();
+	const int from_type = first_port->get_port_type();
+	const int to_type = second_port->get_port_type();
 
 	_cache.from_pos = from_pos;
 	_cache.to_pos = to_pos;
@@ -194,6 +205,7 @@ void GraphConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_other_port_by_node", "node"), &GraphConnection::get_other_port_by_node);
 	ClassDB::bind_method(D_METHOD("get_other_node", "node"), &GraphConnection::get_other_node);
 	ClassDB::bind_method(D_METHOD("get_other_node_by_port", "port"), &GraphConnection::get_other_node_by_port);
+	ClassDB::bind_method(D_METHOD("get_port_by_node", "node"), &GraphConnection::get_port_by_node);
 
 	ClassDB::bind_method(D_METHOD("set_clear_if_invalid", "clear_if_invalid"), &GraphConnection::set_clear_if_invalid);
 	ClassDB::bind_method(D_METHOD("get_clear_if_invalid"), &GraphConnection::get_clear_if_invalid);

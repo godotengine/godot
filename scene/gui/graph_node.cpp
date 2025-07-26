@@ -204,7 +204,7 @@ void GraphNode::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (p_event->is_pressed() && enabled_port_count > 0) {
 		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
-		if ((ac_enabled && port_focus_mode == Control::FOCUS_ACCESSIBILITY) || port_focus_mode == Control::FOCUS_ALL) {
+		if (selected_port && ((ac_enabled && selected_port->get_focus_mode() == Control::FOCUS_ACCESSIBILITY) || selected_port->get_focus_mode() == Control::FOCUS_ALL)) {
 			if (p_event->is_action("ui_up", true)) {
 				selected_port = get_previous_matching_port(selected_port);
 				if (selected_port) {
@@ -298,10 +298,10 @@ void GraphNode::_notification(int p_what) {
 				}
 				name += ", " + vformat(ETR("port %d of %d"), selected_port->get_port_index() + 1, enabled_port_count);
 				if (selected_port->is_enabled()) {
-					if (type_info.has(selected_port->get_type())) {
-						name += "," + vformat(ETR("type: %s"), type_info[selected_port->get_type()]);
+					if (type_info.has(selected_port->get_port_type())) {
+						name += "," + vformat(ETR("type: %s"), type_info[selected_port->get_port_type()]);
 					} else {
-						name += "," + vformat(ETR("type: %d"), selected_port->get_type());
+						name += "," + vformat(ETR("type: %d"), selected_port->get_port_type());
 					}
 					if (graph) {
 						String cd = graph->get_connections_description(selected_port);
@@ -827,23 +827,6 @@ Vector<int> GraphNode::get_allowed_size_flags_vertical() const {
 	return flags;
 }
 
-void GraphNode::set_port_focus_mode(Control::FocusMode p_focus_mode) {
-	if (port_focus_mode == p_focus_mode) {
-		return;
-	}
-	ERR_FAIL_COND((int)p_focus_mode < 1 || (int)p_focus_mode > 3);
-
-	port_focus_mode = p_focus_mode;
-	if (port_focus_mode == Control::FOCUS_CLICK && selected_port) {
-		selected_port = nullptr;
-		queue_redraw();
-	}
-}
-
-Control::FocusMode GraphNode::get_port_focus_mode() const {
-	return port_focus_mode;
-}
-
 void GraphNode::add_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_NULL(graph_edit);
 	ERR_FAIL_COND_MSG(p_connection->get_first_node() != this && p_connection->get_second_node() != this, "Failed to add GraphConnection to GraphNode: neither connection port is part of the GraphNode!");
@@ -1025,13 +1008,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ignore_invalid_connection_type", "ignore"), &GraphNode::set_ignore_invalid_connection_type);
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
 
-	ClassDB::bind_method(D_METHOD("set_port_focus_mode", "focus_mode"), &GraphNode::set_port_focus_mode);
-	ClassDB::bind_method(D_METHOD("get_port_focus_mode"), &GraphNode::get_port_focus_mode);
-
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_TYPE_STRING, MAKE_NODE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_port_focus_mode", "get_port_focus_mode");
 
 	ADD_SIGNAL(MethodInfo("connected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
 	ADD_SIGNAL(MethodInfo("disconnected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));

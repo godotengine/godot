@@ -68,7 +68,6 @@ protected:
 	PackedByteArray directed_port_count = { 0, 0, 0 };
 	PackedByteArray directed_enabled_port_count = { 0, 0, 0 };
 
-	Control::FocusMode port_focus_mode = Control::FOCUS_ACCESSIBILITY;
 	bool port_pos_dirty = true;
 	bool updating_port_pos = false;
 
@@ -156,9 +155,6 @@ public:
 
 	void set_ignore_invalid_connection_type(bool p_ignore);
 	bool is_ignoring_valid_connection_type() const;
-
-	void set_port_focus_mode(Control::FocusMode p_focus_mode);
-	Control::FocusMode get_port_focus_mode() const;
 
 	TypedArray<Ref<GraphConnection>> get_connections() const;
 	TypedArray<Ref<GraphConnection>> get_filtered_connections(GraphPort::PortDirection p_filter_direction) const;

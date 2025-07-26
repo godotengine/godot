@@ -55,6 +55,7 @@ protected:
 	Control *port_container = nullptr;
 	StringName port_container_name = StringName("PortContainer");
 	int port_container_idx = 0;
+	bool free_ports_on_slot_removed = true;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel;
@@ -158,6 +159,9 @@ public:
 	void set_port_container(Control *p_container);
 	Control *get_port_container() const;
 	void ensure_port_container();
+
+	void set_free_ports_on_slot_removed(bool p_free_ports);
+	bool get_free_ports_on_slot_removed() const;
 
 	GraphNodeIndexed();
 };

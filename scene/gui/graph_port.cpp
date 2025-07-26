@@ -71,7 +71,7 @@ void GraphPort::_notification(int p_what) {
 
 void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
 	exclusive = p_exclusive;
-	set_type(p_type);
+	set_port_type(p_type);
 	set_direction(p_direction);
 	set_enabled(p_enabled);
 }
@@ -139,12 +139,12 @@ bool GraphPort::is_enabled() const {
 	return enabled;
 }
 
-int GraphPort::get_type() const {
-	return type;
+int GraphPort::get_port_type() const {
+	return port_type;
 }
 
-void GraphPort::set_type(int p_type) {
-	type = p_type;
+void GraphPort::set_port_type(int p_type) {
+	port_type = p_type;
 
 	queue_redraw();
 	notify_property_list_changed();
@@ -159,7 +159,7 @@ Color GraphPort::get_color() const {
 		return base_col;
 	}
 	const TypedArray<Color> &graph_colors = graph_edit->get_type_colors();
-	return (type > 0 && type < graph_colors.size()) ? Color(graph_colors[type]) : base_col;
+	return (port_type > 0 && port_type < graph_colors.size()) ? Color(graph_colors[port_type]) : base_col;
 }
 
 Color GraphPort::get_rim_color() {
@@ -363,8 +363,8 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &GraphPort::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &GraphPort::is_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_type", "type"), &GraphPort::set_type);
-	ClassDB::bind_method(D_METHOD("get_type"), &GraphPort::get_type);
+	ClassDB::bind_method(D_METHOD("set_port_type", "type"), &GraphPort::set_port_type);
+	ClassDB::bind_method(D_METHOD("get_port_type"), &GraphPort::get_port_type);
 
 	ClassDB::bind_method(D_METHOD("set_exclusive", "exclusive"), &GraphPort::set_exclusive);
 	ClassDB::bind_method(D_METHOD("get_exclusive"), &GraphPort::get_exclusive);
@@ -397,7 +397,7 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_filtered_port_index", "include_disabled"), &GraphPort::get_filtered_port_index, DEFVAL(true));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "type"), "set_type", "get_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_type"), "set_port_type", "get_port_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
@@ -442,11 +442,13 @@ void GraphPort::_bind_methods() {
 }
 
 GraphPort::GraphPort() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 }
 
 GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 	enabled = p_enabled;
 	exclusive = p_exclusive;
-	type = p_type;
+	port_type = p_type;
 	direction = p_direction;
 }

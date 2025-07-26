@@ -315,6 +315,9 @@ GraphPort *GraphNodeIndexed::remove_port(int p_port_index, bool p_include_disabl
 	if (ret && ret->get_parent()) {
 		//WARN_PRINT("uhhh i am _remove_port and this shit's cursed");
 		ret->get_parent()->remove_child(ret);
+		if (free_ports_on_slot_removed) {
+			ret->queue_free();
+		}
 	}
 
 	_port_modified();
@@ -689,6 +692,14 @@ void GraphNodeIndexed::ensure_port_container() {
 	}
 }
 
+void GraphNodeIndexed::set_free_ports_on_slot_removed(bool p_free_ports) {
+	free_ports_on_slot_removed = p_free_ports;
+}
+
+bool GraphNodeIndexed::get_free_ports_on_slot_removed() const {
+	return free_ports_on_slot_removed;
+}
+
 void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_slots", "slots"), &GraphNodeIndexed::set_slots);
 	ClassDB::bind_method(D_METHOD("get_slots"), &GraphNodeIndexed::get_slots);
@@ -726,15 +737,19 @@ void GraphNodeIndexed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_child_by_port", "port"), &GraphNodeIndexed::get_child_by_port);
 
 	ClassDB::bind_method(D_METHOD("set_port_container", "port_container"), &GraphNodeIndexed::set_port_container);
-	ClassDB::bind_method(D_METHOD("get_port_container"), &GraphNodeIndexed::get_port_container);
 
 	ClassDB::bind_method(D_METHOD("set_ports_at_slot", "slot_index", "input_port", "output_port"), &GraphNodeIndexed::set_ports_at_slot);
 	ClassDB::bind_method(D_METHOD("set_input_port_at_slot", "slot_index", "port"), &GraphNodeIndexed::set_input_port_at_slot);
 	ClassDB::bind_method(D_METHOD("set_output_port_at_slot", "slot_index", "port"), &GraphNodeIndexed::set_output_port_at_slot);
+	ClassDB::bind_method(D_METHOD("get_port_container"), &GraphNodeIndexed::get_port_container);
+
+	ClassDB::bind_method(D_METHOD("set_free_ports_on_slot_removed", "free_ports"), &GraphNodeIndexed::set_free_ports_on_slot_removed);
+	ClassDB::bind_method(D_METHOD("get_free_ports_on_slot_removed"), &GraphNodeIndexed::get_free_ports_on_slot_removed);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "slots", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE), "set_slots", "get_slots");
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_node_to_slot_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "slot_focus_mode", PROPERTY_HINT_ENUM, "Click:1,All:2,Accessibility:3"), "set_slot_focus_mode", "get_slot_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "free_ports_on_slot_removed"), "set_free_ports_on_slot_removed", "get_free_ports_on_slot_removed");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "_node_to_slot_cache", PROPERTY_HINT_DICTIONARY_TYPE, "StringName:int", PROPERTY_USAGE_STORAGE), "_set_slot_node_cache", "_get_slot_node_cache");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "port_container", PROPERTY_HINT_NODE_TYPE, "Container", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL), "set_port_container", "get_port_container");
 
 	ADD_SIGNAL(MethodInfo("slot_added", PropertyInfo(Variant::INT, "slot_index")));
