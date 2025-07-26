@@ -587,6 +587,15 @@ void GraphEdit::_graph_element_deselected(Node *p_node) {
 	emit_signal(SNAME("node_deselected"), graph_element);
 }
 
+void GraphEdit::_graph_element_visibility_changed(Node *p_node) {
+	GraphElement *graph_element = Object::cast_to<GraphElement>(p_node);
+	ERR_FAIL_NULL(graph_element);
+
+	if (graph_element->is_selected() && !graph_element->is_visible()) {
+		graph_element->set_selected(false);
+	}
+}
+
 void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node) {
 	GraphElement *graph_element = Object::cast_to<GraphElement>(p_node);
 	ERR_FAIL_NULL(graph_element);
@@ -700,6 +709,7 @@ void GraphEdit::add_child_notify(Node *p_child) {
 		graph_element->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_element_moved).bind(graph_element));
 		graph_element->connect("node_selected", callable_mp(this, &GraphEdit::_graph_element_selected).bind(graph_element));
 		graph_element->connect("node_deselected", callable_mp(this, &GraphEdit::_graph_element_deselected).bind(graph_element));
+		graph_element->connect("visibility_changed", callable_mp(this, &GraphEdit::_graph_element_visibility_changed).bind(graph_element));
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
@@ -756,6 +766,7 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 		graph_element->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_element_moved));
 		graph_element->disconnect("node_selected", callable_mp(this, &GraphEdit::_graph_element_selected));
 		graph_element->disconnect("node_deselected", callable_mp(this, &GraphEdit::_graph_element_deselected));
+		graph_element->disconnect("visibility_changed", callable_mp(this, &GraphEdit::_graph_element_visibility_changed));
 
 		GraphNode *graph_node = Object::cast_to<GraphNode>(graph_element);
 		if (graph_node) {
@@ -2041,6 +2052,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				continue;
 			}
 
+			if (!graph_element->is_visible()) {
+				continue;
+			}
+
 			// Only select frames when the box selection is fully enclosing them.
 			bool is_frame = Object::cast_to<GraphFrame>(graph_element);
 			Rect2 r = graph_element->get_rect();
@@ -2171,6 +2186,10 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				GraphElement *selected_element = Object::cast_to<GraphElement>(get_child(i));
 
 				if (!selected_element) {
+					continue;
+				}
+
+				if (!selected_element->is_visible()) {
 					continue;
 				}
 
