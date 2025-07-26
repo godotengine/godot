@@ -726,11 +726,15 @@ PackedStringArray AreaLight3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Light3D::get_configuration_warnings();
 
 	if (!has_shadow() && get_projector().is_valid()) {
-		warnings.push_back(RTR("Projector texture only works with shadows active."));
+		warnings.push_back(RTR("Projector texture is not yet implemented."));
 	}
 
 	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+	}
+
+	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Rendering area light shadows does not work in compatibility rendering mode."));
 	}
 
 	return warnings;
