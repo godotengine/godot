@@ -47,6 +47,7 @@
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/editor_import_plugin.h"
 #include "editor/inspector/editor_inspector.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "editor/scene/canvas_item_editor_plugin.h"
@@ -223,14 +224,12 @@ PopupMenu *EditorPlugin::get_export_as_menu() {
 
 void EditorPlugin::set_input_event_forwarding_always_enabled() {
 	input_event_forwarding_always_enabled = true;
-	EditorPluginList *always_input_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding();
-	always_input_forwarding_list->add_plugin(this);
+	EditorNode::get_singleton()->get_editor_plugins_force_input_forwarding()->add_plugin(this);
 }
 
 void EditorPlugin::set_force_draw_over_forwarding_enabled() {
 	force_draw_over_forwarding_enabled = true;
-	EditorPluginList *always_draw_over_forwarding_list = EditorNode::get_singleton()->get_editor_plugins_force_over();
-	always_draw_over_forwarding_list->add_plugin(this);
+	EditorNode::get_singleton()->get_editor_plugins_force_over()->add_plugin(this);
 }
 
 void EditorPlugin::notify_scene_changed(const Node *scn_root) {

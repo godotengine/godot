@@ -47,6 +47,7 @@
 #include "core/version.h"
 #include "editor/editor_string_names.h"
 #include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/plugins/editor_plugin_list.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -8898,93 +8899,4 @@ EditorNode::~EditorNode() {
 	editor_file_dialogs.clear();
 
 	singleton = nullptr;
-}
-
-/*
- * EDITOR PLUGIN LIST
- */
-
-void EditorPluginList::make_visible(bool p_visible) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->make_visible(p_visible);
-	}
-}
-
-void EditorPluginList::edit(Object *p_object) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->edit(p_object);
-	}
-}
-
-bool EditorPluginList::forward_gui_input(const Ref<InputEvent> &p_event) {
-	bool discard = false;
-
-	for (int i = 0; i < plugins_list.size(); i++) {
-		if (plugins_list[i]->forward_canvas_gui_input(p_event)) {
-			discard = true;
-		}
-	}
-
-	return discard;
-}
-
-EditorPlugin::AfterGUIInput EditorPluginList::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event, bool serve_when_force_input_enabled) {
-	EditorPlugin::AfterGUIInput after = EditorPlugin::AFTER_GUI_INPUT_PASS;
-
-	for (int i = 0; i < plugins_list.size(); i++) {
-		if ((!serve_when_force_input_enabled) && plugins_list[i]->is_input_event_forwarding_always_enabled()) {
-			continue;
-		}
-
-		EditorPlugin::AfterGUIInput current_after = plugins_list[i]->forward_3d_gui_input(p_camera, p_event);
-		if (current_after == EditorPlugin::AFTER_GUI_INPUT_STOP) {
-			after = EditorPlugin::AFTER_GUI_INPUT_STOP;
-		}
-		if (after != EditorPlugin::AFTER_GUI_INPUT_STOP && current_after == EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
-			after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
-		}
-	}
-
-	return after;
-}
-
-void EditorPluginList::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_canvas_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_canvas_force_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_canvas_force_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_3d_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_3d_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::forward_3d_force_draw_over_viewport(Control *p_overlay) {
-	for (int i = 0; i < plugins_list.size(); i++) {
-		plugins_list[i]->forward_3d_force_draw_over_viewport(p_overlay);
-	}
-}
-
-void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
-	ERR_FAIL_COND(plugins_list.has(p_plugin));
-	plugins_list.push_back(p_plugin);
-}
-
-void EditorPluginList::remove_plugin(EditorPlugin *p_plugin) {
-	plugins_list.erase(p_plugin);
-}
-
-bool EditorPluginList::is_empty() {
-	return plugins_list.is_empty();
-}
-
-void EditorPluginList::clear() {
-	plugins_list.clear();
 }
