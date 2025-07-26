@@ -1338,7 +1338,7 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
 						pass.shadow_id = shadow_id;
 						pass.light_instance_rid = light_instance;
-						pass.type = RS::LIGHT_OMNI;
+						pass.is_omni = true;
 						inst->light_passes.push_back(pass);
 					} else {
 						// Lights without shadow can all go in base pass.
@@ -1361,7 +1361,6 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
 						pass.shadow_id = shadow_id;
 						pass.light_instance_rid = light_instance;
-						pass.type = RS::LIGHT_SPOT;
 						inst->light_passes.push_back(pass);
 					} else {
 						// Lights without shadow can all go in base pass.
@@ -1377,15 +1376,9 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 						continue;
 					}
 					RID light = light_storage->light_instance_get_base_light(light_instance);
-					int32_t shadow_id = light_storage->light_instance_get_shadow_id(light_instance);
 
-					if (light_storage->light_has_shadow(light) && shadow_id >= 0) {
-						GeometryInstanceGLES3::LightPass pass;
-						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
-						pass.shadow_id = shadow_id;
-						pass.light_instance_rid = light_instance;
-						pass.type = RS::LIGHT_AREA;
-						inst->light_passes.push_back(pass);
+					if (light_storage->light_has_shadow(light)) {
+						ERR_FAIL_MSG("AreaLights don't support shadows in Compatibility renderer");
 					} else {
 						// Lights without shadow can all go in base pass.
 						inst->area_light_gl_cache.push_back((uint32_t)light_storage->light_instance_get_gl_id(light_instance));
@@ -3632,10 +3625,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 
 					if (pass < int32_t(inst->light_passes.size())) {
 						// Rendering positional lights.
-						if (inst->light_passes[pass].type == RS::LIGHT_OMNI) {
+						if (inst->light_passes[pass].is_omni) {
 							spec_constants |= SceneShaderGLES3::ADDITIVE_OMNI;
-						} else if (inst->light_passes[pass].type == RS::LIGHT_AREA) {
-							spec_constants |= SceneShaderGLES3::ADDITIVE_AREA;
 						} else {
 							spec_constants |= SceneShaderGLES3::ADDITIVE_SPOT;
 						}
@@ -3703,16 +3694,8 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						int32_t shadow_id = inst->light_passes[pass].shadow_id;
 						if (shadow_id >= 0) {
 							uint32_t light_id = inst->light_passes[pass].light_id;
-							SceneShaderGLES3::Uniforms uniform_name = SceneShaderGLES3::OMNI_LIGHT_INDEX;
-							if (inst->light_passes[pass].type == RS::LIGHT_OMNI) {
-								uniform_name = SceneShaderGLES3::OMNI_LIGHT_INDEX;
-							} else if (inst->light_passes[pass].type == RS::LIGHT_SPOT) {
-								uniform_name = SceneShaderGLES3::SPOT_LIGHT_INDEX;
-							} else if (inst->light_passes[pass].type == RS::LIGHT_AREA) {
-								uniform_name = SceneShaderGLES3::AREA_LIGHT_INDEX;
-							} else {
-								CRASH_NOW_MSG("Invalid Light Type");
-							}
+							bool is_omni = inst->light_passes[pass].is_omni;
+							SceneShaderGLES3::Uniforms uniform_name = is_omni ? SceneShaderGLES3::OMNI_LIGHT_INDEX : SceneShaderGLES3::SPOT_LIGHT_INDEX;
 							material_storage->shaders.scene_shader.version_set_uniform(uniform_name, uint32_t(light_id), shader->version, instance_variant, spec_constants);
 							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::POSITIONAL_SHADOW_INDEX, uint32_t(shadow_id), shader->version, instance_variant, spec_constants);
 
@@ -3720,7 +3703,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							RID light_instance_rid = inst->light_passes[pass].light_instance_rid;
 
 							GLuint tex = GLES3::LightStorage::get_singleton()->light_instance_get_shadow_texture(light_instance_rid, p_render_data->shadow_atlas);
-							if (inst->light_passes[pass].type == RS::LIGHT_OMNI) {
+							if (is_omni) {
 								glBindTexture(GL_TEXTURE_CUBE_MAP, tex);
 							} else {
 								glBindTexture(GL_TEXTURE_2D, tex);
