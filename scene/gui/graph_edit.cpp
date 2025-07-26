@@ -1316,6 +1316,11 @@ bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(connecting_from_port->graph_node, false);
 	int from_type = connecting_from_port->get_type();
 	int to_type = p_port->get_type();
+	if (p_port->direction == GraphPort::PortDirection::OUTPUT || connecting_from_port->direction == GraphPort::PortDirection::INPUT) {
+		int swap_type = from_type;
+		from_type = to_type;
+		to_type = swap_type;
+	}
 	return from_type == to_type ||
 			connecting_from_port->graph_node->is_ignoring_valid_connection_type() ||
 			valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type));
@@ -2985,7 +2990,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_count_by_port", "port"), &GraphEdit::get_connection_count_by_port);
 	ClassDB::bind_method(D_METHOD("get_connection_count_by_node", "node"), &GraphEdit::get_connection_count_by_node);
 
-	ClassDB::bind_method(D_METHOD("connect_nodes", "first_port", "second_port", "keep_alive"), &GraphEdit::connect_nodes, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("connect_nodes", "first_port", "second_port", "clear_if_invalid"), &GraphEdit::connect_nodes, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("disconnect_nodes", "first_port", "second_port"), &GraphEdit::disconnect_nodes);
 	ClassDB::bind_method(D_METHOD("add_connection", "connection"), &GraphEdit::add_connection);
 	ClassDB::bind_method(D_METHOD("remove_connection", "connection"), &GraphEdit::remove_connection);

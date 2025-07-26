@@ -1,268 +1,329 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GraphNode" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A container with connection ports, representing a node in a [GraphEdit].
+		A [GraphElement] with attached [GraphPort]s.
 	</brief_description>
 	<description>
-		[GraphNode] allows to create nodes for a [GraphEdit] graph with customizable content based on its child controls. [GraphNode] is derived from [Container] and it is responsible for placing its children on screen. This works similar to [VBoxContainer]. Children, in turn, provide [GraphNode] with so-called slots, each of which can have a connection port on either side.
-		Each [GraphNode] slot is defined by its index and can provide the node with up to two ports: one on the left, and one on the right. By convention the left port is also referred to as the [b]input port[/b] and the right port is referred to as the [b]output port[/b]. Each port can be enabled and configured individually, using different type and color. The type is an arbitrary value that you can define using your own considerations. The parent [GraphEdit] will receive this information on each connect and disconnect request.
-		Slots can be configured in the Inspector dock once you add at least one child [Control]. The properties are grouped by each slot's index in the "Slot" section.
-		[b]Note:[/b] While GraphNode is set up using slots and slot indices, connections are made between the ports which are enabled. Because of that [GraphEdit] uses the port's index and not the slot's index. You can use [method get_input_port_slot] and [method get_output_port_slot] to get the slot index from the port index.
+		[GraphNode] is an element for a [GraphEdit] graph with customizable content based on its child controls. [GraphNode] is derived from [Container] and it is responsible for placing its children on screen. This works similar to [VBoxContainer].
+		Child controls marked with the "GraphNodeIgnored" meta tag will be ignored for layout purposes, and must be positioned manually.
+		This node expects its parent to be a [GraphEdit] node. Some may not work as expected if this is not the case - notably, all connection logic will fail, as connections are handled by the [GraphEdit]. Methods expected to fail are noted below.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_draw_port" qualifiers="virtual">
+		<method name="add_connection">
 			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="position" type="Vector2i" />
-			<param index="2" name="left" type="bool" />
-			<param index="3" name="color" type="Color" />
+			<param index="0" name="connection" type="GraphConnection" />
 			<description>
+				Adds a [param connection] to the [GraphEdit] associated with this node.
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
 			</description>
 		</method>
-		<method name="clear_all_slots">
+		<method name="add_port">
+			<return type="void" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Adds or "attaches" a [param port] to this node. This [GraphNode] should be an ancestor of the [param port], or unexpected behavior may occur.
+			</description>
+		</method>
+		<method name="clear_connections">
 			<return type="void" />
 			<description>
-				Disables all slots of the GraphNode. This will remove all input/output ports from the GraphNode.
+				Removes all connections to [GraphPort]s attached to this node.
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
-		<method name="clear_slot">
+		<method name="clear_filtered_connections">
 			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
+			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
 			<description>
-				Disables the slot with the given [param slot_index]. This will remove the corresponding input and output port from the GraphNode.
+				Remove all connections to [GraphPort]s attached to this node that match the [param filter_direction].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
-		<method name="get_input_port_color">
-			<return type="Color" />
-			<param index="0" name="port_idx" type="int" />
+		<method name="clear_input_connections">
+			<return type="void" />
 			<description>
-				Returns the [Color] of the input port with the given [param port_idx].
+				Remove all connections to input [GraphPort]s attached to this node. Shorthand for [code]clear_filtered_connections(GraphPort.INPUT)[/code].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
-		<method name="get_input_port_count">
+		<method name="clear_output_connections">
+			<return type="void" />
+			<description>
+				Remove all connections to output [GraphPort]s attached to this node. Shorthand for [code]clear_filtered_connections(GraphPort.OUTPUT)[/code].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="enabled_index_to_port_index" qualifiers="const">
 			<return type="int" />
+			<param index="0" name="enabled_port_index" type="int" />
 			<description>
-				Returns the number of slots with an enabled input port.
+				Gets the attached [GraphPort] at [param enabled_port_index] indexing only enabled ports, then returns its index.
+				Equivalent to calling [code]index_of_port(get_port(port_index, false))[/code].
 			</description>
 		</method>
-		<method name="get_input_port_position">
-			<return type="Vector2" />
-			<param index="0" name="port_idx" type="int" />
-			<description>
-				Returns the position of the input port with the given [param port_idx].
-			</description>
-		</method>
-		<method name="get_input_port_slot">
+		<method name="filtered_index_of_port" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="port_idx" type="int" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the corresponding slot index of the input port with the given [param port_idx].
+				Returns the index of an attached [param port], indexing only ports that match its direction. Fails if the port is not part of this [GraphNode].
+				If [param include_disabled] is [code]false[/code], indexes only *enabled* ports that match.
 			</description>
 		</method>
-		<method name="get_input_port_type">
+		<method name="get_connected_nodes" qualifiers="const">
+			<return type="GraphNode[]" />
+			<description>
+				Returns an [Array] of all [GraphNode]s with connections to [GraphPort]s attached to this node.
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_connections" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s to [GraphPort]s attached to this node.
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_filtered_connected_nodes" qualifiers="const">
+			<return type="GraphNode[]" />
+			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
+			<description>
+				Returns an [Array] of all [GraphNode]s with connections to [GraphPort]s attached to this node that match the [param filter_direction].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_filtered_connections" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s to [GraphPort]s attached to this node that match the [param filter_direction].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_filtered_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
+			<param index="2" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the attached [GraphPort] at [param port_index], indexing only ports that match the [param filter_direction].
+				If [param include_disabled] is [code]false[/code], indexes only *enabled* ports that match.
+			</description>
+		</method>
+		<method name="get_filtered_port_count" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="port_idx" type="int" />
+			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the type of the input port with the given [param port_idx].
+				Returns the number of attached [GraphPort]s that match the [param filter_direction].
+				If [param include_disabled] is [code]false[/code], counts only enabled ports.
 			</description>
 		</method>
-		<method name="get_output_port_color">
-			<return type="Color" />
-			<param index="0" name="port_idx" type="int" />
+		<method name="get_filtered_ports" qualifiers="const">
+			<return type="GraphPort[]" />
+			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the [Color] of the output port with the given [param port_idx].
+				Returns an array of all attached [GraphPort]s that match the [param filter_direction].
+				If [param include_disabled] is [code]false[/code], returns only enabled ports.
 			</description>
 		</method>
-		<method name="get_output_port_count">
+		<method name="get_input_connected_nodes" qualifiers="const">
+			<return type="GraphNode[]" />
+			<description>
+				Returns an [Array] of all [GraphNode]s with connections to input [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connected_nodes(GraphPort.INPUT)[/code].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_input_connections" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s to input [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connections(GraphPort.INPUT)[/code].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_input_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the input [GraphPort] at [param port_index]. Shorthand for [code]get_filtered_port(GraphPort.INPUT, include_disabled)[/code].
+			</description>
+		</method>
+		<method name="get_input_port_count" qualifiers="const">
 			<return type="int" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the number of slots with an enabled output port.
+				Returns the number of input [GraphPort]s attached to this node. Shorthand for [code]get_filtered_port_count(GraphPort.INPUT, include_disabled)[/code].
 			</description>
 		</method>
-		<method name="get_output_port_position">
-			<return type="Vector2" />
-			<param index="0" name="port_idx" type="int" />
+		<method name="get_input_ports" qualifiers="const">
+			<return type="GraphPort[]" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the position of the output port with the given [param port_idx].
+				Returns an [Array] of all input [GraphPort]s attached to this node. Shorthand for [code]get_filtered_ports(GraphPort.INPUT, include_disabled)[/code].
 			</description>
 		</method>
-		<method name="get_output_port_slot">
+		<method name="get_next_matching_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Given a [param port] attached to this node, returns the next [GraphPort] with the same direction, if one exists.
+				If [param include_disabled] is [code]false[/code], returns the next enabled [GraphPort] with the same direction.
+				See also [method get_previous_matching_port].
+			</description>
+		</method>
+		<method name="get_output_connected_nodes" qualifiers="const">
+			<return type="GraphNode[]" />
+			<description>
+				Returns an [Array] of all [GraphNode]s with connections to output [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connected_nodes(GraphPort.OUTPUT)[/code].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_output_connections" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s to output [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connections(GraphPort.OUTPUT)[/code].
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="get_output_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the output [GraphPort] at [param port_index]. Shorthand for [code]get_filtered_port(GraphPort.OUTPUT, include_disabled)[/code]
+			</description>
+		</method>
+		<method name="get_output_port_count" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="port_idx" type="int" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the corresponding slot index of the output port with the given [param port_idx].
+				Returns the number of output [GraphPort]s attached to this node. Shorthand for [code]get_filtered_port_count(GraphPort.OUTPUT, include_disabled)[/code].
 			</description>
 		</method>
-		<method name="get_output_port_type">
+		<method name="get_output_ports" qualifiers="const">
+			<return type="GraphPort[]" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns an [Array] of all output [GraphPort]s attached to this node. Shorthand for [code]get_filtered_ports(GraphPort.OUTPUT, include_disabled)[/code].
+			</description>
+		</method>
+		<method name="get_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the attached [GraphPort] at [param port_index].
+				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
+			</description>
+		</method>
+		<method name="get_port_count" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="port_idx" type="int" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the type of the output port with the given [param port_idx].
+				Returns the number of [GraphPort]s attached to this node.
+				If [param include_disabled] is [code]false[/code], returns the number of enabled [GraphPort]s.
 			</description>
 		</method>
-		<method name="get_slot_color_left" qualifiers="const">
-			<return type="Color" />
-			<param index="0" name="slot_index" type="int" />
+		<method name="get_previous_matching_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
 			<description>
-				Returns the left (input) [Color] of the slot with the given [param slot_index].
+				Given a [param port] attached to this node, returns the previous [GraphPort] with the same direction, if one exists.
+				If [param include_disabled] is [code]false[/code], returns the previous enabled [GraphPort] with the same direction.
+				See also [method get_next_matching_port].
 			</description>
 		</method>
-		<method name="get_slot_color_right" qualifiers="const">
-			<return type="Color" />
-			<param index="0" name="slot_index" type="int" />
-			<description>
-				Returns the right (output) [Color] of the slot with the given [param slot_index].
-			</description>
-		</method>
-		<method name="get_slot_custom_icon_left" qualifiers="const">
-			<return type="Texture2D" />
-			<param index="0" name="slot_index" type="int" />
-			<description>
-				Returns the left (input) custom [Texture2D] of the slot with the given [param slot_index].
-			</description>
-		</method>
-		<method name="get_slot_custom_icon_right" qualifiers="const">
-			<return type="Texture2D" />
-			<param index="0" name="slot_index" type="int" />
-			<description>
-				Returns the right (output) custom [Texture2D] of the slot with the given [param slot_index].
-			</description>
-		</method>
-		<method name="get_slot_type_left" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="slot_index" type="int" />
-			<description>
-				Returns the left (input) type of the slot with the given [param slot_index].
-			</description>
-		</method>
-		<method name="get_slot_type_right" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="slot_index" type="int" />
-			<description>
-				Returns the right (output) type of the slot with the given [param slot_index].
-			</description>
-		</method>
-		<method name="get_titlebar_hbox">
+		<method name="get_titlebar_hbox" qualifiers="const">
 			<return type="HBoxContainer" />
 			<description>
 				Returns the [HBoxContainer] used for the title bar, only containing a [Label] for displaying the title by default. This can be used to add custom controls to the title bar such as option or close buttons.
 			</description>
 		</method>
-		<method name="is_slot_draw_stylebox" qualifiers="const">
+		<method name="has_connection" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="slot_index" type="int" />
 			<description>
-				Returns [code]true[/code] if the background [StyleBox] of the slot with the given [param slot_index] is drawn.
+				Returns [code]true[/code] if any attached [GraphPort] has a connection in the graph.
 			</description>
 		</method>
-		<method name="is_slot_enabled_left" qualifiers="const">
+		<method name="index_of_port" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Returns the index of an attached [param port]. Fails if the port is not part of this [GraphNode].
+				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
+			</description>
+		</method>
+		<method name="insert_port">
+			<return type="void" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="port" type="GraphPort" />
+			<param index="2" name="include_disabled" type="bool" default="true" />
+			<description>
+				Adds a [param port] at the given [param port_index].
+				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
+			</description>
+		</method>
+		<method name="is_connected_to" qualifiers="const">
 			<return type="bool" />
-			<param index="0" name="slot_index" type="int" />
+			<param index="0" name="node" type="GraphNode" />
 			<description>
-				Returns [code]true[/code] if left (input) side of the slot with the given [param slot_index] is enabled.
+				Returns [code]true[/code] if any attached [GraphPort] has a connection in the graph to any other [GraphPort] on the given [param node].
 			</description>
 		</method>
-		<method name="is_slot_enabled_right" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="slot_index" type="int" />
+		<method name="port_index_to_enabled_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="port_index" type="int" />
 			<description>
-				Returns [code]true[/code] if right (output) side of the slot with the given [param slot_index] is enabled.
+				Gets the attached [GraphPort] at [param port_index], then returns its index among only enabled [GraphPort]s.
+				Equivalent to calling [code]index_of_port(get_port(port_index), false)[/code].
 			</description>
 		</method>
-		<method name="set_slot">
+		<method name="remove_all_ports">
 			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="enable_left_port" type="bool" />
-			<param index="2" name="type_left" type="int" />
-			<param index="3" name="color_left" type="Color" />
-			<param index="4" name="enable_right_port" type="bool" />
-			<param index="5" name="type_right" type="int" />
-			<param index="6" name="color_right" type="Color" />
-			<param index="7" name="custom_icon_left" type="Texture2D" default="null" />
-			<param index="8" name="custom_icon_right" type="Texture2D" default="null" />
-			<param index="9" name="draw_stylebox" type="bool" default="true" />
 			<description>
-				Sets properties of the slot with the given [param slot_index].
-				If [param enable_left_port]/[param enable_right_port] is [code]true[/code], a port will appear and the slot will be able to be connected from this side.
-				With [param type_left]/[param type_right] an arbitrary type can be assigned to each port. Two ports can be connected if they share the same type, or if the connection between their types is allowed in the parent [GraphEdit] (see [method GraphEdit.add_valid_connection_type]). Keep in mind that the [GraphEdit] has the final say in accepting the connection. Type compatibility simply allows the [signal GraphEdit.connection_request] signal to be emitted.
-				Ports can be further customized using [param color_left]/[param color_right] and [param custom_icon_left]/[param custom_icon_right]. The color parameter adds a tint to the icon. The custom icon can be used to override the default port dot.
-				Additionally, [param draw_stylebox] can be used to enable or disable drawing of the background stylebox for each slot. See [theme_item slot].
-				Individual properties can also be set using one of the [code]set_slot_*[/code] methods.
-				[b]Note:[/b] This method only sets properties of the slot. To create the slot itself, add a [Control]-derived child to the GraphNode.
+				Detaches all [GraphPort]s.
 			</description>
 		</method>
-		<method name="set_slot_color_left">
+		<method name="remove_connection">
 			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="color" type="Color" />
+			<param index="0" name="connection" type="GraphConnection" />
 			<description>
-				Sets the [Color] of the left (input) side of the slot with the given [param slot_index] to [param color].
+				Removes a [param connection] from the node.
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
 			</description>
 		</method>
-		<method name="set_slot_color_right">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="color" type="Color" />
+		<method name="remove_port">
+			<return type="GraphPort" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
 			<description>
-				Sets the [Color] of the right (output) side of the slot with the given [param slot_index] to [param color].
+				Removes the attached [GraphPort] at [param port_index].
+				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
 			</description>
 		</method>
-		<method name="set_slot_custom_icon_left">
+		<method name="set_connections">
 			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="custom_icon" type="Texture2D" />
+			<param index="0" name="connections" type="GraphConnection[]" />
 			<description>
-				Sets the custom [Texture2D] of the left (input) side of the slot with the given [param slot_index] to [param custom_icon].
+				Removes all existing connections from each [GraphPort] attached to this node, then adds all [param connections] to the graph.
+				Fails if this [GraphNode] is not the child of a [GraphEdit] node. Each connection in [param connections] fails to be added if neither of its referenced [GraphPort]s are attached to this node.
 			</description>
 		</method>
-		<method name="set_slot_custom_icon_right">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="custom_icon" type="Texture2D" />
+		<method name="set_port">
+			<return type="GraphPort" />
+			<param index="0" name="port_index" type="int" />
+			<param index="1" name="port" type="GraphPort" />
+			<param index="2" name="include_disabled" type="bool" default="true" />
 			<description>
-				Sets the custom [Texture2D] of the right (output) side of the slot with the given [param slot_index] to [param custom_icon].
-			</description>
-		</method>
-		<method name="set_slot_draw_stylebox">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="enable" type="bool" />
-			<description>
-				Toggles the background [StyleBox] of the slot with the given [param slot_index].
-			</description>
-		</method>
-		<method name="set_slot_enabled_left">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="enable" type="bool" />
-			<description>
-				Toggles the left (input) side of the slot with the given [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the left side and the slot will be able to be connected from this side.
-			</description>
-		</method>
-		<method name="set_slot_enabled_right">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="enable" type="bool" />
-			<description>
-				Toggles the right (output) side of the slot with the given [param slot_index]. If [param enable] is [code]true[/code], a port will appear on the right side and the slot will be able to be connected from this side.
-			</description>
-		</method>
-		<method name="set_slot_type_left">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="type" type="int" />
-			<description>
-				Sets the left (input) type of the slot with the given [param slot_index] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
-			</description>
-		</method>
-		<method name="set_slot_type_right">
-			<return type="void" />
-			<param index="0" name="slot_index" type="int" />
-			<param index="1" name="type" type="int" />
-			<description>
-				Sets the right (output) type of the slot with the given [param slot_index] to [param type]. If the value is negative, all connections will be disallowed to be created via user inputs.
+				Replaces the attached [GraphPort] at index [param port_index] with [param port].
+				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
 			</description>
 		</method>
 	</methods>
@@ -272,26 +333,33 @@
 			If [code]true[/code], you can connect ports with different types, even if the connection was not explicitly allowed in the parent [GraphEdit].
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
-		<member name="slots_focus_mode" type="int" setter="set_slots_focus_mode" getter="get_slots_focus_mode" enum="Control.FocusMode" default="3">
-			Determines how connection slots can be focused.
-			- If set to [constant Control.FOCUS_CLICK], connections can only be made with the mouse.
-			- If set to [constant Control.FOCUS_ALL], slots can also be focused using the [member ProjectSettings.input/ui_up] and [member ProjectSettings.input/ui_down] and connected using [member ProjectSettings.input/ui_left] and [member ProjectSettings.input/ui_right] input actions.
-			- If set to [constant Control.FOCUS_ACCESSIBILITY], slot input actions are only enabled when the screen reader is active.
+		<member name="port_focus_mode" type="int" setter="set_port_focus_mode" getter="get_port_focus_mode" enum="Control.FocusMode" default="3">
+			Accessibility focus mode for ports. TODO: implement keyboard focus and behavior.
+		</member>
+		<member name="ports" type="GraphPort[]" setter="set_ports" getter="get_ports" default="[]">
+			The [Array] of [GraphPort]s attached to this node.
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The text displayed in the GraphNode's title bar.
 		</member>
 	</members>
 	<signals>
-		<signal name="slot_sizes_changed">
+		<signal name="connected">
+			<param index="0" name="connection" type="GraphConnection" />
 			<description>
-				Emitted when any slot's size might have changed.
+				Emitted when [param connection] is connected to an attached [GraphPort].
 			</description>
 		</signal>
-		<signal name="slot_updated">
-			<param index="0" name="slot_index" type="int" />
+		<signal name="disconnected">
+			<param index="0" name="connection" type="GraphConnection" />
 			<description>
-				Emitted when any GraphNode's slot is updated.
+				Emitted when [param connection] is disconnected from an attached [GraphPort].
+			</description>
+		</signal>
+		<signal name="ports_updated">
+			<param index="0" name="node" type="GraphNode" />
+			<description>
+				Emitted when the list of attached [GraphPort]s changes, or when a property on any attached port is changed.
 			</description>
 		</signal>
 	</signals>
@@ -305,9 +373,6 @@
 		<theme_item name="separation" data_type="constant" type="int" default="2">
 			The vertical distance between ports.
 		</theme_item>
-		<theme_item name="port" data_type="icon" type="Texture2D">
-			The icon used for representing ports.
-		</theme_item>
 		<theme_item name="panel" data_type="style" type="StyleBox">
 			The default background for the slot area of the [GraphNode].
 		</theme_item>
@@ -316,12 +381,6 @@
 		</theme_item>
 		<theme_item name="panel_selected" data_type="style" type="StyleBox">
 			The [StyleBox] used for the slot area when selected.
-		</theme_item>
-		<theme_item name="slot" data_type="style" type="StyleBox">
-			The [StyleBox] used for each slot of the [GraphNode].
-		</theme_item>
-		<theme_item name="slot_selected" data_type="style" type="StyleBox">
-			[StyleBox] used when the slot is focused (when used with assistive apps).
 		</theme_item>
 		<theme_item name="titlebar" data_type="style" type="StyleBox">
 			The [StyleBox] used for the title bar of the [GraphNode].

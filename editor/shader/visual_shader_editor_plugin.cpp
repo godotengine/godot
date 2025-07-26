@@ -4198,10 +4198,10 @@ void VisualShaderEditor::_connection_request(GraphPort *p_from_port, GraphPort *
 	undo_redo->add_do_method(graph_plugin.ptr(), "connect_nodes", type, _from, _from_index, _to, _to_index);
 	undo_redo->add_undo_method(graph_plugin.ptr(), "disconnect_nodes", type, _from, _from_index, _to, _to_index);
 
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, _from);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, _from);
-	undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, _to);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, _to);
+	//undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, _from);
+	//undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, _from);
+	//undo_redo->add_do_method(graph_plugin.ptr(), "update_node", (int)type, _to);
+	//undo_redo->add_undo_method(graph_plugin.ptr(), "update_node", (int)type, _to);
 	undo_redo->commit_action();
 
 	last_to_node = -1;
