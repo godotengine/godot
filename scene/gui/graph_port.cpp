@@ -183,7 +183,7 @@ GraphPort::PortDirection GraphPort::get_direction() const {
 	return direction;
 }
 
-void GraphPort::set_direction(GraphPort::PortDirection p_direction) {
+void GraphPort::set_direction(const GraphPort::PortDirection p_direction) {
 	direction = p_direction;
 
 	queue_redraw();
@@ -197,7 +197,7 @@ GraphPort::DisconnectBehaviour GraphPort::get_disabled_behaviour() const {
 	return on_disabled_behaviour;
 }
 
-void GraphPort::set_disabled_behaviour(GraphPort::DisconnectBehaviour p_disconnect_behaviour) {
+void GraphPort::set_disabled_behaviour(const GraphPort::DisconnectBehaviour p_disconnect_behaviour) {
 	on_disabled_behaviour = p_disconnect_behaviour;
 	notify_property_list_changed();
 	_on_modified();
@@ -243,11 +243,6 @@ int GraphPort::get_port_index(bool p_include_disabled) const {
 
 int GraphPort::get_filtered_port_index(bool p_include_disabled) const {
 	return p_include_disabled ? _filtered_index : _filtered_enabled_index;
-}
-
-void GraphPort::disconnect_all() {
-	ERR_FAIL_NULL(graph_edit);
-	graph_edit->clear_port_connections(this);
 }
 
 void GraphPort::add_connection(Ref<GraphConnection> p_connection) {
@@ -384,7 +379,6 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
 
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
-	ClassDB::bind_method(D_METHOD("disconnect_all"), &GraphPort::disconnect_all);
 	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphPort::set_connections);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphPort::clear_connections);
 

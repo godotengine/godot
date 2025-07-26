@@ -141,8 +141,8 @@ public:
 	int input_port_to_slot_index(int p_port_index, bool p_include_disabled = true) const;
 	int output_port_to_slot_index(int p_port_index, bool p_include_disabled = true) const;
 
-	int child_to_slot_index(int idx) const;
-	int slot_to_child_index(int idx) const;
+	int child_to_slot_index(int idx, bool p_include_internal = false) const;
+	int slot_to_child_index(int idx, bool p_include_internal = false) const;
 
 	Node *get_child_by_slot_index(int p_slot_index) const;
 	Node *get_child_by_port(const GraphPort *p_port) const;

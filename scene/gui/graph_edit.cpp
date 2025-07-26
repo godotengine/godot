@@ -409,12 +409,19 @@ void GraphEdit::disconnect_nodes_indexed_legacy(String p_from_node, int p_from_p
 void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_COND(p_connection.is_null());
+	ERR_FAIL_COND(!graph_connections.has(p_connection));
 
 	if (p_connection->first_port) {
 		connection_map[p_connection->first_port].erase(p_connection);
+		if (connection_map[p_connection->first_port].is_empty()) {
+			connection_map.erase(p_connection->first_port);
+		}
 	}
 	if (p_connection->second_port) {
 		connection_map[p_connection->second_port].erase(p_connection);
+		if (connection_map[p_connection->second_port].is_empty()) {
+			connection_map.erase(p_connection->second_port);
+		}
 	}
 	if (p_connection->_cache.line && p_connection->_cache.line->get_parent()) {
 		p_connection->_cache.line->get_parent()->remove_child(p_connection->_cache.line);
@@ -490,10 +497,7 @@ bool GraphEdit::is_node_connected(const GraphNode *p_node) const {
 }
 
 bool GraphEdit::is_port_connected(const GraphPort *p_port) const {
-	if (!p_port || !connection_map.has(p_port)) {
-		return false;
-	}
-	return !connection_map[p_port].is_empty();
+	return p_port && connection_map.has(p_port) && !connection_map[p_port].is_empty();
 }
 
 TypedArray<GraphPort> GraphEdit::get_connected_ports(const GraphPort *p_port) const {
@@ -581,7 +585,7 @@ const Ref<GraphConnection> GraphEdit::get_first_connection_by_port(const GraphPo
 const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
 	TypedArray<Ref<GraphConnection>> ret;
 	for (GraphPort *port : p_node->ports) {
-		if (!port || port->direction != p_filter_direction || !connection_map.has(port)) {
+		if (!is_port_connected(port) || port->direction != p_filter_direction) {
 			continue;
 		}
 		ret.append_array(connection_map[port]);
@@ -590,8 +594,7 @@ const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_no
 }
 
 int GraphEdit::get_connection_count_by_port(const GraphPort *p_port) const {
-	ERR_FAIL_NULL_V(p_port, 0);
-	if (!connection_map.has(p_port)) {
+	if (!is_port_connected(p_port)) {
 		return 0;
 	}
 	return connection_map[p_port].size();
@@ -601,7 +604,7 @@ int GraphEdit::get_connection_count_by_node(const GraphNode *p_node) const {
 	ERR_FAIL_NULL_V(p_node, 0);
 	int ret = 0;
 	for (GraphPort *port : p_node->ports) {
-		if (!port || !connection_map.has(port)) {
+		if (!is_port_connected(port)) {
 			continue;
 		}
 		ret += connection_map[port].size();
@@ -610,7 +613,8 @@ int GraphEdit::get_connection_count_by_node(const GraphNode *p_node) const {
 }
 
 GraphNode *GraphEdit::get_connection_target(const GraphPort *p_port) const {
-	if (!connection_map.has(p_port)) {
+	ERR_FAIL_NULL_V(p_port, nullptr);
+	if (!is_port_connected(p_port)) {
 		return nullptr;
 	}
 	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
@@ -627,7 +631,7 @@ GraphNode *GraphEdit::get_connection_target(const GraphPort *p_port) const {
 
 String GraphEdit::get_connections_description(const GraphPort *p_port) const {
 	String out;
-	if (!connection_map.has(p_port)) {
+	if (!is_port_connected(p_port)) {
 		return out;
 	}
 	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
@@ -1671,16 +1675,7 @@ void GraphEdit::_update_connections() {
 	}
 
 	for (const Ref<GraphConnection> &dead_conn : dead_connections) {
-		if (dead_conn->first_port) {
-			connection_map.erase(dead_conn->first_port);
-		}
-		if (dead_conn->second_port) {
-			connection_map.erase(dead_conn->second_port);
-		}
-		if (dead_conn->_cache.line->get_parent()) {
-			dead_conn->_cache.line->get_parent()->remove_child(dead_conn->_cache.line);
-		}
-		graph_connections.erase(dead_conn);
+		remove_connection(dead_conn);
 	}
 }
 
@@ -2359,7 +2354,7 @@ void GraphEdit::clear_connections() {
 void GraphEdit::clear_port_connections(const GraphPort *p_port) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
 	ERR_FAIL_NULL(p_port);
-	if (!connection_map.has(p_port)) {
+	if (!is_port_connected(p_port)) {
 		return;
 	}
 
@@ -2376,7 +2371,7 @@ void GraphEdit::clear_node_connections(const GraphNode *p_node) {
 	ERR_FAIL_NULL(p_node);
 
 	for (GraphPort *port : p_node->ports) {
-		if (!port || !connection_map.has(port)) {
+		if (!is_port_connected(port)) {
 			continue;
 		}
 		clear_port_connections(port);
@@ -2590,7 +2585,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_intersecting_with_r
 TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(const GraphNode *p_node) const {
 	TypedArray<Ref<GraphConnection>> connections_from_node;
 	for (GraphPort *port : p_node->ports) {
-		if (!port || !connection_map.has(port)) {
+		if (!is_port_connected(port)) {
 			continue;
 		}
 		connections_from_node.append_array(connection_map[port]);
@@ -2600,7 +2595,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_node(const Graph
 
 TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections_by_port(const GraphPort *p_port) const {
 	TypedArray<Ref<GraphConnection>> connections_from_port;
-	if (!p_port || !connection_map.has(p_port)) {
+	if (!is_port_connected(p_port)) {
 		return connections_from_port;
 	}
 	connections_from_port.append_array(connection_map[p_port]);
@@ -2637,7 +2632,7 @@ void GraphEdit::_invalidate_connection_line_cache() {
 void GraphEdit::_invalidate_graph_node_connections(GraphNode *p_node) {
 	ERR_FAIL_NULL(p_node);
 	for (GraphPort *port : p_node->ports) {
-		if (!port || !port->enabled || !connection_map.has(port)) {
+		if (!is_port_connected(port) || !port->enabled) {
 			continue;
 		}
 		for (const Ref<GraphConnection> conn : connection_map[port]) {

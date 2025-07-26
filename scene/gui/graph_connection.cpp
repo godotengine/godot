@@ -76,28 +76,6 @@ GraphNode *GraphConnection::get_other_node_by_port(const GraphPort *p_port) cons
 	}
 }
 
-GraphPort *GraphConnection::get_port_by_node(const GraphNode *p_node) const {
-	ERR_FAIL_NULL_V(p_node, nullptr);
-	if (p_node == get_first_node()) {
-		return first_port;
-	} else if (p_node == get_second_node()) {
-		return second_port;
-	} else {
-		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to node %s", p_node->get_name()));
-	}
-}
-
-GraphNode *GraphConnection::get_node_by_port(const GraphPort *p_port) const {
-	ERR_FAIL_NULL_V(p_port, nullptr);
-	if (p_port == first_port) {
-		return get_first_node();
-	} else if (p_port == second_port) {
-		return get_second_node();
-	} else {
-		ERR_FAIL_V_MSG(nullptr, vformat("Connection does not connect to port %s", p_port->get_name()));
-	}
-}
-
 // This legacy method is exclusively used by visual shaders, which use legacy port indices and expect GraphNodeIndexed's behavior
 Pair<Pair<String, int>, Pair<String, int>> GraphConnection::_to_legacy_data() const {
 	ERR_FAIL_NULL_V(first_port->graph_node, Pair(Pair(String(""), -1), Pair(String(""), -1)));
@@ -216,8 +194,6 @@ void GraphConnection::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_other_port_by_node", "node"), &GraphConnection::get_other_port_by_node);
 	ClassDB::bind_method(D_METHOD("get_other_node", "node"), &GraphConnection::get_other_node);
 	ClassDB::bind_method(D_METHOD("get_other_node_by_port", "port"), &GraphConnection::get_other_node_by_port);
-	ClassDB::bind_method(D_METHOD("get_port_by_node", "node"), &GraphConnection::get_port_by_node);
-	ClassDB::bind_method(D_METHOD("get_node_by_port", "port"), &GraphConnection::get_node_by_port);
 
 	ClassDB::bind_method(D_METHOD("set_clear_if_invalid", "clear_if_invalid"), &GraphConnection::set_clear_if_invalid);
 	ClassDB::bind_method(D_METHOD("get_clear_if_invalid"), &GraphConnection::get_clear_if_invalid);
@@ -252,4 +228,5 @@ GraphConnection::GraphConnection(GraphPort *p_first_port, GraphPort *p_second_po
 }
 
 GraphConnection::~GraphConnection() {
+	_cache.line->queue_free();
 }

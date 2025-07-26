@@ -131,7 +131,7 @@ public:
 	void set_direction(const PortDirection p_direction);
 
 	DisconnectBehaviour get_disabled_behaviour() const;
-	void set_disabled_behaviour(DisconnectBehaviour p_disconnect_behaviour);
+	void set_disabled_behaviour(const DisconnectBehaviour p_disconnect_behaviour);
 
 	GraphNode *get_graph_node() const;
 
@@ -139,8 +139,6 @@ public:
 
 	int get_port_index(bool p_include_disabled = true) const;
 	int get_filtered_port_index(bool p_include_disabled = true) const;
-
-	void disconnect_all();
 
 	TypedArray<Ref<GraphConnection>> get_connections() const;
 	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
