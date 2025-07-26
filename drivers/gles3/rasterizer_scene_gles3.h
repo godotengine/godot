@@ -328,7 +328,7 @@ private:
 			int32_t light_id = -1; // Position in the light uniform buffer.
 			int32_t shadow_id = -1; // Position in the shadow uniform buffer.
 			RID light_instance_rid;
-			RS::LightType type;
+			bool is_omni = false;
 		};
 
 		LocalVector<LightPass> light_passes;
