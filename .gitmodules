@@ -1,0 +1,3 @@
+[submodule "modules/tiny_lobby"]
+	path = modules/tiny_lobby
+	url = https://github.com/appsinacup/addon_tiny_lobby_client
