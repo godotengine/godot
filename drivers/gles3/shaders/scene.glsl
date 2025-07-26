@@ -239,7 +239,7 @@ layout(std140) uniform SceneData prev_scene_data; // ubo:12
 #ifndef RENDER_MOTION_VECTORS
 #ifdef USE_ADDITIVE_LIGHTING
 
-#if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+#if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA)
 struct PositionalShadowData {
 	highp mat4 shadow_matrix;
 	highp vec3 light_position;
@@ -276,7 +276,7 @@ layout(std140) uniform DirectionalShadows { // ubo:11
 
 uniform lowp uint directional_shadow_index;
 
-#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT))
+#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA))
 #endif // USE_ADDITIVE_LIGHTING
 
 #ifdef USE_VERTEX_LIGHTING
@@ -290,7 +290,7 @@ out vec3 additive_specular_light_interp;
 #endif // USE_ADDITIVE_LIGHTING
 
 // Directional light data.
-#if !defined(DISABLE_LIGHT_DIRECTIONAL) || (!defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
+#if !defined(DISABLE_LIGHT_DIRECTIONAL) || (!defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT) && !defined(ADDITIVE_AREA) && defined(USE_ADDITIVE_LIGHTING))
 
 struct DirectionalLightData {
 	mediump vec3 direction;
@@ -469,10 +469,21 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness,
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = area_lights[idx].position - vertex;
-	float light_length = length(light_rel_vec);
-	float area_attenuation = get_area_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
+	float a_len = length(area_width);
+	float b_len = length(area_height);
+	float a_half_len = a_len / 2.0;
+	float b_half_len = b_len / 2.0;
+	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
+	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
+	float dist = length(closest_point_local_to_light - pos_local_to_light);
+	float light_length = max(0, dist);
+	float area_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
 	vec3 color = area_lights[idx].color * area_attenuation; // No light shaders here, so combine.
 
+	//////
+	diffuse_light = vec3(1.0, 0.0, 1.0); // PINK DEBUG
+	return;
+	//////
 	light_compute(normal, normalize(light_rel_vec), eye_vec, color, false, roughness,
 			diffuse_light,
 			specular_light);
@@ -776,7 +787,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 #ifndef RENDER_MOTION_VECTORS
 	// Calculate shadows.
 #ifdef USE_ADDITIVE_LIGHTING
-#if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+#if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA)
 	// Apply normal bias at draw time to avoid issues with scaling non-fused geometry.
 	vec3 light_rel_vec = positional_shadows[positional_shadow_index].light_position - vertex_interp;
 	float light_length = length(light_rel_vec);
@@ -784,6 +795,11 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	vec3 normal_offset = (1.0 - aNdotL) * positional_shadows[positional_shadow_index].shadow_normal_bias * light_length * normal_interp;
 
 #ifdef ADDITIVE_SPOT
+	// Calculate coord here so we can take advantage of prefetch.
+	shadow_coord = positional_shadows[positional_shadow_index].shadow_matrix * vec4(vertex_interp + normal_offset, 1.0);
+#endif
+
+#ifdef ADDITIVE_AREA
 	// Calculate coord here so we can take advantage of prefetch.
 	shadow_coord = positional_shadows[positional_shadow_index].shadow_matrix * vec4(vertex_interp + normal_offset, 1.0);
 #endif
@@ -809,7 +825,7 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 	shadow_coord4 = directional_shadows[directional_shadow_index].shadow_matrix4 * vec4(vertex_interp + normal_offset, 1.0);
 #endif //LIGHT_USE_PSSM4
 
-#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT))
+#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA))
 #endif // USE_ADDITIVE_LIGHTING
 
 #if defined(RENDER_SHADOWS) && !defined(RENDER_SHADOWS_LINEAR)
@@ -890,21 +906,21 @@ void vertex_shader(vec4 vertex_angle_attrib_input,
 		light_process_area(area_light_indices[i], vertex_interp, view, normal_interp, roughness,
 				diffuse_light_interp.rgb, specular_light_interp.rgb);
 	}
-#endif // !DISABLE_LIGHT_SPOT
+#endif // !DISABLE_LIGHT_AREA
 #endif // BASE_PASS
 
 /* ADDITIVE LIGHTING PASS */
 #ifdef USE_ADDITIVE_LIGHTING
 	additive_diffuse_light_interp = vec3(0.0);
 	additive_specular_light_interp = vec3(0.0);
-#if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
+#if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT) && !defined(ADDITIVE_AREA)
 
 	if (bool(directional_lights[directional_shadow_index].mask & layer_mask)) {
 		light_compute(normal_interp, normalize(directional_lights[directional_shadow_index].direction), normalize(view), directional_lights[directional_shadow_index].color * directional_lights[directional_shadow_index].energy, true, roughness,
 				additive_diffuse_light_interp.rgb,
 				additive_specular_light_interp.rgb);
 	}
-#endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
+#endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT) && !defined(ADDITIVE_AREA)
 
 #ifdef ADDITIVE_OMNI
 	light_process_omni(omni_light_index, vertex_interp, view, normal_interp, roughness,
@@ -1357,8 +1373,12 @@ uniform lowp uint omni_light_index;
 uniform highp sampler2DShadow spot_shadow_texture; // texunit:-3
 uniform lowp uint spot_light_index;
 #endif
+#ifdef ADDITIVE_AREA
+uniform highp sampler2DShadow area_shadow_texture; // texunit:-3
+uniform lowp uint area_light_index;
+#endif
 
-#if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)
+#if defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT) || defined(ADDITIVE_AREA)
 struct PositionalShadowData {
 	highp mat4 shadow_matrix;
 	highp vec3 light_position;
@@ -1392,7 +1412,7 @@ layout(std140) uniform DirectionalShadows { // ubo:11
 };
 
 uniform lowp uint directional_shadow_index;
-#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT))
+#endif // !(defined(ADDITIVE_OMNI) || defined(ADDITIVE_SPOT)) || defined(ADDITIVE_AREA)
 
 #if !defined(ADDITIVE_OMNI)
 float sample_shadow(highp sampler2DShadow shadow, float shadow_pixel_size, vec4 pos) {
@@ -1527,7 +1547,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 #ifndef MODE_RENDER_DEPTH
 
 #ifndef USE_VERTEX_LIGHTING
-#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(USE_ADDITIVE_LIGHTING)
+#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || !defined(DISABLE_LIGHT_AREA) || defined(USE_ADDITIVE_LIGHTING)
 
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
@@ -2035,121 +2055,6 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	float light_length = max(0, dist);
 	float light_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
-	//shadow = 1.0;
-
-#ifndef SHADOWS_DISABLED
-	// Area light shadow.
-	/*if (light_attenuation > HALF_FLT_MIN && area_lights[idx].shadow_opacity > 0.001) {
-		// there is a shadowmap
-		vec2 texel_size = scene_data_block.data.shadow_atlas_pixel_size;
-		vec4 base_uv_rect = area_lights[idx].atlas_rect;
-		base_uv_rect.xy += texel_size;
-		base_uv_rect.zw -= texel_size * 2.0;
-
-		vec3 local_vert = (area_lights[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
-
-		float shadow_len = length(local_vert); //need to remember shadow len from here
-		vec3 shadow_dir = normalize(local_vert);
-
-		vec3 local_normal = normalize(mat3(area_lights[idx].shadow_matrix) * vec3(normal));
-		vec3 normal_bias = local_normal * area_lights[idx].shadow_normal_bias * (1.0 - abs(dot(local_normal, shadow_dir)));
-
-		if (sc_use_light_soft_shadows() && area_lights[idx].soft_shadow_size > 0.0) {
-			//soft shadow
-
-			//find blocker
-
-			float blocker_count = 0.0;
-			float blocker_average = 0.0;
-
-			mat2 disk_rotation;
-			{
-				float r = quick_hash(gl_FragCoord.xy + vec2(taa_frame_count * 5.588238)) * 2.0 * M_PI;
-				float sr = sin(r);
-				float cr = cos(r);
-				disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
-			}
-
-			vec3 basis_normal = shadow_dir;
-			vec3 v0 = abs(basis_normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);
-			vec3 tangent = normalize(cross(v0, basis_normal));
-			vec3 bitangent = normalize(cross(tangent, basis_normal));
-			float z_norm = 1.0 - shadow_len * inv_center_range;
-
-			shadow = 1.0;
-			SPEC_CONSTANT_LOOP_ANNOTATION
-			for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
-				vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
-
-				vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
-
-				pos = normalize(pos);
-
-				vec4 uv_rect = base_uv_rect;
-
-				pos.z = 1.0 + abs(pos.z);
-				pos.xy /= pos.z;
-
-				pos.xy = pos.xy * 0.5 + 0.5;
-				pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
-
-				float d = textureLod(sampler2D(shadow_atlas, SAMPLER_LINEAR_CLAMP), pos.xy, 0.0).r;
-				if (d > z_norm) {
-					blocker_average += d;
-					blocker_count += 1.0;
-				}
-			}
-
-			if (blocker_count > 0.0) {
-				//blockers found, do soft shadow
-				blocker_average /= blocker_count;
-				float penumbra = (-z_norm + blocker_average) / (1.0 - blocker_average);
-				tangent *= penumbra;
-				bitangent *= penumbra;
-
-				z_norm += inv_center_range * area_lights[idx].shadow_bias;
-
-				shadow = 0.0;
-
-				SPEC_CONSTANT_LOOP_ANNOTATION
-				for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
-					vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
-					vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
-
-					pos = normalize(pos);
-					pos = normalize(pos + normal_bias);
-
-					vec4 uv_rect = base_uv_rect;
-
-					pos.z = 1.0 + abs(pos.z);
-					pos.xy /= pos.z;
-
-					pos.xy = pos.xy * 0.5 + 0.5;
-					pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
-					shadow += textureProj(sampler2DShadow(shadow_atlas, shadow_sampler), vec4(pos.xy, z_norm, 1.0));
-				}
-
-				shadow /= sc_penumbra_shadow_samples();
-				shadow = mix(1.0, shadow, area_lights[idx].shadow_opacity);
-
-			} else {
-				//no blockers found, so no shadow
-				shadow = 1.0;
-			}
-		} else {
-			vec4 uv_rect = base_uv_rect;
-
-			vec3 shadow_sample = normalize(shadow_dir + normal_bias);
-
-			shadow_sample.z = 1.0 + abs(shadow_sample.z);
-			vec2 pos = shadow_sample.xy / shadow_sample.z;
-			float depth = shadow_len - area_lights[idx].shadow_bias;
-			depth *= inv_center_range;
-			depth = 1.0 - depth;
-			shadow = mix(1.0, sample_omni_pcf_shadow(shadow_atlas, area_lights[idx].soft_shadow_scale / shadow_sample.z, pos, uv_rect, vec2(0), depth, taa_frame_count), area_lights[idx].shadow_opacity);
-		}
-	}*/
-#endif
 
 	vec3 color = area_lights[idx].color;
 
@@ -3043,7 +2948,7 @@ void main() {
 	specular_light = additive_specular_light_interp * f0;
 #endif // USE_VERTEX_LIGHTING
 
-#if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
+#if !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT) && !defined(ADDITIVE_AREA)
 
 #ifndef SHADOWS_DISABLED
 // Baked shadowmasks
@@ -3218,7 +3123,7 @@ void main() {
 #ifndef USE_VERTEX_LIGHTING
 	}
 #endif // !USE_VERTEX_LIGHTING
-#endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT)
+#endif // !defined(ADDITIVE_OMNI) && !defined(ADDITIVE_SPOT) && !defined(ADDITIVE_AREA)
 
 #ifdef ADDITIVE_OMNI
 	float omni_shadow = 1.0f;
@@ -3286,8 +3191,7 @@ void main() {
 #ifdef ADDITIVE_AREA
 	float area_shadow = 1.0f;
 #ifndef SHADOWS_DISABLED
-	vec3 light_ray = ((positional_shadows[positional_shadow_index].shadow_matrix * vec4(shadow_coord.xyz, 1.0))).xyz;
-	area_shadow = texture(area_shadow_texture, vec4(light_ray, 1.0 - length(light_ray) * area_lights[area_light_index].inv_radius));
+	area_shadow = sample_shadow(area_shadow_texture, positional_shadows[positional_shadow_index].shadow_atlas_pixel_size, shadow_coord);
 	area_shadow = mix(1.0, area_shadow, area_lights[area_light_index].shadow_opacity);
 #endif // SHADOWS_DISABLED
 
