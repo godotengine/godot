@@ -32,6 +32,7 @@
 
 #include "editor/editor_string_names.h"
 #include "editor/scene/texture/color_channel_selector.h"
+#include "editor/scene/texture/mipmap_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_rect.h"
@@ -43,12 +44,14 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/resources/style_box_flat.h"
+#include "scene/resources/texture_rd.h"
 
 constexpr const char *texture_2d_shader = R"(
 shader_type canvas_item;
 render_mode blend_mix;
 
 uniform vec4 u_channel_factors = vec4(1.0);
+uniform float lod = 0.0;
 
 vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 	// Filter RGB.
@@ -69,7 +72,7 @@ vec4 filter_preview_colors(vec4 input_color, vec4 factors) {
 }
 
 void fragment() {
-	COLOR = filter_preview_colors(texture(TEXTURE, UV), u_channel_factors);
+	COLOR = filter_preview_colors(textureLod(TEXTURE, UV, lod), u_channel_factors);
 }
 )";
 
@@ -128,6 +131,11 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 		return portable_compressed_texture->get_format();
 	}
 
+	const Ref<Texture2DRD> rd_texture = p_texture;
+	if (rd_texture.is_valid() && RD::get_singleton()->texture_owner.get_or_null(rd_texture->get_texture_rd_rid()) != nullptr) {
+		return rd_texture->get_image()->get_format();
+	}
+
 	// AtlasTexture?
 
 	// Unknown
@@ -140,6 +148,7 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
 	Ref<Image> image;
 	Ref<AtlasTexture> at = p_texture;
+	Ref<Texture2DRD> rd_texture = p_texture;
 	if (at.is_valid()) {
 		// The AtlasTexture tries to obtain the region from the atlas as an image,
 		// which will fail if it is a compressed format.
@@ -147,6 +156,11 @@ static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
 		if (atlas.is_valid()) {
 			image = atlas->get_image();
 		}
+	} else if (rd_texture.is_valid()) {
+		if (RD::get_singleton()->texture_owner.get_or_null(rd_texture->get_texture_rd_rid()) == nullptr) {
+			return -1;
+		}
+		image = p_texture->get_image();
 	} else {
 		image = p_texture->get_image();
 	}
@@ -215,6 +229,10 @@ void TexturePreview::on_selected_channels_changed() {
 	material->set_shader_parameter("u_channel_factors", channel_selector->get_selected_channel_factors());
 }
 
+void TexturePreview::on_selected_mipmap_changed() {
+	material->set_shader_parameter("lod", mipmap_selector->get_selected_mipmap());
+}
+
 TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	set_custom_minimum_size(Size2(0.0, 256.0) * EDSCALE);
 
@@ -247,6 +265,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		material.instantiate();
 		material->set_shader(shader);
 		material->set_shader_parameter("u_channel_factors", Vector4(1, 1, 1, 1));
+		material->set_shader_parameter("lod", 0.0);
 	}
 
 	texture_display = memnew(TextureRect);
@@ -267,6 +286,10 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		p_texture->connect_changed(callable_mp(this, &TexturePreview::_update_texture_display_ratio));
 	}
 
+	// Container for toggle buttons
+	VBoxContainer *container = memnew(VBoxContainer);
+	add_child(container);
+
 	// Null can be passed by `Camera3DPreview` (which immediately after sets a texture anyways).
 	const Image::Format format = p_texture.is_valid() ? get_texture_2d_format(p_texture.ptr()) : Image::FORMAT_MAX;
 	const uint32_t components_mask = format != Image::FORMAT_MAX ? Image::get_format_component_mask(format) : 0xf;
@@ -278,7 +301,18 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 		channel_selector->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
 		channel_selector->set_available_channels_mask(components_mask);
-		add_child(channel_selector);
+		container->add_child(channel_selector);
+	}
+
+	// Setup Mipmap selector
+	const int mipmaps = get_texture_mipmaps_count(p_texture);
+	if (mipmaps > 0) {
+		mipmap_selector = memnew(MipmapSelector);
+		mipmap_selector->connect("selected_mipmap_changed", callable_mp(this, &TexturePreview::on_selected_mipmap_changed));
+		mipmap_selector->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_selector->set_v_size_flags(Control::SIZE_SHRINK_BEGIN);
+		mipmap_selector->set_mipmap_count(mipmaps);
+		container->add_child(mipmap_selector);
 	}
 
 	if (p_show_metadata) {
@@ -306,7 +340,13 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 }
 
 bool EditorInspectorPluginTexture::can_handle(Object *p_object) {
-	return Object::cast_to<ImageTexture>(p_object) != nullptr || Object::cast_to<AtlasTexture>(p_object) != nullptr || Object::cast_to<CompressedTexture2D>(p_object) != nullptr || Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr || Object::cast_to<AnimatedTexture>(p_object) != nullptr || Object::cast_to<Image>(p_object) != nullptr;
+	return Object::cast_to<Image>(p_object) != nullptr ||
+			Object::cast_to<ImageTexture>(p_object) != nullptr ||
+			Object::cast_to<AtlasTexture>(p_object) != nullptr ||
+			Object::cast_to<CompressedTexture2D>(p_object) != nullptr ||
+			Object::cast_to<PortableCompressedTexture2D>(p_object) != nullptr ||
+			Object::cast_to<AnimatedTexture>(p_object) != nullptr ||
+			Object::cast_to<Texture2DRD>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginTexture::parse_begin(Object *p_object) {

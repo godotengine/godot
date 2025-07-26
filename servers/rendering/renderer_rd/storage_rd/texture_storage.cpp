@@ -1715,26 +1715,30 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 	texture.format = imfmt.image_format;
 	texture.validated_format = texture.format; // ??
 
+	texture.rd_type = tf.texture_type;
+	texture.rd_format = imfmt.rd_format;
+	// Texture storage here doesn't require a new rid.
+	texture.rd_texture = p_rd_texture;
+
 	RD::TextureView rd_view;
-	rd_view.format_override = imfmt.rd_format == tf.format ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
 	rd_view.swizzle_r = imfmt.swizzle_r;
 	rd_view.swizzle_g = imfmt.swizzle_g;
 	rd_view.swizzle_b = imfmt.swizzle_b;
 	rd_view.swizzle_a = imfmt.swizzle_a;
 
-	texture.rd_type = tf.texture_type;
-	texture.rd_view = rd_view;
-	texture.rd_format = imfmt.rd_format;
-	// We create a shared texture here even if our view matches, so we don't obtain ownership.
-	texture.rd_texture = RD::get_singleton()->texture_create_shared(rd_view, p_rd_texture);
-	if (imfmt.rd_format_srgb != RD::DATA_FORMAT_MAX) {
-		rd_view.format_override = imfmt.rd_format_srgb == tf.format ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
-		texture.rd_format_srgb = imfmt.rd_format_srgb;
+	// if Format for SRGB is set set it up here
+	if (imfmt.rd_format_srgb != RD::DATA_FORMAT_MAX && tf.shareable_formats.has(imfmt.rd_format_srgb) && tf.shareable_formats.has(texture.rd_format)) {
+		rd_view.format_override = imfmt.rd_format_srgb;
 		// We create a shared texture here even if our view matches, so we don't obtain ownership.
 		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, p_rd_texture);
+		if (texture.rd_texture_srgb.is_null()) {
+			RD::get_singleton()->free(texture.rd_texture);
+			ERR_FAIL_COND(texture.rd_texture_srgb.is_null());
+		}
 	}
 
 	// TODO figure out what to do with slices
+	texture.rd_view = rd_view;
 
 	texture.width_2d = texture.width;
 	texture.height_2d = texture.height;
