@@ -884,6 +884,7 @@ void EditorNode::_notification(int p_what) {
 			if (save_accept) {
 				save_accept->queue_free();
 			}
+			_save_external_resources(); // Save all edited external resources on exit tree.
 			EditorHelp::save_script_doc_cache();
 			editor_data.save_editor_external_data();
 			FileAccess::set_file_close_fail_notify_callback(nullptr);
@@ -1428,6 +1429,7 @@ void EditorNode::_scan_external_changes() {
 }
 
 void EditorNode::_resave_externally_modified_scenes(String p_str) {
+	_save_external_resources();
 	for (const String &scene_path : disk_changed_scenes) {
 		_save_scene(scene_path);
 	}
@@ -2092,6 +2094,7 @@ void EditorNode::_save_scene_silently() {
 	// Save scene without displaying progress dialog. Used to work around
 	// errors about parent node being busy setting up children
 	// when Save on Focus Loss kicks in.
+	_save_external_resources();
 	Node *scene = editor_data.get_edited_scene_root();
 	if (scene && !scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
 		_save_scene(scene->get_scene_file_path());
@@ -2180,7 +2183,6 @@ void EditorNode::_save_scene(String p_file, int idx) {
 	emit_signal(SNAME("scene_saved"), p_file);
 	editor_data.notify_scene_saved(p_file);
 
-	_save_external_resources();
 	saving_scene = p_file; // Some editors may save scenes of built-in resources as external data, so avoid saving this scene again.
 	editor_data.save_editor_external_data();
 	saving_scene = "";
@@ -2214,11 +2216,13 @@ void EditorNode::save_all_scenes() {
 void EditorNode::save_scene_if_open(const String &p_scene_path) {
 	int idx = editor_data.get_edited_scene_from_path(p_scene_path);
 	if (idx >= 0) {
+		_save_external_resources();
 		_save_scene(p_scene_path, idx);
 	}
 }
 
 void EditorNode::save_scene_list(const HashSet<String> &p_scene_paths) {
+	_save_external_resources();
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Node *scene = editor_data.get_edited_scene_root(i);
 
@@ -2256,6 +2260,7 @@ void EditorNode::restart_editor(bool p_goto_project_manager) {
 
 void EditorNode::_save_all_scenes() {
 	scenes_to_save_as.clear(); // In case saving was canceled before.
+	_save_external_resources();
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		if (!_is_scene_unsaved(i)) {
 			continue;
@@ -2364,6 +2369,11 @@ void EditorNode::_dialog_action(String p_file) {
 					return;
 				}
 
+				// SCENE_MULTI_SAVE_AS_SCENE is excluded because it has already been called in _save_all_scenes().
+				if (current_menu_option != SCENE_MULTI_SAVE_AS_SCENE) {
+					_save_external_resources();
+				}
+
 				save_default_environment();
 				_save_scene_with_preview(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
@@ -2384,6 +2394,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 
 		case SAVE_AND_RUN: {
+			_save_external_resources();
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				save_default_environment();
 				_save_scene_with_preview(p_file);
@@ -2394,7 +2405,7 @@ void EditorNode::_dialog_action(String p_file) {
 		case SAVE_AND_RUN_MAIN_SCENE: {
 			ProjectSettings::get_singleton()->set("application/run/main_scene", ResourceUID::path_to_uid(p_file));
 			ProjectSettings::get_singleton()->save();
-
+			_save_external_resources();
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				save_default_environment();
 				_save_scene_with_preview(p_file);
@@ -2510,6 +2521,7 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 		default: {
 			// Save scene?
+			_save_external_resources();
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				_save_scene_with_preview(p_file);
 			}
@@ -3059,6 +3071,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			int scene_idx = (p_option == SCENE_SAVE_SCENE) ? -1 : tab_closing_idx;
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 			if (scene && !scene->get_scene_file_path().is_empty()) {
+				_save_external_resources();
 				if (DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
 					if (scene_idx != editor_data.get_edited_scene()) {
 						_save_scene_with_preview(scene->get_scene_file_path(), scene_idx);
@@ -3233,6 +3246,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					confirmation_button->grab_focus();
 					break;
 				} else {
+					_save_external_resources();
 					_save_scene_with_preview(scene_filename);
 				}
 			}
