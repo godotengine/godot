@@ -213,7 +213,7 @@ StringName &StringName::operator=(const StringName &p_name) {
 	return *this;
 }
 
-StringName::StringName(const char *p_name, bool p_static) {
+StringName::StringName(const char *p_name) {
 	_data = nullptr;
 
 	if (!p_name || p_name[0] == 0) {

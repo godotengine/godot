@@ -40,7 +40,7 @@ StringName WebRTCPeerConnection::default_extension;
 
 void WebRTCPeerConnection::set_default_extension(const StringName &p_extension) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_extension, WebRTCPeerConnectionExtension::get_class_static()), vformat("Can't make %s the default WebRTC extension since it does not extend WebRTCPeerConnectionExtension.", p_extension));
-	default_extension = StringName(p_extension, true);
+	default_extension = p_extension;
 }
 
 WebRTCPeerConnection *WebRTCPeerConnection::create(bool p_notify_postinitialize) {

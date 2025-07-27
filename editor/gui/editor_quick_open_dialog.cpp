@@ -788,10 +788,10 @@ String QuickOpenResultContainer::get_selected() const {
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
 	static const Vector<StringName> grid_preferred_types = {
-		StringName("Font", true),
-		StringName("Texture2D", true),
-		StringName("Material", true),
-		StringName("Mesh", true),
+		ComptimeStringName<"Font">().value,
+		ComptimeStringName<"Texture2D">().value,
+		ComptimeStringName<"Material">().value,
+		ComptimeStringName<"Mesh">().value,
 	};
 
 	for (const StringName &type : grid_preferred_types) {

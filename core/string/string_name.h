@@ -162,7 +162,7 @@ public:
 		p_name._data = nullptr;
 		return *this;
 	}
-	StringName(const char *p_name, bool p_static = false);
+	StringName(const char *p_name);
 	constexpr StringName(const StringName &p_name) {
 		_data = nullptr;
 

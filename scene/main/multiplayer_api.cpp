@@ -35,7 +35,7 @@ StringName MultiplayerAPI::default_interface;
 
 void MultiplayerAPI::set_default_interface(const StringName &p_interface) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_interface, MultiplayerAPI::get_class_static()), vformat("Can't make %s the default multiplayer interface since it does not extend MultiplayerAPI.", p_interface));
-	default_interface = StringName(p_interface, true);
+	default_interface = p_interface;
 }
 
 StringName MultiplayerAPI::get_default_interface() {
