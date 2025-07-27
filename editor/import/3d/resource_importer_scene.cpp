@@ -765,7 +765,53 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		return p_node;
 	}
 
-	if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
+	if (_teststr(name, "occ") || _teststr(name, "occonly")) {
+		if (isroot) {
+			return p_node;
+		}
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+		if (mi) {
+			Ref<ImporterMesh> mesh = mi->get_mesh();
+
+			if (mesh.is_valid()) {
+				if (r_occluder_arrays) {
+					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
+				}
+				if (_teststr(name, "occ")) {
+					String fixed_name = _fixstr(name, "occ");
+					if (!fixed_name.is_empty()) {
+						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
+							mi->set_name(fixed_name);
+						}
+					}
+				} else {
+					p_node->set_owner(nullptr);
+					memdelete(p_node);
+					p_node = nullptr;
+				}
+			}
+		}
+	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
+		if (isroot) {
+			return p_node;
+		}
+
+		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
+
+		Ref<ImporterMesh> mesh = mi->get_mesh();
+		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
+		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
+
+		nmi->set_name(_fixstr(name, "navmesh"));
+		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
+		nmi->set_navigation_mesh(nmesh);
+		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
+		_copy_meta(p_node, nmi);
+		p_node->replace_by(nmi);
+		p_node->set_owner(nullptr);
+		memdelete(p_node);
+		p_node = nmi;
+	} else if (_teststr(name, "colonly") || _teststr(name, "convcolonly")) {
 		if (isroot) {
 			return p_node;
 		}
@@ -910,53 +956,6 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 				col->set_owner(mi->get_owner());
 
 				_add_shapes(col, shapes);
-			}
-		}
-
-	} else if (_teststr(name, "navmesh") && Object::cast_to<ImporterMeshInstance3D>(p_node)) {
-		if (isroot) {
-			return p_node;
-		}
-
-		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
-
-		Ref<ImporterMesh> mesh = mi->get_mesh();
-		ERR_FAIL_COND_V(mesh.is_null(), nullptr);
-		NavigationRegion3D *nmi = memnew(NavigationRegion3D);
-
-		nmi->set_name(_fixstr(name, "navmesh"));
-		Ref<NavigationMesh> nmesh = mesh->create_navigation_mesh();
-		nmi->set_navigation_mesh(nmesh);
-		Object::cast_to<Node3D>(nmi)->set_transform(mi->get_transform());
-		_copy_meta(p_node, nmi);
-		p_node->replace_by(nmi);
-		p_node->set_owner(nullptr);
-		memdelete(p_node);
-		p_node = nmi;
-	} else if (_teststr(name, "occ") || _teststr(name, "occonly")) {
-		if (isroot) {
-			return p_node;
-		}
-		ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(p_node);
-		if (mi) {
-			Ref<ImporterMesh> mesh = mi->get_mesh();
-
-			if (mesh.is_valid()) {
-				if (r_occluder_arrays) {
-					OccluderInstance3D::bake_single_node(mi, 0.0f, r_occluder_arrays->first, r_occluder_arrays->second);
-				}
-				if (_teststr(name, "occ")) {
-					String fixed_name = _fixstr(name, "occ");
-					if (!fixed_name.is_empty()) {
-						if (mi->get_parent() && !mi->get_parent()->has_node(fixed_name)) {
-							mi->set_name(fixed_name);
-						}
-					}
-				} else {
-					p_node->set_owner(nullptr);
-					memdelete(p_node);
-					p_node = nullptr;
-				}
 			}
 		}
 	} else if (_teststr(name, "vehicle")) {
