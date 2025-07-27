@@ -332,6 +332,19 @@ private:
 	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
 	PackedVector2Array _get_connection_line_bind_compat_86158(const Vector2 &p_from, const Vector2 &p_to);
 	Ref<GraphConnection> _connect_node_bind_compat_97449(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	bool _is_in_input_hotzone_bind_compat_108099(Object *in_node, int in_port, Vector2 mouse_position);
+	bool _is_in_output_hotzone_bind_compat_108099(Object *in_node, int in_port, Vector2 mouse_position);
+	void _add_valid_left_disconnect_type_bind_compat_108099(int type);
+	void _add_valid_right_disconnect_type_bind_compat_108099(int type);
+	Error _connect_node_bind_compat_108099(StringName from_node, int from_port, StringName to_node, int to_port, bool keep_alive = false);
+	void _disconnect_node_bind_compat_108099(StringName from_node, int from_port, StringName to_node, int to_port);
+	Array _get_connection_list_bind_compat_108099();
+	bool _is_right_disconnects_enabled_bind_compat_108099();
+	void _remove_valid_left_disconnect_type_bind_compat_108099(int type);
+	void _remove_valid_right_disconnect_type_bind_compat_108099(int type);
+	void _set_right_disconnects_bind_compat_108099(bool value);
+	// properties: right_disconnects
+	// signals: connection_from_empty
 #endif
 
 protected:

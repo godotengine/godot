@@ -2577,7 +2577,7 @@ void GraphEdit::add_connections(const TypedArray<Ref<GraphConnection>> p_connect
 
 const TypedArray<Ref<GraphConnection>> GraphEdit::_get_connections() const {
 	TypedArray<Ref<GraphConnection>> ret;
-	for (Ref<GraphConnection> conn : graph_connections) {
+	for (const Ref<GraphConnection> conn : graph_connections) {
 		ret.append(conn);
 	}
 	return ret;
