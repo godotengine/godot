@@ -1878,6 +1878,10 @@ void FileSystemDock::_duplicate_operation_confirm(const String &p_path) {
 	_try_duplicate_item(to_duplicate, p_path);
 }
 
+void FileSystemDock::_move_confirm() {
+	_move_operation_confirm(confirm_move_to_dir, confirm_to_copy);
+}
+
 void FileSystemDock::_overwrite_dialog_action(bool p_overwrite) {
 	overwrite_dialog->hide();
 	_move_operation_confirm(to_move_path, to_move_or_copy, p_overwrite ? OVERWRITE_REPLACE : OVERWRITE_RENAME);
@@ -3116,11 +3120,19 @@ void FileSystemDock::drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				}
 			}
 			if (!to_move.is_empty()) {
+				String move_confirm_text;
+				confirm_move_to_dir = to_dir;
+
 				if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					_move_operation_confirm(to_dir, true);
+					move_confirm_text = vformat(TTR("Copy %d selected item(s) to \"%s\"?"), to_move.size(), target_dir);
+					confirm_to_copy = true;
 				} else {
-					_move_operation_confirm(to_dir);
+					move_confirm_text = vformat(TTR("Move %d selected item(s) to \"%s\"?"), to_move.size(), target_dir);
+					confirm_to_copy = false;
 				}
+
+				move_confirm_dialog->set_text(move_confirm_text);
+				move_confirm_dialog->popup_centered();
 			}
 		} else if (favorite) {
 			// Add the files from favorites.
@@ -4392,6 +4404,10 @@ FileSystemDock::FileSystemDock() {
 	add_child(conversion_dialog);
 	conversion_dialog->set_ok_button_text(TTRC("Convert"));
 	conversion_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_convert_dialog_action));
+
+	move_confirm_dialog = memnew(ConfirmationDialog);
+	add_child(move_confirm_dialog);
+	move_confirm_dialog->connect(SceneStringName(confirmed), callable_mp(this, &FileSystemDock::_move_confirm));
 
 	uncollapsed_paths_before_search = Vector<String>();
 
