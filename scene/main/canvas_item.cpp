@@ -126,8 +126,13 @@ bool CanvasItem::is_visible() const {
 }
 
 CanvasItem *CanvasItem::current_item_drawn = nullptr;
+
 CanvasItem *CanvasItem::get_current_item_drawn() {
 	return current_item_drawn;
+}
+
+void CanvasItem::set_current_item_drawn(CanvasItem *p_ci) {
+	current_item_drawn = p_ci;
 }
 
 void CanvasItem::_redraw_callback() {
