@@ -1129,7 +1129,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	preset_sb->set_anti_aliased(false);
 
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
-	theme->set_stylebox("preset_focus", "ColorPicker", focus);
+	theme->set_stylebox("preset_focus", "ColorPresetButton", focus);
 	theme->set_icon("preset_bg", "ColorPresetButton", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPresetButton", icons["color_picker_overbright"]);
 
