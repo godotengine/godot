@@ -2625,7 +2625,12 @@ void ColorPresetButton::_notification(int p_what) {
 
 			if (sb_flat.is_valid()) {
 				sb_flat->set_border_width(SIDE_BOTTOM, 2);
-				if (get_draw_mode() == DRAW_PRESSED || get_draw_mode() == DRAW_HOVER_PRESSED) {
+
+				DrawMode draw_mode = get_draw_mode();
+				// Draw the white "shadow" only when actually pressed. The complex logic is caused by the enabled toggle_mode.
+				bool draw_white = !has_focus() && (draw_mode == DRAW_PRESSED || draw_mode == DRAW_HOVER_PRESSED);
+				draw_white = draw_white || (draw_mode == DRAW_NORMAL && is_pressed());
+				if (draw_white) {
 					sb_flat->set_border_color(Color(1, 1, 1, 1));
 				} else {
 					sb_flat->set_border_color(Color(0, 0, 0, 1));
