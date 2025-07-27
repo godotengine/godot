@@ -321,14 +321,14 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 	line_material->set_shader_parameter("rim_color", connection_line_rim_color);
 	p_connection->set_line_material(line_material);
 
-	// If ports are exclusive, request disconnect their existing connections
+	// If ports are exclusive, disconnect their existing connections
 	if (first_port) {
 		if (first_port->exclusive && is_port_connected(first_port)) {
 			for (const Ref<GraphConnection> conn : connection_map[first_port]) {
 				if (conn.is_null()) {
 					continue;
 				}
-				emit_signal(SNAME("disconnection_request"), conn);
+				remove_connection(conn);
 			}
 		}
 	}
@@ -338,7 +338,7 @@ Error GraphEdit::_add_connection(Ref<GraphConnection> p_connection) {
 				if (conn.is_null()) {
 					continue;
 				}
-				emit_signal(SNAME("disconnection_request"), conn);
+				remove_connection(conn);
 			}
 		}
 	}

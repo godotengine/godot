@@ -362,7 +362,7 @@
 	</methods>
 	<members>
 		<member name="allow_self_connection" type="bool" setter="set_allow_self_connection" getter="is_self_connection_allowed" default="false">
-			If [code]true[/code], allows [GraphPort]s attached to the same [GraphNode] to be connected by [GraphConnection]s.
+			If [code]true[/code], allows [GraphPort]s attached to the same [GraphNode] to be connected.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" overrides="Control" default="true" />
 		<member name="connection_lines_antialiased" type="bool" setter="set_connection_lines_antialiased" getter="is_connection_lines_antialiased" default="true">
