@@ -30,6 +30,7 @@
 
 #include "input_event_editor_plugin.h"
 
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/settings/event_listener_line_edit.h"
 #include "editor/settings/input_event_configuration_dialog.h"
 
@@ -51,8 +52,57 @@ void InputEventConfigContainer::_event_changed() {
 
 void InputEventConfigContainer::_config_dialog_confirmed() {
 	Ref<InputEvent> ie = config_dialog->get_event();
-	input_event->copy_from(ie);
-	_event_changed();
+
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Event Configured"));
+
+	// When command_or_control_autoremap is toggled to false, it should be set first;
+	// and when it is toggled to true, it should be set last.
+	bool will_toggle = false;
+	bool pending = false;
+	Ref<InputEventWithModifiers> iewm = input_event;
+	if (iewm.is_valid()) {
+		Variant new_value = ie->get("command_or_control_autoremap");
+		will_toggle = new_value != input_event->get("command_or_control_autoremap");
+		if (will_toggle) {
+			pending = new_value;
+			if (pending) {
+				undo_redo->add_undo_property(input_event.ptr(), "command_or_control_autoremap", !pending);
+			} else {
+				undo_redo->add_do_property(input_event.ptr(), "command_or_control_autoremap", pending);
+			}
+		}
+	}
+
+	List<PropertyInfo> pi;
+	ie->get_property_list(&pi);
+	for (const PropertyInfo &E : pi) {
+		if (E.name == "resource_path") {
+			continue; // Do not change path.
+		}
+		if (E.name == "command_or_control_autoremap") {
+			continue; // Handle it separately.
+		}
+		Variant old_value = input_event->get(E.name);
+		Variant new_value = ie->get(E.name);
+		if (old_value == new_value) {
+			continue;
+		}
+		undo_redo->add_do_property(input_event.ptr(), E.name, new_value);
+		undo_redo->add_undo_property(input_event.ptr(), E.name, old_value);
+	}
+
+	if (will_toggle) {
+		if (pending) {
+			undo_redo->add_do_property(input_event.ptr(), "command_or_control_autoremap", pending);
+		} else {
+			undo_redo->add_undo_property(input_event.ptr(), "command_or_control_autoremap", !pending);
+		}
+	}
+
+	undo_redo->add_do_property(input_event_text, "text", ie->as_text());
+	undo_redo->add_undo_property(input_event_text, "text", input_event->as_text());
+	undo_redo->commit_action();
 }
 
 void InputEventConfigContainer::set_event(const Ref<InputEvent> &p_event) {
