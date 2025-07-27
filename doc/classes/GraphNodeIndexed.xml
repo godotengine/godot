@@ -213,6 +213,9 @@
 	<members>
 		<member name="_node_to_slot_cache" type="Dictionary[StringName, int]" setter="_set_slot_node_cache" getter="_get_slot_node_cache" default="{}">
 		</member>
+		<member name="free_ports_on_slot_removed" type="bool" setter="set_free_ports_on_slot_removed" getter="get_free_ports_on_slot_removed" default="true">
+			If [code]true[/code], [code]queue_free[/code] is called on [GraphPort]s when their slot is removed.
+		</member>
 		<member name="slot_focus_mode" type="int" setter="set_slot_focus_mode" getter="get_slot_focus_mode" enum="Control.FocusMode" default="3">
 			Accessibility focus mode for slots. TODO: implement keyboard focus and behavior.
 		</member>

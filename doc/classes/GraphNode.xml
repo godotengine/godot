@@ -333,9 +333,6 @@
 			If [code]true[/code], you can connect ports with different types, even if the connection was not explicitly allowed in the parent [GraphEdit].
 		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="0" />
-		<member name="port_focus_mode" type="int" setter="set_port_focus_mode" getter="get_port_focus_mode" enum="Control.FocusMode" default="3">
-			Accessibility focus mode for ports. TODO: implement keyboard focus and behavior.
-		</member>
 		<member name="ports" type="GraphPort[]" setter="set_ports" getter="get_ports" default="[]">
 			The [Array] of [GraphPort]s attached to this node.
 		</member>

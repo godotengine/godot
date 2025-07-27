@@ -47,6 +47,14 @@
 				Fails if [param node] is not attached to either [member first_port] or [member second_port].
 			</description>
 		</method>
+		<method name="get_port_by_node" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="node" type="GraphNode" />
+			<description>
+				If the given [param node] is attached to a port in this connection, return the corresponding port in the connection.
+				Fails if [param node] is not attached to either [member first_port] or [member second_port].
+			</description>
+		</method>
 		<method name="get_second_node" qualifiers="const">
 			<return type="GraphNode" />
 			<description>

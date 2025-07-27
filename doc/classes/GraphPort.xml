@@ -6,7 +6,7 @@
 	<description>
 		[GraphPort] is a [GraphElement] that marks a point where connections can be made. They are drawn using a [TextureRect], and are typically attached to [GraphNode]s. Like most [GraphElement]s, they should have a [GraphEdit] as an ancestor.
 		If a port is enabled, it will be drawn and allow user interaction. When a port is disabled, it will modify its connections according to its [member on_disabled_behaviour], then ignore interaction and draw calls.
-		A port may also be typed with an arbitrary integer. This is useful for marking categories of ports that may only be connected to other similar types, or simply for storing a small amount of data on a port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member type], this port will be drawn using that color.
+		A port may also be typed with an arbitrary integer. This is useful for marking categories of ports that may only be connected to other similar types, or simply for storing a small amount of data on a port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member port_type], this port will be drawn using that color.
 		When it enters the tree, this node tries to cache its first ancestor [GraphEdit], searching from itself up through its parents until it finds one. As a result, some things may not work as expected in hierarchies of nested [GraphEdit]s.
 	</description>
 	<tutorials>
@@ -51,7 +51,7 @@
 		<method name="get_color" qualifiers="const">
 			<return type="Color" />
 			<description>
-				Returns the [Color] of this port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member type], returns the color at that index instead.
+				Returns the [Color] of this port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member port_type], returns the color at that index instead.
 			</description>
 		</method>
 		<method name="get_connected_ports" qualifiers="const">
@@ -155,10 +155,11 @@
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="get_exclusive" default="false">
 			If [code]true[/code], when a connection is added to this port, all existing connections to it will be cleared first.
 		</member>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
 		<member name="on_disabled_behaviour" type="int" setter="set_disabled_behaviour" getter="get_disabled_behaviour" enum="GraphPort.DisconnectBehaviour" default="0">
 			The way [GraphConnection]s connected to this port in the graph should be handled when this port is disabled.
 		</member>
-		<member name="type" type="int" setter="set_type" getter="get_type" default="0">
+		<member name="port_type" type="int" setter="set_port_type" getter="get_port_type" default="0">
 			The type of this port.
 		</member>
 	</members>
@@ -223,7 +224,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
-			The color this port's icon will be drawn with. Overridden by [member GraphEdit.type_colors], if one exists for this port's [member type].
+			The color this port's icon will be drawn with. Overridden by [member GraphEdit.type_colors], if one exists for this port's [member port_type].
 		</theme_item>
 		<theme_item name="rim_color" data_type="color" type="Color" default="Color(0.1, 0.1, 0.1, 0.6)">
 		</theme_item>
