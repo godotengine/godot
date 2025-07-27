@@ -2905,7 +2905,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					continue;
 				}
 
-				spatial_editor->emit_signal(SNAME("transform_key_request"), sp, "", sp->get_transform());
+				spatial_editor->emit_signal(SNAME("transform_3d_key_request"), sp, "", sp->get_transform());
 			}
 
 			set_message(TTR("Animation Key Inserted."));
@@ -5380,18 +5380,18 @@ void Node3DEditorViewport::assign_pending_data_pointers(Node3D *p_preview_node, 
 	accept = p_accept;
 }
 
-void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
-	CollisionObject3D *co = Object::cast_to<CollisionObject3D>(node);
+void _insert_collision_object_rid_recursive(Node *p_node, HashSet<RID> &p_col_obj_rids) {
+	CollisionObject3D *col_obj = Object::cast_to<CollisionObject3D>(p_node);
 
-	if (co) {
-		rids.insert(co->get_rid());
-	} else if (node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
-		rids.insert(node->call("_get_root_collision_instance"));
+	if (col_obj) {
+		p_col_obj_rids.insert(col_obj->get_rid());
+	} else if (p_node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
+		p_col_obj_rids.insert(p_node->call("_get_root_collision_instance"));
 	}
 
-	for (int i = 0; i < node->get_child_count(); i++) {
-		Node *child = node->get_child(i);
-		_insert_rid_recursive(child, rids);
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		Node *child = p_node->get_child(i);
+		_insert_collision_object_rid_recursive(child, p_col_obj_rids);
 	}
 }
 
@@ -5402,27 +5402,26 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 	Vector3 world_ray = get_ray(p_pos);
 	Vector3 world_pos = get_ray_pos(p_pos);
 
-	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
-
-	HashSet<RID> rids;
+	HashSet<RID> col_obj_rids_to_exclude;
 
 	if (preview_node && preview_node->get_child_count() > 0) {
-		_insert_rid_recursive(preview_node, rids);
+		_insert_collision_object_rid_recursive(preview_node, col_obj_rids_to_exclude);
 	} else if (!preview_node->is_inside_tree() && !ruler->is_inside_tree()) {
 		const List<Node *> &selection = editor_selection->get_top_selected_node_list();
 
 		Node3D *first_selected_node = Object::cast_to<Node3D>(selection.front()->get());
 
 		if (first_selected_node) {
-			_insert_rid_recursive(first_selected_node, rids);
+			_insert_collision_object_rid_recursive(first_selected_node, col_obj_rids_to_exclude);
 		}
 	}
 
 	PhysicsDirectSpaceState3D::RayParameters ray_params;
-	ray_params.exclude = rids;
+	ray_params.exclude = col_obj_rids_to_exclude;
 	ray_params.from = world_pos;
 	ray_params.to = world_pos + world_ray * camera->get_far();
 
+	PhysicsDirectSpaceState3D *ss = get_tree()->get_root()->get_world_3d()->get_direct_space_state();
 	PhysicsDirectSpaceState3D::RayResult result;
 	if (ss->intersect_ray(ray_params, result) && (preview_node->get_child_count() > 0 || !preview_node->is_inside_tree())) {
 		// Calculate an offset for the `p_node` such that the its bounding box is on top of and touching the contact surface's plane.
