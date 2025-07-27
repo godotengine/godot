@@ -89,33 +89,34 @@ void GraphPort::enable() {
 void GraphPort::disable() {
 	enabled = false;
 
-	ERR_FAIL_NULL(graph_edit);
-	switch (on_disabled_behaviour) {
-		case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
-			if (!graph_node) {
-				WARN_PRINT("Port is not assigned to a graph node, should not use DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT");
+	if (graph_edit) {
+		switch (on_disabled_behaviour) {
+			case GraphPort::DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT: {
+				if (!graph_node) {
+					WARN_PRINT("Port is not assigned to a graph node, should not use DisconnectBehaviour::MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT");
+					break;
+				}
+				GraphPort *prev_port = graph_node->get_previous_matching_port(this, false);
+				if (prev_port) {
+					graph_edit->move_connections(this, prev_port);
+				}
+			} break;
+			case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
+				if (!graph_node) {
+					WARN_PRINT("Port is not assigned to a graph node, should not use DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT");
+					break;
+				}
+				GraphPort *next_port = graph_node->get_next_matching_port(this, false);
+				if (next_port) {
+					graph_edit->move_connections(this, next_port);
+				}
+			} break;
+			case GraphPort::DisconnectBehaviour::DISCONNECT_ALL:
+			default:
 				break;
-			}
-			GraphPort *prev_port = graph_node->get_previous_matching_port(this, false);
-			if (prev_port) {
-				graph_edit->move_connections(this, prev_port);
-			}
-		} break;
-		case GraphPort::DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT: {
-			if (!graph_node) {
-				WARN_PRINT("Port is not assigned to a graph node, should not use DisconnectBehaviour::MOVE_TO_NEXT_PORT_OR_DISCONNECT");
-				break;
-			}
-			GraphPort *next_port = graph_node->get_next_matching_port(this, false);
-			if (next_port) {
-				graph_edit->move_connections(this, next_port);
-			}
-		} break;
-		case GraphPort::DisconnectBehaviour::DISCONNECT_ALL:
-		default:
-			break;
+		}
+		graph_edit->clear_port_connections(this);
 	}
-	graph_edit->clear_port_connections(this);
 
 	queue_redraw();
 	notify_property_list_changed();
