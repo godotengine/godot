@@ -49,6 +49,8 @@ public:
 	void set_snap_count(int p_snap_count);
 	void use_preset(int p_preset_id);
 
+	void set_curve_data(Array p_undo_data, Vector4 p_undo_range);
+
 	void set_curve(Ref<Curve> p_curve);
 	Ref<Curve> get_curve();
 
@@ -158,10 +160,28 @@ class CurveEditor : public VBoxContainer {
 	EditorSpinSlider *snap_count_edit = nullptr;
 	MenuButton *presets_button = nullptr;
 	CurveEdit *curve_editor_rect = nullptr;
+	HBoxContainer *scale_spin_container = nullptr;
+	LocalVector<EditorSpinSlider *> scale_spins;
 
-	void _set_snap_enabled(bool p_enabled);
+	Array curve_data;
+	Vector4 curve_range;
+
+	enum {
+		SCALE_MIN_DOMAIN,
+		SCALE_MAX_DOMAIN,
+		SCALE_MIN_VALUE,
+		SCALE_MAX_VALUE,
+		SCALE_MAX,
+	};
+
+	void
+	_set_snap_enabled(bool p_enabled);
 	void _set_snap_count(int p_snap_count);
 	void _on_preset_item_selected(int p_preset_id);
+	void _curve_changed();
+	void _scale_curve(double p_value, int p_index);
+	void _scale_start();
+	void _scale_end();
 
 protected:
 	void _notification(int p_what);

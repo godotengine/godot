@@ -354,6 +354,16 @@ void Curve::set_max_value(real_t p_max) {
 	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
 }
 
+void Curve::set_min_value_nocheck(real_t p_min) {
+	_min_value = p_min;
+	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
+}
+
+void Curve::set_max_value_nocheck(real_t p_max) {
+	_max_value = p_max;
+	emit_signal(SNAME(SIGNAL_RANGE_CHANGED));
+}
+
 void Curve::set_min_domain(real_t p_min) {
 	_min_domain = MIN(p_min, _max_domain - MIN_X_RANGE);
 
@@ -372,6 +382,18 @@ void Curve::set_max_domain(real_t p_max) {
 		_max_domain = _points[_points.size() - 1].position.x;
 	}
 
+	mark_dirty();
+	emit_signal(SNAME(SIGNAL_DOMAIN_CHANGED));
+}
+
+void Curve::set_min_domain_nocheck(real_t p_min) {
+	_min_domain = p_min;
+	mark_dirty();
+	emit_signal(SNAME(SIGNAL_DOMAIN_CHANGED));
+}
+
+void Curve::set_max_domain_nocheck(real_t p_max) {
+	_max_domain = p_max;
 	mark_dirty();
 	emit_signal(SNAME(SIGNAL_DOMAIN_CHANGED));
 }
@@ -497,6 +519,32 @@ void Curve::set_data(const Array p_input) {
 	if (old_size != new_size) {
 		notify_property_list_changed();
 	}
+}
+
+void Curve::remap_domain(real_t p_new_min, real_t p_new_max) {
+	real_t min = get_min_domain();
+	real_t max = get_max_domain();
+	for (Point &p : _points) {
+		p.position.x = Math::remap(p.position.x, min, max, p_new_min, p_new_max);
+		p.left_tangent = p.left_tangent * (max - min) / (p_new_max - p_new_min);
+		p.right_tangent = p.right_tangent * (max - min) / (p_new_max - p_new_min);
+	}
+	// Directly set them without check.
+	// Otherwise, e.g. [0.00, 1.00] -> expected: [1.00, 1.01], actual: [0.99, 1.01],
+	set_min_domain_nocheck(p_new_min);
+	set_max_domain_nocheck(p_new_max);
+}
+
+void Curve::remap_value(real_t p_new_min, real_t p_new_max) {
+	real_t min = get_min_value();
+	real_t max = get_max_value();
+	for (Point &p : _points) {
+		p.position.y = Math::remap(p.position.y, min, max, p_new_min, p_new_max);
+		p.left_tangent = p.left_tangent / (max - min) * (p_new_max - p_new_min);
+		p.right_tangent = p.right_tangent / (max - min) * (p_new_max - p_new_min);
+	}
+	set_min_value_nocheck(p_new_min);
+	set_max_value_nocheck(p_new_max);
 }
 
 void Curve::bake() {
