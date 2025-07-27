@@ -428,6 +428,13 @@ void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 	}
 	graph_connections.erase(p_connection);
 
+	if (p_connection->first_port) {
+		p_connection->first_port->_on_disconnected(p_connection);
+	}
+	if (p_connection->second_port) {
+		p_connection->second_port->_on_disconnected(p_connection);
+	}
+
 	minimap->queue_redraw();
 	queue_redraw();
 	connections_layer->queue_redraw();
