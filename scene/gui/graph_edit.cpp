@@ -1282,23 +1282,28 @@ void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 	bool can_disconnect;
 	switch (p_port->get_direction()) {
 		case GraphPort::PortDirection::INPUT:
-			can_disconnect = input_disconnects && valid_input_disconnect_types.has(p_port->get_port_type());
+			can_disconnect = input_disconnects && (valid_input_disconnect_types.has(p_port->get_port_type()) || p_port->graph_node->ignore_invalid_connection_type);
 			break;
 		case GraphPort::PortDirection::OUTPUT:
-			can_disconnect = valid_output_disconnect_types.has(p_port->get_port_type());
+			can_disconnect = valid_output_disconnect_types.has(p_port->get_port_type()) || p_port->graph_node->ignore_invalid_connection_type;
 			break;
 		case GraphPort::PortDirection::UNDIRECTED:
 		default:
-			can_disconnect = valid_undirected_disconnect_types.has(p_port->get_port_type());
+			can_disconnect = valid_undirected_disconnect_types.has(p_port->get_port_type()) || p_port->graph_node->ignore_invalid_connection_type;
 			break;
 	}
 	just_disconnected = false;
-	if (can_disconnect) {
+	if (can_disconnect && is_port_connected(p_port)) {
+		GraphPort *other_port = nullptr;
 		for (const Ref<GraphConnection> conn : connection_map[p_port]) {
 			if (conn.is_valid()) {
 				just_disconnected = true;
+				other_port = conn->get_other_port(p_port);
 				emit_signal(SNAME("disconnection_request"), conn);
 			}
+		}
+		if (other_port) {
+			p_port = other_port;
 		}
 	}
 

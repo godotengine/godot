@@ -196,7 +196,7 @@ private:
 	List<GraphElement *> prev_selected;
 
 	bool setting_scroll_offset = false;
-	bool input_disconnects = false;
+	bool input_disconnects = true;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
 

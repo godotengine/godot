@@ -381,7 +381,7 @@
 		<member name="grid_pattern" type="int" setter="set_grid_pattern" getter="get_grid_pattern" enum="GraphEdit.GridPattern" default="0">
 			The pattern used for drawing the grid.
 		</member>
-		<member name="input_disconnects" type="bool" setter="set_input_disconnects" getter="is_input_disconnects_enabled" default="false">
+		<member name="input_disconnects" type="bool" setter="set_input_disconnects" getter="is_input_disconnects_enabled" default="true">
 			If [code]true[/code], dragging from an input [GraphPort] will disconnect existing connections to the port. This feels like dragging the existing connection to a new location, rather than dragging out a new connection.
 			See also [enum GraphPort.PortDirection].
 		</member>
