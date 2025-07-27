@@ -35,6 +35,7 @@
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/shader/shader_editor.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/syntax_highlighter.h"
 #include "scene/resources/visual_shader.h"
 

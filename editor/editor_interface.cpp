@@ -58,6 +58,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/theme.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
