@@ -177,22 +177,22 @@ void EditorPropertyAnchorsPreset::_notification(int p_what) {
 					continue;
 				}
 				static const StringName icon_names[] = {
-					StringName("ControlAlignTopLeft", true),
-					StringName("ControlAlignTopRight", true),
-					StringName("ControlAlignBottomLeft", true),
-					StringName("ControlAlignBottomRight", true),
-					StringName("ControlAlignCenterLeft", true),
-					StringName("ControlAlignCenterTop", true),
-					StringName("ControlAlignCenterRight", true),
-					StringName("ControlAlignCenterBottom", true),
-					StringName("ControlAlignCenter", true),
-					StringName("ControlAlignLeftWide", true),
-					StringName("ControlAlignTopWide", true),
-					StringName("ControlAlignRightWide", true),
-					StringName("ControlAlignBottomWide", true),
-					StringName("ControlAlignVCenterWide", true),
-					StringName("ControlAlignHCenterWide", true),
-					StringName("ControlAlignFullRect", true),
+					ComptimeStringName<"ControlAlignTopLeft">().value,
+					ComptimeStringName<"ControlAlignTopRight">().value,
+					ComptimeStringName<"ControlAlignBottomLeft">().value,
+					ComptimeStringName<"ControlAlignBottomRight">().value,
+					ComptimeStringName<"ControlAlignCenterLeft">().value,
+					ComptimeStringName<"ControlAlignCenterTop">().value,
+					ComptimeStringName<"ControlAlignCenterRight">().value,
+					ComptimeStringName<"ControlAlignCenterBottom">().value,
+					ComptimeStringName<"ControlAlignCenter">().value,
+					ComptimeStringName<"ControlAlignLeftWide">().value,
+					ComptimeStringName<"ControlAlignTopWide">().value,
+					ComptimeStringName<"ControlAlignRightWide">().value,
+					ComptimeStringName<"ControlAlignBottomWide">().value,
+					ComptimeStringName<"ControlAlignVCenterWide">().value,
+					ComptimeStringName<"ControlAlignHCenterWide">().value,
+					ComptimeStringName<"ControlAlignFullRect">().value,
 				};
 				options->set_item_icon(i, get_editor_theme_icon(icon_names[preset]));
 			}
