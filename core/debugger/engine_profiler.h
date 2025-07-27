@@ -32,6 +32,7 @@
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
+#include "core/object/script_language.h"
 
 class EngineProfiler : public RefCounted {
 	GDCLASS(EngineProfiler, RefCounted);

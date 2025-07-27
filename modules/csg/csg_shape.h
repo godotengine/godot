@@ -73,7 +73,7 @@ private:
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
-	RID root_collision_instance;
+	RID root_collision_body;
 	RID root_collision_debug_instance;
 	Transform3D debug_shape_old_transform;
 #endif // PHYSICS_3D_DISABLED
