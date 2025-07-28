@@ -559,6 +559,11 @@ void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_soc
 
 	size_t arg_idx = 0;
 	for (size_t sig_idx = 0; sig_idx < strlen(msg.signature); ++sig_idx) {
+		if (arg_idx >= p_args.size()) {
+			String err_msg = vformat("Not enough arguments for r0x%d %s.%s(%s) (only got %d)", p_id, p_interface.name, msg.name, msg.signature, p_args.size());
+			CRASH_COND_MSG(arg_idx >= p_args.size(), err_msg);
+		}
+
 		char sym = msg.signature[sig_idx];
 		if (sym >= '0' && sym <= '?') {
 			// We don't care about version notices and nullability symbols. We can skip
