@@ -114,10 +114,8 @@
 #define XDG_POPUP_CONFIGURE 0
 
 size_t WaylandEmbedder::wl_array_word_offset(uint32_t p_size) {
-	constexpr size_t word_size = sizeof(uint32_t);
-
-	uint32_t pad = (word_size - (p_size % word_size)) % word_size;
-	return (p_size + pad) / word_size;
+	uint32_t pad = (WL_WORD_SIZE - (p_size % WL_WORD_SIZE)) % WL_WORD_SIZE;
+	return (p_size + pad) / WL_WORD_SIZE;
 }
 
 const struct wl_interface *WaylandEmbedder::wl_interface_from_string(const char *name, size_t size) {
@@ -339,23 +337,9 @@ void WaylandEmbedder::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalD
 		return;
 	}
 
-	{
-		// FIXME: Make string marshaling at least somewhat bearable.
-		size_t str_words = wl_array_word_offset(p_state->device.length());
-		size_t arg_words = str_words + 1;
-
-		CharString device_name = p_state->device.utf8();
-
-		uint32_t *arg_buf = (uint32_t *)memalloc(arg_words);
-		char *str_buf = (char *)arg_buf + 1;
-
-		arg_buf[0] = device_name.length();
-		strncpy(str_buf, device_name.get_data(), device_name.length());
-
-		send_wayland_message(socket, p_id, WL_DRM_DEVICE, arg_buf, arg_words);
-
-		memfree(arg_buf);
-	}
+	LocalVector<union wl_argument> args;
+	args.push_back(wl_arg_string(p_state->device.utf8().get_data()));
+	send_wayland_event(socket, p_id, wl_drm_interface, WL_DRM_DEVICE, args);
 
 	for (uint32_t format : p_state->formats) {
 		send_wayland_message(socket, p_id, WL_DRM_FORMAT, { format });
@@ -565,8 +549,83 @@ void WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_t
 	sendmsg(p_socket, &msg, MSG_NOSIGNAL);
 }
 
-void WaylandEmbedder::send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args) {
-	send_wayland_message(p_socket, p_id, p_opcode, p_args.begin(), p_args.size());
+void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
+	CRASH_COND(p_direction == ProxyDirection::CLIENT && p_opcode >= (uint32_t)p_interface.event_count);
+	CRASH_COND(p_direction == ProxyDirection::COMPOSITOR && p_opcode >= (uint32_t)p_interface.method_count);
+
+	const struct wl_message &msg = p_direction == ProxyDirection::CLIENT ? p_interface.events[p_opcode] : p_interface.methods[p_opcode];
+
+	LocalVector<uint32_t> arg_buf;
+
+	size_t arg_idx = 0;
+	for (size_t sig_idx = 0; sig_idx < strlen(msg.signature); ++sig_idx) {
+		char sym = msg.signature[sig_idx];
+		if (sym >= '0' && sym <= '?') {
+			// We don't care about version notices and nullability symbols. We can skip
+			// those.
+			continue;
+		}
+
+		const union wl_argument &arg = p_args[arg_idx];
+
+		switch (sym) {
+			case 'i': {
+				arg_buf.push_back((uint32_t)arg.i);
+			} break;
+
+			case 'u': {
+				arg_buf.push_back(arg.u);
+			} break;
+
+			case 'f': {
+				arg_buf.push_back((uint32_t)arg.f);
+			} break;
+
+			case 'o': {
+				// We're encoding object arguments as uints because I don't think we can
+				// reuse the whole opaque struct thing.
+				arg_buf.push_back(arg.u);
+			} break;
+
+			case 'n': {
+				arg_buf.push_back(arg.n);
+			} break;
+
+			case 's': {
+				const char *str = p_args[arg_idx].s;
+				// Wayland requires the string length to include the null terminator.
+				uint32_t str_len = strlen(str) + 1;
+
+				arg_buf.push_back(str_len);
+
+				size_t data_begin_idx = arg_buf.size();
+
+				uint32_t str_words = wl_array_word_offset(str_len);
+
+				arg_buf.resize(arg_buf.size() + str_words);
+				strcpy((char *)(arg_buf.ptr() + data_begin_idx), str);
+			} break;
+
+			case 'a': {
+				const wl_array *arr = p_args[arg_idx].a;
+
+				arg_buf.push_back(arr->size);
+
+				size_t data_begin_idx = arg_buf.size();
+
+				uint32_t words = wl_array_word_offset(arr->size);
+
+				arg_buf.resize(arg_buf.size() + words);
+				memcpy(arg_buf.ptr() + data_begin_idx, arr->data, arr->size);
+			} break;
+
+				// FDs (h) are encoded out-of-band.
+		}
+
+		++arg_idx;
+	}
+
+	send_wayland_message(p_socket, p_id, p_opcode, arg_buf.ptr(), arg_buf.size());
 }
 
 uint32_t WaylandEmbedder::new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
@@ -908,9 +967,6 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 		// Note that the registry has already been allocated in the initialization
 		// routine.
 
-		// TODO: Consider something more efficient, I think.
-		uint32_t *args_buf = (uint32_t *)calloc(msg_buf.size(), sizeof *args_buf);
-
 		// FIXME: Cleanup.
 		for (size_t global_name = 0; global_name < registry_globals.size(); ++global_name) {
 			RegistryGlobalInfo &global_info = registry_globals[global_name];
@@ -921,26 +977,13 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				continue;
 			}
 
-			size_t interface_name_len = strlen(global_interface->name) + 1;
+			LocalVector<union wl_argument> args;
+			args.push_back(wl_arg_uint(global_name));
+			args.push_back(wl_arg_string(global_interface->name));
+			args.push_back(wl_arg_uint(global_info.version));
 
-			uint32_t *write_head = args_buf;
-
-			*write_head = global_name;
-			++write_head;
-
-			*write_head = interface_name_len;
-			++write_head;
-
-			strncpy((char *)write_head, global_interface->name, interface_name_len);
-			write_head += wl_array_word_offset(interface_name_len);
-
-			*write_head = global_info.version;
-
-			size_t arg_buf_words = write_head - args_buf + 1;
-
-			send_wayland_message(client->socket, local_registry_id, 0, args_buf, arg_buf_words);
+			send_wayland_event(client->socket, local_registry_id, wl_registry_interface, WL_REGISTRY_GLOBAL, args);
 		}
-		free(args_buf);
 
 		// FIXME: Multiple associations.
 		client->local_ids[REGISTRY_ID] = local_registry_id;
@@ -956,6 +999,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			// [Request] wl_registry::bind(usun)
 			uint32_t global_name = body[0];
 			uint32_t interface_name_len = body[1];
+			const char *interface_name = (const char *)(body + 2);
 			uint32_t version = body[2 + wl_array_word_offset(interface_name_len)];
 			uint32_t new_local_id_idx = 2 + wl_array_word_offset(interface_name_len) + 1;
 			uint32_t new_local_id = body[new_local_id_idx];
@@ -1004,29 +1048,17 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 				registry_globals_names[instance_gid] = global_name;
 
-				uint32_t *args_buf = (uint32_t *)calloc(msg_buf.size(), sizeof *args_buf);
+				LocalVector<union wl_argument> args;
+				union wl_argument arg;
 
-				uint32_t *write_head = args_buf;
+				args.push_back(wl_arg_uint(global_info.compositor_name));
+				args.push_back(wl_arg_string(interface_name));
+				args.push_back(wl_arg_uint(version));
 
-				*write_head = global_info.compositor_name;
-				++write_head;
+				arg.n = instance_gid;
+				args.push_back(arg);
 
-				*write_head = interface_name_len;
-				++write_head;
-
-				strncpy((char *)write_head, (char *)(body + 2), interface_name_len);
-				write_head += wl_array_word_offset(interface_name_len);
-
-				*write_head = version;
-				++write_head;
-
-				*write_head = instance_gid;
-
-				size_t arg_buf_words = write_head - args_buf + 1;
-
-				send_wayland_message(compositor_socket, REGISTRY_ID, WL_REGISTRY_BIND, args_buf, arg_buf_words);
-
-				free(args_buf);
+				send_wayland_method(compositor_socket, REGISTRY_ID, wl_registry_interface, WL_REGISTRY_BIND, args);
 			} else {
 				// Instance of a reusable object. For interfaces without a destructor
 				// method.

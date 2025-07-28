@@ -126,7 +126,7 @@ private:
 	struct WaylandObject {
 		const struct wl_interface *interface = nullptr;
 		int version = 0;
-		bool destroyed = false; // Intert, awaiting confirmation from server.
+		bool destroyed = false; // Inert, awaiting confirmation from server.
 		WaylandObjectData *data = nullptr;
 	};
 
@@ -485,7 +485,55 @@ private:
 	static void send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds = LocalVector<int>());
 
 	static void send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, const uint32_t *p_args, const size_t p_args_words);
-	static void send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args);
+	static void send_wayland_message(ProxyDirection p_direction, int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args);
+
+	// Utility aliases.
+
+	static void send_wayland_message(int p_socket, uint32_t p_id, uint32_t p_opcode, std::initializer_list<uint32_t> p_args) {
+		send_wayland_message(p_socket, p_id, p_opcode, p_args.begin(), p_args.size());
+	}
+
+	static void send_wayland_method(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
+		send_wayland_message(ProxyDirection::COMPOSITOR, p_socket, p_id, p_interface, p_opcode, p_args);
+	}
+
+	static void send_wayland_event(int p_socket, uint32_t p_id, const struct wl_interface &p_interface, uint32_t p_opcode, LocalVector<union wl_argument> p_args) {
+		send_wayland_message(ProxyDirection::CLIENT, p_socket, p_id, p_interface, p_opcode, p_args);
+	}
+
+	// NOTE: Yes, in our case object arguments are actually uints for now.
+	// Best way I found to reuse the Wayland stuff. Might need to make our
+	// own eventually.
+	static constexpr union wl_argument wl_arg_int(int32_t p_value) {
+		union wl_argument arg = {};
+		arg.i = p_value;
+		return arg;
+	}
+	static constexpr union wl_argument wl_arg_uint(uint32_t p_value) {
+		union wl_argument arg = {};
+		arg.u = p_value;
+		return arg;
+	}
+	static constexpr union wl_argument wl_arg_fixed(wl_fixed_t p_value) {
+		union wl_argument arg = {};
+		arg.f = p_value;
+		return arg;
+	}
+	static constexpr union wl_argument wl_arg_string(const char *p_value) {
+		union wl_argument arg = {};
+		arg.s = p_value;
+		return arg;
+	}
+	static constexpr union wl_argument wl_arg_object(uint32_t p_value) {
+		union wl_argument arg = {};
+		arg.u = p_value;
+		return arg;
+	}
+	static constexpr union wl_argument wl_arg_new_id(uint32_t p_value) {
+		union wl_argument arg = {};
+		arg.n = p_value;
+		return arg;
+	}
 
 	uint32_t new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
 
