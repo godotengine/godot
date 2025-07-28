@@ -31,6 +31,7 @@
 #include "openxr_wmr_controller_extension.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
+#include "../openxr_api.h"
 
 HashMap<String, bool *> OpenXRWMRControllerExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
@@ -53,11 +54,11 @@ void OpenXRWMRControllerExtension::on_register_metadata() {
 
 	{ // HP MR controller (newer G2 controllers)
 		const String profile_path = "/interaction_profiles/hp/mixed_reality_controller";
-		openxr_metadata->register_interaction_profile("HPMR controller", profile_path, XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME);
+		openxr_metadata->register_interaction_profile("HPMR controller", profile_path, XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME "," XR_OPENXR_1_1_NAME);
 		for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-			openxr_metadata->register_io_path(profile_path, "Palm pose", user_path, user_path + "/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+			openxr_metadata->register_io_path(profile_path, "Grip surface pose", user_path, user_path + "/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 			openxr_metadata->register_io_path(profile_path, "Menu click", user_path, user_path + "/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
@@ -84,11 +85,11 @@ void OpenXRWMRControllerExtension::on_register_metadata() {
 
 	{ // Samsung Odyssey controller
 		const String profile_path = "/interaction_profiles/samsung/odyssey_controller";
-		openxr_metadata->register_interaction_profile("Samsung Odyssey controller", profile_path, XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME);
+		openxr_metadata->register_interaction_profile("Samsung Odyssey controller", profile_path, XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME "," XR_OPENXR_1_1_NAME);
 		for (const String user_path : { "/user/hand/left", "/user/hand/right" }) {
 			openxr_metadata->register_io_path(profile_path, "Grip pose", user_path, user_path + "/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-			openxr_metadata->register_io_path(profile_path, "Palm pose", user_path, user_path + "/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+			openxr_metadata->register_io_path(profile_path, "Grip surface pose", user_path, user_path + "/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 			openxr_metadata->register_io_path(profile_path, "Menu click", user_path, user_path + "/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
 
@@ -125,7 +126,7 @@ void OpenXRWMRControllerExtension::on_register_metadata() {
 			openxr_metadata->register_io_path(profile_path, "Aim pose", user_path, user_path + "/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Pinch pose", user_path, user_path + "/input/pinch_ext/pose", XR_EXT_HAND_INTERACTION_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 			openxr_metadata->register_io_path(profile_path, "Poke pose", user_path, user_path + "/input/poke_ext/pose", XR_EXT_HAND_INTERACTION_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-			openxr_metadata->register_io_path(profile_path, "Palm pose", user_path, user_path + "/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+			openxr_metadata->register_io_path(profile_path, "Grip surface pose", user_path, user_path + "/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 			openxr_metadata->register_io_path(profile_path, "Select (pinch)", user_path, user_path + "/input/select/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 
