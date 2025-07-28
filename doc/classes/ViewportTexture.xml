@@ -11,7 +11,7 @@
 		[b]Note:[/b] When using a [Viewport] with [member Viewport.use_hdr_2d] set to [code]true[/code], the returned texture will be an HDR image encoded in linear space. This may look darker than normal when displayed directly on screen. To convert to gamma space, you can do the following:
 		[codeblock]
 		img.convert(Image.FORMAT_RGBA8)
-		imb.linear_to_srgb()
+		img.linear_to_srgb()
 		[/codeblock]
 		[b]Note:[/b] Some nodes such as [Decal], [Light3D], and [PointLight2D] do not support using [ViewportTexture] directly. To use texture data from a [ViewportTexture] in these nodes, you need to create an [ImageTexture] by calling [method Texture2D.get_image] on the [ViewportTexture] and passing the result to [method ImageTexture.create_from_image]. This conversion is a slow operation, so it should not be performed every frame.
 	</description>
