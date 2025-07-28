@@ -87,20 +87,33 @@ void NodeDock::update_lists() {
 	connections->update_tree();
 }
 
-void NodeDock::set_node(Node *p_node) {
-	connections->set_node(p_node);
-	groups->set_current(p_node);
+void NodeDock::set_object(Object *p_object) {
+	connections->set_object(p_object);
+	groups->set_current(cast_to<Node>(p_object));
 
-	if (p_node) {
+	if (p_object) {
 		if (connections_button->is_pressed()) {
 			connections->show();
 		} else {
 			groups->show();
 		}
 
+		if (p_object->is_class("Resource")) {
+			show_connections();
+			connections_button->hide();
+			groups_button->hide();
+			set_name("Resource");
+		} else {
+			connections_button->show();
+			groups_button->show();
+			set_name("Node");
+		}
+
 		mode_hb->show();
 		select_a_node->hide();
 	} else {
+		connections_button->show();
+		groups_button->show();
 		connections->hide();
 		groups->hide();
 		mode_hb->hide();
@@ -148,7 +161,7 @@ NodeDock::NodeDock() {
 
 	select_a_node = memnew(Label);
 	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);
-	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups."));
+	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups, or select an independent resource to edit its signals."));
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
