@@ -228,7 +228,7 @@ public:
 	OpenXRSpatialMarkerTrackingCapability();
 	virtual ~OpenXRSpatialMarkerTrackingCapability() override;
 
-	virtual HashMap<String, bool *> get_requested_extensions() override;
+	virtual HashMap<String, bool *> get_requested_extensions(XrVersion p_version) override;
 
 	virtual void on_session_created(const XrSession p_session) override;
 	virtual void on_session_destroyed() override;
