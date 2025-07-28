@@ -42,6 +42,28 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/popup_menu.h"
 
+void DebuggerEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+	Array breakpoints = p_layout->get_value("Debugger", "breakpoints", Array());
+	for (const Variant &E : breakpoints) {
+		const Breakpoint &bp = Breakpoint::deserialize(E);
+		if (!FileAccess::exists(bp.source) || bp.line <= 0) {
+			continue;
+		}
+		EditorDebuggerNode::get_singleton()->set_breakpoint(bp.source, bp.line, true, bp.enabled, bp.suspend, bp.condition, bp.print);
+	}
+}
+
+void DebuggerEditorPlugin::get_window_layout(Ref<ConfigFile> p_layout) {
+	Array breakpoints;
+	for (const String &E : EditorDebuggerNode::get_singleton()->get_breakpoint_sources()) {
+		for (const Breakpoint &bp : EditorDebuggerNode::get_singleton()->get_breakpoints(E)) {
+			breakpoints.append(bp.serialize());
+		}
+	}
+
+	p_layout->set_value("Debugger", "breakpoints", breakpoints);
+}
+
 DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	EditorDebuggerServer::initialize();
 
