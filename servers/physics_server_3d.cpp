@@ -377,7 +377,6 @@ Dictionary PhysicsDirectSpaceState3D::_intersect_ray(const Ref<PhysicsRayQueryPa
 }
 
 void PhysicsTestRayResult3D::_bind_methods() {
-
 	ClassDB::bind_method(D_METHOD("get_position"), &PhysicsTestRayResult3D::get_position);
 	ClassDB::bind_method(D_METHOD("get_normal"), &PhysicsTestRayResult3D::get_normal);
 	ClassDB::bind_method(D_METHOD("get_rid"), &PhysicsTestRayResult3D::get_rid);
@@ -393,7 +392,6 @@ void PhysicsTestRayResult3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "collider"), "", "get_collider");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "shape"), "", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "face_index"), "", "get_face_index");
-
 }
 
 bool PhysicsDirectSpaceState3D::_test_ray(const Ref<PhysicsRayQueryParameters3D> &p_ray_query, const Ref<PhysicsTestRayResult3D> &p_result) {
