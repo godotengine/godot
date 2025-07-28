@@ -104,7 +104,10 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	void _advanced_toggled(bool p_button_pressed);
 
+#ifndef _3D_DISABLED
 	void _update_dynamic_property_hints();
+#endif // _3D_DISABLED
+
 	PropertyInfo _create_mouse_shortcut_property_info(const String &p_property_name, const String &p_shortcut_1_name, const String &p_shortcut_2_name);
 	String _get_shortcut_button_string(const String &p_shortcut_name);
 
@@ -131,7 +134,9 @@ protected:
 
 public:
 	void popup_edit_settings();
+#ifndef _3D_DISABLED
 	static void update_navigation_preset();
+#endif // _3D_DISABLED
 
 	EditorSettingsDialog();
 };
