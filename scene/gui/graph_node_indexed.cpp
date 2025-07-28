@@ -691,6 +691,7 @@ void GraphNodeIndexed::set_port_container(Control *p_container) {
 	}
 	port_container = p_container;
 	port_container->set_meta(ignore_node_meta_tag, true);
+	port_container->set_meta("_edit_lock_", true);
 }
 
 Control *GraphNodeIndexed::get_port_container() const {
