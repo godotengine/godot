@@ -164,7 +164,6 @@ protected:
 
 #ifndef DISABLE_DEPRECATED
 	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
-
 	String _read_string_from_stdin_bind_compat_91201();
 	static void _bind_compatibility_methods();
 #endif
@@ -652,6 +651,10 @@ protected:
 	static void _bind_methods();
 	static inline EngineDebugger *singleton = nullptr;
 
+#ifndef DISABLE_DEPRECATED
+	void _insert_breakpoint_bind_compat_100516(int p_line, const StringName &p_source);
+	static void _bind_compatibility_methods();
+#endif
 public:
 	static EngineDebugger *get_singleton() { return singleton; }
 
@@ -684,7 +687,7 @@ public:
 
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
 	bool is_skipping_breakpoints() const;
-	void insert_breakpoint(int p_line, const StringName &p_source);
+	void insert_breakpoint(int p_line, const StringName &p_source, bool p_enabled = true, bool p_suspend = true, const String &p_condition = "", const String &p_print = "");
 	void remove_breakpoint(int p_line, const StringName &p_source);
 	void clear_breakpoints();
 

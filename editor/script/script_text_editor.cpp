@@ -31,6 +31,7 @@
 #include "script_text_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/debugger/engine_debugger.h"
 #include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/math/expression.h"
@@ -189,6 +190,20 @@ void ScriptTextEditor::enable_editor(Control *p_shortcut_context) {
 
 void ScriptTextEditor::_load_theme_settings() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
+
+	breakpoint_color = EDITOR_GET("text_editor/theme/highlighting/breakpoint_color");
+	breakpoint_disabled_color = EDITOR_GET("text_editor/theme/highlighting/breakpoint_disabled_color");
+	breakpoint_print_color = EDITOR_GET("text_editor/theme/highlighting/breakpoint_print_color");
+	breakpoint_icon = get_parent_control()->get_editor_theme_icon(SNAME("Breakpoint"));
+	breakpoint_no_suspend_icon = get_parent_control()->get_editor_theme_icon(SNAME("BreakpointNoSuspend"));
+	breakpoint_conditional_icon = get_parent_control()->get_editor_theme_icon(SNAME("BreakpointConditional"));
+	breakpoint_conditional_no_suspend_icon = get_parent_control()->get_editor_theme_icon(SNAME("BreakpointConditionalNoSuspend"));
+
+	bookmark_color = EDITOR_GET("text_editor/theme/highlighting/bookmark_color");
+	bookmark_icon = get_parent_control()->get_editor_theme_icon(SNAME("Bookmark"));
+
+	executing_line_color = EDITOR_GET("text_editor/theme/highlighting/executing_line_color");
+	executing_line_icon = get_parent_control()->get_editor_theme_icon(SNAME("TextEditorPlay"));
 
 	Color updated_warning_line_color = EDITOR_GET("text_editor/theme/highlighting/warning_color");
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
@@ -702,6 +717,14 @@ Variant ScriptTextEditor::get_edit_state() {
 void ScriptTextEditor::set_edit_state(const Variant &p_state) {
 	code_editor->set_edit_state(p_state);
 
+	for (const Breakpoint &bp : EditorDebuggerNode::get_singleton()->get_breakpoints(script->get_path())) {
+		if (bp.line > code_editor->get_text_editor()->get_line_count()) {
+			EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), bp.line, false);
+			continue;
+		}
+		code_editor->get_text_editor()->set_line_as_breakpoint(bp.line - 1, true);
+	}
+
 	Dictionary state = p_state;
 	if (state.has("syntax_highlighter")) {
 		int idx = highlighter_menu->get_item_idx_from_text(state["syntax_highlighter"]);
@@ -1179,6 +1202,7 @@ void ScriptTextEditor::_update_breakpoint_list() {
 
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_breakpoint"), DEBUG_TOGGLE_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_breakpoints"), DEBUG_REMOVE_ALL_BREAKPOINTS);
+	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/edit_breakpoint"), EDIT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_breakpoint"), DEBUG_GOTO_NEXT_BREAKPOINT);
 	breakpoints_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_breakpoint"), DEBUG_GOTO_PREV_BREAKPOINT);
 
@@ -1213,7 +1237,100 @@ void ScriptTextEditor::_breakpoint_item_pressed(int p_idx) {
 }
 
 void ScriptTextEditor::_breakpoint_toggled(int p_row) {
-	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, code_editor->get_text_editor()->is_line_breakpointed(p_row));
+	if (lines_edited_changed != 0 || p_row >= code_editor->get_text_editor()->get_line_count()) {
+		return;
+	}
+
+	bool breakpointed = code_editor->get_text_editor()->is_line_breakpointed(p_row);
+	if (EditorDebuggerNode::get_singleton()->has_breakpoint(script->get_path(), p_row + 1) == breakpointed) {
+		return;
+	}
+
+	EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), p_row + 1, breakpointed);
+}
+
+void ScriptTextEditor::_lines_edited_from(int p_from_line, int p_to_line) {
+	if (p_from_line == p_to_line) {
+		return; // No changes.
+	}
+
+	lines_edited_changed = p_to_line - p_from_line;
+	lines_edited_from = MIN(p_from_line, p_to_line);
+	lines_edited_to = MAX(p_from_line, p_to_line);
+}
+
+void ScriptTextEditor::_text_set() {
+	lines_edited_changed = 0;
+	lines_edited_from = -1;
+	lines_edited_to = -1;
+}
+
+void ScriptTextEditor::_text_changed() {
+	if (lines_edited_changed == 0) {
+		return; // No changes.
+	}
+
+	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
+	const String &source = script->get_path();
+	Vector<Breakpoint> breakpoints = debugger_node->get_breakpoints(source);
+	if (breakpoints.is_empty()) {
+		lines_edited_changed = 0;
+		return;
+	}
+
+	HashMap<int, Breakpoint> to_move;
+	Vector<int> to_remove;
+
+	for (const Breakpoint &bp : breakpoints) {
+		int line = bp.line - 1;
+		if (line <= lines_edited_from) {
+			continue;
+		}
+		if (lines_edited_changed > 0) {
+			if (line >= lines_edited_from) {
+				to_move.insert(line + lines_edited_changed, bp);
+				to_remove.append(line);
+			}
+		} else {
+			if (line >= lines_edited_from && line <= lines_edited_to) {
+				to_remove.append(line);
+				continue;
+			}
+			if (line > lines_edited_from + lines_edited_changed) {
+				to_move.insert(line + lines_edited_changed, bp);
+				to_remove.append(line);
+			}
+		}
+	}
+
+	for (int line : to_remove) {
+		// Avoid toggling breakpoints that moved but the line will remain breakpointed.
+		if (!to_move.has(line)) {
+			debugger_node->set_breakpoint(source, line + 1, false);
+		}
+	}
+
+	for (const KeyValue<int, Breakpoint> &p : to_move) {
+		const Breakpoint &bp = p.value;
+		debugger_node->set_breakpoint(source, p.key + 1, true, bp.enabled, bp.suspend, bp.condition, bp.print);
+	}
+
+	lines_edited_changed = 0;
+	code_editor->get_text_editor()->queue_redraw();
+}
+
+void ScriptTextEditor::_breakpoint_tree_changed(const String &p_source, const int &p_line, const Dictionary &p_data) {
+	if (p_source != script->get_path()) {
+		return;
+	}
+	code_editor->get_text_editor()->queue_redraw();
+}
+
+void ScriptTextEditor::_breakpoint_set_in_tree(Ref<RefCounted> p_source, int p_line, bool p_breakpointed) {
+	if (p_source != script) {
+		return;
+	}
+	code_editor->get_text_editor()->set_line_as_breakpoint(p_line, p_breakpointed);
 }
 
 void ScriptTextEditor::_on_caret_moved() {
@@ -1669,6 +1786,90 @@ void ScriptTextEditor::_update_gutter_indexes() {
 	}
 }
 
+void ScriptTextEditor::_main_gutter_draw_callback(int p_line, int p_gutter, const Rect2 &p_region) {
+	if (lines_edited_changed != 0) {
+		return; // Breakpoints not updated yet after lines edited.
+	}
+
+	CodeEdit *code_edit = code_editor->get_text_editor();
+	bool hovering = code_edit->get_hovered_gutter() == Vector2i(0, p_line);
+
+	// Breakpoints
+	if (breakpoint_icon.is_valid() && breakpoint_conditional_icon.is_valid() && breakpoint_no_suspend_icon.is_valid() && breakpoint_conditional_no_suspend_icon.is_valid()) {
+		bool breakpointed = code_edit->is_line_breakpointed(p_line);
+		ERR_FAIL_COND(breakpointed != EditorDebuggerNode::get_singleton()->has_breakpoint(script->get_path(), p_line + 1));
+
+		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+		if (breakpointed || (hovering && !code_edit->is_dragging_cursor() && !shift_pressed)) {
+			int padding = p_region.size.x / 6;
+
+			Color use_color = breakpoint_color;
+			Breakpoint bp;
+			if (breakpointed) {
+				bp = EditorDebuggerNode::get_singleton()->get_breakpoint(script->get_path(), p_line + 1);
+				if (!bp.enabled) {
+					use_color = breakpoint_disabled_color;
+				} else if (!(bp.print).is_empty() && !bp.suspend) {
+					use_color = breakpoint_print_color;
+				}
+			}
+			if (hovering && !shift_pressed) {
+				use_color = breakpointed ? use_color.lightened(0.3) : use_color.darkened(0.5);
+			}
+
+			Rect2 icon_region = p_region;
+			icon_region.position += Point2(padding, padding);
+			icon_region.size -= Point2(padding, padding) * 2;
+			if (!breakpointed) {
+				breakpoint_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, use_color);
+			} else if ((bp.condition).is_empty()) {
+				if (bp.suspend) {
+					breakpoint_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, use_color);
+				} else {
+					breakpoint_no_suspend_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, use_color);
+				}
+			} else {
+				if (bp.suspend) {
+					breakpoint_conditional_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, use_color);
+				} else {
+					breakpoint_conditional_no_suspend_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, use_color);
+				}
+			}
+		}
+	}
+
+	// Bookmarks
+	if (bookmark_icon.is_valid()) {
+		bool bookmarked = code_edit->is_line_bookmarked(p_line);
+		bool shift_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
+
+		if (bookmarked || (hovering && !code_edit->is_dragging_cursor() && shift_pressed)) {
+			int horizontal_padding = p_region.size.x / 2;
+			int vertical_padding = p_region.size.y / 4;
+
+			Color use_color = bookmark_color;
+			if (hovering && shift_pressed) {
+				use_color = bookmarked ? use_color.lightened(0.3) : use_color.darkened(0.5);
+			}
+			Rect2 icon_region = p_region;
+			icon_region.position += Point2(horizontal_padding, 0);
+			icon_region.size -= Point2(horizontal_padding * 1.1, vertical_padding);
+			bookmark_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, use_color);
+		}
+	}
+
+	// Executing lines
+	if (code_edit->is_line_executing(p_line) && executing_line_icon.is_valid()) {
+		int horizontal_padding = p_region.size.x / 10;
+		int vertical_padding = p_region.size.y / 4;
+
+		Rect2 icon_region = p_region;
+		icon_region.position += Point2(horizontal_padding, vertical_padding);
+		icon_region.size -= Point2(horizontal_padding, vertical_padding) * 2;
+		executing_line_icon->draw_rect(code_edit->get_canvas_item(), icon_region, false, executing_line_color);
+	}
+}
+
 void ScriptTextEditor::_gutter_clicked(int p_line, int p_gutter) {
 	if (p_gutter != connection_gutter) {
 		return;
@@ -1782,6 +1983,14 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case EDIT_TOGGLE_COMMENT: {
 			_edit_option_toggle_inline_comment();
+		} break;
+		case EDIT_BREAKPOINT: {
+			const int &line = tx->get_caret_line(tx->get_sorted_carets().size() - 1);
+			PackedInt32Array breakpoints = tx->get_breakpointed_lines();
+			if (!breakpoints.has(line)) {
+				set_breakpoint(line, true);
+			}
+			emit_signal(SNAME("breakpoint_edit_requested"), script->get_path(), line + 1);
 		} break;
 		case EDIT_COMPLETE: {
 			tx->request_code_completion(true);
@@ -1943,11 +2152,11 @@ void ScriptTextEditor::_edit_option(int p_op) {
 				// Set breakpoint on caret or remove all bookmarks from the selection.
 				if (!selection_has_breakpoints) {
 					if (tx->get_caret_line(c) != last_line) {
-						tx->set_line_as_breakpoint(tx->get_caret_line(c), true);
+						set_breakpoint(tx->get_caret_line(c), true);
 					}
 				} else {
 					for (int line = from; line <= to; line++) {
-						tx->set_line_as_breakpoint(line, false);
+						set_breakpoint(line, false);
 					}
 				}
 				last_line = to;
@@ -1959,7 +2168,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			for (int i = 0; i < bpoints.size(); i++) {
 				int line = bpoints[i];
 				bool dobreak = !tx->is_line_breakpointed(line);
-				tx->set_line_as_breakpoint(line, dobreak);
+				set_breakpoint(line, dobreak);
 				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
 			}
 		} break;
@@ -2093,6 +2302,10 @@ void ScriptTextEditor::_notification(int p_what) {
 	}
 }
 
+void ScriptTextEditor::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("breakpoint_edit_requested", PropertyInfo(Variant::STRING_NAME, "source"), PropertyInfo(Variant::INT, "line")));
+}
+
 Control *ScriptTextEditor::get_edit_menu() {
 	return edit_hb;
 }
@@ -2123,8 +2336,8 @@ PackedInt32Array ScriptTextEditor::get_breakpoints() {
 	return code_editor->get_text_editor()->get_breakpointed_lines();
 }
 
-void ScriptTextEditor::set_breakpoint(int p_line, bool p_enabled) {
-	code_editor->get_text_editor()->set_line_as_breakpoint(p_line, p_enabled);
+void ScriptTextEditor::set_breakpoint(int p_line, bool p_breakpointed) {
+	code_editor->get_text_editor()->set_line_as_breakpoint(p_line, p_breakpointed);
 }
 
 void ScriptTextEditor::clear_breakpoints() {
@@ -2479,6 +2692,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 		bool foldable = tx->can_fold_line(mouse_line) || tx->is_line_folded(mouse_line);
 		bool open_docs = false;
 		bool goto_definition = false;
+		bool has_breakpoint = tx->is_line_breakpointed(mouse_line);
 
 		if (ScriptServer::is_global_class(word_at_pos) || word_at_pos.is_resource_file()) {
 			open_docs = true;
@@ -2567,7 +2781,7 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 				color_position.z = end;
 			}
 		}
-		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, local_pos);
+		_make_context_menu(tx->has_selection(), has_color, foldable, open_docs, goto_definition, has_breakpoint, local_pos);
 	}
 }
 
@@ -2596,7 +2810,7 @@ void ScriptTextEditor::_prepare_edit_menu() {
 	popup->set_item_disabled(popup->get_item_index(EDIT_REDO), !tx->has_redo());
 }
 
-void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos) {
+void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, bool has_breakpoint, Vector2 p_pos) {
 	context_menu->clear();
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
 		context_menu->add_item(TTRC("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
@@ -2618,6 +2832,9 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/unindent"), EDIT_UNINDENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+
+	context_menu->add_separator();
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/edit_breakpoint"), EDIT_BREAKPOINT);
 
 	if (p_selection) {
 		context_menu->add_separator();
@@ -2816,8 +3033,17 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_draw_breakpoints_gutter(true);
 	code_editor->get_text_editor()->set_draw_executing_lines_gutter(true);
 	code_editor->get_text_editor()->connect("breakpoint_toggled", callable_mp(this, &ScriptTextEditor::_breakpoint_toggled));
+	code_editor->get_text_editor()->connect("lines_edited_from", callable_mp(this, &ScriptTextEditor::_lines_edited_from));
+	code_editor->get_text_editor()->connect("text_set", callable_mp(this, &ScriptTextEditor::_text_set));
+	code_editor->get_text_editor()->connect("text_changed", callable_mp(this, &ScriptTextEditor::_text_changed));
 	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
 	code_editor->connect("navigation_preview_ended", callable_mp(this, &ScriptTextEditor::_on_caret_moved));
+
+	EditorDebuggerNode *debugger_node = EditorDebuggerNode::get_singleton();
+	debugger_node->connect("breakpoint_changed", callable_mp(this, &ScriptTextEditor::_breakpoint_tree_changed));
+
+	// Changes from the breakpoint tree panel.
+	EditorDebuggerNode::get_singleton()->connect("breakpoint_set_in_tree", callable_mp(this, &ScriptTextEditor::_breakpoint_set_in_tree));
 
 	connection_gutter = 1;
 	code_editor->get_text_editor()->add_gutter(connection_gutter);
@@ -2849,6 +3075,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_editor()->set_symbol_lookup_on_click_enabled(true);
 	code_editor->get_text_editor()->set_symbol_tooltip_on_hover_enabled(true);
 	code_editor->get_text_editor()->set_context_menu_enabled(false);
+	code_editor->get_text_editor()->set_gutter_custom_draw(0, callable_mp(this, &ScriptTextEditor::_main_gutter_draw_callback));
 
 	context_menu = memnew(PopupMenu);
 
@@ -3000,6 +3227,7 @@ void ScriptTextEditor::register_editor() {
 
 	ED_SHORTCUT("script_text_editor/toggle_breakpoint", TTRC("Toggle Breakpoint"), Key::F9);
 	ED_SHORTCUT_OVERRIDE("script_text_editor/toggle_breakpoint", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
+	ED_SHORTCUT("script_text_editor/edit_breakpoint", TTR("Edit Breakpoint"), KeyModifierMask::CMD_OR_CTRL | Key::F9);
 
 	ED_SHORTCUT("script_text_editor/remove_all_breakpoints", TTRC("Remove All Breakpoints"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::F9);
 	// Using Control for these shortcuts even on macOS because Command+Comma is taken for opening Editor Settings.
