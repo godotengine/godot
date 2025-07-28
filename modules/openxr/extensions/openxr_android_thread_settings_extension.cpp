@@ -62,7 +62,7 @@ void OpenXRAndroidThreadSettingsExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(THREAD_TYPE_RENDERER_WORKER);
 }
 
-HashMap<String, bool *> OpenXRAndroidThreadSettingsExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRAndroidThreadSettingsExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 #ifdef XR_USE_PLATFORM_ANDROID

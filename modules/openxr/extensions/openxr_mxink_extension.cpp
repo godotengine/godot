@@ -35,7 +35,7 @@
 // Not in base XR libs needs def
 #define XR_LOGITECH_MX_INK_STYLUS_INTERACTION_EXTENSION_NAME "XR_LOGITECH_mx_ink_stylus_interaction"
 
-HashMap<String, bool *> OpenXRMxInkExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRMxInkExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_LOGITECH_MX_INK_STYLUS_INTERACTION_EXTENSION_NAME] = &available;

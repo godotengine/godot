@@ -55,7 +55,7 @@ OpenXRAndroidExtension::OpenXRAndroidExtension() {
 	activity_object = env->NewGlobalRef(static_cast<OS_Android *>(OS::get_singleton())->get_godot_java()->get_activity());
 }
 
-HashMap<String, bool *> OpenXRAndroidExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRAndroidExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// XR_KHR_LOADER_INIT_EXTENSION_NAME is a dependency of XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME
@@ -87,7 +87,7 @@ void OpenXRAndroidExtension::on_before_instance_created() {
 // This is reasonably safe as the struct is only used during initialization and the extension is a singleton.
 static XrInstanceCreateInfoAndroidKHR instance_create_info;
 
-void *OpenXRAndroidExtension::set_instance_create_info_and_get_next_pointer(void *p_next_pointer) {
+void *OpenXRAndroidExtension::set_instance_create_info_and_get_next_pointer(XrVersion p_xr_version, void *p_next_pointer) {
 	if (!create_instance_extension_available) {
 		if (!loader_init_android_extension_available) {
 			WARN_PRINT("No Android extensions available, couldn't pass JVM and Activity to OpenXR");

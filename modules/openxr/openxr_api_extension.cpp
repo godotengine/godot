@@ -34,6 +34,7 @@
 #include "openxr_api_extension.compat.inc"
 
 void OpenXRAPIExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_openxr_version"), &OpenXRAPIExtension::get_openxr_version);
 	ClassDB::bind_method(D_METHOD("get_instance"), &OpenXRAPIExtension::get_instance);
 	ClassDB::bind_method(D_METHOD("get_system_id"), &OpenXRAPIExtension::get_system_id);
 	ClassDB::bind_method(D_METHOD("get_session"), &OpenXRAPIExtension::get_session);
@@ -100,6 +101,11 @@ void OpenXRAPIExtension::_bind_methods() {
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL);
 	BIND_ENUM_CONSTANT(OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING);
+}
+
+uint64_t OpenXRAPIExtension::get_openxr_version() {
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
+	return (uint64_t)OpenXRAPI::get_singleton()->get_openxr_version();
 }
 
 uint64_t OpenXRAPIExtension::get_instance() {

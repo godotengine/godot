@@ -444,7 +444,7 @@ void OpenXRSpatialMarkerTrackingCapability::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_april_tag_supported"), &OpenXRSpatialMarkerTrackingCapability::is_april_tag_supported);
 }
 
-HashMap<String, bool *> OpenXRSpatialMarkerTrackingCapability::get_requested_extensions() {
+HashMap<String, bool *> OpenXRSpatialMarkerTrackingCapability::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	if (GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enabled") && GLOBAL_GET_CACHED(bool, "xr/openxr/extensions/spatial_entity/enable_marker_tracking")) {

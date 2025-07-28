@@ -69,7 +69,7 @@ OpenXRVisibilityMaskExtension::~OpenXRVisibilityMaskExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRVisibilityMaskExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRVisibilityMaskExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_VISIBILITY_MASK_EXTENSION_NAME] = &available;

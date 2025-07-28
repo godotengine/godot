@@ -71,11 +71,14 @@ OpenXRRenderModelExtension::~OpenXRRenderModelExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRRenderModelExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRRenderModelExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	if (GLOBAL_GET("xr/openxr/extensions/render_model")) {
-		request_extensions[XR_EXT_UUID_EXTENSION_NAME] = &uuid_ext;
+		if (p_version < XR_API_VERSION_1_1_0) {
+			// Extension was promoted in OpenXR 1.1, only include it in OpenXR 1.0.
+			request_extensions[XR_EXT_UUID_EXTENSION_NAME] = &uuid_ext;
+		}
 		request_extensions[XR_EXT_RENDER_MODEL_EXTENSION_NAME] = &render_model_ext;
 		request_extensions[XR_EXT_INTERACTION_RENDER_MODEL_EXTENSION_NAME] = &interaction_render_model_ext;
 	}
