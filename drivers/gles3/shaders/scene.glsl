@@ -1800,6 +1800,23 @@ vec3 screen_space_dither(vec2 frag_coord) {
 	// Divide by 255 to align to 8-bit quantization.
 	return (dither.rgb - 0.5) / 255.0;
 }
+
+// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+// This dithering must be applied after encoding changes (linear/nonlinear) have been applied
+// as the final step before quantization from floating point to integer values.
+vec3 screen_space_dither_10_bit(vec2 frag_coord) {
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	// Removed the time component to avoid passing time into this shader.
+	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
+	// Divide by 1023 to align to 10-bit quantization.
+	return (dither.rgb - 0.5) / 1023.0;
+}
 #endif // USE_MATERIAL_DEBANDING
 
 void main() {
@@ -2363,11 +2380,6 @@ void main() {
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
-
-#ifdef USE_MATERIAL_DEBANDING
-	frag_color.rgb += screen_space_dither(gl_FragCoord.xy);
-#endif // USE_MATERIAL_DEBANDING
-
 #ifdef APPLY_TONEMAPPING
 	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
 #endif
@@ -2634,19 +2646,6 @@ void main() {
 	additive_light_color *= (1.0 - fog.a);
 #endif // !FOG_DISABLED
 
-#ifdef USE_MATERIAL_DEBANDING
-	// Apply a per-light offset to avoid making the dithering pattern too noticeable
-	// when using multiple lights with additive blending.
-#if defined(ADDITIVE_OMNI)
-	vec2 offset = vec2(float(omni_light_index) * 5.0, float(omni_light_index) * 2.0);
-#elif defined(ADDITIVE_SPOT)
-	vec2 offset = vec2(float(spot_light_index) * 5.0, float(spot_light_index) * 2.0);
-#else // Directional
-	vec2 offset = vec2(0.0);
-#endif
-	frag_color.rgb += screen_space_dither(gl_FragCoord.xy + offset);
-#endif // USE_MATERIAL_DEBANDING
-
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	additive_light_color *= exposure;
 #ifdef APPLY_TONEMAPPING
@@ -2664,4 +2663,23 @@ void main() {
 #ifdef PREMUL_ALPHA_USED
 	frag_color.rgb *= premul_alpha;
 #endif // PREMUL_ALPHA_USED
+
+#ifdef USE_MATERIAL_DEBANDING
+
+	// Apply a per-light offset to avoid making the dithering pattern too noticeable
+	// when using multiple lights with additive blending.
+#ifndef USE_ADDITIVE_LIGHTING
+#if defined(ADDITIVE_OMNI)
+	vec2 offset = vec2(float(omni_light_index) * 5.0, float(omni_light_index) * 2.0);
+#elif defined(ADDITIVE_SPOT)
+	vec2 offset = vec2(float(spot_light_index) * 5.0, float(spot_light_index) * 2.0);
+#else // Directional
+	vec2 offset = vec2(2.0, 5.0);
+#endif
+#else // No additive lighting
+	vec2 offset = vec2(0.0);
+#endif // USE_ADDITIVE_LIGHTING
+
+	frag_color.rgb += screen_space_dither(gl_FragCoord.xy); // TODO: apply 8 bit or 10 bit or none depending on the buffer that is being written to.
+#endif // USE_MATERIAL_DEBANDING
 }
