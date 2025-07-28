@@ -245,6 +245,12 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *en
 	}
 }
 
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateEglResources(JNIEnv *env, jlong p_display, jlong p_surface, jlong p_context, jlong p_config) {
+	if (DisplayServerAndroid *dsa = DisplayServerAndroid::get_singleton()) {
+		dsa->update_egl_resources(reinterpret_cast<void *>(p_display), reinterpret_cast<void *>(p_surface), reinterpret_cast<void *>(p_context), reinterpret_cast<void *>(p_config));
+	}
+}
+
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_back(JNIEnv *env, jclass clazz) {
 	if (step.get() <= STEP_SETUP) {
 		return;

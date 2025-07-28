@@ -485,24 +485,16 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 		}
 #ifdef GLES3_ENABLED
 		case DISPLAY_HANDLE: {
-			if (rendering_driver == "opengl3") {
-				return reinterpret_cast<int64_t>(eglGetCurrentDisplay());
-			}
-			return 0;
+			return reinterpret_cast<int64_t>(egl_display);
 		}
 		case OPENGL_CONTEXT: {
-			if (rendering_driver == "opengl3") {
-				return reinterpret_cast<int64_t>(eglGetCurrentContext());
-			}
-			return 0;
+			return reinterpret_cast<int64_t>(egl_context);
 		}
 		case EGL_DISPLAY: {
-			// @todo Find a way to get this from the Java side.
-			return 0;
+			return reinterpret_cast<int64_t>(egl_display);
 		}
 		case EGL_CONFIG: {
-			// @todo Find a way to get this from the Java side.
-			return 0;
+			return reinterpret_cast<int64_t>(egl_config);
 		}
 #endif
 		default: {
@@ -715,6 +707,15 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	}
 }
 
+void DisplayServerAndroid::update_egl_resources(void *p_display, void *p_surface, void *p_context, void *p_config) {
+#ifdef GLES3_ENABLED
+	egl_display = p_display;
+	egl_surface = p_surface;
+	egl_context = p_context;
+	egl_config = p_config;
+#endif
+}
+
 DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
@@ -796,6 +797,11 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(false);
+
+		if (OS::get_singleton()->is_separate_thread_rendering_enabled()) {
+			GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+			godot_java->set_separate_render_thread_enabled(true);
+		}
 	}
 #endif
 
@@ -962,6 +968,7 @@ void DisplayServerAndroid::release_rendering_thread() {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);
 	godot_java->release_current_gl_window(egl_current_window_id);
+	egl_current_window_id = INVALID_WINDOW_ID;
 }
 
 void DisplayServerAndroid::swap_buffers() {

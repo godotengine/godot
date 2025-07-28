@@ -815,7 +815,7 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 		 *
 		 * @return true if the surface was created successfully.
 		 */
-		public boolean createSurface() {
+		public boolean createSurface(boolean requireMakeCurrent) {
 			if (LOG_EGL) {
 				Log.w("EglHelper", "createSurface()  tid=" + Thread.currentThread().getId());
 			}
@@ -854,7 +854,7 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 				return false;
 			}
 
-			if (!makeEglCurrent()) {
+			if (!makeEglCurrent() && requireMakeCurrent) {
 				return false;
 			}
 
@@ -1261,11 +1261,13 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 					}
 
 					if (mRegisteredGLSurface != null) {
+						boolean eglResourcesChanged = false;
+
 						if (mRegisteredGLSurface.mFrameParams.createEglSurface) {
 							if (LOG_SURFACE) {
 								Log.w("GLThread", "egl createSurface");
 							}
-							if (mRegisteredGLSurface.mEglHelper.createSurface()) {
+							if (mRegisteredGLSurface.mEglHelper.createSurface(!mSeparateRenderThreadEnabled)) {
 								synchronized (sGLThreadManager) {
 									mRegisteredGLSurface.mFinishedCreatingEglSurface = true;
 									sGLThreadManager.notifyAll();
@@ -1278,6 +1280,7 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 								}
 								continue;
 							}
+							eglResourcesChanged = true;
 							mRegisteredGLSurface.mFrameParams.createEglSurface = false;
 						}
 
@@ -1301,6 +1304,10 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 							} finally {
 							}
 							mRegisteredGLSurface.mFrameParams.sizeChanged = false;
+						}
+
+						if (eglResourcesChanged) {
+							mRenderer.onRenderEglResourcesChanged(mRegisteredGLSurface.mEglHelper.mEglDisplay, mRegisteredGLSurface.mEglHelper.mEglSurface, mRegisteredGLSurface.mEglHelper.mEglContext, mRegisteredGLSurface.mEglHelper.mEglConfig);
 						}
 					}
 
@@ -1589,6 +1596,13 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 		}
 
 		@Override
+		public void setSeparateRenderThreadEnabled(boolean enabled) {
+			synchronized(sGLThreadManager) {
+				mSeparateRenderThreadEnabled = enabled;
+			}
+		}
+
+		@Override
 		public boolean makeEglCurrent(int id) {
 			synchronized (sGLThreadManager) {
 				GLSurfaceInfo surfaceInfo = mRegisteredGLSurface;
@@ -1640,6 +1654,7 @@ class GLSurfaceView extends SurfaceView implements SurfaceHolder.Callback2 {
 		private boolean mRequestRender;
 		private boolean mWantRenderNotification;
 		private boolean mRenderComplete;
+		private boolean mSeparateRenderThreadEnabled;
 		private final ArrayList<Runnable> mEventQueue = new ArrayList<Runnable>();
 		private Runnable mFinishDrawingRunnable = null;
 		private final GodotRenderer mRenderer;

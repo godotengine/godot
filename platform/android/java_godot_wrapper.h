@@ -86,6 +86,7 @@ private:
 	jmethodID _release_pointer_capture = nullptr;
 	jmethodID _configure_pointer_icon = nullptr;
 	jmethodID _set_pointer_icon = nullptr;
+	jmethodID _set_separate_render_thread_enabled = nullptr;
 	jmethodID _make_gl_window_current = nullptr;
 	jmethodID _egl_swap_buffers = nullptr;
 	jmethodID _release_current_gl_window = nullptr;
@@ -149,6 +150,7 @@ public:
 	void configure_pointer_icon(int pointer_type, const String &image_path, const Vector2 &p_hotspot);
 	void set_pointer_icon(int pointer_type);
 
+	void set_separate_render_thread_enabled(bool p_enabled);
 	bool make_gl_window_current(DisplayServer::WindowID p_window_id);
 	void egl_swap_buffers(DisplayServer::WindowID p_window_id);
 	void release_current_gl_window(DisplayServer::WindowID p_window_id);

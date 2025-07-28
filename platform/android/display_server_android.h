@@ -79,6 +79,14 @@ class DisplayServerAndroid : public DisplayServer {
 	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
+
+#ifdef GLES3_ENABLED
+	void *egl_display = nullptr;
+	void *egl_surface = nullptr;
+	void *egl_context = nullptr;
+	void *egl_config = nullptr;
+#endif
+
 	NativeMenu *native_menu = nullptr;
 
 	ObjectID window_attached_instance_id;
@@ -245,6 +253,7 @@ public:
 
 	void reset_window();
 	void notify_surface_changed(int p_width, int p_height);
+	void update_egl_resources(void *p_display, void *p_surface, void *p_context, void *p_config);
 
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;

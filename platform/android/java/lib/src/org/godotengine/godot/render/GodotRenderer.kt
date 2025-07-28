@@ -37,6 +37,10 @@ import android.view.Surface
 import org.godotengine.godot.GodotLib
 import org.godotengine.godot.plugin.GodotPluginRegistry
 import org.godotengine.godot.render.GLSurfaceView.GLThread
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
 
 /**
  * Responsible for setting up and driving Godot rendering logic.
@@ -260,4 +264,9 @@ internal class GodotRenderer(val useVulkan: Boolean) : Renderer {
 			plugin.onRenderSurfaceCreated(surface)
 		}
 	}
+
+	override fun onRenderEglResourcesChanged(display: EGLDisplay?, surface: EGLSurface?, context: EGLContext?, config: EGLConfig?) {
+		GodotLib.updateEglResources(display?.getNativeHandle() ?: 0L, surface?.getNativeHandle() ?: 0L, context?.getNativeHandle() ?: 0L, config?.getNativeHandle() ?: 0L);
+	}
+
 }

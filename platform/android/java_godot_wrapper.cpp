@@ -96,6 +96,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 		_release_pointer_capture = p_env->GetMethodID(godot_class, "releasePointerCapture", "()V");
 	}
 
+	_set_separate_render_thread_enabled = p_env->GetMethodID(godot_class, "setSeparateRenderThreadEnabled", "(Z)V");
 	_make_gl_window_current = p_env->GetMethodID(godot_class, "makeGLWindowCurrent", "(I)Z");
 	_egl_swap_buffers = p_env->GetMethodID(godot_class, "eglSwapBuffers", "(I)V");
 	_release_current_gl_window = p_env->GetMethodID(godot_class, "releaseCurrentGLWindow", "(I)V");
@@ -638,6 +639,15 @@ void GodotJavaWrapper::set_pointer_icon(int pointer_type) {
 		ERR_FAIL_NULL(env);
 
 		env->CallVoidMethod(godot_instance, _set_pointer_icon, pointer_type);
+	}
+}
+
+void GodotJavaWrapper::set_separate_render_thread_enabled(bool p_enabled) {
+	if (_set_separate_render_thread_enabled != nullptr) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL(env);
+
+		env->CallVoidMethod(godot_instance, _set_separate_render_thread_enabled, p_enabled);
 	}
 }
 

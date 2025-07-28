@@ -90,6 +90,11 @@ public class GodotLib {
 	public static native void newcontext(Surface p_surface);
 
 	/**
+	 * Invoked on the render thread when any of the EGL resources may have changed.
+	 */
+	public static native void updateEglResources(long display, long surface, long context, long config);
+
+	/**
 	 * Forward {@link Activity#onBackPressed()} event.
 	 */
 	public static native void back();

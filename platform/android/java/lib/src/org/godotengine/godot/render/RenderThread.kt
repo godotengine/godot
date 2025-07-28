@@ -80,6 +80,8 @@ internal abstract class RenderThread(tag: String) : Thread(tag) {
 	 */
 	open fun surfaceDestroyed(holder: SurfaceHolder) { }
 
+	open fun setSeparateRenderThreadEnabled(enabled: Boolean) {}
+
 	open fun makeEglCurrent(windowId: Int): Boolean = false
 
 	open fun eglSwapBuffers(windowId: Int) {}

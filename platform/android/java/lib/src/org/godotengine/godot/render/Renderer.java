@@ -30,6 +30,10 @@
 
 package org.godotengine.godot.render;
 
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
 import android.view.Surface;
 
 import androidx.annotation.NonNull;
@@ -124,4 +128,9 @@ public interface Renderer {
 	 * Invoked when the render thread is in the process of shutting down.
 	 */
 	void onRenderThreadExiting();
+
+	/**
+	 * Invoked when any of the EGL resources may have changed.
+	 */
+	void onRenderEglResourcesChanged(EGLDisplay display, EGLSurface surface, EGLContext context, EGLConfig config);
 }

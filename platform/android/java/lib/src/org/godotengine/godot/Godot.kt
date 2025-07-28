@@ -1383,6 +1383,11 @@ class Godot private constructor(val context: Context) {
 	}
 
 	@Keep
+	private fun setSeparateRenderThreadEnabled(enabled: Boolean) {
+		renderer.renderThread.setSeparateRenderThreadEnabled(enabled)
+	}
+
+	@Keep
 	private fun makeGLWindowCurrent(windowId: Int): Boolean {
 		return renderer.renderThread.makeEglCurrent(windowId)
 	}
