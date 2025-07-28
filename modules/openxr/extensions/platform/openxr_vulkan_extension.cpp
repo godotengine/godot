@@ -39,7 +39,7 @@
 #include "servers/rendering/rendering_server.h"
 #include "servers/rendering/rendering_server_globals.h"
 
-HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available

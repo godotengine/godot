@@ -75,7 +75,7 @@ OpenXRFBFoveationExtension::~OpenXRFBFoveationExtension() {
 	swapchain_update_state_ext = nullptr;
 }
 
-HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRFBFoveationExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_FB_FOVEATION_EXTENSION_NAME] = &fb_foveation_ext;
