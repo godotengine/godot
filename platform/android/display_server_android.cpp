@@ -484,20 +484,13 @@ int64_t DisplayServerAndroid::window_get_native_handle(HandleType p_handle_type,
 		}
 #ifdef GLES3_ENABLED
 		case DISPLAY_HANDLE: {
-			if (rendering_driver == "opengl3") {
-				return reinterpret_cast<int64_t>(eglGetCurrentDisplay());
-			}
-			return 0;
+			return reinterpret_cast<int64_t>(egl_display);
 		}
 		case OPENGL_CONTEXT: {
-			if (rendering_driver == "opengl3") {
-				return reinterpret_cast<int64_t>(eglGetCurrentContext());
-			}
-			return 0;
+			return reinterpret_cast<int64_t>(egl_context);
 		}
 		case EGL_DISPLAY: {
-			// @todo Find a way to get this from the Java side.
-			return 0;
+			return reinterpret_cast<int64_t>(egl_display);
 		}
 		case EGL_CONFIG: {
 			// @todo Find a way to get this from the Java side.
@@ -792,6 +785,13 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(false);
+
+		// These will have been set via eglMakeCurrent() on the Java side. It would be nice to explicitly pass
+		// them from Java, but there's no way to get the native handles with javax.microedition.khronos.egl;
+		// we'd need to switch to android.opengl.
+		egl_display = eglGetCurrentDisplay();
+		egl_surface = eglGetCurrentSurface(EGL_DRAW);
+		egl_context = eglGetCurrentContext();
 	}
 #endif
 
@@ -958,6 +958,7 @@ void DisplayServerAndroid::release_rendering_thread() {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);
 	godot_java->release_current_gl_window(egl_current_window_id);
+	egl_current_window_id = INVALID_WINDOW_ID;
 }
 
 void DisplayServerAndroid::swap_buffers() {

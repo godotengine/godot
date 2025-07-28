@@ -79,6 +79,13 @@ class DisplayServerAndroid : public DisplayServer {
 	RenderingContextDriver *rendering_context = nullptr;
 	RenderingDevice *rendering_device = nullptr;
 #endif
+
+#ifdef GLES3_ENABLED
+	void *egl_display = nullptr;
+	void *egl_surface = nullptr;
+	void *egl_context = nullptr;
+#endif
+
 	NativeMenu *native_menu = nullptr;
 
 	ObjectID window_attached_instance_id;
