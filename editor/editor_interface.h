@@ -173,6 +173,8 @@ public:
 	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
 
+	void add_root_node(Node *p_node);
+
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 	void mark_scene_as_unsaved();
