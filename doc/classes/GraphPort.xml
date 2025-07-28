@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphPort" inherits="GraphElement" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphPort" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [GraphElement] used for connections between elements.
 	</brief_description>
@@ -7,7 +7,7 @@
 		[GraphPort] is a [GraphElement] that marks a point where connections can be made. They are drawn using a [TextureRect], and are typically attached to [GraphNode]s. Like most [GraphElement]s, they should have a [GraphEdit] as an ancestor.
 		If a port is enabled, it will be drawn and allow user interaction. When a port is disabled, it will modify its connections according to its [member on_disabled_behaviour], then ignore interaction and draw calls.
 		A port may also be typed with an arbitrary integer. This is useful for marking categories of ports that may only be connected to other similar types, or simply for storing a small amount of data on a port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member port_type], this port will be drawn using that color.
-		When it enters the tree, this node tries to cache its first ancestor [GraphEdit], searching from itself up through its parents until it finds one. As a result, some things may not work as expected in hierarchies of nested [GraphEdit]s.
+		[b]Warning:[/b] When this node enters the tree, it looks for its first ancestor [GraphEdit], searching up through its parents until it finds one. Ports in hierarchies of nested [GraphEdit]s, or ports without a [GraphEdit] ancestor, may not work as expected. Methods expected to fail are noted below.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,14 +17,14 @@
 			<param index="0" name="connection" type="GraphConnection" />
 			<description>
 				Adds the [param connection] to the graph.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor, or if [param connection] is not connected to this port.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor, or if [param connection] is not connected to this port.
 			</description>
 		</method>
 		<method name="clear_connections">
 			<return type="void" />
 			<description>
 				Removes all connections from this port, if any exist.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="connect_to_port">
@@ -33,7 +33,7 @@
 			<param index="1" name="clear_if_invalid" type="bool" default="true" />
 			<description>
 				Adds a new [GraphConnection] to the graph, connecting this [GraphPort] and the given [param port].
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="disable">
@@ -58,14 +58,14 @@
 			<return type="GraphPort[]" />
 			<description>
 				Returns an [Array] of all [GraphPort]s connected to this port by [GraphConnection]s.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="get_connections" qualifiers="const">
 			<return type="GraphConnection[]" />
 			<description>
 				Returns an [Array] of all [GraphConnection]s connected to this port.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="get_filtered_port_index" qualifiers="const">
@@ -74,28 +74,28 @@
 			<description>
 				If this port is attached to a [GraphNode], returns the index of this port in the node, filtered by [member direction].
 				If [param include_disabled] is [code]false[/code], indexes only *enabled* ports that match.
-				Fails if this [GraphPort] is not attached to a [GraphNode].
+				[b]Note:[/b] Fails if this [GraphPort] is not attached to a [GraphNode].
 			</description>
 		</method>
 		<method name="get_first_connected_node" qualifiers="const">
 			<return type="GraphNode" />
 			<description>
 				Returns the first [GraphNode] connected to this port, if any [GraphConnection] is connected to this port in the graph.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="get_first_connected_port" qualifiers="const">
 			<return type="GraphPort" />
 			<description>
 				Returns the first [GraphPort] connected to this port, if any [GraphConnection] is connected to this port in the graph.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="get_first_connection" qualifiers="const">
 			<return type="GraphConnection" />
 			<description>
 				Returns the first [GraphConnection] connected to this port, if any exists in the graph.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="get_graph_node" qualifiers="const">
@@ -110,14 +110,14 @@
 			<description>
 				If this port is attached to a [GraphNode], returns the index of this port in the node.
 				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
-				Fails if this [GraphPort] is not attached to a [GraphNode].
+				[b]Note:[/b] Fails if this [GraphPort] is not attached to a [GraphNode].
 			</description>
 		</method>
 		<method name="has_connection" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if a [GraphConnection] is connected to this port in the graph.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="is_connected_to" qualifiers="const">
@@ -125,7 +125,7 @@
 			<param index="0" name="port" type="GraphPort" />
 			<description>
 				Returns [code]true[/code] if a [GraphConnection] exists in the graph that connects this [GraphPort] and the given [param port].
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
 		<method name="remove_connection">
@@ -133,7 +133,7 @@
 			<param index="0" name="connection" type="GraphConnection" />
 			<description>
 				Removes the given [param connection] from the graph.
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor, or if [param connection] is not connected to this port.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor, or if [param connection] is not connected to this port.
 			</description>
 		</method>
 		<method name="set_connections">
@@ -141,7 +141,7 @@
 			<param index="0" name="connections" type="GraphConnection[]" />
 			<description>
 				Clears all existing [GraphConnection]s connected to this port in the graph, then adds each connection in [param connections].
-				Fails if this [GraphPort] does not have a [GraphEdit] ancestor. Each connection in [param connections] fails to be added if it is not connected to this port.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor. Each connection in [param connections] fails to be added if it is not connected to this port.
 			</description>
 		</method>
 	</methods>

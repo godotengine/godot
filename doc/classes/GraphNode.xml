@@ -6,7 +6,8 @@
 	<description>
 		[GraphNode] is an element for a [GraphEdit] graph with customizable content based on its child controls. [GraphNode] is derived from [Container] and it is responsible for placing its children on screen. This works similar to [VBoxContainer].
 		Child controls marked with the "GraphNodeIgnored" meta tag will be ignored for layout purposes, and must be positioned manually.
-		This node expects its parent to be a [GraphEdit] node. Some may not work as expected if this is not the case - notably, all connection logic will fail, as connections are handled by the [GraphEdit]. Methods expected to fail are noted below.
+		[b]Warning:[/b] This node expects its parent to be a [GraphEdit] node. If this is not the case, connections and some other behavior may not work as expected. Methods expected to fail are noted below.
+		[b]Note:[/b] Prior to Godot 4.6, [GraphNode] behaved similarly to [GraphNodeIndexed].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -16,7 +17,7 @@
 			<param index="0" name="connection" type="GraphConnection" />
 			<description>
 				Adds a [param connection] to the [GraphEdit] associated with this node.
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
 			</description>
 		</method>
 		<method name="add_port">
@@ -30,7 +31,7 @@
 			<return type="void" />
 			<description>
 				Removes all connections to [GraphPort]s attached to this node.
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="clear_filtered_connections">
@@ -38,21 +39,21 @@
 			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
 			<description>
 				Remove all connections to [GraphPort]s attached to this node that match the [param filter_direction].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="clear_input_connections">
 			<return type="void" />
 			<description>
 				Remove all connections to input [GraphPort]s attached to this node. Shorthand for [code]clear_filtered_connections(GraphPort.INPUT)[/code].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="clear_output_connections">
 			<return type="void" />
 			<description>
 				Remove all connections to output [GraphPort]s attached to this node. Shorthand for [code]clear_filtered_connections(GraphPort.OUTPUT)[/code].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="enabled_index_to_port_index" qualifiers="const">
@@ -76,14 +77,14 @@
 			<return type="GraphNode[]" />
 			<description>
 				Returns an [Array] of all [GraphNode]s with connections to [GraphPort]s attached to this node.
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_connections" qualifiers="const">
 			<return type="GraphConnection[]" />
 			<description>
 				Returns an [Array] of all [GraphConnection]s to [GraphPort]s attached to this node.
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_filtered_connected_nodes" qualifiers="const">
@@ -91,7 +92,7 @@
 			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
 			<description>
 				Returns an [Array] of all [GraphNode]s with connections to [GraphPort]s attached to this node that match the [param filter_direction].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_filtered_connections" qualifiers="const">
@@ -99,7 +100,7 @@
 			<param index="0" name="filter_direction" type="int" enum="GraphPort.PortDirection" />
 			<description>
 				Returns an [Array] of all [GraphConnection]s to [GraphPort]s attached to this node that match the [param filter_direction].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_filtered_port" qualifiers="const">
@@ -134,14 +135,14 @@
 			<return type="GraphNode[]" />
 			<description>
 				Returns an [Array] of all [GraphNode]s with connections to input [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connected_nodes(GraphPort.INPUT)[/code].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_input_connections" qualifiers="const">
 			<return type="GraphConnection[]" />
 			<description>
 				Returns an [Array] of all [GraphConnection]s to input [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connections(GraphPort.INPUT)[/code].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_input_port" qualifiers="const">
@@ -180,14 +181,14 @@
 			<return type="GraphNode[]" />
 			<description>
 				Returns an [Array] of all [GraphNode]s with connections to output [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connected_nodes(GraphPort.OUTPUT)[/code].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_output_connections" qualifiers="const">
 			<return type="GraphConnection[]" />
 			<description>
 				Returns an [Array] of all [GraphConnection]s to output [GraphPort]s attached to this node. Shorthand for [code]get_filtered_connections(GraphPort.OUTPUT)[/code].
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
 			</description>
 		</method>
 		<method name="get_output_port" qualifiers="const">
@@ -296,7 +297,7 @@
 			<param index="0" name="connection" type="GraphConnection" />
 			<description>
 				Removes a [param connection] from the node.
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
 			</description>
 		</method>
 		<method name="remove_port">
@@ -313,7 +314,7 @@
 			<param index="0" name="connections" type="GraphConnection[]" />
 			<description>
 				Removes all existing connections from each [GraphPort] attached to this node, then adds all [param connections] to the graph.
-				Fails if this [GraphNode] is not the child of a [GraphEdit] node. Each connection in [param connections] fails to be added if neither of its referenced [GraphPort]s are attached to this node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node. Each connection in [param connections] fails to be added if neither of its referenced [GraphPort]s are attached to this node.
 			</description>
 		</method>
 		<method name="set_port">

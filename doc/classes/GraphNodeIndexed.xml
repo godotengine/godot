@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="GraphNodeIndexed" inherits="GraphNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="GraphNodeIndexed" inherits="GraphNode" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A [GraphNode] that creates ports for its children automatically.
 	</brief_description>
 	<description>
 		[GraphNodeIndexed] is an opinionated version of [GraphNode] that associates its children with so-called slots, which are used to create [GraphPort]s.
-		To be given a slot, a child node must be a [Control] node, and may not be marked as internal. Children of children, as well as nodes marked with the "GraphNodeIgnored" meta tag, are ignored. For technical reasons, nodes named "PortContainer" are also ignored.
 		Each slot is defined by its index, and provides the [GraphNode] with two [GraphPort]s: one on the left (input), and one on the right (output). These ports are laid out to align with the node associated with the slot, and have some of their properties configured automatically. Ports are named by the convention "InputPort*SLOT_NODE_NAME*" and "OutputPort*SLOT_NODE_NAME*"
+		To be given a slot, a child node must be a [Control] node, and may not be marked as internal. Children of children, as well as nodes marked with the "GraphNodeIgnored" meta tag, are ignored. For technical reasons, nodes named "PortContainer" are also ignored.
 		When created, this node also creates a child [Control] node called "PortContainer", which it will use as the parent for all [GraphPort]s created for slots. Removing this node may result in unexpected behavior, but will usually trigger a replacement to be created when needed. Fair warning: this may be a bit janky, as it is not typical for a native node to create child nodes without marking them as internal.
 	</description>
 	<tutorials>
