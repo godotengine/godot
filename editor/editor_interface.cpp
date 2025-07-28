@@ -32,6 +32,7 @@
 #include "editor_interface.compat.inc"
 
 #include "core/config/project_settings.h"
+#include "core/io/resource_loader.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
@@ -58,6 +59,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/packed_scene.h"
 #include "scene/resources/theme.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
@@ -361,6 +363,28 @@ void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, in
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_path);
 	EditorFileSystem::get_singleton()->emit_signal(SNAME("filesystem_changed"));
+}
+
+void EditorInterface::add_root_node(Node *p_node) {
+	if (EditorNode::get_singleton()->get_edited_scene()) {
+		ERR_PRINT("EditorInterface::add_root_node: The current scene already has a root node.");
+		return;
+	}
+
+	const String &scene_path = p_node->get_scene_file_path();
+	if (!scene_path.is_empty()) {
+		Ref<PackedScene> scene = ResourceLoader::load(scene_path);
+		if (scene.is_valid()) {
+			memfree(scene->instantiate(PackedScene::GEN_EDIT_STATE_INSTANCE)); // Ensure node cache.
+
+			p_node->set_scene_inherited_state(scene->get_state());
+			p_node->set_scene_file_path(String());
+		}
+	}
+
+	EditorNode::get_singleton()->set_edited_scene(p_node);
+	EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+	EditorSceneTabs::get_singleton()->update_scene_tabs();
 }
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
@@ -869,6 +893,8 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
 	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
+
+	ClassDB::bind_method(D_METHOD("add_root_node", "node"), &EditorInterface::add_root_node);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
