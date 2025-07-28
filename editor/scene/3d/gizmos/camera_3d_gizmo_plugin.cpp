@@ -191,7 +191,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			}
 			Vector3 nside = Vector3(-side.x, side.y, side.z);
 			Vector3 up = Vector3(0, hsize * size_factor.y, 0);
-			
+
 			side *= frustum_scale;
 			nside *= frustum_scale;
 			up *= frustum_scale;
