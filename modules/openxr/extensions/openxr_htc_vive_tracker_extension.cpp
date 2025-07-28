@@ -34,7 +34,7 @@
 
 #include "core/string/print_string.h"
 
-HashMap<String, bool *> OpenXRHTCViveTrackerExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHTCViveTrackerExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME] = &available;

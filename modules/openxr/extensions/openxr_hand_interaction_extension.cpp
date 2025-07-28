@@ -31,6 +31,7 @@
 #include "openxr_hand_interaction_extension.h"
 
 #include "../action_map/openxr_interaction_profile_metadata.h"
+#include "../openxr_api.h"
 #include "core/config/project_settings.h"
 
 OpenXRHandInteractionExtension *OpenXRHandInteractionExtension::singleton = nullptr;
@@ -47,7 +48,7 @@ OpenXRHandInteractionExtension::~OpenXRHandInteractionExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRHandInteractionExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRHandInteractionExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	// Only enable this extension when requested.
@@ -77,8 +78,8 @@ void OpenXRHandInteractionExtension::on_register_metadata() {
 	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Pinch pose", "/user/hand/right", "/user/hand/right/input/pinch_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Poke pose", "/user/hand/left", "/user/hand/left/input/poke_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
 	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Poke pose", "/user/hand/right", "/user/hand/right/input/poke_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Grip surface pose", "/user/hand/left", "/user/hand/left/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_KHR_MAINTENANCE1_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
+	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Grip surface pose", "/user/hand/right", "/user/hand/right/input/grip_surface/pose", XR_EXT_PALM_POSE_EXTENSION_NAME "," XR_KHR_MAINTENANCE1_EXTENSION_NAME "," XR_OPENXR_1_1_NAME, OpenXRAction::OPENXR_ACTION_POSE);
 
 	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Pinch", "/user/hand/left", "/user/hand/left/input/pinch_ext/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
 	openxr_metadata->register_io_path("/interaction_profiles/ext/hand_interaction_ext", "Pinch", "/user/hand/right", "/user/hand/right/input/pinch_ext/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
