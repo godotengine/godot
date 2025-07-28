@@ -68,7 +68,7 @@ void Node::_notification(int p_notification) {
 				for (int i = 0; i < get_child_count(); i++) {
 					Node *child_node = get_child(i);
 					Window *child_wnd = Object::cast_to<Window>(child_node);
-					if (child_wnd && !child_wnd->is_embedded()) {
+					if (child_wnd && !(child_wnd->is_visible() && (child_wnd->is_embedded() || child_wnd->is_popup()))) {
 						continue;
 					}
 					if (child_node->is_part_of_edited_scene()) {
@@ -2055,6 +2055,14 @@ Window *Node::get_window() const {
 	return nullptr;
 }
 
+Window *Node::get_non_popup_window() const {
+	Window *w = get_window();
+	while (w && w->is_popup()) {
+		w = w->get_parent_visible_window();
+	}
+	return w;
+}
+
 Window *Node::get_last_exclusive_window() const {
 	Window *w = get_window();
 	while (w && w->get_exclusive_child()) {
@@ -3687,8 +3695,9 @@ RID Node::get_accessibility_element() const {
 		return RID();
 	}
 	if (unlikely(data.accessibility_element.is_null())) {
-		if (get_window() && get_window()->get_window_id() != DisplayServer::INVALID_WINDOW_ID) {
-			data.accessibility_element = DisplayServer::get_singleton()->accessibility_create_element(get_window()->get_window_id(), DisplayServer::ROLE_CONTAINER);
+		Window *w = get_non_popup_window();
+		if (w && w->get_window_id() != DisplayServer::INVALID_WINDOW_ID && get_window()->is_visible()) {
+			data.accessibility_element = DisplayServer::get_singleton()->accessibility_create_element(w->get_window_id(), DisplayServer::ROLE_CONTAINER);
 		}
 	}
 	return data.accessibility_element;

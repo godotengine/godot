@@ -3209,13 +3209,8 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		_native_popup(p_bounds != Rect2i() ? p_bounds : Rect2i(get_position(), Size2i()));
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		moved = Vector2();
@@ -3253,13 +3248,8 @@ void PopupMenu::set_visible(bool p_visible) {
 		}
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		Popup::set_visible(p_visible);
