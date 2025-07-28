@@ -17,7 +17,6 @@ common_win = [
     "os_windows.cpp",
     "display_server_windows.cpp",
     "key_mapping_windows.cpp",
-    "joypad_windows.cpp",
     "tts_windows.cpp",
     "windows_terminal_logger.cpp",
     "windows_utils.cpp",
@@ -37,6 +36,20 @@ else:
 common_win_wrap = [
     "console_wrapper_windows.cpp",
 ]
+
+env_wrap = env.Clone()
+
+if env["arch"] == "x86_64":
+    env_cpp_check = env.Clone()
+    env_cpp_check.add_source_files(sources, ["cpu_feature_validation.c"])
+    if env.msvc:
+        if "/d2archSSE42" in env_cpp_check["CCFLAGS"]:
+            env_cpp_check["CCFLAGS"].remove("/d2archSSE42")
+        env.Append(LINKFLAGS=["/ENTRY:ShimMainCRTStartup"])
+    else:
+        if "-msse4.2" in env_cpp_check["CCFLAGS"]:
+            env_cpp_check["CCFLAGS"].remove("-msse4.2")
+        env.Append(LINKFLAGS=["-Wl,--entry=ShimMainCRTStartup"])
 
 
 def arrange_program_clean(prog):
@@ -75,7 +88,6 @@ if env.msvc:
 
 # Build console wrapper app.
 if env["windows_subsystem"] == "gui":
-    env_wrap = env.Clone()
     res_wrap_file = "godot_res_wrap.rc"
     res_wrap_target = "godot_res_wrap" + env["OBJSUFFIX"]
     res_wrap_obj = env_wrap.RES(res_wrap_target, res_wrap_file)

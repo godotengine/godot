@@ -109,6 +109,9 @@ public:
 	virtual RID region_create() = 0;
 	virtual uint32_t region_get_iteration_id(RID p_region) const = 0;
 
+	virtual void region_set_use_async_iterations(RID p_region, bool p_enabled) = 0;
+	virtual bool region_get_use_async_iterations(RID p_region) const = 0;
+
 	virtual void region_set_enabled(RID p_region, bool p_enabled) = 0;
 	virtual bool region_get_enabled(RID p_region) const = 0;
 
@@ -283,6 +286,7 @@ public:
 	virtual void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const = 0;
+	virtual String get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const = 0;
 #endif // _3D_DISABLED
 
 protected:

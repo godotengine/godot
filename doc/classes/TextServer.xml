@@ -399,11 +399,11 @@
 				Returns [Dictionary] with OpenType font name strings (localized font names, version, description, license information, sample text, etc.).
 			</description>
 		</method>
-		<method name="font_get_oversampling" qualifiers="const" deprecated="Use [Viewport] oversampling, or the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
+		<method name="font_get_oversampling" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
 			<description>
-				Deprecated. This method always returns [code]1.0[/code].
+				Returns oversampling factor override. If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="font_get_scale" qualifiers="const">
@@ -928,12 +928,12 @@
 				Sets font OpenType feature set override.
 			</description>
 		</method>
-		<method name="font_set_oversampling" deprecated="Use [Viewport] oversampling, or the [code skip-lint]oversampling[/code] argument of the [code skip-lint]draw_*[/code] methods instead.">
+		<method name="font_set_oversampling">
 			<return type="void" />
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="oversampling" type="float" />
 			<description>
-				Deprecated. This method does nothing.
+				If set to a positive value, overrides the oversampling factor of the viewport this font is used in. See [member Viewport.oversampling]. This value doesn't override the [code skip-lint]oversampling[/code] parameter of [code skip-lint]draw_*[/code] methods. Used by dynamic fonts only.
 			</description>
 		</method>
 		<method name="font_set_scale">
@@ -1400,6 +1400,7 @@
 			<param index="6" name="oversampling" type="float" default="0.0" />
 			<description>
 				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				[param clip_l] and [param clip_r] are offsets relative to [param pos], going to the right in horizontal layout and downward in vertical layout. If [param clip_l] is not negative, glyphs starting before the offset are clipped. If [param clip_r] is not negative, glyphs ending after the offset are clipped.
 			</description>
 		</method>
 		<method name="shaped_text_draw_outline" qualifiers="const">
@@ -1414,6 +1415,7 @@
 			<param index="7" name="oversampling" type="float" default="0.0" />
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout). If [param oversampling] is greater than zero, it is used as font oversampling factor, otherwise viewport oversampling settings are used.
+				[param clip_l] and [param clip_r] are offsets relative to [param pos], going to the right in horizontal layout and downward in vertical layout. If [param clip_l] is not negative, glyphs starting before the offset are clipped. If [param clip_r] is not negative, glyphs ending after the offset are clipped.
 			</description>
 		</method>
 		<method name="shaped_text_fit_to_width">
@@ -2192,10 +2194,10 @@
 			Glyph horizontal position is rounded to one quarter of the pixel size, each glyph is rasterized up to four times.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE" value="20" enum="SubpixelPositioning">
-			Maximum font size which will use one half of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use "one half of the pixel" subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE" value="16" enum="SubpixelPositioning">
-			Maximum font size which will use one quarter of the pixel subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
+			Maximum font size which will use "one quarter of the pixel" subpixel positioning in [constant SUBPIXEL_POSITIONING_AUTO] mode.
 		</constant>
 		<constant name="FEATURE_SIMPLE_LAYOUT" value="1" enum="Feature">
 			TextServer supports simple text layouts.
@@ -2273,7 +2275,7 @@
 			Font is italic or oblique.
 		</constant>
 		<constant name="FONT_FIXED_WIDTH" value="4" enum="FontStyle" is_bitfield="true">
-			Font have fixed-width characters.
+			Font has fixed-width characters (also known as monospace).
 		</constant>
 		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
 			Use default Unicode BiDi algorithm.

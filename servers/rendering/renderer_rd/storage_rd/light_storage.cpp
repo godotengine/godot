@@ -714,9 +714,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 						light_data.shadow_split_offsets[j] = split;
 						float bias_scale = light_instance->shadow_transform[j].bias_scale * light_data.soft_shadow_scale;
 						light_data.shadow_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_BIAS] / 100.0 * bias_scale;
-						// Use lower shadow normal bias for distant splits, relative to the share taken by the split.
-						// This helps reduce peter-panning at a distance.
-						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size * light_data.shadow_split_offsets[0] / split;
+						light_data.shadow_normal_bias[j] = light->param[RS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] * light_instance->shadow_transform[j].shadow_texel_size;
 						light_data.shadow_transmittance_bias[j] = light->param[RS::LIGHT_PARAM_TRANSMITTANCE_BIAS] / 100.0 * bias_scale;
 						light_data.shadow_z_range[j] = light_instance->shadow_transform[j].farplane;
 						light_data.shadow_range_begin[j] = light_instance->shadow_transform[j].range_begin;
@@ -1665,6 +1663,8 @@ RID LightStorage::reflection_probe_instance_get_framebuffer(RID p_instance, int 
 
 	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(rpi->atlas);
 	ERR_FAIL_NULL_V(atlas, RID());
+	ERR_FAIL_COND_V_MSG(rpi->atlas_index < 0, RID(), "Reflection probe atlas index invalid. Maximum amount of reflection probes in use (" + itos(atlas->count) + ") may have been exceeded, reflections will not display properly. Consider increasing Rendering > Reflections > Reflection Atlas > Reflection Count in the Project Settings.");
+
 	return atlas->reflections[rpi->atlas_index].fbs[p_index];
 }
 
@@ -1888,7 +1888,7 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 				}
 			}
 		}
-		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will nod display properly.");
+		ERR_FAIL_COND_MSG(lm->array_index < 0, "Maximum amount of lightmaps in use (" + itos(lightmap_textures.size()) + ") has been exceeded, lightmap will not display properly.");
 
 		lightmap_textures.write[lm->array_index] = t->rd_texture;
 	}

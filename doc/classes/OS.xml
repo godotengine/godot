@@ -302,6 +302,7 @@
 			<description>
 				On Android devices: Returns the list of dangerous permissions that have been granted.
 				On macOS: Returns the list of granted permissions and user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
+				On iOS, visionOS: Returns the list of granted permissions.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -737,7 +738,7 @@
 			<description>
 				Opens one or more files/directories with the specified application. The [param program_path] specifies the path to the application to use for opening the files, and [param paths] contains an array of file/directory paths to open.
 				[b]Note:[/b] This method is mostly only relevant for macOS, where opening files using [method create_process] might fail. On other platforms, this falls back to using [method create_process].
-				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to an [code].app[/code] bundle.
+				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to a [code].app[/code] bundle.
 			</description>
 		</method>
 		<method name="read_buffer_from_stdin">
@@ -781,8 +782,9 @@
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
 				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
+				- [code]OS.request_permission("appleembedded.permission.AUDIO_RECORD")[/code]
 				[b]Note:[/b] On Android, permission must be checked during export.
-				[b]Note:[/b] This method is implemented on Android and macOS.
+				[b]Note:[/b] This method is implemented on Android, macOS, and visionOS platforms.
 			</description>
 		</method>
 		<method name="request_permissions">

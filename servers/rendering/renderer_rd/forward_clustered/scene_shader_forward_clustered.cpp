@@ -52,7 +52,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	ShaderCompiler::GeneratedCode gen_code;
 
 	blend_mode = BLEND_MODE_MIX;
-	depth_testi = DEPTH_TEST_ENABLED;
+	depth_test_disabledi = 0;
+	depth_test_invertedi = 0;
 	alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 	int cull_modei = RS::CULL_MODE_BACK;
 
@@ -83,6 +84,12 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
 
+	int stencil_readi = 0;
+	int stencil_writei = 0;
+	int stencil_write_depth_faili = 0;
+	int stencil_comparei = STENCIL_COMPARE_ALWAYS;
+	int stencil_referencei = -1;
+
 	ShaderCompiler::IdentifierActions actions;
 	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
 	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
@@ -101,7 +108,8 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_OPAQUE);
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
-	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test_disabledi, 1);
+	actions.render_mode_values["depth_test_inverted"] = Pair<int *, int>(&depth_test_invertedi, 1);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
@@ -143,6 +151,20 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	actions.write_flag_pointers["POSITION"] = &uses_position;
 	actions.write_flag_pointers["Z_CLIP_SCALE"] = &uses_z_clip_scale;
 
+	actions.stencil_mode_values["read"] = Pair<int *, int>(&stencil_readi, STENCIL_FLAG_READ);
+	actions.stencil_mode_values["write"] = Pair<int *, int>(&stencil_writei, STENCIL_FLAG_WRITE);
+	actions.stencil_mode_values["write_depth_fail"] = Pair<int *, int>(&stencil_write_depth_faili, STENCIL_FLAG_WRITE_DEPTH_FAIL);
+
+	actions.stencil_mode_values["compare_less"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_LESS);
+	actions.stencil_mode_values["compare_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_EQUAL);
+	actions.stencil_mode_values["compare_less_or_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_LESS_OR_EQUAL);
+	actions.stencil_mode_values["compare_greater"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_GREATER);
+	actions.stencil_mode_values["compare_not_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_NOT_EQUAL);
+	actions.stencil_mode_values["compare_greater_or_equal"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_GREATER_OR_EQUAL);
+	actions.stencil_mode_values["compare_always"] = Pair<int *, int>(&stencil_comparei, STENCIL_COMPARE_ALWAYS);
+
+	actions.stencil_reference = &stencil_referencei;
+
 	actions.uniforms = &uniforms;
 
 	Error err = OK;
@@ -164,7 +186,13 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
-	depth_test = DepthTest(depth_testi);
+	if (depth_test_disabledi) {
+		depth_test = DEPTH_TEST_DISABLED;
+	} else if (depth_test_invertedi) {
+		depth_test = DEPTH_TEST_ENABLED_INVERTED;
+	} else {
+		depth_test = DEPTH_TEST_ENABLED;
+	}
 	cull_mode = RS::CullMode(cull_modei);
 	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
 	uses_screen_texture = gen_code.uses_screen_texture;
@@ -176,6 +204,11 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_normal |= uses_bent_normal_map;
 	uses_tangent |= uses_normal_map;
 	uses_tangent |= uses_bent_normal_map;
+
+	stencil_enabled = stencil_referencei != -1;
+	stencil_flags = stencil_readi | stencil_writei | stencil_write_depth_faili;
+	stencil_compare = StencilCompare(stencil_comparei);
+	stencil_reference = stencil_referencei;
 
 #if 0
 	print_line("**compiling shader:");
@@ -219,7 +252,7 @@ bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
 	bool has_base_alpha = (uses_alpha && (!uses_alpha_clip || uses_alpha_antialiasing)) || has_read_screen_alpha;
 	bool has_alpha = has_base_alpha || uses_blend_alpha;
 
-	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
+	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test != DEPTH_TEST_ENABLED));
 }
 
 RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {
@@ -318,9 +351,55 @@ void SceneShaderForwardClustered::ShaderData::_create_pipeline(PipelineKey p_pip
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
 		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_GREATER_OR_EQUAL;
+
+		if (depth_test == DEPTH_TEST_ENABLED_INVERTED) {
+			depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS;
+		}
 	}
+
+	depth_stencil_state.enable_stencil = stencil_enabled;
+	if (stencil_enabled) {
+		static const RD::CompareOperator stencil_compare_rd_table[STENCIL_COMPARE_MAX] = {
+			RD::COMPARE_OP_LESS,
+			RD::COMPARE_OP_EQUAL,
+			RD::COMPARE_OP_LESS_OR_EQUAL,
+			RD::COMPARE_OP_GREATER,
+			RD::COMPARE_OP_NOT_EQUAL,
+			RD::COMPARE_OP_GREATER_OR_EQUAL,
+			RD::COMPARE_OP_ALWAYS,
+		};
+
+		uint32_t stencil_mask = 255;
+
+		RD::PipelineDepthStencilState::StencilOperationState op;
+		op.fail = RD::STENCIL_OP_KEEP;
+		op.pass = RD::STENCIL_OP_KEEP;
+		op.depth_fail = RD::STENCIL_OP_KEEP;
+		op.compare = stencil_compare_rd_table[stencil_compare];
+		op.compare_mask = 0;
+		op.write_mask = 0;
+		op.reference = stencil_reference;
+
+		if (stencil_flags & STENCIL_FLAG_READ) {
+			op.compare_mask = stencil_mask;
+		}
+
+		if (stencil_flags & STENCIL_FLAG_WRITE) {
+			op.pass = RD::STENCIL_OP_REPLACE;
+			op.write_mask = stencil_mask;
+		}
+
+		if (stencil_flags & STENCIL_FLAG_WRITE_DEPTH_FAIL) {
+			op.depth_fail = RD::STENCIL_OP_REPLACE;
+			op.write_mask = stencil_mask;
+		}
+
+		depth_stencil_state.front_op = op;
+		depth_stencil_state.back_op = op;
+	}
+
 	bool depth_pre_pass_enabled = bool(GLOBAL_GET_CACHED(bool, "rendering/driver/depth_prepass/enable"));
 
 	RD::RenderPrimitive primitive_rd_table[RS::PRIMITIVE_MAX] = {
@@ -613,7 +692,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["MAIN_CAM_INV_VIEW_MATRIX"] = "scene_data.main_cam_inv_view_matrix";
 
 		actions.renames["VERTEX"] = "vertex";
-		actions.renames["NORMAL"] = "normal";
+		actions.renames["NORMAL"] = "normal_highp";
 		actions.renames["TANGENT"] = "tangent";
 		actions.renames["BINORMAL"] = "binormal";
 		actions.renames["POSITION"] = "position";
@@ -647,12 +726,12 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["NORMAL_MAP"] = "normal_map";
 		actions.renames["NORMAL_MAP_DEPTH"] = "normal_map_depth";
 		actions.renames["BENT_NORMAL_MAP"] = "bent_normal_map";
-		actions.renames["ALBEDO"] = "albedo";
-		actions.renames["ALPHA"] = "alpha";
+		actions.renames["ALBEDO"] = "albedo_highp";
+		actions.renames["ALPHA"] = "alpha_highp";
 		actions.renames["PREMUL_ALPHA_FACTOR"] = "premul_alpha";
-		actions.renames["METALLIC"] = "metallic";
+		actions.renames["METALLIC"] = "metallic_highp";
 		actions.renames["SPECULAR"] = "specular";
-		actions.renames["ROUGHNESS"] = "roughness";
+		actions.renames["ROUGHNESS"] = "roughness_highp";
 		actions.renames["RIM"] = "rim";
 		actions.renames["RIM_TINT"] = "rim_tint";
 		actions.renames["CLEARCOAT"] = "clearcoat";
@@ -694,14 +773,14 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["EYE_OFFSET"] = "eye_offset";
 
 		//for light
-		actions.renames["VIEW"] = "view";
-		actions.renames["SPECULAR_AMOUNT"] = "specular_amount";
-		actions.renames["LIGHT_COLOR"] = "light_color";
+		actions.renames["VIEW"] = "view_highp";
+		actions.renames["SPECULAR_AMOUNT"] = "specular_amount_highp";
+		actions.renames["LIGHT_COLOR"] = "light_color_highp";
 		actions.renames["LIGHT_IS_DIRECTIONAL"] = "is_directional";
-		actions.renames["LIGHT"] = "light";
-		actions.renames["ATTENUATION"] = "attenuation";
-		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
-		actions.renames["SPECULAR_LIGHT"] = "specular_light";
+		actions.renames["LIGHT"] = "light_highp";
+		actions.renames["ATTENUATION"] = "attenuation_highp";
+		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light_highp";
+		actions.renames["SPECULAR_LIGHT"] = "specular_light_highp";
 
 		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";

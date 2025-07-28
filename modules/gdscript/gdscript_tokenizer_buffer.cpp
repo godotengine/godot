@@ -33,8 +33,6 @@
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
 
-#define TOKENIZER_VERSION 100
-
 int GDScriptTokenizerBuffer::_token_to_binary(const Token &p_token, Vector<uint8_t> &r_buffer, int p_start, HashMap<StringName, uint32_t> &r_identifiers_map, HashMap<Variant, uint32_t, VariantHasher, VariantComparator> &r_constants_map) {
 	int pos = p_start;
 
@@ -143,7 +141,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 	ERR_FAIL_COND_V(p_buffer.size() < 12 || p_buffer[0] != 'G' || p_buffer[1] != 'D' || p_buffer[2] != 'S' || p_buffer[3] != 'C', ERR_INVALID_DATA);
 
 	int version = decode_uint32(&buf[4]);
-	ERR_FAIL_COND_V_MSG(version > TOKENIZER_VERSION, ERR_INVALID_DATA, "Binary GDScript is too recent! Please use a newer engine version.");
+	ERR_FAIL_COND_V_MSG(version != TOKENIZER_VERSION, ERR_INVALID_DATA, "Binary GDScript is not compatible with this engine version.");
 
 	int decompressed_size = decode_uint32(&buf[8]);
 
@@ -161,10 +159,10 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 	uint32_t identifier_count = decode_uint32(&buf[0]);
 	uint32_t constant_count = decode_uint32(&buf[4]);
 	uint32_t token_line_count = decode_uint32(&buf[8]);
-	uint32_t token_count = decode_uint32(&buf[16]);
+	uint32_t token_count = decode_uint32(&buf[12]);
 
-	const uint8_t *b = &buf[20];
-	total_len -= 20;
+	const uint8_t *b = &buf[16];
+	total_len -= 16;
 
 	identifiers.resize(identifier_count);
 	for (uint32_t i = 0; i < identifier_count; i++) {
@@ -292,14 +290,13 @@ Vector<uint8_t> GDScriptTokenizerBuffer::parse_code_string(const String &p_code,
 	}
 
 	Vector<uint8_t> contents;
-	contents.resize(20);
+	contents.resize(16);
 	encode_uint32(identifier_map.size(), &contents.write[0]);
 	encode_uint32(constant_map.size(), &contents.write[4]);
 	encode_uint32(token_lines.size(), &contents.write[8]);
-	encode_uint32(0, &contents.write[12]); // Unused, kept for compatibility. Please remove at next `TOKENIZER_VERSION` increment.
-	encode_uint32(token_counter, &contents.write[16]);
+	encode_uint32(token_counter, &contents.write[12]);
 
-	int buf_pos = 20;
+	int buf_pos = 16;
 
 	// Save identifiers.
 	for (const StringName &id : rev_identifier_map) {

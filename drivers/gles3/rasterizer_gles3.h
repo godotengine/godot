@@ -83,7 +83,7 @@ protected:
 	RasterizerSceneGLES3 *scene = nullptr;
 	static RasterizerGLES3 *singleton;
 
-	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first = true);
+	void _blit_render_target_to_screen(DisplayServer::WindowID p_screen, const BlitToScreen &p_blit, bool p_first = true);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
@@ -116,6 +116,7 @@ public:
 
 	static bool is_gles_over_gl() { return gles_over_gl; }
 	static void clear_depth(float p_depth);
+	static void clear_stencil(int32_t p_stencil);
 
 	static void make_current(bool p_gles_over_gl) {
 		gles_over_gl = p_gles_over_gl;

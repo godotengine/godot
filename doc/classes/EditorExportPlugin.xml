@@ -230,7 +230,7 @@
 			<return type="bool" />
 			<param index="0" name="platform" type="EditorExportPlatform" />
 			<description>
-				Return [code]true[/code], if the result of [method _get_export_options] has changed and the export options of preset corresponding to [param platform] should be updated.
+				Return [code]true[/code] if the result of [method _get_export_options] has changed and the export options of the preset corresponding to [param platform] should be updated.
 			</description>
 		</method>
 		<method name="_supports_platform" qualifiers="virtual const">

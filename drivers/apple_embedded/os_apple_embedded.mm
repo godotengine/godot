@@ -35,16 +35,15 @@
 #import "app_delegate_service.h"
 #import "display_server_apple_embedded.h"
 #import "godot_view_apple_embedded.h"
-#import "terminal_logger_apple_embedded.h"
 #import "view_controller.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_pack.h"
-#include "drivers/unix/syslog_logger.h"
+#import "drivers/apple/os_log_logger.h"
 #include "main/main.h"
 
+#import <AVFoundation/AVFAudio.h>
 #import <AudioToolbox/AudioServices.h>
 #import <CoreText/CoreText.h>
 #import <UIKit/UIKit.h>
@@ -142,7 +141,7 @@ OS_AppleEmbedded::OS_AppleEmbedded() {
 	main_loop = nullptr;
 
 	Vector<Logger *> loggers;
-	loggers.push_back(memnew(TerminalLoggerAppleEmbedded));
+	loggers.push_back(memnew(OsLogLogger(NSBundle.mainBundle.bundleIdentifier.UTF8String)));
 	_set_logger(memnew(CompositeLogger(loggers)));
 
 	AudioDriverManager::add_driver(&audio_driver);
@@ -381,6 +380,18 @@ String OS_AppleEmbedded::get_temp_path() const {
 		}
 	}
 	return ret;
+}
+
+String OS_AppleEmbedded::get_resource_dir() const {
+#ifdef TOOLS_ENABLED
+	return OS_Unix::get_resource_dir();
+#else
+	if (remote_fs_dir.is_empty()) {
+		return OS_Unix::get_resource_dir();
+	} else {
+		return remote_fs_dir;
+	}
+#endif
 }
 
 String OS_AppleEmbedded::get_locale() const {
@@ -641,6 +652,15 @@ bool OS_AppleEmbedded::_check_internal_feature_support(const String &p_feature) 
 	return false;
 }
 
+Error OS_AppleEmbedded::setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path) {
+	r_project_path = OS::get_user_data_dir();
+	Error err = OS_Unix::setup_remote_filesystem(p_server_host, p_port, p_password, r_project_path);
+	if (err == OK) {
+		remote_fs_dir = r_project_path;
+	}
+	return err;
+}
+
 void OS_AppleEmbedded::on_focus_out() {
 	if (is_focused) {
 		is_focused = false;
@@ -714,4 +734,35 @@ Rect2 OS_AppleEmbedded::calculate_boot_screen_rect(const Size2 &p_window_size, c
 	}
 }
 
+bool OS_AppleEmbedded::request_permission(const String &p_name) {
+	if (p_name == "appleembedded.permission.AUDIO_RECORD") {
+		if (@available(iOS 17.0, *)) {
+			AVAudioApplicationRecordPermission permission = [AVAudioApplication sharedInstance].recordPermission;
+			if (permission == AVAudioApplicationRecordPermissionGranted) {
+				// Permission already granted, you can start recording.
+				return true;
+			} else if (permission == AVAudioApplicationRecordPermissionDenied) {
+				// Permission denied, or not yet granted.
+				return false;
+			} else {
+				// Request the permission, but for now return false as documented.
+				[AVAudioApplication requestRecordPermissionWithCompletionHandler:^(BOOL granted) {
+					get_main_loop()->emit_signal(SNAME("on_request_permissions_result"), p_name, granted);
+				}];
+			}
+		}
+	}
+	return false;
+}
+
+Vector<String> OS_AppleEmbedded::get_granted_permissions() const {
+	Vector<String> ret;
+
+	if (@available(iOS 17.0, *)) {
+		if ([AVAudioApplication sharedInstance].recordPermission == AVAudioApplicationRecordPermissionGranted) {
+			ret.push_back("appleembedded.permission.AUDIO_RECORD");
+		}
+	}
+	return ret;
+}
 #endif // APPLE_EMBEDDED_ENABLED

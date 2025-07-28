@@ -1221,32 +1221,34 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 	const char *cyan_bold = tty ? "\E[1;36m" : "";
 	const char *reset = tty ? "\E[0m" : "";
 
-	const char *indent = "";
+	const char *bold_color;
+	const char *normal_color;
 	switch (p_type) {
 		case ERR_WARNING:
-			indent = "     ";
-			logf_error("%sWARNING:%s %s\n", yellow_bold, yellow, err_details);
+			bold_color = yellow_bold;
+			normal_color = yellow;
 			break;
 		case ERR_SCRIPT:
-			indent = "          ";
-			logf_error("%sSCRIPT ERROR:%s %s\n", magenta_bold, magenta, err_details);
+			bold_color = magenta_bold;
+			normal_color = magenta;
 			break;
 		case ERR_SHADER:
-			indent = "          ";
-			logf_error("%sSHADER ERROR:%s %s\n", cyan_bold, cyan, err_details);
+			bold_color = cyan_bold;
+			normal_color = cyan;
 			break;
 		case ERR_ERROR:
 		default:
-			indent = "   ";
-			logf_error("%sERROR:%s %s\n", red_bold, red, err_details);
+			bold_color = red_bold;
+			normal_color = red;
 			break;
 	}
 
-	logf_error("%s%sat: %s (%s:%i)%s\n", gray, indent, p_function, p_file, p_line, reset);
+	logf_error("%s%s:%s %s\n", bold_color, error_type_string(p_type), normal_color, err_details);
+	logf_error("%s%sat: %s (%s:%i)%s\n", gray, error_type_indent(p_type), p_function, p_file, p_line, reset);
 
 	for (const Ref<ScriptBacktrace> &backtrace : p_script_backtraces) {
 		if (!backtrace->is_empty()) {
-			logf_error("%s%s%s\n", gray, backtrace->format(strlen(indent)).utf8().get_data(), reset);
+			logf_error("%s%s%s\n", gray, backtrace->format(strlen(error_type_indent(p_type))).utf8().get_data(), reset);
 		}
 	}
 }

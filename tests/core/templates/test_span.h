@@ -43,10 +43,10 @@ TEST_CASE("[Span] Constexpr Validators") {
 	static_assert(span_empty.is_empty());
 
 	constexpr static uint16_t value = 5;
-	constexpr Span<uint16_t> span_value(&value, 1);
-	static_assert(span_value.ptr() == &value);
-	static_assert(span_value.size() == 1);
-	static_assert(!span_value.is_empty());
+	Span<uint16_t> span_value(&value, 1);
+	CHECK(span_value.ptr() == &value);
+	CHECK(span_value.size() == 1);
+	CHECK(!span_value.is_empty());
 
 	static constexpr int ints[] = { 0, 1, 2, 3, 4, 5 };
 	constexpr Span<int> span_array = ints;

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/game_view_plugin.h"
+#include "editor/run/game_view_plugin.h"
 
 class EmbeddedProcessMacOS;
 
@@ -52,6 +52,7 @@ class GameViewDebuggerMacOS : public GameViewDebugger {
 
 	bool _msg_set_context_id(const Array &p_args);
 	bool _msg_cursor_set_shape(const Array &p_args);
+	bool _msg_cursor_set_custom_image(const Array &p_args);
 	bool _msg_mouse_set_mode(const Array &p_args);
 	bool _msg_window_set_ime_active(const Array &p_args);
 	bool _msg_window_set_ime_position(const Array &p_args);
@@ -60,7 +61,6 @@ class GameViewDebuggerMacOS : public GameViewDebugger {
 
 public:
 	virtual bool capture(const String &p_message, const Array &p_data, int p_session) override;
-	virtual bool has_capture(const String &p_capture) const override;
 
 	GameViewDebuggerMacOS(EmbeddedProcessMacOS *p_embedded_process);
 };

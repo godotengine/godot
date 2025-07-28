@@ -63,6 +63,11 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
+		case FEATURE_NATIVE_DIALOG_FILE: {
+			String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
+			return sdk_version.to_int() >= 29;
+		} break;
+
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_HIDPI:
@@ -72,11 +77,10 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		//case FEATURE_MOUSE_WARP:
 		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_NATIVE_DIALOG_INPUT:
-		case FEATURE_NATIVE_DIALOG_FILE:
 		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case FEATURE_NATIVE_ICON:
-		//case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_ORIENTATION:
@@ -592,7 +596,14 @@ void DisplayServerAndroid::window_set_flag(DisplayServer::WindowFlags p_flag, bo
 }
 
 bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, DisplayServer::WindowID p_window) const {
-	return false;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, false);
+	switch (p_flag) {
+		case WindowFlags::WINDOW_FLAG_TRANSPARENT:
+			return is_window_transparency_available();
+
+		default:
+			return false;
+	}
 }
 
 void DisplayServerAndroid::window_request_attention(DisplayServer::WindowID p_window) {
@@ -960,4 +971,8 @@ void DisplayServerAndroid::set_native_icon(const String &p_filename) {
 
 void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
 	// NOT SUPPORTED
+}
+
+bool DisplayServerAndroid::is_window_transparency_available() const {
+	return GLOBAL_GET_CACHED(bool, "display/window/per_pixel_transparency/allowed");
 }

@@ -408,6 +408,7 @@ private:
 		bool used_depth_texture = false;
 		bool used_sss = false;
 		bool used_lightmap = false;
+		bool used_opaque_stencil = false;
 
 		struct ShadowPass {
 			uint32_t element_from;
@@ -485,6 +486,7 @@ private:
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 32768,
 			FLAG_USES_PARTICLE_TRAILS = 65536,
 			FLAG_USES_MOTION_VECTOR = 131072,
+			FLAG_USES_STENCIL = 262144,
 		};
 
 		union {

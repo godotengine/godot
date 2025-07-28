@@ -696,6 +696,7 @@ protected:
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
 
+	virtual void _draw_guidelines() {}
 	virtual void _update_theme_item_cache() override;
 
 	/* Internal API for CodeEdit, pending public API. */
@@ -726,6 +727,7 @@ protected:
 	virtual void _unhide_carets();
 
 	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
+	float _get_wrap_indent_offset(int p_line, int p_wrap_index, bool p_rtl) const;
 
 	// Symbol lookup.
 	String lookup_symbol_word;
@@ -919,6 +921,7 @@ public:
 	Point2 get_local_mouse_pos() const;
 
 	String get_word_at_pos(const Vector2 &p_pos) const;
+	String get_word(int p_line, int p_column) const;
 
 	Point2i get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line = true, bool p_clamp_column = true) const;
 	Point2i get_pos_at_line_column(int p_line, int p_column) const;

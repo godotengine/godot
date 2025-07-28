@@ -35,7 +35,8 @@
 			<param index="0" name="property" type="StringName" />
 			<description>
 				Override this method to customize the behavior of [method get]. Should return the given [param property]'s value, or [code]null[/code] if the [param property] should be handled normally.
-				Combined with [method _set] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property must be present in [method get_property_list], otherwise this method will not be called.
+				Combined with [method _set] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins.
+				[b]Note:[/b] This method is not called when getting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
 				[codeblocks]
 				[gdscript]
 				func _get(property):
@@ -264,6 +265,7 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] The base [Object] defines a few notifications ([constant NOTIFICATION_POSTINITIALIZE] and [constant NOTIFICATION_PREDELETE]). Inheriting classes such as [Node] define a lot more notifications, which are also received by this method.
+				[b]Note:[/b] Unlike other virtual methods, this method is called automatically for every script that overrides it. This means that the base implementation should not be called via [code]super[/code] in GDScript or its equivalents in other languages.
 			</description>
 		</method>
 		<method name="_property_can_revert" qualifiers="virtual">
@@ -288,7 +290,8 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Override this method to customize the behavior of [method set]. Should set the [param property] to [param value] and return [code]true[/code], or [code]false[/code] if the [param property] should be handled normally. The [i]exact[/i] way to set the [param property] is up to this method's implementation.
-				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins. Note that a property [i]must[/i] be present in [method get_property_list], otherwise this method will not be called.
+				Combined with [method _get] and [method _get_property_list], this method allows defining custom properties, which is particularly useful for editor plugins.
+				[b]Note:[/b] This method is not called when setting built-in properties of an object, including properties defined with [annotation @GDScript.@export].
 				[codeblocks]
 				[gdscript]
 				var internal_data = {}

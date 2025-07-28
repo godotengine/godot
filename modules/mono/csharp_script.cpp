@@ -59,11 +59,11 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/editor_file_system.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/node_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "editor/inspector_dock.h"
-#include "editor/node_dock.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
@@ -685,8 +685,14 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			if (success) {
 				ManagedCallable::instances_pending_reload.insert(managed_callable, serialized_data);
-			} else if (OS::get_singleton()->is_stdout_verbose()) {
-				OS::get_singleton()->print("Failed to serialize delegate\n");
+			} else {
+				if (OS::get_singleton()->is_stdout_verbose()) {
+					OS::get_singleton()->print("Failed to serialize delegate.\n");
+				}
+
+				// We failed to serialize the delegate but we still have to release it;
+				// otherwise, we won't be able to unload the assembly.
+				managed_callable->release_delegate_handle();
 			}
 		}
 	}
@@ -832,6 +838,25 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 		}
 
 		return;
+	}
+
+	// Add all script types to script bridge before reloading exports,
+	// so typed collections can be reconstructed correctly regardless of script load order.
+	for (Ref<CSharpScript> &scr : to_reload) {
+		if (!scr->get_path().is_empty() && !scr->get_path().begins_with("csharp://")) {
+			String script_path = scr->get_path();
+
+			bool valid = GDMonoCache::managed_callbacks.ScriptManagerBridge_AddScriptBridge(scr.ptr(), &script_path);
+
+			if (valid) {
+				scr->valid = true;
+
+				CSharpScript::update_script_class_info(scr);
+
+				// Ensure that the next call to CSharpScript::reload will refresh the exports
+				scr->reload_invalidated = true;
+			}
+		}
 	}
 
 	List<Ref<CSharpScript>> to_reload_state;

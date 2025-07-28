@@ -485,10 +485,6 @@ Dictionary AudioStreamWAV::get_tags() const {
 	return tags;
 }
 
-HashMap<String, String>::ConstIterator AudioStreamWAV::remap_tag_id(const String &p_tag_id) {
-	return tag_id_remaps.find(p_tag_id);
-}
-
 double AudioStreamWAV::get_length() const {
 	int len = data_bytes;
 	switch (format) {
@@ -879,20 +875,28 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 
 			char list_id[4];
 			file->get_buffer((uint8_t *)&list_id, 4);
+			uint32_t end_of_chunk = file_pos + chunksize - 8;
 
 			if (list_id[0] == 'I' && list_id[1] == 'N' && list_id[2] == 'F' && list_id[3] == 'O') {
 				// 'INFO' list type.
 				// The size of an entry can be arbitrary.
-				uint32_t end_of_chunk = file_pos + chunksize - 4;
 				while (file->get_position() < end_of_chunk) {
 					char info_id[4];
 					file->get_buffer((uint8_t *)&info_id, 4);
 
 					uint32_t text_size = file->get_32();
+					if (text_size == 0) {
+						continue;
+					}
 
 					Vector<char> text;
 					text.resize(text_size);
 					file->get_buffer((uint8_t *)&text[0], text_size);
+
+					// Skip padding byte if text_size is odd
+					if (text_size & 1) {
+						file->get_8();
+					}
 
 					// The data is always an ASCII string. ASCII is a subset of UTF-8.
 					String tag;
@@ -1146,16 +1150,37 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	sample->set_loop_end(loop_end);
 	sample->set_stereo(format_channels == 2);
 
-	Dictionary tag_dictionary;
-	for (const KeyValue<String, String> &E : tag_map) {
-		HashMap<String, String>::ConstIterator remap = sample->remap_tag_id(E.key);
-		if (remap) {
-			tag_map.replace_key(E.key, remap->value);
-		}
+	if (!tag_map.is_empty()) {
+		// Used to make the metadata tags more unified across different AudioStreams.
+		// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+		HashMap<String, String> tag_id_remaps;
+		tag_id_remaps.reserve(15);
+		tag_id_remaps["IARL"] = "location";
+		tag_id_remaps["IART"] = "artist";
+		tag_id_remaps["ICMS"] = "organization";
+		tag_id_remaps["ICMT"] = "comments";
+		tag_id_remaps["ICOP"] = "copyright";
+		tag_id_remaps["ICRD"] = "date";
+		tag_id_remaps["IGNR"] = "genre";
+		tag_id_remaps["IKEY"] = "keywords";
+		tag_id_remaps["IMED"] = "medium";
+		tag_id_remaps["INAM"] = "title";
+		tag_id_remaps["IPRD"] = "album";
+		tag_id_remaps["ISBJ"] = "description";
+		tag_id_remaps["ISFT"] = "software";
+		tag_id_remaps["ITRK"] = "tracknumber";
+		Dictionary tag_dictionary;
+		for (const KeyValue<String, String> &E : tag_map) {
+			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);
+			String tag_key = E.key;
+			if (remap) {
+				tag_key = remap->value;
+			}
 
-		tag_dictionary[E.key] = E.value;
+			tag_dictionary[tag_key] = E.value;
+		}
+		sample->set_tags(tag_dictionary);
 	}
-	sample->set_tags(tag_dictionary);
 
 	return sample;
 }
@@ -1214,23 +1239,4 @@ void AudioStreamWAV::_bind_methods() {
 	BIND_ENUM_CONSTANT(LOOP_FORWARD);
 	BIND_ENUM_CONSTANT(LOOP_PINGPONG);
 	BIND_ENUM_CONSTANT(LOOP_BACKWARD);
-}
-
-AudioStreamWAV::AudioStreamWAV() {
-	// Used to make the metadata tags more unified across different AudioStreams.
-	// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
-	tag_id_remaps["IARL"] = "location";
-	tag_id_remaps["IART"] = "artist";
-	tag_id_remaps["ICMS"] = "organization";
-	tag_id_remaps["ICMT"] = "comments";
-	tag_id_remaps["ICOP"] = "copyright";
-	tag_id_remaps["ICRD"] = "date";
-	tag_id_remaps["IGNR"] = "genre";
-	tag_id_remaps["IKEY"] = "keywords";
-	tag_id_remaps["IMED"] = "medium";
-	tag_id_remaps["INAM"] = "title";
-	tag_id_remaps["IPRD"] = "album";
-	tag_id_remaps["ISBJ"] = "description";
-	tag_id_remaps["ISFT"] = "software";
-	tag_id_remaps["ITRK"] = "tracknumber";
 }

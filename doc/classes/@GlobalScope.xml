@@ -2815,7 +2815,7 @@
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. By default the file will be stored as UID whenever available. You can use [ResourceUID] methods to convert it back to path. For storing a raw path, use [constant PROPERTY_HINT_FILE_PATH].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
@@ -2956,15 +2956,18 @@
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
 		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
-			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup. Use the optional hint string [code]"feature"[/code] when the group only has variables that are meaningful when the feature is enabled.
-			[b]Note:[/b] The [code]"feature"[/code] hint string does not modify or reset any values.
+			Hints that a boolean property will enable the feature associated with the group that it occurs in. The property will be displayed as a checkbox on the group header. Only works within a group or subgroup.
+			By default, disabling the property hides all properties in the group. Use the optional hint string [code]"checkbox_only"[/code] to disable this behavior.
 		</constant>
 		<constant name="PROPERTY_HINT_INPUT_NAME" value="43" enum="PropertyHint">
 			Hints that a [String] or [StringName] property is the name of an input action. This allows the selection of any action name from the Input Map in the Project Settings. The hint string may contain two options separated by commas:
 			- If it contains [code]"show_builtin"[/code], built-in input actions are included in the selection.
 			- If it contains [code]"loose_mode"[/code], loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
+			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
@@ -3083,7 +3086,7 @@
 			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAG_VIRTUAL_REQUIRED" value="128" enum="MethodFlags" is_bitfield="true">
-			Flag for a virtual method that is required.
+			Flag for a virtual method that is required. In GDScript, this flag is set for abstract functions.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).

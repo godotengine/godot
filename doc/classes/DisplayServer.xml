@@ -651,7 +651,7 @@
 			<return type="Image" />
 			<description>
 				Returns the user's clipboard as an image if possible.
-				[b]Note:[/b] This method uses the copied pixel data, e.g. from a image editing software or a web browser, not an image file copied from file explorer.
+				[b]Note:[/b] This method uses the copied pixel data, e.g. from an image editing software or a web browser, not an image file copied from file explorer.
 			</description>
 		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
@@ -782,7 +782,7 @@
 				Displays OS native dialog for selecting files or directories in the file system.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android (API level 29+).
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
@@ -1976,7 +1976,7 @@
 			<return type="PackedStringArray" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns an [PackedStringArray] of voice identifiers for the [param language].
+				Returns a [PackedStringArray] of voice identifiers for the [param language].
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
@@ -2045,7 +2045,7 @@
 			<return type="void" />
 			<description>
 				Stops synthesis in progress and removes all utterances from the queue.
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Linux), macOS, and Windows.
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
 		<method name="unregister_additional_output">
@@ -2059,6 +2059,7 @@
 			<return type="int" />
 			<description>
 				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
+				[b]Note:[/b] On Android 7 and 8, the keyboard height may return 0 the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
@@ -2543,7 +2544,7 @@
 			Display server supports [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url], which is commonly used for inputting Chinese/Japanese/Korean text. This is handled by the operating system, rather than by Godot. [b]Windows, macOS, Linux (X11)[/b]
 		</constant>
 		<constant name="FEATURE_WINDOW_TRANSPARENCY" value="11" enum="Feature">
-			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11/Wayland), Android[/b]
 		</constant>
 		<constant name="FEATURE_HIDPI" value="12" enum="Feature">
 			Display server supports querying the operating system's display scale factor. This allows automatically detecting the hiDPI display [i]reliably[/i], instead of guessing based on the screen resolution and the display's reported DPI (which might be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
@@ -2856,13 +2857,13 @@
 			Set scroll offset action, callback argument is set to [Vector2] with the scroll offset.
 		</constant>
 		<constant name="ACTION_SET_VALUE" value="20" enum="AccessibilityAction">
-			Set value action action, callback argument is set to [String] or number with the new value.
+			Set value action, callback argument is set to [String] or number with the new value.
 		</constant>
 		<constant name="ACTION_SHOW_CONTEXT_MENU" value="21" enum="AccessibilityAction">
 			Show context menu action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_CUSTOM" value="22" enum="AccessibilityAction">
-			Custom action, callback argument is set to the integer action id.
+			Custom action, callback argument is set to the integer action ID.
 		</constant>
 		<constant name="LIVE_OFF" value="0" enum="AccessibilityLiveMode">
 			Indicates that updates to the live region should not be presented.
@@ -3054,6 +3055,7 @@
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
 			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]Note:[/b] This mode might not work with screen recording software.
 			[b]On Android:[/b] This enables immersive mode.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
@@ -3074,6 +3076,7 @@
 			The window background can be transparent.
 			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
 			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Android, but can only be enabled via [member ProjectSettings.display/window/per_pixel_transparency/allowed]. This flag has no effect on Android.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.
@@ -3097,7 +3100,7 @@
 		<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="WindowFlags">
 			Window is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
 			[b]Note:[/b] This flag is implemented on macOS and Windows.
-			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image. It should not be used as a security measure.
+			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
 		<constant name="WINDOW_FLAG_POPUP_WM_HINT" value="10" enum="WindowFlags">
 			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).

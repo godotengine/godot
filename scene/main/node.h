@@ -118,7 +118,7 @@ public:
 		INTERNAL_MODE_BACK,
 	};
 
-	enum AutoTranslateMode {
+	enum AutoTranslateMode : unsigned int {
 		AUTO_TRANSLATE_MODE_INHERIT,
 		AUTO_TRANSLATE_MODE_ALWAYS,
 		AUTO_TRANSLATE_MODE_DISABLED,
@@ -190,14 +190,6 @@ private:
 
 		mutable RID accessibility_element;
 
-		String accessibility_name;
-		String accessibility_description;
-		DisplayServer::AccessibilityLiveMode accessibility_live = DisplayServer::AccessibilityLiveMode::LIVE_OFF;
-		TypedArray<NodePath> accessibility_controls_nodes;
-		TypedArray<NodePath> accessibility_described_by_nodes;
-		TypedArray<NodePath> accessibility_labeled_by_nodes;
-		TypedArray<NodePath> accessibility_flow_to_nodes;
-
 		HashMap<StringName, GroupData> grouped;
 		List<Node *>::Element *OW = nullptr; // Owned element.
 		List<Node *> owned;
@@ -219,6 +211,7 @@ private:
 		// Keep bitpacked values together to get better packing.
 		ProcessMode process_mode : 3;
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
+		AutoTranslateMode auto_translate_mode : 2;
 
 		bool physics_process : 1;
 		bool process : 1;
@@ -259,12 +252,11 @@ private:
 		bool ready_notified : 1;
 		bool ready_first : 1;
 
-		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
-		mutable bool is_auto_translating = true;
-		mutable bool is_auto_translate_dirty = true;
+		mutable bool is_auto_translating : 1;
+		mutable bool is_auto_translate_dirty : 1;
 
-		mutable bool is_translation_domain_inherited = true;
-		mutable bool is_translation_domain_dirty = true;
+		mutable bool is_translation_domain_inherited : 1;
+		mutable bool is_translation_domain_dirty : 1;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -414,7 +406,6 @@ protected:
 	GDVIRTUAL1(_unhandled_key_input, Ref<InputEvent>)
 
 	GDVIRTUAL0RC(RID, _get_focused_accessibility_element)
-	GDVIRTUAL1RC(String, _get_accessibility_container_name, const Node *)
 
 #ifndef DISABLE_DEPRECATED
 	void _set_name_bind_compat_76560(const String &p_name);
@@ -678,32 +669,10 @@ public:
 	void set_process_thread_messages(BitField<ProcessThreadMessages> p_flags);
 	BitField<ProcessThreadMessages> get_process_thread_messages() const;
 
-	void set_accessibility_name(const String &p_name);
-	String get_accessibility_name() const;
-
-	void set_accessibility_description(const String &p_description);
-	String get_accessibility_description() const;
-
-	void set_accessibility_live(DisplayServer::AccessibilityLiveMode p_mode);
-	DisplayServer::AccessibilityLiveMode get_accessibility_live() const;
-
-	void set_accessibility_controls_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_controls_nodes() const;
-
-	void set_accessibility_described_by_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_described_by_nodes() const;
-
-	void set_accessibility_labeled_by_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_labeled_by_nodes() const;
-
-	void set_accessibility_flow_to_nodes(const TypedArray<NodePath> &p_node_path);
-	TypedArray<NodePath> get_accessibility_flow_to_nodes() const;
-
 	void queue_accessibility_update();
 
 	virtual RID get_accessibility_element() const;
 	virtual RID get_focused_accessibility_element() const;
-	virtual String get_accessibility_container_name(const Node *p_node) const;
 	virtual bool accessibility_override_tree_hierarchy() const { return false; }
 
 	virtual PackedStringArray get_accessibility_configuration_warnings() const;
@@ -742,7 +711,7 @@ public:
 	void set_physics_interpolation_mode(PhysicsInterpolationMode p_mode);
 	PhysicsInterpolationMode get_physics_interpolation_mode() const { return data.physics_interpolation_mode; }
 	_FORCE_INLINE_ bool is_physics_interpolated() const { return data.physics_interpolated; }
-	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && is_physics_interpolated(); }
+	_FORCE_INLINE_ bool is_physics_interpolated_and_enabled() const { return SceneTree::is_fti_enabled() && is_physics_interpolated(); }
 	void reset_physics_interpolation();
 
 	bool is_enabled() const;

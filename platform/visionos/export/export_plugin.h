@@ -35,9 +35,11 @@
 class EditorExportPlatformVisionOS : public EditorExportPlatformAppleEmbedded {
 	GDCLASS(EditorExportPlatformVisionOS, EditorExportPlatformAppleEmbedded);
 
-	virtual String get_platform_name() const override { return "visionos"; }
+	static Vector<String> device_types;
 
+	virtual String get_platform_name() const override { return "visionos"; }
 	virtual String get_sdk_name() const override { return "xros"; }
+	virtual const Vector<String> get_device_types() const override { return device_types; }
 
 	virtual String get_minimum_deployment_target() const override { return "2.0"; }
 

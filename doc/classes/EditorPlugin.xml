@@ -272,7 +272,7 @@
 				[b]Note:[/b] You must implement [method _get_plugin_name] for the state to be stored and restored correctly.
 				[codeblock]
 				func _get_state():
-					var state = {"zoom": zoom, "preferred_color": my_color}
+					var state = { "zoom": zoom, "preferred_color": my_color }
 					return state
 				[/codeblock]
 			</description>
@@ -540,7 +540,7 @@
 			<param index="0" name="scene_import_plugin" type="EditorScenePostImportPlugin" />
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
-				Add a [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
+				Add an [EditorScenePostImportPlugin]. These plugins allow customizing the import process of 3D assets by adding new options to the import dialogs.
 				If [param first_priority] is [code]true[/code], the new import plugin is inserted first in the list and takes precedence over pre-existing plugins.
 			</description>
 		</method>

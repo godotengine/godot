@@ -33,11 +33,12 @@
 #include "crash_handler_macos.h"
 
 #include "core/input/input.h"
-#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
+
+class JoypadSDL;
 
 class OS_MacOS : public OS_Unix {
 #ifdef COREAUDIO_ENABLED
@@ -62,7 +63,9 @@ protected:
 	int argc = 0;
 	char **argv = nullptr;
 
-	JoypadApple *joypad_apple = nullptr;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 	MainLoop *main_loop = nullptr;
 	CFRunLoopTimerRef wait_timer = nil;
 
@@ -166,6 +169,13 @@ public:
 	virtual void run() override;
 
 	OS_MacOS_NSApp(const char *p_execpath, int p_argc, char **p_argv);
+};
+
+class OS_MacOS_Headless : public OS_MacOS {
+public:
+	virtual void run() override;
+
+	OS_MacOS_Headless(const char *p_execpath, int p_argc, char **p_argv);
 };
 
 #ifdef DEBUG_ENABLED

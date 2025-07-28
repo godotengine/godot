@@ -40,12 +40,13 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/settings/editor_settings.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
 #include <sys/stat.h>
+#include <functional>
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -91,6 +92,15 @@ class EditorExportPlatformAppleEmbedded : public EditorExportPlatform {
 	static bool _check_xcode_install();
 	static void _check_for_changes_poll_thread(void *ud);
 	void _update_preset_status();
+
+protected:
+	void _start_remote_device_poller_thread() {
+		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+	}
+
+	int _execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data);
+
+private:
 #endif
 
 	typedef Error (*FileHandler)(String p_file, void *p_userdata);
@@ -169,6 +179,7 @@ protected:
 
 	virtual String get_platform_name() const = 0;
 	virtual String get_sdk_name() const = 0;
+	virtual const Vector<String> get_device_types() const = 0;
 	virtual String get_minimum_deployment_target() const = 0;
 
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const override;
@@ -191,7 +202,7 @@ public:
 
 	virtual int get_options_count() const override;
 	virtual String get_options_tooltip() const override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;

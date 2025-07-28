@@ -32,10 +32,13 @@
 
 #include "../nav_utils_3d.h"
 
+#include "core/object/ref_counted.h"
 #include "servers/navigation/navigation_utilities.h"
 
-struct NavBaseIteration3D {
-	uint32_t id = UINT32_MAX;
+class NavBaseIteration3D : public RefCounted {
+	GDCLASS(NavBaseIteration3D, RefCounted);
+
+public:
 	bool enabled = true;
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
@@ -45,6 +48,7 @@ struct NavBaseIteration3D {
 	RID owner_rid;
 	bool owner_use_edge_connections = false;
 	LocalVector<Nav3D::Polygon> navmesh_polygons;
+	LocalVector<LocalVector<Nav3D::Connection>> internal_connections;
 
 	bool get_enabled() const { return enabled; }
 	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
@@ -55,4 +59,10 @@ struct NavBaseIteration3D {
 	real_t get_travel_cost() const { return travel_cost; }
 	bool get_use_edge_connections() const { return owner_use_edge_connections; }
 	const LocalVector<Nav3D::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
+	const LocalVector<LocalVector<Nav3D::Connection>> &get_internal_connections() const { return internal_connections; }
+
+	virtual ~NavBaseIteration3D() {
+		navmesh_polygons.clear();
+		internal_connections.clear();
+	}
 };

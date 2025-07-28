@@ -43,13 +43,6 @@
 				Returning an empty array produces no warnings.
 			</description>
 		</method>
-		<method name="_get_accessibility_container_name" qualifiers="virtual const">
-			<return type="String" />
-			<param index="0" name="node" type="Node" />
-			<description>
-				Return a human-readable description of the position of [param node] child in the custom container, added to the node name.
-			</description>
-		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
@@ -244,6 +237,12 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				This function ensures that the calling of this function will succeed, no matter whether it's being done from a thread or not. If called from a thread that is not allowed to call the function, the call will become deferred. Otherwise, the call will go through directly.
+			</description>
+		</method>
+		<method name="can_auto_translate" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node can automatically translate messages depending on the current locale. See [member auto_translate_mode], [method atr], and [method atr_n].
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
@@ -451,7 +450,7 @@
 				- Element [code]0[/code] is the [Node], or [code]null[/code] if not found;
 				- Element [code]1[/code] is the subname's last nested [Resource], or [code]null[/code] if not found;
 				- Element [code]2[/code] is the remaining [NodePath], referring to an existing, non-[Resource] property (see [method Object.get_indexed]).
-				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned a [AtlasTexture]:
+				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned an [AtlasTexture]:
 				[codeblocks]
 				[gdscript]
 				var a = get_node_and_resource("Area2D/Sprite2D")
@@ -1009,7 +1008,7 @@
 			<return type="void" />
 			<param index="0" name="load_placeholder" type="bool" />
 			<description>
-				If set to [code]true[/code], the node becomes a [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
+				If set to [code]true[/code], the node becomes an [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
 			</description>
 		</method>
 		<method name="set_thread_safe">
@@ -1035,27 +1034,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
-			The list of nodes which are controlled by this node.
-		</member>
-		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
-			The list of nodes which are describing this node.
-		</member>
-		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
-			The human-readable node description that is reported to assistive apps.
-		</member>
-		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
-			The list of nodes which this node flows into.
-		</member>
-		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
-			The list of nodes which label this node.
-		</member>
-		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
-			Live region update mode, a live region is [Node] that is updated as a result of an external event when user focus may be elsewhere.
-		</member>
-		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
-			The human-readable node name that is reported to assistive apps.
-		</member>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
 			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for POT generation.
 			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].

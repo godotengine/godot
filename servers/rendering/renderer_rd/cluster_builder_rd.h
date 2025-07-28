@@ -76,6 +76,10 @@ class ClusterBuilderSharedDataRD {
 		enum ShaderVariant {
 			SHADER_NORMAL,
 			SHADER_USE_ATTACHMENT,
+			SHADER_NORMAL_MOLTENVK,
+			SHADER_USE_ATTACHMENT_MOLTENVK,
+			SHADER_NORMAL_NO_ATOMICS,
+			SHADER_USE_ATTACHMENT_NO_ATOMICS,
 		};
 
 		enum PipelineVersion {

@@ -60,6 +60,22 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <!-- Intent filter used to intercept hybrid PANEL launch for the current editor project, and route it
+            properly through the editor 'run' logic (e.g: debugger setup) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.PANEL" />
+            </intent-filter>
+
+            <!-- Intent filter used to intercept hybrid IMMERSIVE launch for the current editor project, and route it
+            properly through the editor 'run' logic (e.g: debugger setup) -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="org.godotengine.xr.hybrid.IMMERSIVE" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".GodotGame"
@@ -70,6 +86,7 @@
             android:launchMode="singleTask"
             android:process=":GodotGame"
             android:autoRemoveFromRecents="true"
+            android:theme="@style/GodotGameTheme"
             android:supportsPictureInPicture="true"
             android:screenOrientation="userLandscape">
             <layout
@@ -87,8 +104,7 @@
             android:excludeFromRecents="true"
             android:launchMode="singleTask"
             android:process=":EmbeddedGodotGame"
-            android:supportsPictureInPicture="true"
-            android:screenOrientation="userLandscape" />
+            android:supportsPictureInPicture="true" />
         <activity
             android:name=".GodotXRGame"
             android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
@@ -100,8 +116,7 @@
             android:autoRemoveFromRecents="true"
             android:screenOrientation="landscape"
             android:resizeableActivity="false"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
-        </activity>
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" />
 
         <!--
         We remove this meta-data originating from the vendors plugin as we only need the loader for

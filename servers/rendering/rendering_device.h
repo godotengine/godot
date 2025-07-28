@@ -179,7 +179,7 @@ private:
 	};
 
 	Buffer *_get_buffer_from_owner(RID p_buffer);
-	Error _buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align = 32);
+	Error _buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align = 32);
 
 	void update_perf_report();
 	// Flag for batching descriptor sets.
@@ -794,13 +794,20 @@ public:
 		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = (1 << 0),
 	};
 
-	RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<BufferCreationBits> p_creation_bits = 0);
+	RID vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID _vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits = 0) {
+		return vertex_buffer_create(p_size_bytes, p_data, p_creation_bits);
+	}
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_descriptions);
 	RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets = Vector<uint64_t>());
 
-	RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, Span<uint8_t> p_data = {}, bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID _index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0) {
+		return index_buffer_create(p_index_count, p_format, p_data, p_use_restart_indices, p_creation_bits);
+	}
+
 	RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
 
 	/****************/
@@ -968,10 +975,20 @@ public:
 	/**** BUFFERS ****/
 	/*****************/
 
-	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<BufferCreationBits> p_creation_bits = 0);
-	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID uniform_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID _uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits = 0) {
+		return uniform_buffer_create(p_size_bytes, p_data, p_creation_bits);
+	}
 
-	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
+	RID storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data = {}, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
+	RID _storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0) {
+		return storage_buffer_create(p_size_bytes, p_data, p_usage, p_creation_bits);
+	}
+
+	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, Span<uint8_t> p_data = {});
+	RID _texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
+		return texture_buffer_create(p_size_elements, p_format, p_data);
+	}
 
 	struct Uniform {
 		UniformType uniform_type = UNIFORM_TYPE_IMAGE;

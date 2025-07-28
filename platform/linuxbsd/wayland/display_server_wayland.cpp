@@ -1049,7 +1049,7 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window_id) const {
-	ERR_FAIL_COND_V(p_window_id != MAIN_WINDOW_ID, INVALID_SCREEN);
+	ERR_FAIL_COND_V(!windows.has(p_window_id), INVALID_SCREEN);
 	// Standard Wayland APIs don't support getting the screen of a window.
 	return 0;
 }
@@ -1543,14 +1543,14 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 }
 
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
-
 	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
-#ifdef DBUS_ENABLED
 	return portal_desktop->color_picker((ws ? ws->exported_handle : String()), p_callback);
-#endif
+#else
 	return false;
+#endif
 }
 
 void DisplayServerWayland::try_suspend() {

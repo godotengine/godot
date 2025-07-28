@@ -680,6 +680,7 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_ONESHOT);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_GROUP_ENABLE);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_INPUT_NAME);
+	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_FILE_PATH);
 	BIND_CORE_ENUM_CONSTANT(PROPERTY_HINT_MAX);
 
 	BIND_CORE_BITFIELD_FLAG(PROPERTY_USAGE_NONE);
@@ -862,3 +863,13 @@ void CoreConstants::get_enum_values(const StringName &p_enum, HashMap<StringName
 		(*p_values)[constant.name] = constant.value;
 	}
 }
+
+#ifdef TOOLS_ENABLED
+
+void CoreConstants::get_global_enums(List<StringName> *r_values) {
+	for (const KeyValue<StringName, Vector<_CoreConstant>> &global_enum : _global_enums) {
+		r_values->push_back(global_enum.key);
+	}
+}
+
+#endif

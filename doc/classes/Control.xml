@@ -37,7 +37,7 @@
 			<description>
 				Godot calls this method to test if [param data] from a control's [method _get_drag_data] can be dropped at [param at_position]. [param at_position] is local to this control.
 				This method should only be used to test the data. Process the data in [method _drop_data].
-				[b]Note:[/b] If drag was initiated by keyboard shortcut or [method accessibility_drag], [param at_position] is set to [code]Vector2(INFINITY, INFINITY)[/code] and the currently selected item/text position should be used as drop position.
+				[b]Note:[/b] If the drag was initiated by a keyboard shortcut or [method accessibility_drag], [param at_position] is set to [constant Vector2.INF], and the currently selected item/text position should be used as the drop position.
 				[codeblocks]
 				[gdscript]
 				func _can_drop_data(position, data):
@@ -62,7 +62,7 @@
 			<param index="1" name="data" type="Variant" />
 			<description>
 				Godot calls this method to pass you the [param data] from a control's [method _get_drag_data] result. Godot first calls [method _can_drop_data] to test if [param data] is allowed to drop at [param at_position] where [param at_position] is local to this control.
-				[b]Note:[/b] If drag was initiated by keyboard shortcut or [method accessibility_drag], [param at_position] is set to [code]Vector2(INFINITY, INFINITY)[/code] and the currently selected item/text position should be used as drop position.
+				[b]Note:[/b] If the drag was initiated by a keyboard shortcut or [method accessibility_drag], [param at_position] is set to [constant Vector2.INF], and the currently selected item/text position should be used as the drop position.
 				[codeblocks]
 				[gdscript]
 				func _can_drop_data(position, data):
@@ -85,13 +85,20 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="_get_accessibility_container_name" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Override this method to return a human-readable description of the position of the child [param node] in the custom container, added to the [member accessibility_name].
+			</description>
+		</method>
 		<method name="_get_drag_data" qualifiers="virtual">
 			<return type="Variant" />
 			<param index="0" name="at_position" type="Vector2" />
 			<description>
 				Godot calls this method to get data that can be dragged and dropped onto controls that expect drop data. Returns [code]null[/code] if there is no data to drag. Controls that want to receive drop data should implement [method _can_drop_data] and [method _drop_data]. [param at_position] is local to this control. Drag may be forced with [method force_drag].
 				A preview that will follow the mouse that should represent the data can be set with [method set_drag_preview]. A good time to set the preview is in this method.
-				[b]Note:[/b] If drag was initiated by keyboard shortcut or [method accessibility_drag], [param at_position] is set to [code]Vector2(INFINITY, INFINITY)[/code] and the currently selected item/text position should be used as drop position.
+				[b]Note:[/b] If the drag was initiated by a keyboard shortcut or [method accessibility_drag], [param at_position] is set to [constant Vector2.INF], and the currently selected item/text position should be used as the drag position.
 				[codeblocks]
 				[gdscript]
 				func _get_drag_data(position):
@@ -962,6 +969,27 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
+			The paths to the nodes which are controlled by this node.
+		</member>
+		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
+			The paths to the nodes which are describing this node.
+		</member>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			The human-readable node description that is reported to assistive apps.
+		</member>
+		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
+			The paths to the nodes which this node flows into.
+		</member>
+		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
+			The paths to the nodes which label this node.
+		</member>
+		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
+			The mode with which a live region updates. A live region is a [Node] that is updated as a result of an external event when the user's focus may be elsewhere.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			The human-readable node name that is reported to assistive apps.
+		</member>
 		<member name="anchor_bottom" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the bottom edge of the node to the origin, the center, or the end of its parent control. It changes how the bottom offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
@@ -974,7 +1002,7 @@
 		<member name="anchor_top" type="float" setter="_set_anchor" getter="get_anchor" default="0.0">
 			Anchors the top edge of the node to the origin, the center or the end of its parent control. It changes how the top offset updates when the node moves or changes size. You can use one of the [enum Anchor] constants for convenience.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] instead.">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] and [method Node.can_auto_translate] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="clip_contents" type="bool" setter="set_clip_contents" getter="is_clipping_contents" default="false">

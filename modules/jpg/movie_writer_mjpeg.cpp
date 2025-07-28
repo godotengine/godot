@@ -259,5 +259,5 @@ void MovieWriterMJPEG::write_end() {
 MovieWriterMJPEG::MovieWriterMJPEG() {
 	mix_rate = GLOBAL_GET("editor/movie_writer/mix_rate");
 	speaker_mode = AudioServer::SpeakerMode(int(GLOBAL_GET("editor/movie_writer/speaker_mode")));
-	quality = GLOBAL_GET("editor/movie_writer/mjpeg_quality");
+	quality = GLOBAL_GET("editor/movie_writer/video_quality");
 }

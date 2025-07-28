@@ -90,7 +90,7 @@
 		<method name="get_navigation_mesh">
 			<return type="NavigationMesh" />
 			<description>
-				Returns the [NavigationMesh] resulting from this navigation polygon. This navigation mesh can be used to update the navigation mesh of a region with the [method NavigationServer3D.region_set_navigation_mesh] API directly (as 2D uses the 3D server behind the scene).
+				Returns the [NavigationMesh] resulting from this navigation polygon. This navigation mesh can be used to update the navigation mesh of a region with the [method NavigationServer3D.region_set_navigation_mesh] API directly.
 			</description>
 		</method>
 		<method name="get_outline" qualifiers="const">
@@ -172,6 +172,7 @@
 	<members>
 		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="10.0">
 			The distance to erode/shrink the walkable surface when baking the navigation mesh.
+			[b]Note:[/b] The radius must be equal or higher than [code]0.0[/code]. If the radius is [code]0.0[/code], it won't be possible to fix invalid outline overlaps and other precision errors during the baking process. As a result, some obstacles may be excluded incorrectly from the final navigation mesh, or may delete the navigation mesh's polygons.
 		</member>
 		<member name="baking_rect" type="Rect2" setter="set_baking_rect" getter="get_baking_rect" default="Rect2(0, 0, 0, 0)">
 			If the baking [Rect2] has an area the navigation mesh baking will be restricted to its enclosing area.

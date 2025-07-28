@@ -1269,10 +1269,10 @@ String Label::get_text() const {
 void Label::set_visible_characters(int p_amount) {
 	if (visible_chars != p_amount) {
 		visible_chars = p_amount;
-		if (get_total_character_count() > 0) {
-			visible_ratio = (float)p_amount / (float)get_total_character_count();
-		} else {
+		if (p_amount == -1 || get_total_character_count() == 0) {
 			visible_ratio = 1.0;
+		} else {
+			visible_ratio = (float)p_amount / (float)get_total_character_count();
 		}
 		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			text_dirty = true;

@@ -588,6 +588,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("center_grabber", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
+	theme->set_constant("tick_offset", "HSlider", 0);
 
 	// VSlider
 
@@ -602,6 +603,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
+	theme->set_constant("tick_offset", "VSlider", 0);
 
 	// SpinBox
 
@@ -1127,7 +1129,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	preset_sb->set_anti_aliased(false);
 
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
-	theme->set_stylebox("preset_focus", "ColorPicker", focus);
+	theme->set_stylebox("preset_focus", "ColorPresetButton", focus);
 	theme->set_icon("preset_bg", "ColorPresetButton", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPresetButton", icons["color_picker_overbright"]);
 
@@ -1154,6 +1156,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
 	theme->set_stylebox(CoreStringName(normal), "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
+	Ref<Image> solid_img = Image::create_empty(2, 2, false, Image::FORMAT_RGBA8);
+	solid_img->fill(Color(1, 1, 1, 1));
+	Ref<Texture2D> solid_icon = ImageTexture::create_from_image(solid_img);
+
+	theme->set_icon("horizontal_rule", "RichTextLabel", solid_icon);
+
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("bold_font", "RichTextLabel", bold_font);
 	theme->set_font("italics_font", "RichTextLabel", italics_font);
@@ -1178,6 +1186,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_outline_size", "RichTextLabel", Math::round(1 * scale));
 
 	theme->set_constant(SceneStringName(line_separation), "RichTextLabel", 0);
+	theme->set_constant(SceneStringName(paragraph_separation), "RichTextLabel", 0);
 	theme->set_constant("table_h_separation", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("table_v_separation", "RichTextLabel", Math::round(3 * scale));
 
@@ -1194,6 +1203,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("strikethrough_alpha", "RichTextLabel", 50);
 
 	// Containers
+
+	theme->set_color("touch_dragger_color", "SplitContainer", Color(1, 1, 1, 0.3));
+	theme->set_color("touch_dragger_pressed_color", "SplitContainer", Color(1, 1, 1, 1));
+	theme->set_color("touch_dragger_hover_color", "SplitContainer", Color(1, 1, 1, 0.6));
 
 	theme->set_icon("h_touch_dragger", "SplitContainer", icons["h_dragger"]);
 	theme->set_icon("v_touch_dragger", "SplitContainer", icons["v_dragger"]);

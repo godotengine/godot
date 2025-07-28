@@ -1516,7 +1516,7 @@ void LightmapGI::_assign_lightmaps() {
 		NodePath user_path = light_data->get_user_path(i);
 		Node *node = get_node_or_null(user_path);
 		if (!node) {
-			missing_node_paths.push_back(user_path);
+			missing_node_paths.push_back(String(user_path));
 			continue;
 		}
 		int instance_idx = light_data->get_user_sub_instance(i);
@@ -1800,6 +1800,9 @@ PackedStringArray LightmapGI::get_configuration_warnings() const {
 }
 
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "supersampling_factor" && !supersampling_enabled) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}

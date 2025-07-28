@@ -42,10 +42,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-					{"name", "category/propertyName"},
-					{"type", (int)Variant.Type.Int},
-					{"hint", (int)PropertyHint.Enum},
-					{"hint_string", "one,two,three"},
+					{ "name", "category/propertyName" },
+					{ "type", (int)Variant.Type.Int },
+					{ "hint", (int)PropertyHint.Enum },
+					{ "hint_string", "one,two,three" },
 				};
 
 				ProjectSettings.AddPropertyInfo(propertyInfo);
@@ -261,10 +261,10 @@
 	<members>
 		<member name="accessibility/general/accessibility_support" type="int" setter="" getter="" default="0">
 			Accessibility support mode:
-			- [b]Auto[/b] ([code]0[/code]): accessibility support is enabled, but accessibility information updates are processed only if an assistive app (e.g. screen reader or Braille display) is active (default).
-			- [b]Always Active[/b] ([code]1[/code]): accessibility support is enabled, and accessibility information updates are processed regardless of current assistive apps' status.
-			- [b]Disabled[/b] ([code]2[/code]): accessibility support is fully disabled.
-			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, macOS Accessibility Inspector, or AT-SPI Browser do not count as assistive apps. To test your app with these tools, use [code]1[/code].
+			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
+			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="accessibility/general/updates_per_second" type="int" setter="" getter="" default="60">
 			The number of accessibility information updates per second.
@@ -527,9 +527,6 @@
 		<member name="debug/gdscript/warnings/confusable_local_usage" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when an identifier that will be shadowed below in the block is used.
 		</member>
-		<member name="debug/gdscript/warnings/constant_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a constant is used as a function.
-		</member>
 		<member name="debug/gdscript/warnings/deprecated_keyword" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when deprecated keywords are used.
 			[b]Note:[/b] There are currently no deprecated keywords, so this warning is never produced.
@@ -545,9 +542,6 @@
 		</member>
 		<member name="debug/gdscript/warnings/exclude_addons" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], scripts in the [code]res://addons[/code] folder will not generate warnings.
-		</member>
-		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. When a function is used as a property, a [Callable] is returned.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
 		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
@@ -582,9 +576,6 @@
 		</member>
 		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
-		</member>
-		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1" deprecated="This warning is never produced. Instead, an error is generated if the expression type is known at compile time.">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
 		</member>
 		<member name="debug/gdscript/warnings/redundant_await" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a function that is not a coroutine is called with await.
@@ -670,7 +661,6 @@
 		</member>
 		<member name="debug/settings/gdscript/always_track_call_stacks" type="bool" setter="" getter="" default="false">
 			Whether GDScript call stacks will be tracked in release builds, thus allowing [method Engine.capture_script_backtraces] to function.
-			Enabling this comes at the cost of roughly 40 KiB for every thread that runs any GDScript code.
 			[b]Note:[/b] This setting has no effect on editor builds or debug builds, where GDScript call stacks are tracked regardless.
 		</member>
 		<member name="debug/settings/gdscript/always_track_local_variables" type="bool" setter="" getter="" default="false">
@@ -1026,6 +1016,7 @@
 			If [code]true[/code], enables a window manager hint that the main window background [i]can[/i] be transparent. This does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/viewport/transparent_background].
 			[b]Note:[/b] To use a transparent splash screen, set [member application/boot_splash/bg_color] to [code]Color(0, 0, 0, 0)[/code].
 			[b]Note:[/b] This setting has no effect if [member display/window/per_pixel_transparency/allowed] is set to [code]false[/code].
+			[b]Note:[/b] This setting has no effect on Android as transparency is controlled only via [member display/window/per_pixel_transparency/allowed].
 		</member>
 		<member name="display/window/size/viewport_height" type="int" setter="" getter="" default="648">
 			Sets the game's main viewport height. On desktop platforms, this is also the initial window height, represented by an indigo-colored rectangle in the 2D editor. Stretch mode settings also use this as a reference when using the [code]canvas_items[/code] or [code]viewport[/code] stretch modes. See also [member display/window/size/viewport_width], [member display/window/size/window_width_override] and [member display/window/size/window_height_override].
@@ -1105,20 +1096,30 @@
 		<member name="editor/movie_writer/mix_rate" type="int" setter="" getter="" default="48000">
 			The audio mix rate to use in the recorded audio when writing a movie (in Hz). This can be different from [member audio/driver/mix_rate], but this value must be divisible by [member editor/movie_writer/fps] to prevent audio from desynchronizing over time.
 		</member>
-		<member name="editor/movie_writer/mjpeg_quality" type="float" setter="" getter="" default="0.75">
-			The JPEG quality to use when writing a video to an AVI file, between [code]0.01[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.9[/code]. Even at quality [code]1.0[/code], JPEG compression remains lossy.
-			[b]Note:[/b] This does not affect the audio quality or writing PNG image sequences.
-		</member>
 		<member name="editor/movie_writer/movie_file" type="String" setter="" getter="" default="&quot;&quot;">
 			The output path for the movie. The file extension determines the [MovieWriter] that will be used.
-			Godot has 2 built-in [MovieWriter]s:
-			- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/mjpeg_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
+			Godot has 3 built-in [MovieWriter]s:
+			- OGV container with Theora for video and Vorbis for audio ([code].ogv[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/video_quality] and [member ProjectSettings.editor/movie_writer/ogv/audio_quality]. The resulting file can be viewed in Godot with [VideoStreamPlayer] and most video players, but not web browsers as they don't support Theora.
+			- AVI container with MJPEG for video and uncompressed audio ([code].avi[/code] file extension). Lossy compression, medium file sizes, fast encoding. The lossy compression quality can be adjusted by changing [member ProjectSettings.editor/movie_writer/video_quality]. The resulting file can be viewed in most video players, but it must be converted to another format for viewing on the web or by Godot with [VideoStreamPlayer]. MJPEG does not support transparency. AVI output is currently limited to a file of 4 GB in size at most.
 			- PNG image sequence for video and WAV for audio ([code].png[/code] file extension). Lossless compression, large file sizes, slow encoding. Designed to be encoded to a video file with another tool such as [url=https://ffmpeg.org/]FFmpeg[/url] after recording. Transparency is currently not supported, even if the root viewport is set to be transparent.
 			If you need to encode to a different format or pipe a stream through third-party software, you can extend this [MovieWriter] class to create your own movie writers.
 			When using PNG output, the frame number will be appended at the end of the file name. It starts from 0 and is padded with 8 digits to ensure correct sorting and easier processing. For example, if the output path is [code]/tmp/hello.png[/code], the first two frames will be [code]/tmp/hello00000000.png[/code] and [code]/tmp/hello00000001.png[/code]. The audio will be saved at [code]/tmp/hello.wav[/code].
 		</member>
+		<member name="editor/movie_writer/ogv/audio_quality" type="float" setter="" getter="" default="0.5">
+			The audio encoding quality to use when writing Vorbis audio to a file, between [code]-0.1[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-sounding output at the cost of larger file sizes. Even at quality [code]1.0[/code], compression remains lossy.
+			[b]Note:[/b] This does not affect video quality, which is controlled by [member editor/movie_writer/video_quality] instead.
+		</member>
+		<member name="editor/movie_writer/ogv/encoding_speed" type="int" setter="" getter="" default="4">
+			The tradeoff between encoding speed and compression efficiency. Speed [code]1[/code] is the slowest but provides the best compression. Speed [code]4[/code] is the fastest but provides the worst compression. Video quality is generally not affected significantly by this setting.
+		</member>
+		<member name="editor/movie_writer/ogv/keyframe_interval" type="int" setter="" getter="" default="64">
+			Forces keyframes at the specified interval (in frame count). Higher values can improve compression up to a certain level at the expense of higher latency when seeking.
+		</member>
 		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
+		</member>
+		<member name="editor/movie_writer/video_quality" type="float" setter="" getter="" default="0.75">
+			The video encoding quality to use when writing a Theora or AVI (MJPEG) video to a file, between [code]0.0[/code] and [code]1.0[/code] (inclusive). Higher [code]quality[/code] values result in better-looking output at the cost of larger file sizes. Recommended [code]quality[/code] values are between [code]0.75[/code] and [code]0.9[/code]. Even at quality [code]1.0[/code], compression remains lossy.
 		</member>
 		<member name="editor/naming/default_signal_callback_name" type="String" setter="" getter="" default="&quot;_on_{node_name}_{signal_name}&quot;">
 			The format of the default signal callback name (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
@@ -1635,6 +1636,14 @@
 			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
 			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
 			[b]Note:[/b] [TextServerFallback] does not use additional data.
+		</member>
+		<member name="internationalization/locale/line_breaking_strictness" type="int" setter="" getter="" default="0">
+			Default strictness of line-breaking rules. Can be overridden by adding [code]@lb={auto,loose,normal,strict}[/code] to the language code.
+			- [b]Auto[/b] ([code]0[/code]) - strictness is based on the length of the line.
+			- [b]Loose[/b] ([code]1[/code]) - the least restrictive set of line-breaking rules. Typically used for short lines.
+			- [b]Normal[/b] ([code]2[/code]) - the most common set of line-breaking rules.
+			- [b]Strict[/b] ([code]3[/code]) - the most stringent set of line-breaking rules.
+			See [url=https://www.w3.org/TR/css-text-3/#line-break-property]Line Breaking Strictness: the line-break property[/url] for more info.
 		</member>
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
 			If non-empty, this locale will be used instead of the automatically detected system locale.
@@ -2296,6 +2305,9 @@
 		<member name="navigation/2d/default_link_connection_radius" type="float" setter="" getter="" default="4.0">
 			Default link connection radius for 2D navigation maps. See [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
+		<member name="navigation/2d/merge_rasterizer_cell_scale" type="float" setter="" getter="" default="1.0">
+			Default merge rasterizer cell scale for 2D navigation maps. See [method NavigationServer2D.map_set_merge_rasterizer_cell_scale].
+		</member>
 		<member name="navigation/2d/use_edge_connections" type="bool" setter="" getter="" default="true">
 			If enabled 2D navigation regions will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin. This setting only affects World2D default navigation maps.
 		</member>
@@ -2340,6 +2352,9 @@
 		</member>
 		<member name="navigation/world/map_use_async_iterations" type="bool" setter="" getter="" default="true">
 			If enabled, navigation map synchronization uses an async process that runs on a background thread. This avoids stalling the main thread but adds an additional delay to any navigation map change.
+		</member>
+		<member name="navigation/world/region_use_async_iterations" type="bool" setter="" getter="" default="true">
+			If enabled, navigation region synchronization uses an async process that runs on a background thread. This avoids stalling the main thread but adds an additional delay to any navigation region change.
 		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
@@ -2683,7 +2698,7 @@
 		</member>
 		<member name="rendering/2d/batching/uniform_set_cache_size" type="int" setter="" getter="" default="4096">
 			Maximum number of uniform sets that will be cached by the 2D renderer when batching draw calls.
-			[b]Note:[/b] A project that uses a large number of unique sprite textures per frame may benefit from increasing this value.
+			[b]Note:[/b] Increasing this value can improve performance if the project renders many unique sprite textures every frame.
 		</member>
 		<member name="rendering/2d/sdf/oversize" type="int" setter="" getter="" default="1">
 			Controls how much of the original viewport size should be covered by the 2D signed distance field. This SDF can be sampled in [CanvasItem] shaders and is used for [GPUParticles2D] collision. Higher values allow portions of occluders located outside the viewport to still be taken into account in the generated signed distance field, at the cost of performance. If you notice particles falling through [LightOccluder2D]s as the occluders leave the viewport, increase this setting.
@@ -2730,7 +2745,7 @@
 			[b]Note:[/b] This property is only read when the project starts. There is currently no way to change this setting at run-time.
 		</member>
 		<member name="rendering/anti_aliasing/quality/use_debanding" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. If [member rendering/viewport/hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member rendering/viewport/hdr_2d] is [code]true[/code], debanding will affect all 2D and 3D rendering, including canvas items.
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
 			[b]Note:[/b] This property is only read when the project starts. To set debanding at runtime, set [member Viewport.use_debanding] on the root [Viewport] instead, or use [method RenderingServer.viewport_set_use_debanding].
 		</member>
@@ -2887,15 +2902,15 @@
 			- [code]opengl3_angle[/code], OpenGL ES 3.0 using the ANGLE compatibility layer over native Direct3D 11 drivers. If [member rendering/gl_compatibility/fallback_to_angle] is enabled, this is used as a fallback if OpenGL 3.3 is not supported. By default, ANGLE is used as the default driver for some devices listed in [member rendering/gl_compatibility/force_angle_on_devices].
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
+			If [code]true[/code], the Compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_gles" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
+			If [code]true[/code], the Compatibility renderer will fall back to OpenGLES if desktop OpenGL is not supported.
 			[b]Note:[/b] This setting is implemented only on Linux/X11.
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_native" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
+			If [code]true[/code], the Compatibility renderer will fall back to native OpenGL if ANGLE is not supported, or ANGLE dynamic libraries aren't found.
 			[b]Note:[/b] This setting is implemented on macOS and Windows.
 		</member>
 		<member name="rendering/gl_compatibility/force_angle_on_devices" type="Array" setter="" getter="">
@@ -3011,19 +3026,19 @@
 			Use 16 bits for the omni/spot shadow depth map. Enabling this results in shadows having less precision and may result in shadow acne, but can lead to performance improvements on some devices.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_0_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the first quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_1_subdiv" type="int" setter="" getter="" default="2">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the second quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_2_subdiv" type="int" setter="" getter="" default="3">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the third quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_quadrant_3_subdiv" type="int" setter="" getter="" default="4">
-			Subdivision quadrant size for shadow mapping. See shadow mapping documentation.
+			The subdivision amount of the fourth quadrant on the shadow atlas. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size" type="int" setter="" getter="" default="4096">
-			Size for shadow atlas (used for OmniLights and SpotLights). See documentation.
+			The size of the shadow atlas used for [OmniLight3D] and [SpotLight3D] nodes. See the [url=$DOCS_URL/tutorials/tutorials/3d/lights_and_shadows.html#shadow-atlas]documentation[/url] for more information.
 		</member>
 		<member name="rendering/lights_and_shadows/positional_shadow/atlas_size.mobile" type="int" setter="" getter="" default="2048">
 			Lower-end override for [member rendering/lights_and_shadows/positional_shadow/atlas_size] on mobile devices, due to performance concerns or driver support.
@@ -3359,7 +3374,7 @@
 			The default compression factor for lossless WebP. Decompression speed is mostly unaffected by the compression factor. Supported values are 0 to 100.
 		</member>
 		<member name="rendering/viewport/hdr_2d" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use an high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen. Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
+			If [code]true[/code], enables [member Viewport.use_hdr_2d] on the root viewport. 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen. Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 			[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
 			[b]Note:[/b] This property is only read when the project starts. To toggle HDR 2D at runtime, set [member Viewport.use_hdr_2d] on the root [Viewport].
 		</member>
@@ -3429,6 +3444,10 @@
 		<member name="xr/openxr/extensions/hand_tracking_unobstructed_data_source" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], support for the unobstructed data source is requested. If supported, you will receive hand tracking data based on the actual finger positions of the user often determined by optical tracking.
 			[b]Note:[/b] This requires the OpenXR data source extension and unobstructed handtracking to be supported by the XR runtime. If not supported this setting will be ignored. [member xr/openxr/extensions/hand_tracking] must be enabled for this setting to be used.
+		</member>
+		<member name="xr/openxr/extensions/render_model" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] we enable the render model extension if available.
+			[b]Note:[/b] This relates to the core OpenXR render model extension and has no relation to any vendor render model extensions.
 		</member>
 		<member name="xr/openxr/form_factor" type="int" setter="" getter="" default="&quot;0&quot;">
 			Specify whether OpenXR should be configured for an HMD or a hand held device.

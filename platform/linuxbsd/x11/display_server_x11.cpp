@@ -3691,6 +3691,7 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 bool DisplayServerX11::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
@@ -3699,6 +3700,9 @@ bool DisplayServerX11::color_picker(const Callable &p_callback) {
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
 	return portal_desktop->color_picker(xid, p_callback);
+#else
+	return false;
+#endif
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
@@ -5957,9 +5961,10 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	}
 
 	for (unsigned int i = 0; i < num_children; i++) {
-		pid_t pid = get_window_pid(p_display, children[i]);
-		if (pid == p_process_id) {
-			return children[i];
+		const Window child = children[i];
+		if (get_window_pid(p_display, child) == p_process_id) {
+			XFree(children);
+			return child;
 		}
 	}
 
@@ -5967,6 +5972,7 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	for (unsigned int i = 0; i < num_children; i++) {
 		Window wnd = find_window_from_process_id_internal(p_display, p_process_id, children[i]);
 		if (wnd != 0) {
+			XFree(children);
 			return wnd;
 		}
 	}

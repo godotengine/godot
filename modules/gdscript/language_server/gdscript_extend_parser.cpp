@@ -32,7 +32,7 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 
@@ -253,7 +253,7 @@ void ExtendGDScriptParser::parse_class_symbol(const GDScriptParser::ClassNode *p
 	}
 	r_symbol.detail = "class " + r_symbol.name;
 	{
-		String doc = p_class->doc_data.description;
+		String doc = p_class->doc_data.brief;
 		if (!p_class->doc_data.description.is_empty()) {
 			doc += "\n\n" + p_class->doc_data.description;
 		}
@@ -508,9 +508,22 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 			parameters += " = " + parameter->initializer->reduced_value.to_json_string();
 		}
 	}
+	if (p_func->is_vararg()) {
+		if (!p_func->parameters.is_empty()) {
+			parameters += ", ";
+		}
+		const ParameterNode *rest_param = p_func->rest_parameter;
+		parameters += "..." + rest_param->identifier->name + ": " + rest_param->get_datatype().to_string();
+	}
 	r_symbol.detail += parameters + ")";
-	if (p_func->get_datatype().is_hard_type()) {
-		r_symbol.detail += " -> " + p_func->get_datatype().to_string();
+
+	const DataType return_type = p_func->get_datatype();
+	if (return_type.is_hard_type()) {
+		if (return_type.kind == DataType::BUILTIN && return_type.builtin_type == Variant::NIL) {
+			r_symbol.detail += " -> void";
+		} else {
+			r_symbol.detail += " -> " + return_type.to_string();
+		}
 	}
 
 	List<GDScriptParser::SuiteNode *> function_nodes;

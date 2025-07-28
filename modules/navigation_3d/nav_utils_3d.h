@@ -31,12 +31,13 @@
 #pragma once
 
 #include "core/math/vector3.h"
+#include "core/object/ref_counted.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "servers/navigation/nav_heap.h"
 #include "servers/navigation/navigation_utilities.h"
 
-struct NavBaseIteration3D;
+class NavBaseIteration3D;
 
 namespace Nav3D {
 struct Polygon;
@@ -72,37 +73,34 @@ struct EdgeKey {
 	}
 };
 
-struct Edge {
-	/// The gateway in the edge, as, in some case, the whole edge might not be navigable.
-	struct Connection {
-		/// Polygon that this connection leads to.
-		Polygon *polygon = nullptr;
+struct ConnectableEdge {
+	EdgeKey ek;
+	uint32_t polygon_index;
+	Vector3 pathway_start;
+	Vector3 pathway_end;
+};
 
-		/// Edge of the source polygon where this connection starts from.
-		int edge = -1;
+struct Connection {
+	/// Polygon that this connection leads to.
+	Polygon *polygon = nullptr;
 
-		/// Point on the edge where the gateway leading to the poly starts.
-		Vector3 pathway_start;
+	/// Edge of the source polygon where this connection starts from.
+	int edge = -1;
 
-		/// Point on the edge where the gateway leading to the poly ends.
-		Vector3 pathway_end;
-	};
+	/// Point on the edge where the gateway leading to the poly starts.
+	Vector3 pathway_start;
 
-	/// Connections from this edge to other polygons.
-	LocalVector<Connection> connections;
+	/// Point on the edge where the gateway leading to the poly ends.
+	Vector3 pathway_end;
 };
 
 struct Polygon {
-	/// Id of the polygon in the map.
 	uint32_t id = UINT32_MAX;
 
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration3D *owner = nullptr;
 
 	LocalVector<Vector3> vertices;
-
-	/// The edges of this `Polygon`
-	LocalVector<Edge> edges;
 
 	real_t surface_area = 0.0;
 };
@@ -179,7 +177,7 @@ struct ClosestPointQueryResult {
 };
 
 struct EdgeConnectionPair {
-	Edge::Connection connections[2];
+	Connection connections[2];
 	int size = 0;
 };
 

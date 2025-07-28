@@ -303,6 +303,8 @@ Ref<Tween> Tween::chain() {
 }
 
 bool Tween::custom_step(double p_delta) {
+	ERR_FAIL_COND_V_MSG(in_step, true, "Can't call custom_step() during another Tween step.");
+
 	bool r = running;
 	running = true;
 	bool ret = step(p_delta);
@@ -329,6 +331,7 @@ bool Tween::step(double p_delta) {
 	if (!running) {
 		return true;
 	}
+	in_step = true;
 
 	if (!started) {
 		if (tweeners.is_empty()) {
@@ -339,6 +342,7 @@ bool Tween::step(double p_delta) {
 			} else {
 				tween_id = to_string();
 			}
+			in_step = false;
 			ERR_FAIL_V_MSG(false, tween_id + ": started with no Tweeners.");
 		}
 		current_step = 0;
@@ -357,7 +361,7 @@ bool Tween::step(double p_delta) {
 	bool potential_infinite = false;
 #endif
 
-	while (rem_delta > 0 && running) {
+	while (running && rem_delta > 0) {
 		double step_delta = rem_delta;
 		step_active = false;
 
@@ -392,6 +396,7 @@ bool Tween::step(double p_delta) {
 							potential_infinite = true;
 						} else {
 							// Looped twice without using any time, this is 100% certain infinite loop.
+							in_step = false;
 							ERR_FAIL_V_MSG(false, "Infinite loop detected. Check set_loops() description for more info.");
 						}
 					}
@@ -402,7 +407,7 @@ bool Tween::step(double p_delta) {
 			}
 		}
 	}
-
+	in_step = false;
 	return true;
 }
 
@@ -592,7 +597,6 @@ void PropertyTweener::start() {
 
 	Object *target_instance = ObjectDB::get_instance(target);
 	if (!target_instance) {
-		WARN_PRINT("Target object freed before starting, aborting Tweener.");
 		return;
 	}
 
@@ -870,7 +874,14 @@ void SubtweenTweener::start() {
 
 	// Reset the subtween.
 	subtween->stop();
-	subtween->play();
+
+	// It's possible that a subtween could be killed before it is started;
+	// if so, we just want to skip it entirely.
+	if (subtween->is_valid()) {
+		subtween->play();
+	} else {
+		_finish();
+	}
 }
 
 bool SubtweenTweener::step(double &r_delta) {

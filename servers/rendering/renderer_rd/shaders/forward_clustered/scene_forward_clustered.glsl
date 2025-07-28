@@ -4,6 +4,9 @@
 
 #VERSION_DEFINES
 
+/* Include half precision types. */
+#include "../half_inc.glsl"
+
 #include "scene_forward_clustered_inc.glsl"
 
 #define SHADER_IS_SRGB false
@@ -145,6 +148,7 @@ ivec3 multiview_uv(ivec2 uv) {
 }
 layout(location = 11) out vec4 combined_projected;
 #else // USE_MULTIVIEW
+#define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
@@ -154,8 +158,8 @@ ivec2 multiview_uv(ivec2 uv) {
 #endif //USE_MULTIVIEW
 
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
-layout(location = 12) highp out vec4 diffuse_light_interp;
-layout(location = 13) highp out vec4 specular_light_interp;
+layout(location = 12) out vec4 diffuse_light_interp;
+layout(location = 13) out vec4 specular_light_interp;
 
 #include "../scene_forward_vertex_lights_inc.glsl"
 
@@ -335,7 +339,7 @@ void vertex_shader(vec3 vertex_input,
 
 	vec3 vertex = vertex_input;
 #ifdef NORMAL_USED
-	vec3 normal = normal_input;
+	vec3 normal_highp = normal_input;
 #endif
 
 #ifdef TANGENT_USED
@@ -383,7 +387,7 @@ void vertex_shader(vec3 vertex_input,
 	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
 
 #ifdef NORMAL_USED
-	normal = model_normal_matrix * normal;
+	normal_highp = model_normal_matrix * normal_highp;
 #endif
 
 #ifdef TANGENT_USED
@@ -398,9 +402,29 @@ void vertex_shader(vec3 vertex_input,
 	float z_clip_scale = 1.0;
 #endif
 
-	float roughness = 1.0;
+	float roughness_highp = 1.0;
 
+#ifdef USE_DOUBLE_PRECISION
 	mat4 modelview = scene_data.view_matrix * model_matrix;
+
+	// We separate the basis from the origin because the basis is fine with single point precision.
+	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
+	// We add the result to the vertex and ignore the final lost precision.
+	vec3 model_origin = model_matrix[3].xyz;
+	if (sc_multimesh()) {
+		modelview = modelview * matrix;
+
+		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
+		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
+	}
+
+	// Overwrite the translation part of modelview with improved precision.
+	vec3 temp_precision; // Will be ignored.
+	modelview[3].xyz = double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
+#else
+	mat4 modelview = scene_data.view_matrix * model_matrix;
+#endif
 	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
@@ -409,25 +433,16 @@ void vertex_shader(vec3 vertex_input,
 #CODE : VERTEX
 	}
 
+	float roughness = roughness_highp;
+#ifdef NORMAL_USED
+	vec3 normal = normal_highp;
+#endif
+
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
-#ifdef USE_DOUBLE_PRECISION
-	// We separate the basis from the origin because the basis is fine with single point precision.
-	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
-	// We add the result to the vertex and ignore the final lost precision.
-	vec3 model_origin = model_matrix[3].xyz;
-	if (sc_multimesh()) {
-		vertex = mat3(matrix) * vertex;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
-	}
-	vertex = mat3(inv_view_matrix * modelview) * vertex;
-	vec3 temp_precision; // Will be ignored.
-	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	vertex = mat3(scene_data.view_matrix) * vertex;
-#else
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
-#endif
+
 #ifdef NORMAL_USED
 	normal = modelview_normal * normal;
 #endif
@@ -595,11 +610,11 @@ void vertex_shader(vec3 vertex_input,
 		vec3 directional_specular = vec3(0.0);
 
 		for (uint i = 0; i < scene_data.directional_light_count; i++) {
-			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 				continue; // Not masked, skip.
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
@@ -665,7 +680,7 @@ void vertex_shader(vec3 vertex_input,
 #endif
 
 #ifdef Z_CLIP_SCALE_USED
-	if (!bool(scene_data_block.data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS)) {
+	if (!bool(scene_data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS)) {
 		gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
 	}
 #endif
@@ -807,6 +822,9 @@ void main() {
 #define SHADER_IS_SRGB false
 #define SHADER_SPACE_FAR 0.0
 
+/* Include half precision types. */
+#include "../half_inc.glsl"
+
 #include "scene_forward_clustered_inc.glsl"
 
 /* Varyings */
@@ -919,6 +937,7 @@ ivec3 multiview_uv(ivec2 uv) {
 }
 layout(location = 11) in vec4 combined_projected;
 #else // USE_MULTIVIEW
+#define ViewIndex 0
 vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
@@ -927,8 +946,8 @@ ivec2 multiview_uv(ivec2 uv) {
 }
 #endif // !USE_MULTIVIEW
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
-layout(location = 12) highp in vec4 diffuse_light_interp;
-layout(location = 13) highp in vec4 specular_light_interp;
+layout(location = 12) in vec4 diffuse_light_interp;
+layout(location = 13) in vec4 specular_light_interp;
 #endif
 //defines to keep compatibility with vertex
 
@@ -1125,24 +1144,24 @@ void fragment_shader(in SceneData scene_data) {
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
 	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
-	vec3 view = -normalize(vertex_interp - eye_offset);
+	vec3 view_highp = -normalize(vertex_interp - eye_offset);
 
 	// UV in our combined frustum space is used for certain screen uv processes where it's
 	// overkill to render separate left and right eye views
 	vec2 combined_uv = (combined_projected.xy / combined_projected.w) * 0.5 + 0.5;
 #else
 	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
-	vec3 view = -normalize(vertex_interp);
+	vec3 view_highp = -normalize(vertex_interp);
 #endif
-	vec3 albedo = vec3(1.0);
+	vec3 albedo_highp = vec3(1.0);
 	vec3 backlight = vec3(0.0);
 	vec4 transmittance_color = vec4(0.0, 0.0, 0.0, 1.0);
 	float transmittance_depth = 0.0;
 	float transmittance_boost = 0.0;
-	float metallic = 0.0;
+	float metallic_highp = 0.0;
 	float specular = 0.5;
 	vec3 emission = vec3(0.0);
-	float roughness = 1.0;
+	float roughness_highp = 1.0;
 	float rim = 0.0;
 	float rim_tint = 0.0;
 	float clearcoat = 0.0;
@@ -1163,7 +1182,7 @@ void fragment_shader(in SceneData scene_data) {
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 
-	float alpha = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
+	float alpha_highp = float(instances.data[instance_index].flags >> INSTANCE_FLAGS_FADE_SHIFT) / float(255.0);
 
 #ifdef TANGENT_USED
 	vec3 binormal = binormal_interp;
@@ -1174,10 +1193,10 @@ void fragment_shader(in SceneData scene_data) {
 #endif
 
 #ifdef NORMAL_USED
-	vec3 normal = normal_interp;
+	vec3 normal_highp = normal_interp;
 #if defined(DO_SIDE_CHECK)
 	if (!gl_FrontFacing) {
-		normal = -normal;
+		normal_highp = -normal_highp;
 	}
 #endif // DO_SIDE_CHECK
 #endif // NORMAL_USED
@@ -1247,9 +1266,18 @@ void fragment_shader(in SceneData scene_data) {
 
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
+
 	{
 #CODE : FRAGMENT
 	}
+
+	float roughness = roughness_highp;
+	float metallic = metallic_highp;
+	vec3 albedo = albedo_highp;
+	float alpha = alpha_highp;
+#ifdef NORMAL_USED
+	vec3 normal = normal_highp;
+#endif
 
 #ifdef LIGHT_TRANSMITTANCE_USED
 	transmittance_color.a *= sss_strength;
@@ -1258,10 +1286,12 @@ void fragment_shader(in SceneData scene_data) {
 #ifdef LIGHT_VERTEX_USED
 	vertex = light_vertex;
 #ifdef USE_MULTIVIEW
-	view = -normalize(vertex - eye_offset);
+	vec3 view = -normalize(vertex - eye_offset);
 #else
-	view = -normalize(vertex);
+	vec3 view = -normalize(vertex);
 #endif //USE_MULTIVIEW
+#else
+	vec3 view = view_highp;
 #endif //LIGHT_VERTEX_USED
 
 #ifdef NORMAL_USED
@@ -1689,7 +1719,7 @@ void fragment_shader(in SceneData scene_data) {
 								 c[3] * lightmap_captures.data[index].sh[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
 								 c[2] * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
 								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
-				scene_data.emissive_exposure_normalization;
+				scene_data.IBL_exposure_normalization;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);
@@ -2060,11 +2090,6 @@ void fragment_shader(in SceneData scene_data) {
 
 #endif // !AMBIENT_LIGHT_DISABLED
 #endif //GI !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
-
-#if !defined(MODE_RENDER_DEPTH)
-	//this saves some VGPRs
-	uint orms = packUnorm4x8(vec4(ao, roughness, metallic, specular));
-#endif
 
 // LIGHTING
 #if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
@@ -2453,7 +2478,7 @@ void fragment_shader(in SceneData scene_data) {
 #else
 					directional_lights.data[i].color * directional_lights.data[i].energy * tint,
 #endif
-					true, shadow, f0, orms, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
+					true, shadow, f0, roughness, metallic, directional_lights.data[i].specular, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
@@ -2517,7 +2542,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+				light_process_omni(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2534,7 +2559,7 @@ void fragment_shader(in SceneData scene_data) {
 						clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-						tangent, binormal, anisotropy,
+						binormal, tangent, anisotropy,
 #endif
 						diffuse_light, direct_specular_light);
 			}
@@ -2578,7 +2603,7 @@ void fragment_shader(in SceneData scene_data) {
 					continue; // Statically baked light and object uses lightmap, skip
 				}
 
-				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, orms, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
+				light_process_spot(light_index, vertex, view, normal, vertex_ddx, vertex_ddy, f0, roughness, metallic, scene_data.taa_frame_count, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 						backlight,
 #endif
@@ -2595,8 +2620,7 @@ void fragment_shader(in SceneData scene_data) {
 						clearcoat, clearcoat_roughness, geo_normal,
 #endif // LIGHT_CLEARCOAT_USED
 #ifdef LIGHT_ANISOTROPY_USED
-						tangent,
-						binormal, anisotropy,
+						binormal, tangent, anisotropy,
 #endif
 						diffuse_light, direct_specular_light);
 			}
@@ -2773,12 +2797,10 @@ void fragment_shader(in SceneData scene_data) {
 	diffuse_light *= albedo; // ambient must be multiplied by albedo at the end
 
 	// apply direct light AO
-	ao = unpackUnorm4x8(orms).x;
 	diffuse_light *= ao;
 	direct_specular_light *= ao;
 
 	// apply metallic
-	metallic = unpackUnorm4x8(orms).z;
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 

@@ -148,6 +148,9 @@ void Popup::_post_popup() {
 }
 
 void Popup::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (
 			p_property.name == "transient" ||
 			p_property.name == "exclusive" ||
@@ -387,6 +390,7 @@ void PopupPanel::_notification(int p_what) {
 #endif
 		} break;
 
+		case Control::NOTIFICATION_TRANSLATION_CHANGED:
 		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			if (is_visible()) {
 				_update_shadow_offsets();

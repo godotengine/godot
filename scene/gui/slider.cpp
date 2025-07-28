@@ -308,7 +308,19 @@ void Slider::_notification(int p_what) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
-						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
+
+						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+							tick->draw(ci, Point2i(widget_width + (size.width - widget_width) / 2 + theme_cache.tick_offset, ofs));
+						}
+
+						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i((size.width - widget_width) / 2 - tick->get_width() - theme_cache.tick_offset, ofs);
+							tick->draw_rect(ci, Rect2i(pos, Size2i(-tick->get_width(), tick->get_height())));
+						}
+
+						if (ticks_position == TICK_POSITION_CENTER) {
+							tick->draw(ci, Point2i((size.width - tick->get_width()) / 2 + theme_cache.tick_offset, ofs));
+						}
 					}
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
@@ -333,12 +345,33 @@ void Slider::_notification(int p_what) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
-						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
+
+						if (ticks_position == TICK_POSITION_BOTTOM_RIGHT || ticks_position == TICK_POSITION_BOTH) {
+							tick->draw(ci, Point2i(ofs, widget_height + (size.height - widget_height) / 2 + theme_cache.tick_offset));
+						}
+
+						if (ticks_position == TICK_POSITION_TOP_LEFT || ticks_position == TICK_POSITION_BOTH) {
+							Point2i pos = Point2i(ofs, (size.height - widget_height) / 2 - tick->get_height() - theme_cache.tick_offset);
+							tick->draw_rect(ci, Rect2i(pos, Size2i(tick->get_width(), -tick->get_height())));
+						}
+
+						if (ticks_position == TICK_POSITION_CENTER) {
+							tick->draw(ci, Point2i(ofs, (size.height - tick->get_height()) / 2 + theme_cache.tick_offset));
+						}
 					}
 				}
 				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
 			}
 		} break;
+	}
+}
+
+void Slider::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+	if (p_property.name == "ticks_position") {
+		p_property.hint_string = orientation == VERTICAL ? "Right,Left,Both,Center" : "Bottom,Top,Both,Center";
 	}
 }
 
@@ -367,12 +400,25 @@ bool Slider::get_ticks_on_borders() const {
 	return ticks_on_borders;
 }
 
+Slider::TickPosition Slider::get_ticks_position() const {
+	return ticks_position;
+}
+
 void Slider::set_ticks_on_borders(bool _tob) {
 	if (ticks_on_borders == _tob) {
 		return;
 	}
 
 	ticks_on_borders = _tob;
+	queue_redraw();
+}
+
+void Slider::set_ticks_position(TickPosition p_ticks_position) {
+	if (ticks_position == p_ticks_position) {
+		return;
+	}
+
+	ticks_position = p_ticks_position;
 	queue_redraw();
 }
 
@@ -405,6 +451,9 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"), &Slider::get_ticks_on_borders);
 	ClassDB::bind_method(D_METHOD("set_ticks_on_borders", "ticks_on_border"), &Slider::set_ticks_on_borders);
 
+	ClassDB::bind_method(D_METHOD("get_ticks_position"), &Slider::get_ticks_position);
+	ClassDB::bind_method(D_METHOD("set_ticks_position", "ticks_on_border"), &Slider::set_ticks_position);
+
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
 	ClassDB::bind_method(D_METHOD("set_scrollable", "scrollable"), &Slider::set_scrollable);
@@ -417,6 +466,12 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ticks_position", PROPERTY_HINT_ENUM), "set_ticks_position", "get_ticks_position");
+
+	BIND_ENUM_CONSTANT(TICK_POSITION_BOTTOM_RIGHT);
+	BIND_ENUM_CONSTANT(TICK_POSITION_TOP_LEFT);
+	BIND_ENUM_CONSTANT(TICK_POSITION_BOTH);
+	BIND_ENUM_CONSTANT(TICK_POSITION_CENTER);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, slider_style, "slider");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Slider, grabber_area_style, "grabber_area");
@@ -429,6 +484,7 @@ void Slider::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
 }
 
 Slider::Slider(Orientation p_orientation) {
