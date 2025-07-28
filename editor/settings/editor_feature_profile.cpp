@@ -43,7 +43,9 @@
 #include "scene/gui/separator.h"
 
 const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
+#ifndef _3D_DISABLED
 	TTRC("3D Editor"),
+#endif // _3D_DISABLED
 	TTRC("Script Editor"),
 	TTRC("Asset Library"),
 	TTRC("Scene Tree Editing"),
@@ -55,7 +57,9 @@ const char *EditorFeatureProfile::feature_names[FEATURE_MAX] = {
 };
 
 const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
+#ifndef _3D_DISABLED
 	TTRC("Allows to view and edit 3D scenes."),
+#endif // _3D_DISABLED
 	TTRC("Allows to edit scripts using the integrated script editor."),
 	TTRC("Provides built-in access to the Asset Library."),
 	TTRC("Allows editing the node hierarchy in the Scene dock."),
@@ -67,7 +71,9 @@ const char *EditorFeatureProfile::feature_descriptions[FEATURE_MAX] = {
 };
 
 const char *EditorFeatureProfile::feature_identifiers[FEATURE_MAX] = {
+#ifndef _3D_DISABLED
 	"3d",
+#endif // _3D_DISABLED
 	"script",
 	"asset_lib",
 	"scene_tree",
@@ -304,7 +310,9 @@ void EditorFeatureProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save_to_file", "path"), &EditorFeatureProfile::save_to_file);
 	ClassDB::bind_method(D_METHOD("load_from_file", "path"), &EditorFeatureProfile::load_from_file);
 
+#ifndef _3D_DISABLED
 	BIND_ENUM_CONSTANT(FEATURE_3D);
+#endif // _3D_DISABLED
 	BIND_ENUM_CONSTANT(FEATURE_SCRIPT);
 	BIND_ENUM_CONSTANT(FEATURE_ASSET_LIB);
 	BIND_ENUM_CONSTANT(FEATURE_SCENE_TREE);

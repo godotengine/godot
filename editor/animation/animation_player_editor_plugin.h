@@ -295,7 +295,9 @@ protected:
 	void _notification(int p_what);
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
+#ifndef _3D_DISABLED
 	void _transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key);
+#endif // _3D_DISABLED
 	void _update_keying();
 
 public:
@@ -310,7 +312,9 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	virtual void forward_canvas_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+#ifndef _3D_DISABLED
 	virtual void forward_3d_force_draw_over_viewport(Control *p_overlay) override { anim_editor->forward_force_draw_over_viewport(p_overlay); }
+#endif // _3D_DISABLED
 
 	AnimationPlayerEditorPlugin();
 	~AnimationPlayerEditorPlugin();

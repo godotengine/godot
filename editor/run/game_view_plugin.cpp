@@ -68,6 +68,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
 	settings["box_selection_fill_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
 	settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
+#ifndef _3D_DISABLED
 	settings["editors/3d/default_fov"] = EDITOR_GET("editors/3d/default_fov");
 	settings["editors/3d/default_z_near"] = EDITOR_GET("editors/3d/default_z_near");
 	settings["editors/3d/default_z_far"] = EDITOR_GET("editors/3d/default_z_far");
@@ -80,6 +81,7 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 	settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
 	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+#endif // _3D_DISABLED
 
 	Array setup_data;
 	setup_data.append(settings);
@@ -220,6 +222,7 @@ void GameViewDebugger::reset_camera_2d_position() {
 	}
 }
 
+#ifndef _3D_DISABLED
 void GameViewDebugger::reset_camera_3d_position() {
 	for (Ref<EditorDebuggerSession> &I : sessions) {
 		if (I->is_active()) {
@@ -227,6 +230,7 @@ void GameViewDebugger::reset_camera_3d_position() {
 		}
 	}
 }
+#endif // _3D_DISABLED
 
 void GameViewDebugger::setup_session(int p_session_id) {
 	Ref<EditorDebuggerSession> session = get_session(p_session_id);
@@ -526,7 +530,9 @@ void GameView::_update_debugger_buttons() {
 
 	bool disable_camera_reset = empty || !camera_override_button->is_pressed() || !menu->is_item_checked(menu->get_item_index(CAMERA_MODE_INGAME));
 	menu->set_item_disabled(CAMERA_RESET_2D, disable_camera_reset);
+#ifndef _3D_DISABLED
 	menu->set_item_disabled(CAMERA_RESET_3D, disable_camera_reset);
+#endif // _3D_DISABLED
 
 	if (empty) {
 		suspend_button->set_pressed(false);
@@ -807,7 +813,11 @@ void GameView::_camera_override_button_toggled(bool p_pressed) {
 
 void GameView::_camera_override_menu_id_pressed(int p_id) {
 	PopupMenu *menu = camera_override_menu->get_popup();
-	if (p_id != CAMERA_RESET_2D && p_id != CAMERA_RESET_3D) {
+	if (p_id != CAMERA_RESET_2D
+#ifndef _3D_DISABLED
+			&& p_id != CAMERA_RESET_3D
+#endif // _3D_DISABLED
+	) {
 		for (int i = 0; i < menu->get_item_count(); i++) {
 			menu->set_item_checked(i, false);
 		}
@@ -817,9 +827,11 @@ void GameView::_camera_override_menu_id_pressed(int p_id) {
 		case CAMERA_RESET_2D: {
 			debugger->reset_camera_2d_position();
 		} break;
+#ifndef _3D_DISABLED
 		case CAMERA_RESET_3D: {
 			debugger->reset_camera_3d_position();
 		} break;
+#endif // _3D_DISABLED
 		case CAMERA_MODE_INGAME: {
 			debugger->set_camera_manipulate_mode(EditorDebuggerNode::OVERRIDE_INGAME);
 			menu->set_item_checked(menu->get_item_index(p_id), true);
@@ -857,7 +869,9 @@ void GameView::_notification(int p_what) {
 
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_editor_theme_icon(SNAME("InputEventJoypadMotion")));
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_button_icon(get_editor_theme_icon(SNAME("2DNodes")));
+#ifndef _3D_DISABLED
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
+#endif // _3D_DISABLED
 
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
@@ -1111,11 +1125,13 @@ void GameView::_feature_profile_changed() {
 
 	is_feature_enabled = is_profile_null || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
 
+#ifndef _3D_DISABLED
 	bool is_3d_enabled = is_profile_null || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D);
 	if (!is_3d_enabled && node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->is_pressed()) {
 		_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_NONE);
 	}
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_visible(is_3d_enabled);
+#endif // _3D_DISABLED
 }
 
 GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embedded_process, WindowWrapper *p_wrapper) {
@@ -1191,6 +1207,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTRC("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
 
+#ifndef _3D_DISABLED
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button);
 	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_text(TTRC("3D"));
@@ -1198,6 +1215,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation(SceneStringName(FlatButton));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTRC("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
+#endif // _3D_DISABLED
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -1217,7 +1235,7 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_pressed(true);
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_theme_type_variation(SceneStringName(FlatButton));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_select_mode_pressed).bind(RuntimeNodeSelect::SELECT_MODE_SINGLE));
-	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut(ED_GET_SHORTCUT("spatial_editor/tool_select"));
+	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut(ED_GET_SHORTCUT("canvas_item_editor/select_mode"));
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_shortcut_context(this);
 
 	select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST] = memnew(Button);
@@ -1256,7 +1274,9 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, EmbeddedProcessBase *p_embe
 	menu = camera_override_menu->get_popup();
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &GameView::_camera_override_menu_id_pressed));
 	menu->add_item(TTRC("Reset 2D Camera"), CAMERA_RESET_2D);
+#ifndef _3D_DISABLED
 	menu->add_item(TTRC("Reset 3D Camera"), CAMERA_RESET_3D);
+#endif // _3D_DISABLED
 	menu->add_separator();
 	menu->add_radio_check_item(TTRC("Manipulate In-Game"), CAMERA_MODE_INGAME);
 	menu->set_item_checked(menu->get_item_index(CAMERA_MODE_INGAME), true);

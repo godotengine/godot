@@ -78,7 +78,9 @@ void CSGShapeEditor::_menu_option(int p_option) {
 			_create_baked_mesh_instance();
 		} break;
 		case MENU_OPTION_BAKE_COLLISION_SHAPE: {
+#ifndef PHYSICS_3D_DISABLED
 			_create_baked_collision_shape();
+#endif // PHYSICS_3D_DISABLED
 		} break;
 	}
 }
@@ -116,6 +118,7 @@ void CSGShapeEditor::_create_baked_mesh_instance() {
 	ur->commit_action();
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void CSGShapeEditor::_create_baked_collision_shape() {
 	if (node == get_tree()->get_edited_scene_root()) {
 		err_dialog->set_text(TTR("Can not add a baked collision shape as sibling for the scene root.\nMove the CSG root node below a parent node."));
@@ -148,6 +151,7 @@ void CSGShapeEditor::_create_baked_collision_shape() {
 
 	ur->commit_action();
 }
+#endif // PHYSICS_3D_DISABLED
 
 CSGShapeEditor::CSGShapeEditor() {
 	options = memnew(MenuButton);
@@ -159,7 +163,9 @@ CSGShapeEditor::CSGShapeEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->get_popup()->add_item(TTR("Bake Mesh Instance"), MENU_OPTION_BAKE_MESH_INSTANCE);
+#ifndef PHYSICS_3D_DISABLED
 	options->get_popup()->add_item(TTR("Bake Collision Shape"), MENU_OPTION_BAKE_COLLISION_SHAPE);
+#endif // PHYSICS_3D_DISABLED
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CSGShapeEditor::_menu_option));
 

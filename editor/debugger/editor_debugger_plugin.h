@@ -31,6 +31,9 @@
 #pragma once
 
 #include "scene/gui/control.h"
+#ifdef _3D_DISABLED
+#include "core/object/script_language.h"
+#endif
 
 class ScriptEditorDebugger;
 

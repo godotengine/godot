@@ -34,13 +34,18 @@
 #include "core/io/resource_importer.h"
 #include "core/variant/dictionary.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/resources/3d/importer_mesh.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/mesh.h"
+
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/cylinder_shape_3d.h"
-#include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/3d/sphere_shape_3d.h"
-#include "scene/resources/animation.h"
-#include "scene/resources/mesh.h"
+#else
+using Shape3D = RefCounted;
+#endif // PHYSICS_3D_DISABLED
 
 class AnimationPlayer;
 class ImporterMesh;
@@ -214,7 +219,9 @@ class ResourceImporterScene : public ResourceImporter {
 	Array _get_skinned_pose_transforms(ImporterMeshInstance3D *p_src_mesh_node);
 	void _replace_owner(Node *p_node, Node *p_scene, Node *p_new_owner);
 	Node *_generate_meshes(Node *p_node, const Dictionary &p_mesh_data, bool p_generate_lods, bool p_create_shadow_meshes, LightBakeMode p_light_bake_mode, float p_lightmap_texel_size, const Vector<uint8_t> &p_src_lightmap_cache, Vector<Vector<uint8_t>> &r_lightmap_caches);
+#ifndef PHYSICS_3D_DISABLED
 	void _add_shapes(Node *p_node, const Vector<Ref<Shape3D>> &p_shapes);
+#endif // PHYSICS_3D_DISABLED
 	void _copy_meta(Object *p_src_object, Object *p_dst_object);
 	Node *_replace_node_with_type_and_script(Node *p_node, String p_node_type, Ref<Script> p_script);
 
@@ -304,11 +311,13 @@ public:
 	ResourceImporterScene(const String &p_scene_import_type = "PackedScene", bool p_singleton = false);
 	~ResourceImporterScene();
 
+#ifndef PHYSICS_3D_DISABLED
 	template <typename M>
 	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
 
 	template <typename M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
+#endif // PHYSICS_3D_DISABLED
 };
 
 class EditorSceneFormatImporterESCN : public EditorSceneFormatImporter {
@@ -319,6 +328,7 @@ public:
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 };
 
+#ifndef PHYSICS_3D_DISABLED
 template <typename M>
 Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
 	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
@@ -518,3 +528,4 @@ Transform3D ResourceImporterScene::get_collision_shapes_transform(const M &p_opt
 	}
 	return transform;
 }
+#endif // PHYSICS_3D_DISABLED

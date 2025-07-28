@@ -1763,6 +1763,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 		_allocate_onion_layers();
 	}
 
+#ifndef _3D_DISABLED
 	// Hide superfluous elements that would make the overlay unnecessary cluttered.
 	if (Node3DEditor::get_singleton()->is_visible()) {
 		// 3D
@@ -1787,6 +1788,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 		Node3DEditor::get_singleton()->set_state(new_state);
 	} else {
 		// CanvasItemEditor.
+#endif // _3D_DISABLED
 		onion.temp.canvas_edit_state = CanvasItemEditor::get_singleton()->get_state();
 		Dictionary new_state = onion.temp.canvas_edit_state.duplicate();
 		new_state["show_origin"] = false;
@@ -1800,7 +1802,9 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_prolog() {
 		new_state["show_transformation_gizmos"] = onion.include_gizmos ? new_state["gizmos"] : Variant(false);
 		// TODO: Save/restore only affected entries.
 		CanvasItemEditor::get_singleton()->set_state(new_state);
+#ifndef _3D_DISABLED
 	}
+#endif // _3D_DISABLED
 
 	// Tweak the root viewport to ensure it's rendered before our target.
 	RID root_vp = get_tree()->get_root()->get_viewport_rid();
@@ -1910,14 +1914,18 @@ void AnimationPlayerEditor::_prepare_onion_layers_2_epilog() {
 	player->seek_internal(onion.temp.anim_player_position, true, true, false);
 	player->restore(onion.temp.anim_values_backup);
 
+#ifndef _3D_DISABLED
 	// Restore state of main editors.
 	if (Node3DEditor::get_singleton()->is_visible()) {
 		// 3D
 		Node3DEditor::get_singleton()->set_state(onion.temp.spatial_edit_state);
 	} else { // CanvasItemEditor
 		// 2D
+#endif // _3D_DISABLED
 		CanvasItemEditor::get_singleton()->set_state(onion.temp.canvas_edit_state);
+#ifndef _3D_DISABLED
 	}
+#endif // _3D_DISABLED
 
 	// Update viewports with skin layers overlaid for the actual engine loop render.
 	onion.can_overlay = true;
@@ -2312,7 +2320,9 @@ AnimationPlayerEditor::~AnimationPlayerEditor() {
 void AnimationPlayerEditorPlugin::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+#ifndef _3D_DISABLED
 			Node3DEditor::get_singleton()->connect(SNAME("transform_key_request"), callable_mp(this, &AnimationPlayerEditorPlugin::_transform_key_request));
+#endif // _3D_DISABLED
 			InspectorDock::get_inspector_singleton()->connect(SNAME("property_keyed"), callable_mp(this, &AnimationPlayerEditorPlugin::_property_keyed));
 			anim_editor->get_track_editor()->connect(SNAME("keying_changed"), callable_mp(this, &AnimationPlayerEditorPlugin::_update_keying));
 			InspectorDock::get_inspector_singleton()->connect(SNAME("edited_object_changed"), callable_mp(anim_editor->get_track_editor(), &AnimationTrackEditor::update_keying));
@@ -2330,6 +2340,7 @@ void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const V
 	te->insert_value_key(p_keyed, p_advance);
 }
 
+#ifndef _3D_DISABLED
 void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
 	if (!anim_editor->get_track_editor()->has_keying()) {
 		return;
@@ -2342,6 +2353,7 @@ void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const Strin
 	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_ROTATION_3D, p_key.basis.get_rotation_quaternion());
 	anim_editor->get_track_editor()->insert_transform_key(s, p_sub, Animation::TYPE_SCALE_3D, p_key.basis.get_scale());
 }
+#endif // _3D_DISABLED
 
 void AnimationPlayerEditorPlugin::_update_keying() {
 	InspectorDock::get_inspector_singleton()->set_keying(anim_editor->get_track_editor()->has_keying());

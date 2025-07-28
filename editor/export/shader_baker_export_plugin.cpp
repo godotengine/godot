@@ -33,11 +33,13 @@
 #include "core/config/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
-#include "scene/3d/label_3d.h"
-#include "scene/3d/sprite_3d.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/rendering_shader_container.h"
+
+#ifndef _3D_DISABLED
+#include "scene/3d/label_3d.h"
+#include "scene/3d/sprite_3d.h"
 
 // Ensure that AlphaCut is the same between the two classes so we can share the code to detect transparency.
 static_assert(ENUM_MEMBERS_EQUAL(SpriteBase3D::ALPHA_CUT_DISABLED, Label3D::ALPHA_CUT_DISABLED));
@@ -45,6 +47,7 @@ static_assert(ENUM_MEMBERS_EQUAL(SpriteBase3D::ALPHA_CUT_DISCARD, Label3D::ALPHA
 static_assert(ENUM_MEMBERS_EQUAL(SpriteBase3D::ALPHA_CUT_OPAQUE_PREPASS, Label3D::ALPHA_CUT_OPAQUE_PREPASS));
 static_assert(ENUM_MEMBERS_EQUAL(SpriteBase3D::ALPHA_CUT_HASH, Label3D::ALPHA_CUT_HASH));
 static_assert(ENUM_MEMBERS_EQUAL(SpriteBase3D::ALPHA_CUT_MAX, Label3D::ALPHA_CUT_MAX));
+#endif // _3D_DISABLED
 
 String ShaderBakerExportPlugin::get_name() const {
 	return "ShaderBaker";
@@ -300,6 +303,7 @@ Ref<Resource> ShaderBakerExportPlugin::_customize_resource(const Ref<Resource> &
 }
 
 Node *ShaderBakerExportPlugin::_customize_scene(Node *p_root, const String &p_path) {
+#ifndef _3D_DISABLED
 	LocalVector<Node *> nodes_to_visit;
 	nodes_to_visit.push_back(p_root);
 	while (!nodes_to_visit.is_empty()) {
@@ -366,6 +370,7 @@ Node *ShaderBakerExportPlugin::_customize_scene(Node *p_root, const String &p_pa
 			nodes_to_visit.push_back(node->get_child(i));
 		}
 	}
+#endif // _3D_DISABLED
 
 	return nullptr;
 }
