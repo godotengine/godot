@@ -64,6 +64,7 @@ Ref<Material> Material::get_next_pass() const {
 void Material::set_render_priority(int p_priority) {
 	ERR_FAIL_COND(p_priority < RENDER_PRIORITY_MIN);
 	ERR_FAIL_COND(p_priority > RENDER_PRIORITY_MAX);
+
 	render_priority = p_priority;
 
 	if (material.is_valid()) {
@@ -3215,6 +3216,11 @@ Ref<BaseMaterial3D> BaseMaterial3D::_get_stencil_next_pass() const {
 void BaseMaterial3D::set_stencil_mode(StencilMode p_stencil_mode) {
 	if (stencil_mode == p_stencil_mode) {
 		return;
+	}
+
+	if (p_stencil_mode == StencilMode::STENCIL_MODE_OUTLINE || p_stencil_mode == StencilMode::STENCIL_MODE_XRAY) {
+		ERR_FAIL_COND_EDMSG(get_render_priority() >= RENDER_PRIORITY_MAX,
+				vformat("Cannot use stencil mode Outline or Xray, when render priority is RENDER_PRIORITY_MAX(%d).", RENDER_PRIORITY_MAX));
 	}
 
 	stencil_mode = p_stencil_mode;
