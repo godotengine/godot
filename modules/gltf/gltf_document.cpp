@@ -81,10 +81,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-constexpr int COMPONENT_COUNT_FOR_ACCESSOR_TYPE[7] = {
-	1, 2, 3, 4, 4, 9, 16
-};
-
 static void _attach_extras_to_meta(const Dictionary &p_extras, Ref<Resource> p_node) {
 	if (!p_extras.is_empty()) {
 		p_node->set_meta("extras", p_extras);
@@ -908,32 +904,6 @@ Error GLTFDocument::_encode_accessors(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-String GLTFDocument::_get_accessor_type_name(const GLTFAccessor::GLTFAccessorType p_accessor_type) {
-	if (p_accessor_type == GLTFAccessor::TYPE_SCALAR) {
-		return "SCALAR";
-	}
-	if (p_accessor_type == GLTFAccessor::TYPE_VEC2) {
-		return "VEC2";
-	}
-	if (p_accessor_type == GLTFAccessor::TYPE_VEC3) {
-		return "VEC3";
-	}
-	if (p_accessor_type == GLTFAccessor::TYPE_VEC4) {
-		return "VEC4";
-	}
-
-	if (p_accessor_type == GLTFAccessor::TYPE_MAT2) {
-		return "MAT2";
-	}
-	if (p_accessor_type == GLTFAccessor::TYPE_MAT3) {
-		return "MAT3";
-	}
-	if (p_accessor_type == GLTFAccessor::TYPE_MAT4) {
-		return "MAT4";
-	}
-	ERR_FAIL_V("SCALAR");
-}
-
 Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 	if (!p_state->json.has("accessors")) {
 		return OK;
@@ -954,647 +924,94 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 	return OK;
 }
 
-String GLTFDocument::_get_component_type_name(const GLTFAccessor::GLTFComponentType p_component) {
-	switch (p_component) {
-		case GLTFAccessor::COMPONENT_TYPE_NONE:
-			return "None";
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE:
-			return "Byte";
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE:
-			return "UByte";
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT:
-			return "Short";
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
-			return "UShort";
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT:
-			return "Int";
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
-			return "UInt";
-		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT:
-			return "Float";
-		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT:
-			return "Double";
-		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT:
-			return "Half";
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG:
-			return "Long";
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG:
-			return "ULong";
-	}
-
-	return "<Error>";
-}
-
-Error GLTFDocument::_decode_buffer_view(Ref<GLTFState> p_state, double *p_dst, const GLTFBufferViewIndex p_buffer_view, const int64_t p_skip_every, const int64_t p_skip_bytes, const int64_t p_element_size, const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type, const int64_t p_component_count, const GLTFAccessor::GLTFComponentType p_component_type, const int64_t p_component_size, const bool p_normalized, const int64_t p_byte_offset, const bool p_for_vertex) {
-	const Ref<GLTFBufferView> bv = p_state->buffer_views[p_buffer_view];
-
-	int64_t stride = p_element_size;
-	if (bv->byte_stride > 0) {
-		stride = bv->byte_stride;
-	}
-	if (p_for_vertex && stride % 4) {
-		stride += 4 - (stride % 4); //according to spec must be multiple of 4
-	}
-
-	ERR_FAIL_INDEX_V(bv->buffer, p_state->buffers.size(), ERR_PARSE_ERROR);
-	if (bv->byte_offset % p_component_size != 0) {
-		WARN_PRINT("glTF: Buffer view byte offset is not a multiple of accessor component size. This file is invalid per the glTF specification and will not load correctly in some glTF viewers, but Godot will try to load it anyway.");
-	}
-	if (p_byte_offset % p_component_size != 0) {
-		WARN_PRINT("glTF: Accessor byte offset is not a multiple of accessor component size. This file is invalid per the glTF specification and will not load correctly in some glTF viewers, but Godot will try to load it anyway.");
-	}
-
-	const uint32_t offset = bv->byte_offset + p_byte_offset;
-	Vector<uint8_t> buffer = p_state->buffers[bv->buffer]; //copy on write, so no performance hit
-	const uint8_t *bufptr = buffer.ptr();
-
-	//use to debug
-	print_verbose("glTF: accessor type " + _get_accessor_type_name(p_accessor_type) + " component type: " + _get_component_type_name(p_component_type) + " stride: " + itos(stride) + " amount " + itos(p_count));
-	print_verbose("glTF: accessor offset " + itos(p_byte_offset) + " view offset: " + itos(bv->byte_offset) + " total buffer len: " + itos(buffer.size()) + " view len " + itos(bv->byte_length));
-
-	const int64_t buffer_end = (stride * (p_count - 1)) + p_element_size;
-	ERR_FAIL_COND_V(buffer_end > bv->byte_length, ERR_PARSE_ERROR);
-
-	ERR_FAIL_COND_V((int)(offset + buffer_end) > buffer.size(), ERR_PARSE_ERROR);
-
-	//fill everything as doubles
-
-	for (int64_t i = 0; i < p_count; i++) {
-		const uint8_t *src = &bufptr[offset + i * stride];
-
-		for (int64_t j = 0; j < p_component_count; j++) {
-			if (p_skip_every && j > 0 && (j % p_skip_every) == 0) {
-				src += p_skip_bytes;
-			}
-
-			double d = 0;
-			// 3.11. Implementations MUST use following equations to decode real floating-point value f from a normalized integer c and vise-versa.
-			// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#animations
-			switch (p_component_type) {
-				case GLTFAccessor::COMPONENT_TYPE_NONE: {
-					ERR_FAIL_V_MSG(ERR_INVALID_DATA, "glTF: Failed to decode buffer view, component type not set.");
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE: {
-					int8_t b = int8_t(*src);
-					if (p_normalized) {
-						d = MAX(double(b) / 127.0, -1.0);
-					} else {
-						d = double(b);
-					}
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
-					uint8_t b = *src;
-					if (p_normalized) {
-						d = (double(b) / 255.0);
-					} else {
-						d = double(b);
-					}
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT: {
-					int16_t s = *(int16_t *)src;
-					if (p_normalized) {
-						d = MAX(double(s) / 32767.0, -1.0);
-					} else {
-						d = double(s);
-					}
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
-					uint16_t s = *(uint16_t *)src;
-					if (p_normalized) {
-						d = (double(s) / 65535.0);
-					} else {
-						d = double(s);
-					}
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
-					d = *(int32_t *)src;
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
-					d = *(uint32_t *)src;
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT: {
-					d = *(float *)src;
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
-					d = *(double *)src;
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
-					ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Half float not supported yet.");
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG: {
-					d = *(int64_t *)src;
-				} break;
-				case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
-					d = *(uint64_t *)src;
-				} break;
-			}
-
-			*p_dst++ = d;
-			src += p_component_size;
-		}
-	}
-
-	return OK;
-}
-
-int GLTFDocument::_get_component_type_size(const GLTFAccessor::GLTFComponentType p_component_type) {
-	switch (p_component_type) {
-		case GLTFAccessor::COMPONENT_TYPE_NONE:
-			ERR_FAIL_V(0);
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE:
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE:
-			return 1;
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT:
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT:
-		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT:
-			return 2;
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT:
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT:
-		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT:
-			return 4;
-		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT:
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG:
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG:
-			return 8;
-	}
-	ERR_FAIL_V(0);
-}
-
-Vector<double> GLTFDocument::_decode_accessor(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	//spec, for reference:
-	//https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#data-alignment
-
-	ERR_FAIL_INDEX_V(p_accessor, p_state->accessors.size(), Vector<double>());
-
-	const Ref<GLTFAccessor> a = p_state->accessors[p_accessor];
-
-	const int component_count = COMPONENT_COUNT_FOR_ACCESSOR_TYPE[a->accessor_type];
-	const int component_size = _get_component_type_size(a->component_type);
-	ERR_FAIL_COND_V(component_size == 0, Vector<double>());
-	int element_size = component_count * component_size;
-
-	int64_t skip_every = 0;
-	int64_t skip_bytes = 0;
-	//special case of alignments, as described in spec
-	switch (a->component_type) {
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE:
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
-			if (a->accessor_type == GLTFAccessor::TYPE_MAT2) {
-				skip_every = 2;
-				skip_bytes = 2;
-				element_size = 8; //override for this case
-			}
-			if (a->accessor_type == GLTFAccessor::TYPE_MAT3) {
-				skip_every = 3;
-				skip_bytes = 1;
-				element_size = 12; //override for this case
-			}
-		} break;
-		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT:
-		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
-			if (a->accessor_type == GLTFAccessor::TYPE_MAT3) {
-				skip_every = 6;
-				skip_bytes = 2;
-				element_size = 16; //override for this case
-			}
-		} break;
-		default: {
-		}
-	}
-
-	Vector<double> dst_buffer;
-	dst_buffer.resize(component_count * a->count);
-	double *dst = dst_buffer.ptrw();
-
-	if (a->buffer_view >= 0) {
-		ERR_FAIL_INDEX_V(a->buffer_view, p_state->buffer_views.size(), Vector<double>());
-
-		const Error err = _decode_buffer_view(p_state, dst, a->buffer_view, skip_every, skip_bytes, element_size, a->count, a->accessor_type, component_count, a->component_type, component_size, a->normalized, a->byte_offset, p_for_vertex);
-		if (err != OK) {
-			return Vector<double>();
-		}
-	} else {
-		//fill with zeros, as bufferview is not defined.
-		for (int64_t i = 0; i < (a->count * component_count); i++) {
-			dst_buffer.write[i] = 0;
-		}
-	}
-
-	if (a->sparse_count > 0) {
-		// I could not find any file using this, so this code is so far untested
-		Vector<double> indices;
-		indices.resize(a->sparse_count);
-		const int indices_component_size = _get_component_type_size(a->sparse_indices_component_type);
-
-		Error err = _decode_buffer_view(p_state, indices.ptrw(), a->sparse_indices_buffer_view, 0, 0, indices_component_size, a->sparse_count, GLTFAccessor::TYPE_SCALAR, 1, a->sparse_indices_component_type, indices_component_size, false, a->sparse_indices_byte_offset, false);
-		if (err != OK) {
-			return Vector<double>();
-		}
-
-		Vector<double> data;
-		data.resize(component_count * a->sparse_count);
-		err = _decode_buffer_view(p_state, data.ptrw(), a->sparse_values_buffer_view, skip_every, skip_bytes, element_size, a->sparse_count, a->accessor_type, component_count, a->component_type, component_size, a->normalized, a->sparse_values_byte_offset, p_for_vertex);
-		if (err != OK) {
-			return Vector<double>();
-		}
-
-		for (int i = 0; i < indices.size(); i++) {
-			const int64_t write_offset = int(indices[i]) * component_count;
-
-			for (int j = 0; j < component_count; j++) {
-				dst[write_offset + j] = data[i * component_count + j];
-			}
-		}
-	}
-
-	return dst_buffer;
-}
-
-Vector<int> GLTFDocument::_decode_accessor_as_ints(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<int> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
-	}
-
-	const double *attribs_ptr = attribs.ptr();
-	int64_t ret_size = attribs.size();
-	if (!p_packed_vertex_ids.is_empty()) {
-		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
-		ret_size = p_packed_vertex_ids.size();
-	}
-	ret.resize(ret_size);
-	for (int64_t i = 0; i < ret_size; i++) {
-		int64_t src_i = i;
-		if (!p_packed_vertex_ids.is_empty()) {
-			src_i = p_packed_vertex_ids[i];
-		}
-		ret.write[i] = int(attribs_ptr[src_i]);
+template <typename T>
+T GLTFDocument::_decode_unpack_indexed_data(const T &p_source, const PackedInt32Array &p_indices) {
+	// Handle unpacking indexed data as if it was a regular array.
+	// This isn't a feature of accessors, rather a feature of places using accessors like
+	// indexed meshes, but GLTFDocument needs it in several places when reading accessors.
+	T ret;
+	const int64_t last_index = p_indices[p_indices.size() - 1];
+	ERR_FAIL_COND_V(last_index >= p_source.size(), ret);
+	ret.resize(p_indices.size());
+	for (int64_t i = 0; i < p_indices.size(); i++) {
+		const int64_t source_index = p_indices[i];
+		ret.set(i, p_source[source_index]);
 	}
 	return ret;
 }
 
-Vector<float> GLTFDocument::_decode_accessor_as_floats(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<float> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
+PackedFloat32Array GLTFDocument::_decode_accessor_as_float32s(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedFloat32Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedFloat32Array numbers = accessor->decode_as_float32s(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return numbers;
 	}
-
-	const double *attribs_ptr = attribs.ptr();
-	int64_t ret_size = attribs.size();
-	if (!p_packed_vertex_ids.is_empty()) {
-		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
-		ret_size = p_packed_vertex_ids.size();
-	}
-	ret.resize(ret_size);
-	for (int64_t i = 0; i < ret_size; i++) {
-		int64_t src_i = i;
-		if (!p_packed_vertex_ids.is_empty()) {
-			src_i = p_packed_vertex_ids[i];
-		}
-		ret.write[i] = float(attribs_ptr[src_i]);
-	}
-	return ret;
+	return _decode_unpack_indexed_data<PackedFloat32Array>(numbers, p_packed_vertex_ids);
 }
 
-Vector<Vector2> GLTFDocument::_decode_accessor_as_vec2(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Vector2> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
+PackedFloat64Array GLTFDocument::_decode_accessor_as_float64s(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedFloat64Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedFloat64Array numbers = accessor->decode_as_float64s(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return numbers;
 	}
-
-	ERR_FAIL_COND_V(attribs.size() % 2 != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
-	int64_t ret_size = attribs.size() / 2;
-	if (!p_packed_vertex_ids.is_empty()) {
-		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
-		ret_size = p_packed_vertex_ids.size();
-	}
-	ret.resize(ret_size);
-	for (int64_t i = 0; i < ret_size; i++) {
-		int64_t src_i = i;
-		if (!p_packed_vertex_ids.is_empty()) {
-			src_i = p_packed_vertex_ids[i];
-		}
-		ret.write[i] = Vector2(attribs_ptr[src_i * 2 + 0], attribs_ptr[src_i * 2 + 1]);
-	}
-	return ret;
+	return _decode_unpack_indexed_data<PackedFloat64Array>(numbers, p_packed_vertex_ids);
 }
 
-Vector<Vector3> GLTFDocument::_decode_accessor_as_vec3(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Vector3> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
+PackedInt32Array GLTFDocument::_decode_accessor_as_int32s(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedInt32Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedInt32Array numbers = accessor->decode_as_int32s(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return numbers;
 	}
-
-	ERR_FAIL_COND_V(attribs.size() % 3 != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
-	int64_t ret_size = attribs.size() / 3;
-	if (!p_packed_vertex_ids.is_empty()) {
-		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
-		ret_size = p_packed_vertex_ids.size();
-	}
-	ret.resize(ret_size);
-	for (int64_t i = 0; i < ret_size; i++) {
-		int64_t src_i = i;
-		if (!p_packed_vertex_ids.is_empty()) {
-			src_i = p_packed_vertex_ids[i];
-		}
-		ret.write[i] = Vector3(attribs_ptr[src_i * 3 + 0], attribs_ptr[src_i * 3 + 1], attribs_ptr[src_i * 3 + 2]);
-	}
-	return ret;
+	return _decode_unpack_indexed_data<PackedInt32Array>(numbers, p_packed_vertex_ids);
 }
 
-Vector<Color> GLTFDocument::_decode_accessor_as_color(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex, const Vector<int> &p_packed_vertex_ids) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Color> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
+PackedVector2Array GLTFDocument::_decode_accessor_as_vec2(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedVector2Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedVector2Array vectors = accessor->decode_as_vector2s(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return vectors;
 	}
-
-	const GLTFAccessor::GLTFAccessorType accessor_type = p_state->accessors[p_accessor]->accessor_type;
-	ERR_FAIL_COND_V(!(accessor_type == GLTFAccessor::TYPE_VEC3 || accessor_type == GLTFAccessor::TYPE_VEC4), ret);
-	int vec_len = 3;
-	if (accessor_type == GLTFAccessor::TYPE_VEC4) {
-		vec_len = 4;
-	}
-
-	ERR_FAIL_COND_V(attribs.size() % vec_len != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
-	int64_t ret_size = attribs.size() / vec_len;
-	if (!p_packed_vertex_ids.is_empty()) {
-		ERR_FAIL_COND_V(p_packed_vertex_ids[p_packed_vertex_ids.size() - 1] >= ret_size, ret);
-		ret_size = p_packed_vertex_ids.size();
-	}
-	ret.resize(ret_size);
-	for (int64_t i = 0; i < ret_size; i++) {
-		int64_t src_i = i;
-		if (!p_packed_vertex_ids.is_empty()) {
-			src_i = p_packed_vertex_ids[i];
-		}
-		ret.write[i] = Color(attribs_ptr[src_i * vec_len + 0], attribs_ptr[src_i * vec_len + 1], attribs_ptr[src_i * vec_len + 2], vec_len == 4 ? attribs_ptr[src_i * 4 + 3] : 1.0);
-	}
-	return ret;
-}
-Vector<Quaternion> GLTFDocument::_decode_accessor_as_quaternion(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Quaternion> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
-	}
-
-	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
-	const double *attribs_ptr = attribs.ptr();
-	const int64_t ret_size = attribs.size() / 4;
-	ret.resize(ret_size);
-	{
-		for (int64_t i = 0; i < ret_size; i++) {
-			ret.write[i] = Quaternion(attribs_ptr[i * 4 + 0], attribs_ptr[i * 4 + 1], attribs_ptr[i * 4 + 2], attribs_ptr[i * 4 + 3]).normalized();
-		}
-	}
-	return ret;
-}
-Vector<Transform2D> GLTFDocument::_decode_accessor_as_xform2d(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Transform2D> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
-	}
-
-	ERR_FAIL_COND_V(attribs.size() % 4 != 0, ret);
-	ret.resize(attribs.size() / 4);
-	for (int64_t i = 0; i < ret.size(); i++) {
-		ret.write[i][0] = Vector2(attribs[i * 4 + 0], attribs[i * 4 + 1]);
-		ret.write[i][1] = Vector2(attribs[i * 4 + 2], attribs[i * 4 + 3]);
-	}
-	return ret;
+	return _decode_unpack_indexed_data<PackedVector2Array>(vectors, p_packed_vertex_ids);
 }
 
-Vector<Basis> GLTFDocument::_decode_accessor_as_basis(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Basis> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
+PackedVector3Array GLTFDocument::_decode_accessor_as_vec3(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedVector3Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedVector3Array vectors = accessor->decode_as_vector3s(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return vectors;
 	}
-
-	ERR_FAIL_COND_V(attribs.size() % 9 != 0, ret);
-	ret.resize(attribs.size() / 9);
-	for (int64_t i = 0; i < ret.size(); i++) {
-		ret.write[i].set_column(0, Vector3(attribs[i * 9 + 0], attribs[i * 9 + 1], attribs[i * 9 + 2]));
-		ret.write[i].set_column(1, Vector3(attribs[i * 9 + 3], attribs[i * 9 + 4], attribs[i * 9 + 5]));
-		ret.write[i].set_column(2, Vector3(attribs[i * 9 + 6], attribs[i * 9 + 7], attribs[i * 9 + 8]));
-	}
-	return ret;
+	return _decode_unpack_indexed_data<PackedVector3Array>(vectors, p_packed_vertex_ids);
 }
 
-Vector<Transform3D> GLTFDocument::_decode_accessor_as_xform(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, const bool p_for_vertex) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, p_for_vertex);
-	Vector<Transform3D> ret;
-
-	if (attribs.is_empty()) {
-		return ret;
+PackedColorArray GLTFDocument::_decode_accessor_as_color(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, const PackedInt32Array &p_packed_vertex_ids) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), PackedColorArray());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	PackedColorArray colors = accessor->decode_as_colors(p_gltf_state);
+	if (p_packed_vertex_ids.is_empty()) {
+		return colors;
 	}
-
-	ERR_FAIL_COND_V(attribs.size() % 16 != 0, ret);
-	ret.resize(attribs.size() / 16);
-	for (int64_t i = 0; i < ret.size(); i++) {
-		ret.write[i].basis.set_column(0, Vector3(attribs[i * 16 + 0], attribs[i * 16 + 1], attribs[i * 16 + 2]));
-		ret.write[i].basis.set_column(1, Vector3(attribs[i * 16 + 4], attribs[i * 16 + 5], attribs[i * 16 + 6]));
-		ret.write[i].basis.set_column(2, Vector3(attribs[i * 16 + 8], attribs[i * 16 + 9], attribs[i * 16 + 10]));
-		ret.write[i].set_origin(Vector3(attribs[i * 16 + 12], attribs[i * 16 + 13], attribs[i * 16 + 14]));
-	}
-	return ret;
+	return _decode_unpack_indexed_data<PackedColorArray>(colors, p_packed_vertex_ids);
 }
 
-Vector<Variant> GLTFDocument::_decode_accessor_as_variant(Ref<GLTFState> p_state, const GLTFAccessorIndex p_accessor, Variant::Type p_variant_type, GLTFAccessor::GLTFAccessorType p_accessor_type) {
-	const Vector<double> attribs = _decode_accessor(p_state, p_accessor, false);
-	Vector<Variant> ret;
-	ERR_FAIL_COND_V_MSG(attribs.is_empty(), ret, "glTF: The accessor was empty.");
-	const int component_count = COMPONENT_COUNT_FOR_ACCESSOR_TYPE[p_accessor_type];
-	ERR_FAIL_COND_V_MSG(attribs.size() % component_count != 0, ret, "glTF: The accessor size was not a multiple of the component count.");
-	const int64_t ret_size = attribs.size() / component_count;
-	ret.resize(ret_size);
-	for (int64_t i = 0; i < ret_size; i++) {
-		switch (p_variant_type) {
-			case Variant::BOOL: {
-				ret.write[i] = attribs[i * component_count] != 0.0;
-			} break;
-			case Variant::INT: {
-				ret.write[i] = (int64_t)attribs[i * component_count];
-			} break;
-			case Variant::FLOAT: {
-				ret.write[i] = attribs[i * component_count];
-			} break;
-			case Variant::VECTOR2:
-			case Variant::RECT2:
-			case Variant::VECTOR3:
-			case Variant::VECTOR4:
-			case Variant::PLANE:
-			case Variant::QUATERNION: {
-				// General-purpose code for importing glTF accessor data with any component count into structs up to 4 `real_t`s in size.
-				Variant v;
-				switch (component_count) {
-					case 1: {
-						v = Vector4(attribs[i * component_count], 0.0f, 0.0f, 0.0f);
-					} break;
-					case 2: {
-						v = Vector4(attribs[i * component_count], attribs[i * component_count + 1], 0.0f, 0.0f);
-					} break;
-					case 3: {
-						v = Vector4(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], 0.0f);
-					} break;
-					default: {
-						v = Vector4(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], attribs[i * component_count + 3]);
-					} break;
-				}
-				// Evil hack that relies on the structure of Variant, but it's the
-				// only way to accomplish this without a ton of code duplication.
-				*(Variant::Type *)&v = p_variant_type;
-				ret.write[i] = v;
-			} break;
-			case Variant::VECTOR2I:
-			case Variant::RECT2I:
-			case Variant::VECTOR3I:
-			case Variant::VECTOR4I: {
-				// General-purpose code for importing glTF accessor data with any component count into structs up to 4 `int32_t`s in size.
-				Variant v;
-				switch (component_count) {
-					case 1: {
-						v = Vector4i((int32_t)attribs[i * component_count], 0, 0, 0);
-					} break;
-					case 2: {
-						v = Vector4i((int32_t)attribs[i * component_count], (int32_t)attribs[i * component_count + 1], 0, 0);
-					} break;
-					case 3: {
-						v = Vector4i((int32_t)attribs[i * component_count], (int32_t)attribs[i * component_count + 1], (int32_t)attribs[i * component_count + 2], 0);
-					} break;
-					default: {
-						v = Vector4i((int32_t)attribs[i * component_count], (int32_t)attribs[i * component_count + 1], (int32_t)attribs[i * component_count + 2], (int32_t)attribs[i * component_count + 3]);
-					} break;
-				}
-				// Evil hack that relies on the structure of Variant, but it's the
-				// only way to accomplish this without a ton of code duplication.
-				*(Variant::Type *)&v = p_variant_type;
-				ret.write[i] = v;
-			} break;
-			// No more generalized hacks, each of the below types needs a lot of repetitive code.
-			case Variant::COLOR: {
-				Variant v;
-				switch (component_count) {
-					case 1: {
-						v = Color(attribs[i * component_count], 0.0f, 0.0f, 1.0f);
-					} break;
-					case 2: {
-						v = Color(attribs[i * component_count], attribs[i * component_count + 1], 0.0f, 1.0f);
-					} break;
-					case 3: {
-						v = Color(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], 1.0f);
-					} break;
-					default: {
-						v = Color(attribs[i * component_count], attribs[i * component_count + 1], attribs[i * component_count + 2], attribs[i * component_count + 3]);
-					} break;
-				}
-				ret.write[i] = v;
-			} break;
-			case Variant::TRANSFORM2D: {
-				Transform2D t;
-				switch (component_count) {
-					case 4: {
-						t.columns[0] = Vector2(attribs[i * component_count + 0], attribs[i * component_count + 1]);
-						t.columns[1] = Vector2(attribs[i * component_count + 2], attribs[i * component_count + 3]);
-					} break;
-					case 9: {
-						t.columns[0] = Vector2(attribs[i * component_count + 0], attribs[i * component_count + 1]);
-						t.columns[1] = Vector2(attribs[i * component_count + 3], attribs[i * component_count + 4]);
-						t.columns[2] = Vector2(attribs[i * component_count + 6], attribs[i * component_count + 7]);
-					} break;
-					case 16: {
-						t.columns[0] = Vector2(attribs[i * component_count + 0], attribs[i * component_count + 1]);
-						t.columns[1] = Vector2(attribs[i * component_count + 4], attribs[i * component_count + 5]);
-						t.columns[2] = Vector2(attribs[i * component_count + 12], attribs[i * component_count + 13]);
-					} break;
-				}
-				ret.write[i] = t;
-			} break;
-			case Variant::BASIS: {
-				Basis b;
-				switch (component_count) {
-					case 4: {
-						b.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 2], 0.0f);
-						b.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 3], 0.0f);
-					} break;
-					case 9: {
-						b.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 3], attribs[i * component_count + 6]);
-						b.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 4], attribs[i * component_count + 7]);
-						b.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 5], attribs[i * component_count + 8]);
-					} break;
-					case 16: {
-						b.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 4], attribs[i * component_count + 8]);
-						b.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 5], attribs[i * component_count + 9]);
-						b.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 6], attribs[i * component_count + 10]);
-					} break;
-				}
-				ret.write[i] = b;
-			} break;
-			case Variant::TRANSFORM3D: {
-				Transform3D t;
-				switch (component_count) {
-					case 4: {
-						t.basis.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 2], 0.0f);
-						t.basis.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 3], 0.0f);
-					} break;
-					case 9: {
-						t.basis.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 3], attribs[i * component_count + 6]);
-						t.basis.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 4], attribs[i * component_count + 7]);
-						t.basis.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 5], attribs[i * component_count + 8]);
-					} break;
-					case 16: {
-						t.basis.rows[0] = Vector3(attribs[i * component_count + 0], attribs[i * component_count + 4], attribs[i * component_count + 8]);
-						t.basis.rows[1] = Vector3(attribs[i * component_count + 1], attribs[i * component_count + 5], attribs[i * component_count + 9]);
-						t.basis.rows[2] = Vector3(attribs[i * component_count + 2], attribs[i * component_count + 6], attribs[i * component_count + 10]);
-						t.origin = Vector3(attribs[i * component_count + 12], attribs[i * component_count + 13], attribs[i * component_count + 14]);
-					} break;
-				}
-				ret.write[i] = t;
-			} break;
-			case Variant::PROJECTION: {
-				Projection p;
-				switch (component_count) {
-					case 4: {
-						p.columns[0] = Vector4(attribs[i * component_count + 0], attribs[i * component_count + 1], 0.0f, 0.0f);
-						p.columns[1] = Vector4(attribs[i * component_count + 4], attribs[i * component_count + 5], 0.0f, 0.0f);
-					} break;
-					case 9: {
-						p.columns[0] = Vector4(attribs[i * component_count + 0], attribs[i * component_count + 1], attribs[i * component_count + 2], 0.0f);
-						p.columns[1] = Vector4(attribs[i * component_count + 4], attribs[i * component_count + 5], attribs[i * component_count + 6], 0.0f);
-						p.columns[2] = Vector4(attribs[i * component_count + 8], attribs[i * component_count + 9], attribs[i * component_count + 10], 0.0f);
-					} break;
-					case 16: {
-						p.columns[0] = Vector4(attribs[i * component_count + 0], attribs[i * component_count + 1], attribs[i * component_count + 2], attribs[i * component_count + 3]);
-						p.columns[1] = Vector4(attribs[i * component_count + 4], attribs[i * component_count + 5], attribs[i * component_count + 6], attribs[i * component_count + 7]);
-						p.columns[2] = Vector4(attribs[i * component_count + 8], attribs[i * component_count + 9], attribs[i * component_count + 10], attribs[i * component_count + 11]);
-						p.columns[3] = Vector4(attribs[i * component_count + 12], attribs[i * component_count + 13], attribs[i * component_count + 14], attribs[i * component_count + 15]);
-					} break;
-				}
-				ret.write[i] = p;
-			} break;
-			default: {
-				ERR_FAIL_V_MSG(ret, "glTF: Cannot decode accessor as Variant of type " + Variant::get_type_name(p_variant_type) + ".");
-			}
-		}
-	}
-	return ret;
+Vector<Quaternion> GLTFDocument::_decode_accessor_as_quaternion(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), Vector<Quaternion>());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	Vector<Quaternion> quaternions = accessor->decode_as_quaternions(p_gltf_state);
+	return quaternions;
+}
+
+Array GLTFDocument::_decode_accessor_as_variants(const Ref<GLTFState> p_gltf_state, GLTFAccessorIndex p_accessor_index, Variant::Type p_variant_type) {
+	ERR_FAIL_INDEX_V(p_accessor_index, p_gltf_state->accessors.size(), Array());
+	Ref<GLTFAccessor> accessor = p_gltf_state->accessors[p_accessor_index];
+	Array variants = accessor->decode_as_variants(p_gltf_state, p_variant_type);
+	return variants;
 }
 
 Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
@@ -2095,7 +1512,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			int32_t orig_vertex_num = 0;
 			ERR_FAIL_COND_V(!a.has("POSITION"), ERR_PARSE_ERROR);
 			if (a.has("POSITION")) {
-				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], true);
+				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"]);
 				array[Mesh::ARRAY_VERTEX] = vertices;
 				orig_vertex_num = vertices.size();
 			}
@@ -2106,7 +1523,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Vector<int> indices_rev_mapping;
 			Vector<int> indices_vec4_mapping;
 			if (mesh_prim.has("indices")) {
-				indices = _decode_accessor_as_ints(p_state, mesh_prim["indices"], false);
+				indices = _decode_accessor_as_int32s(p_state, mesh_prim["indices"]);
 				const int index_count = indices.size();
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
@@ -2145,20 +1562,20 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			ERR_FAIL_COND_V(vertex_num <= 0, ERR_INVALID_DECLARATION);
 
 			if (a.has("POSITION")) {
-				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], true, indices_mapping);
+				PackedVector3Array vertices = _decode_accessor_as_vec3(p_state, a["POSITION"], indices_mapping);
 				array[Mesh::ARRAY_VERTEX] = vertices;
 			}
 			if (a.has("NORMAL")) {
-				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(p_state, a["NORMAL"], true, indices_mapping);
+				array[Mesh::ARRAY_NORMAL] = _decode_accessor_as_vec3(p_state, a["NORMAL"], indices_mapping);
 			}
 			if (a.has("TANGENT")) {
-				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_floats(p_state, a["TANGENT"], true, indices_vec4_mapping);
+				array[Mesh::ARRAY_TANGENT] = _decode_accessor_as_float32s(p_state, a["TANGENT"], indices_vec4_mapping);
 			}
 			if (a.has("TEXCOORD_0")) {
-				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_0"], true, indices_mapping);
+				array[Mesh::ARRAY_TEX_UV] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_0"], indices_mapping);
 			}
 			if (a.has("TEXCOORD_1")) {
-				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_1"], true, indices_mapping);
+				array[Mesh::ARRAY_TEX_UV2] = _decode_accessor_as_vec2(p_state, a["TEXCOORD_1"], indices_mapping);
 			}
 			for (int custom_i = 0; custom_i < 3; custom_i++) {
 				Vector<float> cur_custom;
@@ -2169,12 +1586,12 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				String gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i);
 				int num_channels = 0;
 				if (a.has(gltf_texcoord_key)) {
-					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], true, indices_mapping);
+					texcoord_first = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
 					num_channels = 2;
 				}
 				gltf_texcoord_key = vformat("TEXCOORD_%d", texcoord_i + 1);
 				if (a.has(gltf_texcoord_key)) {
-					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], true, indices_mapping);
+					texcoord_second = _decode_accessor_as_vec2(p_state, a[gltf_texcoord_key], indices_mapping);
 					num_channels = 4;
 				}
 				if (!num_channels) {
@@ -2215,16 +1632,16 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 			}
 			if (a.has("COLOR_0")) {
-				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], true, indices_mapping);
+				array[Mesh::ARRAY_COLOR] = _decode_accessor_as_color(p_state, a["COLOR_0"], indices_mapping);
 				has_vertex_color = true;
 			}
 			if (a.has("JOINTS_0") && !a.has("JOINTS_1")) {
-				PackedInt32Array joints_0 = _decode_accessor_as_ints(p_state, a["JOINTS_0"], true, indices_vec4_mapping);
+				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
 				ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
 				array[Mesh::ARRAY_BONES] = joints_0;
 			} else if (a.has("JOINTS_0") && a.has("JOINTS_1")) {
-				PackedInt32Array joints_0 = _decode_accessor_as_ints(p_state, a["JOINTS_0"], true, indices_vec4_mapping);
-				PackedInt32Array joints_1 = _decode_accessor_as_ints(p_state, a["JOINTS_1"], true, indices_vec4_mapping);
+				PackedInt32Array joints_0 = _decode_accessor_as_int32s(p_state, a["JOINTS_0"], indices_vec4_mapping);
+				PackedInt32Array joints_1 = _decode_accessor_as_int32s(p_state, a["JOINTS_1"], indices_vec4_mapping);
 				ERR_FAIL_COND_V(joints_0.size() != joints_1.size(), ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(joints_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
 				int32_t weight_8_count = JOINT_GROUP_SIZE * 2;
@@ -2246,7 +1663,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			// ArrayMesh uses a flat array of either 4 or 8 floats per vertex.
 			// Therefore, decode up to two glTF VEC4 arrays as float arrays.
 			if (a.has("WEIGHTS_0") && !a.has("WEIGHTS_1")) {
-				Vector<float> weights = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true, indices_vec4_mapping);
+				Vector<float> weights = _decode_accessor_as_float32s(p_state, a["WEIGHTS_0"], indices_vec4_mapping);
 				ERR_FAIL_COND_V(weights.size() != 4 * vertex_num, ERR_INVALID_DATA);
 				{ // glTF does not seem to normalize the weights for some reason.
 					int wc = weights.size();
@@ -2268,8 +1685,8 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				}
 				array[Mesh::ARRAY_WEIGHTS] = weights;
 			} else if (a.has("WEIGHTS_0") && a.has("WEIGHTS_1")) {
-				Vector<float> weights_0 = _decode_accessor_as_floats(p_state, a["WEIGHTS_0"], true, indices_vec4_mapping);
-				Vector<float> weights_1 = _decode_accessor_as_floats(p_state, a["WEIGHTS_1"], true, indices_vec4_mapping);
+				Vector<float> weights_0 = _decode_accessor_as_float32s(p_state, a["WEIGHTS_0"], indices_vec4_mapping);
+				Vector<float> weights_1 = _decode_accessor_as_float32s(p_state, a["WEIGHTS_1"], indices_vec4_mapping);
 				Vector<float> weights;
 				ERR_FAIL_COND_V(weights_0.size() != weights_1.size(), ERR_INVALID_DATA);
 				ERR_FAIL_COND_V(weights_0.size() != 4 * vertex_num, ERR_INVALID_DATA);
@@ -2437,7 +1854,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 					}
 
 					if (t.has("POSITION")) {
-						Vector<Vector3> varr = _decode_accessor_as_vec3(p_state, t["POSITION"], true, indices_mapping);
+						Vector<Vector3> varr = _decode_accessor_as_vec3(p_state, t["POSITION"], indices_mapping);
 						const Vector<Vector3> src_varr = array[Mesh::ARRAY_VERTEX];
 						const int size = src_varr.size();
 						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
@@ -2459,7 +1876,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						array_copy[Mesh::ARRAY_VERTEX] = varr;
 					}
 					if (t.has("NORMAL")) {
-						Vector<Vector3> narr = _decode_accessor_as_vec3(p_state, t["NORMAL"], true, indices_mapping);
+						Vector<Vector3> narr = _decode_accessor_as_vec3(p_state, t["NORMAL"], indices_mapping);
 						const Vector<Vector3> src_narr = array[Mesh::ARRAY_NORMAL];
 						int size = src_narr.size();
 						ERR_FAIL_COND_V(size == 0, ERR_PARSE_ERROR);
@@ -2481,7 +1898,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 						array_copy[Mesh::ARRAY_NORMAL] = narr;
 					}
 					if (t.has("TANGENT")) {
-						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], true, indices_mapping);
+						const Vector<Vector3> tangents_v3 = _decode_accessor_as_vec3(p_state, t["TANGENT"], indices_mapping);
 						const Vector<float> src_tangents = array[Mesh::ARRAY_TANGENT];
 						ERR_FAIL_COND_V(src_tangents.is_empty(), ERR_PARSE_ERROR);
 
@@ -3910,8 +3327,10 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> p_state) {
 		const Array &joints = d["joints"];
 
 		if (d.has("inverseBindMatrices")) {
-			skin->inverse_binds = _decode_accessor_as_xform(p_state, d["inverseBindMatrices"], false);
-			ERR_FAIL_COND_V(skin->inverse_binds.size() != joints.size(), ERR_PARSE_ERROR);
+			const GLTFAccessorIndex inv_bind_accessor_index = d["inverseBindMatrices"];
+			Array inv_binds_arr = _decode_accessor_as_variants(p_state, inv_bind_accessor_index, Variant::TRANSFORM3D);
+			ERR_FAIL_COND_V(inv_binds_arr.size() != joints.size(), ERR_PARSE_ERROR);
+			GLTFTemplateConvert::set_from_array(skin->inverse_binds, inv_binds_arr);
 		}
 
 		for (int j = 0; j < joints.size(); j++) {
@@ -4426,7 +3845,7 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 					output_count = 3;
 				}
 			}
-			const Vector<double> times = _decode_accessor(p_state, input_time_accessor_index, false);
+			const PackedFloat64Array times = _decode_accessor_as_float64s(p_state, input_time_accessor_index);
 			// Parse target.
 			const Dictionary &anim_target = anim_channel["target"];
 			ERR_FAIL_COND_V_MSG(!anim_target.has("path"), ERR_PARSE_ERROR, "glTF: Animation channel target missing required 'path' property.");
@@ -4459,22 +3878,22 @@ Error GLTFDocument::_parse_animations(Ref<GLTFState> p_state) {
 				track = &animation->get_node_tracks()[node];
 
 				if (path == "translation") {
-					const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
+					const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, output_value_accessor_index);
 					track->position_track.interpolation = interp;
 					track->position_track.times = times;
 					track->position_track.values = positions;
 				} else if (path == "rotation") {
-					const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, output_value_accessor_index, false);
+					const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, output_value_accessor_index);
 					track->rotation_track.interpolation = interp;
 					track->rotation_track.times = times;
 					track->rotation_track.values = rotations;
 				} else if (path == "scale") {
-					const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, output_value_accessor_index, false);
+					const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, output_value_accessor_index);
 					track->scale_track.interpolation = interp;
 					track->scale_track.times = times;
 					track->scale_track.values = scales;
 				} else if (path == "weights") {
-					const Vector<float> weights = _decode_accessor_as_floats(p_state, output_value_accessor_index, false);
+					const Vector<float> weights = _decode_accessor_as_float32s(p_state, output_value_accessor_index);
 
 					ERR_FAIL_INDEX_V(p_state->nodes[node]->mesh, p_state->meshes.size(), ERR_PARSE_ERROR);
 					Ref<GLTFMesh> mesh = p_state->meshes[p_state->nodes[node]->mesh];
@@ -4530,22 +3949,22 @@ void GLTFDocument::_parse_animation_pointer(Ref<GLTFState> p_state, const String
 		}
 		GLTFAnimation::NodeTrack *track = &node_tracks[node_index];
 		if (split[2] == "translation") {
-			const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, p_output_value_accessor_index, false);
+			const Vector<Vector3> positions = _decode_accessor_as_vec3(p_state, p_output_value_accessor_index);
 			track->position_track.interpolation = p_interp;
 			track->position_track.times = p_times;
 			track->position_track.values = positions;
 		} else if (split[2] == "rotation") {
-			const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, p_output_value_accessor_index, false);
+			const Vector<Quaternion> rotations = _decode_accessor_as_quaternion(p_state, p_output_value_accessor_index);
 			track->rotation_track.interpolation = p_interp;
 			track->rotation_track.times = p_times;
 			track->rotation_track.values = rotations;
 		} else if (split[2] == "scale") {
-			const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, p_output_value_accessor_index, false);
+			const Vector<Vector3> scales = _decode_accessor_as_vec3(p_state, p_output_value_accessor_index);
 			track->scale_track.interpolation = p_interp;
 			track->scale_track.times = p_times;
 			track->scale_track.values = scales;
 		} else if (split[2] == "matrix") {
-			const Vector<Transform3D> transforms = _decode_accessor_as_xform(p_state, p_output_value_accessor_index, false);
+			Array transforms = _decode_accessor_as_variants(p_state, p_output_value_accessor_index, Variant::TRANSFORM3D);
 			track->position_track.interpolation = p_interp;
 			track->position_track.times = p_times;
 			track->position_track.values.resize(transforms.size());
@@ -4556,12 +3975,13 @@ void GLTFDocument::_parse_animation_pointer(Ref<GLTFState> p_state, const String
 			track->scale_track.times = p_times;
 			track->scale_track.values.resize(transforms.size());
 			for (int i = 0; i < transforms.size(); i++) {
-				track->position_track.values.write[i] = transforms[i].get_origin();
-				track->rotation_track.values.write[i] = transforms[i].basis.get_rotation_quaternion();
-				track->scale_track.values.write[i] = transforms[i].basis.get_scale();
+				Transform3D transform = transforms[i];
+				track->position_track.values.write[i] = transform.get_origin();
+				track->rotation_track.values.write[i] = transform.basis.get_rotation_quaternion();
+				track->scale_track.values.write[i] = transform.basis.get_scale();
 			}
 		} else { // if (split[2] == "weights")
-			const Vector<float> accessor_weights = _decode_accessor_as_floats(p_state, p_output_value_accessor_index, false);
+			const Vector<float> accessor_weights = _decode_accessor_as_float32s(p_state, p_output_value_accessor_index);
 			const GLTFMeshIndex mesh_index = p_state->nodes[node_index]->mesh;
 			ERR_FAIL_INDEX(mesh_index, p_state->meshes.size());
 			const Ref<GLTFMesh> gltf_mesh = p_state->meshes[mesh_index];
@@ -4600,7 +4020,9 @@ void GLTFDocument::_parse_animation_pointer(Ref<GLTFState> p_state, const String
 	GLTFAnimation::Channel<Variant> channel;
 	channel.interpolation = p_interp;
 	channel.times = p_times;
-	channel.values = _decode_accessor_as_variant(p_state, p_output_value_accessor_index, obj_model_prop->get_variant_type(), obj_model_prop->get_accessor_type());
+	Array values_arr = _decode_accessor_as_variants(p_state, p_output_value_accessor_index, obj_model_prop->get_variant_type());
+	// TODO: This can be made faster after this pull request is merged: https://github.com/godotengine/godot/pull/109003
+	GLTFTemplateConvert::set_from_array(channel.values, values_arr);
 	anim_ptr_map[p_animation_json_pointer] = channel;
 }
 

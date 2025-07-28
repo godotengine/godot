@@ -443,6 +443,63 @@ int64_t GLTFAccessor::_get_vector_size() const {
 	ERR_FAIL_V(0);
 }
 
+int64_t GLTFAccessor::_get_numbers_per_variant_for_gltf(Variant::Type p_variant_type) {
+	// Note that these numbers are used to determine the size of the glTF accessor appropriate for the type (see `_get_vector_size`).
+	// Therefore, the only valid values this can return are 1 (SCALAR), 2 (VEC2), 3 (VEC3), 4 (VEC4/MAT2), 9 (MAT3), and 16 (MAT4).
+	// The value 0 indicates the Variant type can't map to glTF accessors, and INT64_MAX indicates it needs special handling.
+	switch (p_variant_type) {
+		case Variant::NIL:
+		case Variant::STRING:
+		case Variant::STRING_NAME:
+		case Variant::NODE_PATH:
+		case Variant::RID:
+		case Variant::OBJECT:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL:
+		case Variant::DICTIONARY:
+		case Variant::ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
+		case Variant::VARIANT_MAX:
+			return 0; // Not supported.
+		case Variant::BOOL:
+		case Variant::INT:
+		case Variant::FLOAT:
+			return 1;
+		case Variant::VECTOR2:
+		case Variant::VECTOR2I:
+			return 2;
+		case Variant::VECTOR3:
+		case Variant::VECTOR3I:
+			return 3;
+		case Variant::RECT2:
+		case Variant::RECT2I:
+		case Variant::VECTOR4:
+		case Variant::VECTOR4I:
+		case Variant::PLANE:
+		case Variant::QUATERNION:
+		case Variant::COLOR:
+			return 4;
+		case Variant::TRANSFORM2D:
+		case Variant::AABB:
+		case Variant::BASIS:
+			return 9;
+		case Variant::TRANSFORM3D:
+		case Variant::PROJECTION:
+			return 16;
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+			return INT64_MAX; // Special, use `_get_vector_size()` only to determine size.
+	}
+	return 0;
+}
+
 int64_t GLTFAccessor::_get_bytes_per_component(const GLTFComponentType p_component_type) {
 	switch (p_component_type) {
 		case GLTFAccessor::COMPONENT_TYPE_NONE:
@@ -489,6 +546,546 @@ bool GLTFAccessor::is_equal_exact(const Ref<GLTFAccessor> &p_other) const {
 			sparse_indices_component_type == p_other->sparse_indices_component_type &&
 			sparse_values_buffer_view == p_other->sparse_values_buffer_view &&
 			sparse_values_byte_offset == p_other->sparse_values_byte_offset);
+}
+
+// Private decode functions.
+
+PackedInt64Array GLTFAccessor::_decode_sparse_indices(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views) const {
+	const int64_t bytes_per_component = _get_bytes_per_component(sparse_indices_component_type);
+	PackedInt64Array numbers;
+	ERR_FAIL_INDEX_V(sparse_indices_buffer_view, p_buffer_views.size(), numbers);
+	const Ref<GLTFBufferView> actual_buffer_view = p_buffer_views[sparse_indices_buffer_view];
+	const PackedByteArray raw_bytes = actual_buffer_view->load_buffer_view_data(p_gltf_state);
+	const int64_t min_raw_byte_size = bytes_per_component * sparse_count + sparse_indices_byte_offset;
+	ERR_FAIL_COND_V_MSG(raw_bytes.size() < min_raw_byte_size, numbers, "glTF import: Sparse indices buffer view did not have enough bytes to read the expected number of indices. Returning an empty array.");
+	numbers.resize(sparse_count);
+	const uint8_t *raw_pointer = raw_bytes.ptr();
+	int64_t raw_read_offset = sparse_indices_byte_offset;
+	for (int64_t i = 0; i < sparse_count; i++) {
+		const uint8_t *raw_source = &raw_pointer[raw_read_offset];
+		int64_t number = 0;
+		switch (sparse_indices_component_type) {
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
+				number = *(uint8_t *)raw_source;
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
+				number = *(uint16_t *)raw_source;
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
+				number = *(uint32_t *)raw_source;
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
+				number = *(uint64_t *)raw_source;
+			} break;
+			default: {
+				ERR_FAIL_V_MSG(PackedInt64Array(), "glTF import: Sparse indices must have an unsigned integer component type. Failed to decode, returning an empty array.");
+			}
+		}
+		numbers.set(i, number);
+		raw_read_offset += bytes_per_component;
+	}
+	ERR_FAIL_COND_V_MSG(raw_read_offset != raw_bytes.size(), numbers, "glTF import: Sparse indices buffer view size did not exactly match the expected size.");
+	return numbers;
+}
+
+template <typename T>
+Vector<T> GLTFAccessor::_decode_raw_numbers(const Ref<GLTFState> &p_gltf_state, const TypedArray<GLTFBufferView> &p_buffer_views, bool p_sparse_values) const {
+	const int64_t bytes_per_component = _get_bytes_per_component(component_type);
+	const int64_t bytes_per_vector = _get_bytes_per_vector();
+	const int64_t vector_size = _get_vector_size();
+	int64_t pad_skip_every = 0;
+	int64_t pad_skip_bytes = 0;
+	_determine_pad_skip(pad_skip_every, pad_skip_bytes);
+	int64_t raw_vector_count;
+	int64_t raw_buffer_view_index;
+	int64_t raw_read_offset_start;
+	if (p_sparse_values) {
+		raw_vector_count = sparse_count;
+		raw_buffer_view_index = sparse_values_buffer_view;
+		raw_read_offset_start = sparse_values_byte_offset;
+	} else {
+		raw_vector_count = count;
+		raw_buffer_view_index = buffer_view;
+		raw_read_offset_start = byte_offset;
+	}
+	const int64_t raw_number_count = raw_vector_count * vector_size;
+	Vector<T> ret_numbers;
+	if (raw_buffer_view_index == -1) {
+		ret_numbers.resize(raw_number_count);
+		// No buffer view, so fill with zeros.
+		for (int64_t i = 0; i < raw_number_count; i++) {
+			ret_numbers.set(i, T(0));
+		}
+		return ret_numbers;
+	}
+	ERR_FAIL_INDEX_V(raw_buffer_view_index, p_buffer_views.size(), ret_numbers);
+	const Ref<GLTFBufferView> raw_buffer_view = p_buffer_views[raw_buffer_view_index];
+	if (raw_buffer_view->get_byte_offset() % bytes_per_component != 0) {
+		WARN_PRINT("glTF import: Buffer view byte offset is not a multiple of accessor component size. This file is invalid per the glTF specification and will not load correctly in some glTF viewers, but Godot will try to load it anyway.");
+	}
+	if (byte_offset % bytes_per_component != 0) {
+		WARN_PRINT("glTF import: Accessor byte offset is not a multiple of accessor component size. This file is invalid per the glTF specification and will not load correctly in some glTF viewers, but Godot will try to load it anyway.");
+	}
+	int64_t declared_byte_stride = raw_buffer_view->get_byte_stride();
+	int64_t actual_byte_stride = bytes_per_vector;
+	int64_t stride_skip_every = 0;
+	int64_t stride_skip_bytes = 0;
+	if (declared_byte_stride != -1) {
+		ERR_FAIL_COND_V_MSG(declared_byte_stride % 4 != 0, ret_numbers, "glTF import: The declared buffer view byte stride " + itos(declared_byte_stride) + " was not a multiple of 4 as required by glTF. Returning an empty array.");
+		if (declared_byte_stride > bytes_per_vector) {
+			actual_byte_stride = declared_byte_stride;
+			stride_skip_every = vector_size;
+			stride_skip_bytes = declared_byte_stride - bytes_per_vector;
+		}
+	} else if (raw_buffer_view->get_vertex_attributes()) {
+		print_verbose("WARNING: glTF import: Buffer view byte stride should be declared for vertex attributes. Assuming packed data and reading anyway.");
+	}
+	const int64_t min_raw_byte_size = actual_byte_stride * (raw_vector_count - 1) + bytes_per_vector + raw_read_offset_start;
+	const PackedByteArray raw_bytes = raw_buffer_view->load_buffer_view_data(p_gltf_state);
+	ERR_FAIL_COND_V_MSG(raw_bytes.size() < min_raw_byte_size, ret_numbers, "glTF import: The buffer view size was smaller than the minimum required size for the accessor. Returning an empty array.");
+	ret_numbers.resize(raw_number_count);
+	const uint8_t *raw_pointer = raw_bytes.ptr();
+	int64_t raw_read_offset = raw_read_offset_start;
+	for (int64_t i = 0; i < raw_number_count; i++) {
+		const uint8_t *raw_source = &raw_pointer[raw_read_offset];
+		T number = 0;
+		// 3.11. Implementations MUST use following equations to decode real floating-point value f from a normalized integer c and vice-versa.
+		// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#animations
+		switch (component_type) {
+			case GLTFAccessor::COMPONENT_TYPE_NONE: {
+				ERR_FAIL_V_MSG(Vector<T>(), "glTF import: Failed to decode buffer view, component type not set. Returning an empty array.");
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE: {
+				int8_t prim = *(int8_t *)raw_source;
+				if (normalized) {
+					number = T(MAX(double(prim) / 127.0, -1.0));
+				} else {
+					number = T(prim);
+				}
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
+				uint8_t prim = *(uint8_t *)raw_source;
+				if (normalized) {
+					number = T((double(prim) / 255.0));
+				} else {
+					number = T(prim);
+				}
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT: {
+				int16_t prim = *(int16_t *)raw_source;
+				if (normalized) {
+					number = T(MAX(double(prim) / 32767.0, -1.0));
+				} else {
+					number = T(prim);
+				}
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
+				uint16_t prim = *(uint16_t *)raw_source;
+				if (normalized) {
+					number = T(double(prim) / 65535.0);
+				} else {
+					number = T(prim);
+				}
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
+				number = T(*(int32_t *)raw_source);
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
+				number = T(*(uint32_t *)raw_source);
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT: {
+				number = T(*(float *)raw_source);
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
+				number = T(*(double *)raw_source);
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
+				number = Math::half_to_float(*(uint16_t *)raw_source);
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG: {
+				number = T(*(int64_t *)raw_source);
+			} break;
+			case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
+				number = T(*(uint64_t *)raw_source);
+			} break;
+		}
+		ret_numbers.set(i, number);
+		raw_read_offset += bytes_per_component;
+		// Padding and stride skipping are distinct concepts that both need to be handled.
+		// For example, a 2-in-1 interleaved MAT3 bytes accessor has both, and would look like:
+		// AAA0 AAA0 AAA0 BBB0 BBB0 BBB0 AAA0 AAA0 AAA0 BBB0 BBB0 BBB0
+		// The "0" is skipped by the padding, and the "BBB0" is skipped by the stride.
+		// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#data-alignment
+		if (unlikely(pad_skip_every > 0)) {
+			if ((i + 1) % pad_skip_every == 0) {
+				raw_read_offset += pad_skip_bytes;
+			}
+		}
+		if (unlikely(stride_skip_every > 0)) {
+			if ((i + 1) % stride_skip_every == 0) {
+				raw_read_offset += stride_skip_bytes;
+			}
+		}
+	}
+	return ret_numbers;
+}
+
+template <typename T>
+Vector<T> GLTFAccessor::_decode_as_numbers(const Ref<GLTFState> &p_gltf_state) const {
+	const TypedArray<GLTFBufferView> &p_buffer_views = p_gltf_state->get_buffer_views();
+	Vector<T> ret_numbers = _decode_raw_numbers<T>(p_gltf_state, p_buffer_views, false);
+	if (sparse_count == 0) {
+		return ret_numbers;
+	}
+	// Handle sparse accessors.
+	PackedInt64Array sparse_indices = _decode_sparse_indices(p_gltf_state, p_buffer_views);
+	ERR_FAIL_COND_V_MSG(sparse_indices.size() != sparse_count, ret_numbers, "glTF import: Sparse indices size does not match the sparse count.");
+	const int64_t vector_size = _get_vector_size();
+	Vector<T> sparse_values = _decode_raw_numbers<T>(p_gltf_state, p_buffer_views, true);
+	ERR_FAIL_COND_V_MSG(sparse_values.size() != sparse_count * vector_size, ret_numbers, "glTF import: Sparse values size does not match the sparse count.");
+	for (int64_t in_sparse = 0; in_sparse < sparse_count; in_sparse++) {
+		const int64_t sparse_index = sparse_indices[in_sparse];
+		const int64_t array_offset = sparse_index * vector_size;
+		ERR_FAIL_INDEX_V_MSG(array_offset, ret_numbers.size(), ret_numbers, "glTF import: Sparse indices were out of bounds for the accessor.");
+		for (int64_t in_vec = 0; in_vec < vector_size; in_vec++) {
+			ret_numbers.set(array_offset + in_vec, sparse_values[in_sparse * vector_size + in_vec]);
+		}
+	}
+	return ret_numbers;
+}
+
+// High-level decode functions.
+
+PackedColorArray GLTFAccessor::decode_as_colors(const Ref<GLTFState> &p_gltf_state) const {
+	PackedColorArray ret;
+	PackedFloat32Array numbers = _decode_as_numbers<float>(p_gltf_state);
+	if (accessor_type == TYPE_VEC3) {
+		ERR_FAIL_COND_V_MSG(numbers.size() != count * 3, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+		ret.resize(count);
+		for (int64_t i = 0; i < count; i++) {
+			const int64_t number_index = i * 3;
+			ret.set(i, Color(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], 1.0f));
+		}
+	} else if (accessor_type == TYPE_VEC4) {
+		ERR_FAIL_COND_V_MSG(numbers.size() != count * 4, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+		ret.resize(count);
+		for (int64_t i = 0; i < count; i++) {
+			const int64_t number_index = i * 4;
+			ret.set(i, Color(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], numbers[number_index + 3]));
+		}
+	} else {
+		ERR_FAIL_V_MSG(ret, "glTF import: The `decode_as_colors` function is designed to be fast and can only be used with accessors of type \"VEC3\" or \"VEC4\", but was called with type \"" + _get_accessor_type_name() + "\". Consider using `decode_as_variants` if you need more flexible behavior with support for any accessor type.");
+	}
+	return ret;
+}
+
+PackedFloat32Array GLTFAccessor::decode_as_float32s(const Ref<GLTFState> &p_gltf_state) const {
+	return _decode_as_numbers<float>(p_gltf_state);
+}
+
+PackedFloat64Array GLTFAccessor::decode_as_float64s(const Ref<GLTFState> &p_gltf_state) const {
+	return _decode_as_numbers<double>(p_gltf_state);
+}
+
+PackedInt32Array GLTFAccessor::decode_as_int32s(const Ref<GLTFState> &p_gltf_state) const {
+	return _decode_as_numbers<int32_t>(p_gltf_state);
+}
+
+PackedInt64Array GLTFAccessor::decode_as_int64s(const Ref<GLTFState> &p_gltf_state) const {
+	return _decode_as_numbers<int64_t>(p_gltf_state);
+}
+
+Vector<Quaternion> GLTFAccessor::decode_as_quaternions(const Ref<GLTFState> &p_gltf_state) const {
+	Vector<Quaternion> ret;
+	ERR_FAIL_COND_V_MSG(accessor_type != TYPE_VEC4, ret, "glTF import: The `decode_as_quaternions` function is designed to be fast and can only be used with accessors of type \"VEC4\", but was called with type \"" + _get_accessor_type_name() + "\". Consider using `decode_as_variants` if you need more flexible behavior with support for any accessor type.");
+	PackedRealArray numbers = _decode_as_numbers<real_t>(p_gltf_state);
+	ERR_FAIL_COND_V_MSG(numbers.size() != count * 4, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+	ret.resize(count);
+	for (int64_t i = 0; i < count; i++) {
+		const int64_t number_index = i * 4;
+		ret.set(i, Quaternion(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], numbers[number_index + 3]).normalized());
+	}
+	return ret;
+}
+
+Array GLTFAccessor::decode_as_variants(const Ref<GLTFState> &p_gltf_state, Variant::Type p_variant_type) const {
+	const int64_t numbers_per_variant = _get_numbers_per_variant_for_gltf(p_variant_type);
+	Array ret;
+	ERR_FAIL_COND_V_MSG(numbers_per_variant < 1, ret, "glTF import: The Variant type '" + Variant::get_type_name(p_variant_type) + "' is not supported. Returning an empty array.");
+	const PackedFloat64Array numbers = _decode_as_numbers<double>(p_gltf_state);
+	const int64_t vector_size = _get_vector_size();
+	ERR_FAIL_COND_V_MSG(vector_size < 1, ret, "glTF import: The accessor type '" + _get_accessor_type_name() + "' is not supported. Returning an empty array.");
+	const int64_t numbers_to_read = MIN(vector_size, numbers_per_variant);
+	ERR_FAIL_COND_V_MSG(numbers.size() != count * vector_size, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+	ret.resize(count);
+	for (int64_t value_index = 0; value_index < count; value_index++) {
+		const int64_t number_index = value_index * vector_size;
+		switch (p_variant_type) {
+			case Variant::BOOL: {
+				ret[value_index] = numbers[number_index] != 0.0;
+			} break;
+			case Variant::INT: {
+				ret[value_index] = (int64_t)numbers[number_index];
+			} break;
+			case Variant::FLOAT: {
+				ret[value_index] = numbers[number_index];
+			} break;
+			case Variant::VECTOR2:
+			case Variant::RECT2:
+			case Variant::VECTOR3:
+			case Variant::VECTOR4:
+			case Variant::PLANE:
+			case Variant::QUATERNION: {
+				// General-purpose code for importing glTF accessor data with any component count into structs up to 4 `real_t`s in size.
+				Vector4 vec;
+				switch (numbers_to_read) {
+					case 1: {
+						vec = Vector4(numbers[number_index], 0.0f, 0.0f, 0.0f);
+					} break;
+					case 2: {
+						vec = Vector4(numbers[number_index], numbers[number_index + 1], 0.0f, 0.0f);
+					} break;
+					case 3: {
+						vec = Vector4(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], 0.0f);
+					} break;
+					default: {
+						vec = Vector4(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], numbers[number_index + 3]);
+					} break;
+				}
+				if (p_variant_type == Variant::QUATERNION) {
+					vec.normalize();
+				}
+				// Evil hack that relies on the structure of Variant, but it's the
+				// only way to accomplish this without a ton of code duplication.
+				Variant variant = vec;
+				*(Variant::Type *)&variant = p_variant_type;
+				ret[value_index] = variant;
+			} break;
+			case Variant::VECTOR2I:
+			case Variant::RECT2I:
+			case Variant::VECTOR3I:
+			case Variant::VECTOR4I: {
+				// General-purpose code for importing glTF accessor data with any component count into structs up to 4 `int32_t`s in size.
+				Vector4i vec;
+				switch (numbers_to_read) {
+					case 1: {
+						vec = Vector4i((int32_t)numbers[number_index], 0, 0, 0);
+					} break;
+					case 2: {
+						vec = Vector4i((int32_t)numbers[number_index], (int32_t)numbers[number_index + 1], 0, 0);
+					} break;
+					case 3: {
+						vec = Vector4i((int32_t)numbers[number_index], (int32_t)numbers[number_index + 1], (int32_t)numbers[number_index + 2], 0);
+					} break;
+					default: {
+						vec = Vector4i((int32_t)numbers[number_index], (int32_t)numbers[number_index + 1], (int32_t)numbers[number_index + 2], (int32_t)numbers[number_index + 3]);
+					} break;
+				}
+				// Evil hack that relies on the structure of Variant, but it's the
+				// only way to accomplish this without a ton of code duplication.
+				Variant variant = vec;
+				*(Variant::Type *)&variant = p_variant_type;
+				ret[value_index] = variant;
+			} break;
+			// No more generalized hacks, each of the below types needs a lot of repetitive code.
+			case Variant::COLOR: {
+				Color color;
+				switch (numbers_to_read) {
+					case 1: {
+						color = Color(numbers[number_index], 0.0f, 0.0f, 1.0f);
+					} break;
+					case 2: {
+						color = Color(numbers[number_index], numbers[number_index + 1], 0.0f, 1.0f);
+					} break;
+					case 3: {
+						color = Color(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], 1.0f);
+					} break;
+					default: {
+						color = Color(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], numbers[number_index + 3]);
+					} break;
+				}
+				ret[value_index] = color;
+			} break;
+			case Variant::TRANSFORM2D: {
+				Transform2D t;
+				switch (numbers_to_read) {
+					case 4: {
+						t.columns[0] = Vector2(numbers[number_index + 0], numbers[number_index + 1]);
+						t.columns[1] = Vector2(numbers[number_index + 2], numbers[number_index + 3]);
+					} break;
+					case 9: {
+						t.columns[0] = Vector2(numbers[number_index + 0], numbers[number_index + 1]);
+						t.columns[1] = Vector2(numbers[number_index + 3], numbers[number_index + 4]);
+						t.columns[2] = Vector2(numbers[number_index + 6], numbers[number_index + 7]);
+					} break;
+					case 16: {
+						t.columns[0] = Vector2(numbers[number_index + 0], numbers[number_index + 1]);
+						t.columns[1] = Vector2(numbers[number_index + 4], numbers[number_index + 5]);
+						t.columns[2] = Vector2(numbers[number_index + 12], numbers[number_index + 13]);
+					} break;
+				}
+				ret[value_index] = t;
+			} break;
+			case Variant::AABB: {
+				AABB aabb;
+				switch (numbers_to_read) {
+					case 4: {
+						aabb.position = Vector3(numbers[number_index + 0], numbers[number_index + 1], 0.0f);
+						aabb.size = Vector3(numbers[number_index + 2], numbers[number_index + 3], 0.0f);
+					} break;
+					case 9: {
+						aabb.position = Vector3(numbers[number_index + 0], numbers[number_index + 1], numbers[number_index + 2]);
+						aabb.size = Vector3(numbers[number_index + 3], numbers[number_index + 4], numbers[number_index + 5]);
+					} break;
+					case 16: {
+						aabb.position = Vector3(numbers[number_index + 0], numbers[number_index + 1], numbers[number_index + 2]);
+						aabb.size = Vector3(numbers[number_index + 4], numbers[number_index + 5], numbers[number_index + 6]);
+					} break;
+				}
+				ret[value_index] = aabb;
+			} break;
+			case Variant::BASIS: {
+				Basis b;
+				switch (numbers_to_read) {
+					case 4: {
+						b.rows[0] = Vector3(numbers[number_index + 0], numbers[number_index + 2], 0.0f);
+						b.rows[1] = Vector3(numbers[number_index + 1], numbers[number_index + 3], 0.0f);
+					} break;
+					case 9: {
+						b.rows[0] = Vector3(numbers[number_index + 0], numbers[number_index + 3], numbers[number_index + 6]);
+						b.rows[1] = Vector3(numbers[number_index + 1], numbers[number_index + 4], numbers[number_index + 7]);
+						b.rows[2] = Vector3(numbers[number_index + 2], numbers[number_index + 5], numbers[number_index + 8]);
+					} break;
+					case 16: {
+						b.rows[0] = Vector3(numbers[number_index + 0], numbers[number_index + 4], numbers[number_index + 8]);
+						b.rows[1] = Vector3(numbers[number_index + 1], numbers[number_index + 5], numbers[number_index + 9]);
+						b.rows[2] = Vector3(numbers[number_index + 2], numbers[number_index + 6], numbers[number_index + 10]);
+					} break;
+				}
+				ret[value_index] = b;
+			} break;
+			case Variant::TRANSFORM3D: {
+				Transform3D t;
+				switch (numbers_to_read) {
+					case 4: {
+						t.basis.rows[0] = Vector3(numbers[number_index + 0], numbers[number_index + 2], 0.0f);
+						t.basis.rows[1] = Vector3(numbers[number_index + 1], numbers[number_index + 3], 0.0f);
+					} break;
+					case 9: {
+						t.basis.rows[0] = Vector3(numbers[number_index + 0], numbers[number_index + 3], numbers[number_index + 6]);
+						t.basis.rows[1] = Vector3(numbers[number_index + 1], numbers[number_index + 4], numbers[number_index + 7]);
+						t.basis.rows[2] = Vector3(numbers[number_index + 2], numbers[number_index + 5], numbers[number_index + 8]);
+					} break;
+					case 16: {
+						t.basis.rows[0] = Vector3(numbers[number_index + 0], numbers[number_index + 4], numbers[number_index + 8]);
+						t.basis.rows[1] = Vector3(numbers[number_index + 1], numbers[number_index + 5], numbers[number_index + 9]);
+						t.basis.rows[2] = Vector3(numbers[number_index + 2], numbers[number_index + 6], numbers[number_index + 10]);
+						t.origin = Vector3(numbers[number_index + 12], numbers[number_index + 13], numbers[number_index + 14]);
+					} break;
+				}
+				ret[value_index] = t;
+			} break;
+			case Variant::PROJECTION: {
+				Projection p;
+				switch (numbers_to_read) {
+					case 4: {
+						p.columns[0] = Vector4(numbers[number_index + 0], numbers[number_index + 1], 0.0f, 0.0f);
+						p.columns[1] = Vector4(numbers[number_index + 4], numbers[number_index + 5], 0.0f, 0.0f);
+					} break;
+					case 9: {
+						p.columns[0] = Vector4(numbers[number_index + 0], numbers[number_index + 1], numbers[number_index + 2], 0.0f);
+						p.columns[1] = Vector4(numbers[number_index + 4], numbers[number_index + 5], numbers[number_index + 6], 0.0f);
+						p.columns[2] = Vector4(numbers[number_index + 8], numbers[number_index + 9], numbers[number_index + 10], 0.0f);
+					} break;
+					case 16: {
+						p.columns[0] = Vector4(numbers[number_index + 0], numbers[number_index + 1], numbers[number_index + 2], numbers[number_index + 3]);
+						p.columns[1] = Vector4(numbers[number_index + 4], numbers[number_index + 5], numbers[number_index + 6], numbers[number_index + 7]);
+						p.columns[2] = Vector4(numbers[number_index + 8], numbers[number_index + 9], numbers[number_index + 10], numbers[number_index + 11]);
+						p.columns[3] = Vector4(numbers[number_index + 12], numbers[number_index + 13], numbers[number_index + 14], numbers[number_index + 15]);
+					} break;
+				}
+				ret[value_index] = p;
+			} break;
+			case Variant::PACKED_BYTE_ARRAY: {
+				PackedByteArray packed_array;
+				packed_array.resize(numbers_to_read);
+				for (int64_t j = 0; j < numbers_to_read; j++) {
+					packed_array.set(value_index, numbers[number_index + j]);
+				}
+			} break;
+			case Variant::PACKED_INT32_ARRAY: {
+				PackedInt32Array packed_array;
+				packed_array.resize(numbers_to_read);
+				for (int64_t j = 0; j < numbers_to_read; j++) {
+					packed_array.set(value_index, numbers[number_index + j]);
+				}
+			} break;
+			case Variant::PACKED_INT64_ARRAY: {
+				PackedInt64Array packed_array;
+				packed_array.resize(numbers_to_read);
+				for (int64_t j = 0; j < numbers_to_read; j++) {
+					packed_array.set(value_index, numbers[number_index + j]);
+				}
+			} break;
+			case Variant::PACKED_FLOAT32_ARRAY: {
+				PackedFloat32Array packed_array;
+				packed_array.resize(numbers_to_read);
+				for (int64_t j = 0; j < numbers_to_read; j++) {
+					packed_array.set(value_index, numbers[number_index + j]);
+				}
+			} break;
+			case Variant::PACKED_FLOAT64_ARRAY: {
+				PackedFloat64Array packed_array;
+				packed_array.resize(numbers_to_read);
+				for (int64_t j = 0; j < numbers_to_read; j++) {
+					packed_array.set(value_index, numbers[number_index + j]);
+				}
+			} break;
+			default: {
+				ERR_FAIL_V_MSG(ret, "glTF: Cannot decode accessor as Variant of type " + Variant::get_type_name(p_variant_type) + ".");
+			}
+		}
+	}
+	return ret;
+}
+
+PackedVector2Array GLTFAccessor::decode_as_vector2s(const Ref<GLTFState> &p_gltf_state) const {
+	PackedVector2Array ret;
+	ERR_FAIL_COND_V_MSG(accessor_type != TYPE_VEC2, ret, "glTF import: The `decode_as_vector2s` function is designed to be fast and can only be used with accessors of type \"VEC2\", but was called with type \"" + _get_accessor_type_name() + "\". Consider using `decode_as_variants` if you need more flexible behavior with support for any accessor type.");
+	PackedRealArray numbers = _decode_as_numbers<real_t>(p_gltf_state);
+	ERR_FAIL_COND_V_MSG(numbers.size() != count * 2, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+	ret.resize(count);
+	for (int64_t i = 0; i < count; i++) {
+		const int64_t number_index = i * 2;
+		ret.set(i, Vector2(numbers[number_index], numbers[number_index + 1]));
+	}
+	return ret;
+}
+
+PackedVector3Array GLTFAccessor::decode_as_vector3s(const Ref<GLTFState> &p_gltf_state) const {
+	PackedVector3Array ret;
+	ERR_FAIL_COND_V_MSG(accessor_type != TYPE_VEC3, ret, "glTF import: The `decode_as_vector3s` function is designed to be fast and can only be used with accessors of type \"VEC3\", but was called with type \"" + _get_accessor_type_name() + "\". Consider using `decode_as_variants` if you need more flexible behavior with support for any accessor type.");
+	PackedRealArray numbers = _decode_as_numbers<real_t>(p_gltf_state);
+	ERR_FAIL_COND_V_MSG(numbers.size() != count * 3, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+	ret.resize(count);
+	for (int64_t i = 0; i < count; i++) {
+		const int64_t number_index = i * 3;
+		ret.set(i, Vector3(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2]));
+	}
+	return ret;
+}
+
+PackedVector4Array GLTFAccessor::decode_as_vector4s(const Ref<GLTFState> &p_gltf_state) const {
+	PackedVector4Array ret;
+	ERR_FAIL_COND_V_MSG(accessor_type != TYPE_VEC4, ret, "glTF import: The `decode_as_vector4s` function is designed to be fast and can only be used with accessors of type \"VEC4\", but was called with type \"" + _get_accessor_type_name() + "\". Consider using `decode_as_variants` if you need more flexible behavior with support for any accessor type.");
+	PackedRealArray numbers = _decode_as_numbers<real_t>(p_gltf_state);
+	ERR_FAIL_COND_V_MSG(numbers.size() != count * 4, ret, "glTF import: The accessor does not have the expected amount of numbers for the given count and vector size.");
+	ret.resize(count);
+	for (int64_t i = 0; i < count; i++) {
+		const int64_t number_index = i * 4;
+		ret.set(i, Vector4(numbers[number_index], numbers[number_index + 1], numbers[number_index + 2], numbers[number_index + 3]));
+	}
+	return ret;
 }
 
 // Private encode functions.
