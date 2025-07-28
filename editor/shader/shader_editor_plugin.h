@@ -32,6 +32,8 @@
 
 #include "editor/plugins/editor_plugin.h"
 
+#include "scene/resources/material.h"
+
 class CodeTextEditor;
 class EditorDock;
 class HSplitContainer;

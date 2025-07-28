@@ -30,6 +30,7 @@
 
 #include "editor_log.h"
 
+#include "core/core_bind.h"
 #include "core/object/undo_redo.h"
 #include "core/os/keyboard.h"
 #include "core/version.h"

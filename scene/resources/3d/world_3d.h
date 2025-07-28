@@ -48,7 +48,9 @@ class World3D : public Resource {
 
 private:
 	RID scenario;
+#ifndef PHYSICS_3D_DISABLED
 	mutable RID space;
+#endif // PHYSICS_3D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	mutable RID navigation_map;
 #endif // NAVIGATION_3D_DISABLED
@@ -69,7 +71,9 @@ protected:
 	void _remove_camera(Camera3D *p_camera);
 
 public:
+#ifndef PHYSICS_3D_DISABLED
 	RID get_space() const;
+#endif // PHYSICS_3D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 	RID get_navigation_map() const;
 #endif // NAVIGATION_3D_DISABLED

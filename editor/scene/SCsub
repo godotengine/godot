@@ -6,6 +6,7 @@ Import("env")
 env.add_source_files(env.editor_sources, "*.cpp")
 
 SConscript("2d/SCsub")
-SConscript("3d/SCsub")
+if not env["disable_3d"]:
+    SConscript("3d/SCsub")
 SConscript("gui/SCsub")
 SConscript("texture/SCsub")

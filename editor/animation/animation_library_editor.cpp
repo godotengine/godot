@@ -30,6 +30,7 @@
 
 #include "animation_library_editor.h"
 
+#include "core/core_bind.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/templates/vector.h"

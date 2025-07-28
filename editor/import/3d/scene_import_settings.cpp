@@ -73,7 +73,9 @@ class SceneImportSettingsData : public Object {
 
 			// SceneImportSettings must decide if a new collider should be generated or not.
 			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE) {
+#ifndef PHYSICS_3D_DISABLED
 				SceneImportSettingsDialog::get_singleton()->request_generate_collider();
+#endif // PHYSICS_3D_DISABLED
 			}
 
 			ResourceImporterScene *resource_importer_scene = SceneImportSettingsDialog::get_singleton()->get_resource_importer_scene();
@@ -573,6 +575,7 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 		open_settings(base_path);
 		return;
 	}
+#ifndef PHYSICS_3D_DISABLED
 	for (const KeyValue<String, NodeData> &e : node_map) {
 		// Skip import nodes that aren't MeshInstance3D.
 		const MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
@@ -664,6 +667,7 @@ void SceneImportSettingsDialog::_update_view_gizmos() {
 	}
 
 	generate_collider = false;
+#endif // PHYSICS_3D_DISABLED
 }
 
 void SceneImportSettingsDialog::_update_camera() {
@@ -724,9 +728,11 @@ void SceneImportSettingsDialog::_load_default_subresource_settings(HashMap<Strin
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void SceneImportSettingsDialog::request_generate_collider() {
 	generate_collider = true;
 }
+#endif // PHYSICS_3D_DISABLED
 
 void SceneImportSettingsDialog::update_view() {
 	update_view_timer->start();

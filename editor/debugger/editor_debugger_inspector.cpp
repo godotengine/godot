@@ -30,6 +30,7 @@
 
 #include "editor_debugger_inspector.h"
 
+#include "core/core_bind.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/marshalls.h"
 #include "editor/docks/inspector_dock.h"
