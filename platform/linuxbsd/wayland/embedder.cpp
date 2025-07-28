@@ -2035,7 +2035,23 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		object = client->get_object(info->raw_id);
 	}
 
-	CRASH_COND_MSG(object == nullptr, vformat("No object found for r0x%x", info->raw_id));
+	if (object == nullptr) {
+		if (info->direction == ProxyDirection::COMPOSITOR) {
+			uint32_t local_id = info->raw_id;
+			ERR_PRINT(vformat("Couldn't client %d requested object l0x%x, disconnecting.", client->socket, local_id));
+
+			LocalVector<union wl_argument> args;
+			args.push_back(wl_arg_object(local_id));
+			args.push_back(wl_arg_uint(WL_DISPLAY_ERROR_INVALID_OBJECT));
+			args.push_back(wl_arg_string(vformat("[Godot Embedder] Object l0x%x not found.", local_id).utf8().get_data()));
+
+			send_wayland_event(client->socket, DISPLAY_ID, wl_display_interface, WL_DISPLAY_ERROR, args);
+			client_disconnect(client->socket);
+			return;
+		} else {
+			CRASH_NOW_MSG(vformat("No object found for r0x%x", info->raw_id));
+		}
+	}
 
 	const struct wl_interface *interface = nullptr;
 	interface = object->interface;
