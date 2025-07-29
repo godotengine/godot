@@ -1,0 +1,28 @@
+[configuration]
+
+entry_symbol = "test_extension_library_init"
+compatibility_minimum = 4.5
+reloadable = true
+
+[libraries]
+
+macos.debug = "./bin/libtest_extension.macos.debug.framework"
+macos.release = "./bin/libtest_extension.macos.release.framework"
+windows.debug.x86_64 = "./bin/test_extension.windows.debug.x86_64.dll"
+windows.release.x86_64 = "./bin/test_extension.windows.release.x86_64.dll"
+linux.debug.x86_64 = "./bin/libtest_extension.linux.debug.x86_64.so"
+linux.release.x86_64 = "./bin/libtest_extension.linux.release.x86_64.so"
+linux.debug.arm64 = "./bin/libtest_extension.linux.debug.arm64.so"
+linux.release.arm64 = "./bin/libtest_extension.linux.release.arm64.so"
+linux.debug.rv64 = "./bin/libtest_extension.linux.debug.rv64.so"
+linux.release.rv64 = "./bin/libtest_extension.linux.release.rv64.so"
+web.debug.wasm32 = "./bin/libtest_extension.web.debug.wasm32.wasm"
+web.release.wasm32 = "./bin/libtest_extension.web.release.wasm32.wasm"
+android.debug.arm64 = "./bin/libtest_extension.android.debug.arm64.so"
+android.release.arm64 = "./bin/libtest_extension.android.release.arm64.so"
+ios.debug = "./bin/libtest_extension.ios.debug.universal.dylib"
+ios.release = "./bin/libtest_extension.ios.release.universal.dylib"
+
+[icons]
+
+ExampleNode = "icons/ExampleNode.svg"
