@@ -77,6 +77,17 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_font_size", "size"), &Label3D::set_font_size);
 	ClassDB::bind_method(D_METHOD("get_font_size"), &Label3D::get_font_size);
 
+	ClassDB::bind_method(D_METHOD("get_total_character_count"), &Label3D::get_total_character_count);
+
+	ClassDB::bind_method(D_METHOD("set_visible_characters", "amount"), &Label3D::set_visible_characters);
+	ClassDB::bind_method(D_METHOD("get_visible_characters"), &Label3D::get_visible_characters);
+
+	ClassDB::bind_method(D_METHOD("set_visible_ratio", "ratio"), &Label3D::set_visible_ratio);
+	ClassDB::bind_method(D_METHOD("get_visible_ratio"), &Label3D::get_visible_ratio);
+
+	ClassDB::bind_method(D_METHOD("set_visible_characters_behavior", "behavior"), &Label3D::set_visible_characters_behavior);
+	ClassDB::bind_method(D_METHOD("get_visible_characters_behavior"), &Label3D::get_visible_characters_behavior);
+
 	ClassDB::bind_method(D_METHOD("set_outline_size", "outline_size"), &Label3D::set_outline_size);
 	ClassDB::bind_method(D_METHOD("get_outline_size"), &Label3D::get_outline_size);
 
@@ -166,6 +177,11 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
+
+	ADD_GROUP("Displayed Text", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters", PROPERTY_HINT_RANGE, "-1,128000,1"), "set_visible_characters", "get_visible_characters");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "visible_characters_behavior", PROPERTY_HINT_ENUM, "Characters Before Shaping:0,Characters After Shaping:1,Glyphs (Left-to-Right):3,Glyphs (Right-to-Left):4"), "set_visible_characters_behavior", "get_visible_characters_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visible_ratio", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_visible_ratio", "get_visible_ratio");
 
 	BIND_ENUM_CONSTANT(FLAG_SHADED);
 	BIND_ENUM_CONSTANT(FLAG_DOUBLE_SIDED);
@@ -331,6 +347,14 @@ Ref<TriangleMesh> Label3D::generate_triangle_mesh() const {
 	return triangle_mesh;
 }
 
+bool Label3D::_is_glyph_visible(const Glyph &p_glyph) {
+	if (visible_chars_behavior == TextServer::VisibleCharactersBehavior::VC_GLYPHS_RTL) {
+		return visible_characters == -1 || visible_characters >= abs(p_glyph.end - get_total_character_count() - 1);
+	} else {
+		return visible_characters == -1 || visible_characters >= p_glyph.end;
+	}
+}
+
 void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority, int p_outline_size) {
 	if (p_glyph.index == 0) {
 		r_offset.x += p_glyph.advance * pixel_size * p_glyph.repeat; // Non visual character, skip.
@@ -427,7 +451,11 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 1] = 0.0;
 			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 2] = 0.0;
 			s.mesh_tangents.write[(s.offset * 16) + (i * 4) + 3] = 1.0;
-			s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
+			if (_is_glyph_visible(p_glyph)) {
+				s.mesh_colors.write[(s.offset * 4) + i] = p_modulate;
+			} else {
+				s.mesh_colors.write[(s.offset * 4) + i] = Color(1, 1, 1, 0);
+			}
 			s.mesh_uvs.write[(s.offset * 4) + i] = Vector2();
 		}
 
@@ -483,6 +511,10 @@ void Label3D::_shape() {
 		TS->shaped_text_set_direction(text_rid, text_direction);
 
 		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		if (visible_characters != -1 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
+			int clamped_vis_characters = CLAMP(visible_characters, -1, txt.size() - 1);
+			txt = txt.erase(clamped_vis_characters, txt.length() - clamped_vis_characters);
+		}
 		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
 
 		TypedArray<Vector3i> stt;
@@ -668,6 +700,9 @@ void Label3D::set_text(const String &p_string) {
 	text = p_string;
 	xl_text = atr(p_string);
 	dirty_text = true;
+	if (visible_ratio < 1) {
+		visible_characters = get_total_character_count() * visible_ratio;
+	}
 	_queue_update();
 }
 
@@ -891,6 +926,64 @@ void Label3D::set_modulate(const Color &p_color) {
 
 Color Label3D::get_modulate() const {
 	return modulate;
+}
+
+int Label3D::get_total_character_count() const {
+	return xl_text.length();
+}
+
+void Label3D::set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior) {
+	if (visible_chars_behavior != p_behavior) {
+		visible_chars_behavior = p_behavior;
+		dirty_text = true;
+		dirty_lines = true;
+		if (p_behavior == TextServer::VisibleCharactersBehavior::VC_GLYPHS_AUTO) {
+			print_error("Label3D doesn't support Glyphs(Layout Direction) for the visible characters behavior");
+		}
+		_queue_update();
+	}
+}
+
+TextServer::VisibleCharactersBehavior Label3D::get_visible_characters_behavior() const {
+	return visible_chars_behavior;
+}
+
+void Label3D::set_visible_characters(int p_amount) {
+	if (visible_characters != p_amount) {
+		visible_characters = p_amount;
+		dirty_text = true;
+		if (p_amount == -1 || get_total_character_count() == 0) {
+			visible_ratio = 1.0;
+		} else {
+			visible_ratio = (float)p_amount / (float)get_total_character_count();
+		}
+		_queue_update();
+	}
+}
+
+int Label3D::get_visible_characters() const {
+	return visible_characters;
+}
+
+void Label3D::set_visible_ratio(float p_ratio) {
+	if (visible_ratio != p_ratio) {
+		if (p_ratio >= 1.0) {
+			visible_characters = -1;
+			visible_ratio = 1.0;
+		} else if (p_ratio < 0.0) {
+			visible_characters = 0;
+			visible_ratio = 0.0;
+		} else {
+			visible_characters = get_total_character_count() * p_ratio;
+			visible_ratio = p_ratio;
+		}
+		dirty_text = true;
+		_queue_update();
+	}
+}
+
+float Label3D::get_visible_ratio() const {
+	return visible_ratio;
 }
 
 void Label3D::set_outline_modulate(const Color &p_color) {
