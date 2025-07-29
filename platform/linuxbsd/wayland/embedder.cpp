@@ -348,9 +348,17 @@ WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_fake_object(uint32_
 	return &new_object;
 }
 
-WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_global_instance(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
+WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_global_instance(uint32_t p_local_id, uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
 	CRASH_COND(embedder == nullptr);
 	CRASH_COND_MSG(get_object(p_local_id) != nullptr, vformat("Object l0x%x already exists", p_local_id));
+
+	local_ids[p_global_id] = p_global_id;
+
+	// FIXME: Track each instance properly. Global instances (the compatibility
+	// mechanism) are particular as they're the only case where a global ID might
+	// map to multiple local objects. In that case we need to mirror each event
+	// which passes a registry object as an argument for each instance.
+	global_ids[p_local_id] = p_global_id;
 
 	WaylandObject &new_object = global_instances[p_local_id];
 	new_object.interface = p_interface;
@@ -978,11 +986,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			send_wayland_event(client->socket, local_registry_id, wl_registry_interface, WL_REGISTRY_GLOBAL, args);
 		}
 
-		// FIXME: Multiple associations.
-		client->local_ids[REGISTRY_ID] = local_registry_id;
-		client->global_ids[local_registry_id] = REGISTRY_ID;
-		client->get_object(local_registry_id)->interface = &wl_registry_interface;
-		client->get_object(local_registry_id)->version = 1;
+		client->new_global_instance(local_registry_id, REGISTRY_ID, &wl_registry_interface, 1);
 
 		return true;
 	}
@@ -1078,9 +1082,12 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 				CRASH_COND(global_info.global_ids[version] == INVALID_ID);
 
+				// FIXME: Consider simplifying the relationship between shared_objects and
+				// global_instances. global_instances is only a store for certain objects,
+				// akin to fake_objects, while shared_objects does the actual work of
+				// tracking which interface requires event mirroring.
 				shared_objects[global_info.interface] = global_info.global_ids[version];
-
-				instance = client->new_global_instance(new_local_id, global_info.interface, version);
+				instance = client->new_global_instance(new_local_id, global_info.global_ids[version], global_info.interface, version);
 
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Instancing global #%d iface %s ver %d new id l0x%x g0x%x", global_name, global_info.interface->name, version, new_local_id, global_info.global_ids[version]));
 
@@ -1097,10 +1104,6 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 						send_wayland_message(client->socket, new_local_id, WL_SHM_FORMAT, { format });
 					}
 				}
-
-				// FIXME: Multiple associations?
-				client->global_ids[new_local_id] = global_info.global_ids[version];
-				client->local_ids[global_info.global_ids[version]] = new_local_id;
 			}
 
 			ERR_FAIL_NULL_V(instance, false);
@@ -2113,6 +2116,17 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 			is_global = true;
 		}
 
+		// FIXME: For compatibility, mirror events with instanced registry globals as
+		// object arguments. For example, `wl_surface.enter` returns a `wl_output`. If
+		// said `wl_output` has been instanced multiple times, we need to resend the
+		// same event with each instance as the argument, or the client might miss the
+		// event by looking for the "wrong" instance.
+		//
+		// Note that this missing behavior is exclusively a compatibility mechanism
+		// for old compositors which only implement undestroyable globals. We
+		// otherwise passthrough every bind request and then the compositor takes care
+		// of everything.
+		// See: https://lore.freedesktop.org/wayland-devel/7974118.ZATLvOeFn3@machina/
 		if (shared_objects.has(interface)) {
 			bool handled = false;
 
