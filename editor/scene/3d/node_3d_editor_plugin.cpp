@@ -3750,21 +3750,21 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			if (!get_selected_count()) {
 				break;
 			}
-			
+
 			const List<Node *> &selection = editor_selection->get_top_selected_node_list();
-			
+
 			undo_redo->create_action(TTR("Align Rotation with View"));
 			for (Node *E : selection) {
 				Node3D *sp = Object::cast_to<Node3D>(E);
 				if (!sp) {
 					continue;
 				}
-				
+
 				Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
 				if (!se) {
 					continue;
 				}
-				
+
 				Transform3D node_transform = sp->get_global_transform();
 				Basis basis = node_transform.basis;
 
