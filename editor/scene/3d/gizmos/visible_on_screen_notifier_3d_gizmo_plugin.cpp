@@ -81,14 +81,33 @@ void VisibleOnScreenNotifier3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p
 	helper->get_segment(p_camera, p_point, sg);
 
 	AABB aabb = notifier->get_aabb();
+	int axis = p_id / 2;
+	int sign = p_id % 2 * -2 + 1;
+
+	float neg_end = aabb.position[axis];
+	float pos_end = aabb.position[axis] + aabb.size[axis];
+
 	Vector3 new_size = Vector3(aabb.size);
 	Vector3 new_position;
 	helper->box_set_handle(sg, p_id, new_size, new_position);
 
+	// Adjust position
+	if (Input::get_singleton()->is_key_pressed(Key::ALT)) {
+		new_position = aabb.position + (aabb.get_size() - new_size) * 0.5;
+	} else {
+		new_position = aabb.position;
+		if (sign > 0) {
+			pos_end = neg_end + new_size[axis];
+		} else {
+			neg_end = pos_end - new_size[axis];
+			new_position[axis] = neg_end;
+		}
+	}
+
 	AABB new_aabb;
+	new_aabb.position = new_position;
 	new_aabb.size = new_size;
 	notifier->set_aabb(new_aabb);
-	notifier->set_global_position(new_position);
 }
 
 void VisibleOnScreenNotifier3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
