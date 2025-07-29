@@ -305,6 +305,37 @@ uint32_t WaylandEmbedder::Client::new_object(uint32_t p_local_id, const struct w
 	return new_global_id;
 }
 
+uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
+	CRASH_COND(embedder == nullptr);
+	CRASH_COND_MSG(get_object(p_global_id) != nullptr, vformat("Tried to create %s l0x%x but it already exists as %s", p_interface->name, p_global_id, get_object(p_global_id)->interface->name));
+
+	uint32_t new_local_id = allocate_server_id();
+
+	DEBUG_LOG_WAYLAND_EMBED(vformat("New server object %s g0x%x l0x%x", p_interface->name, p_global_id, new_local_id));
+
+	uint32_t stripped_id = p_global_id & ~(0xff000000);
+
+	// The max ID will never increment more than one at a time, due to the
+	// packed nature of IDs. libwayland already does similar assertions so it
+	// just makes sense to double-check to avoid messing memory up or
+	// allocating a huge buffer for nothing.
+	CRASH_COND_MSG(stripped_id > embedder->server_objects.size(), "Invalid new server id received.");
+
+	if (stripped_id == embedder->server_objects.size()) {
+		embedder->server_objects.resize(embedder->server_objects.size() + 1);
+	}
+
+	WaylandObject *new_object = embedder->get_object(p_global_id);
+	new_object->interface = p_interface;
+	new_object->version = p_version;
+	new_object->data = p_data;
+
+	global_ids[new_local_id] = p_global_id;
+	local_ids[p_global_id] = new_local_id;
+
+	return new_local_id;
+}
+
 WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
 	CRASH_COND(embedder == nullptr);
 	CRASH_COND_MSG(get_object(p_local_id) != nullptr, vformat("Object l0x%x already exists", p_local_id));
@@ -636,7 +667,7 @@ void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_soc
 uint32_t WaylandEmbedder::new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
 	uint32_t new_global_id = next_global_id();
 
-	DEBUG_LOG_WAYLAND_EMBED(vformat("New object g%d %s", new_global_id, p_interface->name));
+	DEBUG_LOG_WAYLAND_EMBED(vformat("New object g0x%x %s", new_global_id, p_interface->name));
 
 	WaylandObject *new_object = get_object(new_global_id);
 	new_object->interface = p_interface;
@@ -778,6 +809,8 @@ bool WaylandEmbedder::global_surface_is_window(uint32_t p_wl_surface_id) {
 }
 
 bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_object, const struct wl_message *message, const struct msg_info *info, uint32_t *buf, uint32_t instance_id) {
+	CRASH_COND(client == nullptr);
+
 	ERR_FAIL_NULL_V(p_object, false);
 
 #ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
@@ -831,44 +864,6 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 			case 'n': {
 				uint32_t arg = body[buf_idx];
 
-				uint32_t new_local_id = 0;
-				uint32_t new_global_id = 0;
-
-				if (info->direction == ProxyDirection::COMPOSITOR) {
-					new_local_id = arg;
-
-					// Try to allocate a suitable global id.
-					new_global_id = next_global_id();
-
-					body[buf_idx] = new_global_id;
-				} else if (info->direction == ProxyDirection::CLIENT) {
-					new_global_id = arg;
-
-					uint32_t stripped_id = new_global_id & ~(0xff000000);
-
-					// The max ID will never increment more than one at a time, due to the
-					// packed nature of IDs. libwayland already does similar assertions so it
-					// just makes sense to double-check to avoid messing memory up or
-					// allocating a huge buffer for nothing.
-					CRASH_COND_MSG(stripped_id > server_objects.size(), "Invalid new server id received.");
-
-					if (stripped_id == server_objects.size()) {
-						server_objects.resize(server_objects.size() + 1);
-					}
-
-					if (client) {
-						new_local_id = client->allocate_server_id();
-						CRASH_COND_MSG(new_local_id == INVALID_ID, "Out of server-side IDs.");
-
-						body[buf_idx] = new_local_id;
-					}
-				}
-
-				if (client) {
-					client->global_ids[new_local_id] = new_global_id;
-					client->local_ids[new_global_id] = new_local_id;
-				}
-
 				const struct wl_interface *new_interface = message->types[arg_idx];
 				uint32_t new_version = p_object->version;
 
@@ -880,17 +875,7 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 					new_version = body[arg_idx - 1];
 				}
 
-				if (new_interface) {
-					if (client) {
-						DEBUG_LOG_WAYLAND_EMBED(vformat("new id l0x%x g0x%x interface %s", new_local_id, new_global_id, new_interface->name));
-						client->get_object(new_local_id)->interface = new_interface;
-						client->get_object(new_local_id)->version = new_version;
-					} else {
-						DEBUG_LOG_WAYLAND_EMBED(vformat("new id lNOCLIENT g0x%x interface %s", new_global_id, new_interface->name));
-						get_object(new_global_id)->interface = new_interface;
-						get_object(new_global_id)->version = new_version;
-					}
-				} else {
+				if (new_interface == nullptr) {
 					if (last_str_len > 0) {
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Unknown interface %s, marking packet as invalid.", (char *)(body + last_str_buf_idx + 1)));
 					} else {
@@ -899,17 +884,20 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 					valid = false;
 					break;
 				}
+
+				if (info->direction == ProxyDirection::COMPOSITOR) {
+					uint32_t new_local_id = arg;
+					body[buf_idx] = client->new_object(new_local_id, new_interface, new_version);
+				} else if (info->direction == ProxyDirection::CLIENT) {
+					uint32_t new_global_id = arg;
+					body[buf_idx] = client->new_server_object(new_global_id, new_interface, new_version);
+				}
 			} break;
 
 			case 'o': {
 				uint32_t obj_id = body[buf_idx];
 				if (obj_id == 0) {
 					// Object arguments can be nil.
-					break;
-				}
-
-				if (!client) {
-					// Doesn't matter. We're not going to send the thing anyways.
 					break;
 				}
 
