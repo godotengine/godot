@@ -3212,7 +3212,7 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 			bool ac = get_tree()->is_accessibility_enabled();
 			// Note: Native popup menus need keyboard focus to work with screen reader.
 			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
+			set_flag(FLAG_NO_FOCUS, true);
 			if (ac) {
 				set_ac_popup();
 			}
@@ -3256,7 +3256,7 @@ void PopupMenu::set_visible(bool p_visible) {
 			bool ac = get_tree()->is_accessibility_enabled();
 			// Note: Native popup menus need keyboard focus to work with screen reader.
 			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
+			set_flag(FLAG_NO_FOCUS, true);
 			if (ac) {
 				set_ac_popup();
 			}
