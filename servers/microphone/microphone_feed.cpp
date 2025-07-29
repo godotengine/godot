@@ -109,21 +109,21 @@ void MicrophoneFeed::set_active(bool p_is_active) {
 int MicrophoneFeed::get_frames_available() {
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
 	if (input_position < microphone_buffer_ofs) {
-		Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+		Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 		input_position += buf.size();
 	}
 	return (input_position - microphone_buffer_ofs) / 2;
 }
 
 int MicrophoneFeed::get_buffer_length_frames() {
-	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	return buf.size() / 2;
 }
 
 PackedVector2Array MicrophoneFeed::get_frames(int p_frames) {
 	PackedVector2Array ret;
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
-	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
+	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	if (input_position < microphone_buffer_ofs) {
 		input_position += buf.size();
 	}
