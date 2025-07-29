@@ -403,11 +403,11 @@ public:
 	void set_port_connections(const GraphPort *p_port, const TypedArray<Ref<GraphConnection>> p_connections);
 	void set_node_connections(const GraphNode *p_node, const TypedArray<Ref<GraphConnection>> p_connections);
 	void add_connections(const TypedArray<Ref<GraphConnection>> p_connections);
-	const TypedArray<Ref<GraphConnection>> get_connections() const;
-	const TypedArray<Ref<GraphConnection>> get_connections_by_port(const GraphPort *p_port) const;
-	const TypedArray<Ref<GraphConnection>> get_connections_by_node(const GraphNode *p_node) const;
-	const Ref<GraphConnection> get_first_connection_by_port(const GraphPort *p_port) const;
-	const TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
+	TypedArray<Ref<GraphConnection>> get_connections() const;
+	TypedArray<Ref<GraphConnection>> get_connections_by_port(const GraphPort *p_port) const;
+	TypedArray<Ref<GraphConnection>> get_connections_by_node(const GraphNode *p_node) const;
+	Ref<GraphConnection> get_first_connection_by_port(const GraphPort *p_port) const;
+	TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
 	void move_connections(GraphPort *p_from_port, GraphPort *p_to_port);
 	void clear_connections();
 	void clear_port_connections(const GraphPort *p_port);

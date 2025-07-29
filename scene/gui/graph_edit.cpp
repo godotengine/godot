@@ -556,46 +556,58 @@ Ref<GraphConnection> GraphEdit::get_connection(const GraphPort *p_first_port, co
 	return Ref<GraphConnection>(nullptr);
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections() const {
+TypedArray<Ref<GraphConnection>> GraphEdit::get_connections() const {
 	return graph_connections;
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_port(const GraphPort *p_port) const {
+TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_port(const GraphPort *p_port) const {
 	if (!p_port || !is_port_connected(p_port)) {
 		return TypedArray<Ref<GraphConnection>>();
 	}
 	return connection_map[p_port];
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_node(const GraphNode *p_node) const {
+TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_by_node(const GraphNode *p_node) const {
 	TypedArray<Ref<GraphConnection>> ret;
-	for (GraphPort *port : p_node->ports) {
-		if (!port) {
+	if (!p_node || p_node->ports.is_empty()) {
+		return ret;
+	}
+	for (const GraphPort *port : p_node->ports) {
+		if (!is_port_connected(port)) {
 			continue;
 		}
-		ret.append_array(connection_map[port]);
+		for (Ref<GraphConnection> conn : connection_map[port]) {
+			if (conn.is_null()) {
+				continue;
+			}
+			ret.push_back(conn);
+		}
 	}
 	return ret;
 }
 
-const Ref<GraphConnection> GraphEdit::get_first_connection_by_port(const GraphPort *p_port) const {
+Ref<GraphConnection> GraphEdit::get_first_connection_by_port(const GraphPort *p_port) const {
 	if (!p_port || !is_port_connected(p_port)) {
 		return Ref<GraphConnection>(nullptr);
 	}
-	const TypedArray<Ref<GraphConnection>> &_ports = connection_map[p_port];
-	if (_ports.is_empty()) {
-		return Ref<GraphConnection>(nullptr);
-	}
-	return _ports.front();
+	return connection_map[p_port].front();
 }
 
-const TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
+TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
 	TypedArray<Ref<GraphConnection>> ret;
+	if (!p_node || p_node->ports.is_empty()) {
+		return ret;
+	}
 	for (GraphPort *port : p_node->ports) {
 		if (!is_port_connected(port) || port->direction != p_filter_direction) {
 			continue;
 		}
-		ret.append_array(connection_map[port]);
+		for (Ref<GraphConnection> conn : connection_map[port]) {
+			if (conn.is_null()) {
+				continue;
+			}
+			ret.push_back(conn);
+		}
 	}
 	return ret;
 }
