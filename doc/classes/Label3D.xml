@@ -23,6 +23,12 @@
 				Returns the value of the specified flag.
 			</description>
 		</method>
+		<method name="get_total_character_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total number of printable characters in the text (excluding spaces and newlines).
+			</description>
+		</method>
 		<method name="set_draw_flag">
 			<return type="void" />
 			<param index="0" name="flag" type="int" enum="Label3D.DrawFlags" />
@@ -135,6 +141,16 @@
 		</member>
 		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="1">
 			Controls the text's vertical alignment. Supports top, center, and bottom.
+		</member>
+		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
+			The number of characters to display. If set to [code]-1[/code], all characters are displayed. This can be useful when animating the text appearing in a dialog box.
+			[b]Note:[/b] Setting this property updates [member visible_ratio] accordingly.
+		</member>
+		<member name="visible_characters_behavior" type="int" setter="set_visible_characters_behavior" getter="get_visible_characters_behavior" enum="TextServer.VisibleCharactersBehavior" default="0">
+		</member>
+		<member name="visible_ratio" type="float" setter="set_visible_ratio" getter="get_visible_ratio" default="1.0">
+			The fraction of characters to display, relative to the total number of characters (see [method get_total_character_count]). If set to [code]1.0[/code], all characters are displayed. If set to [code]0.5[/code], only half of the characters will be displayed. This can be useful when animating the text appearing in a dialog box.
+			[b]Note:[/b] Setting this property updates [member visible_characters] accordingly.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
 			Text width (in pixels), used for autowrap and fill alignment.
