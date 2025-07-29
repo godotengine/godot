@@ -553,6 +553,204 @@ String GDScriptLanguage::make_function(const String &p_class, const String &p_na
 	return result;
 }
 
+Array GDScriptLanguage::parse_color(const String &p_text) const {
+	enum ColorMode {
+		MODE_RGB,
+		MODE_STRING,
+		MODE_HSV,
+		MODE_OKHSL,
+		MODE_RGB8,
+		MODE_HEX,
+		MODE_MAX
+	};
+
+	Array result;
+	int i_end_previous = 0;
+	int i_start = p_text.find("Color");
+
+	while (i_start != -1) {
+		// Ignore words that just have "Color" in them.
+		if (i_start != 0 && ('_' + p_text.substr(i_start - 1, 1)).is_valid_ascii_identifier()) {
+			i_end_previous = MAX(i_end_previous, i_start);
+			i_start = p_text.find("Color", i_start + 1);
+			continue;
+		}
+
+		Dictionary color_info;
+		color_info["column"] = i_start;
+		color_info["width_ratio"] = 1.0;
+
+		bool has_added_color = false;
+
+		const int i_color_word_end = i_start + 5;
+		const int i_par_start = p_text.find_char('(', i_color_word_end);
+		const int i_par_end = p_text.find_char(')', i_color_word_end);
+		if (i_par_start == -1 || i_par_end == -1) {
+			if (i_color_word_end + 1 < p_text.size() && p_text[i_color_word_end] == '.') {
+				// Color name constant.
+				int i_constant_end = p_text.size() - 1;
+				for (int i = i_color_word_end + 1; i < p_text.size(); i++) {
+					if (is_symbol(p_text[i])) {
+						i_constant_end = i;
+						break;
+					}
+				}
+				const String constant_string = p_text.substr(i_color_word_end, i_constant_end - i_color_word_end);
+				const int color_index = Color::find_named_color(constant_string);
+				if (color_index >= 0) {
+					const Color color_constant = Color::get_named_color(color_index);
+					color_info["color"] = color_constant;
+					// Use the RGB mode as there is no constant option.
+					color_info["color_mode"] = MODE_RGB;
+					color_info["color_end"] = i_constant_end - 1;
+					has_added_color = true;
+				}
+			}
+			if (!has_added_color) {
+				i_end_previous = MAX(i_end_previous, i_start);
+				i_start = p_text.find("Color", i_start + 1);
+				continue;
+			}
+		}
+
+		if (!has_added_color) {
+			color_info["color_end"] = i_par_end;
+		}
+		const String fn_name = p_text.substr(i_color_word_end, i_par_start - i_color_word_end);
+		const String s_params = p_text.substr(i_par_start + 1, i_par_end - i_par_start - 1);
+
+		if (!has_added_color && fn_name.is_empty()) {
+			String stripped = s_params.strip_edges(true, true);
+			if (stripped.length() > 1 && (stripped[0] == '"' || stripped[0] == '\'')) {
+				// String constructor.
+				const char32_t string_delimiter = stripped[0];
+				if (stripped[stripped.length() - 1] == string_delimiter) {
+					const String color_string = stripped.substr(1, stripped.length() - 2);
+					if (!color_string.contains_char(string_delimiter)) {
+						color_info["color"] = Color::from_string(color_string, Color());
+						color_info["color_mode"] = MODE_STRING;
+						has_added_color = true;
+					}
+				}
+			} else if (stripped.length() == 10 && stripped.begins_with("0x")) {
+				// Hex constructor.
+				const String color_string = stripped.substr(2);
+				if (color_string.is_valid_hex_number(false)) {
+					color_info["color"] = Color::from_string(color_string, Color());
+					color_info["color_mode"] = MODE_HEX;
+					has_added_color = true;
+				}
+			} else if (stripped.is_empty()) {
+				// Empty Color() constructor.
+				color_info["color"] = Color();
+				color_info["color_mode"] = MODE_RGB;
+				has_added_color = true;
+			}
+		}
+		// Float & int parameters.
+		if (!has_added_color && s_params.size() > 0) {
+			const PackedStringArray s_params_split = s_params.split(",", false, 4);
+			PackedFloat64Array params;
+			bool valid_floats = true;
+			for (const String &s_param : s_params_split) {
+				// Only allow float literals, expressions won't be evaluated and could get replaced.
+				if (!s_param.strip_edges().is_valid_float()) {
+					valid_floats = false;
+					break;
+				}
+				params.push_back(s_param.to_float());
+			}
+			if (valid_floats && params.size() == 3) {
+				if (fn_name == ".from_rgba8") {
+					params.push_back(255);
+				} else {
+					params.push_back(1.0);
+				}
+			}
+			if (valid_floats && params.size() == 4) {
+				has_added_color = true;
+				if (fn_name == ".from_ok_hsl") {
+					color_info["color"] = Color::from_ok_hsl(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_OKHSL;
+				} else if (fn_name == ".from_hsv") {
+					color_info["color"] = Color::from_hsv(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_HSV;
+				} else if (fn_name == ".from_rgba8") {
+					color_info["color"] = Color::from_rgba8(int(params[0]), int(params[1]), int(params[2]), int(params[3]));
+					color_info["color_mode"] = MODE_RGB8;
+				} else if (fn_name.is_empty()) {
+					color_info["color"] = Color(params[0], params[1], params[2], params[3]);
+					color_info["color_mode"] = MODE_RGB;
+				} else {
+					has_added_color = false;
+				}
+			}
+		}
+
+		if (has_added_color) {
+			result.push_back(color_info);
+			i_end_previous = i_par_end + 1;
+		}
+		i_end_previous = MAX(i_end_previous, i_start);
+		i_start = p_text.find("Color", i_start + 1);
+	}
+	return result;
+}
+
+PackedStringArray GDScriptLanguage::get_color_string_options(const Color &p_color) const {
+	PackedStringArray result;
+
+	// All color options must be in the same order as the ColorMode enum in parse_color, as it will be used as an index.
+	// MODE_RGB.
+	PackedStringArray str_params = {
+		String::num(p_color.r, 3),
+		String::num(p_color.g, 3),
+		String::num(p_color.b, 3),
+		String::num(p_color.a, 3)
+	};
+	result.push_back("Color(" + String(", ").join(str_params) + ")");
+
+	// MODE_STRING.
+	str_params = { "\"" + p_color.to_html() + "\"" };
+	result.push_back("Color(" + String(", ").join(str_params) + ")");
+
+	// MODE_HSV.
+	str_params = {
+		String::num(p_color.get_h(), 3),
+		String::num(p_color.get_s(), 3),
+		String::num(p_color.get_v(), 3),
+		String::num(p_color.a, 3)
+	};
+	String fname = ".from_hsv";
+	result.push_back("Color" + fname + "(" + String(", ").join(str_params) + ")");
+
+	// MODE_OKHSL.
+	str_params = {
+		String::num(p_color.get_ok_hsl_h(), 3),
+		String::num(p_color.get_ok_hsl_s(), 3),
+		String::num(p_color.get_ok_hsl_l(), 3),
+		String::num(p_color.a, 3)
+	};
+	fname = ".from_ok_hsl";
+	result.push_back("Color" + fname + "(" + String(", ").join(str_params) + ")");
+
+	// MODE_RGB8.
+	str_params = {
+		itos(p_color.get_r8()),
+		itos(p_color.get_g8()),
+		itos(p_color.get_b8()),
+		itos(p_color.get_a8())
+	};
+	fname = ".from_rgba8";
+	result.push_back("Color" + fname + "(" + String(", ").join(str_params) + ")");
+
+	// MODE_HEX.
+	str_params = { "0x" + p_color.to_html() };
+	result.push_back("Color(" + String(", ").join(str_params) + ")");
+
+	return result;
+}
+
 //////// COMPLETION //////////
 
 #ifdef TOOLS_ENABLED
