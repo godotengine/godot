@@ -36,13 +36,28 @@
 				It will fail if there is no open file.
 			</description>
 		</method>
+		<method name="get_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Returns the zip buffer data if opened using [method open_buffer]. Otherwise, returns an empty array.
+				Must be called after [method close].
+			</description>
+		</method>
 		<method name="open">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="append" type="int" enum="ZIPPacker.ZipAppend" default="0" />
 			<description>
 				Opens a zip file for writing at the given path using the specified write mode.
-				This must be called before everything else.
+			</description>
+		</method>
+		<method name="open_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="init" type="PackedByteArray" default="PackedByteArray()" />
+			<param index="1" name="append" type="int" enum="ZIPPacker.ZipAppend" default="0" />
+			<description>
+				Opens a zip buffer for writing using the specified write mode.
+				The initial buffer content can be given in [param init], useful for [constant APPEND_CREATEAFTER] and [constant APPEND_ADDINZIP].
 			</description>
 		</method>
 		<method name="start_file">
@@ -50,7 +65,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Starts writing to a file within the archive. Only one file can be written at the same time.
-				Must be called after [method open].
+				Must be called after [method open] or [method open_buffer].
 			</description>
 		</method>
 		<method name="write_file">
@@ -69,13 +84,13 @@
 	</members>
 	<constants>
 		<constant name="APPEND_CREATE" value="0" enum="ZipAppend">
-			Create a new zip archive at the given path.
+			Create a new zip archive.
 		</constant>
 		<constant name="APPEND_CREATEAFTER" value="1" enum="ZipAppend">
-			Append a new zip archive to the end of the already existing file at the given path.
+			Append a new zip archive to the end of the existing content.
 		</constant>
 		<constant name="APPEND_ADDINZIP" value="2" enum="ZipAppend">
-			Add new files to the existing zip archive at the given path.
+			Add new files to the existing zip archive.
 		</constant>
 		<constant name="COMPRESSION_DEFAULT" value="-1" enum="CompressionLevel">
 			Start a file with the default Deflate compression level ([code]6[/code]). This is a good compromise between speed and file size.
