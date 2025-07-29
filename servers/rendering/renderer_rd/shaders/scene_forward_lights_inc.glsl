@@ -1319,7 +1319,6 @@ void light_process_area(uint idx, vec3 vertex, hvec3 eye_vec, hvec3 normal, vec3
 
 	spec *= spec_color * max(half(M_brdf_e_mag_fres.y), half(0.0)) + (half(1.0) - spec_color) * max(half(M_brdf_e_mag_fres.z), half(0.0));
 	specular_light += spec / half(2.0 * M_PI) * half(area_lights.data[idx].specular_amount) * light_attenuation;
-	//alpha = ?; // ... SHADOW_TO_OPACITY might affect this.
 }
 
 void reflection_process(uint ref_index, vec3 vertex, hvec3 ref_vec, hvec3 normal, half roughness, hvec3 ambient_light, hvec3 specular_light, inout hvec4 ambient_accum, inout hvec4 reflection_accum) {
