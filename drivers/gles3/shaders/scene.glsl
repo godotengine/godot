@@ -457,27 +457,6 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 }
 #endif // !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
 
-#if !defined(DISABLE_LIGHT_AREA) && defined(USE_ADDITIVE_LIGHTING)
-void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness,
-		inout vec3 diffuse_light, inout vec3 specular_light) {
-	vec3 light_rel_vec = area_lights[idx].position - vertex;
-	float a_len = length(area_width);
-	float b_len = length(area_height);
-	float a_half_len = a_len / 2.0;
-	float b_half_len = b_len / 2.0;
-	vec3 pos_local_to_light = (light_mat_inv * vec4(vertex, 1)).xyz;
-	vec3 closest_point_local_to_light = vec3(clamp(pos_local_to_light.x, -a_half_len, a_half_len), clamp(pos_local_to_light.y, -b_half_len, b_half_len), 0);
-	float dist = length(closest_point_local_to_light - pos_local_to_light);
-	float light_length = max(0, dist);
-	float area_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
-	vec3 color = area_lights[idx].color * area_attenuation; // No light shaders here, so combine.
-
-	light_compute(normal, normalize(light_rel_vec), eye_vec, color, false, roughness,
-			diffuse_light,
-			specular_light);
-}
-#endif // !defined(DISABLE_LIGHT_AREA) && defined(USE_ADDITIVE_LIGHTING))
-
 #endif // !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED) && defined(USE_VERTEX_LIGHTING)
 
 #endif // USE_VERTEX_LIGHTING
