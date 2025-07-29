@@ -6,7 +6,8 @@
 	<description>
 		An area light is a type of [Light3D] node that emits light over a 2-dimensional area, in the shape of a rectangle. The light is attenuated through the distance. This attenuation can be configured by changing the energy, [member area_attenuation], and [member area_range].
 		Light is emitted in the -Z direction of the node's global basis. For an unrotated light, this means that the light is emitted forwards, illuminating the front side of a 3D model (see [constant Vector3.FORWARD] and [constant Vector3.MODEL_FRONT]).
-		[b]Note:[/b] Area lights are only supported in the Forward+ renderer. When using Mobile or Compatibility, they will not display. As a workaround, you can use [LightmapGI] and a [QuadMesh] with [member PrimitiveMesh.add_uv2] set to [code]true[/code] and assign an emissive material to the [QuadMesh], then hide the [QuadMesh] after baking lightmaps.
+		Area lights can cast soft shadows using PCSS, which you can control by tweaking the size parameter. The shadow map is drawn from the center of the light.
+		[b]Note:[/b] Area lights have limited support in the Mobile or Compatibility renderer. In the Mobile renderer, the size of the penumbra doesn't vary is it should with PCSS. In Compatibility, area lights cannot cast shadows. For static lighting, consider instead using [LightmapGI] and a [QuadMesh] with [member PrimitiveMesh.add_uv2] set to [code]true[/code] and assign an emissive material to the [QuadMesh], then hide the [QuadMesh] after baking lightmaps.
 	</description>
 	<tutorials>
 	</tutorials>
