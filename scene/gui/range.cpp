@@ -140,7 +140,9 @@ void Range::_set_value_no_signal(double p_val) {
 
 double Range::_calc_value(double p_val, double p_step) const {
 	if (p_step > 0) {
-		p_val = Math::round((p_val - shared->min) / p_step) * p_step + shared->min;
+		// TODO: In the future, change `step` to a more suitable type for more robust precise calculations.
+		// Subtract min to support cases like min = 0.1, step = 0.2, snaps to 0.1, 0.3, 0.5, etc.
+		p_val = Math::snapped(p_val - shared->min, p_step) + shared->min;
 	}
 
 	if (_rounded_values) {
