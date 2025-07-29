@@ -457,7 +457,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 }
 #endif // !defined(DISABLE_LIGHT_SPOT) || (defined(ADDITIVE_SPOT) && defined(USE_ADDITIVE_LIGHTING))
 
-#if !defined(DISABLE_LIGHT_AREA) && defined(USE_ADDITIVE_LIGHTING))
+#if !defined(DISABLE_LIGHT_AREA) && defined(USE_ADDITIVE_LIGHTING)
 void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float roughness,
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = area_lights[idx].position - vertex;
@@ -472,10 +472,6 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, float 
 	float area_attenuation = get_omni_spot_attenuation(light_length, area_lights[idx].inv_radius, area_lights[idx].attenuation);
 	vec3 color = area_lights[idx].color * area_attenuation; // No light shaders here, so combine.
 
-	//////
-	diffuse_light = vec3(1.0, 0.0, 1.0); // PINK DEBUG
-	return;
-	//////
 	light_compute(normal, normalize(light_rel_vec), eye_vec, color, false, roughness,
 			diffuse_light,
 			specular_light);
@@ -1045,6 +1041,8 @@ void main() {
 7-depth
 8-reflection probe 1
 9-reflection probe 2
+10-area light LUT 1
+11-area light LUT 2
 
 */
 
@@ -2044,7 +2042,6 @@ void light_process_area(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	spec *= spec_color * max(M_brdf_e_mag_fres.y, 0.0) + (1.0 - spec_color) * max(M_brdf_e_mag_fres.z, 0.0);
 	specular_light += spec / (2.0 * M_PI) * area_lights[idx].specular_amount * light_attenuation;
-	//alpha = ?; // ... SHADOW_TO_OPACITY might affect this.
 }
 #endif // !DISABLE_LIGHT_AREA
 
