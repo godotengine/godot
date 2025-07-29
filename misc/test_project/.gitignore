@@ -1,0 +1,5 @@
+*.dblite
+
+# Ignore the submodule so we don't add it to version control.
+# We clone it on CI when needed instead.
+addons/test_extension/src/godot-cpp
