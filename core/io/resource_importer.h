@@ -92,6 +92,7 @@ public:
 	void remove_importer(const Ref<ResourceImporter> &p_importer) { importers.erase(p_importer); }
 	Ref<ResourceImporter> get_importer_by_name(const String &p_name) const;
 	Ref<ResourceImporter> get_importer_by_file(const String &p_file) const;
+	Ref<ResourceImporter> get_default_importer_by_extension(const String &p_extension) const;
 	void get_importers_for_file(const String &p_file, List<Ref<ResourceImporter>> *r_importers);
 	void get_importers(List<Ref<ResourceImporter>> *r_importers);
 
