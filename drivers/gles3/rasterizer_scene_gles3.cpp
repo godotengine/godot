@@ -3222,12 +3222,16 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 		}
 
-		glActiveTexture(GL_TEXTURE10); // TODO: what is the proper index here?
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 10);
 		GLuint ltc_lut1_texture = GLES3::TextureStorage::get_singleton()->texture_get_texid(ltc.lut1_texture);
 		glBindTexture(GL_TEXTURE_2D, ltc_lut1_texture);
-		glActiveTexture(GL_TEXTURE11); // TODO: what is the proper index here?
-		GLuint ltc_lut2_texture = GLES3::TextureStorage::get_singleton()->texture_get_texid(ltc.lut1_texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 11);
+		GLuint ltc_lut2_texture = GLES3::TextureStorage::get_singleton()->texture_get_texid(ltc.lut2_texture);
 		glBindTexture(GL_TEXTURE_2D, ltc_lut2_texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	} else if constexpr (p_pass_mode == PASS_MODE_DEPTH || p_pass_mode == PASS_MODE_SHADOW) {
 		shader_variant = SceneShaderGLES3::MODE_DEPTH;
 	} else if constexpr (p_pass_mode == PASS_MODE_MOTION_VECTORS) {
