@@ -1,0 +1,30 @@
+[gd_resource type="VisualShader" load_steps=2 format=3 uid="uid://barg7ns55yag2"]
+
+[sub_resource type="VisualShaderNodeColorParameter" id="VisualShaderNodeColorParameter_bwiop"]
+output_port_for_preview = 0
+parameter_name = "ColorParameter"
+default_value_enabled = true
+default_value = Color(0, 1, 0, 1)
+
+[resource]
+code = "shader_type spatial;
+render_mode blend_mix, depth_draw_opaque, depth_test_default, cull_back, diffuse_lambert, specular_schlick_ggx;
+
+uniform vec4 ColorParameter : source_color = vec4(0.000000, 1.000000, 0.000000, 1.000000);
+
+
+
+void fragment() {
+// ColorParameter:2
+	vec4 n_out2p0 = ColorParameter;
+
+
+// Output:0
+	ALBEDO = vec3(n_out2p0.xyz);
+
+
+}
+"
+nodes/fragment/2/node = SubResource("VisualShaderNodeColorParameter_bwiop")
+nodes/fragment/2/position = Vector2(20, 260)
+nodes/fragment/connections = PackedInt32Array(2, 0, 0, 0)
