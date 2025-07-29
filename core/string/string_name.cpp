@@ -264,7 +264,7 @@ StringName::StringName(const char *p_name) {
 	Table::table[idx] = _data;
 }
 
-StringName::StringName(const String &p_name, bool p_static) {
+StringName::StringName(const String &p_name) {
 	_data = nullptr;
 
 	if (p_name.is_empty()) {
