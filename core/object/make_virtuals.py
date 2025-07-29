@@ -17,7 +17,7 @@ script_has_method = """ScriptInstance *_script_instance = ((Object *)(this))->ge
 proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 	mutable void *_gdvirtual_##$VARNAME = nullptr;\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST {\\
-		static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
+		static const StringName _gdvirtual_##$VARNAME##_sn = ComptimeStringName<#m_name>().value;\\
 		$SCRIPTCALL\\
 		if (_get_extension()) {\\
 			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
@@ -53,7 +53,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 		return false;\\
 	}\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_overridden() const {\\
-		static const StringName _gdvirtual_##$VARNAME##_sn = StringName(#m_name, true);\\
+		static const StringName _gdvirtual_##$VARNAME##_sn = ComptimeStringName<#m_name>().value;\\
 		$SCRIPTHASMETHOD\\
 		if (_get_extension()) {\\
 			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
@@ -79,7 +79,7 @@ proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
 	}\\
 	_FORCE_INLINE_ static MethodInfo _gdvirtual_##$VARNAME##_get_method_info() {\\
 		MethodInfo method_info;\\
-		method_info.name = #m_name;\\
+		method_info.name = ComptimeString<#m_name>().value;\\
 		method_info.flags = $METHOD_FLAGS;\\
 		$FILL_METHOD_INFO\\
 		return method_info;\\
