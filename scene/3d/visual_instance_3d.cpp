@@ -149,16 +149,25 @@ bool VisualInstance3D::get_layer_mask_value(int p_layer_number) const {
 
 void VisualInstance3D::set_sorting_offset(float p_offset) {
 	sorting_offset = p_offset;
-	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center, sorting_stacked_order);
 }
 
 float VisualInstance3D::get_sorting_offset() const {
 	return sorting_offset;
 }
 
+void VisualInstance3D::set_sorting_stacked_order(int16_t p_order) {
+	sorting_stacked_order = p_order;
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center, sorting_stacked_order);
+}
+
+int16_t VisualInstance3D::get_sorting_stacked_order() const {
+	return sorting_stacked_order;
+}
+
 void VisualInstance3D::set_sorting_use_aabb_center(bool p_enabled) {
 	sorting_use_aabb_center = p_enabled;
-	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center, sorting_stacked_order);
 }
 
 bool VisualInstance3D::is_sorting_use_aabb_center() const {
@@ -166,7 +175,7 @@ bool VisualInstance3D::is_sorting_use_aabb_center() const {
 }
 
 void VisualInstance3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center") {
+	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center" || p_property.name == "sorting_stacked_order") {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
@@ -181,6 +190,8 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_mask_value", "layer_number"), &VisualInstance3D::get_layer_mask_value);
 	ClassDB::bind_method(D_METHOD("set_sorting_offset", "offset"), &VisualInstance3D::set_sorting_offset);
 	ClassDB::bind_method(D_METHOD("get_sorting_offset"), &VisualInstance3D::get_sorting_offset);
+	ClassDB::bind_method(D_METHOD("set_sorting_stacked_order", "offset"), &VisualInstance3D::set_sorting_stacked_order);
+	ClassDB::bind_method(D_METHOD("get_sorting_stacked_order"), &VisualInstance3D::get_sorting_stacked_order);
 	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
 	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
 
@@ -190,6 +201,7 @@ void VisualInstance3D::_bind_methods() {
 	ADD_GROUP("Sorting", "sorting_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "sorting_stacked_order"), "set_sorting_stacked_order", "get_sorting_stacked_order");
 }
 
 void VisualInstance3D::set_base(const RID &p_base) {
@@ -537,7 +549,7 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 }
 
 void GeometryInstance3D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center") {
+	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center" || p_property.name == "sorting_stacked_order") {
 		p_property.usage = PROPERTY_USAGE_DEFAULT;
 	}
 }

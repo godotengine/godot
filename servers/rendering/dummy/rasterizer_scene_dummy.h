@@ -50,7 +50,7 @@ public:
 		virtual void set_mesh_instance(RID p_mesh_instance) override {}
 		virtual void set_transform(const Transform3D &p_transform, const AABB &p_aabb, const AABB &p_transformed_aabb) override {}
 		virtual void reset_motion_vectors() override {}
-		virtual void set_pivot_data(float p_sorting_offset, bool p_use_aabb_center) override {}
+		virtual void set_pivot_data(float p_sorting_offset, bool p_use_aabb_center, int16_t p_sorting_stacked_order = 0) override {}
 		virtual void set_lod_bias(float p_lod_bias) override {}
 		virtual void set_layer_mask(uint32_t p_layer_mask) override {}
 		virtual void set_fade_range(bool p_enable_near, float p_near_begin, float p_near_end, bool p_enable_far, float p_far_begin, float p_far_end) override {}

@@ -80,9 +80,13 @@ void RenderGeometryInstanceBase::set_transform(const Transform3D &p_transform, c
 	lod_model_scale = max_scale;
 }
 
-void RenderGeometryInstanceBase::set_pivot_data(float p_sorting_offset, bool p_use_aabb_center) {
+void RenderGeometryInstanceBase::set_pivot_data(float p_sorting_offset, bool p_use_aabb_center, int16_t p_sorting_stacked_order) {
 	sorting_offset = p_sorting_offset;
 	use_aabb_center = p_use_aabb_center;
+	if (sorting_stacked_order != p_sorting_stacked_order) {
+		sorting_stacked_order = p_sorting_stacked_order;
+		_mark_dirty();
+	}
 }
 
 void RenderGeometryInstanceBase::set_lod_bias(float p_lod_bias) {

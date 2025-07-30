@@ -260,7 +260,6 @@ Validate extension JSON: API was removed: classes/Node/methods/get_rpc_config
 
 Change Node `get_rpc_config` to `get_node_rpc_config`. Compatibility method registered.
 
-
 GH-106300
 ---------
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RichTextLabel/methods/push_strikethrough': arguments
@@ -328,3 +327,9 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and SVGTexture. Compatibility method registered.
+
+GH-106593
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/instance_set_pivot_data/arguments': size changed value in new API, from 3 to 4.
+
+Added a optional parameter with default value and Compatibility method was registered.
