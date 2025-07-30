@@ -404,18 +404,22 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					table->columns[i].width = 0;
 				}
 
+				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
+				int base_column_width = available_width / col_count;
+
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
 					ItemFrame *frame = static_cast<ItemFrame *>(E);
+
 					float prev_h = 0;
 					for (int i = 0; i < (int)frame->lines.size(); i++) {
 						MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
-						int w = _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1;
+						int w = base_column_width - frame->padding.position.x - frame->padding.size.x;
+						w = MAX(w, _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1);
 						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
 					}
 				}
 
-				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
 				_set_table_size(table, available_width);
 
 				int row_idx = (table->align_to_row < 0) ? table->rows_baseline.size() - 1 : table->align_to_row;
@@ -619,7 +623,7 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 				}
 				// Compute minimum width for each cell.
 				const int available_width = p_width - theme_cache.table_h_separation * (col_count - 1);
-
+				int base_column_width = available_width / col_count;
 				int idx = 0;
 				for (Item *E : table->subitems) {
 					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
@@ -642,6 +646,17 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						table->columns[column].max_width = MAX(table->columns[column].max_width, frame->lines[i].indent + std::ceil(frame->lines[i].text_buf->get_non_wrapped_size().x));
 					}
 					idx++;
+				}
+				for (Item *E : table->subitems) {
+					ERR_CONTINUE(E->type != ITEM_FRAME); // Children should all be frames.
+					ItemFrame *frame = static_cast<ItemFrame *>(E);
+
+					float prev_h = 0;
+					for (int i = 0; i < (int)frame->lines.size(); i++) {
+						int w = base_column_width - frame->padding.position.x - frame->padding.size.x;
+						w = MAX(w, _find_margin(frame->lines[i].from, p_base_font, p_base_font_size) + 1);
+						prev_h = _resize_line(frame, i, p_base_font, p_base_font_size, w, prev_h);
+					}
 				}
 
 				_set_table_size(table, available_width);
