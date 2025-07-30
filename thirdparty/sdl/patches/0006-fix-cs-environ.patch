@@ -1,0 +1,14 @@
+diff --git a/thirdparty/sdl/stdlib/SDL_getenv.c b/thirdparty/sdl/stdlib/SDL_getenv.c
+index b4a19224655..c36b8cb8741 100644
+--- a/thirdparty/sdl/stdlib/SDL_getenv.c
++++ b/thirdparty/sdl/stdlib/SDL_getenv.c
+@@ -597,5 +597,9 @@ const char *SDL_getenv_unsafe(const char *name)
+ 
+ const char *SDL_getenv(const char *name)
+ {
++#ifdef SDL_PLATFORM_LINUX
++    return getenv(name);
++#else
+     return SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
++#endif
+ }
