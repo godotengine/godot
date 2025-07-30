@@ -406,7 +406,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 
 	int max_bone = 0;
 
-	for (int ai = 0; ai < VS::ARRAY_MAX; ai++) {
+	for (int ai = 0; ai < (int)VS::ARRAY_MAX; ai++) {
 		if (!(p_format & (1 << ai))) { // no array
 			continue;
 		}
@@ -857,7 +857,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 }
 
 uint32_t VisualServer::mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const {
-	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
+	ERR_FAIL_INDEX_V(p_array_index, (int)ARRAY_MAX, 0);
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t strides[ARRAY_MAX];
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets, strides);
@@ -865,7 +865,7 @@ uint32_t VisualServer::mesh_surface_get_format_offset(uint32_t p_format, int p_v
 }
 
 uint32_t VisualServer::mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const {
-	ERR_FAIL_INDEX_V(p_array_index, ARRAY_MAX, 0);
+	ERR_FAIL_INDEX_V(p_array_index, (int)ARRAY_MAX, 0);
 	uint32_t offsets[ARRAY_MAX];
 	uint32_t strides[ARRAY_MAX];
 	mesh_surface_make_offsets_from_format(p_format, p_vertex_len, p_index_len, offsets, strides);
@@ -879,7 +879,7 @@ void VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, int 
 	int attributes_stride = 0;
 	int positions_stride = 0;
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; //reset
 
 		if (!(p_format & (1 << i))) { // no array
@@ -1029,11 +1029,11 @@ void VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, int 
 
 	if (use_split_stream) {
 		r_strides[VS::ARRAY_VERTEX] = positions_stride;
-		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 1; i < VS::ARRAY_MAX - 1; i++) {
 			r_strides[i] = attributes_stride;
 		}
 	} else {
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			r_strides[i] = positions_stride + attributes_stride;
 		}
 	}
@@ -1077,7 +1077,7 @@ bool VisualServer::_mesh_find_format(VS::PrimitiveType p_primitive, const Array 
 		}
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		r_offsets[i] = 0; //reset
 
 		if (!(r_format & (1 << i))) { // no array
@@ -1297,11 +1297,11 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 
 	if (use_split_stream) {
 		strides[VS::ARRAY_VERTEX] = positions_stride;
-		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 1; i < VS::ARRAY_MAX - 1; i++) {
 			strides[i] = attributes_stride;
 		}
 	} else {
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			strides[i] = positions_stride + attributes_stride;
 		}
 	}
@@ -1350,7 +1350,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 	int attributes_stride = 0;
 	int positions_stride = 0;
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		offsets[i] = 0; //reset
 
 		if (!(p_format & (1 << i))) { // no array
@@ -1499,11 +1499,11 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 	if (use_split_stream) {
 		strides[VS::ARRAY_VERTEX] = positions_stride;
-		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 1; i < VS::ARRAY_MAX - 1; i++) {
 			strides[i] = attributes_stride;
 		}
 	} else {
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			strides[i] = positions_stride + attributes_stride;
 		}
 	}
@@ -1513,7 +1513,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 
 	PoolVector<uint8_t>::Read r = p_vertex_data.read();
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		if (!(p_format & (1 << i))) {
 			continue;
 		}

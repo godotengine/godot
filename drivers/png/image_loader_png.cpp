@@ -61,6 +61,12 @@ Ref<Image> ImageLoaderPNG::load_mem_png(const uint8_t *p_png, int p_size) {
 	Ref<Image> img;
 	img.instance();
 
+	// Note:
+	// For some png loading, p_size is set to -1 on entry, even though p_png is valid.
+	// p_size casts to a very large value when calling png_to_image.
+	// It seems to work okay, but flags with UBSan.
+	// Could do with investigation.
+
 	// the value of p_force_linear does not matter since it only applies to 16 bit
 	Error err = PNGDriverCommon::png_to_image(p_png, p_size, false, img);
 	ERR_FAIL_COND_V(err, Ref<Image>());

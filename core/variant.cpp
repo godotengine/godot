@@ -2520,6 +2520,9 @@ uint32_t Variant::recursive_hash(int p_recursion_count) const {
 			return _data._bool ? 1 : 0;
 		} break;
 		case INT: {
+			// Note: This is flagged by UBSan.
+			// Casting from int64_t to uint32_t is *implementation defined* behaviour
+			// rather than UB, but is still suspect.
 			return _data._int;
 		} break;
 		case REAL: {

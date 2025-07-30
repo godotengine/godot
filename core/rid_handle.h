@@ -108,7 +108,7 @@ public:
 	}
 	bool is_valid() const { return _id != 0; }
 
-	uint32_t get_id() const { return _id ? _handle_data : 0; }
+	uint32_t get_id() const { return _id ? _id : 0; }
 };
 
 class RID : public RID_Handle {

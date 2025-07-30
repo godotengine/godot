@@ -185,7 +185,7 @@ public:
 		U list_id = _active_map[p_id];
 
 		// zero the _active map to detect bugs (only in debug?)
-		_active_map[p_id] = -1;
+		_active_map[p_id] = std::numeric_limits<U>::max();
 
 		_active_list.remove_unordered(list_id);
 

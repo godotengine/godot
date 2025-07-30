@@ -508,8 +508,15 @@ void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 			const float translation_inertia = EDITOR_GET_CACHED(float, "editors/3d/navigation_feel/translation_inertia");
 			const float zoom_inertia = EDITOR_GET_CACHED(float, "editors/3d/navigation_feel/zoom_inertia");
 
-			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
-			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, MIN(1.f, p_interp_delta * (1 / orbit_inertia)));
+			float lerp_fraction = 1;
+
+			// Prevent divide by zero.
+			if (orbit_inertia > CMP_EPSILON) {
+				lerp_fraction = MIN(1.f, p_interp_delta * (1 / orbit_inertia));
+			}
+
+			camera_cursor.x_rot = Math::lerp(old_camera_cursor.x_rot, cursor.x_rot, lerp_fraction);
+			camera_cursor.y_rot = Math::lerp(old_camera_cursor.y_rot, cursor.y_rot, lerp_fraction);
 
 			if (Math::abs(camera_cursor.x_rot - cursor.x_rot) < 0.1) {
 				camera_cursor.x_rot = cursor.x_rot;

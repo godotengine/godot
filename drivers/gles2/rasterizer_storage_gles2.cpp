@@ -1198,7 +1198,7 @@ void RasterizerStorageGLES2::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 		glDisable(GL_SCISSOR_TEST);
 		glDisable(GL_BLEND);
 
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			glDisableVertexAttribArray(i);
 		}
 	}
@@ -2092,7 +2092,7 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 	int src_stride = 0;
 	int dst_stride = 0;
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		to_convert[i] = 0;
 		if (!(p_format & (1 << i))) {
 			src_size[i] = 0;
@@ -2238,7 +2238,7 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 	int src_offset = 0;
 	int dst_offset = 0;
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		if (src_size[i] == 0) {
 			continue; //no go
 		}
@@ -2296,7 +2296,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	int positions_stride = 0;
 	bool uses_half_float = false;
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		attribs[i].index = i;
 
 		if (!(p_format & (1 << i))) {
@@ -2480,11 +2480,11 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 	if (use_split_stream) {
 		attribs[VS::ARRAY_VERTEX].stride = positions_stride;
-		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 1; i < VS::ARRAY_MAX - 1; i++) {
 			attribs[i].stride = attributes_stride;
 		}
 	} else {
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			attribs[i].stride = positions_stride + attributes_stride;
 		}
 	}
@@ -2575,7 +2575,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		surface->skeleton_bone_used.write[i] = !(surface->skeleton_bone_aabb[i].size.x < 0 || surface->skeleton_bone_aabb[i].size.y < 0 || surface->skeleton_bone_aabb[i].size.z < 0);
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (uint32_t i = 0; i < VS::ARRAY_MAX; i++) {
 		surface->attribs[i] = attribs[i];
 	}
 
@@ -3873,7 +3873,7 @@ void RasterizerStorageGLES2::update_dirty_blend_shapes() {
 					}
 				}
 
-				for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+				for (int i = 0; i < (int)VS::ARRAY_MAX - 1; i++) {
 					if (s->attribs[i].enabled) {
 						// Read all attributes
 						for (int j = 0; j < s->array_len; j++) {

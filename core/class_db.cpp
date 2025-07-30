@@ -425,6 +425,9 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
 				hash = hash_djb2_one_64(F->get().hash(), hash);
+
+				// Note: Casting an int to uint64_t is picked up by UBSan,
+				// this could cause dodgy hashes.
 				hash = hash_djb2_one_64(t->constant_map[F->get()], hash);
 			}
 		}

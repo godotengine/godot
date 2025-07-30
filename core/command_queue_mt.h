@@ -326,7 +326,7 @@ class CommandQueueMT {
 	template <class T>
 	T *allocate() {
 		// alloc size is size+T+safeguard
-		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
+		uint32_t alloc_size = (((sizeof(T) + 8) - 1) & (~(uint32_t)(8 - 1))) + 8;
 
 		// Assert that the buffer is big enough to hold at least two messages.
 		ERR_FAIL_COND_V(alloc_size * 2 + sizeof(uint32_t) > command_mem_size, nullptr);
@@ -376,7 +376,8 @@ class CommandQueueMT {
 		// Allocate the size and the 'in use' bit.
 		// First bit used to mark if command is still in use (1)
 		// or if it has been destroyed and can be deallocated (0).
-		uint32_t size = (sizeof(T) + 8 - 1) & ~(8 - 1);
+		uint32_t size = ((sizeof(T) + 8) - 1) & (~(uint32_t)(8 - 1));
+
 		uint32_t *p = (uint32_t *)&command_mem[write_ptr];
 		*p = (size << 1) | 1;
 		write_ptr += 8;
@@ -445,7 +446,7 @@ class CommandQueueMT {
 
 		cmd->post();
 		cmd->~CommandBase();
-		*(uint32_t *)&command_mem[size_ptr] &= ~1;
+		*(uint32_t *)&command_mem[size_ptr] &= ~(uint32_t)1;
 
 		if (p_lock) {
 			unlock();

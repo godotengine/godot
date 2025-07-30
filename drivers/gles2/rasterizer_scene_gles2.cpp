@@ -668,7 +668,7 @@ bool RasterizerSceneGLES2::reflection_probe_instance_postprocess_step(RID p_inst
 		glDisable(GL_BLEND);
 		glDepthMask(GL_FALSE);
 
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			glDisableVertexAttribArray(i);
 		}
 	}
@@ -1483,7 +1483,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 			}
 
-			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			for (int i = 0; i < (int)VS::ARRAY_MAX - 1; i++) {
 				if (s->attribs[i].enabled) {
 					glEnableVertexAttribArray(i);
 
@@ -1664,7 +1664,7 @@ void RasterizerSceneGLES2::_setup_geometry(RenderList::Element *p_element, Raste
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, s->index_id);
 			}
 
-			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			for (int i = 0; i < (int)VS::ARRAY_MAX - 1; i++) {
 				if (s->attribs[i].enabled) {
 					glEnableVertexAttribArray(i);
 					glVertexAttribPointer(s->attribs[i].index, s->attribs[i].size, s->attribs[i].type, s->attribs[i].normalized, s->attribs[i].stride, CAST_INT_TO_UCHAR_PTR(s->attribs[i].offset));
