@@ -262,7 +262,7 @@ private:
 	real_t _settings_roaming_expansion_margin = 1.0;
 
 	// debug override camera
-	ObjectID _godot_preview_camera_ID = -1;
+	ObjectID _godot_preview_camera_ID = std::numeric_limits<ObjectID>::max();
 	// local version of the godot camera frustum,
 	// to prevent updating the visual server (and causing
 	// a screen refresh) where not necessary.

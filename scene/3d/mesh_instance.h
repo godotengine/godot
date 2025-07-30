@@ -51,7 +51,7 @@ protected:
 	NodePath skeleton_path;
 
 	struct SoftwareSkinning {
-		enum Flags {
+		enum Flags : uint32_t {
 			// Data flags.
 			FLAG_TRANSFORM_NORMALS = 1 << 0,
 

@@ -990,12 +990,12 @@ void ArrayMesh::add_surface_from_arrays_cpu(PrimitiveType p_primitive, const Arr
 	s->arrays = p_arrays;
 	s->blend_shapes = p_blend_shapes;
 
-	if (p_arrays.size() > VS::ARRAY_VERTEX) {
+	if (p_arrays.size() > (int)VS::ARRAY_VERTEX) {
 		// This is horrible but VisualServer uses this .. it may do a conversion to PoolVector3Array?
 		// Maybe this rarely happens.
 		s->num_verts = PoolVector3Array(p_arrays[VS::ARRAY_VERTEX]).size();
 	}
-	if (p_arrays.size() > VS::ARRAY_INDEX) {
+	if (p_arrays.size() > (int)VS::ARRAY_INDEX) {
 		s->num_inds = PoolIntArray(p_arrays[VS::ARRAY_INDEX]).size();
 	}
 }

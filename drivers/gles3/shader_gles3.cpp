@@ -1072,9 +1072,10 @@ void ShaderGLES3::_setup_uniforms(CustomCode *p_cc) const {
 
 	// assign uniform block bind points
 	for (int i = 0; i < ubo_count; i++) {
-		GLint loc = glGetUniformBlockIndex(version->ids.main, ubo_pairs[i].name);
-		if (loc >= 0)
+		GLuint loc = glGetUniformBlockIndex(version->ids.main, ubo_pairs[i].name);
+		if (loc != GL_INVALID_INDEX) {
 			glUniformBlockBinding(version->ids.main, loc, ubo_pairs[i].index);
+		}
 	}
 
 	if (p_cc) {

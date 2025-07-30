@@ -118,7 +118,7 @@ public:
 			disable_3d_by_usage = false;
 			keep_3d_linear = false;
 			debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
-			for (int i = 0; i < VS::VIEWPORT_RENDER_INFO_MAX; i++) {
+			for (uint32_t i = 0; i < VS::VIEWPORT_RENDER_INFO_MAX; i++) {
 				render_info[i] = 0;
 			}
 			use_arvr = false;
