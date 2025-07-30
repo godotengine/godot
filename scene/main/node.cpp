@@ -988,7 +988,7 @@ double Node::get_physics_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_physics_process_time();
 	} else {
-		return 0;
+		return CMP_EPSILON;
 	}
 }
 
@@ -996,7 +996,7 @@ double Node::get_process_delta_time() const {
 	if (data.tree) {
 		return data.tree->get_process_time();
 	} else {
-		return 0;
+		return CMP_EPSILON;
 	}
 }
 
