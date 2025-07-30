@@ -107,7 +107,7 @@ void MicrophoneFeed::set_active(bool p_is_active) {
 }
 
 int MicrophoneFeed::get_frames_available() {
-	AudioDriver* ad = AudioDriver::get_singleton();
+	AudioDriver *ad = AudioDriver::get_singleton();
 	ad->lock();
 	int input_position = ad->get_input_position();
 	if (input_position < microphone_buffer_ofs) {
@@ -119,7 +119,7 @@ int MicrophoneFeed::get_frames_available() {
 }
 
 int MicrophoneFeed::get_buffer_length_frames() {
-	AudioDriver* ad = AudioDriver::get_singleton();
+	AudioDriver *ad = AudioDriver::get_singleton();
 	ad->lock();
 	int buffsize = ad->get_input_buffer().size();
 	ad->unlock();
@@ -128,7 +128,7 @@ int MicrophoneFeed::get_buffer_length_frames() {
 
 PackedVector2Array MicrophoneFeed::get_frames(int p_frames) {
 	PackedVector2Array ret;
-	AudioDriver* ad = AudioDriver::get_singleton();
+	AudioDriver *ad = AudioDriver::get_singleton();
 	ad->lock();
 	int input_position = ad->get_input_position();
 	Vector<int32_t> buf = ad->get_input_buffer();
