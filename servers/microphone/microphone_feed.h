@@ -42,7 +42,7 @@ class MicrophoneFeed : public RefCounted {
 	static void _bind_methods();
 
 protected:
-	unsigned int microphone_buffer_ofs = 0;
+	int microphone_buffer_ofs = 0;
 	bool active;
 	Error start_microphone();
 	Error stop_microphone();
