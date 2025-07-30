@@ -106,7 +106,12 @@ TextureStorage::TextureStorage() {
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_BLACK], image);
 
 			Vector<Ref<Image>> images;
-			for (int i = 0; i < 6; i++) {
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_BLACK], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
 				images.push_back(image);
 			}
 			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_BLACK] = texture_allocate();
@@ -132,6 +137,31 @@ TextureStorage::TextureStorage() {
 
 			default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT] = texture_allocate();
 			texture_2d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_TRANSPARENT], image);
+
+			Vector<Ref<Image>> images;
+			images.push_back(image);
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_2D_ARRAY_TRANSPARENT], images, RS::TEXTURE_LAYERED_2D_ARRAY);
+
+			for (int i = 0; i < 5; i++) {
+				images.push_back(image);
+			}
+
+			default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT] = texture_allocate();
+			texture_2d_layered_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_CUBEMAP_TRANSPARENT], images, RS::TEXTURE_LAYERED_CUBEMAP);
+		}
+
+		{
+			Ref<Image> image = Image::create_empty(4, 4, false, Image::FORMAT_RGBA8);
+			image->fill(Color(0, 0, 0, 0));
+
+			Vector<Ref<Image>> images;
+			for (int i = 0; i < 4; i++) {
+				images.push_back(image);
+			}
+			default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT] = texture_allocate();
+			texture_3d_initialize(default_gl_textures[DEFAULT_GL_TEXTURE_3D_TRANSPARENT], image->get_format(), 4, 4, 4, false, images);
 		}
 
 		{

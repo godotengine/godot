@@ -211,7 +211,7 @@ TextureStorage::TextureStorage() {
 			pv.set(i * 4 + 0, 0);
 			pv.set(i * 4 + 1, 0);
 			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
+			pv.set(i * 4 + 3, 255);
 		}
 
 		{
@@ -251,6 +251,34 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
+	{ //create default transparent cubemap array
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.array_layers = 6;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			for (int i = 0; i < 6; i++) {
+				vpv.push_back(pv);
+			}
+			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_TRANSPARENT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
 	{ //create default black cubemap
 
 		RD::TextureFormat tformat;
@@ -267,7 +295,7 @@ TextureStorage::TextureStorage() {
 			pv.set(i * 4 + 0, 0);
 			pv.set(i * 4 + 1, 0);
 			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
+			pv.set(i * 4 + 3, 255);
 		}
 
 		{
@@ -307,6 +335,34 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
+	{ //create default transparent cubemap
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.array_layers = 6;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_CUBE;
+
+		Vector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 0);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			for (int i = 0; i < 6; i++) {
+				vpv.push_back(pv);
+			}
+			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_TRANSPARENT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+	}
+
 	{ //create default 3D
 
 		RD::TextureFormat tformat;
@@ -320,6 +376,20 @@ TextureStorage::TextureStorage() {
 		Vector<uint8_t> pv;
 		pv.resize(64 * 4);
 		for (int i = 0; i < 64; i++) {
+			// opaque black
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<Vector<uint8_t>> vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_3D_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+		for (int i = 0; i < 64; i++) {
+			// transparent black
 			pv.set(i * 4 + 0, 0);
 			pv.set(i * 4 + 1, 0);
 			pv.set(i * 4 + 2, 0);
@@ -329,7 +399,7 @@ TextureStorage::TextureStorage() {
 		{
 			Vector<Vector<uint8_t>> vpv;
 			vpv.push_back(pv);
-			default_rd_textures[DEFAULT_RD_TEXTURE_3D_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_3D_TRANSPARENT] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 		for (int i = 0; i < 64; i++) {
 			pv.set(i * 4 + 0, 255);
