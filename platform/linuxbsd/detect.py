@@ -380,7 +380,6 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["XKB_ENABLED"])
 
     if platform.system() == "Linux":
-        env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
             if not env["use_sowrap"]:
                 if os.system("pkg-config --exists libudev") == 0:  # 0 means found
