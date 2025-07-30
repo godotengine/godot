@@ -922,6 +922,7 @@ void Node3D::clear_gizmos() {
 		data.gizmos.write[i]->free();
 	}
 	data.gizmos.clear();
+	data.gizmos_requested = false;
 #endif
 }
 
