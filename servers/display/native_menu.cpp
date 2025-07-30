@@ -41,6 +41,9 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_menu", "menu_id"), &NativeMenu::get_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu_name", "menu_id"), &NativeMenu::get_system_menu_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_menu_text", "menu_id"), &NativeMenu::get_system_menu_text);
+	ClassDB::bind_method(D_METHOD("set_system_menu_text", "menu_id", "name"), &NativeMenu::set_system_menu_text);
+
 	ClassDB::bind_method(D_METHOD("create_menu"), &NativeMenu::create_menu);
 	ClassDB::bind_method(D_METHOD("has_menu", "rid"), &NativeMenu::has_menu);
 	ClassDB::bind_method(D_METHOD("free_menu", "rid"), &NativeMenu::free_menu);
@@ -155,6 +158,15 @@ String NativeMenu::get_system_menu_name(SystemMenus p_menu_id) const {
 		default:
 			return "Invalid";
 	}
+}
+
+String NativeMenu::get_system_menu_text(SystemMenus p_menu_id) const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return String();
+}
+
+void NativeMenu::set_system_menu_text(SystemMenus p_menu_id, const String &p_name) {
+	WARN_PRINT("Global menus are not supported on this platform.");
 }
 
 RID NativeMenu::create_menu() {
