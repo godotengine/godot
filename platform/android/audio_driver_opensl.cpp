@@ -195,7 +195,9 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf queueItf, void *pContext) {
 	AudioDriverOpenSL *ad = static_cast<AudioDriverOpenSL *>(pContext);
 
+	ad->lock();
 	ad->_record_buffer_callback(queueItf);
+	ad->lock();
 }
 
 Error AudioDriverOpenSL::init_input_device() {
