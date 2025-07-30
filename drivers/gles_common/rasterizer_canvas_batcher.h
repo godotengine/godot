@@ -3209,59 +3209,35 @@ PREAMBLE(bool)::_sort_items_match(const BSortItem &p_a, const BSortItem &p_b) co
 		return false;
 	}
 
-	// tested outside function
-	//	if (a->commands.size() != 1)
-	//		return false;
-
-	const RasterizerCanvas::Item::Command &cb = *b->commands[0];
-	if ((cb.type != RasterizerCanvas::Item::Command::TYPE_RECT) && (cb.type != RasterizerCanvas::Item::Command::TYPE_MULTIRECT)) {
-		return false;
-	}
+	// Tested outside function.
+	// DEV_ASSERT(a->commands.size() == 1);
 
 	const RasterizerCanvas::Item::Command &ca = *a->commands[0];
-	// tested outside function
-	//	if (ca.type != Item::Command::TYPE_RECT)
-	//		return false;
+	const RasterizerCanvas::Item::Command &cb = *b->commands[0];
 
-	const RasterizerCanvas::Item::CommandRect *rect_a = static_cast<const RasterizerCanvas::Item::CommandRect *>(&ca);
-	const RasterizerCanvas::Item::CommandRect *rect_b = static_cast<const RasterizerCanvas::Item::CommandRect *>(&cb);
+	if ((ca.type == RasterizerCanvas::Item::Command::TYPE_RECT) && (cb.type == RasterizerCanvas::Item::Command::TYPE_RECT)) {
+		const RasterizerCanvas::Item::CommandRect *rect_a = static_cast<const RasterizerCanvas::Item::CommandRect *>(&ca);
+		const RasterizerCanvas::Item::CommandRect *rect_b = static_cast<const RasterizerCanvas::Item::CommandRect *>(&cb);
 
-	if (rect_a->texture != rect_b->texture) {
-		return false;
+		if (rect_a->texture != rect_b->texture) {
+			return false;
+		}
+
+		return true;
 	}
 
-	/* ALTERNATIVE APPROACH NOT LIMITED TO RECTS
-const RasterizerCanvas::Item::Command &ca = *a->commands[0];
-const RasterizerCanvas::Item::Command &cb = *b->commands[0];
+	if ((ca.type == RasterizerCanvas::Item::Command::TYPE_MULTIRECT) && (cb.type == RasterizerCanvas::Item::Command::TYPE_MULTIRECT)) {
+		const RasterizerCanvas::Item::CommandMultiRect *rect_a = static_cast<const RasterizerCanvas::Item::CommandMultiRect *>(&ca);
+		const RasterizerCanvas::Item::CommandMultiRect *rect_b = static_cast<const RasterizerCanvas::Item::CommandMultiRect *>(&cb);
 
-if (ca.type != cb.type)
+		if (rect_a->texture != rect_b->texture) {
+			return false;
+		}
+
+		return true;
+	}
+
 	return false;
-
-// do textures match?
-switch (ca.type)
-{
-default:
-	break;
-case RasterizerCanvas::Item::Command::TYPE_RECT:
-	{
-		const RasterizerCanvas::Item::CommandRect *comm_a = static_cast<const RasterizerCanvas::Item::CommandRect *>(&ca);
-		const RasterizerCanvas::Item::CommandRect *comm_b = static_cast<const RasterizerCanvas::Item::CommandRect *>(&cb);
-		if (comm_a->texture != comm_b->texture)
-			return false;
-	}
-	break;
-case RasterizerCanvas::Item::Command::TYPE_POLYGON:
-	{
-		const RasterizerCanvas::Item::CommandPolygon *comm_a = static_cast<const RasterizerCanvas::Item::CommandPolygon *>(&ca);
-		const RasterizerCanvas::Item::CommandPolygon *comm_b = static_cast<const RasterizerCanvas::Item::CommandPolygon *>(&cb);
-		if (comm_a->texture != comm_b->texture)
-			return false;
-	}
-	break;
-}
-*/
-
-	return true;
 }
 
 PREAMBLE(bool)::sort_items_from(int p_start) {
