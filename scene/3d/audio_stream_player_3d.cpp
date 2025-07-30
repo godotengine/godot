@@ -397,13 +397,11 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			continue;
 		}
 
-		bool listener_is_camera = true;
 		Node3D *listener_node = camera;
 
 		AudioListener3D *listener = vp->get_audio_listener_3d();
 		if (listener) {
 			listener_node = listener;
-			listener_is_camera = false;
 		}
 
 		Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
@@ -507,7 +505,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 			Vector3 listener_velocity;
 
-			if (listener_is_camera) {
+			if (listener) {
+				listener_velocity = listener->get_doppler_tracked_velocity();
+			} else {
 				listener_velocity = camera->get_doppler_tracked_velocity();
 			}
 
