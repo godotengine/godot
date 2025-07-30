@@ -45,6 +45,9 @@
 //
 //  - Keep cleaning up this mess (code still sucks)
 //
+//  - Consider returning most errors as wl_display.error events so that we can
+//  eventually shut off everything cleanly in the future.
+//
 //  - Do the mario (swing your arms from side to side)
 
 #include <sys/stat.h>
@@ -153,8 +156,16 @@ struct WaylandEmbedder::WaylandObject *WaylandEmbedder::get_object(uint32_t p_gl
 	}
 
 	if (is_server) {
+		if (server_objects.size() <= p_global_id) {
+			return nullptr;
+		}
+
 		return &server_objects[p_global_id];
 	} else {
+		if (objects.reserved_size() <= p_global_id) {
+			return nullptr;
+		}
+
 		return &objects[p_global_id];
 	}
 }
@@ -307,7 +318,7 @@ uint32_t WaylandEmbedder::Client::new_object(uint32_t p_local_id, const struct w
 
 uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
 	CRASH_COND(embedder == nullptr);
-	CRASH_COND_MSG(get_object(p_global_id) != nullptr, vformat("Tried to create %s l0x%x but it already exists as %s", p_interface->name, p_global_id, get_object(p_global_id)->interface->name));
+	CRASH_COND_MSG(get_object(get_local_id(p_global_id)) != nullptr, vformat("Tried to create %s g0x%x but it already exists as %s", p_interface->name, p_global_id, get_object(get_local_id(p_global_id))->interface->name));
 
 	uint32_t new_local_id = allocate_server_id();
 
