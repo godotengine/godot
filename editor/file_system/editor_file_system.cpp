@@ -3107,8 +3107,31 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		}
 	} else {
 		// Load the resource and save it again in the new location (this generates a new UID).
-		Error err;
-		Ref<Resource> res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		Error err = OK;
+		Ref<Resource> res = ResourceCache::get_ref(p_from);
+		if (res.is_null()) {
+			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		} else {
+			bool edited = false;
+			List<Ref<Resource>> cached;
+			ResourceCache::get_cached_resources(&cached);
+			for (Ref<Resource> &resource : cached) {
+				if (!resource->is_edited()) {
+					continue;
+				}
+				if (!resource->get_path().begins_with(p_from)) {
+					continue;
+				}
+				// The resource or one of its built-in resources is edited.
+				edited = true;
+				resource->set_edited(false);
+			}
+
+			if (edited) {
+				// Save cached resources to prevent changes from being lost and to prevent discrepancies.
+				EditorNode::get_singleton()->save_resource(res);
+			}
+		}
 		if (err == OK && res.is_valid()) {
 			err = ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS);
 			if (err != OK) {
