@@ -22,13 +22,13 @@ runs:
     - name: Open and close editor (Vulkan)
       shell: sh
       run: |
-        xvfb-run ${{ inputs.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+        xvfb-run ${{ inputs.bin }} --audio-driver Dummy --import --path test_project 2>&1 | tee sanitizers_log.txt || true
         misc/scripts/check_ci_log.py sanitizers_log.txt
 
     - name: Open and close editor (GLES3)
       shell: sh
       run: |
-        DRI_PRIME=0 xvfb-run ${{ inputs.bin }} --audio-driver Dummy --rendering-driver opengl3 --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+        DRI_PRIME=0 xvfb-run ${{ inputs.bin }} --audio-driver Dummy --rendering-driver opengl3 --import --path test_project 2>&1 | tee sanitizers_log.txt || true
         misc/scripts/check_ci_log.py sanitizers_log.txt
 
     # Run test project
