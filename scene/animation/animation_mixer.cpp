@@ -282,16 +282,6 @@ bool AnimationMixer::has_animation_library(const StringName &p_name) const {
 	return false;
 }
 
-StringName AnimationMixer::get_animation_library_name(const Ref<AnimationLibrary> &p_animation_library) const {
-	ERR_FAIL_COND_V(p_animation_library.is_null(), StringName());
-	for (const AnimationLibraryData &lib : animation_libraries) {
-		if (lib.library == p_animation_library) {
-			return lib.name;
-		}
-	}
-	return StringName();
-}
-
 StringName AnimationMixer::find_animation_library(const Ref<Animation> &p_animation) const {
 	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 		if (E.value.animation == p_animation) {
