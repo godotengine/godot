@@ -71,6 +71,9 @@ public:
 	virtual RID get_system_menu(SystemMenus p_menu_id) const;
 	virtual String get_system_menu_name(SystemMenus p_menu_id) const;
 
+	virtual String get_system_menu_text(SystemMenus p_menu_id) const;
+	virtual void set_system_menu_text(SystemMenus p_menu_id, const String &p_name);
+
 	virtual RID create_menu();
 	virtual bool has_menu(const RID &p_rid) const;
 	virtual void free_menu(const RID &p_rid);
