@@ -1880,6 +1880,7 @@ void FileSystemDock::_convert_dialog_action() {
 			for (const String &target : cached_valid_conversion_targets) {
 				if (conversion_id == selected_conversion_id && conversion->converts_to() == target) {
 					Ref<Resource> converted_res = conversion->convert(res);
+					ERR_FAIL_COND(converted_res.is_null());
 					ERR_FAIL_COND(res.is_null());
 					converted_resources.push_back(converted_res);
 					resources_to_erase_history_for.insert(res);
