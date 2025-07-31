@@ -356,6 +356,7 @@ public:
 	void _texture_copy_shared(RID p_src_texture_rid, Texture *p_src_texture, RID p_dst_texture_rid, Texture *p_dst_texture);
 	void _texture_create_reinterpret_buffer(Texture *p_texture);
 	uint32_t _texture_vrs_method_to_usage_bits() const;
+	void _texture_ensure_shareable_format(RID p_texture, const DataFormat &p_shareable_format);
 
 	struct TextureGetDataRequest {
 		uint32_t frame_local_index = 0;
