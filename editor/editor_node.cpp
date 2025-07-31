@@ -8370,7 +8370,7 @@ EditorNode::EditorNode() {
 
 	warning = memnew(AcceptDialog);
 	warning->set_unparent_when_invisible(true);
-	warning->add_button(TTR("Copy Text"), true, "copy");
+	warning->add_button(TTRC("Copy Text"), true, "copy");
 	warning->connect("custom_action", callable_mp(this, &EditorNode::_copy_warning));
 
 	ED_SHORTCUT("editor/next_tab", TTRC("Next Scene Tab"), KeyModifierMask::CTRL + Key::TAB);
