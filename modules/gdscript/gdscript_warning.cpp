@@ -162,8 +162,10 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
-		case INIT_WITH_REQUIRED_PARAM:
-			return R"*(Using parameters without default values prevents implicit construction. Instances can only be created by calling "new()". This causes errors when loading resources and scenes. Will also cause errors with some functions and behaviours, such as with "duplicate()".)*";
+		case NODE_CONSTRUCTOR_REQUIRED_PARAM:
+			return R"*(Nodes that use required parameters in their "_init()" can only be created using "new()". Scenes that contain these Nodes will not load correctly, and "duplicate()" calls will result in an error.)*";
+		case RESOURCE_CONSTRUCTOR_REQUIRED_PARAM:
+			return R"*(Resources that use required parameters in their "_init()" can only be created using "new()". Any instance of this Resource will not load correctly, and "duplicate()" calls will result in an error.)*";
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -240,7 +242,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("NATIVE_METHOD_OVERRIDE"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
-		PNAME("INIT_WITH_REQUIRED_PARAM"),
+		PNAME("NODE_CONSTRUCTOR_REQUIRED_PARAM"),
+		PNAME("RESOURCE_CONSTRUCTOR_REQUIRED_PARAM"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",

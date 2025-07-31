@@ -750,7 +750,6 @@ public:
 		bool is_abstract = false;
 		bool has_static_data = false;
 		bool annotated_static_unload = false;
-		bool allows_implicit_new = true;
 		String extends_path;
 		Vector<IdentifierNode *> extends; // List for indexing: extends A.B.C
 		DataType base_type;
@@ -767,6 +766,15 @@ public:
 
 		bool resolved_interface = false;
 		bool resolved_body = false;
+
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+		enum DefaultConstructorStatus : uint8_t {
+			CONSTRUCTOR_TBD,
+			HAS_SAFE_CONSTRUCTOR,
+			CONSTRUCTOR_REQUIRES_PARAMETERS,
+		};
+		DefaultConstructorStatus constructor_default_status = CONSTRUCTOR_TBD;
+#endif
 
 		StringName get_global_name() const {
 			return (outer == nullptr && identifier != nullptr) ? identifier->name : StringName();

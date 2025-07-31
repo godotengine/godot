@@ -2763,6 +2763,9 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->tool = parser->is_tool();
 	p_script->_is_abstract = p_class->is_abstract;
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	p_script->_has_default_constructor = (p_class->constructor_default_status == GDScriptParser::ClassNode::HAS_SAFE_CONSTRUCTOR);
+#endif
 
 	if (p_script->local_name != StringName()) {
 		if (ClassDB::class_exists(p_script->local_name) && ClassDB::is_class_exposed(p_script->local_name)) {

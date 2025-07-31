@@ -273,6 +273,10 @@ public:
 	bool is_abstract() const override {
 		return type_info.is_abstract;
 	}
+	bool has_default_constructor() const override {
+		// TODO
+		return true;
+	}
 
 	bool inherits_script(const Ref<Script> &p_script) const override;
 

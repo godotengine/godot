@@ -624,6 +624,43 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 		E->apply(parser, p_class, p_class->outer);
 	}
 
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
+	// Check constructors
+	if (p_class->constructor_default_status == GDScriptParser::ClassNode::CONSTRUCTOR_REQUIRES_PARAMETERS && !p_class->is_abstract) {
+		if (ClassDB::is_parent_class(result.native_type, SNAME("Node"))) {
+			const int &construct_index = p_class->members_indices[GDScriptLanguage::get_singleton()->strings._init];
+			GDScriptParser::ClassNode::Member &constructor = p_class->members.write[construct_index];
+			parser->push_warning(constructor.function->identifier, GDScriptWarning::NODE_CONSTRUCTOR_REQUIRED_PARAM);
+		} else if (ClassDB::is_parent_class(result.native_type, SNAME("Resource"))) {
+			const int &construct_index = p_class->members_indices[GDScriptLanguage::get_singleton()->strings._init];
+			GDScriptParser::ClassNode::Member &constructor = p_class->members.write[construct_index];
+			parser->push_warning(constructor.function->identifier, GDScriptWarning::RESOURCE_CONSTRUCTOR_REQUIRED_PARAM);
+		}
+	} else if (p_class->constructor_default_status == GDScriptParser::ClassNode::CONSTRUCTOR_TBD) {
+		switch (result.kind) {
+			case GDScriptParser::DataType::NATIVE:
+				p_class->constructor_default_status = GDScriptParser::ClassNode::HAS_SAFE_CONSTRUCTOR;
+				break;
+			case GDScriptParser::DataType::SCRIPT:
+				p_class->constructor_default_status = result.script_type->has_default_constructor() ? GDScriptParser::ClassNode::HAS_SAFE_CONSTRUCTOR : GDScriptParser::ClassNode::CONSTRUCTOR_REQUIRES_PARAMETERS;
+				break;
+			case GDScriptParser::DataType::CLASS:
+				p_class->constructor_default_status = result.class_type->constructor_default_status;
+				break;
+			default:
+				push_error(vformat(R"(Unable to determine constructor type for "%s".)", p_class->fqcn), p_source);
+				return ERR_PARSE_ERROR;
+		}
+		if (p_class->constructor_default_status == GDScriptParser::ClassNode::CONSTRUCTOR_REQUIRES_PARAMETERS && !p_class->is_abstract) {
+			if (ClassDB::is_parent_class(result.native_type, SNAME("Node"))) {
+				parser->push_warning(p_class->extends[0], GDScriptWarning::NODE_CONSTRUCTOR_REQUIRED_PARAM);
+			} else if (ClassDB::is_parent_class(result.native_type, SNAME("Resource"))) {
+				parser->push_warning(p_class->extends[0], GDScriptWarning::RESOURCE_CONSTRUCTOR_REQUIRED_PARAM);
+			}
+		}
+	}
+#endif
+
 	parser->current_class = previous_class;
 
 	return OK;
@@ -1206,9 +1243,6 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					E->apply(parser, member.function, p_class);
 				}
 				resolve_function_signature(member.function, p_source);
-				if (!p_class->allows_implicit_new && member.function->identifier->name == GDScriptLanguage::get_singleton()->strings._init && (ClassDB::is_parent_class(p_class->get_datatype().native_type, SNAME("Node")) || ClassDB::is_parent_class(p_class->get_datatype().native_type, SNAME("Resource")))) {
-					parser->push_warning(member.function, GDScriptWarning::INIT_WITH_REQUIRED_PARAM);
-				}
 				break;
 			case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
 				member.enum_value.identifier->set_datatype(resolving_datatype);
@@ -3628,10 +3662,6 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			} else if (method_flags.has_flag(METHOD_FLAG_VIRTUAL_REQUIRED)) {
 				push_error(vformat(R"*(Cannot call the parent class' abstract function "%s()" because it hasn't been defined.)*", p_call->function_name), p_call);
 			}
-		}
-
-		if (base_type.class_type && !base_type.class_type->allows_implicit_new && (p_call->function_name == SNAME("duplicate") || p_call->function_name == SNAME("duplicate_deep"))) {
-			parser->push_warning(p_call, GDScriptWarning::INIT_WITH_REQUIRED_PARAM);
 		}
 
 		// If the function requires typed arrays we must make literals be typed.
