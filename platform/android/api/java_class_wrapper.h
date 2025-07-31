@@ -203,6 +203,7 @@ public:
 
 #ifdef ANDROID_ENABLED
 	virtual String to_string() override;
+	virtual bool has_method(const StringName &p_method) const override;
 #endif
 
 	JavaClass();
@@ -229,6 +230,7 @@ public:
 
 #ifdef ANDROID_ENABLED
 	virtual String to_string() override;
+	virtual bool has_method(const StringName &p_method) const override;
 
 	jobject get_instance() { return instance; }
 
@@ -244,7 +246,7 @@ class JavaClassWrapper : public Object {
 #ifdef ANDROID_ENABLED
 	RBMap<String, Ref<JavaClass>> class_cache;
 	friend class JavaClass;
-	jmethodID Class_getDeclaredConstructors;
+	jmethodID Class_getConstructors;
 	jmethodID Class_getDeclaredMethods;
 	jmethodID Class_getFields;
 	jmethodID Class_getName;
@@ -272,7 +274,7 @@ class JavaClassWrapper : public Object {
 
 	Ref<JavaObject> exception;
 
-	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_private_methods_access);
+	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_non_public_methods_access);
 
 	static JavaClassWrapper *singleton;
 
