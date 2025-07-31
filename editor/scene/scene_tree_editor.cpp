@@ -2256,9 +2256,8 @@ void SceneTreeDialog::set_valid_types(const Vector<StringName> &p_valid) {
 	content->move_child(allowed_types_hbox, 0);
 
 	{
-		Label *label = memnew(Label);
+		Label *label = memnew(Label(TTRC("Allowed:")));
 		allowed_types_hbox->add_child(label);
-		label->set_text(TTR("Allowed:"));
 	}
 
 	HFlowContainer *hflow = memnew(HFlowContainer);
@@ -2373,7 +2372,7 @@ void SceneTreeDialog::_bind_methods() {
 }
 
 SceneTreeDialog::SceneTreeDialog() {
-	set_title(TTR("Select a Node"));
+	set_title(TTRC("Select a Node"));
 	content = memnew(VBoxContainer);
 	add_child(content);
 
@@ -2382,7 +2381,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	filter->set_placeholder(TTR("Filter Nodes"));
+	filter->set_placeholder(TTRC("Filter Nodes"));
 	filter->set_clear_button_enabled(true);
 	filter->add_theme_constant_override("minimum_character_width", 0);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &SceneTreeDialog::_filter_changed));
@@ -2394,7 +2393,7 @@ SceneTreeDialog::SceneTreeDialog() {
 
 	// Add 'Show All' button to HBoxContainer next to the filter, visible only when valid_types is defined.
 	show_all_nodes = memnew(CheckButton);
-	show_all_nodes->set_text(TTR("Show All"));
+	show_all_nodes->set_text(TTRC("Show All"));
 	show_all_nodes->connect(SceneStringName(toggled), callable_mp(this, &SceneTreeDialog::_show_all_nodes_changed));
 	show_all_nodes->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
 	show_all_nodes->hide();
