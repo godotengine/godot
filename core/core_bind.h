@@ -603,6 +603,7 @@ public:
 	Dictionary get_donor_info() const;
 	Dictionary get_license_info() const;
 	String get_license_text() const;
+	String get_copyright_text() const;
 
 	String get_architecture_name() const;
 

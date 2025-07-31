@@ -289,3 +289,8 @@ struct ComponentCopyright {{
                     to_raw += [line]
             file.write(f"{methods.to_raw_cstring(to_raw)},\n\n")
         file.write("};\n\n")
+
+        file.write("inline const char *GODOT_COPYRIGHT_TEXT = {\n")
+        with open(src_copyright, "r", encoding="utf-8") as copyright_file:
+            file.write(methods.to_raw_cstring(copyright_file.read()))
+        file.write("};\n\n")

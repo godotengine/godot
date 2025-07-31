@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
@@ -39,6 +40,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/inspector/editor_properties.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
@@ -94,6 +96,15 @@ ProjectExportTextureFormatError::ProjectExportTextureFormatError(ProjectExportDi
 	fix_texture_format_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
 }
 
+inline constexpr const char *OPEN_SOURCE_WARNING_TEXT =
+		"Before you continue, we would like to let you know that every Godot Engine game has to let the user "
+		"take a look at Godot Engine's copyright information such as Godot Engine's open source license and "
+		"the open source licenses of every Godot Engine thirdparty library and component. "
+		"[b]Don't worry[/b], this process is not complicated at all. Press the OK button to open the "
+		"documentation to learn more.\n\n"
+		"[b]Note:[/b] This is a one-time warning, this dialog will not open again, but you can still "
+		"find information about this when you search for the method that will be opened once you press the OK button.";
+
 void ProjectExportDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -137,6 +148,11 @@ void ProjectExportDialog::popup_export() {
 		popup(saved_size);
 	} else {
 		popup_centered_clamped(Size2(900, 500) * EDSCALE, 0.7);
+	}
+
+	if (!EditorSettings::get_singleton()->get_project_metadata("export_options", "open_source_warned", false).operator bool()) {
+		open_source_warning->popup_centered();
+		EditorSettings::get_singleton()->set_project_metadata("export_options", "open_source_warned", true);
 	}
 }
 
@@ -1233,6 +1249,12 @@ void ProjectExportDialog::_patch_add_pack_pressed() {
 	patch_dialog->popup_file_dialog();
 }
 
+void ProjectExportDialog::_open_source_ok_pressed() {
+	EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
+	ScriptEditor::get_singleton()->goto_help("class_method:Engine:get_copyright_text");
+	hide();
+}
+
 void ProjectExportDialog::_export_pck_zip() {
 	Ref<EditorExportPreset> current = get_current_preset();
 	ERR_FAIL_COND(current.is_null());
@@ -1850,6 +1872,20 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_project->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
 	export_pck_zip->add_option(TTR("Export With Debug"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_debug", true));
 	export_pck_zip->add_option(TTR("Export As Patch"), Vector<String>(), EditorSettings::get_singleton()->get_project_metadata("export_options", "export_as_patch", true));
+
+	// Open source licenses warning dialog.
+
+	open_source_warning = memnew(ConfirmationDialog);
+	open_source_warning->set_size(Size2i(800, 200));
+	open_source_warning->hide();
+	open_source_warning->connect(SceneStringName(confirmed), callable_mp(this, &ProjectExportDialog::_open_source_ok_pressed));
+
+	open_source_warning_text = memnew(RichTextLabel);
+	open_source_warning_text->set_text(OPEN_SOURCE_WARNING_TEXT);
+	open_source_warning_text->set_use_bbcode(true);
+	open_source_warning->add_child(open_source_warning_text);
+
+	add_child(open_source_warning);
 
 	set_hide_on_ok(false);
 

@@ -221,6 +221,10 @@ String Engine::get_license_text() const {
 	return String(GODOT_LICENSE_TEXT);
 }
 
+String Engine::get_copyright_text() const {
+	return String::utf8(GODOT_COPYRIGHT_TEXT);
+}
+
 String Engine::get_architecture_name() const {
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	return "x86_64";

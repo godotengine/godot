@@ -124,6 +124,9 @@ class ProjectExportDialog : public ConfirmationDialog {
 	Label *export_warning = nullptr;
 	HBoxContainer *export_templates_error = nullptr;
 
+	ConfirmationDialog *open_source_warning = nullptr;
+	RichTextLabel *open_source_warning_text = nullptr;
+
 	String default_filename;
 
 	bool exporting = false;
@@ -161,6 +164,8 @@ class ProjectExportDialog : public ConfirmationDialog {
 	void _patch_file_selected(const String &p_path);
 	void _patch_delete_confirmed();
 	void _patch_add_pack_pressed();
+
+	void _open_source_ok_pressed();
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

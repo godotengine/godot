@@ -75,6 +75,40 @@
 				Returns the full Godot license text.
 			</description>
 		</method>
+		<method name="get_copyright_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the full Godot Engine copyright text that includes the copyright information about Godot Engine itself and every thirdparty component that Godot Engine includes.
+				Displaying the contents of the string this method returns is enough to comply with Godot Engine's open source license and every thirdparty component's open source license.
+				[b]Note:[/b] Every project that uses open source libraries (such as Godot Engine games) has to comply with the licenses of the libraries, otherwise the game developer would be breaching the copyright.
+				[b]Note:[/b] Fortunately, this method makes it easy to comply with the licenses, the only thing you have to do is create a scene with a [Label] node, set the label's [code]text[/code] property at runtime and make the label scroll. Here's an example code to make this work, assuming you already have a scene with a [Label] node called "Text" and the scene is accessible from the game:
+				[codeblocks]
+				[gdscript]
+				@onready var text_label := $Text
+				func _ready() -> void:
+					text_label.text = Engine.get_copyright_text()
+
+				func _process(delta: float) -> void:
+					text_label.position.y -= 60 * delta # Move 60 pixels higher every second
+				[/gdscript]
+				[csharp]
+				Label text_label;
+				public override void _Ready()
+				{
+					text_label = GetNode&lt;Label&gt;("Text");
+					text_label.Text = Engine.GetCopyrightText();
+				}
+
+				public override void _Process(float delta)
+				{
+					var position = text_label.Position;
+					position.Y -= 60 * delta // Move 60 pixels higher every second
+					text_label.Position = position;
+				}
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="get_main_loop" qualifiers="const">
 			<return type="MainLoop" />
 			<description>
