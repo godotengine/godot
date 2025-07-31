@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-17 08:22+0000\n"
+"PO-Revision-Date: 2025-07-08 05:33+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.11-dev\n"
+"X-Generator: Weblate 5.13-dev\n"
 
 msgid "Unset"
 msgstr "მოხსნა"
@@ -221,51 +221,6 @@ msgstr "პიბ"
 msgid "EiB"
 msgstr "ეიბ"
 
-msgid "Revert Action"
-msgstr "ქმედების დაბრუნება"
-
-msgid "Add Event"
-msgstr "მოვლენის დამატება"
-
-msgid "Cannot Remove Action"
-msgstr "ქმედების წაშლა შეუძლებელია"
-
-msgid "Edit Event"
-msgstr "მოვლენის ჩასწორება"
-
-msgid "Remove Event"
-msgstr "მოვლენის წაშლა"
-
-msgid "Filter by Name"
-msgstr "სახელით გაფილტვრა"
-
-msgid "Clear All"
-msgstr "ყველას გასუფთავება"
-
-msgid "Clear all search filters."
-msgstr "ყველა ძებნის ფილტრის გასუფთავება."
-
-msgid "Add New Action"
-msgstr "ახალი მოქმედების დამატება"
-
-msgid "Add"
-msgstr "დამატება"
-
-msgid "Action Map"
-msgstr "ქმედების რუკა"
-
-msgid "Action"
-msgstr "ქმედება"
-
-msgid "Name:"
-msgstr "სახელი:"
-
-msgid "Type:"
-msgstr "ტიპი:"
-
-msgid "Metadata name must be a valid identifier."
-msgstr "მეტამონაცემები სწორ იდენტიფიკატორს უნდა წარმოადგენდეს."
-
 msgid "Time:"
 msgstr "დრო:"
 
@@ -299,8 +254,215 @@ msgstr "ყეველა გასაღების მონიშვნა"
 msgid "Deselect All Keys"
 msgstr "ყველა გასაღების მონიშვნის მოხსნა"
 
+msgid "Add %s"
+msgstr "%s-ის დამატება"
+
+msgid "Load..."
+msgstr "ჩატვირთვა..."
+
+msgid "Add Node Point"
+msgstr "კვანძის წერტილის დამატება"
+
+msgid "Continuous"
+msgstr "უწყვეტი"
+
+msgid "Discrete"
+msgstr "დისკრეტული"
+
+msgid "Capture"
+msgstr "ჩაჭერა"
+
+msgid "Create points."
+msgstr "წერტილების შექმნა."
+
+msgid "Point"
+msgstr "წერტილი"
+
+msgid "Open Editor"
+msgstr "რედაქტორის გახსნა"
+
+msgid "Value"
+msgstr "მნიშვნელობა"
+
+msgid "Parameter Changed: %s"
+msgstr "პარამეტრი შეიცვალა: %s"
+
+msgid "Inspect Filters"
+msgstr "ფილტრების შემოწმება"
+
+msgid "Change Filter"
+msgstr "ფილტრის შეცვლა"
+
+msgid "Anim Clips"
+msgstr "ანიმ კლიპები"
+
+msgid "Audio Clips"
+msgstr "აუდიო კლიპები"
+
+msgid "Functions"
+msgstr "ფუნქციები"
+
+msgid "Clear"
+msgstr "სუფთა ცა"
+
+msgid "Library Name:"
+msgstr "ბიბლიოთეკის სახელი:"
+
+msgid "Add Animation to Library: %s"
+msgstr "ანიმაცების ჩამატება ბიბლიოთეკაში: %s"
+
+msgid "Add Animation Library: %s"
+msgstr "ანიმაციის ბიბლიოთეკის დამატება: %s"
+
+msgid "Save Animation"
+msgstr "ანიმაციის შენახვა"
+
+msgid "Make Animation Unique: %s"
+msgstr "ანიმაციის უნიკალურად გახდენა: %s"
+
+msgid "Save Animation to File: %s"
+msgstr "ანიმაციის შენახვა ფაილში: %s"
+
+msgid "Some Animation files were invalid."
+msgstr "ზოგიერთი ანიმაციის ფაილი არასწორია."
+
+msgid "Load Animations into Library"
+msgstr "ანიმაციის ჩატვირთვა ბიბლიოთეკაში"
+
+msgid "Load Animation into Library: %s"
+msgstr "ანიმაციის ჩატვირთვა ბიბლიოთეკაში: %s"
+
+msgid "Rename Animation Library: %s"
+msgstr "ანიმაციის ბიბლიოთეკის სახელის გადარქმევა: %s"
+
+msgid "[Global]"
+msgstr "[გლობალური]"
+
+msgid "Rename Animation: %s"
+msgstr "ანიმაციის სახელის გადარქმევა: %s"
+
+msgid "Save"
+msgstr "შენახვა"
+
+msgid "Remove Animation Library: %s"
+msgstr "ანიმაციის ბიბლიოთეკის წაშლა: %s"
+
+msgid "Add animation to library."
+msgstr "ანიმაციის დამატება ბიბლიოთეკაში."
+
+msgid "Load animation from file and add to library."
+msgstr "ანიმაციის ჩატვირთვა ფაილიდან და ბიბლიოთეკაში ჩამატება."
+
+msgid "Remove animation library."
+msgstr "ანიმაციის ბიბლიოთეკის წაშლა."
+
+msgid "Copy animation to clipboard."
+msgstr "ანიმაციის კოპირება ბუფერში."
+
+msgid "Save animation to resource on disk."
+msgstr "ანიმაციის შენახვა რესურსში, დისკზე."
+
+msgid "Remove animation from Library."
+msgstr "ანიმაციის წაშლა ბიბლიოთეკიდან."
+
+msgid "Edit Animation Libraries"
+msgstr "ანიმაციის ბიბლიოთეკების ჩასწორება"
+
+msgid "Create new empty animation library."
+msgstr "ახალი ცარიელი ანიმაციის ბიბლიოთეკის შექმნა."
+
+msgid "Load animation library from disk."
+msgstr "ანიმაციის ბიბლიოთეკის ჩატვირთვა დისკიდან."
+
+msgid "Resource"
+msgstr "რესურსი"
+
+msgid "Storage"
+msgstr "საცავი"
+
+msgid "Error:"
+msgstr "შეცდომა:"
+
+msgid "Delete Animation '%s'?"
+msgstr "წავშალო ანიმაცია '%s'?"
+
+msgid "[Global] (create)"
+msgstr "[გლობალური] (შექმნა)"
+
+msgid "Duplicated Animation Name:"
+msgstr "დუბლირებული ანიმაციის სახელი:"
+
+msgid "Play Animation Backwards from End"
+msgstr "ანიმაციის უკუღმა დაკვრა ბოლოდან"
+
+msgid "Animation"
+msgstr "ანიმაცია"
+
+msgid "Manage Animations..."
+msgstr "ანიმაციების მართვა..."
+
+msgid "Duplicate..."
+msgstr "დუბლირება..."
+
+msgid "Rename..."
+msgstr "სახელის გადარქმევა..."
+
+msgid "Edit Transitions..."
+msgstr "გადასვლების ჩასწორება..."
+
+msgid "Remove"
+msgstr "წაშლა"
+
+msgid "Directions"
+msgstr "მიმართულებები"
+
+msgid "Past"
+msgstr "წარსული"
+
+msgid "Future"
+msgstr "მომავალი"
+
+msgid "Depth"
+msgstr "სიღრმე"
+
+msgid "Close"
+msgstr "დახურვა"
+
+msgid "Transition exists!"
+msgstr "გარდასვლა არსებობს!"
+
+msgid "Edit %s"
+msgstr "%s-ის ჩასწორება"
+
+msgid "Immediate"
+msgstr "უეცარი"
+
+msgid "Sync"
+msgstr "სინქრონიზაცია"
+
+msgid "Travel"
+msgstr "მოგზაურობა"
+
+msgid "Create new nodes."
+msgstr "ახალი კვანძების შექმნა."
+
+msgid "Connect nodes."
+msgstr "კვანძთან დაკავშირება."
+
+msgid "Transition:"
+msgstr "გარდასვლა:"
+
 msgid "Animation Change Transition"
 msgstr "ანიმაცია გადასვლის შეცვლა"
+
+msgid "Animation Change Position3D"
+msgstr "ანიმაციის Position3D-ის შეცვლა"
+
+msgid "Animation Change Rotation3D"
+msgstr "ანიმაციის Rotation3D-ის შეცვლა"
+
+msgid "Animation Change Scale3D"
+msgstr "ანიმაციის Scale3D-ის შეცვლა"
 
 msgid "Animation Change Keyframe Value"
 msgstr "ანიმაცია ძირითადი კადრის მნიშვნელობის შეცვლა"
@@ -368,6 +530,9 @@ msgstr "ტრეკის ბილიკის შეცვლა"
 msgid "Toggle this track on/off."
 msgstr "ამ ტრეკის ჩართვა/გამორთვა."
 
+msgid "Select node in scene."
+msgstr "აირჩიეთ კვანძი სცენაში."
+
 msgid "Update Mode (How this property is set)"
 msgstr "განახლების რეჟიმი (როგორ აყენია ეს თვისება)"
 
@@ -392,6 +557,9 @@ msgstr "მასშტაბი:"
 msgid "Blend Shape:"
 msgstr "შერევის ფორმა:"
 
+msgid "Type:"
+msgstr "ტიპი:"
+
 msgid "(Invalid, expected type: %s)"
 msgstr "(არასწორია, მოველოდი ტიპს: %s)"
 
@@ -403,15 +571,6 @@ msgstr "გაშვება (წმ):"
 
 msgid "Animation Clip:"
 msgstr "ანიმაციის კლიპი:"
-
-msgid "Continuous"
-msgstr "უწყვეტი"
-
-msgid "Discrete"
-msgstr "დისკრეტული"
-
-msgid "Capture"
-msgstr "ჩაჭერა"
 
 msgid "Nearest"
 msgstr "უახლოესი"
@@ -612,6 +771,9 @@ msgstr "გასუფთავება"
 msgid "Scale Ratio:"
 msgstr "მასშტაბის თანაფარდობა:"
 
+msgid "Transition Type:"
+msgstr "გარდასვლის ტიპი:"
+
 msgctxt "Transition Type"
 msgid "Linear"
 msgstr "ხაზოვანი"
@@ -619,6 +781,10 @@ msgstr "ხაზოვანი"
 msgctxt "Transition Type"
 msgid "Sine"
 msgstr "სინუსიოდი"
+
+msgctxt "Transition Type"
+msgid "Expo"
+msgstr "ექსპო"
 
 msgctxt "Transition Type"
 msgid "Elastic"
@@ -640,15 +806,16 @@ msgctxt "Transition Type"
 msgid "Spring"
 msgstr "გაზაფხული"
 
+msgid "Ease Type:"
+msgstr "მოგლუვებს ტიპი:"
+
+msgctxt "Ease Type"
+msgid "In"
+msgstr "რაში"
+
 msgctxt "Ease Type"
 msgid "Out"
 msgstr "გარე"
-
-msgid "Transition Type:"
-msgstr "გარდასვლის ტიპი:"
-
-msgid "Ease Type:"
-msgstr "მოგლუვებს ტიპი:"
 
 msgid "FPS:"
 msgstr "კადრი/წმ:"
@@ -668,498 +835,108 @@ msgstr "მონიშნულის კოპირება"
 msgid "Marker '%s' already exists!"
 msgstr "მარკერი '%s' უკვე არსებობს!"
 
-msgid "Close"
-msgstr "დახურვა"
-
 msgid "Change Marker Name:"
 msgstr "მარკერის სახელის შეცვლა:"
 
 msgid "Add Audio Track Clip"
 msgstr "აუდიობილიკის დამატება"
 
-msgid "Go to Line"
-msgstr "ხაზზე გადასვლა"
+msgid "Root"
+msgstr "Root"
 
-msgid "Line Number:"
-msgstr "ხაზის ნომერი:"
+msgid "Path:"
+msgstr "ბილიკი:"
 
-msgid "%d replaced."
-msgstr "%d ჩანაცვლდა."
-
-msgid "No match"
-msgstr "დამთხვევის გარეშე"
-
-msgid "%d match"
-msgid_plural "%d matches"
-msgstr[0] "%d დამთხვევა"
-msgstr[1] "%d დამთხვევა"
-
-msgid "%d of %d match"
-msgid_plural "%d of %d matches"
-msgstr[0] "%d/%d ემთხვევა"
-msgstr[1] "%d/%d ემთხვევა"
-
-msgid "Find"
-msgstr "ძებნა"
-
-msgid "Match Case"
-msgstr "რეგისტრის დამთხვევა"
-
-msgid "Whole Words"
-msgstr "მთლიანი სიტყვები"
-
-msgid "Replace"
-msgstr "ჩანაცვლება"
-
-msgid "Replace All"
-msgstr "ყველას ჩანაცვლება"
-
-msgid "Selection Only"
-msgstr "მხოლოდ მონიშნული"
-
-msgid "Hide"
-msgstr "დამალვა"
-
-msgid "Zoom factor"
-msgstr "გადიდების ფარდობა"
-
-msgid "Zoom In"
-msgstr "გადიდება"
-
-msgid "Zoom Out"
-msgstr "დაპატარავება"
-
-msgid "Reset Zoom"
-msgstr "გადიდების საწყისი პარამეტრები"
-
-msgid "Errors"
-msgstr "შედომები"
-
-msgid "Warnings"
-msgstr "გაფრთხილებები"
-
-msgid "Indentation"
-msgstr "სწორება"
-
-msgid "Method in target node must be specified."
-msgstr "სამიზნე კვანძში მეთოდის მითითება აუცილებელია."
-
-msgid "Method name must be a valid identifier."
-msgstr "მეთოდის სახელი სწორი იდენტიფიკატორი უნდა იყოს."
-
-msgid "Filter Nodes"
-msgstr "კვანძების გაფილტვრა"
-
-msgid "Go to Source"
-msgstr "კოდზე გადასვლა"
-
-msgid "Select Method"
-msgstr "აირჩიეთ მეთოდი"
-
-msgid "Filter Methods"
-msgstr "მეთოდების ფილტრი"
-
-msgid "Type"
-msgstr "ტიპი"
-
-msgid "Remove"
-msgstr "წაშლა"
-
-msgid "Add Extra Call Argument:"
-msgstr "დამატებითი გამოძახების არგუმენტის დამატება:"
-
-msgid "Extra Call Arguments:"
-msgstr "დამატებითი გამოძახების არგუმენტები:"
-
-msgid "Unbind Signal Arguments:"
-msgstr "სიგნალის არგუმენტების მოხსნა:"
-
-msgid "Receiver Method:"
-msgstr "მიმღების მეთოდი:"
-
-msgid "Pick"
-msgstr "აირჩიეთ"
-
-msgid "Advanced"
-msgstr "დამატებითი"
-
-msgid "Deferred"
-msgstr "გადადებული"
-
-msgid "Cannot connect signal"
-msgstr "სიგნალის მიერთების შეცდომა"
-
-msgid "Connect"
-msgstr "დაკავშირება"
-
-msgid "Connect '%s' to '%s'"
-msgstr "'%s' და '%s' დაკავშირება"
-
-msgid "Disconnect '%s' from '%s'"
-msgstr "'%s' და '%s' შორის კავშირის გაწყვეტა"
-
-msgid "Disconnect all from signal: '%s'"
-msgstr "ყველას გათიშვა სიგნალიდან: '%s'"
-
-msgid "Connect..."
-msgstr "დაკავშირება..."
-
-msgid "Disconnect"
-msgstr "გათიშვა"
-
-msgid "Connect a Signal to a Method"
-msgstr "სიგნალის მეთოდთან მიერთება"
-
-msgid "Edit Connection: '%s'"
-msgstr "მიერთების ჩასწორება: '%s'"
-
-msgid "Signals"
-msgstr "სიგნალები"
-
-msgid "Filter Signals"
-msgstr "სიგნალების გაფილტვრა"
-
-msgid "Open Documentation"
-msgstr "დოკუმენტაციის გახსნა"
-
-msgid "Copy Name"
-msgstr "სახელის სახელი"
-
-msgid "Edit..."
-msgstr "ჩასწორება..."
-
-msgid "Go to Method"
-msgstr "მეთოდზე გადასვლა"
-
-msgid "Change"
-msgstr "შეცვლა"
-
-msgid "Create New %s"
-msgstr "ახალი %s-ის შექმნა"
-
-msgid "Script path: %s"
-msgstr "სკრიპტის ბილიკი: %s"
-
-msgid "Favorites"
-msgstr "სანიშნები"
-
-msgid "Favorites:"
-msgstr "სანიშნები:"
-
-msgid "Recent:"
-msgstr "ახლახანს:"
-
-msgid "Search:"
-msgstr "_ძებნა:"
-
-msgid "Matches:"
-msgstr "ემთხვევა:"
-
-msgid "Description"
-msgstr "აღწერა"
-
-msgid "Description:"
-msgstr "აღწერა:"
-
-msgctxt "Job Title"
-msgid "Project Manager"
-msgstr "პროექტის მმართველი"
-
-msgid "Project Founders"
-msgstr "პროექტის დამფუძნებლები"
-
-msgid "Lead Developer"
-msgstr "წამყვანი დეველოპერი"
-
-msgid "Developers"
-msgstr "პროგრამისტები"
-
-msgid "Platinum Sponsors"
-msgstr "პლატინის სპონსორები"
-
-msgid "Gold Sponsors"
-msgstr "ოქროს სპონსორები"
-
-msgid "Debugger"
-msgstr "გამმართველი"
-
-msgid "Debug"
-msgstr "გამართვა"
-
-msgid "Instance:"
-msgstr "გაშვებული ასლი:"
-
-msgid "Toggle Visibility"
-msgstr "ხილულობის გადართვა"
-
-msgid "Clear"
-msgstr "სუფთა ცა"
-
-msgid "Scanning for local changes"
-msgstr "ლოკალური ცვლილებების ძებნა"
-
-msgid "Sending file:"
-msgstr "ფაილის გაგზავნა:"
-
-msgid "ms"
-msgstr "მწმ"
-
-msgid "Monitors"
-msgstr "მონიტორინგი"
-
-msgid "Monitor"
-msgstr "მონიტორი"
-
-msgid "Value"
-msgstr "მნიშვნელობა"
-
-msgid "Stop"
-msgstr "შეჩერება"
-
-msgid "Start"
-msgstr "გაშვება"
-
-msgid "Measure:"
-msgstr "გაზომვა:"
-
-msgid "Frame Time (ms)"
-msgstr "კადრის დრო (მწმ)"
-
-msgid "Frame %"
-msgstr "კადრი %"
-
-msgid "Time"
-msgstr "დრო"
-
-msgid "Inclusive"
-msgstr "ჩათვლით"
-
-msgid "Self"
-msgstr "საკუთარი"
-
-msgid "Display internal functions"
-msgstr "შიდა ფუნქციების ჩვენება"
-
-msgid "Frame #:"
-msgstr "კადრი #:"
-
-msgid "Name"
-msgstr "სახელი"
-
-msgid "Calls"
-msgstr "გამოძახებები"
-
-msgid "Fit to Frame"
-msgstr "კადრში ჩატევა"
-
-msgid "Linked"
-msgstr "მიბმული"
-
-msgid "CPU"
-msgstr "CPU"
-
-msgid "GPU"
-msgstr "GPU"
-
-msgid "Main Thread"
-msgstr "მთავარი ნაკადი"
-
-msgid "Execution resumed."
-msgstr "შესრულება გაგრძელდა."
-
-msgid "Bytes:"
-msgstr "ბაიტი:"
-
-msgid "Warning:"
-msgstr "გაფრთხილება:"
-
-msgid "Error:"
-msgstr "შეცდომა:"
-
-msgid "%s Error"
-msgstr "%s: შეცდომა"
-
-msgid "%s Error:"
-msgstr "%s: შეცდომა:"
-
-msgid "%s Source"
-msgstr "%s-ის კოდი"
-
-msgid "%s Source:"
-msgstr "%s კოდი:"
-
-msgid "Line %d"
-msgstr "ხაზი %d"
-
-msgid "Copy Error"
-msgstr "ლოკალური შეცდომა"
-
-msgid "Step Into"
-msgstr "შებიჯება"
-
-msgid "Step Over"
-msgstr "გადაბიჯება"
-
-msgid "Break"
-msgstr "გაჩერება"
-
-msgid "Continue"
-msgstr "გაგრძელება"
-
-msgid "Filter Stack Variables"
-msgstr "სტეკის ცვლადების ფილტრი"
-
-msgid "Breakpoints"
-msgstr "შეჩერების წერტილები"
-
-msgid "Expand All"
-msgstr "ყველას ამოკეცვა"
-
-msgid "Collapse All"
-msgstr "ყველას ჩაკეცვა"
-
-msgid "Profiler"
-msgstr "პროფაილერი"
-
-msgid "Visual Profiler"
-msgstr "ვიზუალური პროფაილერი"
-
-msgid "Total:"
-msgstr "ჯამი:"
-
-msgid "Resource Path"
-msgstr "ბილიკი რესურსამდე"
-
-msgid "Format"
-msgstr "_ფორმატი"
-
-msgid "Usage"
-msgstr "გამოყენება"
-
-msgid "Misc"
-msgstr "სხვანი"
-
-msgid "Search Replacement For:"
-msgstr "ჩანაცვლების ძებნა:"
-
-msgid "Dependencies For:"
-msgstr "დამოკიდებულება:"
-
-msgid "Dependencies"
-msgstr "დამოკიდებულებები"
-
-msgid "Resource"
-msgstr "რესურსი"
-
-msgid "Path"
-msgstr "ბილიკი"
-
-msgid "Dependencies:"
-msgstr "დამოკიდებულებები:"
-
-msgid "Fix Broken"
-msgstr "გაწყვეტილის გასწორება"
-
-msgid "Dependency Editor"
-msgstr "დამოკიდებულებების შემსწორებელი"
-
-msgid "Search Replacement Resource:"
-msgstr "ჩამნაცვლებელი რესურსის ძიება:"
-
-msgid "Open Scene"
-msgid_plural "Open Scenes"
-msgstr[0] "სცენის გახსნა"
-msgstr[1] "სცენების გახსნა"
-
-msgid "Open"
-msgstr "გახსნა"
-
-msgid ""
-"Remove the selected files from the project? (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved to "
-"the system trash or deleted permanently."
-msgstr ""
-"წავშალო მონიშნული ფაილები პროექტიდან? (პროცესი შეუქცევადია.)\n"
-"ფაილური სისტემის კონფიგურაციაზე დამოკიდებულებით, ფაილები შეიძლება ნაგვის "
-"ყუთში იქნეს გადატანილი, ან სამუდამოდ წაიშლება."
-
-msgid ""
-"The files being removed are required by other resources in order for them to "
-"work.\n"
-"Remove them anyway? (Cannot be undone.)\n"
-"Depending on your filesystem configuration, the files will either be moved to "
-"the system trash or deleted permanently."
-msgstr ""
-"ფაილები, რომლების წაშლასაც აპირებთ, სხვა რესურსების სამუშაოდაა საჭირო.\n"
-"მაინც წავშალო? (პროცესი შეუქცევადია.)\n"
-"ფაილური სისტემის კონფიგურაციაზე დამოკიდებულებით, ისინი შეიძლება სისტემის "
-"ნაგვის ყუთში იქნეს გადატანილი. ან წაიშლება სამუდამოდ."
-
-msgid "Cannot remove:"
-msgstr "წაშლის შეცდომა:"
-
-msgid "Files to be deleted:"
-msgstr "წაიშლება ფაილები:"
-
-msgid "Error loading:"
-msgstr "ჩატვირთვის შეცდომა:"
-
-msgid "Open Anyway"
-msgstr "მაინც გახსნა"
-
-msgid "Which action should be taken?"
-msgstr "რომელი მოქმედება შევასრულოთ?"
-
-msgid "Fix Dependencies"
-msgstr "დამოკიდებულებების გასწორება"
-
-msgid "Errors loading!"
-msgstr "ჩატვირთვის შეცდომა!"
-
-msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "სამუდამოდ წავშალოთ %d ნივთები? (უკან დაბრუნება შეუძლებელია)"
-
-msgid "Orphan Resource Explorer"
-msgstr "ობოლი რესურსების მაძიებელი"
-
-msgid "Owns"
-msgstr "ფლობს"
-
-msgid "Resources Without Explicit Ownership:"
-msgstr "რესურსები გამოკვეთილი მფლობელის გარეშე:"
-
-msgid "Folder name contains invalid characters."
-msgstr "საქაღალდის სახელი არასწორ სიმბოლოებს შეიცავს."
-
-msgid "File with that name already exists."
-msgstr "ფაილი ამ სახელით უკვე არსებობს."
-
-msgid "Folder name is valid."
-msgstr "საქაღალდის სახელი სწორია."
-
-msgid "Godot Engine contributors"
-msgstr "Godot ძრავის ხელშემწყობები"
-
-msgid "Thanks from the Godot community!"
-msgstr "მადლობა Godot საზოგადოებისგან!"
-
-msgid "Authors"
-msgstr "ავტორები"
-
-msgid "Donors"
-msgstr "დონატორები"
+msgid "Author"
+msgstr "ავტორი"
 
 msgid "License"
 msgstr "ლიცენზია"
 
-msgid "All Components"
-msgstr "ყველა კომპონენტი"
+msgid "Version:"
+msgstr "ვერსია:"
 
-msgid "Components"
-msgstr "კომპონენტები"
+msgid "Contents:"
+msgstr "შემადგენლობა:"
 
-msgid "Licenses"
-msgstr "ლიცენზიები"
+msgid "Description:"
+msgstr "აღწერა:"
+
+msgid "No response."
+msgstr "პასუხის გარეშე."
+
+msgid "Write error."
+msgstr "ჩაწერის შეცდომა."
+
+msgid "Timeout."
+msgstr "ლოდინის ვადა გავიდა."
+
+msgid "Failed:"
+msgstr "წარუმატებელი:"
+
+msgid "Downloading..."
+msgstr "გადმოწერა..."
+
+msgid "Connecting..."
+msgstr "დაკავშირება..."
+
+msgid "Idle"
+msgstr "უმოქმედო"
+
+msgid "Install..."
+msgstr "დაყენება..."
+
+msgid "Retry"
+msgstr "თავიდან ცდა"
+
+msgid "Download Error"
+msgstr "გადმოწერის შეცდომა"
+
+msgid "Recently Updated"
+msgstr "ახლახანს განახლებული"
+
+msgid "Community"
+msgstr "საზგადოება"
+
+msgid "Testing"
+msgstr "ტესტირება"
+
+msgid "Loading..."
+msgstr "იტვირთება..."
+
+msgctxt "Pagination"
+msgid "First"
+msgstr "პირველი"
+
+msgctxt "Pagination"
+msgid "Previous"
+msgstr "წინა"
+
+msgctxt "Pagination"
+msgid "Next"
+msgstr "შემდეგი"
+
+msgctxt "Pagination"
+msgid "Last"
+msgstr "ბოლო"
+
+msgid "Install"
+msgstr "დაყენება"
+
+msgid "Import..."
+msgstr "შემოტანა..."
+
+msgid "Sort:"
+msgstr "დალაგება:"
+
+msgid "Site:"
+msgstr "საიტი:"
+
+msgid "Support"
+msgstr "მხარდაჭერა"
+
+msgid "AssetLib"
+msgstr "აქტივების ბიბლიოთეკა"
 
 msgid "Error opening asset file for \"%s\" (not in ZIP format)."
 msgstr "შეცდომა \"%s\"-თვის ასეტების ფაილის გახნისას (ZIP ფორმატში არაა)."
@@ -1170,11 +947,14 @@ msgstr "აქტივების არაკომპრესირებ�
 msgid "Success!"
 msgstr "წარმატება!"
 
+msgid "Asset:"
+msgstr "აქტივი:"
+
 msgid "Installation preview:"
 msgstr "დაყენების გადახედვა:"
 
-msgid "Install"
-msgstr "დაყენება"
+msgid "Stop"
+msgstr "შეჩერება"
 
 msgid "Speakers"
 msgstr "დინამიკები"
@@ -1218,8 +998,17 @@ msgstr "დადუმება"
 msgid "Volume"
 msgstr "ხმის სიმაღლე"
 
+msgid "Channel %d, Right VU"
+msgstr "არხი %d, მარჯვენა VU"
+
 msgid "Bus Options"
 msgstr "მატარებლის მორგება"
+
+msgid "Duplicate Bus"
+msgstr "სალტის დუბლირება"
+
+msgid "Delete Bus"
+msgstr "სალტის წაშლა"
 
 msgid "Error saving file: %s"
 msgstr "ფაილის შენახვის შეცდომა: %s"
@@ -1230,132 +1019,170 @@ msgstr "განლაგება:"
 msgid "Load"
 msgstr "ჩატვირთვა"
 
-msgid "Enable"
-msgstr "ჩართვა"
+msgid "Step Into"
+msgstr "შებიჯება"
 
-msgid "Add Autoload"
-msgstr "ავტომატური ჩატვირთვის დამატება"
+msgid "Step Over"
+msgstr "გადაბიჯება"
 
-msgid "Path:"
-msgstr "ბილიკი:"
+msgid "Break"
+msgstr "გაჩერება"
 
-msgid "Global Variable"
-msgstr "გლობალური ცვლადი"
+msgid "Continue"
+msgstr "გაგრძელება"
 
-msgid "3D Engine"
-msgstr "3D ძრავა"
+msgid "Debugger"
+msgstr "გამმართველი"
 
-msgid "XR"
-msgstr "XR"
+msgid "Visible Paths"
+msgstr "ხილული ბილიკები"
 
-msgid "Vulkan"
-msgstr "Vulkan"
+msgid "Remote %s: %d"
+msgstr "დაშორებული %s: %d"
 
-msgid "OpenGL"
-msgstr "OpenGL"
+msgid "Debug"
+msgstr "გამართვა"
 
-msgid "WOFF2 Fonts"
-msgstr "WOFF2 ფონტები"
+msgid "Instance:"
+msgstr "გაშვებული ასლი:"
 
-msgid "General Features:"
-msgstr "ზოგადი თვისებები:"
+msgid "Toggle Visibility"
+msgstr "ხილულობის გადართვა"
 
-msgid "Reset the edited profile?"
-msgstr "ჩამოვყარო ჩასწორებული პროფილი?"
+msgid "Scanning for local changes"
+msgstr "ლოკალური ცვლილებების ძებნა"
 
-msgid "File saving failed."
-msgstr "ფაილის შენახვის შეცდომა."
+msgid "Sending file:"
+msgstr "ფაილის გაგზავნა:"
 
-msgid "Create a new profile?"
-msgstr "შევქმნა ახალი პროფილი?"
+msgid "ms"
+msgstr "მწმ"
 
-msgid "Error saving profile to path: '%s'."
-msgstr "პროფილის შენახვის შეცდომა ბილიკზე: '%s'."
+msgid "Monitors"
+msgstr "მონიტორინგი"
 
-msgid "New"
-msgstr "ახალი"
+msgid "Monitor"
+msgstr "მონიტორი"
 
-msgid "Save"
-msgstr "შენახვა"
+msgid "Start"
+msgstr "გაშვება"
 
-msgid "Profile:"
-msgstr "პროფილი:"
+msgid "Measure:"
+msgstr "გაზომვა:"
 
-msgid "Reset to Defaults"
-msgstr "ნაგულისხმები პარამეტრების დაყენება"
+msgid "Frame Time (ms)"
+msgstr "კადრის დრო (მწმ)"
 
-msgid "Actions:"
-msgstr "ქმედებები:"
+msgid "Frame %"
+msgstr "კადრი %"
 
-msgid "Load Profile"
-msgstr "პროფილის ჩატვირთვა"
+msgid "Inclusive"
+msgstr "ჩათვლით"
 
-msgid ""
-"Failed to execute command \"%s\":\n"
-"%s."
-msgstr ""
-"ჩავარდა შესრულება ბრძანებისთვის \"%s\":\n"
-"%s."
+msgid "Self"
+msgstr "საკუთარი"
 
-msgid "Filter Commands"
-msgstr "ბრძანებების ფილტრი"
+msgid "Display internal functions"
+msgstr "შიდა ფუნქციების ჩვენება"
 
-msgid "[empty]"
-msgstr "[ცარიელი]"
+msgid "Frame #:"
+msgstr "კადრი #:"
 
-msgid "[unsaved]"
-msgstr "[შეუნახავი]"
+msgid "Name"
+msgstr "სახელი"
 
-msgid "Open the %s dock."
-msgstr "%s დოკის გახსნა."
+msgid "Time"
+msgstr "დრო"
 
-msgid "Focus on the %s dock."
-msgstr "ფოკუსი %s დოკზე."
+msgid "Calls"
+msgstr "გამოძახებები"
 
-msgid "Make Floating"
-msgstr "მცურავად გადაკეთება"
+msgid "Fit to Frame"
+msgstr "კადრში ჩატევა"
 
-msgid "Make this dock floating."
-msgstr "მცურავად გადაკეთება."
+msgid "Linked"
+msgstr "მიბმული"
 
-msgid "Script Editor"
-msgstr "სკრიპტის რედაქტორი"
+msgid "CPU"
+msgstr "CPU"
 
-msgid "(current)"
-msgstr "(მიმდინარე)"
+msgid "GPU"
+msgstr "GPU"
 
-msgid "Class Properties:"
-msgstr "კლასის თვისებები:"
+msgid "Errors"
+msgstr "შედომები"
 
-msgid "Main Features:"
-msgstr "მთავარი ფუნქციები:"
+msgid "Main Thread"
+msgstr "მთავარი ნაკადი"
 
-msgid "Reset to Default"
-msgstr "ნაგულისხმებ მნიშვნელობაზე დაბრუნება"
+msgid "Execution resumed."
+msgstr "შესრულება გაგრძელდა."
 
-msgid "Current Profile:"
-msgstr "მიმდინარე პროფილი:"
+msgid "Bytes:"
+msgstr "ბაიტი:"
 
-msgid "Create Profile"
-msgstr "პროფილის შექმნა"
+msgid "Warning:"
+msgstr "გაფრთხილება:"
 
-msgid "Remove Profile"
-msgstr "პროფილის წაშლა"
+msgid "%s Error"
+msgstr "%s: შეცდომა"
 
-msgid "Available Profiles:"
-msgstr "ხელმისაწვდომი პროფილები:"
+msgid "%s Error:"
+msgstr "%s: შეცდომა:"
 
-msgid "Import"
-msgstr "შემოტანა"
+msgid "%s Source"
+msgstr "%s-ის კოდი"
 
-msgid "Export"
-msgstr "გატანა"
+msgid "%s Source:"
+msgstr "%s კოდი:"
 
-msgid "Restart"
-msgstr "რესტარტ"
+msgid "Line %d"
+msgstr "ხაზი %d"
 
-msgid "Updating Scene Groups"
-msgstr "სცენის ჯგუფების განახლება"
+msgid "Delete Breakpoint"
+msgstr "გაჩერების წერტილის წაშლა"
+
+msgid "Copy Error"
+msgstr "ლოკალური შეცდომა"
+
+msgid "Filter Stack Variables"
+msgstr "სტეკის ცვლადების ფილტრი"
+
+msgid "Breakpoints"
+msgstr "შეჩერების წერტილები"
+
+msgid "Expand All"
+msgstr "ყველას ამოკეცვა"
+
+msgid "Collapse All"
+msgstr "ყველას ჩაკეცვა"
+
+msgid "Profiler"
+msgstr "პროფაილერი"
+
+msgid "Visual Profiler"
+msgstr "ვიზუალური პროფაილერი"
+
+msgid "Total:"
+msgstr "ჯამი:"
+
+msgid "Refresh Video RAM"
+msgstr "ვიდეოRAM-ის განახლება"
+
+msgid "Resource Path"
+msgstr "ბილიკი რესურსამდე"
+
+msgid "Type"
+msgstr "ტიპი"
+
+msgid "Format"
+msgstr "_ფორმატი"
+
+msgid "Usage"
+msgstr "გამოყენება"
+
+msgid "Misc"
+msgstr "სხვანი"
 
 msgid "No return value."
 msgstr "დასაბრუნებელი მნიშვნელობის გარეშე."
@@ -1390,6 +1217,9 @@ msgstr "თავში"
 msgid "Class:"
 msgstr "კლასი:"
 
+msgid "Description"
+msgstr "აღწერა"
+
 msgid "Properties"
 msgstr "პარამეტრები"
 
@@ -1417,6 +1247,9 @@ msgstr "ხატულები"
 msgid "Styles"
 msgstr "სტილები"
 
+msgid "Signals"
+msgstr "სიგნალები"
+
 msgid "Enumerations"
 msgstr "ჩამონათვალები"
 
@@ -1431,6 +1264,9 @@ msgstr "რედაქტორი"
 
 msgid "Click to open in browser."
 msgstr "დააწკაპუნეთ ბრაუზერში გასახსნელად."
+
+msgid "Open"
+msgstr "გახსნა"
 
 msgid "Open in File Manager"
 msgstr "ფაილთა მმართველში გახსნა"
@@ -1456,25 +1292,272 @@ msgstr "სიგნალი"
 msgid "Annotation"
 msgstr "ანოტაცია"
 
+msgid "Path"
+msgstr "ბილიკი"
+
 msgid "Invalid path"
 msgstr "არასწორი ბილიკი"
+
+msgid "Hide"
+msgstr "დამალვა"
+
+msgid "No match"
+msgstr "დამთხვევის გარეშე"
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d დამთხვევა"
+msgstr[1] "%d დამთხვევა"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d/%d ემთხვევა"
+msgstr[1] "%d/%d ემთხვევა"
 
 msgid "Case Sensitive"
 msgstr "რეგისტრზე-დამოკიდებული"
 
+msgid "Constructors Only"
+msgstr "მხოლოდ კონსტრუქტორები"
+
+msgid "Operators Only"
+msgstr "მხოლოდ ოპერატორები"
+
+msgid "Annotations Only"
+msgstr "მხოლოდ ანოტაციები"
+
 msgid "Search Results"
 msgstr "ძებნის შედეგები"
 
-msgid "Unfavorite Property"
-msgstr "თვისების წაშლა სანიშნეებიდან"
+msgid "Open the %s dock."
+msgstr "%s დოკის გახსნა."
 
-msgid "On"
-msgstr "ჩართული"
+msgid "Focus on the %s dock."
+msgstr "ფოკუსი %s დოკზე."
 
-msgid "(%d change)"
-msgid_plural "(%d changes)"
-msgstr[0] "(%d ცვლილება)"
-msgstr[1] "(%d ცვლილება)"
+msgid "Make Floating"
+msgstr "მცურავად გადაკეთება"
+
+msgid "Make this dock floating."
+msgstr "მცურავად გადაკეთება."
+
+msgid "Favorites:"
+msgstr "სანიშნები:"
+
+msgid "Favorites"
+msgstr "სანიშნები"
+
+msgid "Error duplicating directory:"
+msgstr "დუბლირების შეცდომა საქაღალდისთვის:"
+
+msgid "Could not create base directory: %s"
+msgstr "ვერ შევქმენი საბაზისო საქაღალდე: %s"
+
+msgid "Create Folder"
+msgstr "საქაღალდის შექმნა"
+
+msgid "Could not create folder: %s"
+msgstr "ვერ შევქმენი საქაღალდე: %s"
+
+msgid "Run"
+msgstr "სირბილი"
+
+msgid "Create New"
+msgstr "ახლის შექმნა"
+
+msgid "Folder..."
+msgstr "საქაღალდე..."
+
+msgid "Scene..."
+msgstr "სცენა..."
+
+msgid "Script..."
+msgstr "სკრიპტი..."
+
+msgid "Resource..."
+msgstr "რესურსი..."
+
+msgid "Move/Duplicate To..."
+msgstr "გატანა/დუბლირება მისამართზე..."
+
+msgid "Add to Favorites"
+msgstr "რჩეულებში დამატება"
+
+msgid "Remove from Favorites"
+msgstr "რჩეულებიდან წაშლა"
+
+msgid "Convert to..."
+msgstr "გადაყვანა..."
+
+msgid "Show in File Manager"
+msgstr "ფაილების მმართველში ჩვენება"
+
+msgid "New Scene..."
+msgstr "ახალი სცენა..."
+
+msgid "New Script..."
+msgstr "ახალი სკრიპტი..."
+
+msgid "New Resource..."
+msgstr "ახალი რესურსი..."
+
+msgid "New TextFile..."
+msgstr "ახალი ტექსტური ფაილი..."
+
+msgid "Sort Files"
+msgstr "ფაილების დალაგება"
+
+msgid "Copy Path"
+msgstr "ბილიკის კოპირება"
+
+msgid "Red"
+msgstr "წითელი"
+
+msgid "Orange"
+msgstr "ნარინჯისფერი"
+
+msgid "Go to previous selected folder/file."
+msgstr "წინა არჩეულ ფაილზე/საქაღალდეზე გადასვლა."
+
+msgid "Go to next selected folder/file."
+msgstr "შემდეგ არჩეულ ფაილზე/საქაღალდეზე გადასვლა."
+
+msgid "Filter Files"
+msgstr "ფილტრის ფაილები"
+
+msgid "Files"
+msgstr "ფაილები"
+
+msgid "Overwrite"
+msgstr "თავზე გადაწერა"
+
+msgid "Convert"
+msgstr "გადაყვანა"
+
+msgid "Global Groups"
+msgstr "გლობალური ჯგუფები"
+
+msgid "Add to Group"
+msgstr "ჯგუფში ჩამატება"
+
+msgid "Convert to Scene Group"
+msgstr "სცენის ჯგუფში გადაყვანა"
+
+msgid "Rename Group"
+msgstr "ჯგუფის სახელის გადარქემვა"
+
+msgid "Name:"
+msgstr "სახელი:"
+
+msgid "Global"
+msgstr "გლობალური"
+
+msgid "Rename"
+msgstr "გადარქმევა"
+
+msgid "Add a new group."
+msgstr "ახალი ჯგუფის დამატება."
+
+msgid "Scene"
+msgstr "სცენა"
+
+msgid "Default"
+msgstr "ნაგულისხმები"
+
+msgid "Preset"
+msgstr "შაბლონი"
+
+msgid "Advanced..."
+msgstr "დამატებით..."
+
+msgid "(Current)"
+msgstr "(მიმდინარე)"
+
+msgid "Capitalized (e.g. \"%s\")"
+msgstr "ზედა რეგისტრში (მაგ: \"%s\")"
+
+msgid "Copy Properties"
+msgstr "თვისებების კოპირება"
+
+msgid "Paste Properties"
+msgstr "თვისებების ჩასმა"
+
+msgid "Save As..."
+msgstr "შეინახვა &როგორც..."
+
+msgid "Go to previous edited object in history."
+msgstr "ისტორიაში წინა ჩასწორებულ ობიექტზე გადასვლა."
+
+msgid "Open Documentation"
+msgstr "დოკუმენტაციის გახსნა"
+
+msgid "Filter Properties"
+msgstr "ფილტრის თვისებები"
+
+msgid "Groups"
+msgstr "ჯგუფ(ებ)ი"
+
+msgid "Error instantiating scene from %s"
+msgstr "%s-დან სცენის ინსტანცირების შეცდომა"
+
+msgid "Instantiate Scene"
+msgid_plural "Instantiate Scenes"
+msgstr[0] "სცენის ინსტანცირება"
+msgstr[1] "სცენების ინსტანცირება"
+
+msgid "Delete %d nodes?"
+msgstr "წავშალო %d კვანძი?"
+
+msgid "Delete node \"%s\"?"
+msgstr "წავშალო კვანძი \"%s\"?"
+
+msgid "3D Scene"
+msgstr "3D სცენა"
+
+msgid "User Interface"
+msgstr "სამომხმარებლო ინტერფეისი"
+
+msgid "Filters"
+msgstr "ფილტრები"
+
+msgid "Create Node"
+msgstr "კვანძის შექმნა"
+
+msgid "Reparent to New Node"
+msgstr "მშობლობის ახალ კვანძზე გადატანა"
+
+msgid "Open in Editor"
+msgstr "რედაქტორში გახსნა"
+
+msgid "Filter by Type"
+msgstr "ტიპით გაფილტვრა"
+
+msgid "Filter by Group"
+msgstr "ჯგუფით გაფილტვრა"
+
+msgid "Selects all Nodes of the given type."
+msgstr "მითითებული ტიპის ყველა კვანძის მონიშვნა."
+
+msgid "Paste Node(s) as Child of %s"
+msgstr "კვანძების %s-ის შვილების სახით ჩასმა"
+
+msgid "<Unnamed> at %s"
+msgstr "<უსახელო> მისამართზე %s"
+
+msgid "Batch Rename..."
+msgstr "ერთდროული სახელის გადარქმევა..."
+
+msgid "Add Child Node..."
+msgstr "შვილი კვანძის დამატება..."
+
+msgid "Instantiate Child Scene..."
+msgstr "შვილი სცენის წარმოდგენა..."
+
+msgid "Change Type..."
+msgstr "ტიპის შეცვლა..."
+
+msgid "Attach Script..."
+msgstr "სკრიპტის მიმაგრება..."
 
 msgid "Move Up"
 msgstr "აწევა"
@@ -1482,55 +1565,44 @@ msgstr "აწევა"
 msgid "Move Down"
 msgstr "ჩამოწევა"
 
-msgid "Move"
-msgstr "გადატანა"
+msgid "Duplicate"
+msgstr "დუბლიკაცია"
 
-msgid "Resize Array..."
-msgstr "მასივის ზომის ცვლილება..."
+msgid "Reparent to New Node..."
+msgstr "მშობლობის ახალ კვანძზე გადატანა..."
 
-msgid "Resize Array"
-msgstr "მასივის ზომის ცვლილება"
+msgid "Add/Create a New Node."
+msgstr "ახალი კვანის დამატება/შექმნა."
 
-msgid "New Size:"
-msgstr "ახალი ზომა:"
+msgid "Filter Nodes"
+msgstr "კვანძების გაფილტვრა"
 
-msgid "Copy Value"
-msgstr "მნიშვნელობის კოპირება"
+msgid "Extra scene options."
+msgstr "დამატებითი სცენის პარამეტრები."
 
-msgid "Copy Property Path"
-msgstr "თვისების ბილიკის კოპირება"
+msgid "Remote"
+msgstr "დაშორებული"
 
-msgctxt "Locale"
-msgid "Script:"
-msgstr "სკრიპტი:"
+msgid "Local"
+msgstr "ლოკალური"
 
-msgctxt "Locale"
-msgid "Script"
-msgstr "სკრიპტი"
+msgid "[empty]"
+msgstr "[ცარიელი]"
 
-msgid "[Default]"
-msgstr "[ნაგულისხმები]"
+msgid "[unsaved]"
+msgstr "[შეუნახავი]"
 
-msgid "Language:"
-msgstr "ენა:"
-
-msgid "Language"
-msgstr "ენა"
-
-msgid "Country:"
-msgstr "ქვეყანა:"
-
-msgid "Country"
-msgstr "ქვეყანა"
-
-msgid "Variant"
-msgstr "ვარიანტი"
+msgid "Create New %s"
+msgstr "ახალი %s-ის შექმნა"
 
 msgid "Filter Messages"
 msgstr "შეტყობინებების ფილტრი"
 
 msgid "Clear Output"
 msgstr "გამოტანის გასუფთავება"
+
+msgid "Warnings"
+msgstr "გაფრთხილებები"
 
 msgid "OK"
 msgstr "დიახ"
@@ -1577,9 +1649,6 @@ msgstr "განლაგების შენახვა..."
 msgid "Delete Layout..."
 msgstr "განლაგების წაშლა..."
 
-msgid "Default"
-msgstr "ნაგულისხმები"
-
 msgid "Save Layout"
 msgstr "განლაგების შენახვა"
 
@@ -1598,17 +1667,14 @@ msgstr "მობაილი"
 msgid "Compatibility"
 msgstr "თავსებადობა"
 
-msgid "(Overridden)"
-msgstr "(გადაფარულია)"
-
 msgid "Pan View"
 msgstr "პანორამული ხედი"
 
-msgid "Scene"
-msgstr "სცენა"
-
 msgid "Copy Text"
 msgstr "ტექსტის კოპირება"
+
+msgid "Command Palette"
+msgstr "ბრძანების პალიტრა"
 
 msgid "Open Recent"
 msgstr "ბოლოს გახსნილი ფაილების გახსნა"
@@ -1640,6 +1706,9 @@ msgstr "პროექტის პარამეტრები"
 msgid "Version Control"
 msgstr "ვერსიის კონტროლი"
 
+msgid "Export"
+msgstr "გატანა"
+
 msgid "Tools"
 msgstr "ხელსაწყოები"
 
@@ -1658,17 +1727,23 @@ msgstr "მთელ ეკრანზე გატანის ჩართ/�
 msgid "Help"
 msgstr "დახმარება"
 
-msgid "Community"
-msgstr "საზგადოება"
-
 msgid "Report a Bug"
 msgstr "შეცდომის პატაკი"
 
 msgid "Update When Changed"
 msgstr "განახლება ცვლილებისას"
 
+msgid "Import"
+msgstr "შემოტანა"
+
+msgid "Open Import Dock"
+msgstr "შემოტანის დოკის გახსნა"
+
 msgid "Node"
 msgstr "კვანძი"
+
+msgid "Open Node Dock"
+msgstr "კვანძის დოკის გახსნა"
 
 msgid "History"
 msgstr "ისტორია"
@@ -1679,116 +1754,23 @@ msgstr "არ შეინახო"
 msgid "Manage Templates"
 msgstr "ნიმუშების მართვა"
 
-msgid "Show in File Manager"
-msgstr "ფაილების მმართველში ჩვენება"
-
 msgid "Export Library"
 msgstr "ბიბლიოთეკის გატანა"
 
 msgid "What action should be taken?"
 msgstr "რა ქმედება უნდა შესრულდეს?"
 
+msgid "Restart"
+msgstr "რესტარტ"
+
 msgid "Version Control Settings..."
 msgstr "ვერსიის კონტროლის მორგება..."
 
+msgid "Open Anyway"
+msgstr "მაინც გახსნა"
+
 msgid "Warning!"
 msgstr "გაფთხილება:!"
-
-msgid "Edit Text:"
-msgstr "ტექსტის ჩასწორება:"
-
-msgid "Locale"
-msgstr "ენა"
-
-msgid "Rename"
-msgstr "გადარქმევა"
-
-msgid "Layer %d"
-msgstr "ფენა %d"
-
-msgid "Invalid RID"
-msgstr "არასწორი RID"
-
-msgid "New Key:"
-msgstr "ახალი პარამეტრი:"
-
-msgid "New Value:"
-msgstr "ახალი მნიშვნელობა:"
-
-msgid "%s%s (size %d)"
-msgstr "%s%s (ზომა %d)"
-
-msgid "%s (size %d)"
-msgstr "%s (ზომა %d)"
-
-msgid "Size:"
-msgstr "ზომა:"
-
-msgid "Localizable String (size %d)"
-msgstr "თარგმნადი სტრიქონი (ზომა %d)"
-
-msgid "Load..."
-msgstr "ჩატვირთვა..."
-
-msgid "Inspect"
-msgstr "შეამოწმეთ"
-
-msgid "Save As..."
-msgstr "შეინახვა &როგორც..."
-
-msgid "Convert to %s"
-msgstr "%s-ში გადაყვანა"
-
-msgid "Select resources to make unique:"
-msgstr "აირჩიეთ რესურსი მათი უნიკალურად მოსანიშნად:"
-
-msgid "Quick Load"
-msgstr "სწრაფი ჩატვირთვა"
-
-msgid "New Script..."
-msgstr "ახალი სკრიპტი..."
-
-msgid "New Shader..."
-msgstr "ახალი შეიდერი..."
-
-msgid "Edit Built-in Action: %s"
-msgstr "ჩაშენებული ქმედების ჩასწორება: %s"
-
-msgid "Edit Shortcut: %s"
-msgstr "მალსახმობის ჩასწორება: %s"
-
-msgid "Common"
-msgstr "ჩვეულებრივი"
-
-msgid "Editor Settings"
-msgstr "რედაქტორის პარამეტრი"
-
-msgid "Filter Settings"
-msgstr "ფილტრის მორგება"
-
-msgid "Advanced Settings"
-msgstr "დამატებითი პარამეტრები"
-
-msgid "Shortcuts"
-msgstr "მალსახმობები"
-
-msgid "Binding"
-msgstr "აკინძვა"
-
-msgid "Update checks disabled."
-msgstr "განახლებების შემოწმება გათიშულია."
-
-msgid "or"
-msgstr "ან"
-
-msgid "Unicode"
-msgstr "უნიკოდი"
-
-msgid "All Devices"
-msgstr "ყველა მოწყობილობა"
-
-msgid "Device"
-msgstr "მოწყობილობა"
 
 msgid "Failed to process nested resources."
 msgstr "ერთმანეთში ჩალაგებული რესურსების დამუშავების შეცდომა."
@@ -1841,9 +1823,6 @@ msgstr "ფაილურ სისტემასთან წვდომა 
 msgid "Failed to create a file at path \"%s\" with code %d."
 msgstr "ჩავარდა შექმნა ფაილისთვის ბილიკზე \"%s\" კოდით %d."
 
-msgid "Run"
-msgstr "სირბილი"
-
 msgid "Template file not found: \"%s\"."
 msgstr "ნიმუში ვერ ვიპოვე: \"%s\"."
 
@@ -1855,9 +1834,6 @@ msgstr "გაზიარებული ობიექტის \"%s\" კო
 
 msgid "Connecting to the mirror..."
 msgstr "სარკესთან დაკავშირება..."
-
-msgid "Connecting..."
-msgstr "დაკავშირება..."
 
 msgid "Downloading"
 msgstr "გადმოწერა"
@@ -1892,9 +1868,6 @@ msgstr "პრესეტები"
 msgid "Add..."
 msgstr "დამატება..."
 
-msgid "Duplicate"
-msgstr "დუბლიკაცია"
-
 msgid "Advanced Options"
 msgstr "დამატებითი პარამეტრები"
 
@@ -1928,137 +1901,192 @@ msgstr "პროექტის გატანა..."
 msgid "Export All"
 msgstr "ყველაფრის გატანა"
 
-msgid "Browse"
-msgstr "დათვალიერება"
+msgid "Project Export"
+msgstr "პროექტის გატანა"
 
-msgid "Error duplicating directory:"
-msgstr "დუბლირების შეცდომა საქაღალდისთვის:"
+msgid "Search Replacement For:"
+msgstr "ჩანაცვლების ძებნა:"
 
-msgid "Could not create base directory: %s"
-msgstr "ვერ შევქმენი საბაზისო საქაღალდე: %s"
+msgid "Dependencies For:"
+msgstr "დამოკიდებულება:"
 
-msgid "Create Folder"
-msgstr "საქაღალდის შექმნა"
+msgid "Dependencies"
+msgstr "დამოკიდებულებები"
 
-msgid "Could not create folder: %s"
-msgstr "ვერ შევქმენი საქაღალდე: %s"
+msgid "Dependencies:"
+msgstr "დამოკიდებულებები:"
 
-msgid "Create New"
-msgstr "ახლის შექმნა"
+msgid "Fix Broken"
+msgstr "გაწყვეტილის გასწორება"
 
-msgid "Folder..."
-msgstr "საქაღალდე..."
+msgid "Dependency Editor"
+msgstr "დამოკიდებულებების შემსწორებელი"
 
-msgid "Scene..."
-msgstr "სცენა..."
+msgid "Search Replacement Resource:"
+msgstr "ჩამნაცვლებელი რესურსის ძიება:"
 
-msgid "Script..."
-msgstr "სკრიპტი..."
+msgid "Localization remap"
+msgstr "ლოკალიზაციის თავიდან ასახვა"
 
-msgid "Resource..."
-msgstr "რესურსი..."
+msgid ""
+"Remove the selected files from the project? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"წავშალო მონიშნული ფაილები პროექტიდან? (პროცესი შეუქცევადია.)\n"
+"ფაილური სისტემის კონფიგურაციაზე დამოკიდებულებით, ფაილები შეიძლება ნაგვის "
+"ყუთში იქნეს გადატანილი, ან სამუდამოდ წაიშლება."
 
-msgid "Move/Duplicate To..."
-msgstr "გატანა/დუბლირება მისამართზე..."
+msgid ""
+"The files being removed are required by other resources in order for them to "
+"work.\n"
+"Remove them anyway? (Cannot be undone.)\n"
+"Depending on your filesystem configuration, the files will either be moved to "
+"the system trash or deleted permanently."
+msgstr ""
+"ფაილები, რომლების წაშლასაც აპირებთ, სხვა რესურსების სამუშაოდაა საჭირო.\n"
+"მაინც წავშალო? (პროცესი შეუქცევადია.)\n"
+"ფაილური სისტემის კონფიგურაციაზე დამოკიდებულებით, ისინი შეიძლება სისტემის "
+"ნაგვის ყუთში იქნეს გადატანილი. ან წაიშლება სამუდამოდ."
 
-msgid "Add to Favorites"
-msgstr "რჩეულებში დამატება"
+msgid "Cannot remove:"
+msgstr "წაშლის შეცდომა:"
 
-msgid "Remove from Favorites"
-msgstr "რჩეულებიდან წაშლა"
+msgid "Files to be deleted:"
+msgstr "წაიშლება ფაილები:"
 
-msgid "Convert to..."
-msgstr "გადაყვანა..."
+msgid "Error loading:"
+msgstr "ჩატვირთვის შეცდომა:"
 
-msgid "New Scene..."
-msgstr "ახალი სცენა..."
+msgid "Which action should be taken?"
+msgstr "რომელი მოქმედება შევასრულოთ?"
 
-msgid "New Resource..."
-msgstr "ახალი რესურსი..."
+msgid "Fix Dependencies"
+msgstr "დამოკიდებულებების გასწორება"
 
-msgid "New TextFile..."
-msgstr "ახალი ტექსტური ფაილი..."
+msgid "Errors loading!"
+msgstr "ჩატვირთვის შეცდომა!"
 
-msgid "Sort Files"
-msgstr "ფაილების დალაგება"
+msgid "Permanently delete %d item(s)? (No undo!)"
+msgstr "სამუდამოდ წავშალოთ %d ნივთები? (უკან დაბრუნება შეუძლებელია)"
 
-msgid "Copy Path"
-msgstr "ბილიკის კოპირება"
+msgid "Orphan Resource Explorer"
+msgstr "ობოლი რესურსების მაძიებელი"
 
-msgid "Duplicate..."
-msgstr "დუბლირება..."
+msgid "Owns"
+msgstr "ფლობს"
 
-msgid "Rename..."
-msgstr "სახელის გადარქმევა..."
+msgid "Resources Without Explicit Ownership:"
+msgstr "რესურსები გამოკვეთილი მფლობელის გარეშე:"
 
-msgid "Go to previous selected folder/file."
-msgstr "წინა არჩეულ ფაილზე/საქაღალდეზე გადასვლა."
+msgid "Updating Scene Groups"
+msgstr "სცენის ჯგუფების განახლება"
 
-msgid "Go to next selected folder/file."
-msgstr "შემდეგ არჩეულ ფაილზე/საქაღალდეზე გადასვლა."
+msgid "Go to Line"
+msgstr "ხაზზე გადასვლა"
 
-msgid "Filter Files"
-msgstr "ფილტრის ფაილები"
+msgid "Line Number:"
+msgstr "ხაზის ნომერი:"
 
-msgid "Overwrite"
-msgstr "თავზე გადაწერა"
+msgid "%d replaced."
+msgstr "%d ჩანაცვლდა."
 
-msgid "Convert"
-msgstr "გადაყვანა"
+msgid "Find"
+msgstr "ძებნა"
 
-msgid "Find in Files"
-msgstr "ფაილებში ძებნა"
+msgid "Match Case"
+msgstr "რეგისტრის დამთხვევა"
 
-msgid "Find:"
-msgstr "მოძებნა:"
+msgid "Whole Words"
+msgstr "მთლიანი სიტყვები"
 
-msgid "Replace:"
-msgstr "ჩანაცვლება:"
+msgid "Replace"
+msgstr "ჩანაცვლება"
 
-msgid "Folder:"
-msgstr "საქაღალდე:"
+msgid "Replace All"
+msgstr "ყველას ჩანაცვლება"
 
-msgid "Filters:"
-msgstr "ფილტრები:"
+msgid "Selection Only"
+msgstr "მხოლოდ მონიშნული"
 
-msgid "Find..."
-msgstr "მოძებნა…"
+msgid "Zoom factor"
+msgstr "გადიდების ფარდობა"
 
-msgid "Replace..."
-msgstr "ჩანაცვლება..."
+msgid "Zoom In"
+msgstr "გადიდება"
 
-msgid "Searching..."
-msgstr "ძებნა..."
+msgid "Zoom Out"
+msgstr "დაპატარავება"
 
-msgid "%d match in %d file"
-msgstr "%d დამთხვევა %d ფაილში"
+msgid "Reset Zoom"
+msgstr "გადიდების საწყისი პარამეტრები"
 
-msgid "%d matches in %d file"
-msgstr "%d დამთხვევა %d ფაილში"
+msgid "Indentation"
+msgstr "სწორება"
 
-msgid "%d matches in %d files"
-msgstr "%d დამთხვევა %d ფაილში"
+msgid "Change"
+msgstr "შეცვლა"
 
-msgid "A group with the name '%s' already exists."
-msgstr "ჯგუფი სახელით '%s' უკვე არსებობს."
+msgid "Script path: %s"
+msgstr "სკრიპტის ბილიკი: %s"
 
-msgid "Rename Group"
-msgstr "ჯგუფის სახელის გადარქემვა"
+msgid "Recent:"
+msgstr "ახლახანს:"
 
-msgid "Global Groups"
-msgstr "გლობალური ჯგუფები"
+msgid "Search:"
+msgstr "_ძებნა:"
 
-msgid "Add to Group"
-msgstr "ჯგუფში ჩამატება"
+msgid "Matches:"
+msgstr "ემთხვევა:"
 
-msgid "Convert to Scene Group"
-msgstr "სცენის ჯგუფში გადაყვანა"
+msgctxt "Job Title"
+msgid "Project Manager"
+msgstr "პროექტის მმართველი"
 
-msgid "Global"
-msgstr "გლობალური"
+msgid "Project Founders"
+msgstr "პროექტის დამფუძნებლები"
 
-msgid "Add a new group."
-msgstr "ახალი ჯგუფის დამატება."
+msgid "Lead Developer"
+msgstr "წამყვანი დეველოპერი"
+
+msgid "Developers"
+msgstr "პროგრამისტები"
+
+msgid "Platinum Sponsors"
+msgstr "პლატინის სპონსორები"
+
+msgid "Gold Sponsors"
+msgstr "ოქროს სპონსორები"
+
+msgid "Folder name contains invalid characters."
+msgstr "საქაღალდის სახელი არასწორ სიმბოლოებს შეიცავს."
+
+msgid "File with that name already exists."
+msgstr "ფაილი ამ სახელით უკვე არსებობს."
+
+msgid "Folder name is valid."
+msgstr "საქაღალდის სახელი სწორია."
+
+msgid "Godot Engine contributors"
+msgstr "Godot ძრავის ხელშემწყობები"
+
+msgid "Thanks from the Godot community!"
+msgstr "მადლობა Godot საზოგადოებისგან!"
+
+msgid "Authors"
+msgstr "ავტორები"
+
+msgid "Donors"
+msgstr "დონატორები"
+
+msgid "All Components"
+msgstr "ყველა კომპონენტი"
+
+msgid "Components"
+msgstr "კომპონენტები"
+
+msgid "Licenses"
+msgstr "ლიცენზიები"
 
 msgid "Move/Duplicate: %s"
 msgstr "გადატანა/დუბლირება: %s"
@@ -2070,6 +2098,9 @@ msgstr[1] "%d ელემენტის გადატანა/დუბლ�
 
 msgid "Choose target directory:"
 msgstr "აირჩიეთ სამიზნე საქაღალდე:"
+
+msgid "Move"
+msgstr "გადატანა"
 
 msgid "Network"
 msgstr "ქსელი"
@@ -2127,36 +2158,6 @@ msgstr "შედეგების გარეშე"
 msgid " (recently opened)"
 msgstr " (ახლახანს გახსნილი)"
 
-msgid "Reload the played scene."
-msgstr "დაკრული სცენის თავიდან ჩატვირთვა."
-
-msgid "Could not start subprocess(es)!"
-msgstr "ქვეპროცეს(ებ)-ის გაშვება შეუძლებელია!"
-
-msgid "Stop Running Project"
-msgstr "გაშვებული პროექტის შეჩერება"
-
-msgid "Play This Scene"
-msgstr "ამ სცენის დაკვრა"
-
-msgid "Close Tab"
-msgstr "ჩანართის დახურვა"
-
-msgid "Undo Close Tab"
-msgstr "ჩანართის დახურვის გაუქმება"
-
-msgid "Close Other Tabs"
-msgstr "სხვა ჩანართების დახურვა"
-
-msgid "Close Tabs to the Right"
-msgstr "მარჯვნივ მყოფი ჩანართების დახურვა"
-
-msgid "Close All Tabs"
-msgstr "ყველა ჩანართის დახურვა"
-
-msgid "New Window"
-msgstr "ახალი ფანჯარა"
-
 msgid "No notifications."
 msgstr "გაფრთხილებების გარეშე."
 
@@ -2169,25 +2170,14 @@ msgstr "გაფრთხილებების დადუმება."
 msgid "Remove Item"
 msgstr "ჩანაწერისწაშლა"
 
-msgid "Revoke unique name for node \"%s\"?"
-msgstr "გავაუქმო უნიკალური სახელი კვანძისთვის \"%s\"?"
-
-msgid "(Connecting From)"
-msgstr "(წყარო)"
-
-msgid "Node has one connection."
-msgid_plural "Node has {num} connections."
-msgstr[0] "კვანძს ერთი მიერთება გააჩნია"
-msgstr[1] "კვანძს {num} მიერთება გააჩნია"
-
-msgid "Open Script:"
-msgstr "სკრიპტის გახსნა:"
-
-msgid "Open in Editor"
-msgstr "რედაქტორში გახსნა"
+msgid "Pre-Import Scene"
+msgstr "სცენის წინასწარი შემოტანა"
 
 msgid "Saving..."
 msgstr "Შენახვა..."
+
+msgid "<Unnamed Material>"
+msgstr "<უსახელო მასალა>"
 
 msgid "Error opening scene"
 msgstr "სცენის გახსნის შეცდომა"
@@ -2210,8 +2200,14 @@ msgstr "უკვე ვინახავ"
 msgid "Will save to new file"
 msgstr "ახალ ფაილში შევინახავ"
 
+msgid "Set Paths"
+msgstr "ბილიკების დაყენება"
+
 msgid "Actions..."
 msgstr "ქმედებები..."
+
+msgid "Extract Materials"
+msgstr "მასალების გაშლა"
 
 msgid "Set Animation Save Paths"
 msgstr "ანიმაციის შენახვის ბილიკების დაყენება"
@@ -2219,14 +2215,26 @@ msgstr "ანიმაციის შენახვის ბილიკე�
 msgid "Meshes"
 msgstr "ბადეები"
 
-msgid "Animation"
-msgstr "ანიმაცია"
-
 msgid "Status"
 msgstr "სტატუსი"
 
 msgid "Save Extension:"
 msgstr "გაფართების შენახვა:"
+
+msgid "Text: *.tres"
+msgstr "ტექსტი: *.tres"
+
+msgid "Binary: *.res"
+msgstr "ბინარული: *.res"
+
+msgid "Text Resource"
+msgstr "ტექსტური რესურსი"
+
+msgid "Binary Resource"
+msgstr "ბინარული რესურსი"
+
+msgid "Enable"
+msgstr "ჩართვა"
 
 msgid "Enable looping."
 msgstr "მარყუჟის ჩართვა."
@@ -2240,8 +2248,32 @@ msgstr "მარყუჟი:"
 msgid "BPM:"
 msgstr "BPM:"
 
+msgid "Beat Count:"
+msgstr "დარტყმების რაოდენობა:"
+
+msgid "New Configuration"
+msgstr "ახალი კონფიგურაცია"
+
+msgid "Remove Variation"
+msgstr "ვარიაციის წაშლა"
+
+msgid "Rendering Options"
+msgstr "რენდერის პარამეტრები"
+
 msgid "Configuration:"
 msgstr "მორგება:"
+
+msgid "Add new font variation configuration."
+msgstr "ახალი ფონტის ვარიაციის კონფიგურაციის დამატება."
+
+msgid "Browse"
+msgstr "დათვალიერება"
+
+msgid "Confirm Path"
+msgstr "ბილიკის დადასტურება"
+
+msgid "Reset to Defaults"
+msgstr "ნაგულისხმები პარამეტრების დაყენება"
 
 msgid "2D"
 msgstr "2D"
@@ -2249,64 +2281,118 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
-msgid "Preset"
-msgstr "შაბლონი"
+msgid "Add"
+msgstr "დამატება"
 
-msgid "Advanced..."
-msgstr "დამატებით..."
+msgid "Metadata name must be a valid identifier."
+msgstr "მეტამონაცემები სწორ იდენტიფიკატორს უნდა წარმოადგენდეს."
 
-msgid "Mouse Buttons"
-msgstr "თაგუნის ღილაკები"
+msgid "Property: %s"
+msgstr "თვისება: %s"
 
-msgid "Event Configuration for \"%s\""
-msgstr "მოვლენის მორგება \"%s\"-სთვის"
+msgid "Unfavorite Property"
+msgstr "თვისების წაშლა სანიშნეებიდან"
 
-msgid "Manual Selection"
-msgstr "ხელით არჩევა"
+msgid "Delete Property"
+msgstr "თვისების წაშლა"
 
-msgid "Additional Options"
-msgstr "დამატებითი პარამეტრები"
+msgid "Section: %s"
+msgstr "განყოფილება: %s"
 
-msgid "Device:"
-msgstr "მოწყობილობა:"
+msgid "On"
+msgstr "ჩართული"
 
-msgid "(Current)"
-msgstr "(მიმდინარე)"
+msgid "(%d change)"
+msgid_plural "(%d changes)"
+msgstr[0] "(%d ცვლილება)"
+msgstr[1] "(%d ცვლილება)"
 
-msgid "Capitalized (e.g. \"%s\")"
-msgstr "ზედა რეგისტრში (მაგ: \"%s\")"
+msgid "Clear Array"
+msgstr "მასივის გასუფთავება"
 
-msgid "Copy Properties"
-msgstr "თვისებების კოპირება"
+msgid "Resize Array..."
+msgstr "მასივის ზომის ცვლილება..."
 
-msgid "Paste Properties"
-msgstr "თვისებების ჩასმა"
+msgid "Add Element"
+msgstr "ელემენტის დამატება"
 
-msgid "Go to previous edited object in history."
-msgstr "ისტორიაში წინა ჩასწორებულ ობიექტზე გადასვლა."
+msgid "Resize Array"
+msgstr "მასივის ზომის ცვლილება"
 
-msgid "Filter Properties"
-msgstr "ფილტრის თვისებები"
+msgid "New Size:"
+msgstr "ახალი ზომა:"
 
-msgid "Add %d Translation"
-msgid_plural "Add %d Translations"
-msgstr[0] "%d თარგმანის დამატება"
-msgstr[1] "%d თარგმანის დამატება"
+msgid "Copy Value"
+msgstr "მნიშვნელობის კოპირება"
 
-msgid "Removed"
-msgstr "ამოღებულია"
+msgid "Paste Value"
+msgstr "მნიშვნელობის ჩასმა"
 
-msgid "%s cannot be found."
-msgstr "%s ვერ ვიპოვე."
+msgid "Copy Property Path"
+msgstr "თვისების ბილიკის კოპირება"
 
-msgid "Translations"
-msgstr "თარგმანები"
+msgid "Edit Text:"
+msgstr "ტექსტის ჩასწორება:"
 
-msgid "Translations:"
-msgstr "თარგმანები:"
+msgid "Locale"
+msgstr "ენა"
 
-msgid "Add Built-in Strings to POT"
-msgstr "ჩაშენებული სტრიქონების დამატება POT-სთვის"
+msgid "Rename layer"
+msgstr "ფენის სახელის გადარქმევა"
+
+msgid "Layer %d"
+msgstr "ფენა %d"
+
+msgid "Invalid RID"
+msgstr "არასწორი RID"
+
+msgid "New Key:"
+msgstr "ახალი პარამეტრი:"
+
+msgid "New Value:"
+msgstr "ახალი მნიშვნელობა:"
+
+msgid "%s%s (size %d)"
+msgstr "%s%s (ზომა %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (ზომა %d)"
+
+msgid "Size:"
+msgstr "ზომა:"
+
+msgid "Localizable String (size %d)"
+msgstr "თარგმნადი სტრიქონი (ზომა %d)"
+
+msgid "Add Translation"
+msgstr "თარგმანის დამატება"
+
+msgid "Inspect"
+msgstr "შეამოწმეთ"
+
+msgid "Convert to %s"
+msgstr "%s-ში გადაყვანა"
+
+msgid "Select resources to make unique:"
+msgstr "აირჩიეთ რესურსი მათი უნიკალურად მოსანიშნად:"
+
+msgid "New"
+msgstr "ახალი"
+
+msgid "Quick Load"
+msgstr "სწრაფი ჩატვირთვა"
+
+msgid "New Shader..."
+msgstr "ახალი შეიდერი..."
+
+msgid "Size: %s"
+msgstr "ზომა: %s"
+
+msgid "Type: %s"
+msgstr "ტიპი: %s"
+
+msgid "Configure"
+msgstr "მორგება"
 
 msgid "Set %s on %d nodes"
 msgstr "%s-ის დაყენება %d კვანძზე"
@@ -2314,375 +2400,8 @@ msgstr "%s-ის დაყენება %d კვანძზე"
 msgid "%s (%d Selected)"
 msgstr "%s (%d მონიშნულია)"
 
-msgid "Groups"
-msgstr "ჯგუფ(ებ)ი"
-
-msgid "Create Polygon"
-msgstr "მრავალკუთხედის შქემნა"
-
-msgid "Create points."
-msgstr "წერტილების შექმნა."
-
-msgid "Add %s"
-msgstr "%s-ის დამატება"
-
-msgid "Add Node Point"
-msgstr "კვანძის წერტილის დამატება"
-
-msgid "Point"
-msgstr "წერტილი"
-
-msgid "Open Editor"
-msgstr "რედაქტორის გახსნა"
-
-msgid "Parameter Changed: %s"
-msgstr "პარამეტრი შეიცვალა: %s"
-
-msgid "Change Filter"
-msgstr "ფილტრის შეცვლა"
-
-msgid "Anim Clips"
-msgstr "ანიმ კლიპები"
-
-msgid "Audio Clips"
-msgstr "აუდიო კლიპები"
-
-msgid "Functions"
-msgstr "ფუნქციები"
-
-msgid "Library Name:"
-msgstr "ბიბლიოთეკის სახელი:"
-
-msgid "Add Animation to Library: %s"
-msgstr "ანიმაცების ჩამატება ბიბლიოთეკაში: %s"
-
-msgid "Add Animation Library: %s"
-msgstr "ანიმაციის ბიბლიოთეკის დამატება: %s"
-
-msgid "Make Animation Unique: %s"
-msgstr "ანიმაციის უნიკალურად გახდენა: %s"
-
-msgid "Save Animation to File: %s"
-msgstr "ანიმაციის შენახვა ფაილში: %s"
-
-msgid "Some AnimationLibrary files were invalid."
-msgstr "AnimationLibrary-ის ზოგიერთი ფაილი არასწორი იყო."
-
-msgid "Some Animation files were invalid."
-msgstr "ზოგიერთი ანიმაციის ფაილი არასწორია."
-
-msgid "Load Animations into Library"
-msgstr "ანიმაციის ჩატვირთვა ბიბლიოთეკაში"
-
-msgid "Load Animation into Library: %s"
-msgstr "ანიმაციის ჩატვირთვა ბიბლიოთეკაში: %s"
-
-msgid "Rename Animation Library: %s"
-msgstr "ანიმაციის ბიბლიოთეკის სახელის გადარქმევა: %s"
-
-msgid "Rename Animation: %s"
-msgstr "ანიმაციის სახელის გადარქმევა: %s"
-
-msgid "Remove Animation Library: %s"
-msgstr "ანიმაციის ბიბლიოთეკის წაშლა: %s"
-
-msgid "Add animation to library."
-msgstr "ანიმაციის დამატება ბიბლიოთეკაში."
-
-msgid "Load animation from file and add to library."
-msgstr "ანიმაციის ჩატვირთვა ფაილიდან და ბიბლიოთეკაში ჩამატება."
-
-msgid "Remove animation library."
-msgstr "ანიმაციის ბიბლიოთეკის წაშლა."
-
-msgid "Copy animation to clipboard."
-msgstr "ანიმაციის კოპირება ბუფერში."
-
-msgid "Save animation to resource on disk."
-msgstr "ანიმაციის შენახვა რესურსში, დისკზე."
-
-msgid "Remove animation from Library."
-msgstr "ანიმაციის წაშლა ბიბლიოთეკიდან."
-
-msgid "Edit Animation Libraries"
-msgstr "ანიმაციის ბიბლიოთეკების ჩასწორება"
-
-msgid "Create new empty animation library."
-msgstr "ახალი ცარიელი ანიმაციის ბიბლიოთეკის შექმნა."
-
-msgid "Load animation library from disk."
-msgstr "ანიმაციის ბიბლიოთეკის ჩატვირთვა დისკიდან."
-
-msgid "Storage"
-msgstr "საცავი"
-
-msgid "Delete Animation '%s'?"
-msgstr "წავშალო ანიმაცია '%s'?"
-
-msgid "Duplicated Animation Name:"
-msgstr "დუბლირებული ანიმაციის სახელი:"
-
-msgid "Play Animation Backwards from End"
-msgstr "ანიმაციის უკუღმა დაკვრა ბოლოდან"
-
-msgid "Manage Animations..."
-msgstr "ანიმაციების მართვა..."
-
-msgid "Edit Transitions..."
-msgstr "გადასვლების ჩასწორება..."
-
-msgid "Directions"
-msgstr "მიმართულებები"
-
-msgid "Past"
-msgstr "წარსული"
-
-msgid "Future"
-msgstr "მომავალი"
-
-msgid "Depth"
-msgstr "სიღრმე"
-
-msgid "Transition exists!"
-msgstr "გარდასვლა არსებობს!"
-
-msgid "Edit %s"
-msgstr "%s-ის ჩასწორება"
-
-msgid "Immediate"
-msgstr "უეცარი"
-
-msgid "Sync"
-msgstr "სინქრონიზაცია"
-
-msgid "Travel"
-msgstr "მოგზაურობა"
-
-msgid "Create new nodes."
-msgstr "ახალი კვანძების შექმნა."
-
-msgid "Connect nodes."
-msgstr "კვანძთან დაკავშირება."
-
-msgid "Transition:"
-msgstr "გარდასვლა:"
-
-msgid "Root"
-msgstr "Root"
-
-msgid "Author"
-msgstr "ავტორი"
-
-msgid "Version:"
-msgstr "ვერსია:"
-
-msgid "Contents:"
-msgstr "შემადგენლობა:"
-
-msgid "No response."
-msgstr "პასუხის გარეშე."
-
-msgid "Write error."
-msgstr "ჩაწერის შეცდომა."
-
-msgid "Timeout."
-msgstr "ლოდინის ვადა გავიდა."
-
-msgid "Failed:"
-msgstr "წარუმატებელი:"
-
-msgid "Downloading..."
-msgstr "გადმოწერა..."
-
-msgid "Idle"
-msgstr "უმოქმედო"
-
-msgid "Install..."
-msgstr "დაყენება..."
-
-msgid "Retry"
-msgstr "თავიდან ცდა"
-
-msgid "Download Error"
-msgstr "გადმოწერის შეცდომა"
-
-msgid "Recently Updated"
-msgstr "ახლახანს განახლებული"
-
-msgid "Testing"
-msgstr "ტესტირება"
-
-msgid "Loading..."
-msgstr "იტვირთება..."
-
-msgctxt "Pagination"
-msgid "First"
-msgstr "პირველი"
-
-msgctxt "Pagination"
-msgid "Previous"
-msgstr "წინა"
-
-msgctxt "Pagination"
-msgid "Next"
-msgstr "შემდეგი"
-
-msgctxt "Pagination"
-msgid "Last"
-msgstr "ბოლო"
-
-msgid "Import..."
-msgstr "შემოტანა..."
-
-msgid "Sort:"
-msgstr "დალაგება:"
-
-msgid "Site:"
-msgstr "საიტი:"
-
-msgid "Support"
-msgstr "მხარდაჭერა"
-
-msgid "Create Horizontal Guide"
-msgstr "ჰორიზონტალური გიდის შექმნა"
-
-msgid "Locked"
-msgstr "დაბლოკილი"
-
-msgid "Grouped"
-msgstr "დაჯგუფებული"
-
-msgid "Add Node Here..."
-msgstr "აქ კვანძის დამატება..."
-
-msgid "Instantiate Scene Here..."
-msgstr "სცენის წარმოდგენა აქ..."
-
-msgid "Move Node(s) Here"
-msgstr "კვანძ(ებ)-ის აქ გადმოტანა"
-
-msgid "px"
-msgstr "px"
-
-msgid "units"
-msgstr "ერთეულები"
-
-msgid "Rotating:"
-msgstr "ბრუნვა:"
-
-msgid "Scaling:"
-msgstr "მასშტაბი:"
-
-msgid "(Available in all modes.)"
-msgstr "(ხელმისაწვდომია ყველა რეჟიმში.)"
-
-msgid "Ungroup Selected"
-msgstr "მონიშნულის განჯგუფება"
-
-msgid "Zoom to 25%"
-msgstr "25%-ზე გადიდება"
-
-msgid "Zoom to 50%"
-msgstr "50%-ზე გადიდება"
-
-msgid "Zoom to 100%"
-msgstr "100%-მდე გადიდება"
-
-msgid "Zoom to 200%"
-msgstr "200%-ზე გადიდება"
-
-msgid "Zoom to 400%"
-msgstr "400%-ზე გადიდება"
-
-msgid "Zoom to 800%"
-msgstr "800%-ზე გადიდება"
-
-msgid "Scale Mode"
-msgstr "გადიდების რეჟიმი"
-
-msgid "Ruler Mode"
-msgstr "გაზომვის რეჟიმი"
-
-msgid "Show Rulers"
-msgstr "სახაზავების ჩვენება"
-
-msgid "Show Guides"
-msgstr "გიდების ჩვენება"
-
-msgid "Center Selection"
-msgstr "მონიშვნის ცენტრირება"
-
-msgid "Project theme"
-msgstr "პროექტის თემა"
-
-msgid "Insert keys (based on mask)."
-msgstr "გასაღებების ჩასმა (ნიღაბზე დამოკიდებულებით)."
-
-msgid "Insert Key"
-msgstr "ჩასვით გასაღები"
-
-msgid "Animation Key and Pose Options"
-msgstr "ანიმაციის გასაღებისა და პოზის მორგება"
-
-msgid "Error instantiating scene from %s."
-msgstr "%s-დან სცენის ინსტანცირების შეცდომა."
-
-msgid "Create Node"
-msgstr "კვანძის შექმნა"
-
-msgid "Instantiating: "
-msgstr "წარმოდგენა: "
-
-msgid "Adding %s and %s..."
-msgstr "%s-ის და %s-ის დამატება..."
-
-msgid "Set Target Position"
-msgstr "სამიზნე მდებარეობის დაყენება"
-
-msgid "Shrink Begin"
-msgstr "დასაწყისისკენ შემცირება"
-
-msgid "Expand"
-msgstr "გაფართოება"
-
-msgid "Top Left"
-msgstr "ზედა მარცხენა"
-
-msgid "Top Right"
-msgstr "ზედა მარჯვენა"
-
-msgid "Center Left"
-msgstr "მარცხენა ცენტრი"
-
-msgid "Center"
-msgstr "ცენტრი"
-
-msgid "Center Right"
-msgstr "მარჯვენა ცენტრი"
-
-msgid "Bottom Left"
-msgstr "ქვედა მარცხენა"
-
-msgid "Bottom Right"
-msgstr "ქვედა მარჯვენა"
-
-msgid "Change Horizontal Size Flags"
-msgstr "ჰორიზონტალური ზომის ალმების შეცვლა"
-
-msgid "Anchor preset"
-msgstr "ღუზის პრესეტი"
-
-msgid "Set to Current Ratio"
-msgstr "მიმდინარე მასშტაბზე დაყენება"
-
-msgid "Horizontal alignment"
-msgstr "ჰორიზონტალური სწორება"
-
-msgid "Vertical alignment"
-msgstr "ვერტიკალური სწორება"
-
-msgid "Add Curve Point"
-msgstr "მრუდის წერტილის დამატება"
+msgid "Select Method"
+msgstr "აირჩიეთ მეთოდი"
 
 msgid "Edit Plugin"
 msgstr "დამატების ჩასწორება"
@@ -2692,177 +2411,6 @@ msgstr "ახალი დამატების შექმნა"
 
 msgid "Version"
 msgstr "ვერსია"
-
-msgid "Size: %s"
-msgstr "ზომა: %s"
-
-msgid "Type: %s"
-msgstr "ტიპი: %s"
-
-msgid "Overrides (%d)"
-msgstr "გადაფარავს (%d)"
-
-msgid "Variation Coordinates (%d)"
-msgstr "ვარიაციის კოორდინატები (%d)"
-
-msgid "Variation"
-msgstr "ვარიაცია"
-
-msgid "Override the in-game camera."
-msgstr "თამაშის კამერის გადაფარვა."
-
-msgid "Change Box Shape Size"
-msgstr "მართკუთხედის მოხაზულობის ზომის შეცვლა"
-
-msgid "Change Decal Size"
-msgstr "კამერის ზომის შეცვლა"
-
-msgid "Change Probe Size"
-msgstr "ზონდის ტიპის შეცვლა"
-
-msgid "Low"
-msgstr "დაბალი"
-
-msgid "Moderate"
-msgstr "საშუალო"
-
-msgid "High"
-msgstr "მაღალი"
-
-msgid "No editor scene root found."
-msgstr "რედაქტორის ძირითადი სცენა ვერ ვიპოვე."
-
-msgid "Couldn't create a simplified collision shape."
-msgstr "გამარტივებული შეჯახების ფიგურის შექმნა შეუძლებელია."
-
-msgid "Could not create outline."
-msgstr "კონტური ვერ შევქმენი."
-
-msgid "Mesh"
-msgstr "ბადე"
-
-msgid "Create Collision Shape..."
-msgstr "შეჯახების ფიგურის შექმნა..."
-
-msgid "Sibling"
-msgstr "შვილ"
-
-msgid "Creates collision shapes as Sibling."
-msgstr "შეჯახების ფორმის შექმნა შვილის სახით შეუძლებელია."
-
-msgid "Collision Shape Type"
-msgstr "შეჯახების ფორმის ტპი"
-
-msgid "Add Item"
-msgstr "ჩანაწერის დამატება"
-
-msgid "X-Axis"
-msgstr "X-ღერძი"
-
-msgid "Y-Axis"
-msgstr "Y-ღერძი"
-
-msgid "Amount:"
-msgstr "რაოდენობა:"
-
-msgid "Orthogonal"
-msgstr "ორთოგონალური"
-
-msgid "Perspective"
-msgstr "პერსპექტივა"
-
-msgid "Translating:"
-msgstr "გადატანა:"
-
-msgid "Instantiating:"
-msgstr "წარმოდგენა:"
-
-msgid "Can't instantiate: %s."
-msgstr "ინსტანცირება შეუძლებელია: %s."
-
-msgid "Rotate"
-msgstr "შემობრუნება"
-
-msgid "Translate"
-msgstr "თარგმნა"
-
-msgid "Translating %s."
-msgstr "%s-ის თარგმანი."
-
-msgid "Scaling %s."
-msgstr "%s-ის მასშტაბი."
-
-msgid "Display Advanced..."
-msgstr "დამატებით ჩვენება..."
-
-msgid "View Grid"
-msgstr "ბადის ნახვა"
-
-msgid "View Frame Time"
-msgstr "კადრის დროის ნახვა"
-
-msgid "Preview disabled."
-msgstr "მინიატურა გამორთულია."
-
-msgid "Preview Environment"
-msgstr "გარემოს გადახედვა"
-
-msgid "Front View"
-msgstr "წინა ხედი"
-
-msgid "Focus Selection"
-msgstr "ფოკუსის არჩევა"
-
-msgid "Transform"
-msgstr "ტრასფორმირება"
-
-msgid "Snap Settings"
-msgstr "მიბმის მორგება"
-
-msgid "Perspective VFOV (deg.):"
-msgstr "პერსპექტივის VFOV (გრად.):"
-
-msgid "Pre"
-msgstr "პრე"
-
-msgid "Post"
-msgstr "პოსტი"
-
-msgid "Sun Direction"
-msgstr "მზის მიმართულება"
-
-msgid "Angular Altitude"
-msgstr "ადგილის კუთხე"
-
-msgid "Azimuth"
-msgstr "აზიმუტი"
-
-msgid "Sun Color"
-msgstr "მზის ფერი"
-
-msgid "Sky Color"
-msgstr "ცის ფერი"
-
-msgid "Ground Color"
-msgstr "მიწის ფერი"
-
-msgid "Glow"
-msgstr "ნათება"
-
-msgid "Post Process"
-msgstr "პოსტ-პროცესი"
-
-msgid "Emission Source:"
-msgstr "გამოსხივების წყარო:"
-
-msgid "Create Emission Points"
-msgstr "გამოსხივების წერტილების შექმნა"
-
-msgid "Delete Point"
-msgstr "წერტილის წაშლა"
-
-msgid "Remove all curve points?"
-msgstr "წავშალო ყველა რკალის წერტილი?"
 
 msgid "Edit a Plugin"
 msgstr "დამატების ჩასწორება"
@@ -2879,11 +2427,132 @@ msgstr "ქვესაქაღალდე:"
 msgid "Author:"
 msgstr "ავტორი:"
 
+msgid "Language:"
+msgstr "ენა:"
+
 msgid "Script Name:"
 msgstr "სკრიპტის სახელი:"
 
 msgid "Activate now?"
 msgstr "გავააქტიურო ახლა?"
+
+msgid "Update checks disabled."
+msgstr "განახლებების შემოწმება გათიშულია."
+
+msgid "Couldn't create project directory, check permissions."
+msgstr "პროექტის საქაღალდე ვერ შეიქმნა. შეამოწმეთ წვდომები."
+
+msgid "Couldn't duplicate project (error %d)."
+msgstr "პროექტის დუბლირება შეუძლებელია (შეცდომა %d)."
+
+msgid "Create New Project"
+msgstr "ახალი პროექტის შექმნა"
+
+msgid "Project Name:"
+msgstr "პროექტის სახელი:"
+
+msgid "Renderer:"
+msgstr "რენდერერი:"
+
+msgid "Git"
+msgstr "Git"
+
+msgid "Missing Project"
+msgstr "აკლია პროექტი"
+
+msgid "New Window"
+msgstr "ახალი ფანჯარა"
+
+msgctxt "Application"
+msgid "Project Manager"
+msgstr "პროექტის მმართველი"
+
+msgid "New Project"
+msgstr "ახალი პროექტი"
+
+msgid "Import Project"
+msgstr "პროექტის შემოტანა"
+
+msgid "Scan"
+msgstr "სკანირება"
+
+msgid "Loading, please wait..."
+msgstr "იტვირთება. გთხოვთ, მოითმინოთ..."
+
+msgid "Edit Project"
+msgstr "პროექტის რედაქტირება"
+
+msgid "Manage Tags"
+msgstr "ჭდეების მართვა"
+
+msgid "Remove All"
+msgstr "ყველას გამოერთება"
+
+msgid "Project Tags"
+msgstr "პროექტის ჭდეები"
+
+msgid "All Tags"
+msgstr "ყველა ჭდე"
+
+msgid "Create New Tag"
+msgstr "ახალი ჭდის შექმნა"
+
+msgid "Project Tag: %s"
+msgstr "პროექტის ჭდე: %s"
+
+msgid "Restart Now"
+msgstr "ახლა გადატვირთვა"
+
+msgid "Language"
+msgstr "ენა"
+
+msgid "Re-saving scene:"
+msgstr "სცენის თავიდან ჩაწერა:"
+
+msgid "Re-saving resource:"
+msgstr "რესურსის თავიდან შენახვა:"
+
+msgid "Reload the played scene."
+msgstr "დაკრული სცენის თავიდან ჩატვირთვა."
+
+msgid "Could not start subprocess(es)!"
+msgstr "ქვეპროცეს(ებ)-ის გაშვება შეუძლებელია!"
+
+msgid "Stop Running Project"
+msgstr "გაშვებული პროექტის შეჩერება"
+
+msgid "Project Run"
+msgstr "პროექტის გაშვება"
+
+msgid "Override the in-game camera."
+msgstr "თამაშის კამერის გადაფარვა."
+
+msgid "Clear All"
+msgstr "ყველას გასუფთავება"
+
+msgid "Run Instances"
+msgstr "გაშვებული ასლების გაშვება"
+
+msgid "Create Polygon"
+msgstr "მრავალკუთხედის შქემნა"
+
+msgid "Centered"
+msgstr "დაცენტრებული"
+
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
+
+msgid "Delete Point"
+msgstr "წერტილის წაშლა"
+
+msgid "Remove all curve points?"
+msgstr "წავშალო ყველა რკალის წერტილი?"
+
+msgid "Set Target Position"
+msgstr "სამიზნე მდებარეობის დაყენება"
 
 msgid "Points"
 msgstr "წერტილები"
@@ -2909,196 +2578,8 @@ msgstr "მიმაგრების ჩართვა"
 msgid "Show Grid"
 msgstr "ბადის ჩვენება"
 
-msgid "Add Resource"
-msgstr "რესურსის დამატება"
-
-msgid "Delete Resource"
-msgstr "რესურსის წაშლა"
-
-msgid "Path to AnimationMixer is invalid"
-msgstr "ბილიკი AnimationMixer-მდე არასწორია"
-
-msgid "Current value: "
-msgstr "მიმდინარე მნიშვნელობა: "
-
-msgid "Error writing TextFile:"
-msgstr "ტექსტური ფაილის შენახვის შეცდომა:"
-
-msgid "Error saving file!"
-msgstr "ფაილის შენახვის შეცდომა!"
-
-msgid "Error while saving theme."
-msgstr "შეცდომა თემის შენახვისას."
-
-msgid "Error Saving"
-msgstr "შენახვის შეცდომა"
-
-msgid "Error importing theme."
-msgstr "შეცდომა თემის შემოტანისას."
-
-msgid "Error Importing"
-msgstr "შემოტანის შეცდომა"
-
-msgid "Could not load file at:"
-msgstr "შეუძლებელია ფაილის ჩატვირთვა მისამართზე:"
-
-msgid "Save File As..."
-msgstr "ფაილის შენახვა როგორც..."
-
-msgid "Import Theme"
-msgstr "თემის შემოტანა"
-
-msgid "Error while saving theme"
-msgstr "შეცდომა თემის შენახვისას"
-
-msgid "Save Theme As..."
-msgstr "თემის შენახვა, როგორც..."
-
-msgid "Find Next"
-msgstr "მომდევნოს მოძებნა"
-
-msgid "Find Previous"
-msgstr "წინანდელის ძიება"
-
-msgid "Next Script"
-msgstr "შემდეგი სკრიპტი"
-
-msgid "Previous Script"
-msgstr "წინა სკრიპტი"
-
-msgid "Open..."
-msgstr "გახსნა..."
-
-msgid "Save All"
-msgstr "ყველას შენახვა"
-
-msgid "Import Theme..."
-msgstr "თემის შემოტანა.."
-
-msgid "Reload Theme"
-msgstr "თემის გადატვირთვა"
-
-msgid "Theme"
-msgstr "თემა"
-
-msgid "Close All"
-msgstr "ყველას დახურვა"
-
-msgid "Discard"
-msgstr "მოცილება"
-
-msgid "Uppercase"
-msgstr "მაღალირეგისტრი"
-
-msgid "Lowercase"
-msgstr "პატარა სიმბოლოები"
-
-msgid "Capitalize"
-msgstr "მაღალ რეგისტრში გადაყვანა"
-
-msgid "Standard"
-msgstr "სტანდარტული"
-
-msgid "Plain Text"
-msgstr "უბრალო ტექსტი"
-
-msgid "JSON"
-msgstr "JSON"
-
-msgid "Target"
-msgstr "სამიზნე"
-
-msgid ""
-"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr ""
-"აკლია მიერთების მეთოდი '%s' სიგნალისთვის '%s' კვანძიდან '%s' კვანძამდე '%s'."
-
-msgid "Line %d (%s):"
-msgstr "ხაზი %d (%s):"
-
-msgid "Line %d:"
-msgstr "ხაზი %d:"
-
-msgid "Pick Color"
-msgstr "აირჩიეთ ფერი"
-
-msgid "Line"
-msgstr "ხაზი"
-
-msgid "Bookmarks"
-msgstr "სანიშნეები"
-
-msgid "Delete Line"
-msgstr "ხაზის წაშლა"
-
-msgid "Unindent"
-msgstr "შეწევის გაუქმება"
-
-msgid "Toggle Comment"
-msgstr "კომენტარის გადართვა"
-
-msgid "Duplicate Selection"
-msgstr "მონიშვნის ასლის შექმნა"
-
-msgid "Auto Indent"
-msgstr "ავტომატური სწორება"
-
-msgid "Replace in Files..."
-msgstr "ფაილებში ჩანაცვლება..."
-
-msgid "Contextual Help"
-msgstr "კონტექსტური დახმარება"
-
-msgid "Toggle Bookmark"
-msgstr "სანიშნის გადართვა"
-
-msgid "Go to Next Bookmark"
-msgstr "შემდეგ სანიშნზე გადასვლა"
-
-msgid "Go to Previous Bookmark"
-msgstr "წინა სანიშნზე გადასვლა"
-
-msgid "Remove All Bookmarks"
-msgstr "ყველა სანიშნის წაშლა"
-
-msgid "Go to Function..."
-msgstr "ფუნქციაზე გადასვლა..."
-
-msgid "Go to Line..."
-msgstr "ხაზზე გადასვლა..."
-
-msgid "Toggle Breakpoint"
-msgstr "გამართვის წერტილის გადართვა"
-
-msgid "New Shader Include..."
-msgstr "ახალი შეიდერის ჩასმა..."
-
-msgid "Load Shader File..."
-msgstr "შეიდერის ფაილის ჩატვირთვა..."
-
-msgid "Load Shader Include File..."
-msgstr "შეიდერის ჩასასმელი ფაილის ჩატვირთვა..."
-
-msgid "Inspect Native Shader Code..."
-msgstr "ადგილობრივი შეიდერის კოდის შემოწმება..."
-
-msgid "Close File"
-msgstr "ფაილის დახურვა"
-
 msgid "Reset to Rest Pose"
 msgstr "მოსვენების პოზაში დაბრუნება"
-
-msgid "Set Bone Rest"
-msgstr "ძვლის მოსვენების დაყენება"
-
-msgid "Export Skeleton Profile As..."
-msgstr "ჩონჩხის პროფილის გატანა, როგორც..."
-
-msgid "Reset All Bone Poses"
-msgstr "ყველა ძვლის პოზის დაბრუნება"
-
-msgid "Reset Selected Poses"
-msgstr "მონიშნული პოზების დაბრუნება"
 
 msgid "Can't convert an empty sprite to mesh."
 msgstr "ცარიელი სპრაიტის ბადეში გადაყვანა შეუძლებელია."
@@ -3108,199 +2589,6 @@ msgstr "გამარტივება:"
 
 msgid "Update Preview"
 msgstr "მინიატურის განახლება"
-
-msgid "Add Frame"
-msgstr "კადრის დამატება"
-
-msgid "Animations:"
-msgstr "ანიმაციები:"
-
-msgid "Animation Speed"
-msgstr "ანიმაციის სიჩქარე"
-
-msgid "Filter Animations"
-msgstr "ანიმაციების ფილტრი"
-
-msgid "Animation Frames:"
-msgstr "ანიმაციის კადრები:"
-
-msgid "Frame Duration:"
-msgstr "ჩარჩოს ხანგრძლივობა:"
-
-msgid "Zoom Reset"
-msgstr "გადიდების გაუქმება"
-
-msgid "Add frame from file"
-msgstr "კადრის დამატება ფაილიდან"
-
-msgid "Left to Right, Top to Bottom"
-msgstr "მარცხნიდან მარჯვნივ, ზემოდან ქვემოთ"
-
-msgid "Left to Right, Bottom to Top"
-msgstr "მარცხნიდან მარჯვნივ, ქვემოდან ზემოთ"
-
-msgid "Right to Left, Top to Bottom"
-msgstr "მარჯვნიდან მარცხნივ, ზევიდან ქვემოთ"
-
-msgid "Right to Left, Bottom to Top"
-msgstr "მარჯვნიდან მარცხნივ, ქვემოდან ზემოთ"
-
-msgid "Top to Bottom, Left to Right"
-msgstr "ზემოდან ქვემოთ, მარცხნიდან მარჯვნივ"
-
-msgid "Top to Bottom, Right to Left"
-msgstr "ზემოდან ქვემოთ, მარჯვნიდან მარცხნივ"
-
-msgid "Bottom to Top, Left to Right"
-msgstr "ქვემოდან ზემოთ, მარცხნიდან მარჯვნივ"
-
-msgid "Bottom to Top, Right to Left"
-msgstr "ქვემოდან ზემოთ, მარჯვნიდან მარცხნივ"
-
-msgid "Select None"
-msgstr "მონიშვნის მოხსნა"
-
-msgid "Horizontal"
-msgstr "ჰორიზონტალური"
-
-msgid "Vertical"
-msgstr "ვერტიკალური"
-
-msgid "Separation"
-msgstr "გაცალკევება"
-
-msgid "Offset"
-msgstr "წანაცვლება"
-
-msgid "Reload"
-msgstr "თავიდან ჩატვირთვა"
-
-msgid "Separation:"
-msgstr "გაცალკევება:"
-
-msgid "1 color"
-msgid_plural "{num} colors"
-msgstr[0] "1 ფერი"
-msgstr[1] "{num} ფერი"
-
-msgid "1 constant"
-msgid_plural "{num} constants"
-msgstr[0] "1 მუდმივა"
-msgstr[1] "{num} მუდმივა"
-
-msgid "No constants found."
-msgstr "მუდმივები აღმოჩენილი არაა."
-
-msgid "No font sizes found."
-msgstr "ფონტის ზომები ვერ ვიპოვე."
-
-msgid "Importing Theme Items"
-msgstr "თემის ელემენტების შემოტანა"
-
-msgid "Finalizing"
-msgstr "დასრულება"
-
-msgid "Import Theme Items"
-msgstr "თემის ელემენტების შემოტანა"
-
-msgid "Select all visible font size items."
-msgstr "ყველა ხილული ფონტის ზომის ელემენტების მონიშვნა."
-
-msgid "Deselect all visible font size items."
-msgstr "ყველა ხილული ფონტის ზომის ელემენტის მონიშვნის მოხსნა."
-
-msgid "Collapse types."
-msgstr "ტიპების ჩაკეცვა."
-
-msgid "Select all Theme items."
-msgstr "ყველა თემის ელემენტის მონიშვნა."
-
-msgid "Deselect All"
-msgstr "მონიშვნის მოხსნა"
-
-msgid "Import Selected"
-msgstr "მონიშნულის შემოტანა"
-
-msgid "Remove All Color Items"
-msgstr "ყველა ფერის წაშლა"
-
-msgid "Rename Item"
-msgstr "ჩანაწერის სახელის გადარქმევა"
-
-msgid "Remove All Font Items"
-msgstr "ყველა ფონტის წაშლა"
-
-msgid "Remove All Font Size Items"
-msgstr "ყველა ფონტის ზომის წაშლა"
-
-msgid "Create Theme Item"
-msgstr "თემის ელემენტის შექმნა"
-
-msgid "Remove Data Type Items From Theme"
-msgstr "თემიდან მონაცემის ტიპის ელემენტების წაშლა"
-
-msgid "Add Color Item"
-msgstr "ფერის დამატება"
-
-msgid "Add Font Item"
-msgstr "ფონტის დამატება"
-
-msgid "Add Font Size Item"
-msgstr "ფონტის ზომის დამატება"
-
-msgid "Add Icon Item"
-msgstr "ხატულას დამატება"
-
-msgid "Types:"
-msgstr "ტიპები:"
-
-msgid "Remove Items:"
-msgstr "ელემენტების წაშლა:"
-
-msgid "Default Theme"
-msgstr "ნაგულისხმები თემა"
-
-msgid "Available Node-based types:"
-msgstr "ხელმისაწვდომი კვანძზე-ბაზირებული ტიპები:"
-
-msgid "Type name is empty!"
-msgstr "ტიპის სახელი ცარიელია!"
-
-msgid "Override Theme Item"
-msgstr "თემის ელემენტის გადაფარვა"
-
-msgid "Set Variation Base Type"
-msgstr "ვარიაციის საბაზისო ტიპის დაყენება"
-
-msgid "Set Base Type"
-msgstr "საბაზისო ტიპის დაყენება"
-
-msgid "Base Type"
-msgstr "საბაზისო ტიპი"
-
-msgid "Theme:"
-msgstr "თემა:"
-
-msgid "Item"
-msgstr "ელემენტი"
-
-msgid "Submenu"
-msgstr "ქვემენიუ"
-
-msgid "Has"
-msgstr "ჰასი"
-
-msgid "Many"
-msgstr "ბევრი"
-
-msgid "Tab 1"
-msgstr "ჩანართი 1"
-
-msgid "Tab 2"
-msgstr "ჩანართი 2"
-
-msgid "Subtree"
-msgstr "ქვეხე"
 
 msgid "Merge"
 msgstr "_შერწყმა"
@@ -3313,6 +2601,9 @@ msgstr "მრავალკუთხედების ჰორიზონ�
 
 msgid "Add polygon tool"
 msgstr "მრავალკუთხედის ხელსაწყოს დამატება"
+
+msgid "Advanced"
+msgstr "დამატებითი"
 
 msgid "Reset to default tile shape"
 msgstr "ნაგულისხმები ფილის ფიგურაზე დაბრუნება"
@@ -3335,6 +2626,9 @@ msgstr "ფილების თვისების დახატვა"
 msgid "Painting:"
 msgstr "ხატვა:"
 
+msgid "Pick"
+msgstr "აირჩიეთ"
+
 msgid "Index: %d"
 msgstr "ინდექსი: %d"
 
@@ -3344,8 +2638,14 @@ msgstr "ფილების გადაადგილება"
 msgid "Line Tool"
 msgstr "ხაზის ხელსაწყო"
 
+msgid "Contiguous"
+msgstr "უწყვეტი"
+
 msgid "Place Random Tile"
 msgstr "შემთხვევითი ფილის მოთავსება"
+
+msgid "Scattering:"
+msgstr "გაფანტვა:"
 
 msgid "Tiles"
 msgstr "ნაწილები"
@@ -3434,104 +2734,1187 @@ msgstr "სცენების კოლექციის თვისებ�
 msgid "Tile properties:"
 msgstr "ფილის თვისებები:"
 
-msgid "Commit"
-msgstr "კომიტი"
+msgid "Change Decal Size"
+msgstr "კამერის ზომის შეცვლა"
 
-msgid "Open in editor"
-msgstr "რედაქტორში გახსნა"
+msgid "Change Radius"
+msgstr "რადიუსის შეცვლა"
 
-msgid "Discard changes"
-msgstr "ცვლილებების გაუქმება"
+msgid "Change Box Shape Size"
+msgstr "მართკუთხედის მოხაზულობის ზომის შეცვლა"
 
-msgid "Staged Changes"
-msgstr "რიგში მყოფი ცვლილებები"
+msgid "Change Probe Size"
+msgstr "ზონდის ტიპის შეცვლა"
 
-msgid "Unstaged Changes"
-msgstr "რიგიდან მოცილებული ცვლილებები"
+msgid "Low"
+msgstr "დაბალი"
 
-msgid "Commit:"
-msgstr "კომიტი:"
+msgid "Moderate"
+msgstr "საშუალო"
 
-msgid "Subtitle:"
-msgstr "სუბტიტრები:"
+msgid "High"
+msgstr "მაღალი"
 
-msgid "Toggle Version Control Bottom Panel"
-msgstr "ვერსიის კონტროლის ქვედა პანელის გადართვა"
+msgid "No editor scene root found."
+msgstr "რედაქტორის ძირითადი სცენა ვერ ვიპოვე."
 
-msgid "Apply"
-msgstr "გადატარება"
+msgid "Couldn't create a simplified collision shape."
+msgstr "გამარტივებული შეჯახების ფიგურის შექმნა შეუძლებელია."
 
-msgid "Connect to VCS"
-msgstr "VCS-სთან მიერთება"
+msgid "Could not create outline."
+msgstr "კონტური ვერ შევქმენი."
 
-msgid "Remote Login"
-msgstr "დაშორებული შესვლა"
+msgid "Mesh"
+msgstr "ბადე"
 
-msgid "Detect new changes"
-msgstr "ახალი ცვლილებების აღმოჩენა"
+msgid "Create Collision Shape..."
+msgstr "შეჯახების ფიგურის შექმნა..."
 
-msgid "Permanentally delete my changes"
-msgstr "ჩემი ცვლილებების სამუდამოდ წაშლა"
+msgid "Sibling"
+msgstr "შვილ"
 
-msgid "Stage all changes"
-msgstr "ყველა ცვლილებების ინდექსირება"
+msgid "Creates collision shapes as Sibling."
+msgstr "შეჯახების ფორმის შექმნა შვილის სახით შეუძლებელია."
 
-msgid "Commit Message"
-msgstr "კომიტის კომენტარი"
+msgid "Collision Shape Type"
+msgstr "შეჯახების ფორმის ტპი"
 
-msgid "Commit Changes"
-msgstr "ცვლილებების გადაცემა"
+msgid "Add Item"
+msgstr "ჩანაწერის დამატება"
 
-msgid "Branches"
-msgstr "ბრენჩები"
+msgid "X-Axis"
+msgstr "X-ღერძი"
 
-msgid "Create New Branch"
-msgstr "ახალი ბრენჩის შექმნა"
+msgid "Y-Axis"
+msgstr "Y-ღერძი"
 
-msgid "Remove Branch"
-msgstr "ბრენჩის წაშლა"
+msgid "Amount:"
+msgstr "რაოდენობა:"
 
-msgid "Remote"
-msgstr "დაშორებული"
+msgid "Orthogonal"
+msgstr "ორთოგონალური"
 
-msgid "Remotes"
-msgstr "დაშორებულები"
+msgid "Perspective"
+msgstr "პერსპექტივა"
 
-msgid "Create New Remote"
-msgstr "ახალი დაშორებულის შექმნა"
+msgid "Locked"
+msgstr "დაბლოკილი"
 
-msgid "Remote Name"
-msgstr "დაშორებულის სახელი"
+msgid "Grouped"
+msgstr "დაჯგუფებული"
 
-msgid "Remote URL"
-msgstr "დაშორებული URL"
+msgid "Translating:"
+msgstr "გადატანა:"
 
-msgid "Fetch"
-msgstr "გამოთხოვა"
+msgid "Instantiating:"
+msgstr "წარმოდგენა:"
 
-msgid "Pull"
-msgstr "მიღება"
+msgid "Error instantiating scene from %s."
+msgstr "%s-დან სცენის ინსტანცირების შეცდომა."
 
-msgid "Push"
-msgstr "გადაცემა"
+msgid "Can't instantiate: %s."
+msgstr "ინსტანცირება შეუძლებელია: %s."
 
-msgid "Force Push"
-msgstr "ძალით დაპუშვა"
+msgid "Rotate"
+msgstr "შემობრუნება"
 
-msgid "Modified"
-msgstr "შეიცვალა"
+msgid "Translate"
+msgstr "თარგმნა"
 
-msgid "Renamed"
-msgstr "გადარქმეულია"
+msgid "Scaling:"
+msgstr "მასშტაბი:"
 
-msgid "Deleted"
-msgstr "წაშლილია"
+msgid "Translating %s."
+msgstr "%s-ის თარგმანი."
 
-msgid "Split"
-msgstr "გაყოფა"
+msgid "Scaling %s."
+msgstr "%s-ის მასშტაბი."
 
-msgid "Unified"
-msgstr "გაერთიანებული"
+msgid "Display Lighting"
+msgstr "განათების ჩვენება"
+
+msgid "Normal Buffer"
+msgstr "ნორმალების ბუფერი"
+
+msgid "VoxelGI Lighting"
+msgstr "VoxelGI განათება"
+
+msgid "Scene Luminance"
+msgstr "სცენის სიკაშკაშე"
+
+msgid "ReflectionProbe Cluster"
+msgstr "ReflectionProbe კლასტერი"
+
+msgid "Motion Vectors"
+msgstr "მოძრაობის ვექტორები"
+
+msgid "Display Advanced..."
+msgstr "დამატებით ჩვენება..."
+
+msgid "View Grid"
+msgstr "ბადის ნახვა"
+
+msgid "View Frame Time"
+msgstr "კადრის დროის ნახვა"
+
+msgid "Cancel Transformation"
+msgstr "გარდაქმნის გაუქმება"
+
+msgid "Ungroup Selected"
+msgstr "მონიშნულის განჯგუფება"
+
+msgid "(Available in all modes.)"
+msgstr "(ხელმისაწვდომია ყველა რეჟიმში.)"
+
+msgid "Preview disabled."
+msgstr "მინიატურა გამორთულია."
+
+msgid "Scale Mode"
+msgstr "გადიდების რეჟიმი"
+
+msgid "Ruler Mode"
+msgstr "გაზომვის რეჟიმი"
+
+msgid "Front View"
+msgstr "წინა ხედი"
+
+msgid "Focus Selection"
+msgstr "ფოკუსის არჩევა"
+
+msgid "Transform"
+msgstr "ტრასფორმირება"
+
+msgid "Snap Settings"
+msgstr "მიბმის მორგება"
+
+msgid "Perspective VFOV (deg.):"
+msgstr "პერსპექტივის VFOV (გრად.):"
+
+msgid "Pre"
+msgstr "პრე"
+
+msgid "Post"
+msgstr "პოსტი"
+
+msgid "Preview Sun"
+msgstr "მზის წინასწარი ხედი"
+
+msgid "Sun Direction"
+msgstr "მზის მიმართულება"
+
+msgid "Angular Altitude"
+msgstr "ადგილის კუთხე"
+
+msgid "Azimuth"
+msgstr "აზიმუტი"
+
+msgid "Sun Color"
+msgstr "მზის ფერი"
+
+msgid "Sun Energy"
+msgstr "მზის ენერგია"
+
+msgid "Preview Environment"
+msgstr "გარემოს გადახედვა"
+
+msgid "Sky Color"
+msgstr "ცის ფერი"
+
+msgid "Ground Color"
+msgstr "მიწის ფერი"
+
+msgid "Sky Energy"
+msgstr "ცის ენერგია"
+
+msgid "Glow"
+msgstr "ნათება"
+
+msgid "Post Process"
+msgstr "პოსტ-პროცესი"
+
+msgid "Bake Occluders"
+msgstr "ოკლუდერების გამოცხობა"
+
+msgid "Generate AABB"
+msgstr "AABB-ის გენერაცია"
+
+msgid "Emission Source:"
+msgstr "გამოსხივების წყარო:"
+
+msgid "Create Emission Points"
+msgstr "გამოსხივების წერტილების შექმნა"
+
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
+msgid "Path to AnimationMixer is invalid"
+msgstr "ბილიკი AnimationMixer-მდე არასწორია"
+
+msgid "Set Bone Rest"
+msgstr "ძვლის მოსვენების დაყენება"
+
+msgid "Export Skeleton Profile As..."
+msgstr "ჩონჩხის პროფილის გატანა, როგორც..."
+
+msgid "Skeleton3D"
+msgstr "Skeleton3D"
+
+msgid "Reset All Bone Poses"
+msgstr "ყველა ძვლის პოზის დაბრუნება"
+
+msgid "Reset Selected Poses"
+msgstr "მონიშნული პოზების დაბრუნება"
+
+msgid "Bake VoxelGI"
+msgstr "VoxelGI-ის გამოცხობა"
+
+msgid "Select path for VoxelGI Data File"
+msgstr "აირჩიეთ ბილიკი VoxelGl-ის მონაცემები ფაილამდე"
+
+msgid "Create Horizontal Guide"
+msgstr "ჰორიზონტალური გიდის შექმნა"
+
+msgid "Add Node Here..."
+msgstr "აქ კვანძის დამატება..."
+
+msgid "Instantiate Scene Here..."
+msgstr "სცენის წარმოდგენა აქ..."
+
+msgid "Move Node(s) Here"
+msgstr "კვანძ(ებ)-ის აქ გადმოტანა"
+
+msgid "px"
+msgstr "px"
+
+msgid "units"
+msgstr "ერთეულები"
+
+msgid "Rotating:"
+msgstr "ბრუნვა:"
+
+msgid "Zoom to 25%"
+msgstr "25%-ზე გადიდება"
+
+msgid "Zoom to 50%"
+msgstr "50%-ზე გადიდება"
+
+msgid "Zoom to 100%"
+msgstr "100%-მდე გადიდება"
+
+msgid "Zoom to 200%"
+msgstr "200%-ზე გადიდება"
+
+msgid "Zoom to 400%"
+msgstr "400%-ზე გადიდება"
+
+msgid "Zoom to 800%"
+msgstr "800%-ზე გადიდება"
+
+msgid "Show Rulers"
+msgstr "სახაზავების ჩვენება"
+
+msgid "Show Guides"
+msgstr "გიდების ჩვენება"
+
+msgid "Center Selection"
+msgstr "მონიშვნის ცენტრირება"
+
+msgid "Project theme"
+msgstr "პროექტის თემა"
+
+msgid "Insert keys (based on mask)."
+msgstr "გასაღებების ჩასმა (ნიღაბზე დამოკიდებულებით)."
+
+msgid "Insert Key"
+msgstr "ჩასვით გასაღები"
+
+msgid "Animation Key and Pose Options"
+msgstr "ანიმაციის გასაღებისა და პოზის მორგება"
+
+msgid "Instantiating: "
+msgstr "წარმოდგენა: "
+
+msgid "Adding %s and %s..."
+msgstr "%s-ის და %s-ის დამატება..."
+
+msgid "Method in target node must be specified."
+msgstr "სამიზნე კვანძში მეთოდის მითითება აუცილებელია."
+
+msgid "Method name must be a valid identifier."
+msgstr "მეთოდის სახელი სწორი იდენტიფიკატორი უნდა იყოს."
+
+msgid "Go to Source"
+msgstr "კოდზე გადასვლა"
+
+msgid "Filter Methods"
+msgstr "მეთოდების ფილტრი"
+
+msgid "Add Extra Call Argument:"
+msgstr "დამატებითი გამოძახების არგუმენტის დამატება:"
+
+msgid "Extra Call Arguments:"
+msgstr "დამატებითი გამოძახების არგუმენტები:"
+
+msgid "Unbind Signal Arguments:"
+msgstr "სიგნალის არგუმენტების მოხსნა:"
+
+msgid "Receiver Method:"
+msgstr "მიმღების მეთოდი:"
+
+msgid "Deferred"
+msgstr "გადადებული"
+
+msgid "Cannot connect signal"
+msgstr "სიგნალის მიერთების შეცდომა"
+
+msgid "Connect"
+msgstr "დაკავშირება"
+
+msgid "Connect '%s' to '%s'"
+msgstr "'%s' და '%s' დაკავშირება"
+
+msgid "Disconnect '%s' from '%s'"
+msgstr "'%s' და '%s' შორის კავშირის გაწყვეტა"
+
+msgid "Disconnect all from signal: '%s'"
+msgstr "ყველას გათიშვა სიგნალიდან: '%s'"
+
+msgid "Connect..."
+msgstr "დაკავშირება..."
+
+msgid "Disconnect"
+msgstr "გათიშვა"
+
+msgid "Connect a Signal to a Method"
+msgstr "სიგნალის მეთოდთან მიერთება"
+
+msgid "Edit Connection: '%s'"
+msgstr "მიერთების ჩასწორება: '%s'"
+
+msgid "Filter Signals"
+msgstr "სიგნალების გაფილტვრა"
+
+msgid "Copy Name"
+msgstr "სახელის სახელი"
+
+msgid "Edit..."
+msgstr "ჩასწორება..."
+
+msgid "Go to Method"
+msgstr "მეთოდზე გადასვლა"
+
+msgid "Add Curve Point"
+msgstr "მრუდის წერტილის დამატება"
+
+msgid "Play This Scene"
+msgstr "ამ სცენის დაკვრა"
+
+msgid "Close Tab"
+msgstr "ჩანართის დახურვა"
+
+msgid "Undo Close Tab"
+msgstr "ჩანართის დახურვის გაუქმება"
+
+msgid "Close Other Tabs"
+msgstr "სხვა ჩანართების დახურვა"
+
+msgid "Close Tabs to the Right"
+msgstr "მარჯვნივ მყოფი ჩანართების დახურვა"
+
+msgid "Close All Tabs"
+msgstr "ყველა ჩანართის დახურვა"
+
+msgid "A group with the name '%s' already exists."
+msgstr "ჯგუფი სახელით '%s' უკვე არსებობს."
+
+msgid "Container Default"
+msgstr "კონტეინერის ნაგულისხმევი"
+
+msgid "Shrink Begin"
+msgstr "დასაწყისისკენ შემცირება"
+
+msgid "Expand"
+msgstr "გაფართოება"
+
+msgid "Top Left"
+msgstr "ზედა მარცხენა"
+
+msgid "Top Right"
+msgstr "ზედა მარჯვენა"
+
+msgid "Center Left"
+msgstr "მარცხენა ცენტრი"
+
+msgid "Center"
+msgstr "ცენტრი"
+
+msgid "Center Right"
+msgstr "მარჯვენა ცენტრი"
+
+msgid "Bottom Left"
+msgstr "ქვედა მარცხენა"
+
+msgid "Bottom Right"
+msgstr "ქვედა მარჯვენა"
+
+msgid "Change Horizontal Size Flags"
+msgstr "ჰორიზონტალური ზომის ალმების შეცვლა"
+
+msgid "Anchor preset"
+msgstr "ღუზის პრესეტი"
+
+msgid "Set to Current Ratio"
+msgstr "მიმდინარე მასშტაბზე დაყენება"
+
+msgid "Horizontal alignment"
+msgstr "ჰორიზონტალური სწორება"
+
+msgid "Vertical alignment"
+msgstr "ვერტიკალური სწორება"
+
+msgid "Overrides (%d)"
+msgstr "გადაფარავს (%d)"
+
+msgid "Add Locale"
+msgstr "ლოკალის დამატება"
+
+msgid "Variation Coordinates (%d)"
+msgstr "ვარიაციის კოორდინატები (%d)"
+
+msgid "Add Feature"
+msgstr "თვისების დამატება"
+
+msgid "Variation"
+msgstr "ვარიაცია"
+
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "1 ფერი"
+msgstr[1] "{num} ფერი"
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "1 მუდმივა"
+msgstr[1] "{num} მუდმივა"
+
+msgid "No constants found."
+msgstr "მუდმივები აღმოჩენილი არაა."
+
+msgid "No font sizes found."
+msgstr "ფონტის ზომები ვერ ვიპოვე."
+
+msgid "Importing Theme Items"
+msgstr "თემის ელემენტების შემოტანა"
+
+msgid "Finalizing"
+msgstr "დასრულება"
+
+msgid "Import Theme Items"
+msgstr "თემის ელემენტების შემოტანა"
+
+msgid "Select all visible font size items."
+msgstr "ყველა ხილული ფონტის ზომის ელემენტების მონიშვნა."
+
+msgid "Deselect all visible font size items."
+msgstr "ყველა ხილული ფონტის ზომის ელემენტის მონიშვნის მოხსნა."
+
+msgid "Collapse types."
+msgstr "ტიპების ჩაკეცვა."
+
+msgid "Select all Theme items."
+msgstr "ყველა თემის ელემენტის მონიშვნა."
+
+msgid "Deselect All"
+msgstr "მონიშვნის მოხსნა"
+
+msgid "Import Selected"
+msgstr "მონიშნულის შემოტანა"
+
+msgid "Remove Type"
+msgstr "ტიპის წაშლა"
+
+msgid "Remove All Color Items"
+msgstr "ყველა ფერის წაშლა"
+
+msgid "Rename Item"
+msgstr "ჩანაწერის სახელის გადარქმევა"
+
+msgid "Remove All Font Items"
+msgstr "ყველა ფონტის წაშლა"
+
+msgid "Remove All Font Size Items"
+msgstr "ყველა ფონტის ზომის წაშლა"
+
+msgid "Create Theme Item"
+msgstr "თემის ელემენტის შექმნა"
+
+msgid "Remove Data Type Items From Theme"
+msgstr "თემიდან მონაცემის ტიპის ელემენტების წაშლა"
+
+msgid "Add Color Item"
+msgstr "ფერის დამატება"
+
+msgid "Add Font Item"
+msgstr "ფონტის დამატება"
+
+msgid "Add Font Size Item"
+msgstr "ფონტის ზომის დამატება"
+
+msgid "Add Icon Item"
+msgstr "ხატულას დამატება"
+
+msgid "Types:"
+msgstr "ტიპები:"
+
+msgid "Remove Items:"
+msgstr "ელემენტების წაშლა:"
+
+msgid "Default Theme"
+msgstr "ნაგულისხმები თემა"
+
+msgid "Theme Resource"
+msgstr "თემის რესურსი"
+
+msgid "Available Node-based types:"
+msgstr "ხელმისაწვდომი კვანძზე-ბაზირებული ტიპები:"
+
+msgid "Type name is empty!"
+msgstr "ტიპის სახელი ცარიელია!"
+
+msgid "Override Theme Item"
+msgstr "თემის ელემენტის გადაფარვა"
+
+msgid "Set Variation Base Type"
+msgstr "ვარიაციის საბაზისო ტიპის დაყენება"
+
+msgid "Set Base Type"
+msgstr "საბაზისო ტიპის დაყენება"
+
+msgid "Remove current type."
+msgstr "მიმდინარე წიპის წაშლა."
+
+msgid "Base Type"
+msgstr "საბაზისო ტიპი"
+
+msgid "Theme:"
+msgstr "თემა:"
+
+msgid "Theme"
+msgstr "თემა"
+
+msgid "Item"
+msgstr "ელემენტი"
+
+msgid "Submenu"
+msgstr "ქვემენიუ"
+
+msgid "Has"
+msgstr "ჰასი"
+
+msgid "Many"
+msgstr "ბევრი"
+
+msgid "Tab 1"
+msgstr "ჩანართი 1"
+
+msgid "Tab 2"
+msgstr "ჩანართი 2"
+
+msgid "Subtree"
+msgstr "ქვეხე"
+
+msgid "Replace:"
+msgstr "ჩანაცვლება:"
+
+msgid "Prefix:"
+msgstr "პრეფიქსი:"
+
+msgid "Suffix:"
+msgstr "სუფიქსი:"
+
+msgid "Node name."
+msgstr "კვანძის სახელი."
+
+msgid "Node type."
+msgstr "კვანძის ტიპი."
+
+msgid "Current scene name."
+msgstr "მიმდინარე სცენის სახელი."
+
+msgid "Root node name."
+msgstr "ძირითადი კვანძის სახელი."
+
+msgid "Step"
+msgstr "ბიჯი"
+
+msgid "Padding"
+msgstr "შევსება"
+
+msgid "Style"
+msgstr "სტილი"
+
+msgid "Case"
+msgstr "რეგისტრი"
+
+msgid "Reset"
+msgstr "დაბრუნება"
+
+msgid "Select new parent:"
+msgstr "აირჩიეთ ახალი მშობელი:"
+
+msgid "Add Resource"
+msgstr "რესურსის დამატება"
+
+msgid "Delete Resource"
+msgstr "რესურსის წაშლა"
+
+msgid "Pick Root Node Type"
+msgstr "აირჩიეთ ძირითადი კვანძის ტიპი"
+
+msgid "Scene name is empty."
+msgstr "სცენის სახელი ცარიელია."
+
+msgid "File name invalid."
+msgstr "ფაილის სახელი არასწორია."
+
+msgid "File already exists."
+msgstr "ფაილი უკვე არსებობს."
+
+msgid "Root Type:"
+msgstr "ფესვის ტიპი:"
+
+msgid "Scene Name:"
+msgstr "სცენის სახელი:"
+
+msgid "Root Name:"
+msgstr "ძირითადის სახელი:"
+
+msgid "Scene name is valid."
+msgstr "სცენის სახელი სწორია."
+
+msgid "Root node valid."
+msgstr "ძირითადი კვანძი სწორია."
+
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "გავაუქმო უნიკალური სახელი კვანძისთვის \"%s\"?"
+
+msgid "(Connecting From)"
+msgstr "(წყარო)"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "კვანძს ერთი მიერთება გააჩნია"
+msgstr[1] "კვანძს {num} მიერთება გააჩნია"
+
+msgid "Open Script:"
+msgstr "სკრიპტის გახსნა:"
+
+msgid "Add Frame"
+msgstr "კადრის დამატება"
+
+msgid "Animations:"
+msgstr "ანიმაციები:"
+
+msgid "Animation Speed"
+msgstr "ანიმაციის სიჩქარე"
+
+msgid "Filter Animations"
+msgstr "ანიმაციების ფილტრი"
+
+msgid "Animation Frames:"
+msgstr "ანიმაციის კადრები:"
+
+msgid "Frame Duration:"
+msgstr "ჩარჩოს ხანგრძლივობა:"
+
+msgid "Zoom Reset"
+msgstr "გადიდების გაუქმება"
+
+msgid "Add frame from file"
+msgstr "კადრის დამატება ფაილიდან"
+
+msgid "Left to Right, Top to Bottom"
+msgstr "მარცხნიდან მარჯვნივ, ზემოდან ქვემოთ"
+
+msgid "Left to Right, Bottom to Top"
+msgstr "მარცხნიდან მარჯვნივ, ქვემოდან ზემოთ"
+
+msgid "Right to Left, Top to Bottom"
+msgstr "მარჯვნიდან მარცხნივ, ზევიდან ქვემოთ"
+
+msgid "Right to Left, Bottom to Top"
+msgstr "მარჯვნიდან მარცხნივ, ქვემოდან ზემოთ"
+
+msgid "Top to Bottom, Left to Right"
+msgstr "ზემოდან ქვემოთ, მარცხნიდან მარჯვნივ"
+
+msgid "Top to Bottom, Right to Left"
+msgstr "ზემოდან ქვემოთ, მარჯვნიდან მარცხნივ"
+
+msgid "Bottom to Top, Left to Right"
+msgstr "ქვემოდან ზემოთ, მარცხნიდან მარჯვნივ"
+
+msgid "Bottom to Top, Right to Left"
+msgstr "ქვემოდან ზემოთ, მარჯვნიდან მარცხნივ"
+
+msgid "Select None"
+msgstr "მონიშვნის მოხსნა"
+
+msgid "Horizontal"
+msgstr "ჰორიზონტალური"
+
+msgid "Vertical"
+msgstr "ვერტიკალური"
+
+msgid "Separation"
+msgstr "გაცალკევება"
+
+msgid "Offset"
+msgstr "წანაცვლება"
+
+msgid "Separation:"
+msgstr "გაცალკევება:"
+
+msgid "Find in Files"
+msgstr "ფაილებში ძებნა"
+
+msgid "Find:"
+msgstr "მოძებნა:"
+
+msgid "Folder:"
+msgstr "საქაღალდე:"
+
+msgid "Includes:"
+msgstr "შეიცავს:"
+
+msgid "Filters:"
+msgstr "ფილტრები:"
+
+msgid "Find..."
+msgstr "მოძებნა…"
+
+msgid "Replace..."
+msgstr "ჩანაცვლება..."
+
+msgid "Searching..."
+msgstr "ძებნა..."
+
+msgid "%d match in %d file"
+msgstr "%d დამთხვევა %d ფაილში"
+
+msgid "%d matches in %d file"
+msgstr "%d დამთხვევა %d ფაილში"
+
+msgid "%d matches in %d files"
+msgstr "%d დამთხვევა %d ფაილში"
+
+msgid "Path is empty."
+msgstr "ბილიკი ცარიელია."
+
+msgid "Filename is empty."
+msgstr "ფაილის სახელი ცარიელია."
+
+msgid "Filename is invalid."
+msgstr "ფაილის სახელია არასწორია."
+
+msgid "Template:"
+msgstr "შაბლონი:"
+
+msgid "Open Script"
+msgstr "სკრიპტის გახსნა"
+
+msgid "Inherit"
+msgstr "მემკვიდრეობით"
+
+msgid "Using existing script file."
+msgstr "გამოიყენება არსებული სკრიპტის ფაილი."
+
+msgid "Will create a new script file."
+msgstr "შეიქმნება ახალი სკრიპტის ფაილი."
+
+msgid "Template"
+msgstr "შაბლონი"
+
+msgid "Built-in Script:"
+msgstr "ჩაშენებული სკრიპტი:"
+
+msgid "Current value: "
+msgstr "მიმდინარე მნიშვნელობა: "
+
+msgid "Error writing TextFile:"
+msgstr "ტექსტური ფაილის შენახვის შეცდომა:"
+
+msgid "Error saving file!"
+msgstr "ფაილის შენახვის შეცდომა!"
+
+msgid "Could not load file at:"
+msgstr "შეუძლებელია ფაილის ჩატვირთვა მისამართზე:"
+
+msgid "Save File As..."
+msgstr "ფაილის შენახვა როგორც..."
+
+msgid "Import Theme"
+msgstr "თემის შემოტანა"
+
+msgid "Save Theme As..."
+msgstr "თემის შენახვა, როგორც..."
+
+msgid "Find Next"
+msgstr "მომდევნოს მოძებნა"
+
+msgid "Find Previous"
+msgstr "წინანდელის ძიება"
+
+msgid "Filter Scripts"
+msgstr "სკრიპტების ფილტრი"
+
+msgid "Next Script"
+msgstr "შემდეგი სკრიპტი"
+
+msgid "Previous Script"
+msgstr "წინა სკრიპტი"
+
+msgid "Open..."
+msgstr "გახსნა..."
+
+msgid "Save All"
+msgstr "ყველას შენახვა"
+
+msgid "Import Theme..."
+msgstr "თემის შემოტანა.."
+
+msgid "Reload Theme"
+msgstr "თემის გადატვირთვა"
+
+msgid "Close All"
+msgstr "ყველას დახურვა"
+
+msgid "Discard"
+msgstr "მოცილება"
+
+msgid "Script Editor"
+msgstr "სკრიპტის რედაქტორი"
+
+msgid "Uppercase"
+msgstr "მაღალირეგისტრი"
+
+msgid "Lowercase"
+msgstr "პატარა სიმბოლოები"
+
+msgid "Capitalize"
+msgstr "მაღალ რეგისტრში გადაყვანა"
+
+msgid "Standard"
+msgstr "სტანდარტული"
+
+msgid "Plain Text"
+msgstr "უბრალო ტექსტი"
+
+msgid "JSON"
+msgstr "JSON"
+
+msgid "Target"
+msgstr "სამიზნე"
+
+msgid ""
+"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
+msgstr ""
+"აკლია მიერთების მეთოდი '%s' სიგნალისთვის '%s' კვანძიდან '%s' კვანძამდე '%s'."
+
+msgid "Line %d (%s):"
+msgstr "ხაზი %d (%s):"
+
+msgid "Line %d:"
+msgstr "ხაზი %d:"
+
+msgid "Pick Color"
+msgstr "აირჩიეთ ფერი"
+
+msgid "Line"
+msgstr "ხაზი"
+
+msgid "Folding"
+msgstr "დაკეცვა"
+
+msgid "Bookmarks"
+msgstr "სანიშნეები"
+
+msgid "Delete Line"
+msgstr "ხაზის წაშლა"
+
+msgid "Unindent"
+msgstr "შეწევის გაუქმება"
+
+msgid "Toggle Comment"
+msgstr "კომენტარის გადართვა"
+
+msgid "Duplicate Selection"
+msgstr "მონიშვნის ასლის შექმნა"
+
+msgid "Auto Indent"
+msgstr "ავტომატური სწორება"
+
+msgid "Replace in Files..."
+msgstr "ფაილებში ჩანაცვლება..."
+
+msgid "Contextual Help"
+msgstr "კონტექსტური დახმარება"
+
+msgid "Toggle Bookmark"
+msgstr "სანიშნის გადართვა"
+
+msgid "Go to Next Bookmark"
+msgstr "შემდეგ სანიშნზე გადასვლა"
+
+msgid "Go to Previous Bookmark"
+msgstr "წინა სანიშნზე გადასვლა"
+
+msgid "Remove All Bookmarks"
+msgstr "ყველა სანიშნის წაშლა"
+
+msgid "Go to Function..."
+msgstr "ფუნქციაზე გადასვლა..."
+
+msgid "Go to Line..."
+msgstr "ხაზზე გადასვლა..."
+
+msgid "Toggle Breakpoint"
+msgstr "გამართვის წერტილის გადართვა"
+
+msgid "Action %s"
+msgstr "ქმედება %s"
+
+msgid "Revert Action"
+msgstr "ქმედების დაბრუნება"
+
+msgid "Add Event"
+msgstr "მოვლენის დამატება"
+
+msgid "Cannot Remove Action"
+msgstr "ქმედების წაშლა შეუძლებელია"
+
+msgid "Edit Event"
+msgstr "მოვლენის ჩასწორება"
+
+msgid "Remove Event"
+msgstr "მოვლენის წაშლა"
+
+msgid "Add New Action"
+msgstr "ახალი მოქმედების დამატება"
+
+msgid "Action Map"
+msgstr "ქმედების რუკა"
+
+msgid "Action"
+msgstr "ქმედება"
+
+msgid "Add Autoload"
+msgstr "ავტომატური ჩატვირთვის დამატება"
+
+msgid "Global Variable"
+msgstr "გლობალური ცვლადი"
+
+msgid "3D Engine"
+msgstr "3D ძრავა"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "OpenGL"
+msgstr "OpenGL"
+
+msgid "Physics Server (2D)"
+msgstr "ფიზიკის სერვერი (2D)"
+
+msgid "Physics Server (3D)"
+msgstr "ფიზიკის სერვერი (3D)"
+
+msgid "WOFF2 Fonts"
+msgstr "WOFF2 ფონტები"
+
+msgid "General Features:"
+msgstr "ზოგადი თვისებები:"
+
+msgid "Physics Systems:"
+msgstr "ფიზიკის სისტემები:"
+
+msgid "Reset the edited profile?"
+msgstr "ჩამოვყარო ჩასწორებული პროფილი?"
+
+msgid "File saving failed."
+msgstr "ფაილის შენახვის შეცდომა."
+
+msgid "Create a new profile?"
+msgstr "შევქმნა ახალი პროფილი?"
+
+msgid "Error saving profile to path: '%s'."
+msgstr "პროფილის შენახვის შეცდომა ბილიკზე: '%s'."
+
+msgid "Profile:"
+msgstr "პროფილი:"
+
+msgid "Actions:"
+msgstr "ქმედებები:"
+
+msgid "Load Profile"
+msgstr "პროფილის ჩატვირთვა"
+
+msgid ""
+"Failed to execute command \"%s\":\n"
+"%s."
+msgstr ""
+"ჩავარდა შესრულება ბრძანებისთვის \"%s\":\n"
+"%s."
+
+msgid "Filter Commands"
+msgstr "ბრძანებების ფილტრი"
+
+msgid "Filter by Name"
+msgstr "სახელით გაფილტვრა"
+
+msgid "Clear all search filters."
+msgstr "ყველა ძებნის ფილტრის გასუფთავება."
+
+msgid "(current)"
+msgstr "(მიმდინარე)"
+
+msgid "Class Properties:"
+msgstr "კლასის თვისებები:"
+
+msgid "Main Features:"
+msgstr "მთავარი ფუნქციები:"
+
+msgid "Current Profile:"
+msgstr "მიმდინარე პროფილი:"
+
+msgid "Reset to Default"
+msgstr "ნაგულისხმებ მნიშვნელობაზე დაბრუნება"
+
+msgid "Available Profiles:"
+msgstr "ხელმისაწვდომი პროფილები:"
+
+msgid "Create Profile"
+msgstr "პროფილის შექმნა"
+
+msgid "Remove Profile"
+msgstr "პროფილის წაშლა"
+
+msgid "Edit Built-in Action: %s"
+msgstr "ჩაშენებული ქმედების ჩასწორება: %s"
+
+msgid "Edit Shortcut: %s"
+msgstr "მალსახმობის ჩასწორება: %s"
+
+msgid "Common"
+msgstr "ჩვეულებრივი"
+
+msgid "Editor Settings"
+msgstr "რედაქტორის პარამეტრი"
+
+msgid "Filter Settings"
+msgstr "ფილტრის მორგება"
+
+msgid "Advanced Settings"
+msgstr "დამატებითი პარამეტრები"
+
+msgid "Shortcuts"
+msgstr "მალსახმობები"
+
+msgid "Binding"
+msgstr "აკინძვა"
+
+msgid "Overridden in project: %s"
+msgstr "გადაფარულია პროექტში: %s"
+
+msgid "or"
+msgstr "ან"
+
+msgid "Unicode"
+msgstr "უნიკოდი"
+
+msgid "All Devices"
+msgstr "ყველა მოწყობილობა"
+
+msgid "Device"
+msgstr "მოწყობილობა"
+
+msgid "Mouse Buttons"
+msgstr "თაგუნის ღილაკები"
+
+msgid "Joypad Buttons"
+msgstr "ჯოისტიკის ღილაკები"
+
+msgid "Event Configuration for \"%s\""
+msgstr "მოვლენის მორგება \"%s\"-სთვის"
+
+msgid "Event Configuration"
+msgstr "მოვლენის კონფიგურაცია"
+
+msgid "Filter Inputs"
+msgstr "შეყვანების გაფილტვრა"
+
+msgid "Additional Options"
+msgstr "დამატებითი პარამეტრები"
+
+msgid "Device:"
+msgstr "მოწყობილობა:"
+
+msgid "Delete Item"
+msgstr "ჩანაწერის წაშლა"
+
+msgid "Localization"
+msgstr "ლოკალიზაცია"
+
+msgid "Autoload"
+msgstr "ავტოჩატვირთვა"
+
+msgid "Plugins"
+msgstr "დამატებები"
+
+msgid "Error loading shader from %s"
+msgstr "%s-დან შეიდერის ჩატვირთვა შეუძლებელია"
+
+msgid "Will create a new shader file."
+msgstr "შეიქმენა ახალი შეიდერის ფაილი."
+
+msgid "Mode:"
+msgstr "რეჟიმი:"
+
+msgid "Built-in Shader:"
+msgstr "ჩაშენებული შეიდერი:"
+
+msgid "Create Shader"
+msgstr "შეიდერის შექმნა"
+
+msgid "New Shader Include..."
+msgstr "ახალი შეიდერის ჩასმა..."
+
+msgid "Load Shader File..."
+msgstr "შეიდერის ფაილის ჩატვირთვა..."
+
+msgid "Load Shader Include File..."
+msgstr "შეიდერის ჩასასმელი ფაილის ჩატვირთვა..."
+
+msgid "Save File"
+msgstr "ფაილის შენახვა"
+
+msgid "Inspect Native Shader Code..."
+msgstr "ადგილობრივი შეიდერის კოდის შემოწმება..."
+
+msgid "Close File"
+msgstr "ფაილის დახურვა"
+
+msgid "Global shader parameter '%s' already exists."
+msgstr "გლობალური შეიდერის პარამეტრი '%s' უკვე არსებობს."
+
+msgid "Reload"
+msgstr "თავიდან ჩატვირთვა"
 
 msgid "Add Input"
 msgstr "შეყვანის დამატება"
@@ -3599,6 +3982,9 @@ msgstr "მსუბუქი"
 msgid "Process"
 msgstr "პროცესი"
 
+msgid "Collide"
+msgstr "შეჯახება"
+
 msgid "Sky"
 msgstr "ცა"
 
@@ -3625,6 +4011,9 @@ msgstr "შეიდერის კვანძის შექმნა"
 
 msgid "Create Shader Varying"
 msgstr "ცვლადი შეიდერის შექმნა"
+
+msgid "Varying Type"
+msgstr "ცვალებადი ტიპი"
 
 msgid "Color function."
 msgstr "ფერის ფუნქცია."
@@ -3698,254 +4087,150 @@ msgstr "4D ვექტორული მუდმივა."
 msgid "Edit Visual Property: %s"
 msgstr "ვიზუალური თვისების ჩასწორება: %s"
 
-msgid "Bake VoxelGI"
-msgstr "VoxelGI-ის გამოცხობა"
+msgctxt "Locale"
+msgid "Script:"
+msgstr "სკრიპტი:"
 
-msgid "Select path for VoxelGI Data File"
-msgstr "აირჩიეთ ბილიკი VoxelGl-ის მონაცემები ფაილამდე"
+msgctxt "Locale"
+msgid "Script"
+msgstr "სკრიპტი"
 
-msgctxt "Application"
-msgid "Project Manager"
-msgstr "პროექტის მმართველი"
+msgid "[Default]"
+msgstr "[ნაგულისხმები]"
 
-msgid "New Project"
-msgstr "ახალი პროექტი"
+msgid "Country:"
+msgstr "ქვეყანა:"
 
-msgid "Import Project"
-msgstr "პროექტის შემოტანა"
+msgid "Country"
+msgstr "ქვეყანა"
 
-msgid "Scan"
-msgstr "სკანირება"
+msgid "Variant"
+msgstr "ვარიანტი"
 
-msgid "Loading, please wait..."
-msgstr "იტვირთება. გთხოვთ, მოითმინოთ..."
+msgid "Previewing: %s"
+msgstr "მინიატურა: %s"
 
-msgid "Create New Project"
-msgstr "ახალი პროექტის შექმნა"
+msgid "Add %d Translation"
+msgid_plural "Add %d Translations"
+msgstr[0] "%d თარგმანის დამატება"
+msgstr[1] "%d თარგმანის დამატება"
 
-msgid "Edit Project"
-msgstr "პროექტის რედაქტირება"
+msgid "Removed"
+msgstr "ამოღებულია"
 
-msgid "Manage Tags"
-msgstr "ჭდეების მართვა"
+msgid "%s cannot be found."
+msgstr "%s ვერ ვიპოვე."
 
-msgid "Remove All"
-msgstr "ყველას გამოერთება"
+msgid "Translations"
+msgstr "თარგმანები"
 
-msgid "Project Tags"
-msgstr "პროექტის ჭდეები"
+msgid "Translations:"
+msgstr "თარგმანები:"
 
-msgid "All Tags"
-msgstr "ყველა ჭდე"
+msgid "POT Generation"
+msgstr "POT-ის გენერაცია"
 
-msgid "Create New Tag"
-msgstr "ახალი ჭდის შექმნა"
+msgid "Generate POT"
+msgstr "POT-ის გენერაცია"
 
-msgid "Couldn't create project directory, check permissions."
-msgstr "პროექტის საქაღალდე ვერ შეიქმნა. შეამოწმეთ წვდომები."
+msgid "Add Built-in Strings to POT"
+msgstr "ჩაშენებული სტრიქონების დამატება POT-სთვის"
 
-msgid "Project Name:"
-msgstr "პროექტის სახელი:"
+msgid "Commit"
+msgstr "კომიტი"
 
-msgid "Renderer:"
-msgstr "რენდერერი:"
+msgid "Open in editor"
+msgstr "რედაქტორში გახსნა"
 
-msgid "Git"
-msgstr "Git"
+msgid "Discard changes"
+msgstr "ცვლილებების გაუქმება"
 
-msgid "Missing Project"
-msgstr "აკლია პროექტი"
+msgid "Staged Changes"
+msgstr "რიგში მყოფი ცვლილებები"
 
-msgid "Restart Now"
-msgstr "ახლა გადატვირთვა"
+msgid "Unstaged Changes"
+msgstr "რიგიდან მოცილებული ცვლილებები"
 
-msgid "Delete Item"
-msgstr "ჩანაწერის წაშლა"
+msgid "Commit:"
+msgstr "კომიტი:"
 
-msgid "(All)"
-msgstr "(ყველა)"
+msgid "Subtitle:"
+msgstr "სუბტიტრები:"
 
-msgid "Localization"
-msgstr "ლოკალიზაცია"
+msgid "Toggle Version Control Bottom Panel"
+msgstr "ვერსიის კონტროლის ქვედა პანელის გადართვა"
 
-msgid "Plugins"
-msgstr "დამატებები"
+msgid "Apply"
+msgstr "გადატარება"
 
-msgid "Prefix:"
-msgstr "პრეფიქსი:"
+msgid "Connect to VCS"
+msgstr "VCS-სთან მიერთება"
 
-msgid "Suffix:"
-msgstr "სუფიქსი:"
+msgid "Remote Login"
+msgstr "დაშორებული შესვლა"
 
-msgid "Node name."
-msgstr "კვანძის სახელი."
+msgid "Detect new changes"
+msgstr "ახალი ცვლილებების აღმოჩენა"
 
-msgid "Node type."
-msgstr "კვანძის ტიპი."
+msgid "Permanentally delete my changes"
+msgstr "ჩემი ცვლილებების სამუდამოდ წაშლა"
 
-msgid "Current scene name."
-msgstr "მიმდინარე სცენის სახელი."
+msgid "Stage all changes"
+msgstr "ყველა ცვლილებების ინდექსირება"
 
-msgid "Root node name."
-msgstr "ძირითადი კვანძის სახელი."
+msgid "Commit Message"
+msgstr "კომიტის კომენტარი"
 
-msgid "Step"
-msgstr "ბიჯი"
+msgid "Commit Changes"
+msgstr "ცვლილებების გადაცემა"
 
-msgid "Padding"
-msgstr "შევსება"
+msgid "Branches"
+msgstr "ბრენჩები"
 
-msgid "Style"
-msgstr "სტილი"
+msgid "Create New Branch"
+msgstr "ახალი ბრენჩის შექმნა"
 
-msgid "Case"
-msgstr "რეგისტრი"
+msgid "Remove Branch"
+msgstr "ბრენჩის წაშლა"
 
-msgid "Reset"
-msgstr "დაბრუნება"
+msgid "Remotes"
+msgstr "დაშორებულები"
 
-msgid "Select new parent:"
-msgstr "აირჩიეთ ახალი მშობელი:"
+msgid "Create New Remote"
+msgstr "ახალი დაშორებულის შექმნა"
 
-msgid "Run Instances"
-msgstr "გაშვებული ასლების გაშვება"
+msgid "Remote Name"
+msgstr "დაშორებულის სახელი"
 
-msgid "Pick Root Node Type"
-msgstr "აირჩიეთ ძირითადი კვანძის ტიპი"
+msgid "Remote URL"
+msgstr "დაშორებული URL"
 
-msgid "Scene name is empty."
-msgstr "სცენის სახელი ცარიელია."
+msgid "Fetch"
+msgstr "გამოთხოვა"
 
-msgid "File name invalid."
-msgstr "ფაილის სახელი არასწორია."
+msgid "Pull"
+msgstr "მიღება"
 
-msgid "File already exists."
-msgstr "ფაილი უკვე არსებობს."
+msgid "Push"
+msgstr "გადაცემა"
 
-msgid "Root Type:"
-msgstr "ფესვის ტიპი:"
+msgid "Force Push"
+msgstr "ძალით დაპუშვა"
 
-msgid "3D Scene"
-msgstr "3D სცენა"
+msgid "Modified"
+msgstr "შეიცვალა"
 
-msgid "User Interface"
-msgstr "სამომხმარებლო ინტერფეისი"
+msgid "Renamed"
+msgstr "გადარქმეულია"
 
-msgid "Scene Name:"
-msgstr "სცენის სახელი:"
+msgid "Deleted"
+msgstr "წაშლილია"
 
-msgid "Root Name:"
-msgstr "ძირითადის სახელი:"
+msgid "Split"
+msgstr "გაყოფა"
 
-msgid "Scene name is valid."
-msgstr "სცენის სახელი სწორია."
-
-msgid "Root node valid."
-msgstr "ძირითადი კვანძი სწორია."
-
-msgid "Error instantiating scene from %s"
-msgstr "%s-დან სცენის ინსტანცირების შეცდომა"
-
-msgid "Instantiate Scene"
-msgid_plural "Instantiate Scenes"
-msgstr[0] "სცენის ინსტანცირება"
-msgstr[1] "სცენების ინსტანცირება"
-
-msgid "Delete %d nodes?"
-msgstr "წავშალო %d კვანძი?"
-
-msgid "Delete node \"%s\"?"
-msgstr "წავშალო კვანძი \"%s\"?"
-
-msgid "Filters"
-msgstr "ფილტრები"
-
-msgid "Reparent to New Node"
-msgstr "მშობლობის ახალ კვანძზე გადატანა"
-
-msgid "Filter by Type"
-msgstr "ტიპით გაფილტვრა"
-
-msgid "Filter by Group"
-msgstr "ჯგუფით გაფილტვრა"
-
-msgid "Selects all Nodes of the given type."
-msgstr "მითითებული ტიპის ყველა კვანძის მონიშვნა."
-
-msgid "Paste Node(s) as Child of %s"
-msgstr "კვანძების %s-ის შვილების სახით ჩასმა"
-
-msgid "<Unnamed> at %s"
-msgstr "<უსახელო> მისამართზე %s"
-
-msgid "Batch Rename..."
-msgstr "ერთდროული სახელის გადარქმევა..."
-
-msgid "Add Child Node..."
-msgstr "შვილი კვანძის დამატება..."
-
-msgid "Instantiate Child Scene..."
-msgstr "შვილი სცენის წარმოდგენა..."
-
-msgid "Change Type..."
-msgstr "ტიპის შეცვლა..."
-
-msgid "Attach Script..."
-msgstr "სკრიპტის მიმაგრება..."
-
-msgid "Reparent to New Node..."
-msgstr "მშობლობის ახალ კვანძზე გადატანა..."
-
-msgid "Add/Create a New Node."
-msgstr "ახალი კვანის დამატება/შექმნა."
-
-msgid "Extra scene options."
-msgstr "დამატებითი სცენის პარამეტრები."
-
-msgid "Local"
-msgstr "ლოკალური"
-
-msgid "Path is empty."
-msgstr "ბილიკი ცარიელია."
-
-msgid "Filename is empty."
-msgstr "ფაილის სახელი ცარიელია."
-
-msgid "Filename is invalid."
-msgstr "ფაილის სახელია არასწორია."
-
-msgid "Template:"
-msgstr "შაბლონი:"
-
-msgid "Open Script"
-msgstr "სკრიპტის გახსნა"
-
-msgid "Inherit"
-msgstr "მემკვიდრეობით"
-
-msgid "Using existing script file."
-msgstr "გამოიყენება არსებული სკრიპტის ფაილი."
-
-msgid "Will create a new script file."
-msgstr "შეიქმნება ახალი სკრიპტის ფაილი."
-
-msgid "Built-in Script:"
-msgstr "ჩაშენებული სკრიპტი:"
-
-msgid "Error loading shader from %s"
-msgstr "%s-დან შეიდერის ჩატვირთვა შეუძლებელია"
-
-msgid "Will create a new shader file."
-msgstr "შეიქმენა ახალი შეიდერის ფაილი."
-
-msgid "Built-in Shader:"
-msgstr "ჩაშენებული შეიდერი:"
-
-msgid "Create Shader"
-msgstr "შეიდერის შექმნა"
-
-msgid "Global shader parameter '%s' already exists."
-msgstr "გლობალური შეიდერის პარამეტრი '%s' უკვე არსებობს."
+msgid "Unified"
+msgstr "გაერთიანებული"
 
 msgid "Cannot instantiate GDScript class."
 msgstr "GDScript-ს კლასის ინსტანცირება შეუძლებელია."
@@ -3975,6 +4260,9 @@ msgstr "წინას შენარჩუნება:"
 msgid "Denoising %d%%"
 msgstr "ხმაურის მოშორება %d%%"
 
+msgid "Denoising"
+msgstr "ხმაურის მოშორება"
+
 msgid "Class name must be a valid identifier"
 msgstr "კლასის სახელი სწორ იდენტიფიკატორს უნდა წარმოადგენდეს"
 
@@ -3995,6 +4283,9 @@ msgstr "რაოდენობა"
 msgid "Not possible to add a new property to synchronize without a root."
 msgstr ""
 "ძირითადის გარეშე ახალი დასასინქრონიზებელი თვისების დამატება შეუძლებელია."
+
+msgid "Replicate"
+msgstr "რეპლიკაცია"
 
 msgid "Invalid property path: '%s'"
 msgstr "არასწორი თვისების ბილიკი: \"%s\""
@@ -4032,6 +4323,9 @@ msgstr "პროფილის დამატება"
 msgid "Add action"
 msgstr "ქმედების დამატება"
 
+msgid "Fold"
+msgstr "დაკეცვა"
+
 msgid "Add action."
 msgstr "ქმედების დამატება."
 
@@ -4064,6 +4358,9 @@ msgstr "გატანის ფაილის კოპირება და
 
 msgid "Adding files..."
 msgstr "ფაილების დამატება..."
+
+msgid "Export Icons"
+msgstr "ხატულების გატანა"
 
 msgid "Debug Script Export"
 msgstr "გამართვის სკრიპტის გატანა"
@@ -4155,6 +4452,9 @@ msgstr "ანიმაცია ვერ ვიპოვე: '%s'"
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "არაფერია შეერთებული შეყვანაში '%s' კვანძისთვის '%s'."
 
+msgid "Load existing color palette."
+msgstr "არსებული ფერის პალიტრის ჩატვირთვა."
+
 msgid "Default Color"
 msgstr "ნაგულისხმები ფერი"
 
@@ -4197,14 +4497,11 @@ msgstr "დუბლირებული არჩევანის ჭდე:
 msgid "Invalid shader type. Valid types are: %s"
 msgstr "არასწორი შეიდერის ტიპი. სწორი ტიპებია: %s"
 
-msgid "Duplicated render mode: '%s'."
-msgstr "დუბლირებული რენდერის რეჟიმი: '%s'."
-
-msgid "Invalid render mode: '%s'."
-msgstr "არასწორი რენდერის რეჟიმი: '%s'."
-
 msgid "Unexpected token: '%s'."
 msgstr "მოულოდნელი კოდი: '%s'."
+
+msgid "Expected a valid numeric expression after ','."
+msgstr "მოველოდი სწორ რიცხვით გამოსახულებას ','-ის შემდეგ."
 
 msgid "Expected ',' or ')' after string constant."
 msgstr "მოველოდი ','-ს, ან ')'-ს სტრიქონი კონსტანტის შემდეგ."
@@ -4217,6 +4514,12 @@ msgstr "დუბლირებული გამეორების რე�
 
 msgid "Expected a '{' to begin function."
 msgstr "ფუნქციის დასაწყისთან '{'-ს მოველოდი."
+
+msgid "Duplicated render mode: '%s'."
+msgstr "დუბლირებული რენდერის რეჟიმი: '%s'."
+
+msgid "Invalid render mode: '%s'."
+msgstr "არასწორი რენდერის რეჟიმი: '%s'."
 
 msgid "Expected a '%s' or '%s'."
 msgstr "მოველოდი '%s'-ს ან '%s'-ს."
