@@ -1630,7 +1630,7 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 		} while (match(GDScriptTokenizer::Token::COMMA));
 #if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 		if (current_class && p_function->identifier && p_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
-			current_class->constructor_default_status = any_required ?  ClassNode::CONSTRUCTOR_REQUIRES_PARAMETERS : ClassNode::HAS_SAFE_CONSTRUCTOR;
+			current_class->constructor_default_status = any_required ? ClassNode::CONSTRUCTOR_REQUIRES_PARAMETERS : ClassNode::HAS_SAFE_CONSTRUCTOR;
 		}
 #endif
 	}
