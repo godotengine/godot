@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ButtonGroup" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="ButtonGroup" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd" keywords="radio">
 	<brief_description>
 		A group of buttons that doesn't allow more than one button to be pressed at a time.
 	</brief_description>
 	<description>
 		A group of [BaseButton]-derived buttons. The buttons in a [ButtonGroup] are treated like radio buttons: No more than one button can be pressed at a time. Some types of buttons (such as [CheckBox]) may have a special appearance in this state.
 		Every member of a [ButtonGroup] should have [member BaseButton.toggle_mode] set to [code]true[/code].
+		[b]Creating from the editor:[/b] To create a [ButtonGroup] with several buttons in one go, select all the [BaseButton]-derived nodes you want to group, then click the resource dropdown property for [b]Button Group[/b] in the inspector and choose [b]New ButtonGroup[/b]. This will create a single [ButtonGroup] instance shared across all selected buttons. To add more buttons to the [ButtonGroup] later, use the [b]Copy[/b] action on the [b]Button Group[/b] resource dropdown, then select another [BaseButton]-derived node and use the [b]Paste[/b] action on its [b]Button Group[/b] resource dropdown.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -14,6 +15,7 @@
 			<return type="BaseButton[]" />
 			<description>
 				Returns an [Array] of [Button]s who have this as their [ButtonGroup] (see [member BaseButton.button_group]).
+				[b]Note:[/b] There is no equivalent [code]set_buttons()[/code] method, as new buttons are added by setting the [member BaseButton.button_group] property of the button instead. See this class' description for instructions on adding buttons to a group from the editor.
 			</description>
 		</method>
 		<method name="get_pressed_button">
@@ -25,7 +27,7 @@
 	</methods>
 	<members>
 		<member name="allow_unpress" type="bool" setter="set_allow_unpress" getter="is_allow_unpress" default="false">
-			If [code]true[/code], it is possible to unpress all buttons in this [ButtonGroup].
+			If [code]true[/code], it is possible to unpress all buttons in this [ButtonGroup]. If [code]false[/code], one button must always be pressed (except in the initial state where no button may be pressed).
 		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="true" />
 	</members>
