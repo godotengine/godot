@@ -3485,9 +3485,9 @@ PackedStringArray Node::get_configuration_warnings() const {
 	}
 
 #ifdef TOOLS_ENABLED
-	Variant script = get_script();
-	if (!script.is_null()) {
-		Script *scr = Object::cast_to<Script>(script);
+	Variant vscript = get_script();
+	if (!vscript.is_null()) {
+		Script *scr = Object::cast_to<Script>(vscript);
 		if (!scr->has_default_constructor()) {
 			ret.append(vformat(R"(Script class "%s" has no default constructor. Node will not load correctly.)", scr->get_global_name()));
 		}

@@ -1581,7 +1581,9 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum(bool p_is_static) {
 bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNode *p_body, const String &p_type, int p_signature_start) {
 	if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
 		bool default_used = false;
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 		bool any_required = false;
+#endif
 		do {
 			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 				// Allow for trailing comma.
@@ -1614,7 +1616,9 @@ bool GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 					push_error("Cannot have mandatory parameters after optional parameters.");
 					continue;
 				}
+#if defined(TOOLS_ENABLED) || defined(DEBUG_ENABLED)
 				any_required = true;
+#endif
 			}
 
 			if (p_function->parameters_indices.has(parameter->identifier->name)) {
