@@ -76,6 +76,7 @@ private:
 			xform_change;
 
 	RID canvas_item;
+	RID debug_canvas_item;
 	StringName canvas_group;
 
 	CanvasLayer *canvas_layer = nullptr;
@@ -354,6 +355,14 @@ public:
 	_FORCE_INLINE_ RID get_canvas_item() const {
 		return canvas_item;
 	}
+#ifdef DEBUG_ENABLED
+	_FORCE_INLINE_ RID _get_debug_canvas_item() const {
+		return debug_canvas_item;
+	}
+	void _init_debug_canvas_item();
+	void _update_debug_canvas_item_transform();
+	void _set_debug_canvas_item_visible(bool p_visible);
+#endif // DEBUG_ENABLED
 
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;
