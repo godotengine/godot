@@ -18,7 +18,7 @@ if env["builtin_sdl"]:
     # Common sources.
 
     env_sdl.Prepend(
-        CPPPATH=[
+        CPPEXTPATH=[
             thirdparty_dir,
             thirdparty_dir + "include",
             thirdparty_dir + "include/build_config",
