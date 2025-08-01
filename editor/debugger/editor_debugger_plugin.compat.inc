@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  debugger_editor_plugin.h                                              */
+/*  editor_debugger_plugin.compat.inc                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,51 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "editor/plugins/editor_plugin.h"
+void EditorDebuggerSession::_set_breakpoint_100516(const String &p_path, int p_line, bool p_breakpointed) {
+	return set_breakpoint(p_path, p_line, p_breakpointed);
+}
 
-class EditorFileServer;
-class MenuButton;
-class PopupMenu;
-class RunInstancesDialog;
+void EditorDebuggerSession::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_breakpoint", "path", "line", "breakpointed"), &EditorDebuggerSession::_set_breakpoint_100516);
+}
 
-class DebuggerEditorPlugin : public EditorPlugin {
-	GDCLASS(DebuggerEditorPlugin, EditorPlugin);
-
-private:
-	PopupMenu *debug_menu = nullptr;
-	EditorFileServer *file_server = nullptr;
-	RunInstancesDialog *run_instances_dialog = nullptr;
-
-	enum MenuOptions {
-		RUN_FILE_SERVER,
-		RUN_LIVE_DEBUG,
-		RUN_DEBUG_COLLISIONS,
-		RUN_DEBUG_PATHS,
-		RUN_DEBUG_NAVIGATION,
-		RUN_DEBUG_AVOIDANCE,
-		RUN_DEBUG_CANVAS_REDRAW,
-		RUN_DEPLOY_REMOTE_DEBUG,
-		RUN_RELOAD_SCRIPTS,
-		SERVER_KEEP_OPEN,
-		RUN_MULTIPLE_INSTANCES,
-	};
-
-	bool initializing = true;
-
-	void _update_debug_options();
-	void _notification(int p_what);
-	void _menu_option(int p_option);
-
-public:
-	virtual String get_plugin_name() const override { return "Debugger"; }
-
-	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
-	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
-
-	bool has_main_screen() const override { return false; }
-
-	DebuggerEditorPlugin(PopupMenu *p_menu);
-	~DebuggerEditorPlugin();
-};
+#endif

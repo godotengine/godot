@@ -98,6 +98,7 @@ private:
 
 	ErrorMessage _create_overflow_error(const String &p_what, const String &p_descr);
 	Error _put_msg(const String &p_message, const Array &p_data);
+	void _get_input_map(ScriptLanguage *p_script_lang, int p_frame, PackedStringArray *p_names, Array *p_vals) const;
 
 	bool is_peer_connected() { return peer->is_peer_connected(); }
 	void flush_output();
