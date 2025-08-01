@@ -30,13 +30,15 @@
 
 #pragma once
 
-#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/tree.h"
 
 class EditorFileDialog;
 class EditorFileSystemDirectory;
+class ItemList;
+class PopupMenu;
+class Tree;
+class TreeItem;
+class VBoxContainer;
 
 class DependencyEditor : public AcceptDialog {
 	GDCLASS(DependencyEditor, AcceptDialog);
@@ -135,17 +137,20 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
-private:
 	String for_file;
-	Mode mode;
-	Button *fdep = nullptr;
-	Label *text = nullptr;
+
 	Tree *files = nullptr;
+	DependencyEditor *deps_editor = nullptr;
+	bool force_open = false;
+
 	void ok_pressed() override;
-	void custom_action(const String &) override;
+
+	void _on_files_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
+	void _check_for_resolved();
 
 public:
-	void show(const String &p_for_file, const Vector<String> &report);
+	void show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report);
+
 	DependencyErrorDialog();
 };
 
