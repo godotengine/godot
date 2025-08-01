@@ -301,6 +301,7 @@ void PathFollow3D::update_transform() {
 			const Basis twist(tangent, tilt);
 			t.basis = twist * t.basis;
 		}
+		t.basis.orthonormalize();
 	}
 
 	// Apply offset and scale.
