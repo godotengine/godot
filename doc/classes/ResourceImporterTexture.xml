@@ -151,6 +151,10 @@
 			- In 2D, a [CanvasItemMaterial] will need to be created and configured to use the [constant CanvasItemMaterial.BLEND_MODE_PREMULT_ALPHA] blend mode on [CanvasItem]s that use this texture. In custom [code]@canvas_item[/code] shaders, [code]render_mode blend_premul_alpha;[/code] should be used.
 			- In 3D, a [BaseMaterial3D] will need to be created and configured to use the [constant BaseMaterial3D.BLEND_MODE_PREMULT_ALPHA] blend mode on materials that use this texture. In custom [code]spatial[/code] shaders, [code]render_mode blend_premul_alpha;[/code] should be used.
 		</member>
+		<member name="process/resolution_scale" type="float" setter="" getter="" default="1.0">
+			Scales the texture resolution without affecting the size-related properties of the [Texture2D] that are used rendering and scripting. Lower values significantly reduce image disk size and VRAM usage and reduce image quality because of downscaling.
+			[b]Note:[/b] This will cause [method RenderingServer.texture_2d_get] to return a downscaled image, and affect the performance of [method Texture2D.get_image] because it returns an image upscaled to the original size.
+		</member>
 		<member name="process/size_limit" type="int" setter="" getter="" default="0">
 			If set to a value greater than [code]0[/code], the size of the texture is limited on import to a value smaller than or equal to the value specified here. For non-square textures, the size limit affects the longer dimension, with the shorter dimension scaled to preserve aspect ratio. Resizing is performed using cubic interpolation.
 			This can be used to reduce memory usage without affecting the source images, or avoid issues with textures not displaying on mobile/web platforms (as these usually can't display textures larger than 4096×4096).
