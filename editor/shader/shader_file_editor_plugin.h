@@ -69,7 +69,6 @@ class ShaderFileEditorPlugin : public EditorPlugin {
 	GDCLASS(ShaderFileEditorPlugin, EditorPlugin);
 
 	ShaderFileEditor *shader_editor = nullptr;
-	Button *button = nullptr;
 
 public:
 	virtual String get_plugin_name() const override { return "ShaderFile"; }
