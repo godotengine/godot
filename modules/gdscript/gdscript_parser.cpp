@@ -915,7 +915,7 @@ void GDScriptParser::parse_extends() {
 
 	if (match(GDScriptTokenizer::Token::LITERAL)) {
 		if (previous.literal.get_type() == Variant::STRING) {
-			current_class->extends_path = ResourceUID::ensure_path(previous.literal);
+			current_class->extends_path = previous.literal;
 		} else {
 			push_error(vformat(R"(Only strings or identifiers can be used after "extends", found "%s" instead.)", Variant::get_type_name(previous.literal.get_type())));
 		}
