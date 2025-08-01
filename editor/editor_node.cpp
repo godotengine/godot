@@ -578,7 +578,7 @@ void EditorNode::_update_translations() {
 	if (main->is_enabled()) {
 		// Check for the exact locale.
 		// `get_potential_translations("zh_CN")` could return translations for "zh".
-		if (main->get_loaded_locales().has(main->get_locale_override())) {
+		if (main->has_translation_for_locale(main->get_locale_override())) {
 			// The set of translation resources for the current locale changed.
 			const HashSet<Ref<Translation>> translations = main->get_potential_translations(main->get_locale_override());
 			if (translations != tracked_translations) {

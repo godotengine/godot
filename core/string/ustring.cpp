@@ -5932,7 +5932,7 @@ Vector<uint8_t> String::to_multibyte_char_buffer(const String &p_encoding) const
  */
 String TTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->tool_translate(p_text, p_context);
+		return TranslationServer::get_singleton()->get_editor_domain()->translate(p_text, p_context);
 	}
 
 	return p_text;
@@ -5952,7 +5952,7 @@ String TTR(const String &p_text, const String &p_context) {
  */
 String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
+		return TranslationServer::get_singleton()->get_editor_domain()->translate_plural(p_text, p_text_plural, p_n, p_context);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
@@ -5973,7 +5973,7 @@ String DTR(const String &p_text, const String &p_context) {
 	const String text = p_text.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return String(TranslationServer::get_singleton()->doc_translate(text, p_context)).replace("$DOCS_URL", GODOT_VERSION_DOCS_URL);
+		return String(TranslationServer::get_singleton()->get_doc_domain()->translate(text, p_context)).replace("$DOCS_URL", GODOT_VERSION_DOCS_URL);
 	}
 
 	return text.replace("$DOCS_URL", GODOT_VERSION_DOCS_URL);
@@ -5990,7 +5990,7 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 	const String text_plural = p_text_plural.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return String(TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context)).replace("$DOCS_URL", GODOT_VERSION_DOCS_URL);
+		return String(TranslationServer::get_singleton()->get_doc_domain()->translate_plural(text, text_plural, p_n, p_context)).replace("$DOCS_URL", GODOT_VERSION_DOCS_URL);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
@@ -6014,11 +6014,13 @@ String DTRN(const String &p_text, const String &p_text_plural, int p_n, const St
  */
 String RTR(const String &p_text, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		String rtr = TranslationServer::get_singleton()->tool_translate(p_text, p_context);
-		if (rtr.is_empty() || rtr == p_text) {
-			return TranslationServer::get_singleton()->translate(p_text, p_context);
+#ifdef TOOLS_ENABLED
+		String rtr = TranslationServer::get_singleton()->get_editor_domain()->translate(p_text, p_context);
+		if (!rtr.is_empty() && rtr != p_text) {
+			return rtr;
 		}
-		return rtr;
+#endif // TOOLS_ENABLED
+		return TranslationServer::get_singleton()->translate(p_text, p_context);
 	}
 
 	return p_text;
@@ -6037,11 +6039,13 @@ String RTR(const String &p_text, const String &p_context) {
  */
 String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
-		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
-			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
+#ifdef TOOLS_ENABLED
+		String rtr = TranslationServer::get_singleton()->get_editor_domain()->translate_plural(p_text, p_text_plural, p_n, p_context);
+		if (!rtr.is_empty() && rtr != p_text && rtr != p_text_plural) {
+			return rtr;
 		}
-		return rtr;
+#endif // TOOLS_ENABLED
+		return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
