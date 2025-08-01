@@ -41,16 +41,32 @@ void GraphNode::_resort() {
 	Ref<StyleBox> sb_panel = theme_cache.panel;
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
+	// Grab sb_panel margins once to avoid null check spam
+	float sb_panel_margins[4] = { 0, 0, 0, 0 };
+	if (sb_panel.is_valid()) {
+		sb_panel_margins[SIDE_LEFT] = sb_panel->get_margin(SIDE_LEFT);
+		sb_panel_margins[SIDE_TOP] = sb_panel->get_margin(SIDE_TOP);
+		sb_panel_margins[SIDE_RIGHT] = sb_panel->get_margin(SIDE_RIGHT);
+		sb_panel_margins[SIDE_BOTTOM] = sb_panel->get_margin(SIDE_BOTTOM);
+	}
+
 	// Resort titlebar first.
-	if (!hide_title) {
+	if (!title_hidden) {
 		Size2 titlebar_size = Size2(new_size.width, titlebar_hbox->get_size().height);
-		titlebar_size -= sb_titlebar->get_minimum_size();
-		Rect2 titlebar_rect = Rect2(sb_titlebar->get_offset(), titlebar_size);
+		Point2 titlebar_pos = Point2();
+		if (sb_titlebar.is_valid()) {
+			titlebar_size -= sb_titlebar->get_minimum_size();
+			titlebar_pos = sb_titlebar->get_offset();
+		}
+		Rect2 titlebar_rect = Rect2(titlebar_pos, titlebar_size);
 		fit_child_in_rect(titlebar_hbox, titlebar_rect);
 	}
 
 	// After resort, the children of the titlebar container may have changed their height (e.g. Label autowrap).
 	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
+	if (sb_titlebar.is_valid()) {
+		titlebar_min_size.height += sb_titlebar->get_minimum_size().height;
+	}
 
 	// First pass, determine minimum size AND amount of stretchable elements.
 	int separation = theme_cache.separation;
@@ -91,9 +107,9 @@ void GraphNode::_resort() {
 	// Avoid negative stretch space.
 	stretch_diff = MAX(stretch_diff, 0);
 
-	available_stretch_space += stretch_diff - sb_panel->get_margin(SIDE_BOTTOM) - sb_panel->get_margin(SIDE_TOP);
-	if (!hide_title) {
-		available_stretch_space -= titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
+	available_stretch_space += stretch_diff - sb_panel_margins[SIDE_BOTTOM] - sb_panel_margins[SIDE_TOP];
+	if (!title_hidden) {
+		available_stretch_space -= titlebar_min_size.height;
 	}
 
 	// Second pass, discard elements that can't be stretched, this will run while stretchable elements exist.
@@ -135,11 +151,11 @@ void GraphNode::_resort() {
 
 	// Final pass, draw and stretch elements.
 
-	int ofs_y = sb_panel->get_margin(SIDE_TOP);
-	if (!hide_title) {
-		ofs_y += titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
+	int ofs_y = sb_panel_margins[SIDE_TOP];
+	if (!title_hidden) {
+		ofs_y += titlebar_min_size.height;
 	}
-	int width = new_size.width - sb_panel->get_minimum_size().width;
+	int width = new_size.width - (sb_panel.is_valid() ? sb_panel->get_minimum_size().width : 0);
 	int valid_children_idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -158,11 +174,11 @@ void GraphNode::_resort() {
 
 		// Adjust so the last valid child always fits perfect, compensating for numerical imprecision.
 		if (msc.will_stretch && valid_children_idx == children_count - 1) {
-			to_y_pos = new_size.height - sb_panel->get_margin(SIDE_BOTTOM);
+			to_y_pos = new_size.height - sb_panel_margins[SIDE_BOTTOM];
 		}
 
 		int height = to_y_pos - from_y_pos;
-		float margin = sb_panel->get_margin(SIDE_LEFT);
+		float margin = sb_panel_margins[SIDE_LEFT];
 		float final_width = width;
 		Rect2 rect(margin, from_y_pos, final_width, height);
 		fit_child_in_rect(child, rect);
@@ -354,28 +370,32 @@ void GraphNode::_notification(int p_what) {
 			int port_h_offset = theme_cache.port_h_offset;
 
 			Size2 body_size = get_size();
-			Rect2 body_rect(0, 0, body_size.width, body_size.height);
 
-			// Draw title bar stylebox above and push body rect down, if title is visible
-			if (!hide_title) {
-				Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
-				titlebar_rect.size.width = body_size.width;
-				body_size.height -= titlebar_rect.size.height;
-				body_size.y += titlebar_rect.size.height;
-				draw_style_box(sb_to_draw_titlebar, titlebar_rect);
-			}
+			Rect2 titlebar_rect(Point2(), Size2(body_size.width, titlebar_hbox->get_size().y + (sb_titlebar.is_valid() ? sb_titlebar->get_minimum_size().y : 0)));
+			// Push body rect down if title is visible
+			int title_size = title_hidden ? 0 : titlebar_rect.size.height;
+
+			Rect2 body_rect(0, title_size, body_size.width, body_size.height - title_size);
 
 			// Draw body (slots area) stylebox.
-			draw_style_box(sb_to_draw_panel, body_rect);
+			if (sb_to_draw_panel.is_valid()) {
+				draw_style_box(sb_to_draw_panel, body_rect);
+			}
+
+			if (!title_hidden && sb_to_draw_titlebar.is_valid()) {
+				// Draw title bar stylebox above body
+				draw_style_box(sb_to_draw_titlebar, titlebar_rect);
+			}
 
 			//int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			// Take ports into account
-			if (selected_port) {
+			if (selected_port && sb_port_selected.is_valid()) {
 				Size2i port_sz = selected_port->get_size();
 				Vector2 port_pos = selected_port->get_position();
-				draw_style_box(sb_port_selected, Rect2i(port_pos.x + port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-				draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+				int panel_top_margin = sb_panel.is_valid() ? sb_panel->get_margin(SIDE_TOP) : 0;
+				draw_style_box(sb_port_selected, Rect2i(port_pos.x + port_h_offset - port_sz.x, port_pos.y + panel_top_margin - port_sz.y, port_sz.x * 2, port_sz.y * 2));
+				draw_style_box(sb_port_selected, Rect2i(port_pos.x + get_size().x - port_h_offset - port_sz.x, port_pos.y + panel_top_margin - port_sz.y, port_sz.x * 2, port_sz.y * 2));
 			}
 
 			if (resizable) {
@@ -521,7 +541,6 @@ void GraphNode::_port_modified() {
 	_port_rebuild_cache();
 	port_pos_dirty = true;
 	callable_mp(this, &GraphNode::_queue_update_port_positions).call_deferred();
-	notify_property_list_changed();
 	emit_signal(SNAME("ports_updated"), this);
 }
 
@@ -703,7 +722,7 @@ Size2 GraphNode::get_minimum_size() const {
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
 	int separation = theme_cache.separation;
-	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = title_hidden ? Size2(0, 0) : (titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size());
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -811,15 +830,15 @@ String GraphNode::get_title() const {
 }
 
 void GraphNode::set_hide_title(bool p_hide) {
-	hide_title = p_hide;
-	titlebar_hbox->set_visible(!hide_title);
+	title_hidden = p_hide;
+	titlebar_hbox->set_visible(!title_hidden);
 
 	port_pos_dirty = true;
 	_deferred_resort();
 }
 
 bool GraphNode::is_title_hidden() const {
-	return hide_title;
+	return title_hidden;
 }
 
 HBoxContainer *GraphNode::get_titlebar_hbox() const {
@@ -1075,7 +1094,7 @@ GraphNode::GraphNode() {
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	titlebar_hbox->add_child(title_label);
 
-	titlebar_hbox->set_visible(!hide_title);
+	titlebar_hbox->set_visible(!title_hidden);
 
 	connect("replacing_by", callable_mp(this, &GraphNodeIndexed::_on_replacing_by));
 

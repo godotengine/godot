@@ -61,7 +61,7 @@ protected:
 	HBoxContainer *titlebar_hbox = nullptr;
 	Label *title_label = nullptr;
 	String title;
-	bool hide_title = false;
+	bool title_hidden = false;
 
 	Vector<GraphPort *> ports;
 	GraphPort *selected_port = nullptr;

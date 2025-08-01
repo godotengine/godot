@@ -439,7 +439,7 @@ void GraphNodeIndexed::_update_port_positions() {
 
 	// This helps to immediately achieve the initial y "original point" of the slots, which the sum of the titlebar height and the top margin of the panel.
 	int vertical_ofs = (sb_panel.is_valid() ? sb_panel->get_margin(SIDE_TOP) : 0);
-	if (!hide_title) {
+	if (!title_hidden) {
 		vertical_ofs += titlebar_hbox->get_size().height + (sb_titlebar.is_valid() ? sb_titlebar->get_minimum_size().height : 0);
 	}
 
@@ -659,7 +659,8 @@ Size2 GraphNodeIndexed::get_minimum_size() const {
 	Ref<StyleBox> sb_slot = theme_cache.slot;
 
 	int separation = theme_cache.separation;
-	Size2 minsize = hide_title ? Size2(0, 0) : titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = title_hidden ? Size2(0, 0) : titlebar_hbox->get_minimum_size() + (sb_titlebar.is_valid() ? sb_titlebar->get_minimum_size() : Size2(0, 0));
+	Size2 panel_min_size = sb_panel.is_valid() ? sb_panel->get_minimum_size() : Size2(0, 0);
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
@@ -668,10 +669,10 @@ Size2 GraphNodeIndexed::get_minimum_size() const {
 		}
 
 		Size2i size = child->get_combined_minimum_size();
-		size.width += sb_panel->get_minimum_size().width;
+		size.width += panel_min_size.width;
 
-		if (i < slots.size()) {
-			size += slots[i].draw_stylebox ? sb_slot->get_minimum_size() : Size2();
+		if (i < slots.size() && sb_slot.is_valid() && slots[i].draw_stylebox) {
+			size += sb_slot->get_minimum_size();
 		}
 
 		minsize.height += size.height;
@@ -682,7 +683,7 @@ Size2 GraphNodeIndexed::get_minimum_size() const {
 		}
 	}
 
-	minsize.height += sb_panel->get_minimum_size().height;
+	minsize.height += panel_min_size.height;
 
 	return minsize;
 }
