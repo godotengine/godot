@@ -30,6 +30,8 @@
 
 #pragma once
 
+// COLIN: LEAVING A NOTE HERE FOR MYSELF TO REMIND MYSELF - VISUAL TEXTURE_BLIT SHADER EDITOR?
+
 #include "core/string/string_builder.h"
 #include "core/templates/safe_refcount.h"
 #include "scene/gui/control.h"
@@ -53,6 +55,7 @@ public:
 		TYPE_PROCESS_CUSTOM,
 		TYPE_SKY,
 		TYPE_FOG,
+		TYPE_TEXTURE_BLIT,
 		TYPE_MAX
 	};
 
