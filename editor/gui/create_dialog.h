@@ -46,6 +46,11 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
+	enum AbstractMode {
+		ABSTRACT_MODE_CREATE,
+		ABSTRACT_MODE_INHERIT,
+	};
+
 	struct TypeInfo {
 		StringName type_name;
 		PackedStringArray search_keywords;
@@ -58,6 +63,7 @@ class CreateDialog : public ConfirmationDialog {
 	bool is_base_type_node = false;
 	String icon_fallback;
 	String preferred_search_result_type;
+	AbstractMode abstract_mode = ABSTRACT_MODE_CREATE;
 
 	Button *favorite = nullptr;
 	Vector<String> favorite_list;
@@ -125,6 +131,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type) { preferred_search_result_type = p_preferred_type; }
 
 	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_current_type = "", const String &p_current_name = "");
+	void for_inherit();
 
 	CreateDialog();
 };
