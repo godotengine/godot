@@ -527,12 +527,6 @@ void SoftBody3D::_update_soft_mesh() {
 	}
 
 	RID mesh_rid = mesh->get_rid();
-	if (owned_mesh != mesh_rid) {
-		_become_mesh_owner();
-		mesh_rid = mesh->get_rid();
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
-	}
-
 	if (!rendering_server_handler->is_ready(mesh_rid)) {
 		rendering_server_handler->prepare(mesh_rid, 0);
 		PhysicsServer3D::get_singleton()->soft_body_set_transform(physics_rid, get_global_transform());
@@ -564,24 +558,14 @@ void SoftBody3D::_commit_soft_mesh(real_t p_interpolation_fraction) {
 
 void SoftBody3D::_prepare_physics_server() {
 #ifdef TOOLS_ENABLED
+	// We do not perform soft body physics simulations in the editor
 	if (Engine::get_singleton()->is_editor_hint()) {
-		if (mesh.is_valid()) {
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh->get_rid());
-		} else {
-			PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
-		}
-
 		return;
 	}
 #endif
 
 	if (mesh.is_valid() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
-		RID mesh_rid = mesh->get_rid();
-		if (owned_mesh != mesh_rid) {
-			_become_mesh_owner();
-			mesh_rid = mesh->get_rid();
-		}
-		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh_rid);
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, mesh->get_rid());
 		set_process_internal(is_physics_interpolated_and_enabled());
 		set_physics_process_internal(true);
 	} else {
@@ -591,17 +575,36 @@ void SoftBody3D::_prepare_physics_server() {
 	}
 }
 
-void SoftBody3D::_become_mesh_owner() {
-	Vector<Ref<Material>> copy_materials;
-	copy_materials.append_array(surface_override_materials);
+void SoftBody3D::set_mesh(const Ref<Mesh> &p_mesh) {
+	if (p_mesh.is_null()) {
+		MeshInstance3D::set_mesh(nullptr);
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
+		return;
+	}
 
-	ERR_FAIL_COND(!mesh->get_surface_count());
+	// We only support meshes where surface 0 is a PRIMITIVE_TRIANGLES surface
+	if ((p_mesh->get_surface_count() < 1 || p_mesh->surface_get_primitive_type(0) != Mesh::PRIMITIVE_TRIANGLES)) {
+		ERR_PRINT("SoftBody3D only supports triangle meshes");
+		MeshInstance3D::set_mesh(nullptr);
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, RID());
+		return;
+	}
+
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		// The soft body physics simulation does not run in the editor,
+		// so we do not create a dynamically modifiable mesh in this case.
+		MeshInstance3D::set_mesh(p_mesh);
+		update_configuration_warnings();
+		return;
+	}
+#endif
 
 	// Get current mesh array and create new mesh array with necessary flag for SoftBody
-	Array surface_arrays = mesh->surface_get_arrays(0);
-	Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
-	Dictionary surface_lods = mesh->surface_get_lods(0);
-	uint32_t surface_format = mesh->surface_get_format(0);
+	Array surface_arrays = p_mesh->surface_get_arrays(0);
+	Array surface_blend_arrays = p_mesh->surface_get_blend_shape_arrays(0);
+	Dictionary surface_lods = p_mesh->surface_get_lods(0);
+	uint32_t surface_format = p_mesh->surface_get_format(0);
 
 	surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
 	surface_format &= ~Mesh::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
@@ -609,15 +612,12 @@ void SoftBody3D::_become_mesh_owner() {
 	Ref<ArrayMesh> soft_mesh;
 	soft_mesh.instantiate();
 	soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
-	soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
+	soft_mesh->surface_set_material(0, p_mesh->surface_get_material(0));
 
-	set_mesh(soft_mesh);
-
-	for (int i = copy_materials.size() - 1; 0 <= i; --i) {
-		set_surface_override_material(i, copy_materials[i]);
+	MeshInstance3D::set_mesh(soft_mesh);
+	if (is_inside_tree() && (is_enabled() || (disable_mode != DISABLE_MODE_REMOVE))) {
+		PhysicsServer3D::get_singleton()->soft_body_set_mesh(physics_rid, soft_mesh->get_rid());
 	}
-
-	owned_mesh = soft_mesh->get_rid();
 }
 
 void SoftBody3D::set_collision_mask(uint32_t p_mask) {
