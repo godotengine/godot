@@ -445,8 +445,8 @@ EditorExport::EditorExport() {
 	save_timer->set_one_shot(true);
 	save_timer->connect("timeout", callable_mp(this, &EditorExport::_save));
 
-	_export_presets_updated = StringName("export_presets_updated", true);
-	_export_presets_runnable_updated = StringName("export_presets_runnable_updated", true);
+	_export_presets_updated = ComptimeStringName<"export_presets_updated">().value;
+	_export_presets_runnable_updated = ComptimeStringName<"export_presets_runnable_updated">().value;
 
 	singleton = this;
 	set_process(true);

@@ -37,8 +37,8 @@ class Curve : public Resource {
 	GDCLASS(Curve, Resource);
 
 public:
-	static const char *SIGNAL_RANGE_CHANGED;
-	static const char *SIGNAL_DOMAIN_CHANGED;
+	static constexpr char SIGNAL_RANGE_CHANGED[] = "range_changed";
+	static constexpr char SIGNAL_DOMAIN_CHANGED[] = "domain_changed";
 
 	enum TangentMode {
 		TANGENT_FREE = 0,

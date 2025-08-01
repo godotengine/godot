@@ -250,9 +250,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	static const char *SIGNAL_LIST_CHANGED;
-	static const char *SIGNAL_SELECTION_CHANGED;
-	static const char *SIGNAL_PROJECT_ASK_OPEN;
+	static constexpr char SIGNAL_LIST_CHANGED[] = "list_changed";
+	static constexpr char SIGNAL_SELECTION_CHANGED[] = "selection_changed";
+	static constexpr char SIGNAL_PROJECT_ASK_OPEN[] = "project_ask_open";
 
 	static bool project_feature_looks_like_version(const String &p_feature);
 
