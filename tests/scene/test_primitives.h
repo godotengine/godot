@@ -862,4 +862,208 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 	}
 }
 
+TEST_CASE("[SceneTree][Primitive][Curve3D] Curve3DMesh Primitive") {
+	Ref<Curve3DMesh> curve_mesh = memnew(Curve3DMesh);
+
+	SUBCASE("[Primitive][Curve3D] There are valid values of properties on initialization.") {
+		CHECK(curve_mesh->get_curve().is_null());
+		CHECK(curve_mesh->get_width() > 0);
+		CHECK(curve_mesh->get_segments() > 0);
+		CHECK(curve_mesh->is_extend_edges() == false);
+		CHECK((curve_mesh->get_tessellation_mode() == Curve3DMesh::TESSELLATION_ADAPTIVE ||
+				curve_mesh->get_tessellation_mode() == Curve3DMesh::TESSELLATION_BAKED ||
+				curve_mesh->get_tessellation_mode() == Curve3DMesh::TESSELLATION_DISABLED));
+		CHECK((curve_mesh->get_profile() == Curve3DMesh::PROFILE_FLAT ||
+				curve_mesh->get_profile() == Curve3DMesh::PROFILE_CROSS ||
+				curve_mesh->get_profile() == Curve3DMesh::PROFILE_TUBE));
+	}
+
+	SUBCASE("[Primitive][Curve3D] Are able to change properties.") {
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve_mesh->set_curve(curve);
+		curve_mesh->set_width(2.5f);
+		curve_mesh->set_segments(12);
+		curve_mesh->set_extend_edges(true);
+		curve_mesh->set_tessellation_mode(Curve3DMesh::TESSELLATION_BAKED);
+		curve_mesh->set_profile(Curve3DMesh::PROFILE_CROSS);
+		curve_mesh->set_follow_curve(false);
+		curve_mesh->set_smooth_shaded_corners(false);
+
+		CHECK(curve_mesh->get_curve() == curve);
+		CHECK(curve_mesh->get_width() == doctest::Approx(2.5f));
+		CHECK(curve_mesh->get_segments() == 12);
+		CHECK(curve_mesh->is_extend_edges());
+		CHECK(curve_mesh->get_tessellation_mode() == Curve3DMesh::TESSELLATION_BAKED);
+		CHECK(curve_mesh->get_profile() == Curve3DMesh::PROFILE_CROSS);
+		CHECK(!curve_mesh->is_follow_curve());
+		CHECK(!curve_mesh->is_smooth_shaded_corners());
+	}
+
+	SUBCASE("[Primitive][Curve3D] Ensure number of segments always >= minimum values") {
+		ERR_PRINT_OFF;
+		curve_mesh->set_segments(0);
+		ERR_PRINT_ON;
+
+		CHECK(curve_mesh->get_segments() >= 1);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Setting same curve more than once, it remains the same.") {
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve_mesh->set_curve(curve);
+		curve_mesh->set_curve(curve);
+		curve_mesh->set_curve(curve);
+
+		CHECK(curve_mesh->get_curve() == curve);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Setting curve, then changing to different curve.") {
+		Ref<Curve3D> curve1 = memnew(Curve3D);
+		Ref<Curve3D> curve2 = memnew(Curve3D);
+		curve_mesh->set_curve(curve1);
+		CHECK(curve_mesh->get_curve() == curve1);
+
+		curve_mesh->set_curve(curve2);
+		CHECK(curve_mesh->get_curve() == curve2);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Assign same curve to two different curve meshes") {
+		Ref<Curve3DMesh> curve_mesh2 = memnew(Curve3DMesh);
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve_mesh->set_curve(curve);
+		curve_mesh2->set_curve(curve);
+
+		CHECK(curve_mesh->get_curve() == curve);
+		CHECK(curve_mesh2->get_curve() == curve);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Width curve functionality.") {
+		Ref<Curve> width_curve = memnew(Curve);
+		width_curve->add_point(Vector2(0.0, 1.0));
+		width_curve->add_point(Vector2(1.0, 0.5));
+
+		curve_mesh->set_width_curve(width_curve);
+		CHECK(curve_mesh->get_width_curve() == width_curve);
+
+		curve_mesh->set_width_curve(Ref<Curve>());
+		CHECK(curve_mesh->get_width_curve().is_null());
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test with actual curve data.") {
+		// Create a simple curve with multiple points
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve->add_point(Vector3(0, 0, 0));
+		curve->add_point(Vector3(1, 1, 0));
+		curve->add_point(Vector3(2, 0, 1));
+		curve_mesh->set_curve(curve);
+
+		// Test different profiles
+		curve_mesh->set_profile(Curve3DMesh::PROFILE_TUBE);
+		curve_mesh->set_width(0.5f);
+		curve_mesh->set_segments(8);
+
+		// Test mesh generation using public interface
+		Array mesh_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(mesh_arrays.size() > 0);
+
+		// Test that we can get surface arrays
+		Vector<Vector3> vertices = mesh_arrays[Mesh::ARRAY_VERTEX];
+		CHECK(vertices.size() > 0);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test different tessellation modes.") {
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve->add_point(Vector3(0, 0, 0));
+		curve->add_point(Vector3(2, 2, 0));
+		curve_mesh->set_curve(curve);
+
+		// Test adaptive tessellation mesh generation
+		Array adaptive_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(adaptive_arrays.size() > 0);
+
+		// Test baked tessellation mesh generation
+		curve_mesh->set_tessellation_mode(Curve3DMesh::TESSELLATION_BAKED);
+		Array baked_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(baked_arrays.size() > 0);
+
+		// Test disabled tessellation mesh generation
+		curve_mesh->set_tessellation_mode(Curve3DMesh::TESSELLATION_DISABLED);
+		Array disabled_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(disabled_arrays.size() > 0);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test different profiles.") {
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve->add_point(Vector3(0, 0, 0));
+		curve->add_point(Vector3(2, 0, 0));
+		curve_mesh->set_curve(curve);
+
+		// Test flat profile mesh generation
+		curve_mesh->set_profile(Curve3DMesh::PROFILE_FLAT);
+		Array flat_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(flat_arrays.size() > 0);
+
+		// Test cross profile mesh generation
+		curve_mesh->set_profile(Curve3DMesh::PROFILE_CROSS);
+		Array cross_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(cross_arrays.size() > 0);
+
+		// Test tube profile mesh generation
+		curve_mesh->set_profile(Curve3DMesh::PROFILE_TUBE);
+		Array tube_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(tube_arrays.size() > 0);
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test corner threshold and tolerance settings.") {
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve->add_point(Vector3(0, 0, 0));
+		curve->add_point(Vector3(1, 0, 0));
+		curve_mesh->set_curve(curve);
+
+		// Test corner threshold
+		curve_mesh->set_corner_threshold(0.8f);
+		CHECK(curve_mesh->get_corner_threshold() == doctest::Approx(0.8f));
+
+		// Test tessellation tolerance
+		curve_mesh->set_tessellation_tolerance(2.0f);
+		CHECK(curve_mesh->get_tessellation_tolerance() == doctest::Approx(2.0f));
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test UV scaling options.") {
+		curve_mesh->set_scale_UV_by_length(true);
+		CHECK(curve_mesh->is_scale_UV_by_length());
+
+		curve_mesh->set_scale_UV_by_width(true);
+		CHECK(curve_mesh->is_scale_UV_by_width());
+
+		curve_mesh->set_tile_segment_UV(false);
+		CHECK(!curve_mesh->is_tile_segment_UV());
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test up vector and follow curve settings.") {
+		Vector3 custom_up = Vector3(1, 0, 0);
+		curve_mesh->set_up_vector(custom_up);
+		CHECK(curve_mesh->get_up_vector().is_equal_approx(custom_up));
+
+		curve_mesh->set_follow_curve(false);
+		CHECK(!curve_mesh->is_follow_curve());
+	}
+
+	SUBCASE("[Primitive][Curve3D] Test variable width with width curve.") {
+		Ref<Curve3D> curve = memnew(Curve3D);
+		curve->add_point(Vector3(0, 0, 0));
+		curve->add_point(Vector3(2, 0, 0));
+		curve_mesh->set_curve(curve);
+
+		Ref<Curve> width_curve = memnew(Curve);
+		width_curve->add_point(Vector2(0.0, 0.5)); // Start thin
+		width_curve->add_point(Vector2(0.5, 2.0)); // Middle thick
+		width_curve->add_point(Vector2(1.0, 0.8)); // End medium
+		curve_mesh->set_width_curve(width_curve);
+
+		curve_mesh->set_profile(Curve3DMesh::PROFILE_TUBE);
+		Array variable_arrays = curve_mesh->surface_get_arrays(0);
+		CHECK(variable_arrays.size() > 0);
+	}
+}
+
 } // namespace TestPrimitives
