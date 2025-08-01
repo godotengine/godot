@@ -235,7 +235,9 @@ public:
 	enum NodeType {
 		NODE_TYPE_NONE,
 		NODE_TYPE_2D,
+#ifndef _3D_DISABLED
 		NODE_TYPE_3D,
+#endif // _3D_DISABLED
 		NODE_TYPE_MAX,
 	};
 
