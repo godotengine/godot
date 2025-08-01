@@ -1,4 +1,4 @@
-partial class ExportDiagnostics_GD0107_OK
+partial class @ExportDiagnostics_GD0107_OK
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
 #if TOOLS

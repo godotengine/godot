@@ -268,6 +268,8 @@ namespace Godot.SourceGenerators
 
         public static string SanitizeQualifiedNameForUniqueHint(this string qualifiedName)
             => qualifiedName
+                // AddSource() doesn't support @ prefix
+                .Replace("@", "")
                 // AddSource() doesn't support angle brackets
                 .Replace("<", "(Of ")
                 .Replace(">", ")");

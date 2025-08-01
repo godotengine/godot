@@ -1,7 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial class ScriptBoilerplate
+partial class @ScriptBoilerplate
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
     /// <summary>

@@ -1,3 +1,3 @@
-partial class ExportDiagnostics_GD0103
+partial class @ExportDiagnostics_GD0103
 {
 }

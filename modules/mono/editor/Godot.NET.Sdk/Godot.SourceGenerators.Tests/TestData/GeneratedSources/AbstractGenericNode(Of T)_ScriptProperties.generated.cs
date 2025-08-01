@@ -1,7 +1,7 @@
 using Godot;
 using Godot.NativeInterop;
 
-partial class AbstractGenericNode<T>
+partial class @AbstractGenericNode<T>
 {
 #pragma warning disable CS0109 // Disable warning about redundant 'new' keyword
     /// <summary>
