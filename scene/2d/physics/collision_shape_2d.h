@@ -53,6 +53,13 @@ class CollisionShape2D : public Node2D {
 
 	Color _get_default_debug_color() const;
 
+	RID debug_instance_rid;
+#ifdef DEBUG_ENABLED
+	void _draw_debug_instance();
+	void _update_debug_instance_transform();
+	void _set_debug_visible(bool p_visible);
+#endif // DEBUG_ENABLED
+
 protected:
 	void _notification(int p_what);
 
@@ -89,4 +96,5 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	CollisionShape2D();
+	~CollisionShape2D();
 };

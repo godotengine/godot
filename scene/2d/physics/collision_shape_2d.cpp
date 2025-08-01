@@ -30,10 +30,13 @@
 
 #include "collision_shape_2d.h"
 
+#include "core/object/object.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_object_2d.h"
+#include "scene/main/canvas_item.h"
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#include "scene/resources/world_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();
@@ -68,10 +71,31 @@ void CollisionShape2D::_notification(int p_what) {
 			}
 		} break;
 
+#ifdef DEBUG_ENABLED
+		case NOTIFICATION_EXIT_TREE: {
+			_set_debug_visible(false);
+		} break;
+
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			_update_debug_instance_transform();
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_set_debug_visible(is_visible_in_tree());
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			_draw_debug_instance();
+		} break;
+#endif // DEBUG_ENABLED
+
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 			if (collision_object) {
 				_update_in_shape_owner(true);
 			}
+#ifdef DEBUG_ENABLED
+			_update_debug_instance_transform();
+#endif // DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -80,54 +104,6 @@ void CollisionShape2D::_notification(int p_what) {
 			}
 			owner_id = 0;
 			collision_object = nullptr;
-		} break;
-
-		case NOTIFICATION_DRAW: {
-			ERR_FAIL_COND(!is_inside_tree());
-
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
-				break;
-			}
-
-			if (shape.is_null()) {
-				break;
-			}
-
-			rect = Rect2();
-
-			Color draw_col = debug_color;
-			if (disabled) {
-				float g = draw_col.get_v();
-				draw_col.r = g;
-				draw_col.g = g;
-				draw_col.b = g;
-				draw_col.a *= 0.5;
-			}
-			shape->draw(get_canvas_item(), draw_col);
-
-			rect = shape->get_rect();
-			rect = rect.grow(3);
-
-			if (one_way_collision) {
-				// Draw an arrow indicating the one-way collision direction
-				draw_col = debug_color.inverted();
-				if (disabled) {
-					draw_col = draw_col.darkened(0.25);
-				}
-				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, draw_col, 2);
-				real_t tsize = 8;
-
-				Vector<Vector2> pts{
-					line_to + Vector2(0, tsize),
-					line_to + Vector2(Math::SQRT12 * tsize, 0),
-					line_to + Vector2(-Math::SQRT12 * tsize, 0)
-				};
-
-				Vector<Color> cols{ draw_col, draw_col, draw_col };
-
-				draw_primitive(pts, cols, Vector<Vector2>());
-			}
 		} break;
 	}
 }
@@ -246,6 +222,83 @@ Color CollisionShape2D::get_debug_color() const {
 }
 
 #ifdef DEBUG_ENABLED
+void CollisionShape2D::_draw_debug_instance() {
+	ERR_FAIL_COND(!is_inside_tree());
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	if (debug_instance_rid.is_valid()) {
+		rs->canvas_item_clear(debug_instance_rid);
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+		return;
+	}
+
+	if (shape.is_null()) {
+		return;
+	}
+
+	rect = Rect2();
+
+	Color draw_col = debug_color;
+	if (disabled) {
+		float g = draw_col.get_v();
+		draw_col.r = g;
+		draw_col.g = g;
+		draw_col.b = g;
+		draw_col.a *= 0.5;
+	}
+
+	if (!debug_instance_rid.is_valid()) {
+		debug_instance_rid = rs->canvas_item_create();
+		rs->canvas_item_set_parent(debug_instance_rid, get_world_2d()->get_canvas());
+	}
+	_update_debug_instance_transform();
+
+	shape->draw(debug_instance_rid, draw_col);
+
+	rect = shape->get_rect();
+	rect = rect.grow(3);
+
+	if (one_way_collision) {
+		// Draw an arrow indicating the one-way collision direction
+		draw_col = debug_color.inverted();
+		if (disabled) {
+			draw_col = draw_col.darkened(0.25);
+		}
+		Vector2 line_to(0, 20);
+		rs->canvas_item_add_line(debug_instance_rid, Vector2(), line_to, draw_col, 2);
+		real_t tsize = 8;
+
+		Vector<Vector2> pts{
+			line_to + Vector2(0, tsize),
+			line_to + Vector2(Math::SQRT12 * tsize, 0),
+			line_to + Vector2(-Math::SQRT12 * tsize, 0)
+		};
+
+		Vector<Color> cols{ draw_col, draw_col, draw_col };
+
+		rs->canvas_item_add_primitive(debug_instance_rid, pts, cols, Vector<Vector2>(), RID());
+	}
+}
+
+void CollisionShape2D::_set_debug_visible(bool p_visible) {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	if (debug_instance_rid.is_valid()) {
+		RS::get_singleton()->canvas_item_set_visible(debug_instance_rid, p_visible);
+	}
+}
+
+void CollisionShape2D::_update_debug_instance_transform() {
+	if (!debug_instance_rid.is_valid()) {
+		return;
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->canvas_item_set_transform(debug_instance_rid, get_global_transform());
+	rs->canvas_item_set_z_index(debug_instance_rid, get_effective_z_index());
+}
 
 bool CollisionShape2D::_property_can_revert(const StringName &p_name) const {
 	if (p_name == "debug_color") {
@@ -299,7 +352,14 @@ void CollisionShape2D::_bind_methods() {
 }
 
 CollisionShape2D::CollisionShape2D() {
+	set_notify_transform(true);
 	set_notify_local_transform(true);
 	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
+}
+
+CollisionShape2D::~CollisionShape2D() {
+	if (debug_instance_rid.is_valid()) {
+		RS::get_singleton()->free(debug_instance_rid);
+	}
 }
