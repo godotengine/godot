@@ -500,6 +500,7 @@ public:
 	Node *find_parent(const String &p_pattern) const;
 
 	Window *get_window() const;
+	Window *get_non_popup_window() const;
 	Window *get_last_exclusive_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
