@@ -863,7 +863,7 @@ void GraphEdit::_graph_element_resize_request(const Vector2 &p_new_minsize, Node
 	// Snap the new size to the grid if snapping is enabled.
 	Vector2 new_size = p_new_minsize;
 	if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-		new_size = new_size.snappedf(snapping_distance);
+		new_size = new_size.snapped(snapping_distance);
 	}
 
 	// Disallow resizing the frame to a size smaller than the minimum size of the attached nodes.
@@ -1245,7 +1245,7 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 
 		Vector2 pos = (attached_node->get_drag_from() * zoom + drag_accum) / zoom;
 		if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CTRL)) {
-			pos = pos.snappedf(snapping_distance);
+			pos = pos.snapped(snapping_distance);
 		}
 
 		// Recursively move graph frames.
@@ -1865,8 +1865,8 @@ void GraphEdit::_draw_grid() {
 	Vector2 offset = get_scroll_offset() / zoom;
 	Size2 size = get_size() / zoom;
 
-	Point2i from_pos = (offset / float(snapping_distance)).floor();
-	Point2i len = (size / float(snapping_distance)).floor() + Vector2(1, 1);
+	Point2i from_pos = (offset / snapping_distance).floor();
+	Point2i len = (size / snapping_distance).floor() + Vector2(1, 1);
 
 	switch (grid_pattern) {
 		case GRID_PATTERN_LINES: {
@@ -1879,7 +1879,7 @@ void GraphEdit::_draw_grid() {
 					color = theme_cache.grid_minor;
 				}
 
-				float base_offset = i * snapping_distance * zoom - offset.x * zoom;
+				float base_offset = i * snapping_distance.x * zoom - offset.x * zoom;
 				draw_line(Vector2(base_offset, 0), Vector2(base_offset, get_size().height), color);
 			}
 
@@ -1892,7 +1892,7 @@ void GraphEdit::_draw_grid() {
 					color = theme_cache.grid_minor;
 				}
 
-				float base_offset = i * snapping_distance * zoom - offset.y * zoom;
+				float base_offset = i * snapping_distance.y * zoom - offset.y * zoom;
 				draw_line(Vector2(0, base_offset), Vector2(get_size().width, base_offset), color);
 			}
 		} break;
@@ -1908,8 +1908,8 @@ void GraphEdit::_draw_grid() {
 							continue;
 						}
 
-						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+						float base_offset_x = i * snapping_distance.x * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_distance.y * zoom - offset.y * zoom;
 
 						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), transparent_grid_minor);
 					}
@@ -1920,8 +1920,8 @@ void GraphEdit::_draw_grid() {
 			if (theme_cache.grid_major.a != 0) {
 				for (int i = from_pos.x - from_pos.x % GRID_MINOR_STEPS_PER_MAJOR_DOT; i < from_pos.x + len.x; i += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
 					for (int j = from_pos.y - from_pos.y % GRID_MINOR_STEPS_PER_MAJOR_DOT; j < from_pos.y + len.y; j += GRID_MINOR_STEPS_PER_MAJOR_DOT) {
-						float base_offset_x = i * snapping_distance * zoom - offset.x * zoom;
-						float base_offset_y = j * snapping_distance * zoom - offset.y * zoom;
+						float base_offset_x = i * snapping_distance.x * zoom - offset.x * zoom;
+						float base_offset_y = j * snapping_distance.y * zoom - offset.y * zoom;
 
 						draw_rect(Rect2(base_offset_x - 1, base_offset_y - 1, 3, 3), theme_cache.grid_major);
 					}
@@ -1929,6 +1929,14 @@ void GraphEdit::_draw_grid() {
 			}
 
 		} break;
+	}
+}
+
+void GraphEdit::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "snapping_distance") {
+		p_property.usage = separate_snapping_distances ? PROPERTY_USAGE_NO_EDITOR : PROPERTY_USAGE_DEFAULT;
+	} else if (p_property.name == "snapping_distances") {
+		p_property.usage = separate_snapping_distances ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_NO_EDITOR;
 	}
 }
 
@@ -1978,7 +1986,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				// Snapping can be toggled temporarily by holding down Ctrl.
 				// This is done here as to not toggle the grid when holding down Ctrl.
 				if (snapping_enabled ^ Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
-					pos = pos.snappedf(snapping_distance);
+					pos = pos.snapped(snapping_distance);
 				}
 
 				graph_element->set_position_offset(pos);
@@ -2752,13 +2760,44 @@ bool GraphEdit::is_snapping_enabled() const {
 void GraphEdit::set_snapping_distance(int p_snapping_distance) {
 	ERR_FAIL_COND_MSG(p_snapping_distance < GRID_MIN_SNAPPING_DISTANCE || p_snapping_distance > GRID_MAX_SNAPPING_DISTANCE,
 			vformat("GraphEdit's snapping distance must be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE, GRID_MAX_SNAPPING_DISTANCE));
-	snapping_distance = p_snapping_distance;
+	snapping_distance = Vector2i(p_snapping_distance, p_snapping_distance);
 	snapping_distance_spinbox->set_value(p_snapping_distance);
+	snapping_distance_spinbox_vertical->set_value(p_snapping_distance);
+	queue_redraw();
+}
+
+void GraphEdit::set_snapping_distances(Vector2i p_snapping_distances) {
+	ERR_FAIL_COND_MSG(p_snapping_distances.x < GRID_MIN_SNAPPING_DISTANCE || p_snapping_distances.x > GRID_MAX_SNAPPING_DISTANCE ||
+					p_snapping_distances.y < GRID_MIN_SNAPPING_DISTANCE || p_snapping_distances.y > GRID_MAX_SNAPPING_DISTANCE,
+			vformat("GraphEdit's snapping distances must each be between %d and %d (inclusive)", GRID_MIN_SNAPPING_DISTANCE, GRID_MAX_SNAPPING_DISTANCE));
+	snapping_distance = p_snapping_distances;
+	snapping_distance_spinbox->set_value(p_snapping_distances.x);
+	snapping_distance_spinbox_vertical->set_value(p_snapping_distances.y);
 	queue_redraw();
 }
 
 int GraphEdit::get_snapping_distance() const {
+	return snapping_distance.x;
+}
+
+Vector2i GraphEdit::get_snapping_distances() const {
 	return snapping_distance;
+}
+
+void GraphEdit::set_separate_snapping_distances(bool p_enable) {
+	separate_snapping_distances = p_enable;
+
+	if (separate_snapping_distances) {
+		snapping_distance_spinbox->set_tooltip_text(ETR("Change the horizontal snapping distance."));
+	} else {
+		snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
+	}
+	snapping_distance_spinbox_vertical->set_visible(show_grid_buttons && separate_snapping_distances);
+	notify_property_list_changed();
+}
+
+bool GraphEdit::is_separate_snapping_distances() const {
+	return separate_snapping_distances;
 }
 
 void GraphEdit::set_show_grid(bool p_show) {
@@ -2793,7 +2832,12 @@ void GraphEdit::_snapping_toggled() {
 }
 
 void GraphEdit::_snapping_distance_changed(double) {
-	snapping_distance = snapping_distance_spinbox->get_value();
+	snapping_distance.x = snapping_distance_spinbox->get_value();
+	queue_redraw();
+}
+
+void GraphEdit::_snapping_distance_vertical_changed(double) {
+	snapping_distance.y = snapping_distance_spinbox_vertical->get_value();
 	queue_redraw();
 }
 
@@ -3064,8 +3108,14 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_snapping_enabled", "enable"), &GraphEdit::set_snapping_enabled);
 	ClassDB::bind_method(D_METHOD("is_snapping_enabled"), &GraphEdit::is_snapping_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_separate_snapping_distances", "enable"), &GraphEdit::set_separate_snapping_distances);
+	ClassDB::bind_method(D_METHOD("is_separate_snapping_distances"), &GraphEdit::is_separate_snapping_distances);
+
 	ClassDB::bind_method(D_METHOD("set_snapping_distance", "pixels"), &GraphEdit::set_snapping_distance);
 	ClassDB::bind_method(D_METHOD("get_snapping_distance"), &GraphEdit::get_snapping_distance);
+
+	ClassDB::bind_method(D_METHOD("set_snapping_distances", "pixels"), &GraphEdit::set_snapping_distances);
+	ClassDB::bind_method(D_METHOD("get_snapping_distances"), &GraphEdit::get_snapping_distances);
 
 	ClassDB::bind_method(D_METHOD("set_connection_lines_curvature", "curvature"), &GraphEdit::set_connection_lines_curvature);
 	ClassDB::bind_method(D_METHOD("get_connection_lines_curvature"), &GraphEdit::get_connection_lines_curvature);
@@ -3129,7 +3179,9 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_grid"), "set_show_grid", "is_showing_grid");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "grid_pattern", PROPERTY_HINT_ENUM, "Lines,Dots"), "set_grid_pattern", "get_grid_pattern");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "snapping_enabled"), "set_snapping_enabled", "is_snapping_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "separate_snapping_distances"), "set_separate_snapping_distances", "is_separate_snapping_distances");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "snapping_distance", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distance", "get_snapping_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "snapping_distances", PROPERTY_HINT_NONE, "suffix:px"), "set_snapping_distances", "get_snapping_distances");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_disconnects"), "set_input_disconnects", "is_input_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_self_connection"), "set_allow_self_connection", "is_self_connection_allowed");
@@ -3354,10 +3406,24 @@ GraphEdit::GraphEdit() {
 	snapping_distance_spinbox->set_min(GRID_MIN_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_max(GRID_MAX_SNAPPING_DISTANCE);
 	snapping_distance_spinbox->set_step(1);
-	snapping_distance_spinbox->set_value(snapping_distance);
-	snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
+	snapping_distance_spinbox->set_value(snapping_distance.x);
+	if (separate_snapping_distances) {
+		snapping_distance_spinbox->set_tooltip_text(ETR("Change the horizontal snapping distance."));
+	} else {
+		snapping_distance_spinbox->set_tooltip_text(ETR("Change the snapping distance."));
+	}
 	menu_hbox->add_child(snapping_distance_spinbox);
 	snapping_distance_spinbox->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_snapping_distance_changed));
+
+	snapping_distance_spinbox_vertical = memnew(SpinBox);
+	snapping_distance_spinbox_vertical->set_visible(show_grid_buttons && separate_snapping_distances);
+	snapping_distance_spinbox_vertical->set_min(GRID_MIN_SNAPPING_DISTANCE);
+	snapping_distance_spinbox_vertical->set_max(GRID_MAX_SNAPPING_DISTANCE);
+	snapping_distance_spinbox_vertical->set_step(1);
+	snapping_distance_spinbox_vertical->set_value(snapping_distance.y);
+	snapping_distance_spinbox_vertical->set_tooltip_text(ETR("Change the vertical snapping distance."));
+	menu_hbox->add_child(snapping_distance_spinbox_vertical);
+	snapping_distance_spinbox_vertical->connect(SceneStringName(value_changed), callable_mp(this, &GraphEdit::_snapping_distance_vertical_changed));
 
 	// Extra controls.
 

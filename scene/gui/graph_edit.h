@@ -136,6 +136,7 @@ private:
 
 	Button *toggle_snapping_button = nullptr;
 	SpinBox *snapping_distance_spinbox = nullptr;
+	SpinBox *snapping_distance_spinbox_vertical = nullptr;
 	Button *toggle_grid_button = nullptr;
 	Button *minimap_button = nullptr;
 	Button *arrange_button = nullptr;
@@ -156,7 +157,8 @@ private:
 	bool show_arrange_button = true;
 
 	bool snapping_enabled = true;
-	int snapping_distance = 20;
+	Vector2i snapping_distance = Vector2i(20, 20);
+	bool separate_snapping_distances = false;
 	bool show_grid = true;
 	GridPattern grid_pattern = GRID_PATTERN_LINES;
 
@@ -302,6 +304,7 @@ private:
 	void _top_layer_draw();
 	void _minimap_draw();
 	void _draw_grid();
+	void _validate_property(PropertyInfo &p_property) const;
 
 	const TypedArray<Ref<GraphConnection>> _get_connections() const;
 	Ref<GraphConnection> _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
@@ -320,6 +323,7 @@ private:
 	bool _filter_input(const Point2 &p_point);
 	void _snapping_toggled();
 	void _snapping_distance_changed(double);
+	void _snapping_distance_vertical_changed(double);
 	void _show_grid_toggled();
 
 	friend class GraphEditMinimap;
@@ -509,7 +513,12 @@ public:
 	bool is_snapping_enabled() const;
 
 	void set_snapping_distance(int p_snapping_distance);
+	void set_snapping_distances(Vector2i p_snapping_distances);
 	int get_snapping_distance() const;
+	Vector2i get_snapping_distances() const;
+
+	void set_separate_snapping_distances(bool p_enable);
+	bool is_separate_snapping_distances() const;
 
 	void set_show_grid(bool p_enable);
 	bool is_showing_grid() const;
