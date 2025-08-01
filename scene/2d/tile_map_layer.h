@@ -379,6 +379,9 @@ private:
 	bool enabled = true;
 	Ref<TileSet> tile_set;
 
+	bool has_scalable_textures = false;
+	double oversampling = 0.0;
+
 	HighlightMode highlight_mode = HIGHLIGHT_MODE_DEFAULT;
 
 	int y_sort_origin = 0;
@@ -505,6 +508,8 @@ protected:
 
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter) override;
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat) override;
+
+	virtual PackedStringArray get_configuration_warnings() const override;
 
 public:
 #ifdef TOOLS_ENABLED
