@@ -74,7 +74,8 @@ void RaycastOcclusionCull::RaycastHZBuffer::resize(const Size2i &p_size) {
 
 	const int alignment = 64; // Embree requires ray packets to be 64-aligned
 	camera_rays_unaligned_buffer = (uint8_t *)memalloc(camera_rays_tile_count * sizeof(CameraRayTile) + alignment);
-	camera_rays = (CameraRayTile *)(camera_rays_unaligned_buffer + alignment - (((uint64_t)camera_rays_unaligned_buffer) % alignment));
+	size_t offset = (alignment - ((uintptr_t)camera_rays_unaligned_buffer % alignment)) % alignment;
+	camera_rays = (CameraRayTile *)(camera_rays_unaligned_buffer + offset);
 
 	camera_ray_masks.resize(camera_rays_tile_count * TILE_RAYS);
 	memset(camera_ray_masks.ptr(), ~0, camera_rays_tile_count * TILE_RAYS * sizeof(uint32_t));
