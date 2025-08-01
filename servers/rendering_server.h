@@ -1861,7 +1861,7 @@ public:
 	virtual Size2i get_maximum_viewport_size() const = 0;
 
 	RenderingDevice *get_rendering_device() const;
-	RenderingDevice *create_local_rendering_device() const;
+	RenderingDevice *create_local_rendering_device();
 
 	bool is_render_loop_enabled() const;
 	void set_render_loop_enabled(bool p_enabled);
