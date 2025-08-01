@@ -33,6 +33,7 @@
 #include "godot_area_2d.h"
 #include "godot_body_direct_state_2d.h"
 #include "godot_constraint_2d.h"
+#include "godot_physics_server_2d.h"
 #include "godot_space_2d.h"
 
 void GodotBody2D::_mass_properties_changed() {
@@ -415,6 +416,35 @@ void GodotBody2D::set_space(GodotSpace2D *p_space) {
 	}
 }
 
+void GodotBody2D::remove_shape(GodotShape2D *p_shape) {
+	for (int i = 0; i < get_shape_count(); i++) {
+		if (get_shape(i) == p_shape) {
+			GodotCollisionObject2D::remove_shape(i);
+			i--;
+
+			if ((int)shape_frictions.size() > i) {
+				shape_frictions.remove_at(i);
+			}
+
+			if ((int)shape_bounces.size() > i) {
+				shape_bounces.remove_at(i);
+			}
+		}
+	}
+}
+
+void GodotBody2D::remove_shape(int p_index) {
+	GodotCollisionObject2D::remove_shape(p_index);
+
+	if ((int)shape_frictions.size() > p_index) {
+		shape_frictions.remove_at(p_index);
+	}
+
+	if ((int)shape_bounces.size() > p_index) {
+		shape_bounces.remove_at(p_index);
+	}
+}
+
 void GodotBody2D::_update_transform_dependent() {
 	center_of_mass = get_transform().basis_xform(center_of_mass_local);
 }
@@ -652,6 +682,56 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	}
 
 	_update_transform_dependent();
+}
+
+void GodotBody2D::set_shape_friction(int p_index, real_t p_friction) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+
+	int old_size = shape_frictions.size();
+	if (old_size <= p_index) {
+		shape_frictions.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_frictions[i] = NAN;
+		}
+	}
+
+	shape_frictions[p_index] = p_friction;
+}
+
+void GodotBody2D::set_shape_bounce(int p_index, real_t p_bounce) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+
+	int old_size = shape_bounces.size();
+	if (old_size <= p_index) {
+		shape_bounces.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_bounces[i] = NAN;
+		}
+	}
+
+	shape_bounces[p_index] = p_bounce;
+}
+
+real_t GodotBody2D::get_shape_friction(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, get_shape_count(), NAN);
+
+	if (p_index >= (int)shape_frictions.size()) {
+		return NAN;
+	}
+
+	return shape_frictions[p_index];
+}
+
+real_t GodotBody2D::get_shape_bounce(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, get_shape_count(), NAN);
+
+	if (p_index >= (int)shape_bounces.size()) {
+		return NAN;
+	}
+
+	return shape_bounces[p_index];
 }
 
 void GodotBody2D::wakeup_neighbours() {

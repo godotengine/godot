@@ -782,6 +782,12 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_remove_shape", "body", "shape_idx"), &PhysicsServer3D::body_remove_shape);
 	ClassDB::bind_method(D_METHOD("body_clear_shapes", "body"), &PhysicsServer3D::body_clear_shapes);
 
+	ClassDB::bind_method(D_METHOD("body_set_shape_friction_override", "body", "shape_idx", "enable", "friction"), &PhysicsServer3D::body_set_shape_friction_override, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("body_set_shape_bounce_override", "body", "shape_idx", "enable", "bounce"), &PhysicsServer3D::body_set_shape_bounce_override, DEFVAL(0.0));
+
+	ClassDB::bind_method(D_METHOD("body_get_shape_friction_override", "body", "shape_idx"), &PhysicsServer3D::body_get_shape_friction_override);
+	ClassDB::bind_method(D_METHOD("body_get_shape_bounce_override", "body", "shape_idx"), &PhysicsServer3D::body_get_shape_bounce_override);
+
 	ClassDB::bind_method(D_METHOD("body_attach_object_instance_id", "body", "id"), &PhysicsServer3D::body_attach_object_instance_id);
 	ClassDB::bind_method(D_METHOD("body_get_object_instance_id", "body"), &PhysicsServer3D::body_get_object_instance_id);
 

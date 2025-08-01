@@ -134,6 +134,38 @@ real_t GodotPhysicsServer3D::shape_get_margin(RID p_shape) const {
 	return 0.0;
 }
 
+real_t GodotPhysicsServer3D::body_get_shape_friction_override(RID p_body, int p_shape_idx) const {
+	const GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, NAN);
+	return body->get_shape_friction(p_shape_idx);
+}
+
+void GodotPhysicsServer3D::body_set_shape_friction_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_friction) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+	if (p_enable) {
+		body->set_shape_friction(p_shape_idx, p_friction);
+	} else {
+		body->set_shape_friction(p_shape_idx, NAN);
+	}
+}
+
+real_t GodotPhysicsServer3D::body_get_shape_bounce_override(RID p_body, int p_shape_idx) const {
+	const GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, NAN);
+	return body->get_shape_bounce(p_shape_idx);
+}
+
+void GodotPhysicsServer3D::body_set_shape_bounce_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_bounce) {
+	GodotBody3D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+	if (p_enable) {
+		body->set_shape_bounce(p_shape_idx, p_bounce);
+	} else {
+		body->set_shape_bounce(p_shape_idx, NAN);
+	}
+}
+
 real_t GodotPhysicsServer3D::shape_get_custom_solver_bias(RID p_shape) const {
 	const GodotShape3D *shape = shape_owner.get_or_null(p_shape);
 	ERR_FAIL_NULL_V(shape, 0);

@@ -437,11 +437,27 @@
 				Returns the [RID] of the nth shape of a body.
 			</description>
 		</method>
+		<method name="body_get_shape_bounce_override" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Returns the bounciness override for the shape or [constant @GDScript.NAN] if no override is set.
+			</description>
+		</method>
 		<method name="body_get_shape_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="body" type="RID" />
 			<description>
 				Returns the number of shapes assigned to a body.
+			</description>
+		</method>
+		<method name="body_get_shape_friction_override" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<description>
+				Returns the friction override for the shape or [constant @GDScript.NAN] if no override is set.
 			</description>
 		</method>
 		<method name="body_get_shape_transform" qualifiers="const">
@@ -644,12 +660,32 @@
 				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
+		<method name="body_set_shape_bounce_override">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="enable" type="bool" />
+			<param index="3" name="bounce" type="float" default="0.0" />
+			<description>
+				Sets the bounciness for the shape if [param enable] is [code]true[/code], resets to the body's value if [code]false[/code]. A negative value of [param bounce] is equivalent to enabling [member PhysicsMaterial.absorbent].
+			</description>
+		</method>
 		<method name="body_set_shape_disabled">
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
+			</description>
+		</method>
+		<method name="body_set_shape_friction_override">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="shape_idx" type="int" />
+			<param index="2" name="enable" type="bool" />
+			<param index="3" name="friction" type="float" default="0.0" />
+			<description>
+				Sets the friction for the shape if [param enable] is [code]true[/code], resets to the body's value if [code]false[/code]. A negative value of [param friction] is equivalent to enabling [member PhysicsMaterial.rough].
 			</description>
 		</method>
 		<method name="body_set_shape_transform">
