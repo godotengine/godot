@@ -77,6 +77,8 @@ protected:
 	RID white_texture;
 	RID test_material;
 
+	Dictionary _available_drivers;
+
 	Error _surface_set_data(Array p_arrays, uint64_t p_format, uint32_t *p_offsets, uint32_t p_vertex_stride, uint32_t p_normal_stride, uint32_t p_attrib_stride, uint32_t p_skin_stride, Vector<uint8_t> &r_vertex_array, Vector<uint8_t> &r_attrib_array, Vector<uint8_t> &r_skin_array, int p_vertex_array_len, Vector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb, Vector4 &r_uv_scale);
 
 	static RenderingServer *(*create_func)();
@@ -1869,6 +1871,8 @@ public:
 	virtual bool is_on_render_thread() = 0;
 	virtual void call_on_render_thread(const Callable &p_callable) = 0;
 
+	void set_available_rendering_drivers(const Dictionary &p_drivers) { _available_drivers = p_drivers; }
+	Dictionary get_available_rendering_drivers() const { return _available_drivers; }
 	String get_current_rendering_driver_name() const;
 	String get_current_rendering_method() const;
 
