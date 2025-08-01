@@ -411,28 +411,31 @@ void GraphEdit::remove_connection(Ref<GraphConnection> p_connection) {
 	ERR_FAIL_COND(p_connection.is_null());
 	ERR_FAIL_COND(!graph_connections.has(p_connection));
 
-	if (p_connection->first_port) {
-		connection_map[p_connection->first_port].erase(p_connection);
-		if (connection_map[p_connection->first_port].is_empty()) {
-			connection_map.erase(p_connection->first_port);
+	GraphPort *first = p_connection->first_port;
+	if (first && connection_map.has(first)) {
+		connection_map[first].erase(p_connection);
+		if (connection_map[first].is_empty()) {
+			connection_map.erase(first);
 		}
 	}
-	if (p_connection->second_port) {
-		connection_map[p_connection->second_port].erase(p_connection);
-		if (connection_map[p_connection->second_port].is_empty()) {
-			connection_map.erase(p_connection->second_port);
+	GraphPort *second = p_connection->second_port;
+	if (second && connection_map.has(second)) {
+		connection_map[second].erase(p_connection);
+		if (connection_map[second].is_empty()) {
+			connection_map.erase(second);
 		}
 	}
-	if (p_connection->_cache.line && p_connection->_cache.line->get_parent()) {
-		p_connection->_cache.line->get_parent()->remove_child(p_connection->_cache.line);
+	Line2D *line = p_connection->_cache.line;
+	if (line && line->get_parent()) {
+		line->get_parent()->remove_child(line);
 	}
 	graph_connections.erase(p_connection);
 
-	if (p_connection->first_port) {
-		p_connection->first_port->_on_disconnected(p_connection);
+	if (first) {
+		first->_on_disconnected(p_connection);
 	}
-	if (p_connection->second_port) {
-		p_connection->second_port->_on_disconnected(p_connection);
+	if (second) {
+		second->_on_disconnected(p_connection);
 	}
 
 	minimap->queue_redraw();
@@ -649,30 +652,16 @@ String GraphEdit::get_connections_description(const GraphPort *p_port) const {
 		if (conn.is_null()) {
 			continue;
 		}
-		if (conn->first_port == p_port) {
-			GraphNode *to = conn->first_port->graph_node;
-			if (to) {
-				if (!out.is_empty()) {
-					out += ", ";
-				}
-				String name = to->get_accessibility_name();
-				if (name.is_empty()) {
-					name = to->get_name();
-				}
-				out += vformat(ETR("connection to %s (%s) port %d"), name, to->get_title(), p_port);
+		GraphNode *other = conn->get_other_node_by_port(p_port);
+		if (other) {
+			if (!out.is_empty()) {
+				out += ", ";
 			}
-		} else {
-			GraphNode *from = conn->second_port->graph_node;
-			if (from) {
-				if (!out.is_empty()) {
-					out += ", ";
-				}
-				String name = from->get_accessibility_name();
-				if (name.is_empty()) {
-					name = from->get_name();
-				}
-				out += vformat(ETR("connection from %s (%s) port %d"), name, from->get_title(), p_port);
+			String name = other->get_accessibility_name();
+			if (name.is_empty()) {
+				name = other->get_name();
 			}
+			out += vformat(ETR("connection to %s (%s) port %d"), name, other->get_title(), p_port->get_port_index(true));
 		}
 	}
 	return out;
@@ -1329,7 +1318,9 @@ void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, false);
 	ERR_FAIL_NULL_V(connecting_from_port, false);
-	ERR_FAIL_NULL_V(connecting_from_port->graph_node, false);
+	if (!p_port->enabled || !connecting_from_port->enabled) {
+		return false;
+	}
 	int from_type = connecting_from_port->get_port_type();
 	int to_type = p_port->get_port_type();
 	if (p_port->direction == GraphPort::PortDirection::OUTPUT || connecting_from_port->direction == GraphPort::PortDirection::INPUT) {
@@ -1337,9 +1328,8 @@ bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 		from_type = to_type;
 		to_type = swap_type;
 	}
-	return from_type == to_type ||
-			connecting_from_port->graph_node->is_ignoring_valid_connection_type() ||
-			valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type));
+	return from_type == to_type || valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type)) ||
+			(connecting_from_port->graph_node && connecting_from_port->graph_node->is_ignoring_valid_connection_type());
 }
 
 void GraphEdit::_mark_connections_dirty_by_port(const GraphPort *p_port) {
@@ -1500,6 +1490,9 @@ bool GraphEdit::_check_clickable_control(const Control *p_control, const Vector2
 
 bool GraphEdit::is_in_port_hotzone(const GraphPort *p_port, const Vector2 &p_mouse_pos) const {
 	ERR_FAIL_NULL_V(p_port, false);
+	if (!p_port->enabled) {
+		return false;
+	}
 
 	Rect2 hotzone = p_port->get_hotzone();
 
