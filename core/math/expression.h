@@ -175,6 +175,8 @@ private:
 		OperatorNode() {
 			type = TYPE_OPERATOR;
 		}
+
+		bool should_short_circuit(const Variant &p_first_value, Variant &r_ret) const;
 	};
 
 	struct SelfNode : public ENode {
