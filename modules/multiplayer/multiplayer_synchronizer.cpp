@@ -33,13 +33,13 @@
 #include "core/config/engine.h"
 #include "scene/main/multiplayer_api.h"
 
-Object *MultiplayerSynchronizer::_get_prop_target(Object *p_obj, const NodePath &p_path) {
+Node *MultiplayerSynchronizer::_get_prop_target(Node *p_node, const NodePath &p_path) {
 	if (p_path.get_name_count() == 0) {
-		return p_obj;
+		return p_node;
 	}
-	Node *node = Object::cast_to<Node>(p_obj);
-	ERR_FAIL_COND_V_MSG(!node || !node->has_node(p_path), nullptr, vformat("Node '%s' not found.", p_path));
-	return node->get_node(p_path);
+	Node *target = p_node ? p_node->get_node_or_null(p_path) : nullptr;
+	ERR_FAIL_COND_V_MSG(!p_node || !target, nullptr, vformat("Node '%s' not found.", p_path));
+	return target;
 }
 
 void MultiplayerSynchronizer::_stop() {
@@ -153,14 +153,14 @@ PackedStringArray MultiplayerSynchronizer::get_configuration_warnings() const {
 	return warnings;
 }
 
-Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Object *p_obj, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
-	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
+Error MultiplayerSynchronizer::get_state(const LocalVector<NodePath> &p_properties, Node *p_node, Vector<Variant> &r_variant, Vector<const Variant *> &r_variant_ptrs) {
+	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	r_variant.resize(p_properties.size());
 	r_variant_ptrs.resize(r_variant.size());
 	int i = 0;
 	for (const NodePath &prop : p_properties) {
 		bool valid = false;
-		const Object *obj = _get_prop_target(p_obj, prop);
+		const Node *obj = _get_prop_target(p_node, prop);
 		ERR_FAIL_NULL_V(obj, FAILED);
 		r_variant.write[i] = obj->get_indexed(prop.get_subnames(), &valid);
 		r_variant_ptrs.write[i] = &r_variant[i];
@@ -170,11 +170,11 @@ Error MultiplayerSynchronizer::get_state(const List<NodePath> &p_properties, Obj
 	return OK;
 }
 
-Error MultiplayerSynchronizer::set_state(const List<NodePath> &p_properties, Object *p_obj, const Vector<Variant> &p_state) {
-	ERR_FAIL_NULL_V(p_obj, ERR_INVALID_PARAMETER);
+Error MultiplayerSynchronizer::set_state(const LocalVector<NodePath> &p_properties, Node *p_node, const Vector<Variant> &p_state) {
+	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	int i = 0;
 	for (const NodePath &prop : p_properties) {
-		Object *obj = _get_prop_target(p_obj, prop);
+		Node *obj = _get_prop_target(p_node, prop);
 		ERR_FAIL_NULL_V(obj, FAILED);
 		obj->set_indexed(prop.get_subnames(), p_state[i]);
 		i += 1;
@@ -372,7 +372,7 @@ void MultiplayerSynchronizer::set_multiplayer_authority(int p_peer_id, bool p_re
 
 Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 	ERR_FAIL_COND_V(replication_config.is_null(), FAILED);
-	const List<NodePath> props = replication_config->get_watch_properties();
+	const LocalVector<NodePath> &props = replication_config->get_watch_properties();
 	if (props.size() != watchers.size()) {
 		watchers.resize(props.size());
 	}
@@ -386,7 +386,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 	for (const NodePath &prop : props) {
 		idx++;
 		bool valid = false;
-		const Object *obj = _get_prop_target(node, prop);
+		const Node *obj = _get_prop_target(node, prop);
 		ERR_CONTINUE_MSG(!obj, vformat("Node not found for property '%s'.", prop));
 		Variant v = obj->get_indexed(prop.get_subnames(), &valid);
 		ERR_CONTINUE_MSG(!valid, vformat("Property '%s' not found.", prop));
@@ -403,9 +403,9 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 	return OK;
 }
 
-List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes) {
+LocalVector<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint64_t p_last_usec, uint64_t &r_indexes) {
 	r_indexes = 0;
-	List<Variant> out;
+	LocalVector<Variant> out;
 
 	if (last_watch_usec == p_cur_usec) {
 		// We already watched for changes in this frame.
@@ -433,10 +433,10 @@ List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint
 	return out;
 }
 
-List<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes) {
-	List<NodePath> out;
+LocalVector<NodePath> MultiplayerSynchronizer::get_delta_properties(uint64_t p_indexes) {
+	LocalVector<NodePath> out;
 	ERR_FAIL_COND_V(replication_config.is_null(), out);
-	const List<NodePath> watch_props = replication_config->get_watch_properties();
+	const LocalVector<NodePath> &watch_props = replication_config->get_watch_properties();
 	int idx = 0;
 	for (const NodePath &prop : watch_props) {
 		if ((p_indexes & (1ULL << idx++)) == 0) {
