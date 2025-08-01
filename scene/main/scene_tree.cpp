@@ -137,6 +137,9 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 }
 #endif // _3D_DISABLED
 
+bool SceneTree::_physics_interpolation_enabled = false;
+bool SceneTree::_physics_interpolation_enabled_in_project = false;
+
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
 }
@@ -566,6 +569,9 @@ void SceneTree::initialize() {
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// This version is for use in editor.
+	_physics_interpolation_enabled_in_project = p_enabled;
+
 	// We never want interpolation in the editor.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_enabled = false;
@@ -584,10 +590,6 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	if (root) {
 		root->reset_physics_interpolation();
 	}
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
 }
 
 #ifndef _3D_DISABLED
@@ -1006,15 +1008,16 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 		return collision_material;
 	}
 
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	line_material->set_albedo(get_debug_collisions_color());
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
+	material->set_cull_mode(StandardMaterial3D::CULL_BACK);
+	material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
-	collision_material = line_material;
+	collision_material = material;
 
 	return collision_material;
 }

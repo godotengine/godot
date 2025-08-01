@@ -25,6 +25,9 @@ if "svg" in env.module_list:
     # Enable ThorVG static object linking.
     env_text_server_adv.Append(CPPDEFINES=["TVG_STATIC"])
 
+if env["builtin_icu4c"]:
+    env_text_server_adv.Append(CPPDEFINES=["HAVE_ICU_BUILTIN"])
+
 if env["builtin_harfbuzz"]:
     env_harfbuzz = env_modules.Clone()
     env_harfbuzz.disable_warnings()

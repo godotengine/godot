@@ -88,6 +88,9 @@ private:
 	TextureRect *touch_dragger = nullptr;
 
 	struct ThemeCache {
+		Color touch_dragger_color;
+		Color touch_dragger_pressed_color;
+		Color touch_dragger_hover_color;
 		int separation = 0;
 		int minimum_grab_thickness = 0;
 		bool autohide = false;

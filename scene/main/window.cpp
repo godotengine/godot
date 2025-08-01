@@ -2111,6 +2111,14 @@ bool Window::has_focus() const {
 	return focused;
 }
 
+bool Window::has_focus_or_active_popup() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_focused(window_id) || (DisplayServer::get_singleton()->window_get_active_popup() == window_id);
+	}
+	return focused;
+}
+
 void Window::start_drag() {
 	ERR_MAIN_THREAD_GUARD;
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -2883,7 +2891,8 @@ bool Window::is_layout_rtl() const {
 					String locale = OS::get_singleton()->get_locale();
 					return TS->is_locale_right_to_left(locale);
 				} else {
-					String locale = TranslationServer::get_singleton()->get_tool_locale();
+					const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
+					String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
 					return TS->is_locale_right_to_left(locale);
 				}
 			}

@@ -323,9 +323,8 @@ Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/update_imag
 Optional argument added. Compatibility methods registered.
 
 
-GH-98566
---------
-Validate extension JSON: API was removed: classes/VisualShader/methods/set_graph_offset
-Validate extension JSON: API was removed: classes/VisualShader/methods/get_graph_offset
+GH-108825
+---------
+Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
-The graph_offset property was removed from the resource. This information is now stored in `vs_editor_cache.cfg`.
+Return type changed to allow returning both ImageTexture and SVGTexture. Compatibility method registered.

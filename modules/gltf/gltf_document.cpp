@@ -59,7 +59,7 @@
 #include "scene/resources/surface_tool.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
@@ -200,10 +200,6 @@ Error GLTFDocument::_serialize(Ref<GLTFState> p_state) {
 	err = _serialize_textures(p_state);
 	if (err != OK) {
 		return Error::FAILED;
-	}
-
-	for (GLTFBufferViewIndex i = 0; i < p_state->buffer_views.size(); i++) {
-		p_state->buffer_views.write[i]->buffer = 0;
 	}
 
 	/* STEP SERIALIZE BUFFER VIEWS */
@@ -1153,12 +1149,12 @@ String GLTFDocument::_get_component_type_name(const GLTFAccessor::GLTFComponentT
 	return "<Error>";
 }
 
-Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_src, const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type, const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized, const int64_t p_byte_offset, const bool p_for_vertex, GLTFBufferViewIndex &r_accessor, const bool p_for_vertex_indices) {
+Error GLTFDocument::_encode_accessor_into_buffer_view(Ref<GLTFState> p_state, const double *p_src, const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type, const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized, const int64_t p_byte_offset, const bool p_for_vertex, GLTFBufferViewIndex &r_buffer_view, const bool p_for_vertex_indices) {
 	const int component_count = COMPONENT_COUNT_FOR_ACCESSOR_TYPE[p_accessor_type];
 	const int component_size = _get_component_type_size(p_component_type);
 	ERR_FAIL_COND_V(component_size == 0, FAILED);
-	// The byte offset of an accessor MUST be a multiple of the accessor’s component size.
-	// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#data-alignment
+	// The byte offset of an accessor MUST be a multiple of the accessor's component size.
+	// See 3.6.2.4: https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#data-alignment
 	int64_t offset = p_byte_offset;
 	if (p_byte_offset % component_size != 0) {
 		offset += component_size - (p_byte_offset % component_size);
@@ -1166,7 +1162,8 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 
 	int64_t skip_every = 0;
 	int64_t skip_bytes = 0;
-	//special case of alignments, as described in spec
+	// Accessors of matrix type have data stored in column-major order. The start of each column MUST be aligned to 4-byte boundaries.
+	// See 3.6.2.4: https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#data-alignment
 	switch (p_component_type) {
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE:
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
@@ -1183,7 +1180,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
 			if (p_accessor_type == GLTFAccessor::TYPE_MAT3) {
 				skip_every = 6;
-				skip_bytes = 4;
+				skip_bytes = 2;
 			}
 		} break;
 		default: {
@@ -1192,8 +1189,10 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 
 	Ref<GLTFBufferView> bv;
 	bv.instantiate();
+	const GLTFBufferIndex buffer0 = 0;
+	bv->buffer = buffer0;
 	bv->byte_offset = offset;
-	Vector<uint8_t> &gltf_buffer = p_state->buffers.write[0];
+	Vector<uint8_t> &gltf_buffer = p_state->buffers.write[buffer0];
 
 	int64_t stride = component_count * component_size;
 	if (p_for_vertex && stride % 4) {
@@ -1219,8 +1218,8 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 			ERR_FAIL_V_MSG(ERR_INVALID_DATA, "glTF: Failed to encode buffer view, component type not set.");
 		}
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_BYTE: {
-			Vector<int8_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<int8_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1229,23 +1228,23 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					}
 					double d = *p_src;
 					if (p_normalized) {
-						buffer.write[dst_i] = d * 128.0;
+						encoded_data.write[dst_i] = d * 128.0;
 					} else {
-						buffer.write[dst_i] = d;
+						encoded_data.write[dst_i] = d;
 					}
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(int8_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(int8_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
-			Vector<uint8_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<uint8_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1254,21 +1253,21 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					}
 					double d = *p_src;
 					if (p_normalized) {
-						buffer.write[dst_i] = d * 255.0;
+						encoded_data.write[dst_i] = d * 255.0;
 					} else {
-						buffer.write[dst_i] = d;
+						encoded_data.write[dst_i] = d;
 					}
 					p_src++;
 					dst_i++;
 				}
 			}
-			gltf_buffer.append_array(buffer);
-			const size_t buffer_size = buffer.size() * sizeof(uint8_t);
+			gltf_buffer.append_array(encoded_data);
+			const size_t buffer_size = encoded_data.size() * sizeof(uint8_t);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT: {
-			Vector<int16_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<int16_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1277,23 +1276,23 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					}
 					double d = *p_src;
 					if (p_normalized) {
-						buffer.write[dst_i] = d * 32768.0;
+						encoded_data.write[dst_i] = d * 32768.0;
 					} else {
-						buffer.write[dst_i] = d;
+						encoded_data.write[dst_i] = d;
 					}
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(int16_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(int16_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
-			Vector<uint16_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<uint16_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1302,23 +1301,23 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					}
 					double d = *p_src;
 					if (p_normalized) {
-						buffer.write[dst_i] = d * 65535.0;
+						encoded_data.write[dst_i] = d * 65535.0;
 					} else {
-						buffer.write[dst_i] = d;
+						encoded_data.write[dst_i] = d;
 					}
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(uint16_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(uint16_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
-			Vector<int32_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<int32_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1326,20 +1325,20 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 						dst_i += skip_bytes;
 					}
 					double d = *p_src;
-					buffer.write[dst_i] = d;
+					encoded_data.write[dst_i] = d;
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(int32_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(int32_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
-			Vector<uint32_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<uint32_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1347,20 +1346,20 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 						dst_i += skip_bytes;
 					}
 					double d = *p_src;
-					buffer.write[dst_i] = d;
+					encoded_data.write[dst_i] = d;
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(uint32_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(uint32_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT: {
-			Vector<float> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<float> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1368,20 +1367,20 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 						dst_i += skip_bytes;
 					}
 					double d = *p_src;
-					buffer.write[dst_i] = d;
+					encoded_data.write[dst_i] = d;
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(float);
+			const size_t buffer_size = encoded_data.size() * sizeof(float);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
-			Vector<double> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<double> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1389,23 +1388,23 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 						dst_i += skip_bytes;
 					}
 					double d = *p_src;
-					buffer.write[dst_i] = d;
+					encoded_data.write[dst_i] = d;
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(double);
+			const size_t buffer_size = encoded_data.size() * sizeof(double);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Half float not supported yet.");
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_LONG: {
-			Vector<int64_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<int64_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1414,20 +1413,20 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					}
 					// FIXME: This can result in precision loss because int64_t can store some values that double can't.
 					double d = *p_src;
-					buffer.write[dst_i] = d;
+					encoded_data.write[dst_i] = d;
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(int64_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(int64_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
-			Vector<uint64_t> buffer;
-			buffer.resize(p_count * component_count);
+			Vector<uint64_t> encoded_data;
+			encoded_data.resize(p_count * component_count);
 			int64_t dst_i = 0;
 			for (int64_t i = 0; i < p_count; i++) {
 				for (int64_t j = 0; j < component_count; j++) {
@@ -1436,15 +1435,15 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					}
 					// FIXME: This can result in precision loss because int64_t can store some values that double can't.
 					double d = *p_src;
-					buffer.write[dst_i] = d;
+					encoded_data.write[dst_i] = d;
 					p_src++;
 					dst_i++;
 				}
 			}
 			const int64_t old_size = gltf_buffer.size();
-			const size_t buffer_size = buffer.size() * sizeof(uint64_t);
+			const size_t buffer_size = encoded_data.size() * sizeof(uint64_t);
 			gltf_buffer.resize(old_size + buffer_size);
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, encoded_data.ptrw(), buffer_size);
 			bv->byte_length = buffer_size;
 		} break;
 	}
@@ -1456,7 +1455,7 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 		gltf_buffer.push_back(0);
 	}
 
-	r_accessor = bv->buffer = p_state->buffer_views.size();
+	r_buffer_view = p_state->buffer_views.size();
 	p_state->buffer_views.push_back(bv);
 	return OK;
 }
@@ -1738,7 +1737,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_ints(Ref<GLTFState> p_state,
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i, p_for_vertex_indices);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i, p_for_vertex_indices);
 	if (err != OK) {
 		return -1;
 	}
@@ -1847,7 +1846,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec2(Ref<GLTFState> p_state,
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -1900,7 +1899,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_color(Ref<GLTFState> p_state
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -1967,7 +1966,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_weights(Ref<GLTFState> p_sta
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -2018,7 +2017,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_joints(Ref<GLTFState> p_stat
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -2071,7 +2070,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_quaternions(Ref<GLTFState> p
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -2146,7 +2145,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_floats(Ref<GLTFState> p_stat
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -2196,7 +2195,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_vec3(Ref<GLTFState> p_state,
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -2290,11 +2289,11 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 		} else {
 			sparse_accessor->sparse_indices_component_type = GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT;
 		}
-		if (_encode_buffer_view(p_state, changed_indices.ptr(), changed_indices.size(), GLTFAccessor::TYPE_SCALAR, sparse_accessor->sparse_indices_component_type, sparse_accessor->normalized, sparse_accessor->sparse_indices_byte_offset, false, buffer_view_i_indices) != OK) {
+		if (_encode_accessor_into_buffer_view(p_state, changed_indices.ptr(), changed_indices.size(), GLTFAccessor::TYPE_SCALAR, sparse_accessor->sparse_indices_component_type, sparse_accessor->normalized, sparse_accessor->sparse_indices_byte_offset, false, buffer_view_i_indices) != OK) {
 			return -1;
 		}
 		// We use changed_indices.size() here, because we must pass the number of vec3 values rather than the number of components.
-		if (_encode_buffer_view(p_state, changed_values.ptr(), changed_indices.size(), sparse_accessor->accessor_type, sparse_accessor->component_type, sparse_accessor->normalized, sparse_accessor->sparse_values_byte_offset, false, buffer_view_i_values) != OK) {
+		if (_encode_accessor_into_buffer_view(p_state, changed_values.ptr(), changed_indices.size(), sparse_accessor->accessor_type, sparse_accessor->component_type, sparse_accessor->normalized, sparse_accessor->sparse_values_byte_offset, false, buffer_view_i_values) != OK) {
 			return -1;
 		}
 		sparse_accessor->sparse_indices_buffer_view = buffer_view_i_indices;
@@ -2303,7 +2302,7 @@ GLTFAccessorIndex GLTFDocument::_encode_sparse_accessor_as_vec3(Ref<GLTFState> p
 	} else if (changed_indices.size() > 0) {
 		GLTFBufferIndex buffer_view_i;
 		sparse_accessor->byte_offset = 0;
-		Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, sparse_accessor->normalized, size, p_for_vertex, buffer_view_i);
+		Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, sparse_accessor->normalized, size, p_for_vertex, buffer_view_i);
 		if (err != OK) {
 			return -1;
 		}
@@ -2377,7 +2376,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_xform(Ref<GLTFState> p_state
 	accessor->accessor_type = accessor_type;
 	accessor->component_type = component_type;
 	accessor->byte_offset = 0;
-	Error err = _encode_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
+	Error err = _encode_accessor_into_buffer_view(p_state, attribs.ptr(), p_attribs.size(), accessor_type, component_type, accessor->normalized, size, p_for_vertex, buffer_view_i);
 	if (err != OK) {
 		return -1;
 	}
@@ -2817,7 +2816,7 @@ GLTFAccessorIndex GLTFDocument::_encode_accessor_as_variant(Ref<GLTFState> p_sta
 		p_state->buffers.push_back(Vector<uint8_t>());
 	}
 	const int64_t buffer_size = p_state->buffers[buffer_view_index].size();
-	Error err = _encode_buffer_view(p_state, encoded_attribs.ptr(), p_attribs.size(), p_accessor_type, p_component_type, false, buffer_size, false, buffer_view_index);
+	Error err = _encode_accessor_into_buffer_view(p_state, encoded_attribs.ptr(), p_attribs.size(), p_accessor_type, p_component_type, false, buffer_size, false, buffer_view_index);
 	if (err != OK) {
 		return -1;
 	}

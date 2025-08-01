@@ -651,7 +651,7 @@
 			<return type="Image" />
 			<description>
 				Returns the user's clipboard as an image if possible.
-				[b]Note:[/b] This method uses the copied pixel data, e.g. from a image editing software or a web browser, not an image file copied from file explorer.
+				[b]Note:[/b] This method uses the copied pixel data, e.g. from an image editing software or a web browser, not an image file copied from file explorer.
 			</description>
 		</method>
 		<method name="clipboard_get_primary" qualifiers="const">
@@ -782,7 +782,7 @@
 				Displays OS native dialog for selecting files or directories in the file system.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android (API level 29+).
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
@@ -1976,7 +1976,7 @@
 			<return type="PackedStringArray" />
 			<param index="0" name="language" type="String" />
 			<description>
-				Returns an [PackedStringArray] of voice identifiers for the [param language].
+				Returns a [PackedStringArray] of voice identifiers for the [param language].
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux (X11/Wayland), macOS, and Windows.
 			</description>
 		</method>
@@ -2059,6 +2059,7 @@
 			<return type="int" />
 			<description>
 				Returns the on-screen keyboard's height in pixels. Returns 0 if there is no keyboard or if it is currently hidden.
+				[b]Note:[/b] On Android 7 and 8, the keyboard height may return 0 the first time the keyboard is opened in non-immersive mode. This behavior does not occur in immersive mode.
 			</description>
 		</method>
 		<method name="virtual_keyboard_hide">
@@ -2832,22 +2833,22 @@
 			Scroll backward action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_SCROLL_DOWN" value="12" enum="AccessibilityAction">
-			Scroll down action, callback argument is not set.
+			Scroll down action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_FORWARD" value="13" enum="AccessibilityAction">
 			Scroll forward action, callback argument is not set.
 		</constant>
 		<constant name="ACTION_SCROLL_LEFT" value="14" enum="AccessibilityAction">
-			Scroll left action, callback argument is not set.
+			Scroll left action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_RIGHT" value="15" enum="AccessibilityAction">
-			Scroll right action, callback argument is not set.
+			Scroll right action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_UP" value="16" enum="AccessibilityAction">
-			Scroll up action, callback argument is not set.
+			Scroll up action, callback argument is set to [enum AccessibilityScrollUnit].
 		</constant>
 		<constant name="ACTION_SCROLL_INTO_VIEW" value="17" enum="AccessibilityAction">
-			Scroll into view action, callback argument is not set.
+			Scroll into view action, callback argument is set to [enum AccessibilityScrollHint].
 		</constant>
 		<constant name="ACTION_SCROLL_TO_POINT" value="18" enum="AccessibilityAction">
 			Scroll to point action, callback argument is set to [Vector2] with the relative point coordinates.
@@ -2872,6 +2873,30 @@
 		</constant>
 		<constant name="LIVE_ASSERTIVE" value="2" enum="AccessibilityLiveMode">
 			Indicates that updates to the live region have the highest priority and should be presented immediately.
+		</constant>
+		<constant name="SCROLL_UNIT_ITEM" value="0" enum="AccessibilityScrollUnit">
+			The amount by which to scroll. A single item of a list, line of text.
+		</constant>
+		<constant name="SCROLL_UNIT_PAGE" value="1" enum="AccessibilityScrollUnit">
+			The amount by which to scroll. A single page.
+		</constant>
+		<constant name="SCROLL_HINT_TOP_LEFT" value="0" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Top-left edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_BOTTOM_RIGHT" value="1" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Bottom-right edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_TOP_EDGE" value="2" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Top edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_BOTTOM_EDGE" value="3" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Bottom edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_LEFT_EDGE" value="4" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Left edge of the scroll container.
+		</constant>
+		<constant name="SCROLL_HINT_RIGHT_EDGE" value="5" enum="AccessibilityScrollHint">
+			A preferred position for the node scrolled into view. Right edge of the scroll container.
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
@@ -3074,7 +3099,8 @@
 		<constant name="WINDOW_FLAG_TRANSPARENT" value="3" enum="WindowFlags">
 			The window background can be transparent.
 			[b]Note:[/b] This flag has no effect if [method is_window_transparency_available] returns [code]false[/code].
-			[b]Note:[/b] Transparency support is implemented on Android, Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Linux (X11/Wayland), macOS, and Windows, but availability might vary depending on GPU driver, display manager, and compositor capabilities.
+			[b]Note:[/b] Transparency support is implemented on Android, but can only be enabled via [member ProjectSettings.display/window/per_pixel_transparency/allowed]. This flag has no effect on Android.
 		</constant>
 		<constant name="WINDOW_FLAG_NO_FOCUS" value="4" enum="WindowFlags">
 			The window can't be focused. No-focus window will ignore all input, except mouse clicks.

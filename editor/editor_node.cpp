@@ -46,7 +46,7 @@
 #include "core/string/translation_server.h"
 #include "core/version.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/editor_context_menu_plugin.h"
+#include "editor/inspector/editor_context_menu_plugin.h"
 #include "main/main.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/bone_attachment_3d.h"
@@ -72,56 +72,51 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
-#include "editor/audio_stream_preview.h"
+#include "editor/animation/animation_player_editor_plugin.h"
+#include "editor/asset_library/asset_library_editor_plugin.h"
+#include "editor/audio/audio_stream_preview.h"
+#include "editor/audio/editor_audio_buses.h"
+#include "editor/debugger/debugger_editor_plugin.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
-#include "editor/dependency_editor.h"
-#include "editor/editor_about.h"
-#include "editor/editor_audio_buses.h"
-#include "editor/editor_build_profile.h"
-#include "editor/editor_command_palette.h"
+#include "editor/doc/editor_help.h"
+#include "editor/docks/editor_dock_manager.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/docks/history_dock.h"
+#include "editor/docks/import_dock.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/node_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_data.h"
-#include "editor/editor_dock_manager.h"
-#include "editor/editor_feature_profile.h"
-#include "editor/editor_folding.h"
-#include "editor/editor_help.h"
-#include "editor/editor_inspector.h"
 #include "editor/editor_interface.h"
-#include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
 #include "editor/editor_main_screen.h"
-#include "editor/editor_native_shader_source_visualizer.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_properties.h"
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_resource_picker.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_run.h"
-#include "editor/editor_script.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_settings_dialog.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/export/dedicated_server_export_plugin.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/export_template_manager.h"
+#include "editor/export/gdextension_export_plugin.h"
 #include "editor/export/project_export.h"
 #include "editor/export/project_zip_packer.h"
-#include "editor/fbx_importer_manager.h"
-#include "editor/filesystem_dock.h"
+#include "editor/export/register_exporters.h"
+#include "editor/export/shader_baker_export_plugin.h"
+#include "editor/file_system/dependency_editor.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/editor_about.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/history_dock.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/gui/window_wrapper.h"
 #include "editor/import/3d/editor_import_collada.h"
 #include "editor/import/3d/resource_importer_obj.h"
 #include "editor/import/3d/resource_importer_scene.h"
 #include "editor/import/3d/scene_import_settings.h"
 #include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
+#include "editor/import/fbx_importer_manager.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -134,51 +129,55 @@
 #include "editor/import/resource_importer_texture.h"
 #include "editor/import/resource_importer_texture_atlas.h"
 #include "editor/import/resource_importer_wav.h"
-#include "editor/import_dock.h"
-#include "editor/inspector_dock.h"
-#include "editor/multi_node_edit.h"
-#include "editor/node_dock.h"
-#include "editor/plugins/animation_player_editor_plugin.h"
-#include "editor/plugins/asset_library_editor_plugin.h"
-#include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/debugger_editor_plugin.h"
-#include "editor/plugins/dedicated_server_export_plugin.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_preview_plugins.h"
+#include "editor/inspector/editor_properties.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/inspector/editor_resource_picker.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
-#include "editor/plugins/game_view_plugin.h"
-#include "editor/plugins/gdextension_export_plugin.h"
-#include "editor/plugins/material_editor_plugin.h"
-#include "editor/plugins/mesh_library_editor_plugin.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/plugins/packed_scene_translation_parser_plugin.h"
-#include "editor/plugins/particle_process_material_editor_plugin.h"
 #include "editor/plugins/plugin_config_dialog.h"
-#include "editor/plugins/root_motion_editor_plugin.h"
-#include "editor/plugins/script_text_editor.h"
-#include "editor/plugins/shader_baker_export_plugin.h"
-#include "editor/plugins/text_editor.h"
-#include "editor/plugins/version_control_editor_plugin.h"
-#include "editor/plugins/visual_shader_editor_plugin.h"
-#include "editor/progress_dialog.h"
-#include "editor/project_settings_editor.h"
-#include "editor/project_upgrade_tool.h"
-#include "editor/register_exporters.h"
-#include "editor/scene_tree_dock.h"
+#include "editor/project_upgrade/project_upgrade_tool.h"
+#include "editor/run/editor_run.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/run/game_view_plugin.h"
+#include "editor/scene/3d/mesh_library_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/3d/root_motion_editor_plugin.h"
+#include "editor/scene/canvas_item_editor_plugin.h"
+#include "editor/scene/editor_scene_tabs.h"
+#include "editor/scene/material_editor_plugin.h"
+#include "editor/scene/particle_process_material_editor_plugin.h"
+#include "editor/script/editor_script.h"
+#include "editor/script/script_text_editor.h"
+#include "editor/script/text_editor.h"
+#include "editor/settings/editor_build_profile.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_feature_profile.h"
+#include "editor/settings/editor_layouts_dialog.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/settings/editor_settings_dialog.h"
+#include "editor/settings/project_settings_editor.h"
+#include "editor/shader/editor_native_shader_source_visualizer.h"
+#include "editor/shader/visual_shader_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "editor/window_wrapper.h"
+#include "editor/translations/editor_translation_parser.h"
+#include "editor/translations/packed_scene_translation_parser_plugin.h"
+#include "editor/version_control/version_control_editor_plugin.h"
 
 #ifdef VULKAN_ENABLED
-#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_vulkan.h"
+#include "editor/shader/shader_baker/shader_baker_export_plugin_platform_vulkan.h"
 #endif
 
 #ifdef D3D12_ENABLED
-#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_d3d12.h"
+#include "editor/shader/shader_baker/shader_baker_export_plugin_platform_d3d12.h"
 #endif
 
 #ifdef METAL_ENABLED
-#include "editor/plugins/shader_baker/shader_baker_export_plugin_platform_metal.h"
+#include "editor/shader/shader_baker/shader_baker_export_plugin_platform_metal.h"
 #endif
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -451,6 +450,11 @@ void EditorNode::_update_from_settings() {
 		Viewport::DefaultCanvasItemTextureRepeat tr = (Viewport::DefaultCanvasItemTextureRepeat)current_repeat;
 		scene_root->set_default_canvas_item_texture_repeat(tr);
 	}
+	String current_fallback_locale = GLOBAL_GET("internationalization/locale/fallback");
+	if (current_fallback_locale != TranslationServer::get_singleton()->get_fallback_locale()) {
+		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
+		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
+	}
 
 	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
@@ -505,6 +509,11 @@ void EditorNode::_update_from_settings() {
 
 	Viewport::MSAA msaa = Viewport::MSAA(int(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d")));
 	scene_root->set_msaa_2d(msaa);
+
+	// 2D doesn't use a dedicated SubViewport like 3D does, so we apply it on the root viewport instead.
+	bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
+	scene_root->set_use_debanding(use_debanding);
+	get_viewport()->set_use_debanding(use_debanding);
 
 	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	scene_root->set_use_hdr_2d(use_hdr_2d);
@@ -765,6 +774,7 @@ bool EditorNode::_is_project_data_missing() {
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_title();
 			callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
 		} break;
 
@@ -846,7 +856,7 @@ void EditorNode::_notification(int p_what) {
 
 			command_palette->register_shortcuts_as_command();
 
-			callable_mp(this, &EditorNode::_begin_first_scan).call_deferred();
+			_begin_first_scan();
 
 			last_dark_mode_state = DisplayServer::get_singleton()->is_dark_mode();
 			last_system_accent_color = DisplayServer::get_singleton()->get_accent_color();
@@ -1585,7 +1595,13 @@ void EditorNode::save_resource_in_path(const Ref<Resource> &p_resource, const St
 		return;
 	}
 
-	((Resource *)p_resource.ptr())->set_path(path);
+	Ref<Resource> prev_resource = ResourceCache::get_ref(p_path);
+	if (prev_resource.is_null() || prev_resource != p_resource) {
+		p_resource->set_path(path, true);
+	}
+	if (prev_resource.is_valid() && prev_resource != p_resource) {
+		replace_resources_in_scenes({ prev_resource }, { p_resource });
+	}
 	saving_resources_in_path.erase(p_resource);
 
 	_resource_saved(p_resource, path);
@@ -3301,8 +3317,14 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				p_confirmed = false;
 			}
 
+			if (p_confirmed && stop_project_confirmation && project_run_bar->is_playing()) {
+				project_run_bar->stop_playing();
+				stop_project_confirmation = false;
+				p_confirmed = false;
+			}
+
 			if (!p_confirmed) {
-				if (project_run_bar->is_playing()) {
+				if (!stop_project_confirmation && project_run_bar->is_playing()) {
 					if (p_option == PROJECT_RELOAD_CURRENT_PROJECT) {
 						confirmation->set_text(TTR("Stop running project before reloading the current project?"));
 						confirmation->set_ok_button_text(TTR("Stop & Reload"));
@@ -3313,6 +3335,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 					confirmation->reset_size();
 					confirmation->popup_centered();
 					confirmation_button->hide();
+					stop_project_confirmation = true;
 					break;
 				}
 
@@ -4073,6 +4096,7 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	// When scene gets closed no node is edited anymore, so make sure the editors are notified before nodes are freed.
 	hide_unused_editors(SceneTreeDock::get_singleton());
+	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;
@@ -4230,6 +4254,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 	Node *old_scene = get_editor_data().get_edited_scene_root();
 
 	editor_selection->clear();
+	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 	editor_data.set_edited_scene(p_idx);
 
 	Node *new_scene = editor_data.get_edited_scene_root();
@@ -5597,14 +5622,6 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 void EditorNode::_begin_first_scan() {
-	// In headless mode, scan right away.
-	// This allows users to continue using `godot --headless --editor --quit` to prepare a project.
-	if (!DisplayServer::get_singleton()->window_can_draw()) {
-		OS::get_singleton()->benchmark_begin_measure("Editor", "First Scan");
-		EditorFileSystem::get_singleton()->scan();
-		return;
-	}
-
 	if (!waiting_for_first_scan) {
 		return;
 	}
@@ -5996,6 +6013,11 @@ bool EditorNode::immediate_confirmation_dialog(const String &p_text, const Strin
 	return singleton->immediate_dialog_confirmed;
 }
 
+bool EditorNode::is_cmdline_mode() {
+	ERR_FAIL_NULL_V(singleton, false);
+	return singleton->cmdline_mode;
+}
+
 void EditorNode::cleanup() {
 	_init_callbacks.clear();
 }
@@ -6196,6 +6218,12 @@ void EditorNode::_cancel_close_scene_tab() {
 	if (_is_closing_editor()) {
 		tab_closing_menu_option = -1;
 	}
+	changing_scene = false;
+	tabs_to_close.clear();
+}
+
+void EditorNode::_cancel_confirmation() {
+	stop_project_confirmation = false;
 }
 
 void EditorNode::_prepare_save_confirmation_popup() {
@@ -7928,7 +7956,6 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/toggle_last_opened_bottom_panel", TTRC("Toggle Last Opened Bottom Panel"), KeyModifierMask::CMD_OR_CTRL | Key::J);
 	distraction_free->set_shortcut(ED_GET_SHORTCUT("editor/distraction_free_mode"));
 	distraction_free->set_tooltip_text(TTRC("Toggle distraction-free mode."));
-	distraction_free->set_accessibility_name(TTRC("Distraction-free Mode"));
 	distraction_free->set_toggle_mode(true);
 	scene_tabs->add_extra_button(distraction_free);
 	distraction_free->connect(SceneStringName(pressed), callable_mp(this, &EditorNode::_toggle_distraction_free_mode));
@@ -8400,6 +8427,7 @@ EditorNode::EditorNode() {
 	confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
 	confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
+	confirmation->connect("canceled", callable_mp(this, &EditorNode::_cancel_confirmation));
 
 	save_confirmation = memnew(ConfirmationDialog);
 	save_confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");

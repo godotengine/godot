@@ -32,7 +32,7 @@
 
 #include "../gdscript.h"
 #include "../gdscript_analyzer.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "gdscript_language_protocol.h"
 #include "gdscript_workspace.h"
 

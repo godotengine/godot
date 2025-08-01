@@ -159,7 +159,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	//try packed data first
 
 	Ref<FileAccess> ret;
-	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
+	if (!(p_mode_flags & WRITE) && !(p_mode_flags & SKIP_PACK) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret.is_valid()) {
 			if (r_error) {
@@ -170,7 +170,7 @@ Ref<FileAccess> FileAccess::open(const String &p_path, int p_mode_flags, Error *
 	}
 
 	ret = create_for_path(p_path);
-	Error err = ret->open_internal(p_path, p_mode_flags);
+	Error err = ret->open_internal(p_path, p_mode_flags & ~SKIP_PACK);
 
 	if (r_error) {
 		*r_error = err;

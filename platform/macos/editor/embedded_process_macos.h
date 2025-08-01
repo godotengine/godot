@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/embedded_process.h"
+#include "editor/run/embedded_process.h"
 
 class DisplayServerMacOS;
 class EmbeddedProcessMacOS;
@@ -41,12 +41,24 @@ class LayerHost final : public Control {
 	ScriptEditorDebugger *script_debugger = nullptr;
 	EmbeddedProcessMacOS *process = nullptr;
 
+	struct CustomCursor {
+		Ref<Image> image;
+		Vector2 hotspot;
+		CustomCursor() {}
+		CustomCursor(const Ref<Image> &p_image, const Vector2 &p_hotspot) {
+			image = p_image;
+			hotspot = p_hotspot;
+		}
+	};
+	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
+
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 protected:
 	void _notification(int p_what);
 
 public:
+	void cursor_set_custom_image(const Ref<Image> &p_image, DisplayServer::CursorShape p_shape, const Vector2 &p_hotspot);
 	void set_script_debugger(ScriptEditorDebugger *p_debugger) {
 		script_debugger = p_debugger;
 	}
@@ -62,7 +74,6 @@ class EmbeddedProcessMacOS final : public EmbeddedProcessBase {
 		IN_PROGRESS,
 		COMPLETED,
 		FAILED,
-		CLOSED,
 	};
 
 	DisplayServerMacOS *ds = nullptr;

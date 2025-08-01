@@ -988,7 +988,8 @@
 			If [code]true[/code], the Scene dock will display buttons to quickly add a root node to a newly created scene.
 		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
-			If [code]true[/code], automatically expands property groups in the Inspector dock when opening a scene that hasn't been opened previously. If [code]false[/code], all groups remain collapsed by default.
+			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.
+			[b]Note:[/b] This setting only works in specific scenarios: when opening a scene brought in from another project, or when opening a new scene that already has modified properties (e.g., from version control). Duplicated scenes are not considered foreign, so this setting will not affect them.
 		</member>
 		<member name="interface/inspector/color_picker_show_intensity" type="bool" setter="" getter="">
 			If [code]true[/code], show the intensity slider in the [ColorPicker]s opened in the editor.
@@ -1155,6 +1156,7 @@
 		</member>
 		<member name="network/connection/network_mode" type="int" setter="" getter="">
 			Determines whether online features are enabled in the editor, such as the Asset Library or update checks. Disabling these online features helps alleviate privacy concerns by preventing the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
+			Editor plugins and tool scripts are recommended to follow this setting. However, Godot can't prevent them from violating this rule.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to this device's local IP address to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
@@ -1380,7 +1382,11 @@
 			If [code]true[/code], uses [StringName] instead of [String] when appropriate for code autocompletion.
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
-			If [code]true[/code], adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key. If [code]true[/code], newly created scripts will also automatically have type hints added to their method parameters and return types.
+			If [code]true[/code], automatically adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] (such as [code]-&gt; void[/code] and [code]: int[/code]) in many situations where it's possible to, including when:
+			- Accepting a suggestion from code autocompletion;
+			- Creating a new script from a template;
+			- Connecting signals from the Node dock;
+			- Creating variables prefixed with [annotation @GDScript.@onready], by dropping nodes from the Scene dock into the script editor while holding [kbd]Ctrl[/kbd].
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically inserts the matching closing brace when the opening brace is inserted by typing or autocompletion. Also automatically removes the closing brace when pressing [kbd]Backspace[/kbd] on the opening brace. This includes brackets ([code]()[/code], [code][][/code], [code]{}[/code]), string quotation marks ([code]''[/code], [code]""[/code]), and comments ([code]/**/[/code]) if the language supports it.
@@ -1495,6 +1501,27 @@
 			The script editor's comment color.
 			[b]Note:[/b] In GDScript, unlike Python, multiline strings are not considered to be comments, and will use the string highlighting color instead.
 		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/critical_color" type="Color" setter="" getter="">
+			The script editor's critical comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/critical_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/critical_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/critical_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/notice_color" type="Color" setter="" getter="">
+			The script editor's notice comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/notice_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/notice_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/notice_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/warning_color" type="Color" setter="" getter="">
+			The script editor's warning comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/warning_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/warning_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/warning_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
 		<member name="text_editor/theme/highlighting/completion_background_color" type="Color" setter="" getter="">
 			The script editor's autocompletion box background color.
 		</member>
@@ -1533,7 +1560,25 @@
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
-			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
+			[b]Note:[/b] When using the GDScript syntax highlighter, this is only used when calling some functions since function definitions and global functions have their own colors [member text_editor/theme/highlighting/gdscript/function_definition_color] and [member text_editor/theme/highlighting/gdscript/global_function_color].
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/annotation_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for annotations (e.g. [code]@export[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/function_definition_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for function definitions (e.g. the [code]_ready[/code] in [code]func _ready():[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/global_function_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for global functions, such as the ones in [@GlobalScope] (e.g. [code]preload()[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/node_path_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for [NodePath] literals (e.g. [code]^"position:x"[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/node_reference_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for node reference literals (e.g. [code]$"Sprite"[/code] and [code]%"Sprite"[/code]]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/string_name_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&gt;"example"[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).

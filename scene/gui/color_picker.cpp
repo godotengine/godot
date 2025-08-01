@@ -99,17 +99,14 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_COLOR_PICKER)) {
-				btn_pick->set_accessibility_name(ETR("Pick Color From Screen"));
 				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_native));
 			} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
 				// FIXME: The embedding check is needed to fix a bug in single-window mode (GH-93718).
-				btn_pick->set_accessibility_name(ETR("Pick Color From Screen"));
 				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed));
 			} else {
 				// On unsupported platforms, use a legacy method for color picking.
-				btn_pick->set_accessibility_name(ETR("Pick Color From Window"));
 				btn_pick->set_tooltip_text(ETR("Pick a color from the application window."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
 			}
@@ -683,6 +680,9 @@ void ColorPicker::_copy_hsv_okhsl_to_normalized() {
 }
 
 Color ColorPicker::_color_apply_intensity(const Color &col) const {
+	if (intensity == 0.0f) {
+		return col;
+	}
 	Color linear_color = col.srgb_to_linear();
 	Color result;
 	float multiplier = Math::pow(2, intensity);
@@ -2182,7 +2182,6 @@ ColorPicker::ColorPicker() {
 	btn_shape->set_flat(false);
 	sample_hbc->add_child(btn_shape);
 	btn_shape->set_toggle_mode(true);
-	btn_shape->set_accessibility_name(ETR("Picker Shape"));
 	btn_shape->set_tooltip_text(ETR("Select a picker shape."));
 	btn_shape->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_shape->set_focus_mode(FOCUS_ALL);
@@ -2233,7 +2232,7 @@ ColorPicker::ColorPicker() {
 	btn_mode->set_flat(false);
 	mode_hbc->add_child(btn_mode);
 	btn_mode->set_toggle_mode(true);
-	btn_mode->set_accessibility_name(ETR("Picker Mode"));
+	btn_mode->set_accessibility_name(ETR("Select a picker mode."));
 	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
 	btn_mode->set_focus_mode(FOCUS_ALL);
 
@@ -2284,7 +2283,6 @@ ColorPicker::ColorPicker() {
 	text_type->set_text("#");
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		text_type->set_accessibility_name(TTRC("Hexadecimal/Code Values"));
 		text_type->set_tooltip_text(TTRC("Switch between hexadecimal and code values."));
 		text_type->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
@@ -2300,7 +2298,7 @@ ColorPicker::ColorPicker() {
 	hex_hbc->add_child(c_text);
 	c_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	c_text->set_select_all_on_focus(true);
-	c_text->set_accessibility_name(ETR("Hex Code or Name"));
+	c_text->set_accessibility_name(ETR("Hex code or named color"));
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
 	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
@@ -2338,7 +2336,6 @@ ColorPicker::ColorPicker() {
 	menu_btn->set_flat(false);
 	menu_btn->set_focus_mode(FOCUS_ALL);
 	menu_btn->set_tooltip_text(ETR("Show all options available."));
-	menu_btn->set_accessibility_name(ETR("All Options"));
 	menu_btn->connect("about_to_popup", callable_mp(this, &ColorPicker::_update_menu_items));
 	palette_box->add_child(menu_btn);
 
@@ -2375,7 +2372,6 @@ ColorPicker::ColorPicker() {
 	btn_add_preset = memnew(Button);
 	btn_add_preset->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_add_preset->set_tooltip_text(ETR("Add current color as a preset."));
-	btn_add_preset->set_accessibility_name(ETR("Add Preset"));
 	btn_add_preset->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_add_preset_pressed));
 	preset_container->add_child(btn_add_preset);
 

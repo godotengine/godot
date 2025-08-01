@@ -90,7 +90,7 @@
 			http_request.request_completed.connect(self._http_request_completed)
 
 			# Perform the HTTP request. The URL below returns a PNG image as of writing.
-			var error = http_request.request("https://placehold.co/512")
+			var error = http_request.request("https://placehold.co/512.png")
 			if error != OK:
 				push_error("An error occurred in the HTTP request.")
 
@@ -120,7 +120,7 @@
 			httpRequest.RequestCompleted += HttpRequestCompleted;
 
 			// Perform the HTTP request. The URL below returns a PNG image as of writing.
-			Error error = httpRequest.Request("https://placehold.co/512");
+			Error error = httpRequest.Request("https://placehold.co/512.png");
 			if (error != Error.Ok)
 			{
 				GD.PushError("An error occurred in the HTTP request.");
@@ -150,7 +150,7 @@
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] [HTTPRequest] nodes will automatically handle decompression of response bodies. A [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
+		[b]Note:[/b] [HTTPRequest] nodes will automatically handle decompression of response bodies. An [code]Accept-Encoding[/code] header will be automatically added to each of your requests, unless one is already specified. Any response with a [code]Content-Encoding: gzip[/code] header will automatically be decompressed and delivered to you as uncompressed bytes.
 	</description>
 	<tutorials>
 		<link title="Making HTTP requests">$DOCS_URL/tutorials/networking/http_request_class.html</link>

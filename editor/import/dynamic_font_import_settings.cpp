@@ -34,13 +34,13 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_locale_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/translations/editor_locale_dialog.h"
 #include "scene/gui/split_container.h"
 
 /*************************************************************************/
@@ -1100,13 +1100,12 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 
 	add_var = memnew(Button);
 	add_var->set_tooltip_text(TTR("Add new font variation configuration."));
-	add_var->set_accessibility_name(TTRC("Add Configuration"));
 	page2_hb_vars->add_child(add_var);
 	add_var->connect(SceneStringName(pressed), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_add));
 
 	vars_list = memnew(Tree);
 	vars_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	vars_list->set_accessibility_name(TTRC("Configuration"));
+	vars_list->set_accessibility_name(TTRC("Configuration:"));
 	vars_list->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	vars_list->set_hide_root(true);
 	vars_list->set_columns(2);

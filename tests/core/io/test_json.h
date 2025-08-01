@@ -71,6 +71,10 @@ TEST_CASE("[JSON] Stringify arrays") {
 	indented_array.push_back(nested_array);
 	CHECK(JSON::stringify(indented_array, "\t") == "[\n\t0,\n\t1,\n\t2,\n\t3,\n\t4,\n\t[\n\t\t0,\n\t\t1,\n\t\t2,\n\t\t3,\n\t\t4\n\t]\n]");
 
+	Array full_precision_array;
+	full_precision_array.push_back(0.123456789012345677);
+	CHECK(JSON::stringify(full_precision_array, "", true, true) == "[0.123456789012345677]");
+
 	ERR_PRINT_OFF
 	Array self_array;
 	self_array.push_back(self_array);
@@ -104,6 +108,10 @@ TEST_CASE("[JSON] Stringify dictionaries") {
 	inner["key"] = "value";
 	outer["inner"] = inner;
 	CHECK(JSON::stringify(outer) == "{\"inner\":{\"key\":\"value\"}}");
+
+	Dictionary full_precision_dictionary;
+	full_precision_dictionary["key"] = 0.123456789012345677;
+	CHECK(JSON::stringify(full_precision_dictionary, "", true, true) == "{\"key\":0.123456789012345677}");
 
 	ERR_PRINT_OFF
 	Dictionary self_dictionary;

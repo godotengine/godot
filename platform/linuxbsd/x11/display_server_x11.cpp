@@ -5961,9 +5961,10 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	}
 
 	for (unsigned int i = 0; i < num_children; i++) {
-		pid_t pid = get_window_pid(p_display, children[i]);
-		if (pid == p_process_id) {
-			return children[i];
+		const Window child = children[i];
+		if (get_window_pid(p_display, child) == p_process_id) {
+			XFree(children);
+			return child;
 		}
 	}
 
@@ -5971,6 +5972,7 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	for (unsigned int i = 0; i < num_children; i++) {
 		Window wnd = find_window_from_process_id_internal(p_display, p_process_id, children[i]);
 		if (wnd != 0) {
+			XFree(children);
 			return wnd;
 		}
 	}

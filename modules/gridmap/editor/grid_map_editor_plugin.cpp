@@ -31,15 +31,15 @@
 #include "grid_map_editor_plugin.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
@@ -535,7 +535,6 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(selected) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(selected);
-				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 
 				if (mesh.is_valid()) {
 					item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
@@ -1337,7 +1336,7 @@ GridMapEditor::GridMapEditor() {
 	settings_pick_distance->set_min(500.0f);
 	settings_pick_distance->set_step(1.0f);
 	settings_pick_distance->set_value(EDITOR_GET("editors/grid_map/pick_distance"));
-	settings_pick_distance->set_accessibility_name(TTRC("Pick Distance"));
+	settings_pick_distance->set_accessibility_name(TTRC("Pick Distance:"));
 	settings_vbc->add_margin_child(TTR("Pick Distance:"), settings_pick_distance);
 
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &GridMapEditor::_menu_option));
@@ -1370,7 +1369,7 @@ GridMapEditor::GridMapEditor() {
 	select_mode_button->set_toggle_mode(true);
 	select_mode_button->set_button_group(mode_buttons_group);
 	select_mode_button->set_shortcut(ED_SHORTCUT("grid_map/selection_tool", TTRC("Selection"), Key::Q, true));
-	select_mode_button->set_accessibility_name(TTRC("Select"));
+	select_mode_button->set_accessibility_name(TTRC("Selection"));
 	select_mode_button->connect(SceneStringName(toggled),
 			callable_mp(this, &GridMapEditor::_on_tool_mode_changed).unbind(1));
 	mode_buttons->add_child(select_mode_button);
@@ -1460,7 +1459,7 @@ GridMapEditor::GridMapEditor() {
 	rotate_x_button = memnew(Button);
 	rotate_x_button->set_theme_type_variation(SceneStringName(FlatButton));
 	rotate_x_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_x", TTRC("Cursor Rotate X"), Key::A, true));
-	rotate_x_button->set_accessibility_name(TTRC("Rotate X"));
+	rotate_x_button->set_accessibility_name(TTRC("Cursor Rotate X"));
 	rotate_x_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_X));
 	rotation_buttons->add_child(rotate_x_button);
@@ -1469,7 +1468,7 @@ GridMapEditor::GridMapEditor() {
 	rotate_y_button = memnew(Button);
 	rotate_y_button->set_theme_type_variation(SceneStringName(FlatButton));
 	rotate_y_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_y", TTRC("Cursor Rotate Y"), Key::S, true));
-	rotate_y_button->set_accessibility_name(TTRC("Rotate Y"));
+	rotate_y_button->set_accessibility_name(TTRC("Cursor Rotate Y"));
 	rotate_y_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Y));
 	rotation_buttons->add_child(rotate_y_button);
@@ -1478,6 +1477,7 @@ GridMapEditor::GridMapEditor() {
 	rotate_z_button = memnew(Button);
 	rotate_z_button->set_theme_type_variation(SceneStringName(FlatButton));
 	rotate_z_button->set_shortcut(ED_SHORTCUT("grid_map/cursor_rotate_z", TTRC("Cursor Rotate Z"), Key::D, true));
+	rotate_z_button->set_accessibility_name(TTRC("Cursor Rotate Z"));
 	rotate_z_button->connect(SceneStringName(pressed),
 			callable_mp(this, &GridMapEditor::_menu_option).bind(MENU_OPTION_CURSOR_ROTATE_Z));
 	rotation_buttons->add_child(rotate_z_button);
@@ -1493,7 +1493,7 @@ GridMapEditor::GridMapEditor() {
 	floor->set_min(-32767);
 	floor->set_max(32767);
 	floor->set_step(1);
-	floor->set_accessibility_name(TTRC("Grid Floor"));
+	floor->set_accessibility_name(TTRC("Change Grid Floor:"));
 	floor->set_tooltip_text(
 			vformat(TTR("Change Grid Floor:\nPrevious Plane (%s)\nNext Plane (%s)"),
 					ED_GET_SHORTCUT("grid_map/previous_floor")->get_as_text(),

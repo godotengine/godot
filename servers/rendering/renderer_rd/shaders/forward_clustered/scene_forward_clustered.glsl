@@ -404,7 +404,27 @@ void vertex_shader(vec3 vertex_input,
 
 	float roughness_highp = 1.0;
 
+#ifdef USE_DOUBLE_PRECISION
 	mat4 modelview = scene_data.view_matrix * model_matrix;
+
+	// We separate the basis from the origin because the basis is fine with single point precision.
+	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
+	// We add the result to the vertex and ignore the final lost precision.
+	vec3 model_origin = model_matrix[3].xyz;
+	if (sc_multimesh()) {
+		modelview = modelview * matrix;
+
+		vec3 instance_origin = mat3(model_matrix) * matrix[3].xyz;
+		model_origin = double_add_vec3(model_origin, model_precision, instance_origin, vec3(0.0), model_precision);
+	}
+
+	// Overwrite the translation part of modelview with improved precision.
+	vec3 temp_precision; // Will be ignored.
+	modelview[3].xyz = double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
+#else
+	mat4 modelview = scene_data.view_matrix * model_matrix;
+#endif
 	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
 	mat4 read_view_matrix = scene_data.view_matrix;
 	vec2 read_viewport_size = scene_data.viewport_size;
@@ -421,22 +441,8 @@ void vertex_shader(vec3 vertex_input,
 // using local coordinates (default)
 #if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
 
-#ifdef USE_DOUBLE_PRECISION
-	// We separate the basis from the origin because the basis is fine with single point precision.
-	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
-	// We add the result to the vertex and ignore the final lost precision.
-	vec3 model_origin = model_matrix[3].xyz;
-	if (sc_multimesh()) {
-		vertex = mat3(matrix) * vertex;
-		model_origin = double_add_vec3(model_origin, model_precision, matrix[3].xyz, vec3(0.0), model_precision);
-	}
-	vertex = mat3(inv_view_matrix * modelview) * vertex;
-	vec3 temp_precision; // Will be ignored.
-	vertex += double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	vertex = mat3(scene_data.view_matrix) * vertex;
-#else
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
-#endif
+
 #ifdef NORMAL_USED
 	normal = modelview_normal * normal;
 #endif
@@ -604,11 +610,11 @@ void vertex_shader(vec3 vertex_input,
 		vec3 directional_specular = vec3(0.0);
 
 		for (uint i = 0; i < scene_data.directional_light_count; i++) {
-			if (!bool(directional_lights.data[i].mask & instances.data[draw_call.instance_index].layer_mask)) {
+			if (!bool(directional_lights.data[i].mask & instances.data[instance_index].layer_mask)) {
 				continue; // Not masked, skip.
 			}
 
-			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[draw_call.instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
+			if (directional_lights.data[i].bake_mode == LIGHT_BAKE_STATIC && bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) {
 				continue; // Statically baked light and object uses lightmap, skip.
 			}
 			if (i == 0) {
@@ -674,7 +680,7 @@ void vertex_shader(vec3 vertex_input,
 #endif
 
 #ifdef Z_CLIP_SCALE_USED
-	if (!bool(scene_data_block.data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS)) {
+	if (!bool(scene_data.flags & SCENE_DATA_FLAGS_IN_SHADOW_PASS)) {
 		gl_Position.z = mix(gl_Position.w, gl_Position.z, z_clip_scale);
 	}
 #endif
@@ -1713,7 +1719,7 @@ void fragment_shader(in SceneData scene_data) {
 								 c[3] * lightmap_captures.data[index].sh[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
 								 c[2] * lightmap_captures.data[index].sh[7].rgb * wnormal.x * wnormal.z +
 								 c[4] * lightmap_captures.data[index].sh[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
-				scene_data.emissive_exposure_normalization;
+				scene_data.IBL_exposure_normalization;
 
 	} else if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_LIGHTMAP)) { // has actual lightmap
 		bool uses_sh = bool(instances.data[instance_index].flags & INSTANCE_FLAGS_USE_SH_LIGHTMAP);

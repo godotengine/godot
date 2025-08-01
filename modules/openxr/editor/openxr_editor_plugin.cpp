@@ -32,9 +32,9 @@
 
 #include "../action_map/openxr_action_map.h"
 
-#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/settings/editor_command_palette.h"
 
 void OpenXREditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<OpenXRActionMap>(p_node)) {

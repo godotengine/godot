@@ -522,10 +522,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		}
 		int err_line = _initial_line;
 		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// Debugger break did not happen.
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
-		}
+		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
+		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 #endif
 		return _get_default_variant_for_data_type(return_type);
 	}
@@ -658,7 +656,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	String err_text;
 
-	GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
+	GDScriptLanguage::CallLevel call_level;
+	GDScriptLanguage::get_singleton()->enter_function(&call_level, p_instance, this, stack, &ip, &line);
 
 #ifdef DEBUG_ENABLED
 #define GD_ERR_BREAK(m_cond)                                                                                           \
@@ -2550,7 +2549,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						// Is this even possible to be null at this point?
 						if (obj) {
 							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
-								result = Signal(obj, "completed");
+								result = Signal(obj, SNAME("completed"));
 							}
 						}
 					}
@@ -2596,6 +2595,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 					gdfs->state.defarg = defarg;
 					gdfs->function = this;
+
+					if (p_state) {
+						// Pass down the signal from the first state.
+						gdfs->state.completed = p_state->completed;
+					} else {
+						gdfs->state.completed = Signal(gdfs.ptr(), SNAME("completed"));
+					}
 
 					retvalue = gdfs;
 
@@ -3939,11 +3945,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			err_text = "Internal script error! Opcode: " + itos(last_opcode) + " (please report).";
 		}
 
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// debugger break did not happen
-
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
-		}
+		_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), false, ERR_HANDLER_SCRIPT);
+		GDScriptLanguage::get_singleton()->debug_break(err_text, false);
 
 		// Get a default return type in case of failure
 		retvalue = _get_default_variant_for_data_type(return_type);
@@ -3984,6 +3987,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	}
 
 	call_depth--;
+
+	if (p_state && !awaited) {
+		// This means we have finished executing a resumed function and it was not awaited again.
+
+		// Signal the next function-state to resume.
+		const Variant *args[1] = { &retvalue };
+		p_state->completed.emit(args, 1);
+
+		// Exit function only after executing the remaining function states to preserve async call stack.
+		GDScriptLanguage::get_singleton()->exit_function();
+	}
 
 	return retvalue;
 }

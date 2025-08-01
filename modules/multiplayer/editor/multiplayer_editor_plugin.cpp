@@ -34,10 +34,10 @@
 #include "editor_network_profiler.h"
 #include "replication_editor.h"
 
-#include "editor/editor_command_palette.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
+#include "editor/settings/editor_command_palette.h"
 
 void MultiplayerEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("open_request", PropertyInfo(Variant::STRING, "path")));

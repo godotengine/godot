@@ -113,8 +113,7 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 		}
 	}
 
-	// Update those quadrants.
-	bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
+	// Create new quadrants if needed.
 	for (const Vector2i &quadrant_coords : quadrants_to_updates) {
 		if (!debug_quadrant_map.has(quadrant_coords)) {
 			// Create a new quadrant and add it to the quadrant map.
@@ -123,7 +122,30 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			new_quadrant->quadrant_coords = quadrant_coords;
 			debug_quadrant_map[quadrant_coords] = new_quadrant;
 		}
+	}
 
+	// Second pass on modified cells to update the list of cells per quandrant.
+	if (_debug_was_cleaned_up || anything_changed) {
+		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
+			CellData &cell_data = kv.value;
+			Ref<DebugQuadrant> debug_quadrant = debug_quadrant_map[_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE)];
+			if (!cell_data.debug_quadrant_list_element.in_list()) {
+				debug_quadrant->cells.add(&cell_data.debug_quadrant_list_element);
+			}
+		}
+	} else {
+		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
+			CellData &cell_data = *cell_data_list_element->self();
+			Ref<DebugQuadrant> debug_quadrant = debug_quadrant_map[_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE)];
+			if (!cell_data.debug_quadrant_list_element.in_list()) {
+				debug_quadrant->cells.add(&cell_data.debug_quadrant_list_element);
+			}
+		}
+	}
+
+	// Update those quadrants.
+	bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
+	for (const Vector2i &quadrant_coords : quadrants_to_updates) {
 		Ref<DebugQuadrant> debug_quadrant = debug_quadrant_map[quadrant_coords];
 
 		// Update the quadrant's canvas item.
@@ -239,7 +261,7 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 		}
 
 		// Update all dirty quadrants.
-		bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
+		bool needs_set_not_interpolated = SceneTree::is_fti_enabled() && !is_physics_interpolated();
 		for (SelfList<RenderingQuadrant> *quadrant_list_element = dirty_rendering_quadrant_list.first(); quadrant_list_element;) {
 			SelfList<RenderingQuadrant> *next_quadrant_list_element = quadrant_list_element->next(); // "Hack" to clear the list while iterating.
 
@@ -593,7 +615,7 @@ void TileMapLayer::_rendering_occluders_update_cell(CellData &r_cell_data) {
 				bool transpose = (r_cell_data.cell.alternative_tile & TileSetAtlasSource::TRANSFORM_TRANSPOSE);
 
 				// Create, update or clear occluders.
-				bool needs_set_not_interpolated = is_inside_tree() && get_tree()->is_physics_interpolation_enabled() && !is_physics_interpolated();
+				bool needs_set_not_interpolated = SceneTree::is_fti_enabled() && !is_physics_interpolated();
 				for (uint32_t occlusion_layer_index = 0; occlusion_layer_index < r_cell_data.occluders.size(); occlusion_layer_index++) {
 					LocalVector<RID> &occluders = r_cell_data.occluders[occlusion_layer_index];
 
@@ -2189,7 +2211,7 @@ void TileMapLayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physics_quadrant_size"), "set_physics_quadrant_size", "get_physics_quadrant_size");
 #ifndef NAVIGATION_2D_DISABLED
 	ADD_GROUP("Navigation", "navigation_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_navigation_enabled", "is_navigation_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "navigation_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_navigation_enabled", "is_navigation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 #endif // NAVIGATION_2D_DISABLED
 

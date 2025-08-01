@@ -30,7 +30,7 @@
 
 #include "navigation_link_3d_editor_plugin.h"
 
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
 #include "scene/3d/navigation/navigation_link_3d.h"
 
 void NavigationLink3DEditorPlugin::edit(Object *p_object) {

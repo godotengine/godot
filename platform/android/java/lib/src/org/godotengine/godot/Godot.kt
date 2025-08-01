@@ -38,6 +38,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.hardware.Sensor
 import android.hardware.SensorManager
 import android.os.*
@@ -47,6 +48,8 @@ import android.view.*
 import android.widget.FrameLayout
 import androidx.annotation.Keep
 import androidx.annotation.StringRes
+import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsAnimationCompat
@@ -78,6 +81,8 @@ import java.io.FileInputStream
 import java.io.InputStream
 import java.security.MessageDigest
 import java.util.*
+import java.util.concurrent.Callable
+import java.util.concurrent.FutureTask
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -135,6 +140,16 @@ class Godot private constructor(val context: Context) {
 	val netUtils = GodotNetUtils(context)
 	private val godotInputHandler = GodotInputHandler(context, this)
 
+	private val hasClipboardCallable = Callable {
+		mClipboard?.hasPrimaryClip() == true
+	}
+
+	private val getClipboardCallable = Callable {
+		val clipData = mClipboard?.primaryClip
+		val text = clipData?.getItemAt(0)?.text
+		text?.toString() ?: ""
+	}
+
 	/**
 	 * Task to run when the engine terminates.
 	 */
@@ -175,6 +190,7 @@ class Godot private constructor(val context: Context) {
 	private val isEdgeToEdge = AtomicBoolean(false)
 	private var useDebugOpengl = false
 	private var darkMode = false
+	private var backgroundColor: Int = Color.BLACK
 
 	internal var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
@@ -204,7 +220,7 @@ class Godot private constructor(val context: Context) {
 	 * @throws IllegalArgumentException exception if the specified expansion pack (if any)
 	 * is invalid.
 	 */
-	fun initEngine(commandLineParams: List<String>, hostPlugins: Set<GodotPlugin>): Boolean {
+	fun initEngine(host: GodotHost?, commandLineParams: List<String>, hostPlugins: Set<GodotPlugin> = Collections.emptySet()): Boolean {
 		if (isNativeInitialized()) {
 			Log.d(TAG, "Engine already initialized")
 			return true
@@ -216,6 +232,8 @@ class Godot private constructor(val context: Context) {
 
 		beginBenchmarkMeasure("Startup", "Godot::initEngine")
 		try {
+			this.primaryHost = host
+
 			Log.v(TAG, "Initializing Godot plugin registry")
 			val runtimePlugins = mutableSetOf<GodotPlugin>(AndroidRuntimePlugin(this))
 			runtimePlugins.addAll(hostPlugins)
@@ -241,6 +259,17 @@ class Godot private constructor(val context: Context) {
 				} else if (commandLine[i] == "--fullscreen") {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
+				} else if (commandLine[i] == "--background_color") {
+					val colorStr = commandLine[i + 1]
+					try {
+						backgroundColor = colorStr.toColorInt()
+						Log.d(TAG, "background color = $backgroundColor")
+					} catch (e: java.lang.IllegalArgumentException) {
+						Log.d(TAG, "Failed to parse background color: $colorStr")
+					}
+					runOnHostThread {
+						getActivity()?.window?.decorView?.setBackgroundColor(backgroundColor)
+					}
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -342,6 +371,8 @@ class Godot private constructor(val context: Context) {
 	 */
 	@JvmOverloads
 	fun enableEdgeToEdge(enabled: Boolean, override: Boolean = false) {
+		// Note: If modifying edge-to-edge or immersive mode logic, ensure to test with GodotIO.getDisplaySafeArea()
+		// to confirm there are no regressions in safe area calculation.
 		val window = getActivity()?.window ?: return
 
 		if (!isEdgeToEdge.compareAndSet(!enabled, enabled) && !override) {
@@ -353,19 +384,39 @@ class Godot private constructor(val context: Context) {
 		if (enabled) {
 			ViewCompat.setOnApplyWindowInsetsListener(rootView, null)
 			rootView.setPadding(0, 0, 0, 0)
+			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+				window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+				window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+			}
 		} else {
-			val insetType = WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
 			if (rootView.rootWindowInsets != null) {
-				val windowInsets = WindowInsetsCompat.toWindowInsetsCompat(rootView.rootWindowInsets)
-				val insets = windowInsets.getInsets(insetType)
-				rootView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+				if (!useImmersive.get() || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)) {
+					val windowInsets = WindowInsetsCompat.toWindowInsetsCompat(rootView.rootWindowInsets)
+					val insets = windowInsets.getInsets(getInsetType())
+					rootView.setPadding(insets.left, insets.top, insets.right, insets.bottom)
+				}
 			}
 
 			ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-				val windowInsets = insets.getInsets(insetType)
-				v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
+				v.post {
+					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+						// Fixes issue where padding remained visible in immersive mode on some devices.
+						v.setPadding(0, 0, 0, 0)
+					} else {
+						val windowInsets = insets.getInsets(getInsetType())
+						v.setPadding(windowInsets.left, windowInsets.top, windowInsets.right, windowInsets.bottom)
+					}
+				}
 				WindowInsetsCompat.CONSUMED
 			}
+		}
+	}
+
+	private fun getInsetType(): Int {
+		return if (!useImmersive.get() || isEditorBuild()) {
+			WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()
+		} else {
+			WindowInsetsCompat.Type.systemBars()
 		}
 	}
 
@@ -375,6 +426,8 @@ class Godot private constructor(val context: Context) {
 	 */
 	@JvmOverloads
 	fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
+		// Note: If modifying edge-to-edge or immersive mode logic, ensure to test with GodotIO.getDisplaySafeArea()
+		// to confirm there are no regressions in safe area calculation.
 		val activity = getActivity() ?: return
 		val window = activity.window ?: return
 
@@ -420,6 +473,24 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	fun isInEdgeToEdgeMode() = isEdgeToEdge.get()
+
+	fun setSystemBarsAppearance() {
+		val window = getActivity()?.window ?: return
+		val isLight = ColorUtils.calculateLuminance(getWindowBackgroundColor(window)) > 0.5
+
+		val controller = WindowInsetsControllerCompat(window, window.decorView)
+		controller.isAppearanceLightNavigationBars = isLight
+		controller.isAppearanceLightStatusBars = isLight
+	}
+
+	private fun getWindowBackgroundColor(window: Window): Int {
+		val background = window.decorView.background
+		return if (background is ColorDrawable) {
+			background.color
+		} else {
+			backgroundColor
+		}
+	}
 
 	/**
 	 * Used to complete initialization of the view used by the engine for rendering.
@@ -474,7 +545,9 @@ class Godot private constructor(val context: Context) {
 
 			// Check whether the render view should be made transparent
 			val shouldBeTransparent =
-				!isProjectManagerHint() && !isEditorHint() && java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
+				!isProjectManagerHint() &&
+					!isEditorHint() &&
+					java.lang.Boolean.parseBoolean(GodotLib.getGlobal("display/window/per_pixel_transparency/allowed"))
 			Log.d(TAG, "Render view should be transparent: $shouldBeTransparent")
 			renderView = if (usesVulkan()) {
 				if (meetsVulkanRequirements(context.packageManager)) {
@@ -516,12 +589,18 @@ class Godot private constructor(val context: Context) {
 					startBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
 				}
 
-				override fun onStart(animation: WindowInsetsAnimationCompat, bounds: WindowInsetsAnimationCompat.BoundsCompat): WindowInsetsAnimationCompat.BoundsCompat {
+				override fun onStart(
+					animation: WindowInsetsAnimationCompat,
+					bounds: WindowInsetsAnimationCompat.BoundsCompat
+				): WindowInsetsAnimationCompat.BoundsCompat {
 					endBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
 					return bounds
 				}
 
-				override fun onProgress(windowInsets: WindowInsetsCompat, animationsList: List<WindowInsetsAnimationCompat>): WindowInsetsCompat {
+				override fun onProgress(
+					windowInsets: WindowInsetsCompat,
+					animationsList: List<WindowInsetsAnimationCompat>
+				): WindowInsetsCompat {
 					// Find the IME animation.
 					var imeAnimation: WindowInsetsAnimationCompat? = null
 					for (animation in animationsList) {
@@ -536,12 +615,20 @@ class Godot private constructor(val context: Context) {
 						val interpolatedFraction = imeAnimation.interpolatedFraction
 						// Linear interpolation between start and end values.
 						val keyboardHeight = startBottom * (1.0f - interpolatedFraction) + endBottom * interpolatedFraction
-						GodotLib.setVirtualKeyboardHeight(keyboardHeight.toInt())
+						val finalHeight = maxOf(keyboardHeight.toInt() - topView.rootView.paddingBottom, 0)
+						GodotLib.setVirtualKeyboardHeight(finalHeight)
 					}
 					return windowInsets
 				}
 
-				override fun onEnd(animation: WindowInsetsAnimationCompat) {}
+				override fun onEnd(animation: WindowInsetsAnimationCompat) {
+					// Fixes issue on Android 7 and 8 where immersive mode gets auto disabled after the keyboard is hidden.
+					if (useImmersive.get() && Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+						runOnHostThread {
+							enableImmersiveMode(true, true)
+						}
+					}
+				}
 			})
 
 			renderView?.queueOnRenderThread {
@@ -891,19 +978,31 @@ class Godot private constructor(val context: Context) {
 
 	@Keep
 	fun hasClipboard(): Boolean {
-		return mClipboard?.hasPrimaryClip() == true
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || Looper.getMainLooper().thread == Thread.currentThread()) {
+			hasClipboardCallable.call()
+		} else {
+			val task = FutureTask(hasClipboardCallable)
+			runOnHostThread(task)
+			task.get()
+		}
 	}
 
 	@Keep
 	fun getClipboard(): String {
-		val clipData = mClipboard?.primaryClip ?: return ""
-		val text = clipData.getItemAt(0).text ?: return ""
-		return text.toString()
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || Looper.getMainLooper().thread == Thread.currentThread()) {
+			getClipboardCallable.call()
+		} else {
+			val task = FutureTask(getClipboardCallable)
+			runOnHostThread(task)
+			task.get()
+		}
 	}
 
 	@Keep
 	fun setClipboard(text: String?) {
-		mClipboard?.setPrimaryClip(ClipData.newPlainText("myLabel", text))
+		runOnHostThread {
+			mClipboard?.setPrimaryClip(ClipData.newPlainText("myLabel", text))
+		}
 	}
 
 	@Keep

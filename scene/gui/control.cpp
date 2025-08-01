@@ -45,7 +45,7 @@
 #include "servers/text_server.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/plugins/control_editor_plugin.h"
+#include "editor/scene/gui/control_editor_plugin.h"
 #endif // TOOLS_ENABLED
 
 // Editor plugin interoperability.
@@ -1042,6 +1042,10 @@ int Control::_get_anchors_layout_preset() const {
 	float right = get_anchor(SIDE_RIGHT);
 	float top = get_anchor(SIDE_TOP);
 	float bottom = get_anchor(SIDE_BOTTOM);
+
+	if (get_offset(SIDE_LEFT) != 0.0 || get_offset(SIDE_RIGHT) != 0.0 || get_offset(SIDE_TOP) != 0.0 || get_offset(SIDE_BOTTOM) != 0.0) {
+		return -1;
+	}
 
 	if (left == (float)ANCHOR_BEGIN && right == (float)ANCHOR_BEGIN && top == (float)ANCHOR_BEGIN && bottom == (float)ANCHOR_BEGIN) {
 		return (int)LayoutPreset::PRESET_TOP_LEFT;
@@ -3519,7 +3523,8 @@ bool Control::is_layout_rtl() const {
 						String locale = OS::get_singleton()->get_locale();
 						data.is_rtl = TS->is_locale_right_to_left(locale);
 					} else {
-						String locale = TranslationServer::get_singleton()->get_tool_locale();
+						const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
+						String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
 						data.is_rtl = TS->is_locale_right_to_left(locale);
 					}
 					return data.is_rtl;

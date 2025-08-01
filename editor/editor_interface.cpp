@@ -32,27 +32,27 @@
 #include "editor_interface.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "editor/create_dialog.h"
-#include "editor/editor_command_palette.h"
-#include "editor/editor_feature_profile.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_resource_preview.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/filesystem_dock.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/editor_preview_plugins.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/inspector/property_selector.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/scene/editor_scene_tabs.h"
+#include "editor/scene/scene_tree_editor.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_feature_profile.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
-#include "plugins/editor_preview_plugins.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/box_container.h"
@@ -230,9 +230,12 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 }
 
 void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
-	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
+	if (!Engine::get_singleton()->is_editor_hint() || !DisplayServer::get_singleton()->window_can_draw()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null, cannot generate preview.");
 	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);

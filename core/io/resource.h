@@ -122,12 +122,12 @@ protected:
 	virtual Ref<Resource> _duplicate(const DuplicateParams &p_params) const;
 
 public:
-	static Node *(*_get_local_scene_func)(); //used by editor
-	static void (*_update_configuration_warning)(); //used by editor
+	static Node *(*_get_local_scene_func)(); // Used by the editor.
+	static void (*_update_configuration_warning)(); // Used by the editor.
 
 	void update_configuration_warning();
 	virtual bool editor_can_reload_from_file();
-	virtual void reset_state(); //for resources that use variable amount of properties, either via _validate_property or _get_property_list, this function needs to be implemented to correctly clear state
+	virtual void reset_state(); // For resources that store state in non-exposed properties, such as via _validate_property or _get_property_list, this function must be implemented to clear them.
 	virtual Error copy_from(const Ref<Resource> &p_resource);
 	virtual void reload_from_file();
 
@@ -178,11 +178,12 @@ public:
 
 	void set_as_translation_remapped(bool p_remapped);
 
-	virtual RID get_rid() const; // some resources may offer conversion to RID
+	virtual RID get_rid() const; // Some resources may offer conversion to RID.
 
-	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-	void set_id_for_path(const String &p_path, const String &p_id);
-	String get_id_for_path(const String &p_path) const;
+	// Helps keep IDs the same when loading/saving scenes. An empty ID clears the entry, and an empty ID is returned when not found.
+	static void set_resource_id_for_path(const String &p_referrer_path, const String &p_resource_path, const String &p_id);
+	void set_id_for_path(const String &p_referrer_path, const String &p_id) { set_resource_id_for_path(p_referrer_path, get_path(), p_id); }
+	String get_id_for_path(const String &p_referrer_path) const;
 
 	Resource();
 	~Resource();
@@ -192,7 +193,7 @@ VARIANT_ENUM_CAST(Resource::DeepDuplicateMode);
 
 class ResourceCache {
 	friend class Resource;
-	friend class ResourceLoader; //need the lock
+	friend class ResourceLoader; // Need the lock.
 	static Mutex lock;
 	static HashMap<String, Resource *> resources;
 #ifdef TOOLS_ENABLED

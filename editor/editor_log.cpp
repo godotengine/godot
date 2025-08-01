@@ -34,9 +34,9 @@
 #include "core/os/keyboard.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/font.h"
@@ -512,7 +512,6 @@ EditorLog::EditorLog() {
 	collapse_button->set_theme_type_variation(SceneStringName(FlatButton));
 	collapse_button->set_focus_mode(FOCUS_ACCESSIBILITY);
 	collapse_button->set_tooltip_text(TTR("Collapse duplicate messages into one log entry. Shows number of occurrences."));
-	collapse_button->set_accessibility_name(TTRC("Collapse Duplicate Messages"));
 	collapse_button->set_toggle_mode(true);
 	collapse_button->set_pressed(false);
 	collapse_button->connect(SceneStringName(toggled), callable_mp(this, &EditorLog::_set_collapse));

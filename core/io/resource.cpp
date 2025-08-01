@@ -671,26 +671,26 @@ void Resource::set_as_translation_remapped(bool p_remapped) {
 	}
 }
 
-//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
-void Resource::set_id_for_path(const String &p_path, const String &p_id) {
+// Helps keep IDs the same when loading/saving scenes. An empty ID clears the entry, and an empty ID is returned when not found.
+void Resource::set_resource_id_for_path(const String &p_referrer_path, const String &p_resource_path, const String &p_id) {
 #ifdef TOOLS_ENABLED
 	if (p_id.is_empty()) {
 		ResourceCache::path_cache_lock.write_lock();
-		ResourceCache::resource_path_cache[p_path].erase(get_path());
+		ResourceCache::resource_path_cache[p_referrer_path].erase(p_resource_path);
 		ResourceCache::path_cache_lock.write_unlock();
 	} else {
 		ResourceCache::path_cache_lock.write_lock();
-		ResourceCache::resource_path_cache[p_path][get_path()] = p_id;
+		ResourceCache::resource_path_cache[p_referrer_path][p_resource_path] = p_id;
 		ResourceCache::path_cache_lock.write_unlock();
 	}
 #endif
 }
 
-String Resource::get_id_for_path(const String &p_path) const {
+String Resource::get_id_for_path(const String &p_referrer_path) const {
 #ifdef TOOLS_ENABLED
 	ResourceCache::path_cache_lock.read_lock();
-	if (ResourceCache::resource_path_cache[p_path].has(get_path())) {
-		String result = ResourceCache::resource_path_cache[p_path][get_path()];
+	if (ResourceCache::resource_path_cache[p_referrer_path].has(get_path())) {
+		String result = ResourceCache::resource_path_cache[p_referrer_path][get_path()];
 		ResourceCache::path_cache_lock.read_unlock();
 		return result;
 	} else {

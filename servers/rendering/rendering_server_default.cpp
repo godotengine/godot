@@ -253,7 +253,7 @@ void RenderingServerDefault::init() {
 	if (create_thread) {
 		print_verbose("RenderingServerWrapMT: Starting render thread");
 		DisplayServer::get_singleton()->release_rendering_thread();
-		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true);
+		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &RenderingServerDefault::_thread_loop), true, "Rendering Server pump task", true);
 		command_queue.set_pump_task_id(tid);
 		command_queue.push(this, &RenderingServerDefault::_assign_mt_ids, tid);
 		command_queue.push_and_sync(this, &RenderingServerDefault::_init);
@@ -376,8 +376,12 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
 	server_thread = Thread::get_caller_id();
 	server_task_id = p_pump_task_id;
-	// This is needed because the main RD is created on the main thread.
-	RenderingDevice::get_singleton()->make_current();
+
+	RenderingDevice *rd = RenderingDevice::get_singleton();
+	if (rd) {
+		// This is needed because the main RD is created on the main thread.
+		rd->make_current();
+	}
 }
 
 void RenderingServerDefault::_thread_exit() {
