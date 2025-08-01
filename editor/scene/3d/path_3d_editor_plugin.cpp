@@ -730,24 +730,9 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 }
 
 void Path3DEditorPlugin::edit(Object *p_object) {
-	if (p_object) {
-		path = Object::cast_to<Path3D>(p_object);
-		if (path) {
-			if (path->get_curve().is_valid()) {
-				path->get_curve()->emit_signal(CoreStringName(changed));
-			}
-			_update_toolbar();
-		}
-	} else {
-		Path3D *pre = path;
-		path = nullptr;
-		if (pre && pre->get_curve().is_valid()) {
-			pre->get_curve()->emit_signal(CoreStringName(changed));
-		}
-	}
-
+	path = Object::cast_to<Path3D>(p_object);
+	_update_toolbar();
 	update_overlays();
-	//collision_polygon_editor->edit(Object::cast_to<Node>(p_object));
 }
 
 bool Path3DEditorPlugin::handles(Object *p_object) const {
@@ -759,14 +744,7 @@ void Path3DEditorPlugin::make_visible(bool p_visible) {
 		topmenu_bar->show();
 	} else {
 		topmenu_bar->hide();
-
-		{
-			Path3D *pre = path;
-			path = nullptr;
-			if (pre && pre->get_curve().is_valid()) {
-				pre->get_curve()->emit_signal(CoreStringName(changed));
-			}
-		}
+		path = nullptr;
 	}
 }
 
