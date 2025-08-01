@@ -2783,7 +2783,9 @@ void EditorThemeManager::_populate_text_editor_styles(const Ref<EditorTheme> &p_
 	Ref<StyleBoxFlat> code_edit_stylebox = make_flat_stylebox(background_color, p_config.widget_margin.x, p_config.widget_margin.y, p_config.widget_margin.x, p_config.widget_margin.y, p_config.corner_radius);
 	p_theme->set_stylebox(CoreStringName(normal), "CodeEdit", code_edit_stylebox);
 	p_theme->set_stylebox("read_only", "CodeEdit", code_edit_stylebox);
-	p_theme->set_stylebox("focus", "CodeEdit", memnew(StyleBoxEmpty));
+	Ref<StyleBoxFlat> code_edit_focus_stylebox = p_config.button_style_focus->duplicate();
+	code_edit_focus_stylebox->set_expand_margin_all(Math::round(2 * MAX(1, EDSCALE)));
+	p_theme->set_stylebox("focus", "CodeEdit", code_edit_focus_stylebox);
 
 	p_theme->set_color("background_color", "CodeEdit", Color(0, 0, 0, 0)); // Unset any color, we use a stylebox.
 
