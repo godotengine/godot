@@ -3449,6 +3449,23 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 		}
 
+		// Enable HDR if requested and available.
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_HDR) && RD::get_singleton() && RD::get_singleton()->has_feature(RD::Features::SUPPORTS_HDR_OUTPUT)) {
+			bool hdr_enabled = GLOBAL_GET("display/window/hdr/enabled");
+			bool prefer_high_precision = GLOBAL_GET("display/window/hdr/prefer_high_precision");
+			bool auto_adjust_reference_luminance = GLOBAL_GET("display/window/hdr/auto_adjust_reference_luminance");
+			float reference_luminance = GLOBAL_GET("display/window/hdr/reference_luminance");
+			bool auto_adjust_max_luminance = GLOBAL_GET("display/window/hdr/auto_adjust_max_luminance");
+			float max_luminance = GLOBAL_GET("display/window/hdr/max_luminance");
+
+			DisplayServer::get_singleton()->window_set_hdr_output_enabled(hdr_enabled);
+			DisplayServer::get_singleton()->window_set_hdr_output_prefer_high_precision(prefer_high_precision);
+			DisplayServer::get_singleton()->window_set_hdr_output_auto_adjust_reference_luminance(auto_adjust_reference_luminance);
+			DisplayServer::get_singleton()->window_set_hdr_output_reference_luminance(reference_luminance);
+			DisplayServer::get_singleton()->window_set_hdr_output_auto_adjust_max_luminance(auto_adjust_max_luminance);
+			DisplayServer::get_singleton()->window_set_hdr_output_max_luminance(max_luminance);
+		}
+
 		Color clear = GLOBAL_DEF_BASIC("rendering/environment/defaults/default_clear_color", Color(0.3, 0.3, 0.3));
 		RenderingServer::get_singleton()->set_default_clear_color(clear);
 
