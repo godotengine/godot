@@ -140,7 +140,7 @@
 			The shape's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
 		<member name="collision_result" type="Array" setter="" getter="get_collision_result" default="[]">
-			Returns the complete collision information from the collision sweep. The data returned is the same as in the [method PhysicsDirectSpaceState2D.get_rest_info] method.
+			Returns the complete collision information from the collision sweep. The resulting array contains a list of dictionaries, one for each collision. Each element includes all fields from the [method PhysicsDirectSpaceState2D.get_rest_info] method with a [code]collider[/code] field for the object associated with the [code]collider_id[/code], using [method @GlobalScope.instance_from_id].
 		</member>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 			If [code]true[/code], collisions will be reported.
