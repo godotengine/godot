@@ -360,7 +360,7 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	viewport = RS::get_singleton()->viewport_create();
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	RS::get_singleton()->viewport_set_size(viewport, 0, 128, 128, 1);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
 	RS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
@@ -775,7 +775,7 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	viewport = RS::get_singleton()->viewport_create();
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
 	RS::get_singleton()->viewport_set_scenario(viewport, scenario);
-	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	RS::get_singleton()->viewport_set_size(viewport, 0, 128, 128, 1);
 	RS::get_singleton()->viewport_set_transparent_background(viewport, true);
 	RS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
@@ -890,7 +890,7 @@ Ref<Texture2D> EditorFontPreviewPlugin::generate(const Ref<Resource> &p_from, co
 EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 	viewport = RS::get_singleton()->viewport_create();
 	RS::get_singleton()->viewport_set_update_mode(viewport, RS::VIEWPORT_UPDATE_DISABLED);
-	RS::get_singleton()->viewport_set_size(viewport, 128, 128);
+	RS::get_singleton()->viewport_set_size(viewport, 0, 128, 128, 1);
 	RS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = RS::get_singleton()->viewport_get_texture(viewport);
 
