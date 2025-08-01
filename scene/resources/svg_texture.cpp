@@ -277,9 +277,13 @@ void SVGTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_mod
 	double scale = 1.0;
 	CanvasItem *ci = CanvasItem::get_current_item_drawn();
 	if (ci) {
-		Viewport *vp = ci->get_viewport();
-		if (vp) {
-			scale = vp->get_oversampling();
+		if (ci->get_oversampling_override() != 0.0) {
+			scale = ci->get_oversampling_override();
+		} else {
+			Viewport *vp = ci->get_viewport();
+			if (vp) {
+				scale = vp->get_oversampling();
+			}
 		}
 	}
 	RID rid = _ensure_scale(scale);
@@ -291,9 +295,13 @@ void SVGTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, 
 	double scale = 1.0;
 	CanvasItem *ci = CanvasItem::get_current_item_drawn();
 	if (ci) {
-		Viewport *vp = ci->get_viewport();
-		if (vp) {
-			scale = vp->get_oversampling();
+		if (ci->get_oversampling_override() != 0.0) {
+			scale = ci->get_oversampling_override();
+		} else {
+			Viewport *vp = ci->get_viewport();
+			if (vp) {
+				scale = vp->get_oversampling();
+			}
 		}
 	}
 	RID rid = _ensure_scale(scale);
@@ -305,9 +313,13 @@ void SVGTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const 
 	double scale = 1.0;
 	CanvasItem *ci = CanvasItem::get_current_item_drawn();
 	if (ci) {
-		Viewport *vp = ci->get_viewport();
-		if (vp) {
-			scale = vp->get_oversampling();
+		if (ci->get_oversampling_override() != 0.0) {
+			scale = ci->get_oversampling_override();
+		} else {
+			Viewport *vp = ci->get_viewport();
+			if (vp) {
+				scale = vp->get_oversampling();
+			}
 		}
 	}
 	RID rid = _ensure_scale(scale);

@@ -38,6 +38,7 @@
 #include "scene/resources/font.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
+#include "scene/resources/svg_texture.h"
 #include "scene/resources/world_2d.h"
 
 #define ERR_DRAW_GUARD \
@@ -143,7 +144,11 @@ void CanvasItem::_redraw_callback() {
 		drawing = true;
 		Ref<TextServer> ts = TextServerManager::get_singleton()->get_primary_interface();
 		if (ts.is_valid()) {
-			ts->set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
+			if (oversampling_override != 0.0) {
+				ts->set_current_drawn_item_oversampling(oversampling_override);
+			} else {
+				ts->set_current_drawn_item_oversampling(get_viewport()->get_oversampling());
+			}
 		}
 		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
@@ -367,6 +372,11 @@ void CanvasItem::_notification(int p_what) {
 				get_parent()->connect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()), CONNECT_REFERENCE_COUNTED);
 			}
 
+			if (oversampling_override != 0.0) {
+				TS->reference_oversampling_level(oversampling_override);
+				SVGTexture::reference_scaling_level(oversampling_override);
+			}
+
 			// If using physics interpolation, reset for this node only,
 			// as a helper, as in most cases, users will want items reset when
 			// adding to the tree.
@@ -398,6 +408,11 @@ void CanvasItem::_notification(int p_what) {
 			}
 			_set_global_invalid(true);
 			parent_visible_in_tree = false;
+
+			if (oversampling_override != 0.0) {
+				TS->unreference_oversampling_level(oversampling_override);
+				SVGTexture::unreference_scaling_level(oversampling_override);
+			}
 
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()));
@@ -1425,6 +1440,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_repeat", "mode"), &CanvasItem::set_texture_repeat);
 	ClassDB::bind_method(D_METHOD("get_texture_repeat"), &CanvasItem::get_texture_repeat);
 
+	ClassDB::bind_method(D_METHOD("set_oversampling_override", "oversampling"), &CanvasItem::set_oversampling_override);
+	ClassDB::bind_method(D_METHOD("get_oversampling_override"), &CanvasItem::get_oversampling_override);
+
 	ClassDB::bind_method(D_METHOD("set_clip_children_mode", "mode"), &CanvasItem::set_clip_children_mode);
 	ClassDB::bind_method(D_METHOD("get_clip_children_mode"), &CanvasItem::get_clip_children_mode);
 
@@ -1439,6 +1457,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_children", PROPERTY_HINT_ENUM, "Disabled,Clip Only,Clip + Draw"), "set_clip_children_mode", "get_clip_children_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_light_mask", "get_light_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "visibility_layer", PROPERTY_HINT_LAYERS_2D_RENDER), "set_visibility_layer", "get_visibility_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling_override"), "set_oversampling_override", "get_oversampling_override");
 
 	ADD_GROUP("Ordering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
@@ -1712,6 +1731,31 @@ CanvasItem::ClipChildrenMode CanvasItem::get_clip_children_mode() const {
 CanvasItem::TextureRepeat CanvasItem::get_texture_repeat() const {
 	ERR_READ_THREAD_GUARD_V(TEXTURE_REPEAT_DISABLED);
 	return texture_repeat;
+}
+
+void CanvasItem::set_oversampling_override(double p_oversampling) {
+	if (oversampling_override == p_oversampling) {
+		return;
+	}
+
+	if (is_inside_tree()) {
+		if (oversampling_override != 0.0) {
+			TS->unreference_oversampling_level(oversampling_override);
+			SVGTexture::unreference_scaling_level(oversampling_override);
+		}
+		if (p_oversampling != 0.0) {
+			TS->reference_oversampling_level(p_oversampling);
+			SVGTexture::reference_scaling_level(p_oversampling);
+		}
+	}
+	oversampling_override = p_oversampling;
+	queue_redraw();
+}
+
+double CanvasItem::get_oversampling_override() const {
+	ERR_READ_THREAD_GUARD_V(0.0);
+
+	return oversampling_override;
 }
 
 CanvasItem::TextureFilter CanvasItem::get_texture_filter_in_tree() const {
