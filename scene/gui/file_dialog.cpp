@@ -882,9 +882,9 @@ void FileDialog::update_file_list() {
 
 	for (const DirInfo &info : filtered_dirs) {
 		if (display_mode == DISPLAY_THUMBNAILS) {
-			file_list->add_item(info.name, theme_cache.folder_thumbnail);
+			file_list->add_item(info.name, info.bundle ? theme_cache.file_thumbnail : theme_cache.folder_thumbnail);
 		} else {
-			file_list->add_item(info.name, theme_cache.folder);
+			file_list->add_item(info.name, info.bundle ? theme_cache.file : theme_cache.folder);
 		}
 		file_list->set_item_icon_modulate(-1, theme_cache.folder_icon_color);
 
