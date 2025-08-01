@@ -330,6 +330,9 @@
 	</methods>
 	<members>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="3" />
+		<member name="hide_title" type="bool" setter="set_hide_title" getter="is_title_hidden" default="false">
+			If [code]true[/code], the GraphNode's title bar will not be drawn and will be ignored in layout calculations.
+		</member>
 		<member name="ignore_invalid_connection_type" type="bool" setter="set_ignore_invalid_connection_type" getter="is_ignoring_valid_connection_type" default="false">
 			If [code]true[/code], you can connect ports with different types, even if the connection was not explicitly allowed in the parent [GraphEdit].
 		</member>

@@ -400,6 +400,9 @@
 		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
 		</member>
+		<member name="separate_snapping_distances" type="bool" setter="set_separate_snapping_distances" getter="is_separate_snapping_distances" default="false">
+			If [code]true[/code], splits [member snapping_distance] into separate values for the x and y axes, exposed as [member snapping_distances].
+		</member>
 		<member name="show_arrange_button" type="bool" setter="set_show_arrange_button" getter="is_showing_arrange_button" default="true">
 			If [code]true[/code], the button to automatically arrange graph nodes is visible.
 		</member>
@@ -423,6 +426,13 @@
 		</member>
 		<member name="snapping_distance" type="int" setter="set_snapping_distance" getter="get_snapping_distance" default="20">
 			The snapping distance in pixels, also determines the grid line distance.
+			Hidden if [member separate_snapping_distances] is [code]true[/code].
+			Linked to [member snapping_distances]. Setting this property will set both the x and y values for separated snapping distances.
+		</member>
+		<member name="snapping_distances" type="Vector2i" setter="set_snapping_distances" getter="get_snapping_distances" default="Vector2i(20, 20)">
+			Same as [member snapping_distance], but with separate x and y axes.
+			Hidden if [member separate_snapping_distances] is [code]false[/code].
+			Linked to [member snapping_distance]. Setting this property's x axis is equivalent to [code]set_snapping_distance[/code].
 		</member>
 		<member name="snapping_enabled" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled" default="true">
 			If [code]true[/code], enables snapping.
