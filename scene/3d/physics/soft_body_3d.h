@@ -39,6 +39,7 @@ class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHand
 	friend class SoftBody3D;
 
 	RID mesh;
+	bool rendering_server_dirty = true;
 	int surface = 0;
 	AABB aabb_prev;
 	AABB aabb_curr;
@@ -63,6 +64,7 @@ private:
 	void clear();
 	void open();
 	void close();
+	void fti_teleport();
 	void fti_pump();
 	void commit_changes(real_t p_interpolation_fraction);
 
@@ -79,6 +81,11 @@ public:
 	enum DisableMode {
 		DISABLE_MODE_REMOVE,
 		DISABLE_MODE_KEEP_ACTIVE,
+	};
+
+	enum PinModeProcess {
+		PIN_MODE_PROCESS_PHYSICS,
+		PIN_MODE_PROCESS_IDLE,
 	};
 
 	struct PinnedPoint {
@@ -98,6 +105,7 @@ private:
 	RID physics_rid;
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
+	PinModeProcess pin_mode_process = PIN_MODE_PROCESS_IDLE;
 
 	RID owned_mesh;
 	uint32_t collision_mask = 1;
@@ -115,11 +123,15 @@ private:
 
 	void _update_pickable();
 
-	void _update_physics_server();
-	void _update_soft_mesh();
+	void _update_pinned_points();
 	void _commit_soft_mesh(real_t p_interpolation_fraction);
 
+	bool _ensure_soft_mesh_ready();
+	void _tick_update_soft_mesh();
+	void _draw_soft_mesh();
+
 	void _prepare_physics_server();
+	void _update_process_mode();
 	void _become_mesh_owner();
 
 protected:
@@ -160,6 +172,9 @@ public:
 
 	void set_disable_mode(DisableMode p_mode);
 	DisableMode get_disable_mode() const;
+
+	void set_pin_mode_process(PinModeProcess p_mode);
+	PinModeProcess get_pin_mode_process() const { return pin_mode_process; }
 
 	void set_parent_collision_ignore(const NodePath &p_parent_collision_ignore);
 	const NodePath &get_parent_collision_ignore() const;
@@ -225,3 +240,4 @@ private:
 };
 
 VARIANT_ENUM_CAST(SoftBody3D::DisableMode);
+VARIANT_ENUM_CAST(SoftBody3D::PinModeProcess);
