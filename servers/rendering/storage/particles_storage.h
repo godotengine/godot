@@ -86,6 +86,7 @@ public:
 	virtual void particles_request_process(RID p_particles) = 0;
 	virtual AABB particles_get_current_aabb(RID p_particles) = 0;
 	virtual AABB particles_get_aabb(RID p_particles) const = 0;
+	virtual PackedVector3Array particles_get_current_positions(RID p_particles) const = 0;
 
 	virtual void particles_set_emission_transform(RID p_particles, const Transform3D &p_transform) = 0;
 	virtual void particles_set_emitter_velocity(RID p_particles, const Vector3 &p_velocity) = 0;
