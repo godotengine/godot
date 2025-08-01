@@ -21,7 +21,7 @@ def get_name():
 
 
 def try_cmd(test, prefix, arch, check_clang=False):
-    archs = ["x86_64", "x86_32", "arm64", "arm32"]
+    archs = ["x86_64ucrt", "x86_64", "x86_32", "arm64", "arm32"]
     if arch:
         archs = [arch]
 
@@ -62,6 +62,7 @@ def can_build():
 def get_mingw_bin_prefix(prefix, arch):
     bin_prefix = (os.path.normpath(os.path.join(prefix, "bin")) + os.sep) if prefix else ""
     ARCH_PREFIXES = {
+        "x86_64ucrt": "x86_64-w64-mingw32ucrt-",
         "x86_64": "x86_64-w64-mingw32-",
         "x86_32": "i686-w64-mingw32-",
         "arm32": "armv7-w64-mingw32-",
@@ -73,6 +74,7 @@ def get_mingw_bin_prefix(prefix, arch):
 
 def get_detected(env: "SConsEnvironment", tool: str) -> str:
     checks = [
+        get_mingw_bin_prefix(env["mingw_prefix"], env["arch"] + "ucrt") + tool,
         get_mingw_bin_prefix(env["mingw_prefix"], env["arch"]) + tool,
         get_mingw_bin_prefix(env["mingw_prefix"], "") + tool,
     ]
@@ -245,13 +247,13 @@ def build_def_file(target, source, env: "SConsEnvironment"):
         "arm64": "arm64",
     }
 
-    cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
+    cmdbase = " -m " + arch_aliases[env["arch"]]
     if env["arch"] == "x86_32":
         cmdbase += " -k"
     else:
         cmdbase += " --no-leading-underscore"
 
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
+    mingw_bin_prefix = get_detected(env, "dlltool")
 
     for x in range(len(source)):
         ok = True
