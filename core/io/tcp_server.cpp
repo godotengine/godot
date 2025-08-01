@@ -30,13 +30,16 @@
 
 #include "tcp_server.h"
 
-void TCPServer::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
+void SocketServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCPServer::is_connection_available);
 	ClassDB::bind_method(D_METHOD("is_listening"), &TCPServer::is_listening);
+	ClassDB::bind_method(D_METHOD("stop"), &TCPServer::stop);
+}
+
+void TCPServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCPServer::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("get_local_port"), &TCPServer::get_local_port);
 	ClassDB::bind_method(D_METHOD("take_connection"), &TCPServer::take_connection);
-	ClassDB::bind_method(D_METHOD("stop"), &TCPServer::stop);
 }
 
 Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
@@ -52,14 +55,15 @@ Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 		ip_type = p_bind_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
 	}
 
-	err = _sock->open(NetSocket::TYPE_TCP, ip_type);
+	err = _sock->open(NetSocket::Family::INET, NetSocket::TYPE_TCP, ip_type);
 
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	_sock->set_blocking_enabled(false);
 	_sock->set_reuse_address_enabled(true);
 
-	err = _sock->bind(p_bind_address, p_port);
+	NetSocket::Address addr(p_bind_address, p_port);
+	err = _sock->bind(addr);
 
 	if (err != OK) {
 		_sock->close();
@@ -76,18 +80,18 @@ Error TCPServer::listen(uint16_t p_port, const IPAddress &p_bind_address) {
 }
 
 int TCPServer::get_local_port() const {
-	uint16_t local_port;
-	_sock->get_socket_address(nullptr, &local_port);
-	return local_port;
+	NetSocket::Address addr;
+	_sock->get_socket_address(&addr);
+	return addr.port();
 }
 
-bool TCPServer::is_listening() const {
+bool SocketServer::is_listening() const {
 	ERR_FAIL_COND_V(_sock.is_null(), false);
 
 	return _sock->is_open();
 }
 
-bool TCPServer::is_connection_available() const {
+bool SocketServer::is_connection_available() const {
 	ERR_FAIL_COND_V(_sock.is_null(), false);
 
 	if (!_sock->is_open()) {
@@ -105,28 +109,77 @@ Ref<StreamPeerTCP> TCPServer::take_connection() {
 	}
 
 	Ref<NetSocket> ns;
-	IPAddress ip;
-	uint16_t port = 0;
-	ns = _sock->accept(ip, port);
+	NetSocket::Address addr;
+	ns = _sock->accept(addr);
 	if (ns.is_null()) {
 		return conn;
 	}
 
 	conn.instantiate();
-	conn->accept_socket(ns, ip, port);
+	conn->accept_socket(ns, addr.ip(), addr.port());
 	return conn;
 }
 
-void TCPServer::stop() {
+void SocketServer::stop() {
 	if (_sock.is_valid()) {
 		_sock->close();
 	}
 }
 
-TCPServer::TCPServer() :
+SocketServer::SocketServer() :
 		_sock(Ref<NetSocket>(NetSocket::create())) {
 }
 
-TCPServer::~TCPServer() {
+SocketServer::~SocketServer() {
 	stop();
+}
+
+void UDSServer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("listen", "path"), &UDSServer::listen);
+	ClassDB::bind_method(D_METHOD("take_connection"), &UDSServer::take_connection);
+}
+
+Error UDSServer::listen(const String &p_path) {
+	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_path.is_empty(), ERR_INVALID_PARAMETER);
+
+	IP::Type ip_type = IP::TYPE_NONE;
+	Error err = _sock->open(NetSocket::Family::UNIX, NetSocket::TYPE_NONE, ip_type);
+	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+
+	_sock->set_blocking_enabled(false);
+
+	err = _sock->bind(p_path);
+
+	if (err != OK) {
+		_sock->close();
+		return FAILED;
+	}
+
+	err = _sock->listen(MAX_PENDING_CONNECTIONS);
+
+	if (err != OK) {
+		_sock->close();
+		return FAILED;
+	}
+	return OK;
+}
+
+Ref<StreamPeerUDS> UDSServer::take_connection() {
+	Ref<StreamPeerUDS> conn;
+	if (!is_connection_available()) {
+		return conn;
+	}
+
+	Ref<NetSocket> ns;
+	NetSocket::Address addr;
+	ns = _sock->accept(addr);
+	if (ns.is_null()) {
+		return conn;
+	}
+
+	conn.instantiate();
+	conn->accept_socket(ns);
+	return conn;
 }

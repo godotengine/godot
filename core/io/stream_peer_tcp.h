@@ -35,8 +35,8 @@
 #include "core/io/net_socket.h"
 #include "core/io/stream_peer.h"
 
-class StreamPeerTCP : public StreamPeer {
-	GDCLASS(StreamPeerTCP, StreamPeer);
+class StreamPeerSocket : public StreamPeer {
+	GDCLASS(StreamPeerSocket, StreamPeer);
 
 public:
 	enum Status {
@@ -50,29 +50,18 @@ protected:
 	Ref<NetSocket> _sock;
 	uint64_t timeout = 0;
 	Status status = STATUS_NONE;
-	IPAddress peer_host;
-	uint16_t peer_port = 0;
+	NetSocket::Address peer_address;
 
-	Error _connect(const String &p_address, int p_port);
 	Error write(const uint8_t *p_data, int p_bytes, int &r_sent, bool p_block);
 	Error read(uint8_t *p_buffer, int p_bytes, int &r_received, bool p_block);
 
 	static void _bind_methods();
 
 public:
-	void accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint16_t p_port);
-
-	Error bind(int p_port, const IPAddress &p_host);
-	Error connect_to_host(const IPAddress &p_host, int p_port);
-	IPAddress get_connected_host() const;
-	int get_connected_port() const;
-	int get_local_port() const;
 	void disconnect_from_host();
 
 	int get_available_bytes() const override;
 	Status get_status() const;
-
-	void set_no_delay(bool p_enabled);
 
 	// Poll socket updating its state.
 	Error poll();
@@ -86,8 +75,43 @@ public:
 	Error get_data(uint8_t *p_buffer, int p_bytes) override;
 	Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) override;
 
-	StreamPeerTCP();
-	~StreamPeerTCP();
+	StreamPeerSocket();
+	virtual ~StreamPeerSocket();
 };
 
-VARIANT_ENUM_CAST(StreamPeerTCP::Status);
+VARIANT_ENUM_CAST(StreamPeerSocket::Status);
+
+class StreamPeerTCP : public StreamPeerSocket {
+	GDCLASS(StreamPeerTCP, StreamPeer);
+
+protected:
+	Error _connect(const String &p_address, int p_port);
+
+	static void _bind_methods();
+
+public:
+	void accept_socket(Ref<NetSocket> p_sock, IPAddress p_host, uint16_t p_port);
+
+	Error bind(int p_port, const IPAddress &p_host);
+	Error connect_to_host(const IPAddress &p_host, int p_port);
+	IPAddress get_connected_host() const;
+	int get_connected_port() const;
+	int get_local_port() const;
+
+	void set_no_delay(bool p_enabled);
+};
+
+class StreamPeerUDS : public StreamPeerSocket {
+	GDCLASS(StreamPeerUDS, StreamPeer);
+
+protected:
+	String peer_path;
+	static void _bind_methods();
+
+public:
+	void accept_socket(Ref<NetSocket> p_sock);
+
+	Error bind(const String &p_path);
+	Error connect_to_host(const String &p_path);
+	const String &get_connected_path() const;
+};

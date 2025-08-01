@@ -53,9 +53,10 @@ public:
 	RemoteDebuggerPeer();
 };
 
-class RemoteDebuggerPeerTCP : public RemoteDebuggerPeer {
-private:
-	Ref<StreamPeerTCP> tcp_client;
+template <typename T>
+class RemoteDebuggerPeerSocket : public RemoteDebuggerPeer {
+protected:
+	T socket_client;
 	Mutex mutex;
 	Thread thread;
 	List<Array> in_queue;
@@ -76,10 +77,6 @@ private:
 	void _read_in();
 
 public:
-	static RemoteDebuggerPeer *create(const String &p_uri);
-
-	Error connect_to_host(const String &p_host, uint16_t p_port);
-
 	bool is_peer_connected() override;
 	int get_max_message_size() const override;
 	bool has_message() override;
@@ -88,6 +85,26 @@ public:
 	void poll() override;
 	void close() override;
 
-	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>());
-	~RemoteDebuggerPeerTCP();
+	RemoteDebuggerPeerSocket(T p_stream);
+	virtual ~RemoteDebuggerPeerSocket();
+};
+
+class RemoteDebuggerPeerTCP : public RemoteDebuggerPeerSocket<Ref<StreamPeerTCP>> {
+public:
+	static RemoteDebuggerPeer *create(const String &p_uri);
+
+	Error connect_to_host(const String &p_host, uint16_t p_port);
+
+	RemoteDebuggerPeerTCP(Ref<StreamPeerTCP> p_stream = Ref<StreamPeerTCP>()) :
+			RemoteDebuggerPeerSocket<Ref<StreamPeerTCP>>(p_stream) {}
+};
+
+class RemoteDebuggerPeerUDS : public RemoteDebuggerPeerSocket<Ref<StreamPeerUDS>> {
+public:
+	static RemoteDebuggerPeer *create(const String &p_uri);
+
+	Error connect_to_host(const String &p_path);
+
+	RemoteDebuggerPeerUDS(Ref<StreamPeerUDS> p_stream = Ref<StreamPeerUDS>()) :
+			RemoteDebuggerPeerSocket<Ref<StreamPeerUDS>>(p_stream) {}
 };
