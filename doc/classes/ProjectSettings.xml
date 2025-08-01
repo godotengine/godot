@@ -307,6 +307,9 @@
 		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
 			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
 		</member>
+		<member name="application/config/disable_project_settings_override" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], disables loading of project settings overrides (file defined in [member application/config/project_settings_override] and [code]res://override.cfg[/code]) and related CLI arguments.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon as a fallback if necessary.
 		</member>
