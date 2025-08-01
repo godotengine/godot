@@ -168,7 +168,7 @@ public:
 	}
 
 	template <typename Comparator, typename Value, typename... Args>
-	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) {
+	Size bsearch_custom(const Value &p_value, bool p_before, Args &&...args) const {
 		return span().bisect(p_value, p_before, Comparator{ args... });
 	}
 
