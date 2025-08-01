@@ -42,10 +42,12 @@ void GraphNode::_resort() {
 	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
 	// Resort titlebar first.
-	Size2 titlebar_size = Size2(new_size.width, titlebar_hbox->get_size().height);
-	titlebar_size -= sb_titlebar->get_minimum_size();
-	Rect2 titlebar_rect = Rect2(sb_titlebar->get_offset(), titlebar_size);
-	fit_child_in_rect(titlebar_hbox, titlebar_rect);
+	if (!hide_title) {
+		Size2 titlebar_size = Size2(new_size.width, titlebar_hbox->get_size().height);
+		titlebar_size -= sb_titlebar->get_minimum_size();
+		Rect2 titlebar_rect = Rect2(sb_titlebar->get_offset(), titlebar_size);
+		fit_child_in_rect(titlebar_hbox, titlebar_rect);
+	}
 
 	// After resort, the children of the titlebar container may have changed their height (e.g. Label autowrap).
 	Size2i titlebar_min_size = titlebar_hbox->get_combined_minimum_size();
@@ -89,7 +91,10 @@ void GraphNode::_resort() {
 	// Avoid negative stretch space.
 	stretch_diff = MAX(stretch_diff, 0);
 
-	available_stretch_space += stretch_diff - sb_panel->get_margin(SIDE_BOTTOM) - sb_panel->get_margin(SIDE_TOP) - titlebar_min_size.height - sb_titlebar->get_minimum_size().height;
+	available_stretch_space += stretch_diff - sb_panel->get_margin(SIDE_BOTTOM) - sb_panel->get_margin(SIDE_TOP);
+	if (!hide_title) {
+		available_stretch_space -= titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
+	}
 
 	// Second pass, discard elements that can't be stretched, this will run while stretchable elements exist.
 
@@ -130,7 +135,10 @@ void GraphNode::_resort() {
 
 	// Final pass, draw and stretch elements.
 
-	int ofs_y = sb_panel->get_margin(SIDE_TOP) + titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
+	int ofs_y = sb_panel->get_margin(SIDE_TOP);
+	if (!hide_title) {
+		ofs_y += titlebar_min_size.height + sb_titlebar->get_minimum_size().height;
+	}
 	int width = new_size.width - sb_panel->get_minimum_size().width;
 	int valid_children_idx = 0;
 	for (int i = 0; i < get_child_count(false); i++) {
@@ -345,17 +353,20 @@ void GraphNode::_notification(int p_what) {
 
 			int port_h_offset = theme_cache.port_h_offset;
 
-			Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
 			Size2 body_size = get_size();
-			titlebar_rect.size.width = body_size.width;
-			body_size.height -= titlebar_rect.size.height;
-			Rect2 body_rect(0, titlebar_rect.size.height, body_size.width, body_size.height);
+			Rect2 body_rect(0, 0, body_size.width, body_size.height);
+
+			// Draw title bar stylebox above and push body rect down, if title is visible
+			if (!hide_title) {
+				Rect2 titlebar_rect(Point2(), titlebar_hbox->get_size() + sb_titlebar->get_minimum_size());
+				titlebar_rect.size.width = body_size.width;
+				body_size.height -= titlebar_rect.size.height;
+				body_size.y += titlebar_rect.size.height;
+				draw_style_box(sb_to_draw_titlebar, titlebar_rect);
+			}
 
 			// Draw body (slots area) stylebox.
 			draw_style_box(sb_to_draw_panel, body_rect);
-
-			// Draw title bar stylebox above.
-			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
 
 			//int width = get_size().width - sb_panel->get_minimum_size().x;
 
@@ -799,6 +810,18 @@ String GraphNode::get_title() const {
 	return title;
 }
 
+void GraphNode::set_hide_title(bool p_hide) {
+	hide_title = p_hide;
+	titlebar_hbox->set_visible(!hide_title);
+
+	port_pos_dirty = true;
+	_deferred_resort();
+}
+
+bool GraphNode::is_title_hidden() const {
+	return hide_title;
+}
+
 HBoxContainer *GraphNode::get_titlebar_hbox() const {
 	return titlebar_hbox;
 }
@@ -960,6 +983,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_title", "title"), &GraphNode::set_title);
 	ClassDB::bind_method(D_METHOD("get_title"), &GraphNode::get_title);
 
+	ClassDB::bind_method(D_METHOD("set_hide_title", "hidden"), &GraphNode::set_hide_title);
+	ClassDB::bind_method(D_METHOD("is_title_hidden"), &GraphNode::is_title_hidden);
+
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
 
 	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::set_ports);
@@ -1014,6 +1040,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ignoring_valid_connection_type"), &GraphNode::is_ignoring_valid_connection_type);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_title"), "set_hide_title", "is_title_hidden");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_invalid_connection_type"), "set_ignore_invalid_connection_type", "is_ignoring_valid_connection_type");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "ports", PROPERTY_HINT_TYPE_STRING, MAKE_NODE_TYPE_HINT("GraphPort")), "set_ports", "get_ports");
 
@@ -1047,6 +1074,8 @@ GraphNode::GraphNode() {
 	title_label->set_theme_type_variation("GraphNodeTitleLabel");
 	title_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	titlebar_hbox->add_child(title_label);
+
+	titlebar_hbox->set_visible(!hide_title);
 
 	connect("replacing_by", callable_mp(this, &GraphNodeIndexed::_on_replacing_by));
 
