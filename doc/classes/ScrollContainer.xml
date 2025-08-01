@@ -46,6 +46,12 @@
 		<member name="follow_focus" type="bool" setter="set_follow_focus" getter="is_following_focus" default="false">
 			If [code]true[/code], the ScrollContainer will automatically scroll to focused children (including indirect children) to make sure they are fully visible.
 		</member>
+		<member name="hold_when_max_horizontal" type="bool" setter="set_hold_when_max_horizontal" getter="is_hold_when_max_horizontal" default="false">
+			If [code]true[/code], when [member scroll_horizontal] is at its maximum value, the [ScrollContainer] will adjust [member scroll_horizontal] to its maximum possible value when resized, keeping the end of the child [Control] pinned to the end of the [ScrollContainer]. When [member scroll_horizontal] is at any other value than its maximum, the [ScrollContainer] will preserve the numerical value of [member scroll_horizontal] when resized, which means the end of the child [Control] may be subsumed by the end of the [ScrollContainer].
+		</member>
+		<member name="hold_when_max_vertical" type="bool" setter="set_hold_when_max_vertical" getter="is_hold_when_max_vertical" default="false">
+			If [code]true[/code], when [member scroll_vertical] is at its maximum value, the [ScrollContainer] will adjust [member scroll_vertical] to its maximum possible value when resized, keeping the end of the child [Control] pinned to the end of the [ScrollContainer]. When [member scroll_vertical] is at any other value than its maximum, the [ScrollContainer] will preserve the numerical value of [member scroll_vertical] when resized, which means the end of the child [Control] may be subsumed by the end of the [ScrollContainer].
+		</member>
 		<member name="horizontal_scroll_mode" type="int" setter="set_horizontal_scroll_mode" getter="get_horizontal_scroll_mode" enum="ScrollContainer.ScrollMode" default="1">
 			Controls whether horizontal scrollbar can be used and when it should be visible.
 		</member>
