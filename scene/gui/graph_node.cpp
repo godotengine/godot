@@ -845,6 +845,27 @@ HBoxContainer *GraphNode::get_titlebar_hbox() const {
 	return titlebar_hbox;
 }
 
+void GraphNode::add_node_to_titlebar(Control *p_node) {
+	ERR_FAIL_NULL(p_node);
+	titlebar_hbox->add_child(p_node);
+}
+
+void GraphNode::remove_node_from_titlebar(Control *p_node) {
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_COND(p_node->get_parent() != titlebar_hbox);
+	titlebar_hbox->remove_child(p_node);
+}
+
+void GraphNode::clear_titlebar_nodes() {
+	for (int i = 0; i < titlebar_hbox->get_child_count(false); i++) {
+		Control *child = as_sortable_control(get_child(i, false));
+		if (!child || child == title_label) {
+			continue;
+		}
+		titlebar_hbox->remove_child(child);
+	}
+}
+
 Control::CursorShape GraphNode::get_cursor_shape(const Point2 &p_pos) const {
 	if (resizable) {
 		if (resizing || (p_pos.x > get_size().x - theme_cache.resizer->get_width() && p_pos.y > get_size().y - theme_cache.resizer->get_height())) {
@@ -1006,6 +1027,9 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_title_hidden"), &GraphNode::is_title_hidden);
 
 	ClassDB::bind_method(D_METHOD("get_titlebar_hbox"), &GraphNode::get_titlebar_hbox);
+	ClassDB::bind_method(D_METHOD("add_node_to_titlebar", "node"), &GraphNode::add_node_to_titlebar);
+	ClassDB::bind_method(D_METHOD("remove_node_from_titlebar", "node"), &GraphNode::remove_node_from_titlebar);
+	ClassDB::bind_method(D_METHOD("clear_titlebar_nodes"), &GraphNode::clear_titlebar_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_ports", "ports"), &GraphNode::set_ports);
 	ClassDB::bind_method(D_METHOD("get_ports"), &GraphNode::get_ports);

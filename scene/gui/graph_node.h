@@ -128,6 +128,9 @@ public:
 	bool is_title_hidden() const;
 
 	HBoxContainer *get_titlebar_hbox() const;
+	void add_node_to_titlebar(Control *p_node);
+	void remove_node_from_titlebar(Control *p_node);
+	void clear_titlebar_nodes();
 
 	void set_ports(const TypedArray<GraphPort> &p_ports);
 	TypedArray<GraphPort> get_ports() const;
