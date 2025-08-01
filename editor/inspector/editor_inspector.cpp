@@ -4619,6 +4619,21 @@ void EditorInspector::update_tree() {
 		}
 	}
 
+	//Lock Inspector Button
+	Control *spacer = memnew(Control);
+	spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
+	main_vbox->add_child(spacer);
+	Button *il = EditorInspector::create_inspector_action_button(TTR("Lock Inspector"));
+	if (is_inspector_locked) { // Setting the correct icon for "Lock Inspector button" if inspector refreshes without interacting with "Lock Inspector Button".
+		il->set_button_icon(theme_cache.icon_closed_lock);
+	} else {
+		il->set_button_icon(theme_cache.icon_open_lock);
+	}
+	Inspector_Lock_Button = il; // This is done just to change the button icon in _toggle_lock() method
+	il->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_toggle_lock));
+	main_vbox->add_child(il);
+	//End
+
 	// Get the lists of to add at the end.
 	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
 		ped->parse_end(object);
@@ -4692,6 +4707,22 @@ Object *EditorInspector::get_next_edited_object() {
 }
 
 void EditorInspector::edit(Object *p_object) {
+	// Logic for locking the inspector if lock state is suppose to be true
+	if (selected_object != p_object) { // Selected_Object is an Object pointer referring to the last node selected, irrespective of Inpesctor's current lock state.
+		selected_object = p_object; // this is done so that Inspector directly switches to currently selected node as soon as the lock is lifted
+	}
+	if (is_inspector_locked && locked_object_id.is_valid()) {
+		Object *locked_object = ObjectDB::get_instance(locked_object_id);
+		if (locked_object) {
+			p_object = locked_object;
+			return;
+		} else {
+			locked_object_id = ObjectID();
+			is_inspector_locked = false;
+		}
+	}
+	//End
+
 	if (object == p_object) {
 		return;
 	}
@@ -4719,7 +4750,6 @@ void EditorInspector::edit(Object *p_object) {
 
 		update_tree();
 	}
-
 	// Keep it available until the end so it works with both main and sub inspectors.
 	next_object = nullptr;
 
@@ -5432,7 +5462,8 @@ void EditorInspector::_notification(int p_what) {
 			theme_cache.vertical_separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
 			theme_cache.prop_subsection = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			theme_cache.icon_add = get_editor_theme_icon(SNAME("Add"));
-
+			theme_cache.icon_closed_lock = get_editor_theme_icon(SNAME("LockActive"));
+			theme_cache.icon_open_lock = get_editor_theme_icon(SNAME("LockDeactive"));
 			initialize_section_theme(section_theme_cache, this);
 			initialize_category_theme(category_theme_cache, this);
 
@@ -5598,6 +5629,40 @@ void EditorInspector::set_property_clipboard(const Variant &p_value) {
 Variant EditorInspector::get_property_clipboard() const {
 	return property_clipboard;
 }
+
+// Switching between Lock or Unlock Status of the Inspector
+void EditorInspector::_toggle_lock() {
+	if (!is_inspector_locked) {
+		locked_object_id = object->get_instance_id();
+		object->connect("tree_exiting", callable_mp(this, &EditorInspector::_on_locked_node_deleted));
+		if (Inspector_Lock_Button) {
+			Inspector_Lock_Button->set_button_icon(theme_cache.icon_closed_lock);
+		}
+		is_inspector_locked = true;
+
+	} else {
+		locked_object_id = ObjectID();
+		if (Inspector_Lock_Button) {
+			Inspector_Lock_Button->set_button_icon(theme_cache.icon_open_lock);
+		}
+		object->disconnect("tree_exiting", callable_mp(this, &EditorInspector::_on_locked_node_deleted));
+		is_inspector_locked = false;
+		call_deferred("edit", selected_object);
+	}
+}
+//End
+
+// Resetting Inpector and its lock state if a locked node is deleted without unlocking it
+void EditorInspector::_on_locked_node_deleted() {
+	locked_object_id = ObjectID();
+	object->disconnect("tree_exiting", callable_mp(this, &EditorInspector::_on_locked_node_deleted));
+	if (Inspector_Lock_Button) {
+		Inspector_Lock_Button->set_button_icon(theme_cache.icon_open_lock);
+	}
+	is_inspector_locked = false;
+	edit(nullptr);
+}
+//End
 
 void EditorInspector::_show_add_meta_dialog() {
 	if (!add_meta_dialog) {
