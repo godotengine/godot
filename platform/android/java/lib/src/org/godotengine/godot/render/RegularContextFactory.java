@@ -28,9 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.regular;
+package org.godotengine.godot.render;
 
-import org.godotengine.godot.gl.GLSurfaceView;
 import org.godotengine.godot.utils.GLUtils;
 
 import android.util.Log;
@@ -43,7 +42,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 /**
  * Factory used to setup the opengl context for pancake games.
  */
-public class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
+class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static final String TAG = RegularContextFactory.class.getSimpleName();
 
 	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
