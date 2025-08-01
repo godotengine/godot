@@ -1104,7 +1104,7 @@
 				Sets the compositor effects for the specified compositor RID. [param effects] should be an array containing RIDs created with [method compositor_effect_create].
 			</description>
 		</method>
-		<method name="create_local_rendering_device" qualifiers="const">
+		<method name="create_local_rendering_device">
 			<return type="RenderingDevice" />
 			<description>
 				Creates a RenderingDevice that can be used to do draw and compute operations on a separate thread. Cannot draw to the screen nor share data with the global RenderingDevice.
