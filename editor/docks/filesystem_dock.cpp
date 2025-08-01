@@ -2726,6 +2726,10 @@ void FileSystemDock::_resource_created() {
 	EditorNode::get_singleton()->save_resource_as(Ref<Resource>(r), fpath);
 }
 
+void FileSystemDock::_script_created(const Ref<Script> &p_script) {
+	EditorNode::get_singleton()->push_item(p_script.ptr());
+}
+
 void FileSystemDock::_search_changed(const String &p_text, const Control *p_from) {
 	if (searched_tokens.is_empty()) {
 		// Register the uncollapsed paths before they change.
@@ -4379,6 +4383,7 @@ FileSystemDock::FileSystemDock() {
 	make_script_dialog = memnew(ScriptCreateDialog);
 	make_script_dialog->set_title(TTRC("Create Script"));
 	add_child(make_script_dialog);
+	make_script_dialog->connect("script_created", callable_mp(this, &FileSystemDock::_script_created));
 
 	make_shader_dialog = memnew(ShaderCreateDialog);
 	add_child(make_shader_dialog);
