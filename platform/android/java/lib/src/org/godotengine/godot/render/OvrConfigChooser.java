@@ -28,9 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.xr.ovr;
-
-import org.godotengine.godot.gl.GLSurfaceView;
+package org.godotengine.godot.render;
 
 import android.opengl.EGLExt;
 
@@ -41,7 +39,7 @@ import javax.microedition.khronos.egl.EGLDisplay;
 /**
  * EGL config chooser for the Oculus Mobile VR SDK.
  */
-public class OvrConfigChooser implements GLSurfaceView.EGLConfigChooser {
+class OvrConfigChooser implements GLSurfaceView.EGLConfigChooser {
 	private static final int[] CONFIG_ATTRIBS = {
 		EGL10.EGL_RED_SIZE, 8,
 		EGL10.EGL_GREEN_SIZE, 8,

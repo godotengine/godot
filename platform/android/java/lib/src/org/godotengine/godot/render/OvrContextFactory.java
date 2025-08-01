@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  java_godot_view_wrapper.h                                             */
+/*  OvrContextFactory.java                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+package org.godotengine.godot.render;
 
-#include "jni_utils.h"
+import android.opengl.EGL14;
 
-#include "core/math/vector2.h"
+import javax.microedition.khronos.egl.EGL10;
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.egl.EGLContext;
+import javax.microedition.khronos.egl.EGLDisplay;
 
-#include <android/log.h>
-#include <jni.h>
+/**
+ * EGL Context factory for the Oculus mobile VR SDK.
+ */
+class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
+	private static final int[] CONTEXT_ATTRIBS = {
+		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE
+	};
 
-// Class that makes functions in java/src/org/godotengine/godot/GodotRenderView.java callable from C++
-class GodotJavaViewWrapper {
-private:
-	jclass _cls;
+	@Override
+	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+		return egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, CONTEXT_ATTRIBS);
+	}
 
-	jobject _godot_view;
-
-	jmethodID _can_capture_pointer = 0;
-	jmethodID _request_pointer_capture = 0;
-	jmethodID _release_pointer_capture = 0;
-
-	jmethodID _configure_pointer_icon = 0;
-	jmethodID _set_pointer_icon = 0;
-
-public:
-	GodotJavaViewWrapper(jobject godot_view);
-
-	bool can_update_pointer_icon() const;
-	bool can_capture_pointer() const;
-
-	void request_pointer_capture();
-	void release_pointer_capture();
-
-	void configure_pointer_icon(int pointer_type, const String &image_path, const Vector2 &p_hotspot);
-	void set_pointer_icon(int pointer_type);
-
-	~GodotJavaViewWrapper();
-};
+	@Override
+	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
+		egl.eglDestroyContext(display, context);
+	}
+}
