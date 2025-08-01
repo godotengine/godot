@@ -86,29 +86,30 @@ void BetsyCompressor::_init() {
 
 	// Create local RD.
 	RenderingContextDriver *rcd = nullptr;
-	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
+	Ref<RenderingDevice> rd = RenderingServer::get_singleton()->create_local_rendering_device();
 
-	if (rd == nullptr) {
+	if (rd.is_null()) {
 #if defined(RD_ENABLED)
 #if defined(METAL_ENABLED)
 		rcd = memnew(RenderingContextDriverMetal);
-		rd = memnew(RenderingDevice);
+		rd.instantiate();
 #endif
 #if defined(VULKAN_ENABLED)
 		if (rcd == nullptr) {
 			rcd = memnew(RenderingContextDriverVulkan);
-			rd = memnew(RenderingDevice);
+			rd.instantiate();
 		}
 #endif
 #endif
-		if (rcd != nullptr && rd != nullptr) {
+		if (rcd != nullptr && rd.is_valid()) {
 			Error err = rcd->initialize();
 			if (err == OK) {
 				err = rd->initialize(rcd);
 			}
 
 			if (err != OK) {
-				memdelete(rd);
+				//memdelete(rd);
+				rd.unref();
 				memdelete(rcd);
 				rd = nullptr;
 				rcd = nullptr;
@@ -116,7 +117,7 @@ void BetsyCompressor::_init() {
 		}
 	}
 
-	ERR_FAIL_NULL_MSG(rd, "Unable to create a local RenderingDevice.");
+	ERR_FAIL_COND_MSG(rd.is_null(), "Unable to create a local RenderingDevice.");
 
 	compress_rd = rd;
 	compress_rcd = rcd;
@@ -246,7 +247,7 @@ void BetsyCompressor::_thread_loop() {
 void BetsyCompressor::_thread_exit() {
 	exit = true;
 
-	if (compress_rd != nullptr) {
+	if (compress_rd.is_valid()) {
 		if (dxt1_encoding_table_buffer.is_valid()) {
 			compress_rd->free(dxt1_encoding_table_buffer);
 		}
@@ -261,8 +262,9 @@ void BetsyCompressor::_thread_exit() {
 		}
 
 		// Free the RD (and RCD if necessary).
-		memdelete(compress_rd);
-		compress_rd = nullptr;
+		//memdelete(compress_rd);
+		compress_rd.unref();
+		//compress_rd = nullptr;
 		if (compress_rcd != nullptr) {
 			memdelete(compress_rcd);
 			compress_rcd = nullptr;
@@ -363,7 +365,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
 
 	// Return an error so that the compression can fall back to cpu compression
-	if (compress_rd == nullptr) {
+	if (compress_rd.is_null()) {
 		return ERR_CANT_CREATE;
 	}
 

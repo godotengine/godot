@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/object.h"
+#include "core/object/ref_counted.h"
 #include "core/variant/type_info.h"
 
 #include <algorithm>
@@ -66,7 +67,7 @@ public:
 			_ptr(p_lv.ptr()), _size(p_lv.size()) {}
 };
 
-class RenderingDeviceCommons : public Object {
+class RenderingDeviceCommons : public RefCounted {
 	////////////////////////////////////////////
 	// PUBLIC STUFF
 	// Exposed by RenderingDevice, and shared
