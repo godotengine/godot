@@ -220,10 +220,20 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			const real_t aspect = small_image->get_size().aspect();
 			if (aspect > 1.0) {
 				new_size.y = MAX(1, new_size.y / aspect);
-			} else {
+			} else if (aspect < 1.0) {
 				new_size.x = MAX(1, new_size.x * aspect);
 			}
 			small_image->resize(new_size.x, new_size.y, Image::INTERPOLATE_CUBIC);
+
+			// Make sure the image is always square.
+			if (aspect != 1.0) {
+				Ref<Image> rect = small_image;
+				const Vector2i rect_size = rect->get_size();
+				small_image = Image::create_empty(small_thumbnail_size, small_thumbnail_size, false, rect->get_format());
+				// Blit the rectangle in the center of the square.
+				small_image->blit_rect(rect, Rect2i(Vector2i(), rect_size), (Vector2i(1, 1) * small_thumbnail_size - rect_size) / 2);
+			}
+
 			r_small_texture.instantiate();
 			r_small_texture->set_image(small_image);
 		}
