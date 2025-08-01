@@ -438,7 +438,10 @@ void GraphNodeIndexed::_update_port_positions() {
 	int separation = theme_cache.separation;
 
 	// This helps to immediately achieve the initial y "original point" of the slots, which the sum of the titlebar height and the top margin of the panel.
-	int vertical_ofs = titlebar_hbox->get_size().height + (sb_titlebar.is_valid() ? sb_titlebar->get_minimum_size().height : 0) + (sb_panel.is_valid() ? sb_panel->get_margin(SIDE_TOP) : 0);
+	int vertical_ofs = (sb_panel.is_valid() ? sb_panel->get_margin(SIDE_TOP) : 0);
+	if (!hide_title) {
+		vertical_ofs += titlebar_hbox->get_size().height + (sb_titlebar.is_valid() ? sb_titlebar->get_minimum_size().height : 0);
+	}
 
 	// Node x and port x positions are uniform for all ports, so find them now
 	int node_width = get_size().width;
@@ -656,7 +659,7 @@ Size2 GraphNodeIndexed::get_minimum_size() const {
 	Ref<StyleBox> sb_slot = theme_cache.slot;
 
 	int separation = theme_cache.separation;
-	Size2 minsize = titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
+	Size2 minsize = hide_title ? Size2(0, 0) : titlebar_hbox->get_minimum_size() + sb_titlebar->get_minimum_size();
 
 	for (int i = 0; i < get_child_count(false); i++) {
 		Control *child = as_sortable_control(get_child(i, false));
