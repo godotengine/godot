@@ -101,7 +101,7 @@ class BetsyCompressor : public Object {
 	};
 
 	// Resources shared by all compression formats.
-	RenderingDevice *compress_rd = nullptr;
+	Ref<RenderingDevice> compress_rd;
 	RenderingContextDriver *compress_rcd = nullptr;
 	BetsyShader cached_shaders[BETSY_SHADER_MAX];
 	RID src_sampler;

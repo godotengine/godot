@@ -1891,7 +1891,7 @@ RenderingDevice *RenderingServer::get_rendering_device() const {
 	return RenderingDevice::get_singleton();
 }
 
-RenderingDevice *RenderingServer::create_local_rendering_device() const {
+Ref<RenderingDevice> RenderingServer::create_local_rendering_device() {
 	RenderingDevice *device = RenderingDevice::get_singleton();
 	if (!device) {
 		return nullptr;

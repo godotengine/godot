@@ -57,7 +57,7 @@ class RDFramebufferPass;
 class RDPipelineSpecializationConstant;
 
 class RenderingDevice : public RenderingDeviceCommons {
-	GDCLASS(RenderingDevice, Object)
+	GDCLASS(RenderingDevice, RefCounted)
 
 	_THREAD_SAFE_CLASS_
 
@@ -1636,7 +1636,7 @@ public:
 
 	uint64_t get_memory_usage(MemoryType p_type) const;
 
-	RenderingDevice *create_local_device();
+	Ref<RenderingDevice> create_local_device();
 
 	void set_resource_name(RID p_id, const String &p_name);
 
