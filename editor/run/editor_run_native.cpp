@@ -144,7 +144,9 @@ Error EditorRunNative::start_run_native(int p_id) {
 
 	preset->update_value_overrides();
 
-	emit_signal(SNAME("native_run"), preset);
+	if (eep->is_options_runnable(idx)) {
+		emit_signal(SNAME("native_run"), preset);
+	}
 
 	BitField<EditorExportPlatform::DebugFlags> flags = 0;
 
