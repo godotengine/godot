@@ -415,7 +415,6 @@ def configure_msvc(env: "SConsEnvironment"):
     if env["use_asan"]:
         env.extra_suffix += ".san"
         prebuilt_lib_extra_suffix = ".san"
-        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
         env.Append(CCFLAGS=["/fsanitize=address"])
         env.Append(LINKFLAGS=["/INFERASANLIBS"])
 
@@ -775,7 +774,6 @@ def configure_mingw(env: "SConsEnvironment"):
             sys.exit(255)
 
         env.extra_suffix += ".san"
-        env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
         san_flags = []
         if env["use_asan"]:
             san_flags.append("-fsanitize=address")
