@@ -864,16 +864,130 @@ TEST_CASE("[String] Splitting") {
 }
 
 TEST_CASE("[String] format") {
-	const String value_format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
-
+	String format;
+	Array value_array;
 	Dictionary value_dictionary;
+	Array arg_array;
+
+	// array values, index placeholder
+	format = "Waiting for {0} is a play by {1}, and {0} Engine is named after it.";
+	value_array.clear();
+	value_array.push_back("Godot");
+	value_array.push_back("Samuel Beckett");
+	CHECK(format.format(value_array) == "Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it.");
+
+	// dictionary values, named placeholder
+	format = "User {id} is {name}.";
+	value_dictionary.clear();
+	value_dictionary["id"] = 42;
+	value_dictionary["name"] = "Godot";
+	CHECK(format.format(value_dictionary) == "User 42 is Godot.");
+
+	// array values, positional placeholder
+	format = "User {} is {}.";
+	value_array.clear();
+	value_array.push_back(42);
+	value_array.push_back("Godot");
+	CHECK(format.format(value_array, "{}") == "User 42 is Godot.");
+
+	// array[array] values, named placeholder
+	format = "User {id} is {name}.";
+	value_array.clear();
+	arg_array.clear();
+	arg_array.push_back("id");
+	arg_array.push_back(42);
+	value_array.push_back(arg_array);
+	arg_array.clear();
+	arg_array.push_back("name");
+	arg_array.push_back("Godot");
+	value_array.push_back(arg_array);
+	CHECK(format.format(value_dictionary) == "User 42 is Godot.");
+
+	// dictionary values, named $_ placeholder
+	format = "red=\"$red\" green=\"$green\" blue=\"$blue\" alpha=\"$alpha\"";
+	value_dictionary.clear();
 	value_dictionary["red"] = 10;
 	value_dictionary["green"] = 20;
 	value_dictionary["blue"] = "bla";
 	value_dictionary["alpha"] = 0.4;
-	String value = value_format.format(value_dictionary, "$_");
+	CHECK(format.format(value_dictionary, "$_") == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\"");
 
-	CHECK(value == "red=\"10\" green=\"20\" blue=\"bla\" alpha=\"0.4\"");
+	// incremental replacement (replaces args first to last)
+	format = "{0} {1}";
+	value_array.clear();
+	value_array.push_back("{1}");
+	value_array.push_back("x");
+	CHECK(format.format(value_array) == "x x");
+
+	format = "{0} {1}";
+	value_array.clear();
+	value_array.push_back("x");
+	value_array.push_back("{0}");
+	CHECK(format.format(value_array) == "x {0}");
+
+	format = "{foo} {bar}";
+	value_dictionary.clear();
+	value_dictionary["foo"] = "{bar}";
+	value_dictionary["bar"] = "baz";
+	CHECK(format.format(value_dictionary) == "baz baz");
+
+	format = "{foo} {bar}";
+	value_dictionary.clear();
+	value_dictionary["bar"] = "baz";
+	value_dictionary["foo"] = "{bar}";
+	CHECK(format.format(value_dictionary) == "{bar} baz");
+}
+
+TEST_CASE("[String] format with FormatSpec") {
+	String s_template;
+	Array value_array;
+	Dictionary value_dictionary;
+
+	// Index placeholder with spec.
+	s_template = "-{0:10}-";
+	value_array.clear();
+	value_array.push_back("Godot");
+	CHECK(s_template.format(value_array) == "-Godot     -");
+
+	// Dictionary key placeholder with spec.
+	s_template = "-{name:10}-";
+	value_dictionary.clear();
+	value_dictionary["name"] = "Godot";
+	CHECK(s_template.format(value_dictionary) == "-Godot     -");
+
+	// Array[array] key placeholder with spec.
+	s_template = "-{name:10}-";
+	Array arg_array;
+	arg_array.push_back("name");
+	arg_array.push_back("Godot");
+	value_array.push_back(arg_array);
+	CHECK(s_template.format(value_array) == "-Godot     -");
+
+	// String min_width spec default to left.
+	s_template = "|{0:10}|";
+	value_array.clear();
+	value_array.push_back("Godot");
+	CHECK(s_template.format(value_array) == "|Godot     |");
+
+	// Int min_width spec default to right.
+	s_template = "|{0:10}|";
+	value_array.clear();
+	value_array.push_back(42);
+	CHECK(s_template.format(value_array) == "|        42|");
+
+	// Float min_width spec default to right.
+	s_template = "|{0:10}|";
+	value_array.clear();
+	value_array.push_back(1.234);
+	CHECK(s_template.format(value_array) == "|     1.234|");
+
+	// Multiple values with various formats.
+	s_template = "Test with string {0:=^8s}, ints {1:#x} and {1:,d}, and floats {2:+0.2f} and {2:.4f}";
+	value_array.clear();
+	value_array.push_back("Hello");
+	value_array.push_back(123456789);
+	value_array.push_back(1234.5678);
+	CHECK(s_template.format(value_array) == "Test with string =Hello==, ints 0x75bcd15 and 123,456,789, and floats +1234.57 and 1234.5678");
 }
 
 TEST_CASE("[String] sprintf") {
@@ -1898,6 +2012,13 @@ TEST_CASE("[String] Strip escapes") {
 	CHECK(s.strip_escapes() == "Test Test Test");
 }
 
+TEST_CASE("[String] regex_escape") {
+	const String with_regex_chars = "test.^$*+?{}[]()|\\test";
+	CHECK(with_regex_chars.regex_escape() == "test\\.\\^\\$\\*\\+\\?\\{\\}\\[\\]\\(\\)\\|\\\\test");
+	const String without_regex_chars = "abcABC123!@#%&-=_;:'\",/";
+	CHECK(without_regex_chars.regex_escape() == without_regex_chars);
+}
+
 TEST_CASE("[String] Similarity") {
 	String a = "Test";
 	String b = "West";
@@ -2217,4 +2338,390 @@ TEST_CASE("[Stress][String] Empty via `is_empty()`") {
 		}
 	}
 }
+
+TEST_CASE("[FormatSpec] parse") {
+// Check the equality of all elements of two ValueFormatOptions
+#define CHECK_PART_EQ(actual_part, expected_part)                            \
+	{                                                                        \
+		CHECK(actual_part.min_width == expected_part.min_width);             \
+		CHECK(actual_part.align_type == expected_part.align_type);           \
+		CHECK(actual_part.align_pad == expected_part.align_pad);             \
+		CHECK(actual_part.sign_type == expected_part.sign_type);             \
+		CHECK(actual_part.use_base_prefix == expected_part.use_base_prefix); \
+		CHECK(actual_part.group_separator == expected_part.group_separator); \
+		CHECK(actual_part.precision == expected_part.precision);             \
+		CHECK(actual_part.format_type == expected_part.format_type);         \
+	}
+
+// Check that format_spec_text parses to the given FormatSpec (not including the vector element format).
+#define CHECK_PARSE_OK(format_spec_text, expected_format_spec_init)                  \
+	{                                                                                \
+		bool error;                                                                  \
+		FormatSpec actual_format_spec = FormatSpec::parse(format_spec_text, &error); \
+		REQUIRE(error == false);                                                     \
+		ValueFormatOptions expected_format_spec = expected_format_spec_init;         \
+		CHECK_PART_EQ(actual_format_spec, expected_format_spec);                     \
+		CHECK(actual_format_spec.is_vector_element == false);                        \
+	}
+
+// Check that format_spec_text formats to the given base FormatSpec and vector element FormatSpec.
+#define CHECK_PARSE_VECTOR_OK(format_spec_text, expected_base_format_spec_init, expected_vector_format_spec_init) \
+	{                                                                                                             \
+		bool error;                                                                                               \
+		FormatSpec actual_format_spec = FormatSpec::parse(format_spec_text, &error);                              \
+		REQUIRE(error == false);                                                                                  \
+		ValueFormatOptions expected_base_format_spec = expected_base_format_spec_init;                            \
+		ValueFormatOptions expected_vector_format_spec = expected_vector_format_spec_init;                        \
+		CHECK_PART_EQ(actual_format_spec, expected_base_format_spec);                                             \
+		CHECK(actual_format_spec.is_vector_element == false);                                                     \
+		CHECK_PART_EQ(actual_format_spec.vector_element_format, expected_vector_format_spec);                     \
+		CHECK(actual_format_spec.vector_element_format.is_vector_element == true);                                \
+	}
+
+	CHECK_PARSE_OK("", ValueFormatOptions{});
+	CHECK_PARSE_OK("10", ValueFormatOptions{ .min_width = 10 });
+	CHECK_PARSE_OK("<10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::LEFT }));
+	CHECK_PARSE_OK(">10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::RIGHT }));
+	CHECK_PARSE_OK("=10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::PAD_AFTER_SIGN }));
+	CHECK_PARSE_OK("^10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::CENTER }));
+	CHECK_PARSE_OK(".<10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::LEFT, .align_pad = '.' }));
+	CHECK_PARSE_OK("+", (ValueFormatOptions{ .sign_type = FormatSpec::SignType::PLUS_MINUS }));
+	CHECK_PARSE_OK("-", (ValueFormatOptions{ .sign_type = FormatSpec::SignType::MINUS_ONLY }));
+	CHECK_PARSE_OK(" ", (ValueFormatOptions{ .sign_type = FormatSpec::SignType::SPACE_MINUS }));
+	CHECK_PARSE_OK("#", (ValueFormatOptions{ .use_base_prefix = true }));
+	CHECK_PARSE_OK("0", (ValueFormatOptions{ .align_type = FormatSpec::Alignment::PAD_AFTER_SIGN, .align_pad = '0' }));
+	CHECK_PARSE_OK(",", (ValueFormatOptions{ .group_separator = ',' }));
+	CHECK_PARSE_OK("_", (ValueFormatOptions{ .group_separator = '_' }));
+	CHECK_PARSE_OK(".", (ValueFormatOptions{ .group_separator = '.' }));
+	CHECK_PARSE_OK(".5", (ValueFormatOptions{ .precision = 5 }));
+	CHECK_PARSE_OK("s", (ValueFormatOptions{ .format_type = FormatSpec::Type::STRING_T }));
+	CHECK_PARSE_OK("b", (ValueFormatOptions{ .format_type = FormatSpec::Type::BINARY_T }));
+	CHECK_PARSE_OK("c", (ValueFormatOptions{ .format_type = FormatSpec::Type::CHAR_T }));
+	CHECK_PARSE_OK("d", (ValueFormatOptions{ .format_type = FormatSpec::Type::DECIMAL_T }));
+	CHECK_PARSE_OK("o", (ValueFormatOptions{ .format_type = FormatSpec::Type::OCTAL_T }));
+	CHECK_PARSE_OK("x", (ValueFormatOptions{ .format_type = FormatSpec::Type::HEX_T }));
+	CHECK_PARSE_OK("X", (ValueFormatOptions{ .format_type = FormatSpec::Type::HEX_UPPER_T }));
+	CHECK_PARSE_OK("f", (ValueFormatOptions{ .format_type = FormatSpec::Type::FLOAT_T }));
+	CHECK_PARSE_OK("h", (ValueFormatOptions{ .format_type = FormatSpec::Type::FLOAT_SIG_FIG_T }));
+	// Vector
+	CHECK_PARSE_VECTOR_OK("v", (ValueFormatOptions{ .format_type = FormatSpec::Type::VECTOR_T }), ValueFormatOptions{});
+	CHECK_PARSE_VECTOR_OK("v[5]", (ValueFormatOptions{ .format_type = FormatSpec::Type::VECTOR_T }), (ValueFormatOptions{ .min_width = 5 }));
+	CHECK_PARSE_VECTOR_OK("v[<5]", (ValueFormatOptions{ .format_type = FormatSpec::Type::VECTOR_T }), (ValueFormatOptions{ .min_width = 5, .align_type = FormatSpec::Alignment::LEFT }));
+	CHECK_PARSE_VECTOR_OK("v[+]", (ValueFormatOptions{ .format_type = FormatSpec::Type::VECTOR_T }), (ValueFormatOptions{ .sign_type = FormatSpec::SignType::PLUS_MINUS }));
+	CHECK_PARSE_VECTOR_OK("v[x]", (ValueFormatOptions{ .format_type = FormatSpec::Type::VECTOR_T }), (ValueFormatOptions{ .format_type = FormatSpec::Type::HEX_T }));
+	// Combinations
+	CHECK_PARSE_OK("+10", (ValueFormatOptions{ .min_width = 10, .sign_type = FormatSpec::SignType::PLUS_MINUS }));
+	CHECK_PARSE_OK("<+10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::LEFT, .sign_type = FormatSpec::SignType::PLUS_MINUS }));
+	CHECK_PARSE_OK("#10", (ValueFormatOptions{ .min_width = 10, .use_base_prefix = true }));
+	CHECK_PARSE_OK("+#10", (ValueFormatOptions{ .min_width = 10, .sign_type = FormatSpec::SignType::PLUS_MINUS, .use_base_prefix = true }));
+	CHECK_PARSE_OK("<+#10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::LEFT, .sign_type = FormatSpec::SignType::PLUS_MINUS, .use_base_prefix = true }));
+	CHECK_PARSE_OK(".<+#10", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::LEFT, .align_pad = '.', .sign_type = FormatSpec::SignType::PLUS_MINUS, .use_base_prefix = true }));
+	CHECK_PARSE_OK("<0", (ValueFormatOptions{ .align_type = FormatSpec::Alignment::LEFT })); // Explicit alignment overrides zero padding.
+	CHECK_PARSE_OK("010", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::PAD_AFTER_SIGN, .align_pad = '0' }));
+	CHECK_PARSE_OK("10_", (ValueFormatOptions{ .min_width = 10, .group_separator = '_' }));
+	CHECK_PARSE_OK("..5", (ValueFormatOptions{ .group_separator = '.', .precision = 5 }));
+	CHECK_PARSE_OK("10f", (ValueFormatOptions{ .min_width = 10, .format_type = FormatSpec::Type::FLOAT_T }));
+	CHECK_PARSE_OK("10.2f", (ValueFormatOptions{ .min_width = 10, .precision = 2, .format_type = FormatSpec::Type::FLOAT_T }));
+	CHECK_PARSE_OK("<10.2d", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::LEFT, .precision = 2, .format_type = FormatSpec::Type::DECIMAL_T }));
+	CHECK_PARSE_OK("010_X", (ValueFormatOptions{ .min_width = 10, .align_type = FormatSpec::Alignment::PAD_AFTER_SIGN, .align_pad = '0', .group_separator = '_', .format_type = FormatSpec::Type::HEX_UPPER_T }));
+
+#undef CHECK_PART_EQ
+#undef CHECK_PARSE_OK
+#undef CHECK_PARSE_VECTOR_OK
+}
+
+TEST_CASE("[FormatSpec] parse not ok") {
+#define CHECK_PARSE_NOT_OK(format_spec_text)         \
+	{                                                \
+		bool error;                                  \
+		FormatSpec::parse(format_spec_text, &error); \
+		REQUIRE(error == true);                      \
+	}
+	CHECK_PARSE_NOT_OK("x10"); // Fill character without justify type.
+	CHECK_PARSE_NOT_OK(".."); // Fill character '.', but precision '.' without amount.
+	CHECK_PARSE_NOT_OK("v[5"); // Partial vector element type
+	CHECK_PARSE_NOT_OK("v[..]"); // Illegal vector element type
+
+#undef CHECK_PARSE_NOT_OK
+}
+
+TEST_CASE("[FormatSpec] format") {
+// Checks that formatting `value` with the spec `format_spec_text` generates `expected_output`.
+#define CHECK_FORMAT(format_spec_text, value, expected_output)                 \
+	{                                                                          \
+		bool error1;                                                           \
+		FormatSpec format_spec = FormatSpec::parse(format_spec_text, &error1); \
+		REQUIRE(error1 == false);                                              \
+		String output;                                                         \
+		Error error2 = output.append_formatted(format_spec, value);            \
+		REQUIRE(error2 == OK);                                                 \
+		CHECK(output == expected_output);                                      \
+	}
+
+	// Various types by default
+	CHECK_FORMAT("", Variant(), "<null>");
+	CHECK_FORMAT("", true, "true")
+	CHECK_FORMAT("", false, "false")
+	CHECK_FORMAT("", 42, "42")
+	CHECK_FORMAT("", -42, "-42")
+	CHECK_FORMAT("", 1.234, "1.234")
+	CHECK_FORMAT("", -1.234, "-1.234")
+	CHECK_FORMAT("", NAN, "nan")
+	CHECK_FORMAT("", INFINITY, "inf")
+	CHECK_FORMAT("", -INFINITY, "-inf")
+	CHECK_FORMAT("", "str", "str")
+	CHECK_FORMAT("", Vector2i(2, 4), "(2, 4)")
+
+	// Explicit type format + base prefix
+	CHECK_FORMAT("c", 65, "A")
+	CHECK_FORMAT("c", "a", "a")
+	CHECK_FORMAT("d", 12345, "12345")
+	CHECK_FORMAT("b", 0x123, "100100011")
+	CHECK_FORMAT("#b", 0x123, "0b100100011")
+	CHECK_FORMAT("_b", -1, "1111_1111") // Negative binary numbers limited to 8 bits if possible.
+	CHECK_FORMAT("_b", -128, "1000_0000") // Negative binary numbers limited to 8 bits if possible.
+	CHECK_FORMAT("_b", -129, "1111_1111_0111_1111") // Negative binary numbers limited to 16 bits if possible.
+	CHECK_FORMAT("_b", -32768, "1000_0000_0000_0000") // Negative binary numbers limited to 16 bits if possible.
+	CHECK_FORMAT("_b", -32769, "1111_1111_1111_1111_0111_1111_1111_1111") // Negative binary numbers limited to 32 bits if possible.
+	CHECK_FORMAT("o", 012345, "12345")
+	CHECK_FORMAT("#o", 012345, "0o12345")
+	CHECK_FORMAT("_o", -1, "377_7777_7777") // Negative octal numbers limited to 32 bits if possible.
+	CHECK_FORMAT("_o", static_cast<int64_t>(-2147483648), "200_0000_0000")
+	CHECK_FORMAT("_o", static_cast<int64_t>(-2147483649), "17_7777_7777_7577_7777_7777")
+	CHECK_FORMAT("x", 0x123abc, "123abc")
+	CHECK_FORMAT("#x", 0x123abc, "0x123abc")
+	CHECK_FORMAT("X", 0x123abc, "123ABC")
+	CHECK_FORMAT("#X", 0x123abc, "0X123ABC")
+	CHECK_FORMAT("_x", -1, "ffff_ffff") // Negative hex numbers limited to 32 bits if possible.
+	CHECK_FORMAT("_x", static_cast<int64_t>(-2147483648), "8000_0000")
+	CHECK_FORMAT("_x", static_cast<int64_t>(-2147483649), "ffff_ffff_7fff_ffff")
+	CHECK_FORMAT("f", 0, "0.0")
+	CHECK_FORMAT("f", 1234567890, "1234567890.0")
+	CHECK_FORMAT("f", 1234.56, "1234.56")
+	CHECK_FORMAT("f", -1234.56, "-1234.56")
+	CHECK_FORMAT("f", 1234, "1234.0") // Default precision of 6 digits after decimal point.
+	CHECK_FORMAT("f", 1234.5, "1234.5")
+	CHECK_FORMAT("f", 1234.56, "1234.56")
+	CHECK_FORMAT("f", 1234.567, "1234.567")
+	CHECK_FORMAT("f", 1234.5678, "1234.5678")
+	CHECK_FORMAT("f", 1234.56789, "1234.56789")
+	CHECK_FORMAT("f", 1234.567891, "1234.567891")
+	CHECK_FORMAT("f", 1234.5678912, "1234.567891")
+	CHECK_FORMAT("h", 1234, "1234.0") // Default precision of 6 significant figures.
+	CHECK_FORMAT("h", 1234.5, "1234.5")
+	CHECK_FORMAT("h", 1234.56, "1234.56")
+	CHECK_FORMAT("h", 1234.567, "1234.57")
+	CHECK_FORMAT("h", 1234.5678, "1234.57")
+	CHECK_FORMAT("v", Vector2(1.2, 2.3), "(1.2, 2.3)")
+	CHECK_FORMAT("v", Vector3(1.2, 2.3, 3.4), "(1.2, 2.3, 3.4)")
+	CHECK_FORMAT("v", Vector4(1.2, 2.3, 3.4, 4.5), "(1.2, 2.3, 3.4, 4.5)")
+	CHECK_FORMAT("v", Vector2(1234.5, 2345.6), "(1234.5, 2345.6)") // Checking for float-precision printing of vector elements.
+	CHECK_FORMAT("v[f]", Vector2(1234.5, 2345.6), "(1234.5, 2345.6)")
+	CHECK_FORMAT("v[h]", Vector2(1234.5, 2345.6), "(1234.5, 2345.6)")
+	CHECK_FORMAT("v", Vector2i(1, 2), "(1, 2)")
+	CHECK_FORMAT("v", Vector3i(1, 2, 3), "(1, 2, 3)")
+	CHECK_FORMAT("v", Vector4i(1, 2, 3, 4), "(1, 2, 3, 4)")
+
+	// Sign
+	CHECK_FORMAT("+", 123, "+123")
+	CHECK_FORMAT("-", 123, "123")
+	CHECK_FORMAT(" ", 123, " 123")
+	CHECK_FORMAT("+", -123, "-123")
+	CHECK_FORMAT("-", -123, "-123")
+	CHECK_FORMAT(" ", -123, "-123")
+	CHECK_FORMAT("x", -12345, "ffffcfc7")
+	CHECK_FORMAT("+x", -12345, "ffffcfc7")
+	CHECK_FORMAT("-x", -12345, "ffffcfc7")
+	CHECK_FORMAT(" x", -12345, "ffffcfc7")
+	CHECK_FORMAT("+f", 123.45, "+123.45")
+	CHECK_FORMAT("-f", 123.45, "123.45")
+	CHECK_FORMAT(" f", 123.45, " 123.45")
+	CHECK_FORMAT(" f", -123.45, "-123.45")
+	CHECK_FORMAT("v[+]", Vector2(1.2, -2.3), "(+1.2, -2.3)")
+	CHECK_FORMAT("v[-]", Vector2(1.2, -2.3), "(1.2, -2.3)")
+	CHECK_FORMAT("v[ ]", Vector2(1.2, -2.3), "( 1.2, -2.3)")
+
+	// Zero
+	CHECK_FORMAT("05", 123, "00123")
+	CHECK_FORMAT("+05", 123, "+0123")
+	CHECK_FORMAT(".>05", 123, "..123") // '0' is overridden by explicit alignment.
+	CHECK_FORMAT("06", NAN, "   nan") // Don't pad nan with '0's.
+	CHECK_FORMAT("06", INFINITY, "   inf") // Don't pad inf with '0's.
+	CHECK_FORMAT("06", -INFINITY, "-  inf") // Don't pad inf with '0's.
+
+	// Groups
+	CHECK_FORMAT(",", 0, "0")
+	CHECK_FORMAT(",", 1, "1")
+	CHECK_FORMAT(",", 12, "12")
+	CHECK_FORMAT(",", 123, "123")
+	CHECK_FORMAT(",", 1234, "1,234")
+	CHECK_FORMAT(",", 12345, "12,345")
+	CHECK_FORMAT(",", -1, "-1")
+	CHECK_FORMAT(",", -12, "-12")
+	CHECK_FORMAT(",", -123, "-123")
+	CHECK_FORMAT(",", -1234, "-1,234")
+	CHECK_FORMAT(",", -12345, "-12,345")
+	CHECK_FORMAT(",", 1234567890, "1,234,567,890")
+	CHECK_FORMAT("_", 1234567890, "1_234_567_890")
+	CHECK_FORMAT(".", 1234567890, "1.234.567.890")
+	CHECK_FORMAT(",", 1234567.89, "1,234,567.89")
+	CHECK_FORMAT("_x", static_cast<uint64_t>(0x1234abcd1234), "1234_abcd_1234")
+	CHECK_FORMAT("_o", 01234567012, "12_3456_7012")
+	CHECK_FORMAT("_b", 0xabcd, "1010_1011_1100_1101")
+	CHECK_FORMAT(",f", 0, "0.0")
+	CHECK_FORMAT(",f", 0.123456, "0.123456")
+	CHECK_FORMAT(",f", 123456.0, "123,456.0")
+	CHECK_FORMAT(",f", 1.1, "1.1")
+	CHECK_FORMAT(",f", 21.12, "21.12")
+	CHECK_FORMAT(",f", 321.123, "321.123")
+	CHECK_FORMAT(",f", 4321.1234, "4,321.1234")
+	CHECK_FORMAT(",f", 54321.12345, "54,321.12345")
+	CHECK_FORMAT("v[,]", Vector2(1.2, 2.3), "(1.2, 2.3)")
+	CHECK_FORMAT("v[,]", Vector2i(1, 2), "(1, 2)")
+	CHECK_FORMAT("v[,]", Vector2i(1234, 2345), "(1,234, 2,345)")
+
+	// Precision
+	CHECK_FORMAT(".0", 123.45678, "123")
+	CHECK_FORMAT(".1", 123.45678, "123.5")
+	CHECK_FORMAT(".2", 123.45678, "123.46")
+	CHECK_FORMAT(".3", 123.45678, "123.457")
+	CHECK_FORMAT(".4", 123.45678, "123.4568")
+	CHECK_FORMAT(".5", 123.45678, "123.45678")
+	CHECK_FORMAT(".6", 123.45678, "123.456780")
+
+	CHECK_FORMAT(".0f", 100, "100")
+	CHECK_FORMAT(".1f", 100, "100.0")
+	CHECK_FORMAT(".2f", 100, "100.00")
+	CHECK_FORMAT(".3f", 100, "100.000")
+	CHECK_FORMAT(".4f", 100, "100.0000")
+
+	CHECK_FORMAT(".0f", 123.45678, "123")
+	CHECK_FORMAT(".1f", 123.45678, "123.5")
+	CHECK_FORMAT(".2f", 123.45678, "123.46")
+	CHECK_FORMAT(".3f", 123.45678, "123.457")
+	CHECK_FORMAT(".4f", 123.45678, "123.4568")
+	CHECK_FORMAT(".5f", 123.45678, "123.45678")
+	CHECK_FORMAT(".6f", 123.45678, "123.456780")
+
+	CHECK_FORMAT(".0h", 123.45678, "123")
+	CHECK_FORMAT(".1h", 123.45678, "123")
+	CHECK_FORMAT(".2h", 123.45678, "123")
+	CHECK_FORMAT(".3h", 123.45678, "123")
+	CHECK_FORMAT(".4h", 123.45678, "123.5")
+	CHECK_FORMAT(".5h", 123.45678, "123.46")
+	CHECK_FORMAT(".6h", 123.45678, "123.457")
+	CHECK_FORMAT(".3h", 123.9, "124") // Rounds to the ones digit too.
+
+	CHECK_FORMAT(".0h", 100, "100")
+	CHECK_FORMAT(".1h", 100, "100")
+	CHECK_FORMAT(".2h", 100, "100")
+	CHECK_FORMAT(".3h", 100, "100")
+	CHECK_FORMAT(".4h", 100, "100.0")
+	CHECK_FORMAT(".5h", 100, "100.00")
+	CHECK_FORMAT(".6h", 100, "100.000")
+
+	CHECK_FORMAT(".3h", 12345.0, "12345")
+	CHECK_FORMAT(".3h", 1234.4, "1234")
+	CHECK_FORMAT(".3h", 123.45, "123")
+	CHECK_FORMAT(".3h", 12.345, "12.3")
+	CHECK_FORMAT(".3h", 1.2345, "1.23")
+	CHECK_FORMAT(".3h", 0.12345, "0.123")
+	CHECK_FORMAT(".3h", 0.012345, "0.0123")
+
+	CHECK_FORMAT("v[.0]", Vector2(1.23, 6.78), "(1, 7)")
+	CHECK_FORMAT("v[.1]", Vector2(1.23, 6.78), "(1.2, 6.8)")
+	CHECK_FORMAT("v[.6]", Vector2(1.234, 6.789), "(1.234000, 6.789000)")
+
+	// String precision emits only up to the specified number of characters of the string.
+	CHECK_FORMAT(".0", "abcdefgh", "")
+	CHECK_FORMAT(".1", "abcdefgh", "a")
+	CHECK_FORMAT(".5", "abcdefgh", "abcde")
+	CHECK_FORMAT(".10", "abcdefgh", "abcdefgh")
+	CHECK_FORMAT(".0s", "abcdefgh", "")
+	CHECK_FORMAT(".1s", "abcdefgh", "a")
+	CHECK_FORMAT(".5s", "abcdefgh", "abcde")
+	CHECK_FORMAT(".10s", "abcdefgh", "abcdefgh")
+
+	// Alignment
+	CHECK_FORMAT("10", "abc", "abc       ")
+	CHECK_FORMAT("<10", "abc", "abc       ")
+	CHECK_FORMAT(">10", "abc", "       abc")
+	CHECK_FORMAT("^10", "abc", "   abc    ")
+	CHECK_FORMAT(".<10", "abc", "abc.......")
+	CHECK_FORMAT(".>10", "abc", ".......abc")
+
+	CHECK_FORMAT("10", 123, "       123")
+	CHECK_FORMAT("<10", 123, "123       ")
+	CHECK_FORMAT(">10", 123, "       123")
+	CHECK_FORMAT("^10", 123, "   123    ")
+	CHECK_FORMAT("=10", 123, "       123")
+	CHECK_FORMAT("<+10", 123, "+123      ")
+	CHECK_FORMAT(">+10", 123, "      +123")
+	CHECK_FORMAT("^+10", 123, "   +123   ")
+	CHECK_FORMAT("=+10", 123, "+      123")
+	CHECK_FORMAT("<+10", -123, "-123      ")
+	CHECK_FORMAT(">+10", -123, "      -123")
+	CHECK_FORMAT("^+10", -123, "   -123   ")
+	CHECK_FORMAT("=+10", -123, "-      123")
+
+	// Element alignment adjusts only the elements
+	CHECK_FORMAT("v[5]", Vector2i(2, 4), "(    2,     4)")
+	CHECK_FORMAT("v[<5]", Vector2i(2, 4), "(2    , 4    )")
+	CHECK_FORMAT("v[>5]", Vector2i(2, 4), "(    2,     4)")
+	CHECK_FORMAT("v[^5]", Vector2i(2, 4), "(  2  ,   4  )")
+
+	// Outside alignment adjusts the whole vector string.
+	CHECK_FORMAT("10v", Vector2i(2, 4), "(2, 4)    ")
+	CHECK_FORMAT("<10v", Vector2i(2, 4), "(2, 4)    ")
+	CHECK_FORMAT(">10v", Vector2i(2, 4), "    (2, 4)")
+	CHECK_FORMAT("^10v", Vector2i(2, 4), "  (2, 4)  ")
+
+	// Can align both elements and whole vector.
+	CHECK_FORMAT("<16v[<5]", Vector2i(2, 4), "(2    , 4    )  ")
+	CHECK_FORMAT("^16v[>5]", Vector2i(2, 4), " (    2,     4) ")
+	CHECK_FORMAT(">16v[^5]", Vector2i(2, 4), "  (  2  ,   4  )")
+
+	// Combinations
+	CHECK_FORMAT("<+12,", 1234567, "+1,234,567  ")
+	CHECK_FORMAT(">+12,", 1234567, "  +1,234,567")
+	CHECK_FORMAT("^+12,", 1234567, " +1,234,567 ")
+	CHECK_FORMAT("=+12,", 1234567, "+  1,234,567")
+
+	CHECK_FORMAT(",", 1234567.89, "1,234,567.89")
+	CHECK_FORMAT(",f", 1234567.89, "1,234,567.89")
+
+	CHECK_FORMAT("+15", 1234567.89, "    +1234567.89")
+	CHECK_FORMAT("+15f", 1234567.89, "    +1234567.89")
+	CHECK_FORMAT("=+15f", 1234567.89, "+    1234567.89")
+	CHECK_FORMAT("+15,f", 1234567.89, "  +1,234,567.89")
+	CHECK_FORMAT("=+15,f", 1234567.89, "+  1,234,567.89")
+
+	CHECK_FORMAT("v[#x]", Vector3i(0x1234, 0xabcd, 0x5678), "(0x1234, 0xabcd, 0x5678)")
+	CHECK_FORMAT("v[_x]", Vector2i(0x123456, 0xabcd12), "(12_3456, ab_cd12)")
+	CHECK_FORMAT("v[b]", Vector3i(10, 2, 7), "(1010, 10, 111)")
+	CHECK_FORMAT("v[4b]", Vector3i(10, 2, 7), "(1010,   10,  111)")
+	CHECK_FORMAT("v[04b]", Vector3i(10, 2, 7), "(1010, 0010, 0111)")
+	CHECK_FORMAT("v[_b]", Vector2i(0x1234, 0xabcd), "(1_0010_0011_0100, 1010_1011_1100_1101)")
+
+#undef CHECK_FORMAT
+}
+
+TEST_CASE("[FormatSpec] format not ok") {
+#define CHECK_FORMAT_NOT_OK(format_spec_text, value)                           \
+	{                                                                          \
+		bool error1;                                                           \
+		FormatSpec format_spec = FormatSpec::parse(format_spec_text, &error1); \
+		REQUIRE(error1 == false);                                              \
+		String output;                                                         \
+		Error error2 = output.append_formatted(format_spec, value);            \
+		REQUIRE(error2 != OK);                                                 \
+	}
+	ERR_PRINT_OFF;
+	CHECK_FORMAT_NOT_OK("d", "str"); // Can't format string as number.
+	CHECK_FORMAT_NOT_OK("c", -4); // negative character
+	CHECK_FORMAT_NOT_OK("c", "abc"); // multi-character string isn't a valid character
+	CHECK_FORMAT_NOT_OK("=", "abc"); // '=' justification only valid for numbers
+	ERR_PRINT_ON;
+} //namespace TestString
+
 } // namespace TestString
