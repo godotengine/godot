@@ -179,10 +179,10 @@ private:
 		WaylandObject *get_object(uint32_t p_local_id);
 		Error delete_object(uint32_t p_local_id);
 
-		uint32_t new_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
-		uint32_t new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
-		WaylandObject *new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
-		WaylandObject *new_global_instance(uint32_t p_local_id, uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
+		uint32_t new_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
+		uint32_t new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
+		WaylandObject *new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
+		WaylandObject *new_global_instance(uint32_t p_local_id, uint32_t p_global_id, const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 
 		void send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalData *p_state);
 	};
@@ -536,7 +536,7 @@ private:
 		return arg;
 	}
 
-	uint32_t new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data = nullptr);
+	uint32_t new_object(const struct wl_interface *p_interface, int p_version = 1, WaylandObjectData *p_data = nullptr);
 
 	void poll_sockets();
 

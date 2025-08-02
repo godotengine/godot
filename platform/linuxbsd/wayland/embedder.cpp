@@ -2491,22 +2491,14 @@ Error WaylandEmbedder::init() {
 	}
 
 	{
-		uint32_t display_id = INVALID_ID;
-		WaylandObject *display_object = objects.request(display_id);
-		display_object->interface = &wl_display_interface;
-		display_object->version = 1;
-
+		uint32_t display_id = new_object(&wl_display_interface);
 		CRASH_COND(display_id != DISPLAY_ID);
 
 		shared_objects[&wl_display_interface] = DISPLAY_ID;
 	}
 
 	{
-		uint32_t registry_id = INVALID_ID;
-		WaylandObject *registry_object = objects.request(registry_id);
-		registry_object->interface = &wl_registry_interface;
-		registry_object->version = 1;
-
+		uint32_t registry_id = new_object(&wl_registry_interface);
 		CRASH_COND(registry_id != REGISTRY_ID);
 
 		shared_objects[&wl_registry_interface] = DISPLAY_ID;
@@ -2534,18 +2526,14 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 
 		Client &client = clients.insert_new(new_fd, {})->value;
 
-		pollfds.push_back({ new_fd, POLLIN, 0 });
-
 		client.embedder = this;
-
 		client.socket = new_fd;
-
 		client.pid = cred.pid;
 
 		client.global_ids[DISPLAY_ID] = DISPLAY_ID;
 		client.local_ids[DISPLAY_ID] = DISPLAY_ID;
 
-		client.get_object(DISPLAY_ID)->interface = &wl_display_interface;
+		pollfds.push_back({ new_fd, POLLIN, 0 });
 
 		if (main_client == nullptr) {
 			main_client = &client;
