@@ -395,15 +395,23 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 			int index = -(int64_t)0x80000000; // Always must be drawn below children.
 
 			// Sort the quadrants coords per local coordinates.
-			RBMap<Vector2, Ref<RenderingQuadrant>, RenderingQuadrant::CoordsWorldComparator> local_to_map;
+			LocalVector<Pair<Vector2, Ref<RenderingQuadrant>>> sortable_quadrant_keys;
+			sortable_quadrant_keys.reserve(rendering_quadrant_map.size());
 			for (KeyValue<Vector2i, Ref<RenderingQuadrant>> &kv : rendering_quadrant_map) {
-				Ref<RenderingQuadrant> &rendering_quadrant = kv.value;
-				local_to_map[tile_set->map_to_local(rendering_quadrant->quadrant_coords)] = rendering_quadrant;
+				Vector2 local_coords = tile_set->map_to_local(kv.value->quadrant_coords);
+				sortable_quadrant_keys.push_back(Pair<Vector2, Ref<RenderingQuadrant>>(local_coords, kv.value));
 			}
+			struct PairedQuadrantSorter {
+				RenderingQuadrant::CoordsWorldComparator comparator;
+				_ALWAYS_INLINE_ bool operator()(const Pair<Vector2, Ref<RenderingQuadrant>> &p_a, const Pair<Vector2, Ref<RenderingQuadrant>> &p_b) const {
+					return comparator(p_a.first, p_b.first);
+				}
+			};
+			sortable_quadrant_keys.sort_custom<PairedQuadrantSorter>();
 
-			// Sort the quadrants.
-			for (const KeyValue<Vector2, Ref<RenderingQuadrant>> &E : local_to_map) {
-				for (const RID &ci : E.value->canvas_items) {
+			// Set the draw indices.
+			for (const Pair<Vector2, Ref<RenderingQuadrant>> &E : sortable_quadrant_keys) {
+				for (const RID &ci : E.second->canvas_items) {
 					RS::get_singleton()->canvas_item_set_draw_index(ci, index++);
 				}
 			}
@@ -1283,9 +1291,11 @@ void TileMapLayer::_navigation_update(bool p_force_cleanup) {
 
 	// ----------- Navigation regions processing -----------
 	if (forced_cleanup) {
-		// Clean everything.
-		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
-			_navigation_clear_cell(kv.value);
+		if (navigation_enabled || dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_ENABLED]) {
+			// Clean everything.
+			for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
+				_navigation_clear_cell(kv.value);
+			}
 		}
 	} else {
 		if (_navigation_was_cleaned_up || dirty.flags[DIRTY_FLAGS_TILE_SET] || dirty.flags[DIRTY_FLAGS_LAYER_IN_TREE] || dirty.flags[DIRTY_FLAGS_LAYER_NAVIGATION_MAP]) {
