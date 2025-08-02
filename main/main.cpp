@@ -1044,9 +1044,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String default_renderer = "";
 	String default_renderer_mobile = "";
 	String renderer_hints = "";
-	TypedArray<String> available_methods = {};
-	TypedArray<String> rd_drivers = {};
-	TypedArray<String> gl_drivers = {};
+	Vector<String> available_methods = {};
+	Vector<String> rd_drivers = {};
+	Vector<String> gl_drivers = {};
 
 	packed_data = PackedData::get_singleton();
 	if (!packed_data) {
@@ -2467,7 +2467,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
 					rendering_method.utf8().get_data());
 
-			TypedArray<String> rendering_method_hints;
+			Vector<String> rendering_method_hints;
 			for (int i = 0; i < available_drivers.keys().size(); i++) {
 				rendering_method_hints.push_back(available_drivers.keys()[i]);
 			}
