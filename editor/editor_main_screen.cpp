@@ -262,6 +262,8 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_theme_type_variation("MainScreenButton");
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
+	tb->set_shortcut_in_tooltip(true);
+	tb->set_shortcut(ED_GET_SHORTCUT(String("editor/editor_{0}").format(varray(p_editor->get_plugin_name())).to_lower()));
 
 	Ref<Texture2D> icon = p_editor->get_plugin_icon();
 	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
