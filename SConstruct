@@ -744,6 +744,14 @@ if env["arch"] == "x86_64":
     else:
         # `-msse2` is implied when compiling for x86_64.
         env.Append(CCFLAGS=["-msse4.2", "-mpopcnt"])
+        if (
+            env["platform"] == "linuxbsd"
+            and env.editor_build
+            and env.dev_build
+            and (env.get("use_ubsan") or env.get("use_asan"))
+        ):
+            env.Append(CCFLAGS=["-fPIC", "-mcmodel=large"])
+
 elif env["arch"] == "x86_32":
     # Be more conservative with instruction sets on 32-bit x86 to improve compatibility.
     # SSE and SSE2 are present on all CPUs that support 64-bit, even if running a 32-bit OS.
