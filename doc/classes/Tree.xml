@@ -431,7 +431,7 @@
 		<signal name="item_collapsed">
 			<param index="0" name="item" type="TreeItem" />
 			<description>
-				Emitted when an item is collapsed by a click on the folding arrow.
+				Emitted when an item is expanded or collapsed by a click on the folding arrow or through code. (Despite its name, this signal is emitted when an item is expanded too.)
 			</description>
 		</signal>
 		<signal name="item_edited">
