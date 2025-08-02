@@ -78,6 +78,11 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 		return;
 	}
 
+	if (guard_source_tree && (guard_source_tree != process_state->tree)) {
+		property_cache.clear();
+	}
+	guard_source_tree = process_state->tree;
+
 	const AHashMap<StringName, int>::Iterator it = property_cache.find(p_name);
 	if (it) {
 		Pair<Variant, bool> &prop = process_state->tree->property_map.get_by_index(it->value).value;
@@ -98,6 +103,12 @@ void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_val
 
 Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	ERR_FAIL_NULL_V(process_state, Variant());
+
+	if (guard_source_tree && (guard_source_tree != process_state->tree)) {
+		property_cache.clear();
+	}
+	guard_source_tree = process_state->tree;
+
 	const AHashMap<StringName, int>::ConstIterator it = property_cache.find(p_name);
 	if (it) {
 		return process_state->tree->property_map.get_by_index(it->value).value.first;
@@ -107,6 +118,7 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 
 	StringName path = process_state->tree->property_parent_map[node_state.base_path][p_name];
 	int idx = process_state->tree->property_map.get_index(path);
+
 	property_cache.insert_new(p_name, idx);
 	return process_state->tree->property_map.get_by_index(idx).value.first;
 }
@@ -144,6 +156,9 @@ void AnimationNode::blend_animation(const StringName &p_animation, AnimationMixe
 }
 
 AnimationNode::NodeTimeInfo AnimationNode::_pre_process(ProcessState *p_process_state, AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
+	if (guard_source_tree && (guard_source_tree != p_process_state->tree)) {
+		make_cache_dirty();
+	}
 	process_state = p_process_state;
 	NodeTimeInfo nti = process(p_playback_info, p_test_only);
 	process_state = nullptr;
