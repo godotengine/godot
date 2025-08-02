@@ -1846,6 +1846,13 @@ void RendererCanvasCull::canvas_item_set_z_as_relative_to_parent(RID p_item, boo
 	canvas_item->z_relative = p_enable;
 }
 
+void RendererCanvasCull::canvas_item_set_collapse_group(RID p_item, bool p_enable) {
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_NULL(canvas_item);
+
+	canvas_item->collapse_group = p_enable;
+}
+
 void RendererCanvasCull::canvas_item_attach_skeleton(RID p_item, RID p_skeleton) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_NULL(canvas_item);

@@ -694,6 +694,20 @@ bool CanvasItem::is_y_sort_enabled() const {
 	return y_sort_enabled;
 }
 
+void CanvasItem::set_collapse_group(bool p_enabled) {
+	ERR_THREAD_GUARD;
+	if (collapse_group == p_enabled) {
+		return;
+	}
+	collapse_group = p_enabled;
+	RS::get_singleton()->canvas_item_set_collapse_group(canvas_item, p_enabled);
+}
+
+bool CanvasItem::is_collapse_group() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return z_relative;
+}
+
 void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash, bool p_aligned, bool p_antialiased) {
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;

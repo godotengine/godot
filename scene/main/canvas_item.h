@@ -92,6 +92,7 @@ private:
 	int z_index = 0;
 	bool z_relative = true;
 	bool y_sort_enabled = false;
+	bool collapse_group = false;
 
 	Window *window = nullptr;
 	bool visible = true;
@@ -292,6 +293,9 @@ public:
 
 	virtual void set_y_sort_enabled(bool p_enabled);
 	virtual bool is_y_sort_enabled() const;
+
+	void set_collapse_group(bool p_enabled);
+	bool is_collapse_group() const;
 
 	/* DRAWING API */
 
