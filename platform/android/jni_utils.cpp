@@ -518,6 +518,10 @@ void setup_android_class_loader() {
 	// This ClassLoader will be used by jni_find_class() to locate classes at runtime
 	// in a thread-safe manner, avoiding issues with FindClass in non-main threads.
 
+	if (android_class_loader) {
+		cleanup_android_class_loader();
+	}
+
 	JNIEnv *env = get_jni_env();
 	ERR_FAIL_NULL(env);
 
@@ -553,12 +557,23 @@ void cleanup_android_class_loader() {
 		JNIEnv *env = get_jni_env();
 		if (env) {
 			env->DeleteGlobalRef(android_class_loader);
-			android_class_loader = nullptr;
+		} else {
+			ERR_PRINT("Failed to release Android ClassLoader - JNIEnv is not available.");
 		}
+		android_class_loader = nullptr;
+		load_class_method = nullptr;
 	}
 }
 
 jclass jni_find_class(JNIEnv *p_env, const char *p_class_name) {
+	ERR_FAIL_NULL_V(p_env, nullptr);
+	ERR_FAIL_NULL_V(p_class_name, nullptr);
+
+	if (!android_class_loader || !load_class_method) {
+		ERR_PRINT("Android ClassLoader is not initialized. Falling back to FindClass.");
+		return p_env->FindClass(p_class_name);
+	}
+
 	jstring java_class_name = p_env->NewStringUTF(p_class_name);
 	jobject class_object = p_env->CallObjectMethod(
 			android_class_loader,
