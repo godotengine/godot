@@ -37,7 +37,6 @@
 #include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "settings/editor_command_palette.h"
 
 void EditorMainScreen::_notification(int p_what) {
 	switch (p_what) {
@@ -264,14 +263,10 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	tb->set_name(p_editor->get_plugin_name());
 	tb->set_text(p_editor->get_plugin_name());
 
-	const String shortcut_path = String("editor/editor_{0}").format(varray(p_editor->get_plugin_name().to_lower()));
-	Ref<Shortcut> shortcut = ED_GET_SHORTCUT(shortcut_path);
-	if (shortcut.is_null() || !shortcut.is_valid()) {
-		const String desc = vformat(RTR("Open %s Screen"), String(p_editor->get_plugin_name()));
-		shortcut = ED_SHORTCUT_AND_COMMAND(shortcut_path, desc, Key::NONE);
+	Ref<Shortcut> shortcut = EditorSettings::get_singleton()->get_shortcut("editor/editor_" + p_editor->get_plugin_name().to_lower());
+	if (shortcut.is_valid()) {
+		tb->set_shortcut(shortcut);
 	}
-
-	tb->set_shortcut(shortcut);
 
 	Ref<Texture2D> icon = p_editor->get_plugin_icon();
 	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
