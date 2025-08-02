@@ -142,6 +142,15 @@ private:
 	};
 
 	struct Client {
+		struct GlobalIdInfo {
+			uint32_t id = INVALID_ID;
+			List<uint32_t>::Element *history_elem = nullptr;
+
+			GlobalIdInfo() = default;
+			GlobalIdInfo(uint32_t p_id, List<uint32_t>::Element *p_history_elem) :
+					id(p_id), history_elem(p_history_elem) {}
+		};
+
 		WaylandEmbedder *embedder = nullptr;
 
 		int socket = -1;
@@ -152,9 +161,8 @@ private:
 		// FIXME: Names suck.
 		AHashMap<uint32_t, HashSet<uint32_t>> registry_globals_instances;
 
-		uint32_t embedded_client_id = 0;
-
-		AHashMap<uint32_t, uint32_t> global_ids;
+		List<uint32_t> global_id_history;
+		AHashMap<uint32_t, GlobalIdInfo> global_ids;
 		AHashMap<uint32_t, uint32_t> local_ids;
 
 		// Objects with no equivalent on the real compositor.
@@ -163,7 +171,8 @@ private:
 		// Objects which mirror events of a global object.
 		AHashMap<uint32_t, WaylandObject> global_instances;
 
-		uint32_t embedded_window_id = 0;
+		uint32_t embedded_client_id = INVALID_ID;
+		uint32_t embedded_window_id = INVALID_ID;
 
 		List<int> fds;
 
@@ -172,7 +181,7 @@ private:
 		uint32_t allocated_server_ids = INVALID_ID;
 		LocalVector<uint32_t> free_server_ids;
 
-		uint32_t get_global_id(uint32_t p_local_id) const { return global_ids.has(p_local_id) ? global_ids[p_local_id] : INVALID_ID; }
+		uint32_t get_global_id(uint32_t p_local_id) const { return global_ids.has(p_local_id) ? global_ids[p_local_id].id : INVALID_ID; }
 		uint32_t get_local_id(uint32_t p_global_id) const { return local_ids.has(p_global_id) ? local_ids[p_global_id] : INVALID_ID; }
 
 		uint32_t allocate_server_id();
@@ -208,7 +217,7 @@ private:
 		WaylandObject *get() { return is_valid() ? client->get_object(local_id) : nullptr; }
 		constexpr Client *get_client() const { return client; }
 		constexpr uint32_t get_local_id() const { return local_id; }
-		uint32_t get_global_id() const { return (is_valid() && client->global_ids.has(local_id)) ? client->global_ids[local_id] : INVALID_ID; }
+		uint32_t get_global_id() const { return (is_valid() && client->global_ids.has(local_id)) ? client->global_ids[local_id].id : INVALID_ID; }
 	};
 
 	struct WaylandSeatInstanceData : WaylandObjectData {

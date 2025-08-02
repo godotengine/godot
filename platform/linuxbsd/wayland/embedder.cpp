@@ -239,28 +239,6 @@ struct WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::get_object(uint3
 }
 
 Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
-	if (global_instances.has(p_local_id)) {
-#ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
-		WaylandObject *object = &global_instances[p_local_id];
-		DEBUG_LOG_WAYLAND_EMBED(vformat("Deleting global instance %s l0x%x", object->interface ? object->interface->name : "UNKNOWN", p_local_id));
-#endif
-
-		uint32_t global_id = get_global_id(p_local_id);
-
-		// wl_display::delete_id
-		send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
-
-		// We don't want to delete the global object tied to this instance, so we'll only get rid of the local stuff.
-		global_instances.erase(p_local_id);
-		global_ids.erase(p_local_id);
-
-		if (global_id != INVALID_ID) {
-			local_ids.erase(global_id);
-		}
-
-		// We're done here.
-		return OK;
-	}
 	if (fake_objects.has(p_local_id)) {
 #ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
 		WaylandObject *object = &fake_objects[p_local_id];
@@ -279,7 +257,31 @@ Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 	}
 
 	ERR_FAIL_COND_V(!global_ids.has(p_local_id), ERR_DOES_NOT_EXIST);
-	uint32_t global_id = global_ids[p_local_id];
+	GlobalIdInfo gid_info = global_ids[p_local_id];
+	uint32_t global_id = gid_info.id;
+
+	global_id_history.erase(gid_info.history_elem);
+
+	if (global_instances.has(p_local_id)) {
+#ifdef WAYLAND_EMBED_DEBUG_LOGS_ENABLED
+		WaylandObject *object = &global_instances[p_local_id];
+		DEBUG_LOG_WAYLAND_EMBED(vformat("Deleting global instance %s l0x%x", object->interface ? object->interface->name : "UNKNOWN", p_local_id));
+#endif
+
+		// wl_display::delete_id
+		send_wayland_message(socket, DISPLAY_ID, 1, { p_local_id });
+
+		// We don't want to delete the global object tied to this instance, so we'll only get rid of the local stuff.
+		global_instances.erase(p_local_id);
+		global_ids.erase(p_local_id);
+
+		if (global_id != INVALID_ID) {
+			local_ids.erase(global_id);
+		}
+
+		// We're done here.
+		return OK;
+	}
 
 	WaylandObject *object = embedder->get_object(global_id);
 	ERR_FAIL_NULL_V(object, ERR_DOES_NOT_EXIST);
@@ -310,7 +312,11 @@ uint32_t WaylandEmbedder::Client::new_object(uint32_t p_local_id, const struct w
 
 	uint32_t new_global_id = embedder->new_object(p_interface, p_version, p_data);
 
-	global_ids[p_local_id] = new_global_id;
+	GlobalIdInfo gid_info;
+	gid_info.id = new_global_id;
+	gid_info.history_elem = global_id_history.push_back(new_global_id);
+	global_ids[p_local_id] = gid_info;
+
 	local_ids[new_global_id] = p_local_id;
 
 	return new_global_id;
@@ -341,7 +347,11 @@ uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const 
 	new_object->version = p_version;
 	new_object->data = p_data;
 
-	global_ids[new_local_id] = p_global_id;
+	GlobalIdInfo gid_info;
+	gid_info.id = p_global_id;
+	gid_info.history_elem = global_id_history.push_back(p_global_id);
+	global_ids[new_local_id] = gid_info;
+
 	local_ids[p_global_id] = new_local_id;
 
 	return new_local_id;
@@ -363,18 +373,21 @@ WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_global_instance(uin
 	CRASH_COND(embedder == nullptr);
 	CRASH_COND_MSG(get_object(p_local_id) != nullptr, vformat("Object l0x%x already exists", p_local_id));
 
-	local_ids[p_global_id] = p_global_id;
+	WaylandObject &new_object = global_instances[p_local_id];
+	new_object.interface = p_interface;
+	new_object.version = p_version;
+	new_object.data = p_data;
 
 	// FIXME: Track each instance properly. Global instances (the compatibility
 	// mechanism) are particular as they're the only case where a global ID might
 	// map to multiple local objects. In that case we need to mirror each event
 	// which passes a registry object as an argument for each instance.
-	global_ids[p_local_id] = p_global_id;
+	GlobalIdInfo gid_info;
+	gid_info.id = p_global_id;
+	gid_info.history_elem = global_id_history.push_back(p_global_id);
+	global_ids[p_local_id] = gid_info;
 
-	WaylandObject &new_object = global_instances[p_local_id];
-	new_object.interface = p_interface;
-	new_object.version = p_version;
-	new_object.data = p_data;
+	local_ids[p_global_id] = p_global_id;
 
 	return &new_object;
 }
@@ -432,8 +445,9 @@ void WaylandEmbedder::client_disconnect(int p_socket) {
 		}
 	}
 
-	for (KeyValue<uint32_t, uint32_t> &pair : client.global_ids) {
-		uint32_t global_id = pair.value;
+	for (List<uint32_t>::Element *E = client.global_id_history.back(); E;) {
+		uint32_t global_id = E->get();
+		E = E->prev();
 
 		WaylandObject *object = get_object(global_id);
 		if (object == nullptr) {
@@ -449,7 +463,6 @@ void WaylandEmbedder::client_disconnect(int p_socket) {
 			continue;
 		}
 
-		// FIXME: Ensure proper destruction order for stuff like surfaces.
 		for (int opcode = 0; opcode < object->interface->method_count; ++opcode) {
 			const struct wl_message &message = object->interface->methods[opcode];
 
@@ -467,6 +480,7 @@ void WaylandEmbedder::client_disconnect(int p_socket) {
 			// is currently not exposed to the generated C file.
 			if (object->version >= destructor_version && (strcmp(message.name, "destroy") == 0 || strcmp(message.name, "release") == 0)) {
 				if (global_id & 0xff000000) {
+					E = E->prev();
 					delete_object(global_id);
 				}
 
@@ -2530,7 +2544,7 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 		client.socket = new_fd;
 		client.pid = cred.pid;
 
-		client.global_ids[DISPLAY_ID] = DISPLAY_ID;
+		client.global_ids[DISPLAY_ID] = Client::GlobalIdInfo(DISPLAY_ID, nullptr);
 		client.local_ids[DISPLAY_ID] = DISPLAY_ID;
 
 		pollfds.push_back({ new_fd, POLLIN, 0 });
