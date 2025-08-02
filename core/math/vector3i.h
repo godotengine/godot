@@ -124,7 +124,6 @@ struct [[nodiscard]] Vector3i {
 	constexpr Vector3i operator-() const;
 
 	constexpr bool operator==(const Vector3i &p_v) const;
-	constexpr bool operator!=(const Vector3i &p_v) const;
 	constexpr bool operator<(const Vector3i &p_v) const;
 	constexpr bool operator<=(const Vector3i &p_v) const;
 	constexpr bool operator>(const Vector3i &p_v) const;
@@ -277,10 +276,6 @@ constexpr Vector3i Vector3i::operator-() const {
 
 constexpr bool Vector3i::operator==(const Vector3i &p_v) const {
 	return (x == p_v.x && y == p_v.y && z == p_v.z);
-}
-
-constexpr bool Vector3i::operator!=(const Vector3i &p_v) const {
-	return (x != p_v.x || y != p_v.y || z != p_v.z);
 }
 
 constexpr bool Vector3i::operator<(const Vector3i &p_v) const {
