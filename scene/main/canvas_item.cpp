@@ -705,7 +705,7 @@ void CanvasItem::set_collapse_group(bool p_enabled) {
 
 bool CanvasItem::is_collapse_group() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return z_relative;
+	return collapse_group;
 }
 
 void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash, bool p_aligned, bool p_antialiased) {
