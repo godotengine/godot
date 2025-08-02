@@ -2103,11 +2103,11 @@ static String marked_documentation(const String &p_bbcode) {
 				// past them to avoid conflicts with class names.
 				const bool is_within_bounds = pos + 4 <= line.length();
 				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
-					line = line.substr(0, pos) + "[" + line.substr(pos + 4);
+					line = line.substr(0, pos) + "\[" + line.substr(pos + 4);
 					pos += 1;
 					continue;
 				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
-					line = line.substr(0, pos) + "]" + line.substr(pos + 4);
+					line = line.substr(0, pos) + "\]" + line.substr(pos + 4);
 					pos += 1;
 					continue;
 				}
