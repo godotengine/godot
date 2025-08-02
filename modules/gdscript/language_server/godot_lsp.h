@@ -1975,22 +1975,22 @@ static String marked_documentation(const String &p_bbcode) {
 		}
 
 		// We need to account for both [codeblock] or [codeblock lang=...]
-		String code_block_lang = "gdscript";
+		String codeblock_lang = "gdscript";
 		int block_start = line.find("[codeblock");
 		if (block_start != -1) {
 			int bracket_pos = line.find("]", block_start);
 			if (bracket_pos != -1) {
 				int lang_start = line.find("lang=", block_start);
 				if (lang_start != -1 && lang_start < bracket_pos) {
-					const int LANG_PARAM_LENGTH = 5;
+					const int LANG_PARAM_LENGTH = 5; // Length of "lang="
 					int lang_value_start = lang_start + LANG_PARAM_LENGTH;
 					int lang_end = bracket_pos;
 					if (lang_value_start < lang_end) {
-						code_block_lang = line.substr(lang_value_start, lang_end - lang_value_start);
+						codeblock_lang = line.substr(lang_value_start, lang_end - lang_value_start);
 					}
 				}
 				in_codeblock_tag = true;
-				line = "```" + code_block_lang;
+				line = "```" + codeblock_lang;
 			}
 		}
 
@@ -2002,11 +2002,6 @@ static String marked_documentation(const String &p_bbcode) {
 		if (!in_codeblock_tag) {
 			line = line.strip_edges();
 			line = line.replace("[br]", "\n");
-
-			// These are bracket literals, which we want to preserve
-			// TODO: verify, in some rare cases, they might conflict with patterns like [Node2D]
-			line = line.replace("[lb]", "[");
-			line = line.replace("[rb]", "]");
 
 			line = line.replace("[code]", "`");
 			line = line.replace("[/code]", "`");
@@ -2022,6 +2017,9 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[/kbd]", "`");
 			line = line.replace("[center]", "");
 			line = line.replace("[/center]", "");
+			line = line.replace("[/font]", "");
+			line = line.replace("[/color]", "");
+			line = line.replace("[/img]", "");
 
 			static const int URL_OPEN_TAG_LENGTH = 5; // Length of "[url="
 			static const int URL_CLOSE_TAG_LENGTH = 6; // Length of "[/url]"
@@ -2092,7 +2090,6 @@ static String marked_documentation(const String &p_bbcode) {
 						break;
 					}
 				}
-				line = line.replace("[/" + tag_name + "]", "");
 			}
 
 			// Convert remaining simple bracketed class names to backticks and literal brackets.
@@ -2103,16 +2100,17 @@ static String marked_documentation(const String &p_bbcode) {
 				// past them to avoid conflicts with class names.
 				const bool is_within_bounds = pos + 4 <= line.length();
 				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
-					line = line.substr(0, pos) + "\[" + line.substr(pos + 4);
+					line = line.substr(0, pos) + "\\[" + line.substr(pos + 4);
 					pos += 1;
 					continue;
 				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
-					line = line.substr(0, pos) + "\]" + line.substr(pos + 4);
+					line = line.substr(0, pos) + "\\]" + line.substr(pos + 4);
 					pos += 1;
 					continue;
 				}
 
 				// Replace class names in brackets
+				// TODO: this affects markdown URL content - [link description](url) - and needs to be addressed
 				int end_pos = line.find("]", pos);
 				if (end_pos != -1) {
 					String content = line.substr(pos + 1, end_pos - pos - 1);
