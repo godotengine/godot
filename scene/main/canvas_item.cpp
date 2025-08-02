@@ -1168,7 +1168,13 @@ bool CanvasItem::is_draw_behind_parent_enabled() const {
 
 void CanvasItem::set_material(const Ref<Material> &p_material) {
 	ERR_THREAD_GUARD;
+	if (Engine::get_singleton()->is_editor_hint() && material.is_valid()) {
+		material->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	material = p_material;
+	if (Engine::get_singleton()->is_editor_hint() && material.is_valid()) {
+		material->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	RID rid;
 	if (material.is_valid()) {
 		rid = material->get_rid();
