@@ -2478,7 +2478,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				} else if (i != 0) {
 					OS::get_singleton()->print(", ");
 				}
-				OS::get_singleton()->print("'%s'", ((String)rendering_method_hints[i]).utf8().get_data());
+				OS::get_singleton()->print("'%s'", rendering_method_hints[i].utf8().get_data());
 			}
 
 			OS::get_singleton()->print(".\n");
@@ -2571,7 +2571,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		if (i > 0) {
 			renderer_hints += ",";
 		}
-		renderer_hints += (String)available_methods[i];
+		renderer_hints += available_methods[i];
 	}
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
