@@ -148,14 +148,16 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 		return;
 	}
 
-	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+	if (Engine::get_singleton()->is_editor_hint() && process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
 		process_material->disconnect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
+		process_material->disconnect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 
 	process_material = p_material;
 
-	if (process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
+	if (Engine::get_singleton()->is_editor_hint() && process_material.is_valid() && process_material->is_class("ParticleProcessMaterial")) {
 		process_material->connect("emission_shape_changed", callable_mp((CanvasItem *)this, &GPUParticles2D::queue_redraw));
+		process_material->connect(CoreStringName(property_list_changed), callable_mp((Object *)this, &Object::notify_property_list_changed));
 	}
 
 	queue_redraw();
@@ -173,6 +175,10 @@ void GPUParticles2D::set_process_material(const Ref<Material> &p_material) {
 	RS::get_singleton()->particles_set_process_material(particles, material_rid);
 
 	update_configuration_warnings();
+
+	if (Engine::get_singleton()->is_editor_hint()) {
+		notify_property_list_changed();
+	}
 }
 
 void GPUParticles2D::set_trail_enabled(bool p_enabled) {
