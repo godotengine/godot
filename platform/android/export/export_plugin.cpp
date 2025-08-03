@@ -2176,11 +2176,11 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gesture/swipe_to_dismiss"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/edge_to_edge"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_normal"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_large"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_xlarge"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/edge_to_edge"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "screen/background_color", PROPERTY_HINT_COLOR_NO_ALPHA), Color()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "user_data_backup/allow"), false));
@@ -3103,6 +3103,9 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 	}
 
 	String background_color = "#" + p_preset->get("screen/background_color").operator Color().to_html(false);
+
+	// For Gradle build, _fix_themes_xml() sets background to transparent if _is_transparency_allowed().
+	// Overriding to transparent here too as it's used as fallback for system bar appearance.
 	if (_is_transparency_allowed(p_preset) && p_preset->get("gradle_build/use_gradle_build")) {
 		background_color = "#00000000";
 	}
