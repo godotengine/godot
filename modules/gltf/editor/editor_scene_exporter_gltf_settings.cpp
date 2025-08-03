@@ -246,6 +246,10 @@ void EditorSceneExporterGLTFSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bake_fps"), &EditorSceneExporterGLTFSettings::get_bake_fps);
 	ClassDB::bind_method(D_METHOD("set_bake_fps", "bake_fps"), &EditorSceneExporterGLTFSettings::set_bake_fps);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_fps", PROPERTY_HINT_RANGE, "0.001,120,0.0001,or_greater"), "set_bake_fps", "get_bake_fps");
+
+	ClassDB::bind_method(D_METHOD("get_external_data_mode"), &EditorSceneExporterGLTFSettings::get_external_data_mode);
+	ClassDB::bind_method(D_METHOD("set_external_data_mode", "external_data_mode"), &EditorSceneExporterGLTFSettings::set_external_data_mode);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "external_data_mode", PROPERTY_HINT_ENUM, "Automatic,Embed Everything,Separate All Files,Separate Binary Blobs,Separate Resource Files"), "set_external_data_mode", "get_external_data_mode");
 }
 
 double EditorSceneExporterGLTFSettings::get_bake_fps() const {
