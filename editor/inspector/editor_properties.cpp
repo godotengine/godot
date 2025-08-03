@@ -2432,7 +2432,7 @@ EditorPropertyTransform2D::EditorPropertyTransform2D(bool p_include_origin) {
 	g->set_columns(p_include_origin ? 3 : 2);
 	add_child(g);
 
-	static const char *desc[6] = { "xx", "xy", "xo", "yx", "yy", "yo" };
+	static const char *desc[6] = { "xx", "yx", "ox", "xy", "yy", "oy" };
 	for (int i = 0; i < 6; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2514,7 +2514,7 @@ EditorPropertyBasis::EditorPropertyBasis() {
 	g->set_columns(3);
 	add_child(g);
 
-	static const char *desc[9] = { "xx", "xy", "xz", "yx", "yy", "yz", "zx", "zy", "zz" };
+	static const char *desc[9] = { "xx", "yx", "zx", "xy", "yy", "zy", "xz", "yz", "zz" };
 	for (int i = 0; i < 9; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2603,7 +2603,7 @@ EditorPropertyTransform3D::EditorPropertyTransform3D() {
 	g->set_columns(4);
 	add_child(g);
 
-	static const char *desc[12] = { "xx", "xy", "xz", "xo", "yx", "yy", "yz", "yo", "zx", "zy", "zz", "zo" };
+	static const char *desc[12] = { "xx", "yx", "zx", "ox", "xy", "yy", "zy", "oy", "xz", "yz", "zz", "oz" };
 	for (int i = 0; i < 12; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
@@ -2700,7 +2700,7 @@ EditorPropertyProjection::EditorPropertyProjection() {
 	g->set_columns(4);
 	add_child(g);
 
-	static const char *desc[16] = { "xx", "xy", "xz", "xw", "yx", "yy", "yz", "yw", "zx", "zy", "zz", "zw", "wx", "wy", "wz", "ww" };
+	static const char *desc[16] = { "xx", "yx", "zx", "wx", "xy", "yy", "zy", "wy", "xz", "yz", "zz", "wz", "xw", "yw", "zw", "ww" };
 	for (int i = 0; i < 16; i++) {
 		spin[i] = memnew(EditorSpinSlider);
 		spin[i]->set_label(desc[i]);
