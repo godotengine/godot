@@ -3547,6 +3547,15 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			} else {
 				validate_call_arg(function_info, p_call);
 			}
+			if (function_name == SNAME("weakref") && p_call->arguments.size() == 1) {
+				call_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+				call_type.kind = GDScriptParser::DataType::NATIVE;
+				call_type.builtin_type = Variant::OBJECT;
+				call_type.native_type = WeakRef::get_class_static();
+				call_type.set_container_element_type(0, p_call->arguments[0]->datatype);
+				p_call->set_datatype(call_type);
+				return;
+			}
 			p_call->set_datatype(type_from_property(function_info.return_val));
 			return;
 		}
