@@ -60,7 +60,7 @@ int MicrophoneServer::get_feed_count() {
 }
 
 MicrophoneServer::MicrophoneServer() {
-	default_feed = memnew(MicrophoneFeed("default_feed"));
+	default_feed = memnew(MicrophoneFeed("Default"));
 	singleton = this;
 }
 
