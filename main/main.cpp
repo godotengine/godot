@@ -4532,6 +4532,12 @@ int Main::start() {
 				ERR_FAIL_NULL_V_MSG(scene, EXIT_FAILURE, "Failed loading scene: " + local_game_path + ".");
 				sml->add_current_scene(scene);
 
+				if (game_path == ResourceUID::ensure_path(String(GLOBAL_GET("application/run/main_scene")))) {
+					OS::get_singleton()->_custom_scene = false;
+				} else {
+					OS::get_singleton()->_custom_scene = true;
+				}
+
 #ifdef MACOS_ENABLED
 				String mac_icon_path = GLOBAL_GET("application/config/macos_native_icon");
 				if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_ICON) && !mac_icon_path.is_empty()) {
