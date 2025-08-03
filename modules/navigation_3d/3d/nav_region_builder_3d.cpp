@@ -242,6 +242,7 @@ void NavRegionBuilder3D::_build_step_merge_edge_connection_pairs(NavRegionIterat
 			ConnectableEdge ce;
 			ce.ek = pair_it.key;
 			ce.polygon_index = connection.polygon->id;
+			ce.edge = connection.edge;
 			ce.pathway_start = connection.pathway_start;
 			ce.pathway_end = connection.pathway_end;
 
