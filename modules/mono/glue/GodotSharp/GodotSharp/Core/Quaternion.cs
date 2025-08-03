@@ -576,6 +576,10 @@ namespace Godot
             {
                 if (d >= 0.0f)
                 {
+                    X = 0.0f;
+                    Y = 0.0f;
+                    Z = 0.0f;
+                    W = 1.0f;
                     return; // Vectors are same.
                 }
                 Vector3 axis = n0.GetAnyPerpendicular();
