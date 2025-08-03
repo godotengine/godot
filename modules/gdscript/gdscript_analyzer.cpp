@@ -786,7 +786,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result.native_type = first;
 			if (first == WeakRef::get_class_static()) {
 				GDScriptParser::DataType ref_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
-				if (ref_type.kind != GDScriptParser::DataType::VARIANT) {
+				if (ref_type.is_object_type()) {
 					ref_type.is_constant = false;
 					result.set_container_element_type(0, ref_type);
 				}
@@ -3548,13 +3548,16 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				validate_call_arg(function_info, p_call);
 			}
 			if (function_name == SNAME("weakref") && p_call->arguments.size() == 1) {
-				call_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-				call_type.kind = GDScriptParser::DataType::NATIVE;
-				call_type.builtin_type = Variant::OBJECT;
-				call_type.native_type = WeakRef::get_class_static();
-				call_type.set_container_element_type(0, p_call->arguments[0]->datatype);
-				p_call->set_datatype(call_type);
-				return;
+				GDScriptParser::ExpressionNode *ref_arg = p_call->arguments[0];
+				if (ref_arg->datatype.is_object_type()) {
+					call_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
+					call_type.kind = GDScriptParser::DataType::NATIVE;
+					call_type.builtin_type = Variant::OBJECT;
+					call_type.native_type = WeakRef::get_class_static();
+					call_type.set_container_element_type(0, ref_arg->datatype);
+					p_call->set_datatype(call_type);
+					return;
+				}
 			}
 			p_call->set_datatype(type_from_property(function_info.return_val));
 			return;
@@ -6223,6 +6226,18 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 	if (p_source.kind == GDScriptParser::DataType::BUILTIN && p_source.builtin_type == Variant::NIL) {
 		// null is acceptable in object.
 		return true;
+	}
+
+	// If both are typed WeakRef, then compare their types
+	if (p_source.kind == GDScriptParser::DataType::NATIVE && p_target.kind == GDScriptParser::DataType::NATIVE && p_source.native_type == WeakRef::get_class_static() && p_target.native_type == WeakRef::get_class_static()) {
+		if (!p_target.has_container_element_type(0)) return true; // No issue if target is an un-typed WeakRef
+		if (p_source.has_container_element_type(0)) {
+			GDScriptParser::DataType target_class = p_target.get_container_element_type(0);
+			GDScriptParser::DataType source_class = p_source.get_container_element_type(0);
+			return check_type_compatibility(target_class, source_class, p_allow_implicit_conversion, p_source_node);
+		} else {
+			return p_allow_implicit_conversion;
+		}
 	}
 
 	StringName src_native;

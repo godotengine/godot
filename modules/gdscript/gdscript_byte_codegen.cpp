@@ -936,13 +936,46 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			}
 		} break;
 		case GDScriptDataType::NATIVE: {
-			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_target.type.native_type];
-			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
-			class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
-			append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE);
-			append(p_target);
-			append(p_source);
-			append(class_idx);
+			if (p_target.type.native_type == WeakRef::get_class_static() && p_target.type.has_container_element_type(0)) {
+				GDScriptDataType ref_type = p_target.type.get_container_element_type(0);
+				switch (ref_type.kind) {
+					case GDScriptDataType::NATIVE: {
+						int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[ref_type.native_type];
+						Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
+						class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+						append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE_WEAKREF);
+						append(p_target);
+						append(p_source);
+						append(class_idx);
+					} break;
+					case GDScriptDataType::SCRIPT:
+					case GDScriptDataType::GDSCRIPT: {
+						Variant script = ref_type.script_type;
+						int idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+
+						append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_SCRIPT_WEAKREF);
+						append(p_target);
+						append(p_source);
+						append(idx);
+					} break;
+					default: {
+						ERR_PRINT("Compiler bug: unresolved weakref assign.");
+
+						// Shouldn't get here, but fail-safe to a regular assignment
+						append_opcode(GDScriptFunction::OPCODE_ASSIGN);
+						append(p_target);
+						append(p_source);
+					}
+				}
+			} else {
+				int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_target.type.native_type];
+				Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
+				class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
+				append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE);
+				append(p_target);
+				append(p_source);
+				append(class_idx);
+			}
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {

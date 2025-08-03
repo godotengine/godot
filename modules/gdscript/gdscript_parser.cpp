@@ -5387,7 +5387,7 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 				result.class_name = GDScriptNativeClass::get_class_static();
 			} else {
 				result.class_name = native_type;
-				if (result.class_name == WeakRef::get_class_static()) {
+				if (result.class_name == WeakRef::get_class_static() && has_container_element_type(0)) {
 					const DataType ref_type = get_container_element_type(0);
 					String ref_hint;
 					switch (ref_type.kind) {
@@ -5407,9 +5407,6 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 							} else {
 								ref_hint = ref_type.native_type;
 							}
-							break;
-						default:
-							ref_hint = "Variant";
 							break;
 					}
 					result.hint = PROPERTY_HINT_WEAKREF_TYPE;
