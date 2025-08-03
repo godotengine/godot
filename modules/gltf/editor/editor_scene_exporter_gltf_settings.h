@@ -40,6 +40,7 @@ class EditorSceneExporterGLTFSettings : public RefCounted {
 
 	String _copyright;
 	double _bake_fps = 30.0;
+	GLTFState::ExternalDataMode _external_data_mode = GLTFState::EXTERNAL_DATA_MODE_AUTOMATIC;
 
 protected:
 	static void _bind_methods();
@@ -59,4 +60,7 @@ public:
 
 	double get_bake_fps() const;
 	void set_bake_fps(const double p_bake_fps);
+
+	GLTFState::ExternalDataMode get_external_data_mode() const { return _external_data_mode; }
+	void set_external_data_mode(GLTFState::ExternalDataMode p_external_data_mode) { _external_data_mode = p_external_data_mode; }
 };
