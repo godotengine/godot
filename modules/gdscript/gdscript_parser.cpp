@@ -5408,6 +5408,9 @@ PropertyInfo GDScriptParser::DataType::to_property_info(const String &p_name) co
 								ref_hint = ref_type.native_type;
 							}
 							break;
+						default:
+							DEV_ASSERT(false); // should never be called
+							break;
 					}
 					result.hint = PROPERTY_HINT_WEAKREF_TYPE;
 					result.hint_string = ref_hint;

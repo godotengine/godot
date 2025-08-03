@@ -258,7 +258,9 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_TYPE_TEST_ARRAY,                        \
 		&&OPCODE_TYPE_TEST_DICTIONARY,                   \
 		&&OPCODE_TYPE_TEST_NATIVE,                       \
+		&&OPCODE_TYPE_TEST_NATIVE_WEAKREF,               \
 		&&OPCODE_TYPE_TEST_SCRIPT,                       \
+		&&OPCODE_TYPE_TEST_SCRIPT_WEAKREF,               \
 		&&OPCODE_SET_KEYED,                              \
 		&&OPCODE_SET_KEYED_VALIDATED,                    \
 		&&OPCODE_SET_INDEXED_VALIDATED,                  \
@@ -286,7 +288,9 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_ASSIGN_TYPED_SCRIPT_WEAKREF,            \
 		&&OPCODE_CAST_TO_BUILTIN,                        \
 		&&OPCODE_CAST_TO_NATIVE,                         \
+		&&OPCODE_CAST_TO_NATIVE_WEAKREF,                 \
 		&&OPCODE_CAST_TO_SCRIPT,                         \
+		&&OPCODE_CAST_TO_SCRIPT_WEAKREF,                 \
 		&&OPCODE_CONSTRUCT,                              \
 		&&OPCODE_CONSTRUCT_VALIDATED,                    \
 		&&OPCODE_CONSTRUCT_ARRAY,                        \
@@ -940,6 +944,44 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_TYPE_TEST_NATIVE_WEAKREF) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
+
+				int native_type_idx = _code_ptr[ip + 3];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				bool was_freed = false;
+				Object *wr_obj = value->get_validated_object_with_check(was_freed);
+				if (was_freed) {
+					err_text = "Left operand of 'is' is a previously freed instance.";
+					OPCODE_BREAK;
+				}
+
+				bool result = false;
+				if (wr_obj && wr_obj->get_class_name() == WeakRef::get_class_static()) {
+					WeakRef *wr = (WeakRef *)wr_obj;
+					Variant ref_var = wr->get_ref();
+					if (ref_var.get_type() != Variant::NIL) {
+						Object *ref_obj = ref_var.get_validated_object_with_check(was_freed);
+						if (was_freed) {
+							err_text = "WeakRef instance left of 'is' is a previously freed instance.";
+							OPCODE_BREAK;
+						}
+						if (ref_obj && ClassDB::is_parent_class(ref_obj->get_class_name(), native_type)) {
+							result = true;
+						}
+					}
+				}
+
+				*dst = result;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_TYPE_TEST_SCRIPT) {
 				CHECK_SPACE(4);
 
@@ -966,6 +1008,51 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							break;
 						}
 						script_ptr = script_ptr->get_base_script().ptr();
+					}
+				}
+
+				*dst = result;
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_TYPE_TEST_SCRIPT_WEAKREF) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
+
+				GET_VARIANT_PTR(type, 2);
+				Script *script_type = Object::cast_to<Script>(type->operator Object *());
+				GD_ERR_BREAK(!script_type);
+
+				bool was_freed = false;
+				Object *wr_obj = value->get_validated_object_with_check(was_freed);
+				if (was_freed) {
+					err_text = "Left operand of 'is' is a previously freed instance.";
+					OPCODE_BREAK;
+				}
+
+				bool result = false;
+				if (wr_obj) {
+					WeakRef *wr = (WeakRef *)wr_obj;
+					Variant ref_var = wr->get_ref();
+					if (ref_var.get_type() != Variant::NIL) {
+						Object *ref_obj = ref_var.get_validated_object_with_check(was_freed);
+						if (was_freed) {
+							err_text = "WeakRef instance left of 'is' is a previously freed instance.";
+							OPCODE_BREAK;
+						}
+						if (ref_obj && ref_obj->get_script_instance()) {
+							Script *script_ptr = ref_obj->get_script_instance()->get_script().ptr();
+							while (script_ptr) {
+								if (script_ptr == script_type) {
+									result = true;
+									break;
+								}
+								script_ptr = script_ptr->get_base_script().ptr();
+							}
+						}
 					}
 				}
 
@@ -1588,9 +1675,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					Variant ref_var = wr->get_ref();
 					if (ref_var.get_type() != Variant::NIL) {
 						Object *ref_obj = ref_var.get_validated_object_with_check(was_freed);
+						if (was_freed) {
+							err_text = "Trying to assign WeakRef with invalid previously freed instance.";
+							OPCODE_BREAK;
+						}
 						if (ref_obj && !ClassDB::is_parent_class(ref_obj->get_class_name(), nc->get_name())) {
 							err_text = "Trying to assign value of type 'WeakRef[" + ref_obj->get_class_name() +
-									"]' to a variable of type 'WeakRef" + nc->get_name() + "'.";
+									"]' to a variable of type 'WeakRef[" + nc->get_name() + "]'.";
 							OPCODE_BREAK;
 						}
 					}
@@ -1695,6 +1786,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						Variant ref_var = wr->get_ref();
 						if (ref_var.get_type() != Variant::NIL) {
 							Object *ref_obj = ref_var.get_validated_object_with_check(was_freed);
+							if (was_freed) {
+								err_text = "Trying to assign WeakRef with invalid previously freed instance.";
+								OPCODE_BREAK;
+							}
 							if (ref_obj) {
 								ScriptInstance *scr_inst = ref_obj->get_script_instance();
 								if (!scr_inst) {
@@ -1716,7 +1811,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 								if (!valid) {
 									err_text = "Trying to assign value of type 'WeakRef[" + ref_obj->get_script_instance()->get_script()->get_path().get_file() +
-											"]' to a variable of type '" + base_type->get_path().get_file() + "'.";
+											"]' to a variable of type 'WeakRef[" + base_type->get_path().get_file() + "]'.";
 									OPCODE_BREAK;
 								}
 							}
@@ -1791,6 +1886,54 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
+			OPCODE(OPCODE_CAST_TO_NATIVE_WEAKREF) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(src, 0);
+				GET_VARIANT_PTR(dst, 1);
+				GET_VARIANT_PTR(to_type, 2);
+
+				GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(to_type->operator Object *());
+				GD_ERR_BREAK(!nc);
+
+#ifdef DEBUG_ENABLED
+				if (src->operator Object *() && !src->get_validated_object()) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
+				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
+					err_text = "Invalid cast: can't convert a non-object value to an object type.";
+					OPCODE_BREAK;
+				}
+#endif
+				Object *wr_obj = src->operator Object *();
+
+				bool valid = false;
+				if (wr_obj) {
+					WeakRef *wr = (WeakRef *)wr_obj;
+					Variant ref_var = wr->get_ref();
+					if (ref_var.get_type() != Variant::NIL) {
+						bool was_freed;
+						Object *ref_obj = ref_var.get_validated_object_with_check(was_freed);
+						if (was_freed) {
+							err_text = "Trying to cast a WeakRef to a freed object.";
+							OPCODE_BREAK;
+						}
+						if (ref_obj && ClassDB::is_parent_class(ref_obj->get_class_name(), nc->get_name())) {
+							valid = true;
+						}
+					}
+				}
+
+				if (valid) {
+					*dst = *src; // Valid cast, copy the source object
+				} else {
+					*dst = Variant(); // invalid cast, assign NULL
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
 			OPCODE(OPCODE_CAST_TO_SCRIPT) {
 				CHECK_SPACE(4);
 				GET_VARIANT_PTR(src, 0);
@@ -1826,6 +1969,65 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 								break;
 							}
 							src_type = src_type->get_base_script().ptr();
+						}
+					}
+				}
+
+				if (valid) {
+					*dst = *src; // Valid cast, copy the source object
+				} else {
+					*dst = Variant(); // invalid cast, assign NULL
+				}
+
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_CAST_TO_SCRIPT_WEAKREF) {
+				CHECK_SPACE(4);
+				GET_VARIANT_PTR(src, 0);
+				GET_VARIANT_PTR(dst, 1);
+				GET_VARIANT_PTR(to_type, 2);
+
+				Script *base_type = Object::cast_to<Script>(to_type->operator Object *());
+
+				GD_ERR_BREAK(!base_type);
+
+#ifdef DEBUG_ENABLED
+				if (src->operator Object *() && !src->get_validated_object()) {
+					err_text = "Trying to cast a freed object.";
+					OPCODE_BREAK;
+				}
+				if (src->get_type() != Variant::OBJECT && src->get_type() != Variant::NIL) {
+					err_text = "Trying to assign a non-object value to a variable of type '" + base_type->get_path().get_file() + "'.";
+					OPCODE_BREAK;
+				}
+#endif
+				Object *wr_obj = src->operator Object *();
+				bool valid = false;
+
+				if (wr_obj) {
+					WeakRef *wr = (WeakRef *)wr_obj;
+					Variant ref_var = wr->get_ref();
+					if (ref_var.get_type() != Variant::NIL) {
+						bool was_freed;
+						Object *ref_obj = ref_var.get_validated_object_with_check(was_freed);
+						if (was_freed) {
+							err_text = "Trying to cast a WeakRef to a freed object.";
+							OPCODE_BREAK;
+						}
+						if (ref_obj) {
+							ScriptInstance *scr_inst = ref_obj->get_script_instance();
+							if (scr_inst) {
+								Script *src_type = scr_inst->get_script().ptr();
+								while (src_type) {
+									if (src_type == base_type) {
+										valid = true;
+										break;
+									}
+									src_type = src_type->get_base_script().ptr();
+								}
+							}
 						}
 					}
 				}

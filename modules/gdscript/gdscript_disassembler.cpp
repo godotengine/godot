@@ -218,7 +218,17 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 9;
 			} break;
 			case OPCODE_TYPE_TEST_NATIVE: {
-				text += "type test ";
+				text += "type test native ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is ";
+				text += get_global_name(_code_ptr[ip + 3]);
+
+				incr += 4;
+			} break;
+			case OPCODE_TYPE_TEST_NATIVE_WEAKREF: {
+				text += "type test native weakref ";
 				text += DADDR(1);
 				text += " = ";
 				text += DADDR(2);
@@ -228,7 +238,17 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_TYPE_TEST_SCRIPT: {
-				text += "type test ";
+				text += "type test script ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is ";
+				text += DADDR(3);
+
+				incr += 4;
+			} break;
+			case OPCODE_TYPE_TEST_SCRIPT_WEAKREF: {
+				text += "type test script weakref ";
 				text += DADDR(1);
 				text += " = ";
 				text += DADDR(2);
@@ -468,11 +488,31 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
+			case OPCODE_ASSIGN_TYPED_NATIVE_WEAKREF: {
+				text += "assign typed native-weakref (";
+				text += DADDR(3);
+				text += ") ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+
+				incr += 4;
+			} break;
 			case OPCODE_ASSIGN_TYPED_SCRIPT: {
 				Ref<Script> script = get_constant(_code_ptr[ip + 3] & ADDR_MASK);
 
 				text += "assign typed script (";
 				text += GDScript::debug_get_script_name(script);
+				text += ") ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+
+				incr += 4;
+			} break;
+			case OPCODE_ASSIGN_TYPED_SCRIPT_WEAKREF: {
+				text += "assign typed script-weakref (";
+				text += DADDR(3);
 				text += ") ";
 				text += DADDR(1);
 				text += " = ";
@@ -500,8 +540,28 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 4;
 			} break;
+			case OPCODE_CAST_TO_NATIVE_WEAKREF: {
+				text += "cast native weakref ";
+				text += DADDR(2);
+				text += " = ";
+				text += DADDR(1);
+				text += " as ";
+				text += DADDR(3);
+
+				incr += 4;
+			} break;
 			case OPCODE_CAST_TO_SCRIPT: {
-				text += "cast ";
+				text += "cast script ";
+				text += DADDR(2);
+				text += " = ";
+				text += DADDR(1);
+				text += " as ";
+				text += DADDR(3);
+
+				incr += 4;
+			} break;
+			case OPCODE_CAST_TO_SCRIPT_WEAKREF: {
+				text += "cast script weakref ";
 				text += DADDR(2);
 				text += " = ";
 				text += DADDR(1);

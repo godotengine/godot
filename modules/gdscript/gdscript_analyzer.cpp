@@ -954,7 +954,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				push_error(R"(Typed dictionaries require exactly two collection element types.)", p_type);
 				return bad_type;
 			}
-		} else if (result.kind == GDScriptParser::DataType::NATIVE && result.builtin_type == Variant::OBJECT && result.native_type == WeakRef::get_class_static()) {
+		} else if (result.kind == GDScriptParser::DataType::NATIVE && result.native_type == WeakRef::get_class_static()) {
 			if (p_type->container_types.size() != 1) {
 				push_error(R"(Typed WeakRefs require exactly one class type.)", p_type);
 				return bad_type;
@@ -6230,7 +6230,9 @@ bool GDScriptAnalyzer::check_type_compatibility(const GDScriptParser::DataType &
 
 	// If both are typed WeakRef, then compare their types
 	if (p_source.kind == GDScriptParser::DataType::NATIVE && p_target.kind == GDScriptParser::DataType::NATIVE && p_source.native_type == WeakRef::get_class_static() && p_target.native_type == WeakRef::get_class_static()) {
-		if (!p_target.has_container_element_type(0)) return true; // No issue if target is an un-typed WeakRef
+		if (!p_target.has_container_element_type(0)) {
+			return true; // No issue if target is an un-typed WeakRef
+		}
 		if (p_source.has_container_element_type(0)) {
 			GDScriptParser::DataType target_class = p_target.get_container_element_type(0);
 			GDScriptParser::DataType source_class = p_source.get_container_element_type(0);
