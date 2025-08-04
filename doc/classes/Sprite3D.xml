@@ -18,6 +18,9 @@
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet. When this property is changed, [member frame] is adjusted so that the same visual frame is maintained (same row and column). If that's impossible, [member frame] is reset to [code]0[/code].
 		</member>
+		<member name="oversampling" type="float" setter="set_oversampling" getter="get_oversampling" default="1.0">
+			Oversampling factor used to render [DPITexture].
+		</member>
 		<member name="region_enabled" type="bool" setter="set_region_enabled" getter="is_region_enabled" default="false">
 			If [code]true[/code], the sprite will use [member region_rect] and display only the specified part of its texture.
 		</member>

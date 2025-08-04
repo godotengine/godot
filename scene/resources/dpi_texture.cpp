@@ -269,6 +269,10 @@ RID DPITexture::get_rid() const {
 	return _ensure_scale(1.0);
 }
 
+RID DPITexture::get_rid_for_scale(double p_scale) const {
+	return _ensure_scale(p_scale);
+}
+
 bool DPITexture::has_alpha() const {
 	return true;
 }
