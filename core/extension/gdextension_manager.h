@@ -57,6 +57,7 @@ public:
 
 private:
 	LoadStatus _load_extension_internal(const Ref<GDExtension> &p_extension, bool p_first_load);
+	void _finish_load_extension(const Ref<GDExtension> &p_extension);
 	LoadStatus _unload_extension_internal(const Ref<GDExtension> &p_extension);
 
 #ifdef TOOLS_ENABLED
