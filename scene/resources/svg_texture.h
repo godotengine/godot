@@ -89,6 +89,7 @@ public:
 	int get_height() const override;
 
 	virtual RID get_rid() const override;
+	virtual RID get_rid_for_scale(double p_scale) const;
 
 	bool has_alpha() const override;
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
