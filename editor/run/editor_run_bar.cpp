@@ -119,11 +119,11 @@ void EditorRunBar::_reset_play_buttons() {
 
 	play_button->set_pressed(false);
 	play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
-	play_button->set_tooltip_text(TTRC("Play the project."));
+	play_button->set_tooltip_text(TTRC("Run the project's main scene."));
 
 	play_scene_button->set_pressed(false);
 	play_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayScene")));
-	play_scene_button->set_tooltip_text(TTRC("Play the edited scene."));
+	play_scene_button->set_tooltip_text(TTRC("Play the currently edited scene."));
 
 	play_custom_scene_button->set_pressed(false);
 	play_custom_scene_button->set_button_icon(get_editor_theme_icon(SNAME("PlayCustom")));
@@ -143,16 +143,18 @@ void EditorRunBar::_update_play_buttons() {
 	Button *active_button = nullptr;
 	if (current_mode == RUN_CURRENT) {
 		active_button = play_scene_button;
+		active_button->set_tooltip_text(TTRC("Reload the played scene that was being edited."));
 	} else if (current_mode == RUN_CUSTOM) {
 		active_button = play_custom_scene_button;
+		active_button->set_tooltip_text(TTRC("Reload the played custom scene."));
 	} else {
 		active_button = play_button;
+		active_button->set_tooltip_text(TTRC("Reload the played main scene."));
 	}
 
 	if (active_button) {
 		active_button->set_pressed(true);
 		active_button->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
-		active_button->set_tooltip_text(TTRC("Reload the played scene."));
 	}
 }
 
@@ -581,12 +583,11 @@ EditorRunBar::EditorRunBar() {
 	play_button->set_theme_type_variation("RunBarButton");
 	play_button->set_toggle_mode(true);
 	play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	play_button->set_tooltip_text(TTRC("Run the project's default scene."));
-	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false, Vector<String>()));
-
 	ED_SHORTCUT_AND_COMMAND("editor/run_project", TTRC("Run Project"), Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_project", "macos", KeyModifierMask::META | Key::B);
 	play_button->set_shortcut(ED_GET_SHORTCUT("editor/run_project"));
+	play_button->set_tooltip_text(TTRC("Run the project's main scene."));
+	play_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::play_main_scene).bind(false, Vector<String>()));
 
 	pause_button = memnew(Button);
 	main_hbox->add_child(pause_button);
@@ -640,13 +641,13 @@ EditorRunBar::EditorRunBar() {
 		play_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_current_pressed).bind(-1));
 	}
 	main_hbox->add_child(play_scene_button);
-	play_scene_button->set_theme_type_variation("RunBarButton");
-	play_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	play_scene_button->set_tooltip_text(TTRC("Run the currently edited scene."));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_current_scene", TTRC("Run Current Scene"), Key::F6);
 	ED_SHORTCUT_OVERRIDE("editor/run_current_scene", "macos", KeyModifierMask::META | Key::R);
 	play_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_current_scene"));
+	play_scene_button->set_tooltip_text(TTRC("Play the currently edited scene."));
+	play_scene_button->set_theme_type_variation("RunBarButton");
+	play_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	if (add_play_xr_mode_options) {
 		MenuButton *menu_button = memnew(MenuButton);
@@ -661,13 +662,13 @@ EditorRunBar::EditorRunBar() {
 		play_custom_scene_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::_play_custom_pressed).bind(-1));
 	}
 	main_hbox->add_child(play_custom_scene_button);
-	play_custom_scene_button->set_theme_type_variation("RunBarButton");
-	play_custom_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	play_custom_scene_button->set_tooltip_text(TTRC("Run a specific scene."));
 
 	ED_SHORTCUT_AND_COMMAND("editor/run_specific_scene", TTRC("Run Specific Scene"), KeyModifierMask::CTRL | KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
 	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_specific_scene"));
+	play_custom_scene_button->set_tooltip_text(TTRC("Play a custom scene."));
+	play_custom_scene_button->set_theme_type_variation("RunBarButton");
+	play_custom_scene_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 
 	write_movie_panel = memnew(PanelContainer);
 	main_hbox->add_child(write_movie_panel);
