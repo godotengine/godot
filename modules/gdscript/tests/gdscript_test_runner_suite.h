@@ -32,9 +32,21 @@
 
 #include "gdscript_test_runner.h"
 
+#include "modules/gdscript/gdscript_cache.h"
 #include "tests/test_macros.h"
 
 namespace GDScriptTests {
+
+class TestGDScriptCacheAccessor {
+public:
+	static bool has_shallow(String p_path) {
+		return GDScriptCache::singleton->shallow_gdscript_cache.has(p_path);
+	}
+
+	static bool has_full(String p_path) {
+		return GDScriptCache::singleton->full_gdscript_cache.has(p_path);
+	}
+};
 
 // TODO: Handle some cases failing on release builds. See: https://github.com/godotengine/godot/pull/88452
 #ifdef TOOLS_ENABLED
@@ -70,6 +82,18 @@ func _init():
 	Ref<RefCounted> ref_counted = memnew(RefCounted);
 	ref_counted->set_script(gdscript);
 	CHECK_MESSAGE(int(ref_counted->get_meta("result")) == 42, "The script should assign object metadata successfully.");
+}
+
+TEST_CASE("[Modules][GDScript] Loading keeps ResourceCache and GDScriptCache in sync") {
+	CHECK(!ResourceCache::has("res://utils.notest.gd"));
+	CHECK(!TestGDScriptCacheAccessor::has_shallow("res://utils.notest.gd"));
+	CHECK(!TestGDScriptCacheAccessor::has_full("res://utils.notest.gd"));
+
+	Ref<GDScript> loaded = ResourceLoader::load("res://utils.notest.gd");
+
+	CHECK(ResourceCache::has("res://utils.notest.gd"));
+	CHECK(!TestGDScriptCacheAccessor::has_shallow("res://utils.notest.gd"));
+	CHECK(TestGDScriptCacheAccessor::has_full("res://utils.notest.gd"));
 }
 
 TEST_CASE("[Modules][GDScript] Validate built-in API") {

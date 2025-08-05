@@ -312,7 +312,7 @@ Ref<GDScript> GDScriptCache::get_shallow_script(const String &p_path, Error &r_e
 
 	Ref<GDScript> script;
 	script.instantiate();
-	script->set_path(p_path, true);
+	script->set_path_cache(p_path);
 	if (remapped_path.get_extension().to_lower() == "gdc") {
 		Vector<uint8_t> buffer = get_binary_tokens(remapped_path);
 		if (buffer.is_empty()) {
@@ -362,6 +362,11 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	}
 
 	const String remapped_path = ResourceLoader::path_remap(p_path);
+
+	// Resources don't know whether they are cached, so using set_path after set_path_cache does not add the resource to the cache if the path is the same.
+	// We reset the cached path from get_shallow_script first so that the fully loaded script can be added to the ResourceCache.
+	script->set_path_cache("");
+	script->set_path(remapped_path);
 
 	if (p_update_from_disk) {
 		if (remapped_path.get_extension().to_lower() == "gdc") {
