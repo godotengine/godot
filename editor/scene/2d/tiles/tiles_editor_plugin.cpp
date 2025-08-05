@@ -75,7 +75,7 @@ void TilesEditorUtils::_thread() {
 
 		// Process patterns in batches for efficiency
 		List<QueueItem> batch_items;
-		
+
 		pattern_preview_mutex.lock();
 		if (pattern_preview_queue.is_empty()) {
 			pattern_preview_mutex.unlock();
@@ -162,10 +162,10 @@ void TilesEditorUtils::_thread() {
 void TilesEditorUtils::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMapPattern> p_pattern, Callable p_callback) {
 	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_COND(p_pattern.is_null());
-	
+
 	// Generate cache key based on pattern content and tileset
 	String cache_key = String::num_int64(p_tile_set->get_instance_id()) + "_" + String::num_int64(p_pattern->get_instance_id());
-	
+
 	// Check cache first
 	{
 		MutexLock cache_lock(pattern_cache_mutex);
@@ -176,7 +176,7 @@ void TilesEditorUtils::queue_pattern_preview(Ref<TileSet> p_tile_set, Ref<TileMa
 			return;
 		}
 	}
-	
+
 	// Cache miss - queue for generation
 	{
 		MutexLock lock(pattern_preview_mutex);
