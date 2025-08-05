@@ -197,17 +197,17 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_style
 		p_slot = Slot(p_draw_stylebox, p_slot_node_name);
 	}
 
+	_insert_slot(p_slot_index, p_slot);
 	insert_port(slot_to_port_index(p_slot_index, true), p_left);
 	insert_port(slot_to_port_index(p_slot_index, false), p_right);
-	_insert_slot(p_slot_index, p_slot);
 
 	emit_signal("slot_added", p_slot_index);
 }
 
 void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
-	_remove_slot(p_slot_index);
 	int input_port_idx = slot_to_port_index(p_slot_index, true);
 	int output_port_idx = slot_to_port_index(p_slot_index, false);
+	_remove_slot(p_slot_index);
 	if (output_port_idx < ports.size()) {
 		remove_port(output_port_idx);
 		remove_port(input_port_idx);

@@ -214,7 +214,10 @@
 		<member name="_node_to_slot_cache" type="Dictionary[StringName, int]" setter="_set_slot_node_cache" getter="_get_slot_node_cache" default="{}">
 		</member>
 		<member name="free_ports_on_slot_removed" type="bool" setter="set_free_ports_on_slot_removed" getter="get_free_ports_on_slot_removed" default="false">
-			If [code]true[/code], [code]queue_free[/code] is called on [GraphPort]s when their slot is removed.
+			By default, when a child with an associated slot is removed from this node, a historical record of its properties is stored. If a child with the same name is added later, that child will assume the properties of the previous node, rather than creating a new slot.
+			This allows undo/redo operations to correctly re-create a slot's ports and connections when it is added and removed. To accomplish this, removed ports are not freed until this GraphNodeIndexed is freed.
+			If [code]true[/code], [code]queue_free[/code] is called on [GraphPort]s when their slot is removed. Adding a child node previously associated with a slot will instead create a new slot from scratch.
+			[b]Warning:[/b] setting this property breaks undo/redo! With this set, deleting a child node will cause its associated GraphPorts and their GraphConnections and properties to be permanently lost.
 		</member>
 		<member name="slot_focus_mode" type="int" setter="set_slot_focus_mode" getter="get_slot_focus_mode" enum="Control.FocusMode" default="3">
 			Accessibility focus mode for slots. TODO: implement keyboard focus and behavior.
