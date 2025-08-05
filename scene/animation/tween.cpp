@@ -597,7 +597,6 @@ void PropertyTweener::start() {
 
 	Object *target_instance = ObjectDB::get_instance(target);
 	if (!target_instance) {
-		WARN_PRINT("Target object freed before starting, aborting Tweener.");
 		return;
 	}
 

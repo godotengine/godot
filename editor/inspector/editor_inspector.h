@@ -32,12 +32,12 @@
 
 #include "editor/inspector/editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/scroll_container.h"
 
 class AddMetadataDialog;
 class AcceptDialog;
-class Button;
 class ConfirmationDialog;
 class EditorInspector;
 class EditorValidationPanel;
@@ -55,6 +55,18 @@ class EditorPropertyRevert {
 public:
 	static Variant get_property_revert_value(Object *p_object, const StringName &p_property, bool *r_is_valid);
 	static bool can_property_revert(Object *p_object, const StringName &p_property, const Variant *p_custom_current_value = nullptr);
+};
+
+class EditorInspectorActionButton : public Button {
+	GDCLASS(EditorInspectorActionButton, Button);
+
+	StringName icon_name;
+
+protected:
+	void _notification(int p_what);
+
+public:
+	EditorInspectorActionButton(const String &p_text, const StringName &p_icon_name);
 };
 
 class EditorProperty : public Container {
@@ -765,7 +777,6 @@ public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	static void cleanup_plugins();
-	static Button *create_inspector_action_button(const String &p_text);
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 

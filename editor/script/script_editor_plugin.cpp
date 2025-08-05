@@ -1222,6 +1222,73 @@ bool ScriptEditor::_test_script_times_on_disk(Ref<Resource> p_for_script) {
 	return need_reload;
 }
 
+void _import_text_editor_theme(const String &p_file) {
+	if (p_file.get_extension() != "tet") {
+		EditorToaster::get_singleton()->popup_str(TTR("Importing theme failed. File is not a text editor theme file (.tet)."), EditorToaster::SEVERITY_ERROR);
+		return;
+	}
+	const String theme_name = p_file.get_file().get_basename();
+	if (EditorSettings::is_default_text_editor_theme(theme_name.to_lower())) {
+		EditorToaster::get_singleton()->popup_str(TTR("Importing theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."), EditorToaster::SEVERITY_ERROR);
+		return;
+	}
+
+	const String theme_dir = EditorPaths::get_singleton()->get_text_editor_themes_dir();
+	Ref<DirAccess> d = DirAccess::open(theme_dir);
+	Error err = FAILED;
+	if (d.is_valid()) {
+		err = d->copy(p_file, theme_dir.path_join(p_file.get_file()));
+	}
+
+	if (err != OK) {
+		EditorToaster::get_singleton()->popup_str(TTR("Importing theme failed. Failed to copy theme file."), EditorToaster::SEVERITY_ERROR);
+		return;
+	}
+
+	// Reload themes and switch to new theme.
+	EditorSettings::get_singleton()->update_text_editor_themes_list();
+	EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", theme_name, true);
+	EditorSettings::get_singleton()->notify_changes();
+}
+
+void _save_text_editor_theme_as(const String &p_file) {
+	String file = p_file;
+	if (p_file.get_extension() != "tet") {
+		file += ".tet";
+	}
+
+	const String theme_name = file.get_file().get_basename();
+	if (EditorSettings::is_default_text_editor_theme(theme_name.to_lower())) {
+		EditorToaster::get_singleton()->popup_str(TTR("Saving theme failed. File name cannot be 'Default', 'Custom', or 'Godot 2'."), EditorToaster::SEVERITY_ERROR);
+		return;
+	}
+
+	const String theme_section = "color_theme";
+	const Ref<ConfigFile> cf = memnew(ConfigFile);
+
+	// Use the keys from the Godot 2 theme to know which settings to save.
+	HashMap<StringName, Color> text_colors = EditorSettings::get_godot2_text_editor_theme();
+	text_colors.sort();
+	for (const KeyValue<StringName, Color> &text_color : text_colors) {
+		const Color val = EditorSettings::get_singleton()->get_setting(text_color.key);
+		const String &key = text_color.key.operator String().replace("text_editor/theme/highlighting/", "");
+		cf->set_value(theme_section, key, val.to_html());
+	}
+
+	const Error err = cf->save(file);
+	if (err != OK) {
+		EditorToaster::get_singleton()->popup_str(TTR("Saving theme failed."), EditorToaster::SEVERITY_ERROR);
+		return;
+	}
+
+	// Reload themes and switch to saved theme.
+	EditorSettings::get_singleton()->update_text_editor_themes_list();
+	if (p_file.get_base_dir() == EditorPaths::get_singleton()->get_text_editor_themes_dir()) {
+		// Don't need to emit signal or notify changes as the colors are already set.
+		EditorSettings::get_singleton()->set_manually("text_editor/theme/color_theme", theme_name, false);
+	}
+}
+
 void ScriptEditor::_file_dialog_action(const String &p_file) {
 	switch (file_dialog_option) {
 		case FILE_MENU_NEW_TEXTFILE: {
@@ -1266,14 +1333,10 @@ void ScriptEditor::_file_dialog_action(const String &p_file) {
 			}
 		} break;
 		case THEME_SAVE_AS: {
-			if (!EditorSettings::get_singleton()->save_text_editor_theme_as(p_file)) {
-				EditorNode::get_singleton()->show_warning(TTR("Error while saving theme."), TTR("Error Saving"));
-			}
+			_save_text_editor_theme_as(p_file);
 		} break;
 		case THEME_IMPORT: {
-			if (!EditorSettings::get_singleton()->import_text_editor_theme(p_file)) {
-				EditorNode::get_singleton()->show_warning(TTR("Error importing theme."), TTR("Error Importing"));
-			}
+			_import_text_editor_theme(p_file);
 		} break;
 	}
 	file_dialog_option = -1;
@@ -1642,14 +1705,8 @@ void ScriptEditor::_theme_option(int p_option) {
 			file_dialog->popup_file_dialog();
 		} break;
 		case THEME_RELOAD: {
-			EditorSettings::get_singleton()->load_text_editor_theme();
-		} break;
-		case THEME_SAVE: {
-			if (EditorSettings::get_singleton()->is_default_text_editor_theme()) {
-				ScriptEditor::_show_save_theme_as_dialog();
-			} else if (!EditorSettings::get_singleton()->save_text_editor_theme()) {
-				EditorNode::get_singleton()->show_warning(TTR("Error while saving theme"), TTR("Error saving"));
-			}
+			EditorSettings::get_singleton()->mark_setting_changed("text_editor/theme/color_theme");
+			EditorSettings::get_singleton()->notify_changes();
 		} break;
 		case THEME_SAVE_AS: {
 			ScriptEditor::_show_save_theme_as_dialog();
@@ -1663,7 +1720,7 @@ void ScriptEditor::_show_save_theme_as_dialog() {
 	file_dialog_option = THEME_SAVE_AS;
 	file_dialog->clear_filters();
 	file_dialog->add_filter("*.tet");
-	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().path_join(EDITOR_GET("text_editor/theme/color_theme")));
+	file_dialog->set_current_path(EditorPaths::get_singleton()->get_text_editor_themes_dir().path_join(EDITOR_GET("text_editor/theme/color_theme")) + " New");
 	file_dialog->set_title(TTRC("Save Theme As..."));
 	file_dialog->popup_file_dialog();
 }
@@ -3033,13 +3090,6 @@ void ScriptEditor::_apply_editor_settings() {
 
 	_update_autosave_timer();
 
-	if (current_theme.is_empty()) {
-		current_theme = EDITOR_GET("text_editor/theme/color_theme");
-	} else if (current_theme != String(EDITOR_GET("text_editor/theme/color_theme"))) {
-		current_theme = EDITOR_GET("text_editor/theme/color_theme");
-		EditorSettings::get_singleton()->load_text_editor_theme();
-	}
-
 	_update_script_names();
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
@@ -3733,7 +3783,7 @@ bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
 }
 
 void ScriptEditor::update_doc(const String &p_name) {
-	ERR_FAIL_COND(!EditorHelp::has_doc(p_name));
+	ERR_FAIL_COND_MSG(!EditorHelp::has_doc(p_name), vformat("Can't update documentation for \"%s\".", p_name));
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
@@ -4161,7 +4211,6 @@ void ScriptEditor::_bind_methods() {
 
 ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	window_wrapper = p_wrapper;
-	current_theme = "";
 
 	script_editor_cache.instantiate();
 	script_editor_cache->load(EditorPaths::get_singleton()->get_project_settings_dir().path_join("script_editor_cache.cfg"));
@@ -4340,7 +4389,6 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	theme_submenu->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_theme_option));
 
 	theme_submenu->add_separator();
-	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme", TTRC("Save Theme")), THEME_SAVE);
 	theme_submenu->add_shortcut(ED_SHORTCUT("script_editor/save_theme_as", TTRC("Save Theme As...")), THEME_SAVE_AS);
 
 	file_menu->get_popup()->add_separator();

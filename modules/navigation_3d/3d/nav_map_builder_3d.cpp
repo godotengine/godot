@@ -127,6 +127,7 @@ void NavMapBuilder3D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 				// Add the polygon/edge tuple to this key.
 				Connection new_connection;
 				new_connection.polygon = &region->navmesh_polygons[connectable_edge.polygon_index];
+				new_connection.edge = connectable_edge.edge;
 				new_connection.pathway_start = connectable_edge.pathway_start;
 				new_connection.pathway_end = connectable_edge.pathway_end;
 

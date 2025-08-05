@@ -680,6 +680,9 @@ void ColorPicker::_copy_hsv_okhsl_to_normalized() {
 }
 
 Color ColorPicker::_color_apply_intensity(const Color &col) const {
+	if (intensity == 0.0f) {
+		return col;
+	}
 	Color linear_color = col.srgb_to_linear();
 	Color result;
 	float multiplier = Math::pow(2, intensity);

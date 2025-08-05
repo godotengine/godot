@@ -65,8 +65,8 @@ SDL_FunctionPointer SDL_LoadFunction(SDL_SharedObject *handle, const char *name)
         symbol = dlsym(handle, _name);
         SDL_small_free(_name, isstack);
         if (!symbol) {
-            SDL_SetError("Failed loading %s: %s", name,
-                         (const char *)dlerror());
+            //SDL_SetError("Failed loading %s: %s", name,
+            //             (const char *)dlerror());
         }
     }
     return symbol;

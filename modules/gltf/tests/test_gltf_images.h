@@ -108,8 +108,10 @@ TEST_CASE("[SceneTree][Node][Editor] Import GLTF from .godot/imported folder wit
 	EditorFileSystem *efs = memnew(EditorFileSystem);
 	EditorResourcePreview *erp = memnew(EditorResourcePreview);
 
+	ERR_PRINT_OFF
 	Node *loaded = gltf_import("res://.godot/imported/gltf_placed_in_dot_godot_imported.gltf");
 	Ref<Texture2D> texture = _check_texture(loaded);
+	ERR_PRINT_ON
 
 	// In-editor imports of gltf and texture from .godot/imported folder should end up in res:// if extract_path is defined.
 	CHECK_MESSAGE(texture->get_path() == "res://gltf_placed_in_dot_godot_imported_material_albedo000.png", "Texture not parsed as resource.");
@@ -133,8 +135,10 @@ TEST_CASE("[SceneTree][Node][Editor] Import GLTF with texture outside of res:// 
 	output->store_buffer(FileAccess::get_file_as_bytes("res://texture_source.png"));
 	output->close();
 
+	ERR_PRINT_OFF
 	Node *loaded = gltf_import("res://gltf_pointing_to_texture_outside_of_res_folder.gltf");
 	Ref<Texture2D> texture = _check_texture(loaded);
+	ERR_PRINT_ON
 
 	// Imports of gltf with texture from outside of res:// folder should end up being copied to res://
 	CHECK_MESSAGE(texture->get_path() == "res://gltf_pointing_to_texture_outside_of_res_folder_material_albedo000.png", "Texture not parsed as resource.");
@@ -150,8 +154,10 @@ TEST_CASE("[SceneTree][Node][Editor] Import GLTF with embedded texture, check ho
 	EditorFileSystem *efs = memnew(EditorFileSystem);
 	EditorResourcePreview *erp = memnew(EditorResourcePreview);
 
+	ERR_PRINT_OFF
 	Node *loaded = gltf_import("res://embedded_texture.gltf");
 	Ref<Texture2D> texture = _check_texture(loaded);
+	ERR_PRINT_ON
 
 	// In-editor imports of texture embedded in file should end up with a resource.
 	CHECK_MESSAGE(texture->get_path() == "res://embedded_texture_material_albedo000.png", "Texture not parsed as resource.");

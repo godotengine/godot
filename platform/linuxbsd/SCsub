@@ -31,10 +31,6 @@ if env["fontconfig"]:
     if env["use_sowrap"]:
         common_linuxbsd.append("fontconfig-so_wrap.c")
 
-if env["udev"]:
-    if env["use_sowrap"]:
-        common_linuxbsd.append("libudev-so_wrap.c")
-
 if env["dbus"]:
     if env["use_sowrap"]:
         common_linuxbsd.append("dbus-so_wrap.c")

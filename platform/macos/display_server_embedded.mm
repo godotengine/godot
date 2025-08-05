@@ -542,6 +542,21 @@ int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
 	return 96;
 }
 
+float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_screen) {
+		case SCREEN_WITH_MOUSE_FOCUS:
+		case SCREEN_WITH_KEYBOARD_FOCUS:
+		case SCREEN_PRIMARY:
+		case SCREEN_OF_MAIN_WINDOW:
+		case 0:
+			return state.screen_window_scale;
+		default:
+			return 1.0;
+	}
+}
+
 float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -811,7 +826,14 @@ DisplayServer::CursorShape DisplayServerEmbedded::cursor_get_shape() const {
 }
 
 void DisplayServerEmbedded::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
-	WARN_PRINT_ONCE("Custom cursor images are not supported in embedded mode.");
+	PackedByteArray data;
+	if (p_cursor.is_valid()) {
+		Ref<Image> image = _get_cursor_image_from_resource(p_cursor, p_hotspot);
+		if (image.is_valid()) {
+			data = image->save_png_to_buffer();
+		}
+	}
+	EngineDebugger::get_singleton()->send_message("game_view:cursor_set_custom_image", { data, p_shape, p_hotspot });
 }
 
 void DisplayServerEmbedded::swap_buffers() {
@@ -823,15 +845,16 @@ void DisplayServerEmbedded::swap_buffers() {
 }
 
 void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
-	r_data.resize(12);
+	r_data.resize(16);
 
 	uint8_t *data = r_data.ptrw();
 	data += encode_float(screen_max_scale, data);
 	data += encode_float(screen_dpi, data);
+	data += encode_float(screen_window_scale, data);
 	data += encode_uint32(display_id, data);
 
 	// Assert we had enough space.
-	DEV_ASSERT((data - r_data.ptrw()) >= r_data.size());
+	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
 }
 
 Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
@@ -840,6 +863,8 @@ Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
 	screen_max_scale = decode_float(data);
 	data += sizeof(float);
 	screen_dpi = decode_float(data);
+	data += sizeof(float);
+	screen_window_scale = decode_float(data);
 	data += sizeof(float);
 	display_id = decode_uint32(data);
 

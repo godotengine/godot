@@ -3667,6 +3667,12 @@ void TileMapLayerEditor::_notification(int p_what) {
 			get_tree()->disconnect("node_removed", callable_mp(this, &TileMapLayerEditor::_node_change));
 		} break;
 
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (custom_overlay) {
+				custom_overlay->set_visible(is_visible_in_tree());
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			missing_tile_texture = get_editor_theme_icon(SNAME("StatusWarning"));
 			warning_pattern_texture = get_editor_theme_icon(SNAME("WarningPattern"));

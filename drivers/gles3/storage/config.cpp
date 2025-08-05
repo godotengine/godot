@@ -212,7 +212,6 @@ Config::Config() {
 	//Adreno 3xx Compatibility
 	const String rendering_device_name = String::utf8((const char *)glGetString(GL_RENDERER));
 	if (rendering_device_name.left(13) == "Adreno (TM) 3") {
-		flip_xy_workaround = true;
 		disable_particles_workaround = true;
 
 		// ignore driver version 331+
@@ -229,8 +228,6 @@ Config::Config() {
 		// OpenGL ES 3.0 V@0502.0 (GIT@09fef447e8, I1fe547a144, 1661493934) (Date:08/25/22)
 		String driver_version = gl_version.get_slice("V@", 1).get_slicec(' ', 0);
 		if (driver_version.is_valid_float() && driver_version.to_float() >= 331.0) {
-			flip_xy_workaround = false;
-
 			//TODO: also 'GPUParticles'?
 			//https://github.com/godotengine/godot/issues/92662#issuecomment-2161199477
 			//disable_particles_workaround = false;

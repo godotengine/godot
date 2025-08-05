@@ -1069,12 +1069,13 @@ void EditorFileSystem::scan() {
 	if (first_scan) {
 		_first_scan_filesystem();
 #ifdef ANDROID_ENABLED
+		// Create a .nomedia file to hide assets from media apps on Android.
 		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479 and GH-105399 for details.
+		// NOTE: Nomedia file is also handled in project manager. See project_dialog.cpp ->  ProjectDialog::ok_pressed().
 		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
 		if (sdk_version != "30") {
 			const String nomedia_file_path = ProjectSettings::get_singleton()->get_resource_path().path_join(".nomedia");
 			if (!FileAccess::exists(nomedia_file_path)) {
-				// Create a .nomedia file to hide assets from media apps on Android.
 				Ref<FileAccess> f = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
 				if (f.is_null()) {
 					// .nomedia isn't so critical.
@@ -1284,7 +1285,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->class_info = _get_global_script_class(fi->type, path);
 				fi->modified_time = 0;
 				fi->import_modified_time = 0;
-				fi->import_md5 = "";
+				fi->import_md5 = FileAccess::get_md5(path + ".import");
 				fi->import_dest_paths = Vector<String>();
 				fi->import_valid = (fi->type == "TextFile" || fi->type == "OtherFile") ? true : ResourceLoader::is_import_valid(path);
 
@@ -2285,8 +2286,10 @@ void EditorFileSystem::_process_update_pending() {
 	_update_script_classes();
 	// Parse documentation second, as it requires the class names to be loaded
 	// because _update_script_documentation loads the scripts completely.
-	_update_script_documentation();
-	_update_pending_scene_groups();
+	if (!EditorNode::is_cmdline_mode()) {
+		_update_script_documentation();
+		_update_pending_scene_groups();
+	}
 }
 
 void EditorFileSystem::_queue_update_script_class(const String &p_path, const ScriptClassInfoUpdate &p_script_update) {
@@ -3105,8 +3108,31 @@ Error EditorFileSystem::_copy_file(const String &p_from, const String &p_to) {
 		}
 	} else {
 		// Load the resource and save it again in the new location (this generates a new UID).
-		Error err;
-		Ref<Resource> res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		Error err = OK;
+		Ref<Resource> res = ResourceCache::get_ref(p_from);
+		if (res.is_null()) {
+			res = ResourceLoader::load(p_from, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
+		} else {
+			bool edited = false;
+			List<Ref<Resource>> cached;
+			ResourceCache::get_cached_resources(&cached);
+			for (Ref<Resource> &resource : cached) {
+				if (!resource->is_edited()) {
+					continue;
+				}
+				if (!resource->get_path().begins_with(p_from)) {
+					continue;
+				}
+				// The resource or one of its built-in resources is edited.
+				edited = true;
+				resource->set_edited(false);
+			}
+
+			if (edited) {
+				// Save cached resources to prevent changes from being lost and to prevent discrepancies.
+				EditorNode::get_singleton()->save_resource(res);
+			}
+		}
 		if (err == OK && res.is_valid()) {
 			err = ResourceSaver::save(res, p_to, ResourceSaver::FLAG_COMPRESS);
 			if (err != OK) {

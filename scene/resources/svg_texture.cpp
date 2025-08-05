@@ -203,6 +203,7 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 		img->adjust_bcs(1.0, 1.0, saturation);
 	}
 
+	Size2 current_size = size;
 	if (p_set_size) {
 		size.x = img->get_width();
 		base_size.x = img->get_width();
@@ -214,10 +215,15 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 		if (size_override.y != 0) {
 			size.y = size_override.y;
 		}
+		current_size = size;
+	}
+	if (current_size.is_zero_approx()) {
+		current_size.x = img->get_width();
+		current_size.y = img->get_height();
 	}
 
 	RID rid = RenderingServer::get_singleton()->texture_2d_create(img);
-	RenderingServer::get_singleton()->texture_set_size_override(rid, size.x, size.y);
+	RenderingServer::get_singleton()->texture_set_size_override(rid, current_size.x, current_size.y);
 	return rid;
 }
 

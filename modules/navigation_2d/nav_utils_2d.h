@@ -75,6 +75,7 @@ struct EdgeKey {
 struct ConnectableEdge {
 	EdgeKey ek;
 	uint32_t polygon_index;
+	int edge = -1;
 	Vector2 pathway_start;
 	Vector2 pathway_end;
 };

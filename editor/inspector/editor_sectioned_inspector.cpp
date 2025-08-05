@@ -152,7 +152,7 @@ void SectionedInspector::_section_selected() {
 	selected_category = sections->get_selected()->get_metadata(0);
 	filter->set_section(selected_category, sections->get_selected()->get_first_child() == nullptr);
 	inspector->set_property_prefix(selected_category + "/");
-	inspector->set_v_scroll(0);
+	inspector->set_scroll_offset(0);
 	emit_signal(SNAME("category_changed"), selected_category);
 }
 

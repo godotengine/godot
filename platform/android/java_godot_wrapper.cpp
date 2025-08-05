@@ -41,7 +41,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	godot_instance = p_env->NewGlobalRef(p_godot_instance);
 
 	// get info about our Godot class so we can get pointers and stuff...
-	godot_class = p_env->FindClass("org/godotengine/godot/Godot");
+	godot_class = jni_find_class(p_env, "org/godotengine/godot/Godot");
 	if (godot_class) {
 		godot_class = (jclass)p_env->NewGlobalRef(godot_class);
 	} else {
@@ -308,7 +308,7 @@ Error GodotJavaWrapper::show_dialog(const String &p_title, const String &p_descr
 		ERR_FAIL_NULL_V(env, ERR_UNCONFIGURED);
 		jstring j_title = env->NewStringUTF(p_title.utf8().get_data());
 		jstring j_description = env->NewStringUTF(p_description.utf8().get_data());
-		jobjectArray j_buttons = env->NewObjectArray(p_buttons.size(), env->FindClass("java/lang/String"), nullptr);
+		jobjectArray j_buttons = env->NewObjectArray(p_buttons.size(), jni_find_class(env, "java/lang/String"), nullptr);
 		for (int i = 0; i < p_buttons.size(); ++i) {
 			jstring j_button = env->NewStringUTF(p_buttons[i].utf8().get_data());
 			env->SetObjectArrayElement(j_buttons, i, j_button);
@@ -353,7 +353,7 @@ Error GodotJavaWrapper::show_file_picker(const String &p_current_directory, cons
 			filters.append_array(E.get_slicec(';', 0).split(",")); // Add extensions.
 			filters.append_array(E.get_slicec(';', 2).split(",")); // Add MIME types.
 		}
-		jobjectArray j_filters = env->NewObjectArray(filters.size(), env->FindClass("java/lang/String"), nullptr);
+		jobjectArray j_filters = env->NewObjectArray(filters.size(), jni_find_class(env, "java/lang/String"), nullptr);
 		for (int i = 0; i < filters.size(); ++i) {
 			jstring j_filter = env->NewStringUTF(filters[i].utf8().get_data());
 			env->SetObjectArrayElement(j_filters, i, j_filter);
@@ -469,7 +469,7 @@ int GodotJavaWrapper::create_new_godot_instance(const List<String> &args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, 0);
-		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+		jobjectArray jargs = env->NewObjectArray(args.size(), jni_find_class(env, "java/lang/String"), env->NewStringUTF(""));
 		int i = 0;
 		for (List<String>::ConstIterator itr = args.begin(); itr != args.end(); ++itr, ++i) {
 			jstring j_arg = env->NewStringUTF(itr->utf8().get_data());

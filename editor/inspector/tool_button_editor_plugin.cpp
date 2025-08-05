@@ -30,12 +30,6 @@
 
 #include "tool_button_editor_plugin.h"
 
-#include "scene/gui/button.h"
-
-void EditorInspectorToolButtonPlugin::_update_action_icon(Button *p_action_button, const String &p_action_icon) {
-	p_action_button->set_button_icon(p_action_button->get_editor_theme_icon(p_action_icon));
-}
-
 void EditorInspectorToolButtonPlugin::_call_action(const Variant &p_object, const StringName &p_property) {
 	Object *object = p_object.get_validated_object();
 	ERR_FAIL_NULL_MSG(object, vformat(R"(Failed to get property "%s" on a previously freed instance.)", p_property));
@@ -65,10 +59,9 @@ bool EditorInspectorToolButtonPlugin::parse_property(Object *p_object, const Var
 	const String &hint_text = splits[0]; // Safe since `splits` cannot be empty.
 	const String &hint_icon = splits.size() > 1 ? splits[1] : "Callable";
 
-	Button *action_button = EditorInspector::create_inspector_action_button(hint_text);
+	EditorInspectorActionButton *action_button = memnew(EditorInspectorActionButton(hint_text, hint_icon));
 	action_button->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
 	action_button->set_disabled(p_usage & PROPERTY_USAGE_READ_ONLY);
-	action_button->connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspectorToolButtonPlugin::_update_action_icon).bind(action_button, hint_icon));
 	action_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorToolButtonPlugin::_call_action).bind(p_object, p_path));
 
 	add_custom_control(action_button);

@@ -70,28 +70,9 @@ void CodeEdit::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 			RID ci = get_canvas_item();
-			const Size2 size = get_size();
 			const bool caret_visible = is_caret_visible();
 			const bool rtl = is_layout_rtl();
 			const int row_height = get_line_height();
-
-			if (line_length_guideline_columns.size() > 0) {
-				const int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
-				const int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-
-				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
-					const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
-					const int xoffset = xmargin_beg + column_pos - get_h_scroll();
-					if (xoffset > xmargin_beg && xoffset < xmargin_end) {
-						Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.5);
-						if (rtl) {
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - xoffset, 0), Point2(size.width - xoffset, size.height), guideline_color);
-							continue;
-						}
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(xoffset, 0), Point2(xoffset, size.height), guideline_color);
-					}
-				}
-			}
 
 			if (caret_visible) {
 				const bool draw_code_completion = code_completion_active && !code_completion_options.is_empty();
@@ -277,6 +258,32 @@ void CodeEdit::_notification(int p_what) {
 		case NOTIFICATION_MOUSE_EXIT: {
 			symbol_tooltip_timer->stop();
 		} break;
+	}
+}
+
+void CodeEdit::_draw_guidelines() {
+	if (line_length_guideline_columns.is_empty()) {
+		return;
+	}
+
+	RID ci = get_canvas_item();
+	const Size2 size = get_size();
+	const bool rtl = is_layout_rtl();
+
+	const int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
+	const int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
+
+	for (int i = 0; i < line_length_guideline_columns.size(); i++) {
+		const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+		const int xoffset = xmargin_beg + column_pos - get_h_scroll();
+		if (xoffset > xmargin_beg && xoffset < xmargin_end) {
+			Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.5);
+			if (rtl) {
+				RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(size.width - xoffset, 0), Point2(size.width - xoffset, size.height), guideline_color);
+				continue;
+			}
+			RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2(xoffset, 0), Point2(xoffset, size.height), guideline_color);
+		}
 	}
 }
 

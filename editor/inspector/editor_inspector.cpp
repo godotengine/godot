@@ -57,6 +57,21 @@
 #include "scene/resources/style_box_flat.h"
 #include "scene/scene_string_names.h"
 
+void EditorInspectorActionButton::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			set_button_icon(get_editor_theme_icon(icon_name));
+		} break;
+	}
+}
+
+EditorInspectorActionButton::EditorInspectorActionButton(const String &p_text, const StringName &p_icon_name) {
+	icon_name = p_icon_name;
+	set_text(p_text);
+	set_theme_type_variation(SNAME("InspectorActionButton"));
+	set_h_size_flags(SIZE_SHRINK_CENTER);
+}
+
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
 	if (p_property_path.containsn(p_filter)) {
 		return true;
@@ -445,17 +460,30 @@ void EditorProperty::_notification(int p_what) {
 					checkbox = get_editor_theme_icon(SNAME("GuiUnchecked"));
 				}
 
+				check_rect = Rect2(ofs, 0, checkbox->get_width() + padding, size.height);
+
+				Point2 rtl_pos;
+				if (rtl) {
+					rtl_pos = Point2(size.width - check_rect.position.x - (checkbox->get_width() + padding + (1 * EDSCALE)), check_rect.position.y);
+				}
+
 				Color color2(1, 1, 1);
 				if (check_hover) {
 					color2.r *= 1.2;
 					color2.g *= 1.2;
 					color2.b *= 1.2;
+
+					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
+					if (rtl) {
+						draw_style_box(sb_hover, Rect2(rtl_pos, check_rect.size));
+					} else {
+						draw_style_box(sb_hover, check_rect);
+					}
 				}
-				check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
 				if (rtl) {
-					draw_texture(checkbox, Vector2(size.width - check_rect.position.x - checkbox->get_width(), check_rect.position.y), color2);
+					draw_texture(checkbox, rtl_pos + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				} else {
-					draw_texture(checkbox, check_rect.position, color2);
+					draw_texture(checkbox, check_rect.position + Point2(padding, size.height - checkbox->get_height()) / 2, color2);
 				}
 				int check_ofs = checkbox->get_width() + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				ofs += check_ofs;
@@ -469,7 +497,7 @@ void EditorProperty::_notification(int p_what) {
 				text_limit -= reload_icon->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				revert_rect = Rect2(ofs + text_limit, 0, reload_icon->get_width() + padding + (1 * EDSCALE), size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - revert_rect.position.x - (reload_icon->get_width() + padding + (1 * EDSCALE)), revert_rect.position.y);
 				}
@@ -531,7 +559,7 @@ void EditorProperty::_notification(int p_what) {
 				ofs -= key->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				keying_rect = Rect2(ofs, 0, key->get_width() + padding, size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - keying_rect.position.x - (key->get_width() + padding), keying_rect.position.y);
 				}
@@ -568,7 +596,7 @@ void EditorProperty::_notification(int p_what) {
 				ofs -= close->get_width() + half_padding + get_theme_constant(SNAME("h_separation"), SNAME("Tree"));
 				delete_rect = Rect2(ofs, 0, close->get_width() + padding, size.height);
 
-				Point2 rtl_pos = Point2();
+				Point2 rtl_pos;
 				if (rtl) {
 					rtl_pos = Point2(size.width - delete_rect.position.x - (close->get_width() + padding), delete_rect.position.y);
 				}
@@ -3151,8 +3179,6 @@ void EditorInspectorArray::_notification(int p_what) {
 					ae.erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 				}
 			}
-
-			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -3243,7 +3269,7 @@ EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	elements_vbox->add_theme_constant_override("separation", 0);
 	vbox->add_child(elements_vbox);
 
-	add_button = EditorInspector::create_inspector_action_button(TTR("Add Element"));
+	add_button = memnew(EditorInspectorActionButton(TTRC("Add Element"), SNAME("Add")));
 	add_button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorArray::_add_button_pressed));
 	add_button->set_disabled(read_only);
 	vbox->add_child(add_button);
@@ -3498,14 +3524,6 @@ void EditorInspector::cleanup_plugins() {
 		inspector_plugins[i].unref();
 	}
 	inspector_plugin_count = 0;
-}
-
-Button *EditorInspector::create_inspector_action_button(const String &p_text) {
-	Button *button = memnew(Button);
-	button->set_text(p_text);
-	button->set_theme_type_variation(SNAME("InspectorActionButton"));
-	button->set_h_size_flags(SIZE_SHRINK_CENTER);
-	return button;
 }
 
 bool EditorInspector::is_main_editor_inspector() const {
@@ -3964,6 +3982,7 @@ void EditorInspector::update_tree() {
 				name_override = name_override.substr(0, dot);
 			}
 		}
+		name_override = name_override.uri_decode();
 
 		// Don't localize script variables.
 		EditorPropertyNameProcessor::Style name_style = property_name_style;
@@ -4102,7 +4121,7 @@ void EditorInspector::update_tree() {
 			bool is_const = false;
 			bool numbered = false;
 			bool foldable = use_folding;
-			String add_button_text = TTR("Add Element");
+			String add_button_text = TTRC("Add Element");
 			String swap_method;
 			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
 				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
@@ -4597,8 +4616,7 @@ void EditorInspector::update_tree() {
 		spacer->set_custom_minimum_size(Size2(0, 4) * EDSCALE);
 		main_vbox->add_child(spacer);
 
-		Button *add_md = EditorInspector::create_inspector_action_button(TTR("Add Metadata"));
-		add_md->set_button_icon(theme_cache.icon_add);
+		Button *add_md = memnew(EditorInspectorActionButton(TTRC("Add Metadata"), SNAME("Add")));
 		add_md->connect(SceneStringName(pressed), callable_mp(this, &EditorInspector::_show_add_meta_dialog));
 		main_vbox->add_child(add_md);
 		if (all_read_only) {

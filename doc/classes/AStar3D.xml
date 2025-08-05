@@ -70,6 +70,15 @@
 				Note that this function is hidden in the default [AStar3D] class.
 			</description>
 		</method>
+		<method name="_filter_neighbor" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="from_id" type="int" />
+			<param index="1" name="neighbor_id" type="int" />
+			<description>
+				Called when neighboring point enters processing and if [member neighbor_filter_enabled] is [code]true[/code]. If [code]true[/code] is returned the point will not be processed.
+				Note that this function is hidden in the default [AStar3D] class.
+			</description>
+		</method>
 		<method name="add_point">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
@@ -346,4 +355,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="neighbor_filter_enabled" type="bool" setter="set_neighbor_filter_enabled" getter="is_neighbor_filter_enabled" default="false">
+			If [code]true[/code] enables the filtering of neighbors via [method _filter_neighbor].
+		</member>
+	</members>
 </class>

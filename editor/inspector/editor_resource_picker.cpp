@@ -441,23 +441,32 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			EditorSettings::get_singleton()->set_resource_clipboard(edited_resource);
 		} break;
 
-		case OBJ_MENU_PASTE:
+		case OBJ_MENU_PASTE: {
+			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
+			bool make_unique = true;
+
+			// Automatically make resource unique if it belongs to another scene or resource.
+			if (!EditorNode::get_singleton()->get_edited_scene() || !edited_resource->is_built_in() || edited_resource->get_path().get_slice("::", 0) == EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path()) {
+				make_unique = false;
+			} else if (resource_owner) {
+				Resource *res = Object::cast_to<Resource>(resource_owner);
+				if (res && edited_resource->get_path().get_slice("::", 0) == res->get_path().get_slice("::", 0)) {
+					make_unique = false;
+				}
+			}
+
+			if (make_unique) {
+				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
+			} else {
+				_resource_changed();
+			}
+		} break;
+
 		case OBJ_MENU_PASTE_AS_UNIQUE: {
 			edited_resource = EditorSettings::get_singleton()->get_resource_clipboard();
-			if (p_which == OBJ_MENU_PASTE_AS_UNIQUE ||
-					(EditorNode::get_singleton()->get_edited_scene() && edited_resource->is_built_in() && edited_resource->get_path().get_slice("::", 0) != EditorNode::get_singleton()->get_edited_scene()->get_scene_file_path())) {
-				// Automatically make resource unique if it belongs to another scene,
-				// or if requested by the user with the Paste as Unique option.
-				if (p_which == OBJ_MENU_PASTE_AS_UNIQUE) {
-					// Use the recursive version when using Paste as Unique.
-					// This will show up a dialog to select which resources to make unique.
-					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
-				} else {
-					_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
-				}
-				return;
-			}
-			_resource_changed();
+			// Use the recursive version when using Paste as Unique.
+			// This will show up a dialog to select which resources to make unique.
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
@@ -728,9 +737,11 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	} else if (drag_data.has("type") && String(drag_data["type"]) == "files") {
 		Vector<String> files = drag_data["files"];
 
-		// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
 		if (files.size() == 1) {
-			res = ResourceLoader::load(files[0]);
+			if (ResourceLoader::exists(files[0])) {
+				// TODO: Extract the typename of the dropped filepath's resource in a more performant way, without fully loading it.
+				res = ResourceLoader::load(files[0]);
+			}
 		}
 	}
 

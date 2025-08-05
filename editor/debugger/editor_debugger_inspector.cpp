@@ -389,7 +389,9 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 	}
 
 	PropertyInfo pinfo;
-	pinfo.name = type + n;
+	// Encode special characters to avoid issues with expressions in Evaluator.
+	// Dots are skipped by uri_encode(), but uri_decode() process them correctly when replaced with "%2E".
+	pinfo.name = type + n.uri_encode().replace(".", "%2E");
 	pinfo.type = v.get_type();
 	pinfo.hint = h;
 	pinfo.hint_string = hs;
@@ -403,7 +405,7 @@ void EditorDebuggerInspector::add_stack_variable(const Array &p_array, int p_off
 		}
 		variables->prop_list.insert_before(current, pinfo);
 	}
-	variables->prop_values[type + n][0] = v;
+	variables->prop_values[pinfo.name][0] = v;
 	variables->update();
 	edit(variables);
 }

@@ -1628,7 +1628,7 @@ void main() {
 				half(0.429043) // l2p2 			sqrt(15.0/(16.0*PI))* PI*1.0/4.0
 		);
 
-		half norm = half(scene_data.emissive_exposure_normalization);
+		half norm = half(scene_data.IBL_exposure_normalization);
 		ambient_light += c[0] * hvec3(lightmap_captures.data[index].sh[0].rgb) * norm;
 		ambient_light += c[1] * hvec3(lightmap_captures.data[index].sh[1].rgb) * wnormal.y * norm;
 		ambient_light += c[1] * hvec3(lightmap_captures.data[index].sh[2].rgb) * wnormal.z * norm;
