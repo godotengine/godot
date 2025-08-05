@@ -1074,6 +1074,12 @@ void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
 }
 
+void GDScript::set_path_cache(const String &p_path) {
+	if (is_root_script()) {
+		Script::set_path_cache(p_path);
+	}
+}
+
 void GDScript::set_path(const String &p_path, bool p_take_over) {
 	if (is_root_script()) {
 		Script::set_path(p_path, p_take_over);
@@ -3041,7 +3047,11 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
 	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
-	Ref<GDScript> scr = GDScriptCache::get_full_script(p_original_path, err, "", ignoring);
+	Ref<GDScript> scr = GDScriptCache::get_full_script_no_resource_cache(p_original_path, err, "", ignoring);
+	// Reset `path_cache` so that when resource loader uses `set_path()` later, the script gets added to the cache.
+	if (scr.is_valid()) {
+		scr->set_path_cache(String());
+	}
 
 	if (err && scr.is_valid()) {
 		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
