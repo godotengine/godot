@@ -5356,6 +5356,11 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 // Used to track the progress of tasks in the CLI output (since we don't have any other frame of reference).
 static HashMap<String, int> progress_total_steps;
 
+static String last_progress_task;
+static String last_progress_state;
+static int last_progress_step = 0;
+static double last_progress_time = 0;
+
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (!singleton) {
 		return;
@@ -5371,8 +5376,18 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 	if (!singleton) {
 		return false;
 	} else if (singleton->cmdline_mode) {
-		const int percent = (p_step / float(progress_total_steps[p_task] + 1)) * 100;
-		print_line_rich(vformat("[%4d%% ] [color=gray][b]%s[/b] | %s[/color]", percent, p_task, p_state));
+		double current_time = USEC_TO_SEC(OS::get_singleton()->get_ticks_usec());
+		double elapsed_time = current_time - last_progress_time;
+		if (p_task != last_progress_task || p_state != last_progress_state || p_step != last_progress_step || elapsed_time >= 1.0) {
+			// Only print the progress if it's changed since the last print, or if one second has passed.
+			// This prevents multithreaded import from printing the same progress too often, which would bloat the log file.
+			const int percent = (p_step / float(progress_total_steps[p_task] + 1)) * 100;
+			print_line_rich(vformat("[%4d%% ] [color=gray][b]%s[/b] | %s[/color]", percent, p_task, p_state));
+			last_progress_task = p_task;
+			last_progress_state = p_state;
+			last_progress_step = p_step;
+			last_progress_time = current_time;
+		}
 		return false;
 	} else if (singleton->progress_dialog) {
 		return singleton->progress_dialog->task_step(p_task, p_state, p_step, p_force_refresh);
