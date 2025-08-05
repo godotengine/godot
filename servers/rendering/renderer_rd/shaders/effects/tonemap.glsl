@@ -370,36 +370,13 @@ vec3 apply_tonemapping(vec3 color) { // inputs are LINEAR
 	// They can be negative in the case of negative lights, which leads to undesired behavior.
 	color = max(vec3(0.0), color);
 
-	// Entirely unoptimized demonstration of a CIE-correct "black" parameter
-	// Matrix from https://www.colour-science.org/apps/
-	const mat3 linear_sRGB_to_XYZ = transpose(mat3(
-			0.4338873456, 0.3762240091, 0.1898886453,
-			0.2126390059, 0.7151686788, 0.0721923154,
-			0.0177500401, 0.1094476209, 0.8728023391));
-	const mat3 XYZ_to_linear_sRGB = inverse(linear_sRGB_to_XYZ);
-	if (params.tonemap_black > 0.0) {
-		vec3 XYZ = linear_sRGB_to_XYZ * color;
-		if (XYZ.y > 0.0) {
-			// Black parameter has been set and input color is non-black.
-			// This means we need to apply the black parameter to color:
-			float new_y = XYZ.y - params.tonemap_black;
-			if (new_y <= 0.0) {
-				color = vec3(0.0);
-			} else {
-				// First record the original chromaticity coords
-				vec2 xy = vec2(XYZ.x / (XYZ.x + XYZ.y + XYZ.z), XYZ.y / (XYZ.x + XYZ.y + XYZ.z));
-				// Construct new XYZ with old chromaticity coords and new luminance
-				XYZ.y = new_y;
-				XYZ.x = new_y * (xy.x / xy.y);
-				XYZ.z = new_y * ((1.0 - xy.x - xy.y) / xy.y);
-				color = XYZ_to_linear_sRGB * XYZ;
-				// XYZ_to_linear_sRGB transformation can result in negative
-				// numbers that are extremely close to zero. These need to be
-				// turned into non-negative for tonemappers to work well.
-				color = max(vec3(0.0), color);
-			}
-		}
-	}
+	// Apply black parameter to luminance rather than individual red, green, and blue channels
+	// to prevent collapse to these three primary colors.
+	const vec3 rec709_luminance_weights = vec3(0.212639005871510, 0.715168678767756, 0.072192315360734);
+	float old_luminance = dot(color, rec709_luminance_weights);
+	float new_luminance = max(0.0, old_luminance - params.tonemap_black);
+	float luminance_ratio = new_luminance / old_luminance;
+	color *= vec3(luminance_ratio);
 
 	if (params.tonemapper == TONEMAPPER_REINHARD) {
 		return tonemap_reinhard(color);
