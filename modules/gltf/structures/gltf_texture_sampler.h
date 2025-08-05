@@ -83,7 +83,7 @@ public:
 	}
 
 	void set_wrap_t(const int wrap_mode) {
-		wrap_s = (WrapMode)wrap_mode;
+		wrap_t = (WrapMode)wrap_mode;
 	}
 
 	StandardMaterial3D::TextureFilter get_filter_mode() const {
