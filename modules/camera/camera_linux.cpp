@@ -61,23 +61,23 @@ void CameraLinux::_update_devices() {
 				}
 			}
 
-			DIR *devices = opendir("/dev");
+			struct dirent **devices;
+			int count = scandir("/dev", &devices, nullptr, alphasort);
 
-			if (devices) {
-				struct dirent *device;
-
-				while ((device = readdir(devices)) != nullptr) {
-					if (strncmp(device->d_name, "video", 5) != 0) {
-						continue;
+			if (count != -1) {
+				for (int i = 0; i < count; i++) {
+					struct dirent *device = devices[i];
+					if (strncmp(device->d_name, "video", 5) == 0) {
+						String device_name = String("/dev/") + String(device->d_name);
+						if (!_has_device(device_name)) {
+							_add_device(device_name);
+						}
 					}
-					String device_name = String("/dev/") + String(device->d_name);
-					if (!_has_device(device_name)) {
-						_add_device(device_name);
-					}
+					free(device);
 				}
 			}
 
-			closedir(devices);
+			free(devices);
 		}
 
 		usleep(1000000);
@@ -169,6 +169,7 @@ inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
 
 	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
 	if (p_monitoring_feeds) {
+		exit_flag.clear();
 		camera_thread.start(CameraLinux::camera_thread_func, this);
 	} else {
 		exit_flag.set();

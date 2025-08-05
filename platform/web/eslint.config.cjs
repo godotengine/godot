@@ -11,7 +11,6 @@ if (process && process.env && process.env.npm_command && !fs.existsSync('./platf
 }
 
 const emscriptenGlobals = {
-	'Browser': true,
 	'ERRNO_CODES': true,
 	'FS': true,
 	'GL': true,
@@ -19,14 +18,19 @@ const emscriptenGlobals = {
 	'HEAP8': true,
 	'HEAPF32': true,
 	'HEAPU8': true,
+	'HEAPU32': true,
 	'IDBFS': true,
 	'LibraryManager': true,
+	'MainLoop': true,
 	'Module': true,
 	'UTF8ToString': true,
+	'UTF8Decoder': true,
 	'_emscripten_webgl_get_current_context': true,
 	'_free': true,
 	'_malloc': true,
 	'autoAddDeps': true,
+	'addToLibrary': true,
+	'addOnPostRun': true,
 	'getValue': true,
 	'lengthBytesUTF8': true,
 	'mergeInto': true,
@@ -138,7 +142,12 @@ module.exports = [
 
 	// libraries and modules (browser)
 	{
-		files: ['js/libs/**/*.js', 'platform/web/js/libs/**/*.js', 'modules/**/*.js'],
+		files: [
+			'js/libs/**/*.js',
+			'platform/web/js/libs/**/*.js',
+			'platform/web/js/patches/**/*.js',
+			'modules/**/*.js'
+		],
 		languageOptions: {
 			globals: {
 				...globals.browser,

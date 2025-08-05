@@ -36,17 +36,12 @@
 
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 #include "scene/gui/line_edit.h"
-
-#ifdef MINGW_ENABLED
-#define near
-#define far
-#endif
 
 #ifdef WINDOWS_ENABLED
 #include <shlwapi.h>
@@ -173,10 +168,17 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	}
 	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
-		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
-			parameters_map["export_materials"] = "PLACEHOLDER";
-		} else if (exports == BLEND_MATERIAL_EXPORT_EXPORT) {
-			parameters_map["export_materials"] = "EXPORT";
+		switch (exports) {
+			case BLEND_MATERIAL_EXPORT_PLACEHOLDER: {
+				parameters_map["export_materials"] = "PLACEHOLDER";
+			} break;
+			case BLEND_MATERIAL_EXPORT_EXPORT: {
+				parameters_map["export_materials"] = "EXPORT";
+			} break;
+			case BLEND_MATERIAL_EXPORT_NAMED_PLACEHOLDER: {
+				parameters_map["export_materials"] = "EXPORT";
+				parameters_map["export_image_format"] = "NONE";
+			} break;
 		}
 	} else {
 		parameters_map["export_materials"] = "PLACEHOLDER";
@@ -304,6 +306,10 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	Ref<GLTFState> state;
 	state.instantiate();
 
+	if (p_options.has("gltf/naming_version")) {
+		int naming_version = p_options["gltf/naming_version"];
+		gltf->set_naming_version(naming_version);
+	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
 	}
@@ -365,10 +371,21 @@ void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, Li
 	ADD_OPTION_ENUM("blender/meshes/skins", "None,4 Influences (Compatible),All Influences", BLEND_BONE_INFLUENCES_ALL);
 	ADD_OPTION_BOOL("blender/meshes/export_bones_deforming_mesh_only", false);
 	ADD_OPTION_BOOL("blender/materials/unpack_enabled", true);
-	ADD_OPTION_ENUM("blender/materials/export_materials", "Placeholder,Export", BLEND_MATERIAL_EXPORT_EXPORT);
+	ADD_OPTION_ENUM("blender/materials/export_materials", "Placeholder,Export,Named Placeholder", BLEND_MATERIAL_EXPORT_EXPORT);
 	ADD_OPTION_BOOL("blender/animation/limit_playback", true);
 	ADD_OPTION_BOOL("blender/animation/always_sample", true);
 	ADD_OPTION_BOOL("blender/animation/group_tracks", true);
+
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
+}
+
+void EditorSceneFormatImporterBlend::handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {
+	if (!p_import_params.has("gltf/naming_version")) {
+		// If a .blend's existing import file is missing the glTF
+		// naming compatibility version, we need to use version 1.
+		// Version 1 is the behavior before this option was added.
+		p_import_params["gltf/naming_version"] = 1;
+	}
 }
 
 ///////////////////////////
@@ -379,7 +396,7 @@ static bool _test_blender_path(const String &p_path, String *r_err = nullptr) {
 }
 
 bool EditorFileSystemImportFormatSupportQueryBlend::is_active() const {
-	bool blend_enabled = GLOBAL_GET("filesystem/import/blender/enabled");
+	bool blend_enabled = GLOBAL_GET_CACHED(bool, "filesystem/import/blender/enabled");
 
 	if (blend_enabled && !_test_blender_path(EDITOR_GET("filesystem/import/blender/blender_path").operator String())) {
 		// Intending to import Blender, but blend not configured.
@@ -515,6 +532,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 		blender_path = memnew(LineEdit);
 		blender_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		blender_path->set_accessibility_name(TTRC("Path"));
 		hb->add_child(blender_path);
 
 		blender_path_browse = memnew(Button);
@@ -528,6 +546,7 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 		vb->add_child(hb);
 
 		path_status = memnew(Label);
+		path_status->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		vb->add_child(path_status);
 
 		configure_blender_dialog->add_child(vb);

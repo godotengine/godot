@@ -44,10 +44,10 @@
 				settings.set("category/property_name", 0)
 
 				var property_info = {
-				    "name": "category/property_name",
-				    "type": TYPE_INT,
-				    "hint": PROPERTY_HINT_ENUM,
-				    "hint_string": "one,two,three"
+					"name": "category/property_name",
+					"type": TYPE_INT,
+					"hint": PROPERTY_HINT_ENUM,
+					"hint_string": "one,two,three"
 				}
 
 				settings.add_property_info(property_info)
@@ -58,10 +58,10 @@
 
 				var propertyInfo = new Godot.Collections.Dictionary
 				{
-				    {"name", "category/propertyName"},
-				    {"type", Variant.Type.Int},
-				    {"hint", PropertyHint.Enum},
-				    {"hint_string", "one,two,three"}
+					{ "name", "category/propertyName" },
+					{ "type", Variant.Type.Int },
+					{ "hint", PropertyHint.Enum },
+					{ "hint_string", "one,two,three" },
 				};
 
 				settings.AddPropertyInfo(propertyInfo);
@@ -233,6 +233,9 @@
 		<member name="docks/property_editor/subresource_hue_tint" type="float" setter="" getter="">
 			The tint intensity to use for the subresources background in the Inspector dock. The tint is used to distinguish between different subresources in the inspector. Higher values result in a more noticeable background color difference.
 		</member>
+		<member name="docks/scene_tree/accessibility_warnings" type="bool" setter="" getter="">
+			If [code]true[/code], accessibility related warnings are displayed alongside other configuration warnings.
+		</member>
 		<member name="docks/scene_tree/ask_before_deleting_related_animation_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], when a node is deleted with animation tracks referencing it, a confirmation dialog appears before the tracks are deleted. The dialog will appear even when using the "Delete (No Confirm)" shortcut.
 		</member>
@@ -279,6 +282,9 @@
 		</member>
 		<member name="editors/2d/guides_color" type="Color" setter="" getter="">
 			The guides color to use in the 2D editor. Guides can be created by dragging the mouse cursor from the rulers.
+		</member>
+		<member name="editors/2d/ruler_width" type="float" setter="" getter="">
+			The thickness of the coordinate ruler in the 2D editor. Increasing this will also increase the size of the ruler font, improving readability when using a lower editor scale. The editor may force a minimum size to keep the ruler numbers legible.
 		</member>
 		<member name="editors/2d/smart_snapping_line_color" type="Color" setter="" getter="">
 			The color to use when drawing smart snapping lines in the 2D editor. The smart snapping lines will automatically display when moving 2D nodes if smart snapping is enabled in the Snapping Options menu at the top of the 2D editor viewport.
@@ -512,6 +518,9 @@
 		<member name="editors/3d_gizmos/gizmo_settings/bone_shape" type="int" setter="" getter="">
 			The shape of [Skeleton3D] bone gizmos in the 3D editor. [b]Wire[/b] is a thin line, while [b]Octahedron[/b] is a set of lines that represent a thicker hollow line pointing in a specific direction (similar to most 3D animation software).
 		</member>
+		<member name="editors/3d_gizmos/gizmo_settings/lightmap_gi_probe_size" type="float" setter="" getter="">
+			Size of probe gizmos displayed when editing [LightmapGI] and [LightmapProbe] nodes. Setting this to [code]0.0[/code] will hide the probe spheres of [LightmapGI] and wireframes of [LightmapProbe] nodes, but will keep the wireframes linking probes from [LightmapGI] and billboard icons from [LightmapProbe] intact.
+		</member>
 		<member name="editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size" type="float" setter="" getter="">
 			Size of the disk gizmo displayed when editing [Path3D]'s tilt handles.
 		</member>
@@ -578,6 +587,9 @@
 		</member>
 		<member name="editors/panning/warped_mouse_panning" type="bool" setter="" getter="">
 			If [code]true[/code], warps the mouse around the 2D viewport while panning in the 2D editor. This makes it possible to pan over a large area without having to exit panning and adjust the mouse cursor.
+		</member>
+		<member name="editors/panning/zoom_style" type="int" setter="" getter="">
+			The mouse cursor movement direction to use when drag-zooming in any editor (except 3D scene editor) by moving the mouse. This does not affect zooming with the mouse wheel.
 		</member>
 		<member name="editors/polygon_editor/auto_bake_delay" type="float" setter="" getter="">
 			The delay in seconds until more complex and performance costly polygon editors commit their outlines, e.g. the 2D navigation polygon editor rebakes the navigation mesh polygons. A negative value stops the auto bake.
@@ -775,13 +787,15 @@
 			If set to [code]Adaptive[/code], the dialog opens in list view or grid view depending on the requested type. If set to [code]Last Used[/code], the display mode will always open the way you last used it.
 		</member>
 		<member name="filesystem/quick_open_dialog/enable_fuzzy_matching" type="bool" setter="" getter="">
-			If [code]true[/code], fuzzy matching of search tokens is allowed.
+			If [code]true[/code], together with exact matches of a filename, the dialog includes approximate matches.
+			This is useful for finding the correct files even when there are typos in the search query; for example, searching "nprmal" will find "normal". Additionally, it allows you to write shorter search queries; for example, searching "nml" will also find "normal".
+			See also [member filesystem/quick_open_dialog/max_fuzzy_misses].
 		</member>
 		<member name="filesystem/quick_open_dialog/include_addons" type="bool" setter="" getter="">
 			If [code]true[/code], results will include files located in the [code]addons[/code] folder.
 		</member>
 		<member name="filesystem/quick_open_dialog/max_fuzzy_misses" type="int" setter="" getter="">
-			The number of allowed missed query characters in a match, if fuzzy matching is enabled. For example, with the default value of 2, [code]foobar[/code] would match [code]foobur[/code] and [code]foob[/code] but not [code]foo[/code].
+			The number of missed query characters allowed in a match when fuzzy matching is enabled. For example, with the default value of [code]2[/code], [code]"normal"[/code] would match [code]"narmal"[/code] and [code]"norma"[/code] but not [code]"nor"[/code].
 		</member>
 		<member name="filesystem/quick_open_dialog/max_results" type="int" setter="" getter="">
 			Maximum number of matches to show in dialog.
@@ -802,6 +816,13 @@
 			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.
 			Input accumulation can be disabled to get slightly more precise/reactive input at the cost of increased CPU usage.
 			[b]Note:[/b] Input accumulation is [i]enabled[/i] by default.
+		</member>
+		<member name="interface/accessibility/accessibility_support" type="int" setter="" getter="">
+			Editor accessibility support mode:
+			- [b]Auto[/b] ([code]0[/code]): Accessibility support is enabled, but updates to the accessibility information are processed only if an assistive app (such as a screen reader or a Braille display) is active (default).
+			- [b]Always Active[/b] ([code]1[/code]): Accessibility support is enabled, and updates to the accessibility information are always processed, regardless of the status of assistive apps.
+			- [b]Disabled[/b] ([code]2[/code]): Accessibility support is fully disabled.
+			[b]Note:[/b] Accessibility debugging tools, such as Accessibility Insights for Windows, Accessibility Inspector (macOS), or AT-SPI Browser (Linux/BSD) do not count as assistive apps. To test your project with these tools, use [b]Always Active[/b].
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
@@ -830,6 +851,11 @@
 		<member name="interface/editor/code_font_size" type="int" setter="" getter="">
 			The size of the font in the script editor. This setting does not impact the font size of the Output panel (see [member run/output/font_size]).
 		</member>
+		<member name="interface/editor/collapse_main_menu" type="bool" setter="" getter="">
+			If [code]true[/code], the main menu collapses into a [MenuButton].
+			[b]Note:[/b] This setting is only applicable on macOS when [member interface/editor/use_embedded_menu] is [code]true[/code].
+			[b]Note:[/b] Defaults to [code]true[/code] on the Android editor.
+		</member>
 		<member name="interface/editor/custom_display_scale" type="float" setter="" getter="">
 			The custom editor scale factor to use. This can be used for displays with very high DPI where a scale factor of 200% is not sufficient.
 			[b]Note:[/b] Only effective if [member interface/editor/display_scale] is set to [b]Custom[/b].
@@ -847,7 +873,7 @@
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
-			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across restarts.
+			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across multiple sessions.
 		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
@@ -883,14 +909,16 @@
 			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
+			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/main_font" type="String" setter="" getter="">
 			The font to use for the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+			[b]Note:[/b] If the provided font is variable, a weight of 400 (normal) will be used.
 		</member>
 		<member name="interface/editor/main_font_bold" type="String" setter="" getter="">
 			The font to use for bold text in the editor interface. Must be a resource of a [Font] type such as a [code].ttf[/code] or [code].otf[/code] font file.
+			[b]Note:[/b] If the provided font is variable, a weight of 700 (bold) will be used.
 		</member>
 		<member name="interface/editor/main_font_size" type="int" setter="" getter="">
 			The size of the font in the editor interface.
@@ -934,7 +962,7 @@
 			Editor UI default layout direction.
 		</member>
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 20 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
+			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/update_continuously" type="bool" setter="" getter="">
@@ -960,7 +988,11 @@
 			If [code]true[/code], the Scene dock will display buttons to quickly add a root node to a newly created scene.
 		</member>
 		<member name="interface/inspector/auto_unfold_foreign_scenes" type="bool" setter="" getter="">
-			If [code]true[/code], automatically expands property groups in the Inspector dock when opening a scene that hasn't been opened previously. If [code]false[/code], all groups remain collapsed by default.
+			If [code]true[/code], automatically unfolds Inspector property groups containing modified values when opening a scene for the first time. Only affects scenes without saved folding preferences and only unfolds groups with properties that have been changed from their default values.
+			[b]Note:[/b] This setting only works in specific scenarios: when opening a scene brought in from another project, or when opening a new scene that already has modified properties (e.g., from version control). Duplicated scenes are not considered foreign, so this setting will not affect them.
+		</member>
+		<member name="interface/inspector/color_picker_show_intensity" type="bool" setter="" getter="">
+			If [code]true[/code], show the intensity slider in the [ColorPicker]s opened in the editor.
 		</member>
 		<member name="interface/inspector/default_color_picker_mode" type="int" setter="" getter="">
 			The default color picker mode to use when opening [ColorPicker]s in the editor. This mode can be temporarily adjusted on the color picker itself.
@@ -1102,19 +1134,19 @@
 			If [code]true[/code], enable two finger pan and scale gestures on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
-		<member name="interface/touchscreen/enable_touch_actions_panel" type="bool" setter="" getter="">
-			If [code]true[/code], enables the TouchActionsPanel to provide easy access to keyboard shortcuts on touchscreen devices.
-			[b]Note:[/b] Only available in the Android editor.
-		</member>
-		<member name="interface/touchscreen/increase_scrollbar_touch_area" type="bool" setter="" getter="">
-			If [code]true[/code], increases the scrollbar touch area to improve usability on touchscreen devices.
+		<member name="interface/touchscreen/enable_touch_optimizations" type="bool" setter="" getter="">
+			If [code]true[/code], increases the scrollbar touch area and enables a larger dragger for split containers to improve usability on touchscreen devices
 			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
 		</member>
 		<member name="interface/touchscreen/scale_gizmo_handles" type="float" setter="" getter="">
 			Specify the multiplier to apply to the scale for the editor gizmo handles to improve usability on touchscreen devices.
 			[b]Note:[/b] Defaults to [code]1[/code] on non-touchscreen devices.
 		</member>
-		<member name="network/connection/engine_version_update_mode" type="int" setter="" getter="">
+		<member name="interface/touchscreen/touch_actions_panel" type="int" setter="" getter="">
+			A touch-friendly panel that provides easy access to common actions such as save, delete, undo, and redo without requiring a keyboard.
+			[b]Note:[/b] Only available in the Android and XR editor.
+		</member>
+		<member name="network/connection/check_for_updates" type="int" setter="" getter="">
 			Specifies how the engine should check for updates.
 			- [b]Disable Update Checks[/b] will block the engine from checking updates (see also [member network/connection/network_mode]).
 			- [b]Check Newest Preview[/b] (default for preview versions) will check for the newest available development snapshot.
@@ -1124,6 +1156,7 @@
 		</member>
 		<member name="network/connection/network_mode" type="int" setter="" getter="">
 			Determines whether online features are enabled in the editor, such as the Asset Library or update checks. Disabling these online features helps alleviate privacy concerns by preventing the editor from making HTTP requests to the Godot website or third-party platforms hosting assets from the Asset Library.
+			Editor plugins and tool scripts are recommended to follow this setting. However, Godot can't prevent them from violating this rule.
 		</member>
 		<member name="network/debug/remote_host" type="String" setter="" getter="">
 			The address to listen to when starting the remote debugger. This can be set to this device's local IP address to allow external clients to connect to the remote debugger (instead of restricting the remote debugger to connections from [code]localhost[/code]).
@@ -1190,7 +1223,7 @@
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
-			[b]Note:[/b] Game embedding is not available for "Force Maximized" or "Force Fullscreen."
+			[b]Note:[/b] Game embedding is not available for [b]"Force Maximized"[/b] or [b]"Force Fullscreen"[/b].
 		</member>
 		<member name="run/window_placement/rect_custom_position" type="Vector2" setter="" getter="">
 			The custom position to use when starting the project from the editor (in pixels from the top-left corner). Only effective if [member run/window_placement/rect] is set to [b]Custom Position[/b].
@@ -1212,6 +1245,9 @@
 		</member>
 		<member name="text_editor/appearance/caret/type" type="int" setter="" getter="">
 			The shape of the caret to use in the script editor. [b]Line[/b] displays a vertical line to the left of the current character, whereas [b]Block[/b] displays an outline over the current character.
+		</member>
+		<member name="text_editor/appearance/enable_inline_color_picker" type="bool" setter="" getter="">
+			If [code]true[/code], displays a colored button before any [Color] constructor in the script editor. Clicking on them allows the color to be modified through a color picker.
 		</member>
 		<member name="text_editor/appearance/guidelines/line_length_guideline_hard_column" type="int" setter="" getter="">
 			The column at which to display a subtle line as a line length guideline for scripts. This should generally be greater than [member text_editor/appearance/guidelines/line_length_guideline_soft_column].
@@ -1265,7 +1301,9 @@
 			If [code]true[/code], tool scripts will be automatically soft-reloaded after they are saved.
 		</member>
 		<member name="text_editor/behavior/files/auto_reload_scripts_on_external_change" type="bool" setter="" getter="">
-			If [code]true[/code], automatically reloads scripts in the editor when they have been modified and saved by external editors.
+			If [code]true[/code], automatically reloads scripts and text-based shaders in the editor when they have been modified and saved by external editors or tools and the editor regains focus. External changes can be discarded by using the Undo function after they've been loaded in the editor.
+			If [code]false[/code], a file conflict dialog will always be displayed when the editor regains focus. This dialog allows you to choose whether to keep local changes or discard them.
+			[b]Note:[/b] Even when this setting is [code]true[/code], a file conflict dialog is still displayed in certain situations. For instance, it will display when the script editor has unsaved changes that the external editor did not account for.
 		</member>
 		<member name="text_editor/behavior/files/autosave_interval_secs" type="int" setter="" getter="">
 			If set to a value greater than [code]0[/code], automatically saves the current script following the specified interval (in seconds). This can be used to prevent data loss if the editor crashes.
@@ -1344,7 +1382,11 @@
 			If [code]true[/code], uses [StringName] instead of [String] when appropriate for code autocompletion.
 		</member>
 		<member name="text_editor/completion/add_type_hints" type="bool" setter="" getter="">
-			If [code]true[/code], adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] hints such as [code]-&gt; void[/code] and [code]: int[/code] when using code autocompletion or when creating onready variables by drag and dropping nodes into the script editor while pressing the [kbd]Ctrl[/kbd] key. If [code]true[/code], newly created scripts will also automatically have type hints added to their method parameters and return types.
+			If [code]true[/code], automatically adds [url=$DOCS_URL/tutorials/scripting/gdscript/static_typing.html]GDScript static typing[/url] (such as [code]-&gt; void[/code] and [code]: int[/code]) in many situations where it's possible to, including when:
+			- Accepting a suggestion from code autocompletion;
+			- Creating a new script from a template;
+			- Connecting signals from the Node dock;
+			- Creating variables prefixed with [annotation @GDScript.@onready], by dropping nodes from the Scene dock into the script editor while holding [kbd]Ctrl[/kbd].
 		</member>
 		<member name="text_editor/completion/auto_brace_complete" type="bool" setter="" getter="">
 			If [code]true[/code], automatically inserts the matching closing brace when the opening brace is inserted by typing or autocompletion. Also automatically removes the closing brace when pressing [kbd]Backspace[/kbd] on the opening brace. This includes brackets ([code]()[/code], [code][][/code], [code]{}[/code]), string quotation marks ([code]''[/code], [code]""[/code]), and comments ([code]/**/[/code]) if the language supports it.
@@ -1459,6 +1501,27 @@
 			The script editor's comment color.
 			[b]Note:[/b] In GDScript, unlike Python, multiline strings are not considered to be comments, and will use the string highlighting color instead.
 		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/critical_color" type="Color" setter="" getter="">
+			The script editor's critical comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/critical_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/critical_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/critical_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/notice_color" type="Color" setter="" getter="">
+			The script editor's notice comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/notice_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/notice_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/notice_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/warning_color" type="Color" setter="" getter="">
+			The script editor's warning comment marker text color. These markers are determined by [member text_editor/theme/highlighting/comment_markers/warning_list].
+		</member>
+		<member name="text_editor/theme/highlighting/comment_markers/warning_list" type="String" setter="" getter="">
+			A comma-separated list of case-sensitive words to highlight in comments. The text will be highlighted in the script editor with the [member text_editor/theme/highlighting/comment_markers/warning_color] color. These must not include spaces or symbols or they will not be highlighted.
+			[b]Note:[/b] This is only implemented in the GDScript syntax highlighter.
+		</member>
 		<member name="text_editor/theme/highlighting/completion_background_color" type="Color" setter="" getter="">
 			The script editor's autocompletion box background color.
 		</member>
@@ -1497,7 +1560,25 @@
 		</member>
 		<member name="text_editor/theme/highlighting/function_color" type="Color" setter="" getter="">
 			The script editor's function call color.
-			[b]Note:[/b] When using the GDScript syntax highlighter, this is replaced by the function definition color configured in the syntax theme for function definitions (e.g. [code]func _ready():[/code]).
+			[b]Note:[/b] When using the GDScript syntax highlighter, this is only used when calling some functions since function definitions and global functions have their own colors [member text_editor/theme/highlighting/gdscript/function_definition_color] and [member text_editor/theme/highlighting/gdscript/global_function_color].
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/annotation_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for annotations (e.g. [code]@export[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/function_definition_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for function definitions (e.g. the [code]_ready[/code] in [code]func _ready():[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/global_function_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for global functions, such as the ones in [@GlobalScope] (e.g. [code]preload()[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/node_path_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for [NodePath] literals (e.g. [code]^"position:x"[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/node_reference_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for node reference literals (e.g. [code]$"Sprite"[/code] and [code]%"Sprite"[/code]]).
+		</member>
+		<member name="text_editor/theme/highlighting/gdscript/string_name_color" type="Color" setter="" getter="">
+			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&gt;"example"[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).
@@ -1551,9 +1632,6 @@
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
-		</member>
-		<member name="text_editor/theme/line_spacing" type="int" setter="" getter="">
-			The vertical line separation used in text editors, in pixels.
 		</member>
 		<member name="version_control/ssh_private_key_path" type="String" setter="" getter="">
 			Path to private SSH key file for the editor's Version Control integration credentials.

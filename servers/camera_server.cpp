@@ -42,6 +42,7 @@ void CameraServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_monitoring_feeds", "is_monitoring_feeds"), &CameraServer::set_monitoring_feeds);
 	ClassDB::bind_method(D_METHOD("is_monitoring_feeds"), &CameraServer::is_monitoring_feeds);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitoring_feeds"), "set_monitoring_feeds", "is_monitoring_feeds");
+	ADD_PROPERTY_DEFAULT("monitoring_feeds", false);
 
 	ClassDB::bind_method(D_METHOD("get_feed", "index"), &CameraServer::get_feed);
 	ClassDB::bind_method(D_METHOD("get_feed_count"), &CameraServer::get_feed_count);

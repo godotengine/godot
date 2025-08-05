@@ -409,7 +409,7 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 		Vector<StringName> connections;
 	};
 
-	RBMap<StringName, Node, StringName::AlphCompare> nodes;
+	AHashMap<StringName, Node> nodes;
 
 	Vector2 graph_offset;
 
@@ -468,7 +468,8 @@ public:
 	virtual String get_caption() const override;
 	virtual NodeTimeInfo _process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only = false) override;
 
-	void get_node_list(List<StringName> *r_list);
+	LocalVector<StringName> get_node_list() const;
+	TypedArray<StringName> get_node_list_as_typed_array() const;
 
 	void set_graph_offset(const Vector2 &p_graph_offset);
 	Vector2 get_graph_offset() const;

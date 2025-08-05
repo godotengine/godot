@@ -65,6 +65,8 @@ public:
 		FLAG_SHARP_CORNERS = DisplayServer::WINDOW_FLAG_SHARP_CORNERS,
 		FLAG_EXCLUDE_FROM_CAPTURE = DisplayServer::WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
 		FLAG_POPUP_WM_HINT = DisplayServer::WINDOW_FLAG_POPUP_WM_HINT,
+		FLAG_MINIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MINIMIZE_DISABLED,
+		FLAG_MAXIMIZE_DISABLED = DisplayServer::WINDOW_FLAG_MAXIMIZE_DISABLED,
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
@@ -118,7 +120,7 @@ private:
 	bool initialized = false;
 
 	String title;
-	String tr_title;
+	String displayed_title;
 	mutable int current_screen = 0;
 	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
@@ -132,7 +134,6 @@ private:
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
 
-	bool use_font_oversampling = false;
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -154,9 +155,17 @@ private:
 	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
+	RID accessibility_title_element;
+	RID accessibility_announcement_element;
+	String announcement;
+	String accessibility_name;
+	String accessibility_description;
+
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+	void _accessibility_notify_enter(Node *p_node);
+	void _accessibility_notify_exit(Node *p_node);
 
 	bool _try_parent_dialog(Node *p_from_node);
 
@@ -179,6 +188,8 @@ private:
 	void _clear_transient();
 	void _make_transient();
 	void _set_transient_exclusive_child(bool p_clear_invalid = false);
+
+	static Window *focused_window;
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
@@ -241,11 +252,14 @@ private:
 	void _update_mouse_over(Vector2 p_pos) override;
 	void _mouse_leave_viewport() override;
 
+	void _update_displayed_title();
+
 	Ref<Shortcut> debugger_stop_shortcut;
 
 	static int root_layout_direction;
 
 protected:
+	virtual void _pre_popup() {} // Called after "about_to_popup", but before window is shown.
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 	virtual void _post_popup() {}
 
@@ -259,6 +273,10 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
+
+	void _accessibility_action_grab_focus(const Variant &p_data) {
+		grab_focus();
+	}
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
@@ -275,9 +293,12 @@ public:
 	static void set_root_layout_direction(int p_root_dir);
 	static Window *get_from_id(DisplayServer::WindowID p_window_id);
 
+	RID get_accessibility_element() const override;
+	virtual RID get_focused_accessibility_element() const override;
+
 	void set_title(const String &p_title);
 	String get_title() const;
-	String get_translated_title() const;
+	String get_displayed_title() const;
 
 	void set_initial_position(WindowInitialPosition p_initial_position);
 	WindowInitialPosition get_initial_position() const;
@@ -368,9 +389,6 @@ public:
 	void set_content_scale_factor(real_t p_factor);
 	real_t get_content_scale_factor() const;
 
-	void set_use_font_oversampling(bool p_oversampling);
-	bool is_using_font_oversampling() const;
-
 	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
 	Vector<Vector2> get_mouse_passthrough_polygon() const;
 
@@ -379,6 +397,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
+	HashSet<Window *> get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
 
@@ -400,11 +419,20 @@ public:
 
 	void grab_focus();
 	bool has_focus() const;
+	bool has_focus_or_active_popup() const;
 
 	void start_drag();
 	void start_resize(DisplayServer::WindowResizeEdge p_edge);
 
 	Rect2i get_usable_parent_rect() const;
+
+	void set_accessibility_name(const String &p_name);
+	String get_accessibility_name() const;
+
+	void set_accessibility_description(const String &p_description);
+	String get_accessibility_description() const;
+
+	void accessibility_announcement(const String &p_announcement);
 
 	// Internationalization.
 
@@ -413,6 +441,9 @@ public:
 	bool is_layout_rtl() const;
 
 #ifndef DISABLE_DEPRECATED
+	void set_use_font_oversampling(bool p_oversampling);
+	bool is_using_font_oversampling() const;
+
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
 #endif
@@ -478,16 +509,16 @@ public:
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
-	//
-
 	virtual Transform2D get_final_transform() const override;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
+	virtual Transform2D get_popup_base_transform_native() const override;
 	virtual Viewport *get_section_root_viewport() const override;
 	virtual bool is_attached_in_viewport() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+	static Window *get_focused_window() { return focused_window; }
 
 	virtual Size2 _get_contents_minimum_size() const;
 

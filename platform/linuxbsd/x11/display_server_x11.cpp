@@ -39,8 +39,11 @@
 #include "core/math/math_funcs.h"
 #include "core/string/print_string.h"
 #include "core/string/ustring.h"
+#include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
+
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
@@ -50,14 +53,17 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
+#endif
+
 #include <dlfcn.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <climits>
+#include <cstdio>
+#include <cstdlib>
 
 #undef CursorShape
 #include <X11/XKBlib.h>
@@ -166,6 +172,12 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 #ifdef SPEECHD_ENABLED
 		case FEATURE_TEXT_TO_SPEECH: {
 			return true;
+		} break;
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
 		} break;
 #endif
 
@@ -609,7 +621,7 @@ BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 		int root_x, root_y, win_x, win_y;
 		unsigned int mask;
 		if (XQueryPointer(x11_display, XRootWindow(x11_display, i), &root, &child, &root_x, &root_y, &win_x, &win_y, &mask)) {
-			BitField<MouseButtonMask> last_button_state = 0;
+			BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 
 			if (mask & Button1Mask) {
 				last_button_state.set_flag(MouseButtonMask::LEFT);
@@ -630,7 +642,7 @@ BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 			return last_button_state;
 		}
 	}
-	return 0;
+	return MouseButtonMask::NONE;
 }
 
 void DisplayServerX11::clipboard_set(const String &p_text) {
@@ -1194,7 +1206,8 @@ Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	Rect2i rect(0, 0, 0, 0);
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_COND_V(p_screen < 0, rect);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
 
 	// Using Xinerama Extension.
 	bool found = false;
@@ -1282,9 +1295,7 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 
 	p_screen = _get_screen_index(p_screen);
 	int screen_count = get_screen_count();
-
-	// Check if screen is valid.
-	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i(0, 0, 0, 0));
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
 
 	bool is_multiscreen = screen_count > 1;
 
@@ -1588,7 +1599,8 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), 0);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
 	//Get physical monitor Dimensions through XRandR and calculate dpi
 	Size2i sc = screen_get_size(p_screen);
@@ -1665,18 +1677,9 @@ Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
 Ref<Image> DisplayServerX11::screen_get_image(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
 
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
-
-	ERR_FAIL_COND_V(p_screen < 0, Ref<Image>());
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	if (xwayland) {
 		return Ref<Image>();
@@ -1782,7 +1785,8 @@ float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), SCREEN_REFRESH_RATE_FALLBACK);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	//Use xrandr to get screen refresh rate.
 	if (xrandr_ext_ok) {
@@ -1890,7 +1894,7 @@ DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, V
 void DisplayServerX11::show_window(WindowID p_id) {
 	_THREAD_SAFE_METHOD_
 
-	const WindowData &wd = windows[p_id];
+	WindowData &wd = windows[p_id];
 	popup_open(p_id);
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
@@ -1898,6 +1902,76 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	XMapWindow(x11_display, wd.x11_window);
 	XSync(x11_display, False);
 	_validate_mode_on_map(p_id);
+
+	if (p_id == MAIN_WINDOW_ID) {
+		// Get main window size for boot splash drawing.
+		bool get_config_event = false;
+
+		// Search the X11 event queue for ConfigureNotify events and process all that are currently queued early.
+		{
+			MutexLock mutex_lock(events_mutex);
+
+			for (uint32_t event_index = 0; event_index < polled_events.size(); ++event_index) {
+				XEvent &config_event = polled_events[event_index];
+				if (config_event.type == ConfigureNotify) {
+					_window_changed(&config_event);
+					get_config_event = true;
+				}
+			}
+			XEvent config_event;
+			while (XCheckTypedEvent(x11_display, ConfigureNotify, &config_event)) {
+				_window_changed(&config_event);
+				get_config_event = true;
+			}
+		}
+
+		// Estimate maximize/full screen window size, ConfigureNotify may arrive only after maximize animation is finished.
+		if (!get_config_event && (wd.maximized || wd.fullscreen)) {
+			int screen = window_get_current_screen(p_id);
+			Size2i sz;
+			if (wd.maximized) {
+				sz = screen_get_usable_rect(screen).size;
+				if (!wd.borderless) {
+					Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+					if (prop != None) {
+						Atom type;
+						int format;
+						unsigned long len;
+						unsigned long remaining;
+						unsigned char *data = nullptr;
+						if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+							if (format == 32 && len == 4 && data) {
+								long *extents = (long *)data;
+								sz.width -= extents[0] + extents[1]; // left, right
+								sz.height -= extents[2] + extents[3]; // top, bottom
+							}
+							XFree(data);
+						}
+					}
+				}
+			} else {
+				sz = screen_get_size(screen);
+			}
+			if (sz == Size2i()) {
+				return;
+			}
+
+			wd.size = sz;
+#if defined(RD_ENABLED)
+			if (rendering_context) {
+				rendering_context->window_set_size(p_id, sz.width, sz.height);
+			}
+#endif
+#if defined(GLES3_ENABLED)
+			if (gl_manager) {
+				gl_manager->window_resize(p_id, sz.width, sz.height);
+			}
+			if (gl_manager_egl) {
+				gl_manager_egl->window_resize(p_id, sz.width, sz.height);
+			}
+#endif
+		}
+	}
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -1940,6 +2014,12 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 	if (gl_manager_egl) {
 		gl_manager_egl->window_destroy(p_id);
+	}
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_id);
 	}
 #endif
 
@@ -2157,7 +2237,7 @@ int DisplayServerX11::window_get_current_screen(WindowID p_window) const {
 		return 0;
 	}
 
-	ERR_FAIL_COND_V(!windows.has(p_window), 0);
+	ERR_FAIL_COND_V(!windows.has(p_window), INVALID_SCREEN);
 	const WindowData &wd = windows[p_window];
 
 	const Rect2i window_rect(wd.position, wd.size);
@@ -2193,14 +2273,15 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
 
 	p_screen = _get_screen_index(p_screen);
-	ERR_FAIL_INDEX(p_screen, get_screen_count());
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
+	WindowData &wd = windows[p_window];
 
 	if (wd.embed_parent) {
 		print_line("Embedded window can't be moved to another screen.");
@@ -2313,6 +2394,40 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 
 	XSetWMNormalHints(x11_display, wd.x11_window, xsh);
 	XFree(xsh);
+}
+
+void DisplayServerX11::_update_actions_hints(WindowID p_window) {
+	WindowData &wd = windows[p_window];
+
+	Atom prop = XInternAtom(x11_display, "_NET_WM_ALLOWED_ACTIONS", False);
+	if (prop != None) {
+		Atom wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_HORZ", False);
+		Atom wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_ACTION_MAXIMIZE_VERT", False);
+		Atom wm_act_min = XInternAtom(x11_display, "_NET_WM_ACTION_MINIMIZE", False);
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 1024, False, XA_ATOM, &type, &format, &len, &remaining, &data) == Success) {
+			Atom *atoms = (Atom *)data;
+			Vector<Atom> new_atoms;
+			for (uint64_t i = 0; i < len; i++) {
+				if (atoms[i] != wm_act_max_horz && atoms[i] != wm_act_max_vert && atoms[i] != wm_act_min) {
+					new_atoms.push_back(atoms[i]);
+				}
+			}
+			if (!wd.no_max_btn) {
+				new_atoms.push_back(wm_act_max_horz);
+				new_atoms.push_back(wm_act_max_vert);
+			}
+			if (!wd.no_min_btn) {
+				new_atoms.push_back(wm_act_min);
+			}
+			XChangeProperty(x11_display, wd.x11_window, prop, XA_ATOM, 32, PropModeReplace, (unsigned char *)new_atoms.ptrw(), new_atoms.size());
+			XFree(data);
+		}
+	}
 }
 
 Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
@@ -3001,6 +3116,18 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 	WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			wd.no_max_btn = p_enabled;
+			_update_actions_hints(p_window);
+
+			XFlush(x11_display);
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			wd.no_min_btn = p_enabled;
+			_update_actions_hints(p_window);
+
+			XFlush(x11_display);
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			if (p_enabled && wd.embed_parent) {
 				print_line("Embedded window resize can't be disabled.");
@@ -3009,6 +3136,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 
 			wd.resize_disabled = p_enabled;
 			_update_size_hints(p_window);
+			_update_actions_hints(p_window);
 
 			XFlush(x11_display);
 		} break;
@@ -3095,6 +3223,12 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 	const WindowData &wd = windows[p_window];
 
 	switch (p_flag) {
+		case WINDOW_FLAG_MAXIMIZE_DISABLED: {
+			return wd.no_max_btn;
+		} break;
+		case WINDOW_FLAG_MINIMIZE_DISABLED: {
+			return wd.no_min_btn;
+		} break;
 		case WINDOW_FLAG_RESIZE_DISABLED: {
 			return wd.resize_disabled;
 		} break;
@@ -3284,6 +3418,22 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 	}
 }
 
+int DisplayServerX11::accessibility_should_increase_contrast() const {
+#ifdef DBUS_ENABLED
+	return portal_desktop->get_high_contrast();
+#endif
+	return -1;
+}
+
+int DisplayServerX11::accessibility_screen_reader_active() const {
+#ifdef DBUS_ENABLED
+	if (atspi_monitor->is_supported()) {
+		return atspi_monitor->is_active();
+	}
+#endif
+	return -1;
+}
+
 Point2i DisplayServerX11::ime_get_selection() const {
 	return im_selection;
 }
@@ -3355,7 +3505,7 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 		cursor_image->pixels = (XcursorPixel *)memalloc(size);
 
 		for (XcursorPixel index = 0; index < image_size; index++) {
-			int row_index = floor(index / texture_size.width);
+			int row_index = std::floor(index / texture_size.width);
 			int column_index = index % int(texture_size.width);
 
 			*(cursor_image->pixels + index) = image->get_pixel(column_index, row_index).to_argb32();
@@ -3541,6 +3691,7 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 }
 
 bool DisplayServerX11::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = last_focused_window;
 
 	if (!windows.has(window_id)) {
@@ -3549,6 +3700,9 @@ bool DisplayServerX11::color_picker(const Callable &p_callback) {
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
 	return portal_desktop->color_picker(xid, p_callback);
+#else
+	return false;
+#endif
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
@@ -4842,6 +4996,9 @@ void DisplayServerX11::process_events() {
 				XSync(x11_display, False);
 				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
+				_update_actions_hints(window_id);
+				XFlush(x11_display);
+
 				// Set focus when menu window is started.
 				// RevertToPointerRoot is used to make sure we don't lose all focus in case
 				// a subwindow and its parent are both destroyed.
@@ -4931,6 +5088,11 @@ void DisplayServerX11::process_events() {
 				static unsigned int focus_order = 0;
 				wd.focus_order = ++focus_order;
 
+#ifdef ACCESSKIT_ENABLED
+				if (accessibility_driver) {
+					accessibility_driver->accessibility_set_window_focused(window_id, true);
+				}
+#endif
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_IN);
 
 				if (mouse_mode_grab) {
@@ -4982,6 +5144,11 @@ void DisplayServerX11::process_events() {
 				wd.focused = false;
 
 				Input::get_singleton()->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+				if (accessibility_driver) {
+					accessibility_driver->accessibility_set_window_focused(window_id, false);
+				}
+#endif
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
 
 				if (mouse_mode_grab) {
@@ -5217,7 +5384,7 @@ void DisplayServerX11::process_events() {
 					pos = Point2i(windows[focused_window_id].size.width / 2, windows[focused_window_id].size.height / 2);
 				}
 
-				BitField<MouseButtonMask> last_button_state = 0;
+				BitField<MouseButtonMask> last_button_state = MouseButtonMask::NONE;
 				if (event.xmotion.state & Button1Mask) {
 					last_button_state.set_flag(MouseButtonMask::LEFT);
 				}
@@ -5321,7 +5488,7 @@ void DisplayServerX11::process_events() {
 					Vector<String> files = String((char *)p.data).split("\r\n", false);
 					XFree(p.data);
 					for (int i = 0; i < files.size(); i++) {
-						files.write[i] = files[i].replace("file://", "").uri_decode();
+						files.write[i] = files[i].replace("file://", "").uri_file_decode();
 					}
 
 					if (windows[window_id].drop_files_callback.is_valid()) {
@@ -5794,9 +5961,10 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	}
 
 	for (unsigned int i = 0; i < num_children; i++) {
-		pid_t pid = get_window_pid(p_display, children[i]);
-		if (pid == p_process_id) {
-			return children[i];
+		const Window child = children[i];
+		if (get_window_pid(p_display, child) == p_process_id) {
+			XFree(children);
+			return child;
 		}
 	}
 
@@ -5804,6 +5972,7 @@ Window find_window_from_process_id_internal(Display *p_display, pid_t p_process_
 	for (unsigned int i = 0; i < num_children; i++) {
 		Window wnd = find_window_from_process_id_internal(p_display, p_process_id, children[i]);
 		if (wnd != 0) {
+			XFree(children);
 			return wnd;
 		}
 	}
@@ -6083,6 +6252,7 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -6230,6 +6400,15 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 #ifdef XKB_ENABLED
 		if (dead_tbl && xkb_loaded_v05p) {
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
+		}
+#endif
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver && !accessibility_driver->window_create(id, nullptr)) {
+			if (OS::get_singleton()->is_stdout_verbose()) {
+				ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+			}
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
 		}
 #endif
 		// Enable receiving notification when the window is initialized (MapNotify)
@@ -6818,6 +6997,16 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
+
 	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//TODO - do Vulkan and OpenGL support checks, driver selection and fallback
 	rendering_driver = p_rendering_driver;
@@ -6826,6 +7015,11 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	String executable_name = OS::get_singleton()->get_executable_path().get_file();
 
 	// Initialize context and rendering device.
+
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+		driver_found = true;
+	}
 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
@@ -7157,8 +7351,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 #endif // DBUS_ENABLED
-
 	XSetErrorHandler(&default_window_error_handler);
 
 	r_error = OK;
@@ -7195,6 +7389,12 @@ DisplayServerX11::~DisplayServerX11() {
 		}
 		if (gl_manager_egl) {
 			gl_manager_egl->window_destroy(E.key);
+		}
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+		if (accessibility_driver) {
+			accessibility_driver->window_destroy(E.key);
 		}
 #endif
 
@@ -7272,7 +7472,11 @@ DisplayServerX11::~DisplayServerX11() {
 	if (xmbstring) {
 		memfree(xmbstring);
 	}
-
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
+	}
+#endif
 #ifdef SPEECHD_ENABLED
 	if (tts) {
 		memdelete(tts);
@@ -7282,6 +7486,7 @@ DisplayServerX11::~DisplayServerX11() {
 #ifdef DBUS_ENABLED
 	memdelete(screensaver);
 	memdelete(portal_desktop);
+	memdelete(atspi_monitor);
 #endif
 }
 

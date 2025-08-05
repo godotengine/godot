@@ -50,6 +50,9 @@ public:
 class Node3D : public Node {
 	GDCLASS(Node3D, Node);
 
+	friend class SceneTreeFTI;
+	friend class SceneTreeFTITests;
+
 public:
 	// Edit mode for the rotation.
 	// THIS MODE ONLY AFFECTS HOW DATA IS EDITED AND SAVED
@@ -81,7 +84,8 @@ private:
 		DIRTY_NONE = 0,
 		DIRTY_EULER_ROTATION_AND_SCALE = 1,
 		DIRTY_LOCAL_TRANSFORM = 2,
-		DIRTY_GLOBAL_TRANSFORM = 4
+		DIRTY_GLOBAL_TRANSFORM = 4,
+		DIRTY_GLOBAL_INTERPOLATED_TRANSFORM = 8,
 	};
 
 	struct ClientPhysicsInterpolationData {
@@ -97,8 +101,19 @@ private:
 	// This Data struct is to avoid namespace pollution in derived classes.
 
 	struct Data {
+		// Interpolated global transform - correct on the frame only.
+		// Only used with FTI.
+		Transform3D global_transform_interpolated;
+
+		// Current xforms are either
+		// * Used for everything (when not using FTI)
+		// * Correct on the physics tick (when using FTI)
 		mutable Transform3D global_transform;
 		mutable Transform3D local_transform;
+
+		// Only used with FTI.
+		Transform3D local_transform_prev;
+
 		mutable EulerOrder euler_rotation_order = EulerOrder::YXZ;
 		mutable Vector3 euler_rotation;
 		mutable Vector3 scale = Vector3(1, 1, 1);
@@ -122,6 +137,16 @@ private:
 		bool visible : 1;
 		bool disable_scale : 1;
 
+		// Scene tree interpolation.
+		bool fti_on_frame_xform_list : 1;
+		bool fti_on_frame_property_list : 1;
+		bool fti_on_tick_xform_list : 1;
+		bool fti_on_tick_property_list : 1;
+		bool fti_global_xform_interp_set : 1;
+		bool fti_frame_xform_force_update : 1;
+		bool fti_is_identity_xform : 1;
+		bool fti_processed : 1;
+
 		RID visibility_parent;
 
 		Node3D *parent = nullptr;
@@ -132,6 +157,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 		Vector<Ref<Node3DGizmo>> gizmos;
+		bool gizmos_requested : 1;
 		bool gizmos_disabled : 1;
 		bool gizmos_dirty : 1;
 		bool transform_gizmo_visible : 1;
@@ -166,7 +192,29 @@ protected:
 	void _set_vi_visible(bool p_visible) { data.vi_visible = p_visible; }
 	bool _is_vi_visible() const { return data.vi_visible; }
 	Transform3D _get_global_transform_interpolated(real_t p_interpolation_fraction);
+	const Transform3D &_get_cached_global_transform_interpolated() const { return data.global_transform_interpolated; }
 	void _disable_client_physics_interpolation();
+
+	// Calling this announces to the FTI system that a node has been moved,
+	// or requires an update in terms of interpolation
+	// (e.g. changing Camera zoom even if position hasn't changed).
+	void fti_notify_node_changed(bool p_transform_changed = true);
+
+	// Opportunity after FTI to update the servers
+	// with global_transform_interpolated,
+	// and any custom interpolated data in derived classes.
+	// Make sure to call the parent class fti_update_servers(),
+	// so all data is updated to the servers.
+	virtual void fti_update_servers_xform() {}
+	virtual void fti_update_servers_property() {}
+
+	// Pump the FTI data, also gives a chance for inherited classes
+	// to pump custom data, but they *must* call the base class here too.
+	// This is the opportunity for classes to move current values for
+	// transforms and properties to stored previous values,
+	// and this should take place both on ticks, and during resets.
+	virtual void fti_pump_xform();
+	virtual void fti_pump_property() {}
 
 	void _notification(int p_what);
 	static void _bind_methods();

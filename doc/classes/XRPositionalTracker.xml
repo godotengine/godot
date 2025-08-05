@@ -45,7 +45,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Changes the value for the given input. This method is called by a [XRInterface] implementation and should not be used directly.
+				Changes the value for the given input. This method is called by an [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 		<method name="set_pose">
@@ -56,7 +56,7 @@
 			<param index="3" name="angular_velocity" type="Vector3" />
 			<param index="4" name="tracking_confidence" type="int" enum="XRPose.TrackingConfidence" />
 			<description>
-				Sets the transform, linear velocity, angular velocity and tracking confidence for the given pose. This method is called by a [XRInterface] implementation and should not be used directly.
+				Sets the transform, linear velocity, angular velocity and tracking confidence for the given pose. This method is called by an [XRInterface] implementation and should not be used directly.
 			</description>
 		</method>
 	</methods>

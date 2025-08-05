@@ -129,12 +129,6 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
-	/*
-	tohash.append("[SpirvCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
-	tohash.append("[BinaryCacheKey]");
-	tohash.append(RenderingDevice::get_singleton()->shader_get_binary_cache_key());
-	*/
 	tohash.append("[Vertex]");
 	tohash.append(p_vertex_code ? p_vertex_code : "");
 	tohash.append("[Fragment]");
@@ -321,7 +315,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.vert_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.vert_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.vert_id);
 
 		glGetShaderiv(spec.vert_id, GL_COMPILE_STATUS, &status);
@@ -340,8 +335,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.vert_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Vertex shader compilation failed:\n";
@@ -369,7 +363,8 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 		String builder_string = builder.as_string();
 		CharString cs = builder_string.utf8();
 		const char *cstr = cs.ptr();
-		glShaderSource(spec.frag_id, 1, &cstr, nullptr);
+		GLint cstr_len = cs.length();
+		glShaderSource(spec.frag_id, 1, &cstr, &cstr_len);
 		glCompileShader(spec.frag_id);
 
 		glGetShaderiv(spec.frag_id, GL_COMPILE_STATUS, &status);
@@ -388,8 +383,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 					iloglen = 4096; // buggy driver (Adreno 220+)
 				}
 
-				char *ilogmem = (char *)Memory::alloc_static(iloglen + 1);
-				memset(ilogmem, 0, iloglen + 1);
+				char *ilogmem = (char *)Memory::alloc_static_zeroed(iloglen + 1);
 				glGetShaderInfoLog(spec.frag_id, iloglen, &iloglen, ilogmem);
 
 				String err_string = name + ": Fragment shader compilation failed:\n";
@@ -576,10 +570,10 @@ bool ShaderGLES3::_load_from_cache(Version *p_version) {
 	int cache_variant_count = static_cast<int>(f->get_32());
 	ERR_FAIL_COND_V_MSG(cache_variant_count != variant_count, false, "shader cache variant count mismatch, expected " + itos(variant_count) + " got " + itos(cache_variant_count)); //should not happen but check
 
-	LocalVector<OAHashMap<uint64_t, Version::Specialization>> variants;
+	LocalVector<AHashMap<uint64_t, Version::Specialization>> variants;
 	for (int i = 0; i < cache_variant_count; i++) {
 		uint32_t cache_specialization_count = f->get_32();
-		OAHashMap<uint64_t, Version::Specialization> variant;
+		AHashMap<uint64_t, Version::Specialization> variant;
 		for (uint32_t j = 0; j < cache_specialization_count; j++) {
 			uint64_t specialization_key = f->get_64();
 			uint32_t variant_size = f->get_32();
@@ -654,18 +648,14 @@ void ShaderGLES3::_save_to_cache(Version *p_version) {
 	f->store_32(variant_count);
 
 	for (int i = 0; i < variant_count; i++) {
-		int cache_specialization_count = p_version->variants[i].get_num_elements();
+		int cache_specialization_count = p_version->variants[i].size();
 		f->store_32(cache_specialization_count);
 
-		for (OAHashMap<uint64_t, ShaderGLES3::Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
-			const uint64_t specialization_key = *it.key;
+		for (KeyValue<uint64_t, ShaderGLES3::Version::Specialization> &kv : p_version->variants[i]) {
+			const uint64_t specialization_key = kv.key;
 			f->store_64(specialization_key);
 
-			const Version::Specialization *specialization = it.value;
-			if (specialization == nullptr) {
-				f->store_32(0);
-				continue;
-			}
+			const Version::Specialization *specialization = &kv.value;
 			GLint program_size = 0;
 			glGetProgramiv(specialization->id, GL_PROGRAM_BINARY_LENGTH, &program_size);
 			if (program_size == 0) {
@@ -695,11 +685,11 @@ void ShaderGLES3::_clear_version(Version *p_version) {
 	}
 
 	for (int i = 0; i < variant_count; i++) {
-		for (OAHashMap<uint64_t, Version::Specialization>::Iterator it = p_version->variants[i].iter(); it.valid; it = p_version->variants[i].next_iter(it)) {
-			if (it.value->id != 0) {
-				glDeleteShader(it.value->vert_id);
-				glDeleteShader(it.value->frag_id);
-				glDeleteProgram(it.value->id);
+		for (KeyValue<uint64_t, Version::Specialization> &kv : p_version->variants[i]) {
+			if (kv.value.id != 0) {
+				glDeleteShader(kv.value.vert_id);
+				glDeleteShader(kv.value.frag_id);
+				glDeleteProgram(kv.value.id);
 			}
 		}
 	}
@@ -715,7 +705,7 @@ void ShaderGLES3::_initialize_version(Version *p_version) {
 	}
 	p_version->variants.reserve(variant_count);
 	for (int i = 0; i < variant_count; i++) {
-		OAHashMap<uint64_t, Version::Specialization> variant;
+		AHashMap<uint64_t, Version::Specialization> variant;
 		p_version->variants.push_back(variant);
 		Version::Specialization spec;
 		_compile_specialization(spec, i, p_version, specialization_default_mask);
@@ -841,13 +831,11 @@ bool ShaderGLES3::shader_cache_save_compressed_zstd = true;
 bool ShaderGLES3::shader_cache_save_debug = true;
 
 ShaderGLES3::~ShaderGLES3() {
-	List<RID> remaining;
-	version_owner.get_owned_list(&remaining);
+	LocalVector<RID> remaining = version_owner.get_owned_list();
 	if (remaining.size()) {
 		ERR_PRINT(itos(remaining.size()) + " shaders of type " + name + " were never freed");
-		while (remaining.size()) {
-			version_free(remaining.front()->get());
-			remaining.pop_front();
+		for (RID &rid : remaining) {
+			version_free(rid);
 		}
 	}
 }

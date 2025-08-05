@@ -69,6 +69,7 @@ private:
 	RD::DataFormat base_data_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 	RendererRD::VRS *vrs = nullptr;
 	uint64_t auto_exposure_version = 1;
+	RS::ViewportVRSMode vrs_mode = RS::VIEWPORT_VRS_DISABLED;
 
 	// Our render target represents our final destination that we display on screen.
 	RID render_target;
@@ -188,6 +189,7 @@ public:
 	void set_base_data_format(const RD::DataFormat p_base_data_format) { base_data_format = p_base_data_format; }
 	RD::DataFormat get_base_data_format() const { return base_data_format; }
 	void set_vrs(RendererRD::VRS *p_vrs) { vrs = p_vrs; }
+	RS::ViewportVRSMode get_vrs_mode() { return vrs_mode; }
 
 	void cleanup();
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
@@ -309,6 +311,8 @@ public:
 	bool has_velocity_buffer(bool p_has_msaa);
 	RID get_velocity_buffer(bool p_get_msaa);
 	RID get_velocity_buffer(bool p_get_msaa, uint32_t p_layer);
+
+	RID get_velocity_depth_buffer();
 
 	// Samplers adjusted with the mipmap bias that is best fit for the configuration of these render buffers.
 

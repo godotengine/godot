@@ -31,7 +31,6 @@
 #include "os_windows.h"
 
 #include "display_server_windows.h"
-#include "joypad_windows.h"
 #include "lang_table.h"
 #include "windows_terminal_logger.h"
 #include "windows_utils.h"
@@ -111,12 +110,12 @@ static String fix_path(const String &p_path) {
 	if (p_path.is_relative_path()) {
 		Char16String current_dir_name;
 		size_t str_len = GetCurrentDirectoryW(0, nullptr);
-		current_dir_name.resize(str_len + 1);
+		current_dir_name.resize_uninitialized(str_len + 1);
 		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
-		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace("\\", "/").path_join(path);
+		path = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/').path_join(path);
 	}
 	path = path.simplify_path();
-	path = path.replace("/", "\\");
+	path = path.replace_char('/', '\\');
 	if (path.size() >= MAX_PATH && !path.is_network_share_path() && !path.begins_with(R"(\\?\)")) {
 		path = R"(\\?\)" + path;
 	}
@@ -195,7 +194,7 @@ bool OS_Windows::is_using_con_wrapper() const {
 			WCHAR proc_name[MAX_PATH];
 			DWORD len = MAX_PATH;
 			if (QueryFullProcessImageNameW(process, 0, &proc_name[0], &len)) {
-				String name = String::utf16((const char16_t *)&proc_name[0], len).replace("\\", "/").to_lower();
+				String name = String::utf16((const char16_t *)&proc_name[0], len).replace_char('\\', '/').to_lower();
 				if (name == exe_name) {
 					found_exe = true;
 				}
@@ -281,6 +280,7 @@ void OS_Windows::initialize() {
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	TIMECAPS time_caps;
@@ -292,6 +292,9 @@ void OS_Windows::initialize() {
 		delay_resolution = 1000;
 		timeBeginPeriod(1);
 	}
+#else
+	delay_resolution = 1000;
+#endif
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -374,7 +377,9 @@ void OS_Windows::finalize_core() {
 
 	FileAccessWindows::finalize();
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP
 	timeEndPeriod(1);
+#endif
 
 	memdelete(process_map);
 	NetSocketWinSock::cleanup();
@@ -495,22 +500,15 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 		}
 	}
 
-	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
-	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
-
-	PAddDllDirectory add_dll_directory = (PAddDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
-	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
-
-	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
 
 	String dll_path = fix_path(load_path);
 	String dll_dir = fix_path(ProjectSettings::get_singleton()->globalize_path(load_path.get_base_dir()));
-	if (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) {
-		cookie = add_dll_directory((LPCWSTR)(dll_dir.utf16().get_data()));
+	if (p_data != nullptr && p_data->also_set_library_path) {
+		cookie = AddDllDirectory((LPCWSTR)(dll_dir.utf16().get_data()));
 	}
 
-	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path && has_dll_directory_api) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
+	p_library_handle = (void *)LoadLibraryExW((LPCWSTR)(dll_path.utf16().get_data()), nullptr, (p_data != nullptr && p_data->also_set_library_path) ? LOAD_LIBRARY_SEARCH_DEFAULT_DIRS : 0);
 	if (!p_library_handle) {
 		if (p_data != nullptr && p_data->generate_temp_files) {
 			DirAccess::remove_absolute(load_path);
@@ -542,7 +540,7 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 #endif
 
 	if (cookie) {
-		remove_dll_directory(cookie);
+		RemoveDllDirectory(cookie);
 	}
 
 	if (p_data != nullptr && p_data->r_resolved_path != nullptr) {
@@ -638,24 +636,6 @@ String OS_Windows::get_version_alias() const {
 						windows_string += "10";
 					}
 				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 3) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string = "Server 2012 R2";
-				} else {
-					windows_string += "8.1";
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 2) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string += "Server 2012";
-				} else {
-					windows_string += "8";
-				}
-			} else if (fow.dwMajorVersion == 6 && fow.dwMinorVersion == 1) {
-				if (fow.wProductType != VER_NT_WORKSTATION) {
-					windows_string = "Server 2008 R2";
-				} else {
-					windows_string += "7";
-				}
 			} else {
 				windows_string += "Unknown";
 			}
@@ -723,7 +703,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			BSTR object_name = SysAllocString(L"DriverName");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dn.vt == VT_BSTR) {
 				String d_name = String(V_BSTR(&dn));
 				if (d_name.is_empty()) {
 					object_name = SysAllocString(L"DriverProviderName");
@@ -739,8 +719,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 				object_name = SysAllocString(L"DriverProviderName");
 				hr = pnpSDriverObject[0]->Get(object_name, 0, &dn, nullptr, nullptr);
 				SysFreeString(object_name);
-				if (hr == S_OK) {
+				if (hr == S_OK && dn.vt == VT_BSTR) {
 					driver_name = String(V_BSTR(&dn));
+				} else {
+					driver_name = "Unknown";
 				}
 			}
 
@@ -749,8 +731,10 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 			object_name = SysAllocString(L"DriverVersion");
 			hr = pnpSDriverObject[0]->Get(object_name, 0, &dv, nullptr, nullptr);
 			SysFreeString(object_name);
-			if (hr == S_OK) {
+			if (hr == S_OK && dv.vt == VT_BSTR) {
 				driver_version = String(V_BSTR(&dv));
+			} else {
+				driver_version = "Unknown";
 			}
 			for (ULONG i = 0; i < resultCount; i++) {
 				SAFE_RELEASE(pnpSDriverObject[i])
@@ -1295,12 +1279,12 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1401,12 +1385,12 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1500,12 +1484,12 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
 		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
-		current_short_dir_name.resize(str_len);
+		current_short_dir_name.resize_uninitialized(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
@@ -1641,7 +1625,7 @@ Vector<String> OS_Windows::get_system_fonts() const {
 		hr = family_names->GetStringLength(index, &length);
 		ERR_CONTINUE(FAILED(hr));
 
-		name.resize(length + 1);
+		name.resize_uninitialized(length + 1);
 		hr = family_names->GetString(index, (WCHAR *)name.ptrw(), length + 1);
 		ERR_CONTINUE(FAILED(hr));
 
@@ -1879,7 +1863,7 @@ Vector<String> OS_Windows::get_system_font_path_for_text(const String &p_font_na
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1958,7 +1942,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 		if (FAILED(hr)) {
 			continue;
 		}
-		String fpath = String::utf16((const char16_t *)&file_path[0]).replace("\\", "/");
+		String fpath = String::utf16((const char16_t *)&file_path[0]).replace_char('\\', '/');
 
 		WIN32_FIND_DATAW d;
 		HANDLE fnd = FindFirstFileW((LPCWSTR)&file_path[0], &d);
@@ -1978,7 +1962,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
 	GetModuleFileNameW(nullptr, bufname, 4096);
-	String s = String::utf16((const char16_t *)bufname).replace("\\", "/");
+	String s = String::utf16((const char16_t *)bufname).replace_char('\\', '/');
 	return s;
 }
 
@@ -2195,14 +2179,14 @@ String OS_Windows::get_locale() const {
 		}
 
 		if (lang == wl->main_lang && sublang == wl->sublang) {
-			return String(wl->locale).replace("-", "_");
+			return String(wl->locale).replace_char('-', '_');
 		}
 
 		wl++;
 	}
 
 	if (!neutral.is_empty()) {
-		return String(neutral).replace("-", "_");
+		return String(neutral).replace_char('-', '_');
 	}
 
 	return "en";
@@ -2331,7 +2315,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 String OS_Windows::get_config_path() const {
 	if (has_environment("APPDATA")) {
-		return get_environment("APPDATA").replace("\\", "/");
+		return get_environment("APPDATA").replace_char('\\', '/');
 	}
 	return ".";
 }
@@ -2344,7 +2328,7 @@ String OS_Windows::get_cache_path() const {
 	static String cache_path_cache;
 	if (cache_path_cache.is_empty()) {
 		if (has_environment("LOCALAPPDATA")) {
-			cache_path_cache = get_environment("LOCALAPPDATA").replace("\\", "/");
+			cache_path_cache = get_environment("LOCALAPPDATA").replace_char('\\', '/');
 		}
 		if (cache_path_cache.is_empty()) {
 			cache_path_cache = get_temp_path();
@@ -2374,7 +2358,7 @@ String OS_Windows::get_temp_path() const {
 			temp_path_cache = get_config_path();
 		}
 	}
-	return temp_path_cache.replace("\\", "/").trim_suffix("/");
+	return temp_path_cache.replace_char('\\', '/').trim_suffix("/");
 }
 
 // Get properly capitalized engine name for system paths
@@ -2415,19 +2399,21 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	PWSTR szPath;
 	HRESULT res = SHGetKnownFolderPath(id, 0, nullptr, &szPath);
 	ERR_FAIL_COND_V(res != S_OK, String());
-	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
+	String path = String::utf16((const char16_t *)szPath).replace_char('\\', '/');
 	CoTaskMemFree(szPath);
 	return path;
 }
 
 String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
-	return get_data_path().path_join(p_user_dir).replace("\\", "/");
+	return get_data_path().path_join(p_user_dir).replace_char('\\', '/');
 }
 
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	return String::ascii(Span((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN));
+
+	// Note: Windows API returns a GUID with null termination.
+	return String::ascii(Span<char>(HwProfInfo.szHwProfileGuid, strnlen(HwProfInfo.szHwProfileGuid, HW_PROFILE_GUIDLEN)));
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -2507,7 +2493,21 @@ String OS_Windows::get_system_ca_certificates() {
 	return certs;
 }
 
-void OS_Windows::add_frame_delay(bool p_can_draw) {
+void OS_Windows::add_frame_delay(bool p_can_draw, bool p_wake_for_events) {
+	if (p_wake_for_events) {
+		uint64_t delay = get_frame_delay(p_can_draw);
+		if (delay == 0) {
+			return;
+		}
+
+		DisplayServer *ds = DisplayServer::get_singleton();
+		DisplayServerWindows *ds_win = Object::cast_to<DisplayServerWindows>(ds);
+		if (ds_win) {
+			MsgWaitForMultipleObjects(0, nullptr, false, Math::floor(double(delay) / 1000.0), QS_ALLINPUT);
+			return;
+		}
+	}
+
 	const uint32_t frame_delay = Engine::get_singleton()->get_frame_delay();
 	if (frame_delay) {
 		// Add fixed frame delay to decrease CPU/GPU usage. This doesn't take
@@ -2560,6 +2560,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
 bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
 
@@ -2652,6 +2653,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
 	return ok;
 }
+#endif
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
@@ -2661,12 +2663,12 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	// Reset CWD to ensure long path is used.
 	Char16String current_dir_name;
 	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
+	current_dir_name.resize_uninitialized(str_len + 1);
 	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 
 	Char16String new_current_dir_name;
 	str_len = GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), nullptr, 0);
-	new_current_dir_name.resize(str_len + 1);
+	new_current_dir_name.resize_uninitialized(str_len + 1);
 	GetLongPathNameW((LPCWSTR)current_dir_name.get_data(), (LPWSTR)new_current_dir_name.ptrw(), new_current_dir_name.size());
 
 	SetCurrentDirectoryW((LPCWSTR)new_current_dir_name.get_data());
@@ -2699,7 +2701,7 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	GetConsoleMode(stdoutHandle, &outMode);
 	outMode |= ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
 	if (!SetConsoleMode(stdoutHandle, outMode)) {
-		// Windows 8.1 or below, or Windows 10 prior to Anniversary Update.
+		// Windows 10 prior to Anniversary Update.
 		print_verbose("Can't set the ENABLE_VIRTUAL_TERMINAL_PROCESSING Windows console mode. `print_rich()` will not work as expected.");
 	}
 

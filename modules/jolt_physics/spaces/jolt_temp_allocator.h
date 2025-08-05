@@ -34,7 +34,7 @@
 
 #include "Jolt/Core/TempAllocator.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 class JoltTempAllocator final : public JPH::TempAllocator {
 	uint64_t capacity = 0;

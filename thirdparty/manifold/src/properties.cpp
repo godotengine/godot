@@ -14,9 +14,13 @@
 
 #include <limits>
 
-#include "./impl.h"
-#include "./parallel.h"
-#include "./tri_dist.h"
+#if MANIFOLD_PAR == 1
+#include <tbb/combinable.h>
+#endif
+
+#include "impl.h"
+#include "parallel.h"
+#include "tri_dist.h"
 
 namespace {
 using namespace manifold;
@@ -64,48 +68,6 @@ struct CurvatureAngles {
   }
 };
 
-struct UpdateProperties {
-  VecView<ivec3> triProp;
-  VecView<double> properties;
-  VecView<uint8_t> counters;
-
-  VecView<const double> oldProperties;
-  VecView<const Halfedge> halfedge;
-  VecView<const double> meanCurvature;
-  VecView<const double> gaussianCurvature;
-  const int oldNumProp;
-  const int numProp;
-  const int gaussianIdx;
-  const int meanIdx;
-
-  void operator()(const size_t tri) {
-    for (const int i : {0, 1, 2}) {
-      const int vert = halfedge[3 * tri + i].startVert;
-      if (oldNumProp == 0) {
-        triProp[tri][i] = vert;
-      }
-      const int propVert = triProp[tri][i];
-
-      auto old = std::atomic_exchange(
-          reinterpret_cast<std::atomic<uint8_t>*>(&counters[propVert]),
-          static_cast<uint8_t>(1));
-      if (old == 1) continue;
-
-      for (int p = 0; p < oldNumProp; ++p) {
-        properties[numProp * propVert + p] =
-            oldProperties[oldNumProp * propVert + p];
-      }
-
-      if (gaussianIdx >= 0) {
-        properties[numProp * propVert + gaussianIdx] = gaussianCurvature[vert];
-      }
-      if (meanIdx >= 0) {
-        properties[numProp * propVert + meanIdx] = meanCurvature[vert];
-      }
-    }
-  }
-};
-
 struct CheckHalfedges {
   VecView<const Halfedge> halfedges;
 
@@ -138,33 +100,8 @@ struct CheckCCW {
     for (int i : {0, 1, 2})
       v[i] = projection * vertPos[halfedges[3 * face + i].startVert];
 
-    int ccw = CCW(v[0], v[1], v[2], std::abs(tol));
-    bool check = tol > 0 ? ccw >= 0 : ccw == 0;
-
-#ifdef MANIFOLD_DEBUG
-    if (tol > 0 && !check) {
-      vec2 v1 = v[1] - v[0];
-      vec2 v2 = v[2] - v[0];
-      double area = v1.x * v2.y - v1.y * v2.x;
-      double base2 = std::max(la::dot(v1, v1), la::dot(v2, v2));
-      double base = std::sqrt(base2);
-      vec3 V0 = vertPos[halfedges[3 * face].startVert];
-      vec3 V1 = vertPos[halfedges[3 * face + 1].startVert];
-      vec3 V2 = vertPos[halfedges[3 * face + 2].startVert];
-      vec3 norm = la::cross(V1 - V0, V2 - V0);
-      printf(
-          "Tri %ld does not match normal, approx height = %g, base = %g\n"
-          "tol = %g, area2 = %g, base2*tol2 = %g\n"
-          "normal = %g, %g, %g\n"
-          "norm = %g, %g, %g\nverts: %d, %d, %d\n",
-          static_cast<long>(face), area / base, base, tol, area * area,
-          base2 * tol * tol, triNormal[face].x, triNormal[face].y,
-          triNormal[face].z, norm.x, norm.y, norm.z,
-          halfedges[3 * face].startVert, halfedges[3 * face + 1].startVert,
-          halfedges[3 * face + 2].startVert);
-    }
-#endif
-    return check;
+    const int ccw = CCW(v[0], v[1], v[2], std::abs(tol));
+    return tol > 0 ? ccw >= 0 : ccw == 0;
   }
 };
 }  // namespace
@@ -211,55 +148,58 @@ std::mutex dump_lock;
  * Note that this is not checking for epsilon-validity.
  */
 bool Manifold::Impl::IsSelfIntersecting() const {
-  const double epsilonSq = epsilon_ * epsilon_;
+  const double ep = 2 * epsilon_;
+  const double epsilonSq = ep * ep;
   Vec<Box> faceBox;
   Vec<uint32_t> faceMorton;
   GetFaceBoxMorton(faceBox, faceMorton);
-  SparseIndices collisions = collider_.Collisions<true>(faceBox.cview());
 
-  const bool verbose = ManifoldParams().verbose;
-  return !all_of(countAt(0), countAt(collisions.size()), [&](size_t i) {
-    size_t x = collisions.Get(i, false);
-    size_t y = collisions.Get(i, true);
-    std::array<vec3, 3> tri_x, tri_y;
+  std::atomic<bool> intersecting(false);
+
+  auto f = [&](int tri0, int tri1) {
+    std::array<vec3, 3> triVerts0, triVerts1;
     for (int i : {0, 1, 2}) {
-      tri_x[i] = vertPos_[halfedge_[3 * x + i].startVert];
-      tri_y[i] = vertPos_[halfedge_[3 * y + i].startVert];
+      triVerts0[i] = vertPos_[halfedge_[3 * tri0 + i].startVert];
+      triVerts1[i] = vertPos_[halfedge_[3 * tri1 + i].startVert];
     }
-    // if triangles x and y share a vertex, return true to skip the
+    // if triangles tri0 and tri1 share a vertex, return true to skip the
     // check. we relax the sharing criteria a bit to allow for at most
     // distance epsilon squared
     for (int i : {0, 1, 2})
       for (int j : {0, 1, 2})
-        if (distance2(tri_x[i], tri_y[j]) <= epsilonSq) return true;
+        if (distance2(triVerts0[i], triVerts1[j]) <= epsilonSq) return;
 
-    if (DistanceTriangleTriangleSquared(tri_x, tri_y) == 0.0) {
+    if (DistanceTriangleTriangleSquared(triVerts0, triVerts1) == 0.0) {
       // try to move the triangles around the normal of the other face
-      std::array<vec3, 3> tmp_x, tmp_y;
-      for (int i : {0, 1, 2}) tmp_x[i] = tri_x[i] + epsilon_ * faceNormal_[y];
-      if (DistanceTriangleTriangleSquared(tmp_x, tri_y) > 0.0) return true;
-      for (int i : {0, 1, 2}) tmp_x[i] = tri_x[i] - epsilon_ * faceNormal_[y];
-      if (DistanceTriangleTriangleSquared(tmp_x, tri_y) > 0.0) return true;
-      for (int i : {0, 1, 2}) tmp_y[i] = tri_y[i] + epsilon_ * faceNormal_[x];
-      if (DistanceTriangleTriangleSquared(tri_x, tmp_y) > 0.0) return true;
-      for (int i : {0, 1, 2}) tmp_y[i] = tri_y[i] - epsilon_ * faceNormal_[x];
-      if (DistanceTriangleTriangleSquared(tri_x, tmp_y) > 0.0) return true;
+      std::array<vec3, 3> tmp0, tmp1;
+      for (int i : {0, 1, 2}) tmp0[i] = triVerts0[i] + ep * faceNormal_[tri1];
+      if (DistanceTriangleTriangleSquared(tmp0, triVerts1) > 0.0) return;
+      for (int i : {0, 1, 2}) tmp0[i] = triVerts0[i] - ep * faceNormal_[tri1];
+      if (DistanceTriangleTriangleSquared(tmp0, triVerts1) > 0.0) return;
+      for (int i : {0, 1, 2}) tmp1[i] = triVerts1[i] + ep * faceNormal_[tri0];
+      if (DistanceTriangleTriangleSquared(triVerts0, tmp1) > 0.0) return;
+      for (int i : {0, 1, 2}) tmp1[i] = triVerts1[i] - ep * faceNormal_[tri0];
+      if (DistanceTriangleTriangleSquared(triVerts0, tmp1) > 0.0) return;
 
 #ifdef MANIFOLD_DEBUG
-      if (verbose) {
+      if (ManifoldParams().verbose > 0) {
         dump_lock.lock();
         std::cout << "intersecting:" << std::endl;
-        for (int i : {0, 1, 2}) std::cout << tri_x[i] << " ";
+        for (int i : {0, 1, 2}) std::cout << triVerts0[i] << " ";
         std::cout << std::endl;
-        for (int i : {0, 1, 2}) std::cout << tri_y[i] << " ";
+        for (int i : {0, 1, 2}) std::cout << triVerts1[i] << " ";
         std::cout << std::endl;
         dump_lock.unlock();
       }
 #endif
-      return false;
+      intersecting.store(true);
     }
-    return true;
-  });
+  };
+
+  auto recorder = MakeSimpleRecorder(f);
+  collider_.Collisions<true>(faceBox.cview(), recorder);
+
+  return intersecting.load();
 }
 
 /**
@@ -335,20 +275,36 @@ void Manifold::Impl::CalculateCurvature(int gaussianIdx, int meanIdx) {
 
   const int oldNumProp = NumProp();
   const int numProp = std::max(oldNumProp, std::max(gaussianIdx, meanIdx) + 1);
-  const Vec<double> oldProperties = meshRelation_.properties;
-  meshRelation_.properties = Vec<double>(numProp * NumPropVert(), 0);
-  meshRelation_.numProp = numProp;
-  if (meshRelation_.triProperties.size() == 0) {
-    meshRelation_.triProperties.resize(NumTri());
-  }
+  const Vec<double> oldProperties = properties_;
+  properties_ = Vec<double>(numProp * NumPropVert(), 0);
+  numProp_ = numProp;
 
-  const Vec<uint8_t> counters(NumPropVert(), 0);
-  for_each_n(
-      policy, countAt(0_uz), NumTri(),
-      UpdateProperties({meshRelation_.triProperties, meshRelation_.properties,
-                        counters, oldProperties, halfedge_, vertMeanCurvature,
-                        vertGaussianCurvature, oldNumProp, numProp, gaussianIdx,
-                        meanIdx}));
+  Vec<uint8_t> counters(NumPropVert(), 0);
+  for_each_n(policy, countAt(0_uz), NumTri(), [&](const size_t tri) {
+    for (const int i : {0, 1, 2}) {
+      const Halfedge& edge = halfedge_[3 * tri + i];
+      const int vert = edge.startVert;
+      const int propVert = edge.propVert;
+
+      auto old = std::atomic_exchange(
+          reinterpret_cast<std::atomic<uint8_t>*>(&counters[propVert]),
+          static_cast<uint8_t>(1));
+      if (old == 1) continue;
+
+      for (int p = 0; p < oldNumProp; ++p) {
+        properties_[numProp * propVert + p] =
+            oldProperties[oldNumProp * propVert + p];
+      }
+
+      if (gaussianIdx >= 0) {
+        properties_[numProp * propVert + gaussianIdx] =
+            vertGaussianCurvature[vert];
+      }
+      if (meanIdx >= 0) {
+        properties_[numProp * propVert + meanIdx] = vertMeanCurvature[vert];
+      }
+    }
+  });
 }
 
 /**
@@ -404,6 +360,36 @@ bool Manifold::Impl::IsIndexInBounds(VecView<const ivec3> triVerts) const {
   return minmax[0] >= 0 && minmax[1] < static_cast<int>(NumVert());
 }
 
+struct MinDistanceRecorder {
+  using Local = double;
+  const Manifold::Impl &self, &other;
+#if MANIFOLD_PAR == 1
+  tbb::combinable<double> store = tbb::combinable<double>(
+      []() { return std::numeric_limits<double>::infinity(); });
+  Local& local() { return store.local(); }
+  double get() {
+    double result = std::numeric_limits<double>::infinity();
+    store.combine_each([&](double& val) { result = std::min(result, val); });
+    return result;
+  }
+#else
+  double result = std::numeric_limits<double>::infinity();
+  Local& local() { return result; }
+  double get() { return result; }
+#endif
+
+  void record(int triOther, int tri, double& minDistance) {
+    std::array<vec3, 3> p;
+    std::array<vec3, 3> q;
+
+    for (const int j : {0, 1, 2}) {
+      p[j] = self.vertPos_[self.halfedge_[3 * tri + j].startVert];
+      q[j] = other.vertPos_[other.halfedge_[3 * triOther + j].startVert];
+    }
+    minDistance = std::min(minDistance, DistanceTriangleTriangleSquared(p, q));
+  }
+};
+
 /*
  * Returns the minimum gap between two manifolds. Returns a double between
  * 0 and searchLength.
@@ -422,26 +408,11 @@ double Manifold::Impl::MinGap(const Manifold::Impl& other,
                          box.max + vec3(searchLength));
             });
 
-  SparseIndices collisions = collider_.Collisions(faceBoxOther.cview());
-
-  double minDistanceSquared = transform_reduce(
-      countAt(0_uz), countAt(collisions.size()), searchLength * searchLength,
-      [](double a, double b) { return std::min(a, b); },
-      [&collisions, this, &other](int i) {
-        const int tri = collisions.Get(i, 1);
-        const int triOther = collisions.Get(i, 0);
-
-        std::array<vec3, 3> p;
-        std::array<vec3, 3> q;
-
-        for (const int j : {0, 1, 2}) {
-          p[j] = vertPos_[halfedge_[3 * tri + j].startVert];
-          q[j] = other.vertPos_[other.halfedge_[3 * triOther + j].startVert];
-        }
-
-        return DistanceTriangleTriangleSquared(p, q);
-      });
-
+  MinDistanceRecorder recorder{*this, other};
+  collider_.Collisions<false, Box, MinDistanceRecorder>(faceBoxOther.cview(),
+                                                        recorder, false);
+  double minDistanceSquared =
+      std::min(recorder.get(), searchLength * searchLength);
   return sqrt(minDistanceSquared);
 };
 

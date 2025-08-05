@@ -136,7 +136,6 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 	force_feedback = NO;
 
 	for (int i = 0; i < (int)JoyAxis::MAX; i++) {
-		axis_changed[i] = false;
 		axis_value[i] = 0.0;
 	}
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
@@ -169,36 +168,36 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 
 	auto JOYSTICK_LEFT = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
 		if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
-			axis_changed[(int)JoyAxis::LEFT_X] = true;
+			axis_changed_mask |= (1 << (int)JoyAxis::LEFT_X);
 			axis_value[(int)JoyAxis::LEFT_X] = xValue;
 		}
 		if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
-			axis_changed[(int)JoyAxis::LEFT_Y] = true;
+			axis_changed_mask |= (1 << (int)JoyAxis::LEFT_Y);
 			axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
 		}
 	};
 
 	auto JOYSTICK_RIGHT = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
 		if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
-			axis_changed[(int)JoyAxis::RIGHT_X] = true;
+			axis_changed_mask |= (1 << (int)JoyAxis::RIGHT_X);
 			axis_value[(int)JoyAxis::RIGHT_X] = xValue;
 		}
 		if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
-			axis_changed[(int)JoyAxis::RIGHT_Y] = true;
+			axis_changed_mask |= (1 << (int)JoyAxis::RIGHT_Y);
 			axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
 		}
 	};
 
 	auto TRIGGER_LEFT = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
 		if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
-			axis_changed[(int)JoyAxis::TRIGGER_LEFT] = true;
+			axis_changed_mask |= (1 << (int)JoyAxis::TRIGGER_LEFT);
 			axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
 		}
 	};
 
 	auto TRIGGER_RIGHT = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
 		if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
-			axis_changed[(int)JoyAxis::TRIGGER_RIGHT] = true;
+			axis_changed_mask |= (1 << (int)JoyAxis::TRIGGER_RIGHT);
 			axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
 		}
 	};
@@ -595,20 +594,25 @@ void JoypadApple::joypad_vibration_stop(GameController &p_joypad, uint64_t p_tim
 }
 
 void JoypadApple::process_joypads() {
+	Input *input = Input::get_singleton();
+
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
 		for (KeyValue<int, GameController *> &E : joypads) {
 			int id = E.key;
 			GameController &joypad = *E.value;
 
-			for (int i = 0; i < (int)JoyAxis::MAX; i++) {
-				if (joypad.axis_changed[i]) {
-					joypad.axis_changed[i] = false;
-					Input::get_singleton()->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
-				}
+			uint32_t changed = joypad.axis_changed_mask;
+			joypad.axis_changed_mask = 0;
+			// Loop over changed axes.
+			while (changed) {
+				// Find the index of the next set bit.
+				uint32_t i = (uint32_t)__builtin_ctzll(changed);
+				// Clear the set bit.
+				changed &= (changed - 1);
+				input->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
 			}
 
 			if (joypad.force_feedback) {
-				Input *input = Input::get_singleton();
 				uint64_t timestamp = input->get_joy_vibration_timestamp(id);
 
 				if (timestamp > (unsigned)joypad.ff_effect_timestamp) {

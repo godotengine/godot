@@ -91,12 +91,12 @@ private:
 	uint32_t poll_every = 0;
 
 protected:
-	static EngineDebugger *singleton;
-	static ScriptDebugger *script_debugger;
+	static inline EngineDebugger *singleton = nullptr;
+	static inline ScriptDebugger *script_debugger = nullptr;
 
-	static HashMap<StringName, Profiler> profilers;
-	static HashMap<StringName, Capture> captures;
-	static HashMap<String, CreatePeerFunc> protocols;
+	static inline HashMap<StringName, Profiler> profilers;
+	static inline HashMap<StringName, Capture> captures;
+	static inline HashMap<String, CreatePeerFunc> protocols;
 
 	static void (*allow_focus_steal_fn)();
 

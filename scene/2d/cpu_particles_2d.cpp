@@ -45,7 +45,7 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 		return;
 	}
 
-	if (p_emitting && !use_fixed_seed) {
+	if (p_emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 
@@ -616,7 +616,7 @@ void CPUParticles2D::request_particles_process(real_t p_requested_process_time) 
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emitting") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
 	}
 
@@ -891,12 +891,12 @@ void CPUParticles2D::_particles_process(double p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					real_t t = Math_TAU * rng->randf();
+					real_t t = Math::TAU * rng->randf();
 					real_t radius = emission_sphere_radius * rng->randf();
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
 				case EMISSION_SHAPE_SPHERE_SURFACE: {
-					real_t s = rng->randf(), t = Math_TAU * rng->randf();
+					real_t s = rng->randf(), t = Math::TAU * rng->randf();
 					real_t radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
 					p.transform[2] = Vector2(Math::cos(t), Math::sin(t)) * radius;
 				} break;
@@ -1013,7 +1013,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			//orbit velocity
 			real_t orbit_amount = tex_orbit_velocity * Math::lerp(parameters_min[PARAM_ORBIT_VELOCITY], parameters_max[PARAM_ORBIT_VELOCITY], rand_from_seed(_seed));
 			if (orbit_amount != 0.0) {
-				real_t ang = orbit_amount * local_delta * Math_TAU;
+				real_t ang = orbit_amount * local_delta * Math::TAU;
 				// Not sure why the ParticleProcessMaterial code uses a clockwise rotation matrix,
 				// but we use -ang here to reproduce its behavior.
 				Transform2D rot = Transform2D(-ang, Vector2());
@@ -1067,7 +1067,7 @@ void CPUParticles2D::_particles_process(double p_delta) {
 			tex_hue_variation = curve_parameters[PARAM_HUE_VARIATION]->sample(tv);
 		}
 
-		real_t hue_rot_angle = (tex_hue_variation)*Math_TAU * Math::lerp(parameters_min[PARAM_HUE_VARIATION], parameters_max[PARAM_HUE_VARIATION], p.hue_rot_rand);
+		real_t hue_rot_angle = (tex_hue_variation)*Math::TAU * Math::lerp(parameters_min[PARAM_HUE_VARIATION], parameters_max[PARAM_HUE_VARIATION], p.hue_rot_rand);
 		real_t hue_rot_c = Math::cos(hue_rot_angle);
 		real_t hue_rot_s = Math::sin(hue_rot_angle);
 
@@ -1097,10 +1097,11 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
-				p.transform.columns[1] = p.velocity.normalized();
-				p.transform.columns[0] = p.transform.columns[1].orthogonal();
+				p.transform.columns[1] = p.velocity;
 			}
 
+			p.transform.columns[1] = p.transform.columns[1].normalized();
+			p.transform.columns[0] = p.transform.columns[1].orthogonal();
 		} else {
 			p.transform.columns[0] = Vector2(Math::cos(p.rotation), -Math::sin(p.rotation));
 			p.transform.columns[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));

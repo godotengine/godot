@@ -105,7 +105,7 @@ void GDScriptDocGen::_doctype_from_gdtype(const GDType &p_gdtype, String &r_type
 			return;
 		case GDType::SCRIPT:
 			if (p_gdtype.is_meta_type) {
-				r_type = p_gdtype.script_type.is_valid() ? p_gdtype.script_type->get_class() : Script::get_class_static();
+				r_type = p_gdtype.script_type.is_valid() ? p_gdtype.script_type->get_class_name() : Script::get_class_static();
 				return;
 			}
 			if (p_gdtype.script_type.is_valid()) {
@@ -216,15 +216,15 @@ String GDScriptDocGen::_docvalue_from_variant(const Variant &p_variant, int p_re
 			} else {
 				result += "{";
 
-				List<Variant> keys;
-				dict.get_key_list(&keys);
+				LocalVector<Variant> keys = dict.get_key_list();
 				keys.sort_custom<StringLikeVariantOrder>();
 
-				for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-					if (E->prev()) {
+				for (uint32_t i = 0; i < keys.size(); i++) {
+					const Variant &key = keys[i];
+					if (i > 0) {
 						result += ", ";
 					}
-					result += _docvalue_from_variant(E->get(), p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[E->get()], p_recursion_level + 1);
+					result += _docvalue_from_variant(key, p_recursion_level + 1) + ": " + _docvalue_from_variant(dict[key], p_recursion_level + 1);
 				}
 
 				result += "}";
@@ -303,7 +303,9 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 		} break;
 		case GDP::Node::CALL: {
 			const GDP::CallNode *call = static_cast<const GDP::CallNode *>(p_expression);
-			return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+			if (call->get_callee_type() == GDP::Node::IDENTIFIER) {
+				return call->function_name.operator String() + (call->arguments.is_empty() ? "()" : "(...)");
+			}
 		} break;
 		case GDP::Node::DICTIONARY: {
 			const GDP::DictionaryNode *dict = static_cast<const GDP::DictionaryNode *>(p_expression);
@@ -314,9 +316,11 @@ String GDScriptDocGen::docvalue_from_expression(const GDP::ExpressionNode *p_exp
 			return id->name;
 		} break;
 		default: {
-			return "<unknown>";
+			// Nothing to do.
 		} break;
 	}
+
+	return "<unknown>";
 }
 
 void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_class) {
@@ -407,7 +411,27 @@ void GDScriptDocGen::_generate_docs(GDScript *p_script, const GDP::ClassNode *p_
 				method_doc.deprecated_message = m_func->doc_data.deprecated_message;
 				method_doc.is_experimental = m_func->doc_data.is_experimental;
 				method_doc.experimental_message = m_func->doc_data.experimental_message;
-				method_doc.qualifiers = m_func->is_static ? "static" : "";
+
+				if (m_func->is_vararg()) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "vararg";
+					method_doc.rest_argument.name = m_func->rest_parameter->identifier->name;
+					_doctype_from_gdtype(m_func->rest_parameter->get_datatype(), method_doc.rest_argument.type, method_doc.rest_argument.enumeration);
+				}
+				if (m_func->is_abstract) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "abstract";
+				}
+				if (m_func->is_static) {
+					if (!method_doc.qualifiers.is_empty()) {
+						method_doc.qualifiers += " ";
+					}
+					method_doc.qualifiers += "static";
+				}
 
 				if (func_name == "_init") {
 					method_doc.return_type = "void";

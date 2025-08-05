@@ -223,7 +223,7 @@ void BetsyCompressor::_init() {
 }
 
 void BetsyCompressor::init() {
-	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true);
+	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true, "Betsy pump task", true);
 	command_queue.set_pump_task_id(tid);
 	command_queue.push(this, &BetsyCompressor::_assign_mt_ids, tid);
 	command_queue.push_and_sync(this, &BetsyCompressor::_init);
@@ -437,11 +437,7 @@ Error BetsyCompressor::_compress(BetsyFormat p_format, Image *r_img) {
 
 	// Encoding table setup.
 	if ((dest_format == Image::FORMAT_DXT1 || dest_format == Image::FORMAT_DXT5) && dxt1_encoding_table_buffer.is_null()) {
-		Vector<uint8_t> data;
-		data.resize(1024 * 4);
-		memcpy(data.ptrw(), dxt1_encoding_table, 1024 * 4);
-
-		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, data);
+		dxt1_encoding_table_buffer = compress_rd->storage_buffer_create(1024 * 4, Span(dxt1_encoding_table).reinterpret<uint8_t>());
 	}
 
 	const int mip_count = r_img->get_mipmap_count() + 1;

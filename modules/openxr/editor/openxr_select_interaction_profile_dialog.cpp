@@ -41,7 +41,6 @@ void OpenXRSelectInteractionProfileDialog::_bind_methods() {
 
 void OpenXRSelectInteractionProfileDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
@@ -126,6 +125,7 @@ OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
 	scroll->add_child(main_vb);
 
 	all_selected = memnew(Label);
+	all_selected->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	all_selected->set_text(TTR("All interaction profiles have been added to the action map."));
 	main_vb->add_child(all_selected);
 }

@@ -116,7 +116,7 @@ namespace embree
   {
   }
 
-  void Geometry::enable () 
+  void Geometry::enable ()
   {
     if (isEnabled()) 
       return;

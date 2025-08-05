@@ -476,6 +476,27 @@ TEST_CASE("[String] Find and replace") {
 	MULTICHECK_STRING_STRING_EQ(s, replacen, "Y", "Y", "HappY BirthdaY, Anna!");
 }
 
+TEST_CASE("[String] replace_char") {
+	String s = "Banana";
+	CHECK(s.replace_char('n', 'x') == "Baxaxa");
+	CHECK(s.replace_char('\0', 'x') == "Banana");
+	ERR_PRINT_OFF
+	CHECK(s.replace_char('n', '\0') == "Banana");
+	ERR_PRINT_ON
+}
+
+TEST_CASE("[String] replace_chars") {
+	String s = "Banana";
+	CHECK(s.replace_chars(String("Bn"), 'x') == "xaxaxa");
+	CHECK(s.replace_chars("Bn", 'x') == "xaxaxa");
+	CHECK(s.replace_chars(String(), 'x') == "Banana");
+	CHECK(s.replace_chars("", 'x') == "Banana");
+	ERR_PRINT_OFF
+	CHECK(s.replace_chars(String("Bn"), '\0') == "Banana");
+	CHECK(s.replace_chars("Bn", '\0') == "Banana");
+	ERR_PRINT_ON
+}
+
 TEST_CASE("[String] Insertion") {
 	String s = "Who is Frederic?";
 	s = s.insert(s.find("?"), " Chopin");
@@ -525,7 +546,6 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
 	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
-	CHECK(String::num_scientific(30000000) == "3e+07");
 
 	// String::num_int64 tests.
 	CHECK(String::num_int64(3141593) == "3141593");
@@ -546,6 +566,20 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num_uint64(4294967295, 37) == ""); // Invalid base > 36.
 	ERR_PRINT_ON;
 
+	// String::num_scientific tests.
+	CHECK(String::num_scientific(30000000.0) == "30000000");
+	CHECK(String::num_scientific(1234567890.0) == "1234567890");
+	CHECK(String::num_scientific(3e100) == "3e+100");
+	CHECK(String::num_scientific(7e-100) == "7e-100");
+	CHECK(String::num_scientific(Math::TAU) == "6.283185307179586");
+	CHECK(String::num_scientific(Math::INF) == "inf");
+	CHECK(String::num_scientific(-Math::INF) == "-inf");
+	CHECK(String::num_scientific(Math::NaN) == "nan");
+	CHECK(String::num_scientific(2.0) == "2");
+	CHECK(String::num_scientific(1.0) == "1");
+	CHECK(String::num_scientific(0.0) == "0");
+	CHECK(String::num_scientific(-0.0) == "-0");
+
 	// String::num_real tests.
 	CHECK(String::num_real(1.0) == "1.0");
 	CHECK(String::num_real(1.0, false) == "1");
@@ -558,12 +592,12 @@ TEST_CASE("[String] Number to string") {
 #ifdef REAL_T_IS_DOUBLE
 	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.456789", "Prints the appropriate amount of digits for real_t = double.");
 	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(Math::PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
 	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
 #else
 	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(Math::PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
 	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
 #endif // REAL_T_IS_DOUBLE
 
@@ -669,15 +703,15 @@ TEST_CASE("[String] String to float") {
 	CHECK(String("-1e308").to_float() == -1e308);
 
 	// Exponent is so high that value is INFINITY/-INFINITY.
-	CHECK(String("1e309").to_float() == INFINITY);
-	CHECK(String("1e511").to_float() == INFINITY);
-	CHECK(String("-1e309").to_float() == -INFINITY);
-	CHECK(String("-1e511").to_float() == -INFINITY);
+	CHECK(String("1e309").to_float() == Math::INF);
+	CHECK(String("1e511").to_float() == Math::INF);
+	CHECK(String("-1e309").to_float() == -Math::INF);
+	CHECK(String("-1e511").to_float() == -Math::INF);
 
 	// Exponent is so high that a warning message is printed. Value is INFINITY/-INFINITY.
 	ERR_PRINT_OFF
-	CHECK(String("1e512").to_float() == INFINITY);
-	CHECK(String("-1e512").to_float() == -INFINITY);
+	CHECK(String("1e512").to_float() == Math::INF);
+	CHECK(String("-1e512").to_float() == -Math::INF);
 	ERR_PRINT_ON
 }
 
@@ -982,7 +1016,7 @@ TEST_CASE("[String] sprintf") {
 	// Real (infinity) left-padded
 	format = "fish %11f frog";
 	args.clear();
-	args.push_back(INFINITY);
+	args.push_back(Math::INF);
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish         inf frog"));
@@ -1106,7 +1140,7 @@ TEST_CASE("[String] sprintf") {
 	// Vector left-padded with inf/nan
 	format = "fish %11v frog";
 	args.clear();
-	args.push_back(Variant(Vector2(INFINITY, NAN)));
+	args.push_back(Variant(Vector2(Math::INF, Math::NaN)));
 	output = format.sprintf(args, &error);
 	REQUIRE(error == false);
 	CHECK(output == String("fish (        inf,         nan) frog"));
@@ -1430,6 +1464,14 @@ TEST_CASE("[String] Capitalize against many strings") {
 	output = "Snake Snake Case";
 	CHECK(input.capitalize() == output);
 
+	input = "kebab-case";
+	output = "Kebab Case";
+	CHECK(input.capitalize() == output);
+
+	input = "kebab-kebab-case";
+	output = "Kebab Kebab Case";
+	CHECK(input.capitalize() == output);
+
 	input = "sha256sum";
 	output = "Sha 256 Sum";
 	CHECK(input.capitalize() == output);
@@ -1450,6 +1492,14 @@ TEST_CASE("[String] Capitalize against many strings") {
 	output = "Snake Case Function( Snake Case Arg )";
 	CHECK(input.capitalize() == output);
 
+	input = "kebab-case-function( kebab-case-arg )";
+	output = "Kebab Case Function( Kebab Case Arg )";
+	CHECK(input.capitalize() == output);
+
+	input = "kebab_case_function( kebab_case_arg )";
+	output = "Kebab Case Function( Kebab Case Arg )";
+	CHECK(input.capitalize() == output);
+
 	input = U"словоСлово_слово слово";
 	output = U"Слово Слово Слово Слово";
 	CHECK(input.capitalize() == output);
@@ -1468,35 +1518,37 @@ struct StringCasesTestCase {
 	const char32_t *camel_case;
 	const char32_t *pascal_case;
 	const char32_t *snake_case;
+	const char32_t *kebab_case;
 };
 
 TEST_CASE("[String] Checking case conversion methods") {
 	StringCasesTestCase test_cases[] = {
 		/* clang-format off */
-		{ U"2D",                     U"2d",                   U"2d",                   U"2d"                      },
-		{ U"2d",                     U"2d",                   U"2d",                   U"2d"                      },
-		{ U"2db",                    U"2Db",                  U"2Db",                  U"2_db"                    },
-		{ U"Vector3",                U"vector3",              U"Vector3",              U"vector_3"                },
-		{ U"sha256",                 U"sha256",               U"Sha256",               U"sha_256"                 },
-		{ U"Node2D",                 U"node2d",               U"Node2d",               U"node_2d"                 },
-		{ U"RichTextLabel",          U"richTextLabel",        U"RichTextLabel",        U"rich_text_label"         },
-		{ U"HTML5",                  U"html5",                U"Html5",                U"html_5"                  },
-		{ U"Node2DPosition",         U"node2dPosition",       U"Node2dPosition",       U"node_2d_position"        },
-		{ U"Number2Digits",          U"number2Digits",        U"Number2Digits",        U"number_2_digits"         },
-		{ U"get_property_list",      U"getPropertyList",      U"GetPropertyList",      U"get_property_list"       },
-		{ U"get_camera_2d",          U"getCamera2d",          U"GetCamera2d",          U"get_camera_2d"           },
-		{ U"_physics_process",       U"physicsProcess",       U"PhysicsProcess",       U"_physics_process"        },
-		{ U"bytes2var",              U"bytes2Var",            U"Bytes2Var",            U"bytes_2_var"             },
-		{ U"linear2db",              U"linear2Db",            U"Linear2Db",            U"linear_2_db"             },
-		{ U"sha256sum",              U"sha256Sum",            U"Sha256Sum",            U"sha_256_sum"             },
-		{ U"camelCase",              U"camelCase",            U"CamelCase",            U"camel_case"              },
-		{ U"PascalCase",             U"pascalCase",           U"PascalCase",           U"pascal_case"             },
-		{ U"snake_case",             U"snakeCase",            U"SnakeCase",            U"snake_case"              },
-		{ U"Test TEST test",         U"testTestTest",         U"TestTestTest",         U"test_test_test"          },
-		{ U"словоСлово_слово слово", U"словоСловоСловоСлово", U"СловоСловоСловоСлово", U"слово_слово_слово_слово" },
-		{ U"λέξηΛέξη_λέξη λέξη",     U"λέξηΛέξηΛέξηΛέξη",     U"ΛέξηΛέξηΛέξηΛέξη",     U"λέξη_λέξη_λέξη_λέξη"     },
-		{ U"բառԲառ_բառ բառ",         U"բառԲառԲառԲառ",         U"ԲառԲառԲառԲառ",         U"բառ_բառ_բառ_բառ"         },
-		{ nullptr,                   nullptr,                 nullptr,                 nullptr                    },
+		{ U"2D",                     U"2d",                   U"2d",                   U"2d",                      U"2d"                      },
+		{ U"2d",                     U"2d",                   U"2d",                   U"2d",                      U"2d"                      },
+		{ U"2db",                    U"2Db",                  U"2Db",                  U"2_db",                    U"2-db"                    },
+		{ U"Vector3",                U"vector3",              U"Vector3",              U"vector_3",                U"vector-3"                },
+		{ U"sha256",                 U"sha256",               U"Sha256",               U"sha_256",                 U"sha-256"                 },
+		{ U"Node2D",                 U"node2d",               U"Node2d",               U"node_2d",                 U"node-2d"                 },
+		{ U"RichTextLabel",          U"richTextLabel",        U"RichTextLabel",        U"rich_text_label",         U"rich-text-label"         },
+		{ U"HTML5",                  U"html5",                U"Html5",                U"html_5",                  U"html-5"                  },
+		{ U"Node2DPosition",         U"node2dPosition",       U"Node2dPosition",       U"node_2d_position",        U"node-2d-position"        },
+		{ U"Number2Digits",          U"number2Digits",        U"Number2Digits",        U"number_2_digits",         U"number-2-digits"         },
+		{ U"get_property_list",      U"getPropertyList",      U"GetPropertyList",      U"get_property_list",       U"get-property-list"       },
+		{ U"get_camera_2d",          U"getCamera2d",          U"GetCamera2d",          U"get_camera_2d",           U"get-camera-2d"           },
+		{ U"_physics_process",       U"physicsProcess",       U"PhysicsProcess",       U"_physics_process",        U"-physics-process"        },
+		{ U"bytes2var",              U"bytes2Var",            U"Bytes2Var",            U"bytes_2_var",             U"bytes-2-var"             },
+		{ U"linear2db",              U"linear2Db",            U"Linear2Db",            U"linear_2_db",             U"linear-2-db"             },
+		{ U"sha256sum",              U"sha256Sum",            U"Sha256Sum",            U"sha_256_sum",             U"sha-256-sum"             },
+		{ U"camelCase",              U"camelCase",            U"CamelCase",            U"camel_case",              U"camel-case"              },
+		{ U"PascalCase",             U"pascalCase",           U"PascalCase",           U"pascal_case",             U"pascal-case"             },
+		{ U"snake_case",             U"snakeCase",            U"SnakeCase",            U"snake_case",              U"snake-case"              },
+		{ U"kebab-case",             U"kebabCase",            U"KebabCase",            U"kebab_case",              U"kebab-case"              },
+		{ U"Test TEST test",         U"testTestTest",         U"TestTestTest",         U"test_test_test",          U"test-test-test"          },
+		{ U"словоСлово_слово слово", U"словоСловоСловоСлово", U"СловоСловоСловоСлово", U"слово_слово_слово_слово", U"слово-слово-слово-слово" },
+		{ U"λέξηΛέξη_λέξη λέξη",     U"λέξηΛέξηΛέξηΛέξη",     U"ΛέξηΛέξηΛέξηΛέξη",     U"λέξη_λέξη_λέξη_λέξη",     U"λέξη-λέξη-λέξη-λέξη"     },
+		{ U"բառԲառ_բառ բառ",         U"բառԲառԲառԲառ",         U"ԲառԲառԲառԲառ",         U"բառ_բառ_բառ_բառ",         U"բառ-բառ-բառ-բառ"         },
+		{ nullptr,                   nullptr,                 nullptr,                 nullptr,                    nullptr                    },
 		/* clang-format on */
 	};
 
@@ -1506,6 +1558,7 @@ TEST_CASE("[String] Checking case conversion methods") {
 		CHECK(input.to_camel_case() == test_cases[idx].camel_case);
 		CHECK(input.to_pascal_case() == test_cases[idx].pascal_case);
 		CHECK(input.to_snake_case() == test_cases[idx].snake_case);
+		CHECK(input.to_kebab_case() == test_cases[idx].kebab_case);
 		idx++;
 	}
 }
@@ -1774,6 +1827,7 @@ TEST_CASE("[String] uri_encode/unescape") {
 	static const uint8_t u8str[] = { 0x54, 0xC4, 0x93, 0xC5, 0xA1, 0x74, 0x00 };
 	String x2 = String::utf8((const char *)u8str);
 	String x3 = U"Tēšt";
+	String x4 = U"file+name";
 
 	CHECK(x1.uri_decode() == x2);
 	CHECK(x1.uri_decode() == x3);
@@ -1783,6 +1837,8 @@ TEST_CASE("[String] uri_encode/unescape") {
 
 	CHECK(s.uri_encode() == t);
 	CHECK(t.uri_decode() == s);
+	CHECK(x4.uri_file_decode() == x4);
+	CHECK(x4.uri_decode() == U"file name");
 }
 
 TEST_CASE("[String] xml_escape/unescape") {

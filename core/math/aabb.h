@@ -131,7 +131,7 @@ struct [[nodiscard]] AABB {
 		return position + (size * 0.5f);
 	}
 
-	operator String() const;
+	explicit operator String() const;
 
 	AABB() = default;
 	constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :

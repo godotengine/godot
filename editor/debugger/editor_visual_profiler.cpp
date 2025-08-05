@@ -31,9 +31,9 @@
 #include "editor_visual_profiler.h"
 
 #include "core/io/image.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_run_bar.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/flow_container.h"
 #include "scene/resources/image_texture.h"
@@ -442,7 +442,6 @@ void EditorVisualProfiler::_autostart_toggled(bool p_toggled_on) {
 
 void EditorVisualProfiler::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -778,6 +777,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb_measure->add_child(memnew(Label(TTR("Measure:"))));
 
 	display_mode = memnew(OptionButton);
+	display_mode->set_accessibility_name(TTRC("Measure:"));
 	display_mode->add_item(TTR("Frame Time (ms)"));
 	display_mode->add_item(TTR("Frame %"));
 	display_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorVisualProfiler::_combo_changed));
@@ -801,6 +801,7 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	hb_frame->add_child(memnew(Label(TTR("Frame #:"))));
 
 	cursor_metric_edit = memnew(SpinBox);
+	cursor_metric_edit->set_accessibility_name(TTRC("Frame #:"));
 	cursor_metric_edit->set_h_size_flags(SIZE_FILL);
 	hb_frame->add_child(cursor_metric_edit);
 	cursor_metric_edit->connect(SceneStringName(value_changed), callable_mp(this, &EditorVisualProfiler::_cursor_metric_changed));

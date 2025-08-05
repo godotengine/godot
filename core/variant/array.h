@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/typedefs.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 #include <climits>
 #include <initializer_list>
@@ -44,6 +45,7 @@ struct ContainerType;
 
 class Array {
 	mutable ArrayPrivate *_p;
+	void _ref(const Array &p_from) const;
 	void _unref() const;
 
 public:
@@ -109,8 +111,6 @@ public:
 	ConstIterator begin() const;
 	ConstIterator end() const;
 
-	void _ref(const Array &p_from) const;
-
 	Variant &operator[](int p_idx);
 	const Variant &operator[](int p_idx) const;
 
@@ -165,7 +165,8 @@ public:
 	Variant pop_at(int p_pos);
 
 	Array duplicate(bool p_deep = false) const;
-	Array recursive_duplicate(bool p_deep, int recursion_count) const;
+	Array duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Array recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	Array slice(int p_begin, int p_end = INT_MAX, int p_step = 1, bool p_deep = false) const;
 	Array filter(const Callable &p_callable) const;

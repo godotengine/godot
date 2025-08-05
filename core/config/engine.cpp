@@ -224,39 +224,22 @@ String Engine::get_license_text() const {
 String Engine::get_architecture_name() const {
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	return "x86_64";
-
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	return "x86_32";
-
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
-
 #elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
-
 #elif defined(__riscv)
-#if __riscv_xlen == 8
 	return "rv64";
-#else
-	return "riscv";
-#endif
-
-#elif defined(__powerpc__)
-#if defined(__powerpc64__)
+#elif defined(__powerpc64__)
 	return "ppc64";
-#else
-	return "ppc";
-#endif
-
 #elif defined(__loongarch64)
 	return "loongarch64";
-
-#elif defined(__wasm__)
-#if defined(__wasm64__)
+#elif defined(__wasm64__)
 	return "wasm64";
 #elif defined(__wasm32__)
 	return "wasm32";
-#endif
 #endif
 }
 
@@ -399,8 +382,6 @@ void Engine::set_shader_cache_path(const String &p_path) {
 String Engine::get_shader_cache_path() const {
 	return shader_cache_path;
 }
-
-Engine *Engine::singleton = nullptr;
 
 Engine *Engine::get_singleton() {
 	return singleton;

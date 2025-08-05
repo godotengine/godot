@@ -280,7 +280,7 @@ TEST_CASE("[Stress][AStar3D] Find paths") {
 		float d[N][N];
 		for (int u = 0; u < N; u++) {
 			for (int v = 0; v < N; v++) {
-				d[u][v] = (u == v || adj[u][v]) ? p[u].distance_to(p[v]) : INFINITY;
+				d[u][v] = (u == v || adj[u][v]) ? p[u].distance_to(p[v]) : Math::INF;
 			}
 		}
 		for (int w = 0; w < N; w++) {

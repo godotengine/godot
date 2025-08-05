@@ -39,6 +39,8 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #ifdef VULKAN_ENABLED
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
@@ -48,6 +50,10 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
 #include "wayland/egl_manager_wayland_gles.h"
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
@@ -198,6 +204,12 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 #ifdef SPEECHD_ENABLED
 		case FEATURE_TEXT_TO_SPEECH: {
 			return true;
+		} break;
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
 		} break;
 #endif
 
@@ -441,15 +453,13 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 
 	WindowID pointed_id = wayland_thread.pointer_get_pointed_window_id();
 
-	if (pointed_id != INVALID_WINDOW_ID) {
+	if (pointed_id != INVALID_WINDOW_ID && windows.has(pointed_id)) {
 		return Input::get_singleton()->get_mouse_position() + windows[pointed_id].rect.position;
 	}
 
 	// We can't properly implement this method by design.
 	// This is the best we can do unfortunately.
 	return Input::get_singleton()->get_mouse_position();
-
-	return Point2i();
 }
 
 BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
@@ -566,9 +576,9 @@ int DisplayServerWayland::get_primary_screen() const {
 Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
 
 	return wayland_thread.screen_get_data(p_screen).position;
 }
@@ -576,24 +586,27 @@ Point2i DisplayServerWayland::screen_get_position(int p_screen) const {
 Size2i DisplayServerWayland::screen_get_size(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
 
 	return wayland_thread.screen_get_data(p_screen).size;
 }
 
 Rect2i DisplayServerWayland::screen_get_usable_rect(int p_screen) const {
-	// Unsupported on wayland.
-	return Rect2i(Point2i(), screen_get_size(p_screen));
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
+	return Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
 }
 
 int DisplayServerWayland::screen_get_dpi(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 96);
 
 	const WaylandThread::ScreenData &data = wayland_thread.screen_get_data(p_screen);
 
@@ -626,15 +639,19 @@ float DisplayServerWayland::screen_get_scale(int p_screen) const {
 		return wayland_thread.window_state_get_scale_factor(ws);
 	}
 
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return wayland_thread.screen_get_data(p_screen).scale;
 }
 
 float DisplayServerWayland::screen_get_refresh_rate(int p_screen) const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
 
 	return wayland_thread.screen_get_data(p_screen).refresh_rate;
 }
@@ -688,6 +705,16 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 	wd.mode = p_mode;
 	wd.flags = p_flags;
 	wd.vsync_mode = p_vsync_mode;
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+		}
+		memdelete(accessibility_driver);
+		accessibility_driver = nullptr;
+	}
+#endif
 
 	// NOTE: Remember to clear its position if this window will be a toplevel. We
 	// can only know once we show it.
@@ -800,8 +827,9 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 		}
 #endif
 
-		// NOTE: The public window-handling methods might depend on this flag being
-		// set. Ensure to not make any of these calls before this assignment.
+		// NOTE: Some public window-handling methods might depend on this flag being
+		// set. Make sure the method you're calling does not depend on it before this
+		// assignment.
 		wd.visible = true;
 
 		// Actually try to apply the window's mode now that it's visible.
@@ -839,6 +867,12 @@ void DisplayServerWayland::delete_sub_window(WindowID p_window_id) {
 	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
 		popup_menu_list.pop_back();
 	}
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_window_id);
+	}
+#endif
 
 	if (wd.visible) {
 #ifdef VULKAN_ENABLED
@@ -1015,6 +1049,7 @@ void DisplayServerWayland::window_set_drop_files_callback(const Callable &p_call
 }
 
 int DisplayServerWayland::window_get_current_screen(DisplayServer::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), INVALID_SCREEN);
 	// Standard Wayland APIs don't support getting the screen of a window.
 	return 0;
 }
@@ -1209,12 +1244,12 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't be popup.");
-			ERR_FAIL_COND_MSG(wd.visible, "Popup flag can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & WINDOW_FLAG_POPUP_BIT) != p_enabled, "Popup flag can't changed while window is opened.");
 		} break;
 
 		case WINDOW_FLAG_POPUP_WM_HINT: {
 			ERR_FAIL_COND_MSG(p_window_id == MAIN_WINDOW_ID, "Main window can't have popup hint.");
-			ERR_FAIL_COND_MSG(wd.visible, "Popup hint can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(wd.visible && (wd.flags & WINDOW_FLAG_POPUP_WM_HINT_BIT) != p_enabled, "Popup hint can't changed while window is opened.");
 		} break;
 
 		default: {
@@ -1284,6 +1319,22 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 	wayland_thread.window_set_ime_position(p_pos, p_window_id);
 }
 
+int DisplayServerWayland::accessibility_should_increase_contrast() const {
+#ifdef DBUS_ENABLED
+	return portal_desktop->get_high_contrast();
+#endif
+	return -1;
+}
+
+int DisplayServerWayland::accessibility_screen_reader_active() const {
+#ifdef DBUS_ENABLED
+	if (atspi_monitor->is_supported()) {
+		return atspi_monitor->is_active();
+	}
+#endif
+	return -1;
+}
+
 Point2i DisplayServerWayland::ime_get_selection() const {
 	return ime_selection;
 }
@@ -1305,7 +1356,7 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	if (rendering_context) {
 		rendering_context->window_set_vsync_mode(p_window_id, p_vsync_mode);
 
-		wd.emulate_vsync = (rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
+		wd.emulate_vsync = (!wayland_thread.is_fifo_available() && rendering_context->window_get_vsync_mode(p_window_id) == DisplayServer::VSYNC_ENABLED);
 
 		if (wd.emulate_vsync) {
 			print_verbose("VSYNC: manually throttling frames using MAILBOX.");
@@ -1318,6 +1369,8 @@ void DisplayServerWayland::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	if (egl_manager) {
 		egl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 
+		// NOTE: Mesa's EGL implementation does not seem to make use of fifo_v1 so
+		// we'll have to always emulate V-Sync.
 		wd.emulate_vsync = egl_manager->is_using_vsync();
 
 		if (wd.emulate_vsync) {
@@ -1490,46 +1543,25 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 }
 
 bool DisplayServerWayland::color_picker(const Callable &p_callback) {
+#ifdef DBUS_ENABLED
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
-
 	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
 	return portal_desktop->color_picker((ws ? ws->exported_handle : String()), p_callback);
+#else
+	return false;
+#endif
 }
 
 void DisplayServerWayland::try_suspend() {
-	bool must_emulate = false;
-
-	for (KeyValue<DisplayServer::WindowID, WindowData> &pair : windows) {
-		if (pair.value.emulate_vsync) {
-			must_emulate = true;
-			break;
-		}
-	}
-
 	// Due to various reasons, we manually handle display synchronization by
 	// waiting for a frame event (request to draw) or, if available, the actual
 	// window's suspend status. When a window is suspended, we can avoid drawing
 	// altogether, either because the compositor told us that we don't need to or
 	// because the pace of the frame events became unreliable.
-	if (must_emulate) {
-		bool frame = wayland_thread.wait_frame_suspend_ms(WAYLAND_MAX_FRAME_TIME_US / 1000);
-		if (!frame) {
-			suspend_state = SuspendState::TIMEOUT;
-		}
-	}
-
-	// If we suspended by capability, we'll know with this check. We must do this
-	// after `wait_frame_suspend_ms` as it progressively dispatches the event queue
-	// during the "timeout".
-	if (wayland_thread.is_suspended()) {
-		suspend_state = SuspendState::CAPABILITY;
-	}
-
-	if (suspend_state == SuspendState::TIMEOUT) {
-		DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
-	} else if (suspend_state == SuspendState::CAPABILITY) {
-		DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
+	bool frame = wayland_thread.wait_frame_suspend_ms(WAYLAND_MAX_FRAME_TIME_US / 1000);
+	if (!frame) {
+		suspend_state = SuspendState::TIMEOUT;
 	}
 }
 
@@ -1557,14 +1589,24 @@ void DisplayServerWayland::process_events() {
 		}
 
 		Ref<WaylandThread::WindowEventMessage> winev_msg = msg;
-		if (winev_msg.is_valid()) {
+		if (winev_msg.is_valid() && windows.has(winev_msg->id)) {
 			_send_window_event(winev_msg->event, winev_msg->id);
 
 			if (winev_msg->event == WINDOW_EVENT_FOCUS_IN) {
+#ifdef ACCESSKIT_ENABLED
+				if (accessibility_driver) {
+					accessibility_driver->accessibility_set_window_focused(winev_msg->id, true);
+				}
+#endif
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 				}
 			} else if (winev_msg->event == WINDOW_EVENT_FOCUS_OUT) {
+#ifdef ACCESSKIT_ENABLED
+				if (accessibility_driver) {
+					accessibility_driver->accessibility_set_window_focused(winev_msg->id, false);
+				}
+#endif
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
@@ -1670,39 +1712,54 @@ void DisplayServerWayland::process_events() {
 
 	wayland_thread.keyboard_echo_keys();
 
-	if (suspend_state == SuspendState::NONE) {
-		// Due to the way legacy suspension works, we have to treat low processor
-		// usage mode very differently than the regular one.
-		if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
-			// NOTE: We must avoid committing a surface if we expect a new frame, as we
-			// might otherwise commit some inconsistent data (e.g. buffer scale). Note
-			// that if a new frame is expected it's going to be committed by the renderer
-			// soon anyways.
-			if (!RenderingServer::get_singleton()->has_changed()) {
-				// We _can't_ commit in a different thread (such as in the frame callback
-				// itself) because we would risk to step on the renderer's feet, which would
-				// cause subtle but severe issues, such as crashes on setups with explicit
-				// sync. This isn't normally a problem, as the renderer commits at every
-				// frame (which is what we need for atomic surface updates anyways), but in
-				// low processor usage mode that expectation is broken. When it's on, our
-				// frame rate stops being constant. This also reflects in the frame
-				// information we use for legacy suspension. In order to avoid issues, let's
-				// manually commit all surfaces, so that we can get fresh frame data.
-				wayland_thread.commit_surfaces();
-				try_suspend();
+	switch (suspend_state) {
+		case SuspendState::NONE: {
+			bool emulate_vsync = false;
+			for (KeyValue<DisplayServer::WindowID, WindowData> &pair : windows) {
+				if (pair.value.emulate_vsync) {
+					emulate_vsync = true;
+					break;
+				}
 			}
-		} else {
-			try_suspend();
-		}
-	} else {
-		if (suspend_state == SuspendState::CAPABILITY) {
-			// If we suspended by capability we can assume that it will be reset when
-			// the compositor wants us to repaint.
-			if (!wayland_thread.is_suspended()) {
-				suspend_state = SuspendState::NONE;
-				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
+
+			if (emulate_vsync) {
+				// Due to the way legacy suspension works, we have to treat low processor
+				// usage mode very differently than the regular one.
+				if (OS::get_singleton()->is_in_low_processor_usage_mode()) {
+					// NOTE: We must avoid committing a surface if we expect a new frame, as we
+					// might otherwise commit some inconsistent data (e.g. buffer scale). Note
+					// that if a new frame is expected it's going to be committed by the renderer
+					// soon anyways.
+					if (!RenderingServer::get_singleton()->has_changed()) {
+						// We _can't_ commit in a different thread (such as in the frame callback
+						// itself) because we would risk to step on the renderer's feet, which would
+						// cause subtle but severe issues, such as crashes on setups with explicit
+						// sync. This isn't normally a problem, as the renderer commits at every
+						// frame (which is what we need for atomic surface updates anyways), but in
+						// low processor usage mode that expectation is broken. When it's on, our
+						// frame rate stops being constant. This also reflects in the frame
+						// information we use for legacy suspension. In order to avoid issues, let's
+						// manually commit all surfaces, so that we can get fresh frame data.
+						wayland_thread.commit_surfaces();
+						try_suspend();
+					}
+				} else {
+					try_suspend();
+				}
 			}
-		} else if (suspend_state == SuspendState::TIMEOUT) {
+
+			if (wayland_thread.is_suspended()) {
+				suspend_state = SuspendState::CAPABILITY;
+			}
+
+			if (suspend_state == SuspendState::TIMEOUT) {
+				DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
+			} else if (suspend_state == SuspendState::CAPABILITY) {
+				DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
+			}
+		} break;
+
+		case SuspendState::TIMEOUT: {
 			// Certain compositors might not report the "suspended" wm_capability flag.
 			// Because of this we'll wake up at the next frame event, indicating the
 			// desire for the compositor to let us repaint.
@@ -1710,11 +1767,20 @@ void DisplayServerWayland::process_events() {
 				suspend_state = SuspendState::NONE;
 				DEBUG_LOG_WAYLAND("Unsuspending from timeout.");
 			}
-		}
 
-		// Since we're not rendering, nothing is committing the windows'
-		// surfaces. We have to do it ourselves.
-		wayland_thread.commit_surfaces();
+			// Since we're not rendering, nothing is committing the windows'
+			// surfaces. We have to do it ourselves.
+			wayland_thread.commit_surfaces();
+		} break;
+
+		case SuspendState::CAPABILITY: {
+			// If we suspended by capability we can assume that it will be reset when
+			// the compositor wants us to repaint.
+			if (!wayland_thread.is_suspended()) {
+				suspend_state = SuspendState::NONE;
+				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
+			}
+		} break;
 	}
 
 #ifdef DBUS_ENABLED
@@ -1775,6 +1841,7 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -1828,10 +1895,25 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
+
 	rendering_driver = p_rendering_driver;
 
 	bool driver_found = false;
 	String executable_name = OS::get_singleton()->get_executable_path().get_file();
+
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+		driver_found = true;
+	}
 
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
@@ -2000,6 +2082,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.rect.size = p_resolution;
 	wd.title = "Godot";
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+		}
+		memdelete(accessibility_driver);
+		accessibility_driver = nullptr;
+	}
+#endif
+
 	show_window(MAIN_WINDOW_ID);
 
 #ifdef RD_ENABLED
@@ -2021,6 +2113,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef DBUS_ENABLED
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 	screensaver = memnew(FreeDesktopScreenSaver);
 #endif // DBUS_ENABLED
 
@@ -2045,12 +2138,17 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 		if (!window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, id)) {
 			toplevels.push_back(id);
+#ifdef ACCESSKIT_ENABLED
+		} else if (accessibility_driver) {
+			accessibility_driver->window_destroy(id);
+#endif
 		}
 	}
 
 	for (WindowID &id : toplevels) {
 		delete_sub_window(id);
 	}
+	windows.clear();
 
 	wayland_thread.destroy();
 
@@ -2071,9 +2169,16 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
+	}
+#endif
+
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
 		memdelete(portal_desktop);
+		memdelete(atspi_monitor);
 		memdelete(screensaver);
 	}
 #endif

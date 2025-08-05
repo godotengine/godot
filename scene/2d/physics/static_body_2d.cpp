@@ -159,16 +159,16 @@ void StaticBody2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 				const real_t capsule_radius = capsule_shape->get_radius();
 
 				Vector<Vector2> shape_outline;
-				const real_t turn_step = Math_TAU / 12.0;
+				const real_t turn_step = Math::TAU / 12.0;
 				shape_outline.resize(14);
 				int shape_outline_inx = 0;
 				for (int i = 0; i < 12; i++) {
-					Vector2 ofs = Vector2(0, (i > 3 && i <= 9) ? -capsule_height * 0.5 + capsule_radius : capsule_height * 0.5 - capsule_radius);
+					Vector2 ofs = Vector2(0, (i > 3 && i <= 9) ? capsule_height * 0.5 - capsule_radius : -capsule_height * 0.5 + capsule_radius);
 
-					shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * capsule_radius + ofs);
+					shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), -Math::cos(i * turn_step)) * capsule_radius + ofs);
 					shape_outline_inx += 1;
 					if (i == 3 || i == 9) {
-						shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), Math::cos(i * turn_step)) * capsule_radius - ofs);
+						shape_outline.write[shape_outline_inx] = static_body_xform.xform(Vector2(Math::sin(i * turn_step), -Math::cos(i * turn_step)) * capsule_radius - ofs);
 						shape_outline_inx += 1;
 					}
 				}
@@ -184,7 +184,7 @@ void StaticBody2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 				int circle_edge_count = 12;
 				shape_outline.resize(circle_edge_count);
 
-				const real_t turn_step = Math_TAU / real_t(circle_edge_count);
+				const real_t turn_step = Math::TAU / real_t(circle_edge_count);
 				for (int i = 0; i < circle_edge_count; i++) {
 					shape_outline.write[i] = static_body_xform.xform(Vector2(Math::cos(i * turn_step), Math::sin(i * turn_step)) * circle_radius);
 				}

@@ -114,8 +114,6 @@ void SceneTreeTimer::release_connections() {
 	}
 }
 
-SceneTreeTimer::SceneTreeTimer() {}
-
 #ifndef _3D_DISABLED
 // This should be called once per physics tick, to make sure the transform previous and current
 // is kept up to date on the few Node3Ds that are using client side physics interpolation.
@@ -138,6 +136,9 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 	}
 }
 #endif // _3D_DISABLED
+
+bool SceneTree::_physics_interpolation_enabled = false;
+bool SceneTree::_physics_interpolation_enabled_in_project = false;
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -188,14 +189,6 @@ void SceneTree::remove_from_group(const StringName &p_group, Node *p_node) {
 	}
 }
 
-void SceneTree::make_group_changed(const StringName &p_group) {
-	_THREAD_SAFE_METHOD_
-	HashMap<StringName, Group>::Iterator E = group_map.find(p_group);
-	if (E) {
-		E->value.changed = true;
-	}
-}
-
 void SceneTree::flush_transform_notifications() {
 	_THREAD_SAFE_METHOD_
 
@@ -206,6 +199,104 @@ void SceneTree::flush_transform_notifications() {
 		xform_change_list.remove(n);
 		n = nx;
 		node->notification(NOTIFICATION_TRANSFORM_CHANGED);
+	}
+}
+
+bool SceneTree::is_accessibility_enabled() const {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
+		return false;
+	}
+
+	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	int screen_reader_active = DisplayServer::get_singleton()->accessibility_screen_reader_active();
+	if ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) || ((accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO) && (screen_reader_active != 1))) {
+		return false;
+	}
+	return true;
+}
+
+bool SceneTree::is_accessibility_supported() const {
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ACCESSIBILITY_SCREEN_READER)) {
+		return false;
+	}
+
+	DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::accessibility_get_mode();
+	if (accessibility_mode == DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		return false;
+	}
+	return true;
+}
+
+void SceneTree::_accessibility_force_update() {
+	accessibility_force_update = true;
+}
+
+void SceneTree::_accessibility_notify_change(const Node *p_node, bool p_remove) {
+	if (p_node) {
+		if (p_remove) {
+			accessibility_change_queue.erase(p_node->get_instance_id());
+		} else {
+			accessibility_change_queue.insert(p_node->get_instance_id());
+		}
+	}
+}
+
+void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_id) {
+	// Process NOTIFICATION_ACCESSIBILITY_UPDATE.
+	Vector<ObjectID> processed;
+	for (const ObjectID &id : accessibility_change_queue) {
+		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+		if (!node || !node->get_window()) {
+			processed.push_back(id);
+			continue; // Invalid node, remove from list and skip.
+		} else if (node->get_window()->get_window_id() != p_window_id) {
+			continue; // Another window, skip.
+		}
+		node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
+		processed.push_back(id);
+	}
+
+	// Track focus change.
+	// Note: Do not use `Window::get_focused_window()`, it returns both native and embedded windows, and we only care about focused element in the currently processed native window.
+	// Native window focus is handled in the DisplayServer, or AccessKit subclassing adapter.
+	ObjectID oid = DisplayServer::get_singleton()->window_get_attached_instance_id(p_window_id);
+	Window *w_this = (Window *)ObjectDB::get_instance(oid);
+	if (w_this) {
+		Window *w_focus = w_this->get_focused_subwindow();
+		if (w_focus && !w_focus->is_part_of_edited_scene()) {
+			w_this = w_focus;
+		}
+
+		RID new_focus_element;
+		Control *n_focus = w_this->gui_get_focus_owner();
+		if (n_focus && !n_focus->is_part_of_edited_scene()) {
+			new_focus_element = n_focus->get_focused_accessibility_element();
+		} else {
+			new_focus_element = w_this->get_focused_accessibility_element();
+		}
+
+		DisplayServer::get_singleton()->accessibility_update_set_focus(new_focus_element);
+	}
+
+	// Cleanup.
+	for (const ObjectID &id : processed) {
+		accessibility_change_queue.erase(id);
+	}
+}
+
+void SceneTree::_flush_accessibility_changes() {
+	if (is_accessibility_enabled()) {
+		uint64_t time = OS::get_singleton()->get_ticks_msec();
+		if (!accessibility_force_update) {
+			if (time - accessibility_last_update < 1000 / accessibility_upd_per_sec) {
+				return;
+			}
+		}
+		accessibility_force_update = false;
+		accessibility_last_update = time;
+
+		// Push update to the accessibility driver.
+		DisplayServer::get_singleton()->accessibility_update_if_active(callable_mp(this, &SceneTree::_process_accessibility_changes));
 	}
 }
 
@@ -478,6 +569,9 @@ void SceneTree::initialize() {
 }
 
 void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
+	// This version is for use in editor.
+	_physics_interpolation_enabled_in_project = p_enabled;
+
 	// We never want interpolation in the editor.
 	if (Engine::get_singleton()->is_editor_hint()) {
 		p_enabled = false;
@@ -490,14 +584,12 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	_physics_interpolation_enabled = p_enabled;
 	RenderingServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
 
+	get_scene_tree_fti().set_enabled(get_root(), p_enabled);
+
 	// Perform an auto reset on the root node for convenience for the user.
 	if (root) {
 		root->reset_physics_interpolation();
 	}
-}
-
-bool SceneTree::is_physics_interpolation_enabled() const {
-	return _physics_interpolation_enabled;
 }
 
 #ifndef _3D_DISABLED
@@ -517,6 +609,7 @@ void SceneTree::iteration_prepare() {
 		// Make sure any pending transforms from the last tick / frame
 		// are flushed before pumping the interpolation prev and currents.
 		flush_transform_notifications();
+		get_scene_tree_fti().tick_update();
 		RenderingServer::get_singleton()->tick();
 	}
 }
@@ -549,6 +642,7 @@ bool SceneTree::physics_process(double p_time) {
 
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
+
 	_call_idle_callbacks();
 
 	return _quit;
@@ -570,6 +664,17 @@ void SceneTree::iteration_end() {
 }
 
 bool SceneTree::process(double p_time) {
+	// First pass of scene tree fixed timestep interpolation.
+	if (get_scene_tree_fti().is_enabled()) {
+		// Special, we need to ensure RenderingServer is up to date
+		// with *all* the pending xforms *before* updating it during
+		// the FTI update.
+		// If this is not done, we can end up with a deferred `set_transform()`
+		// overwriting the interpolated xform in the server.
+		flush_transform_notifications();
+		get_scene_tree_fti().frame_update(get_root(), true);
+	}
+
 	if (MainLoop::process(p_time)) {
 		_quit = true;
 	}
@@ -607,12 +712,14 @@ bool SceneTree::process(double p_time) {
 	// This should happen last because any processing that deletes something beforehand might expect the object to be removed in the same frame.
 	_flush_delete_queue();
 
+	_flush_accessibility_changes();
+
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
 #ifndef _3D_DISABLED
 	if (Engine::get_singleton()->is_editor_hint()) {
-		String env_path = GLOBAL_GET(SNAME("rendering/environment/defaults/default_environment"));
+		String env_path = GLOBAL_GET("rendering/environment/defaults/default_environment");
 		env_path = env_path.strip_edges(); // User may have added a space or two.
 
 		bool can_load = true;
@@ -648,6 +755,11 @@ bool SceneTree::process(double p_time) {
 	}
 #endif // _3D_DISABLED
 #endif // TOOLS_ENABLED
+
+	// Second pass of scene tree fixed timestep interpolation.
+	// ToDo: Possibly needs another flush_transform_notifications here
+	// depending on whether there are side effects to _call_idle_callbacks().
+	get_scene_tree_fti().frame_update(get_root(), false);
 
 	if (_physics_interpolation_enabled) {
 		RenderingServer::get_singleton()->pre_draw(true);
@@ -896,15 +1008,16 @@ Ref<Material> SceneTree::get_debug_collision_material() {
 		return collision_material;
 	}
 
-	Ref<StandardMaterial3D> line_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
-	line_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	line_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	line_material->set_albedo(get_debug_collisions_color());
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
+	material->set_cull_mode(StandardMaterial3D::CULL_BACK);
+	material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 
-	collision_material = line_material;
+	collision_material = material;
 
 	return collision_material;
 }
@@ -1707,7 +1820,7 @@ void SceneTree::set_multiplayer(Ref<MultiplayerAPI> p_multiplayer, const NodePat
 						break;
 					}
 				}
-				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + p_root_path + "' in '" + E.key + "'.");
+				ERR_FAIL_COND_MSG(valid, "Multiplayer is already configured for a parent of this path: '" + String(p_root_path) + "' in '" + String(E.key) + "'.");
 			}
 		}
 		if (p_multiplayer.is_valid()) {
@@ -1731,6 +1844,9 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
+
+	ClassDB::bind_method(D_METHOD("is_accessibility_enabled"), &SceneTree::is_accessibility_enabled);
+	ClassDB::bind_method(D_METHOD("is_accessibility_supported"), &SceneTree::is_accessibility_supported);
 
 	ClassDB::bind_method(D_METHOD("is_auto_accept_quit"), &SceneTree::is_auto_accept_quit);
 	ClassDB::bind_method(D_METHOD("set_auto_accept_quit", "enabled"), &SceneTree::set_auto_accept_quit);
@@ -1849,12 +1965,26 @@ void SceneTree::add_idle_callback(IdleCallback p_callback) {
 
 #ifdef TOOLS_ENABLED
 void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
-	const String pf = p_function;
 	bool add_options = false;
 	if (p_idx == 0) {
-		add_options = pf == "get_nodes_in_group" || pf == "has_group" || pf == "get_first_node_in_group" || pf == "set_group" || pf == "notify_group" || pf == "call_group" || pf == "add_to_group";
+		static const Vector<StringName> names = {
+			StringName("add_to_group", true),
+			StringName("call_group", true),
+			StringName("get_first_node_in_group", true),
+			StringName("get_node_count_in_group", true),
+			StringName("get_nodes_in_group", true),
+			StringName("has_group", true),
+			StringName("notify_group", true),
+			StringName("set_group", true),
+		};
+		add_options = names.has(p_function);
 	} else if (p_idx == 1) {
-		add_options = pf == "set_group_flags" || pf == "call_group_flags" || pf == "notify_group_flags";
+		static const Vector<StringName> names = {
+			StringName("call_group_flags", true),
+			StringName("notify_group_flags", true),
+			StringName("set_group_flags", true),
+		};
+		add_options = names.has(p_function);
 	}
 	if (add_options) {
 		HashMap<StringName, String> global_groups = ProjectSettings::get_singleton()->get_global_groups_list();
@@ -1879,6 +2009,7 @@ SceneTree::SceneTree() {
 	debug_paths_color = GLOBAL_DEF("debug/shapes/paths/geometry_color", Color(0.1, 1.0, 0.7, 0.4));
 	debug_paths_width = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/paths/geometry_width", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 2.0);
 	collision_debug_contacts = GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/shapes/collision/max_contacts_displayed", PROPERTY_HINT_RANGE, "0,20000,1"), 10000);
+	accessibility_upd_per_sec = GLOBAL_GET(SNAME("accessibility/general/updates_per_second"));
 
 	GLOBAL_DEF("debug/shapes/collision/draw_2d_outlines", true);
 
@@ -1890,13 +2021,17 @@ SceneTree::SceneTree() {
 	root = memnew(Window);
 	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
-	root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	root->set_name("root");
-	root->set_title(GLOBAL_GET("application/config/name"));
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		root->set_wrap_controls(true);
+		root->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_ALWAYS);
+	} else {
+		root->set_auto_translate_mode(GLOBAL_GET("internationalization/rendering/root_node_auto_translate") ? Node::AUTO_TRANSLATE_MODE_ALWAYS : Node::AUTO_TRANSLATE_MODE_DISABLED);
 	}
+
+	// Set after auto translate mode to avoid changing the displayed title back and forth.
+	root->set_title(GLOBAL_GET("application/config/name"));
 
 #ifndef _3D_DISABLED
 	if (root->get_world_3d().is_null()) {
@@ -1932,7 +2067,7 @@ SceneTree::SceneTree() {
 	const bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	root->set_use_hdr_2d(use_hdr_2d);
 
-	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast)"), 0);
+	const int ssaa_mode = GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/screen_space_aa", PROPERTY_HINT_ENUM, "Disabled (Fastest),FXAA (Fast),SMAA (Average)"), 0);
 	root->set_screen_space_aa(Viewport::ScreenSpaceAA(ssaa_mode));
 
 	const bool use_taa = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/use_taa", false);

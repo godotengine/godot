@@ -662,9 +662,10 @@ void OpenXRCompositionLayer::_get_property_list(List<PropertyInfo> *p_property_l
 bool OpenXRCompositionLayer::_get(const StringName &p_property, Variant &r_value) const {
 	if (extension_property_values.has(p_property)) {
 		r_value = extension_property_values[p_property];
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p_value) {
@@ -676,6 +677,9 @@ bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p
 }
 
 void OpenXRCompositionLayer::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "layer_viewport") {
 		if (use_android_surface) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;

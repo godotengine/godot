@@ -107,6 +107,8 @@ public:
 		bool is_experimental = false;
 		String experimental_message;
 		Vector<ArgumentDoc> arguments;
+		// NOTE: Only for GDScript for now. The rest argument is not saved to the XML file.
+		ArgumentDoc rest_argument;
 		Vector<int> errors_returned;
 		String keywords;
 		bool operator<(const MethodDoc &p_method) const {
@@ -794,8 +796,8 @@ public:
 			if (p_dict.has("enums")) {
 				enums = p_dict["enums"];
 			}
-			for (int i = 0; i < enums.size(); i++) {
-				doc.enums[enums.get_key_at_index(i)] = EnumDoc::from_dict(enums.get_value_at_index(i));
+			for (const KeyValue<Variant, Variant> &kv : enums) {
+				doc.enums[kv.key] = EnumDoc::from_dict(kv.value);
 			}
 
 			Array properties;

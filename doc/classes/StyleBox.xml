@@ -10,7 +10,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_draw" qualifiers="virtual const">
+		<method name="_draw" qualifiers="virtual required const">
 			<return type="void" />
 			<param index="0" name="to_canvas_item" type="RID" />
 			<param index="1" name="rect" type="Rect2" />

@@ -87,7 +87,7 @@ public:
 	virtual bool is_valid() const override { return valid; }
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const override {
 		if (p_arg < 0) {
 			return return_value_metadata;
@@ -95,7 +95,7 @@ public:
 			return arguments_metadata.get(p_arg);
 		}
 	}
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual Variant call(Object *p_object, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) const override {
 #ifdef TOOLS_ENABLED
@@ -219,9 +219,9 @@ public:
 		_set_returns(p_method_info->has_return_value);
 		_set_const(p_method_info->method_flags & GDEXTENSION_METHOD_FLAG_CONST);
 		_set_static(p_method_info->method_flags & GDEXTENSION_METHOD_FLAG_STATIC);
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 		_generate_argument_types(p_method_info->argument_count);
-#endif
+#endif // DEBUG_ENABLED
 		set_argument_count(p_method_info->argument_count);
 
 		Vector<Variant> defargs;
@@ -240,7 +240,7 @@ public:
 
 #ifndef DISABLE_DEPRECATED
 void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo *p_extension_funcs) {
-	const GDExtensionClassCreationInfo4 class_info4 = {
+	const GDExtensionClassCreationInfo5 class_info5 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
 		true, // GDExtensionBool is_exposed;
@@ -274,14 +274,14 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		nullptr,
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info4, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
 
 void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo2 *p_extension_funcs) {
-	const GDExtensionClassCreationInfo4 class_info4 = {
+	const GDExtensionClassCreationInfo5 class_info5 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
-		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
+		true, // GDExtensionBool is_exposed;
 		false, // GDExtensionBool is_runtime;
 		nullptr, // GDExtensionConstStringPtr icon_path;
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
@@ -312,14 +312,14 @@ void GDExtension::_register_extension_class2(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtual get_virtual_func;
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info4, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
 
 void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo3 *p_extension_funcs) {
-	const GDExtensionClassCreationInfo4 class_info4 = {
+	const GDExtensionClassCreationInfo5 class_info5 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
-		p_extension_funcs->is_exposed, // GDExtensionBool is_exposed;
+		true, // GDExtensionBool is_exposed;
 		p_extension_funcs->is_runtime, // GDExtensionBool is_runtime;
 		nullptr, // GDExtensionConstStringPtr icon_path;
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
@@ -350,16 +350,22 @@ void GDExtension::_register_extension_class3(GDExtensionClassLibraryPtr p_librar
 		p_extension_funcs->get_virtual_func, // GDExtensionClassGetVirtual get_virtual_func;
 		p_extension_funcs->get_virtual_call_data_func, // GDExtensionClassGetVirtual get_virtual_func;
 	};
-	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info4, &legacy);
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5, &legacy);
 }
 
+void GDExtension::_register_extension_class4(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs) {
+	GDExtensionClassCreationInfo5 class_info5 = *p_extension_funcs;
+	// Force classes to be exposed, because the behavior of unexposed classes changed in an incompatible (albeit, minor) way.
+	class_info5.is_exposed = true;
+	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, &class_info5);
+}
 #endif // DISABLE_DEPRECATED
 
-void GDExtension::_register_extension_class4(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs) {
+void GDExtension::_register_extension_class5(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs) {
 	_register_extension_class_internal(p_library, p_class_name, p_parent_class_name, p_extension_funcs);
 }
 
-void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo4 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs) {
+void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_parent_class_name, const GDExtensionClassCreationInfo5 *p_extension_funcs, const ClassCreationDeprecatedInfo *p_deprecated_funcs) {
 	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
 
 	StringName class_name = *reinterpret_cast<const StringName *>(p_class_name);
@@ -410,8 +416,16 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	}
 
 	if (self->reloadable && p_extension_funcs->recreate_instance_func == nullptr) {
-		ERR_PRINT(vformat("Extension marked as reloadable, but attempted to register class '%s' which doesn't support reloading. Perhaps your language binding don't support it? Reloading disabled for this extension.", class_name));
-		self->reloadable = false;
+		bool can_create_class = (bool)p_extension_funcs->create_instance_func;
+#ifndef DISABLE_DEPRECATED
+		if (!can_create_class && p_deprecated_funcs) {
+			can_create_class = (bool)p_deprecated_funcs->create_instance_func;
+		}
+#endif
+		if (can_create_class) {
+			ERR_PRINT(vformat("Extension marked as reloadable, but attempted to register class '%s' which doesn't support reloading. Perhaps your language binding don't support it? Reloading disabled for this extension.", class_name));
+			self->reloadable = false;
+		}
 	}
 
 	extension->gdextension.library = self;
@@ -686,7 +700,12 @@ void GDExtension::_register_get_classes_used_callback(GDExtensionClassLibraryPtr
 #endif
 }
 
-HashMap<StringName, GDExtensionInterfaceFunctionPtr> GDExtension::gdextension_interface_functions;
+void GDExtension::_register_main_loop_callbacks(GDExtensionClassLibraryPtr p_library, const GDExtensionMainLoopCallbacks *p_callbacks) {
+	GDExtension *self = reinterpret_cast<GDExtension *>(p_library);
+	self->startup_callback = p_callbacks->startup_func;
+	self->shutdown_callback = p_callbacks->shutdown_func;
+	self->frame_callback = p_callbacks->frame_func;
+}
 
 void GDExtension::register_interface_function(const StringName &p_function_name, GDExtensionInterfaceFunctionPtr p_function_pointer) {
 	ERR_FAIL_COND_MSG(gdextension_interface_functions.has(p_function_name), vformat("Attempt to register interface function '%s', which appears to be already registered.", p_function_name));
@@ -794,8 +813,9 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_register_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class);
 	register_interface_function("classdb_register_extension_class2", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class2);
 	register_interface_function("classdb_register_extension_class3", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class3);
-#endif // DISABLE_DEPRECATED
 	register_interface_function("classdb_register_extension_class4", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class4);
+#endif // DISABLE_DEPRECATED
+	register_interface_function("classdb_register_extension_class5", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class5);
 	register_interface_function("classdb_register_extension_class_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_method);
 	register_interface_function("classdb_register_extension_class_virtual_method", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_virtual_method);
 	register_interface_function("classdb_register_extension_class_integer_constant", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_extension_class_integer_constant);
@@ -807,6 +827,7 @@ void GDExtension::initialize_gdextensions() {
 	register_interface_function("classdb_unregister_extension_class", (GDExtensionInterfaceFunctionPtr)&GDExtension::_unregister_extension_class);
 	register_interface_function("get_library_path", (GDExtensionInterfaceFunctionPtr)&GDExtension::_get_library_path);
 	register_interface_function("editor_register_get_classes_used_callback", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_get_classes_used_callback);
+	register_interface_function("register_main_loop_callbacks", (GDExtensionInterfaceFunctionPtr)&GDExtension::_register_main_loop_callbacks);
 }
 
 void GDExtension::finalize_gdextensions() {
@@ -864,6 +885,19 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 }
 
 #ifdef TOOLS_ENABLED
+void GDExtensionResourceLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Ref<GDExtension> gdext = ResourceLoader::load(p_path);
+	if (gdext.is_null()) {
+		return;
+	}
+
+	for (const StringName class_name : gdext->get_classes_used()) {
+		if (ClassDB::class_exists(class_name)) {
+			r_classes->insert(class_name);
+		}
+	}
+}
+
 bool GDExtension::has_library_changed() const {
 	return loader->has_library_changed();
 }
@@ -1050,10 +1084,6 @@ PackedStringArray GDExtension::get_classes_used() const {
 	return ret;
 }
 
-Vector<StringName> GDExtensionEditorPlugins::extension_classes;
-GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_add_plugin = nullptr;
-GDExtensionEditorPlugins::EditorPluginRegisterFunc GDExtensionEditorPlugins::editor_node_remove_plugin = nullptr;
-
 void GDExtensionEditorPlugins::add_extension_class(const StringName &p_class_name) {
 	if (editor_node_add_plugin) {
 		editor_node_add_plugin(p_class_name);
@@ -1069,9 +1099,6 @@ void GDExtensionEditorPlugins::remove_extension_class(const StringName &p_class_
 		extension_classes.erase(p_class_name);
 	}
 }
-
-GDExtensionEditorHelp::EditorHelpLoadXmlBufferFunc GDExtensionEditorHelp::editor_help_load_xml_buffer = nullptr;
-GDExtensionEditorHelp::EditorHelpRemoveClassFunc GDExtensionEditorHelp::editor_help_remove_class = nullptr;
 
 void GDExtensionEditorHelp::load_xml_buffer(const uint8_t *p_buffer, int p_size) {
 	ERR_FAIL_NULL(editor_help_load_xml_buffer);

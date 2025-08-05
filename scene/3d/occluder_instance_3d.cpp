@@ -321,13 +321,13 @@ void SphereOccluder3D::_update_arrays(PackedVector3Array &r_vertices, PackedInt3
 	int point = 0;
 	for (int j = 0; j <= (RINGS + 1); j++) {
 		float v = j / float(RINGS + 1);
-		float w = Math::sin(Math_PI * v);
-		float y = Math::cos(Math_PI * v);
+		float w = Math::sin(Math::PI * v);
+		float y = Math::cos(Math::PI * v);
 		for (int i = 0; i <= RADIAL_SEGMENTS; i++) {
 			float u = i / float(RADIAL_SEGMENTS);
 
-			float x = Math::cos(u * Math_TAU);
-			float z = Math::sin(u * Math_TAU);
+			float x = Math::cos(u * Math::TAU);
+			float z = Math::sin(u * Math::TAU);
 			vertex_ptr[vertex_i++] = Vector3(x * w, y, z * w) * radius;
 
 			if (i > 0 && j > 0) {
@@ -693,7 +693,7 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 PackedStringArray OccluderInstance3D::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
 
-	if (!bool(GLOBAL_GET("rendering/occlusion_culling/use_occlusion_culling"))) {
+	if (!bool(GLOBAL_GET_CACHED(bool, "rendering/occlusion_culling/use_occlusion_culling"))) {
 		warnings.push_back(RTR("Occlusion culling is disabled in the Project Settings, which means occlusion culling won't be performed in the root viewport.\nTo resolve this, open the Project Settings and enable Rendering > Occlusion Culling > Use Occlusion Culling."));
 	}
 

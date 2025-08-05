@@ -52,9 +52,11 @@
 		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
 			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
 		</member>
-		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
-			If [code]true[/code], native libraries are compressed when performing a Gradle build.
-			[b]Note:[/b] Although your binary may be smaller, your application may load slower because the native libraries are not loaded directly from the binary at runtime.
+		<member name="gradle_build/custom_theme_attributes" type="Dictionary" setter="" getter="">
+			A dictionary of custom theme attributes to include in the exported Android project. Each entry defines a theme attribute name and its value, and will be added to the [b]GodotAppMainTheme[/b].
+			For example, the key [code]android:windowSwipeToDismiss[/code] with the value [code]false[/code] is resolved to [code]&lt;item name="android:windowSwipeToDismiss"&gt;false&lt;/item&gt;[/code].
+			[b]Note:[/b] To add a custom attribute to the [b]GodotAppSplashTheme[/b], prefix the attribute name with [code][splash][/code].
+			[b]Note:[/b] Reserved attributes configured via other export options or project settings cannot be overridden by [code]custom_theme_attributes[/code] and are skipped during export.
 		</member>
 		<member name="gradle_build/export_format" type="int" setter="" getter="">
 			Application export format (*.apk or *.aab).
@@ -596,8 +598,15 @@
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
 		</member>
+		<member name="screen/background_color" type="Color" setter="" getter="">
+			The background color used for the root window. Default is [code]black[/code].
+		</member>
+		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
+			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.
+			[b]Note:[/b] You should ensure that none of the application content is occluded by system elements by using the [method DisplayServer.get_display_safe_area] and [method DisplayServer.get_display_cutouts] methods.
+		</member>
 		<member name="screen/immersive_mode" type="bool" setter="" getter="">
-			If [code]true[/code], hides navigation and status bar. See [method DisplayServer.window_set_mode] to toggle it at runtime.
+			If [code]true[/code], hides the navigation and status bar. Set [method DisplayServer.window_set_mode] to change this at runtime.
 		</member>
 		<member name="screen/support_large" type="bool" setter="" getter="">
 			Indicates whether the application supports larger screen form-factors.
@@ -610,6 +619,9 @@
 		</member>
 		<member name="screen/support_xlarge" type="bool" setter="" getter="">
 			Indicates whether the application supports extra large screen form-factors.
+		</member>
+		<member name="shader_baker/enabled" type="bool" setter="" getter="">
+			If [code]true[/code], shaders will be compiled and embedded in the application. This option is only supported when using the Forward+ or Mobile renderers.
 		</member>
 		<member name="user_data_backup/allow" type="bool" setter="" getter="">
 			If [code]true[/code], allows the application to participate in the backup and restore infrastructure.

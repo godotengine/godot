@@ -35,6 +35,8 @@
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 class DisplayServerHeadless : public DisplayServer {
+	GDSOFTCLASS(DisplayServerHeadless, DisplayServer);
+
 private:
 	friend class DisplayServer;
 
@@ -108,7 +110,7 @@ public:
 
 	void window_set_mouse_passthrough(const Vector<Vector2> &p_region, WindowID p_window = MAIN_WINDOW_ID) override {}
 
-	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override { return -1; }
+	int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override { return INVALID_SCREEN; }
 	void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override { return Point2i(); }

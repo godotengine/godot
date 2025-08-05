@@ -42,12 +42,14 @@ namespace embree
     void setNumTimeSteps (unsigned int numTimeSteps);
     void setVertexAttributeCount (unsigned int N);
     void setBuffer(RTCBufferType type, unsigned int slot, RTCFormat format, const Ref<Buffer>& buffer, size_t offset, size_t stride, unsigned int num);
-    void* getBuffer(RTCBufferType type, unsigned int slot);
+    void* getBufferData(RTCBufferType type, unsigned int slot, BufferDataPointerType pointerType);
     void updateBuffer(RTCBufferType type, unsigned int slot);
     void commit();
     bool verify();
     void interpolate(const RTCInterpolateArguments* const args);
     void addElementsToCount (GeometryCounts & counts) const;
+    size_t getGeometryDataDeviceByteSize() const;
+    void convertToDeviceRepresentation(size_t offset, char* data_host, char* data_device) const;
 
     template<int N>
       void interpolate_impl(const RTCInterpolateArguments* const args)

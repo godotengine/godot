@@ -33,7 +33,7 @@ void distanceSignCorrection(const BitmapRef<float, 1> &sdf, const Shape &shape, 
 template <int N>
 static void multiDistanceSignCorrection(const BitmapRef<float, N> &sdf, const Shape &shape, const Projection &projection, FillRule fillRule) {
     int w = sdf.width, h = sdf.height;
-    if (!(w*h))
+    if (!(w && h))
         return;
     Scanline scanline;
     bool ambiguous = false;

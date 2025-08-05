@@ -34,6 +34,7 @@
 #include "editor/debugger/script_editor_debugger.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/line_edit.h"
 
 void EditorExpressionEvaluator::on_start() {
 	expression_input->set_editable(false);
@@ -110,6 +111,7 @@ EditorExpressionEvaluator::EditorExpressionEvaluator() {
 	expression_input = memnew(LineEdit);
 	expression_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	expression_input->set_placeholder(TTR("Expression to evaluate"));
+	expression_input->set_accessibility_name(TTRC("Expression to evaluate"));
 	expression_input->set_clear_button_enabled(true);
 	expression_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorExpressionEvaluator::_evaluate).unbind(1));
 	expression_input->connect(SceneStringName(text_changed), callable_mp(this, &EditorExpressionEvaluator::_on_expression_input_changed));

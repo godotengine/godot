@@ -65,6 +65,13 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 	return "FontFile";
 }
 
+void ResourceImporterDynamicFont::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	Ref<FontFile> font = ResourceLoader::load(p_path);
+	if (font.is_valid() && font->is_multichannel_signed_distance_field()) {
+		r_dependencies->insert("module_msdfgen_enabled");
+	}
+}
+
 bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
@@ -197,7 +204,7 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 				for (int i = 0; i < contours.size(); i++) {
 					for (int j = prev_start; j <= contours[i]; j++) {
 						int next_point = (j < contours[i]) ? (j + 1) : prev_start;
-						if ((points[j].z != TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
+						if ((points[j].z != (real_t)TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
 							is_pixel = false;
 							break;
 						}
@@ -223,16 +230,16 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	font->set_keep_rounding_remainders(keep_rounding_remainders);
 
 	Dictionary langs = p_options["language_support"];
-	for (int i = 0; i < langs.size(); i++) {
-		String key = langs.get_key_at_index(i);
-		bool enabled = langs.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : langs) {
+		String key = kv.key;
+		bool enabled = kv.value;
 		font->set_language_support_override(key, enabled);
 	}
 
 	Dictionary scripts = p_options["script_support"];
-	for (int i = 0; i < scripts.size(); i++) {
-		String key = scripts.get_key_at_index(i);
-		bool enabled = scripts.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : scripts) {
+		String key = kv.key;
+		bool enabled = kv.value;
 		font->set_script_support_override(key, enabled);
 	}
 

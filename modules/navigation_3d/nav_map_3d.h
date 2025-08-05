@@ -55,8 +55,8 @@ class NavMap3D : public NavRid3D {
 
 	/// To find the polygons edges the vertices are displaced in a grid where
 	/// each cell has the following cell_size and cell_height.
-	real_t cell_size = NavigationDefaults3D::navmesh_cell_size;
-	real_t cell_height = NavigationDefaults3D::navmesh_cell_height;
+	real_t cell_size = NavigationDefaults3D::NAV_MESH_CELL_SIZE;
+	real_t cell_height = NavigationDefaults3D::NAV_MESH_CELL_HEIGHT;
 
 	// For the inter-region merging to work, internal rasterization is performed.
 	Vector3 merge_rasterizer_cell_size = Vector3(cell_size, cell_height, cell_size);
@@ -66,10 +66,10 @@ class NavMap3D : public NavRid3D {
 
 	bool use_edge_connections = true;
 	/// This value is used to detect the near edges to connect.
-	real_t edge_connection_margin = NavigationDefaults3D::edge_connection_margin;
+	real_t edge_connection_margin = NavigationDefaults3D::EDGE_CONNECTION_MARGIN;
 
 	/// This value is used to limit how far links search to find polygons to connect to.
-	real_t link_connection_radius = NavigationDefaults3D::link_connection_radius;
+	real_t link_connection_radius = NavigationDefaults3D::LINK_CONNECTION_RADIUS;
 
 	bool map_settings_dirty = true;
 
@@ -110,11 +110,30 @@ class NavMap3D : public NavRid3D {
 	Nav3D::PerformanceData performance_data;
 
 	struct {
-		SelfList<NavRegion3D>::List regions;
-		SelfList<NavLink3D>::List links;
-		SelfList<NavAgent3D>::List agents;
-		SelfList<NavObstacle3D>::List obstacles;
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion3D>::List list;
+		} regions;
+		struct {
+			RWLock rwlock;
+			SelfList<NavLink3D>::List list;
+		} links;
+		struct {
+			RWLock rwlock;
+			SelfList<NavAgent3D>::List list;
+		} agents;
+		struct {
+			RWLock rwlock;
+			SelfList<NavObstacle3D>::List list;
+		} obstacles;
 	} sync_dirty_requests;
+
+	struct {
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion3D>::List list;
+		} regions;
+	} async_dirty_requests;
 
 	int path_query_slots_max = 4;
 
@@ -125,7 +144,6 @@ class NavMap3D : public NavRid3D {
 	mutable RWLock iteration_slot_rwlock;
 
 	NavMapIterationBuild3D iteration_build;
-	bool iteration_build_use_threads = false;
 	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	static void _build_iteration_threaded(void *p_arg);
 
@@ -236,6 +254,9 @@ public:
 	Vector3 get_region_connection_pathway_start(NavRegion3D *p_region, int p_connection_id) const;
 	Vector3 get_region_connection_pathway_end(NavRegion3D *p_region, int p_connection_id) const;
 
+	void add_region_async_thread_join_request(SelfList<NavRegion3D> *p_async_request);
+	void remove_region_async_thread_join_request(SelfList<NavRegion3D> *p_async_request);
+
 	void add_region_sync_dirty_request(SelfList<NavRegion3D> *p_sync_request);
 	void add_link_sync_dirty_request(SelfList<NavLink3D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent3D> *p_sync_request);
@@ -252,6 +273,7 @@ public:
 private:
 	void _sync_dirty_map_update_requests();
 	void _sync_dirty_avoidance_update_requests();
+	void _sync_async_tasks();
 
 	void compute_single_step(uint32_t index, NavAgent3D **agent);
 

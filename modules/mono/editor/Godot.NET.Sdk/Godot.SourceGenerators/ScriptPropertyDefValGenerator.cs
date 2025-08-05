@@ -430,6 +430,13 @@ namespace Godot.SourceGenerators
                 return true;
             }
 
+            // Handle negative literals (e.g., `-10`)
+            if (expression is PrefixUnaryExpressionSyntax { Operand: LiteralExpressionSyntax } &&
+                expression.Kind() == SyntaxKind.UnaryMinusExpression)
+            {
+                return true;
+            }
+
             // Handle identifiers (e.g., variable names)
             if (expression is IdentifierNameSyntax identifier)
             {

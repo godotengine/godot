@@ -45,23 +45,45 @@ private:
 	Button *delete_button = nullptr;
 	Button *undo_button = nullptr;
 	Button *redo_button = nullptr;
+	Button *cut_button = nullptr;
+	Button *copy_button = nullptr;
+	Button *paste_button = nullptr;
 
 	TextureRect *drag_handle = nullptr;
 	Button *layout_toggle_button = nullptr;
 	Button *lock_panel_button = nullptr;
+	Button *panel_pos_button = nullptr;
 
-	bool lock_panel_position = false;
+	bool locked_panel = false;
 	bool dragging = false;
 	Vector2 drag_offset;
 
+	enum Modifier {
+		MODIFIER_CTRL,
+		MODIFIER_SHIFT,
+		MODIFIER_ALT
+	};
+
+	bool ctrl_btn_pressed = false;
+	bool shift_btn_pressed = false;
+	bool alt_btn_pressed = false;
+
+	bool is_floating = false; // Embedded panel mode is default.
+	int embedded_panel_index = 0;
+
 	void _notification(int p_what);
+	virtual void input(const Ref<InputEvent> &event) override;
 
 	void _simulate_editor_shortcut(const String &p_shortcut_name);
 	void _simulate_key_press(Key p_keycode);
 	void _on_drag_handle_gui_input(const Ref<InputEvent> &p_event);
 	void _switch_layout();
 	void _lock_panel_toggled(bool p_pressed);
-	Button *_add_new_action_button(const String &p_shortcut, Key p_keycode = Key::NONE);
+	void _switch_embedded_panel_side();
+
+	Button *_add_new_action_button(const String &p_shortcut, const String &p_name, Key p_keycode = Key::NONE);
+	void _add_new_modifier_button(Modifier p_modifier);
+	void _on_modifier_button_toggled(bool p_pressed, int p_modifier);
 
 	void _hardware_keyboard_connected(bool p_connected);
 

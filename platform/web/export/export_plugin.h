@@ -75,11 +75,11 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 		return name;
 	}
 
-	Ref<Image> _get_project_icon() const {
+	Ref<Image> _get_project_icon(const Ref<EditorExportPreset> &p_preset) const {
 		Error err = OK;
 		Ref<Image> icon;
 		icon.instantiate();
-		const String icon_path = String(GLOBAL_GET("application/config/icon")).strip_edges();
+		const String icon_path = String(get_project_setting(p_preset, "application/config/icon")).strip_edges();
 		if (!icon_path.is_empty()) {
 			icon = _load_icon_or_splash_image(icon_path, &err);
 		}
@@ -89,11 +89,11 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 		return icon;
 	}
 
-	Ref<Image> _get_project_splash() const {
+	Ref<Image> _get_project_splash(const Ref<EditorExportPreset> &p_preset) const {
 		Error err = OK;
 		Ref<Image> splash;
 		splash.instantiate();
-		const String splash_path = String(GLOBAL_GET("application/boot_splash/image")).strip_edges();
+		const String splash_path = String(get_project_setting(p_preset, "application/boot_splash/image")).strip_edges();
 		if (!splash_path.is_empty()) {
 			splash = _load_icon_or_splash_image(splash_path, &err);
 		}
@@ -106,7 +106,7 @@ class EditorExportPlatformWeb : public EditorExportPlatform {
 	Error _extract_template(const String &p_template, const String &p_dir, const String &p_name, bool pwa);
 	void _replace_strings(const HashMap<String, String> &p_replaces, Vector<uint8_t> &r_template);
 	void _fix_html(Vector<uint8_t> &p_html, const Ref<EditorExportPreset> &p_preset, const String &p_name, bool p_debug, BitField<EditorExportPlatform::DebugFlags> p_flags, const Vector<SharedObject> p_shared_objects, const Dictionary &p_file_sizes);
-	Error _add_manifest_icon(const String &p_path, const String &p_icon, int p_size, Array &r_arr);
+	Error _add_manifest_icon(const Ref<EditorExportPreset> &p_preset, const String &p_path, const String &p_icon, int p_size, Array &r_arr);
 	Error _build_pwa(const Ref<EditorExportPreset> &p_preset, const String p_path, const Vector<SharedObject> &p_shared_objects);
 	Error _write_or_error(const uint8_t *p_content, int p_len, String p_path);
 
@@ -134,7 +134,7 @@ public:
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;
 	virtual Ref<Texture2D> get_run_icon() const override;
 

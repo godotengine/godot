@@ -52,6 +52,7 @@
 #endif
 
 #ifdef DBUS_ENABLED
+#include "freedesktop_at_spi_monitor.h"
 #include "freedesktop_portal_desktop.h"
 #include "freedesktop_screensaver.h"
 #endif
@@ -60,13 +61,14 @@
 #include "core/input/input.h"
 #include "servers/display_server.h"
 
-#include <limits.h>
-#include <stdio.h>
+#include <climits>
+#include <cstdio>
 
 #undef CursorShape
 
 class DisplayServerWayland : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWayland, DisplayServer);
+
 	struct WindowData {
 		WindowID id = INVALID_WINDOW_ID;
 
@@ -142,7 +144,7 @@ class DisplayServerWayland : public DisplayServer {
 	// are the "take all input thx" windows while the `popup_stack` variable keeps
 	// track of all the generic floating window concept.
 	List<WindowID> popup_menu_list;
-	BitField<MouseButtonMask> last_mouse_monitor_mask;
+	BitField<MouseButtonMask> last_mouse_monitor_mask = MouseButtonMask::NONE;
 
 	String ime_text;
 	Vector2i ime_selection;
@@ -167,6 +169,7 @@ class DisplayServerWayland : public DisplayServer {
 
 #if DBUS_ENABLED
 	FreeDesktopPortalDesktop *portal_desktop = nullptr;
+	FreeDesktopAtSPIMonitor *atspi_monitor = nullptr;
 
 	FreeDesktopScreenSaver *screensaver = nullptr;
 	bool screensaver_inhibited = false;
@@ -306,6 +309,9 @@ public:
 
 	virtual void window_set_ime_active(const bool p_active, WindowID p_window_id = MAIN_WINDOW_ID) override;
 	virtual void window_set_ime_position(const Point2i &p_pos, WindowID p_window_id = MAIN_WINDOW_ID) override;
+
+	virtual int accessibility_should_increase_contrast() const override;
+	virtual int accessibility_screen_reader_active() const override;
 
 	virtual Point2i ime_get_selection() const override;
 	virtual String ime_get_text() const override;

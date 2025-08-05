@@ -34,9 +34,6 @@
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/multimesh.h"
 
-//heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
-//should scale better with hardware that supports instancing
-
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 #ifndef PHYSICS_3D_DISABLED
@@ -151,6 +148,9 @@ class GridMap : public Node3D {
 		//OctantKey(const IndexKey& p_k, int p_item) { indexkey=p_k.key; item=p_item; }
 		OctantKey() {}
 	};
+
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
 
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;

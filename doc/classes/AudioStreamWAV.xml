@@ -32,15 +32,15 @@
 				@onready var audio_player = $AudioStreamPlayer
 
 				func _ready():
-				    get_window().files_dropped.connect(_on_files_dropped)
+					get_window().files_dropped.connect(_on_files_dropped)
 
 				func _on_files_dropped(files):
-				    if files[0].get_extension() == "wav":
-				        audio_player.stream = AudioStreamWAV.load_from_file(files[0], {
-				                "force/max_rate": true,
-				                "force/max_rate_hz": 11025
-				            })
-				        audio_player.play()
+					if files[0].get_extension() == "wav":
+						audio_player.stream = AudioStreamWAV.load_from_file(files[0], {
+								"force/max_rate": true,
+								"force/max_rate_hz": 11025
+							})
+						audio_player.play()
 				[/codeblock]
 			</description>
 		</method>
@@ -60,7 +60,7 @@
 			[b]Note:[/b] If [member format] is set to [constant FORMAT_QOA], this property expects data from a full QOA file.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="0">
-			Audio format. See [enum Format] constants for values.
+			Audio format.
 		</member>
 		<member name="loop_begin" type="int" setter="set_loop_begin" getter="get_loop_begin" default="0">
 			The loop start point (in number of samples, relative to the beginning of the stream).
@@ -69,7 +69,7 @@
 			The loop end point (in number of samples, relative to the beginning of the stream).
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="AudioStreamWAV.LoopMode" default="0">
-			The loop mode. See [enum LoopMode] constants for values.
+			The loop mode.
 		</member>
 		<member name="mix_rate" type="int" setter="set_mix_rate" getter="get_mix_rate" default="44100">
 			The sample rate for mixing this audio. Higher values require more storage space, but result in better quality.
@@ -78,6 +78,12 @@
 		</member>
 		<member name="stereo" type="bool" setter="set_stereo" getter="is_stereo" default="false">
 			If [code]true[/code], audio is stereo.
+		</member>
+		<member name="tags" type="Dictionary" setter="set_tags" getter="get_tags" default="{}">
+			Contains user-defined tags if found in the WAV data.
+			Commonly used tags include [code]title[/code], [code]artist[/code], [code]album[/code], [code]tracknumber[/code], and [code]date[/code] ([code]date[/code] does not have a standard date format).
+			[b]Note:[/b] No tag is [i]guaranteed[/i] to be present in every file, so make sure to account for the keys not always existing.
+			[b]Note:[/b] Only WAV files using a [code]LIST[/code] chunk with an identifier of [code]INFO[/code] to encode the tags are currently supported.
 		</member>
 	</members>
 	<constants>

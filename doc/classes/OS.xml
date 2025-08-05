@@ -11,6 +11,13 @@
 		<link title="Operating System Testing Demo">https://godotengine.org/asset-library/asset/2789</link>
 	</tutorials>
 	<methods>
+		<method name="add_logger">
+			<return type="void" />
+			<param index="0" name="logger" type="Logger" />
+			<description>
+				Add a custom logger to intercept the internal message stream.
+			</description>
+		</method>
 		<method name="alert">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
@@ -189,29 +196,29 @@
 				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
-				    if argument.contains("="):
-				        var key_value = argument.split("=")
-				        arguments[key_value[0].trim_prefix("--")] = key_value[1]
-				    else:
-				        # Options without an argument will be present in the dictionary,
-				        # with the value set to an empty string.
-				        arguments[argument.trim_prefix("--")] = ""
+					if argument.contains("="):
+						var key_value = argument.split("=")
+						arguments[key_value[0].trim_prefix("--")] = key_value[1]
+					else:
+						# Options without an argument will be present in the dictionary,
+						# with the value set to an empty string.
+						arguments[argument.trim_prefix("--")] = ""
 				[/gdscript]
 				[csharp]
 				var arguments = new Dictionary&lt;string, string&gt;();
 				foreach (var argument in OS.GetCmdlineArgs())
 				{
-				    if (argument.Contains('='))
-				    {
-				        string[] keyValue = argument.Split("=");
-				        arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
-				    }
-				    else
-				    {
-				        // Options without an argument will be present in the dictionary,
-				        // with the value set to an empty string.
-				        arguments[argument.TrimPrefix("--")] = "";
-				    }
+					if (argument.Contains('='))
+					{
+						string[] keyValue = argument.Split("=");
+						arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
+					}
+					else
+					{
+						// Options without an argument will be present in the dictionary,
+						// with the value set to an empty string.
+						arguments[argument.TrimPrefix("--")] = "";
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -294,7 +301,8 @@
 			<return type="PackedStringArray" />
 			<description>
 				On Android devices: Returns the list of dangerous permissions that have been granted.
-				On macOS: Returns the list of user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
+				On macOS: Returns the list of granted permissions and user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
+				On iOS, visionOS: Returns the list of granted permissions.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -376,44 +384,44 @@
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
-				    "Windows":
-				        print("Welcome to Windows!")
-				    "macOS":
-				        print("Welcome to macOS!")
-				    "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
-				        print("Welcome to Linux/BSD!")
-				    "Android":
-				        print("Welcome to Android!")
-				    "iOS":
-				        print("Welcome to iOS!")
-				    "Web":
-				        print("Welcome to the Web!")
+					"Windows":
+						print("Welcome to Windows!")
+					"macOS":
+						print("Welcome to macOS!")
+					"Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
+						print("Welcome to Linux/BSD!")
+					"Android":
+						print("Welcome to Android!")
+					"iOS":
+						print("Welcome to iOS!")
+					"Web":
+						print("Welcome to the Web!")
 				[/gdscript]
 				[csharp]
 				switch (OS.GetName())
 				{
-				    case "Windows":
-				        GD.Print("Welcome to Windows");
-				        break;
-				    case "macOS":
-				        GD.Print("Welcome to macOS!");
-				        break;
-				    case "Linux":
-				    case "FreeBSD":
-				    case "NetBSD":
-				    case "OpenBSD":
-				    case "BSD":
-				        GD.Print("Welcome to Linux/BSD!");
-				        break;
-				    case "Android":
-				        GD.Print("Welcome to Android!");
-				        break;
-				    case "iOS":
-				        GD.Print("Welcome to iOS!");
-				        break;
-				    case "Web":
-				        GD.Print("Welcome to the Web!");
-				        break;
+					case "Windows":
+						GD.Print("Welcome to Windows");
+						break;
+					case "macOS":
+						GD.Print("Welcome to macOS!");
+						break;
+					case "Linux":
+					case "FreeBSD":
+					case "NetBSD":
+					case "OpenBSD":
+					case "BSD":
+						GD.Print("Welcome to Linux/BSD!");
+						break;
+					case "Android":
+						GD.Print("Welcome to Android!");
+						break;
+					case "iOS":
+						GD.Print("Welcome to iOS!");
+						break;
+					case "Web":
+						GD.Print("Welcome to the Web!");
+						break;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -434,7 +442,7 @@
 			<return type="int" />
 			<description>
 				Returns the number used by the host machine to uniquely identify this application.
-				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS, and Windows.
+				[b]Note:[/b] On Web, this method always returns [code]0[/code].
 			</description>
 		</method>
 		<method name="get_processor_count" qualifiers="const">
@@ -471,14 +479,14 @@
 		<method name="get_stderr_type" qualifiers="const">
 			<return type="int" enum="OS.StdHandleType" />
 			<description>
-				Returns type of the standard error device.
+				Returns the type of the standard error device.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_stdin_type" qualifiers="const">
 			<return type="int" enum="OS.StdHandleType" />
 			<description>
-				Returns type of the standard input device.
+				Returns the type of the standard input device.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the standard input. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
@@ -486,7 +494,7 @@
 		<method name="get_stdout_type" qualifiers="const">
 			<return type="int" enum="OS.StdHandleType" />
 			<description>
-				Returns type of the standard output device.
+				Returns the type of the standard output device.
 				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 			</description>
 		</method>
@@ -581,7 +589,7 @@
 			<return type="String" />
 			<description>
 				Returns the exact production and build version of the operating system. This is different from the branded version used in marketing. This helps to distinguish between different releases of operating systems, including minor versions, and insider and custom builds.
-				- For Windows, the major and minor version are returned, as well as the build number. For example, the returned string may look like [code]10.0.9926[/code] for a build of Windows 10, and it may look like [code]6.1.7601[/code] for a build of Windows 7 SP1.
+				- For Windows, the major and minor version are returned, as well as the build number. For example, the returned string may look like [code]10.0.9926[/code] for a build of Windows 10.
 				- For rolling distributions, such as Arch Linux, an empty string is returned.
 				- For macOS and iOS, the major and minor version are returned, as well as the patch number.
 				- For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
@@ -591,8 +599,9 @@
 		<method name="get_version_alias" qualifiers="const">
 			<return type="String" />
 			<description>
-				Returns the branded version used in marketing, followed by the build number (on Windows) or the version number (on macOS). Examples include [code]11 (build 22000)[/code] and [code]Sequoia (15.0.0)[/code]. This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
-				[b]Note:[/b] This method is only supported on Windows and macOS. On other operating systems, it returns the same value as [method get_version].
+				Returns the branded version used in marketing, followed by the build number (on Windows), the version number (on macOS), or the SDK version and incremental build number (on Android). Examples include [code]11 (build 22000)[/code], [code]Sequoia (15.0.0)[/code], and [code]15 (SDK 35 build abc528-11988f)[/code].
+				This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
+				[b]Note:[/b] This method is only supported on Windows, macOS, and Android. On other operating systems, it returns the same value as [method get_version].
 			</description>
 		</method>
 		<method name="get_video_adapter_driver_info" qualifiers="const">
@@ -722,11 +731,21 @@
 				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
 			</description>
 		</method>
+		<method name="open_with_program">
+			<return type="int" enum="Error" />
+			<param index="0" name="program_path" type="String" />
+			<param index="1" name="paths" type="PackedStringArray" />
+			<description>
+				Opens one or more files/directories with the specified application. The [param program_path] specifies the path to the application to use for opening the files, and [param paths] contains an array of file/directory paths to open.
+				[b]Note:[/b] This method is mostly only relevant for macOS, where opening files using [method create_process] might fail. On other platforms, this falls back to using [method create_process].
+				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to a [code].app[/code] bundle.
+			</description>
+		</method>
 		<method name="read_buffer_from_stdin">
 			<return type="PackedByteArray" />
 			<param index="0" name="buffer_size" type="int" default="1024" />
 			<description>
-				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_buffer_from_stdin] is called on the main thread.
 				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
 				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
 				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
@@ -747,6 +766,13 @@
 				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
+		<method name="remove_logger">
+			<return type="void" />
+			<param index="0" name="logger" type="Logger" />
+			<description>
+				Remove a custom logger added by [method add_logger].
+			</description>
+		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
@@ -755,8 +781,10 @@
 				The [param name] must be the full permission name. For example:
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
-				[b]Note:[/b] Permission must be checked during export.
-				[b]Note:[/b] This method is only implemented on Android.
+				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
+				- [code]OS.request_permission("appleembedded.permission.AUDIO_RECORD")[/code]
+				[b]Note:[/b] On Android, permission must be checked during export.
+				[b]Note:[/b] This method is implemented on Android, macOS, and visionOS platforms.
 			</description>
 		</method>
 		<method name="request_permissions">

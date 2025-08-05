@@ -37,6 +37,7 @@
 struct DirAccessWindowsPrivate;
 
 class DirAccessWindows : public DirAccess {
+	GDSOFTCLASS(DirAccessWindows, DirAccess);
 	enum {
 		MAX_DRIVES = 26
 	};

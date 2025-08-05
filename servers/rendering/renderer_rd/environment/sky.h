@@ -128,6 +128,7 @@ private:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 
 		SkyShaderData() {}
 		virtual ~SkyShaderData();
@@ -280,6 +281,9 @@ public:
 
 	uint32_t sky_ggx_samples_quality;
 	bool sky_use_cubemap_array;
+#if defined(MACOS_ENABLED) && defined(__x86_64__)
+	void check_cubemap_array();
+#endif
 	Sky *dirty_sky_list = nullptr;
 	mutable RID_Owner<Sky, true> sky_owner;
 	int roughness_layers;

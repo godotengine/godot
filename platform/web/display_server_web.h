@@ -38,7 +38,7 @@
 #include <emscripten/html5.h>
 
 class DisplayServerWeb : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerWeb, DisplayServer);
 
 private:
 	struct JSTouchEvent {
@@ -104,6 +104,8 @@ private:
 	bool swap_cancel_ok = false;
 	NativeMenu *native_menu = nullptr;
 
+	int gamepad_count = 0;
+
 	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
 	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
 	bool mouse_mode_override_enabled = false;
@@ -118,10 +120,10 @@ private:
 	static void _fullscreen_change_callback(int p_fullscreen);
 	WASM_EXPORT static int mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
 	static int _mouse_button_callback(int p_pressed, int p_button, double p_x, double p_y, int p_modifiers);
-	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
-	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers);
-	WASM_EXPORT static int mouse_wheel_callback(double p_delta_x, double p_delta_y);
-	static int _mouse_wheel_callback(double p_delta_x, double p_delta_y);
+	WASM_EXPORT static void mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
+	static void _mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure);
+	WASM_EXPORT static int mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
+	static int _mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y);
 	WASM_EXPORT static void touch_callback(int p_type, int p_count);
 	static void _touch_callback(int p_type, int p_count);
 	WASM_EXPORT static void key_callback(int p_pressed, int p_repeat, int p_modifiers);

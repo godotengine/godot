@@ -36,8 +36,6 @@
 #include "core/os/os.h"
 #include "core/variant/variant_parser.h"
 
-ResourceFormatImporterLoadOnStartup ResourceImporter::load_on_startup = nullptr;
-
 bool ResourceFormatImporter::SortImporterByName::operator()(const Ref<ResourceImporter> &p_a, const Ref<ResourceImporter> &p_b) const {
 	return p_a->get_importer_name() < p_b->get_importer_name();
 }
@@ -121,6 +119,12 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		} else if (next_tag.name != "remap") {
 			break;
 		}
+	}
+
+	if (p_load && !path_found && decomp_path_found) {
+		print_verbose(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
+		r_path_and_type.path = decomp_path;
+		return OK;
 	}
 
 #ifdef TOOLS_ENABLED
@@ -262,7 +266,7 @@ Error ResourceFormatImporter::get_import_order_threads_and_importer(const String
 			importer = get_importer_by_name(pat.importer);
 		}
 	} else {
-		importer = get_importer_by_extension(p_path.get_extension().to_lower());
+		importer = get_importer_by_file(p_path);
 	}
 
 	if (importer.is_valid()) {
@@ -286,7 +290,7 @@ int ResourceFormatImporter::get_import_order(const String &p_path) const {
 			importer = get_importer_by_name(pat.importer);
 		}
 	} else {
-		importer = get_importer_by_extension(p_path.get_extension().to_lower());
+		importer = get_importer_by_file(p_path);
 	}
 
 	if (importer.is_valid()) {
@@ -430,6 +434,7 @@ Variant ResourceFormatImporter::get_resource_metadata(const String &p_path) cons
 
 	return pat.metadata;
 }
+
 void ResourceFormatImporter::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
 	PathAndType pat;
 	Error err = _get_path_and_type(p_path, pat, false);
@@ -452,6 +457,18 @@ void ResourceFormatImporter::get_dependencies(const String &p_path, List<String>
 	ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
 }
 
+void ResourceFormatImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	if (!exists(p_path)) {
+		return;
+	}
+
+	List<Ref<ResourceImporter>> valid_importers;
+	get_importers_for_file(p_path, &valid_importers);
+	for (Ref<ResourceImporter> importer : valid_importers) {
+		importer->get_build_dependencies(p_path, r_dependencies);
+	}
+}
+
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) const {
 	for (int i = 0; i < importers.size(); i++) {
 		if (importers[i]->get_importer_name() == p_name) {
@@ -471,12 +488,12 @@ void ResourceFormatImporter::add_importer(const Ref<ResourceImporter> &p_importe
 	}
 }
 
-void ResourceFormatImporter::get_importers_for_extension(const String &p_extension, List<Ref<ResourceImporter>> *r_importers) {
+void ResourceFormatImporter::get_importers_for_file(const String &p_file, List<Ref<ResourceImporter>> *r_importers) {
 	for (int i = 0; i < importers.size(); i++) {
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
 		for (const String &F : local_exts) {
-			if (p_extension.to_lower() == F) {
+			if (p_file.right(F.length()).nocasecmp_to(F) == 0) {
 				r_importers->push_back(importers[i]);
 				break;
 			}
@@ -490,7 +507,7 @@ void ResourceFormatImporter::get_importers(List<Ref<ResourceImporter>> *r_import
 	}
 }
 
-Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const String &p_extension) const {
+Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_file(const String &p_file) const {
 	Ref<ResourceImporter> importer;
 	float priority = 0;
 
@@ -498,9 +515,10 @@ Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_extension(const St
 		List<String> local_exts;
 		importers[i]->get_recognized_extensions(&local_exts);
 		for (const String &F : local_exts) {
-			if (p_extension.to_lower() == F && importers[i]->get_priority() > priority) {
+			if (p_file.right(F.length()).nocasecmp_to(F) == 0 && importers[i]->get_priority() > priority) {
 				importer = importers[i];
 				priority = importers[i]->get_priority();
+				break;
 			}
 		}
 	}
@@ -544,17 +562,27 @@ String ResourceFormatImporter::get_import_settings_hash() const {
 	return hash.md5_text();
 }
 
-ResourceFormatImporter *ResourceFormatImporter::singleton = nullptr;
-
 ResourceFormatImporter::ResourceFormatImporter() {
 	singleton = this;
 }
 
 //////////////
 
+void ResourceImporter::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	Vector<String> ret;
+	if (GDVIRTUAL_CALL(_get_build_dependencies, p_path, ret)) {
+		for (int i = 0; i < ret.size(); i++) {
+			r_dependencies->insert(ret[i]);
+		}
+		return;
+	}
+}
+
 void ResourceImporter::_bind_methods() {
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_DEFAULT);
 	BIND_ENUM_CONSTANT(IMPORT_ORDER_SCENE);
+
+	GDVIRTUAL_BIND(_get_build_dependencies, "path");
 }
 
 /////

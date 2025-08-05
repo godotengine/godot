@@ -31,19 +31,20 @@
 #include "nav_region_2d.h"
 
 #include "nav_map_2d.h"
-#include "triangle2.h"
 
-#include "2d/nav_map_builder_2d.h"
 #include "2d/nav_mesh_queries_2d.h"
+#include "2d/nav_region_builder_2d.h"
 #include "2d/nav_region_iteration_2d.h"
+#include "core/config/project_settings.h"
 
-using namespace nav_2d;
+using namespace Nav2D;
 
 void NavRegion2D::set_map(NavMap2D *p_map) {
 	if (map == p_map) {
 		return;
 	}
 
+	cancel_async_thread_join();
 	cancel_sync_request();
 
 	if (map) {
@@ -51,11 +52,14 @@ void NavRegion2D::set_map(NavMap2D *p_map) {
 	}
 
 	map = p_map;
-	polygons_dirty = true;
+	iteration_dirty = true;
 
 	if (map) {
 		map->add_region(this);
 		request_sync();
+		if (iteration_build_thread_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+			request_async_thread_join();
+		}
 	}
 }
 
@@ -64,9 +68,7 @@ void NavRegion2D::set_enabled(bool p_enabled) {
 		return;
 	}
 	enabled = p_enabled;
-
-	// TODO: This should not require a full rebuild as the region has not really changed.
-	polygons_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -74,39 +76,32 @@ void NavRegion2D::set_enabled(bool p_enabled) {
 void NavRegion2D::set_use_edge_connections(bool p_enabled) {
 	if (use_edge_connections != p_enabled) {
 		use_edge_connections = p_enabled;
-		polygons_dirty = true;
+		iteration_dirty = true;
 	}
 
 	request_sync();
 }
 
-void NavRegion2D::set_transform(const Transform2D &p_transform) {
+void NavRegion2D::set_transform(Transform2D p_transform) {
 	if (transform == p_transform) {
 		return;
 	}
 	transform = p_transform;
-	polygons_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
 
-void NavRegion2D::set_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon) {
+void NavRegion2D::set_navigation_mesh(Ref<NavigationPolygon> p_navigation_mesh) {
 #ifdef DEBUG_ENABLED
-	if (map && p_navigation_polygon.is_valid() && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_polygon->get_cell_size()))) {
-		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_polygon->get_cell_size()), double(map->get_cell_size())));
+	if (map && p_navigation_mesh.is_valid() && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_mesh->get_cell_size()))) {
+		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_size()), double(map->get_cell_size())));
 	}
 #endif // DEBUG_ENABLED
 
-	RWLockWrite write_lock(navmesh_rwlock);
+	navmesh = p_navigation_mesh;
 
-	pending_navmesh_vertices.clear();
-	pending_navmesh_polygons.clear();
-
-	if (p_navigation_polygon.is_valid()) {
-		p_navigation_polygon->get_data(pending_navmesh_vertices, pending_navmesh_polygons);
-	}
-
-	polygons_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -132,7 +127,7 @@ void NavRegion2D::set_navigation_layers(uint32_t p_navigation_layers) {
 		return;
 	}
 	navigation_layers = p_navigation_layers;
-	region_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -143,7 +138,7 @@ void NavRegion2D::set_enter_cost(real_t p_enter_cost) {
 		return;
 	}
 	enter_cost = new_enter_cost;
-	region_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -154,7 +149,7 @@ void NavRegion2D::set_travel_cost(real_t p_travel_cost) {
 		return;
 	}
 	travel_cost = new_travel_cost;
-	region_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
@@ -164,136 +159,150 @@ void NavRegion2D::set_owner_id(ObjectID p_owner_id) {
 		return;
 	}
 	owner_id = p_owner_id;
-	region_dirty = true;
+	iteration_dirty = true;
 
 	request_sync();
 }
 
+void NavRegion2D::scratch_polygons() {
+	iteration_dirty = true;
+
+	request_sync();
+}
+
+real_t NavRegion2D::get_surface_area() const {
+	RWLockRead read_lock(iteration_rwlock);
+	return iteration->get_surface_area();
+}
+
+Rect2 NavRegion2D::get_bounds() const {
+	RWLockRead read_lock(iteration_rwlock);
+	return iteration->get_bounds();
+}
+
+LocalVector<Nav2D::Polygon> const &NavRegion2D::get_polygons() const {
+	RWLockRead read_lock(iteration_rwlock);
+	return iteration->get_navmesh_polygons();
+}
+
 bool NavRegion2D::sync() {
-	RWLockWrite write_lock(region_rwlock);
+	bool requires_map_update = false;
+	if (!map) {
+		return requires_map_update;
+	}
 
-	bool something_changed = region_dirty || polygons_dirty;
+	if (iteration_dirty && !iteration_building && !iteration_ready) {
+		_build_iteration();
+	}
 
-	region_dirty = false;
+	if (iteration_ready) {
+		_sync_iteration();
+		requires_map_update = true;
+	}
 
-	update_polygons();
-
-	return something_changed;
+	return requires_map_update;
 }
 
-void NavRegion2D::update_polygons() {
-	if (!polygons_dirty) {
-		return;
-	}
-	navmesh_polygons.clear();
-	surface_area = 0.0;
-	bounds = Rect2();
-	polygons_dirty = false;
+void NavRegion2D::sync_async_tasks() {
+	if (iteration_build_thread_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		if (WorkerThreadPool::get_singleton()->is_task_completed(iteration_build_thread_task_id)) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(iteration_build_thread_task_id);
 
-	if (map == nullptr) {
-		return;
-	}
-
-	RWLockRead read_lock(navmesh_rwlock);
-
-	if (pending_navmesh_vertices.is_empty() || pending_navmesh_polygons.is_empty()) {
-		return;
-	}
-
-	int len = pending_navmesh_vertices.size();
-	if (len == 0) {
-		return;
-	}
-
-	const Vector2 *vertices_r = pending_navmesh_vertices.ptr();
-
-	navmesh_polygons.resize(pending_navmesh_polygons.size());
-
-	real_t _new_region_surface_area = 0.0;
-	Rect2 _new_bounds;
-
-	bool first_vertex = true;
-	int navigation_mesh_polygon_index = 0;
-
-	for (Polygon &polygon : navmesh_polygons) {
-		polygon.surface_area = 0.0;
-
-		Vector<int> navigation_mesh_polygon = pending_navmesh_polygons[navigation_mesh_polygon_index];
-		navigation_mesh_polygon_index += 1;
-
-		int navigation_mesh_polygon_size = navigation_mesh_polygon.size();
-		if (navigation_mesh_polygon_size < 3) {
-			continue;
-		}
-
-		const int *indices = navigation_mesh_polygon.ptr();
-		bool valid(true);
-
-		polygon.points.resize(navigation_mesh_polygon_size);
-		polygon.edges.resize(navigation_mesh_polygon_size);
-
-		real_t _new_polygon_surface_area = 0.0;
-
-		for (int j(2); j < navigation_mesh_polygon_size; j++) {
-			const Triangle2 triangle = Triangle2(
-					transform.xform(vertices_r[indices[0]]),
-					transform.xform(vertices_r[indices[j - 1]]),
-					transform.xform(vertices_r[indices[j]]));
-
-			_new_polygon_surface_area += triangle.get_area();
-		}
-
-		polygon.surface_area = _new_polygon_surface_area;
-		_new_region_surface_area += _new_polygon_surface_area;
-
-		for (int j(0); j < navigation_mesh_polygon_size; j++) {
-			int idx = indices[j];
-			if (idx < 0 || idx >= len) {
-				valid = false;
-				break;
-			}
-
-			Vector2 point_position = transform.xform(vertices_r[idx]);
-			polygon.points[j].pos = point_position;
-			polygon.points[j].key = NavMapBuilder2D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
-
-			if (first_vertex) {
-				first_vertex = false;
-				_new_bounds.position = point_position;
-			} else {
-				_new_bounds.expand_to(point_position);
-			}
-		}
-
-		if (!valid) {
-			ERR_BREAK_MSG(!valid, "The navigation polygon set in this region is not valid!");
+			iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+			iteration_building = false;
+			iteration_ready = true;
+			request_sync();
 		}
 	}
-
-	surface_area = _new_region_surface_area;
-	bounds = _new_bounds;
 }
 
-void NavRegion2D::get_iteration_update(NavRegionIteration2D &r_iteration) {
-	r_iteration.navigation_layers = get_navigation_layers();
-	r_iteration.enter_cost = get_enter_cost();
-	r_iteration.travel_cost = get_travel_cost();
-	r_iteration.owner_object_id = get_owner_id();
-	r_iteration.owner_type = get_type();
-	r_iteration.owner_rid = get_self();
+void NavRegion2D::_build_iteration() {
+	if (!iteration_dirty || iteration_building || iteration_ready) {
+		return;
+	}
 
-	r_iteration.enabled = get_enabled();
-	r_iteration.transform = get_transform();
-	r_iteration.owner_use_edge_connections = get_use_edge_connections();
-	r_iteration.bounds = get_bounds();
-	r_iteration.surface_area = get_surface_area();
+	iteration_dirty = false;
+	iteration_building = true;
+	iteration_ready = false;
 
-	r_iteration.navmesh_polygons.clear();
-	r_iteration.navmesh_polygons.resize(navmesh_polygons.size());
-	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
-		Polygon &navmesh_polygon = navmesh_polygons[i];
-		navmesh_polygon.owner = &r_iteration;
-		r_iteration.navmesh_polygons[i] = navmesh_polygon;
+	iteration_build.reset();
+
+	if (navmesh.is_valid()) {
+		navmesh->get_data(iteration_build.navmesh_data.vertices, iteration_build.navmesh_data.polygons);
+	}
+
+	iteration_build.map_cell_size = map->get_merge_rasterizer_cell_size();
+
+	Ref<NavRegionIteration2D> new_iteration;
+	new_iteration.instantiate();
+
+	new_iteration->navigation_layers = get_navigation_layers();
+	new_iteration->enter_cost = get_enter_cost();
+	new_iteration->travel_cost = get_travel_cost();
+	new_iteration->owner_object_id = get_owner_id();
+	new_iteration->owner_type = get_type();
+	new_iteration->owner_rid = get_self();
+	new_iteration->enabled = get_enabled();
+	new_iteration->transform = get_transform();
+	new_iteration->owner_use_edge_connections = get_use_edge_connections();
+
+	iteration_build.region_iteration = new_iteration;
+
+	if (use_async_iterations) {
+		iteration_build_thread_task_id = WorkerThreadPool::get_singleton()->add_native_task(&NavRegion2D::_build_iteration_threaded, &iteration_build, true, SNAME("NavRegionBuilder2D"));
+		request_async_thread_join();
+	} else {
+		NavRegionBuilder2D::build_iteration(iteration_build);
+
+		iteration_building = false;
+		iteration_ready = true;
+	}
+}
+
+void NavRegion2D::_build_iteration_threaded(void *p_arg) {
+	NavRegionIterationBuild2D *_iteration_build = static_cast<NavRegionIterationBuild2D *>(p_arg);
+
+	NavRegionBuilder2D::build_iteration(*_iteration_build);
+}
+
+void NavRegion2D::_sync_iteration() {
+	if (iteration_building || !iteration_ready) {
+		return;
+	}
+
+	performance_data.pm_polygon_count = iteration_build.performance_data.pm_polygon_count;
+	performance_data.pm_edge_count = iteration_build.performance_data.pm_edge_count;
+	performance_data.pm_edge_merge_count = iteration_build.performance_data.pm_edge_merge_count;
+
+	RWLockWrite write_lock(iteration_rwlock);
+	ERR_FAIL_COND(iteration.is_null());
+	iteration = Ref<NavRegionIteration2D>();
+	DEV_ASSERT(iteration.is_null());
+	iteration = iteration_build.region_iteration;
+	iteration_build.region_iteration = Ref<NavRegionIteration2D>();
+	DEV_ASSERT(iteration_build.region_iteration.is_null());
+	iteration_id = iteration_id % UINT32_MAX + 1;
+
+	iteration_ready = false;
+
+	cancel_async_thread_join();
+}
+
+Ref<NavRegionIteration2D> NavRegion2D::get_iteration() {
+	RWLockRead read_lock(iteration_rwlock);
+	return iteration;
+}
+
+void NavRegion2D::request_async_thread_join() {
+	DEV_ASSERT(map);
+	if (map && !async_list_element.in_list()) {
+		map->add_region_async_thread_join_request(&async_list_element);
+	}
+}
+
+void NavRegion2D::cancel_async_thread_join() {
+	if (map && async_list_element.in_list()) {
+		map->remove_region_async_thread_join_request(&async_list_element);
 	}
 }
 
@@ -309,11 +318,42 @@ void NavRegion2D::cancel_sync_request() {
 	}
 }
 
+void NavRegion2D::set_use_async_iterations(bool p_enabled) {
+	if (use_async_iterations == p_enabled) {
+		return;
+	}
+#ifdef THREADS_ENABLED
+	use_async_iterations = p_enabled;
+#endif
+}
+
+bool NavRegion2D::get_use_async_iterations() const {
+	return use_async_iterations;
+}
+
 NavRegion2D::NavRegion2D() :
-		sync_dirty_request_list_element(this) {
+		sync_dirty_request_list_element(this), async_list_element(this) {
 	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+	iteration_build.region = this;
+	iteration.instantiate();
+
+#ifdef THREADS_ENABLED
+	use_async_iterations = GLOBAL_GET("navigation/world/region_use_async_iterations");
+#else
+	use_async_iterations = false;
+#endif
 }
 
 NavRegion2D::~NavRegion2D() {
+	cancel_async_thread_join();
 	cancel_sync_request();
+
+	if (iteration_build_thread_task_id != WorkerThreadPool::INVALID_TASK_ID) {
+		WorkerThreadPool::get_singleton()->wait_for_task_completion(iteration_build_thread_task_id);
+		iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
+	}
+
+	iteration_build.region = nullptr;
+	iteration_build.region_iteration = Ref<NavRegionIteration2D>();
+	iteration = Ref<NavRegionIteration2D>();
 }

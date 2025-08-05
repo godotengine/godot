@@ -45,8 +45,6 @@ class Translation : public Resource {
 	virtual Dictionary _get_messages() const;
 	virtual void _set_messages(const Dictionary &p_messages);
 
-	void _notify_translation_changed_if_applies();
-
 protected:
 	static void _bind_methods();
 
