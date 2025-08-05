@@ -81,6 +81,12 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 			case 5:
 				min_filter_enum = GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR;
 				break;
+			case 6:
+				min_filter_enum = GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_ANISOTROPIC;
+				break;
+			case 7:
+				min_filter_enum = GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_ANISOTROPIC;
+				break;
 		}
 		state->set_texture_filter_min(min_filter_enum);
 	}
@@ -156,7 +162,7 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 	if (p_path.is_empty() || file_extension == "gltf" || file_extension == "glb") {
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/minification", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap Nearest,Linear Mipmap Nearest,Nearest Mipmap Linear,Linear Mipmap Linear"), 5));
+		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/minification", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap Nearest,Linear Mipmap Nearest,Nearest Mipmap Linear,Linear Mipmap Linear,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), 7));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/magnification", PROPERTY_HINT_ENUM, "Nearest,Linear"), 1));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/wrap_u", PROPERTY_HINT_ENUM, "Clamp to Edge,Mirrored Repeat,Repeat"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/wrap_v", PROPERTY_HINT_ENUM, "Clamp to Edge,Mirrored Repeat,Repeat"), 2));

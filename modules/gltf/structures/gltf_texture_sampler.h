@@ -42,7 +42,9 @@ public:
 		NEAREST_MIPMAP_NEAREST = 9984,
 		LINEAR_MIPMAP_NEAREST = 9985,
 		NEAREST_MIPMAP_LINEAR = 9986,
-		LINEAR_MIPMAP_LINEAR = 9987
+		LINEAR_MIPMAP_LINEAR = 9987,
+		NEAREST_MIPMAP_ANISOTROPIC = 9988,
+		LINEAR_MIPMAP_ANISOTROPIC = 9989
 	};
 
 	enum WrapMode {
@@ -97,8 +99,12 @@ public:
 				return TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
 			case LINEAR_MIPMAP_NEAREST:
 			case LINEAR_MIPMAP_LINEAR:
-			default:
 				return TextureFilter::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+			case NEAREST_MIPMAP_ANISOTROPIC:
+				return TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC;
+			case LINEAR_MIPMAP_ANISOTROPIC:
+			default:
+				return TextureFilter::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC;
 		}
 	}
 
@@ -115,14 +121,20 @@ public:
 				mag_filter = FilterMode::LINEAR;
 				break;
 			case TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS:
-			case TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
 				min_filter = FilterMode::NEAREST_MIPMAP_LINEAR;
 				mag_filter = FilterMode::NEAREST;
 				break;
 			case TextureFilter::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS:
+				min_filter = FilterMode::LINEAR_MIPMAP_LINEAR;
+				mag_filter = FilterMode::LINEAR;
+				break;
+			case TextureFilter::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC:
+				min_filter = FilterMode::NEAREST_MIPMAP_ANISOTROPIC;
+				mag_filter = FilterMode::NEAREST;
+				break;
 			case TextureFilter::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC:
 			default:
-				min_filter = FilterMode::LINEAR_MIPMAP_LINEAR;
+				min_filter = FilterMode::LINEAR_MIPMAP_ANISOTROPIC;
 				mag_filter = FilterMode::LINEAR;
 				break;
 		}
