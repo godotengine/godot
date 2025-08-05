@@ -4252,7 +4252,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		
 		// Check for zero-dimension textures that can cause crashes (issue #109295)
 		if (!img->is_empty() && (img->get_width() == 0 || img->get_height() == 0)) {
-			WARN_PRINT(vformat("glTF: Image index '%d' has zero dimensions (%dx%d). Creating placeholder texture to prevent crash.", i, img->get_width(), img->get_height()));
+			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+			WARN_PRINT(vformat("GLTF Import Warning: Corrupted texture detected in '%s'.\n"
+							   "Image index '%d' (name: '%s') has invalid zero dimensions (%dx%d).\n"
+							   "A magenta placeholder texture has been created to prevent crashes.\n"
+							   "Please check the source file - this texture may be corrupted or incorrectly exported.", 
+							   file_info, i, image_name, img->get_width(), img->get_height()));
 			// Create a minimal 1x1 placeholder image instead of skipping
 			img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
 			img->fill(Color(1, 0, 1)); // Magenta to indicate missing/invalid texture
@@ -4363,7 +4368,11 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 
 Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
 	if (p_texture >= p_state->textures.size()) {
-		WARN_PRINT("glTF: Texture index " + itos(p_texture) + " is out of bounds (textures.size() = " + itos(p_state->textures.size()) + "). Skipping texture.");
+		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture reference detected in '%s'.\n"
+						   "Material references texture index %d, but only %d textures exist in the file.\n"
+						   "The material will render without this texture. Please check the source file for export errors.", 
+						   file_info, p_texture, p_state->textures.size()));
 		return Ref<Texture2D>();
 	}
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
@@ -4405,7 +4414,11 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_sta
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
 	if (p_texture >= p_state->textures.size()) {
-		WARN_PRINT("glTF: Texture index " + itos(p_texture) + " is out of bounds (textures.size() = " + itos(p_state->textures.size()) + ") when getting sampler. Using default sampler.");
+		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture sampler reference in '%s'.\n"
+						   "Texture index %d is out of bounds (only %d textures available).\n"
+						   "Using default texture sampler settings.", 
+						   file_info, p_texture, p_state->textures.size()));
 		return p_state->default_texture_sampler;
 	}
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
