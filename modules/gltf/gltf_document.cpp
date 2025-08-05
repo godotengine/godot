@@ -4247,18 +4247,20 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					WARN_PRINT(vformat("GLTF: Creating placeholder for missing texture in '%s'. Reason: %s", 
 									   file_info, missing_reason));
 					
-					// Create in-memory placeholder texture
-					Ref<Image> placeholder_image = Image::create_empty(64, 64, false, Image::FORMAT_RGB8);
-					for (int y = 0; y < 64; y++) {
-						for (int x = 0; x < 64; x++) {
-							Color color = ((x / 8 + y / 8) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.5, 0.0, 0.5);
+					// Create in-memory placeholder texture - 128x128 for better visibility
+					Ref<Image> placeholder_image = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
+					// Fill with bright magenta checkerboard pattern
+					for (int y = 0; y < 128; y++) {
+						for (int x = 0; x < 128; x++) {
+							Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.8, 0.0, 0.8);
 							placeholder_image->set_pixel(x, y, color);
 						}
 					}
+					
 					Ref<ImageTexture> placeholder_texture;
 					placeholder_texture.instantiate();
 					placeholder_texture->set_name(image_name + "_placeholder");
-					placeholder_texture->set_image(placeholder_image);
+					placeholder_texture->create_from_image(placeholder_image);
 					p_state->images.push_back(placeholder_texture);
 					p_state->source_images.push_back(placeholder_image);
 					continue;
@@ -4282,18 +4284,19 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 			WARN_PRINT(vformat("GLTF: No image data for index %d in '%s'. Using placeholder.", i, file_info));
 			
-			// Create placeholder texture
-			Ref<Image> placeholder_image = Image::create_empty(64, 64, false, Image::FORMAT_RGB8);
-			for (int y = 0; y < 64; y++) {
-				for (int x = 0; x < 64; x++) {
-					Color color = ((x / 8 + y / 8) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.5, 0.0, 0.5);
+			// Create placeholder texture - 128x128 for better visibility
+			Ref<Image> placeholder_image = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
+			// Fill with bright magenta checkerboard pattern
+			for (int y = 0; y < 128; y++) {
+				for (int x = 0; x < 128; x++) {
+					Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.8, 0.0, 0.8);
 					placeholder_image->set_pixel(x, y, color);
 				}
 			}
 			Ref<ImageTexture> placeholder_texture;
 			placeholder_texture.instantiate();
 			placeholder_texture->set_name(image_name + "_empty");
-			placeholder_texture->set_image(placeholder_image);
+			placeholder_texture->create_from_image(placeholder_image);
 			p_state->images.push_back(placeholder_texture);
 			p_state->source_images.push_back(placeholder_image);
 			continue;
@@ -4307,9 +4310,15 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 			WARN_PRINT(vformat("GLTF: Invalid zero-dimension texture in '%s' (index %d). Using placeholder.", 
 							   file_info, i));
-			// Create a minimal 1x1 placeholder image instead of skipping
-			img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
-			img->fill(Color(1, 0, 1)); // Magenta to indicate missing/invalid texture
+			// Create a 128x128 placeholder for better visibility
+			img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
+			// Fill with bright magenta checkerboard pattern
+			for (int y = 0; y < 128; y++) {
+				for (int x = 0; x < 128; x++) {
+					Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
+					img->set_pixel(x, y, color);
+				}
+			}
 		}
 		
 		img->set_name(image_name);
@@ -4420,12 +4429,43 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture reference detected in '%s'.\n"
 						   "Material references texture index %d, but only %d textures exist in the file.\n"
-						   "The material will render without this texture. Please check the source file for export errors.", 
+						   "Using placeholder texture. Please check the source file for export errors.", 
 						   file_info, p_texture, p_state->textures.size()));
-		return Ref<Texture2D>();
+		
+		// Create a 128x128 placeholder texture for invalid references
+		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
+		// Fill with bright magenta checkerboard pattern
+		for (int y = 0; y < 128; y++) {
+			for (int x = 0; x < 128; x++) {
+				Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
+				placeholder_img->set_pixel(x, y, color);
+			}
+		}
+		
+		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
+		return placeholder_texture;
 	}
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
-	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
+	if (image >= p_state->images.size()) {
+		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+		WARN_PRINT(vformat("GLTF Import Warning: Invalid image reference detected in '%s'.\n"
+						   "Texture index %d references image index %d, but only %d images exist in the file.\n"
+						   "Using placeholder texture. Please check the source file for export errors.", 
+						   file_info, p_texture, image, p_state->images.size()));
+		
+		// Create a 128x128 placeholder texture for invalid image references
+		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
+		// Fill with bright magenta checkerboard pattern
+		for (int y = 0; y < 128; y++) {
+			for (int x = 0; x < 128; x++) {
+				Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
+				placeholder_img->set_pixel(x, y, color);
+			}
+		}
+		
+		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
+		return placeholder_texture;
+	}
 	if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
 		ERR_FAIL_INDEX_V(image, p_state->source_images.size(), Ref<Texture2D>());
 		Ref<PortableCompressedTexture2D> portable_texture;
@@ -4442,7 +4482,29 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		p_state->images.write[image] = portable_texture;
 		p_state->source_images.write[image] = new_img;
 	}
-	return p_state->images[image];
+	
+	// Final safety check - if the texture is null, return a placeholder
+	Ref<Texture2D> texture = p_state->images[image];
+	if (texture.is_null()) {
+		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+		WARN_PRINT(vformat("GLTF Import Warning: Null texture detected at image index %d in '%s'. Using placeholder texture.", 
+						   image, file_info));
+		
+		// Create a 128x128 placeholder texture for null textures
+		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
+		// Fill with bright magenta checkerboard pattern
+		for (int y = 0; y < 128; y++) {
+			for (int x = 0; x < 128; x++) {
+				Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
+				placeholder_img->set_pixel(x, y, color);
+			}
+		}
+		
+		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
+		return placeholder_texture;
+	}
+	
+	return texture;
 }
 
 GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_state, StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats) {
