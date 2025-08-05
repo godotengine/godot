@@ -9,6 +9,8 @@ const GodotAudioRecorder = {
 		'Module["downloadRecordedVideo"] = GodotAudioRecorder.downloadRecordedVideo;',
 		'Module["getRecordedVideoBlob"] = GodotAudioRecorder.getRecordedVideoBlob;',
 		'Module["setRecorderCanvas"] = GodotAudioRecorder.setRecorderCanvas;',
+		'Module["tryStartRecording"] = GodotAudioRecorder.tryStartRecording;',
+		'Module["tryStopRecording"] = GodotAudioRecorder.tryStopRecording;',
 	].join(''),
 	$GodotAudioRecorder: {
 		// Private state
@@ -346,6 +348,15 @@ const GodotAudioRecorder = {
 			return 'video/webm';
 		},
 		
+		tryStartRecording: function() {
+			console.log("TODO request to record video ")
+		},
+
+		tryStopRecording: async function() {
+			console.log("TODO request to record video ")
+			return null // return the video data
+		},
+
 		/**
 		 * Start video recording (audio and video merged)
 		 * @returns {boolean}
