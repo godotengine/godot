@@ -86,10 +86,11 @@
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the logical time between frames in seconds. Equivalent to [method Node._process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the time between frames in seconds. Equivalent to [method Node._process].
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
 				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
 				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
+				[b]Note:[/b] Frame delta may be post processed by [member OS.delta_smoothing] if this is enabled for the project.
 			</description>
 		</method>
 	</methods>
