@@ -1553,31 +1553,32 @@ static bool _get_monitor_desc(HMONITOR p_monitor, DXGI_OUTPUT_DESC1 &r_Desc) {
 		return false;
 	}
 
-	// Retrieve the current default adapter.
+	// Note: As of August, 2025 Microsoft's sample code only checks the default
+	// adapter, but sometimes p_monitor may belong to another adapter.
 	ComPtr<IDXGIAdapter1> dxgiAdapter;
-	if (FAILED(dxgi_factory->EnumAdapters1(0, &dxgiAdapter))) {
-		return false;
-	}
+	UINT adapter_i = 0;
+	while (dxgi_factory->EnumAdapters1(adapter_i, &dxgiAdapter) == S_OK) {
+		ComPtr<IDXGIOutput> dxgiOutput;
+		DXGI_OUTPUT_DESC1 desc1;
+		UINT output_i = 0;
+		while (dxgiAdapter->EnumOutputs(output_i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND) {
+			ComPtr<IDXGIOutput6> output6;
+			if (FAILED(dxgiOutput.As(&output6))) {
+				continue;
+			}
 
-	UINT i = 0;
-	ComPtr<IDXGIOutput> dxgiOutput;
-	DXGI_OUTPUT_DESC1 desc1;
-	while (dxgiAdapter->EnumOutputs(i, &dxgiOutput) != DXGI_ERROR_NOT_FOUND) {
-		ComPtr<IDXGIOutput6> output6;
-		if (FAILED(dxgiOutput.As(&output6))) {
-			continue;
+			if (FAILED(output6->GetDesc1(&desc1))) {
+				continue;
+			}
+
+			if (desc1.Monitor == p_monitor) {
+				r_Desc = desc1;
+				return true;
+			}
+
+			output_i++;
 		}
-
-		if (FAILED(output6->GetDesc1(&desc1))) {
-			continue;
-		}
-
-		if (desc1.Monitor == p_monitor) {
-			r_Desc = desc1;
-			return true;
-		}
-
-		i++;
+		adapter_i++;
 	}
 
 	return false;
