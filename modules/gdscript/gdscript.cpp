@@ -1078,13 +1078,6 @@ void GDScript::set_path_cache(const String &p_path) {
 	if (is_root_script()) {
 		Script::set_path_cache(p_path);
 	}
-
-	path = p_path;
-	path_valid = true;
-
-	for (KeyValue<StringName, Ref<GDScript>> &kv : subclasses) {
-		kv.value->set_path_cache(p_path);
-	}
 }
 
 void GDScript::set_path(const String &p_path, bool p_take_over) {
@@ -2826,17 +2819,6 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 }
 
 String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
-	LocalVector<String> r_vec;
-	return _get_global_class_name(p_path, r_base_type, r_icon_path, r_is_abstract, r_is_tool, r_vec);
-}
-
-String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool, LocalVector<String> &r_visited) const {
-	if (r_visited.has(p_path)) {
-		return String();
-	}
-
-	r_visited.push_back(p_path);
-
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -2876,7 +2858,7 @@ String GDScriptLanguage::_get_global_class_name(const String &p_path, String *r_
 				if (!subclass->extends_path.is_empty()) {
 					if (subclass->extends.is_empty()) {
 						// We only care about the referenced class_name.
-						_ALLOW_DISCARD_ _get_global_class_name(subclass->extends_path, r_base_type, nullptr, nullptr, nullptr, r_visited);
+						_ALLOW_DISCARD_ get_global_class_name(subclass->extends_path, r_base_type);
 						subclass = nullptr;
 						break;
 					} else {
@@ -3065,7 +3047,11 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
 	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
-	Ref<GDScript> scr = GDScriptCache::get_full_script(p_original_path, err, "", ignoring);
+	Ref<GDScript> scr = GDScriptCache::get_full_script_no_resource_cache(p_original_path, err, "", ignoring);
+	// Reset `path_cache` so that when resource loader uses `set_path()` later, the script gets added to the cache.
+	if (scr.is_valid()) {
+		scr->set_path_cache(String());
+	}
 
 	if (err && scr.is_valid()) {
 		// If !scr.is_valid(), the error was likely from scr->load_source_code(), which already generates an error.
