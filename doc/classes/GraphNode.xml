@@ -20,6 +20,14 @@
 				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
 			</description>
 		</method>
+		<method name="add_node_to_titlebar">
+			<return type="void" />
+			<param index="0" name="node" type="Control" />
+			<description>
+				Adds a custom [param node] to the titlebar hbox.
+				See also [method remove_node_from_titlebar] and [method clear_titlebar_nodes].
+			</description>
+		</method>
 		<method name="add_port">
 			<return type="void" />
 			<param index="0" name="port" type="GraphPort" />
@@ -54,6 +62,13 @@
 			<description>
 				Remove all connections to output [GraphPort]s attached to this node. Shorthand for [code]clear_filtered_connections(GraphPort.OUTPUT)[/code].
 				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
+		<method name="clear_titlebar_nodes">
+			<return type="void" />
+			<description>
+				Removes all custom nodes from the title bar.
+				See also [method add_node_to_titlebar] and [method remove_node_from_titlebar].
 			</description>
 		</method>
 		<method name="enabled_index_to_port_index" qualifiers="const">
@@ -298,6 +313,14 @@
 			<description>
 				Removes a [param connection] from the node.
 				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
+			</description>
+		</method>
+		<method name="remove_node_from_titlebar">
+			<return type="void" />
+			<param index="0" name="node" type="Control" />
+			<description>
+				Removes a custom [param node] from the titlebar hbox.
+				See also [method add_node_to_titlebar] and [method clear_titlebar_nodes].
 			</description>
 		</method>
 		<method name="remove_port">
