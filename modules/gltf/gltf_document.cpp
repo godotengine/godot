@@ -4195,11 +4195,11 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_file_decode();
-				
+
 				// Create placeholder texture for missing files
 				bool create_placeholder = false;
 				String missing_reason = "";
-				
+
 				if (uri.is_absolute_path()) {
 					if (!FileAccess::exists(uri)) {
 						// Try local fallback
@@ -4208,19 +4208,19 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 						if (FileAccess::exists(fallback_path)) {
 							uri = fallback_path;
 							String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-							WARN_PRINT(vformat("GLTF: Corrected texture path in '%s'. Using '%s' instead of missing absolute path.", 
-											   file_info, filename));
+							WARN_PRINT(vformat("GLTF: Corrected texture path in '%s'. Using '%s' instead of missing absolute path.",
+									file_info, filename));
 						} else {
 							create_placeholder = true;
 							missing_reason = "Absolute path not found, local fallback also missing";
 						}
 					}
 				}
-				
+
 				if (!create_placeholder) {
 					uri = p_base_path.path_join(uri).replace_char('\\', '/');
 					resource_uri = uri.simplify_path();
-					
+
 					// Try ResourceLoader first
 					if (ResourceLoader::exists(resource_uri)) {
 						Ref<Texture2D> texture = ResourceLoader::load(resource_uri, "Texture2D");
@@ -4230,7 +4230,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 							continue;
 						}
 					}
-					
+
 					// Try loading as bytes
 					if (mime_type.is_empty()) {
 						mime_type = "image/" + resource_uri.get_extension();
@@ -4241,12 +4241,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 						missing_reason = "Could not load texture data";
 					}
 				}
-				
+
 				if (create_placeholder) {
 					String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-					WARN_PRINT(vformat("GLTF: Creating placeholder for missing texture in '%s'. Reason: %s", 
-									   file_info, missing_reason));
-					
+					WARN_PRINT(vformat("GLTF: Creating placeholder for missing texture in '%s'. Reason: %s",
+							file_info, missing_reason));
+
 					// Create in-memory placeholder texture - 128x128 for better visibility
 					Ref<Image> placeholder_image = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
 					// Fill with bright magenta checkerboard pattern
@@ -4256,7 +4256,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 							placeholder_image->set_pixel(x, y, color);
 						}
 					}
-					
+
 					Ref<ImageTexture> placeholder_texture;
 					placeholder_texture.instantiate();
 					placeholder_texture->set_name(image_name + "_placeholder");
@@ -4283,7 +4283,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		if (data.is_empty()) {
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 			WARN_PRINT(vformat("GLTF: No image data for index %d in '%s'. Using placeholder.", i, file_info));
-			
+
 			// Create placeholder texture - 128x128 for better visibility
 			Ref<Image> placeholder_image = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
 			// Fill with bright magenta checkerboard pattern
@@ -4304,12 +4304,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		// Parse the image data from bytes into an Image resource and save if needed.
 		String file_extension;
 		Ref<Image> img = _parse_image_bytes_into_image(p_state, data, mime_type, i, file_extension);
-		
+
 		// Check for zero-dimension textures that can cause crashes (issue #109295)
 		if (!img->is_empty() && (img->get_width() == 0 || img->get_height() == 0)) {
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-			WARN_PRINT(vformat("GLTF: Invalid zero-dimension texture in '%s' (index %d). Using placeholder.", 
-							   file_info, i));
+			WARN_PRINT(vformat("GLTF: Invalid zero-dimension texture in '%s' (index %d). Using placeholder.",
+					file_info, i));
 			// Create a 128x128 placeholder for better visibility
 			img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
 			// Fill with bright magenta checkerboard pattern
@@ -4320,7 +4320,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				}
 			}
 		}
-		
+
 		img->set_name(image_name);
 		_parse_image_save_image(p_state, data, resource_uri, file_extension, i, img);
 	}
@@ -4429,9 +4429,9 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture reference detected in '%s'.\n"
 						   "Material references texture index %d, but only %d textures exist in the file.\n"
-						   "Using placeholder texture. Please check the source file for export errors.", 
-						   file_info, p_texture, p_state->textures.size()));
-		
+						   "Using placeholder texture. Please check the source file for export errors.",
+				file_info, p_texture, p_state->textures.size()));
+
 		// Create a 128x128 placeholder texture for invalid references
 		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
 		// Fill with bright magenta checkerboard pattern
@@ -4441,7 +4441,7 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 				placeholder_img->set_pixel(x, y, color);
 			}
 		}
-		
+
 		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
 		return placeholder_texture;
 	}
@@ -4450,9 +4450,9 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 		WARN_PRINT(vformat("GLTF Import Warning: Invalid image reference detected in '%s'.\n"
 						   "Texture index %d references image index %d, but only %d images exist in the file.\n"
-						   "Using placeholder texture. Please check the source file for export errors.", 
-						   file_info, p_texture, image, p_state->images.size()));
-		
+						   "Using placeholder texture. Please check the source file for export errors.",
+				file_info, p_texture, image, p_state->images.size()));
+
 		// Create a 128x128 placeholder texture for invalid image references
 		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
 		// Fill with bright magenta checkerboard pattern
@@ -4462,7 +4462,7 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 				placeholder_img->set_pixel(x, y, color);
 			}
 		}
-		
+
 		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
 		return placeholder_texture;
 	}
@@ -4482,14 +4482,14 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		p_state->images.write[image] = portable_texture;
 		p_state->source_images.write[image] = new_img;
 	}
-	
+
 	// Final safety check - if the texture is null, return a placeholder
 	Ref<Texture2D> texture = p_state->images[image];
 	if (texture.is_null()) {
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-		WARN_PRINT(vformat("GLTF Import Warning: Null texture detected at image index %d in '%s'. Using placeholder texture.", 
-						   image, file_info));
-		
+		WARN_PRINT(vformat("GLTF Import Warning: Null texture detected at image index %d in '%s'. Using placeholder texture.",
+				image, file_info));
+
 		// Create a 128x128 placeholder texture for null textures
 		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
 		// Fill with bright magenta checkerboard pattern
@@ -4499,11 +4499,11 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 				placeholder_img->set_pixel(x, y, color);
 			}
 		}
-		
+
 		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
 		return placeholder_texture;
 	}
-	
+
 	return texture;
 }
 
@@ -4528,8 +4528,8 @@ Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture sampler reference in '%s'.\n"
 						   "Texture index %d is out of bounds (only %d textures available).\n"
-						   "Using default texture sampler settings.", 
-						   file_info, p_texture, p_state->textures.size()));
+						   "Using default texture sampler settings.",
+				file_info, p_texture, p_state->textures.size()));
 		return p_state->default_texture_sampler;
 	}
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
@@ -9075,13 +9075,13 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
-	
+
 	// Handle hardcoded absolute paths that don't exist
 	if (err != OK && p_path.is_absolute_path()) {
 		String filename = p_path.get_file();
 		String base_dir = p_base_path.is_empty() ? "." : p_base_path;
 		String local_path = base_dir.path_join(filename);
-		
+
 		// Try to find the file locally
 		if (FileAccess::exists(local_path)) {
 			file = FileAccess::open(local_path, FileAccess::READ, &err);
@@ -9090,7 +9090,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 				p_path = local_path; // Update path for further processing
 			}
 		}
-		
+
 		// If still can't find it, try in current directory
 		if (err != OK) {
 			String current_dir_path = filename; // Just the filename in current directory
@@ -9103,7 +9103,7 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 			}
 		}
 	}
-	
+
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat(R"(Can't open file at path "%s")", p_path));
 	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
