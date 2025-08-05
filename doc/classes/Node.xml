@@ -84,12 +84,12 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics.
+				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics. [param delta] is the time between physics frames in seconds.
 				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Processing happens in order of [member process_physics_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will always be [member Engine.time_scale] / [member Engine.physics_ticks_per_second], even when running at slower frame rates. [param delta] is in seconds.
+				[b]Note:[/b] [param delta] will always be [member Engine.time_scale] / [member Engine.physics_ticks_per_second]. Avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
