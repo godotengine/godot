@@ -4195,34 +4195,72 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_file_decode();
-				uri = p_base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
-				resource_uri = uri.simplify_path();
-				// ResourceLoader will rely on the file extension to use the relevant loader.
-				// The spec says that if mimeType is defined, it should take precedence (e.g.
-				// there could be a `.png` image which is actually JPEG), but there's no easy
-				// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
-				// the material), so we only do that only as fallback.
-				if (ResourceLoader::exists(resource_uri)) {
-					Ref<Texture2D> texture = ResourceLoader::load(resource_uri, "Texture2D");
-					if (texture.is_valid()) {
-						p_state->images.push_back(texture);
-						p_state->source_images.push_back(texture->get_image());
-						continue;
+				
+				// Create placeholder texture for missing files
+				bool create_placeholder = false;
+				String missing_reason = "";
+				
+				if (uri.is_absolute_path()) {
+					if (!FileAccess::exists(uri)) {
+						// Try local fallback
+						String filename = uri.get_file();
+						String fallback_path = p_base_path.path_join(filename);
+						if (FileAccess::exists(fallback_path)) {
+							uri = fallback_path;
+							String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+							WARN_PRINT(vformat("GLTF: Corrected texture path in '%s'. Using '%s' instead of missing absolute path.", 
+											   file_info, filename));
+						} else {
+							create_placeholder = true;
+							missing_reason = "Absolute path not found, local fallback also missing";
+						}
 					}
 				}
-				// mimeType is optional, but if we have it in the file extension, let's use it.
-				// If the mimeType does not match with the file extension, either it should be
-				// specified in the file, or the GLTFDocumentExtension should handle it.
-				if (mime_type.is_empty()) {
-					mime_type = "image/" + resource_uri.get_extension();
+				
+				if (!create_placeholder) {
+					uri = p_base_path.path_join(uri).replace_char('\\', '/');
+					resource_uri = uri.simplify_path();
+					
+					// Try ResourceLoader first
+					if (ResourceLoader::exists(resource_uri)) {
+						Ref<Texture2D> texture = ResourceLoader::load(resource_uri, "Texture2D");
+						if (texture.is_valid()) {
+							p_state->images.push_back(texture);
+							p_state->source_images.push_back(texture->get_image());
+							continue;
+						}
+					}
+					
+					// Try loading as bytes
+					if (mime_type.is_empty()) {
+						mime_type = "image/" + resource_uri.get_extension();
+					}
+					data = FileAccess::get_file_as_bytes(resource_uri);
+					if (data.is_empty()) {
+						create_placeholder = true;
+						missing_reason = "Could not load texture data";
+					}
 				}
-				// Fallback to loading as byte array. This enables us to support the
-				// spec's requirement that we honor mimetype regardless of file URI.
-				data = FileAccess::get_file_as_bytes(resource_uri);
-				if (data.is_empty()) {
-					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s because there was no data to load. Skipping it.", i, mime_type, resource_uri));
-					p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
-					p_state->source_images.push_back(Ref<Image>());
+				
+				if (create_placeholder) {
+					String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+					WARN_PRINT(vformat("GLTF: Creating placeholder for missing texture in '%s'. Reason: %s", 
+									   file_info, missing_reason));
+					
+					// Create in-memory placeholder texture
+					Ref<Image> placeholder_image = Image::create_empty(64, 64, false, Image::FORMAT_RGB8);
+					for (int y = 0; y < 64; y++) {
+						for (int x = 0; x < 64; x++) {
+							Color color = ((x / 8 + y / 8) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.5, 0.0, 0.5);
+							placeholder_image->set_pixel(x, y, color);
+						}
+					}
+					Ref<ImageTexture> placeholder_texture;
+					placeholder_texture.instantiate();
+					placeholder_texture->set_name(image_name + "_placeholder");
+					placeholder_texture->set_image(placeholder_image);
+					p_state->images.push_back(placeholder_texture);
+					p_state->source_images.push_back(placeholder_image);
 					continue;
 				}
 			}
@@ -4241,9 +4279,23 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		// Done loading the image data bytes. Check that we actually got data to parse.
 		// Note: There are paths above that return early, so this point might not be reached.
 		if (data.is_empty()) {
-			WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded, no data found. Skipping it.", i));
-			p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
-			p_state->source_images.push_back(Ref<Image>());
+			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
+			WARN_PRINT(vformat("GLTF: No image data for index %d in '%s'. Using placeholder.", i, file_info));
+			
+			// Create placeholder texture
+			Ref<Image> placeholder_image = Image::create_empty(64, 64, false, Image::FORMAT_RGB8);
+			for (int y = 0; y < 64; y++) {
+				for (int x = 0; x < 64; x++) {
+					Color color = ((x / 8 + y / 8) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.5, 0.0, 0.5);
+					placeholder_image->set_pixel(x, y, color);
+				}
+			}
+			Ref<ImageTexture> placeholder_texture;
+			placeholder_texture.instantiate();
+			placeholder_texture->set_name(image_name + "_empty");
+			placeholder_texture->set_image(placeholder_image);
+			p_state->images.push_back(placeholder_texture);
+			p_state->source_images.push_back(placeholder_image);
 			continue;
 		}
 		// Parse the image data from bytes into an Image resource and save if needed.
@@ -4253,11 +4305,8 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		// Check for zero-dimension textures that can cause crashes (issue #109295)
 		if (!img->is_empty() && (img->get_width() == 0 || img->get_height() == 0)) {
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-			WARN_PRINT(vformat("GLTF Import Warning: Corrupted texture detected in '%s'.\n"
-							   "Image index '%d' (name: '%s') has invalid zero dimensions (%dx%d).\n"
-							   "A magenta placeholder texture has been created to prevent crashes.\n"
-							   "Please check the source file - this texture may be corrupted or incorrectly exported.", 
-							   file_info, i, image_name, img->get_width(), img->get_height()));
+			WARN_PRINT(vformat("GLTF: Invalid zero-dimension texture in '%s' (index %d). Using placeholder.", 
+							   file_info, i));
 			// Create a minimal 1x1 placeholder image instead of skipping
 			img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
 			img->fill(Color(1, 0, 1)); // Magenta to indicate missing/invalid texture
@@ -8964,6 +9013,35 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
+	
+	// Handle hardcoded absolute paths that don't exist
+	if (err != OK && p_path.is_absolute_path()) {
+		String filename = p_path.get_file();
+		String base_dir = p_base_path.is_empty() ? "." : p_base_path;
+		String local_path = base_dir.path_join(filename);
+		
+		// Try to find the file locally
+		if (FileAccess::exists(local_path)) {
+			file = FileAccess::open(local_path, FileAccess::READ, &err);
+			if (err == OK) {
+				WARN_PRINT(vformat("Found local file '%s' instead of hardcoded path '%s'", local_path, p_path));
+				p_path = local_path; // Update path for further processing
+			}
+		}
+		
+		// If still can't find it, try in current directory
+		if (err != OK) {
+			String current_dir_path = filename; // Just the filename in current directory
+			if (FileAccess::exists(current_dir_path)) {
+				file = FileAccess::open(current_dir_path, FileAccess::READ, &err);
+				if (err == OK) {
+					WARN_PRINT(vformat("Found file '%s' in current directory instead of hardcoded path '%s'", current_dir_path, p_path));
+					p_path = current_dir_path;
+				}
+			}
+		}
+	}
+	
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat(R"(Can't open file at path "%s")", p_path));
 	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
