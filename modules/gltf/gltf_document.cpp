@@ -4249,6 +4249,15 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		// Parse the image data from bytes into an Image resource and save if needed.
 		String file_extension;
 		Ref<Image> img = _parse_image_bytes_into_image(p_state, data, mime_type, i, file_extension);
+		
+		// Check for zero-dimension textures that can cause crashes (issue #109295)
+		if (!img->is_empty() && (img->get_width() == 0 || img->get_height() == 0)) {
+			WARN_PRINT(vformat("glTF: Image index '%d' has zero dimensions (%dx%d). Creating placeholder texture to prevent crash.", i, img->get_width(), img->get_height()));
+			// Create a minimal 1x1 placeholder image instead of skipping
+			img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
+			img->fill(Color(1, 0, 1)); // Magenta to indicate missing/invalid texture
+		}
+		
 		img->set_name(image_name);
 		_parse_image_save_image(p_state, data, resource_uri, file_extension, i, img);
 	}
@@ -4353,7 +4362,10 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 }
 
 Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
-	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
+	if (p_texture >= p_state->textures.size()) {
+		WARN_PRINT("glTF: Texture index " + itos(p_texture) + " is out of bounds (textures.size() = " + itos(p_state->textures.size()) + "). Skipping texture.");
+		return Ref<Texture2D>();
+	}
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
 	if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
@@ -4392,7 +4404,10 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_sta
 }
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
+	if (p_texture >= p_state->textures.size()) {
+		WARN_PRINT("glTF: Texture index " + itos(p_texture) + " is out of bounds (textures.size() = " + itos(p_state->textures.size()) + ") when getting sampler. Using default sampler.");
+		return p_state->default_texture_sampler;
+	}
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
 
 	if (sampler == -1) {
