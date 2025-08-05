@@ -76,19 +76,20 @@
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called each physics frame. [param delta] is the time between physics frames in seconds and is determined by [member Engine.physics_ticks_per_second]. Equivalent to [method Node._physics_process].
-				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
-				[b]Note:[/b] May be called up to [member Engine.max_physics_steps_per_frame] times per process (rendered) frame, which happens more often during performance issues.
-				[b]Note:[/b] [param delta] will always be [member Engine.time_scale] / [member Engine.physics_ticks_per_second]. Avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				Called each physics tick. [param delta] is the logical time between physics ticks in seconds and is equal to [member Engine.time_scale] / [member Engine.physics_ticks_per_second]. Equivalent to [method Node._physics_process].
+				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next step.
+				[b]Note:[/b] May be called up to [member Engine.max_physics_steps_per_frame] times per (idle) frame, which happens more often during performance issues.
+				[b]Note:[/b] Be aware that accumulated [param delta] may diverge from real world seconds.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="bool" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called each process (rendered) frame with the time since the last process frame as argument [param delta] (in seconds). Equivalent to [method Node._process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the logical time between frames in seconds.
 				If implemented, the method must return a boolean value. [code]true[/code] ends the main loop, while [code]false[/code] lets it proceed to the next frame.
-				[b]Note:[/b] [param delta] will increase when running at a slower framerate due to performance, but it will not exceed [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. Avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
+				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
 			</description>
 		</method>
 	</methods>
