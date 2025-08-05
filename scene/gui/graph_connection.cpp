@@ -240,5 +240,9 @@ GraphConnection::GraphConnection(GraphPort *p_first_port, GraphPort *p_second_po
 }
 
 GraphConnection::~GraphConnection() {
-	_cache.line->queue_free();
+	if (_cache.line->is_inside_tree()) {
+		_cache.line->queue_free();
+	} else {
+		memdelete(_cache.line);
+	}
 }
