@@ -972,6 +972,14 @@ void GraphNode::set_connections(const TypedArray<Ref<GraphConnection>> &p_connec
 	graph_edit->set_node_connections(this, p_connections);
 }
 
+void GraphNode::add_connections(const TypedArray<Ref<GraphConnection>> &p_connections) {
+	if (p_connections.is_empty()) {
+		return;
+	}
+	ERR_FAIL_NULL(graph_edit);
+	graph_edit->add_connections(p_connections);
+}
+
 void GraphNode::clear_connections() {
 	ERR_FAIL_NULL(graph_edit);
 	graph_edit->clear_node_connections(this);
@@ -1064,6 +1072,7 @@ void GraphNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_connections"), &GraphNode::get_input_connections);
 	ClassDB::bind_method(D_METHOD("get_output_connections"), &GraphNode::get_output_connections);
 	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphNode::set_connections);
+	ClassDB::bind_method(D_METHOD("add_connections", "connections"), &GraphNode::add_connections);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphNode::clear_connections);
 	ClassDB::bind_method(D_METHOD("clear_filtered_connections", "filter_direction"), &GraphNode::clear_filtered_connections);
 	ClassDB::bind_method(D_METHOD("clear_input_connections"), &GraphNode::clear_input_connections);

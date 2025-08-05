@@ -48,6 +48,18 @@ protected:
 	Vector<Slot> slots;
 	HashMap<StringName, int> _node_to_slot_cache;
 	Vector<float> _slot_y_cache;
+	// Stores recently-removed slots and their connections, to support undo-redo without having reference to the undo-redo object
+	struct SlotHistory {
+		Slot slot;
+		GraphPort *input_port = nullptr;
+		GraphPort *output_port = nullptr;
+		TypedArray<Ref<GraphConnection>> conns;
+
+		SlotHistory();
+		SlotHistory(Slot p_slot, GraphPort *p_input, GraphPort *p_output, TypedArray<Ref<GraphConnection>> p_conns) :
+				slot(p_slot), input_port(p_input), output_port(p_output), conns(p_conns) {}
+	};
+	HashMap<StringName, SlotHistory> _node_to_slot_history_cache;
 
 	int selected_slot = -1;
 	Control::FocusMode slot_focus_mode = Control::FOCUS_ACCESSIBILITY;
@@ -55,7 +67,7 @@ protected:
 	Control *port_container = nullptr;
 	StringName port_container_name = StringName("PortContainer");
 	int port_container_idx = 0;
-	bool free_ports_on_slot_removed = true;
+	bool free_ports_on_slot_removed = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> panel;
@@ -148,6 +160,8 @@ public:
 	Node *get_child_by_slot_index(int p_slot_index) const;
 	Node *get_child_by_port(const GraphPort *p_port) const;
 
+	TypedArray<Ref<GraphConnection>> get_slot_connections(int p_slot_index) const;
+
 	bool get_slot_draw_stylebox(int p_slot_index) const;
 	void set_slot_draw_stylebox(int p_slot_index, bool p_draw_stylebox);
 
@@ -164,4 +178,5 @@ public:
 	bool get_free_ports_on_slot_removed() const;
 
 	GraphNodeIndexed();
+	~GraphNodeIndexed();
 };

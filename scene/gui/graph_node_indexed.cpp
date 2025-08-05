@@ -174,16 +174,32 @@ void GraphNodeIndexed::_notification(int p_what) {
 }
 
 void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_stylebox, StringName p_slot_node_name) {
-	GraphPort *p_left = memnew(GraphPort(false, true, 0, GraphPort::PortDirection::INPUT));
-	GraphPort *p_right = memnew(GraphPort(false, false, 0, GraphPort::PortDirection::OUTPUT));
-	p_left->set_name(vformat("InputPort%s", String(p_slot_node_name)));
-	p_right->set_name(vformat("OutputPort%s", String(p_slot_node_name)));
+	GraphPort *p_left;
+	GraphPort *p_right;
+	Slot p_slot;
+	if (_node_to_slot_history_cache.has(p_slot_node_name)) {
+		SlotHistory history = _node_to_slot_history_cache[p_slot_node_name];
+		_node_to_slot_history_cache.erase(p_slot_node_name);
+		p_left = history.input_port;
+		p_right = history.output_port;
+		p_slot = history.slot;
+		if (graph_edit) {
+			callable_mp((GraphNode *)this, &GraphNode::add_connections).call_deferred(history.conns);
+		}
+	} else {
+		p_left = memnew(GraphPort(false, true, 0, GraphPort::PortDirection::INPUT));
+		p_right = memnew(GraphPort(false, false, 0, GraphPort::PortDirection::OUTPUT));
+		p_left->set_name(vformat("InputPort%s", String(p_slot_node_name)));
+		p_right->set_name(vformat("OutputPort%s", String(p_slot_node_name)));
 
-	p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
+		p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
 
-	_insert_slot(p_slot_index, Slot(p_draw_stylebox, p_slot_node_name));
+		p_slot = Slot(p_draw_stylebox, p_slot_node_name);
+	}
+
 	insert_port(slot_to_port_index(p_slot_index, true), p_left);
 	insert_port(slot_to_port_index(p_slot_index, false), p_right);
+	_insert_slot(p_slot_index, p_slot);
 
 	emit_signal("slot_added", p_slot_index);
 }
@@ -379,13 +395,16 @@ void GraphNodeIndexed::_remove_all_slots() {
 }
 
 void GraphNodeIndexed::_remove_slot(int p_slot_index) {
-	slots.remove_at(p_slot_index);
-
 	for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
 		if (kv_pair.value == p_slot_index) {
+			if (!free_ports_on_slot_removed) {
+				SlotHistory history = SlotHistory(slots[p_slot_index], get_input_port_by_slot(p_slot_index), get_output_port_by_slot(p_slot_index), get_slot_connections(p_slot_index));
+				_node_to_slot_history_cache[kv_pair.key] = history;
+			}
 			_node_to_slot_cache.erase(kv_pair.key);
 		}
 	}
+	slots.remove_at(p_slot_index);
 }
 
 void GraphNodeIndexed::_set_slot_node_cache(const TypedDictionary<StringName, int> &p_slot_node_map_cache) {
@@ -512,6 +531,23 @@ Node *GraphNodeIndexed::get_child_by_slot_index(int p_slot_index) const {
 
 Node *GraphNodeIndexed::get_child_by_port(const GraphPort *p_port) const {
 	return get_child_by_slot_index(slot_index_of_port(p_port));
+}
+
+TypedArray<Ref<GraphConnection>> GraphNodeIndexed::get_slot_connections(int p_slot_index) const {
+	TypedArray<Ref<GraphConnection>> ret;
+	if (!graph_edit) {
+		return ret;
+	}
+	ERR_FAIL_INDEX_V(p_slot_index, slots.size(), ret);
+	GraphPort *input_port = get_input_port_by_slot(p_slot_index);
+	GraphPort *output_port = get_output_port_by_slot(p_slot_index);
+	if (input_port && input_port->has_connection()) {
+		ret.append_array(input_port->get_connections());
+	}
+	if (output_port && output_port->has_connection()) {
+		ret.append_array(output_port->get_connections());
+	}
+	return ret;
 }
 
 int GraphNodeIndexed::slot_index_of_port(const GraphPort *p_port) const {
@@ -821,5 +857,31 @@ GraphNodeIndexed::GraphNodeIndexed() {
 	callable_mp(this, &GraphNodeIndexed::ensure_port_container).call_deferred();
 }
 
+GraphNodeIndexed::~GraphNodeIndexed() {
+	for (KeyValue<StringName, SlotHistory> history : _node_to_slot_history_cache) {
+		if (history.key.is_empty()) {
+			continue;
+		}
+		if (history.value.input_port) {
+			if (history.value.input_port->is_inside_tree()) {
+				history.value.input_port->queue_free();
+			} else {
+				memdelete(history.value.input_port);
+			}
+		}
+		if (history.value.output_port) {
+			if (history.value.output_port->is_inside_tree()) {
+				history.value.output_port->queue_free();
+			} else {
+				memdelete(history.value.output_port);
+			}
+		}
+	}
+	_node_to_slot_history_cache.clear();
+}
+
 GraphNodeIndexed::Slot::Slot() {
+}
+
+GraphNodeIndexed::SlotHistory::SlotHistory() {
 }

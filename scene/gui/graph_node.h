@@ -169,6 +169,7 @@ public:
 	TypedArray<Ref<GraphConnection>> get_input_connections() const;
 	TypedArray<Ref<GraphConnection>> get_output_connections() const;
 	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
+	void add_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
 	void clear_connections();
 
 	void add_connection(Ref<GraphConnection> p_connection);

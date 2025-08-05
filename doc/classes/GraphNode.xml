@@ -20,6 +20,14 @@
 				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node, or if neither [GraphPort] used by the [param connection] is attached to this node.
 			</description>
 		</method>
+		<method name="add_connections">
+			<return type="void" />
+			<param index="0" name="connections" type="GraphConnection[]" />
+			<description>
+				Adds a list of [param connections] to the [GraphEdit] associated with this node.
+				[b]Note:[/b] Fails if this [GraphNode] is not the child of a [GraphEdit] node.
+			</description>
+		</method>
 		<method name="add_node_to_titlebar">
 			<return type="void" />
 			<param index="0" name="node" type="Control" />
