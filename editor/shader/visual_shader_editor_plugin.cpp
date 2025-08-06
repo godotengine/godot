@@ -8446,6 +8446,11 @@ bool VisualShaderConversionPlugin::handles(const Ref<Resource> &p_resource) cons
 Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<VisualShader> vshader = p_resource;
 	ERR_FAIL_COND_V(vshader.is_null(), Ref<Resource>());
+	int embed = vshader->has_node_embeds();
+	ERR_FAIL_COND_V_MSG(embed == 2, Ref<Resource>(), "Cannot convert VisualShader to GDShader because VisualShader has embedded subresources.");
+	if (embed == 1) {
+		WARN_PRINT("Visual Shader conversion cannot convert embedded resources. Resource references from Nodes will have to be rebound as ShaderParameters on a Material");
+	}
 
 	Ref<Shader> shader;
 	shader.instantiate();
