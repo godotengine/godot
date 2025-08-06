@@ -2001,7 +2001,7 @@ static String marked_documentation(const String &p_bbcode) {
 
 		if (!in_codeblock_tag) {
 			line = line.strip_edges();
-			line = line.replace("[br]", "\n");
+			line = line.replace("[br]", "\n\n");
 
 			line = line.replace("[code]", "`");
 			line = line.replace("[/code]", "`");
@@ -2021,11 +2021,48 @@ static String marked_documentation(const String &p_bbcode) {
 			line = line.replace("[/color]", "");
 			line = line.replace("[/img]", "");
 
+			// Convert remaining simple bracketed class names to backticks and literal brackets.
+			// This handles cases like [Node2D], [Sprite2D], etc. and [lb] and [rb].
+			int pos = 0;
+			while ((pos = line.find("[", pos)) != -1) {
+				// Replace the special cases for [lb] and [rb] first and walk
+				// past them to avoid conflicts with class names.
+				const bool is_within_bounds = pos + 4 <= line.length();
+				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
+					line = line.substr(0, pos) + "\\[" + line.substr(pos + 4);
+					// We advance past the newly inserted \\ and [ characters (2
+					// chars) so the next line.find does not stop at the same
+					// position.
+					pos += 2;
+					continue;
+				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
+					line = line.substr(0, pos) + "\\]" + line.substr(pos + 4);
+					pos += 2;
+					continue;
+				}
+
+				// Replace class names in brackets
+				int end_pos = line.find("]", pos);
+				if (end_pos != -1) {
+					String content = line.substr(pos + 1, end_pos - pos - 1);
+					// We only convert if it looks like a simple class name (no spaces, no special chars)
+					bool is_class_name = (content.find(" ") == -1 && content.find("=") == -1 && !content.is_empty() && content[0] >= 'A' && content[0] <= 'Z');
+					if (is_class_name) {
+						line = line.substr(0, pos) + "`" + content + "`" + line.substr(end_pos + 1);
+						pos += content.length() + 2;
+					} else {
+						pos = end_pos + 1;
+					}
+				} else {
+					break;
+				}
+			}
+
 			static const int URL_OPEN_TAG_LENGTH = 5; // Length of "[url="
 			static const int URL_CLOSE_TAG_LENGTH = 6; // Length of "[/url]"
 
 			// This is for the case [url=$url]$text[/url]
-			int pos = 0;
+			pos = 0;
 			while ((pos = line.find("[url=", pos)) != -1) {
 				int url_end = line.find("]", pos);
 				int close_start = line.find("[/url]", url_end);
@@ -2089,40 +2126,6 @@ static String marked_documentation(const String &p_bbcode) {
 					} else {
 						break;
 					}
-				}
-			}
-
-			// Convert remaining simple bracketed class names to backticks and literal brackets.
-			// This handles cases like [Node2D], [Sprite2D], etc. and [lb] and [rb].
-			pos = 0;
-			while ((pos = line.find("[", pos)) != -1) {
-				// Replace the special cases for [lb] and [rb] first and walk
-				// past them to avoid conflicts with class names.
-				const bool is_within_bounds = pos + 4 <= line.length();
-				if (is_within_bounds && line.substr(pos, 4) == "[lb]") {
-					line = line.substr(0, pos) + "\\[" + line.substr(pos + 4);
-					pos += 1;
-					continue;
-				} else if (is_within_bounds && line.substr(pos, 4) == "[rb]") {
-					line = line.substr(0, pos) + "\\]" + line.substr(pos + 4);
-					pos += 1;
-					continue;
-				}
-
-				// Replace class names in brackets
-				// TODO: this affects markdown URL content - [link description](url) - and needs to be addressed
-				int end_pos = line.find("]", pos);
-				if (end_pos != -1) {
-					String content = line.substr(pos + 1, end_pos - pos - 1);
-					// We only convert if it looks like a simple class name (no spaces, no special chars)
-					if (content.find(" ") == -1 && content.find("=") == -1) {
-						line = line.substr(0, pos) + "`" + content + "`" + line.substr(end_pos + 1);
-						pos += content.length() + 2;
-					} else {
-						pos = end_pos + 1;
-					}
-				} else {
-					break;
 				}
 			}
 		}
