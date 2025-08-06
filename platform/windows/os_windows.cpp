@@ -668,15 +668,78 @@ String OS_Windows::get_version_alias() const {
 	return "";
 }
 
-Vector<String> OS_Windows::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton() == nullptr) {
+Vector<String> OS_Windows::_get_video_adapter_driver_info_reg(const String &p_name) const {
+	Vector<String> info;
+
+	String subkey = "SYSTEM\\CurrentControlSet\\Control\\Class\\{4d36e968-e325-11ce-bfc1-08002be10318}";
+	HKEY hkey = nullptr;
+	LSTATUS result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)subkey.utf16().get_data(), 0, KEY_READ, &hkey);
+	if (result != ERROR_SUCCESS) {
 		return Vector<String>();
 	}
 
-	static Vector<String> info;
-	if (!info.is_empty()) {
-		return info;
+	DWORD subkeys = 0;
+	result = RegQueryInfoKeyW(hkey, nullptr, nullptr, nullptr, &subkeys, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+	if (result != ERROR_SUCCESS) {
+		RegCloseKey(hkey);
+		return Vector<String>();
 	}
+	for (DWORD i = 0; i < subkeys; i++) {
+		WCHAR key_name[MAX_PATH] = L"";
+		DWORD key_name_size = MAX_PATH;
+		result = RegEnumKeyExW(hkey, i, key_name, &key_name_size, nullptr, nullptr, nullptr, nullptr);
+		if (result != ERROR_SUCCESS) {
+			continue;
+		}
+		String id = String::utf16((const char16_t *)key_name, key_name_size);
+		if (!id.is_empty()) {
+			HKEY sub_hkey = nullptr;
+			result = RegOpenKeyExW(HKEY_LOCAL_MACHINE, (LPCWSTR)(subkey + "\\" + id).utf16().get_data(), 0, KEY_QUERY_VALUE, &sub_hkey);
+			if (result != ERROR_SUCCESS) {
+				continue;
+			}
+
+			WCHAR buffer[4096];
+			DWORD buffer_len = 4096;
+			DWORD vtype = REG_SZ;
+			if (RegQueryValueExW(sub_hkey, L"DriverDesc", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"HardwareInformation.AdapterString", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) != ERROR_SUCCESS || buffer_len == 0) {
+					RegCloseKey(sub_hkey);
+					continue;
+				}
+			}
+
+			String driver_name = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+			if (driver_name == p_name) {
+				String driver_provider = driver_name;
+				String driver_version;
+
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"ProviderName", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+					driver_provider = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+				}
+				buffer_len = 4096;
+				if (RegQueryValueExW(sub_hkey, L"DriverVersion", nullptr, &vtype, (LPBYTE)buffer, &buffer_len) == ERROR_SUCCESS && buffer_len != 0) {
+					driver_version = String::utf16((const char16_t *)buffer, buffer_len).strip_edges();
+				}
+				if (!driver_version.is_empty()) {
+					info.push_back(driver_provider);
+					info.push_back(driver_version);
+
+					RegCloseKey(sub_hkey);
+					break;
+				}
+			}
+			RegCloseKey(sub_hkey);
+		}
+	}
+	RegCloseKey(hkey);
+	return info;
+}
+
+Vector<String> OS_Windows::_get_video_adapter_driver_info_wmi(const String &p_name) const {
+	Vector<String> info;
 
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
@@ -686,11 +749,6 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	IWbemClassObject *pnpSDriverObject[1]; // contains driver name, version, etc.
 	String driver_name;
 	String driver_version;
-
-	const String device_name = RenderingServer::get_singleton()->get_video_adapter_name();
-	if (device_name.is_empty()) {
-		return Vector<String>();
-	}
 
 	HRESULT hr = CoCreateInstance(clsid, nullptr, CLSCTX_INPROC_SERVER, uuid, (LPVOID *)&wbemLocator);
 	if (hr != S_OK) {
@@ -706,7 +764,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 		return Vector<String>();
 	}
 
-	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", device_name);
+	const String gpu_device_class_query = vformat("SELECT * FROM Win32_PnPSignedDriver WHERE DeviceName = \"%s\"", p_name);
 	BSTR query = SysAllocString((const WCHAR *)gpu_device_class_query.utf16().get_data());
 	BSTR query_lang = SysAllocString(L"WQL");
 	hr = wbemServices->ExecQuery(query_lang, query, WBEM_FLAG_RETURN_IMMEDIATELY | WBEM_FLAG_FORWARD_ONLY, nullptr, &iter);
@@ -764,6 +822,28 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	info.push_back(driver_name);
 	info.push_back(driver_version);
 
+	return info;
+}
+
+Vector<String> OS_Windows::get_video_adapter_driver_info() const {
+	if (RenderingServer::get_singleton() == nullptr) {
+		return Vector<String>();
+	}
+
+	static Vector<String> info;
+	if (!info.is_empty()) {
+		return info;
+	}
+
+	const String device_name = RenderingServer::get_singleton()->get_video_adapter_name();
+	if (device_name.is_empty()) {
+		return Vector<String>();
+	}
+
+	info = _get_video_adapter_driver_info_reg(device_name);
+	if (info.is_empty()) {
+		info = _get_video_adapter_driver_info_wmi(device_name);
+	}
 	return info;
 }
 
