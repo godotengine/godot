@@ -75,6 +75,7 @@ class CanvasItemEditor : public VBoxContainer {
 public:
 	enum Tool {
 		TOOL_SELECT,
+		TOOL_SCENE_PAINT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
 		TOOL_SCALE,
@@ -314,6 +315,7 @@ private:
 	Button *select_button = nullptr;
 
 	Button *move_button = nullptr;
+	Button *scene_paint_button = nullptr;
 	Button *scale_button = nullptr;
 	Button *rotate_button = nullptr;
 
