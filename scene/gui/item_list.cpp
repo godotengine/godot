@@ -416,7 +416,7 @@ void ItemList::select(int p_idx, bool p_single) {
 	ERR_FAIL_INDEX(p_idx, items.size());
 
 	if (p_single || select_mode == SELECT_SINGLE) {
-		if (!items[p_idx].selectable) {
+		if (!items[p_idx].selectable || items[p_idx].disabled) {
 			return;
 		}
 
@@ -430,7 +430,7 @@ void ItemList::select(int p_idx, bool p_single) {
 		current = p_idx;
 		ensure_selected_visible = false;
 	} else {
-		if (items[p_idx].selectable) {
+		if (items[p_idx].selectable && !items[p_idx].disabled) {
 			items.write[p_idx].selected = true;
 			items.write[p_idx].accessibility_item_dirty = true;
 		}
@@ -724,7 +724,7 @@ void ItemList::set_fixed_tag_icon_size(const Size2i &p_size) {
 void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-#define CAN_SELECT(i) (items[i].selectable)
+#define CAN_SELECT(i) (items[i].selectable && !items[i].disabled)
 #define IS_SAME_ROW(i, row) (i / current_columns == row)
 
 	double prev_scroll_v = scroll_bar_v->get_value();
