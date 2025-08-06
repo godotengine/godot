@@ -32,9 +32,9 @@ package org.godotengine.godot.render;
 
 import org.godotengine.godot.utils.GLUtils;
 
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLDisplay;
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLDisplay;
 
 /**
  * Used to select the egl config for pancake games.
@@ -42,21 +42,20 @@ import javax.microedition.khronos.egl.EGLDisplay;
 class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 	private static final String TAG = RegularConfigChooser.class.getSimpleName();
 
-	private int[] mValue = new int[1];
+	private final int[] mValue = new int[1];
 
 	/* This EGL config specification is used to specify 3.0 rendering.
 	 * We use a minimum size of 4 bits for red/green/blue, but will
 	 * perform actual matching in chooseConfig() below.
 	 */
-	private static int EGL_OPENGL_ES2_BIT = 4;
-	private static int[] s_configAttribs = {
-		EGL10.EGL_RED_SIZE, 4,
-		EGL10.EGL_GREEN_SIZE, 4,
-		EGL10.EGL_BLUE_SIZE, 4,
-		// EGL10.EGL_DEPTH_SIZE,     16,
-		// EGL10.EGL_STENCIL_SIZE,   EGL10.EGL_DONT_CARE,
-		EGL10.EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT, //apparently there is no EGL_OPENGL_ES3_BIT
-		EGL10.EGL_NONE
+	private static final int[] s_configAttribs = {
+		EGL14.EGL_RED_SIZE, 4,
+		EGL14.EGL_GREEN_SIZE, 4,
+		EGL14.EGL_BLUE_SIZE, 4,
+		// EGL14.EGL_DEPTH_SIZE,     16,
+		// EGL14.EGL_STENCIL_SIZE,   EGL14.EGL_DONT_CARE,
+		EGL14.EGL_RENDERABLE_TYPE, EGL14.EGL_OPENGL_ES2_BIT, //apparently there is no EGL_OPENGL_ES3_BIT
+		EGL14.EGL_NONE
 	};
 
 	public RegularConfigChooser(int r, int g, int b, int a, int depth, int stencil) {
@@ -68,11 +67,11 @@ class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		mStencilSize = stencil;
 	}
 
-	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display) {
+	public EGLConfig chooseConfig(EGLDisplay display) {
 		/* Get the number of minimally matching EGL configurations
 		 */
 		int[] num_config = new int[1];
-		egl.eglChooseConfig(display, s_configAttribs, null, 0, num_config);
+		EGL14.eglChooseConfig(display, s_configAttribs, 0, null, 0, 0, num_config, 0);
 
 		int numConfigs = num_config[0];
 
@@ -83,37 +82,36 @@ class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		/* Allocate then read the array of minimally matching EGL configs
 		 */
 		EGLConfig[] configs = new EGLConfig[numConfigs];
-		egl.eglChooseConfig(display, s_configAttribs, configs, numConfigs, num_config);
+		EGL14.eglChooseConfig(display, s_configAttribs, 0, configs, 0, numConfigs, num_config, 0);
 
 		if (GLUtils.DEBUG) {
-			GLUtils.printConfigs(egl, display, configs);
+			GLUtils.printConfigs(display, configs);
 		}
 		/* Now return the "best" one
 		 */
-		return chooseConfig(egl, display, configs);
+		return chooseConfig(display, configs);
 	}
 
-	public EGLConfig chooseConfig(EGL10 egl, EGLDisplay display,
-			EGLConfig[] configs) {
+	public EGLConfig chooseConfig(EGLDisplay display, EGLConfig[] configs) {
 		for (EGLConfig config : configs) {
-			int d = findConfigAttrib(egl, display, config,
-					EGL10.EGL_DEPTH_SIZE, 0);
-			int s = findConfigAttrib(egl, display, config,
-					EGL10.EGL_STENCIL_SIZE, 0);
+			int d = findConfigAttrib(display, config,
+					EGL14.EGL_DEPTH_SIZE, 0);
+			int s = findConfigAttrib(display, config,
+					EGL14.EGL_STENCIL_SIZE, 0);
 
 			// We need at least mDepthSize and mStencilSize bits
 			if (d < mDepthSize || s < mStencilSize)
 				continue;
 
 			// We want an *exact* match for red/green/blue/alpha
-			int r = findConfigAttrib(egl, display, config,
-					EGL10.EGL_RED_SIZE, 0);
-			int g = findConfigAttrib(egl, display, config,
-					EGL10.EGL_GREEN_SIZE, 0);
-			int b = findConfigAttrib(egl, display, config,
-					EGL10.EGL_BLUE_SIZE, 0);
-			int a = findConfigAttrib(egl, display, config,
-					EGL10.EGL_ALPHA_SIZE, 0);
+			int r = findConfigAttrib(display, config,
+					EGL14.EGL_RED_SIZE, 0);
+			int g = findConfigAttrib(display, config,
+					EGL14.EGL_GREEN_SIZE, 0);
+			int b = findConfigAttrib(display, config,
+					EGL14.EGL_BLUE_SIZE, 0);
+			int a = findConfigAttrib(display, config,
+					EGL14.EGL_ALPHA_SIZE, 0);
 
 			if (r == mRedSize && g == mGreenSize && b == mBlueSize && a == mAlphaSize)
 				return config;
@@ -121,9 +119,9 @@ class RegularConfigChooser implements GLSurfaceView.EGLConfigChooser {
 		return null;
 	}
 
-	private int findConfigAttrib(EGL10 egl, EGLDisplay display,
+	private int findConfigAttrib(EGLDisplay display,
 			EGLConfig config, int attribute, int defaultValue) {
-		if (egl.eglGetConfigAttrib(display, config, attribute, mValue)) {
+		if (EGL14.eglGetConfigAttrib(display, config, attribute, mValue, 0)) {
 			return mValue[0];
 		}
 		return defaultValue;

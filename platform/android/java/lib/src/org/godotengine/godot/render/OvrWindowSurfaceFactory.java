@@ -30,25 +30,24 @@
 
 package org.godotengine.godot.render;
 
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLDisplay;
+import android.opengl.EGLSurface;
 import android.view.SurfaceHolder;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLDisplay;
-import javax.microedition.khronos.egl.EGLSurface;
 
 /**
  * EGL window surface factory for the Oculus mobile VR SDK.
  */
 class OvrWindowSurfaceFactory implements GLSurfaceView.EGLWindowSurfaceFactory {
 	private final static int[] SURFACE_ATTRIBS = {
-		EGL10.EGL_WIDTH, 16,
-		EGL10.EGL_HEIGHT, 16,
-		EGL10.EGL_NONE
+		EGL14.EGL_WIDTH, 16,
+		EGL14.EGL_HEIGHT, 16,
+		EGL14.EGL_NONE
 	};
 
 	@Override
-	public EGLSurface createWindowSurface(EGL10 egl, EGLDisplay display, EGLConfig config, SurfaceHolder surfaceHolder) {
-		return egl.eglCreatePbufferSurface(display, config, SURFACE_ATTRIBS);
+	public EGLSurface createWindowSurface(EGLDisplay display, EGLConfig config, SurfaceHolder surfaceHolder) {
+		return EGL14.eglCreatePbufferSurface(display, config, SURFACE_ATTRIBS, 0);
 	}
 }
