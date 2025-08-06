@@ -770,11 +770,6 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (closest != -1 && (mb->get_button_index() == MouseButton::LEFT || (allow_rmb_select && mb->get_button_index() == MouseButton::RIGHT))) {
 			int i = closest;
 
-			if (items[i].disabled) {
-				// Don't emit any signal or do any action with clicked item when disabled.
-				return;
-			}
-
 			if (select_mode == SELECT_MULTI && items[i].selected && mb->is_command_or_control_pressed()) {
 				deselect(i);
 				emit_signal(SNAME("multi_selected"), i, false);
@@ -835,7 +830,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 
 				emit_signal(SNAME("item_clicked"), i, get_local_mouse_position(), mb->get_button_index());
 
-				if (mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
+				if (!items[i].disabled && mb->get_button_index() == MouseButton::LEFT && mb->is_double_click()) {
 					emit_signal(SNAME("item_activated"), i);
 				}
 			}
@@ -900,11 +895,6 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 		if (p_event->is_action("ui_menu", true)) {
 			if (current != -1 && allow_rmb_select) {
 				int i = current;
-
-				if (items[i].disabled) {
-					// Don't emit any signal or do any action with clicked item when disabled.
-					return;
-				}
 
 				emit_signal(SNAME("item_clicked"), i, get_item_rect(i).position, MouseButton::RIGHT);
 
