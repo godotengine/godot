@@ -47,6 +47,7 @@ OpenXRPalmPoseExtension::~OpenXRPalmPoseExtension() {
 HashMap<String, bool *> OpenXRPalmPoseExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
+	// Note, only required for OpenXR 1.0, filter out in OpenXR 1.1 and later as it's replace by the grip surface pose.
 	request_extensions[XR_EXT_PALM_POSE_EXTENSION_NAME] = &available;
 
 	return request_extensions;

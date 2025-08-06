@@ -86,8 +86,12 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 	// In with the new.
 	PackedStringArray interaction_profiles = meta_data->get_interaction_profile_paths();
 	for (const String &path : interaction_profiles) {
-		const String extension = meta_data->get_interaction_profile_extension(path);
-		if (!p_do_not_include.has(path) && (extension.is_empty() || requested_extensions.has(extension))) {
+		const Vector<String> extensions = meta_data->get_interaction_profile_extensions(path).split(",", false);
+		bool extension_is_requested = extensions.is_empty(); // If none, then yes we can use this.
+		for (const String &extension : extensions) {
+			extension_is_requested |= requested_extensions.has(extension);
+		}
+		if (!p_do_not_include.has(path) && extension_is_requested) {
 			Button *ip_button = memnew(Button);
 			ip_button->set_flat(true);
 			ip_button->set_text(meta_data->get_profile(path)->display_name);

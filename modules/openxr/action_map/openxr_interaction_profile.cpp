@@ -79,7 +79,14 @@ Ref<OpenXRAction> OpenXRIPBinding::get_action() const {
 }
 
 void OpenXRIPBinding::set_binding_path(const String &path) {
-	binding_path = path;
+	OpenXRInteractionProfileMetadata *pmd = OpenXRInteractionProfileMetadata::get_singleton();
+	if (pmd) {
+		binding_path = pmd->check_path_name(path);
+	} else {
+		// OpenXR module not enabled, ignore checks.
+		binding_path = path;
+	}
+
 	emit_changed();
 }
 
