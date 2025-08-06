@@ -175,6 +175,11 @@ void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringN
 		// compatibility version, we need to use version 0.
 		p_import_params["gltf/naming_version"] = 0;
 	}
+	if (!p_import_params.has("gltf/texture_filter/minification")) {
+		// If an existing import file is missing the glTF
+		// texture filter minification, we need to use linear.
+		p_import_params["gltf/texture_filter/minification"] = 1;
+	}
 }
 
 Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_path, const String &p_scene_import_type,

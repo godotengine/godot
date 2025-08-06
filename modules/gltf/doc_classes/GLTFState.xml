@@ -323,6 +323,18 @@
 		</member>
 		<member name="use_named_skin_binds" type="bool" setter="set_use_named_skin_binds" getter="get_use_named_skin_binds" default="false">
 		</member>
+		<member name="texture_filter_mag" type="int" setter="set_texture_filter_mag" getter="get_texture_filter_mag" default="0">
+			The texture magnification filter mode. See [enum GLTFTextureSampler.FilterMode].
+		</member>
+		<member name="texture_filter_min" type="int" setter="set_texture_filter_min" getter="get_texture_filter_min" default="0">
+			The texture minification filter mode. See [enum GLTFTextureSampler.FilterMode].
+		</member>
+		<member name="texture_wrap_u" type="int" setter="set_texture_wrap_u" getter="get_texture_wrap_u" default="0">
+			The texture wrap mode for the U-axis. See [enum GLTFTextureSampler.WrapMode].
+		</member>
+		<member name="texture_wrap_v" type="int" setter="set_texture_wrap_v" getter="get_texture_wrap_v" default="0">
+			The texture wrap mode for the V-axis. See [enum GLTFTextureSampler.WrapMode].
+		</member>
 	</members>
 	<constants>
 		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0">
