@@ -1493,6 +1493,10 @@ void ItemList::_notification(int p_what) {
 				bool should_draw_selected_bg = items[i].selected && hovered != i;
 				bool should_draw_hovered_selected_bg = items[i].selected && hovered == i;
 				bool should_draw_hovered_bg = hovered == i && !items[i].selected;
+				bool should_draw_disabled_bg = items[i].disabled && hovered != i;
+				bool should_draw_disabled_selected_bg = items[i].disabled && items[i].selected && hovered != i;
+				bool should_draw_disabled_hovered_bg = items[i].disabled && !items[i].selected && hovered == i;
+				bool should_draw_disabled_hovered_selected_bg = items[i].disabled && items[i].selected && hovered == i;
 				bool should_draw_custom_bg = items[i].custom_bg.a > 0.001;
 
 				if (should_draw_selected_bg || should_draw_hovered_selected_bg || should_draw_hovered_bg || should_draw_custom_bg) {
@@ -1518,6 +1522,26 @@ void ItemList::_notification(int p_what) {
 					}
 					if (should_draw_custom_bg) {
 						draw_rect(r, items[i].custom_bg);
+					}
+					if (should_draw_disabled_bg) {
+						draw_style_box(theme_cache.disabled_style, r);
+					}
+					if (should_draw_disabled_selected_bg) {
+						if (has_focus()) {
+							draw_style_box(theme_cache.disabled_selected_focus_style, r);
+						} else {
+							draw_style_box(theme_cache.disabled_selected_style, r);
+						}
+					}
+					if (should_draw_disabled_hovered_bg) {
+						draw_style_box(theme_cache.disabled_hovered_style, r);
+					}
+					if (should_draw_disabled_hovered_selected_bg) {
+						if (has_focus()) {
+							draw_style_box(theme_cache.disabled_hovered_selected_focus_style, r);
+						} else {
+							draw_style_box(theme_cache.disabled_hovered_selected_style, r);
+						}
 					}
 				}
 
@@ -2400,6 +2424,12 @@ void ItemList::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, selected_focus_style, "selected_focus");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_style, "cursor_unfocused");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, cursor_focus_style, "cursor");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_style, "disabled");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_selected_style, "disabled_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_selected_focus_style, "disabled_selected_focus");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_hovered_style, "disabled_hovered");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_hovered_selected_style, "disabled_hovered_selected");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, ItemList, disabled_hovered_selected_focus_style, "disabled_hovered_selected_focus");
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, ItemList, guide_color);
 
 	Item defaults(true);

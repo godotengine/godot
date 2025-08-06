@@ -180,6 +180,12 @@ protected:
 		Ref<StyleBox> selected_focus_style;
 		Ref<StyleBox> cursor_style;
 		Ref<StyleBox> cursor_focus_style;
+		Ref<StyleBox> disabled_style;
+		Ref<StyleBox> disabled_selected_style;
+		Ref<StyleBox> disabled_selected_focus_style;
+		Ref<StyleBox> disabled_hovered_style;
+		Ref<StyleBox> disabled_hovered_selected_style;
+		Ref<StyleBox> disabled_hovered_selected_focus_style;
 		Color guide_color;
 	} theme_cache;
 
