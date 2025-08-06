@@ -435,6 +435,7 @@ public:
 
 	void set_texture(Ref<Texture2D> p_texture);
 	Ref<Texture2D> get_texture() const;
+	bool has_embed() const override { return !texture.is_null(); }
 
 	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
@@ -477,6 +478,7 @@ public:
 
 	void set_texture(Ref<CurveTexture> p_texture);
 	Ref<CurveTexture> get_texture() const;
+	bool has_embed() const override { return !texture.is_null(); }
 
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual bool is_use_prop_slots() const override;
@@ -512,6 +514,7 @@ public:
 
 	void set_texture(Ref<CurveXYZTexture> p_texture);
 	Ref<CurveXYZTexture> get_texture() const;
+	bool has_embed() const override { return !texture.is_null(); }
 
 	virtual Vector<StringName> get_editable_properties() const override;
 	virtual bool is_use_prop_slots() const override;
@@ -585,6 +588,7 @@ public:
 
 	void set_texture_array(Ref<TextureLayered> p_texture_array);
 	Ref<TextureLayered> get_texture_array() const;
+	bool has_embed() const override { return !texture_array.is_null(); }
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -608,6 +612,7 @@ public:
 
 	void set_texture(Ref<Texture3D> p_texture);
 	Ref<Texture3D> get_texture() const;
+	bool has_embed() const override { return !texture.is_null(); }
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -666,6 +671,7 @@ public:
 
 	void set_cube_map(Ref<TextureLayered> p_cube_map);
 	Ref<TextureLayered> get_cube_map() const;
+	bool has_embed() const override { return !cube_map.is_null(); }
 
 	void set_texture_type(TextureType p_texture_type);
 	TextureType get_texture_type() const;
