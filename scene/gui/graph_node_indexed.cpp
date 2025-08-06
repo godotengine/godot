@@ -205,13 +205,29 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_style
 }
 
 void GraphNodeIndexed::remove_slot_and_ports(int p_slot_index) {
+	if (!free_ports_on_slot_removed) {
+		StringName slot_node_name;
+		for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
+			if (kv_pair.value == p_slot_index) {
+				slot_node_name = kv_pair.key;
+			}
+		}
+		SlotHistory history = SlotHistory(slots[p_slot_index], get_input_port_by_slot(p_slot_index), get_output_port_by_slot(p_slot_index), get_slot_connections(p_slot_index));
+		_node_to_slot_history_cache[slot_node_name] = history;
+	}
 	int input_port_idx = slot_to_port_index(p_slot_index, true);
 	int output_port_idx = slot_to_port_index(p_slot_index, false);
-	_remove_slot(p_slot_index);
 	if (output_port_idx < ports.size()) {
-		remove_port(output_port_idx);
-		remove_port(input_port_idx);
+		GraphPort *port_in = remove_port(output_port_idx);
+		if (port_in && free_ports_on_slot_removed) {
+			port_in->queue_free();
+		}
+		GraphPort *port_out = remove_port(input_port_idx);
+		if (port_out && free_ports_on_slot_removed) {
+			port_out->queue_free();
+		}
 	}
+	_remove_slot(p_slot_index);
 	for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
 		if (kv_pair.value > p_slot_index) {
 			kv_pair.value--;
@@ -293,11 +309,9 @@ GraphPort *GraphNodeIndexed::set_port(int p_port_index, GraphPort *p_port, bool 
 	}
 	if (!old_port || !p_port || old_port->get_parent() != p_port->get_parent()) {
 		if (old_port && old_port->get_parent()) {
-			//WARN_PRINT("hello i am removing on _set_port");
 			old_port->get_parent()->remove_child(old_port);
 		}
 		if (p_port && (!port_container || p_port->get_parent() != port_container)) {
-			//WARN_PRINT("hello i am adding on _set_port");
 			ensure_port_container();
 			port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
 			if (get_owner()) {
@@ -316,7 +330,6 @@ void GraphNodeIndexed::add_port(GraphPort *p_port) {
 	GraphNode::_add_port(p_port);
 
 	if (p_port && (!port_container || p_port->get_parent() != port_container)) {
-		//WARN_PRINT("hello i am working on _add_port");
 		ensure_port_container();
 		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
 		if (get_owner()) {
@@ -333,7 +346,6 @@ void GraphNodeIndexed::insert_port(int p_port_index, GraphPort *p_port, bool p_i
 	GraphNode::_insert_port(p_port_index, p_port, p_include_disabled);
 
 	if (p_port && (!port_container || p_port->get_parent() != port_container)) {
-		//WARN_PRINT("hello i am working on _insert_port");
 		ensure_port_container();
 		port_container->add_child(p_port, true, Node::INTERNAL_MODE_DISABLED);
 		if (get_owner()) {
@@ -350,11 +362,7 @@ GraphPort *GraphNodeIndexed::remove_port(int p_port_index, bool p_include_disabl
 	GraphPort *ret = GraphNode::_remove_port(p_port_index, p_include_disabled);
 
 	if (ret && ret->get_parent()) {
-		//WARN_PRINT("uhhh i am _remove_port and this shit's cursed");
 		ret->get_parent()->remove_child(ret);
-		if (free_ports_on_slot_removed) {
-			ret->queue_free();
-		}
 	}
 
 	_port_modified();
@@ -397,10 +405,6 @@ void GraphNodeIndexed::_remove_all_slots() {
 void GraphNodeIndexed::_remove_slot(int p_slot_index) {
 	for (KeyValue<StringName, int> &kv_pair : _node_to_slot_cache) {
 		if (kv_pair.value == p_slot_index) {
-			if (!free_ports_on_slot_removed) {
-				SlotHistory history = SlotHistory(slots[p_slot_index], get_input_port_by_slot(p_slot_index), get_output_port_by_slot(p_slot_index), get_slot_connections(p_slot_index));
-				_node_to_slot_history_cache[kv_pair.key] = history;
-			}
 			_node_to_slot_cache.erase(kv_pair.key);
 		}
 	}
