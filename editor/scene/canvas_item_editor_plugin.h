@@ -75,6 +75,7 @@ class CanvasItemEditor : public VBoxContainer {
 public:
 	enum Tool {
 		TOOL_SELECT,
+		TOOL_SCENE_PAINT,
 		TOOL_LIST_SELECT,
 		TOOL_MOVE,
 		TOOL_SCALE,
@@ -262,6 +263,7 @@ private:
 
 	MenuOption last_option;
 
+public:
 	struct _SelectResult {
 		CanvasItem *item = nullptr;
 		real_t z_index = 0;
@@ -270,6 +272,8 @@ private:
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
 		}
 	};
+
+private:
 	Vector<_SelectResult> selection_results;
 	Vector<_SelectResult> selection_results_menu;
 
@@ -314,6 +318,7 @@ private:
 	Button *select_button = nullptr;
 
 	Button *move_button = nullptr;
+	Button *scene_paint_button = nullptr;
 	Button *scale_button = nullptr;
 	Button *rotate_button = nullptr;
 
@@ -574,6 +579,8 @@ public:
 	Control *get_viewport_control() { return viewport; }
 
 	Control *get_controls_container() { return controls_vb; }
+
+	void get_canvas_items_at_pos(const Point2 &p_pos, Vector<_SelectResult> &r_items, bool p_allow_locked = false);
 
 	void update_viewport();
 
