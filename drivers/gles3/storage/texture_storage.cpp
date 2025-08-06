@@ -1489,6 +1489,11 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);
 
+	i = 0;
+	while (i < p_textures.size()) {
+		texture_atlas_update_texture(p_textures[i]);
+		i += 1;
+	}
 	// Reset to system FBO
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
@@ -2312,6 +2317,30 @@ void TextureStorage::texture_atlas_remove_texture(RID p_texture) {
 	if (texture_atlas.textures.has(p_texture)) {
 		texture_atlas.textures.erase(p_texture);
 		// There is not much a point of making it dirty, texture can be removed next time the atlas is updated.
+	}
+}
+
+void TextureStorage::texture_atlas_update_texture(RID p_texture) {
+	if (texture_atlas.textures.has(p_texture)) {
+		CopyEffects *copy_effects = CopyEffects::get_singleton();
+		ERR_FAIL_NULL(copy_effects);
+		ERR_FAIL_COND(texture_atlas.texture == 0);
+
+		if (texture_atlas.dirty) {
+			return; //Don't mess with it while it's dirty anyway
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, texture_atlas.framebuffer);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_atlas.texture, 0);
+		glViewport(0, 0, texture_atlas.size.width, texture_atlas.size.height);
+		glDisable(GL_BLEND);
+
+		TextureAtlas::Texture *t = texture_atlas.textures.getptr(p_texture);
+		Texture *src_tex = get_texture(p_texture);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, src_tex->tex_id);
+		copy_effects->copy_to_rect(t->uv_rect);
+		glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	}
 }
 

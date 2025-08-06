@@ -1796,9 +1796,15 @@ void TextureStorage::texture_drawable_blit_rect(const TypedArray<RID> &p_texture
 
 	// DRAW!!
 	RD::get_singleton()->draw_list_draw(draw_list, false, 1u, 6u);
+	// Detect if any target is in Decal Atlas and also draw to Decal Atlas?
 
 	RD::get_singleton()->draw_list_end();
 	RD::get_singleton()->draw_command_end_label();
+	i = 0;
+	while (i < p_textures.size()) {
+		decal_atlas_mark_draw_on_texture(p_textures[i]);
+		i += 1;
+	}
 }
 
 //these two APIs can be used together or in combination with the others.
@@ -3366,10 +3372,66 @@ void TextureStorage::decal_atlas_mark_dirty_on_texture(RID p_texture) {
 	}
 }
 
+void TextureStorage::decal_atlas_mark_draw_on_texture(RID p_texture) {
+	if (decal_atlas.dirty) {
+		return; //Don't mess with it while it's dirty anyway
+	}
+
+	if (decal_atlas.textures.has(p_texture)) {
+		//belongs to decal_atlas
+		DecalAtlas::Texture *t = decal_atlas.textures.getptr(p_texture);
+		t->drawn = true;
+
+		decal_atlas.draw_dirty = true;
+	}
+}
+
 void TextureStorage::decal_atlas_remove_texture(RID p_texture) {
 	if (decal_atlas.textures.has(p_texture)) {
 		decal_atlas.textures.erase(p_texture);
 		//there is not much a point of making it dirty, just let it be.
+	}
+}
+
+void TextureStorage::decal_atlas_redraw_textures() {
+	if (decal_atlas.dirty) {
+		return; //Don't mess with it while it's dirty anyway
+	}
+
+	if (!decal_atlas.draw_dirty) {
+		return; //Nothing to do
+	}
+
+	decal_atlas.draw_dirty = false;
+
+	CopyEffects *copy_effects = CopyEffects::get_singleton();
+	ERR_FAIL_NULL(copy_effects);
+	ERR_FAIL_COND(!decal_atlas.texture.is_valid());
+
+	RID prev_texture;
+	for (int i = 0; i < decal_atlas.texture_mipmaps.size(); i++) {
+		const DecalAtlas::MipMap &mm = decal_atlas.texture_mipmaps[i];
+
+		if (decal_atlas.textures.size()) {
+			if (i == 0) {
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb);
+				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
+					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
+					if (t->drawn) {
+						Texture *src_tex = get_texture(E.key);
+						copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+						t->drawn = false;
+					}
+				}
+
+				RD::get_singleton()->draw_list_end();
+
+				prev_texture = mm.texture;
+			} else {
+				copy_effects->copy_to_fb_rect(prev_texture, mm.fb, Rect2i(Point2i(), mm.size));
+				prev_texture = mm.texture;
+			}
+		}
 	}
 }
 
@@ -3403,6 +3465,7 @@ void TextureStorage::update_decal_atlas() {
 	}
 
 	decal_atlas.dirty = false;
+	decal_atlas.draw_dirty = false;
 
 	if (decal_atlas.texture.is_valid()) {
 		RD::get_singleton()->free_rid(decal_atlas.texture);
@@ -3573,6 +3636,7 @@ void TextureStorage::update_decal_atlas() {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
 					Texture *src_tex = get_texture(E.key);
 					copy_effects->copy_to_atlas_fb(src_tex->rd_texture, mm.fb, t->uv_rect, draw_list, false, t->panorama_to_dp_users > 0);
+					t->drawn = false;
 				}
 
 				RD::get_singleton()->draw_list_end();
