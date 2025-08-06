@@ -31,27 +31,25 @@
 package org.godotengine.godot.render;
 
 import android.opengl.EGL14;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
 
 /**
  * EGL Context factory for the Oculus mobile VR SDK.
  */
 class OvrContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static final int[] CONTEXT_ATTRIBS = {
-		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE
+		EGL14.EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE
 	};
 
 	@Override
-	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
-		return egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, CONTEXT_ATTRIBS);
+	public EGLContext createContext(EGLDisplay display, EGLConfig eglConfig) {
+		return EGL14.eglCreateContext(display, eglConfig, EGL14.EGL_NO_CONTEXT, CONTEXT_ATTRIBS, 0);
 	}
 
 	@Override
-	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
-		egl.eglDestroyContext(display, context);
+	public void destroyContext(EGLDisplay display, EGLContext context) {
+		EGL14.eglDestroyContext(display, context);
 	}
 }
