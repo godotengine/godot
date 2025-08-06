@@ -1925,6 +1925,8 @@ void FileSystemDock::_convert_dialog_action() {
 		Ref<Resource> original_resource = selected_resources.get(i);
 		Ref<Resource> new_resource = converted_resources.get(i);
 
+		// Notify plugins that the original resource is removed.
+		emit_signal(SNAME("file_removed"), original_resource->get_path());
 		// Overwrite the path.
 		new_resource->set_path(original_resource->get_path(), true);
 

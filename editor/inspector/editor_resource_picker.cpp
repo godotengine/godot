@@ -484,8 +484,11 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
-				edited_resource = conversions[to_type]->convert(edited_resource);
-				_resource_changed();
+				Ref<Resource> converted_resource = conversions[to_type]->convert(edited_resource);
+				if (converted_resource.is_valid()) {
+					edited_resource = converted_resource;
+					_resource_changed();
+				}
 				break;
 			}
 
