@@ -519,6 +519,10 @@ void PropertySelector::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect(SceneStringName(confirmed), callable_mp(this, &PropertySelector::_confirmed));
 		} break;
+
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
+		} break;
 	}
 }
 
@@ -666,9 +670,11 @@ PropertySelector::PropertySelector() {
 	add_child(vbc);
 	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
-	vbc->add_margin_child(TTR("Search:"), search_box);
+	search_box->set_accessibility_name(TTRC("Search:"));
+	search_box->set_clear_button_enabled(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
+	vbc->add_margin_child(TTRC("Search:"), search_box);
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
