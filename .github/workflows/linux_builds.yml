@@ -1,6 +1,11 @@
 name: 🐧 Linux Builds
 on:
+  workflow_dispatch:
   workflow_call:
+  push:
+    branches:
+    - "3.6"
+    - "3.6-stable"
 
 # Global Settings
 env:
