@@ -3200,9 +3200,9 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 		}
 		case FORMAT_RGB565: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0x1F) / 31.0;
+			float r = ((u >> 11) & 0x1F) / 31.0;
 			float g = ((u >> 5) & 0x3F) / 63.0;
-			float b = ((u >> 11) & 0x1F) / 31.0;
+			float b = (u & 0x1F) / 31.0;
 			return Color(r, g, b, 1.0);
 		}
 		case FORMAT_RF: {
@@ -3299,9 +3299,9 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 		case FORMAT_RGB565: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
+			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31)) << 11;
 			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 63)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 11;
+			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31));
 
 			((uint16_t *)ptr)[ofs] = rgba;
 		} break;
