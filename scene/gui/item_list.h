@@ -166,6 +166,10 @@ protected:
 		Color font_selected_color;
 		int font_outline_size = 0;
 		Color font_outline_color;
+		Color font_disabled_color;
+		Color font_disabled_selected_color;
+		Color font_disabled_hovered_color;
+		Color font_disabled_hovered_selected_color;
 
 		int line_separation = 0;
 		int icon_margin = 0;
