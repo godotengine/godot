@@ -440,6 +440,7 @@ private:
 		struct Texture {
 			int users;
 			Rect2 uv_rect;
+			bool drawn = false;
 		};
 
 		struct SortItem {
@@ -460,6 +461,7 @@ private:
 
 		HashMap<RID, Texture> textures;
 		bool dirty = true;
+		bool draw_dirty = false;
 
 		GLuint texture = 0;
 		GLuint framebuffer = 0;
@@ -614,6 +616,7 @@ public:
 	/* TEXTURE ATLAS API */
 
 	void update_texture_atlas();
+	void texture_atlas_redraw_textures();
 
 	GLuint texture_atlas_get_texture() const;
 	_FORCE_INLINE_ Rect2 texture_atlas_get_texture_rect(RID p_texture) {
@@ -628,6 +631,7 @@ public:
 	void texture_add_to_texture_atlas(RID p_texture);
 	void texture_remove_from_texture_atlas(RID p_texture);
 	void texture_atlas_mark_dirty_on_texture(RID p_texture);
+	void texture_atlas_mark_draw_on_texture(RID p_texture);
 	void texture_atlas_remove_texture(RID p_texture);
 
 	/* DECAL API */

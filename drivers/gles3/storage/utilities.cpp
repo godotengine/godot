@@ -392,6 +392,7 @@ void Utilities::update_dirty_resources() {
 	MaterialStorage::get_singleton()->_update_queued_materials();
 	MeshStorage::get_singleton()->_update_dirty_skeletons();
 	MeshStorage::get_singleton()->_update_dirty_multimeshes();
+	TextureStorage::get_singleton()->texture_atlas_redraw_textures();
 	TextureStorage::get_singleton()->update_texture_atlas();
 }
 
