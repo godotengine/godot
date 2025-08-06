@@ -32,12 +32,11 @@ package org.godotengine.godot.render;
 
 import org.godotengine.godot.utils.GLUtils;
 
+import android.opengl.EGL14;
+import android.opengl.EGLConfig;
+import android.opengl.EGLContext;
+import android.opengl.EGLDisplay;
 import android.util.Log;
-
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
 
 /**
  * Factory used to setup the opengl context for pancake games.
@@ -48,7 +47,7 @@ class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 	private static final int _EGL_CONTEXT_FLAGS_KHR = 0x30FC;
 	private static final int _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR = 0x00000001;
 
-	private static int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
+	private static final int EGL_CONTEXT_CLIENT_VERSION = 0x3098;
 
 	private final boolean mUseDebugOpengl;
 
@@ -60,27 +59,27 @@ class RegularContextFactory implements GLSurfaceView.EGLContextFactory {
 		this.mUseDebugOpengl = useDebugOpengl;
 	}
 
-	public EGLContext createContext(EGL10 egl, EGLDisplay display, EGLConfig eglConfig) {
+	public EGLContext createContext(EGLDisplay display, EGLConfig eglConfig) {
 		Log.w(TAG, "creating OpenGL ES 3.0 context :");
 
-		GLUtils.checkEglError(TAG, "Before eglCreateContext", egl);
+		GLUtils.checkEglError(TAG, "Before eglCreateContext");
 		EGLContext context;
-		int[] debug_attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL10.EGL_NONE };
-		int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL10.EGL_NONE };
+		int[] debug_attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, _EGL_CONTEXT_FLAGS_KHR, _EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR, EGL14.EGL_NONE };
+		int[] attrib_list = { EGL_CONTEXT_CLIENT_VERSION, 3, EGL14.EGL_NONE };
 		if (mUseDebugOpengl) {
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, debug_attrib_list);
-			if (context == null || context == EGL10.EGL_NO_CONTEXT) {
+			context = EGL14.eglCreateContext(display, eglConfig, EGL14.EGL_NO_CONTEXT, debug_attrib_list, 0);
+			if (context == null || context == EGL14.EGL_NO_CONTEXT) {
 				Log.w(TAG, "creating 'OpenGL Debug' context failed");
-				context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
+				context = EGL14.eglCreateContext(display, eglConfig, EGL14.EGL_NO_CONTEXT, attrib_list, 0);
 			}
 		} else {
-			context = egl.eglCreateContext(display, eglConfig, EGL10.EGL_NO_CONTEXT, attrib_list);
+			context = EGL14.eglCreateContext(display, eglConfig, EGL14.EGL_NO_CONTEXT, attrib_list, 0);
 		}
-		GLUtils.checkEglError(TAG, "After eglCreateContext", egl);
+		GLUtils.checkEglError(TAG, "After eglCreateContext");
 		return context;
 	}
 
-	public void destroyContext(EGL10 egl, EGLDisplay display, EGLContext context) {
-		egl.eglDestroyContext(display, context);
+	public void destroyContext(EGLDisplay display, EGLContext context) {
+		EGL14.eglDestroyContext(display, context);
 	}
 }
