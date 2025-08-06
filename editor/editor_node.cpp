@@ -7137,15 +7137,24 @@ Vector<Ref<EditorResourceConversionPlugin>> EditorNode::find_resource_conversion
 }
 
 void EditorNode::_update_renderer_color() {
-	String rendering_method = renderer->get_selected_metadata();
+	String current_renderer = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
+	Color renderer_color;
 
-	if (rendering_method == "forward_plus") {
-		renderer->add_theme_color_override(SceneStringName(font_color), theme->get_color(SNAME("forward_plus_color"), EditorStringName(Editor)));
-	} else if (rendering_method == "mobile") {
-		renderer->add_theme_color_override(SceneStringName(font_color), theme->get_color(SNAME("mobile_color"), EditorStringName(Editor)));
-	} else if (rendering_method == "gl_compatibility") {
-		renderer->add_theme_color_override(SceneStringName(font_color), theme->get_color(SNAME("gl_compatibility_color"), EditorStringName(Editor)));
+	if (current_renderer != OS::get_singleton()->get_current_rendering_method().to_lower()) {
+		renderer_color = theme->get_color(SNAME("overridden_color"), EditorStringName(Editor));
+	} else {
+		String rendering_method = renderer->get_selected_metadata();
+		if (rendering_method == "forward_plus") {
+			renderer_color = theme->get_color(SNAME("forward_plus_color"), EditorStringName(Editor));
+		} else if (rendering_method == "mobile") {
+			renderer_color = theme->get_color(SNAME("mobile_color"), EditorStringName(Editor));
+		} else if (rendering_method == "gl_compatibility") {
+			renderer_color = theme->get_color(SNAME("gl_compatibility_color"), EditorStringName(Editor));
+		}
 	}
+
+	renderer->add_theme_color_override(SceneStringName(font_color), renderer_color);
+	renderer->add_theme_color_override(SNAME("icon_normal_color"), renderer_color);
 }
 
 void EditorNode::_renderer_selected(int p_which) {
@@ -7168,20 +7177,24 @@ void EditorNode::_renderer_selected(int p_which) {
 
 void EditorNode::_add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden) {
 	String item_text;
+	Ref<Texture2D> item_icon;
 	if (p_renderer_name == "forward_plus") {
 		item_text = TTR("Forward+");
+		item_icon = theme->get_icon(SNAME("ForwardRender"), EditorStringName(EditorIcons));
 	}
 	if (p_renderer_name == "mobile") {
 		item_text = TTR("Mobile");
+		item_icon = theme->get_icon(SNAME("MobileRender"), EditorStringName(EditorIcons));
 	}
 	if (p_renderer_name == "gl_compatibility") {
 		item_text = TTR("Compatibility");
+		item_icon = theme->get_icon(SNAME("CompatibilityRender"), EditorStringName(EditorIcons));
 	}
 	if (p_mark_overridden) {
 		// TRANSLATORS: The placeholder is the rendering method that has overridden the default one.
 		item_text = vformat(TTR("%s (Overridden)"), item_text);
 	}
-	renderer->add_item(item_text);
+	renderer->add_icon_item(item_icon, item_text);
 }
 
 void EditorNode::_set_renderer_name_save_and_restart() {
@@ -8283,10 +8296,10 @@ EditorNode::EditorNode() {
 	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
+	renderer->set_clip_text(true);
 	renderer->set_visible(true);
 	renderer->set_flat(true);
 	renderer->set_theme_type_variation("TopBarOptionButton");
-	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	renderer->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	renderer->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_ALWAYS);
@@ -8302,8 +8315,7 @@ EditorNode::EditorNode() {
 		title_bar->add_child(right_menu_spacer);
 	}
 
-	String current_renderer_ps = GLOBAL_GET("rendering/renderer/rendering_method");
-	current_renderer_ps = current_renderer_ps.to_lower();
+	String current_renderer_ps = String(GLOBAL_GET("rendering/renderer/rendering_method")).to_lower();
 	String current_renderer_os = OS::get_singleton()->get_current_rendering_method().to_lower();
 
 	// Add the renderers name to the UI.
