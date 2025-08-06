@@ -2130,9 +2130,7 @@ static String marked_documentation(const String &p_bbcode) {
 			}
 		}
 
-		if (!in_codeblock_tag && i < lines.size() - 1) {
-			line += "\n\n";
-		} else if (i < lines.size() - 1) {
+		if (i < lines.size() - 1) {
 			line += "\n";
 		}
 		markdown += line;
