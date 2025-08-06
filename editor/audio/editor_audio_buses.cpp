@@ -1356,7 +1356,6 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	bus_scroll = memnew(ScrollContainer);
 	bus_scroll->set_v_size_flags(SIZE_EXPAND_FILL);
-	bus_scroll->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	add_child(bus_scroll);
 	bus_hb = memnew(HBoxContainer);
 	bus_hb->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1381,6 +1380,7 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &EditorAudioBuses::_rebuild_buses));
 
+	set_custom_minimum_size(Size2(0, 128 * EDSCALE));
 	set_process(true);
 }
 
