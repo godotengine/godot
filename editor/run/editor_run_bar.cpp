@@ -324,7 +324,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	}
 
 	_update_play_buttons();
-	stop_button->set_disabled(false);
+	stop_button->set_visible(true);
 
 	emit_signal(SNAME("play_pressed"));
 }
@@ -426,7 +426,7 @@ void EditorRunBar::stop_playing() {
 	run_custom_filename.clear();
 	run_current_filename.clear();
 	stop_button->set_pressed(false);
-	stop_button->set_disabled(true);
+	stop_button->set_visible(false);
 	_reset_play_buttons();
 
 	emit_signal(SNAME("stop_pressed"));
@@ -586,7 +586,7 @@ EditorRunBar::EditorRunBar() {
 	pause_button->set_toggle_mode(true);
 	pause_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	pause_button->set_tooltip_text(TTRC("Pause the running project's execution for debugging."));
-	pause_button->set_disabled(true);
+	pause_button->hide();
 
 	ED_SHORTCUT("editor/pause_running_project", TTRC("Pause Running Project"), Key::F7);
 	ED_SHORTCUT_OVERRIDE("editor/pause_running_project", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::Y);
@@ -597,7 +597,7 @@ EditorRunBar::EditorRunBar() {
 	stop_button->set_theme_type_variation("RunBarButton");
 	stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	stop_button->set_tooltip_text(TTRC("Stop the currently running project."));
-	stop_button->set_disabled(true);
+	stop_button->hide();
 	stop_button->connect(SceneStringName(pressed), callable_mp(this, &EditorRunBar::stop_playing));
 
 	ED_SHORTCUT("editor/stop_running_project", TTRC("Stop Running Project"), Key::F8);
