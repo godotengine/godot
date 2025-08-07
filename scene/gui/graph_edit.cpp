@@ -652,9 +652,13 @@ int GraphEdit::get_connection_count_by_node(const GraphNode *p_node) const {
 	return ret;
 }
 
-GraphNode *GraphEdit::get_connection_target(const GraphPort *p_port) const {
+GraphPort *GraphEdit::get_connection_target(const GraphPort *p_port, int p_connection_index) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
-	return get_first_connected_node(p_port);
+	const TypedArray<Ref<GraphConnection>> conns = get_connections_by_port(p_port);
+	ERR_FAIL_INDEX_V(p_connection_index, conns.size(), nullptr);
+	Ref<GraphConnection> conn = conns[p_connection_index];
+	ERR_FAIL_COND_V(conn.is_null(), nullptr);
+	return conn->get_other_port(p_port);
 }
 
 String GraphEdit::get_connections_description(const GraphPort *p_port) const {

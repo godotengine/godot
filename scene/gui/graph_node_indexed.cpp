@@ -381,7 +381,12 @@ GraphPort *GraphNodeIndexed::get_port_navigation(Side side, const GraphPort *p_p
 				if (slot < 0) {
 					return nullptr;
 				}
-				return get_input_port_by_slot(slot);
+				GraphPort *in = get_input_port_by_slot(slot);
+				if (in->is_enabled()) {
+					return in;
+				} else {
+					return nullptr;
+				}
 			} else {
 				return nullptr;
 			}
@@ -393,7 +398,12 @@ GraphPort *GraphNodeIndexed::get_port_navigation(Side side, const GraphPort *p_p
 				if (slot < 0) {
 					return nullptr;
 				}
-				return get_output_port_by_slot(slot);
+				GraphPort *out = get_output_port_by_slot(slot);
+				if (out->is_enabled()) {
+					return out;
+				} else {
+					return nullptr;
+				}
 			} else {
 				return nullptr;
 			}

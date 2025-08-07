@@ -106,9 +106,13 @@ void GraphPort::_accessibility_action(const Variant &p_data) {
 			queue_redraw();
 			break;
 		case ACTION_FOLLOW:
-			GraphNode *target = graph_edit->get_connection_target(this);
+			GraphPort *target = graph_edit->get_connection_target(this, nav_conn_index);
 			if (target) {
 				target->grab_focus();
+			}
+			nav_conn_index++;
+			if (nav_conn_index >= get_connection_count()) {
+				nav_conn_index = 0;
 			}
 			break;
 	}
@@ -118,37 +122,35 @@ void GraphPort::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
 	if (p_event->is_pressed() && is_enabled()) {
-		if (graph_node && get_focus_mode() == Control::FOCUS_ALL) {
-			GraphPort *nav_port;
-			bool do_navigation = false;
+		if (graph_node) {
+			GraphPort *nav_port = nullptr;
 			if (p_event->is_action("ui_up", true)) {
 				nav_port = graph_node->get_port_navigation(SIDE_TOP, this);
-				do_navigation = true;
+				accept_event();
 			} else if (p_event->is_action("ui_down", true)) {
 				nav_port = graph_node->get_port_navigation(SIDE_BOTTOM, this);
-				do_navigation = true;
+				accept_event();
 			} else if (p_event->is_action("ui_left", true)) {
 				nav_port = graph_node->get_port_navigation(SIDE_LEFT, this);
-				do_navigation = true;
+				accept_event();
 			} else if (p_event->is_action("ui_right", true)) {
 				nav_port = graph_node->get_port_navigation(SIDE_RIGHT, this);
-				do_navigation = true;
-			}
-			if (do_navigation) {
-				if (nav_port) {
-					nav_port->grab_focus();
-				} else {
-					graph_node->grab_focus();
-				}
 				accept_event();
+			}
+			if (nav_port) {
+				nav_port->grab_focus();
 			}
 		}
 		if (p_event->is_action("ui_graph_follow_left", true) || p_event->is_action("ui_graph_follow_right", true)) {
-			if (graph_edit) {
-				GraphNode *target = graph_edit->get_connection_target(this);
+			if (graph_edit && has_connection()) {
+				GraphPort *target = graph_edit->get_connection_target(this, nav_conn_index);
 				if (target) {
 					target->grab_focus();
-					accept_event();
+				}
+				accept_event();
+				nav_conn_index++;
+				if (nav_conn_index >= get_connection_count()) {
+					nav_conn_index = 0;
 				}
 			}
 		} else if (p_event->is_action("ui_accept", true)) {
@@ -158,11 +160,6 @@ void GraphPort::gui_input(const Ref<InputEvent> &p_event) {
 				} else {
 					graph_edit->start_connecting(this, true);
 				}
-				accept_event();
-			}
-		} else if (p_event->is_action("ui_focus_prev", true)) {
-			if (graph_node) {
-				graph_node->grab_focus();
 				accept_event();
 			}
 		}
@@ -387,6 +384,11 @@ void GraphPort::clear_connections() {
 	graph_edit->clear_port_connections(this);
 }
 
+int GraphPort::get_connection_count() const {
+	ERR_FAIL_NULL_V(graph_edit, 0);
+	return graph_edit->get_connection_count_by_port(this);
+}
+
 Ref<GraphConnection> GraphPort::get_first_connection() const {
 	ERR_FAIL_NULL_V(graph_edit, Ref<GraphConnection>(nullptr));
 	return graph_edit->get_first_connection_by_port(this);
@@ -492,6 +494,7 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphPort::get_connections);
 	ClassDB::bind_method(D_METHOD("set_connections", "connections"), &GraphPort::set_connections);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphPort::clear_connections);
+	ClassDB::bind_method(D_METHOD("get_connection_count"), &GraphPort::get_connection_count);
 
 	ClassDB::bind_method(D_METHOD("add_connection", "connection"), &GraphPort::add_connection);
 	ClassDB::bind_method(D_METHOD("connect_to_port", "port", "clear_if_invalid"), &GraphPort::connect_to_port, DEFVAL(true));

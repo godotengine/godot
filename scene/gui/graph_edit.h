@@ -400,7 +400,7 @@ public:
 	TypedArray<GraphNode> get_connected_nodes(const GraphNode *p_node) const;
 	int get_connection_count_by_port(const GraphPort *p_port) const;
 	int get_connection_count_by_node(const GraphNode *p_node) const;
-	GraphNode *get_connection_target(const GraphPort *p_port) const;
+	GraphPort *get_connection_target(const GraphPort *p_port, int p_connection_index = 0) const;
 	String get_connections_description(const GraphPort *p_port) const;
 
 	void set_connections(const TypedArray<Ref<GraphConnection>> p_connections);

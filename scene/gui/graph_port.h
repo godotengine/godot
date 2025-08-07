@@ -91,6 +91,7 @@ protected:
 	int port_type = 0;
 	PortDirection direction = PortDirection::UNDIRECTED;
 	DisconnectBehaviour on_disabled_behaviour = DisconnectBehaviour::DISCONNECT_ALL;
+	int nav_conn_index = 0;
 
 	GraphEdit *graph_edit = nullptr;
 	GraphNode *graph_node = nullptr;
@@ -150,6 +151,7 @@ public:
 	TypedArray<Ref<GraphConnection>> get_connections() const;
 	void set_connections(const TypedArray<Ref<GraphConnection>> &p_connections);
 	void clear_connections();
+	int get_connection_count() const;
 
 	void add_connection(Ref<GraphConnection> p_connection);
 	void remove_connection(Ref<GraphConnection> p_connection);
