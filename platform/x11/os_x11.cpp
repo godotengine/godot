@@ -40,6 +40,10 @@
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+
 #ifdef HAVE_MNTENT
 #include <mntent.h>
 #endif
@@ -663,8 +667,13 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	input = memnew(InputDefault);
 
 	window_has_focus = true; // Set focus to true at init
-#ifdef JOYDEV_ENABLED
-	joypad = memnew(JoypadLinux(input));
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL(input));
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
 #endif
 
 	power_manager = memnew(PowerX11);
@@ -909,8 +918,10 @@ void OS_X11::finalize() {
 	}
 #endif
 
-#ifdef JOYDEV_ENABLED
-	memdelete(joypad);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
 #endif
 
 	xi.touch_devices.clear();
@@ -4020,8 +4031,8 @@ void OS_X11::set_icon(const Ref<Image> &p_icon) {
 
 void OS_X11::force_process_input() {
 	process_xevents(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-	joypad->process_joypads();
+#ifdef SDL_ENABLED
+	joypad_sdl->process_events();
 #endif
 }
 
@@ -4041,8 +4052,10 @@ void OS_X11::run() {
 
 	while (!force_quit) {
 		process_xevents(); // get rid of pending events
-#ifdef JOYDEV_ENABLED
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
 #endif
 		if (Main::iteration()) {
 			break;

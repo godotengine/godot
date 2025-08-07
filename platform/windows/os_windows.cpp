@@ -38,13 +38,16 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "joypad_windows.h"
 #include "lang_table.h"
 #include "main/main.h"
 #include "servers/audio_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "windows_terminal_logger.h"
+
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
 
 #include <avrt.h>
 #include <direct.h>
@@ -1155,9 +1158,6 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
 		} break;
 
-		case WM_DEVICECHANGE: {
-			joypad->probe_joypads();
-		} break;
 		case WM_SETCURSOR: {
 			if (LOWORD(lParam) == HTCLIENT) {
 				if (window_has_focus && (mouse_mode == MOUSE_MODE_HIDDEN || mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN)) {
@@ -1655,7 +1655,14 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	visual_server->init();
 
 	input = memnew(InputDefault);
-	joypad = memnew(JoypadWindows(input, &hWnd));
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL(input, hWnd));
+	if (joypad_sdl->initialize() != OK) {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 
 	power_manager = memnew(PowerWindows);
 
@@ -1819,7 +1826,12 @@ void OS_Windows::finalize() {
 
 	main_loop = NULL;
 
-	memdelete(joypad);
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
+
 	memdelete(input);
 	touch_state.clear();
 
@@ -2713,7 +2725,11 @@ void OS_Windows::process_events() {
 	MSG msg;
 
 	if (!drop_events) {
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
+#endif
 	}
 
 	while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE)) {
