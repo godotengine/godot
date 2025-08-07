@@ -174,6 +174,9 @@ def configure(env):
         if env["arch"] != "arm64":
             env["x86_libtheora_opt_gcc"] = True
 
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+
     ## Flags
 
     env.Prepend(CPPPATH=["#platform/osx"])
@@ -205,6 +208,10 @@ def configure(env):
             "-lz",
             "-framework",
             "IOKit",
+            "-framework",
+            "GameController",
+            "-framework",
+            "CoreHaptics",
             "-framework",
             "ForceFeedback",
             "-framework",

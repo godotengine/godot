@@ -12,7 +12,6 @@ common_win = [
     "crash_handler_windows.cpp",
     "os_windows.cpp",
     "key_mapping_windows.cpp",
-    "joypad_windows.cpp",
     "tts_windows.cpp",
     "power_windows.cpp",
     "windows_terminal_logger.cpp",
