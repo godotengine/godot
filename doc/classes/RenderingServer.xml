@@ -3917,15 +3917,17 @@
 		<method name="viewport_get_render_target" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="layer" type="int" default="0" />
 			<description>
-				Returns the render target for the viewport.
+				Returns the render target for the [param layer] of the viewport.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="layer" type="int" default="0" />
 			<description>
-				Returns the viewport's last rendered frame.
+				Returns the viewport's last rendered frame for a [param layer].
 			</description>
 		</method>
 		<method name="viewport_get_update_mode" qualifiers="const">
@@ -4064,6 +4066,15 @@
 				Sets the viewport's global transformation matrix.
 			</description>
 		</method>
+		<method name="viewport_set_layer_count">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="layer_count" type="int" />
+			<description>
+				Sets the number of layers for this viewport. Each layer will be rendered separately.
+				[b]Note:[/b] This is an XR feature only, in other use cases the output of additional layers is discarded.
+			</description>
+		</method>
 		<method name="viewport_set_measure_render_time">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
@@ -4182,10 +4193,12 @@
 		<method name="viewport_set_size">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
-			<param index="1" name="width" type="int" />
-			<param index="2" name="height" type="int" />
+			<param index="1" name="layer" type="int" />
+			<param index="2" name="width" type="int" />
+			<param index="3" name="height" type="int" />
+			<param index="4" name="view_count" type="int" />
 			<description>
-				Sets the viewport's width and height in pixels.
+				Sets the viewport's [param width], [param height] in pixels and the [param view_count] for the specified [param layer].
 			</description>
 		</method>
 		<method name="viewport_set_snap_2d_transforms_to_pixel">

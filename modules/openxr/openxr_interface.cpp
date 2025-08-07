@@ -1015,17 +1015,28 @@ void OpenXRInterface::set_foveation_dynamic(bool p_foveation_dynamic) {
 	}
 }
 
-Size2 OpenXRInterface::get_render_target_size() {
+uint32_t OpenXRInterface::get_layer_count() {
 	if (openxr_api == nullptr) {
-		return Size2();
+		return 1;
 	} else {
-		return openxr_api->get_recommended_target_size();
+		return openxr_api->get_layer_count();
 	}
 }
 
-uint32_t OpenXRInterface::get_view_count() {
-	// TODO set this based on our configuration
-	return 2;
+Size2 OpenXRInterface::get_render_target_size(uint32_t p_layer) {
+	if (openxr_api == nullptr) {
+		return Size2();
+	} else {
+		return openxr_api->get_recommended_target_size(p_layer);
+	}
+}
+
+uint32_t OpenXRInterface::get_view_count(uint32_t p_layer) {
+	if (openxr_api == nullptr) {
+		return 1;
+	} else {
+		return openxr_api->get_view_count(p_layer);
+	}
 }
 
 void OpenXRInterface::_set_default_pos(Transform3D &p_transform, double p_world_scale, uint64_t p_eye) {
@@ -1057,18 +1068,20 @@ Transform3D OpenXRInterface::get_camera_transform() {
 	return hmd_transform;
 }
 
-Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_layer, uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, Transform3D());
-	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(), Transform3D(), "View index outside bounds.");
+	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(p_layer), Transform3D(), "View index outside bounds.");
+
+	// TODO alter get_view_transform to support layers
 
 	Transform3D t;
-	if (openxr_api && openxr_api->get_view_transform(p_view, t)) {
+	if (openxr_api && openxr_api->get_view_transform(p_layer, p_view, t)) {
 		// update our cached value if we have a valid transform
-		transform_for_view[p_view] = t;
+		transform_for_view[p_layer][p_view] = t;
 	} else {
 		// reuse cached value
-		t = transform_for_view[p_view];
+		t = transform_for_view[p_layer][p_view];
 	}
 
 	// Apply our world scale
@@ -1078,12 +1091,12 @@ Transform3D OpenXRInterface::get_transform_for_view(uint32_t p_view, const Trans
 	return p_cam_transform * xr_server->get_reference_frame() * t;
 }
 
-Projection OpenXRInterface::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection OpenXRInterface::get_projection_for_view(uint32_t p_layer, uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	Projection cm;
-	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(), cm, "View index outside bounds.");
+	ERR_FAIL_UNSIGNED_INDEX_V_MSG(p_view, get_view_count(p_layer), cm, "View index outside bounds.");
 
 	if (openxr_api) {
-		if (openxr_api->get_view_projection(p_view, p_z_near, p_z_far, cm)) {
+		if (openxr_api->get_view_projection(p_layer, p_view, p_z_near, p_z_far, cm)) {
 			return cm;
 		}
 	}
@@ -1102,32 +1115,34 @@ Rect2i OpenXRInterface::get_render_region() {
 	}
 }
 
-RID OpenXRInterface::get_color_texture() {
+RID OpenXRInterface::get_color_texture(uint32_t p_layer) {
 	if (openxr_api) {
-		return openxr_api->get_color_texture();
+		return openxr_api->get_color_texture(p_layer);
 	} else {
 		return RID();
 	}
 }
 
-RID OpenXRInterface::get_depth_texture() {
+RID OpenXRInterface::get_depth_texture(uint32_t p_layer) {
 	if (openxr_api) {
-		return openxr_api->get_depth_texture();
+		return openxr_api->get_depth_texture(p_layer);
 	} else {
 		return RID();
 	}
 }
 
-RID OpenXRInterface::get_velocity_texture() {
-	if (openxr_api) {
+RID OpenXRInterface::get_velocity_texture(uint32_t p_layer) {
+	if (openxr_api && p_layer == 0) {
+		// Only supported on the first layer.
 		return openxr_api->get_velocity_texture();
 	} else {
 		return RID();
 	}
 }
 
-RID OpenXRInterface::get_velocity_depth_texture() {
-	if (openxr_api) {
+RID OpenXRInterface::get_velocity_depth_texture(uint32_t p_layer) {
+	if (openxr_api && p_layer == 0) {
+		// Only supported on the first layer.
 		return openxr_api->get_velocity_depth_texture();
 	} else {
 		return RID();
@@ -1636,8 +1651,8 @@ OpenXRInterface::OpenXRInterface() {
 
 	// while we don't have head tracking, don't put the headset on the floor...
 	_set_default_pos(head_transform, 1.0, 0);
-	_set_default_pos(transform_for_view[0], 1.0, 1);
-	_set_default_pos(transform_for_view[1], 1.0, 2);
+	_set_default_pos(transform_for_view[0][0], 1.0, 1);
+	_set_default_pos(transform_for_view[0][1], 1.0, 2);
 }
 
 OpenXRInterface::~OpenXRInterface() {

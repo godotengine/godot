@@ -277,7 +277,9 @@ uint32_t WebXRInterfaceJS::get_capabilities() const {
 	return XRInterface::XR_STEREO | XRInterface::XR_MONO | XRInterface::XR_VR | XRInterface::XR_AR;
 }
 
-uint32_t WebXRInterfaceJS::get_view_count() {
+uint32_t WebXRInterfaceJS::get_view_count(uint32_t p_layer) {
+	ERR_FAIL_COND_V(p_layer > 0, 0);
+
 	return godot_webxr_get_view_count();
 }
 
@@ -416,7 +418,9 @@ Transform3D WebXRInterfaceJS::_js_matrix_to_transform(float *p_js_matrix) {
 	return transform;
 }
 
-Size2 WebXRInterfaceJS::get_render_target_size() {
+Size2 WebXRInterfaceJS::get_render_target_size(uint32_t p_layer) {
+	ERR_FAIL_COND_V(p_layer > 0, Size2());
+
 	if (render_targetsize.width != 0 && render_targetsize.height != 0) {
 		return render_targetsize;
 	}
@@ -454,10 +458,11 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	return camera_transform;
 }
 
-Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
+Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_layer, uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL_V(xr_server, p_cam_transform);
 	ERR_FAIL_COND_V(!initialized, p_cam_transform);
+	ERR_FAIL_COND_V(p_layer > 0, p_cam_transform);
 
 	float js_matrix[16];
 	bool has_transform = godot_webxr_get_transform_for_view(p_view, js_matrix);
@@ -473,10 +478,11 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_view;
 }
 
-Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
+Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_layer, uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	Projection view;
 
 	ERR_FAIL_COND_V(!initialized, view);
+	ERR_FAIL_COND_V(p_layer > 0, view);
 
 	float js_matrix[16];
 	bool has_projection = godot_webxr_get_projection_for_view(p_view, js_matrix);
@@ -582,15 +588,18 @@ RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 	return texture;
 }
 
-RID WebXRInterfaceJS::get_color_texture() {
+RID WebXRInterfaceJS::get_color_texture(uint32_t p_layer) {
+	ERR_FAIL_COND_V(p_layer > 0, RID());
 	return color_texture;
 }
 
-RID WebXRInterfaceJS::get_depth_texture() {
+RID WebXRInterfaceJS::get_depth_texture(uint32_t p_layer) {
+	ERR_FAIL_COND_V(p_layer > 0, RID());
 	return depth_texture;
 }
 
-RID WebXRInterfaceJS::get_velocity_texture() {
+RID WebXRInterfaceJS::get_velocity_texture(uint32_t p_layer) {
+	ERR_FAIL_COND_V(p_layer > 0, RID());
 	unsigned int texture_id = godot_webxr_get_velocity_texture();
 	if (texture_id == 0) {
 		return RID();

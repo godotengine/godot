@@ -46,8 +46,9 @@ void XRInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_tracking_status"), &XRInterface::get_tracking_status);
 
-	ClassDB::bind_method(D_METHOD("get_render_target_size"), &XRInterface::get_render_target_size);
-	ClassDB::bind_method(D_METHOD("get_view_count"), &XRInterface::get_view_count);
+	ClassDB::bind_method(D_METHOD("get_layer_count"), &XRInterface::get_layer_count);
+	ClassDB::bind_method(D_METHOD("get_render_target_size", "layer"), &XRInterface::get_render_target_size, DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("get_view_count", "layer"), &XRInterface::get_view_count, DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("trigger_haptic_pulse", "action_name", "tracker_name", "frequency", "amplitude", "duration_sec", "delay_sec"), &XRInterface::trigger_haptic_pulse);
 
@@ -72,8 +73,8 @@ void XRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_passthrough_enabled"), &XRInterface::is_passthrough_enabled);
 	ClassDB::bind_method(D_METHOD("start_passthrough"), &XRInterface::start_passthrough);
 	ClassDB::bind_method(D_METHOD("stop_passthrough"), &XRInterface::stop_passthrough);
-	ClassDB::bind_method(D_METHOD("get_transform_for_view", "view", "cam_transform"), &XRInterface::get_transform_for_view);
-	ClassDB::bind_method(D_METHOD("get_projection_for_view", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
+	ClassDB::bind_method(D_METHOD("get_transform_for_view", "layer", "view", "cam_transform"), &XRInterface::get_transform_for_view);
+	ClassDB::bind_method(D_METHOD("get_projection_for_view", "layer", "view", "aspect", "near", "far"), &XRInterface::get_projection_for_view);
 
 	/** environment blend mode. */
 	ClassDB::bind_method(D_METHOD("get_supported_environment_blend_modes"), &XRInterface::get_supported_environment_blend_modes);
@@ -179,19 +180,19 @@ RID XRInterface::get_vrs_texture() {
 
 /** these are optional, so we want dummies **/
 
-RID XRInterface::get_color_texture() {
+RID XRInterface::get_color_texture(uint32_t p_layer) {
 	return RID();
 }
 
-RID XRInterface::get_depth_texture() {
+RID XRInterface::get_depth_texture(uint32_t p_layer) {
 	return RID();
 }
 
-RID XRInterface::get_velocity_texture() {
+RID XRInterface::get_velocity_texture(uint32_t p_layer) {
 	return RID();
 }
 
-RID XRInterface::get_velocity_depth_texture() {
+RID XRInterface::get_velocity_depth_texture(uint32_t p_layer) {
 	return RID();
 }
 

@@ -2589,7 +2589,7 @@ bool RendererSceneCull::_light_instance_update_shadow(Instance *p_instance, cons
 	return animated_material_found;
 }
 
-void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, RenderInfo *r_render_info) {
+void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_camera, RID p_scenario, RID p_viewport, Size2 p_viewport_size, uint32_t p_jitter_phase_count, float p_screen_mesh_lod_threshold, RID p_shadow_atlas, Ref<XRInterface> &p_xr_interface, uint32_t p_viewport_layer, uint32_t p_first_view, uint32_t p_view_count, RenderInfo *r_render_info) {
 #ifndef _3D_DISABLED
 
 	Camera *camera = camera_owner.get_or_null(p_camera);
@@ -2612,6 +2612,9 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		jitter = camera_jitter_array[RSG::rasterizer->get_frame_number() % p_jitter_phase_count] / p_viewport_size;
 		taa_frame_count = float(RSG::rasterizer->get_frame_number() % p_jitter_phase_count);
 	}
+
+	// Note: For now we're only implementing layer and views support for XR interfaces,
+	// but long term plans is to make this available for normal views too.
 
 	RendererSceneRender::CameraData camera_data;
 
@@ -2665,8 +2668,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		Transform3D transforms[RendererSceneRender::MAX_RENDER_VIEWS];
 		Projection projections[RendererSceneRender::MAX_RENDER_VIEWS];
 
-		uint32_t view_count = p_xr_interface->get_view_count();
-		ERR_FAIL_COND_MSG(view_count == 0 || view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
+		ERR_FAIL_COND_MSG(p_view_count == 0 || p_view_count > RendererSceneRender::MAX_RENDER_VIEWS, "Requested view count is not supported");
 
 		float aspect = p_viewport_size.width / (float)p_viewport_size.height;
 
@@ -2674,23 +2676,23 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 
 		// We ignore our camera position, it will have been positioned with a slightly old tracking position.
 		// Instead we take our origin point and have our XR interface add fresh tracking data! Whoohoo!
-		for (uint32_t v = 0; v < view_count; v++) {
-			transforms[v] = p_xr_interface->get_transform_for_view(v, world_origin);
-			projections[v] = p_xr_interface->get_projection_for_view(v, aspect, camera->znear, camera->zfar);
+		for (uint32_t v = 0; v < p_view_count; v++) {
+			transforms[v] = p_xr_interface->get_transform_for_view(p_viewport_layer, p_first_view + v, world_origin);
+			projections[v] = p_xr_interface->get_projection_for_view(p_viewport_layer, p_first_view + v, aspect, camera->znear, camera->zfar);
 		}
 
 		// If requested, we move the views to be rendered as if the HMD is at the XROrigin.
 		if (unlikely(xr_server->is_camera_locked_to_origin())) {
 			Transform3D camera_reset = p_xr_interface->get_camera_transform().affine_inverse() * xr_server->get_reference_frame().affine_inverse();
-			for (uint32_t v = 0; v < view_count; v++) {
+			for (uint32_t v = 0; v < p_view_count; v++) {
 				transforms[v] *= camera_reset;
 			}
 		}
 
-		if (view_count == 1) {
+		if (p_view_count == 1) {
 			camera_data.set_camera(transforms[0], projections[0], false, false, camera->vaspect, jitter, p_jitter_phase_count, camera->visible_layers);
-		} else if (view_count == 2) {
-			camera_data.set_multiview_camera(view_count, transforms, projections, false, false, camera->vaspect);
+		} else if (p_view_count == 2) {
+			camera_data.set_multiview_camera(p_view_count, transforms, projections, false, false, camera->vaspect);
 		} else {
 			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
 		}
@@ -2704,6 +2706,9 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 	// For now just cull on the first camera
 	RendererSceneOcclusionCull::get_singleton()->buffer_update(p_viewport, camera_data.main_transform, camera_data.main_projection, camera_data.is_orthogonal);
 
+	// TODO we need to make sure we pass and properly use our "first_view" and "view_count" values here.
+	// Right now we're always going back to using the view_count in our render buffers, but that is now the total view count,
+	// and we might be processing just a slice of those.
 	_render_scene(&camera_data, p_render_buffers, environment, camera->attributes, compositor, camera->visible_layers, p_scenario, p_viewport, p_shadow_atlas, RID(), -1, p_screen_mesh_lod_threshold, true, r_render_info);
 #endif
 }
