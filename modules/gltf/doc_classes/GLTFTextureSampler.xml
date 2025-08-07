@@ -23,4 +23,30 @@
 			Wrapping mode to use for T-axis (vertical) texture coordinates.
 		</member>
 	</members>
+	<constants>
+		<constant name="NEAREST" value="9728" enum="FilterMode">
+		</constant>
+		<constant name="LINEAR" value="9729" enum="FilterMode">
+		</constant>
+		<constant name="NEAREST_MIPMAP_NEAREST" value="9984" enum="FilterMode">
+		</constant>
+		<constant name="LINEAR_MIPMAP_NEAREST" value="9985" enum="FilterMode">
+		</constant>
+		<constant name="NEAREST_MIPMAP_LINEAR" value="9986" enum="FilterMode">
+		</constant>
+		<constant name="LINEAR_MIPMAP_LINEAR" value="9987" enum="FilterMode">
+		</constant>
+		<constant name="NEAREST_MIPMAP_ANISOTROPIC" value="9988" enum="FilterMode">
+		</constant>
+		<constant name="LINEAR_MIPMAP_ANISOTROPIC" value="9989" enum="FilterMode">
+		</constant>
+		<constant name="CLAMP_TO_EDGE" value="33071" enum="WrapMode">
+		</constant>
+		<constant name="MIRRORED_REPEAT" value="33648" enum="WrapMode">
+		</constant>
+		<constant name="REPEAT" value="10497" enum="WrapMode">
+		</constant>
+		<constant name="DEFAULT" value="10497" enum="WrapMode">
+		</constant>
+	</constants>
 </class>
