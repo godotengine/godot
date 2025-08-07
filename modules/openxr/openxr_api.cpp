@@ -93,7 +93,7 @@ bool OpenXRAPI::OpenXRSwapChainInfo::create(XrSwapchainCreateFlags p_create_flag
 	XrResult result;
 
 	void *next_pointer = nullptr;
-	for (OpenXRExtensionWrapper *wrapper : openxr_api->get_registered_extension_wrappers()) {
+	for (OpenXRExtensionWrapper *wrapper : OpenXRAPI::get_registered_extension_wrappers()) {
 		void *np = wrapper->set_swapchain_create_info_and_get_next_pointer(next_pointer);
 		if (np != nullptr) {
 			next_pointer = np;
