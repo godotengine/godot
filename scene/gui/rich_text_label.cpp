@@ -1770,9 +1770,11 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 						}
 					}
 				} else {
-					char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
-					char_pos = TS->shaped_text_closest_character_pos(rid, char_pos);
-					char_clicked = true;
+					int click_char_pos = TS->shaped_text_hit_test_position(rid, p_click.x - rect.position.x);
+					if (click_char_pos != -1) {
+						char_pos = TS->shaped_text_closest_character_pos(rid, click_char_pos);
+						char_clicked = true;
+					}
 				}
 			}
 			line_clicked = true;

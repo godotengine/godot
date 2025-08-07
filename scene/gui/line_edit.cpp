@@ -1825,6 +1825,9 @@ void LineEdit::set_caret_at_pixel_pos(int p_x) {
 	}
 
 	int ofs = std::ceil(TS->shaped_text_hit_test_position(text_rid, p_x - x_ofs - scroll_offset));
+	if (ofs == -1) {
+		return;
+	}
 	if (!caret_mid_grapheme_enabled) {
 		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
 	}

@@ -5034,6 +5034,9 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line
 	}
 
 	int col = TS->shaped_text_hit_test_position(text_rid, colx);
+	if (col == -1) {
+		return Point2i(-1, -1);
+	}
 	if (!caret_mid_grapheme_enabled) {
 		col = TS->shaped_text_closest_character_pos(text_rid, col);
 	}
@@ -8197,6 +8200,9 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 		p_px -= wrap_indent;
 	}
 	int ofs = TS->shaped_text_hit_test_position(text_rid, p_px);
+	if (ofs == -1) {
+		return 0;
+	}
 	if (!caret_mid_grapheme_enabled) {
 		ofs = TS->shaped_text_closest_character_pos(text_rid, ofs);
 	}
