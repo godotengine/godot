@@ -5354,15 +5354,14 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 }
 
 // Used to track the progress of tasks in the CLI output (since we don't have any other frame of reference).
-// All tasks run sequentially, so we can just keep a single counter.
-static int progress_total_steps = 0;
+static HashMap<String, int> progress_total_steps;
 
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (!singleton) {
 		return;
 	} else if (singleton->cmdline_mode) {
 		print_line_rich(vformat("[   0%% ] [color=gray][b]%s[/b] | Started %s (%d steps)[/color]", p_task, p_label, p_steps));
-		progress_total_steps = p_steps;
+		progress_total_steps[p_task] = p_steps;
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
 	}
@@ -5372,7 +5371,7 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 	if (!singleton) {
 		return false;
 	} else if (singleton->cmdline_mode) {
-		const int percent = (p_step / float(progress_total_steps + 1)) * 100;
+		const int percent = (p_step / float(progress_total_steps[p_task] + 1)) * 100;
 		print_line_rich(vformat("[%4d%% ] [color=gray][b]%s[/b] | %s[/color]", percent, p_task, p_state));
 		return false;
 	} else if (singleton->progress_dialog) {
@@ -5386,6 +5385,7 @@ void EditorNode::progress_end_task(const String &p_task) {
 	if (!singleton) {
 		return;
 	} else if (singleton->cmdline_mode) {
+		progress_total_steps.erase(p_task);
 		print_line_rich(vformat("[color=green][ DONE ][/color] [b]%s[/b]\n", p_task));
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
