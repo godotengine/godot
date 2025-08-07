@@ -283,6 +283,9 @@ def configure_msvc(env, manual_msvc_config):
         else:
             print("Missing environment variable: WindowsSdkDir")
 
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+
     ## LTO
 
     if env["lto"] == "auto":  # No LTO by default for MSVC, doesn't help.
@@ -455,6 +458,9 @@ def configure_mingw(env):
             "dwmapi",
         ]
     )
+
+    if env["sdl"]:
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 

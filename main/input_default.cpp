@@ -290,12 +290,16 @@ void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
+		// Bypass the mapping system if the joypad's mapping is already handled by its driver
+		// (for example, the SDL joypad driver).
+#ifndef SDL_ENABLED
 		for (int i = 0; i < map_db.size(); i++) {
 			if (js.uid == map_db[i].uid) {
 				mapping = i;
 				js.name = map_db[i].name;
 			};
 		};
+#endif
 		js.mapping = mapping;
 	} else {
 		js.connected = false;
