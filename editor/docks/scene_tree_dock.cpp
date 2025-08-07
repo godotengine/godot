@@ -713,7 +713,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			if (was_empty) {
-				_update_create_root_dialog();
+				_update_create_root_options();
 			}
 		} break;
 		case TOOL_PASTE: {
@@ -1605,11 +1605,6 @@ void SceneTreeDock::add_root_node(Node *p_node) {
 void SceneTreeDock::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			if (!first_enter) {
-				break;
-			}
-			first_enter = false;
-
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &SceneTreeDock::_feature_profile_changed));
 
 			CanvasItemEditorPlugin *canvas_item_plugin = Object::cast_to<CanvasItemEditorPlugin>(editor_data->get_editor_by_name("2D"));
@@ -1624,74 +1619,6 @@ void SceneTreeDock::_notification(int p_what) {
 			spatial_editor_plugin->get_spatial_editor()->connect("item_group_status_changed", callable_mp(scene_tree, &SceneTreeEditor::_update_tree).bind(false));
 
 			filter->set_clear_button_enabled(true);
-
-			// create_root_dialog
-			HBoxContainer *top_row = memnew(HBoxContainer);
-			top_row->set_h_size_flags(SIZE_EXPAND_FILL);
-			Label *l = memnew(Label(TTR("Create Root Node:")));
-			l->set_theme_type_variation("HeaderSmall");
-			top_row->add_child(l);
-			top_row->add_spacer();
-
-			node_shortcuts_toggle = memnew(Button);
-			node_shortcuts_toggle->set_flat(true);
-			node_shortcuts_toggle->set_accessibility_name(TTRC("Favorite Nodes"));
-			node_shortcuts_toggle->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
-			node_shortcuts_toggle->set_toggle_mode(true);
-			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
-			node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
-			node_shortcuts_toggle->set_anchors_and_offsets_preset(Control::PRESET_CENTER_RIGHT);
-			node_shortcuts_toggle->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
-			top_row->add_child(node_shortcuts_toggle);
-
-			create_root_dialog->add_child(top_row);
-
-			ScrollContainer *scroll_container = memnew(ScrollContainer);
-			create_root_dialog->add_child(scroll_container);
-			scroll_container->set_v_size_flags(SIZE_EXPAND_FILL);
-			scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
-
-			VBoxContainer *node_shortcuts = memnew(VBoxContainer);
-			scroll_container->add_child(node_shortcuts);
-			node_shortcuts->set_h_size_flags(SIZE_EXPAND_FILL);
-
-			beginner_node_shortcuts = memnew(VBoxContainer);
-			node_shortcuts->add_child(beginner_node_shortcuts);
-
-			button_2d = memnew(Button);
-			beginner_node_shortcuts->add_child(button_2d);
-			button_2d->set_text(TTR("2D Scene"));
-			button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
-			button_2d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_2D_SCENE, false));
-
-			button_3d = memnew(Button);
-			beginner_node_shortcuts->add_child(button_3d);
-			button_3d->set_text(TTR("3D Scene"));
-			button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
-			button_3d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_3D_SCENE, false));
-
-			button_ui = memnew(Button);
-			beginner_node_shortcuts->add_child(button_ui);
-			button_ui->set_text(TTR("User Interface"));
-			button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
-			button_ui->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
-
-			favorite_node_shortcuts = memnew(VBoxContainer);
-			node_shortcuts->add_child(favorite_node_shortcuts);
-
-			button_custom = memnew(Button);
-			node_shortcuts->add_child(button_custom);
-			button_custom->set_text(TTR("Other Node"));
-			button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
-
-			button_clipboard = memnew(Button);
-			node_shortcuts->add_child(button_clipboard);
-			button_clipboard->set_text(TTR("Paste From Clipboard"));
-			button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
-			button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
-
-			_update_create_root_dialog(true);
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -1728,38 +1655,14 @@ void SceneTreeDock::_notification(int p_what) {
 			filter_menu->set_item_icon(filter_menu->get_item_index(FILTER_BY_TYPE), get_editor_theme_icon(SNAME("Node")));
 			filter_menu->set_item_icon(filter_menu->get_item_index(FILTER_BY_GROUP), get_editor_theme_icon(SNAME("Groups")));
 
-			// These buttons are created on READY, because reasons...
-			if (button_2d) {
-				button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
-			}
-			if (button_3d) {
-				button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
-			}
-			if (button_ui) {
-				button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
-			}
-			if (button_custom) {
-				button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			}
-			if (button_clipboard) {
-				button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
-			}
+			node_shortcuts_toggle->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
+			button_2d->set_button_icon(get_editor_theme_icon(SNAME("Node2D")));
+			button_3d->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
+			button_ui->set_button_icon(get_editor_theme_icon(SNAME("Control")));
+			button_custom->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			button_clipboard->set_button_icon(get_editor_theme_icon(SNAME("ActionPaste")));
 
 			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
-		} break;
-
-		case NOTIFICATION_PROCESS: {
-			bool show_create_root = bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) && get_tree()->get_edited_scene_root() == nullptr;
-
-			if (show_create_root != create_root_dialog->is_visible_in_tree() && !remote_tree->is_visible()) {
-				if (show_create_root) {
-					create_root_dialog->show();
-					scene_tree->hide();
-				} else {
-					create_root_dialog->hide();
-					scene_tree->show();
-				}
-			}
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -4396,10 +4299,8 @@ void SceneTreeDock::hide_tab_buttons() {
 
 void SceneTreeDock::_remote_tree_selected() {
 	scene_tree->hide();
-	create_root_dialog->hide();
-	if (remote_tree) {
-		remote_tree->show();
-	}
+	create_root_options->hide();
+	remote_tree->show();
 	edit_remote->set_pressed(true);
 	edit_local->set_pressed(false);
 
@@ -4407,22 +4308,17 @@ void SceneTreeDock::_remote_tree_selected() {
 }
 
 void SceneTreeDock::_local_tree_selected() {
-	if (!bool(EDITOR_GET("interface/editors/show_scene_tree_root_selection")) || get_tree()->get_edited_scene_root() != nullptr) {
+	if (get_tree()->get_edited_scene_root() != nullptr) {
 		scene_tree->show();
+	} else {
+		create_root_options->show();
 	}
-	if (remote_tree) {
-		remote_tree->hide();
-	}
+	remote_tree->hide();
 	edit_remote->set_pressed(false);
 	edit_local->set_pressed(true);
 }
 
-void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
-	if (!p_initializing) {
-		EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", node_shortcuts_toggle->is_pressed());
-		EditorSettings::get_singleton()->save();
-	}
-
+void SceneTreeDock::_update_create_root_options() {
 	if (node_shortcuts_toggle->is_pressed()) {
 		for (int i = 0; i < favorite_node_shortcuts->get_child_count(); i++) {
 			favorite_node_shortcuts->get_child(i)->queue_free();
@@ -4459,6 +4355,21 @@ void SceneTreeDock::_update_create_root_dialog(bool p_initializing) {
 		}
 		button_clipboard->set_visible(!node_clipboard.is_empty());
 	}
+}
+
+void SceneTreeDock::_update_create_root_options_visibility() {
+	if (remote_tree->is_visible()) {
+		return;
+	}
+	bool show_create_root = get_tree()->get_edited_scene_root() == nullptr;
+	scene_tree->set_visible(!show_create_root);
+	create_root_options->set_visible(show_create_root);
+}
+
+void SceneTreeDock::_toggle_favorite_nodes(bool p_enabled) {
+	EditorSettings::get_singleton()->set_setting("_use_favorites_root_selection", p_enabled);
+	EditorSettings::get_singleton()->save();
+	_update_create_root_options();
 }
 
 void SceneTreeDock::_favorite_root_selected(const String &p_class) {
@@ -4813,13 +4724,73 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_hb->add_child(edit_local);
 	edit_local->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_local_tree_selected));
 
-	remote_tree = nullptr;
 	button_hb->hide();
 
-	create_root_dialog = memnew(VBoxContainer);
-	vbc->add_child(create_root_dialog);
-	create_root_dialog->set_v_size_flags(SIZE_EXPAND_FILL);
-	create_root_dialog->hide();
+	create_root_options = memnew(VBoxContainer);
+	create_root_options->set_v_size_flags(SIZE_EXPAND_FILL);
+	create_root_options->hide();
+	vbc->add_child(create_root_options);
+
+	HBoxContainer *top_row = memnew(HBoxContainer);
+	top_row->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	Label *l = memnew(Label(TTR("Create Root Node:")));
+	l->set_theme_type_variation("HeaderSmall");
+	top_row->add_child(l);
+	top_row->add_spacer();
+
+	node_shortcuts_toggle = memnew(Button);
+	node_shortcuts_toggle->set_flat(true);
+	node_shortcuts_toggle->set_accessibility_name(TTRC("Favorite Nodes"));
+	node_shortcuts_toggle->set_toggle_mode(true);
+	node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
+	node_shortcuts_toggle->set_pressed(EDITOR_GET("_use_favorites_root_selection"));
+	top_row->add_child(node_shortcuts_toggle);
+	node_shortcuts_toggle->connect(SceneStringName(toggled), callable_mp(this, &SceneTreeDock::_toggle_favorite_nodes));
+
+	create_root_options->add_child(top_row);
+
+	ScrollContainer *scroll_container = memnew(ScrollContainer);
+	scroll_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	scroll_container->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
+	create_root_options->add_child(scroll_container);
+
+	VBoxContainer *node_shortcuts = memnew(VBoxContainer);
+	node_shortcuts->set_h_size_flags(SIZE_EXPAND_FILL);
+	scroll_container->add_child(node_shortcuts);
+
+	beginner_node_shortcuts = memnew(VBoxContainer);
+	node_shortcuts->add_child(beginner_node_shortcuts);
+
+	button_2d = memnew(Button);
+	button_2d->set_text(TTRC("2D Scene"));
+	beginner_node_shortcuts->add_child(button_2d);
+	button_2d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_2D_SCENE, false));
+
+	button_3d = memnew(Button);
+	button_3d->set_text(TTRC("3D Scene"));
+	beginner_node_shortcuts->add_child(button_3d);
+	button_3d->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_3D_SCENE, false));
+
+	button_ui = memnew(Button);
+	button_ui->set_text(TTRC("User Interface"));
+	beginner_node_shortcuts->add_child(button_ui);
+	button_ui->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_CREATE_USER_INTERFACE, false));
+
+	favorite_node_shortcuts = memnew(VBoxContainer);
+	node_shortcuts->add_child(favorite_node_shortcuts);
+
+	button_custom = memnew(Button);
+	node_shortcuts->add_child(button_custom);
+	button_custom->set_text(TTRC("Other Node"));
+	button_custom->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
+
+	button_clipboard = memnew(Button);
+	node_shortcuts->add_child(button_clipboard);
+	button_clipboard->set_text(TTRC("Paste From Clipboard"));
+	button_clipboard->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_PASTE, false));
+
+	_update_create_root_options();
 
 	scene_tree = memnew(SceneTreeEditor(false, true, true));
 
@@ -4836,6 +4807,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
+	scene_tree->connect("tree_updated", callable_mp(this, &SceneTreeDock::_update_create_root_options_visibility));
 	scene_tree->get_scene_tree()->get_vscroll_bar()->connect("value_changed", callable_mp(this, &SceneTreeDock::_reset_hovering_timer).unbind(1));
 
 	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
@@ -4856,7 +4828,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	create_dialog->set_base_type("Node");
 	add_child(create_dialog);
 	create_dialog->connect("create", callable_mp(this, &SceneTreeDock::_create));
-	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_dialog).bind(false));
+	create_dialog->connect("favorites_updated", callable_mp(this, &SceneTreeDock::_update_create_root_options).bind(false));
 
 	rename_dialog = memnew(RenameDialog(scene_tree));
 	add_child(rename_dialog);
@@ -4926,7 +4898,6 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	add_child(clear_inherit_confirm);
 
 	set_process_input(true);
-	set_process(true);
 
 	EDITOR_DEF("_use_favorites_root_selection", false);
 

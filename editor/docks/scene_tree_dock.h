@@ -169,8 +169,6 @@ class SceneTreeDock : public VBoxContainer {
 	PopupMenu *menu_properties = nullptr;
 	ConfirmationDialog *clear_inherit_confirm = nullptr;
 
-	bool first_enter = true;
-
 	void _create();
 	Node *_do_create(Node *p_parent);
 	void _post_do_create(Node *p_child);
@@ -179,7 +177,7 @@ class SceneTreeDock : public VBoxContainer {
 	Node *pending_click_select = nullptr;
 	bool tree_clicked = false;
 
-	VBoxContainer *create_root_dialog = nullptr;
+	VBoxContainer *create_root_options = nullptr;
 	String selected_favorite_root;
 
 	Ref<ShaderMaterial> selected_shader_material;
@@ -278,7 +276,9 @@ class SceneTreeDock : public VBoxContainer {
 	void _remote_tree_selected();
 	void _local_tree_selected();
 
-	void _update_create_root_dialog(bool p_initializing = false);
+	void _update_create_root_options();
+	void _update_create_root_options_visibility();
+	void _toggle_favorite_nodes(bool p_enabled);
 	void _favorite_root_selected(const String &p_class);
 
 	void _feature_profile_changed();
