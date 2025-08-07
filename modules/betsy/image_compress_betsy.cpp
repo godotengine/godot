@@ -223,7 +223,7 @@ void BetsyCompressor::_init() {
 }
 
 void BetsyCompressor::init() {
-	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true);
+	WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &BetsyCompressor::_thread_loop), true, "Betsy pump task", true);
 	command_queue.set_pump_task_id(tid);
 	command_queue.push(this, &BetsyCompressor::_assign_mt_ids, tid);
 	command_queue.push_and_sync(this, &BetsyCompressor::_init);

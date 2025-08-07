@@ -203,6 +203,7 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 		img->adjust_bcs(1.0, 1.0, saturation);
 	}
 
+	Size2 current_size = size;
 	if (p_set_size) {
 		size.x = img->get_width();
 		base_size.x = img->get_width();
@@ -214,10 +215,15 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 		if (size_override.y != 0) {
 			size.y = size_override.y;
 		}
+		current_size = size;
+	}
+	if (current_size.is_zero_approx()) {
+		current_size.x = img->get_width();
+		current_size.y = img->get_height();
 	}
 
 	RID rid = RenderingServer::get_singleton()->texture_2d_create(img);
-	RenderingServer::get_singleton()->texture_set_size_override(rid, size.x, size.y);
+	RenderingServer::get_singleton()->texture_set_size_override(rid, current_size.x, current_size.y);
 	return rid;
 }
 
@@ -267,7 +273,7 @@ bool SVGTexture::has_alpha() const {
 	return true;
 }
 
-void SVGTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+RID SVGTexture::get_scaled_rid() const {
 	double scale = 1.0;
 	CanvasItem *ci = CanvasItem::get_current_item_drawn();
 	if (ci) {
@@ -276,37 +282,19 @@ void SVGTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_mod
 			scale = vp->get_oversampling();
 		}
 	}
-	RID rid = _ensure_scale(scale);
+	return _ensure_scale(scale);
+}
 
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), rid, false, p_modulate, p_transpose);
+void SVGTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), get_scaled_rid(), false, p_modulate, p_transpose);
 }
 
 void SVGTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
-	double scale = 1.0;
-	CanvasItem *ci = CanvasItem::get_current_item_drawn();
-	if (ci) {
-		Viewport *vp = ci->get_viewport();
-		if (vp) {
-			scale = vp->get_oversampling();
-		}
-	}
-	RID rid = _ensure_scale(scale);
-
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, rid, p_tile, p_modulate, p_transpose);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_scaled_rid(), p_tile, p_modulate, p_transpose);
 }
 
 void SVGTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
-	double scale = 1.0;
-	CanvasItem *ci = CanvasItem::get_current_item_drawn();
-	if (ci) {
-		Viewport *vp = ci->get_viewport();
-		if (vp) {
-			scale = vp->get_oversampling();
-		}
-	}
-	RID rid = _ensure_scale(scale);
-
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, rid, p_src_rect, p_modulate, p_transpose, p_clip_uv);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_scaled_rid(), p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
 bool SVGTexture::is_pixel_opaque(int p_x, int p_y) const {
@@ -376,6 +364,7 @@ void SVGTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_map", "color_map"), &SVGTexture::set_color_map);
 	ClassDB::bind_method(D_METHOD("get_color_map"), &SVGTexture::get_color_map);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &SVGTexture::set_size_override);
+	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &SVGTexture::get_scaled_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"), "set_base_scale", "get_base_scale");

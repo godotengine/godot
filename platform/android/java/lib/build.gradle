@@ -108,7 +108,7 @@ android {
         }
 
         boolean devBuild = buildType == "dev"
-        boolean debugSymbols = devBuild || (buildType == "debug" && isAndroidStudio())
+        boolean debugSymbols = devBuild
         boolean runTests = devBuild
         boolean storeRelease = buildType == "release"
         boolean productionBuild = storeRelease

@@ -181,8 +181,9 @@ public:
 	virtual RID get_rid() const; // Some resources may offer conversion to RID.
 
 	// Helps keep IDs the same when loading/saving scenes. An empty ID clears the entry, and an empty ID is returned when not found.
-	void set_id_for_path(const String &p_path, const String &p_id);
-	String get_id_for_path(const String &p_path) const;
+	static void set_resource_id_for_path(const String &p_referrer_path, const String &p_resource_path, const String &p_id);
+	void set_id_for_path(const String &p_referrer_path, const String &p_id) { set_resource_id_for_path(p_referrer_path, get_path(), p_id); }
+	String get_id_for_path(const String &p_referrer_path) const;
 
 	Resource();
 	~Resource();

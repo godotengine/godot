@@ -311,6 +311,7 @@ public:
 
 	void add_logger(const Ref<Logger> &p_logger);
 	void remove_logger(const Ref<Logger> &p_logger);
+	void remove_script_loggers(const ScriptLanguage *p_script);
 
 	static OS *get_singleton() { return singleton; }
 

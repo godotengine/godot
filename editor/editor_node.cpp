@@ -510,6 +510,11 @@ void EditorNode::_update_from_settings() {
 	Viewport::MSAA msaa = Viewport::MSAA(int(GLOBAL_GET("rendering/anti_aliasing/quality/msaa_2d")));
 	scene_root->set_msaa_2d(msaa);
 
+	// 2D doesn't use a dedicated SubViewport like 3D does, so we apply it on the root viewport instead.
+	bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
+	scene_root->set_use_debanding(use_debanding);
+	get_viewport()->set_use_debanding(use_debanding);
+
 	bool use_hdr_2d = GLOBAL_GET("rendering/viewport/hdr_2d");
 	scene_root->set_use_hdr_2d(use_hdr_2d);
 	get_viewport()->set_use_hdr_2d(use_hdr_2d);
@@ -4091,6 +4096,7 @@ bool EditorNode::is_addon_plugin_enabled(const String &p_addon) const {
 void EditorNode::_remove_edited_scene(bool p_change_tab) {
 	// When scene gets closed no node is edited anymore, so make sure the editors are notified before nodes are freed.
 	hide_unused_editors(SceneTreeDock::get_singleton());
+	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 
 	int new_index = editor_data.get_edited_scene();
 	int old_index = new_index;
@@ -5348,15 +5354,14 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 }
 
 // Used to track the progress of tasks in the CLI output (since we don't have any other frame of reference).
-// All tasks run sequentially, so we can just keep a single counter.
-static int progress_total_steps = 0;
+static HashMap<String, int> progress_total_steps;
 
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (!singleton) {
 		return;
 	} else if (singleton->cmdline_mode) {
 		print_line_rich(vformat("[   0%% ] [color=gray][b]%s[/b] | Started %s (%d steps)[/color]", p_task, p_label, p_steps));
-		progress_total_steps = p_steps;
+		progress_total_steps[p_task] = p_steps;
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
 	}
@@ -5366,7 +5371,7 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 	if (!singleton) {
 		return false;
 	} else if (singleton->cmdline_mode) {
-		const int percent = (p_step / float(progress_total_steps + 1)) * 100;
+		const int percent = (p_step / float(progress_total_steps[p_task] + 1)) * 100;
 		print_line_rich(vformat("[%4d%% ] [color=gray][b]%s[/b] | %s[/color]", percent, p_task, p_state));
 		return false;
 	} else if (singleton->progress_dialog) {
@@ -5380,6 +5385,7 @@ void EditorNode::progress_end_task(const String &p_task) {
 	if (!singleton) {
 		return;
 	} else if (singleton->cmdline_mode) {
+		progress_total_steps.erase(p_task);
 		print_line_rich(vformat("[color=green][ DONE ][/color] [b]%s[/b]\n", p_task));
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
@@ -5616,14 +5622,6 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 void EditorNode::_begin_first_scan() {
-	// In headless mode, scan right away.
-	// This allows users to continue using `godot --headless --editor --quit` to prepare a project.
-	if (!DisplayServer::get_singleton()->window_can_draw()) {
-		OS::get_singleton()->benchmark_begin_measure("Editor", "First Scan");
-		EditorFileSystem::get_singleton()->scan();
-		return;
-	}
-
 	if (!waiting_for_first_scan) {
 		return;
 	}

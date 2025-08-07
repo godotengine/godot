@@ -40,7 +40,37 @@
 #include <linux/hidraw.h>
 #include <linux/version.h>
 #include <linux/input.h>
-#include <libudev.h>
+//#include <libudev.h>
+#include "SDL_udev.h"
+extern SDL_UDEV_PrivateData *SDL_UDEV_PrivateData_this;
+#define udev_device_get_action (SDL_UDEV_PrivateData_this->syms.udev_device_get_action)
+#define udev_device_get_devnode (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnode)
+#define udev_device_get_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_get_syspath)
+#define udev_device_get_subsystem (SDL_UDEV_PrivateData_this->syms.udev_device_get_subsystem)
+#define udev_device_get_parent_with_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_device_get_parent_with_subsystem_devtype)
+#define udev_device_get_property_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_property_value)
+#define udev_device_get_sysattr_value (SDL_UDEV_PrivateData_this->syms.udev_device_get_sysattr_value)
+#define udev_device_new_from_syspath (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_syspath)
+#define udev_device_unref (SDL_UDEV_PrivateData_this->syms.udev_device_unref)
+#define udev_enumerate_add_match_property (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_property)
+#define udev_enumerate_add_match_subsystem (SDL_UDEV_PrivateData_this->syms.udev_enumerate_add_match_subsystem)
+#define udev_enumerate_get_list_entry (SDL_UDEV_PrivateData_this->syms.udev_enumerate_get_list_entry)
+#define udev_enumerate_new (SDL_UDEV_PrivateData_this->syms.udev_enumerate_new)
+#define udev_enumerate_scan_devices (SDL_UDEV_PrivateData_this->syms.udev_enumerate_scan_devices)
+#define udev_enumerate_unref (SDL_UDEV_PrivateData_this->syms.udev_enumerate_unref)
+#define udev_list_entry_get_name (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_name)
+#define udev_list_entry_get_next (SDL_UDEV_PrivateData_this->syms.udev_list_entry_get_next)
+#define udev_monitor_enable_receiving (SDL_UDEV_PrivateData_this->syms.udev_monitor_enable_receiving)
+#define udev_monitor_filter_add_match_subsystem_devtype (SDL_UDEV_PrivateData_this->syms.udev_monitor_filter_add_match_subsystem_devtype)
+#define udev_monitor_get_fd (SDL_UDEV_PrivateData_this->syms.udev_monitor_get_fd)
+#define udev_monitor_new_from_netlink (SDL_UDEV_PrivateData_this->syms.udev_monitor_new_from_netlink)
+#define udev_monitor_receive_device (SDL_UDEV_PrivateData_this->syms.udev_monitor_receive_device)
+#define udev_monitor_unref (SDL_UDEV_PrivateData_this->syms.udev_monitor_unref)
+#define udev_new (SDL_UDEV_PrivateData_this->syms.udev_new)
+#define udev_unref (SDL_UDEV_PrivateData_this->syms.udev_unref)
+#define udev_device_new_from_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_new_from_devnum)
+#define udev_device_get_devnum (SDL_UDEV_PrivateData_this->syms.udev_device_get_devnum)
+#undef SDL_UDEV_SYM
 
 #include "../hidapi/hidapi.h"
 

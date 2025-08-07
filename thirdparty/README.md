@@ -8,7 +8,7 @@ readability.
 ## accesskit
 
 - Upstream: https://github.com/AccessKit/accesskit-c
-- Version: 0.16.0 (06c1779473ff4304f42ea254f77fef2e33f982b0, 2025)
+- Version: 0.17.0 (f69571eca23151be07a41bf493ca48a2b44b6a8b, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -971,6 +971,7 @@ Patches:
 - `0002-msvc-constants-fpstrict.patch` (GH-106218)
 - `0003-std-include.patch` (GH-108144)
 - `0004-errno-include.patch` (GH-108354)
+- `0005-fix-libudev-dbus.patch` (GH-108373)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.

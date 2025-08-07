@@ -56,11 +56,12 @@ public class GodotApp extends GodotActivity {
 		}
 	}
 
-	private final Runnable updateImmersiveAndEdgeToEdgeModes = () -> {
+	private final Runnable updateWindowAppearance = () -> {
 		Godot godot = getGodot();
 		if (godot != null) {
 			godot.enableImmersiveMode(godot.isInImmersiveMode(), true);
 			godot.enableEdgeToEdge(godot.isInEdgeToEdgeMode(), true);
+			godot.setSystemBarsAppearance();
 		}
 	};
 
@@ -74,12 +75,12 @@ public class GodotApp extends GodotActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
-		updateImmersiveAndEdgeToEdgeModes.run();
+		updateWindowAppearance.run();
 	}
 
 	@Override
 	public void onGodotMainLoopStarted() {
 		super.onGodotMainLoopStarted();
-		runOnUiThread(updateImmersiveAndEdgeToEdgeModes);
+		runOnUiThread(updateWindowAppearance);
 	}
 }

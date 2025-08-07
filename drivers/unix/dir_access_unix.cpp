@@ -437,7 +437,7 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	struct stat flags = {};
-	if ((lstat(p_path.utf8().get_data(), &flags) != 0)) {
+	if (lstat(p_path.utf8().get_data(), &flags) != 0) {
 		return FAILED;
 	}
 
@@ -467,7 +467,7 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	struct stat flags = {};
-	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
+	if (lstat(p_file.utf8().get_data(), &flags) != 0) {
 		return false;
 	}
 
@@ -484,8 +484,8 @@ String DirAccessUnix::read_link(String p_file) {
 		p_file = p_file.left(-1);
 	}
 
-	char buf[256];
-	memset(buf, 0, 256);
+	char buf[PATH_MAX];
+	memset(buf, 0, PATH_MAX);
 	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
 	String link;
 	if (len > 0) {

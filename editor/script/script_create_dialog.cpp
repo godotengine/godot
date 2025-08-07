@@ -994,6 +994,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	select_class = memnew(CreateDialog);
 	select_class->connect("create", callable_mp(this, &ScriptCreateDialog::_create));
+	select_class->for_inherit();
 	add_child(select_class);
 
 	file_browse = memnew(EditorFileDialog);
