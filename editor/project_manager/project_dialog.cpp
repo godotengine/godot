@@ -46,6 +46,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/gui/link_button.h"
 
 void ProjectDialog::_set_message(const String &p_msg, MessageType p_type, InputType p_input_type) {
 	msg->set_text(p_msg);
@@ -1049,6 +1050,7 @@ ProjectDialog::ProjectDialog() {
 	}
 
 	Button *rs_button = memnew(CheckBox);
+	LinkButton *renderer_doc_link = memnew(LinkButton);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Forward+"));
 #ifndef RD_ENABLED
@@ -1075,12 +1077,15 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTRC("Compatibility"));
+	renderer_doc_link->set_text(TTRC("More Information"));
+	renderer_doc_link->set_url("https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html");
 #if !defined(GLES3_ENABLED)
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
+	rvb->add_child(renderer_doc_link);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {
 		rs_button->set_pressed(true);
