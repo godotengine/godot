@@ -37,11 +37,6 @@
 
 void GraphPort::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_THEME_CHANGED: {
-			if (theme_cache.icon.is_valid()) {
-				set_custom_minimum_size(theme_cache.icon->get_size());
-			}
-		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			Node *parent = get_parent();
 			graph_edit = nullptr;
@@ -422,6 +417,10 @@ Vector2 GraphPort::get_connection_point() const {
 	return theme_cache.icon.is_valid() ? theme_cache.icon->get_size() / 2 : Vector2(0, 0);
 }
 
+Size2 GraphPort::get_minimum_size() const {
+	return theme_cache.icon.is_valid() ? theme_cache.icon->get_size() : Size2(0, 0);
+}
+
 void GraphPort::_draw() {
 	if (!enabled) {
 		return;
@@ -565,10 +564,6 @@ void GraphPort::_bind_methods() {
 GraphPort::GraphPort() {
 	set_focus_mode(FOCUS_NONE);
 	set_mouse_filter(MOUSE_FILTER_IGNORE);
-
-	if (theme_cache.icon.is_valid()) {
-		set_custom_minimum_size(theme_cache.icon->get_size());
-	}
 }
 
 GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
@@ -579,8 +574,4 @@ GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection
 
 	set_focus_mode(p_enabled ? FOCUS_ALL : FOCUS_NONE);
 	set_mouse_filter(p_enabled ? MOUSE_FILTER_STOP : MOUSE_FILTER_IGNORE);
-
-	if (theme_cache.icon.is_valid()) {
-		set_custom_minimum_size(theme_cache.icon->get_size());
-	}
 }

@@ -168,6 +168,8 @@ public:
 
 	Vector2 get_connection_point() const;
 
+	virtual Size2 get_minimum_size() const override;
+
 	GraphPort();
 	GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);
 };
