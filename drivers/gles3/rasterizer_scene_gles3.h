@@ -272,6 +272,22 @@ private:
 			};
 		} sort;
 
+		union {
+			struct {
+				uint64_t sort_key;
+			};
+			struct {
+				//Ids dont need to be accurate just used to prevent inconsistency between frames
+				uint64_t shader_id : 10;
+				uint64_t material_id : 11;
+				uint64_t geometry_id : 11;
+
+				uint64_t material_depth : 8;
+				uint64_t surface_index : 8;
+				uint64_t EXTRA_SPACE : 16;
+			};
+		} transparent_sort;
+
 		RS::PrimitiveType primitive = RS::PRIMITIVE_MAX;
 		uint32_t flags = 0;
 		uint32_t surface_index = 0;
@@ -375,7 +391,7 @@ private:
 	PagedAllocator<GeometryInstanceGLES3> geometry_instance_alloc;
 	PagedAllocator<GeometryInstanceSurface> geometry_instance_surface_alloc;
 
-	void _geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh);
+	void _geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint8_t p_material_depth, uint32_t p_shader_id, RID p_mesh);
 	void _geometry_instance_add_surface_with_material_chain(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, RID p_mat_src, RID p_mesh);
 	void _geometry_instance_add_surface(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, RID p_material, RID p_mesh);
 	void _geometry_instance_update(RenderGeometryInstance *p_geometry_instance);
@@ -688,15 +704,29 @@ private:
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
-		struct SortByReverseDepthAndPriority {
+		struct StandardSceneSort {
 			_FORCE_INLINE_ bool operator()(const GeometryInstanceSurface *A, const GeometryInstanceSurface *B) const {
-				return (A->sort.priority == B->sort.priority) ? (A->owner->depth > B->owner->depth) : (A->sort.priority < B->sort.priority);
+				if (A->sort.priority == B->sort.priority) {
+					if (Math::is_equal_approx(A->owner->depth, B->owner->depth)) { //could maybe just be strict equality
+						return A->transparent_sort.sort_key < B->transparent_sort.sort_key;
+					}
+					return (A->owner->depth > B->owner->depth);
+				}
+				return A->sort.priority < B->sort.priority;
 			}
 		};
 
-		void sort_by_reverse_depth_and_priority() { //used for alpha
-
-			SortArray<GeometryInstanceSurface *, SortByReverseDepthAndPriority> sorter;
+		void sort_by_standard_scene_sort() {
+			// used for standard scene sorting also known as the alpha sort
+			// this is used for sorting transparent objects
+			//
+			// sorts in the order of:
+			// 1. material priority
+			// 2. object depth
+			// 3. surface index
+			// 4. material depth used for next-pass sorting
+			// 5. object ids used for constant buffer sorting
+			SortArray<GeometryInstanceSurface *, StandardSceneSort> sorter;
 			sorter.sort(elements.ptr(), elements.size());
 		}
 
