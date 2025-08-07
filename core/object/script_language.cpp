@@ -821,7 +821,6 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 				}
 			}
 		}
-
 #endif
 	}
 
