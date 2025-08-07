@@ -694,6 +694,9 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	}
 
 	String hvigor_cmd = get_hvigor_path();
+	bool is_windows = OS::get_singleton()->get_name() == "Windows";
+	String node_bin_path = "";
+	String java_home = get_java_sdk_path();
 	if (!FileAccess::exists(hvigor_cmd)) {
 		String hvigor_cmd_ide = get_hvigor_path_ide();
 		if (!FileAccess::exists(hvigor_cmd_ide)) {
@@ -701,7 +704,18 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 			return ERR_FILE_NOT_FOUND;
 		}
 		hvigor_cmd = hvigor_cmd_ide;
+		node_bin_path = tool_path.path_join(is_windows ? "/tools/node" : "/tools/node/bin");
+		if (java_home.is_empty()) {
+			java_home = tool_path.path_join(OS::get_singleton()->get_name() == "macOS" ? "/jbr/Contents/Home" : "/jbr");
+		}
+	} else {
+		node_bin_path = tool_path.path_join(is_windows ? "/tool/node" : "/tool/node/bin");
+		if (java_home.is_empty()) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Java SDK path is required when using command line tools. Please set it in the Editor Settings (Export > OpenHarmony > Java SDK Path).")));
+			return ERR_FILE_NOT_FOUND;
+		}
 	}
+	String java_bin_path = java_home.path_join("/bin");
 
 	bool is_hap = file_ext == "hap";
 
@@ -728,6 +742,10 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Could not change to project directory: \"%s\"."), project_dir));
 		return err;
 	}
+	String system_path = OS::get_singleton()->get_environment("PATH");
+	String system_path_sep = is_windows ? ";" : ":";
+	system_path = node_bin_path + system_path_sep + java_bin_path + system_path_sep + system_path;
+	OS::get_singleton()->set_environment("PATH", system_path);
 	OS::get_singleton()->set_environment("DEVECO_SDK_HOME", get_sdk_path());
 	String output;
 	int exit_code;
@@ -1123,6 +1141,10 @@ bool EditorExportPlatformOpenHarmony::has_valid_project_configuration(const Ref<
 
 String EditorExportPlatformOpenHarmony::get_tool_path() const {
 	return EDITOR_GET("export/openharmony/openharmony_tool_path");
+}
+
+String EditorExportPlatformOpenHarmony::get_java_sdk_path() const {
+	return EDITOR_GET("export/openharmony/java_sdk_path");
 }
 
 String EditorExportPlatformOpenHarmony::get_sdk_path() const {

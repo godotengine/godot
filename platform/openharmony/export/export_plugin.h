@@ -54,6 +54,7 @@ private:
 	Ref<ImageTexture> run_icon;
 
 	String get_tool_path() const;
+	String get_java_sdk_path() const;
 	String get_sdk_path() const;
 	String get_hvigor_path() const;
 	String get_hvigor_path_ide() const;
