@@ -702,48 +702,50 @@ void CPUParticles2D::_update_internal() {
 	} else {
 		frame_time = 1.0 / 30.0;
 	}
-	float todo = time == 0 ? pre_process_time : 0;
-	todo = todo > _request_process_time ? todo : _request_process_time;
-	todo = todo > _request_process_time_residual ? todo : _request_process_time_residual;
+	{
+		float todo = time == 0 ? pre_process_time : 0;
+		todo = todo > _request_process_time ? todo : _request_process_time;
+		todo = todo > _request_process_time_residual ? todo : _request_process_time_residual;
 
-	if (todo > 0.0001) {
-		real_t frame_time;
-		if (fixed_fps > 0) {
-			frame_time = 1.0 / fixed_fps;
-		} else {
-			frame_time = 1.0 / 30.0;
-		}
+		if (todo > 0.0001) {
+			real_t frame_time;
+			if (fixed_fps > 0) {
+				frame_time = 1.0 / fixed_fps;
+			} else {
+				frame_time = 1.0 / 30.0;
+			}
 
-		float tmp_scale = speed_scale;
-		// We need this otherwise the speed scale of the particle system influences the TODO.
-		speed_scale = 1.0;
-		if (time == 0) {
-			todo = pre_process_time;
-			while (todo > 0.00001) {
-				_particles_process(frame_time > todo ? todo : frame_time);
-				todo -= frame_time;
+			float tmp_scale = speed_scale;
+			// We need this otherwise the speed scale of the particle system influences the TODO.
+			speed_scale = 1.0;
+			if (time == 0) {
+				todo = pre_process_time;
+				while (todo > 0.00001) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
 			}
-		}
-		if (_request_process_time > 0.00001) {
-			todo = _request_process_time;
-			emitting = true;
-			while (todo > 0.00001) {
-				_particles_process(frame_time > todo ? todo : frame_time);
-				todo -= frame_time;
+			if (_request_process_time > 0.00001) {
+				todo = _request_process_time;
+				emitting = true;
+				while (todo > 0.00001) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
 			}
-		}
-		if (_request_process_time_residual > 0.00001) {
-			emitting = false;
-			todo = _request_process_time_residual;
-			while (todo > 0.00001) {
-				_particles_process(frame_time > todo ? todo : frame_time);
-				todo -= frame_time;
+			if (_request_process_time_residual > 0.00001) {
+				emitting = false;
+				todo = _request_process_time_residual;
+				while (todo > 0.00001) {
+					_particles_process(frame_time > todo ? todo : frame_time);
+					todo -= frame_time;
+				}
 			}
+			speed_scale = tmp_scale;
 		}
-		speed_scale = tmp_scale;
+		_request_process_time = 0;
+		_request_process_time_residual = 0;
 	}
-	_request_process_time = 0;
-	_request_process_time_residual = 0;
 
 	if (fixed_fps > 0) {
 		double decr = frame_time;
@@ -754,7 +756,7 @@ void CPUParticles2D::_update_internal() {
 		} else if (ldelta <= 0.0) { //unlikely but..
 			ldelta = 0.001;
 		}
-		todo = frame_remainder + ldelta;
+		double todo = frame_remainder + ldelta;
 
 		while (todo >= frame_time) {
 			_particles_process(frame_time);
@@ -1455,7 +1457,7 @@ void CPUParticles2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_fixed_fps", "fps"), &CPUParticles2D::set_fixed_fps);
 	ClassDB::bind_method(D_METHOD("set_fractional_delta", "enable"), &CPUParticles2D::set_fractional_delta);
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "scale"), &CPUParticles2D::set_speed_scale);
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &CPUParticles2D::request_particles_process);
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &CPUParticles2D::request_particles_process);
 
 	ClassDB::bind_method(D_METHOD("is_emitting"), &CPUParticles2D::is_emitting);
 	ClassDB::bind_method(D_METHOD("get_amount"), &CPUParticles2D::get_amount);

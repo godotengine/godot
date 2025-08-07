@@ -1098,49 +1098,51 @@ void ParticlesStorage::update_particles() {
 			fixed_fps = particles->fixed_fps;
 		}
 
-		float todo = particles->clear ? particles->pre_process_time : 0;
-		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
-		todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
-		bool artificial_process = particles->request_process_time > 0 || particles->request_process_time_residual > 0;
+		// Request process and pre-process block
+		{
+			float todo = particles->clear ? particles->pre_process_time : 0;
+			todo = todo > particles->request_process_time ? todo : particles->request_process_time;
+			todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
 
-		if (todo > 0.0001) {
-			real_t frame_time;
-			if (fixed_fps > 0) {
-				frame_time = 1.0 / fixed_fps;
-			} else {
-				frame_time = 1.0 / 30.0;
+			if (todo > 0.0001) {
+				real_t frame_time;
+				if (fixed_fps > 0) {
+					frame_time = 1.0 / fixed_fps;
+				} else {
+					frame_time = 1.0 / 30.0;
+				}
+
+				float tmp_scale = particles->speed_scale;
+				// We need this otherwise the speed scale of the particle system influences the TODO.
+				particles->speed_scale = 1.0;
+				if (particles->clear) {
+					todo = particles->pre_process_time;
+					while (todo > 0.00001) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				if (particles->request_process_time > 0.00001) {
+					todo = particles->request_process_time;
+					while (todo > 0.00001) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				if (particles->request_process_time_residual > 0.00001) {
+					particles->emitting = false;
+					todo = particles->request_process_time_residual;
+					while (todo > 0.00001) {
+						_particles_process(particles, frame_time > todo ? todo : frame_time);
+						todo -= frame_time;
+					}
+				}
+				particles->speed_scale = tmp_scale;
 			}
 
-			float tmp_scale = particles->speed_scale;
-			// We need this otherwise the speed scale of the particle system influences the TODO.
-			particles->speed_scale = 1.0;
-			if (particles->clear) {
-				todo = particles->pre_process_time;
-				while (todo > 0.00001) {
-					_particles_process(particles, frame_time > todo ? todo : frame_time);
-					todo -= frame_time;
-				}
-			}
-			if (particles->request_process_time > 0.00001) {
-				todo = particles->request_process_time;
-				while (todo > 0.00001) {
-					_particles_process(particles, frame_time > todo ? todo : frame_time);
-					todo -= frame_time;
-				}
-			}
-			if (particles->request_process_time_residual > 0.00001) {
-				particles->emitting = false;
-				todo = particles->request_process_time_residual;
-				while (todo > 0.00001) {
-					_particles_process(particles, frame_time > todo ? todo : frame_time);
-					todo -= frame_time;
-				}
-			}
-			particles->speed_scale = tmp_scale;
+			particles->request_process_time = 0.0;
+			particles->request_process_time_residual = 0.0;
 		}
-
-		particles->request_process_time = 0.0;
-		particles->request_process_time_residual = 0.0;
 
 		double time_scale = MAX(particles->speed_scale, 0.0);
 

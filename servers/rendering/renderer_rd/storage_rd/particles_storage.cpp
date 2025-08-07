@@ -1538,7 +1538,6 @@ void ParticlesStorage::update_particles() {
 		float todo = particles->clear ? particles->pre_process_time : 0;
 		todo = todo > particles->request_process_time ? todo : particles->request_process_time;
 		todo = todo > particles->request_process_time_residual ? todo : particles->request_process_time_residual;
-		bool artificial_process = particles->request_process_time > 0 || particles->request_process_time_residual > 0;
 
 		if (todo > 0.0001) {
 			real_t frame_time;
@@ -1580,26 +1579,24 @@ void ParticlesStorage::update_particles() {
 		particles->request_process_time_residual = 0.0;
 
 		float time_scale = MAX(particles->speed_scale, 0.0);
-		if (!artificial_process) {
-			if (fixed_fps > 0) {
-				float frame_time = 1.0 / fixed_fps;
-				float delta = (float)RendererCompositorRD::get_singleton()->get_frame_delta_time();
-				if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
-					delta = 0.1;
-				} else if (delta <= 0.0) { //unlikely but..
-					delta = 0.001;
-				}
-				todo = particles->frame_remainder + delta * time_scale;
-
-				while (todo >= frame_time || particles->clear) {
-					_particles_process(particles, frame_time);
-					todo -= frame_time;
-				}
-
-				particles->frame_remainder = todo;
-			} else {
-				_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time() * time_scale);
+		if (fixed_fps > 0) {
+			float frame_time = 1.0 / fixed_fps;
+			float delta = (float)RendererCompositorRD::get_singleton()->get_frame_delta_time();
+			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
+				delta = 0.1;
+			} else if (delta <= 0.0) { //unlikely but..
+				delta = 0.001;
 			}
+			todo = particles->frame_remainder + delta * time_scale;
+
+			while (todo >= frame_time || particles->clear) {
+				_particles_process(particles, frame_time);
+				todo -= frame_time;
+			}
+
+			particles->frame_remainder = todo;
+		} else {
+			_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time() * time_scale);
 		}
 		// Ensure that memory is initialized (the code above should ensure that _particles_process is always called at least once upon clearing).
 		DEV_ASSERT(!particles->clear);
