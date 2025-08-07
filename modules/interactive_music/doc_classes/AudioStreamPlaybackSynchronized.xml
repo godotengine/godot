@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioStreamPlaybackSynchronized" inherits="AudioStreamPlayback" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Playback component of [AudioStreamSynchronized].
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="get_playback">
+			<return type="AudioStreamPlayback" />
+			<param index="0" name="stream_index" type="int" />
+			<description>
+				Return playback of sub-stream, by index.
+			</description>
+		</method>
+	</methods>
 </class>
