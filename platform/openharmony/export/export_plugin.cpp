@@ -674,7 +674,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	print_line(vformat("Project exported pck successfully. %s", pck_path));
 
 	if (export_project_only) {
-		add_message(EXPORT_MESSAGE_INFO, TTR("Export"), TTR("Project exported successfully. Build skipped as requested."));
+		print_line(vformat("Project exported successfully. Build skipped as requested."));
 		return OK;
 	}
 
@@ -771,7 +771,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Could not copy bundle file from \"%s\" to \"%s\"."), bundle_file, p_path));
 				return err;
 			}
-			add_message(EXPORT_MESSAGE_INFO, TTR("Build"), TTR("Build completed successfully."));
+			print_line(vformat("Build completed successfully."));
 		} else {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("bundle file not found in output directory: \"%s\"."), output_dir));
 			return ERR_FILE_NOT_FOUND;
@@ -1106,7 +1106,7 @@ bool EditorExportPlatformOpenHarmony::has_valid_project_configuration(const Ref<
 
 	// Check if Vulkan renderer is being used (required for OpenHarmony)
 	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
+	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.openharmony");
 
 	bool uses_vulkan = (rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "vulkan";
 	if (!uses_vulkan) {

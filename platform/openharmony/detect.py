@@ -77,7 +77,10 @@ def configure(env: "SConsEnvironment"):
     ## Compiler configuration
 
     # Save this in environment for use by other modules
-    env["ENV"]["PATH"] = f"{sdk_root}/native/llvm/bin;" + env["ENV"]["PATH"]
+    if sys.platform.startswith("win"):
+        env["ENV"]["PATH"] = f"{sdk_root}/native/llvm/bin;" + env["ENV"]["PATH"]
+    else:
+        env["ENV"]["PATH"] = f"{sdk_root}/native/llvm/bin:" + env["ENV"]["PATH"]
 
     env["CC"] = "clang"
     env["CXX"] = "clang++"
