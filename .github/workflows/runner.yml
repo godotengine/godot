@@ -1,5 +1,9 @@
 name: 🔗 GHA
-on: [push, pull_request, merge_group]
+on:
+  push:
+  pull_request:
+    types: [opened, reopened, synchronize, converted_to_draft, ready_for_review]
+  merge_group: # Unused.
 
 concurrency:
   group: ${{ github.workflow }}|${{ github.ref_name }}
@@ -9,7 +13,7 @@ jobs:
   # First stage: Only static checks, fast and prevent expensive builds from running.
 
   static-checks:
-    if: ${{ !vars.DISABLE_GODOT_CI || github.run_attempt > 1 }}
+    if: ${{ (!vars.DISABLE_GODOT_CI || github.run_attempt > 1) && !(github.event_name == 'pull_request' && github.event.pull_request.draft) }}
     name: 📊 Static checks
     uses: ./.github/workflows/static_checks.yml
 
