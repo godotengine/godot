@@ -37,6 +37,11 @@
 
 void GraphPort::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			if (theme_cache.icon.is_valid()) {
+				set_custom_minimum_size(theme_cache.icon->get_size());
+			}
+		} break;
 		case NOTIFICATION_ENTER_TREE: {
 			Node *parent = get_parent();
 			graph_edit = nullptr;
@@ -63,9 +68,103 @@ void GraphPort::_notification(int p_what) {
 			graph_edit = nullptr;
 			graph_node = nullptr;
 		} break;
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			String name = get_accessibility_name();
+			if (name.is_empty()) {
+				name = get_name();
+			}
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_UNKNOWN);
+			DisplayServer::get_singleton()->accessibility_update_set_name(ae, name);
+			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_CONNECT, ETR("Edit Port Connection"));
+			DisplayServer::get_singleton()->accessibility_update_add_custom_action(ae, CustomAccessibilityAction::ACTION_FOLLOW, ETR("Follow Port Connection"));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_CUSTOM, callable_mp(this, &GraphPort::_accessibility_action));
+		} break;
 		case NOTIFICATION_DRAW: {
 			_draw();
 		} break;
+	}
+}
+
+void GraphPort::_accessibility_action(const Variant &p_data) {
+	CustomAccessibilityAction action = (CustomAccessibilityAction)p_data.operator int();
+	ERR_FAIL_COND(!enabled);
+	ERR_FAIL_NULL(graph_edit);
+	switch (action) {
+		case ACTION_CONNECT:
+			if (graph_edit->is_keyboard_connecting()) {
+				graph_edit->end_connecting(this, true);
+			} else {
+				graph_edit->start_connecting(this, true);
+			}
+			queue_accessibility_update();
+			queue_redraw();
+			break;
+		case ACTION_FOLLOW:
+			GraphNode *target = graph_edit->get_connection_target(this);
+			if (target) {
+				target->grab_focus();
+			}
+			break;
+	}
+}
+
+void GraphPort::gui_input(const Ref<InputEvent> &p_event) {
+	ERR_FAIL_COND(p_event.is_null());
+
+	if (p_event->is_pressed() && selected && is_enabled()) {
+		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
+		if (graph_node && ((ac_enabled && get_focus_mode() == Control::FOCUS_ACCESSIBILITY) || get_focus_mode() == Control::FOCUS_ALL)) {
+			GraphPort *nav_port;
+			bool do_navigation = false;
+			if (p_event->is_action("ui_up", true)) {
+				nav_port = graph_node->get_port_navigation(SIDE_TOP, this);
+				do_navigation = true;
+			} else if (p_event->is_action("ui_down", true)) {
+				nav_port = graph_node->get_port_navigation(SIDE_BOTTOM, this);
+				do_navigation = true;
+			} else if (p_event->is_action("ui_left", true)) {
+				nav_port = graph_node->get_port_navigation(SIDE_LEFT, this);
+				do_navigation = true;
+			} else if (p_event->is_action("ui_right", true)) {
+				nav_port = graph_node->get_port_navigation(SIDE_RIGHT, this);
+				do_navigation = true;
+			}
+			if (do_navigation) {
+				if (nav_port) {
+					nav_port->grab_focus();
+				} else {
+					graph_node->grab_focus();
+				}
+				accept_event();
+			}
+		}
+		if (p_event->is_action("ui_graph_follow_left", true) || p_event->is_action("ui_graph_follow_right", true)) {
+			if (graph_edit) {
+				GraphNode *target = graph_edit->get_connection_target(this);
+				if (target) {
+					target->grab_focus();
+					accept_event();
+				}
+			}
+		} else if (p_event->is_action("ui_accept", true)) {
+			if (graph_edit) {
+				if (graph_edit->is_keyboard_connecting()) {
+					graph_edit->end_connecting(this, true);
+				} else {
+					graph_edit->start_connecting(this, true);
+				}
+				accept_event();
+			}
+		} else if (p_event->is_action("ui_focus_prev", true)) {
+			if (graph_node) {
+				graph_node->grab_focus();
+				accept_event();
+			}
+		}
 	}
 }
 
@@ -78,6 +177,8 @@ void GraphPort::set_properties(bool p_enabled, bool p_exclusive, int p_type, Por
 
 void GraphPort::enable() {
 	enabled = true;
+	set_focus_mode(FOCUS_ALL);
+	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	queue_redraw();
 	notify_property_list_changed();
@@ -88,6 +189,8 @@ void GraphPort::enable() {
 
 void GraphPort::disable() {
 	enabled = false;
+	set_focus_mode(FOCUS_NONE);
+	set_mouse_filter(MOUSE_FILTER_IGNORE);
 
 	if (graph_edit) {
 		switch (on_disabled_behaviour) {
@@ -299,19 +402,13 @@ TypedArray<GraphPort> GraphPort::get_connected_ports() const {
 }
 
 GraphPort *GraphPort::get_first_connected_port() const {
-	const Ref<GraphConnection> first_conn = get_first_connection();
-	if (first_conn.is_null()) {
-		return nullptr;
-	}
-	return first_conn->get_other_port(this);
+	ERR_FAIL_NULL_V(graph_edit, nullptr);
+	return graph_edit->get_first_connected_port(this);
 }
 
 GraphNode *GraphPort::get_first_connected_node() const {
-	GraphPort *other_port = get_first_connected_port();
-	if (!other_port) {
-		return nullptr;
-	}
-	return other_port->graph_node;
+	ERR_FAIL_NULL_V(graph_edit, nullptr);
+	return graph_edit->get_first_connected_node(this);
 }
 
 void GraphPort::_draw() {
@@ -333,6 +430,18 @@ void GraphPort::_draw() {
 	if (rim_color.a > 0 && s > 0) {
 		draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
 	}
+
+	// Focus box
+	if (has_focus()) {
+		const RID ci = get_canvas_item();
+		const Size2 size = get_size();
+
+		Ref<StyleBox> panel_focus = theme_cache.panel_focus;
+		if (panel_focus.is_valid()) {
+			panel_focus->draw(ci, Rect2i(get_position_offset() + icon_offset, size));
+		}
+	}
+
 	port_icon->draw(get_canvas_item(), get_position_offset() + icon_offset, get_color());
 }
 
@@ -411,16 +520,14 @@ void GraphPort::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
 	ADD_SIGNAL(MethodInfo("disconnected", PropertyInfo(Variant::OBJECT, "connection", PROPERTY_HINT_RESOURCE_TYPE, "GraphConnection")));
 
-	BIND_ENUM_CONSTANT(INPUT)
-	BIND_ENUM_CONSTANT(OUTPUT)
-	BIND_ENUM_CONSTANT(UNDIRECTED)
+	BIND_ENUM_CONSTANT(INPUT);
+	BIND_ENUM_CONSTANT(OUTPUT);
+	BIND_ENUM_CONSTANT(UNDIRECTED);
 
-	BIND_ENUM_CONSTANT(DISCONNECT_ALL)
-	BIND_ENUM_CONSTANT(MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT)
-	BIND_ENUM_CONSTANT(MOVE_TO_NEXT_PORT_OR_DISCONNECT)
+	BIND_ENUM_CONSTANT(DISCONNECT_ALL);
+	BIND_ENUM_CONSTANT(MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT);
+	BIND_ENUM_CONSTANT(MOVE_TO_NEXT_PORT_OR_DISCONNECT);
 
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel);
-	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_selected);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, GraphPort, panel_focus);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, GraphPort, icon);
@@ -443,13 +550,24 @@ void GraphPort::_bind_methods() {
 }
 
 GraphPort::GraphPort() {
-	set_focus_mode(FOCUS_ACCESSIBILITY);
+	set_focus_mode(FOCUS_NONE);
+	set_mouse_filter(MOUSE_FILTER_IGNORE);
+
+	if (theme_cache.icon.is_valid()) {
+		set_custom_minimum_size(theme_cache.icon->get_size());
+	}
 }
 
 GraphPort::GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction) {
-	set_focus_mode(FOCUS_ACCESSIBILITY);
 	enabled = p_enabled;
 	exclusive = p_exclusive;
 	port_type = p_type;
 	direction = p_direction;
+
+	set_focus_mode(p_enabled ? FOCUS_ALL : FOCUS_NONE);
+	set_mouse_filter(p_enabled ? MOUSE_FILTER_STOP : MOUSE_FILTER_IGNORE);
+
+	if (theme_cache.icon.is_valid()) {
+		set_custom_minimum_size(theme_cache.icon->get_size());
+	}
 }

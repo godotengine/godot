@@ -373,6 +373,37 @@ const Vector<GraphNodeIndexed::Slot> &GraphNodeIndexed::_get_slots() {
 	return slots;
 }
 
+GraphPort *GraphNodeIndexed::get_port_navigation(Side side, const GraphPort *p_port) const {
+	switch (side) {
+		case SIDE_LEFT:
+			if (p_port->get_direction() == GraphPort::PortDirection::OUTPUT) {
+				int slot = slot_index_of_port(p_port);
+				if (slot < 0) {
+					return nullptr;
+				}
+				return get_input_port_by_slot(slot);
+			} else {
+				return nullptr;
+			}
+		case SIDE_TOP:
+			return get_previous_matching_port(p_port);
+		case SIDE_RIGHT:
+			if (p_port->get_direction() == GraphPort::PortDirection::INPUT) {
+				int slot = slot_index_of_port(p_port);
+				if (slot < 0) {
+					return nullptr;
+				}
+				return get_output_port_by_slot(slot);
+			} else {
+				return nullptr;
+			}
+		case SIDE_BOTTOM:
+			return get_next_matching_port(p_port);
+		default:
+			return nullptr;
+	}
+}
+
 TypedArray<Array> GraphNodeIndexed::get_slots() const {
 	TypedArray<Array> ret;
 	for (GraphNodeIndexed::Slot slot : slots) {

@@ -58,10 +58,13 @@ public:
 		MOVE_TO_NEXT_PORT_OR_DISCONNECT
 	};
 
+	enum CustomAccessibilityAction {
+		ACTION_CONNECT,
+		ACTION_FOLLOW,
+	};
+
 protected:
 	struct ThemeCache {
-		Ref<StyleBox> panel;
-		Ref<StyleBox> panel_selected;
 		Ref<StyleBox> panel_focus;
 
 		Ref<Texture2D> icon;
@@ -109,6 +112,10 @@ protected:
 
 	void _notification(int p_what);
 	virtual void _draw();
+
+	void _accessibility_action(const Variant &p_data);
+
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
 	void set_properties(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);

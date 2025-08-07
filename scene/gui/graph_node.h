@@ -51,11 +51,6 @@ protected:
 		int final_size = 0;
 	};
 
-	enum CustomAccessibilityAction {
-		ACTION_CONNECT,
-		ACTION_FOLLOW,
-	};
-
 	GraphEdit *graph_edit = nullptr;
 
 	HBoxContainer *titlebar_hbox = nullptr;
@@ -64,7 +59,6 @@ protected:
 	bool title_hidden = false;
 
 	Vector<GraphPort *> ports;
-	GraphPort *selected_port = nullptr;
 	int port_count = 0;
 	int enabled_port_count = 0;
 	PackedByteArray directed_port_count = { 0, 0, 0 };
@@ -95,7 +89,6 @@ protected:
 	static void _bind_methods();
 	virtual void _resort() override;
 	void _deferred_resort();
-	void _accessibility_action_port(const Variant &p_data);
 
 	void _set_ports(const Vector<GraphPort *> &p_ports);
 	const Vector<GraphPort *> &_get_ports();
@@ -120,7 +113,6 @@ protected:
 public:
 	virtual String get_accessibility_container_name(const Node *p_node) const override;
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
-	const Control *get_accessibility_node_by_port(int p_port_index) const;
 
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -144,7 +136,9 @@ public:
 	GraphPort *get_filtered_port(int p_port_index, GraphPort::PortDirection p_direction, bool p_include_disabled = true) const;
 	GraphPort *get_input_port(int p_port_index, bool p_include_disabled = true) const;
 	GraphPort *get_output_port(int p_port_index, bool p_include_disabled = true) const;
+	GraphPort *get_next_port(const GraphPort *p_port, bool p_include_disabled = true) const;
 	GraphPort *get_next_matching_port(const GraphPort *p_port, bool p_include_disabled = true) const;
+	GraphPort *get_previous_port(const GraphPort *p_port, bool p_include_disabled = true) const;
 	GraphPort *get_previous_matching_port(const GraphPort *p_port, bool p_include_disabled = true) const;
 	virtual void add_port(GraphPort *port);
 	virtual void insert_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true);
@@ -160,6 +154,8 @@ public:
 
 	int enabled_index_to_port_index(int p_port_index) const;
 	int port_index_to_enabled_index(int p_port_index) const;
+
+	virtual GraphPort *get_port_navigation(Side side, const GraphPort *p_port) const;
 
 	void set_ignore_invalid_connection_type(bool p_ignore);
 	bool is_ignoring_valid_connection_type() const;

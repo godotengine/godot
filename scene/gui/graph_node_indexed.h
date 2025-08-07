@@ -123,8 +123,10 @@ protected:
 
 	virtual GraphPort *set_port(int p_port_index, GraphPort *p_port, bool p_include_disabled = true) override;
 
-public:
 	void _notification(int p_what);
+
+public:
+	virtual GraphPort *get_port_navigation(Side side, const GraphPort *p_port) const override;
 
 	TypedArray<Array> get_slots() const;
 

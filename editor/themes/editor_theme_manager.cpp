@@ -1711,8 +1711,6 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			// GraphPort.
 
-			p_theme->set_stylebox("panel", "GraphPort", make_empty_stylebox());
-			p_theme->set_stylebox("panel_selected", "GraphPort", make_empty_stylebox());
 			p_theme->set_stylebox("panel_focus", "GraphPort", p_config.button_style_focus);
 
 			p_theme->set_color("color", "GraphPort", Color(1, 1, 1, 1));

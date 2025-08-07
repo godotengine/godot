@@ -775,8 +775,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// GraphPort
 
-	theme->set_stylebox("panel", "GraphPort", make_empty_stylebox());
-	theme->set_stylebox("panel_selected", "GraphPort", make_empty_stylebox());
 	theme->set_stylebox("panel_focus", "GraphPort", focus);
 	theme->set_icon("icon", "GraphPort", icons["graph_port"]);
 	theme->set_color("color", "GraphPort", Color(1, 1, 1, 1));

@@ -596,6 +596,24 @@ Ref<GraphConnection> GraphEdit::get_first_connection_by_port(const GraphPort *p_
 	return connection_map[p_port].front();
 }
 
+GraphPort *GraphEdit::get_first_connected_port(const GraphPort *p_port) const {
+	ERR_FAIL_NULL_V(p_port, nullptr);
+	const Ref<GraphConnection> first_conn = get_first_connection_by_port(p_port);
+	if (first_conn.is_null()) {
+		return nullptr;
+	}
+	return first_conn->get_other_port(p_port);
+}
+
+GraphNode *GraphEdit::get_first_connected_node(const GraphPort *p_port) const {
+	ERR_FAIL_NULL_V(p_port, nullptr);
+	GraphPort *other_port = get_first_connected_port(p_port);
+	if (!other_port) {
+		return nullptr;
+	}
+	return other_port->graph_node;
+}
+
 TypedArray<Ref<GraphConnection>> GraphEdit::get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const {
 	TypedArray<Ref<GraphConnection>> ret;
 	if (!p_node || p_node->ports.is_empty()) {
@@ -636,11 +654,7 @@ int GraphEdit::get_connection_count_by_node(const GraphNode *p_node) const {
 
 GraphNode *GraphEdit::get_connection_target(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, nullptr);
-	const Ref<GraphConnection> conn = get_first_connection_by_port(p_port);
-	if (conn.is_null()) {
-		return nullptr;
-	}
-	return conn->get_other_node_by_port(p_port);
+	return get_first_connected_node(p_port);
 }
 
 String GraphEdit::get_connections_description(const GraphPort *p_port) const {
@@ -3033,6 +3047,8 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connections"), &GraphEdit::get_connections);
 	ClassDB::bind_method(D_METHOD("get_connections_by_port", "port"), &GraphEdit::_get_connections_by_port);
 	ClassDB::bind_method(D_METHOD("get_first_connection_by_port", "port"), &GraphEdit::get_first_connection_by_port);
+	ClassDB::bind_method(D_METHOD("get_first_connected_port", "port"), &GraphEdit::get_first_connected_port);
+	ClassDB::bind_method(D_METHOD("get_first_connected_node", "port"), &GraphEdit::get_first_connected_node);
 	ClassDB::bind_method(D_METHOD("get_connections_by_node", "node"), &GraphEdit::_get_connections_by_node);
 	ClassDB::bind_method(D_METHOD("get_filtered_connections_by_node", "node", "filter_direction"), &GraphEdit::get_filtered_connections_by_node);
 	ClassDB::bind_method(D_METHOD("add_connections", "connections"), &GraphEdit::add_connections);

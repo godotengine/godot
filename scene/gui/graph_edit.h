@@ -411,6 +411,8 @@ public:
 	TypedArray<Ref<GraphConnection>> get_connections_by_port(const GraphPort *p_port) const;
 	TypedArray<Ref<GraphConnection>> get_connections_by_node(const GraphNode *p_node) const;
 	Ref<GraphConnection> get_first_connection_by_port(const GraphPort *p_port) const;
+	GraphPort *get_first_connected_port(const GraphPort *p_port) const;
+	GraphNode *get_first_connected_node(const GraphPort *p_port) const;
 	TypedArray<Ref<GraphConnection>> get_filtered_connections_by_node(const GraphNode *p_node, GraphPort::PortDirection p_filter_direction) const;
 	void move_connections(GraphPort *p_from_port, GraphPort *p_to_port);
 	void clear_connections();

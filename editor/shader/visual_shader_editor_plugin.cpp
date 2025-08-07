@@ -131,9 +131,22 @@ void VSGraphPort::_draw() {
 	if (rim_color.a > 0 && s > 0) {
 		draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
 	}
+
+	// Focus box
+	if (has_focus()) {
+		const RID ci = get_canvas_item();
+		const Size2 size = get_size() * EDSCALE;
+
+		Ref<StyleBox> panel_focus = theme_cache.panel_focus;
+		if (panel_focus.is_valid()) {
+			panel_focus->draw(ci, Rect2i(get_position_offset() + icon_offset, size));
+		}
+	}
+
 	// Debug draw port hotzone
 	//Rect2 hotzone = get_hotzone();
 	//draw_style_box(theme_cache.panel_focus, hotzone);
+
 	draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset, port_icon_size), false, get_color());
 }
 
