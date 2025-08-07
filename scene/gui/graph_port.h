@@ -132,6 +132,8 @@ public:
 	Color get_color() const;
 	Color get_rim_color();
 
+	Ref<Texture2D> get_icon() const;
+
 	bool get_exclusive() const;
 	void set_exclusive(bool p_exclusive);
 
@@ -163,6 +165,8 @@ public:
 	TypedArray<GraphPort> get_connected_ports() const;
 	GraphPort *get_first_connected_port() const;
 	GraphNode *get_first_connected_node() const;
+
+	Vector2 get_connection_point() const;
 
 	GraphPort();
 	GraphPort(bool p_enabled, bool p_exclusive, int p_type, PortDirection p_direction);

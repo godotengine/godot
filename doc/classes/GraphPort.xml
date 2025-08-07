@@ -68,6 +68,13 @@
 				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
+		<method name="get_connection_point" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the local position to which a [GraphConnection] line would be drawn.
+				By default, this is half the icon size, or the center of the port.
+			</description>
+		</method>
 		<method name="get_connections" qualifiers="const">
 			<return type="GraphConnection[]" />
 			<description>
@@ -109,6 +116,12 @@
 			<return type="GraphNode" />
 			<description>
 				Returns the [GraphNode] this port is attached to, if one exists.
+			</description>
+		</method>
+		<method name="get_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				Returns the icon this port is drawn with.
 			</description>
 		</method>
 		<method name="get_port_index" qualifiers="const">

@@ -525,10 +525,18 @@ void GraphNodeIndexed::_update_port_positions() {
 			GraphPort *right_port = get_output_port_by_slot(slot_index);
 
 			if (left_port) {
-				left_port->set_position(Point2(-theme_cache.port_h_offset, port_y));
+				Ref<Texture2D> port_icon = left_port->get_icon();
+				Size2 port_icon_size = port_icon.is_valid() ? port_icon->get_size() : Size2(0, 0);
+				Point2 icon_offset = -port_icon_size * 0.5;
+
+				left_port->set_position(Point2(-theme_cache.port_h_offset, port_y) + icon_offset);
 			}
 			if (right_port) {
-				right_port->set_position(Point2(node_width + theme_cache.port_h_offset, port_y));
+				Ref<Texture2D> port_icon = right_port->get_icon();
+				Size2 port_icon_size = port_icon.is_valid() ? port_icon->get_size() : Size2(0, 0);
+				Point2 icon_offset = -port_icon_size * 0.5;
+
+				right_port->set_position(Point2(node_width + theme_cache.port_h_offset, port_y) + icon_offset);
 			}
 		}
 

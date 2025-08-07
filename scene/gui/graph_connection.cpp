@@ -162,11 +162,15 @@ Ref<Gradient> GraphConnection::get_line_gradient() const {
 }
 
 void GraphConnection::update_cache() {
-	Vector2 from_pos = first_port->get_position();
+	if (!first_port || !second_port) {
+		return;
+	}
+
+	Vector2 from_pos = first_port->get_position() + first_port->get_connection_point();
 	if (first_port->graph_node) {
 		from_pos += first_port->graph_node->get_position_offset();
 	}
-	Vector2 to_pos = second_port->get_position();
+	Vector2 to_pos = second_port->get_position() + second_port->get_connection_point();
 	if (second_port->graph_node) {
 		to_pos += second_port->graph_node->get_position_offset();
 	}

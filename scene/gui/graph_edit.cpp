@@ -1364,7 +1364,7 @@ void GraphEdit::end_connecting(const GraphPort *p_port, bool is_keyboard) {
 
 	connecting_target_valid = _is_connection_valid(p_port);
 	if (connecting_target_valid && p_port->graph_node != nullptr) {
-		connecting_to_point = p_port->get_position() * zoom + p_port->graph_node->get_position();
+		connecting_to_point = (p_port->get_position() + p_port->get_connection_point()) * zoom + p_port->graph_node->get_position();
 	}
 
 	if (connecting && connecting_target_valid) {
@@ -1444,7 +1444,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 					if (is_in_port_hotzone(port, mm->get_position() / zoom)) {
 						if (_is_connection_valid(port) && is_node_hover_valid(connecting_from_port, connecting_to_port)) {
 							connecting_target_valid = true;
-							connecting_to_point = port->get_position() * zoom + graph_node->get_position();
+							connecting_to_point = (port->get_position() + port->get_connection_point()) * zoom + graph_node->get_position();
 							connecting_to_port = port;
 							return;
 						}
@@ -1730,7 +1730,7 @@ void GraphEdit::_update_top_connection_layer() {
 
 	ERR_FAIL_NULL(connecting_from_port);
 
-	Vector2 from_pos = connecting_from_port->get_position();
+	Vector2 from_pos = connecting_from_port->get_position() + connecting_from_port->get_connection_point();
 	if (connecting_from_port->graph_node) {
 		from_pos += connecting_from_port->graph_node->get_position() / zoom;
 	}

@@ -268,6 +268,10 @@ Color GraphPort::get_rim_color() {
 	return selected ? theme_cache.selected_rim_color : theme_cache.rim_color;
 }
 
+Ref<Texture2D> GraphPort::get_icon() const {
+	return theme_cache.icon;
+}
+
 bool GraphPort::get_exclusive() const {
 	return exclusive;
 }
@@ -310,7 +314,7 @@ GraphNode *GraphPort::get_graph_node() const {
 }
 
 Rect2 GraphPort::get_hotzone() const {
-	Vector2 pos = get_position();
+	Vector2 pos = get_position() + get_connection_point();
 
 	Ref<Texture2D> icon = theme_cache.icon;
 	Vector2 icon_size = Vector2(0.0, 0.0);
@@ -414,6 +418,10 @@ GraphNode *GraphPort::get_first_connected_node() const {
 	return graph_edit->get_first_connected_node(this);
 }
 
+Vector2 GraphPort::get_connection_point() const {
+	return theme_cache.icon.is_valid() ? theme_cache.icon->get_size() / 2 : Vector2(0, 0);
+}
+
 void GraphPort::_draw() {
 	if (!enabled) {
 		return;
@@ -425,13 +433,12 @@ void GraphPort::_draw() {
 	}
 
 	Size2 port_icon_size = port_icon->get_size();
-	Point2 icon_offset = -port_icon_size * 0.5;
 
 	// Draw "shadow"/outline in the connection rim color.
 	Color rim_color = get_rim_color();
 	int s = theme_cache.rim_size;
 	if (rim_color.a > 0 && s > 0) {
-		draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
+		draw_texture_rect(port_icon, Rect2(get_position_offset() - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
 	}
 
 	// Focus box
@@ -441,11 +448,11 @@ void GraphPort::_draw() {
 
 		Ref<StyleBox> panel_focus = theme_cache.panel_focus;
 		if (panel_focus.is_valid()) {
-			panel_focus->draw(ci, Rect2i(get_position_offset() + icon_offset, size));
+			panel_focus->draw(ci, Rect2i(get_position_offset(), size));
 		}
 	}
 
-	port_icon->draw(get_canvas_item(), get_position_offset() + icon_offset, get_color());
+	port_icon->draw(get_canvas_item(), get_position_offset(), get_color());
 }
 
 void GraphPort::_on_enabled() {
@@ -483,7 +490,9 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_exclusive"), &GraphPort::get_exclusive);
 
 	ClassDB::bind_method(D_METHOD("get_color"), &GraphPort::get_color);
+	ClassDB::bind_method(D_METHOD("get_icon"), &GraphPort::get_icon);
 	ClassDB::bind_method(D_METHOD("get_graph_node"), &GraphPort::get_graph_node);
+	ClassDB::bind_method(D_METHOD("get_connection_point"), &GraphPort::get_connection_point);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);

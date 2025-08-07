@@ -123,13 +123,12 @@ void VSGraphPort::_draw() {
 	}
 
 	Size2 port_icon_size = port_icon->get_size() * EDSCALE;
-	Point2 icon_offset = -port_icon_size * 0.5;
 
 	// Draw "shadow"/outline in the connection rim color.
 	Color rim_color = get_rim_color();
 	int s = theme_cache.rim_size * EDSCALE;
 	if (rim_color.a > 0 && s > 0) {
-		draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
+		draw_texture_rect(port_icon, Rect2(get_position_offset() - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
 	}
 
 	// Focus box
@@ -139,7 +138,7 @@ void VSGraphPort::_draw() {
 
 		Ref<StyleBox> panel_focus = theme_cache.panel_focus;
 		if (panel_focus.is_valid()) {
-			panel_focus->draw(ci, Rect2i(get_position_offset() + icon_offset, size));
+			panel_focus->draw(ci, Rect2i(get_position_offset(), size));
 		}
 	}
 
@@ -147,7 +146,7 @@ void VSGraphPort::_draw() {
 	//Rect2 hotzone = get_hotzone();
 	//draw_style_box(theme_cache.panel_focus, hotzone);
 
-	draw_texture_rect(port_icon, Rect2(get_position_offset() + icon_offset, port_icon_size), false, get_color());
+	draw_texture_rect(port_icon, Rect2(get_position_offset(), port_icon_size), false, get_color());
 }
 
 VSGraphPort::VSGraphPort() {
