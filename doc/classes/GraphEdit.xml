@@ -275,6 +275,20 @@
 				Returns an [Array] of all [GraphConnection]s connected to [GraphPort]s that are both attached to the [param node] and match the filter direction.
 			</description>
 		</method>
+		<method name="get_first_connected_node" qualifiers="const">
+			<return type="GraphNode" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the first [GraphNode] the given [param port] is connected to, if one exists.
+			</description>
+		</method>
+		<method name="get_first_connected_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns the first [GraphPort] the given [param port] is connected to, if one exists.
+			</description>
+		</method>
 		<method name="get_first_connection_by_port" qualifiers="const">
 			<return type="GraphConnection" />
 			<param index="0" name="port" type="GraphPort" />

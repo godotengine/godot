@@ -200,6 +200,16 @@
 				See also [method get_previous_matching_port].
 			</description>
 		</method>
+		<method name="get_next_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Given a [param port] attached to this node, returns the next [GraphPort], if one exists.
+				If [param include_disabled] is [code]false[/code], returns the next enabled [GraphPort].
+				See also [method get_previous_port] and [method get_next_matching_port].
+			</description>
+		</method>
 		<method name="get_output_connected_nodes" qualifiers="const">
 			<return type="GraphNode[]" />
 			<description>
@@ -253,6 +263,15 @@
 				If [param include_disabled] is [code]false[/code], returns the number of enabled [GraphPort]s.
 			</description>
 		</method>
+		<method name="get_port_navigation" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="side" type="int" enum="Side" />
+			<param index="1" name="port" type="GraphPort" />
+			<description>
+				Given a [param port] attached to this node, returns the port a user would navigate to on the given [param side] using keyboard navigation.
+				If no appropriate port exists, returns [code]null[/code]. Returned ports will always be enabled.
+			</description>
+		</method>
 		<method name="get_previous_matching_port" qualifiers="const">
 			<return type="GraphPort" />
 			<param index="0" name="port" type="GraphPort" />
@@ -261,6 +280,16 @@
 				Given a [param port] attached to this node, returns the previous [GraphPort] with the same direction, if one exists.
 				If [param include_disabled] is [code]false[/code], returns the previous enabled [GraphPort] with the same direction.
 				See also [method get_next_matching_port].
+			</description>
+		</method>
+		<method name="get_previous_port" qualifiers="const">
+			<return type="GraphPort" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="include_disabled" type="bool" default="true" />
+			<description>
+				Given a [param port] attached to this node, returns the previous [GraphPort], if one exists.
+				If [param include_disabled] is [code]false[/code], returns the previous enabled [GraphPort].
+				See also [method get_next_port] and [method get_previous_matching_port].
 			</description>
 		</method>
 		<method name="get_titlebar_hbox" qualifiers="const">
