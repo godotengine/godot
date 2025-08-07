@@ -39,7 +39,6 @@
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
-#include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
@@ -80,6 +79,8 @@ typedef struct _xrr_monitor_info {
 } xrr_monitor_info;
 
 #undef CursorShape
+
+class JoypadSDL;
 
 class OS_X11 : public OS_Unix {
 	Atom wm_delete;
@@ -202,8 +203,8 @@ class OS_X11 : public OS_Unix {
 
 	InputDefault *input;
 
-#ifdef JOYDEV_ENABLED
-	JoypadLinux *joypad;
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
 #endif
 
 #ifdef ALSA_ENABLED
