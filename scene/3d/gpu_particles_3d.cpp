@@ -470,18 +470,18 @@ void GPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
-void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_trailing = 0) {
-	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_trailing);
+void GPUParticles3D::request_particles_process(real_t p_requested_process_time, real_t p_request_process_time_residual = 0) {
+	RS::get_singleton()->particles_request_process_time(particles, p_requested_process_time, p_request_process_time_residual);
 	// Setting emitting independently from set_emitting is important here
 	// we assume to be in a controlled process situation.
 	// setting RS emission to true is necessary to ensure particles will emit when
 	// regular process time is > than zero but the particles are already in trailing mode.
 	// this could also be done on the GScript/tool side. TODO: discuss in review
-	if(p_requested_process_time > 0.0){
+	if (p_requested_process_time > 0.0) {
 		emitting = true;
 		RS::get_singleton()->particles_set_emitting(particles, true);
 	}
-	if (p_request_process_time_trailing > 0.0){
+	if (p_request_process_time_residual > 0.0) {
 		emitting = false;
 	}
 }
@@ -823,7 +823,7 @@ void GPUParticles3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_amount_ratio", "ratio"), &GPUParticles3D::set_amount_ratio);
 	ClassDB::bind_method(D_METHOD("get_amount_ratio"), &GPUParticles3D::get_amount_ratio);
 
-	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time"), &GPUParticles3D::request_particles_process, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("request_particles_process", "process_time", "process_time_residual"), &GPUParticles3D::request_particles_process, DEFVAL(0.0));
 
 	ADD_SIGNAL(MethodInfo("finished"));
 
