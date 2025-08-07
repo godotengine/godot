@@ -43,7 +43,8 @@ void InstanceUniforms::free(RID p_self) {
 	_invalidate_items();
 }
 
-void InstanceUniforms::materials_start() {
+void InstanceUniforms::materials_start(bool p_use_linear_color) {
+	_use_linear_color = p_use_linear_color;
 	_invalidate_items();
 }
 
@@ -93,7 +94,7 @@ bool InstanceUniforms::materials_finish(RID p_self) {
 	for (KeyValue<StringName, Item> &kv : _parameters) {
 		Item &i = kv.value;
 		if (i.is_valid()) {
-			RSG::material_storage->global_shader_parameters_instance_update(p_self, i.index, i.value, i.flags);
+			RSG::material_storage->global_shader_parameters_instance_update(p_self, i.index, i.value, i.flags, _use_linear_color);
 		}
 	}
 
@@ -114,7 +115,7 @@ void InstanceUniforms::set(RID p_self, const StringName &p_name, const Variant &
 	if (Item *ptr = _parameters.getptr(p_name); ptr) {
 		ptr->value = p_value;
 		if (ptr->is_valid()) {
-			RSG::material_storage->global_shader_parameters_instance_update(p_self, ptr->index, ptr->value, ptr->flags);
+			RSG::material_storage->global_shader_parameters_instance_update(p_self, ptr->index, ptr->value, ptr->flags, _use_linear_color);
 		}
 	} else {
 		Item i; // Initialize in materials_finish.
