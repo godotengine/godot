@@ -284,15 +284,10 @@ void GraphNode::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			// Used for layout calculations.
-			Ref<StyleBox> sb_panel = theme_cache.panel;
 			Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 			// Used for drawing.
 			Ref<StyleBox> sb_to_draw_panel = selected ? theme_cache.panel_selected : theme_cache.panel;
 			Ref<StyleBox> sb_to_draw_titlebar = selected ? theme_cache.titlebar_selected : theme_cache.titlebar;
-
-			Ref<StyleBox> sb_port_selected = theme_cache.port_selected;
-
-			int port_h_offset = theme_cache.port_h_offset;
 
 			Size2 body_size = get_size();
 

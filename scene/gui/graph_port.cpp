@@ -91,8 +91,10 @@ void GraphPort::_notification(int p_what) {
 
 void GraphPort::_accessibility_action(const Variant &p_data) {
 	CustomAccessibilityAction action = (CustomAccessibilityAction)p_data.operator int();
+	if (!graph_edit) {
+		return;
+	}
 	ERR_FAIL_COND(!enabled);
-	ERR_FAIL_NULL(graph_edit);
 	switch (action) {
 		case ACTION_CONNECT:
 			if (graph_edit->is_keyboard_connecting()) {
@@ -115,9 +117,8 @@ void GraphPort::_accessibility_action(const Variant &p_data) {
 void GraphPort::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (p_event->is_pressed() && selected && is_enabled()) {
-		bool ac_enabled = get_tree() && get_tree()->is_accessibility_enabled();
-		if (graph_node && ((ac_enabled && get_focus_mode() == Control::FOCUS_ACCESSIBILITY) || get_focus_mode() == Control::FOCUS_ALL)) {
+	if (p_event->is_pressed() && is_enabled()) {
+		if (graph_node && get_focus_mode() == Control::FOCUS_ALL) {
 			GraphPort *nav_port;
 			bool do_navigation = false;
 			if (p_event->is_action("ui_up", true)) {

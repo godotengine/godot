@@ -76,7 +76,6 @@ protected:
 		Ref<StyleBox> panel_focus;
 		Ref<StyleBox> titlebar;
 		Ref<StyleBox> titlebar_selected;
-		Ref<StyleBox> port_selected;
 
 		int separation = 0;
 		int port_h_offset = 0;
