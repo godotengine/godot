@@ -23,42 +23,4 @@
 			Wrapping mode to use for T-axis (vertical) texture coordinates.
 		</member>
 	</members>
-	<constants>
-		<constant name="NEAREST" value="9728" enum="FilterMode">
-			Nearest-neighbor texture filtering.
-		</constant>
-		<constant name="LINEAR" value="9729" enum="FilterMode">
-			Linear texture filtering.
-		</constant>
-		<constant name="NEAREST_MIPMAP_NEAREST" value="9984" enum="FilterMode">
-			Nearest-neighbor filtering with nearest mipmap selection.
-		</constant>
-		<constant name="LINEAR_MIPMAP_NEAREST" value="9985" enum="FilterMode">
-			Linear filtering with nearest mipmap selection.
-		</constant>
-		<constant name="NEAREST_MIPMAP_LINEAR" value="9986" enum="FilterMode">
-			Nearest-neighbor filtering with linear mipmap interpolation.
-		</constant>
-		<constant name="LINEAR_MIPMAP_LINEAR" value="9987" enum="FilterMode">
-			Linear filtering with linear mipmap interpolation.
-		</constant>
-		<constant name="NEAREST_MIPMAP_ANISOTROPIC" value="9988" enum="FilterMode">
-			Nearest-neighbor filtering with anisotropic mipmap filtering.
-		</constant>
-		<constant name="LINEAR_MIPMAP_ANISOTROPIC" value="9989" enum="FilterMode">
-			Linear filtering with anisotropic mipmap filtering.
-		</constant>
-		<constant name="CLAMP_TO_EDGE" value="33071" enum="WrapMode">
-			Clamp texture coordinates to the edge of the texture.
-		</constant>
-		<constant name="MIRRORED_REPEAT" value="33648" enum="WrapMode">
-			Repeat the texture with mirroring.
-		</constant>
-		<constant name="REPEAT" value="10497" enum="WrapMode">
-			Repeat the texture.
-		</constant>
-		<constant name="DEFAULT" value="10497" enum="WrapMode">
-			Default wrap mode, same as [constant REPEAT].
-		</constant>
-	</constants>
 </class>
