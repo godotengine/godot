@@ -5,6 +5,10 @@ on:
     types:
       - closed
 
+concurrency:
+  group: ${{ github.workflow }}|${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   cleanup:
     name: Cleanup PR caches
