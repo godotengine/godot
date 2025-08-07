@@ -11,17 +11,17 @@ Import("env")
 
 def generate_bundle(target, source, env):
     dst_lib_path = (
-        Dir(f"#platform/openharmony/template/entry/src/main/cpp/libs/{lib_arch_dir}/").abspath + "/libgodot.so"
+        Dir(f"#misc/dist/openharmony_template/entry/src/main/cpp/libs/{lib_arch_dir}/").abspath + "/libgodot.so"
     )
     os.makedirs(os.path.dirname(dst_lib_path), exist_ok=True)
     shutil.copy(lib[0].abspath, dst_lib_path)
     dst_header_path = (
-        Dir("#platform/openharmony/template/entry/src/main/cpp/include/").abspath + "/bridge_openharmony.h"
+        Dir("#misc/dist/openharmony_template/entry/src/main/cpp/include/").abspath + "/bridge_openharmony.h"
     )
     os.makedirs(os.path.dirname(dst_header_path), exist_ok=True)
     shutil.copy(File("#platform/openharmony/bridge_openharmony.h").abspath, dst_header_path)
 
-    template_dir = Dir("#platform/openharmony/template").abspath
+    template_dir = Dir("#misc/dist/openharmony_template").abspath
     shutil.make_archive(Dir(f"#bin/openharmony_{lib_type_dir}_{lib_arch_dir}").abspath, "zip", root_dir=template_dir)
     os.remove(dst_lib_path)
     os.remove(dst_header_path)
