@@ -51,7 +51,6 @@ public:
 		SCENE_RUN,
 		SCENE_CLOSE_OTHERS,
 		SCENE_CLOSE_RIGHT,
-		SCENE_CLOSE_ALL,
 	};
 
 private:
