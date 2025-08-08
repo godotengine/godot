@@ -30,24 +30,26 @@
 
 #pragma once
 
-#include "editor/asset_library/editor_asset_installer.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/grid_container.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/link_button.h"
+#include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/progress_bar.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/gui/scroll_container.h"
-#include "scene/gui/texture_button.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/main/http_request.h"
 
+class EditorAssetInstaller;
+class EditorAssetLibraryPagination;
 class EditorFileDialog;
+class GridContainer;
+class HTTPRequest;
+class LineEdit;
+class LinkButton;
 class MenuButton;
+class OptionButton;
+class ProgressBar;
+class RichTextLabel;
+class ScrollContainer;
+class TextureButton;
+class TextureRect;
 
 class EditorAssetLibraryItem : public PanelContainer {
 	GDCLASS(EditorAssetLibraryItem, PanelContainer);
@@ -208,9 +210,9 @@ class EditorAssetLibrary : public PanelContainer {
 
 	HBoxContainer *contents = nullptr;
 
-	HBoxContainer *asset_top_page = nullptr;
+	EditorAssetLibraryPagination *asset_top_page = nullptr;
 	GridContainer *asset_items = nullptr;
-	HBoxContainer *asset_bottom_page = nullptr;
+	EditorAssetLibraryPagination *asset_bottom_page = nullptr;
 
 	HTTPRequest *request = nullptr;
 
@@ -269,8 +271,6 @@ class EditorAssetLibrary : public PanelContainer {
 	void _image_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data, int p_queue_id);
 	void _request_image(ObjectID p_for, int p_asset_id, String p_image_url, ImageType p_type, int p_image_index);
 	void _update_image_queue();
-
-	HBoxContainer *_make_pages(int p_page, int p_page_count, int p_page_len, int p_total_items, int p_current_items);
 
 	//
 	EditorAssetLibraryItemDescription *description = nullptr;
