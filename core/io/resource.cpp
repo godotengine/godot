@@ -267,8 +267,8 @@ void Resource::reload_from_file() {
 }
 
 Variant Resource::_duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage) const {
-	// Anything other than object can be simply skipped in case of a shallow copy.
-	if (!p_params.deep && p_variant.get_type() != Variant::OBJECT) {
+	// Anything that doesn't isn't a container can be simply skipped in case of a shallow copy.
+	if (!p_params.deep && p_variant.get_type() != Variant::OBJECT && p_variant.get_type() != Variant::ARRAY && p_variant.get_type() != Variant::DICTIONARY) {
 		return p_variant;
 	}
 
@@ -316,6 +316,9 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 		} break;
 		case Variant::ARRAY: {
 			const Array &src = p_variant;
+			if (!p_params.deep) {
+				return src.duplicate(false);
+			}
 			Array dst;
 			if (src.is_typed()) {
 				dst.set_typed(src.get_element_type());
@@ -328,6 +331,9 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 		} break;
 		case Variant::DICTIONARY: {
 			const Dictionary &src = p_variant;
+			if (!p_params.deep) {
+				return src.duplicate(false);
+			}
 			Dictionary dst;
 			if (src.is_typed()) {
 				dst.set_typed(src.get_typed_key_builtin(), src.get_typed_key_class_name(), src.get_typed_key_script(), src.get_typed_value_builtin(), src.get_typed_value_class_name(), src.get_typed_value_script());
