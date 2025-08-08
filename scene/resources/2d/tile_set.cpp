@@ -5775,7 +5775,7 @@ int TileSetScenesCollectionSource::get_alternative_tile_id(const Vector2i p_atla
 
 bool TileSetScenesCollectionSource::has_alternative_tile(const Vector2i p_atlas_coords, int p_alternative_tile) const {
 	ERR_FAIL_COND_V(p_atlas_coords != Vector2i(), false);
-	return scenes.has(p_alternative_tile);
+	return scenes.has(TileSetAtlasSource::alternative_no_transform(p_alternative_tile));
 }
 
 int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_scene, int p_id_override) {
@@ -5837,8 +5837,9 @@ void TileSetScenesCollectionSource::set_scene_tile_scene(int p_id, Ref<PackedSce
 }
 
 Ref<PackedScene> TileSetScenesCollectionSource::get_scene_tile_scene(int p_id) const {
-	ERR_FAIL_COND_V(!scenes.has(p_id), Ref<PackedScene>());
-	return scenes[p_id].scene;
+	int scene_tile = TileSetAtlasSource::alternative_no_transform(p_id);
+	ERR_FAIL_COND_V(!scenes.has(scene_tile), Ref<PackedScene>());
+	return scenes[scene_tile].scene;
 }
 
 void TileSetScenesCollectionSource::set_scene_tile_display_placeholder(int p_id, bool p_display_placeholder) {
