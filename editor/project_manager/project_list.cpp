@@ -49,10 +49,6 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/image_texture.h"
 
-const char *ProjectList::SIGNAL_LIST_CHANGED = "list_changed";
-const char *ProjectList::SIGNAL_SELECTION_CHANGED = "selection_changed";
-const char *ProjectList::SIGNAL_PROJECT_ASK_OPEN = "project_ask_open";
-
 void ProjectListItemControl::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {

@@ -38,32 +38,35 @@
 class Main;
 
 class [[nodiscard]] StringName {
+	template <CowBuffer buf>
+	friend struct ComptimeStringName;
 	struct Table;
 
 	struct _Data {
 		SafeRefCount refcount;
-		SafeNumeric<uint32_t> static_count;
 		String name;
 #ifdef DEBUG_ENABLED
-		uint32_t debug_references = 0;
+		uint32_t debug_references;
 #endif
-
-		uint32_t hash = 0;
-		_Data *prev = nullptr;
-		_Data *next = nullptr;
-		_Data() {}
+		bool is_static;
+		uint32_t hash;
+		_Data *prev;
+		_Data *next;
 	};
 
 	_Data *_data = nullptr;
+
+	struct Register {
+		Register(_Data &p_data);
+	};
 
 	void unref();
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static void setup();
 	static void cleanup();
 	static uint32_t get_empty_hash();
-	static inline bool configured = false;
+	static inline bool configured = true;
 #ifdef DEBUG_ENABLED
 	struct DebugSortReferences {
 		bool operator()(const _Data *p_left, const _Data *p_right) const {
@@ -74,15 +77,13 @@ class [[nodiscard]] StringName {
 	static inline bool debug_stringname = false;
 #endif
 
-	StringName(_Data *p_data) { _data = p_data; }
+	constexpr StringName(_Data *p_data) { _data = p_data; }
 
 public:
 	_FORCE_INLINE_ explicit operator bool() const { return _data; }
 
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
-	bool operator!=(const String &p_name) const;
-	bool operator!=(const char *p_name) const;
 
 	const char32_t *get_data() const { return _data ? _data->name.ptr() : U""; }
 	char32_t operator[](int p_index) const;
@@ -111,9 +112,6 @@ public:
 		// The real magic of all this mess happens here.
 		// This is why path comparisons are very fast.
 		return _data == p_name._data;
-	}
-	_FORCE_INLINE_ bool operator!=(const StringName &p_name) const {
-		return _data != p_name._data;
 	}
 	_FORCE_INLINE_ uint32_t hash() const {
 		if (_data) {
@@ -164,22 +162,28 @@ public:
 		p_name._data = nullptr;
 		return *this;
 	}
-	StringName(const char *p_name, bool p_static = false);
-	StringName(const StringName &p_name);
+	StringName(const char *p_name);
+	constexpr StringName(const StringName &p_name) {
+		_data = nullptr;
+
+		if (std::is_constant_evaluated() || (p_name._data && p_name._data->refcount.ref())) {
+			_data = p_name._data;
+		}
+	}
 	StringName(StringName &&p_name) {
 		_data = p_name._data;
 		p_name._data = nullptr;
 	}
-	StringName(const String &p_name, bool p_static = false);
-	StringName() {}
+	StringName(const String &p_name);
+	constexpr StringName() = default;
 
 #ifdef SIZE_EXTRA
 	_NO_INLINE_
 #else
 	_FORCE_INLINE_
 #endif
-	~StringName() {
-		if (likely(configured) && _data) { //only free if configured
+	constexpr ~StringName() {
+		if (!std::is_constant_evaluated() && _data) {
 			unref();
 		}
 	}
@@ -193,11 +197,6 @@ public:
 template <>
 struct is_zero_constructible<StringName> : std::true_type {};
 
-bool operator==(const String &p_name, const StringName &p_string_name);
-bool operator!=(const String &p_name, const StringName &p_string_name);
-bool operator==(const char *p_name, const StringName &p_string_name);
-bool operator!=(const char *p_name, const StringName &p_string_name);
-
 /*
  * The SNAME macro is used to speed up StringName creation, as it allows caching it after the first usage in a very efficient way.
  * It should NOT be used everywhere, but instead in places where high performance is required and the creation of a StringName
@@ -210,4 +209,33 @@ bool operator!=(const char *p_name, const StringName &p_string_name);
  * Use in places that can be called hundreds of times per frame (or more) is recommended, but this situation is very rare. If in doubt, do not use.
  */
 
-#define SNAME(m_arg) ([]() -> const StringName & { static StringName sname = StringName(m_arg, true); return sname; })()
+#define SNAME(m_arg) ComptimeStringName<m_arg>().value
+
+template <CowBuffer buf>
+struct ComptimeStringName {
+private:
+	inline static constinit StringName::_Data data = {
+		.refcount = SafeRefCount(2),
+		.name = ComptimeString<buf>().value,
+#ifdef DEBUG_ENABLED
+		.debug_references = 0,
+#endif
+		.is_static = true,
+		.hash = buf.hash(),
+		.prev = nullptr,
+		.next = nullptr
+	};
+
+	inline static StringName::Register _reg{ data };
+
+public:
+	// TODO: Once we can constexpr `String::is_empty()` this should be `data.name.is_empty() ? nullptr : &data`.
+	// For now we can only watch out not to pass empty string in.
+#if defined(_MSC_VER) && !defined(__clang__)
+	// MSVC is more strict, but it can handle initialization order properly.
+	inline static constexpr StringName value{ &data };
+#else
+	// Force register data before use for other compilers.
+	inline static constexpr StringName value{ (_reg, &data) };
+#endif
+};

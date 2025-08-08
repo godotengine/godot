@@ -262,9 +262,6 @@ public:
 			return physics_layer < p_other.physics_layer;
 		}
 
-		bool operator!=(const PhysicsBodyKey &p_other) const {
-			return !this->operator==(p_other);
-		}
 		bool operator==(const PhysicsBodyKey &p_other) const {
 			return physics_layer == p_other.physics_layer &&
 					linear_velocity == p_other.linear_velocity &&

@@ -661,7 +661,7 @@ bool AnimationTree::_blend_pre_process(double p_delta, int p_track_count, const 
 		for (int i = 0; i < p_track_count; i++) {
 			src_blendsw[i] = 1.0; // By default all go to 1 for the root input.
 		}
-		root_animation_node->set_node_state_base_path(SNAME(Animation::PARAMETERS_BASE_PATH.ascii().get_data()));
+		root_animation_node->set_node_state_base_path(Animation::PARAMETERS_BASE_PATH_SNAME);
 		root_animation_node->node_state.parent = nullptr;
 	}
 
