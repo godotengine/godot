@@ -62,6 +62,13 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="set_curve">
+			<return type="PropertyTweener" />
+			<param index="0" name="curve" type="Curve" />
+			<description>
+				Sets the curve. If not set, the easing and transition from the [Tween] that contains this Tweener will be used.
+			</description>
+		</method>
 		<method name="set_custom_interpolator">
 			<return type="PropertyTweener" />
 			<param index="0" name="interpolator_method" type="Callable" />
