@@ -666,7 +666,17 @@ void DisplayServerWayland::screen_set_keep_on(bool p_enable) {
 	}
 
 #ifdef DBUS_ENABLED
-	if (screensaver) {
+	if (portal_desktop && portal_desktop->is_inhibit_supported()) {
+		if (p_enable) {
+			WindowID window_id = MAIN_WINDOW_ID;
+			// TODO: Use window IDs for multiwindow support.
+			WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+			screensaver_inhibited = portal_desktop->inhibit((ws ? ws->exported_handle : String()));
+		} else {
+			portal_desktop->uninhibit();
+			screensaver_inhibited = false;
+		}
+	} else if (screensaver) {
 		if (p_enable) {
 			screensaver->inhibit();
 		} else {
