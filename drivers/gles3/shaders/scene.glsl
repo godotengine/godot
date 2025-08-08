@@ -596,23 +596,6 @@ void main() {
 	vec4 instance_custom = vec4(0.0);
 #endif
 
-	// Using world coordinates
-#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-
-	vertex = (model_matrix * vec4(vertex, 1.0)).xyz;
-
-#ifdef NORMAL_USED
-	normal = model_normal_matrix * normal;
-#endif
-
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-
-	tangent = model_normal_matrix * tangent;
-	binormal = model_normal_matrix * binormal;
-
-#endif
-#endif
-
 #ifdef Z_CLIP_SCALE_USED
 	float z_clip_scale = 1.0;
 #endif
@@ -631,7 +614,7 @@ void main() {
 	gl_PointSize = point_size;
 
 	// Using local coordinates (default)
-#if !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
+#if !defined(SKIP_TRANSFORM_USED)
 
 	vertex = (modelview * vec4(vertex, 1.0)).xyz;
 #ifdef NORMAL_USED
@@ -643,21 +626,7 @@ void main() {
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
 #endif
-#endif // !defined(SKIP_TRANSFORM_USED) && !defined(VERTEX_WORLD_COORDS_USED)
-
-	// Using world coordinates
-#if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
-
-	vertex = (scene_data.view_matrix * vec4(vertex, 1.0)).xyz;
-#ifdef NORMAL_USED
-	normal = (scene_data.view_matrix * vec4(normal, 0.0)).xyz;
-#endif
-
-#if defined(TANGENT_USED) || defined(NORMAL_MAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-	binormal = (scene_data.view_matrix * vec4(binormal, 0.0)).xyz;
-	tangent = (scene_data.view_matrix * vec4(tangent, 0.0)).xyz;
-#endif
-#endif
+#endif // !defined(SKIP_TRANSFORM_USED)
 
 	vertex_interp = vertex;
 
