@@ -273,6 +273,10 @@ void Node::_notification(int p_notification) {
 				return;
 			}
 
+			if (data.parent) {
+				data.parent->remove_child(this);
+			}
+
 			if (data.owner) {
 				_clean_up_owner();
 			}
@@ -280,10 +284,6 @@ void Node::_notification(int p_notification) {
 			while (!data.owned.is_empty()) {
 				Node *n = data.owned.back()->get();
 				n->_clean_up_owner(); // This will change data.owned. So it's impossible to loop over the list in the usual manner.
-			}
-
-			if (data.parent) {
-				data.parent->remove_child(this);
 			}
 
 			// kill children as cleanly as possible
