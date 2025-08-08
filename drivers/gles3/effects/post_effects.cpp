@@ -87,7 +87,10 @@ void PostEffects::_draw_screen_triangle() {
 	glBindVertexArray(0);
 }
 
-void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color, Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
+void PostEffects::post_copy(
+		GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color,
+		GLuint p_source_depth, bool p_ssao_enabled, float p_ssao_strength, float p_ssao_radius, float p_ssao_falloff, // These are for SSAO.
+		Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
 	glDisable(GL_BLEND);
@@ -103,9 +106,13 @@ void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuin
 	if (p_glow_buffers != nullptr) {
 		flags |= PostShaderGLES3::USE_GLOW;
 	}
+	if (p_ssao_enabled) {
+		flags |= PostShaderGLES3::USE_SSAO;
+	}
 	if (p_luminance_multiplier != 1.0) {
 		flags |= PostShaderGLES3::USE_LUMINANCE_MULTIPLIER;
 	}
+	flags |= PostShaderGLES3::USE_LUMINANCE_MULTIPLIER;
 
 	bool success = post.shader.version_bind_shader(post.shader_version, mode, flags);
 	if (!success) {
@@ -117,6 +124,16 @@ void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuin
 	glBindTexture(texture_target, p_source_color);
 	glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	if (p_ssao_enabled) {
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, p_source_depth);
+
+		post.shader.version_set_uniform(PostShaderGLES3::SSAO_INTENSITY, p_ssao_strength, post.shader_version, mode, flags);
+		post.shader.version_set_uniform(PostShaderGLES3::SSAO_RADIUS_FRAC, p_ssao_radius, post.shader_version, mode, flags);
+		post.shader.version_set_uniform(PostShaderGLES3::SSAO_FALLOFF_FRAC, p_ssao_falloff, post.shader_version, mode, flags);
+		post.shader.version_set_uniform(PostShaderGLES3::VIEWPORT_SIZE, p_source_size.x, p_source_size.y, post.shader_version, mode, flags);
+	}
 
 	if (p_glow_buffers != nullptr) {
 		glActiveTexture(GL_TEXTURE1);
@@ -134,6 +151,10 @@ void PostEffects::post_copy(GLuint p_dest_framebuffer, Size2i p_dest_size, GLuin
 	// Reset state
 	if (p_glow_buffers != nullptr) {
 		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	if (p_ssao_enabled) {
+		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
