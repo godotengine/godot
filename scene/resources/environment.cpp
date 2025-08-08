@@ -1135,6 +1135,15 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus") {
+		// Hide SSAO properties that only work in Forward+.
+		if (p_property.name.begins_with("ssao_")) {
+			if ((p_property.name != "ssao_enabled") && (p_property.name != "ssao_radius") && (p_property.name != "ssao_intensity")) {
+				p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			}
+		}
+	}
+
 	if (p_property.name == "background_color") {
 		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
