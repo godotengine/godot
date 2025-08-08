@@ -71,6 +71,8 @@ __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 #define GetProcAddress (void *)GetProcAddress
 #endif
 
+int constexpr FS_TRANSP_BORDER = 2;
+
 typedef struct {
 	int count;
 	int screen;
@@ -1430,6 +1432,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		WindowRect.bottom = current.dmPelsHeight;
 
 		*/
+		int off_x = video_mode.non_ex_fs ? FS_TRANSP_BORDER : 0;
 
 		// Get the primary monitor without providing hwnd
 		// Solution from https://devblogs.microsoft.com/oldnewthing/20070809-00/?p=25643
@@ -1440,7 +1443,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		EnumSizeData data = { 0, primary_data.screen, Size2() };
 		EnumDisplayMonitors(NULL, NULL, _MonitorEnumProcSize, (LPARAM)&data);
 
-		WindowRect.right = data.size.width;
+		WindowRect.right = data.size.width + off_x;
 		WindowRect.bottom = data.size.height;
 
 		/*  DEVMODE dmScreenSettings;
@@ -1706,6 +1709,7 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 	}
 
 	update_real_mouse_position();
+	_update_window_mouse_passthrough();
 
 	return OK;
 }
@@ -1869,9 +1873,11 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 void OS_Windows::_set_mouse_mode_impl(MouseMode p_mode) {
 	if (p_mode == MOUSE_MODE_CAPTURED || p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+		int off_x = (video_mode.fullscreen && video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
 		// Mouse is grabbed (captured or confined).
 		RECT clipRect;
 		GetClientRect(hWnd, &clipRect);
+		clipRect.right -= off_x;
 		ClientToScreen(hWnd, (POINT *)&clipRect.left);
 		ClientToScreen(hWnd, (POINT *)&clipRect.right);
 		ClipCursor(&clipRect);
@@ -1952,7 +1958,16 @@ void OS_Windows::set_window_mouse_passthrough(const PoolVector2Array &p_region) 
 
 void OS_Windows::_update_window_mouse_passthrough() {
 	if (mpath.size() == 0) {
-		SetWindowRgn(hWnd, NULL, TRUE);
+		if (video_mode.non_ex_fs && video_mode.fullscreen) {
+			int cs = get_current_screen();
+			Size2 size = get_screen_size(cs);
+
+			HRGN region = CreateRectRgn(0, 0, size.width, size.height);
+			SetWindowRgn(hWnd, region, FALSE);
+			DeleteObject(region);
+		} else {
+			SetWindowRgn(hWnd, NULL, TRUE);
+		}
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * mpath.size());
 		for (int i = 0; i < mpath.size(); i++) {
@@ -1966,7 +1981,15 @@ void OS_Windows::_update_window_mouse_passthrough() {
 		}
 
 		HRGN region = CreatePolygonRgn(points, mpath.size(), ALTERNATE);
-		SetWindowRgn(hWnd, region, TRUE);
+		if (video_mode.non_ex_fs && video_mode.fullscreen) {
+			int cs = get_current_screen();
+			Size2 size = get_screen_size(cs);
+
+			HRGN region_clip = CreateRectRgn(0, 0, size.width, size.height);
+			CombineRgn(region, region, region_clip, RGN_AND);
+			DeleteObject(region_clip);
+		}
+		SetWindowRgn(hWnd, region, FALSE);
 		DeleteObject(region);
 		memfree(points);
 	}
@@ -2007,8 +2030,9 @@ void OS_Windows::set_current_screen(int p_screen) {
 		}
 		Point2 pos = get_screen_position(p_screen);
 		Size2 size = get_screen_size(p_screen);
+		int off_x = (video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
 
-		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+		MoveWindow(hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
 	} else {
 		Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
 		set_window_position(ofs + get_screen_position(p_screen));
@@ -2137,7 +2161,9 @@ Size2 OS_Windows::get_window_size() const {
 
 	RECT r;
 	if (GetClientRect(hWnd, &r)) { // Only area inside of window border
-		return Size2(r.right - r.left, r.bottom - r.top);
+		int off_x = (video_mode.fullscreen && video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
+
+		return Size2(r.right - r.left - off_x, r.bottom - r.top);
 	}
 	return Size2();
 }
@@ -2169,7 +2195,9 @@ void OS_Windows::set_max_window_size(const Size2 p_size) {
 Size2 OS_Windows::get_real_window_size() const {
 	RECT r;
 	if (GetWindowRect(hWnd, &r)) { // Includes area of the window border
-		return Size2(r.right - r.left, r.bottom - r.top);
+		int off_x = (video_mode.fullscreen && video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
+
+		return Size2(r.right - r.left - off_x, r.bottom - r.top);
 	}
 	return Size2();
 }
@@ -2208,8 +2236,9 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 	}
 }
 void OS_Windows::set_window_fullscreen(bool p_enabled) {
-	if (video_mode.fullscreen == p_enabled)
+	if (video_mode.fullscreen == p_enabled) {
 		return;
+	}
 
 	if (layered_window)
 		set_window_per_pixel_transparency_enabled(false);
@@ -2228,8 +2257,9 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 		video_mode.fullscreen = true;
 
 		_update_window_style(false);
+		int off_x = (video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
 
-		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+		MoveWindow(hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
 
 		SystemParametersInfoA(SPI_GETMOUSETRAILS, 0, &restore_mouse_trails, 0);
 		if (restore_mouse_trails > 1) {
@@ -2259,10 +2289,39 @@ void OS_Windows::set_window_fullscreen(bool p_enabled) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, restore_mouse_trails, 0, 0);
 		}
 	}
+	_update_window_mouse_passthrough();
 }
+
+void OS_Windows::set_window_use_nonexclusive_fullscreen(bool p_enabled) {
+	if (video_mode.non_ex_fs == p_enabled) {
+		return;
+	}
+	video_mode.non_ex_fs = p_enabled;
+
+	if (video_mode.fullscreen) {
+		int cs = get_current_screen();
+		Point2 pos = get_screen_position(cs);
+		Size2 size = get_screen_size(cs);
+
+		video_mode.fullscreen = true;
+
+		_update_window_style(false);
+		int off_x = (video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
+
+		MoveWindow(hWnd, pos.x, pos.y, size.width + off_x, size.height, TRUE);
+
+		_update_window_mouse_passthrough();
+	}
+}
+
 bool OS_Windows::is_window_fullscreen() const {
 	return video_mode.fullscreen;
 }
+
+bool OS_Windows::is_window_use_nonexclusive_fullscreen() const {
+	return video_mode.non_ex_fs;
+}
+
 void OS_Windows::set_window_resizable(bool p_enabled) {
 	if (video_mode.resizable == p_enabled)
 		return;
@@ -2402,7 +2461,8 @@ void OS_Windows::_update_window_style(bool p_repaint, bool p_maximized) {
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(hWnd, &rect);
-		MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
+		int off_x = (video_mode.fullscreen && video_mode.non_ex_fs) ? FS_TRANSP_BORDER : 0;
+		MoveWindow(hWnd, rect.left, rect.top, rect.right - rect.left + off_x, rect.bottom - rect.top, TRUE);
 	}
 }
 
