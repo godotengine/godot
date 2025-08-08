@@ -200,6 +200,20 @@ Patches:
 - `0001-ciso646-version.patch` (GH-105913)
 
 
+# dr_libs
+
+- Upstream: https://github.com/mackron/dr_libs
+- Version: git (95143ff1e51844e32958ec92c47731e869734af1, 2025)
+- License: Public Domain or Unlicense or MIT-0
+
+Files extracted from upstream source:
+
+- `dr_wav.h`
+- `LICENSE`
+
+`dr_bridge.h` is a Godot file and should be preserved on updates.
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
