@@ -949,7 +949,17 @@ VisualShaderNodeTexture::Source VisualShaderNodeTexture::get_source() const {
 }
 
 void VisualShaderNodeTexture::set_texture(Ref<Texture2D> p_texture) {
+	if (!texture.is_null()) {
+		if (texture->is_built_in()) {
+			embed_count -= 1;
+		}
+	}
 	texture = p_texture;
+	if (!p_texture.is_null()) {
+		if (p_texture->is_built_in()) {
+			embed_count += 1;
+		}
+	}
 	emit_changed();
 }
 
@@ -1082,7 +1092,17 @@ String VisualShaderNodeCurveTexture::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeCurveTexture::set_texture(Ref<CurveTexture> p_texture) {
+	if (!texture.is_null()) {
+		if (texture->is_built_in()) {
+			embed_count -= 1;
+		}
+	}
 	texture = p_texture;
+	if (!p_texture.is_null()) {
+		if (p_texture->is_built_in()) {
+			embed_count += 1;
+		}
+	}
 	emit_changed();
 }
 
@@ -1167,7 +1187,17 @@ String VisualShaderNodeCurveXYZTexture::get_output_port_name(int p_port) const {
 }
 
 void VisualShaderNodeCurveXYZTexture::set_texture(Ref<CurveXYZTexture> p_texture) {
+	if (!texture.is_null()) {
+		if (texture->is_built_in()) {
+			embed_count -= 1;
+		}
+	}
 	texture = p_texture;
+	if (!p_texture.is_null()) {
+		if (p_texture->is_built_in()) {
+			embed_count += 1;
+		}
+	}
 	emit_changed();
 }
 
@@ -1365,7 +1395,17 @@ String VisualShaderNodeTexture2DArray::generate_global(Shader::Mode p_mode, Visu
 }
 
 void VisualShaderNodeTexture2DArray::set_texture_array(Ref<TextureLayered> p_texture_array) {
+	if (!texture_array.is_null()) {
+		if (texture_array->is_built_in()) {
+			embed_count -= 1;
+		}
+	}
 	texture_array = p_texture_array;
+	if (!p_texture_array.is_null()) {
+		if (p_texture_array->is_built_in()) {
+			embed_count += 1;
+		}
+	}
 	emit_changed();
 }
 
@@ -1422,7 +1462,17 @@ String VisualShaderNodeTexture3D::generate_global(Shader::Mode p_mode, VisualSha
 }
 
 void VisualShaderNodeTexture3D::set_texture(Ref<Texture3D> p_texture) {
+	if (!texture.is_null()) {
+		if (texture->is_built_in()) {
+			embed_count -= 1;
+		}
+	}
 	texture = p_texture;
+	if (!p_texture.is_null()) {
+		if (p_texture->is_built_in()) {
+			embed_count += 1;
+		}
+	}
 	emit_changed();
 }
 
@@ -1580,7 +1630,17 @@ VisualShaderNodeCubemap::Source VisualShaderNodeCubemap::get_source() const {
 }
 
 void VisualShaderNodeCubemap::set_cube_map(Ref<TextureLayered> p_cube_map) {
+	if (!cube_map.is_null()) {
+		if (cube_map->is_built_in()) {
+			embed_count -= 1;
+		}
+	}
 	cube_map = p_cube_map;
+	if (!p_cube_map.is_null()) {
+		if (p_cube_map->is_built_in()) {
+			embed_count += 1;
+		}
+	}
 	emit_changed();
 }
 

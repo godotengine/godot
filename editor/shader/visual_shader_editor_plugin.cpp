@@ -8437,6 +8437,7 @@ bool VisualShaderConversionPlugin::handles(const Ref<Resource> &p_resource) cons
 Ref<Resource> VisualShaderConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<VisualShader> vshader = p_resource;
 	ERR_FAIL_COND_V(vshader.is_null(), Ref<Resource>());
+	ERR_FAIL_COND_V(vshader->has_node_embeds(), Ref<Resource>());
 
 	Ref<Shader> shader;
 	shader.instantiate();
