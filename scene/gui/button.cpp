@@ -201,7 +201,7 @@ void Button::_notification(int p_what) {
 				style_offset.y = style->get_margin(MARGIN_TOP);
 
 				if (expand_icon) {
-					Size2 _size = get_size() - style->get_offset() * 2;
+					Size2 _size = get_size() - style->get_minimum_size();
 					int icon_text_separation = text.empty() ? 0 : get_constant("h_separation");
 					_size.width -= icon_text_separation + icon_ofs_region;
 					if (!clip_text && icon_align != ALIGN_CENTER) {
