@@ -244,7 +244,7 @@ typedef int boolean;
 
 #define C_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
 #define C_PROGRESSIVE_SUPPORTED     /* Progressive JPEG? (Requires MULTISCAN)*/
-//#define C_LOSSLESS_SUPPORTED        /* Lossless JPEG? */
+// #define C_LOSSLESS_SUPPORTED        /* Lossless JPEG? */
 #define ENTROPY_OPT_SUPPORTED       /* Optimization of entropy coding parms? */
 /* Note: if you selected 12-bit data precision, it is dangerous to turn off
  * ENTROPY_OPT_SUPPORTED.  The standard Huffman tables are only good for 8-bit
@@ -261,7 +261,7 @@ typedef int boolean;
 
 #define D_MULTISCAN_FILES_SUPPORTED /* Multiple-scan JPEG files? */
 #define D_PROGRESSIVE_SUPPORTED     /* Progressive JPEG? (Requires MULTISCAN)*/
-//#define D_LOSSLESS_SUPPORTED        /* Lossless JPEG? */
+// #define D_LOSSLESS_SUPPORTED        /* Lossless JPEG? */
 #define SAVE_MARKERS_SUPPORTED      /* jpeg_save_markers() needed? */
 #define BLOCK_SMOOTHING_SUPPORTED   /* Block smoothing? (Progressive only) */
 #define IDCT_SCALING_SUPPORTED      /* Output rescaling via IDCT? */
