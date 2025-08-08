@@ -873,9 +873,6 @@ public:
 	}
 };
 
-//typedef Dictionary Dictionary; no
-//typedef Array Array;
-
 template <typename... VarArgs>
 Vector<Variant> varray(VarArgs... p_args) {
 	Vector<Variant> v;
