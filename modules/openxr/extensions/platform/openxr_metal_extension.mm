@@ -289,7 +289,7 @@ void OpenXRMetalExtension::cleanup_swapchain_graphics_data(void **p_swapchain_gr
 	ERR_FAIL_NULL(rendering_device);
 
 	for (const RID &texture_rid : data->texture_rids) {
-		rendering_device->free(texture_rid);
+		rendering_device->free_rid(texture_rid);
 	}
 	data->texture_rids.clear();
 

@@ -1189,7 +1189,7 @@ void GodotNavigationServer2D::flush_queries() {
 	commands.clear();
 }
 
-COMMAND_1(free, RID, p_object) {
+COMMAND_1(free_rid, RID, p_object) {
 	if (geometry_parser_owner.owns(p_object)) {
 		RWLockWrite write_lock(geometry_parser_rwlock);
 
