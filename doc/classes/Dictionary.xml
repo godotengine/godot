@@ -94,7 +94,7 @@
 		pointsDict["Blue"] = 150; // Add "Blue" as a key and assign 150 as its value.
 		[/csharp]
 		[/codeblocks]
-		Finally, dictionaries can contain different types of keys and values in the same dictionary:
+		Finally, untyped dictionaries can contain different types of keys and values in the same dictionary:
 		[codeblocks]
 		[gdscript]
 		# This is a valid dictionary.
@@ -131,6 +131,39 @@
 		{
 			// `fruit` is the key, `amount` is the value.
 		}
+		[/csharp]
+		[/codeblocks]
+		To enforce a certain type for keys and values, you can create a [i]typed dictionary[/i]. Typed dictionaries can only contain keys and values of the given types, or that inherit from the given classes:
+		[codeblocks]
+		[gdscript]
+		# Creates a typed dictionary with String keys and int values.
+		# Attempting to use any other type for keys or values will result in an error.
+		var typed_dict: Dictionary[String, int] = {
+			"some_key": 1,
+			"some_other_key": 2,
+		}
+
+		# Creates a typed dictionary with String keys and values of any type.
+		# Attempting to use any other type for keys will result in an error.
+		var typed_dict_key_only: Dictionary[String, Variant] = {
+			"some_key": 12.34,
+			"some_other_key": "string",
+		}
+		[/gdscript]
+		[csharp]
+		// Creates a typed dictionary with String keys and int values.
+		// Attempting to use any other type for keys or values will result in an error.
+		var typedDict = new Godot.Collections.Dictionary&lt;String, int&gt; {
+			{"some_key", 1},
+			{"some_other_key", 2},
+		};
+
+		// Creates a typed dictionary with String keys and values of any type.
+		// Attempting to use any other type for keys will result in an error.
+		var typedDictKeyOnly = new Godot.Collections.Dictionary&lt;String, Variant&gt; {
+			{"some_key", 12.34},
+			{"some_other_key", "string"},
+		};
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Dictionaries are always passed by reference. To get a copy of a dictionary which can be modified independently of the original dictionary, use [method duplicate].
