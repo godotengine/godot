@@ -306,6 +306,12 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 			return false;
 		}
 
+#ifndef MACOS_ENABLED
+		if (p_option == "application/liquid_glass_icon") {
+			return false;
+		}
+#endif
+
 		String custom_prof = p_preset->get("codesign/entitlements/custom_file");
 		if (!custom_prof.is_empty() && p_option != "codesign/entitlements/custom_file" && p_option.begins_with("codesign/entitlements/")) {
 			return false;
@@ -467,6 +473,7 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "debug/export_console_wrapper", PROPERTY_HINT_ENUM, "No,Debug Only,Debug and Release"), 1));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/liquid_glass_icon", PROPERTY_HINT_FILE, "*.icon"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.icns,*.png,*.webp,*.svg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/icon_interpolation", PROPERTY_HINT_ENUM, "Nearest neighbor,Bilinear,Cubic,Trilinear,Lanczos"), 4));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/bundle_identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), "", false, true));
@@ -828,7 +835,7 @@ void EditorExportPlatformMacOS::_fix_privacy_manifest(const Ref<EditorExportPres
 	}
 }
 
-void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary) {
+void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &plist, const String &p_binary, bool p_lg_icon_exported, const String &p_lg_icon) {
 	String str = String::utf8((const char *)plist.ptr(), plist.size());
 	String strnew;
 	Vector<String> lines = str.split("\n");
@@ -872,6 +879,12 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$xcodever", p_preset->get("xcode/xcode_version")) + "\n";
 		} else if (lines[i].contains("$xcodebuild")) {
 			strnew += lines[i].replace("$xcodebuild", p_preset->get("xcode/xcode_build")) + "\n";
+		} else if (lines[i].contains("$liquid_glass_icon")) {
+			if (p_lg_icon_exported) {
+				strnew += lines[i].replace("$liquid_glass_icon", "\t<key>CFBundleIconName</key>\n\t<string>" + p_lg_icon + "</string>\n");
+			} else {
+				strnew += lines[i].replace("$liquid_glass_icon", "");
+			}
 		} else if (lines[i].contains("$usage_descriptions")) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
@@ -931,6 +944,76 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 	for (int i = 0; i < cs.size() - 1; i++) {
 		plist.write[i] = cs[i];
 	}
+}
+
+Error EditorExportPlatformMacOS::_export_liquid_glass_icon(const Ref<EditorExportPreset> &p_preset, const String &p_app_path, const String &p_icon_path) {
+	String actool = EDITOR_GET("export/macos/actool").operator String();
+	if (actool.is_empty()) {
+		actool = "actool";
+	}
+
+	List<String> args;
+	args.push_back("--version");
+	String str;
+	String err_str;
+	int exitcode = 0;
+
+	Error err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not start 'actool' executable."));
+		return err;
+	}
+	PList info_plist;
+	if (!info_plist.load_string(str, err_str)) {
+		print_verbose(str);
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not read 'actool' version."));
+		return err;
+	}
+	if (info_plist.get_root()->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && info_plist.get_root()->data_dict.has("com.apple.actool.version")) {
+		Ref<PListNode> dict = info_plist.get_root()->data_dict["com.apple.actool.version"];
+		if (dict->data_type == PList::PLNodeType::PL_NODE_TYPE_DICT && dict->data_dict.has("short-bundle-version")) {
+			float version = String::utf8(dict->data_dict["short-bundle-version"]->data_string.get_data()).to_float();
+			if (version < 26.0) {
+				add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), vformat(TTR("At least version 26.0 of 'actool' is required (version %f found)."), version));
+				return ERR_UNAVAILABLE;
+			}
+		}
+	}
+	str.clear();
+
+	String plist = EditorPaths::get_singleton()->get_temp_dir().path_join("assetcatalog.plist");
+	args.clear();
+	args.push_back(ProjectSettings::get_singleton()->globalize_path(p_icon_path));
+	args.push_back("--compile");
+	args.push_back(p_app_path + "/Contents/Resources/");
+	args.push_back("--output-format");
+	args.push_back("human-readable-text");
+	args.push_back("--lightweight-asset-runtime-mode");
+	args.push_back("enabled");
+	args.push_back("--app-icon");
+	args.push_back(p_icon_path.get_file().get_basename());
+	args.push_back("--include-all-app-icons");
+	args.push_back("--enable-on-demand-resources");
+	args.push_back("NO");
+	args.push_back("--development-region");
+	args.push_back("en");
+	args.push_back("--target-device");
+	args.push_back("mac");
+	args.push_back("--minimum-deployment-target");
+	args.push_back("26");
+	args.push_back("--platform");
+	args.push_back("macosx");
+	args.push_back("--output-partial-info-plist");
+	args.push_back(plist);
+
+	err = OS::get_singleton()->execute(actool, args, &str, &exitcode, true);
+	if (err != OK || str.contains("error:") || !FileAccess::exists(p_app_path + "/Contents/Resources/Assets.car") || !FileAccess::exists(plist)) {
+		print_verbose(str);
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Liquid Glass Icons"), TTR("Could not export liquid glass icon:") + "\n" + str);
+		return err;
+	}
+
+	return OK;
 }
 
 /**
@@ -1861,7 +1944,16 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (file == "Contents/Info.plist") {
-			_fix_plist(p_preset, data, pkg_name);
+			bool lg_icon_expored = false;
+			String lg_icon = p_preset->get("application/liquid_glass_icon");
+#ifdef MACOS_ENABLED
+			// Export liquid glass.
+			if (!lg_icon.is_empty()) {
+				lg_icon_expored = (_export_liquid_glass_icon(p_preset, tmp_app_path_name, lg_icon) == OK);
+			}
+#endif
+			// Modify plist.
+			_fix_plist(p_preset, data, pkg_name, lg_icon_expored, lg_icon.get_file().get_basename());
 		}
 
 		if (file == "Contents/Resources/PrivacyInfo.xcprivacy") {
