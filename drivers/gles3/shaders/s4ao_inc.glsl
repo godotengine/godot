@@ -1,0 +1,49 @@
+// The sample_width should be even, else the midpoint is at UV.
+#define SAMPLE_WIDTH_LOW_QUALITY 2
+#define SAMPLE_WIDTH_MID_QUALITY 4
+#define SAMPLE_WIDTH_HIGH_QUALITY 6
+
+// Takes sample_width^2 samples in a grid, with the corners notched.
+const int sample_width = SAMPLE_WIDTH_MID_QUALITY;
+const int notch_01 = int(sample_width > 3); // Set to 1 to skip the corner samples, 0 to include them.
+const float sample_mid = (float(sample_width) - 1.0) * 0.50001; // Can't be exactly 0.5 in case sample_width is odd.
+const float inv_half_width = 1.7 / sample_mid; // Bake in the 1.7 scale for the random rotation.
+const float average_samples = 1.0 / float(sample_width * sample_width - 4 * notch_01);
+const vec2 prn_UV = vec2((9.0 + sqrt(221.0)) / 10.0, 1.618033988749) * 4242.42;
+
+// Perform the SSAO.
+float s4ao(vec2 UV) {
+	float depth = texture(depth_buffer, UV).r;
+	vec2 slope = vec2(dFdx(depth), dFdy(depth)) * viewport_size;
+	slope *= smoothstep(1.0f, 0.0f, dot(slope, slope)); // Mitigate discontinuities.
+	vec3 normal = normalize(vec3(-slope, 1.0f));
+	float radius = max(1e-4f, depth * ssao_radius_frac);
+	float inv_falloff = 1.0f / max(1e-4f, depth * ssao_falloff_frac);
+	// Random 2D rotation per pixel (+/-45 deg, with 0 having a higher probability).
+	vec2 rcos = (inv_half_width * radius) * (vec2(0.5f, fract(dot(UV, prn_UV)) - 0.5f)); // Random cosine vector.
+	vec2 rsin = rcos.yx * vec2(-1, 1); // Transpose of the random cosine vector.
+#if 1
+	// Precompute the UV offset vector per row.
+	vec2 row_duv[sample_width];
+	for (int i = 0; i < sample_width; ++i) {
+		row_duv[i] = (float(i) - sample_mid) * rcos;
+	}
+#endif
+	// Grab the samples and determine the occlusion.
+	float occlusion = 0.0f;
+	for (int j = 0; j < sample_width; ++j) {
+		vec2 pre_ray = (float(j) - sample_mid) * rsin;
+		int o = notch_01 & int((j <= 0) || (j >= (sample_width - 1))); // Notch corners of the grid.
+		for (int i = o; i < (sample_width - o); ++i) {
+			vec3 ray = vec3(row_duv[i] + pre_ray, 0.0f);
+			//vec3 ray = vec3( (float(i) - sample_mid) * rcos + pre_ray, 0.0f );
+			ray.z = texture(depth_buffer, UV + ray.xy).r - depth;
+			float validity = smoothstep(1.0f, 0.0f, ray.z * inv_falloff);
+			occlusion += dot(normalize(ray), normal) * validity; // How 'directly overhead' is it?
+		}
+	}
+	// Adjust the occlusion for intensity, and # samples.
+	occlusion *= ssao_intensity * average_samples;
+	occlusion = clamp(1.0f - occlusion, 0.0f, 1.0f);
+	return occlusion * occlusion;
+}

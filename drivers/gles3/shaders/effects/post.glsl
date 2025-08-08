@@ -10,6 +10,7 @@ USE_LUMINANCE_MULTIPLIER = false
 USE_BCS = false
 USE_COLOR_CORRECTION = false
 USE_1D_LUT = false
+USE_SSAO = false
 
 #[vertex]
 layout(location = 0) in vec2 vertex_attrib;
@@ -91,6 +92,15 @@ vec3 apply_bcs(vec3 color) {
 }
 #endif
 
+#ifdef USE_SSAO
+uniform float ssao_intensity;
+uniform float ssao_radius_frac;
+uniform float ssao_falloff_frac;
+uniform vec2 viewport_size;
+uniform sampler2D depth_buffer; // texunit:3
+#include "../s4ao_inc.glsl"
+#endif
+
 in vec2 uv_interp;
 
 layout(location = 0) out vec4 frag_color;
@@ -115,6 +125,11 @@ void main() {
 #endif
 
 	color.rgb = srgb_to_linear(color.rgb);
+
+#ifdef USE_SSAO
+	color.rgb *= s4ao(uv_interp);
+#endif
+
 	color.rgb = apply_tonemapping(color.rgb, white);
 	color.rgb = linear_to_srgb(color.rgb);
 
