@@ -268,6 +268,36 @@ const GodotOS = {
 				}, 0);
 			});
 		},
+
+		/**
+		 * Returns Web features.
+		 * NOTE: This is not the fully featured `OS.has_feature()`.
+		 *       This is only what is returned from browser land to Godot.
+		 * @param {string} pFeature
+		 * @returns {boolean}
+		 */
+		has_feature_web: function (pFeature) {
+			const ua = navigator.userAgent;
+			if (pFeature === 'web_macos') {
+				return ua.indexOf('Mac') !== -1;
+			}
+			if (pFeature === 'web_windows') {
+				return ua.indexOf('Windows') !== -1;
+			}
+			if (pFeature === 'web_android') {
+				return ua.indexOf('Android') !== -1;
+			}
+			if (pFeature === 'web_ios') {
+				return ua.indexOf('iPhone') !== -1 || ua.indexOf('iPad') !== -1 || ua.indexOf('iPod') !== -1;
+			}
+			if (pFeature === 'web_linuxbsd') {
+				return ua.indexOf('cross') !== -1
+					|| ua.indexOf('BSD') !== -1
+					|| ua.indexOf('Linux') !== -1
+					|| ua.indexOf('X11') !== -1;
+			}
+			return false;
+		},
 	},
 
 	godot_js_os_finish_async__proxy: 'sync',
@@ -301,25 +331,9 @@ const GodotOS = {
 
 	godot_js_os_has_feature__proxy: 'sync',
 	godot_js_os_has_feature__sig: 'ii',
-	godot_js_os_has_feature: function (p_ftr) {
-		const ftr = GodotRuntime.parseString(p_ftr);
-		const ua = navigator.userAgent;
-		if (ftr === 'web_macos') {
-			return (ua.indexOf('Mac') !== -1) ? 1 : 0;
-		}
-		if (ftr === 'web_windows') {
-			return (ua.indexOf('Windows') !== -1) ? 1 : 0;
-		}
-		if (ftr === 'web_android') {
-			return (ua.indexOf('Android') !== -1) ? 1 : 0;
-		}
-		if (ftr === 'web_ios') {
-			return ((ua.indexOf('iPhone') !== -1) || (ua.indexOf('iPad') !== -1) || (ua.indexOf('iPod') !== -1)) ? 1 : 0;
-		}
-		if (ftr === 'web_linuxbsd') {
-			return ((ua.indexOf('CrOS') !== -1) || (ua.indexOf('BSD') !== -1) || (ua.indexOf('Linux') !== -1) || (ua.indexOf('X11') !== -1)) ? 1 : 0;
-		}
-		return 0;
+	godot_js_os_has_feature: function (pFeaturePtr) {
+		const feature = GodotRuntime.parseString(pFeaturePtr);
+		return Number(GodotOS.has_feature_web(feature));
 	},
 
 	godot_js_os_execute__proxy: 'sync',
