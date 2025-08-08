@@ -375,7 +375,8 @@ struct png_struct_def
 
 /* New member added in libpng-1.6.36 */
 #if defined(PNG_READ_EXPAND_SUPPORTED) && \
-    defined(PNG_ARM_NEON_IMPLEMENTATION)
+    (defined(PNG_ARM_NEON_IMPLEMENTATION) || \
+     defined(PNG_RISCV_RVV_IMPLEMENTATION))
    png_bytep riffled_palette; /* buffer for accelerated palette expansion */
 #endif
 
