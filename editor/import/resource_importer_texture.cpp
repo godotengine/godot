@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
+#include "core/math/math_funcs.h"
 #include "core/version.h"
 #include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_toaster.h"
@@ -982,6 +983,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 		if (convert_editor_colors) {
 			editor_meta["editor_dark_theme"] = EditorThemeManager::is_dark_theme();
+			editor_meta["icon_saturation"] = EDITOR_GET("interface/theme/icon_saturation");
 		}
 
 		_save_editor_meta(editor_meta, p_save_path + ".editor.meta");
@@ -1038,6 +1040,10 @@ bool ResourceImporterTexture::are_import_settings_valid(const String &p_path, co
 		Dictionary editor_meta = _load_editor_meta(editor_meta_path);
 
 		if (editor_meta.has("editor_scale") && (float)editor_meta["editor_scale"] != EDSCALE) {
+			return false;
+		}
+
+		if (editor_meta.has("icon_saturation") && !Math::is_equal_approx((float)editor_meta["icon_saturation"], EDITOR_GET("interface/theme/icon_saturation"))) {
 			return false;
 		}
 
