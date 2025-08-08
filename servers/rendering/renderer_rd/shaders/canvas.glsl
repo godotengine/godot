@@ -462,8 +462,8 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 	}
 }
 
-float msdf_median(float r, float g, float b, float a) {
-	return min(max(min(r, g), min(max(r, g), b)), a);
+float msdf_median(float r, float g, float b) {
+    return max(min(r, g), min(max(r, g), b));
 }
 
 void main() {
