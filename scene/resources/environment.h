@@ -67,6 +67,7 @@ public:
 		TONE_MAPPER_FILMIC,
 		TONE_MAPPER_ACES,
 		TONE_MAPPER_AGX,
+		TONE_MAPPER_ADJUSTABLE,
 	};
 
 	enum SDFGIYScale {
@@ -114,7 +115,9 @@ private:
 	// Tonemap
 	ToneMapper tone_mapper = TONE_MAPPER_LINEAR;
 	float tonemap_exposure = 1.0;
+	float tonemap_black = 0.0;
 	float tonemap_white = 1.0;
+	float tonemap_contrast = 1.25; // Default to approximately Blender's AgX contrast
 	void _update_tonemap();
 
 	// SSR
@@ -271,6 +274,10 @@ public:
 	float get_tonemap_exposure() const;
 	void set_tonemap_white(float p_white);
 	float get_tonemap_white() const;
+	void set_tonemap_black(float p_black);
+	float get_tonemap_black() const;
+	void set_tonemap_contrast(float p_contrast);
+	float get_tonemap_contrast() const;
 
 	// SSR
 	void set_ssr_enabled(bool p_enabled);

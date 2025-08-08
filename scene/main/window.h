@@ -134,6 +134,15 @@ private:
 	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 	bool force_native = false;
 
+	mutable bool hdr_output_enabled = false;
+	mutable bool hdr_output_prefer_high_precision = false;
+	mutable bool hdr_output_auto_adjust_reference_luminance = false;
+	mutable float hdr_output_reference_luminance = 200.0f; // BT.2408 recommendation of 203 nits for HDR Reference White, rounded to 200 to be a more pleasant player-facing value.
+	mutable bool hdr_output_auto_adjust_max_luminance = false;
+	mutable float hdr_output_max_luminance = 1000.0f;
+
+	void _update_viewport_for_hdr_output();
+
 	bool transient = false;
 	bool transient_to_focused = false;
 	bool exclusive = false;
@@ -331,6 +340,28 @@ public:
 
 	void set_flag(Flags p_flag, bool p_enabled);
 	bool get_flag(Flags p_flag) const;
+
+	bool is_hdr_output_supported() const;
+
+	void set_hdr_output_enabled(bool p_enabled);
+	bool is_hdr_output_enabled() const;
+
+	void set_hdr_output_prefer_high_precision(bool p_enabled);
+	bool is_hdr_output_preferring_high_precision() const;
+
+	void set_hdr_output_auto_adjust_reference_luminance(bool p_enabled);
+	bool is_hdr_output_auto_adjusting_reference_luminance() const;
+
+	void set_hdr_output_reference_luminance(float p_reference_luminance);
+	float get_hdr_output_reference_luminance() const;
+
+	void set_hdr_output_auto_adjust_max_luminance(bool p_enabled);
+	bool is_hdr_output_auto_adjusting_max_luminance() const;
+
+	void set_hdr_output_max_luminance(float p_max_luminance);
+	float get_hdr_output_max_luminance() const;
+
+	float get_hdr_output_max_value() const;
 
 	bool is_maximize_allowed() const;
 
