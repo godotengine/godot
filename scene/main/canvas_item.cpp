@@ -402,6 +402,9 @@ void CanvasItem::_notification(int p_what) {
 			if (get_viewport()) {
 				get_parent()->disconnect(SNAME("child_order_changed"), callable_mp(get_viewport(), &Viewport::canvas_parent_mark_dirty).bind(get_parent()));
 			}
+#ifdef DEBUG_ENABLED
+			_set_debug_canvas_item_visible(false);
+#endif //DEBUG_ENABLED
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
@@ -414,6 +417,9 @@ void CanvasItem::_notification(int p_what) {
 			ERR_MAIN_THREAD_GUARD;
 
 			emit_signal(SceneStringName(visibility_changed));
+#ifdef DEBUG_ENABLED
+			_set_debug_canvas_item_visible(visible);
+#endif //DEBUG_ENABLED
 		} break;
 		case NOTIFICATION_WORLD_2D_CHANGED: {
 			ERR_MAIN_THREAD_GUARD;
@@ -427,6 +433,13 @@ void CanvasItem::_notification(int p_what) {
 
 			_notify_transform();
 		} break;
+
+#ifdef DEBUG_ENABLED
+		case NOTIFICATION_TRANSFORM_CHANGED:
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
+			_update_debug_canvas_item_transform();
+		} break;
+#endif // DEBUG_ENABLED
 	}
 }
 
@@ -1123,6 +1136,38 @@ CanvasItem *CanvasItem::get_top_level() const {
 	return ci;
 }
 
+#ifdef DEBUG_ENABLED
+void CanvasItem::_init_debug_canvas_item() {
+	ERR_FAIL_COND(!is_inside_tree());
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	if (!debug_canvas_item.is_valid()) {
+		debug_canvas_item = rs->canvas_item_create();
+		rs->canvas_item_set_parent(debug_canvas_item, get_world_2d()->get_canvas());
+	}
+	_update_debug_canvas_item_transform();
+	set_notify_transform(true);
+}
+
+void CanvasItem::_set_debug_canvas_item_visible(bool p_visible) {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	ERR_FAIL_NULL(rs);
+	if (debug_canvas_item.is_valid()) {
+		RS::get_singleton()->canvas_item_set_visible(debug_canvas_item, p_visible);
+	}
+}
+
+void CanvasItem::_update_debug_canvas_item_transform() {
+	if (!debug_canvas_item.is_valid()) {
+		return;
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->canvas_item_set_transform(debug_canvas_item, get_global_transform());
+	rs->canvas_item_set_z_index(debug_canvas_item, get_effective_z_index());
+}
+#endif //DEBUG_ENABLED
+
 Ref<World2D> CanvasItem::get_world_2d() const {
 	ERR_READ_THREAD_GUARD_V(Ref<World2D>());
 	ERR_FAIL_COND_V(!is_inside_tree(), Ref<World2D>());
@@ -1733,7 +1778,12 @@ CanvasItem::CanvasItem() :
 
 CanvasItem::~CanvasItem() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
-	RenderingServer::get_singleton()->free(canvas_item);
+	RenderingServer *rs = RenderingServer::get_singleton();
+	rs->free(canvas_item);
+
+	if (debug_canvas_item.is_valid()) {
+		rs->free(debug_canvas_item);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////
