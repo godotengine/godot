@@ -40,7 +40,8 @@
 #include "SDL_hints_c.h"
 #include "SDL_log_c.h"
 #include "SDL_properties_c.h"
-//#include "audio/SDL_sysaudio.h"
+#include "audio/SDL_sysaudio.h"
+#include "cpuinfo/SDL_cpuinfo_c.h"
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_gamepad_c.h"
@@ -662,7 +663,7 @@ void SDL_Quit(void)
 
     //SDL_QuitPixelFormatDetails();
 
-    //SDL_QuitCPUInfo();
+    SDL_QuitCPUInfo();
 
     /* Now that every subsystem has been quit, we reset the subsystem refcount
      * and the list of initialized subsystems.

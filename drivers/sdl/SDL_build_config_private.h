@@ -39,7 +39,6 @@
 
 // Here we disable SDL subsystems that are not going to be used
 #define SDL_CPUINFO_DISABLED 1
-#define SDL_AUDIO_DISABLED 1
 #define SDL_PROCESS_DUMMY 1
 #define SDL_LOADSO_DUMMY 1
 #define SDL_VIDEO_DISABLED 1
@@ -54,7 +53,73 @@
 #define SDL_LEAN_AND_MEAN 1
 
 // Windows defines
-#if defined(SDL_PLATFORM_WINDOWS)
+#if defined(SDL_PLATFORM_ANDROID)
+
+#define SDL_PLATFORM_PRIVATE_NAME "Android"
+#define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
+
+//#define SDL_JOYSTICK_DISABLED 1
+#define SDL_HAPTIC_DISABLED 1
+
+#define SDL_AUDIO_DRIVER_OPENSLES 1
+
+#define SDL_LOADSO_DLOPEN 1
+
+#define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
+
+#define SDL_TIMER_UNIX 1
+
+// Needed for processing events.
+#define SDL_VIDEO_DRIVER_ANDROID 1
+
+#elif defined(SDL_PLATFORM_IOS)
+
+#define SDL_PLATFORM_PRIVATE_NAME "iOS"
+
+#define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
+
+#define HAVE_LIBC 1
+#define HAVE_GETENV 1
+#define HAVE_SETENV 1
+#define HAVE_UNSETENV 1
+
+#define SDL_AUDIO_DRIVER_COREAUDIO 1
+
+#define SDL_LOADSO_DLOPEN 1
+
+#define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
+
+#define SDL_TIME_UNIX 1
+#define SDL_TIMER_UNIX 1
+
+#elif defined(SDL_PLATFORM_VISIONOS)
+
+#define SDL_PLATFORM_PRIVATE_NAME "visionOS"
+
+#define HAVE_STDIO_H 1
+#define HAVE_STDLIB_H 1
+
+#define HAVE_LIBC 1
+#define HAVE_GETENV 1
+#define HAVE_SETENV 1
+#define HAVE_UNSETENV 1
+
+#define SDL_AUDIO_DRIVER_COREAUDIO 1
+
+#define SDL_LOADSO_DLOPEN 1
+
+#define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
+
+#define SDL_TIME_UNIX 1
+#define SDL_TIMER_UNIX 1
+
+// Windows defines
+#elif defined(SDL_PLATFORM_WINDOWS)
 
 #define SDL_PLATFORM_PRIVATE_NAME "Windows"
 #define HAVE_LIBC 1
@@ -73,6 +138,10 @@
 #define SDL_THREAD_GENERIC_RWLOCK_SUFFIX 1
 #define SDL_THREAD_WINDOWS 1
 #define SDL_TIMER_WINDOWS 1
+
+// Audio
+#define SDL_AUDIO_DRIVER_WASAPI 1
+#define HAVE_MMDEVICEAPI_H 1
 
 // Linux defines
 #elif defined(SDL_PLATFORM_LINUX)
@@ -113,6 +182,16 @@
 #define SDL_INPUT_LINUXEV 1
 #define SDL_THREAD_PTHREAD 1
 
+// Audio
+#define SDL_AUDIO_DRIVER_ALSA 1
+#define SDL_AUDIO_DRIVER_PULSEAUDIO 1
+
+// TODO: Introduce `builtin_alsa` and `builtin_pulseaudio` build arguments.
+#ifdef SOWRAP_ENABLED
+#define SDL_AUDIO_DRIVER_ALSA_DYNAMIC "libasound.so.2"
+#define SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC "libpulse.so.0"
+#endif
+
 // MacOS defines
 #elif defined(SDL_PLATFORM_MACOS)
 
@@ -125,6 +204,9 @@
 #define SDL_JOYSTICK_MFI 1
 #define SDL_TIMER_UNIX 1
 #define SDL_THREAD_PTHREAD 1
+
+// Audio
+#define SDL_AUDIO_DRIVER_COREAUDIO 1
 
 // Other platforms are not supported (for now)
 #else
