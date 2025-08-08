@@ -3602,7 +3602,6 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	remove_type_button = memnew(Button);
 	remove_type_button->set_disabled(true);
 	remove_type_button->set_tooltip_text(TTRC("Remove current type."));
-	remove_type_button->set_accessibility_name(TTRC("Remove current type."));
 	type_list_hb->add_child(remove_type_button);
 	remove_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_remove_type_button_cbk));
 
@@ -3612,6 +3611,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	show_default_items_button = memnew(CheckButton);
 	show_default_items_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	show_default_items_button->set_text(TTR("Show Default"));
+	show_default_items_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 	show_default_items_button->set_tooltip_text(TTR("Show default type items alongside items that have been overridden."));
 	show_default_items_button->set_pressed(true);
 	type_controls->add_child(show_default_items_button);
@@ -3729,7 +3729,7 @@ void ThemeEditor::_theme_save_button_cbk(bool p_save_as) {
 }
 
 void ThemeEditor::_theme_edit_button_cbk() {
-	theme_edit_dialog->popup_centered(Size2(850, 700) * EDSCALE);
+	theme_edit_dialog->popup_centered_clamped(Size2(850, 700) * EDSCALE, 0.8);
 }
 
 void ThemeEditor::_theme_close_button_cbk() {
@@ -3882,6 +3882,8 @@ void ThemeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			theme_close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+
 			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), EditorStringName(EditorStyles)));
 			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), EditorStringName(EditorStyles)));
 			preview_tabs_content->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainerOdd")));
@@ -3897,10 +3899,21 @@ ThemeEditor::ThemeEditor() {
 
 	theme_name = memnew(Label);
 	theme_name->set_text(TTR("Theme:"));
+	theme_name->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_name->set_theme_type_variation("HeaderSmall");
+	theme_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	top_menu->add_child(theme_name);
 
-	top_menu->add_spacer(false);
+	top_menu->add_child(memnew(VSeparator));
+
+	Button *theme_edit_button = memnew(Button);
+	theme_edit_button->set_text(TTRC("Manage Items..."));
+	theme_edit_button->set_tooltip_text(TTRC("Add, remove, organize, and import Theme items."));
+	theme_edit_button->set_flat(true);
+	theme_edit_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
+	top_menu->add_child(theme_edit_button);
+
+	top_menu->add_child(memnew(VSeparator));
 
 	Button *theme_save_button = memnew(Button);
 	theme_save_button->set_text(TTR("Save"));
@@ -3914,20 +3927,13 @@ ThemeEditor::ThemeEditor() {
 	theme_save_as_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(true));
 	top_menu->add_child(theme_save_as_button);
 
-	Button *theme_close_button = memnew(Button);
-	theme_close_button->set_text(TTR("Close"));
+	top_menu->add_child(memnew(VSeparator));
+
+	theme_close_button = memnew(Button);
+	theme_close_button->set_tooltip_text(TTRC("Close"));
 	theme_close_button->set_flat(true);
 	theme_close_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_close_button_cbk));
 	top_menu->add_child(theme_close_button);
-
-	top_menu->add_child(memnew(VSeparator));
-
-	Button *theme_edit_button = memnew(Button);
-	theme_edit_button->set_text(TTR("Manage Items..."));
-	theme_edit_button->set_tooltip_text(TTR("Add, remove, organize and import Theme items."));
-	theme_edit_button->set_flat(true);
-	theme_edit_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
-	top_menu->add_child(theme_edit_button);
 
 	theme_type_editor = memnew(ThemeTypeEditor);
 
@@ -3958,11 +3964,9 @@ ThemeEditor::ThemeEditor() {
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
 	preview_tabs->connect("tab_button_pressed", callable_mp(this, &ThemeEditor::_remove_preview_tab));
 
-	HBoxContainer *add_preview_button_hb = memnew(HBoxContainer);
-	preview_tabbar_hb->add_child(add_preview_button_hb);
 	add_preview_button = memnew(Button);
-	add_preview_button->set_text(TTR("Add Preview"));
-	add_preview_button_hb->add_child(add_preview_button);
+	add_preview_button->set_tooltip_text(TTRC("Add Preview"));
+	preview_tabbar_hb->add_child(add_preview_button);
 	add_preview_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_add_preview_button_cbk));
 
 	DefaultThemeEditorPreview *default_preview_tab = memnew(DefaultThemeEditorPreview);
