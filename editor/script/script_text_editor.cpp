@@ -2290,7 +2290,21 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				parts.append(_quote_drop_data(path));
 			}
 		}
-		text_to_drop = String(is_empty_line ? "\n" : ", ").join(parts);
+		String join_string;
+		if (is_empty_line) {
+			int indent_level = te->get_indent_level(drop_at_line);
+			if (te->is_indent_using_spaces()) {
+				join_string = "\n" + String(" ").repeat(indent_level);
+			} else {
+				join_string = "\n" + String("\t").repeat(indent_level / te->get_tab_size());
+			}
+		} else {
+			join_string = ", ";
+		}
+		text_to_drop = join_string.join(parts);
+		if (is_empty_line) {
+			text_to_drop += join_string;
+		}
 	}
 
 	if (type == "nodes") {
@@ -2351,7 +2365,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 			}
 
-			if (!is_empty_line && drop_at_column == 0) {
+			if (is_empty_line || drop_at_column == 0) {
 				text_to_drop += "\n";
 			}
 		} else {
