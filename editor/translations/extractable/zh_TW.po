@@ -30,24 +30,14 @@ msgstr "從螢幕上選擇一種顏色。"
 msgid "Pick a color from the application window."
 msgstr "從應用程式視窗中選擇一種顏色。"
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"色彩： #%s\n"
-"滑鼠左鍵：設定色彩\n"
-"滑鼠右鍵：刪除預設設定"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"色彩： #%s\n"
-"左鍵點擊：設定色彩"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "輸入十六進位碼（“#ff0000”）或顏色名稱（“red”）。"
+
+msgid "Save"
+msgstr "儲存"
+
+msgid "Clear"
+msgstr "清除"
 
 msgid "Select a picker shape."
 msgstr "選擇選取器形狀。"
@@ -76,9 +66,6 @@ msgstr "開啟"
 
 msgid "Select Current Folder"
 msgstr "選擇目前資料夾"
-
-msgid "Save"
-msgstr "儲存"
 
 msgid "Select This Folder"
 msgstr "選擇此資料夾"
@@ -119,11 +106,11 @@ msgstr "路徑："
 msgid "Refresh files."
 msgstr "重新整理檔案。"
 
-msgid "Toggle the visibility of hidden files."
-msgstr "顯示／取消顯示隱藏檔案。"
-
 msgid "Directories & Files:"
 msgstr "資料夾與檔案："
+
+msgid "Toggle the visibility of hidden files."
+msgstr "顯示／取消顯示隱藏檔案。"
 
 msgid "File:"
 msgstr "檔案："
@@ -235,9 +222,6 @@ msgstr "貼上"
 
 msgid "Select All"
 msgstr "全部選擇"
-
-msgid "Clear"
-msgstr "清除"
 
 msgid "Undo"
 msgstr "復原"

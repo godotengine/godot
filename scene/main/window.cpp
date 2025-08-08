@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
-#include "core/input/shortcut.h"
 #include "core/string/translation_server.h"
 #include "scene/gui/control.h"
 #include "scene/theme/theme_db.h"
@@ -244,7 +243,7 @@ void Window::_validate_property(PropertyInfo &p_property) const {
 		if (initial_position != WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 		}
-	} else if (p_property.name == "theme_type_variation") {
+	} else if (Engine::get_singleton()->is_editor_hint() && p_property.name == "theme_type_variation") {
 		List<StringName> names;
 
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
@@ -305,39 +304,9 @@ void Window::set_title(const String &p_title) {
 	ERR_MAIN_THREAD_GUARD;
 
 	title = p_title;
-	tr_title = atr(p_title);
+	_update_displayed_title();
 
-#ifdef DEBUG_ENABLED
-	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-		// Append a suffix to the window title to denote that the project is running
-		// from a debug build (including the editor, excluding the project manager).
-		// Since this results in lower performance, this should be clearly presented
-		// to the user.
-		tr_title = vformat("%s (DEBUG)", tr_title);
-	}
-#endif
-
-	if (embedder) {
-		embedder->_sub_window_update(this);
-	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
-		DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-		if (keep_title_visible) {
-			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-			Size2i size_limit = get_clamped_minimum_size();
-			if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
-				_update_window_size();
-			}
-		}
-	}
 	emit_signal("title_changed");
-
-#ifdef DEBUG_ENABLED
-	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-		Array arr = { tr_title };
-		EngineDebugger::get_singleton()->send_message("window:title", arr);
-	}
-#endif
-	queue_accessibility_update();
 }
 
 String Window::get_title() const {
@@ -345,9 +314,9 @@ String Window::get_title() const {
 	return title;
 }
 
-String Window::get_translated_title() const {
+String Window::get_displayed_title() const {
 	ERR_READ_THREAD_GUARD_V(String());
-	return tr_title;
+	return displayed_title;
 }
 
 void Window::_settings_changed() {
@@ -698,7 +667,7 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
-	DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
+	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
 	_update_window_size();
@@ -1167,7 +1136,7 @@ Size2i Window::_clamp_window_size(const Size2i &p_size) {
 void Window::_update_window_size() {
 	Size2i size_limit = get_clamped_minimum_size();
 	if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID && keep_title_visible) {
-		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
+		Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(displayed_title, window_id);
 		size_limit = size_limit.max(title_size);
 	}
 
@@ -1366,7 +1335,13 @@ void Window::set_force_native(bool p_force_native) {
 	if (is_visible() && !is_in_edited_scene_root()) {
 		ERR_FAIL_MSG("Can't change \"force_native\" while a window is displayed. Consider hiding window before changing this value.");
 	}
+	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
+		return;
+	}
 	force_native = p_force_native;
+	if (!is_in_edited_scene_root() && is_inside_tree() && get_tree()->get_root()->is_embedding_subwindows()) {
+		set_embedding_subwindows(force_native);
+	}
 }
 
 bool Window::get_force_native() const {
@@ -1430,7 +1405,12 @@ void Window::_notification(int p_what) {
 			ERR_FAIL_COND(ae.is_null());
 
 			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_WINDOW);
-			DisplayServer::get_singleton()->accessibility_update_set_name(ae, tr_title);
+			if (accessibility_name.is_empty()) {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, displayed_title);
+			} else {
+				DisplayServer::get_singleton()->accessibility_update_set_name(ae, accessibility_name);
+			}
+			DisplayServer::get_singleton()->accessibility_update_set_description(ae, accessibility_description);
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_MODAL, exclusive);
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Window::_accessibility_action_grab_focus));
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !visible);
@@ -1448,7 +1428,7 @@ void Window::_notification(int p_what) {
 				}
 
 				int w = get_theme_constant(SNAME("title_height"));
-				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, tr_title);
+				DisplayServer::get_singleton()->accessibility_update_set_name(accessibility_title_element, displayed_title);
 				DisplayServer::get_singleton()->accessibility_update_set_bounds(accessibility_title_element, Rect2(Vector2(0, -w), Size2(size.x, w)));
 			} else {
 				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, get_final_transform());
@@ -1491,6 +1471,9 @@ void Window::_notification(int p_what) {
 				if (!ProjectSettings::get_singleton()->is_connected("settings_changed", callable_mp(this, &Window::_settings_changed))) {
 					ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Window::_settings_changed));
 				}
+			} else if (get_parent() && get_tree()->get_root()->is_embedding_subwindows()) {
+				// Is not the main window and main window is embedding.
+				set_embedding_subwindows(force_native);
 			}
 
 			bool embedded = false;
@@ -1582,29 +1565,7 @@ void Window::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
-
-			tr_title = atr(title);
-#ifdef DEBUG_ENABLED
-			if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-				// Append a suffix to the window title to denote that the project is running
-				// from a debug build (including the editor, excluding the project manager).
-				// Since this results in lower performance, this should be clearly presented
-				// to the user.
-				tr_title = vformat("%s (DEBUG)", tr_title);
-			}
-#endif
-
-			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
-				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
-				if (keep_title_visible) {
-					Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(tr_title, window_id);
-					Size2i size_limit = get_clamped_minimum_size();
-					if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
-						_update_window_size();
-					}
-				}
-			}
-			queue_accessibility_update();
+			_update_displayed_title();
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -1983,6 +1944,8 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	ERR_MAIN_THREAD_GUARD;
 	emit_signal(SNAME("about_to_popup"));
 
+	_pre_popup();
+
 	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.
 		SceneTree *scene_tree = get_tree();
@@ -1994,7 +1957,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 	// Update window size to calculate the actual window size based on contents minimum size and minimum size.
 	_update_window_size();
 
-	bool should_fit = !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
+	bool should_fit = is_embedded() || !DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS);
 
 	if (p_screen_rect != Rect2i()) {
 		set_position(p_screen_rect.position);
@@ -2128,7 +2091,7 @@ Size2 Window::get_clamped_minimum_size() const {
 		return min_size;
 	}
 
-	return min_size.max(get_contents_minimum_size());
+	return min_size.max(get_contents_minimum_size() * get_content_scale_factor());
 }
 
 void Window::grab_focus() {
@@ -2144,6 +2107,14 @@ bool Window::has_focus() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->window_is_focused(window_id);
+	}
+	return focused;
+}
+
+bool Window::has_focus_or_active_popup() const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		return DisplayServer::get_singleton()->window_is_focused(window_id) || (DisplayServer::get_singleton()->window_get_active_popup() == window_id);
 	}
 	return focused;
 }
@@ -2212,7 +2183,33 @@ Rect2i Window::get_usable_parent_rect() const {
 	return parent_rect;
 }
 
+void Window::set_accessibility_name(const String &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	if (accessibility_name != p_name) {
+		accessibility_name = p_name;
+		queue_accessibility_update();
+		update_configuration_warnings();
+	}
+}
+
+String Window::get_accessibility_name() const {
+	return tr(accessibility_name);
+}
+
+void Window::set_accessibility_description(const String &p_description) {
+	ERR_MAIN_THREAD_GUARD;
+	if (accessibility_description != p_description) {
+		accessibility_description = p_description;
+		queue_accessibility_update();
+	}
+}
+
+String Window::get_accessibility_description() const {
+	return tr(accessibility_description);
+}
+
 void Window::accessibility_announcement(const String &p_announcement) {
+	ERR_MAIN_THREAD_GUARD;
 	announcement = p_announcement;
 	queue_accessibility_update();
 }
@@ -2894,7 +2891,8 @@ bool Window::is_layout_rtl() const {
 					String locale = OS::get_singleton()->get_locale();
 					return TS->is_locale_right_to_left(locale);
 				} else {
-					String locale = TranslationServer::get_singleton()->get_tool_locale();
+					const Ref<Translation> &t = TranslationServer::get_singleton()->get_translation_object(TranslationServer::get_singleton()->get_locale());
+					String locale = t.is_valid() ? t->get_locale() : TranslationServer::get_singleton()->get_fallback_locale();
 					return TS->is_locale_right_to_left(locale);
 				}
 			}
@@ -2986,6 +2984,20 @@ Transform2D Window::get_screen_transform_internal(bool p_absolute_position) cons
 	return embedder_transform * get_final_transform();
 }
 
+Transform2D Window::get_popup_base_transform_native() const {
+	ERR_READ_THREAD_GUARD_V(Transform2D());
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+		return Transform2D();
+	}
+	Transform2D popup_base_transform;
+	popup_base_transform.set_origin(get_position());
+	popup_base_transform *= get_final_transform();
+	if (get_embedder()) {
+		return get_embedder()->get_popup_base_transform_native() * popup_base_transform;
+	}
+	return popup_base_transform;
+}
+
 Transform2D Window::get_popup_base_transform() const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	if (is_embedding_subwindows()) {
@@ -3046,6 +3058,42 @@ void Window::_mouse_leave_viewport() {
 		mouse_in_window = false;
 		_propagate_window_notification(this, NOTIFICATION_WM_MOUSE_EXIT);
 	}
+}
+
+void Window::_update_displayed_title() {
+	displayed_title = atr(title);
+
+#ifdef DEBUG_ENABLED
+	if (window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
+		// Append a suffix to the window title to denote that the project is running
+		// from a debug build (including the editor, excluding the project manager).
+		// Since this results in lower performance, this should be clearly presented
+		// to the user.
+		displayed_title = vformat("%s (DEBUG)", displayed_title);
+	}
+#endif
+
+	if (embedder) {
+		embedder->_sub_window_update(this);
+	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+		DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
+		if (keep_title_visible) {
+			Size2i title_size = DisplayServer::get_singleton()->window_get_title_size(displayed_title, window_id);
+			Size2i size_limit = get_clamped_minimum_size();
+			if (title_size.x > size_limit.x || title_size.y > size_limit.y) {
+				_update_window_size();
+			}
+		}
+	}
+
+#ifdef DEBUG_ENABLED
+	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
+		Array arr = { displayed_title };
+		EngineDebugger::get_singleton()->send_message("window:title", arr);
+	}
+#endif
+
+	queue_accessibility_update();
 }
 
 void Window::_bind_methods() {
@@ -3198,6 +3246,11 @@ void Window::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_window_id"), &Window::get_window_id);
 
+	ClassDB::bind_method(D_METHOD("set_accessibility_name", "name"), &Window::set_accessibility_name);
+	ClassDB::bind_method(D_METHOD("get_accessibility_name"), &Window::get_accessibility_name);
+	ClassDB::bind_method(D_METHOD("set_accessibility_description", "description"), &Window::set_accessibility_description);
+	ClassDB::bind_method(D_METHOD("get_accessibility_description"), &Window::get_accessibility_description);
+
 	ClassDB::bind_static_method("Window", D_METHOD("get_focused_window"), &Window::get_focused_window);
 
 	ClassDB::bind_method(D_METHOD("set_layout_direction", "direction"), &Window::set_layout_direction);
@@ -3271,8 +3324,12 @@ void Window::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "content_scale_factor", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), "set_content_scale_factor", "get_content_scale_factor");
 
 #ifndef DISABLE_DEPRECATED
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_auto_translate", "is_auto_translating");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_translate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_auto_translate", "is_auto_translating");
 #endif
+
+	ADD_GROUP("Accessibility", "accessibility_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_name"), "set_accessibility_name", "get_accessibility_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "accessibility_description"), "set_accessibility_description", "get_accessibility_description");
 
 	ADD_GROUP("Theme", "theme_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), "set_theme", "get_theme");

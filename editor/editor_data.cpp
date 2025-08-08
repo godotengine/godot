@@ -36,8 +36,8 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/multi_node_edit.h"
-#include "editor/plugins/editor_context_menu_plugin.h"
+#include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -950,6 +950,7 @@ void EditorData::clear_edited_scenes() {
 		}
 	}
 	edited_scene.clear();
+	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
 }
 
 void EditorData::set_plugin_window_layout(Ref<ConfigFile> p_layout) {
@@ -1116,10 +1117,13 @@ Ref<Texture2D> EditorData::_load_script_icon(const String &p_path) const {
 
 Ref<Texture2D> EditorData::get_script_icon(const String &p_script_path) {
 	// Take from the local cache, if available.
-	if (_script_icon_cache.has(p_script_path)) {
-		// Can be an empty value if we can't resolve any icon for this script.
-		// An empty value is still cached to avoid unnecessary attempts at resolving it again.
-		return _script_icon_cache[p_script_path];
+	{
+		Ref<Texture2D> *icon = _script_icon_cache.getptr(p_script_path);
+		if (icon) {
+			// Can be an empty value if we can't resolve any icon for this script.
+			// An empty value is still cached to avoid unnecessary attempts at resolving it again.
+			return *icon;
+		}
 	}
 
 	// Fast path in case the whole hierarchy is made of global classes.

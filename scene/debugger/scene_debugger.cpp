@@ -32,9 +32,11 @@
 
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/io/dir_access.h"
 #include "core/io/marshalls.h"
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
+#include "core/os/time.h"
 #include "core/templates/local_vector.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/main/canvas_layer.h"
@@ -65,10 +67,6 @@ SceneDebugger::SceneDebugger() {
 	singleton = this;
 
 #ifdef DEBUG_ENABLED
-	if (unlikely(parse_message_handlers.is_empty())) {
-		_init_parse_message_handlers();
-	}
-
 	LiveEditor::singleton = memnew(LiveEditor);
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
 
@@ -95,6 +93,9 @@ SceneDebugger::~SceneDebugger() {
 
 void SceneDebugger::initialize() {
 	if (EngineDebugger::is_active()) {
+#ifdef DEBUG_ENABLED
+		_init_message_handlers();
+#endif
 		memnew(SceneDebugger);
 	}
 }
@@ -137,17 +138,17 @@ void SceneDebugger::_handle_embed_input(const Ref<InputEvent> &p_event, const Di
 	}
 }
 
-Error SceneDebugger::_msg_setup_scene(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
-	p_scene_tree->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
+Error SceneDebugger::_msg_setup_scene(const Array &p_args) {
+	SceneTree::get_singleton()->get_root()->connect(SceneStringName(window_input), callable_mp_static(SceneDebugger::_handle_input).bind(DebuggerMarshalls::deserialize_key_shortcut(p_args)));
 	return OK;
 }
 
-Error SceneDebugger::_msg_request_scene_tree(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
-	p_live_editor->_send_tree();
+Error SceneDebugger::_msg_request_scene_tree(const Array &p_args) {
+	LiveEditor::get_singleton()->_send_tree();
 	return OK;
 }
 
-Error SceneDebugger::_msg_save_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_save_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
 	_save_node(p_args[0], p_args[1]);
 	Array arr;
@@ -156,7 +157,7 @@ Error SceneDebugger::_msg_save_node(const Array &p_args, SceneTree *p_scene_tree
 	return OK;
 }
 
-Error SceneDebugger::_msg_inspect_objects(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_inspect_objects(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
 	Vector<ObjectID> ids;
 	for (const Variant &id : (Array)p_args[0]) {
@@ -166,53 +167,53 @@ Error SceneDebugger::_msg_inspect_objects(const Array &p_args, SceneTree *p_scen
 	return OK;
 }
 
-Error SceneDebugger::_msg_clear_selection(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
-	p_runtime_node_select->_clear_selection();
+Error SceneDebugger::_msg_clear_selection(const Array &p_args) {
+	RuntimeNodeSelect::get_singleton()->_clear_selection();
 	return OK;
 }
 
-Error SceneDebugger::_msg_suspend_changed(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_suspend_changed(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool suspended = p_args[0];
-	p_scene_tree->set_suspend(suspended);
-	p_runtime_node_select->_update_input_state();
+	SceneTree::get_singleton()->set_suspend(suspended);
+	RuntimeNodeSelect::get_singleton()->_update_input_state();
 	return OK;
 }
 
-Error SceneDebugger::_msg_next_frame(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_next_frame(const Array &p_args) {
 	_next_frame();
 	return OK;
 }
 
-Error SceneDebugger::_msg_debug_mute_audio(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_debug_mute_audio(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool do_mute = p_args[0];
 	AudioServer::get_singleton()->set_debug_mute(do_mute);
 	return OK;
 }
 
-Error SceneDebugger::_msg_override_cameras(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_override_cameras(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool enable = p_args[0];
 	bool from_editor = p_args[1];
-	p_scene_tree->get_root()->enable_canvas_transform_override(enable);
+	SceneTree::get_singleton()->get_root()->enable_canvas_transform_override(enable);
 #ifndef _3D_DISABLED
-	p_scene_tree->get_root()->enable_camera_3d_override(enable);
+	SceneTree::get_singleton()->get_root()->enable_camera_3d_override(enable);
 #endif // _3D_DISABLED
-	p_runtime_node_select->_set_camera_override_enabled(enable && !from_editor);
+	RuntimeNodeSelect::get_singleton()->_set_camera_override_enabled(enable && !from_editor);
 	return OK;
 }
 
-Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_transform_camera_2d(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	Transform2D transform = p_args[0];
-	p_scene_tree->get_root()->set_canvas_transform_override(transform);
-	p_runtime_node_select->_queue_selection_update();
+	SceneTree::get_singleton()->get_root()->set_canvas_transform_override(transform);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 
 #ifndef _3D_DISABLED
-Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 5, ERR_INVALID_DATA);
 	Transform3D transform = p_args[0];
 	bool is_perspective = p_args[1];
@@ -220,38 +221,38 @@ Error SceneDebugger::_msg_transform_camera_3d(const Array &p_args, SceneTree *p_
 	float depth_near = p_args[3];
 	float depth_far = p_args[4];
 	if (is_perspective) {
-		p_scene_tree->get_root()->set_camera_3d_override_perspective(size_or_fov, depth_near, depth_far);
+		SceneTree::get_singleton()->get_root()->set_camera_3d_override_perspective(size_or_fov, depth_near, depth_far);
 	} else {
-		p_scene_tree->get_root()->set_camera_3d_override_orthogonal(size_or_fov, depth_near, depth_far);
+		SceneTree::get_singleton()->get_root()->set_camera_3d_override_orthogonal(size_or_fov, depth_near, depth_far);
 	}
-	p_scene_tree->get_root()->set_camera_3d_override_transform(transform);
-	p_runtime_node_select->_queue_selection_update();
+	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(transform);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 #endif // _3D_DISABLED
 
-Error SceneDebugger::_msg_set_object_property(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_set_object_property(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
 	_set_object_property(p_args[0], p_args[1], p_args[2]);
-	p_runtime_node_select->_queue_selection_update();
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 
-Error SceneDebugger::_msg_set_object_property_field(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_set_object_property_field(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
 	_set_object_property(p_args[0], p_args[1], p_args[2], p_args[3]);
-	p_runtime_node_select->_queue_selection_update();
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 
-Error SceneDebugger::_msg_reload_cached_files(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_reload_cached_files(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	PackedStringArray files = p_args[0];
 	reload_cached_files(files);
 	return OK;
 }
 
-Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
 	Dictionary dict = p_args[0];
 	LocalVector<Variant> keys = dict.get_key_list();
@@ -266,63 +267,49 @@ Error SceneDebugger::_msg_setup_embedded_shortcuts(const Array &p_args, SceneTre
 
 // region Live editing.
 
-Error SceneDebugger::_msg_live_set_root(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_set_root(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-	p_live_editor->_root_func(p_args[0], p_args[1]);
+	LiveEditor::get_singleton()->_root_func(p_args[0], p_args[1]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_node_path(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_node_path(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-	p_live_editor->_node_path_func(p_args[0], p_args[1]);
+	LiveEditor::get_singleton()->_node_path_func(p_args[0], p_args[1]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_res_path(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_res_path(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-	p_live_editor->_res_path_func(p_args[0], p_args[1]);
+	LiveEditor::get_singleton()->_res_path_func(p_args[0], p_args[1]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_node_prop_res(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_node_prop_res(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_node_set_res_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_node_set_res_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_node_prop(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_node_prop(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_node_set_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_node_set_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_res_prop_res(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_res_prop_res(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_res_set_res_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_res_set_res_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_res_prop(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_res_prop(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_res_set_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_res_set_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_node_call(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
-	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-	LocalVector<Variant> args;
-	LocalVector<Variant *> argptrs;
-	args.resize(p_args.size() - 2);
-	argptrs.resize(args.size());
-	for (uint32_t i = 0; i < args.size(); i++) {
-		args[i] = p_args[i + 2];
-		argptrs[i] = &args[i];
-	}
-	p_live_editor->_node_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
-	return OK;
-}
-
-Error SceneDebugger::_msg_live_res_call(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_node_call(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
 	LocalVector<Variant> args;
 	LocalVector<Variant *> argptrs;
@@ -332,51 +319,65 @@ Error SceneDebugger::_msg_live_res_call(const Array &p_args, SceneTree *p_scene_
 		args[i] = p_args[i + 2];
 		argptrs[i] = &args[i];
 	}
-	p_live_editor->_res_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
+	LiveEditor::get_singleton()->_node_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_create_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_res_call(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
+	LocalVector<Variant> args;
+	LocalVector<Variant *> argptrs;
+	args.resize(p_args.size() - 2);
+	argptrs.resize(args.size());
+	for (uint32_t i = 0; i < args.size(); i++) {
+		args[i] = p_args[i + 2];
+		argptrs[i] = &args[i];
+	}
+	LiveEditor::get_singleton()->_res_call_func(p_args[0], p_args[1], argptrs.size() ? (const Variant **)argptrs.ptr() : nullptr, argptrs.size());
+	return OK;
+}
+
+Error SceneDebugger::_msg_live_create_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_create_node_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_create_node_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_instantiate_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_instantiate_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_instance_node_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_instance_node_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_remove_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_remove_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
-	p_live_editor->_remove_node_func(p_args[0]);
-	p_runtime_node_select->_queue_selection_update();
+	LiveEditor::get_singleton()->_remove_node_func(p_args[0]);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_remove_and_keep_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_remove_and_keep_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-	p_live_editor->_remove_and_keep_node_func(p_args[0], p_args[1]);
-	p_runtime_node_select->_queue_selection_update();
+	LiveEditor::get_singleton()->_remove_and_keep_node_func(p_args[0], p_args[1]);
+	RuntimeNodeSelect::get_singleton()->_queue_selection_update();
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_restore_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_restore_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 3, ERR_INVALID_DATA);
-	p_live_editor->_restore_node_func(p_args[0], p_args[1], p_args[2]);
+	LiveEditor::get_singleton()->_restore_node_func(p_args[0], p_args[1], p_args[2]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_duplicate_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_duplicate_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 2, ERR_INVALID_DATA);
-	p_live_editor->_duplicate_node_func(p_args[0], p_args[1]);
+	LiveEditor::get_singleton()->_duplicate_node_func(p_args[0], p_args[1]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_live_reparent_node(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_live_reparent_node(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.size() < 4, ERR_INVALID_DATA);
-	p_live_editor->_reparent_node_func(p_args[0], p_args[1], p_args[2], p_args[3]);
+	LiveEditor::get_singleton()->_reparent_node_func(p_args[0], p_args[1], p_args[2], p_args[3]);
 	return OK;
 }
 
@@ -384,65 +385,97 @@ Error SceneDebugger::_msg_live_reparent_node(const Array &p_args, SceneTree *p_s
 
 // region Runtime Node Selection.
 
-Error SceneDebugger::_msg_runtime_node_select_setup(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_runtime_node_select_setup(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty() || p_args[0].get_type() != Variant::DICTIONARY, ERR_INVALID_DATA);
-	p_runtime_node_select->_setup(p_args[0]);
+	RuntimeNodeSelect::get_singleton()->_setup(p_args[0]);
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_type(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_runtime_node_select_set_type(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	RuntimeNodeSelect::NodeType type = (RuntimeNodeSelect::NodeType)(int)p_args[0];
-	p_runtime_node_select->_node_set_type(type);
+	RuntimeNodeSelect::get_singleton()->_node_set_type(type);
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_mode(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_runtime_node_select_set_mode(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	RuntimeNodeSelect::SelectMode mode = (RuntimeNodeSelect::SelectMode)(int)p_args[0];
-	p_runtime_node_select->_select_set_mode(mode);
+	RuntimeNodeSelect::get_singleton()->_select_set_mode(mode);
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
+Error SceneDebugger::_msg_runtime_node_select_set_visible(const Array &p_args) {
 	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
 	bool visible = p_args[0];
-	p_runtime_node_select->_set_selection_visible(visible);
+	RuntimeNodeSelect::get_singleton()->_set_selection_visible(visible);
 	return OK;
 }
 
-Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
-	p_runtime_node_select->_reset_camera_2d();
+Error SceneDebugger::_msg_runtime_node_select_reset_camera_2d(const Array &p_args) {
+	RuntimeNodeSelect::get_singleton()->_reset_camera_2d();
 	return OK;
 }
 #ifndef _3D_DISABLED
-Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select) {
-	p_runtime_node_select->_reset_camera_3d();
+Error SceneDebugger::_msg_runtime_node_select_reset_camera_3d(const Array &p_args) {
+	RuntimeNodeSelect::get_singleton()->_reset_camera_3d();
 	return OK;
 }
 #endif // _3D_DISABLED
 
 // endregion
 
+// region Embedded process screenshot.
+
+Error SceneDebugger::_msg_rq_screenshot(const Array &p_args) {
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+
+	Viewport *viewport = SceneTree::get_singleton()->get_root();
+	ERR_FAIL_NULL_V_MSG(viewport, ERR_UNCONFIGURED, "Cannot get a viewport from the main screen.");
+	Ref<ViewportTexture> texture = viewport->get_texture();
+	ERR_FAIL_COND_V_MSG(texture.is_null(), ERR_UNCONFIGURED, "Cannot get a viewport texture from the main screen.");
+	Ref<Image> img = texture->get_image();
+	ERR_FAIL_COND_V_MSG(img.is_null(), ERR_UNCONFIGURED, "Cannot get an image from a viewport texture of the main screen.");
+	img->clear_mipmaps();
+
+	const String TEMP_DIR = OS::get_singleton()->get_temp_path();
+	uint32_t suffix_i = 0;
+	String path;
+	while (true) {
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
+		datetime += itos(Time::get_singleton()->get_ticks_usec());
+		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+		path = TEMP_DIR.path_join("scr-" + suffix + ".png");
+		if (!DirAccess::exists(path)) {
+			break;
+		}
+		suffix_i += 1;
+	}
+	img->save_png(path);
+
+	Array arr;
+	arr.append(p_args[0]);
+	arr.append(img->get_width());
+	arr.append(img->get_height());
+	arr.append(path);
+	EngineDebugger::get_singleton()->send_message("game_view:get_screenshot", arr);
+
+	return OK;
+}
+
+// endregion
+
+HashMap<String, SceneDebugger::ParseMessageFunc> SceneDebugger::message_handlers;
+
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
-	SceneTree *scene_tree = SceneTree::get_singleton();
-	if (!scene_tree) {
-		return ERR_UNCONFIGURED;
-	}
+	ERR_FAIL_NULL_V(SceneTree::get_singleton(), ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(LiveEditor::get_singleton(), ERR_UNCONFIGURED);
+	ERR_FAIL_NULL_V(RuntimeNodeSelect::get_singleton(), ERR_UNCONFIGURED);
 
-	LiveEditor *live_editor = LiveEditor::get_singleton();
-	if (!live_editor) {
-		return ERR_UNCONFIGURED;
-	}
-	RuntimeNodeSelect *runtime_node_select = RuntimeNodeSelect::get_singleton();
-	if (!runtime_node_select) {
-		return ERR_UNCONFIGURED;
-	}
-
-	ParseMessageFunc *fn_ptr = parse_message_handlers.getptr(p_msg);
+	ParseMessageFunc *fn_ptr = message_handlers.getptr(p_msg);
 	if (fn_ptr) {
 		r_captured = true;
-		return (*fn_ptr)(p_args, scene_tree, live_editor, runtime_node_select);
+		return (*fn_ptr)(p_args);
 	}
 
 	if (p_msg.begins_with("live_") || p_msg.begins_with("runtime_node_select_")) {
@@ -457,54 +490,49 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 	return OK;
 }
 
-HashMap<String, SceneDebugger::ParseMessageFunc> SceneDebugger::parse_message_handlers;
-
-void SceneDebugger::_init_parse_message_handlers() {
-#define HANDLER(name) parse_message_handlers[#name] = _msg_##name
-
-	HANDLER(setup_scene);
-	HANDLER(setup_embedded_shortcuts);
-	HANDLER(request_scene_tree);
-	HANDLER(save_node);
-	HANDLER(inspect_objects);
-	HANDLER(clear_selection);
-	HANDLER(suspend_changed);
-	HANDLER(next_frame);
-	HANDLER(debug_mute_audio);
-	HANDLER(override_cameras);
-	HANDLER(transform_camera_2d);
+void SceneDebugger::_init_message_handlers() {
+	message_handlers["setup_scene"] = _msg_setup_scene;
+	message_handlers["setup_embedded_shortcuts"] = _msg_setup_embedded_shortcuts;
+	message_handlers["request_scene_tree"] = _msg_request_scene_tree;
+	message_handlers["save_node"] = _msg_save_node;
+	message_handlers["inspect_objects"] = _msg_inspect_objects;
+	message_handlers["clear_selection"] = _msg_clear_selection;
+	message_handlers["suspend_changed"] = _msg_suspend_changed;
+	message_handlers["next_frame"] = _msg_next_frame;
+	message_handlers["debug_mute_audio"] = _msg_debug_mute_audio;
+	message_handlers["override_cameras"] = _msg_override_cameras;
+	message_handlers["transform_camera_2d"] = _msg_transform_camera_2d;
 #ifndef _3D_DISABLED
-	HANDLER(transform_camera_3d);
+	message_handlers["transform_camera_3d"] = _msg_transform_camera_3d;
 #endif
-	HANDLER(set_object_property);
-	HANDLER(set_object_property_field);
-	HANDLER(reload_cached_files);
-	HANDLER(live_set_root);
-	HANDLER(live_node_path);
-	HANDLER(live_res_path);
-	HANDLER(live_node_prop_res);
-	HANDLER(live_node_prop);
-	HANDLER(live_res_prop_res);
-	HANDLER(live_res_prop);
-	HANDLER(live_node_call);
-	HANDLER(live_res_call);
-	HANDLER(live_create_node);
-	HANDLER(live_instantiate_node);
-	HANDLER(live_remove_node);
-	HANDLER(live_remove_and_keep_node);
-	HANDLER(live_restore_node);
-	HANDLER(live_duplicate_node);
-	HANDLER(live_reparent_node);
-	HANDLER(runtime_node_select_setup);
-	HANDLER(runtime_node_select_set_type);
-	HANDLER(runtime_node_select_set_mode);
-	HANDLER(runtime_node_select_set_visible);
-	HANDLER(runtime_node_select_reset_camera_2d);
+	message_handlers["set_object_property"] = _msg_set_object_property;
+	message_handlers["set_object_property_field"] = _msg_set_object_property_field;
+	message_handlers["reload_cached_files"] = _msg_reload_cached_files;
+	message_handlers["live_set_root"] = _msg_live_set_root;
+	message_handlers["live_node_path"] = _msg_live_node_path;
+	message_handlers["live_res_path"] = _msg_live_res_path;
+	message_handlers["live_node_prop_res"] = _msg_live_node_prop_res;
+	message_handlers["live_node_prop"] = _msg_live_node_prop;
+	message_handlers["live_res_prop_res"] = _msg_live_res_prop_res;
+	message_handlers["live_res_prop"] = _msg_live_res_prop;
+	message_handlers["live_node_call"] = _msg_live_node_call;
+	message_handlers["live_res_call"] = _msg_live_res_call;
+	message_handlers["live_create_node"] = _msg_live_create_node;
+	message_handlers["live_instantiate_node"] = _msg_live_instantiate_node;
+	message_handlers["live_remove_node"] = _msg_live_remove_node;
+	message_handlers["live_remove_and_keep_node"] = _msg_live_remove_and_keep_node;
+	message_handlers["live_restore_node"] = _msg_live_restore_node;
+	message_handlers["live_duplicate_node"] = _msg_live_duplicate_node;
+	message_handlers["live_reparent_node"] = _msg_live_reparent_node;
+	message_handlers["runtime_node_select_setup"] = _msg_runtime_node_select_setup;
+	message_handlers["runtime_node_select_set_type"] = _msg_runtime_node_select_set_type;
+	message_handlers["runtime_node_select_set_mode"] = _msg_runtime_node_select_set_mode;
+	message_handlers["runtime_node_select_set_visible"] = _msg_runtime_node_select_set_visible;
+	message_handlers["runtime_node_select_reset_camera_2d"] = _msg_runtime_node_select_reset_camera_2d;
 #ifndef _3D_DISABLED
-	HANDLER(runtime_node_select_reset_camera_3d);
+	message_handlers["runtime_node_select_reset_camera_3d"] = _msg_runtime_node_select_reset_camera_3d;
 #endif
-
-#undef HANDLER
+	message_handlers["rq_screenshot"] = _msg_rq_screenshot;
 }
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
@@ -1606,8 +1634,8 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 	if (camera_override) {
 		if (node_select_type == NODE_TYPE_2D) {
 			is_dragging_camera = panner->gui_input(p_event, Rect2(Vector2(), root->get_visible_rect().get_size()));
-		} else if (node_select_type == NODE_TYPE_3D && selection_drag_state == SELECTION_DRAG_NONE) {
 #ifndef _3D_DISABLED
+		} else if (node_select_type == NODE_TYPE_3D && selection_drag_state == SELECTION_DRAG_NONE) {
 			if (_handle_3d_input(p_event)) {
 				return;
 			}
@@ -1779,8 +1807,8 @@ void RuntimeNodeSelect::_physics_frame() {
 				}
 			}
 		}
-	} else if (node_select_type == NODE_TYPE_3D) {
 #ifndef _3D_DISABLED
+	} else if (node_select_type == NODE_TYPE_3D) {
 		if (selection_drag_valid) {
 			_find_3d_items_at_rect(selection_drag_area, items);
 		} else {
@@ -2147,7 +2175,7 @@ void RuntimeNodeSelect::_update_selection() {
 		if (visual_instance) {
 			bounds = visual_instance->get_aabb();
 		} else {
-#ifndef PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			CollisionShape3D *collision_shape = Object::cast_to<CollisionShape3D>(node_3d);
 			if (collision_shape) {
 				Ref<Shape3D> shape = collision_shape->get_shape();
@@ -2155,7 +2183,7 @@ void RuntimeNodeSelect::_update_selection() {
 					bounds = shape->get_debug_mesh()->get_aabb();
 				}
 			}
-#endif // PHYSICS_2D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 		}
 
 		Transform3D xform_to_top_level_parent_space = node_3d->get_global_transform().affine_inverse() * node_3d->get_global_transform();

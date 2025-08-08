@@ -48,13 +48,15 @@
 		<method name="get_edited_object">
 			<return type="Object" />
 			<description>
-				Gets the edited object.
+				Returns the edited object.
+				[b]Note:[/b] This method could return [code]null[/code] if the editor has not yet been associated with a property. However, in [method _update_property] and [method _set_read_only], this value is [i]guaranteed[/i] to be non-[code]null[/code].
 			</description>
 		</method>
 		<method name="get_edited_property" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Gets the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.
+				Returns the edited property. If your editor is for a single property (added via [method EditorInspectorPlugin._parse_property]), then this will return the property.
+				[b]Note:[/b] This method could return [code]null[/code] if the editor has not yet been associated with a property. However, in [method _update_property] and [method _set_read_only], this value is [i]guaranteed[/i] to be non-[code]null[/code].
 			</description>
 		</method>
 		<method name="is_selected" qualifiers="const">
@@ -95,7 +97,7 @@
 		<method name="update_property">
 			<return type="void" />
 			<description>
-				Forces refresh of the property display.
+				Forces a refresh of the property display.
 			</description>
 		</method>
 	</methods>
@@ -200,6 +202,11 @@
 			<param index="1" name="value" type="Variant" />
 			<description>
 				Emit it if you want to key a property with a single value.
+			</description>
+		</signal>
+		<signal name="property_overridden">
+			<description>
+				Emitted when a setting override for the current project is requested.
 			</description>
 		</signal>
 		<signal name="property_pinned">

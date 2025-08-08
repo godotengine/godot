@@ -51,6 +51,7 @@ class Node3D : public Node {
 	GDCLASS(Node3D, Node);
 
 	friend class SceneTreeFTI;
+	friend class SceneTreeFTITests;
 
 public:
 	// Edit mode for the rotation.
@@ -143,6 +144,8 @@ private:
 		bool fti_on_tick_property_list : 1;
 		bool fti_global_xform_interp_set : 1;
 		bool fti_frame_xform_force_update : 1;
+		bool fti_is_identity_xform : 1;
+		bool fti_processed : 1;
 
 		RID visibility_parent;
 
@@ -154,6 +157,7 @@ private:
 
 #ifdef TOOLS_ENABLED
 		Vector<Ref<Node3DGizmo>> gizmos;
+		bool gizmos_requested : 1;
 		bool gizmos_disabled : 1;
 		bool gizmos_dirty : 1;
 		bool transform_gizmo_visible : 1;

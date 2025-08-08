@@ -150,7 +150,8 @@ public:
 
 		enum DepthTest {
 			DEPTH_TEST_DISABLED,
-			DEPTH_TEST_ENABLED
+			DEPTH_TEST_ENABLED,
+			DEPTH_TEST_ENABLED_INVERTED,
 		};
 
 		enum CullVariant {
@@ -165,6 +166,23 @@ public:
 			ALPHA_ANTIALIASING_OFF,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+		};
+
+		enum StencilFlags {
+			STENCIL_FLAG_READ = 1,
+			STENCIL_FLAG_WRITE = 2,
+			STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
+		};
+
+		enum StencilCompare {
+			STENCIL_COMPARE_LESS,
+			STENCIL_COMPARE_EQUAL,
+			STENCIL_COMPARE_LESS_OR_EQUAL,
+			STENCIL_COMPARE_GREATER,
+			STENCIL_COMPARE_NOT_EQUAL,
+			STENCIL_COMPARE_GREATER_OR_EQUAL,
+			STENCIL_COMPARE_ALWAYS,
+			STENCIL_COMPARE_MAX // Not an actual operator, just the amount of operators.
 		};
 
 		struct PipelineKey {
@@ -213,7 +231,8 @@ public:
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		int blend_mode = BLEND_MODE_MIX;
-		int depth_testi = DEPTH_TEST_ENABLED;
+		int depth_test_disabledi = 0;
+		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
 		bool uses_point_size = false;
@@ -245,7 +264,13 @@ public:
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;
+		bool uses_z_clip_scale = false;
 		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
+
+		bool stencil_enabled = false;
+		uint32_t stencil_flags = 0;
+		StencilCompare stencil_compare = STENCIL_COMPARE_LESS;
+		uint32_t stencil_reference = 0;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -256,19 +281,19 @@ public:
 			bool has_blend_alpha = uses_blend_alpha;
 			bool has_alpha = has_base_alpha || has_blend_alpha;
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return has_alpha || has_read_screen_alpha || no_depth_draw || no_depth_test;
 		}
 
 		_FORCE_INLINE_ bool uses_depth_in_alpha_pass() const {
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return (uses_depth_prepass_alpha || uses_alpha_antialiasing) && !(no_depth_draw || no_depth_test);
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
 			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe && !uses_z_clip_scale && !stencil_enabled;
 		}
 
 		virtual void set_code(const String &p_Code);
@@ -276,6 +301,7 @@ public:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		uint16_t _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
 		RID _get_shader_variant(uint16_t p_shader_version) const;
 		void _clear_vertex_input_mask_cache();
@@ -349,6 +375,7 @@ public:
 
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
+	void enable_multiview_shader_group();
 	void enable_advanced_shader_group(bool p_needs_multiview = false);
 	bool is_multiview_shader_group_enabled() const;
 	bool is_advanced_shader_group_enabled(bool p_multiview) const;

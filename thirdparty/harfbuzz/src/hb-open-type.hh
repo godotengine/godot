@@ -54,35 +54,40 @@ namespace OT {
  */
 
 /* Integer types in big-endian order and no alignment requirement */
-template <typename Type,
+template <bool BE,
+	  typename Type,
 	  unsigned int Size = sizeof (Type)>
-struct IntType
+struct NumType
 {
   typedef Type type;
-
-  IntType () = default;
-  explicit constexpr IntType (Type V) : v {V} {}
-  IntType& operator = (Type i) { v = i; return *this; }
   /* For reason we define cast out operator for signed/unsigned, instead of Type, see:
    * https://github.com/harfbuzz/harfbuzz/pull/2875/commits/09836013995cab2b9f07577a179ad7b024130467 */
-  operator typename std::conditional<std::is_signed<Type>::value, signed, unsigned>::type () const { return v; }
+  typedef typename std::conditional<std::is_integral<Type>::value,
+				     typename std::conditional<std::is_signed<Type>::value, signed, unsigned>::type,
+				     Type>::type WideType;
 
-  bool operator == (const IntType &o) const { return (Type) v == (Type) o.v; }
-  bool operator != (const IntType &o) const { return !(*this == o); }
+  NumType () = default;
+  explicit constexpr NumType (Type V) : v {V} {}
+  NumType& operator = (Type V) { v = V; return *this; }
 
-  IntType& operator += (unsigned count) { *this = *this + count; return *this; }
-  IntType& operator -= (unsigned count) { *this = *this - count; return *this; }
-  IntType& operator ++ () { *this += 1; return *this; }
-  IntType& operator -- () { *this -= 1; return *this; }
-  IntType operator ++ (int) { IntType c (*this); ++*this; return c; }
-  IntType operator -- (int) { IntType c (*this); --*this; return c; }
+  operator WideType () const { return v; }
 
-  HB_INTERNAL static int cmp (const IntType *a, const IntType *b)
+  bool operator == (const NumType &o) const { return (Type) v == (Type) o.v; }
+  bool operator != (const NumType &o) const { return !(*this == o); }
+
+  NumType& operator += (WideType count) { *this = *this + count; return *this; }
+  NumType& operator -= (WideType count) { *this = *this - count; return *this; }
+  NumType& operator ++ () { *this += 1; return *this; }
+  NumType& operator -- () { *this -= 1; return *this; }
+  NumType operator ++ (int) { NumType c (*this); ++*this; return c; }
+  NumType operator -- (int) { NumType c (*this); --*this; return c; }
+
+  HB_INTERNAL static int cmp (const NumType *a, const NumType *b)
   { return b->cmp (*a); }
   HB_INTERNAL static int cmp (const void *a, const void *b)
   {
-    IntType *pa = (IntType *) a;
-    IntType *pb = (IntType *) b;
+    NumType *pa = (NumType *) a;
+    NumType *pb = (NumType *) b;
 
     return pb->cmp (*pa);
   }
@@ -99,20 +104,32 @@ struct IntType
     return_trace (c->check_struct (this));
   }
   protected:
-  BEInt<Type, Size> v;
+  typename std::conditional<std::is_integral<Type>::value,
+			    HBInt<BE, Type, Size>,
+			    HBFloat<BE, Type, Size>>::type v;
   public:
   DEFINE_SIZE_STATIC (Size);
 };
 
-typedef IntType<uint8_t>  HBUINT8;	/* 8-bit unsigned integer. */
-typedef IntType<int8_t>   HBINT8;	/* 8-bit signed integer. */
-typedef IntType<uint16_t> HBUINT16;	/* 16-bit unsigned integer. */
-typedef IntType<int16_t>  HBINT16;	/* 16-bit signed integer. */
-typedef IntType<uint32_t> HBUINT32;	/* 32-bit unsigned integer. */
-typedef IntType<int32_t>  HBINT32;	/* 32-bit signed integer. */
+typedef NumType<true, uint8_t>  HBUINT8;	/* 8-bit big-endian unsigned integer. */
+typedef NumType<true, int8_t>   HBINT8;		/* 8-bit big-endian signed integer. */
+typedef NumType<true, uint16_t> HBUINT16;	/* 16-bit big-endian unsigned integer. */
+typedef NumType<true, int16_t>  HBINT16;	/* 16-bit big-endian signed integer. */
+typedef NumType<true, uint32_t> HBUINT32;	/* 32-bit big-endian unsigned integer. */
+typedef NumType<true, int32_t>  HBINT32;	/* 32-bit big-endian signed integer. */
 /* Note: we cannot defined a signed HBINT24 because there's no corresponding C type.
  * Works for unsigned, but not signed, since we rely on compiler for sign-extension. */
-typedef IntType<uint32_t, 3> HBUINT24;	/* 24-bit unsigned integer. */
+typedef NumType<true, uint32_t, 3> HBUINT24;	/* 24-bit big-endian unsigned integer. */
+
+typedef NumType<false, uint16_t> HBUINT16LE;	/* 16-bit little-endian unsigned integer. */
+typedef NumType<false, int16_t>  HBINT16LE;	/* 16-bit little-endian signed integer. */
+typedef NumType<false, uint32_t> HBUINT32LE;	/* 32-bit little-endian unsigned integer. */
+typedef NumType<false, int32_t>  HBINT32LE;	/* 32-bit little-endian signed integer. */
+
+typedef NumType<true,  float>  HBFLOAT32BE;	/* 32-bit little-endian floating point number. */
+typedef NumType<true,  double> HBFLOAT64BE;	/* 64-bit little-endian floating point number. */
+typedef NumType<false, float>  HBFLOAT32LE;	/* 32-bit little-endian floating point number. */
+typedef NumType<false, double> HBFLOAT64LE;	/* 64-bit little-endian floating point number. */
 
 /* 15-bit unsigned number; top bit used for extension. */
 struct HBUINT15 : HBUINT16
@@ -218,7 +235,7 @@ typedef HBUINT16 UFWORD;
 template <typename Type, unsigned fraction_bits>
 struct HBFixed : Type
 {
-  static constexpr float shift = (float) (1 << fraction_bits);
+  static constexpr float mult = 1.f / (1 << fraction_bits);
   static_assert (Type::static_size * 8 > fraction_bits, "");
 
   operator signed () const = delete;
@@ -226,8 +243,8 @@ struct HBFixed : Type
   explicit operator float () const { return to_float (); }
   typename Type::type to_int () const { return Type::v; }
   void set_int (typename Type::type i ) { Type::v = i; }
-  float to_float (float offset = 0) const  { return ((int32_t) Type::v + offset) / shift; }
-  void set_float (float f) { Type::v = roundf (f * shift); }
+  float to_float (float offset = 0) const  { return ((int32_t) Type::v + offset) * mult; }
+  void set_float (float f) { Type::v = roundf (f / mult); }
   public:
   DEFINE_SIZE_STATIC (Type::static_size);
 };
@@ -1707,7 +1724,8 @@ struct TupleValues
   static bool decompile (const HBUINT8 *&p /* IN/OUT */,
 			 hb_vector_t<T> &values /* IN/OUT */,
 			 const HBUINT8 *end,
-			 bool consume_all = false)
+			 bool consume_all = false,
+			 unsigned start = 0)
   {
     unsigned i = 0;
     unsigned count = consume_all ? UINT_MAX : values.length;
@@ -1725,6 +1743,10 @@ struct TupleValues
       }
       unsigned stop = i + run_count;
       if (unlikely (stop > count)) return false;
+
+      unsigned skip = i < start ? hb_min (start - i, run_count) : 0;
+      i += skip;
+
       if ((control & VALUES_SIZE_MASK) == VALUES_ARE_ZEROS)
       {
         for (; i < stop; i++)
@@ -1733,6 +1755,7 @@ struct TupleValues
       else if ((control & VALUES_SIZE_MASK) ==  VALUES_ARE_WORDS)
       {
         if (unlikely (p + run_count * HBINT16::static_size > end)) return false;
+	p += skip * HBINT16::static_size;
 #ifndef HB_OPTIMIZE_SIZE
         for (; i + 3 < stop; i += 4)
 	{
@@ -1755,6 +1778,7 @@ struct TupleValues
       else if ((control & VALUES_SIZE_MASK) ==  VALUES_ARE_LONGS)
       {
         if (unlikely (p + run_count * HBINT32::static_size > end)) return false;
+	p += skip * HBINT32::static_size;
         for (; i < stop; i++)
         {
           values.arrayZ[i] = * (const HBINT32 *) p;
@@ -1764,6 +1788,7 @@ struct TupleValues
       else if ((control & VALUES_SIZE_MASK) ==  VALUES_ARE_BYTES)
       {
         if (unlikely (p + run_count > end)) return false;
+	p += skip * HBINT8::static_size;
 #ifndef HB_OPTIMIZE_SIZE
 	for (; i + 3 < stop; i += 4)
 	{
@@ -1888,7 +1913,7 @@ struct TupleValues
 
     bool ensure_run ()
     {
-      if (likely (run_count > 0)) return true;
+      if (run_count > 0) return true;
 
       if (unlikely (p >= end))
       {
@@ -1943,6 +1968,11 @@ struct TupleValues
 	unsigned count = hb_min (n - i, (unsigned) run_count);
 	switch (width)
 	{
+	  case 0:
+	  {
+	    arrayZ += count;
+	    break;
+	  }
 	  case 1:
 	  {
 	    const auto *pp = (const HBINT8 *) p;
@@ -1958,6 +1988,8 @@ struct TupleValues
 #endif
 	    for (; j < count; j++)
 	      *arrayZ++ += scaled ? *pp++ * scale : *pp++;
+
+	    p = (const unsigned char *) pp;
 	  }
 	  break;
 	  case 2:
@@ -1975,6 +2007,8 @@ struct TupleValues
 #endif
 	    for (; j < count; j++)
 	      *arrayZ++ += scaled ? *pp++ * scale : *pp++;
+
+	    p = (const unsigned char *) pp;
 	  }
 	  break;
 	  case 4:
@@ -1982,10 +2016,11 @@ struct TupleValues
 	    const auto *pp = (const HBINT32 *) p;
 	    for (unsigned j = 0; j < count; j++)
 	      *arrayZ++ += scaled ? *pp++ * scale : *pp++;
+
+	    p = (const unsigned char *) pp;
 	  }
 	  break;
 	}
-	p += count * width;
 	run_count -= count;
 	i += count;
       }
@@ -2026,6 +2061,23 @@ struct TupleList : CFF2Index
     return TupleValues::fetcher_t (bytes.arrayZ, bytes.length);
   }
 };
+
+
+// Alignment
+
+template <unsigned int alignment>
+struct Align
+{
+  unsigned get_size (const void *base) const
+  {
+    unsigned offset = (const char *) this - (const char *) base;
+    return (alignment - offset) & (alignment - 1);
+  }
+
+  public:
+  DEFINE_SIZE_MIN (0);
+};
+
 
 
 } /* namespace OT */

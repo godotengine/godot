@@ -1204,19 +1204,35 @@ void ItemList::_accessibility_action_scroll_set(const Variant &p_data) {
 }
 
 void ItemList::_accessibility_action_scroll_up(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() - scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_down(const Variant &p_data) {
-	scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page() / 4);
+	} else {
+		scroll_bar_v->set_value(scroll_bar_v->get_value() + scroll_bar_v->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_left(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() - scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_right(const Variant &p_data) {
-	scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	if ((DisplayServer::AccessibilityScrollUnit)p_data == DisplayServer::SCROLL_UNIT_ITEM) {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page() / 4);
+	} else {
+		scroll_bar_h->set_value(scroll_bar_h->get_value() + scroll_bar_h->get_page());
+	}
 }
 
 void ItemList::_accessibility_action_scroll_into_view(const Variant &p_data, int p_index) {
@@ -1578,8 +1594,6 @@ void ItemList::_notification(int p_what) {
 				}
 
 				if (!items[i].text.is_empty()) {
-					Vector2 size2 = items[i].text_buf->get_size();
-
 					Color txt_modulate;
 					if (items[i].selected && hovered == i) {
 						txt_modulate = theme_cache.font_hovered_selected_color;
@@ -1598,18 +1612,19 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (icon_mode == ICON_MODE_TOP && max_text_lines > 0) {
-						text_ofs += base_ofs;
-						text_ofs += items[i].rect_cache.position;
-
 						text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
+						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
 						items.write[i].text_buf->set_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 
-						float text_w = items[i].rect_cache.size.width;
-						if (wraparound_items && items[i].rect_cache.size.width > width) {
-							text_w -= items[i].rect_cache.size.width - width;
+						float text_w = items[i].rect_cache.size.width - text_ofs.x * 2;
+						if (wraparound_items && text_w + text_ofs.x > width) {
+							text_w = width - text_ofs.x;
 						}
 						items.write[i].text_buf->set_width(text_w);
+
+						text_ofs += base_ofs;
+						text_ofs += items[i].rect_cache.position;
 
 						if (rtl) {
 							text_ofs.x = size.width - text_ofs.x - text_w;
@@ -1621,18 +1636,8 @@ void ItemList::_notification(int p_what) {
 
 						items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 					} else {
-						if (fixed_column_width > 0) {
-							size2.x = MIN(size2.x, fixed_column_width);
-						}
-
-						if (icon_mode == ICON_MODE_TOP) {
-							text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
-							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-							text_ofs.y += MAX(theme_cache.v_separation, 0) / 2;
-						} else {
-							text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
-							text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
-						}
+						text_ofs.y += (items[i].rect_cache.size.height - items[i].text_buf->get_size().y) / 2;
+						text_ofs.x += MAX(theme_cache.h_separation, 0) / 2;
 
 						real_t text_width_ofs = text_ofs.x;
 

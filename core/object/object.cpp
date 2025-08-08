@@ -1924,6 +1924,7 @@ void Object::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONNECT_PERSIST);
 	BIND_ENUM_CONSTANT(CONNECT_ONE_SHOT);
 	BIND_ENUM_CONSTANT(CONNECT_REFERENCE_COUNTED);
+	BIND_ENUM_CONSTANT(CONNECT_APPEND_SOURCE_OBJECT);
 }
 
 void Object::set_deferred(const StringName &p_property, const Variant &p_value) {

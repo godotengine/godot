@@ -78,6 +78,8 @@ public:
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes) override;
 	virtual bool exists(const String &p_path) const override;
 
+	void get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies);
+
 	virtual int get_import_order(const String &p_path) const override;
 
 	Error get_import_order_threads_and_importer(const String &p_path, int &r_order, bool &r_can_threads, String &r_importer) const;
@@ -106,6 +108,8 @@ class ResourceImporter : public RefCounted {
 	GDCLASS(ResourceImporter, RefCounted);
 
 protected:
+	GDVIRTUAL1RC(Vector<String>, _get_build_dependencies, String)
+
 	static void _bind_methods();
 
 public:
@@ -155,6 +159,8 @@ public:
 	virtual Error import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
 	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
+
+	virtual void get_build_dependencies(const String &p_path, HashSet<String> *r_build_dependencies);
 };
 
 VARIANT_ENUM_CAST(ResourceImporter::ImportOrder);

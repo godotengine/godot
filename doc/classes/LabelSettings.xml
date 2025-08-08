@@ -164,7 +164,7 @@
 			The number of stacked outlines.
 		</member>
 		<member name="stacked_shadow_count" type="int" setter="set_stacked_shadow_count" getter="get_stacked_shadow_count" default="0">
-			Returns the stacked shadow count.
+			The number of stacked shadows.
 		</member>
 	</members>
 </class>

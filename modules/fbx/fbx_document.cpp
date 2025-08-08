@@ -53,7 +53,7 @@
 #include "modules/gltf/structures/gltf_camera.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #endif
 
 // FIXME: Hardcoded to avoid editor dependency.
@@ -1798,7 +1798,7 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 			const Skeleton3D *sk = p_state->skeletons[fbx_node->skeleton]->godot_skeleton;
 			ERR_FAIL_NULL(sk);
 
-			const String path = p_animation_player->get_parent()->get_path_to(sk);
+			const String path = String(p_animation_player->get_parent()->get_path_to(sk));
 			const String bone = fbx_node->get_name();
 			transform_node_path = path + ":" + bone;
 		} else {
@@ -2217,11 +2217,15 @@ Error FBXDocument::_parse_fbx_state(Ref<FBXState> p_state, const String &p_searc
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* DETERMINE SKELETONS */
-	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->get_import_as_skeleton_bones() ? p_state->root_nodes : Vector<GLTFNodeIndex>());
+	if (p_state->get_import_as_skeleton_bones()) {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->root_nodes, true);
+	} else {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, Vector<GLTFNodeIndex>(), _naming_version < 2);
+	}
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* CREATE SKELETONS */
-	err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes, p_state->skeleton3d_to_fbx_skeleton, p_state->skeletons, p_state->scene_nodes);
+	err = SkinTool::_create_skeletons(p_state->unique_names, p_state->skins, p_state->nodes, p_state->skeleton3d_to_fbx_skeleton, p_state->skeletons, p_state->scene_nodes, _naming_version);
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* CREATE SKINS */
@@ -2488,6 +2492,14 @@ Error FBXDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_p
 
 Error FBXDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint32_t p_flags) {
 	return ERR_UNAVAILABLE;
+}
+
+void FBXDocument::set_naming_version(int p_version) {
+	_naming_version = p_version;
+}
+
+int FBXDocument::get_naming_version() const {
+	return _naming_version;
 }
 
 Vector3 FBXDocument::_as_vec3(const ufbx_vec3 &p_vector) {

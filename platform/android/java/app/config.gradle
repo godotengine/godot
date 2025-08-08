@@ -15,7 +15,7 @@ ext.versions = [
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
     ndkVersion         : '28.1.13356709',
     splashscreenVersion: '1.0.1',
-    openxrVendorsVersion: '4.0.0-stable'
+    openxrVendorsVersion: '4.1.1-stable'
 
 ]
 
@@ -373,24 +373,6 @@ ext.shouldSign = { ->
 
 ext.shouldNotStrip = { ->
     return isAndroidStudio() || project.hasProperty("doNotStrip")
-}
-
-/**
- * Whether to use the legacy convention of compressing all .so files in the APK.
- *
- * For more background, see:
- * - https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs
- * - https://stackoverflow.com/a/44704840
- */
-ext.shouldUseLegacyPackaging = { ->
-    int minSdk = getExportMinSdkVersion()
-    String legacyPackagingFlag = project.hasProperty("compress_native_libraries") ? project.property("compress_native_libraries") : ""
-    if (legacyPackagingFlag != null && !legacyPackagingFlag.isEmpty()) {
-        return Boolean.parseBoolean(legacyPackagingFlag)
-    }
-
-    // Default behavior for minSdk >= 24
-    return false
 }
 
 ext.getAddonsDirectory = { ->

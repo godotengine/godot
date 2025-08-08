@@ -3509,6 +3509,7 @@ void TileSet::_compatibility_conversion() {
 							compatibility_tilemap_mapping_tile_modes[E.key] = COMPATIBILITY_TILE_MODE_ATLAS_TILE;
 
 							TileData *tile_data = atlas_source->get_tile_data(coords, alternative_tile);
+							ERR_CONTINUE(!tile_data);
 
 							tile_data->set_flip_h(flip_h);
 							tile_data->set_flip_v(flip_v);
@@ -4232,6 +4233,9 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TileSet::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "tile_layout" && tile_shape == TILE_SHAPE_SQUARE) {
 		p_property.usage ^= PROPERTY_USAGE_READ_ONLY;
 	} else if (p_property.name == "tile_offset_axis" && tile_shape == TILE_SHAPE_SQUARE) {

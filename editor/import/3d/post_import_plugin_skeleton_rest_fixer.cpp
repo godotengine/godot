@@ -367,31 +367,15 @@ void PostImportPluginSkeletonRestFixer::internal_process(InternalImportCategory 
 
 				Vector3 prof_dir = prof_tail - prof_head;
 				Vector3 src_dir = src_tail - src_head;
+				if (Math::is_zero_approx(prof_dir.length_squared()) || Math::is_zero_approx(src_dir.length_squared())) {
+					continue;
+				}
+				prof_dir.normalize();
+				src_dir.normalize();
 
 				// Rotate rest.
 				if (Math::abs(Math::rad_to_deg(src_dir.angle_to(prof_dir))) > float(p_options["retarget/rest_fixer/fix_silhouette/threshold"])) {
-					// Get rotation difference.
-					Vector3 up_vec; // Need to rotate other than roll axis.
-					switch (Vector3(std::abs(src_dir.x), std::abs(src_dir.y), std::abs(src_dir.z)).min_axis_index()) {
-						case Vector3::AXIS_X: {
-							up_vec = Vector3(1, 0, 0);
-						} break;
-						case Vector3::AXIS_Y: {
-							up_vec = Vector3(0, 1, 0);
-						} break;
-						case Vector3::AXIS_Z: {
-							up_vec = Vector3(0, 0, 1);
-						} break;
-					}
-					Basis src_b;
-					src_b = src_b.looking_at(src_dir, up_vec);
-					Basis prof_b;
-					prof_b = src_b.looking_at(prof_dir, up_vec);
-					if (prof_b.is_equal_approx(Basis())) {
-						continue; // May not need to rotate.
-					}
-					Basis diff_b = prof_b * src_b.inverse();
-
+					Basis diff_b = Basis(Quaternion(src_dir, prof_dir));
 					// Apply rotation difference as global transform to skeleton.
 					Basis src_pg;
 					int src_parent = src_skeleton->get_bone_parent(src_idx);

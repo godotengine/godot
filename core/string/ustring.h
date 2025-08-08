@@ -177,12 +177,18 @@ class [[nodiscard]] CharStringT {
 public:
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const T *get_data() const { return ptr() ? ptr() : &_null; }
+
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<T>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<T> span() const { return Span(ptr(), length()); }
 
-	_FORCE_INLINE_ Error resize(int p_size) { return _cowdata.resize(p_size); }
+	/// Resizes the string. The given size must include the null terminator.
+	/// New characters are not initialized, and should be set by the caller.
+	_FORCE_INLINE_ Error resize_uninitialized(int64_t p_size) { return _cowdata.template resize<false>(p_size); }
 
 	_FORCE_INLINE_ T get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
@@ -217,7 +223,7 @@ public:
 	}
 	_FORCE_INLINE_ CharStringT<T> &operator+=(T p_char) {
 		const int lhs_len = length();
-		resize(lhs_len + 2);
+		resize_uninitialized(lhs_len + 2);
 
 		T *dst = ptrw();
 		dst[lhs_len] = p_char;
@@ -226,28 +232,20 @@ public:
 		return *this;
 	}
 
-	_FORCE_INLINE_ int length() const { return size() ? size() - 1 : 0; }
-	_FORCE_INLINE_ const T *get_data() const {
-		if (size()) {
-			return &operator[](0);
-		}
-		return &_null;
-	}
-
 protected:
 	void copy_from(const T *p_cstr) {
 		if (!p_cstr) {
-			resize(0);
+			resize_uninitialized(0);
 			return;
 		}
 
 		size_t len = strlen(p_cstr);
 		if (len == 0) {
-			resize(0);
+			resize_uninitialized(0);
 			return;
 		}
 
-		Error err = resize(++len); // include terminating null char.
+		Error err = resize_uninitialized(++len); // include terminating null char.
 
 		ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
 
@@ -313,18 +311,25 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ const char32_t *get_data() const { return ptr() ? ptr() : &_null; }
+
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+	_FORCE_INLINE_ int length() const { return ptr() ? size() - 1 : 0; }
+	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 
 	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
 	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
-	_FORCE_INLINE_ void clear() { resize(0); }
+	_FORCE_INLINE_ void clear() { resize_uninitialized(0); }
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	Error resize(int p_size) { return _cowdata.resize(p_size); }
+
+	/// Resizes the string. The given size must include the null terminator.
+	/// New characters are not initialized, and should be set by the caller.
+	Error resize_uninitialized(int64_t p_size) { return _cowdata.resize<false>(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
 		if (unlikely(p_index == _cowdata.size())) {
@@ -376,14 +381,6 @@ public:
 	// Special sorting for file names. Names starting with `_` are put before all others except those starting with `.`, otherwise natural comparison is used.
 	signed char filecasecmp_to(const String &p_str) const;
 	signed char filenocasecmp_to(const String &p_str) const;
-
-	const char32_t *get_data() const;
-	/* standard size stuff */
-
-	_FORCE_INLINE_ int length() const {
-		int s = size();
-		return s ? (s - 1) : 0; // length does not include zero
-	}
 
 	bool is_valid_string() const;
 
@@ -446,6 +443,7 @@ public:
 	String unquote() const;
 	static String num(double p_num, int p_decimals = -1);
 	static String num_scientific(double p_num);
+	static String num_scientific(float p_num);
 	static String num_real(double p_num, bool p_trailing = true);
 	static String num_real(float p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
@@ -586,7 +584,6 @@ public:
 	Vector<uint8_t> sha1_buffer() const;
 	Vector<uint8_t> sha256_buffer() const;
 
-	_FORCE_INLINE_ bool is_empty() const { return length() == 0; }
 	_FORCE_INLINE_ bool contains(const char *p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains(const String &p_str) const { return find(p_str) != -1; }
 	_FORCE_INLINE_ bool contains_char(char32_t p_chr) const { return find_char(p_chr) != -1; }
@@ -790,24 +787,7 @@ _FORCE_INLINE_ String ETRN(const String &p_text, const String &p_text_plural, in
 	return p_text_plural;
 }
 
-bool select_word(const String &p_s, int p_col, int &r_beg, int &r_end);
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr) {
-}
-
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str) {
-	arr.push_back(p_str);
-}
-
-template <typename... P>
-_FORCE_INLINE_ void sarray_add_str(Vector<String> &arr, const String &p_str, P... p_args) {
-	arr.push_back(p_str);
-	sarray_add_str(arr, p_args...);
-}
-
 template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
-	Vector<String> arr;
-	sarray_add_str(arr, p_args...);
-	return arr;
+	return Vector<String>({ String(p_args)... });
 }

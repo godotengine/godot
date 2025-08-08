@@ -30,10 +30,9 @@
 
 #include "quick_settings_dialog.h"
 
-#include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -281,6 +280,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 		// Language options.
 		{
 			language_option_button = memnew(OptionButton);
+			language_option_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			language_option_button->set_fit_to_longest_item(false);
 			language_option_button->connect(SceneStringName(item_selected), callable_mp(this, &QuickSettingsDialog::_language_selected));
 

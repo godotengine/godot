@@ -22,7 +22,7 @@
 			<param index="0" name="candidates" type="Dictionary[]" />
 			<description>
 				Override this method to define what items in [param candidates] should be displayed.
-				Both [param candidates] and the return is a [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
+				Both [param candidates] and the return is an [Array] of [Dictionary], see [method get_code_completion_option] for [Dictionary] content.
 			</description>
 		</method>
 		<method name="_request_code_completion" qualifiers="virtual">

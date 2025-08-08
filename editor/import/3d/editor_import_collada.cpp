@@ -1565,7 +1565,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 		}
 
 		NodeMap &nm = node_map[E];
-		String path = scene->get_path_to(nm.node);
+		String path = String(scene->get_path_to(nm.node));
 
 		if (nm.bone >= 0) {
 			Skeleton3D *sk = static_cast<Skeleton3D *>(nm.node);
@@ -1756,7 +1756,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 			}
 
 			NodeMap &nm = node_map[at.target];
-			String path = scene->get_path_to(nm.node);
+			String path = String(scene->get_path_to(nm.node));
 
 			animation->add_track(Animation::TYPE_BLEND_SHAPE);
 			int track = animation->get_track_count() - 1;

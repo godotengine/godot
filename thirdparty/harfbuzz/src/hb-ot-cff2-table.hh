@@ -405,7 +405,7 @@ struct cff2
 
       this->blob = sc.reference_table<cff2> (face);
 
-      /* setup for run-time santization */
+      /* setup for run-time sanitization */
       sc.init (this->blob);
       sc.start_processing ();
 
@@ -458,7 +458,8 @@ struct cff2
 	if (unlikely (!font_interp.interpret (*font))) goto fail;
 
 	const hb_ubytes_t privDictStr = StructAtOffsetOrNull<UnsizedByteStr> (cff2, font->privateDictInfo.offset, sc, font->privateDictInfo.size).as_ubytes (font->privateDictInfo.size);
-	if (unlikely (privDictStr == (const unsigned char *) &Null (UnsizedByteStr))) goto fail;
+	if (unlikely (font->privateDictInfo.size &&
+		      privDictStr == (const unsigned char *) &Null (UnsizedByteStr))) goto fail;
 	cff2_priv_dict_interp_env_t env2 (privDictStr);
 	dict_interpreter_t<PRIVOPSET, PRIVDICTVAL, cff2_priv_dict_interp_env_t> priv_interp (env2);
 	privateDicts[i].init ();
@@ -481,6 +482,13 @@ struct cff2
       privateDicts.fini ();
       hb_blob_destroy (blob);
       blob = nullptr;
+
+      auto *scalars = cached_scalars_vector.get_acquire ();
+      if (scalars && cached_scalars_vector.cmpexch (scalars, nullptr))
+      {
+	scalars->fini ();
+	hb_free (scalars);
+      }
     }
 
     hb_vector_t<uint16_t> *create_glyph_to_sid_map () const
@@ -508,6 +516,8 @@ struct cff2
     hb_vector_t<cff2_font_dict_values_t>     fontDicts;
     hb_vector_t<PRIVDICTVAL>  privateDicts;
 
+    mutable hb_atomic_t<hb_vector_t<float> *> cached_scalars_vector;
+
     unsigned int	      num_glyphs = 0;
   };
 
@@ -518,6 +528,10 @@ struct cff2
     HB_INTERNAL bool get_extents (hb_font_t *font,
 				  hb_codepoint_t glyph,
 				  hb_glyph_extents_t *extents) const;
+    HB_INTERNAL bool get_extents_at (hb_font_t *font,
+				     hb_codepoint_t glyph,
+				     hb_glyph_extents_t *extents,
+				     hb_array_t<const int> coords) const;
     HB_INTERNAL bool get_path (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session) const;
     HB_INTERNAL bool get_path_at (hb_font_t *font, hb_codepoint_t glyph, hb_draw_session_t &draw_session, hb_array_t<const int> coords) const;
   };

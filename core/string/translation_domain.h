@@ -49,6 +49,9 @@ class TranslationDomain : public RefCounted {
 		String suffix = "]";
 	};
 
+	bool enabled = true;
+
+	String locale_override;
 	HashSet<Ref<Translation>> translations;
 	PseudolocalizationConfig pseudolocalization;
 
@@ -68,6 +71,7 @@ public:
 	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_context) const;
 	StringName get_message_from_translations(const String &p_locale, const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
 	PackedStringArray get_loaded_locales() const;
+	HashSet<Ref<Translation>> get_potential_translations(const String &p_locale) const;
 
 public:
 	Ref<Translation> get_translation_object(const String &p_locale) const;
@@ -78,6 +82,12 @@ public:
 
 	StringName translate(const StringName &p_message, const StringName &p_context) const;
 	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context) const;
+
+	String get_locale_override() const;
+	void set_locale_override(const String &p_locale);
+
+	bool is_enabled() const;
+	void set_enabled(bool p_enabled);
 
 	bool is_pseudolocalization_enabled() const;
 	void set_pseudolocalization_enabled(bool p_enabled);

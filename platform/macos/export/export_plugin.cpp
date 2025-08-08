@@ -38,11 +38,11 @@
 #include "core/string/translation.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/codesign.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
@@ -61,6 +61,10 @@ void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset
 		r_features->push_back("astc");
 	} else {
 		ERR_PRINT("Invalid architecture");
+	}
+
+	if (p_preset->get("shader_baker/enabled")) {
+		r_features->push_back("shader_baker");
 	}
 
 	if (architecture == "universal") {
@@ -96,6 +100,15 @@ String EditorExportPlatformMacOS::get_export_option_warning(const EditorExportPr
 			String pn_err;
 			if (!is_package_name_valid(identifier, &pn_err)) {
 				return TTR("Invalid bundle identifier:") + " " + pn_err;
+			}
+		}
+
+		if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
+			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method");
+			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+				return TTR("\"Shader Baker\" is not supported when using the Compatibility renderer.");
+			} else if (OS::get_singleton()->get_current_rendering_method() != export_renderer) {
+				return vformat(TTR("The editor is currently using a different renderer than what the target platform will use. \"Shader Baker\" won't be able to include core shaders. Switch to the \"%s\" renderer temporarily to fix this."), export_renderer);
 			}
 		}
 
@@ -467,6 +480,8 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version_arm64"), "11.00"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "application/export_angle", PROPERTY_HINT_ENUM, "Auto,Yes,No"), 0, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "shader_baker/enabled"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/additional_plist_content", PROPERTY_HINT_MULTILINE_TEXT), ""));
 
@@ -2512,8 +2527,12 @@ bool EditorExportPlatformMacOS::poll_export() {
 	return menu_options != prev;
 }
 
-Ref<ImageTexture> EditorExportPlatformMacOS::get_option_icon(int p_index) const {
-	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformMacOS::get_option_icon(int p_index) const {
+	if (p_index == 1) {
+		return stop_icon;
+	} else {
+		return EditorExportPlatform::get_option_icon(p_index);
+	}
 }
 
 int EditorExportPlatformMacOS::get_options_count() const {
@@ -2621,7 +2640,7 @@ Error EditorExportPlatformMacOS::run(const Ref<EditorExportPreset> &p_preset, in
 	}
 
 	const bool use_remote = p_debug_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG) || p_debug_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT);
-	int dbg_port = EditorSettings::get_singleton()->get("network/debug/remote_port");
+	int dbg_port = EDITOR_GET("network/debug/remote_port");
 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);

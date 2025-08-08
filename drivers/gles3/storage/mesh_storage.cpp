@@ -227,7 +227,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		if (!(new_surface.format & RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES) && (new_surface.format & RS::ARRAY_FORMAT_NORMAL) && !(new_surface.format & RS::ARRAY_FORMAT_TANGENT)) {
 			// Unfortunately, we need to copy the buffer, which is fine as doing a resize triggers a CoW anyway.
 			Vector<uint8_t> new_vertex_data;
-			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
+			new_vertex_data.resize_initialized(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
 			GLES3::Utilities::get_singleton()->buffer_allocate_data(GL_ARRAY_BUFFER, s->vertex_buffer, new_vertex_data.size(), new_vertex_data.ptr(), (s->format & RS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW, "Mesh vertex buffer");
 			s->vertex_buffer_size = new_vertex_data.size();
@@ -534,10 +534,10 @@ RS::BlendShapeMode MeshStorage::mesh_get_blend_shape_mode(RID p_mesh) const {
 }
 
 void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.is_empty());
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->vertex_buffer_size);
@@ -549,10 +549,10 @@ void MeshStorage::mesh_surface_update_vertex_region(RID p_mesh, int p_surface, i
 }
 
 void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.is_empty());
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->attribute_buffer_size);
@@ -564,16 +564,31 @@ void MeshStorage::mesh_surface_update_attribute_region(RID p_mesh, int p_surface
 }
 
 void MeshStorage::mesh_surface_update_skin_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_NULL(mesh);
 	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
-	ERR_FAIL_COND(p_data.is_empty());
 
 	uint64_t data_size = p_data.size();
 	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->skin_buffer_size);
 	const uint8_t *r = p_data.ptr();
 
 	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->skin_buffer);
+	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void MeshStorage::mesh_surface_update_index_region(RID p_mesh, int p_surface, int p_offset, const Vector<uint8_t> &p_data) {
+	ERR_FAIL_COND(p_data.is_empty());
+	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
+	ERR_FAIL_NULL(mesh);
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_surface, mesh->surface_count);
+
+	uint64_t data_size = p_data.size();
+	ERR_FAIL_COND(p_offset + data_size > mesh->surfaces[p_surface]->index_buffer_size);
+	const uint8_t *r = p_data.ptr();
+
+	glBindBuffer(GL_ARRAY_BUFFER, mesh->surfaces[p_surface]->index_buffer);
 	glBufferSubData(GL_ARRAY_BUFFER, p_offset, data_size, r);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

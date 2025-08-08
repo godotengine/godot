@@ -8,16 +8,16 @@
 		[codeblock]
 		# Create a ZIP archive with a single file at its root.
 		func write_zip_file():
-		    var writer = ZIPPacker.new()
-		    var err = writer.open("user://archive.zip")
-		    if err != OK:
-		        return err
-		    writer.start_file("hello.txt")
-		    writer.write_file("Hello World".to_utf8_buffer())
-		    writer.close_file()
+			var writer = ZIPPacker.new()
+			var err = writer.open("user://archive.zip")
+			if err != OK:
+				return err
+			writer.start_file("hello.txt")
+			writer.write_file("Hello World".to_utf8_buffer())
+			writer.close_file()
 
-		    writer.close()
-		    return OK
+			writer.close()
+			return OK
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -87,7 +87,7 @@
 			Start a file with the fastest Deflate compression level ([code]1[/code]). This is fast to compress, but results in larger file sizes than [constant COMPRESSION_DEFAULT]. Decompression speed is generally unaffected by the chosen compression level.
 		</constant>
 		<constant name="COMPRESSION_BEST" value="9" enum="CompressionLevel">
-			Start a file with the the best Deflate compression level ([code]9[/code]). This is slow to compress, but results in smaller file sizes than [constant COMPRESSION_DEFAULT]. Decompression speed is generally unaffected by the chosen compression level.
+			Start a file with the best Deflate compression level ([code]9[/code]). This is slow to compress, but results in smaller file sizes than [constant COMPRESSION_DEFAULT]. Decompression speed is generally unaffected by the chosen compression level.
 		</constant>
 	</constants>
 </class>

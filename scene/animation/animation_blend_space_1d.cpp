@@ -45,9 +45,9 @@ Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName 
 	}
 
 	if (p_parameter == closest) {
-		return -1;
+		return (int)-1;
 	} else {
-		return 0;
+		return 0.0;
 	}
 }
 

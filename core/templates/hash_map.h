@@ -33,6 +33,7 @@
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/pair.h"
+#include "core/templates/sort_list.h"
 
 #include <initializer_list>
 
@@ -59,8 +60,6 @@ struct HashMapElement {
 	HashMapElement(const TKey &p_key, const TValue &p_value) :
 			data(p_key, p_value) {}
 };
-
-bool _hashmap_variant_less_than(const Variant &p_left, const Variant &p_right);
 
 template <typename TKey, typename TValue,
 		typename Hasher = HashMapHasherDefault,
@@ -91,9 +90,19 @@ private:
 		return hash;
 	}
 
+	_FORCE_INLINE_ static constexpr void _increment_mod(uint32_t &r_pos, const uint32_t p_capacity) {
+		r_pos++;
+		// `if` is faster than both fastmod and mod.
+		if (unlikely(r_pos == p_capacity)) {
+			r_pos = 0;
+		}
+	}
+
 	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
 		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
-		return fastmod(p_pos - original_pos + p_capacity, p_capacity_inv, p_capacity);
+		const uint32_t distance_pos = p_pos - original_pos + p_capacity;
+		// At most p_capacity over 0, so we can use an if (faster than fastmod).
+		return distance_pos >= p_capacity ? distance_pos - p_capacity : distance_pos;
 	}
 
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
@@ -121,7 +130,7 @@ private:
 				return true;
 			}
 
-			pos = fastmod((pos + 1), capacity_inv, capacity);
+			_increment_mod(pos, capacity);
 			distance++;
 		}
 	}
@@ -152,7 +161,7 @@ private:
 				distance = existing_probe_len;
 			}
 
-			pos = fastmod((pos + 1), capacity_inv, capacity);
+			_increment_mod(pos, capacity);
 			distance++;
 		}
 	}
@@ -169,13 +178,9 @@ private:
 		uint32_t *old_hashes = hashes;
 
 		num_elements = 0;
-		hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-		elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static(sizeof(HashMapElement<TKey, TValue> *) * capacity));
-
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = 0;
-			elements[i] = nullptr;
-		}
+		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+		hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
+		elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
 
 		if (old_capacity == 0) {
 			// Nothing to do.
@@ -199,13 +204,9 @@ private:
 		if (unlikely(elements == nullptr)) {
 			// Allocate on demand to save memory.
 
-			hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-			elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static(sizeof(HashMapElement<TKey, TValue> *) * capacity));
-
-			for (uint32_t i = 0; i < capacity; i++) {
-				hashes[i] = EMPTY_HASH;
-				elements[i] = nullptr;
-			}
+			static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+			hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
+			elements = reinterpret_cast<HashMapElement<TKey, TValue> **>(Memory::alloc_static_zeroed(sizeof(HashMapElement<TKey, TValue> *) * capacity));
 		}
 
 		if (num_elements + 1 > MAX_OCCUPANCY * capacity) {
@@ -263,44 +264,18 @@ public:
 	}
 
 	void sort() {
-		if (elements == nullptr || num_elements < 2) {
-			return; // An empty or single element HashMap is already sorted.
+		sort_custom<KeyValueSort<TKey, TValue>>();
+	}
+
+	template <typename C>
+	void sort_custom() {
+		if (size() < 2) {
+			return;
 		}
-		// Use insertion sort because we want this operation to be fast for the
-		// common case where the input is already sorted or nearly sorted.
-		HashMapElement<TKey, TValue> *inserting = head_element->next;
-		while (inserting != nullptr) {
-			HashMapElement<TKey, TValue> *after = nullptr;
-			for (HashMapElement<TKey, TValue> *current = inserting->prev; current != nullptr; current = current->prev) {
-				if (_hashmap_variant_less_than(inserting->data.key, current->data.key)) {
-					after = current;
-				} else {
-					break;
-				}
-			}
-			HashMapElement<TKey, TValue> *next = inserting->next;
-			if (after != nullptr) {
-				// Modify the elements around `inserting` to remove it from its current position.
-				inserting->prev->next = next;
-				if (next == nullptr) {
-					tail_element = inserting->prev;
-				} else {
-					next->prev = inserting->prev;
-				}
-				// Modify `before` and `after` to insert `inserting` between them.
-				HashMapElement<TKey, TValue> *before = after->prev;
-				if (before == nullptr) {
-					head_element = inserting;
-				} else {
-					before->next = inserting;
-				}
-				after->prev = inserting;
-				// Point `inserting` to its new surroundings.
-				inserting->prev = before;
-				inserting->next = after;
-			}
-			inserting = next;
-		}
+
+		using E = HashMapElement<TKey, TValue>;
+		SortList<E, KeyValue<TKey, TValue>, &E::data, &E::prev, &E::next, C> sorter;
+		sorter.sort(head_element, tail_element);
 	}
 
 	TValue &get(const TKey &p_key) {
@@ -357,7 +332,7 @@ public:
 			SWAP(hashes[next_pos], hashes[pos]);
 			SWAP(elements[next_pos], elements[pos]);
 			pos = next_pos;
-			next_pos = fastmod((pos + 1), capacity_inv, capacity);
+			_increment_mod(next_pos, capacity);
 		}
 
 		hashes[pos] = EMPTY_HASH;
@@ -406,7 +381,7 @@ public:
 			SWAP(hashes[next_pos], hashes[pos]);
 			SWAP(elements[next_pos], elements[pos]);
 			pos = next_pos;
-			next_pos = fastmod((pos + 1), capacity_inv, capacity);
+			_increment_mod(next_pos, capacity);
 		}
 		hashes[pos] = EMPTY_HASH;
 		elements[pos] = nullptr;

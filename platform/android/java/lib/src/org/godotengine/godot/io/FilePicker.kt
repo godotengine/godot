@@ -51,6 +51,7 @@ import org.godotengine.godot.io.file.MediaStoreData
 internal class FilePicker {
 	companion object {
 		private const val FILE_PICKER_REQUEST = 1000
+		private const val FILE_SAVE_REQUEST = 1001
 		private val TAG = FilePicker::class.java.simpleName
 
 		// Constants for fileMode values
@@ -70,7 +71,7 @@ internal class FilePicker {
 		 */
 		@RequiresApi(Build.VERSION_CODES.Q)
 		fun handleActivityResult(context: Context, requestCode: Int, resultCode: Int, data: Intent?) {
-			if (requestCode == FILE_PICKER_REQUEST) {
+			if (requestCode == FILE_PICKER_REQUEST || requestCode == FILE_SAVE_REQUEST) {
 				if (resultCode == Activity.RESULT_CANCELED) {
 					Log.d(TAG, "File picker canceled")
 					GodotLib.filePickerCallback(false, emptyArray())
@@ -100,6 +101,10 @@ internal class FilePicker {
 								selectedPaths.add(filepath)
 							} else {
 								Log.d(TAG, "null filepath URI: $it")
+							}
+
+							if (requestCode == FILE_SAVE_REQUEST) {
+								DocumentsContract.deleteDocument(context.contentResolver, it)
 							}
 						}
 					}
@@ -152,7 +157,11 @@ internal class FilePicker {
 				intent.addCategory(Intent.CATEGORY_OPENABLE)
 			}
 			intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-			activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
+			if (fileMode == FILE_MODE_SAVE_FILE) {
+				activity?.startActivityForResult(intent, FILE_SAVE_REQUEST)
+			} else {
+				activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
+			}
 		}
 
 		/**

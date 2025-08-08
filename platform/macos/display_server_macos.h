@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "core/input/input.h"
-#include "servers/display_server.h"
+#include "display_server_macos_base.h"
 
 #if defined(GLES3_ENABLED)
 #include "gl_manager_macos_angle.h"
@@ -74,10 +73,8 @@
 
 class EmbeddedProcessMacOS;
 
-class DisplayServerMacOS : public DisplayServer {
-	GDSOFTCLASS(DisplayServerMacOS, DisplayServer);
-
-	_THREAD_SAFE_CLASS_
+class DisplayServerMacOS : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerMacOS, DisplayServerMacOSBase);
 
 public:
 	struct KeyEvent {
@@ -101,6 +98,8 @@ public:
 
 		Vector<Vector2> mpath;
 
+		CGDirectDisplayID display_id = -1;
+
 		Point2i mouse_pos;
 		WindowResizeEdge edge = WINDOW_EDGE_MAX;
 
@@ -109,7 +108,8 @@ public:
 		Size2i size;
 		Vector2i wb_offset = Vector2i(14, 14);
 
-		NSRect last_frame_rect;
+		NSRect last_frame_rect = NSMakeRect(0, 0, 0, 0);
+		NSRect pre_zoom_rect = NSMakeRect(0, 0, 0, 0);
 
 		bool im_active = false;
 		Size2i im_position;
@@ -172,7 +172,6 @@ private:
 	Vector<KeyEvent> key_event_buffer;
 	int key_event_pos = 0;
 
-	id tts = nullptr;
 	id menu_delegate = nullptr;
 	NativeMenuMacOS *native_menu = nullptr;
 
@@ -188,14 +187,6 @@ private:
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
-
-	struct LayoutInfo {
-		String name;
-		String code;
-	};
-	mutable Vector<LayoutInfo> kbd_layouts;
-	mutable int current_layout = 0;
-	mutable bool keyboard_layout_dirty = true;
 
 	WindowID window_mouseover_id = INVALID_WINDOW_ID;
 	WindowID last_focused_window = INVALID_WINDOW_ID;
@@ -243,20 +234,18 @@ private:
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
 	void _process_key_events();
-	void _update_keyboard_layouts() const;
-	static void _keyboard_layout_changed(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef user_info);
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
 	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
-	void initialize_tts() const;
-
 	struct EmbeddedProcessData {
-		const EmbeddedProcessMacOS *process;
+		EmbeddedProcessMacOS *process;
+		WindowData *wd = nullptr;
 		CALayer *layer_host = nil;
 	};
 	HashMap<OS::ProcessID, EmbeddedProcessData> embedded_processes;
+	void _window_update_display_id(WindowData *p_wd);
 
 public:
 	void menu_callback(id p_sender);
@@ -294,6 +283,10 @@ public:
 
 	bool is_always_on_top_recursive(WindowID p_window) const;
 
+	/**
+	 * Get the display ID of a window.
+	 */
+	uint32_t window_get_display_id(WindowID p_window) const;
 	void window_destroy(WindowID p_window);
 	void window_resize(WindowID p_window, int p_width, int p_height);
 	void window_set_custom_window_buttons(WindowData &p_wd, bool p_enabled);
@@ -305,15 +298,6 @@ public:
 	virtual void help_set_search_callbacks(const Callable &p_search_callback = Callable(), const Callable &p_action_callback = Callable()) override;
 	Callable _help_get_search_callback() const;
 	Callable _help_get_action_callback() const;
-
-	virtual bool tts_is_speaking() const override;
-	virtual bool tts_is_paused() const override;
-	virtual TypedArray<Dictionary> tts_get_voices() const override;
-
-	virtual void tts_speak(const String &p_text, const String &p_voice, int p_volume = 50, float p_pitch = 1.f, float p_rate = 1.f, int p_utterance_id = 0, bool p_interrupt = false) override;
-	virtual void tts_pause() override;
-	virtual void tts_resume() override;
-	virtual void tts_stop() override;
 
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
@@ -340,12 +324,6 @@ public:
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
-
-	virtual void clipboard_set(const String &p_text) override;
-	virtual String clipboard_get() const override;
-	virtual Ref<Image> clipboard_get_image() const override;
-	virtual bool clipboard_has() const override;
-	virtual bool clipboard_has_image() const override;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
@@ -461,19 +439,10 @@ public:
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 #ifdef TOOLS_ENABLED
-	Error embed_process_update(WindowID p_window, const EmbeddedProcessMacOS *p_process);
+	Error embed_process_update(WindowID p_window, EmbeddedProcessMacOS *p_process);
 #endif
 	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
-
-	virtual int keyboard_get_layout_count() const override;
-	virtual int keyboard_get_current_layout() const override;
-	virtual void keyboard_set_current_layout(int p_index) override;
-	virtual String keyboard_get_layout_language(int p_index) const override;
-	virtual String keyboard_get_layout_name(int p_index) const override;
-	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
-	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
-	virtual void show_emoji_and_symbol_picker() const override;
 
 	void _process_events(bool p_pump);
 	virtual void process_events() override;

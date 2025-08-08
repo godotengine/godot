@@ -45,7 +45,7 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 		return;
 	}
 
-	if (p_emitting && !use_fixed_seed) {
+	if (p_emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 
@@ -616,7 +616,7 @@ void CPUParticles2D::request_particles_process(real_t p_requested_process_time) 
 }
 
 void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
-	if (p_property.name == "emitting") {
+	if (Engine::get_singleton()->is_editor_hint() && p_property.name == "emitting") {
 		p_property.hint = one_shot ? PROPERTY_HINT_ONESHOT : PROPERTY_HINT_NONE;
 	}
 
@@ -1097,10 +1097,11 @@ void CPUParticles2D::_particles_process(double p_delta) {
 
 		if (particle_flags[PARTICLE_FLAG_ALIGN_Y_TO_VELOCITY]) {
 			if (p.velocity.length() > 0.0) {
-				p.transform.columns[1] = p.velocity.normalized();
-				p.transform.columns[0] = p.transform.columns[1].orthogonal();
+				p.transform.columns[1] = p.velocity;
 			}
 
+			p.transform.columns[1] = p.transform.columns[1].normalized();
+			p.transform.columns[0] = p.transform.columns[1].orthogonal();
 		} else {
 			p.transform.columns[0] = Vector2(Math::cos(p.rotation), -Math::sin(p.rotation));
 			p.transform.columns[1] = Vector2(Math::sin(p.rotation), Math::cos(p.rotation));

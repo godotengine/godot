@@ -253,13 +253,16 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_scr
 	velocity = accum / accum_t;
 	screen_velocity = screen_accum / accum_t;
 	accum = Vector2();
+	screen_accum = Vector2();
 	accum_t = 0;
 }
 
 void Input::VelocityTrack::reset() {
 	last_tick = OS::get_singleton()->get_ticks_usec();
 	velocity = Vector2();
+	screen_velocity = Vector2();
 	accum = Vector2();
+	screen_accum = Vector2();
 	accum_t = 0;
 }
 
@@ -587,9 +590,13 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
-		for (int i = 0; i < map_db.size(); i++) {
-			if (js.uid == map_db[i].uid) {
-				mapping = i;
+		// Bypass the mapping system if the joypad's mapping is already handled by its driver
+		// (for example, the SDL joypad driver).
+		if (!p_joypad_info.get("mapping_handled", false)) {
+			for (int i = 0; i < map_db.size(); i++) {
+				if (js.uid == map_db[i].uid) {
+					mapping = i;
+				}
 			}
 		}
 		_set_joypad_mapping(js, mapping);

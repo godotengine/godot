@@ -52,8 +52,32 @@ public:
 		SHADER_VERSION_COLOR_PASS_MULTIVIEW,
 		SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW,
 		SHADER_VERSION_SHADOW_PASS_MULTIVIEW,
+		SHADER_VERSION_MOTION_VECTORS_MULTIVIEW,
 
 		SHADER_VERSION_MAX
+	};
+
+	enum ShaderCount {
+		SHADER_COUNT_NONE,
+		SHADER_COUNT_SINGLE,
+		SHADER_COUNT_MULTIPLE
+	};
+
+	_FORCE_INLINE_ static ShaderCount shader_count_for(uint32_t p_count) {
+		if (p_count == 0) {
+			return SHADER_COUNT_NONE;
+		} else if (p_count == 1) {
+			return SHADER_COUNT_SINGLE;
+		} else {
+			return SHADER_COUNT_MULTIPLE;
+		}
+	}
+
+	enum ShaderGroup {
+		SHADER_GROUP_FP32,
+		SHADER_GROUP_FP32_MULTIVIEW,
+		SHADER_GROUP_FP16,
+		SHADER_GROUP_FP16_MULTIVIEW,
 	};
 
 	struct ShaderSpecialization {
@@ -91,25 +115,18 @@ public:
 			struct {
 				uint32_t directional_soft_shadow_samples : 6;
 				uint32_t directional_penumbra_shadow_samples : 6;
-				uint32_t omni_lights : 4;
-				uint32_t spot_lights : 4;
-				uint32_t reflection_probes : 4;
-				uint32_t directional_lights : 4;
-				uint32_t decals : 4;
-			};
-		};
-
-		union {
-			uint32_t packed_2;
-
-			struct {
+				uint32_t omni_lights : 2;
+				uint32_t spot_lights : 2;
+				uint32_t reflection_probes : 2;
+				uint32_t directional_lights : 2;
+				uint32_t decals : 1;
 				uint32_t directional_light_blend_splits : 8;
-				uint32_t padding_1 : 24;
+				uint32_t padding_1 : 3;
 			};
 		};
 
 		union {
-			float packed_3;
+			float packed_2;
 			float luminance_multiplier;
 		};
 	};
@@ -122,10 +139,6 @@ public:
 				uint32_t cull_mode : 2;
 			};
 		};
-
-		uint32_t padding_1;
-		uint32_t padding_2;
-		uint32_t padding_3;
 	};
 
 	struct ShaderData : public RendererRD::MaterialStorage::ShaderData {
@@ -137,7 +150,8 @@ public:
 
 		enum DepthTest {
 			DEPTH_TEST_DISABLED,
-			DEPTH_TEST_ENABLED
+			DEPTH_TEST_ENABLED,
+			DEPTH_TEST_ENABLED_INVERTED,
 		};
 
 		enum CullVariant {
@@ -152,6 +166,23 @@ public:
 			ALPHA_ANTIALIASING_OFF,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+		};
+
+		enum StencilFlags {
+			STENCIL_FLAG_READ = 1,
+			STENCIL_FLAG_WRITE = 2,
+			STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
+		};
+
+		enum StencilCompare {
+			STENCIL_COMPARE_LESS,
+			STENCIL_COMPARE_EQUAL,
+			STENCIL_COMPARE_LESS_OR_EQUAL,
+			STENCIL_COMPARE_GREATER,
+			STENCIL_COMPARE_NOT_EQUAL,
+			STENCIL_COMPARE_GREATER_OR_EQUAL,
+			STENCIL_COMPARE_ALWAYS,
+			STENCIL_COMPARE_MAX // Not an actual operator, just the amount of operators.
 		};
 
 		struct PipelineKey {
@@ -172,8 +203,7 @@ public:
 				h = hash_murmur3_one_32(primitive_type, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_0, h);
 				h = hash_murmur3_one_32(shader_specialization.packed_1, h);
-				h = hash_murmur3_one_32(shader_specialization.packed_2, h);
-				h = hash_murmur3_one_float(shader_specialization.packed_3, h);
+				h = hash_murmur3_one_float(shader_specialization.packed_2, h);
 				h = hash_murmur3_one_32(version, h);
 				h = hash_murmur3_one_32(render_pass, h);
 				h = hash_murmur3_one_32(wireframe, h);
@@ -201,7 +231,8 @@ public:
 		DepthTest depth_test;
 
 		int blend_mode = BLEND_MODE_MIX;
-		int depth_testi = DEPTH_TEST_ENABLED;
+		int depth_test_disabledi = 0;
+		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 		int cull_mode = RS::CULL_MODE_BACK;
 
@@ -234,6 +265,11 @@ public:
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 
+		bool stencil_enabled = false;
+		uint32_t stencil_flags = 0;
+		StencilCompare stencil_compare = STENCIL_COMPARE_LESS;
+		uint32_t stencil_reference = 0;
+
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
 
@@ -243,24 +279,25 @@ public:
 			bool has_blend_alpha = uses_blend_alpha;
 			bool has_alpha = has_base_alpha || has_blend_alpha;
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return has_alpha || has_read_screen_alpha || no_depth_draw || no_depth_test;
 		}
 
 		_FORCE_INLINE_ bool uses_depth_in_alpha_pass() const {
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return (uses_depth_prepass_alpha || uses_alpha_antialiasing) && !(no_depth_draw || no_depth_test);
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_world_coordinates && !wireframe;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && !uses_world_coordinates && !wireframe && !stencil_enabled;
 		}
 
 		virtual void set_code(const String &p_Code);
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
 		RD::PolygonCullMode get_cull_mode_from_cull_variant(CullVariant p_cull_variant);
 		void _clear_vertex_input_mask_cache();
 		RID get_shader_variant(ShaderVersion p_shader_version, bool p_ubershader) const;
@@ -300,6 +337,7 @@ public:
 
 	SceneForwardMobileShaderRD shader;
 	ShaderCompiler compiler;
+	bool use_fp16 = false;
 
 	RID default_shader;
 	RID default_material;
@@ -333,7 +371,10 @@ public:
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
 	uint32_t get_pipeline_compilations(RS::PipelineSource p_source);
-	bool is_multiview_enabled() const;
+	void enable_fp32_shader_group();
+	void enable_fp16_shader_group();
+	void enable_multiview_shader_group();
+	bool is_multiview_shader_group_enabled() const;
 };
 
 } // namespace RendererSceneRenderImplementation

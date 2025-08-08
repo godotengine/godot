@@ -14,7 +14,7 @@
 		extends EditorScript
 
 		func _run():
-		    print("Hello from the Godot Editor!")
+			print("Hello from the Godot Editor!")
 		[/gdscript]
 		[csharp]
 		using Godot;
@@ -22,20 +22,19 @@
 		[Tool]
 		public partial class HelloEditor : EditorScript
 		{
-		    public override void _Run()
-		    {
-		        GD.Print("Hello from the Godot Editor!");
-		    }
+			public override void _Run()
+			{
+				GD.Print("Hello from the Godot Editor!");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
-		[b]Note:[/b] The script is run in the Editor context, which means the output is visible in the console window started with the Editor (stdout) instead of the usual Godot [b]Output[/b] dock.
 		[b]Note:[/b] EditorScript is [RefCounted], meaning it is destroyed when nothing references it. This can cause errors during asynchronous operations if there are no references to the script.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_run" qualifiers="virtual">
+		<method name="_run" qualifiers="virtual required">
 			<return type="void" />
 			<description>
 				This method is executed by the Editor when [b]File &gt; Run[/b] is used.

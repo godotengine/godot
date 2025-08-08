@@ -54,7 +54,7 @@ class AudioStreamPlaybackWAV : public AudioStreamPlaybackResampled {
 		qoa_desc desc = {};
 		uint32_t data_ofs = 0;
 		uint32_t frame_len = 0;
-		LocalVector<int16_t> dec;
+		TightLocalVector<int16_t> dec;
 		uint32_t dec_len = 0;
 	} qoa;
 
@@ -121,8 +121,10 @@ private:
 	int loop_begin = 0;
 	int loop_end = 0;
 	int mix_rate = 44100;
-	LocalVector<uint8_t> data;
+	TightLocalVector<uint8_t> data;
 	uint32_t data_bytes = 0;
+
+	Dictionary tags;
 
 protected:
 	static void _bind_methods();
@@ -148,6 +150,9 @@ public:
 
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
+
+	void set_tags(const Dictionary &p_tags);
+	virtual Dictionary get_tags() const override;
 
 	virtual double get_length() const override; //if supported, otherwise return 0
 
@@ -271,7 +276,7 @@ public:
 			p_desc->lms[c].weights[3] = (1 << 14);
 		}
 
-		LocalVector<int16_t> data16;
+		TightLocalVector<int16_t> data16;
 		data16.resize(QOA_FRAME_LEN * p_desc->channels);
 
 		uint8_t *dst_ptr = dst_data.ptrw();

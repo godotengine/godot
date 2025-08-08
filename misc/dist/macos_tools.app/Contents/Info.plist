@@ -9,7 +9,9 @@
 	<key>CFBundleName</key>
 	<string>Godot</string>
 	<key>CFBundleIconFile</key>
-	<string>Godot.icns</string>
+	<string>GodotLG.icns</string>
+	<key>CFBundleIconName</key>
+	<string>GodotLG</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.godotengine.godot</string>
 	<key>CFBundleInfoDictionaryVersion</key>

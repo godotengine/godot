@@ -465,6 +465,15 @@ psa_status_t mbedtls_psa_mac_compute(
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
     mbedtls_psa_mac_operation_t operation = MBEDTLS_PSA_MAC_OPERATION_INIT;
+    /* Make sure the whole operation is zeroed.
+     * PSA_MAC_OPERATION_INIT does not necessarily do it fully,
+     * since one field is a union and initializing a union does not
+     * necessarily initialize all of its members.
+     * In multipart operations, this is done in the API functions,
+     * before driver dispatch, since it needs to be done before calling
+     * the driver entry point. Here, we bypass the multipart API,
+     * so it's our job. */
+    memset(&operation, 0, sizeof(operation));
 
     status = psa_mac_setup(&operation,
                            attributes, key_buffer, key_buffer_size,

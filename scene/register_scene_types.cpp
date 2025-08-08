@@ -214,10 +214,14 @@
 #endif // NAVIGATION_2D_DISABLED
 
 #ifndef _3D_DISABLED
+#include "scene/3d/aim_modifier_3d.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/audio_stream_player_3d.h"
 #include "scene/3d/bone_attachment_3d.h"
+#include "scene/3d/bone_constraint_3d.h"
 #include "scene/3d/camera_3d.h"
+#include "scene/3d/convert_transform_modifier_3d.h"
+#include "scene/3d/copy_transform_modifier_3d.h"
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/decal.h"
 #include "scene/3d/fog_volume.h"
@@ -231,6 +235,7 @@
 #include "scene/3d/look_at_modifier_3d.h"
 #include "scene/3d/marker_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/modifier_bone_target_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/occluder_instance_3d.h"
@@ -240,6 +245,11 @@
 #include "scene/3d/retarget_modifier_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
+#include "scene/3d/spring_bone_collision_3d.h"
+#include "scene/3d/spring_bone_collision_capsule_3d.h"
+#include "scene/3d/spring_bone_collision_plane_3d.h"
+#include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
@@ -328,11 +338,6 @@
 #include "scene/3d/physics/spring_arm_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/3d/physics/vehicle_body_3d.h"
-#include "scene/3d/spring_bone_collision_3d.h"
-#include "scene/3d/spring_bone_collision_capsule_3d.h"
-#include "scene/3d/spring_bone_collision_plane_3d.h"
-#include "scene/3d/spring_bone_collision_sphere_3d.h"
-#include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
@@ -642,19 +647,23 @@ void register_scene_types() {
 	GDREGISTER_CLASS(GPUParticlesAttractorVectorField3D);
 	GDREGISTER_CLASS(CPUParticles3D);
 	GDREGISTER_CLASS(Marker3D);
+	GDREGISTER_CLASS(ModifierBoneTarget3D);
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
-
-	OS::get_singleton()->yield(); // may take time to init
-
-#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(SpringBoneSimulator3D);
 	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
 	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
 	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
 	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
+	GDREGISTER_VIRTUAL_CLASS(BoneConstraint3D);
+	GDREGISTER_CLASS(CopyTransformModifier3D);
+	GDREGISTER_CLASS(ConvertTransformModifier3D);
+	GDREGISTER_CLASS(AimModifier3D);
 
+	OS::get_singleton()->yield(); // may take time to init
+
+#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_ABSTRACT_CLASS(CollisionObject3D);
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);

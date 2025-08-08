@@ -92,7 +92,7 @@ PackedStringArray XRCamera3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("XRCamera3D may not function as expected without an XROrigin3D node as its parent."));
 		};
 
-		if (is_physics_interpolated()) {
+		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 			warnings.push_back(RTR("XRCamera3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 		}
 	}
@@ -255,6 +255,9 @@ void XRNode3D::_bind_methods() {
 }
 
 void XRNode3D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -498,7 +501,7 @@ PackedStringArray XRNode3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("No pose is set."));
 		}
 
-		if (is_physics_interpolated()) {
+		if (SceneTree::is_fti_enabled_in_project() && is_physics_interpolated()) {
 			warnings.push_back(RTR("XRNode3D should have physics_interpolation_mode set to OFF in order to avoid jitter."));
 		}
 	}

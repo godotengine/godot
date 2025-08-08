@@ -166,6 +166,12 @@ namespace Godot
                 }
                 case GodotObject godotObject:
                 {
+                    if (!GodotObject.IsInstanceValid(godotObject))
+                    {
+                        // If the delegate's target has been freed we can't serialize it.
+                        return false;
+                    }
+
                     using (var stream = new MemoryStream())
                     using (var writer = new BinaryWriter(stream))
                     {

@@ -35,8 +35,8 @@
 #include "modules/modules_enabled.gen.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #endif // TOOLS_ENABLED
 
 #include "tests/core/config/test_project_settings.h"
@@ -103,9 +103,9 @@
 #include "tests/core/templates/test_list.h"
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
-#include "tests/core/templates/test_oa_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_rid.h"
+#include "tests/core/templates/test_self_list.h"
 #include "tests/core/templates/test_span.h"
 #include "tests/core/templates/test_vector.h"
 #include "tests/core/templates/test_vset.h"
@@ -119,6 +119,7 @@
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
 #include "tests/scene/test_animation.h"
+#include "tests/scene/test_animation_blend_tree.h"
 #include "tests/scene/test_audio_stream_synchronized.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
@@ -140,6 +141,7 @@
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
+#include "tests/scene/test_sprite_2d.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
@@ -169,6 +171,8 @@
 #include "tests/core/math/test_triangle_mesh.h"
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_convert_transform_modifier_3d.h"
+#include "tests/scene/test_copy_transform_modifier_3d.h"
 #include "tests/scene/test_gltf_document.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
@@ -235,11 +239,9 @@ int test_main(int argc, char *argv[]) {
 
 	WorkerThreadPool::get_singleton()->init();
 
-	String test_path = OS::get_singleton()->get_cache_path().path_join("godot_test");
-
-	Ref<DirAccess> da;
-	if (DirAccess::exists(test_path)) {
-		da = DirAccess::open(test_path);
+	{
+		const String test_path = TestUtils::get_temp_path("");
+		Ref<DirAccess> da = DirAccess::open(test_path); // get_temp_path() automatically creates the folder.
 		ERR_FAIL_COND_V(da.is_null(), 0);
 		ERR_FAIL_COND_V_MSG(da->erase_contents_recursive() != OK, 0, "Failed to delete files");
 	}

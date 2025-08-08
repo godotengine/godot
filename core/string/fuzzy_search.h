@@ -84,16 +84,17 @@ public:
 class FuzzySearch {
 	Vector<FuzzySearchToken> tokens;
 
+	bool case_sensitive = false;
 	void sort_and_filter(Vector<FuzzySearchResult> &p_results) const;
 
 public:
 	int start_offset = 0;
-	bool case_sensitive = false;
 	int max_results = 100;
 	int max_misses = 2;
 	bool allow_subsequences = true;
 
 	void set_query(const String &p_query);
+	void set_query(const String &p_query, bool p_case_sensitive);
 	bool search(const String &p_target, FuzzySearchResult &p_result) const;
 	void search_all(const PackedStringArray &p_targets, Vector<FuzzySearchResult> &p_results) const;
 };

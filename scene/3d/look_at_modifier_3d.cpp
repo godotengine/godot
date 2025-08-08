@@ -31,9 +31,7 @@
 #include "look_at_modifier_3d.h"
 
 void LookAtModifier3D::_validate_property(PropertyInfo &p_property) const {
-	SkeletonModifier3D::_validate_property(p_property);
-
-	if (p_property.name == "bone_name" || p_property.name == "origin_bone_name") {
+	if (Engine::get_singleton()->is_editor_hint() && (p_property.name == "bone_name" || p_property.name == "origin_bone_name")) {
 		Skeleton3D *skeleton = get_skeleton();
 		if (skeleton) {
 			p_property.hint = PROPERTY_HINT_ENUM;
@@ -73,6 +71,20 @@ PackedStringArray LookAtModifier3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Forward axis and primary rotation axis must not be parallel."));
 	}
 	return warnings;
+}
+
+void LookAtModifier3D::_validate_bone_names() {
+	// Prior bone name.
+	if (!bone_name.is_empty()) {
+		set_bone_name(bone_name);
+	} else if (bone != -1) {
+		set_bone(bone);
+	}
+	if (!origin_bone_name.is_empty()) {
+		set_origin_bone_name(origin_bone_name);
+	} else if (origin_bone != -1) {
+		set_origin_bone(origin_bone);
+	}
 }
 
 void LookAtModifier3D::set_bone_name(const String &p_bone_name) {
@@ -529,7 +541,7 @@ void LookAtModifier3D::_process_modification(double p_delta) {
 		} else {
 			origin_tr = bone_rest_space;
 		}
-		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv((target->get_global_position() - origin_tr.translated_local(origin_offset).origin));
+		forward_vector = bone_rest_space.orthonormalized().basis.xform_inv(target->get_global_position() - origin_tr.translated_local(origin_offset).origin);
 		forward_vector_nrm = forward_vector.normalized();
 		if (forward_vector_nrm.abs().is_equal_approx(get_vector_from_axis(primary_rotation_axis))) {
 			destination = skeleton->get_bone_pose_rotation(bone);

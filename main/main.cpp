@@ -71,7 +71,6 @@
 #include "servers/camera_server.h"
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
-#include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text/text_server_dummy.h"
@@ -110,24 +109,24 @@
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/doc_data_class_path.gen.h"
-#include "editor/doc_tools.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_help.h"
+#include "editor/doc/doc_data_class_path.gen.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_translation.h"
-#include "editor/progress_dialog.h"
-#include "editor/project_manager.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/register_editor_types.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/translations/editor_translation.h"
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 #include "main/splash_editor.gen.h"
 #endif
 
 #ifndef DISABLE_DEPRECATED
-#include "editor/project_converter_3_to_4.h"
+#include "editor/project_upgrade/project_converter_3_to_4.h"
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
 
@@ -249,8 +248,10 @@ static int64_t init_embed_parent_window_id = 0;
 #ifdef TOOLS_ENABLED
 static bool init_display_scale_found = false;
 static int init_display_scale = 0;
+static bool init_custom_scale_found = false;
 static float init_custom_scale = 1.0;
 static bool init_expand_to_title = false;
+static bool init_expand_to_title_found = false;
 #endif
 static bool use_custom_res = true;
 static bool force_res = false;
@@ -546,9 +547,9 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("-p, --project-manager", "Start the project manager, even if a project is auto-detected.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--recovery-mode", "Start the editor in recovery mode, which disables features that can typically cause startup crashes, such as tool scripts, editor plugins, GDExtension addons, and others.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--debug-server <uri>", "Start the editor debug server (<protocol>://<host/IP>[:port], e.g. tcp://127.0.0.1:6007)\n", CLI_OPTION_AVAILABILITY_EDITOR);
-	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debugger Adaptor protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--dap-port <port>", "Use the specified port for the GDScript Debug Adapter Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #if defined(MODULE_GDSCRIPT_ENABLED) && !defined(GDSCRIPT_NO_LSP)
-	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript language server protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--lsp-port <port>", "Use the specified port for the GDScript Language Server Protocol. Recommended port range [1024, 49151].\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif // MODULE_GDSCRIPT_ENABLED && !GDSCRIPT_NO_LSP
 #endif
 	print_help_option("--quit", "Quit after the first iteration.\n");
@@ -1037,6 +1038,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Vector<String> breakpoints;
 	bool delta_smoothing_override = false;
+	bool load_shell_env = false;
 
 	String default_renderer = "";
 	String default_renderer_mobile = "";
@@ -1651,6 +1653,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			upwards = true;
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
+#ifdef TOOLS_ENABLED
+			wait_for_import = true;
+#endif
 		} else if (arg == "--quit-after") { // Quit after the given number of iterations
 			if (N) {
 				quit_after = N->get().to_int();
@@ -2191,6 +2196,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.visionos", PROPERTY_HINT_ENUM, "metal"), "metal");
 		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
@@ -2363,6 +2369,34 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		FORCE_ANGLE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
 		FORCE_ANGLE("Intel", "Intel(R) Iris Pro Graphics P580");
 		FORCE_ANGLE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 610");
+		FORCE_ANGLE("0x8086", "0x5902"); // Intel(R) HD Graphics 610, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x5906");
+		FORCE_ANGLE("0x8086", "0x5908");
+		FORCE_ANGLE("0x8086", "0x590A");
+		FORCE_ANGLE("0x8086", "0x590B");
+		FORCE_ANGLE("0x8086", "0x590E");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 615");
+		FORCE_ANGLE("0x8086", "0x5913"); // Intel(R) HD Graphics 615, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x5915");
+		FORCE_ANGLE("0x8086", "0x591E");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 620");
+		FORCE_ANGLE("0x8086", "0x5916"); // Intel(R) HD Graphics 620, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x5917");
+		FORCE_ANGLE("0x8086", "0x5921");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 630");
+		FORCE_ANGLE("0x8086", "0x5912"); // Intel(R) HD Graphics 630, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x591B");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 635");
+		FORCE_ANGLE("0x8086", "0x5923"); // Intel(R) HD Graphics 635, Gen9.5, Kaby Lake
+		FORCE_ANGLE("Intel", "Intel(R) Iris Plus Graphics 640");
+		FORCE_ANGLE("0x8086", "0x5926"); // Intel(R) Iris Plus Graphics 640, Gen9.5, Kaby Lake
+		FORCE_ANGLE("Intel", "Intel(R) Iris Plus Graphics 650");
+		FORCE_ANGLE("0x8086", "0x5927"); // Iris Plus Graphics 650, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x593B");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics P630");
+		FORCE_ANGLE("0x8086", "0x591A"); // Intel(R) HD Graphics P630, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x591D");
 
 #undef FORCE_ANGLE
 
@@ -2529,7 +2563,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	default_renderer = renderer_hints.get_slicec(',', 0);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
+	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
 
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {
@@ -2636,17 +2670,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	GLOBAL_DEF_BASIC("internationalization/locale/include_text_server_data", false);
-
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
+
+	load_shell_env = GLOBAL_DEF("application/run/load_shell_environment", false);
 
 #ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
 		// The editor and project manager always detect and use hiDPI if needed.
 		OS::get_singleton()->_allow_hidpi = true;
+		load_shell_env = true;
 	}
 #endif
+	if (load_shell_env) {
+		OS::get_singleton()->load_shell_environment();
+	}
 
 	if (separate_thread_render == -1) {
 		separate_thread_render = (int)GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE) == OS::RENDER_SEPARATE_THREAD;
@@ -2672,6 +2710,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.linuxbsd", PROPERTY_HINT_ENUM_SUGGESTION, "default,x11,wayland,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.android", PROPERTY_HINT_ENUM_SUGGESTION, "default,android,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.ios", PROPERTY_HINT_ENUM_SUGGESTION, "default,iOS,headless"), "default");
+	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.visionos", PROPERTY_HINT_ENUM_SUGGESTION, "default,visionOS,headless"), "default");
 	GLOBAL_DEF_NOVAL(PropertyInfo(Variant::STRING, "display/display_server/driver.macos", PROPERTY_HINT_ENUM_SUGGESTION, "default,macos,headless"), "default");
 
 	GLOBAL_DEF_RST_NOVAL("audio/driver/driver", AudioDriverManager::get_driver(0)->get_name());
@@ -2765,6 +2804,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC("xr/openxr/extensions/hand_tracking_controller_data_source", false); // XR_HAND_TRACKING_DATA_SOURCE_CONTROLLER_EXT
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/hand_interaction_profile", false);
 	GLOBAL_DEF_RST_BASIC("xr/openxr/extensions/eye_gaze_interaction", false);
+	GLOBAL_DEF_BASIC("xr/openxr/extensions/render_model", false);
 
 	// OpenXR Binding modifier settings
 	GLOBAL_DEF_BASIC("xr/openxr/binding_modifiers/analog_threshold", false);
@@ -2900,6 +2940,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	int accessibility_mode_editor = 0;
 	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Initialize Early Settings");
@@ -2937,6 +2978,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 					bool tablet_found = false;
 
+					bool ac_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -2951,7 +2994,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found || !tablet_found) {
+					while (!screen_found || !init_expand_to_title_found || !init_display_scale_found || !init_custom_scale_found || !prefer_wayland_found || !tablet_found || !ac_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2970,19 +3013,22 @@ Error Main::setup2(bool p_show_boot_logo) {
 									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 								}
 							}
-							if (assign == "interface/editor/expand_to_title") {
+							if (!ac_found && assign == "interface/accessibility/accessibility_support") {
+								accessibility_mode_editor = value;
+								ac_found = true;
+							} else if (!init_expand_to_title_found && assign == "interface/editor/expand_to_title") {
 								init_expand_to_title = value;
-							} else if (assign == "interface/editor/display_scale") {
+								init_expand_to_title_found = true;
+							} else if (!init_display_scale_found && assign == "interface/editor/display_scale") {
 								init_display_scale = value;
 								init_display_scale_found = true;
-							} else if (assign == "interface/editor/custom_display_scale") {
+							} else if (!init_custom_scale_found && assign == "interface/editor/custom_display_scale") {
 								init_custom_scale = value;
+								init_custom_scale_found = true;
 							} else if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
-							}
-
-							if (!tablet_found && assign == "interface/editor/tablet_driver") {
+							} else if (!tablet_found && assign == "interface/editor/tablet_driver") {
 								tablet_driver_editor = value;
 								tablet_found = true;
 							}
@@ -3145,7 +3191,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 #endif
 
 		if (!accessibility_mode_set) {
-			accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+#ifdef TOOLS_ENABLED
+			if (editor || project_manager || cmdline_tool) {
+				accessibility_mode = (DisplayServer::AccessibilityMode)accessibility_mode_editor;
+			} else {
+#else
+			{
+#endif
+				accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+			}
 		}
 		DisplayServer::accessibility_set_mode(accessibility_mode);
 
@@ -3204,7 +3258,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 
 #ifdef TOOLS_ENABLED
-		if (project_manager && init_display_scale_found) {
+		if (project_manager) {
 			float ui_scale = init_custom_scale;
 			switch (init_display_scale) {
 				case 0:
@@ -3797,7 +3851,7 @@ static MainTimerSync main_timer_sync;
 int Main::start() {
 	OS::get_singleton()->benchmark_begin_measure("Startup", "Main::Start");
 
-	ERR_FAIL_COND_V(!_start_success, false);
+	ERR_FAIL_COND_V(!_start_success, EXIT_FAILURE);
 
 	bool has_icon = false;
 	String positional_arg;
@@ -3859,7 +3913,7 @@ int Main::start() {
 		} else if (E->get() == "--scene") {
 			E = E->next();
 			if (E) {
-				game_path = E->get();
+				game_path = ResourceUID::ensure_path(E->get());
 			} else {
 				ERR_FAIL_V_MSG(EXIT_FAILURE, "Missing scene path, aborting.");
 			}
@@ -3878,7 +3932,7 @@ int Main::start() {
 				// or other file extensions without trouble. This can be used to implement
 				// "drag-and-drop onto executable" logic, which can prove helpful
 				// for non-game applications.
-				game_path = E->get();
+				game_path = scene_path;
 			}
 		}
 		// Then parameters that have an argument to the right.
@@ -4431,13 +4485,12 @@ int Main::start() {
 
 #ifdef TOOLS_ENABLED
 		if (editor) {
-			bool editor_embed_subwindows = EditorSettings::get_singleton()->get_setting(
-					"interface/editor/single_window_mode");
+			bool editor_embed_subwindows = EDITOR_GET("interface/editor/single_window_mode");
 
 			if (editor_embed_subwindows) {
 				sml->get_root()->set_embedding_subwindows(true);
 			}
-			restore_editor_window_layout = EditorSettings::get_singleton()->get_setting("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
+			restore_editor_window_layout = EDITOR_GET("interface/editor/editor_screen").operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 		}
 #endif
 
@@ -4575,6 +4628,8 @@ int Main::start() {
 	if (movie_writer) {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
 	}
+
+	GDExtensionManager::get_singleton()->startup();
 
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
@@ -4781,6 +4836,8 @@ bool Main::iteration() {
 	process_max = MAX(process_ticks, process_max);
 	uint64_t frame_time = OS::get_singleton()->get_ticks_usec() - ticks;
 
+	GDExtensionManager::get_singleton()->frame();
+
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		ScriptServer::get_language(i)->frame();
 	}
@@ -4847,11 +4904,9 @@ bool Main::iteration() {
 	}
 
 	SceneTree *scene_tree = SceneTree::get_singleton();
-	bool skip_delay = scene_tree && scene_tree->is_accessibility_enabled();
+	bool wake_for_events = scene_tree && scene_tree->is_accessibility_enabled();
 
-	if (!skip_delay) {
-		OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
-	}
+	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw(), wake_for_events);
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
@@ -4900,6 +4955,8 @@ void Main::cleanup(bool p_force) {
 		input->flush_frame_parsed_events();
 	}
 #endif
+
+	GDExtensionManager::get_singleton()->shutdown();
 
 	for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();

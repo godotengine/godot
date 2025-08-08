@@ -457,8 +457,8 @@
 				[codeblock]
 				print(" (x)  (fmod(x, 1.5))   (fposmod(x, 1.5))")
 				for i in 7:
-				    var x = i * 0.5 - 1.5
-				    print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
+					var x = i * 0.5 - 1.5
+					print("%4.1f           %4.1f  | %4.1f" % [x, fmod(x, 1.5), fposmod(x, 1.5)])
 				[/codeblock]
 				Prints:
 				[codeblock lang=text]
@@ -498,21 +498,21 @@
 				var drink = "water"
 
 				func _ready():
-				    var id = get_instance_id()
-				    var instance = instance_from_id(id)
-				    print(instance.foo) # Prints "water"
+					var id = get_instance_id()
+					var instance = instance_from_id(id)
+					print(instance.foo) # Prints "water"
 				[/gdscript]
 				[csharp]
 				public partial class MyNode : Node
 				{
-				    public string Drink { get; set; } = "water";
+					public string Drink { get; set; } = "water";
 
-				    public override void _Ready()
-				    {
-				        ulong id = GetInstanceId();
-				        var instance = (MyNode)InstanceFromId(Id);
-				        GD.Print(instance.Drink); // Prints "water"
-				    }
+					public override void _Ready()
+					{
+						ulong id = GetInstanceId();
+						var instance = (MyNode)InstanceFromId(Id);
+						GD.Print(instance.Drink); // Prints "water"
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -642,10 +642,10 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-				    var min_angle = deg_to_rad(0.0)
-				    var max_angle = deg_to_rad(90.0)
-				    rotation = lerp_angle(min_angle, max_angle, elapsed)
-				    elapsed += delta
+					var min_angle = deg_to_rad(0.0)
+					var max_angle = deg_to_rad(90.0)
+					rotation = lerp_angle(min_angle, max_angle, elapsed)
+					elapsed += delta
 				[/codeblock]
 				[b]Note:[/b] This function lerps through the shortest path between [param from] and [param to]. However, when these two angles are approximately [code]PI + k * TAU[/code] apart for any integer [code]k[/code], it's not obvious which way they lerp due to floating-point precision errors. For example, [code]lerp_angle(0, PI, weight)[/code] lerps counter-clockwise, while [code]lerp_angle(0, PI + 5 * TAU, weight)[/code] lerps clockwise.
 			</description>
@@ -815,7 +815,7 @@
 				[codeblock]
 				print("#(i)  (i % 3)   (posmod(i, 3))")
 				for i in range(-3, 4):
-				    print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
+					print("%2d       %2d  | %2d" % [i, i % 3, posmod(i, 3)])
 				[/codeblock]
 				Prints:
 				[codeblock lang=text]
@@ -876,7 +876,6 @@
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
-				[b]Note:[/b] On Windows, only Windows 10 and later correctly displays ANSI escape codes in standard output.
 				[b]Note:[/b] Output displayed in the editor supports clickable [code skip-lint][url=address]text[/url][/code] tags. The [code skip-lint][url][/code] tag's [code]address[/code] value is handled by [method OS.shell_open] when clicked.
 			</description>
 		</method>
@@ -1430,9 +1429,9 @@
 				json.parse('["a", "b", "c"]')
 				var result = json.get_data()
 				if result is Array:
-				    print(result[0]) # Prints "a"
+					print(result[0]) # Prints "a"
 				else:
-				    print("Unexpected result!")
+					print("Unexpected result!")
 				[/codeblock]
 				See also [method type_string].
 			</description>
@@ -1472,8 +1471,8 @@
 				Prints:
 				[codeblock lang=text]
 				{
-				    "a": 1,
-				    "b": 2
+					"a": 1,
+					"b": 2
 				}
 				[/codeblock]
 				[b]Note:[/b] Converting [Signal] or [Callable] is not supported and will result in an empty value for these types, regardless of their data.
@@ -1493,8 +1492,8 @@
 			<param index="1" name="min" type="Variant" />
 			<param index="2" name="max" type="Variant" />
 			<description>
-				Wraps the [Variant] [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
-				Variant types [int] and [float] are supported. If any of the arguments is [float] this function returns a [float], otherwise it returns an [int].
+				Wraps the [Variant] [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
+				Variant types [int] and [float] are supported. If any of the arguments is [float], this function returns a [float], otherwise it returns an [int].
 				[codeblock]
 				var a = wrap(4, 5, 10)
 				# a is 9 (int)
@@ -1513,7 +1512,7 @@
 			<param index="1" name="min" type="float" />
 			<param index="2" name="max" type="float" />
 			<description>
-				Wraps the float [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Wraps the float [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5.0 and 9.9
 				value = wrapf(value + 0.1, 5.0, 10.0)
@@ -1526,8 +1525,7 @@
 				# Infinite rotation (in radians)
 				angle = wrapf(angle + 0.1, -PI, PI)
 				[/codeblock]
-				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead.
-				[method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
+				[b]Note:[/b] If [param min] is [code]0[/code], this is equivalent to [method fposmod], so prefer using that instead. [method wrapf] is more flexible than using the [method fposmod] approach by giving the user control over the minimum value.
 			</description>
 		</method>
 		<method name="wrapi">
@@ -1536,7 +1534,7 @@
 			<param index="1" name="min" type="int" />
 			<param index="2" name="max" type="int" />
 			<description>
-				Wraps the integer [param value] between [param min] and [param max]. Can be used for creating loop-alike behavior or infinite surfaces.
+				Wraps the integer [param value] between [param min] and [param max]. [param min] is [i]inclusive[/i] while [param max] is [i]exclusive[/i]. This can be used for creating loop-like behavior or infinite surfaces.
 				[codeblock]
 				# Infinite loop between 5 and 9
 				frame = wrapi(frame + 1, 5, 10)
@@ -2614,11 +2612,11 @@
 			[codeblock]
 			var error = method_that_returns_error()
 			if error != OK:
-			    printerr("Failure!")
+				printerr("Failure!")
 
 			# Or, alternatively:
 			if error:
-			    printerr("Still failing!")
+				printerr("Still failing!")
 			[/codeblock]
 			[b]Note:[/b] Many functions do not return an error code, but will print error messages to standard output.
 		</constant>
@@ -2817,7 +2815,7 @@
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. By default the file will be stored as UID whenever available. You can use [ResourceUID] methods to convert it back to path. For storing a raw path, use [constant PROPERTY_HINT_FILE_PATH].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
@@ -2958,14 +2956,18 @@
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
 		<constant name="PROPERTY_HINT_GROUP_ENABLE" value="42" enum="PropertyHint">
-			Hints that a boolean property will enable the feature associated with the group that it occurs in. Only works within a group or subgroup.
+			Hints that a boolean property will enable the feature associated with the group that it occurs in. The property will be displayed as a checkbox on the group header. Only works within a group or subgroup.
+			By default, disabling the property hides all properties in the group. Use the optional hint string [code]"checkbox_only"[/code] to disable this behavior.
 		</constant>
 		<constant name="PROPERTY_HINT_INPUT_NAME" value="43" enum="PropertyHint">
 			Hints that a [String] or [StringName] property is the name of an input action. This allows the selection of any action name from the Input Map in the Project Settings. The hint string may contain two options separated by commas:
 			- If it contains [code]"show_builtin"[/code], built-in input actions are included in the selection.
 			- If it contains [code]"loose_mode"[/code], loose mode is enabled. This allows inserting any action name even if it's not present in the input map.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_FILE_PATH" value="44" enum="PropertyHint">
+			Like [constant PROPERTY_HINT_FILE], but the property is stored as a raw path, not UID. That means the reference will be broken if you move the file. Consider using [constant PROPERTY_HINT_FILE] when possible.
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
@@ -3084,7 +3086,7 @@
 			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
 		<constant name="METHOD_FLAG_VIRTUAL_REQUIRED" value="128" enum="MethodFlags" is_bitfield="true">
-			Flag for a virtual method that is required.
+			Flag for a virtual method that is required. In GDScript, this flag is set for abstract functions.
 		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).

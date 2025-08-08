@@ -209,7 +209,7 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Variant, _get_rpc_config)
 
-	virtual Variant get_rpc_config() const override {
+	virtual const Variant get_rpc_config() const override {
 		Variant ret;
 		GDVIRTUAL_CALL(_get_rpc_config, ret);
 		return ret;
@@ -239,43 +239,35 @@ public:
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_reserved_words)
 
-	virtual void get_reserved_words(List<String> *p_words) const override {
+	virtual Vector<String> get_reserved_words() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_reserved_words, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 	EXBIND1RC(bool, is_control_flow_keyword, const String &)
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_comment_delimiters)
 
-	virtual void get_comment_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_comment_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
 
-	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_doc_comment_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	GDVIRTUAL0RC_REQUIRED(Vector<String>, _get_string_delimiters)
 
-	virtual void get_string_delimiters(List<String> *p_words) const override {
+	virtual Vector<String> get_string_delimiters() const override {
 		Vector<String> ret;
 		GDVIRTUAL_CALL(_get_string_delimiters, ret);
-		for (int i = 0; i < ret.size(); i++) {
-			p_words->push_back(ret[i]);
-		}
+		return ret;
 	}
 
 	EXBIND3RC(Ref<Script>, make_template, const String &, const String &, const String &)
@@ -347,8 +339,6 @@ public:
 				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
-				ERR_CONTINUE(!warn.has("leftmost_column"));
-				ERR_CONTINUE(!warn.has("rightmost_column"));
 				ERR_CONTINUE(!warn.has("code"));
 				ERR_CONTINUE(!warn.has("string_code"));
 				ERR_CONTINUE(!warn.has("message"));
@@ -356,8 +346,6 @@ public:
 				Warning swarn;
 				swarn.start_line = warn["start_line"];
 				swarn.end_line = warn["end_line"];
-				swarn.leftmost_column = warn["leftmost_column"];
-				swarn.rightmost_column = warn["rightmost_column"];
 				swarn.code = warn["code"];
 				swarn.string_code = warn["string_code"];
 				swarn.message = warn["message"];

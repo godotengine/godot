@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from emscripten_helpers import (
@@ -100,7 +101,25 @@ def library_emitter(target, source, env):
 
 
 def configure(env: "SConsEnvironment"):
+    env["CC"] = "emcc"
+    env["CXX"] = "em++"
+
+    env["AR"] = "emar"
+    env["RANLIB"] = "emranlib"
+
+    # Get version info for checks below.
+    cc_version = get_compiler_version(env)
+    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
+
+    # Minimum emscripten requirements.
+    if cc_semver < (4, 0, 0):
+        print_error("The minimum Emscripten version to build Godot is 4.0.0, detected: %s.%s.%s" % cc_semver)
+        sys.exit(255)
+
     env.Append(LIBEMITTER=[library_emitter])
+
+    env["EXPORTED_FUNCTIONS"] = ["_main"]
+    env["EXPORTED_RUNTIME_METHODS"] = []
 
     # Validate arch.
     supported_arches = ["wasm32"]
@@ -111,6 +130,14 @@ def configure(env: "SConsEnvironment"):
     except Exception:
         print_error("Initial memory must be a valid integer")
         sys.exit(255)
+
+    # Add Emscripten to the included paths (for compile_commands.json completion)
+    emcc_path = Path(str(WhereIs("emcc")))
+    while emcc_path.is_symlink():
+        # For some reason, mypy trips on `Path.readlink` not being defined, somehow.
+        emcc_path = emcc_path.readlink()  # type: ignore[attr-defined]
+    emscripten_include_path = emcc_path.parent.joinpath("cache", "sysroot", "include")
+    env.Append(CPPPATH=[emscripten_include_path])
 
     ## Build type
 
@@ -137,9 +164,14 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-Wl,--fatal-warnings"])
 
     # LTO
-
     if env["lto"] == "auto":  # Enable LTO for production.
         env["lto"] = "thin"
+
+    if env["lto"] == "thin" and cc_semver < (4, 0, 9):
+        print_warning(
+            '"lto=thin" support requires Emscripten 4.0.9 (detected %s.%s.%s), using "lto=full" instead.' % cc_semver
+        )
+        env["lto"] = "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -163,6 +195,13 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sSAFE_HEAP=1"])
 
     # Closure compiler
+    if env["use_closure_compiler"] and cc_semver < (4, 0, 11):
+        print_warning(
+            '"use_closure_compiler=yes" support requires Emscripten 4.0.11 (detected %s.%s.%s), using "use_closure_compiler=no" instead.'
+            % cc_semver
+        )
+        env["use_closure_compiler"] = False
+
     if env["use_closure_compiler"]:
         # For emscripten support code.
         env.Append(LINKFLAGS=["--closure", "1"])
@@ -189,12 +228,6 @@ def configure(env: "SConsEnvironment"):
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
 
-    env["CC"] = "emcc"
-    env["CXX"] = "em++"
-
-    env["AR"] = "emar"
-    env["RANLIB"] = "emranlib"
-
     # Use TempFileMunge since some AR invocations are too long for cmd.exe.
     # Use POSIX-style paths, required with TempFileMunge.
     env["ARCOM_POSIX"] = env["ARCOM"].replace("$TARGET", "$TARGET.posix").replace("$SOURCES", "$SOURCES.posix")
@@ -210,15 +243,6 @@ def configure(env: "SConsEnvironment"):
     env["LIBSUFFIX"] = ".a"
     env["LIBPREFIXES"] = ["$LIBPREFIX"]
     env["LIBSUFFIXES"] = ["$LIBSUFFIX"]
-
-    # Get version info for checks below.
-    cc_version = get_compiler_version(env)
-    cc_semver = (cc_version["major"], cc_version["minor"], cc_version["patch"])
-
-    # Minimum emscripten requirements.
-    if cc_semver < (3, 1, 62):
-        print_error("The minimum emscripten version to build Godot is 3.1.62, detected: %s.%s.%s" % cc_semver)
-        sys.exit(255)
 
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED", "UNIX_SOCKET_UNAVAILABLE"])
@@ -244,12 +268,12 @@ def configure(env: "SConsEnvironment"):
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=\"Module['emscriptenPoolSize']||8\""])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
             # Not needed (and potentially dangerous) when dlink_enabled=yes, since we set EXPORT_ALL=1 in that case.
-            env.Append(LINKFLAGS=["-sEXPORTED_FUNCTIONS=['__emscripten_thread_crashed','_main']"])
+            env["EXPORTED_FUNCTIONS"] += ["__emscripten_thread_crashed"]
 
     elif env["proxy_to_pthread"]:
         print_warning('"threads=no" support requires "proxy_to_pthread=no", disabling proxy to pthread.')
@@ -264,6 +288,7 @@ def configure(env: "SConsEnvironment"):
             print_warning("GDExtension support requires proxy_to_pthread=no, disabling proxy to pthread.")
             env["proxy_to_pthread"] = False
 
+        env.Append(CPPDEFINES=["WEB_DLINK_ENABLED"])
         env.Append(CCFLAGS=["-sSIDE_MODULE=2"])
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
@@ -276,7 +301,7 @@ def configure(env: "SConsEnvironment"):
     if env["proxy_to_pthread"]:
         env.Append(LINKFLAGS=["-sPROXY_TO_PTHREAD=1"])
         env.Append(CPPDEFINES=["PROXY_TO_PTHREAD_ENABLED"])
-        env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['_emscripten_proxy_main']"])
+        env["EXPORTED_RUNTIME_METHODS"] += ["_emscripten_proxy_main"]
         # https://github.com/emscripten-core/emscripten/issues/18034#issuecomment-1277561925
         env.Append(LINKFLAGS=["-sTEXTDECODER=0"])
 
@@ -303,7 +328,13 @@ def configure(env: "SConsEnvironment"):
     env.Append(LINKFLAGS=["-sINVOKE_RUN=0"])
 
     # callMain for manual start, cwrap for the mono version.
-    env.Append(LINKFLAGS=["-sEXPORTED_RUNTIME_METHODS=['callMain','cwrap']"])
+    # Make sure also to have those memory-related functions available.
+    heap_arrays = [f"HEAP{heap_type}{heap_size}" for heap_size in [8, 16, 32, 64] for heap_type in ["", "U"]] + [
+        "HEAPF32",
+        "HEAPF64",
+    ]
+    env["EXPORTED_RUNTIME_METHODS"] += ["callMain", "cwrap"] + heap_arrays
+    env["EXPORTED_FUNCTIONS"] += ["_malloc", "_free"]
 
     # Add code that allow exiting runtime.
     env.Append(LINKFLAGS=["-sEXIT_RUNTIME=1"])
@@ -311,3 +342,6 @@ def configure(env: "SConsEnvironment"):
     # This workaround creates a closure that prevents the garbage collector from freeing the WebGL context.
     # We also only use WebGL2, and changing context version is not widely supported anyway.
     env.Append(LINKFLAGS=["-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0"])
+
+    # Disable GDScript LSP (as the Web platform is not compatible with TCP).
+    env.Append(CPPDEFINES=["GDSCRIPT_NO_LSP"])

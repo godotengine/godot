@@ -154,42 +154,84 @@ inline bool is_power_of_2(const T x) {
 }
 
 // Function to find the next power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int next_power_of_2(unsigned int x) {
-	if (x == 0) {
+constexpr uint64_t next_power_of_2(uint64_t p_number) {
+	if (p_number == 0) {
 		return 0;
 	}
 
-	--x;
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
+	--p_number;
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+	p_number |= p_number >> 32;
 
-	return ++x;
+	return ++p_number;
+}
+
+constexpr uint32_t next_power_of_2(uint32_t p_number) {
+	if (p_number == 0) {
+		return 0;
+	}
+
+	--p_number;
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+
+	return ++p_number;
 }
 
 // Function to find the previous power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int previous_power_of_2(unsigned int x) {
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
-	return x - (x >> 1);
+constexpr uint64_t previous_power_of_2(uint64_t p_number) {
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+	p_number |= p_number >> 32;
+	return p_number - (p_number >> 1);
+}
+
+constexpr uint32_t previous_power_of_2(uint32_t p_number) {
+	p_number |= p_number >> 1;
+	p_number |= p_number >> 2;
+	p_number |= p_number >> 4;
+	p_number |= p_number >> 8;
+	p_number |= p_number >> 16;
+	return p_number - (p_number >> 1);
 }
 
 // Function to find the closest power of 2 to an integer.
-static _FORCE_INLINE_ unsigned int closest_power_of_2(unsigned int x) {
-	unsigned int nx = next_power_of_2(x);
-	unsigned int px = previous_power_of_2(x);
-	return (nx - x) > (x - px) ? px : nx;
+constexpr uint64_t closest_power_of_2(uint64_t p_number) {
+	uint64_t nx = next_power_of_2(p_number);
+	uint64_t px = previous_power_of_2(p_number);
+	return (nx - p_number) > (p_number - px) ? px : nx;
+}
+
+constexpr uint32_t closest_power_of_2(uint32_t p_number) {
+	uint32_t nx = next_power_of_2(p_number);
+	uint32_t px = previous_power_of_2(p_number);
+	return (nx - p_number) > (p_number - px) ? px : nx;
 }
 
 // Get a shift value from a power of 2.
-static inline int get_shift_from_power_of_2(unsigned int p_bits) {
-	for (unsigned int i = 0; i < 32; i++) {
-		if (p_bits == (unsigned int)(1 << i)) {
+constexpr int32_t get_shift_from_power_of_2(uint64_t p_bits) {
+	for (uint64_t i = 0; i < (uint64_t)64; i++) {
+		if (p_bits == (uint64_t)((uint64_t)1 << i)) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+constexpr int32_t get_shift_from_power_of_2(uint32_t p_bits) {
+	for (uint32_t i = 0; i < (uint32_t)32; i++) {
+		if (p_bits == (uint32_t)((uint32_t)1 << i)) {
 			return i;
 		}
 	}
@@ -198,30 +240,44 @@ static inline int get_shift_from_power_of_2(unsigned int p_bits) {
 }
 
 template <typename T>
-static _FORCE_INLINE_ T nearest_power_of_2_templated(T x) {
-	--x;
+static _FORCE_INLINE_ T nearest_power_of_2_templated(T p_number) {
+	--p_number;
 
 	// The number of operations on x is the base two logarithm
 	// of the number of bits in the type. Add three to account
 	// for sizeof(T) being in bytes.
-	size_t num = get_shift_from_power_of_2(sizeof(T)) + 3;
+	constexpr size_t shift_steps = get_shift_from_power_of_2((uint64_t)sizeof(T)) + 3;
 
 	// If the compiler is smart, it unrolls this loop.
 	// If it's dumb, this is a bit slow.
-	for (size_t i = 0; i < num; i++) {
-		x |= x >> (1 << i);
+	for (size_t i = 0; i < shift_steps; i++) {
+		p_number |= p_number >> (1 << i);
 	}
 
-	return ++x;
+	return ++p_number;
 }
 
 // Function to find the nearest (bigger) power of 2 to an integer.
-static inline unsigned int nearest_shift(unsigned int p_number) {
-	for (int i = 30; i >= 0; i--) {
-		if (p_number & (1 << i)) {
-			return i + 1;
+constexpr uint64_t nearest_shift(uint64_t p_number) {
+	uint64_t i = 63;
+	do {
+		i--;
+		if (p_number & ((uint64_t)1 << i)) {
+			return i + (uint64_t)1;
 		}
-	}
+	} while (i != 0);
+
+	return 0;
+}
+
+constexpr uint32_t nearest_shift(uint32_t p_number) {
+	uint32_t i = 31;
+	do {
+		i--;
+		if (p_number & ((uint32_t)1 << i)) {
+			return i + (uint32_t)1;
+		}
+	} while (i != 0);
 
 	return 0;
 }
@@ -316,10 +372,6 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 
 // Limit the depth of recursive algorithms when dealing with Array/Dictionary
 #define MAX_RECURSION 100
-
-#ifdef DEBUG_ENABLED
-#define DEBUG_METHODS_ENABLED
-#endif
 
 // Macro GD_IS_DEFINED() allows to check if a macro is defined. It needs to be defined to anything (say 1) to work.
 #define __GDARG_PLACEHOLDER_1 false,

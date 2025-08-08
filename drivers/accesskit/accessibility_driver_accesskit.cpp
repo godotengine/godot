@@ -136,8 +136,36 @@ void AccessibilityDriverAccessKit::_accessibility_action_callback(struct accessk
 					case ACCESSKIT_ACTION_DATA_NUMERIC_VALUE: {
 						rq_data = p_request->data.value.numeric_value;
 					} break;
-					case ACCESSKIT_ACTION_DATA_SCROLL_TARGET_RECT: {
-						rq_data = Rect2(p_request->data.value.scroll_target_rect.x0, p_request->data.value.scroll_target_rect.y0, p_request->data.value.scroll_target_rect.x1 - p_request->data.value.scroll_target_rect.x0, p_request->data.value.scroll_target_rect.y1 - p_request->data.value.scroll_target_rect.y0);
+					case ACCESSKIT_ACTION_DATA_SCROLL_HINT: {
+						switch (p_request->data.value.scroll_hint) {
+							case ACCESSKIT_SCROLL_HINT_TOP_LEFT: {
+								rq_data = DisplayServer::SCROLL_HINT_TOP_LEFT;
+							} break;
+							case ACCESSKIT_SCROLL_HINT_BOTTOM_RIGHT: {
+								rq_data = DisplayServer::SCROLL_HINT_BOTTOM_RIGHT;
+							} break;
+							case ACCESSKIT_SCROLL_HINT_TOP_EDGE: {
+								rq_data = DisplayServer::SCROLL_HINT_TOP_EDGE;
+							} break;
+							case ACCESSKIT_SCROLL_HINT_BOTTOM_EDGE: {
+								rq_data = DisplayServer::SCROLL_HINT_BOTTOM_EDGE;
+							} break;
+							case ACCESSKIT_SCROLL_HINT_LEFT_EDGE: {
+								rq_data = DisplayServer::SCROLL_HINT_LEFT_EDGE;
+							} break;
+							case ACCESSKIT_SCROLL_HINT_RIGHT_EDGE: {
+								rq_data = DisplayServer::SCROLL_HINT_RIGHT_EDGE;
+							} break;
+							default:
+								break;
+						}
+					} break;
+					case ACCESSKIT_ACTION_DATA_SCROLL_UNIT: {
+						if (p_request->data.value.scroll_unit == ACCESSKIT_SCROLL_UNIT_ITEM) {
+							rq_data = DisplayServer::SCROLL_UNIT_ITEM;
+						} else if (p_request->data.value.scroll_unit == ACCESSKIT_SCROLL_UNIT_PAGE) {
+							rq_data = DisplayServer::SCROLL_UNIT_PAGE;
+						}
 					} break;
 					case ACCESSKIT_ACTION_DATA_SCROLL_TO_POINT: {
 						rq_data = Point2(p_request->data.value.scroll_to_point.x, p_request->data.value.scroll_to_point.y);
@@ -327,10 +355,10 @@ RID AccessibilityDriverAccessKit::accessibility_create_sub_text_edit_elements(co
 		Vector<float> char_positions;
 		Vector<float> char_widths;
 
-		char_positions.resize_zeroed(t.length());
+		char_positions.resize_initialized(t.length());
 		float *positions_ptr = char_positions.ptrw();
 
-		char_widths.resize_zeroed(t.length());
+		char_widths.resize_initialized(t.length());
 		float *widths_ptr = char_widths.ptrw();
 
 		float size_x = 0.0;
@@ -1056,9 +1084,6 @@ void AccessibilityDriverAccessKit::accessibility_update_set_popup_type(const RID
 	_ensure_node(p_id, ae);
 
 	switch (p_popup) {
-		case DisplayServer::AccessibilityPopupType::POPUP_UNKNOWN: {
-			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_TRUE);
-		} break;
 		case DisplayServer::AccessibilityPopupType::POPUP_MENU: {
 			accesskit_node_set_has_popup(ae->node, ACCESSKIT_HAS_POPUP_MENU);
 		} break;
@@ -1278,13 +1303,6 @@ void AccessibilityDriverAccessKit::accessibility_update_set_flag(const RID &p_id
 				accesskit_node_set_hidden(ae->node);
 			} else {
 				accesskit_node_clear_hidden(ae->node);
-			}
-		} break;
-		case DisplayServer::AccessibilityFlags::FLAG_LINKED: {
-			if (p_value) {
-				accesskit_node_set_linked(ae->node);
-			} else {
-				accesskit_node_clear_linked(ae->node);
 			}
 		} break;
 		case DisplayServer::AccessibilityFlags::FLAG_MULTISELECTABLE: {
@@ -1631,9 +1649,9 @@ AccessibilityDriverAccessKit::AccessibilityDriverAccessKit() {
 	//action_map[DisplayServer::AccessibilityAction::ACTION_LOAD_INLINE_TEXT_BOXES] = ACCESSKIT_ACTION_LOAD_INLINE_TEXT_BOXES;
 	action_map[DisplayServer::AccessibilityAction::ACTION_SET_TEXT_SELECTION] = ACCESSKIT_ACTION_SET_TEXT_SELECTION;
 	action_map[DisplayServer::AccessibilityAction::ACTION_REPLACE_SELECTED_TEXT] = ACCESSKIT_ACTION_REPLACE_SELECTED_TEXT;
-	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_BACKWARD] = ACCESSKIT_ACTION_SCROLL_BACKWARD;
+	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_BACKWARD] = ACCESSKIT_ACTION_SCROLL_UP;
 	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_DOWN] = ACCESSKIT_ACTION_SCROLL_DOWN;
-	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_FORWARD] = ACCESSKIT_ACTION_SCROLL_FORWARD;
+	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_FORWARD] = ACCESSKIT_ACTION_SCROLL_DOWN;
 	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_LEFT] = ACCESSKIT_ACTION_SCROLL_LEFT;
 	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_RIGHT] = ACCESSKIT_ACTION_SCROLL_RIGHT;
 	action_map[DisplayServer::AccessibilityAction::ACTION_SCROLL_UP] = ACCESSKIT_ACTION_SCROLL_UP;

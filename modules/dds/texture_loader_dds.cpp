@@ -172,12 +172,7 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 		// Calculate the space these formats will take up after decoding.
 		switch (p_dds_format) {
-			case DDS_BGR565:
-				size = size * 3 / 2;
-				break;
-
 			case DDS_BGR5A1:
-			case DDS_BGRA4:
 			case DDS_B2GR3A8:
 			case DDS_LUMINANCE_ALPHA_4:
 				size = size * 2;
@@ -216,41 +211,14 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 				}
 
 			} break;
-			case DDS_BGR565: {
-				// To RGB8.
-				int colcount = size / 3;
-
-				for (int i = colcount - 1; i >= 0; i--) {
-					int src_ofs = i * 2;
-					int dst_ofs = i * 3;
-
-					uint8_t b = wb[src_ofs] & 0x1F;
-					uint8_t g = (wb[src_ofs] >> 5) | ((wb[src_ofs + 1] & 0x7) << 3);
-					uint8_t r = wb[src_ofs + 1] >> 3;
-
-					wb[dst_ofs + 0] = r << 3;
-					wb[dst_ofs + 1] = g << 2;
-					wb[dst_ofs + 2] = b << 3;
-				}
-
-			} break;
 			case DDS_BGRA4: {
-				// To RGBA8.
-				int colcount = size / 4;
+				// To RGBA4.
+				for (uint32_t i = 0; i < size; i += 2) {
+					uint8_t ar = wb[i + 0];
+					uint8_t gb = wb[i + 1];
 
-				for (int i = colcount - 1; i >= 0; i--) {
-					int src_ofs = i * 2;
-					int dst_ofs = i * 4;
-
-					uint8_t b = wb[src_ofs] & 0x0F;
-					uint8_t g = wb[src_ofs] & 0xF0;
-					uint8_t r = wb[src_ofs + 1] & 0x0F;
-					uint8_t a = wb[src_ofs + 1] & 0xF0;
-
-					wb[dst_ofs] = (r << 4) | r;
-					wb[dst_ofs + 1] = g | (g >> 4);
-					wb[dst_ofs + 2] = (b << 4) | b;
-					wb[dst_ofs + 3] = a | (a >> 4);
+					wb[i + 0] = ((ar & 0x0F) << 4) | ((gb & 0xF0) >> 4);
+					wb[i + 1] = ((ar & 0xF0) >> 4) | ((gb & 0x0F) << 4);
 				}
 
 			} break;
@@ -359,6 +327,39 @@ static Ref<Image> _dds_load_layer(Ref<FileAccess> p_file, DDSFormat p_dds_format
 
 			} break;
 
+			case DDS_RGBX8: {
+				// To RGB8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int src_ofs = i * 4;
+					int dst_ofs = i * 3;
+
+					wb[dst_ofs + 0] = wb[src_ofs + 0];
+					wb[dst_ofs + 1] = wb[src_ofs + 1];
+					wb[dst_ofs + 2] = wb[src_ofs + 2];
+				}
+
+				r_src_data.resize(size * 3 / 4);
+
+			} break;
+			case DDS_BGRX8: {
+				// To RGB8.
+				int colcount = size / 4;
+
+				for (int i = 0; i < colcount; i++) {
+					int src_ofs = i * 4;
+					int dst_ofs = i * 3;
+
+					wb[dst_ofs + 0] = wb[src_ofs + 2];
+					wb[dst_ofs + 1] = wb[src_ofs + 1];
+					wb[dst_ofs + 2] = wb[src_ofs + 0];
+				}
+
+				r_src_data.resize(size * 3 / 4);
+
+			} break;
+
 			// Grayscale.
 			case DDS_LUMINANCE_ALPHA_4: {
 				// To LA8.
@@ -421,7 +422,7 @@ static Ref<Resource> _dds_create_texture(const Vector<Ref<Image>> &p_images, uin
 			return ImageTexture::create_from_image(p_images[0]);
 		}
 
-	} else if ((p_layer_count & DDST_TYPE_MASK) == DDST_CUBEMAP) {
+	} else if ((p_dds_type & DDST_TYPE_MASK) == DDST_CUBEMAP) {
 		ERR_FAIL_COND_V(p_layer_count % 6 != 0, Ref<Resource>());
 
 		if (p_dds_type & DDST_ARRAY) {
@@ -622,6 +623,10 @@ static Vector<Ref<Image>> _dds_load_images_from_buffer(Ref<FileAccess> p_f, DDSF
 				r_dds_format = DDS_BGR565;
 			} else if (format_rgb_bits == 8 && format_red_mask == 0xe0 && format_green_mask == 0x1c && format_blue_mask == 0x3) {
 				r_dds_format = DDS_B2GR3;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff) {
+				r_dds_format = DDS_BGRX8;
+			} else if (format_rgb_bits == 32 && format_red_mask == 0xff && format_green_mask == 0xff00 && format_blue_mask == 0xff0000) {
+				r_dds_format = DDS_RGBX8;
 			}
 		}
 
