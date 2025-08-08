@@ -44,7 +44,7 @@ void MovieWriterPNGWAV::get_supported_extensions(List<String> *r_extensions) con
 }
 
 bool MovieWriterPNGWAV::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "png";
+	return p_path.has_extension("png");
 }
 
 String MovieWriterPNGWAV::zeros_str(uint32_t p_index) {

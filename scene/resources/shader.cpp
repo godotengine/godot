@@ -338,8 +338,7 @@ bool ResourceFormatLoaderShader::handles_type(const String &p_type) const {
 }
 
 String ResourceFormatLoaderShader::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gdshader") {
+	if (p_path.has_extension("gdshader")) {
 		return "Shader";
 	}
 	return "";
