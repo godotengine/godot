@@ -5224,7 +5224,7 @@ void Node3DEditorViewport::apply_transform(Vector3 p_motion, double p_snap) {
 			continue;
 		}
 
-		if (sp->has_meta("_edit_lock_")) {
+		if (sp->has_meta("_edit_lock_") && !spatial_editor->is_gizmo_visible()) {
 			continue;
 		}
 
