@@ -96,7 +96,9 @@ private:
 	void _patterns_item_list_gui_input(const Ref<InputEvent> &p_event);
 	void _pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Texture2D> p_texture);
 	bool select_last_pattern = false;
+	HashMap<Ref<TileMapPattern>, int> pattern_to_index_map; // Optimization: O(1) pattern lookup
 	void _update_patterns_list();
+	void _schedule_pattern_preview_updates(); // Lazy loading for visible patterns
 
 	// Expanded editor.
 	PanelContainer *expanded_area = nullptr;
