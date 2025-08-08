@@ -41,6 +41,8 @@ class NodeDock : public VBoxContainer {
 	Button *connections_button = nullptr;
 	Button *groups_button = nullptr;
 
+	VBoxContainer *panel = nullptr;
+
 	ConnectionsDock *connections = nullptr;
 	GroupsEditor *groups = nullptr;
 
@@ -62,7 +64,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_node(Node *p_node);
+	void edit(Object *object);
 
 	void show_groups();
 	void show_connections();
