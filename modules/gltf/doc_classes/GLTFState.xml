@@ -83,9 +83,10 @@
 				Returns an array of all [GLTFCamera]s in the glTF file. These are the cameras that the [member GLTFNode.camera] index refers to.
 			</description>
 		</method>
-		<method name="get_handle_binary_image">
+		<method name="get_handle_binary_image" deprecated="Use [member handle_binary_image_mode] instead.">
 			<return type="int" />
 			<description>
+				Deprecated untyped alias for [member handle_binary_image_mode]. When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled.
 			</description>
 		</method>
 		<method name="get_images">
@@ -203,10 +204,11 @@
 				Sets the [GLTFCamera]s in the state. These are the cameras that the [member GLTFNode.camera] index refers to.
 			</description>
 		</method>
-		<method name="set_handle_binary_image">
+		<method name="set_handle_binary_image" deprecated="Use [member handle_binary_image_mode] instead.">
 			<return type="void" />
 			<param index="0" name="method" type="int" />
 			<description>
+				Deprecated untyped alias for [member handle_binary_image_mode]. When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled.
 			</description>
 		</method>
 		<method name="set_images">
@@ -305,6 +307,10 @@
 		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
 			The binary buffer attached to a .glb file.
 		</member>
+		<member name="handle_binary_image_mode" type="int" setter="set_handle_binary_image_mode" getter="get_handle_binary_image_mode" enum="GLTFState.HandleBinaryImageMode" default="1">
+			When importing a glTF file with unimported raw binary images embedded inside of binary blob buffers, in data URIs, or separate files not imported by Godot, this controls how the images are handled. Images can be discarded, saved as separate files, or embedded in the scene lossily or losslessly. See [enum HandleBinaryImageMode] for options.
+			This property does nothing for image files in the [code]res://[/code] folder imported by Godot, as those are handled by Godot's image importer directly, and then the Godot scene generated from the glTF file will use the images as Godot imported them.
+		</member>
 		<member name="import_as_skeleton_bones" type="bool" setter="set_import_as_skeleton_bones" getter="get_import_as_skeleton_bones" default="false">
 			If [code]true[/code], forces all GLTFNodes in the document to be bones of a single [Skeleton3D] Godot node.
 		</member>
@@ -325,16 +331,30 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0">
+		<constant name="HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES" value="0" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, discards all images and uses untextured materials in their place. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+		</constant>
+		<constant name="HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES" value="1" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, extracts them and saves them to their own files. This allows the image to be imported by Godot's image importer, which can then have their import options customized by the user, including optionally compressing the image to VRAM texture formats.
+			This will save the images's bytes exactly as-is, without recompression. For image formats supplied by glTF extensions, the file will have a filename ending with the file extension supplied by [method GLTFDocumentExtension._get_image_file_extension] of the extension class.
+			[b]Note:[/b] This option is editor-only. At runtime, this acts the same as [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED].
+		</constant>
+		<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU" value="2" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, embeds textures VRAM compressed with Basis Universal into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+		</constant>
+		<constant name="HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED" value="3" enum="HandleBinaryImageMode">
+			When importing a glTF file with embedded binary images, embeds textures compressed losslessly into the generated scene. Images stored as separate files in the [code]res://[/code] folder are not affected by this; those will be used as Godot imported them.
+		</constant>
+		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES] instead.">
 			Discards all embedded textures and uses untextured materials.
 		</constant>
-		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1">
+		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES] instead.">
 			Extracts embedded textures to be reimported and compressed. Editor only. Acts as uncompressed at runtime.
 		</constant>
-		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2">
+		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU] instead.">
 			Embeds textures VRAM compressed with Basis Universal into the generated scene.
 		</constant>
-		<constant name="HANDLE_BINARY_EMBED_AS_UNCOMPRESSED" value="3">
+		<constant name="HANDLE_BINARY_EMBED_AS_UNCOMPRESSED" value="3" deprecated="Use [constant HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED] instead.">
 			Embeds textures compressed losslessly into the generated scene, matching old behavior.
 		</constant>
 	</constants>
