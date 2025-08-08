@@ -144,9 +144,10 @@ unzFile ZipArchive::get_file_handle(const String &p_file) const {
 	return pkg;
 }
 
-bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset = 0) {
+bool ZipArchive::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset = 0, const PackedByteArray *p_key = nullptr) {
 	// load with offset feature only supported for PCK files
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with ZIP archives.");
+	ERR_FAIL_COND_V_MSG(p_key != nullptr && !p_key->is_empty(), false, "Invalid PCK data. Note that using a key isn't supported with ZIP archives.");
 
 	if (p_path.get_extension().nocasecmp_to("zip") != 0 && p_path.get_extension().nocasecmp_to("pcz") != 0) {
 		return false;
