@@ -41,12 +41,19 @@
 #include "core/variant/variant_internal.h"
 
 struct DictionaryPrivate {
-	SafeRefCount refcount;
 	Variant *read_only = nullptr; // If enabled, a pointer is used to a temporary value that is used to return read-only values.
 	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator> variant_map;
-	ContainerTypeValidate typed_key;
-	ContainerTypeValidate typed_value;
-	Variant *typed_fallback = nullptr; // Allows a typed dictionary to return dummy values when attempting an invalid access.
+	mutable ContainerTypeValidate typed_key;
+	mutable ContainerTypeValidate typed_value;
+	mutable Variant *typed_fallback = nullptr; // Allows a typed dictionary to return dummy values when attempting an invalid access.
+
+	DictionaryPrivate() = default;
+	DictionaryPrivate(std::initializer_list<KeyValue<Variant, Variant>> p_init) :
+			variant_map(p_init) {}
+	~DictionaryPrivate() {
+		memdelete_notnull(read_only);
+		memdelete_notnull(typed_fallback);
+	}
 };
 
 Dictionary::ConstIterator Dictionary::begin() const {
@@ -127,8 +134,10 @@ const Variant &Dictionary::operator[](const Variant &p_key) const {
 		VariantInternal::initialize(_p->typed_fallback, _p->typed_value.type);
 		return *_p->typed_fallback;
 	} else {
-		// Will not insert key, so no initialization is necessary.
-		return _p->variant_map[key];
+		static Variant empty;
+		const Variant *value = _p->variant_map.getptr(key);
+		ERR_FAIL_COND_V_MSG(!value, empty, "Bug: Dictionary::operator[] used when there was no value for the given key, please report.");
+		return *value;
 	}
 }
 
@@ -274,29 +283,12 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 	}
 	recursion_count++;
 	for (const KeyValue<Variant, Variant> &this_E : _p->variant_map) {
-		HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
+		ConstIterator other_E(p_dictionary._p->variant_map.find(this_E.key));
 		if (!other_E || !this_E.value.hash_compare(other_E->value, recursion_count, false)) {
 			return false;
 		}
 	}
 	return true;
-}
-
-void Dictionary::_ref(const Dictionary &p_from) const {
-	//make a copy first (thread safe)
-	if (!p_from._p->refcount.ref()) {
-		return; // couldn't copy
-	}
-
-	//if this is the same, unreference the other one
-	if (p_from._p == _p) {
-		_p->refcount.unref();
-		return;
-	}
-	if (_p) {
-		_unref();
-	}
-	_p = p_from._p;
 }
 
 void Dictionary::clear() {
@@ -338,20 +330,6 @@ Dictionary Dictionary::merged(const Dictionary &p_dictionary, bool p_overwrite) 
 	Dictionary ret = duplicate();
 	ret.merge(p_dictionary, p_overwrite);
 	return ret;
-}
-
-void Dictionary::_unref() const {
-	ERR_FAIL_NULL(_p);
-	if (_p->refcount.unref()) {
-		if (_p->read_only) {
-			memdelete(_p->read_only);
-		}
-		if (_p->typed_fallback) {
-			memdelete(_p->typed_fallback);
-		}
-		memdelete(_p);
-	}
-	_p = nullptr;
 }
 
 uint32_t Dictionary::hash() const {
@@ -565,7 +543,7 @@ const Variant *Dictionary::next(const Variant *p_key) const {
 	}
 	Variant key = *p_key;
 	ERR_FAIL_COND_V(!_p->typed_key.validate(key, "next"), nullptr);
-	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::Iterator E = _p->variant_map.find(key);
+	HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator E = _p->variant_map.find(key);
 
 	if (!E) {
 		return nullptr;
@@ -635,7 +613,7 @@ void Dictionary::set_typed(const ContainerType &p_key_type, const ContainerType 
 void Dictionary::set_typed(uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
 	ERR_FAIL_COND_MSG(_p->variant_map.size() > 0, "Type can only be set when dictionary is empty.");
-	ERR_FAIL_COND_MSG(_p->refcount.get() > 1, "Type can only be set when dictionary has no more than one user.");
+	ERR_FAIL_COND_MSG(_p.refcount().get() > 1, "Type can only be set when dictionary has no more than one user.");
 	ERR_FAIL_COND_MSG(_p->typed_key.type != Variant::NIL || _p->typed_value.type != Variant::NIL, "Type can only be set once.");
 	ERR_FAIL_COND_MSG((p_key_class_name != StringName() && p_key_type != Variant::OBJECT) || (p_value_class_name != StringName() && p_value_type != Variant::OBJECT), "Class names can only be set for type OBJECT.");
 	Ref<Script> key_script = p_key_script;
@@ -731,10 +709,7 @@ const ContainerTypeValidate &Dictionary::get_value_validator() const {
 }
 
 void Dictionary::operator=(const Dictionary &p_dictionary) {
-	if (this == &p_dictionary) {
-		return;
-	}
-	_ref(p_dictionary);
+	_p = p_dictionary._p;
 }
 
 const void *Dictionary::id() const {
@@ -742,31 +717,20 @@ const void *Dictionary::id() const {
 }
 
 Dictionary::Dictionary(const Dictionary &p_base, uint32_t p_key_type, const StringName &p_key_class_name, const Variant &p_key_script, uint32_t p_value_type, const StringName &p_value_class_name, const Variant &p_value_script) {
-	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
+	_p = SharedPtr<DictionaryPrivate>::make();
 	set_typed(p_key_type, p_key_class_name, p_key_script, p_value_type, p_value_class_name, p_value_script);
 	assign(p_base);
 }
 
-Dictionary::Dictionary(const Dictionary &p_from) {
-	_p = nullptr;
-	_ref(p_from);
-}
+Dictionary::Dictionary(const Dictionary &p_from) :
+		_p(p_from._p) {}
 
 Dictionary::Dictionary() {
-	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
+	_p = SharedPtr<DictionaryPrivate>::make();
 }
 
 Dictionary::Dictionary(std::initializer_list<KeyValue<Variant, Variant>> p_init) {
-	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
-
-	for (const KeyValue<Variant, Variant> &E : p_init) {
-		operator[](E.key) = E.value;
-	}
+	_p = SharedPtr<DictionaryPrivate>::make(p_init);
 }
 
-Dictionary::~Dictionary() {
-	_unref();
-}
+Dictionary::~Dictionary() {}
