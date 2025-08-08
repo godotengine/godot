@@ -57,7 +57,7 @@
 			[b]Note:[/b] Regardless of [member generate_probes_subdiv], direct lighting on dynamic objects is always applied using [Light3D] nodes in real-time.
 		</member>
 		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
-			If [code]true[/code], ignore environment lighting when baking lightmaps.
+			If [code]true[/code], considers this [LightmapGI] node to be used for indoor lighting. This means it will not consider environment lighting when blending multiple [LightmapGI] nodes at the same position. Additionally, baking lightmaps will make the lightmap probes located near the edges of the [LightmapGI] black regardless of how much lighting they receive. This prevent light leaks that make dynamic objects too bright due to the lighting being interpolated between those probes.
 		</member>
 		<member name="light_data" type="LightmapGIData" setter="set_light_data" getter="get_light_data">
 			The [LightmapGIData] associated to this [LightmapGI] node. This resource is automatically created after baking, and is not meant to be created manually.
