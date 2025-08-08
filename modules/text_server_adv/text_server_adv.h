@@ -705,7 +705,73 @@ class TextServerAdvanced : public TextServerExtension {
 	int64_t _convert_pos(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
 	int64_t _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_length) const;
-	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
+
+	struct FontPriorityList {
+		friend class TextServerAdvanced;
+
+		const int MAX_PRIORITY = 2;
+		int current_priority = 0;
+		uint32_t current_index = 0;
+		uint32_t font_count = 0;
+		const String *language;
+		const String *script_code;
+		LocalVector<Pair<RID, int>> unprocessed_fonts;
+		LocalVector<RID> fonts;
+		const TextServerAdvanced *text_server;
+
+		FontPriorityList(const TextServerAdvanced *p_text_server, const Array &p_fonts, const String &p_language, const String &p_script_code) {
+			text_server = p_text_server;
+			language = &p_language;
+			script_code = &p_script_code;
+			font_count = p_fonts.size();
+
+			unprocessed_fonts.reserve(font_count);
+			for (uint32_t i = 0; i < font_count; i++) {
+				unprocessed_fonts.push_back(Pair<RID, int>(p_fonts[i], -1));
+			}
+
+			fonts.reserve(font_count);
+			if (font_count > 0) {
+				fonts.push_back(p_fonts[0]);
+				unprocessed_fonts[0].second = 0;
+				current_index++;
+			}
+		}
+
+		_FORCE_INLINE_ uint32_t size() const {
+			return font_count;
+		}
+
+		_FORCE_INLINE_ int _get_priority(const RID &font) {
+			return text_server->_font_is_script_supported(font, *script_code) ? (text_server->_font_is_language_supported(font, *language) ? 0 : 1) : 2;
+		}
+
+		RID operator[](uint32_t index) {
+			if (index < fonts.size()) {
+				return fonts[index];
+			}
+			while (current_priority < MAX_PRIORITY || current_index < font_count) {
+				if (current_index >= font_count) {
+					current_priority++;
+					current_index = 0;
+				}
+				const RID &font = unprocessed_fonts[current_index].first;
+				int &priority = unprocessed_fonts[current_index].second;
+				if (priority < 0) {
+					priority = _get_priority(font);
+				}
+				if (priority == current_priority) {
+					fonts.push_back(font);
+					if (index < fonts.size()) {
+						return fonts[index];
+					}
+				}
+				current_index++;
+			}
+			return RID();
+		}
+	};
+	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, FontPriorityList &p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font);
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
