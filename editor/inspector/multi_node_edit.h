@@ -74,8 +74,12 @@ public:
 		if (get_node_count() != p_other->get_node_count()) {
 			return false;
 		}
+		HashSet<NodePath> nodes_in_selection;
 		for (int i = 0; i < get_node_count(); i++) {
-			if (!nodes.has(p_other->get_node(i))) {
+			nodes_in_selection.insert(p_other->get_node(i));
+		}
+		for (const NodePath &node : nodes) {
+			if (!nodes_in_selection.has(node)) {
 				return false;
 			}
 		}
