@@ -51,8 +51,8 @@ EditorFileSystem *EditorFileSystem::singleton = nullptr;
 int EditorFileSystem::nb_files_total = 0;
 EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
 
-//the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache10"
+// The name is the version, to keep compatibility with different versions of Godot.
+#define CACHE_FILE_NAME "filesystem_cache11"
 
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
@@ -135,7 +135,7 @@ Vector<String> EditorFileSystemDirectory::get_file_deps(int p_idx) const {
 
 	for (int i = 0; i < files[p_idx]->deps.size(); i++) {
 		String dep = files[p_idx]->deps[i];
-		int sep_idx = dep.find("::"); //may contain type information, unwanted
+		int sep_idx = dep.find("<*>"); // May contain type information, unwanted.
 		if (sep_idx != -1) {
 			dep = dep.substr(0, sep_idx);
 		}
@@ -393,14 +393,11 @@ void EditorFileSystem::_scan_filesystem() {
 	// On the first scan, the first_scan_root_dir is created in _first_scan_filesystem.
 	ERR_FAIL_COND(!scanning || new_filesystem || (first_scan && !first_scan_root_dir));
 
-	//read .fscache
-	String cpath;
-
 	sources_changed.clear();
 	file_cache.clear();
 
+	String directory_path;
 	String project = ProjectSettings::get_singleton()->get_resource_path();
-
 	String fscache = EditorPaths::get_singleton()->get_project_settings_dir().path_join(CACHE_FILE_NAME);
 	{
 		Ref<FileAccess> f = FileAccess::open(fscache, FileAccess::READ);
@@ -431,20 +428,14 @@ void EditorFileSystem::_scan_filesystem() {
 
 				if (l.begins_with("::")) {
 					Vector<String> split = l.split("::");
-					ERR_CONTINUE(split.size() != 3);
-					const String &name = split[1];
-
-					cpath = name;
+					ERR_CONTINUE(split.size() != 2);
+					directory_path = split[1];
 
 				} else {
-					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
-					Vector<String> split = l.split("::", true, 8);
-					ERR_CONTINUE(split.size() < 9);
-					String name = split[0];
-					String file;
-
-					file = name;
-					name = cpath.path_join(name);
+					Vector<String> split = l.split("::", true);
+					ERR_CONTINUE(split.size() < 11);
+					const String file = split[0];
+					const String path = directory_path.path_join(file);
 
 					FileCache fc;
 					fc.type = split[1].get_slicec('/', 0);
@@ -454,20 +445,20 @@ void EditorFileSystem::_scan_filesystem() {
 					fc.import_modification_time = split[4].to_int();
 					fc.import_valid = split[5].to_int() != 0;
 					fc.import_group_file = split[6].strip_edges();
+					fc.import_md5 = split[7];
+					fc.import_dest_paths = split[8].split("<>");
 					{
-						const Vector<String> &slices = split[7].split("<>");
-						ERR_CONTINUE(slices.size() < 7);
+						const Vector<String> &slices = split[9].split("<>");
+						ERR_CONTINUE(slices.size() < 5);
 						fc.class_info.name = slices[0];
 						fc.class_info.extends = slices[1];
 						fc.class_info.icon_path = slices[2];
 						fc.class_info.is_abstract = slices[3].to_int();
 						fc.class_info.is_tool = slices[4].to_int();
-						fc.import_md5 = slices[5];
-						fc.import_dest_paths = slices[6].split("<*>");
 					}
-					fc.deps = split[8].strip_edges().split("<>");
+					fc.deps = split[10].strip_edges().split("<>");
 
-					file_cache[name] = fc;
+					file_cache[path] = fc;
 				}
 			}
 		}
@@ -969,7 +960,7 @@ bool EditorFileSystem::_update_scan_actions() {
 					reimports.push_back(full_path);
 					Vector<String> dependencies = _get_dependencies(full_path);
 					for (const String &dep : dependencies) {
-						const String &dependency_path = dep.contains("::") ? dep.get_slice("::", 0) : dep;
+						const String &dependency_path = dep.contains("<*>") ? dep.get_slice("<*>", 0) : dep;
 						if (_can_import_file(dep)) {
 							reimports.push_back(dependency_path);
 						}
@@ -1823,7 +1814,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 	if (!p_dir) {
 		return; //none
 	}
-	p_file->store_line("::" + p_dir->get_path() + "::" + String::num_int64(p_dir->modified_time));
+	p_file->store_line("::" + p_dir->get_path());
 
 	for (int i = 0; i < p_dir->files.size(); i++) {
 		const EditorFileSystemDirectory::FileInfo *file_info = p_dir->files[i];
@@ -1844,7 +1835,9 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		cache_string.append(itos(file_info->import_modified_time));
 		cache_string.append(itos(file_info->import_valid));
 		cache_string.append(file_info->import_group_file);
-		cache_string.append(String("<>").join({ file_info->class_info.name, file_info->class_info.extends, file_info->class_info.icon_path, itos(file_info->class_info.is_abstract), itos(file_info->class_info.is_tool), file_info->import_md5, String("<*>").join(file_info->import_dest_paths) }));
+		cache_string.append(file_info->import_md5);
+		cache_string.append(String("<>").join(file_info->import_dest_paths));
+		cache_string.append(String("<>").join({ file_info->class_info.name, file_info->class_info.extends, file_info->class_info.icon_path, itos(file_info->class_info.is_abstract), itos(file_info->class_info.is_tool) }));
 		cache_string.append(String("<>").join(file_info->deps));
 
 		p_file->store_line(String("::").join(cache_string));
@@ -2090,7 +2083,7 @@ void EditorFileSystem::_update_file_icon_path(EditorFileSystemDirectory::FileInf
 		icon_path = EditorNode::get_editor_data().script_class_get_icon_path(file_info->resource_script_class);
 	} else if (file_info->class_info.icon_path.is_empty() && !file_info->deps.is_empty()) {
 		const String &script_dep = file_info->deps[0]; // Assuming the first dependency is a script.
-		const String &script_path = script_dep.contains("::") ? script_dep.get_slice("::", 2) : script_dep;
+		const String &script_path = script_dep.contains("<*>") ? script_dep.get_slice("<*>", 2) : script_dep;
 		if (!script_path.is_empty()) {
 			String *cached = file_icon_cache.getptr(script_path);
 			if (cached) {

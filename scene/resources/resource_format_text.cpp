@@ -914,13 +914,13 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 		}
 
 		if (p_add_types) {
-			path += "::" + type;
+			path += "<*>" + type;
 		}
 		if (!fallback_path.is_empty()) {
 			if (!p_add_types) {
-				path += "::"; // Ensure that path comes third, even if there is no type.
+				path += "<*>"; // Ensure that path comes third, even if there is no type.
 			}
-			path += "::" + fallback_path;
+			path += "<*>" + fallback_path;
 		}
 
 		p_dependencies->push_back(path);
