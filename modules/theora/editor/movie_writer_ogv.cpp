@@ -100,7 +100,7 @@ AudioServer::SpeakerMode MovieWriterOGV::get_audio_speaker_mode() const {
 }
 
 bool MovieWriterOGV::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "ogv";
+	return p_path.has_extension("ogv");
 }
 
 void MovieWriterOGV::get_supported_extensions(List<String> *r_extensions) const {

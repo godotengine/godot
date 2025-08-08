@@ -877,8 +877,7 @@ bool GDExtensionResourceLoader::handles_type(const String &p_type) const {
 }
 
 String GDExtensionResourceLoader::get_resource_type(const String &p_path) const {
-	String el = p_path.get_extension().to_lower();
-	if (el == "gdextension") {
+	if (p_path.has_extension("gdextension")) {
 		return "GDExtension";
 	}
 	return "";

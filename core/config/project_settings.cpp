@@ -1105,7 +1105,7 @@ bool _csproj_exists(const String &p_root_dir) {
 	dir->list_dir_begin();
 	String file_name = dir->_get_next();
 	while (file_name != "") {
-		if (!dir->current_is_dir() && file_name.get_extension() == "csproj") {
+		if (!dir->current_is_dir() && file_name.has_extension("csproj")) {
 			return true;
 		}
 		file_name = dir->_get_next();
