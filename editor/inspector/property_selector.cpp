@@ -68,11 +68,11 @@ void PropertySelector::_sbox_input(const Ref<InputEvent> &p_event) {
 
 void PropertySelector::_update_search() {
 	if (properties) {
-		set_title(TTR("Select Property"));
+		set_title(TTRC("Select Property"));
 	} else if (virtuals_only) {
-		set_title(TTR("Select Virtual Method"));
+		set_title(TTRC("Select Virtual Method"));
 	} else {
-		set_title(TTR("Select Method"));
+		set_title(TTRC("Select Method"));
 	}
 
 	search_options->clear();
@@ -664,15 +664,14 @@ void PropertySelector::_bind_methods() {
 PropertySelector::PropertySelector() {
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
-	//set_child_rect(vbc);
 	search_box = memnew(LineEdit);
-	vbc->add_margin_child(TTR("Search:"), search_box);
+	vbc->add_margin_child(TTRC("Search:"), search_box);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &PropertySelector::_text_changed));
 	search_box->connect(SceneStringName(gui_input), callable_mp(this, &PropertySelector::_sbox_input));
 	search_options = memnew(Tree);
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	vbc->add_margin_child(TTR("Matches:"), search_options, true);
-	set_ok_button_text(TTR("Open"));
+	vbc->add_margin_child(TTRC("Matches:"), search_options, true);
+	set_ok_button_text(TTRC("Open"));
 	get_ok_button()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);
@@ -683,5 +682,5 @@ PropertySelector::PropertySelector() {
 	help_bit = memnew(EditorHelpBit);
 	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &PropertySelector::_hide_requested));
-	vbc->add_margin_child(TTR("Description:"), help_bit);
+	vbc->add_margin_child(TTRC("Description:"), help_bit);
 }
