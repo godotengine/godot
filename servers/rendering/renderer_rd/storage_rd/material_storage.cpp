@@ -2000,6 +2000,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		new_type = SHADER_TYPE_SKY;
 	} else if (mode_string == "fog") {
 		new_type = SHADER_TYPE_FOG;
+	} else if (mode_string == "mesh_rasterizer") {
+		new_type = SHADER_TYPE_MESH_RASTERIZER;
 	} else {
 		new_type = SHADER_TYPE_MAX;
 	}

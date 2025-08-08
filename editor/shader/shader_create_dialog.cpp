@@ -216,6 +216,22 @@ void fog() {
 	// a given FogVolume will still be used.
 }
 )";
+						break;
+					case Shader::MODE_MESH_RASTERIZER:
+						code += R"(
+uniform mat4 projection;
+uniform sampler2D base_texture: source_color;
+uniform vec4 modulate: source_color = vec4(1.0);
+
+void vertex() {
+    POSITION = projection * POSITION;
+}
+
+void fragment() {
+    OUTPUT_COLOR = modulate * texture(base_texture, UV);
+}
+)";
+						break;
 				}
 			}
 			text_shader->set_code(code.as_string());
