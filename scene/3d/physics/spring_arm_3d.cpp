@@ -138,7 +138,8 @@ void SpringArm3D::process_spring() {
 	Vector3 motion;
 	const Vector3 cast_direction(get_global_transform().basis.xform(Vector3(0, 0, 1)));
 
-	motion = Vector3(cast_direction * (spring_length));
+	real_t motion_length = spring_length + margin;
+	motion = Vector3(cast_direction * motion_length);
 
 	if (shape.is_null()) {
 		Camera3D *camera = nullptr;
@@ -172,9 +173,7 @@ void SpringArm3D::process_spring() {
 			PhysicsDirectSpaceState3D::RayResult r;
 			bool intersected = get_world_3d()->get_direct_space_state()->intersect_ray(ray_params, r);
 			if (intersected) {
-				real_t dist = get_global_transform().origin.distance_to(r.position);
-				dist -= margin;
-				motion_delta = dist / (spring_length);
+				motion_delta = get_global_transform().origin.distance_to(r.position) / motion_length;
 			}
 		}
 	} else {
@@ -188,9 +187,9 @@ void SpringArm3D::process_spring() {
 		get_world_3d()->get_direct_space_state()->cast_motion(shape_params, motion_delta, motion_delta_unsafe);
 	}
 
-	current_spring_length = spring_length * motion_delta;
+	current_spring_length = motion_length * motion_delta - margin;
 	Transform3D child_transform;
-	child_transform.origin = get_global_transform().origin + cast_direction * (spring_length * motion_delta);
+	child_transform.origin = get_global_transform().origin + cast_direction * current_spring_length;
 
 	for (int i = get_child_count() - 1; 0 <= i; --i) {
 		Node3D *child = Object::cast_to<Node3D>(get_child(i));
