@@ -174,7 +174,7 @@ public:
 	_FORCE_INLINE_ real_t get_collision_priority() const { return collision_priority; }
 
 	void remove_shape(GodotShape2D *p_shape) override;
-	void remove_shape(int p_index);
+	virtual void remove_shape(int p_index);
 
 	virtual void set_space(GodotSpace2D *p_space) = 0;
 

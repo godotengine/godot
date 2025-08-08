@@ -462,6 +462,35 @@ void GodotBody3D::set_space(GodotSpace3D *p_space) {
 	}
 }
 
+void GodotBody3D::remove_shape(GodotShape3D *p_shape) {
+	for (int i = 0; i < get_shape_count(); i++) {
+		if (get_shape(i) == p_shape) {
+			GodotCollisionObject3D::remove_shape(i);
+			i--;
+
+			if (shape_frictions.size() > (uint32_t)i) {
+				shape_frictions.remove_at(i);
+			}
+
+			if (shape_bounces.size() > (uint32_t)i) {
+				shape_bounces.remove_at(i);
+			}
+		}
+	}
+}
+
+void GodotBody3D::remove_shape(int p_index) {
+	GodotCollisionObject3D::remove_shape(p_index);
+
+	if ((int)shape_frictions.size() > p_index) {
+		shape_frictions.remove_at(p_index);
+	}
+
+	if ((int)shape_bounces.size() > p_index) {
+		shape_bounces.remove_at(p_index);
+	}
+}
+
 void GodotBody3D::set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool lock) {
 	if (lock) {
 		locked_axis |= p_axis;
@@ -797,6 +826,56 @@ bool GodotBody3D::sleep_test(real_t p_step) {
 		still_time = 0; //maybe this should be set to 0 on set_active?
 		return false;
 	}
+}
+
+void GodotBody3D::set_shape_friction(int p_index, real_t p_friction) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+
+	int old_size = shape_frictions.size();
+	if (old_size <= p_index) {
+		shape_frictions.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_frictions[i] = NAN;
+		}
+	}
+
+	shape_frictions[p_index] = p_friction;
+}
+
+void GodotBody3D::set_shape_bounce(int p_index, real_t p_bounce) {
+	ERR_FAIL_INDEX(p_index, get_shape_count());
+
+	int old_size = shape_bounces.size();
+	if (old_size <= p_index) {
+		shape_bounces.resize(p_index + 1);
+
+		for (int i = old_size; i < p_index; i++) {
+			shape_bounces[i] = NAN;
+		}
+	}
+
+	shape_bounces[p_index] = p_bounce;
+}
+
+real_t GodotBody3D::get_shape_friction(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, get_shape_count(), NAN);
+
+	if ((uint32_t)p_index >= shape_frictions.size()) {
+		return NAN;
+	}
+
+	return shape_frictions[p_index];
+}
+
+real_t GodotBody3D::get_shape_bounce(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, get_shape_count(), NAN);
+
+	if ((uint32_t)p_index >= shape_bounces.size()) {
+		return NAN;
+	}
+
+	return shape_bounces[p_index];
 }
 
 void GodotBody3D::set_state_sync_callback(const Callable &p_callable) {
