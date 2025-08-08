@@ -894,7 +894,15 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	} else {
 		render_list[RENDER_LIST_OPAQUE].sort_by_key();
 	}
-	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
+
+	// sorts in the order of:
+	// 1. material priority
+	// 2. object depth
+	// 3. surface index
+	// 4. material depth used for next-pass sorting
+	// 5. object ids used for constant buffer sorting
+	render_list[RENDER_LIST_ALPHA].sort_by_standard_scene_sort();
+
 	_fill_instance_data(RENDER_LIST_OPAQUE);
 	_fill_instance_data(RENDER_LIST_ALPHA);
 
@@ -2653,7 +2661,7 @@ void RenderForwardMobile::_update_global_pipeline_data_requirements_from_light_s
 	global_pipeline_data_required.use_shadow_dual_paraboloid = light_storage->get_shadow_dual_paraboloid_used();
 }
 
-void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
+void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryInstanceForwardMobile *ginstance, uint32_t p_surface, SceneShaderForwardMobile::MaterialData *p_material, uint32_t p_material_id, uint8_t p_material_depth, uint32_t p_shader_id, RID p_mesh) {
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 	uint32_t flags = 0;
 
@@ -2756,12 +2764,14 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	sdcache->sort.sort_key1 = 0;
 	sdcache->sort.sort_key2 = 0;
+	sdcache->transparent_sort.sort_key = 0;
 
-	sdcache->sort.surface_index = p_surface;
-	sdcache->sort.material_id = p_material_id;
-	sdcache->sort.shader_id = p_shader_id;
-	sdcache->sort.geometry_id = p_mesh.get_local_index();
+	sdcache->transparent_sort.surface_index = sdcache->sort.surface_index = p_surface;
+	sdcache->transparent_sort.material_id = sdcache->sort.material_id = p_material_id;
+	sdcache->transparent_sort.shader_id = sdcache->sort.shader_id = p_shader_id;
+	sdcache->transparent_sort.geometry_id = sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.priority = p_material->priority;
+	sdcache->transparent_sort.material_depth = p_material_depth;
 
 	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
 	if (p_material->shader_data->uses_tangent && !(format & RS::ARRAY_FORMAT_TANGENT)) {
@@ -2785,9 +2795,11 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(Geo
 	SceneShaderForwardMobile::MaterialData *material = p_material;
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	_geometry_instance_add_surface_with_material(ginstance, p_surface, material, p_mat_src.get_local_index(), material_storage->material_get_shader_id(p_mat_src), p_mesh);
+	uint8_t material_depth = 0;
+	_geometry_instance_add_surface_with_material(ginstance, p_surface, material, p_mat_src.get_local_index(), material_depth, material_storage->material_get_shader_id(p_mat_src), p_mesh);
 
 	while (material->next_pass.is_valid()) {
+		material_depth++;
 		RID next_pass = material->next_pass;
 		material = static_cast<SceneShaderForwardMobile::MaterialData *>(material_storage->material_get_data(next_pass, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 		if (!material || !material->shader_data->is_valid()) {
@@ -2796,7 +2808,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material_chain(Geo
 		if (ginstance->data->dirty_dependencies) {
 			material_storage->material_update_dependency(next_pass, &ginstance->data->dependency_tracker);
 		}
-		_geometry_instance_add_surface_with_material(ginstance, p_surface, material, next_pass.get_local_index(), material_storage->material_get_shader_id(next_pass), p_mesh);
+		_geometry_instance_add_surface_with_material(ginstance, p_surface, material, next_pass.get_local_index(), material_depth, material_storage->material_get_shader_id(next_pass), p_mesh);
 	}
 }
 
