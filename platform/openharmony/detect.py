@@ -29,7 +29,7 @@ def get_opts():
         BoolVariable(
             "generate_bundle",
             "Generate an APP bundle after building OpenHarmony binaries",
-            False,
+            True,
         ),
     ]
 

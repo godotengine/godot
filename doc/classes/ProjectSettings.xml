@@ -910,6 +910,7 @@
 			MacOS override for [member display/display_server/driver].
 		</member>
 		<member name="display/display_server/driver.openharmony" type="String" setter="" getter="">
+			OpenHarmony override for [member display/display_server/driver].
 		</member>
 		<member name="display/display_server/driver.visionos" type="String" setter="" getter="">
 			visionOS override for [member display/display_server/driver].
@@ -3206,6 +3207,9 @@
 			- [code]vulkan[/code], Vulkan over Metal via MoltenVK, supported on both Apple Silicon and Intel Macs.
 		</member>
 		<member name="rendering/rendering_device/driver.openharmony" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			OpenHarmony override for [member rendering/rendering_device/driver].
+			Only one option is supported:
+			- [code]vulkan[/code] (default), Vulkan from native drivers.
 		</member>
 		<member name="rendering/rendering_device/driver.visionos" type="String" setter="" getter="" default="&quot;metal&quot;">
 			visionOS override for [member rendering/rendering_device/driver].
