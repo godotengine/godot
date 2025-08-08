@@ -200,19 +200,27 @@ public:
 			} else if (p_a.get_type() == Variant::ARRAY) {
 				const Array &arr_a = p_a;
 				const Array &arr_b = p_b;
-				CHECK(!arr_a.is_same_instance(arr_b));
-				CHECK(arr_a.size() == arr_b.size());
-				for (int i = 0; i < arr_a.size(); i++) {
-					_verify_deep_copied_variants(arr_a[i], arr_b[i]);
+				if (p_property_usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
+					CHECK(arr_a.is_same_instance(arr_b));
+				} else {
+					CHECK(!arr_a.is_same_instance(arr_b));
+					CHECK(arr_a.size() == arr_b.size());
+					for (int i = 0; i < arr_a.size(); i++) {
+						_verify_deep_copied_variants(arr_a[i], arr_b[i]);
+					}
 				}
 			} else if (p_a.get_type() == Variant::DICTIONARY) {
 				const Dictionary &dict_a = p_a;
 				const Dictionary &dict_b = p_b;
-				CHECK(!dict_a.is_same_instance(dict_b));
-				CHECK(dict_a.size() == dict_b.size());
-				for (int i = 0; i < dict_a.size(); i++) {
-					_verify_deep_copied_variants(dict_a.get_key_at_index(i), dict_b.get_key_at_index(i));
-					_verify_deep_copied_variants(dict_a.get_value_at_index(i), dict_b.get_value_at_index(i));
+				if (p_property_usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
+					CHECK(dict_a.is_same_instance(dict_b));
+				} else {
+					CHECK(!dict_a.is_same_instance(dict_b));
+					CHECK(dict_a.size() == dict_b.size());
+					for (int i = 0; i < dict_a.size(); i++) {
+						_verify_deep_copied_variants(dict_a.get_key_at_index(i), dict_b.get_key_at_index(i));
+						_verify_deep_copied_variants(dict_a.get_value_at_index(i), dict_b.get_value_at_index(i));
+					}
 				}
 			} else {
 				CHECK(p_a == p_b);
