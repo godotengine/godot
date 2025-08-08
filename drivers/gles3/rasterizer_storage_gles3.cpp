@@ -3397,7 +3397,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	int attributes_stride = 0;
 	int positions_stride = 0;
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX; i++) {
 		attribs[i].index = i;
 
 		if (!(p_format & (1 << i))) {
@@ -3580,11 +3580,11 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 	if (use_split_stream) {
 		attribs[VS::ARRAY_VERTEX].stride = positions_stride;
-		for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 1; i < VS::ARRAY_MAX - 1; i++) {
 			attribs[i].stride = attributes_stride;
 		}
 	} else {
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 			attribs[i].stride = positions_stride + attributes_stride;
 		}
 	}
@@ -3659,7 +3659,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 		}
 	}
 
-	for (int i = 0; i < VS::ARRAY_MAX; i++) {
+	for (uint32_t i = 0; i < VS::ARRAY_MAX; i++) {
 		surface->attribs[i] = attribs[i];
 	}
 
@@ -3695,7 +3695,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 				glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
 			}
 
-			for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+			for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 				if (!attribs[i].enabled) {
 					continue;
 				}
@@ -3793,7 +3793,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 					glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
 				}
 
-				for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+				for (uint32_t i = 0; i < VS::ARRAY_MAX - 1; i++) {
 					if (!attribs[i].enabled) {
 						continue;
 					}
@@ -3836,7 +3836,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 			glBindVertexArray(mt.array_id);
 			glBindBuffer(GL_ARRAY_BUFFER, mt.vertex_id);
 
-			for (int j = 0; j < VS::ARRAY_MAX - 1; j++) {
+			for (uint32_t j = 0; j < VS::ARRAY_MAX - 1; j++) {
 				if (!attribs[j].enabled) {
 					continue;
 				}
@@ -4306,7 +4306,7 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 		4 * 4
 	};
 
-	for (int i = 1; i < VS::ARRAY_MAX - 1; i++) {
+	for (int i = 1; i < (int)VS::ARRAY_MAX - 1; i++) {
 		shaders.blend_shapes.set_conditional(cond[i], s->format & (1 << i)); //enable conditional for format
 		if (s->format & (1 << i)) {
 			stride += sizes[i];
@@ -4356,7 +4356,7 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 		shaders.blend_shapes.set_uniform(BlendShapeShaderGLES3::BLEND_AMOUNT, weight);
 
 		int ofs = 0;
-		for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+		for (int i = 0; i < (int)VS::ARRAY_MAX - 1; i++) {
 			if (s->format & (1 << i)) {
 				glEnableVertexAttribArray(i + 8);
 				switch (i) {
@@ -4424,7 +4424,7 @@ void RasterizerStorageGLES3::mesh_render_blend_shapes(Surface *s, const float *p
 	glBindBuffer(GL_ARRAY_BUFFER, resources.transform_feedback_buffers[0]);
 
 	int ofs = 0;
-	for (int i = 0; i < VS::ARRAY_MAX - 1; i++) {
+	for (int i = 0; i < (int)VS::ARRAY_MAX - 1; i++) {
 		if (s->format & (1 << i)) {
 			glEnableVertexAttribArray(i);
 			switch (i) {
