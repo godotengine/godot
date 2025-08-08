@@ -38,8 +38,11 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/gui/tree.h"
 
 void DependencyEditor::_searched(const String &p_path) {
 	HashMap<String, String> dep_rename;
@@ -164,6 +167,30 @@ void DependencyEditor::_update_file() {
 	EditorFileSystem::get_singleton()->update_file(editing);
 }
 
+static String _get_resolved_dep_path(const String &p_dep) {
+	if (p_dep.get_slice_count("::") < 3) {
+		return p_dep.get_slice("::", 0); // No UID, just return the path.
+	}
+
+	const String uid_text = p_dep.get_slice("::", 0);
+	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(uid_text);
+
+	// Dependency is in UID format, obtain proper path.
+	if (uid != ResourceUID::INVALID_ID && ResourceUID::get_singleton()->has_id(uid)) {
+		return ResourceUID::get_singleton()->get_id_path(uid);
+	}
+
+	// UID fallback path.
+	return p_dep.get_slice("::", 2);
+}
+
+static String _get_stored_dep_path(const String &p_dep) {
+	if (p_dep.get_slice_count("::") > 2) {
+		return p_dep.get_slice("::", 2);
+	}
+	return p_dep.get_slice("::", 0);
+}
+
 void DependencyEditor::_update_list() {
 	List<String> deps;
 	ResourceLoader::get_dependencies(editing, &deps, true);
@@ -177,46 +204,26 @@ void DependencyEditor::_update_list() {
 
 	bool broken = false;
 
-	for (const String &n : deps) {
+	for (const String &dep : deps) {
 		TreeItem *item = tree->create_item(root);
-		String path;
-		String type;
 
-		if (n.contains("::")) {
-			path = n.get_slice("::", 0);
-			type = n.get_slice("::", 1);
+		const String path = _get_resolved_dep_path(dep);
+		if (FileAccess::exists(path)) {
+			item->set_text(0, path.get_file());
+			item->set_text(1, path);
 		} else {
-			path = n;
-			type = "Resource";
-		}
-
-		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(path);
-		if (uid != ResourceUID::INVALID_ID) {
-			// Dependency is in uid format, obtain proper path.
-			if (ResourceUID::get_singleton()->has_id(uid)) {
-				path = ResourceUID::get_singleton()->get_id_path(uid);
-			} else if (n.get_slice_count("::") >= 3) {
-				// If uid can't be found, try to use fallback path.
-				path = n.get_slice("::", 2);
-			} else {
-				ERR_PRINT("Invalid dependency UID and fallback path.");
-				continue;
-			}
-		}
-
-		String name = path.get_file();
-
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
-		item->set_text(0, name);
-		item->set_icon(0, icon);
-		item->set_metadata(0, type);
-		item->set_text(1, path);
-
-		if (!FileAccess::exists(path)) {
+			const String &stored_path = _get_stored_dep_path(dep);
+			item->set_text(0, stored_path.get_file());
+			item->set_text(1, stored_path);
 			item->set_custom_color(1, Color(1, 0.4, 0.3));
-			missing.push_back(path);
+			missing.push_back(stored_path);
 			broken = true;
 		}
+
+		const String type = dep.contains("::") ? dep.get_slice("::", 1) : "Resource";
+		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
+		item->set_icon(0, icon);
+		item->set_metadata(0, type);
 
 		item->add_button(1, folder, 0);
 	}
@@ -249,10 +256,8 @@ DependencyEditor::DependencyEditor() {
 	tree->set_column_titles_visible(true);
 	tree->set_column_title(0, TTR("Resource"));
 	tree->set_column_clip_content(0, true);
-	tree->set_column_expand_ratio(0, 2);
 	tree->set_column_title(1, TTR("Path"));
 	tree->set_column_clip_content(1, true);
-	tree->set_column_expand_ratio(1, 1);
 	tree->set_hide_root(true);
 	tree->connect("button_clicked", callable_mp(this, &DependencyEditor::_load_pressed));
 
@@ -712,36 +717,78 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 //////////////
 
-void DependencyErrorDialog::show(const String &p_for_file, const Vector<String> &report) {
+void DependencyErrorDialog::show(const String &p_for_file, const HashMap<String, HashSet<String>> &p_report) {
 	for_file = p_for_file;
 	set_title(TTR("Error loading:") + " " + p_for_file.get_file());
 	files->clear();
 
 	TreeItem *root = files->create_item(nullptr);
-	for (int i = 0; i < report.size(); i++) {
-		String dep;
-		String type = "Object";
-		dep = report[i].get_slice("::", 0);
-		if (report[i].get_slice_count("::") > 0) {
-			type = report[i].get_slice("::", 1);
+
+	for (const KeyValue<String, HashSet<String>> &E : p_report) {
+		const String &owner_path = E.key;
+
+		TreeItem *owner_ti = root->create_child();
+		owner_ti->set_text(0, owner_path);
+		owner_ti->set_metadata(0, owner_path);
+		owner_ti->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+		owner_ti->add_button(1, files->get_editor_theme_icon(SNAME("Edit")), -1, false, TTRC("Fix Dependencies"));
+
+		for (const String &missing : E.value) {
+			const String &missing_path = missing.get_slice("::", 0);
+			const String &missing_type = missing.get_slice("::", 1);
+
+			TreeItem *ti = owner_ti->create_child();
+			ti->set_text(0, missing_path);
+			ti->set_metadata(0, missing_path);
+			ti->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);
+			ti->set_icon(0, EditorNode::get_singleton()->get_class_icon(missing_type));
+			ti->set_icon(1, get_editor_theme_icon(SNAME("ImportFail")));
 		}
-
-		Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(type);
-
-		TreeItem *ti = files->create_item(root);
-		ti->set_text(0, dep);
-		ti->set_icon(0, icon);
 	}
 
+	set_ok_button_text(TTRC("Open Anyway"));
 	popup_centered();
 }
 
 void DependencyErrorDialog::ok_pressed() {
-	EditorNode::get_singleton()->load_scene_or_resource(for_file, true);
+	EditorNode::get_singleton()->load_scene_or_resource(for_file, force_open);
 }
 
-void DependencyErrorDialog::custom_action(const String &) {
-	EditorNode::get_singleton()->fix_dependencies(for_file);
+void DependencyErrorDialog::_on_files_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button) {
+	const String &owner_path = p_item->get_metadata(0);
+	deps_editor->edit(owner_path);
+}
+
+void DependencyErrorDialog::_check_for_resolved() {
+	if (deps_editor->is_visible()) {
+		return; // Only update when the dialog is closed.
+	}
+
+	force_open = false;
+
+	TreeItem *root = files->get_root();
+	for (TreeItem *ti = root->get_first_child(); ti; ti = ti->get_next()) {
+		List<String> deps;
+		ResourceLoader::get_dependencies(ti->get_metadata(0), &deps);
+
+		LocalVector<String> stored_paths;
+		for (const String &dep : deps) {
+			if (!force_open && !FileAccess::exists(_get_resolved_dep_path(dep))) {
+				force_open = true;
+			}
+			stored_paths.push_back(_get_stored_dep_path(dep));
+		}
+
+		for (TreeItem *child = ti->get_first_child(); child; child = child->get_next()) {
+			if (stored_paths.has(child->get_metadata(0))) {
+				child->set_icon(1, get_editor_theme_icon(SNAME("ImportFail")));
+			} else {
+				child->set_icon(1, get_editor_theme_icon(SNAME("ImportCheck")));
+			}
+		}
+	}
+
+	set_ok_button_text(force_open ? TTRC("Open Anyway") : TTRC("Open"));
 }
 
 DependencyErrorDialog::DependencyErrorDialog() {
@@ -749,23 +796,24 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	add_child(vb);
 
 	files = memnew(Tree);
-	files->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	files->set_hide_root(true);
-	vb->add_margin_child(TTR("Load failed due to missing dependencies:"), files, true);
+	files->set_select_mode(Tree::SELECT_ROW);
+	files->set_columns(2);
+	files->set_column_expand(1, false);
 	files->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	files->connect("button_clicked", callable_mp(this, &DependencyErrorDialog::_on_files_button_clicked));
+	vb->add_margin_child(TTRC("Load failed due to missing dependencies:"), files, true);
 
-	set_min_size(Size2(500, 220) * EDSCALE);
-	set_ok_button_text(TTR("Open Anyway"));
-	set_cancel_button_text(TTR("Close"));
+	set_min_size(Size2(500, 320) * EDSCALE);
+	set_cancel_button_text(TTRC("Close"));
 
-	text = memnew(Label);
+	Label *text = memnew(Label(TTRC("Which action should be taken?")));
 	text->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	vb->add_child(text);
-	text->set_text(TTR("Which action should be taken?"));
 
-	fdep = add_button(TTR("Fix Dependencies"), true, "fixdeps");
-
-	set_title(TTR("Errors loading!"));
+	deps_editor = memnew(DependencyEditor);
+	deps_editor->connect(SceneStringName(visibility_changed), callable_mp(this, &DependencyErrorDialog::_check_for_resolved));
+	add_child(deps_editor);
 }
 
 //////////////////////////////////////////////////////////////////////
