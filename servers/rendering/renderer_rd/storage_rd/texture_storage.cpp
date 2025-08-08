@@ -1541,10 +1541,13 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		return;
 	}
 
-	if (tex->rd_texture_srgb.is_valid()) {
+	if (tex->rd_texture_srgb.is_valid() && RD::get_singleton()->texture_is_valid(tex->rd_texture_srgb)) {
 		RD::get_singleton()->free(tex->rd_texture_srgb);
 	}
-	RD::get_singleton()->free(tex->rd_texture);
+
+	if (RD::get_singleton()->texture_is_valid(tex->rd_texture)) {
+		RD::get_singleton()->free(tex->rd_texture);
+	}
 
 	if (tex->canvas_texture) {
 		memdelete(tex->canvas_texture);
