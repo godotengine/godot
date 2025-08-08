@@ -184,7 +184,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["accesskit"]:
         if env["accesskit_sdk_path"] != "":
-            env.Prepend(CPPPATH=[env["accesskit_sdk_path"] + "/include"])
+            env.Prepend(CPPEXTPATH=[env["accesskit_sdk_path"] + "/include"])
             if env["arch"] == "arm64" or env["arch"] == "universal":
                 env.Append(LINKFLAGS=["-L" + env["accesskit_sdk_path"] + "/lib/macos/arm64/static/"])
             if env["arch"] == "x86_64" or env["arch"] == "universal":
