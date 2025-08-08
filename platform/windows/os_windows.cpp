@@ -46,6 +46,7 @@
 #include "drivers/windows/net_socket_winsock.h"
 #include "drivers/windows/thread_windows.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text_server.h"
@@ -2248,6 +2249,8 @@ void OS_Windows::run() {
 	main_loop->initialize();
 
 	while (true) {
+		GodotProfileFrameMark;
+		GodotProfileZone("OS_Windows::run");
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 		if (Main::iteration()) {
 			break;
