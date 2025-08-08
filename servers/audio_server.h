@@ -122,7 +122,7 @@ public:
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
+	Vector<int32_t> &get_input_buffer() { return input_buffer; }
 	unsigned int get_input_position() { return input_position; }
 	unsigned int get_input_size() { return input_size; }
 
