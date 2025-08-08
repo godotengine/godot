@@ -2143,7 +2143,7 @@ FileDialog::FileDialog() {
 
 	favorite_button = memnew(Button);
 	favorite_button->set_theme_type_variation(SceneStringName(FlatButton));
-	favorite_button->set_tooltip_text(TTRC("(Un)favorite current folder."));
+	favorite_button->set_tooltip_text(ETR("(Un)favorite current folder."));
 	top_toolbar->add_child(favorite_button);
 	favorite_button->connect(SceneStringName(pressed), callable_mp(this, &FileDialog::_favorite_pressed));
 
