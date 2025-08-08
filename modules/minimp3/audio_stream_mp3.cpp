@@ -300,6 +300,14 @@ int AudioStreamMP3::get_bar_beats() const {
 	return bar_beats;
 }
 
+void AudioStreamMP3::set_tags(const Dictionary &p_tags) {
+	tags = p_tags;
+}
+
+Dictionary AudioStreamMP3::get_tags() const {
+	return tags;
+}
+
 Ref<AudioSample> AudioStreamMP3::generate_sample() const {
 	Ref<AudioSample> sample;
 	sample.instantiate();
@@ -312,11 +320,131 @@ Ref<AudioSample> AudioStreamMP3::generate_sample() const {
 	return sample;
 }
 
+// Tag size is stored as 32 bit syncsafe integer (highest bits are always zeroed).
+// See https://id3.org/id3v2.4.0-structure (section 6.2)
+#define TAG_SIZE_INT_32_SYNCSAFE(m_buf, m_start) \
+	(((m_buf[m_start] & 0x7f) << 21) | ((m_buf[m_start + 1] & 0x7f) << 14) | ((m_buf[m_start + 2] & 0x7f) << 7) | (m_buf[m_start + 3] & 0x7f))
+
+#define TAG_SIZE_INT_32(m_buf, m_start) \
+	(((m_buf[m_start]) << 24) | ((m_buf[m_start + 1]) << 16) | ((m_buf[m_start + 2]) << 8) | (m_buf[m_start + 3]))
+
 Ref<AudioStreamMP3> AudioStreamMP3::load_from_buffer(const Vector<uint8_t> &p_stream_data) {
 	Ref<AudioStreamMP3> mp3_stream;
 	mp3_stream.instantiate();
 	mp3_stream->set_data(p_stream_data);
 	ERR_FAIL_COND_V_MSG(mp3_stream->get_data().is_empty(), Ref<AudioStreamMP3>(), "MP3 decoding failed. Check that your data is a valid MP3 audio stream.");
+
+	HashMap<String, String> tag_map;
+
+	const int TAG_HEADER_SIZE = 10;
+	char tag_header[TAG_HEADER_SIZE];
+	memcpy((uint8_t *)&tag_header, p_stream_data.ptr(), TAG_HEADER_SIZE);
+
+	if (tag_header[0] == 'I' && tag_header[1] == 'D' && tag_header[2] == '3') {
+		size_t tag_size = TAG_SIZE_INT_32_SYNCSAFE(tag_header, 6);
+		uint8_t flags = tag_header[5];
+		uint8_t unsync = flags & 0b10000000;
+		uint8_t extended_header = flags & 0b01000000;
+
+		size_t frame_pos = TAG_HEADER_SIZE;
+		if (extended_header) {
+			frame_pos += TAG_HEADER_SIZE + TAG_SIZE_INT_32_SYNCSAFE(p_stream_data, TAG_HEADER_SIZE);
+		}
+
+		const int FRAME_HEADER_SIZE = 10;
+		const int FRAME_ID_SIZE = 4;
+		while (frame_pos < tag_size) {
+			if (!p_stream_data[frame_pos]) {
+				// We have hit the padding null bytes
+				break;
+			}
+
+			char frame_id[FRAME_ID_SIZE + 1];
+			memcpy((uint8_t *)&frame_id, p_stream_data.ptr() + frame_pos, FRAME_ID_SIZE);
+			frame_id[FRAME_ID_SIZE] = 0;
+
+			size_t frame_size = unsync
+					? TAG_SIZE_INT_32_SYNCSAFE(p_stream_data, frame_pos + FRAME_ID_SIZE)
+					: TAG_SIZE_INT_32(p_stream_data, frame_pos + FRAME_ID_SIZE);
+			size_t frame_data_pos = frame_pos + FRAME_HEADER_SIZE;
+
+			// All text frame IDs begin with "T", except for "TXXX".
+			// See https://id3.org/id3v2.4.0-frames (section 4.2)
+			if (frame_id[0] == 'T' && frame_id[1] != 'X' && frame_id[2] != 'X' && frame_id[3] != 'X') {
+				// First byte describes encoding
+				uint8_t encoding = p_stream_data[frame_data_pos];
+				frame_data_pos++;
+				// Remaining bytes are the text in that encoding
+				size_t text_size = frame_size - 1;
+
+				Vector<char> text;
+				text.resize(text_size);
+				memcpy((uint8_t *)&text[0], p_stream_data.ptr() + frame_data_pos, text_size);
+
+				String tag;
+				tag.append_utf8(frame_id, 4);
+
+				String tag_value;
+
+				const int TAG_ENCODING_LATIN1 = 0x00;
+				const int TAG_ENCODING_UTF16 = 0x01; // with BOM
+				const int TAG_ENCODING_UTF16A = 0x02; // without BOM
+				const int TAG_ENCODING_UTF8 = 0x03;
+				switch (encoding) {
+					// Latin-1 is a subset of UTF-8.
+					case TAG_ENCODING_LATIN1:
+					case TAG_ENCODING_UTF8:
+						tag_value.append_utf8(&text[0], text_size);
+						break;
+					case TAG_ENCODING_UTF16:
+					case TAG_ENCODING_UTF16A:
+						tag_value.append_utf16((char16_t *)&text[0], text_size);
+						break;
+					default:
+						ERR_PRINT(vformat("Invalid encoding value '%d' in tag frame '%s'", encoding, frame_id));
+						break;
+				}
+
+				tag_map[tag] = tag_value;
+			}
+
+			frame_pos += FRAME_HEADER_SIZE + frame_size;
+		}
+	}
+
+	if (!tag_map.is_empty()) {
+		// Used to make the metadata tags more unified across different AudioStreams.
+		// See https://id3.org/id3v2.4.0-frames (section 4)
+		HashMap<String, String> tag_id_remaps;
+		tag_id_remaps.reserve(15);
+		tag_id_remaps["TALB"] = "album";
+		tag_id_remaps["TPE1"] = "artist";
+		tag_id_remaps["TPE2"] = "albumartist";
+		tag_id_remaps["TCOM"] = "composer";
+		tag_id_remaps["TCOP"] = "copyright";
+		tag_id_remaps["TPOS"] = "discnumber";
+		tag_id_remaps["TCON"] = "genre";
+		tag_id_remaps["TSRC"] = "isrc";
+		tag_id_remaps["TMED"] = "medium";
+		tag_id_remaps["TPUB"] = "organization";
+		tag_id_remaps["TDRC"] = "date";
+		tag_id_remaps["TIT2"] = "title";
+		tag_id_remaps["TRCK"] = "tracknumber";
+		tag_id_remaps["TYER"] = "year";
+
+		Dictionary tag_dictionary;
+		for (const KeyValue<String, String> &E : tag_map) {
+			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);
+			String tag_key = E.key;
+			if (remap) {
+				tag_key = remap->value;
+			}
+
+			tag_dictionary[tag_key] = E.value;
+		}
+		mp3_stream->set_tags(tag_dictionary);
+	}
+
 	return mp3_stream;
 }
 
@@ -348,10 +476,14 @@ void AudioStreamMP3::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_bar_beats", "count"), &AudioStreamMP3::set_bar_beats);
 	ClassDB::bind_method(D_METHOD("get_bar_beats"), &AudioStreamMP3::get_bar_beats);
 
+	ClassDB::bind_method(D_METHOD("set_tags", "tags"), &AudioStreamMP3::set_tags);
+	ClassDB::bind_method(D_METHOD("get_tags"), &AudioStreamMP3::get_tags);
+
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,1,or_greater"), "set_beat_count", "get_beat_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,1,or_greater"), "set_bar_beats", "get_bar_beats");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "tags", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_tags", "get_tags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "loop_offset"), "set_loop_offset", "get_loop_offset");
 }
