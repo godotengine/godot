@@ -30,6 +30,7 @@
 
 #include "shader_compiler.h"
 
+#include "core/config/project_settings.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_types.h"
 
@@ -1490,59 +1491,63 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	if (err != OK) {
 		Vector<ShaderLanguage::FilePosition> include_positions = parser.get_include_positions();
 
-		String current;
-		HashMap<String, Vector<String>> includes;
-		includes[""] = Vector<String>();
-		Vector<String> include_stack;
-		Vector<String> shader_lines = p_code.split("\n");
+		bool should_print_contents = GLOBAL_GET("debug/shader_language/errors/output_shader_contents_on_error");
 
-		// Reconstruct the files.
-		for (int i = 0; i < shader_lines.size(); i++) {
-			String l = shader_lines[i];
-			if (l.begins_with("@@>")) {
-				String inc_path = l.replace_first("@@>", "");
+		if (should_print_contents) {
+			String current;
+			HashMap<String, Vector<String>> includes;
+			includes[""] = Vector<String>();
+			Vector<String> include_stack;
+			Vector<String> shader_lines = p_code.split("\n");
 
-				l = "#include \"" + inc_path + "\"";
-				includes[current].append("#include \"" + inc_path + "\""); // Restore the include directive
-				include_stack.push_back(current);
-				current = inc_path;
-				includes[inc_path] = Vector<String>();
+			// Reconstruct the files.
+			for (int i = 0; i < shader_lines.size(); i++) {
+				String l = shader_lines[i];
+				if (l.begins_with("@@>")) {
+					String inc_path = l.replace_first("@@>", "");
 
-			} else if (l.begins_with("@@<")) {
-				if (include_stack.size()) {
-					current = include_stack[include_stack.size() - 1];
-					include_stack.resize(include_stack.size() - 1);
-				}
-			} else {
-				includes[current].push_back(l);
-			}
-		}
+					l = "#include \"" + inc_path + "\"";
+					includes[current].append("#include \"" + inc_path + "\""); // Restore the include directive
+					include_stack.push_back(current);
+					current = inc_path;
+					includes[inc_path] = Vector<String>();
 
-		// Print the files.
-		for (const KeyValue<String, Vector<String>> &E : includes) {
-			if (E.key.is_empty()) {
-				if (p_path == "") {
-					print_line("--Main Shader--");
+				} else if (l.begins_with("@@<")) {
+					if (include_stack.size()) {
+						current = include_stack[include_stack.size() - 1];
+						include_stack.resize(include_stack.size() - 1);
+					}
 				} else {
-					print_line("--" + p_path + "--");
-				}
-			} else {
-				print_line("--" + E.key + "--");
-			}
-			int err_line = -1;
-			for (int i = 0; i < include_positions.size(); i++) {
-				if (include_positions[i].file == E.key) {
-					err_line = include_positions[i].line;
+					includes[current].push_back(l);
 				}
 			}
-			const Vector<String> &V = E.value;
-			for (int i = 0; i < V.size(); i++) {
-				if (i == err_line - 1) {
-					// Mark the error line to be visible without having to look at
-					// the trace at the end.
-					print_line(vformat("E%4d-> %s", i + 1, V[i]));
+
+			// Print the files.
+			for (const KeyValue<String, Vector<String>> &E : includes) {
+				if (E.key.is_empty()) {
+					if (p_path == "") {
+						print_line("--Main Shader--");
+					} else {
+						print_line("--" + p_path + "--");
+					}
 				} else {
-					print_line(vformat("%5d | %s", i + 1, V[i]));
+					print_line("--" + E.key + "--");
+				}
+				int err_line = -1;
+				for (int i = 0; i < include_positions.size(); i++) {
+					if (include_positions[i].file == E.key) {
+						err_line = include_positions[i].line;
+					}
+				}
+				const Vector<String> &V = E.value;
+				for (int i = 0; i < V.size(); i++) {
+					if (i == err_line - 1) {
+						// Mark the error line to be visible without having to look at
+						// the trace at the end.
+						print_line(vformat("E%4d-> %s", i + 1, V[i]));
+					} else {
+						print_line(vformat("%5d | %s", i + 1, V[i]));
+					}
 				}
 			}
 		}
