@@ -267,8 +267,11 @@ void Resource::reload_from_file() {
 }
 
 Variant Resource::_duplicate_recursive(const Variant &p_variant, const DuplicateParams &p_params, uint32_t p_usage) const {
-	// Anything other than object can be simply skipped in case of a shallow copy.
-	if (!p_params.deep && p_variant.get_type() != Variant::OBJECT) {
+	// Anything that doesn't isn't a container can be simply skipped in case of a shallow copy.
+	if (!p_params.deep && p_variant.get_type() != Variant::OBJECT && p_variant.get_type() != Variant::ARRAY && p_variant.get_type() != Variant::DICTIONARY) {
+		return p_variant;
+	}
+	if (p_usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
 		return p_variant;
 	}
 
@@ -279,8 +282,6 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 			if (sr.is_valid()) {
 				if ((p_usage & PROPERTY_USAGE_ALWAYS_DUPLICATE)) {
 					should_duplicate = true;
-				} else if ((p_usage & PROPERTY_USAGE_NEVER_DUPLICATE)) {
-					should_duplicate = false;
 				} else if (p_params.local_scene) {
 					should_duplicate = sr->is_local_to_scene();
 				} else {
