@@ -21,7 +21,7 @@ def get_opts():
 
     return [
         ("ANDROID_SDK_ROOT", "Path to the Android SDK", get_env_android_sdk_root()),
-        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-19")', "android-19"),
+        ("ndk_platform", 'Target platform (android-<api>, e.g. "android-24")', "android-24"),
         EnumVariable("android_arch", "Target architecture", "armv7", ("armv7", "arm64v8", "x86", "x86_64")),
         BoolVariable("android_neon", "Enable NEON support (armv7 only)", True),
         BoolVariable("store_release", "Editor build for Google Play Store (for official builds only)", False),
@@ -43,7 +43,7 @@ def get_android_ndk_root(env):
 
 # This is kept in sync with the value in 'platform/android/java/app/config.gradle'.
 def get_ndk_version():
-    return "23.2.8568313"
+    return "28.1.13356709"
 
 
 def get_flags():
@@ -89,15 +89,6 @@ def configure(env):
     if env["android_arch"] == "armv7" and env["android_neon"]:
         neon_text = " (with NEON)"
     print("Building for Android (" + env["android_arch"] + ")" + neon_text)
-
-    if get_min_sdk_version(env["ndk_platform"]) < 21:
-        if env["android_arch"] == "x86_64" or env["android_arch"] == "arm64v8":
-            print(
-                "WARNING: android_arch="
-                + env["android_arch"]
-                + " is not supported by ndk_platform lower than android-21; setting ndk_platform=android-21"
-            )
-            env["ndk_platform"] = "android-21"
 
     if env["android_arch"] == "armv7":
         target_triple = "armv7a-linux-androideabi"
@@ -185,9 +176,7 @@ def configure(env):
         CCFLAGS="-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing".split()
     )
     env.Append(CPPDEFINES=["NO_STATVFS", "GLES_ENABLED"])
-
-    if get_min_sdk_version(env["ndk_platform"]) >= 24:
-        env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
+    env.Append(CPPDEFINES=[("_FILE_OFFSET_BITS", 64)])
 
     env["neon_enabled"] = False
     if env["android_arch"] == "x86":

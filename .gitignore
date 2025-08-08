@@ -79,6 +79,7 @@ local.properties
 *.iml
 .gradletasknamecache
 project.properties
+platform/android/java/build/
 platform/android/java/*/.cxx/
 platform/android/java/*/build/
 platform/android/java/*/libs/
