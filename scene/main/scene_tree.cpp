@@ -246,10 +246,10 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 	Vector<ObjectID> processed;
 	for (const ObjectID &id : accessibility_change_queue) {
 		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
-		if (!node || !node->get_window()) {
+		if (!node || !node->get_non_popup_window() || !node->get_window()->is_visible()) {
 			processed.push_back(id);
 			continue; // Invalid node, remove from list and skip.
-		} else if (node->get_window()->get_window_id() != p_window_id) {
+		} else if (node->get_non_popup_window()->get_window_id() != p_window_id) {
 			continue; // Another window, skip.
 		}
 		node->notification(Node::NOTIFICATION_ACCESSIBILITY_UPDATE);
@@ -265,6 +265,15 @@ void SceneTree::_process_accessibility_changes(DisplayServer::WindowID p_window_
 		Window *w_focus = w_this->get_focused_subwindow();
 		if (w_focus && !w_focus->is_part_of_edited_scene()) {
 			w_this = w_focus;
+		}
+
+		// Popups have no native window focus, but have focused element.
+		DisplayServer::WindowID popup_id = DisplayServer::get_singleton()->window_get_active_popup();
+		if (popup_id != DisplayServer::INVALID_WINDOW_ID) {
+			Window *popup_w = Window::get_from_id(popup_id);
+			if (popup_w && w_this->is_ancestor_of(popup_w)) {
+				w_this = popup_w;
+			}
 		}
 
 		RID new_focus_element;
