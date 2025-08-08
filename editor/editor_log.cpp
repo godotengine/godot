@@ -37,6 +37,10 @@
 #include "scene/gui/center_container.h"
 #include "scene/resources/dynamic_font.h"
 
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#endif
+
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 	EditorLog *self = (EditorLog *)p_self;
 	if (self->current != Thread::get_caller_id()) {
@@ -128,7 +132,11 @@ void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 		} break;
 	}
 
+#ifdef MODULE_REGEX_ENABLED
+	log->add_text(strip_ansi_regex->sub(p_msg, "", true));
+#else
 	log->add_text(p_msg);
+#endif
 	log->add_newline();
 
 	if (restore) {
@@ -153,6 +161,9 @@ void EditorLog::_bind_methods() {
 }
 
 EditorLog::EditorLog() {
+#ifdef MODULE_REGEX_ENABLED
+	strip_ansi_regex = memnew(RegEx("\u001b\\[((?:\\d|;)*)([a-zA-Z])"));
+#endif
 	VBoxContainer *vb = this;
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -197,6 +208,10 @@ EditorLog::EditorLog() {
 }
 
 void EditorLog::deinit() {
+#ifdef MODULE_REGEX_ENABLED
+	memdelete(strip_ansi_regex);
+#endif
+
 	remove_error_handler(&eh);
 }
 
