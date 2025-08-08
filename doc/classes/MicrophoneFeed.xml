@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MicrophoneFeed" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A microphone feed gives you access to a single physical microphone attached to your device.
+	</brief_description>
+	<description>
+		A microphone feed gives you access to a single physical microphone attached to your device.
+		When enabled, Godot will start acquiring stereo sample frames at the [method AudioServer.get_input_mix_rate]
+		and writing them into an internal buffer of size [method get_buffer_length_frames].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_buffer_length_frames">
+			<return type="int" />
+			<description>
+				Returns the absolute size of the microphone input buffer.
+				This is set as some multiple of the audio latency and can be used to
+				estimate the minimum rate at which the frames are fetched.
+			</description>
+		</method>
+		<method name="get_frames">
+			<return type="PackedVector2Array" />
+			<param index="0" name="frames" type="int" />
+			<description>
+				Gets the next [param frames] audio samples from the internal microphone buffer.
+				The buffer is filled at the rate of [method AudioServer.get_input_mix_rate] frames per second when [member feed_is_active] is true.
+				Returns a [PackedVector2Array] containing exactly [param frames] audio samples if available, or an empty [PackedVector2Array].
+				The samples are signed floating-point PCM between [code]-1[/code] and [code]1[/code]. You will have to scale them if you want to use them as 8 or 16-bit integer samples. ([code]v = 0x7fff * samples[0].x[/code])
+			</description>
+		</method>
+		<method name="get_frames_available">
+			<return type="int" />
+			<description>
+				Returns the number of frames available to read using [method get_frames].
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the microphone's name.
+			</description>
+		</method>
+		<method name="set_name">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Sets the microphone's name.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
+			If [code]true[/code], the microphone feed is active.
+		</member>
+	</members>
+</class>
