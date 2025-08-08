@@ -1987,8 +1987,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					clicked = ObjectID();
 
 					bool node_selected = get_selected_count() > 0;
-
-					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM && !b->is_alt_pressed()) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM && (spatial_editor->get_tool_mode() != Node3DEditor::TOOL_MODE_SELECT || !b->is_command_or_control_pressed())) {
 						// Single item selection.
 						clicked = _select_ray(b->get_position());
 
@@ -2006,18 +2005,8 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					if (!clicked_wants_append && node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
+					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) {
 						begin_transform(TRANSFORM_ROTATE, false);
-						break;
-					}
-
-					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
-						begin_transform(TRANSFORM_TRANSLATE, false);
-						break;
-					}
-
-					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
-						begin_transform(TRANSFORM_SCALE, false);
 						break;
 					}
 
@@ -2177,10 +2166,22 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					return;
 				}
 
-				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
-					_compute_edit(_edit.original_mouse_pos);
-					clicked = ObjectID();
-					_edit.mode = TRANSFORM_TRANSLATE;
+				if (clicked.is_valid() && movement_threshold_passed) {
+					TransformMode mode = TRANSFORM_NONE;
+
+					if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
+						mode = TRANSFORM_TRANSLATE;
+					} else if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE) {
+						mode = TRANSFORM_ROTATE;
+					} else if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
+						mode = TRANSFORM_SCALE;
+					}
+
+					if (mode != TRANSFORM_NONE) {
+						_compute_edit(_edit.original_mouse_pos);
+						clicked = ObjectID();
+						_edit.mode = mode;
+					}
 				}
 
 				if (_edit.mode == TRANSFORM_NONE || _edit.numeric_input != 0 || _edit.numeric_next_decimal != 0) {
