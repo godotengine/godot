@@ -597,5 +597,9 @@ const char *SDL_getenv_unsafe(const char *name)
 
 const char *SDL_getenv(const char *name)
 {
+#ifdef SDL_PLATFORM_LINUX
+    return getenv(name);
+#else
     return SDL_GetEnvironmentVariable(SDL_GetEnvironment(), name);
+#endif
 }
