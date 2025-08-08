@@ -55,6 +55,5 @@ public:
 	GDVIRTUAL1(_add_frame, Array);
 	GDVIRTUAL4(_tick, double, double, double, double);
 
-	EngineProfiler() {}
 	virtual ~EngineProfiler();
 };
