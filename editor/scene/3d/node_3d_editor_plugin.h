@@ -482,6 +482,7 @@ private:
 	bool previewing_cinema = false;
 	bool _is_node_locked(const Node *p_node) const;
 	void _preview_exited_scene();
+	void _preview_camera_property_changed();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
 	void _init_gizmo_instance(int p_idx);
