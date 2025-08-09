@@ -4240,6 +4240,62 @@ char32_t String::unicode_at(int p_idx) const {
 	return operator[](p_idx);
 }
 
+bool String::has_extension(const char *p_ext) const {
+	const int extlen = strlen(p_ext);
+	if (extlen >= length()) {
+		return false;
+	}
+
+	const char32_t *this_str = get_data() + length() - extlen - 1;
+	if (*this_str != '.') {
+		return false;
+	}
+
+	this_str++;
+	while (true) {
+		if (*p_ext == 0 && *this_str == 0) {
+			return true;
+		} else if (*this_str == 0 || *p_ext == 0) {
+			return false;
+		} else if (_find_upper(*this_str) < _find_upper(*p_ext)) {
+			return false;
+		} else if (_find_upper(*this_str) > _find_upper(*p_ext)) {
+			return false;
+		}
+		this_str++;
+		p_ext++;
+	}
+	return false;
+}
+
+bool String::has_extension(const String &p_ext) const {
+	if (p_ext.length() >= length()) {
+		return false;
+	}
+
+	const char32_t *this_str = get_data() + length() - p_ext.length() - 1;
+	if (*this_str != '.') {
+		return false;
+	}
+
+	this_str++;
+	const char32_t *that_str = p_ext.get_data();
+	while (true) {
+		if (*that_str == 0 && *this_str == 0) {
+			return true;
+		} else if (*this_str == 0 || that_str == 0) {
+			return false;
+		} else if (_find_upper(*this_str) < _find_upper(*that_str)) {
+			return false;
+		} else if (_find_upper(*this_str) > _find_upper(*that_str)) {
+			return false;
+		}
+		this_str++;
+		that_str++;
+	}
+	return false;
+}
+
 String String::indent(const String &p_prefix) const {
 	String new_string;
 	int line_start = 0;

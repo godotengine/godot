@@ -335,7 +335,7 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 		const HashMap<StringName, Variant> &p_options) {
-	if (p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.has_extension("blend")) {
 		return true;
 	}
 
@@ -349,7 +349,7 @@ Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_pa
 
 void EditorSceneFormatImporterBlend::get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options) {
 	// Returns all the options when path is empty because that means it's for the Project Settings.
-	if (!p_path.is_empty() && p_path.get_extension().to_lower() != "blend") {
+	if (!p_path.is_empty() && !p_path.has_extension("blend")) {
 		return;
 	}
 #define ADD_OPTION_BOOL(PATH, VALUE) \
