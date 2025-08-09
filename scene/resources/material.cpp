@@ -1476,8 +1476,8 @@ void vertex() {)";
 
 	if (flags[FLAG_ALBEDO_TEXTURE_MSDF] && !flags[FLAG_UV1_USE_TRIPLANAR]) {
 		code += R"(
-float msdf_median(float r, float g, float b, float a) {
-	return min(max(min(r, g), min(max(r, g), b)), a);
+float msdf_median(float r, float g, float b) {
+	return max(min(r, g), min(max(r, g), b));
 }
 )";
 	}
@@ -1621,10 +1621,12 @@ void fragment() {)";
 		code += R"(
 	{
 		// Albedo Texture MSDF: Enabled
-		albedo_tex.rgb = mix(
-				vec3(1.0 + 0.055) * pow(albedo_tex.rgb, vec3(1.0 / 2.4)) - vec3(0.055),
-				vec3(12.92) * albedo_tex.rgb,
-				lessThan(albedo_tex.rgb, vec3(0.0031308)));
+		if (!OUTPUT_IS_SRGB) {
+			albedo_tex.rgb = mix(
+					vec3(1.0 + 0.055) * pow(albedo_tex.rgb, vec3(1.0 / 2.4)) - vec3(0.055),
+					vec3(12.92) * albedo_tex.rgb,
+					lessThan(albedo_tex.rgb, vec3(0.0031308)));
+		}
 		vec2 msdf_size = vec2(msdf_pixel_range) / vec2(albedo_texture_size);
 )";
 		if (flags[FLAG_USE_POINT_SIZE]) {
@@ -1634,12 +1636,13 @@ void fragment() {)";
 		}
 		code += R"(
 		float px_size = max(0.5 * dot(msdf_size, dest_size), 1.0);
-		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b, albedo_tex.a) - 0.5;
+		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b);
 		if (msdf_outline_size > 0.0) {
 			float cr = clamp(msdf_outline_size, 0.0, msdf_pixel_range / 2.0) / msdf_pixel_range;
-			albedo_tex.a = clamp((d + cr) * px_size, 0.0, 1.0);
+			d = min(d, albedo_tex.a);
+			albedo_tex.a = clamp((d - 0.5 + cr) * px_size + 0.5, 0.0, 1.0);
 		} else {
-			albedo_tex.a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			albedo_tex.a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 		}
 		albedo_tex.rgb = vec3(1.0);
 	}

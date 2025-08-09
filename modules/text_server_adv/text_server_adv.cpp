@@ -881,9 +881,15 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 				}
 			} else if (p_color_size == 4) {
 				for (int i = 0; i < texsize * texsize * p_color_size; i += 4) { // FORMAT_RGBA8, Color font, Multichannel(+True) SDF.
-					w[i + 0] = 255;
-					w[i + 1] = 255;
-					w[i + 2] = 255;
+					if (p_msdf) {
+						w[i + 0] = 0;
+						w[i + 1] = 0;
+						w[i + 2] = 0;
+					} else {
+						w[i + 0] = 255;
+						w[i + 1] = 255;
+						w[i + 2] = 255;
+					}
 					w[i + 3] = 0;
 				}
 			} else {
