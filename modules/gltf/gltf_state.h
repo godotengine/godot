@@ -51,6 +51,21 @@ class GLTFState : public Resource {
 	friend class GLTFDocument;
 	friend class GLTFNode;
 
+public:
+	enum ExternalDataMode {
+		EXTERNAL_DATA_MODE_AUTOMATIC,
+		EXTERNAL_DATA_MODE_EMBED_EVERYTHING,
+		EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES,
+		EXTERNAL_DATA_MODE_SEPARATE_BINARY_BLOBS,
+		EXTERNAL_DATA_MODE_SEPARATE_RESOURCE_FILES,
+	};
+	enum HandleBinaryImageMode {
+		HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES = 0,
+		HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES,
+		HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU,
+		HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
+	};
+
 protected:
 	String base_path;
 	String extract_path;
@@ -71,7 +86,8 @@ protected:
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
 
-	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
+	ExternalDataMode external_data_mode = ExternalDataMode::EXTERNAL_DATA_MODE_AUTOMATIC;
+	HandleBinaryImageMode handle_binary_image_mode = HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES;
 
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
@@ -133,11 +149,13 @@ public:
 		HANDLE_BINARY_EMBED_AS_UNCOMPRESSED, // If this value changes from 3, ResourceImporterScene::pre_import must be changed as well.
 	};
 	int32_t get_handle_binary_image() {
-		return handle_binary_image;
+		return handle_binary_image_mode;
 	}
 	void set_handle_binary_image(int32_t p_handle_binary_image) {
-		handle_binary_image = p_handle_binary_image;
+		handle_binary_image_mode = (HandleBinaryImageMode)p_handle_binary_image;
 	}
+	HandleBinaryImageMode get_handle_binary_image_mode() { return handle_binary_image_mode; }
+	void set_handle_binary_image_mode(HandleBinaryImageMode p_handle_binary_image) { handle_binary_image_mode = p_handle_binary_image; }
 
 	Dictionary get_json();
 	void set_json(Dictionary p_json);
@@ -201,6 +219,12 @@ public:
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
+	bool is_text_gltf() const;
+
+	ExternalDataMode get_external_data_mode() const { return external_data_mode; }
+	void set_external_data_mode(ExternalDataMode p_external_data_mode) { external_data_mode = p_external_data_mode; }
+	bool should_separate_binary_blobs() const;
+	bool should_separate_resource_files() const;
 
 	PackedInt32Array get_root_nodes();
 	void set_root_nodes(PackedInt32Array p_root_nodes);
@@ -251,3 +275,6 @@ public:
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
+
+VARIANT_ENUM_CAST(GLTFState::ExternalDataMode);
+VARIANT_ENUM_CAST(GLTFState::HandleBinaryImageMode);
