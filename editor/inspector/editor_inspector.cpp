@@ -4978,7 +4978,6 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
 		if (valid) {
-
 			Resource *previous = Object::cast_to<Resource>(value);
 			Resource *current = Object::cast_to<Resource>(p_value);		
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
