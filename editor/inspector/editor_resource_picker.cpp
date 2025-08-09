@@ -60,7 +60,6 @@ void EditorResourcePicker::_update_resource() {
 		preview_rect->set_texture(Ref<Texture2D>());
 
 		assign_button->set_custom_minimum_size(assign_button_min_size);
-
 		if (edited_resource == Ref<Resource>()) {
 			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
@@ -69,7 +68,7 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 
 			if (!edited_resource->get_name().is_empty()) {
-				assign_button->set_text(edited_resource->get_name());
+				assign_button->set_text(edited_resource->get_name() + edited_resource->get_copy_count());
 			} else if (edited_resource->get_path().is_resource_file()) {
 				assign_button->set_text(edited_resource->get_path().get_file());
 			} else {
@@ -378,7 +377,6 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
-
 			Ref<Resource> unique_resource = edited_resource->duplicate();
 			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
