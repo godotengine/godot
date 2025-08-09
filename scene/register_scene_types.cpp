@@ -119,6 +119,7 @@
 #include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/curve_texture.h"
+#include "scene/resources/drawable_texture.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/external_texture.h"
 #include "scene/resources/font.h"
@@ -1052,6 +1053,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TextureCubemapRD);
 	GDREGISTER_CLASS(TextureCubemapArrayRD);
 	GDREGISTER_CLASS(Texture3DRD);
+
+	GDREGISTER_CLASS(DrawableTexture2D);
 	GDREGISTER_CLASS(RasterizedMeshTexture);
 
 	GDREGISTER_CLASS(Animation);
