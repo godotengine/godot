@@ -219,16 +219,12 @@ void fog() {
 						break;
 					case Shader::MODE_MESH_RASTERIZER:
 						code += R"(
-uniform mat4 projection;
-uniform sampler2D base_texture: source_color;
-uniform vec4 modulate: source_color = vec4(1.0);
-
 void vertex() {
-    POSITION = projection * POSITION;
+	// Called for every vertex the material is visible on.
 }
 
 void fragment() {
-    OUTPUT_COLOR = modulate * texture(base_texture, UV);
+	// Called for every pixel the material is visible on.
 }
 )";
 						break;

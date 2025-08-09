@@ -34,7 +34,6 @@
 #include "../framebuffer_cache_rd.h"
 #include "material_storage.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
-#include "servers/rendering/renderer_rd/storage_rd/mesh_rasterizer_rd.h"
 
 using namespace RendererRD;
 
@@ -1769,6 +1768,18 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 	}
 }
 
+Size2i RendererRD::TextureStorage::texture_2d_get_size(RID p_texture) {
+	if (p_texture.is_null()) {
+		return Size2i();
+	}
+	RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
+
+	if (!tex) {
+		return Size2i();
+	}
+	return Size2i(tex->width_2d, tex->height_2d);
+}
+
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
 	Image::Format original_format = p_image->get_format();
 	Ref<Image> image = p_image->duplicate();
@@ -3355,14 +3366,6 @@ void RendererRD::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture
 		RD::get_singleton()->free(tex_src);
 		RD::get_singleton()->free(tex_dst);
 	}
-}
-
-void RendererRD::TextureStorage::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
-	MeshRasterizerRD::get_singleton()->texture_drawable_draw_mesh(p_texture_drawable, p_material, p_mesh, p_surface_index, p_blend_mode, p_clear_color);
-}
-
-void RendererRD::TextureStorage::texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
-	MeshRasterizerRD::get_singleton()->texture_drawable_blit_rect(p_texture_drawable, p_rect, p_source_texture, p_modulate, p_blend_mode, p_clear_color);
 }
 
 bool RendererRD::TextureStorage::texture_drawable_is_srgb(RID p_rid) {

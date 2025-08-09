@@ -131,6 +131,8 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const override { return RID(); }
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const override { return 0; }
 
+	virtual Size2i texture_2d_get_size(RID p_texture) override { return Size2i(); }
+
 	/* DECAL API */
 	virtual RID decal_allocate() override { return RID(); }
 	virtual void decal_initialize(RID p_rid) override {}
@@ -163,8 +165,6 @@ public:
 
 	void texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) override {}
 	void texture_drawable_generate_mipmaps(RID p_texture_drawable) override {}
-	void texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) override {}
-	void texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) override {}
 
 	/* RENDER TARGET */
 

@@ -120,6 +120,7 @@ public:
 	RendererFog *get_fog() { return fog; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
+	MeshRasterizer *get_mesh_rasterizer() { return mesh_rasterizer; }
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
 

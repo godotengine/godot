@@ -108,6 +108,8 @@ public:
 	virtual RID texture_get_rd_texture(RID p_texture, bool p_srgb = false) const = 0;
 	virtual uint64_t texture_get_native_handle(RID p_texture, bool p_srgb = false) const = 0;
 
+	virtual Size2i texture_2d_get_size(RID p_texture) = 0;
+
 	/* Decal API */
 	virtual RID decal_allocate() = 0;
 	virtual void decal_initialize(RID p_rid) = 0;
@@ -140,8 +142,6 @@ public:
 
 	virtual void texture_drawable_initialize(RID p_texture_drawable, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps = false) = 0;
 	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable) = 0;
-	virtual void texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) = 0;
-	virtual void texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) = 0;
 
 	/* RENDER TARGET */
 

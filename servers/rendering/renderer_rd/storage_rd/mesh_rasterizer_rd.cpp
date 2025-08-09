@@ -41,7 +41,7 @@ MeshRasterizerRD *MeshRasterizerRD::get_singleton() {
 	return singleton;
 }
 
-void MeshRasterizerRD::RasterizeMeshShaderData::set_code(const String &p_code) {
+void MeshRasterizerRD::MeshRasterizerShaderData::set_code(const String &p_code) {
 	//compile
 
 	code = p_code;
@@ -95,51 +95,51 @@ void MeshRasterizerRD::RasterizeMeshShaderData::set_code(const String &p_code) {
 	valid = true;
 }
 
-bool MeshRasterizerRD::RasterizeMeshShaderData::is_animated() const {
+bool MeshRasterizerRD::MeshRasterizerShaderData::is_animated() const {
 	return false;
 }
 
-bool MeshRasterizerRD::RasterizeMeshShaderData::casts_shadows() const {
+bool MeshRasterizerRD::MeshRasterizerShaderData::casts_shadows() const {
 	return false;
 }
 
-RS::ShaderNativeSourceCode MeshRasterizerRD::RasterizeMeshShaderData::get_native_source_code() const {
+RS::ShaderNativeSourceCode MeshRasterizerRD::MeshRasterizerShaderData::get_native_source_code() const {
 	return singleton->shader_file_rd.version_get_native_source_code(version);
 }
 
-Pair<ShaderRD *, RID> MeshRasterizerRD::RasterizeMeshShaderData::get_native_shader_and_version() const {
+Pair<ShaderRD *, RID> MeshRasterizerRD::MeshRasterizerShaderData::get_native_shader_and_version() const {
 	return { &singleton->shader_file_rd, version };
 }
 
-uint64_t MeshRasterizerRD::RasterizeMeshShaderData::get_vertex_input_mask() {
+uint64_t MeshRasterizerRD::MeshRasterizerShaderData::get_vertex_input_mask() {
 	return RD::get_singleton()->shader_get_vertex_input_attribute_mask(shader_rd);
 }
 
-MeshRasterizerRD::RasterizeMeshShaderData::~RasterizeMeshShaderData() {
+MeshRasterizerRD::MeshRasterizerShaderData::~MeshRasterizerShaderData() {
 	MeshRasterizerRD *rasterizer = MeshRasterizerRD::get_singleton();
 	rasterizer->shader_file_rd.version_free(version);
 }
 
-bool MeshRasterizerRD::RasterizeMeshMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+bool MeshRasterizerRD::MeshRasterizerMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	MeshRasterizerRD *rasterizer = MeshRasterizerRD::get_singleton();
 	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, material_uniforms, rasterizer->shader_file_rd.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
 	bool uniform_set_changed_srgb = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, material_uniforms, rasterizer->shader_file_rd.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
 	return uniform_set_changed || uniform_set_changed_srgb;
 }
 
-MeshRasterizerRD::RasterizeMeshMaterialData::~RasterizeMeshMaterialData() {
+MeshRasterizerRD::MeshRasterizerMaterialData::~MeshRasterizerMaterialData() {
 	free_parameters_uniform_set(material_uniforms);
 	free_parameters_uniform_set(material_uniforms_srgb);
 }
 
 RendererRD::MaterialStorage::ShaderData *MeshRasterizerRD::_create_mesh_rasterizer_shader_funcs() {
-	RasterizeMeshShaderData *shader_data = memnew(RasterizeMeshShaderData);
+	MeshRasterizerShaderData *shader_data = memnew(MeshRasterizerShaderData);
 	return shader_data;
 }
 
 RendererRD::MaterialStorage::MaterialData *MeshRasterizerRD::_create_mesh_rasterizer_material_funcs(RendererRD::MaterialStorage::ShaderData *p_shader) {
-	RasterizeMeshMaterialData *material_data = memnew(RasterizeMeshMaterialData);
-	material_data->shader_data = static_cast<RasterizeMeshShaderData *>(p_shader);
+	MeshRasterizerMaterialData *material_data = memnew(MeshRasterizerMaterialData);
+	material_data->shader_data = static_cast<MeshRasterizerShaderData *>(p_shader);
 	return material_data;
 }
 
@@ -167,8 +167,8 @@ void MeshRasterizerRD::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	MaterialStorage::MaterialData *md = material_storage->material_get_data(p_material, MaterialStorage::SHADER_TYPE_MESH_RASTERIZER);
 	ERR_FAIL_NULL(md);
-	RasterizeMeshMaterialData *material_data = static_cast<RasterizeMeshMaterialData *>(md);
-	RasterizeMeshShaderData *shader_data = static_cast<RasterizeMeshShaderData *>(material_storage->material_get_shader_data(p_material));
+	MeshRasterizerMaterialData *material_data = static_cast<MeshRasterizerMaterialData *>(md);
+	MeshRasterizerShaderData *shader_data = static_cast<MeshRasterizerShaderData *>(material_storage->material_get_shader_data(p_material));
 	ERR_FAIL_COND(shader_data->shader_rd.is_null());
 
 	RID index_array_rid;
@@ -225,19 +225,6 @@ void MeshRasterizerRD::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_
 	RD::get_singleton()->draw_list_end();
 
 	RD::get_singleton()->free(pipeline);
-}
-
-void MeshRasterizerRD::texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
-	Vector2 size = TextureStorage::get_singleton()->texture_2d_get_size(p_texture_drawable);
-	MaterialStorage *material_storage = MaterialStorage::get_singleton();
-	MutexLock local_lock(material_mutex);
-	material_storage->material_set_param(default_blit_material, SNAME("source_tex"), p_source_texture);
-	material_storage->material_set_param(default_blit_material, SNAME("modulate"), p_modulate);
-	material_storage->material_set_param(default_blit_material, SNAME("offset"), p_rect.position);
-	material_storage->material_set_param(default_blit_material, SNAME("region"), p_rect.size);
-	material_storage->material_set_param(default_blit_material, SNAME("size"), size);
-
-	texture_drawable_draw_mesh(p_texture_drawable, default_blit_material, default_blit_mesh, 0, p_blend_mode, p_clear_color);
 }
 
 MeshRasterizerRD::MeshRasterizerRD() {
@@ -301,60 +288,6 @@ MeshRasterizerRD::MeshRasterizerRD() {
 
 	String defines = "\n#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
 	shader_file_rd.initialize({ "" }, defines);
-
-	default_blit_shader = material_storage->shader_allocate();
-	default_blit_material = material_storage->material_allocate();
-	material_storage->shader_initialize(default_blit_shader);
-	material_storage->material_initialize(default_blit_material);
-	material_storage->shader_set_code(default_blit_shader, R"(
-		shader_type mesh_rasterizer;
-
-		uniform vec2 size;
-		uniform vec2 offset;
-		uniform vec2 region;
-		uniform sampler2D source_tex: source_color;
-		uniform vec4 modulate: source_color = vec4(1.0);
-
-		void vertex(){
-			POSITION.xy = region / size * POSITION.xy + (offset - (size - region) / 2.0) / size;
-		}
-
-		void fragment(){
-			OUTPUT_COLOR = modulate * texture(source_tex, UV);
-		}
-	)");
-	material_storage->material_set_shader(default_blit_material, default_blit_shader);
-
-	MeshStorage *mesh_storage = MeshStorage::get_singleton();
-	default_blit_mesh = mesh_storage->mesh_allocate();
-	mesh_storage->mesh_initialize(default_blit_mesh);
-
-	Array surface_arrays;
-	surface_arrays.resize(RS::ArrayType::ARRAY_MAX);
-	surface_arrays[RS::ARRAY_VERTEX] = Vector<Vector2>{
-		Vector2(1, -1),
-		Vector2(-1, -1),
-		Vector2(1, 1),
-		Vector2(-1, 1)
-	};
-	surface_arrays[RS::ArrayType::ARRAY_INDEX] = Vector<int32_t>{
-		0, 1, 2, 1, 3, 2
-	};
-	surface_arrays[RS::ArrayType::ARRAY_TEX_UV] = Vector<Vector2>{
-		Vector2(1, 1),
-		Vector2(0, 1),
-		Vector2(1, 0),
-		Vector2(0, 0),
-	};
-	RS::SurfaceData surface_data;
-	RS::get_singleton()->mesh_create_surface_data_from_arrays(&surface_data, RS::PRIMITIVE_TRIANGLES, surface_arrays);
-	mesh_storage->mesh_add_surface(default_blit_mesh, surface_data);
-}
-
-MeshRasterizerRD::~MeshRasterizerRD() {
-	MaterialStorage::get_singleton()->free(default_blit_material);
-	MaterialStorage::get_singleton()->free(default_blit_shader);
-	MeshStorage::get_singleton()->free(default_blit_mesh);
 }
 
 } //namespace RendererRD
