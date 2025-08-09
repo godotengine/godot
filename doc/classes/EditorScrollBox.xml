@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorScrollBox" inherits="BoxContainer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Allow adding a control that can be scrolled horizontally or vertically with buttons.
+	</brief_description>
+	<description>
+		A class used internally by the Editor to allow adding a control that can be scrolled with buttons.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="ensure_control_visible">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Ensures the given [param control] is visible in the [ScrollContainer].
+			</description>
+		</method>
+		<method name="get_control" qualifiers="const">
+			<return type="Control" />
+			<description>
+				Returns the control node used by the [ScrollContainer].
+			</description>
+		</method>
+		<method name="get_first_button" qualifiers="const">
+			<return type="Button" />
+			<description>
+				Returns the first button used to scroll to the begin.
+			</description>
+		</method>
+		<method name="get_scroll_container" qualifiers="const">
+			<return type="ScrollContainer" />
+			<description>
+				Returns the [ScrollContainer] used by the buttons.
+			</description>
+		</method>
+		<method name="get_second_button" qualifiers="const">
+			<return type="Button" />
+			<description>
+				Returns the second button used to scroll to the end.
+			</description>
+		</method>
+		<method name="has_control" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a control is used by the [ScrollContainer].
+			</description>
+		</method>
+		<method name="set_control">
+			<return type="void" />
+			<param index="0" name="control" type="Control" />
+			<description>
+				Changes the control used by the [ScrollContainer].
+				if [param control] is [code]null[/code], removes the control used by the [ScrollContainer].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" overrides="Control" enum="Control.SizeFlags" is_bitfield="true" default="3" />
+	</members>
+	<signals>
+		<signal name="vertical_changed">
+			<param index="0" name="is_vertical" type="bool" />
+			<description>
+				Emitted when the alignment of the node is changed.
+			</description>
+		</signal>
+	</signals>
+	<theme_items>
+		<theme_item name="arrow_down" data_type="icon" type="Texture2D">
+			Arrow texture used when scrolling to the end in vertical layout.
+		</theme_item>
+		<theme_item name="arrow_left" data_type="icon" type="Texture2D">
+			Arrow texture used when scrolling to the start in horizontal layout.
+		</theme_item>
+		<theme_item name="arrow_right" data_type="icon" type="Texture2D">
+			Arrow texture used when scrolling to the end in horizontal layout.
+		</theme_item>
+		<theme_item name="arrow_up" data_type="icon" type="Texture2D">
+			Arrow texture used when scrolling to the start in vertical layout.
+		</theme_item>
+	</theme_items>
+</class>

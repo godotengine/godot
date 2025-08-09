@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  editor_bottom_panel.h                                                 */
+/*  editor_scroll_box.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,58 +30,66 @@
 
 #pragma once
 
-#include "scene/gui/panel_container.h"
+#include "scene/gui/box_container.h"
 
 class Button;
-class ConfigFile;
-class EditorToaster;
-class HBoxContainer;
-class VBoxContainer;
 class ScrollContainer;
-class EditorHScrollBox;
 
-class EditorBottomPanel : public PanelContainer {
-	GDCLASS(EditorBottomPanel, PanelContainer);
+class EditorScrollBox : public BoxContainer {
+	GDCLASS(EditorScrollBox, BoxContainer)
 
-	struct BottomPanelItem {
-		String name;
-		Control *control = nullptr;
-		Button *button = nullptr;
-	};
+	struct ThemeCache {
+		Ref<Texture2D> arrow_left;
+		Ref<Texture2D> arrow_right;
+		Ref<Texture2D> arrow_up;
+		Ref<Texture2D> arrow_down;
+	} theme_cache;
 
-	Vector<BottomPanelItem> items;
-	bool lock_panel_switching = false;
+	Button *first_button = nullptr;
+	Button *second_button = nullptr;
+	ScrollContainer *scroll_container = nullptr;
+	Control *control = nullptr;
 
-	VBoxContainer *item_vbox = nullptr;
-	HBoxContainer *bottom_hbox = nullptr;
-	EditorHScrollBox *scroll_box = nullptr;
-	HBoxContainer *button_hbox = nullptr;
-	EditorToaster *editor_toaster = nullptr;
-	Button *pin_button = nullptr;
-	Button *expand_button = nullptr;
-	Control *last_opened_control = nullptr;
-
-	void _switch_by_control(bool p_visible, Control *p_control, bool p_ignore_lock = false);
-	void _switch_to_item(bool p_visible, int p_idx, bool p_ignore_lock = false);
-	void _pin_button_toggled(bool p_pressed);
-	void _expand_button_toggled(bool p_pressed);
-
-	bool _button_drag_hover(const Vector2 &, const Variant &, Button *p_button, Control *p_control);
+	void _scroll(bool p_right);
+	void _update_buttons();
+	void _update_disabled_buttons();
+	void _update_buttons_icon_and_tooltip();
+	void _update_scroll_container();
 
 protected:
+	bool is_fixed = false;
+
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
+	static void _bind_methods();
+	bool _set(const StringName &p_name, const Variant &p_value);
 
 public:
-	void save_layout_to_config(Ref<ConfigFile> p_config_file, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_config_file, const String &p_section);
+	void set_control(Control *p_control);
+	Control *get_control() const { return control; }
+	bool has_control() const;
 
-	Button *add_item(String p_text, Control *p_item, const Ref<Shortcut> &p_shortcut = nullptr, bool p_at_front = false);
-	void remove_item(Control *p_item);
-	void make_item_visible(Control *p_item, bool p_visible = true, bool p_ignore_lock = false);
-	void move_item_to_end(Control *p_item);
-	void hide_bottom_panel();
-	void toggle_last_opened_bottom_panel();
-	void set_expanded(bool p_expanded);
+	void ensure_control_visible(Control *p_control);
 
-	EditorBottomPanel();
+	Button *get_first_button() const { return first_button; }
+	Button *get_second_button() const { return second_button; }
+	ScrollContainer *get_scroll_container() const { return scroll_container; }
+
+	EditorScrollBox(bool p_vertical = false);
+};
+
+class EditorHScrollBox : public EditorScrollBox {
+	GDCLASS(EditorHScrollBox, EditorScrollBox)
+
+public:
+	EditorHScrollBox() :
+			EditorScrollBox(false) { is_fixed = true; }
+};
+
+class EditorVScrollBox : public EditorScrollBox {
+	GDCLASS(EditorVScrollBox, EditorScrollBox)
+
+public:
+	EditorVScrollBox() :
+			EditorScrollBox(true) { is_fixed = true; }
 };

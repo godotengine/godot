@@ -77,6 +77,7 @@ class EditorExportPreset;
 class EditorFeatureProfileManager;
 class EditorFileDialog;
 class EditorFolding;
+class EditorHScrollBox;
 class EditorLayoutsDialog;
 class EditorLog;
 class EditorMainScreen;
@@ -326,12 +327,11 @@ private:
 	Control *left_menu_spacer = nullptr;
 	Control *right_menu_spacer = nullptr;
 	EditorTitleBar *title_bar = nullptr;
+	HBoxContainer *title_left_hbox = nullptr;
+	HBoxContainer *title_right_hbox = nullptr;
+	EditorHScrollBox *menu_scroll_box = nullptr;
+	EditorHScrollBox *main_scroll_box = nullptr;
 	EditorRunBar *project_run_bar = nullptr;
-	HBoxContainer *right_menu_hb = nullptr;
-
-	// Spacers to center 2D / 3D / Script buttons.
-	HBoxContainer *left_spacer = nullptr;
-	Control *right_spacer = nullptr;
 
 	Control *menu_btn_spacer = nullptr;
 	MenuButton *main_menu_button = nullptr;
@@ -581,9 +581,9 @@ private:
 	void _version_control_menu_option(int p_idx);
 	void _close_messages();
 	void _show_messages();
-	void _vp_resized();
 	void _titlebar_resized();
 	void _viewport_resized();
+	void _adjust_project_title();
 
 	void _update_undo_redo_allowed();
 
