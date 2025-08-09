@@ -185,22 +185,6 @@ void ConnectDialog::_focus_currently_connected() {
 	tree->set_selected(source);
 }
 
-void ConnectDialog::_unbind_count_changed(double p_count) {
-	for (Control *control : bind_controls) {
-		BaseButton *b = Object::cast_to<BaseButton>(control);
-		if (b) {
-			b->set_disabled(p_count > 0);
-		}
-
-		EditorInspector *e = Object::cast_to<EditorInspector>(control);
-		if (e) {
-			e->set_read_only(p_count > 0);
-		}
-	}
-
-	append_source->set_disabled(p_count > 0);
-}
-
 void ConnectDialog::_method_selected() {
 	TreeItem *selected_item = method_tree->get_selected();
 	dst_method->set_text(selected_item->get_metadata(0));
@@ -295,10 +279,9 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 		PropertyInfo pi = p_signal.arguments[i];
 		effective_args.push_back(Pair(pi.type, pi.class_name));
 	}
-	if (unbind == 0) {
-		for (const Variant &variant : get_binds()) {
-			effective_args.push_back(Pair(variant.get_type(), StringName()));
-		}
+
+	for (const Variant &variant : get_binds()) {
+		effective_args.push_back(Pair(variant.get_type(), StringName()));
 	}
 
 	for (const MethodInfo &mi : p_methods) {
@@ -687,7 +670,6 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 
 	unbind_count->set_max(p_signal_args.size());
 	unbind_count->set_value(p_cd.unbinds);
-	_unbind_count_changed(p_cd.unbinds);
 
 	cdbinds->params.clear();
 	cdbinds->params = p_cd.binds;
@@ -872,7 +854,6 @@ ConnectDialog::ConnectDialog() {
 	unbind_count = memnew(SpinBox);
 	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
 	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments:"));
-	unbind_count->connect(SceneStringName(value_changed), callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
 
@@ -963,9 +944,8 @@ void ConnectionsDock::_make_or_edit_connection() {
 	cd.signal = connect_dialog->get_signal_name();
 	cd.method = connect_dialog->get_dst_method_name();
 	cd.unbinds = connect_dialog->get_unbinds();
-	if (cd.unbinds == 0) {
-		cd.binds = connect_dialog->get_binds();
-	}
+	cd.binds = connect_dialog->get_binds();
+
 	bool b_deferred = connect_dialog->get_deferred();
 	bool b_oneshot = connect_dialog->get_one_shot();
 	bool b_append_source = connect_dialog->get_append_source();
@@ -1639,7 +1619,8 @@ void ConnectionsDock::update_tree() {
 				}
 				if (cd.unbinds > 0) {
 					path += " unbinds(" + itos(cd.unbinds) + ")";
-				} else if (!cd.binds.is_empty()) {
+				}
+				if (!cd.binds.is_empty()) {
 					path += " binds(";
 					for (int i = 0; i < cd.binds.size(); i++) {
 						if (i > 0) {
