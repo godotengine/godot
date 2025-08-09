@@ -316,8 +316,7 @@ MeshRasterizerRD::MeshRasterizerRD() {
 		uniform vec4 modulate: source_color = vec4(1.0);
 
 		void vertex(){
-			POSITION.xy = region/size * POSITION.xy + offset/size;
-			POSITION.w=0.5;
+			POSITION.xy = region / size * POSITION.xy + (offset - (size - region) / 2.0) / size;
 		}
 
 		void fragment(){
@@ -333,18 +332,18 @@ MeshRasterizerRD::MeshRasterizerRD() {
 	Array surface_arrays;
 	surface_arrays.resize(RS::ArrayType::ARRAY_MAX);
 	surface_arrays[RS::ARRAY_VERTEX] = Vector<Vector2>{
-		Vector2(0, 0),
+		Vector2(1, -1),
+		Vector2(-1, -1),
 		Vector2(1, 1),
-		Vector2(1, 0),
-		Vector2(0, 1),
+		Vector2(-1, 1)
 	};
 	surface_arrays[RS::ArrayType::ARRAY_INDEX] = Vector<int32_t>{
-		0, 1, 2, 0, 3, 1
+		0, 1, 2, 1, 3, 2
 	};
 	surface_arrays[RS::ArrayType::ARRAY_TEX_UV] = Vector<Vector2>{
+		Vector2(1, 1),
 		Vector2(0, 1),
 		Vector2(1, 0),
-		Vector2(1, 1),
 		Vector2(0, 0),
 	};
 	RS::SurfaceData surface_data;
