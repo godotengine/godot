@@ -469,6 +469,10 @@
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
 			The default value of [code]0.5[/code] is tuned for headphones which means that the opposite side channel goes no lower than 50% of the volume of the nearside channel. You may find that you can set this value higher for speakers to have the same effect since both ears can hear from each speaker.
 		</member>
+		<member name="audio/general/3d_volume_db_affects_attenuation" type="bool" setter="" getter="" default="true">
+			When set to [code]true[/code], the [AudioStreamPlayer3D] property [member AudioStreamPlayer3D.volume_db] will offset attenuation instead of directly offsetting the volume of the sound.
+			This defaults to [code]false[/code] for projects created starting in Godot 4.6.
+		</member>
 		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="" keywords="stream, sample">
 			Specifies the default playback type of the platform.
 			The default value is set to [b]Stream[/b], as most platforms have no issues mixing streams.
