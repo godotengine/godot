@@ -3313,6 +3313,7 @@ void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_h
 	texture.height_2d = texture.height;
 	texture.is_render_target = false;
 	texture.is_proxy = false;
+	texture.texture_drawable_use_srgb = p_texture_format == imfmt.rd_format_srgb; // Tell `drawable_texture_draw_mesh` to use srgb view.
 	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
 		rd_tex_format.shareable_formats.push_back(texture.rd_format);
 		rd_tex_format.shareable_formats.push_back(texture.rd_format_srgb);
@@ -3337,8 +3338,7 @@ void TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_h
 }
 
 void RendererRD::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture_drawable) {
-	TextureStorage *texture_storage = TextureStorage::get_singleton();
-	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, false);
+	RID rd_texture = texture_get_rd_texture(p_texture_drawable, false);
 	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
 	int mipmap_count = tex_fmt.mipmaps;
 	// Generate mipmaps.
@@ -3359,6 +3359,16 @@ void RendererRD::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture
 
 void RendererRD::TextureStorage::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
 	MeshRasterizerRD::get_singleton()->texture_drawable_draw_mesh(p_texture_drawable, p_material, p_mesh, p_surface_index, p_blend_mode, p_clear_color);
+}
+
+void RendererRD::TextureStorage::texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
+	MeshRasterizerRD::get_singleton()->texture_drawable_blit_rect(p_texture_drawable, p_rect, p_source_texture, p_modulate, p_blend_mode, p_clear_color);
+}
+
+bool RendererRD::TextureStorage::texture_drawable_is_srgb(RID p_rid) {
+	Texture *texture = texture_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(texture, false);
+	return texture->texture_drawable_use_srgb;
 }
 
 /* RENDER TARGET API */

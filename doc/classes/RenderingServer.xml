@@ -3750,6 +3750,17 @@
 				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
+		<method name="texture_drawable_blit_rect">
+			<return type="void" />
+			<param index="0" name="texture_drawable" type="RID" />
+			<param index="1" name="rect" type="Rect2i" />
+			<param index="2" name="source_texture" type="RID" />
+			<param index="3" name="modulate" type="Color" />
+			<param index="4" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="5" name="clear_color" type="Color" />
+			<description>
+			</description>
+		</method>
 		<method name="texture_drawable_create">
 			<return type="RID" />
 			<param index="0" name="width" type="int" />

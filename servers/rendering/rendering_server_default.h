@@ -249,6 +249,7 @@ public:
 	FUNCRIDTEX4(texture_drawable, int, int, RD::DataFormat, bool);
 	FUNC1(texture_drawable_generate_mipmaps, RID);
 	FUNC6(texture_drawable_draw_mesh, RID, RID, RID, uint32_t, RS::TextureDrawableBlendMode, const Color &);
+	FUNC6(texture_drawable_blit_rect, RID, Rect2i, RID, const Color &, TextureDrawableBlendMode, const Color &);
 
 	/* SHADER API */
 

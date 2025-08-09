@@ -43,7 +43,7 @@ class RasterizedMeshTexture : public Texture2D {
 	Color clear_color = Color(0, 0, 0, 0);
 	Ref<Mesh> mesh;
 	Ref<Material> material;
-	RD::DataFormat texture_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+	RD::DataFormat texture_format = RD::DATA_FORMAT_R8G8B8A8_SRGB;
 	bool generate_mipmaps = false;
 
 	RID texture;
@@ -52,7 +52,6 @@ class RasterizedMeshTexture : public Texture2D {
 
 	bool update_queued = false;
 
-	void force_draw();
 	void queue_update();
 
 protected:
@@ -84,11 +83,10 @@ public:
 	void set_texture_format(RD::DataFormat p_texture_format);
 	RD::DataFormat get_texture_format() const;
 
-	void set_multisample(RD::TextureSamples p_multisample);
-	RD::TextureSamples get_multisample() const;
-
 	void set_generate_mipmaps(bool p_generate_mipmaps);
 	bool is_generating_mipmaps() const;
+
+	void force_draw();
 
 	RasterizedMeshTexture();
 	~RasterizedMeshTexture();

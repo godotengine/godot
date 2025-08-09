@@ -71,10 +71,13 @@ private:
 	struct RasterizeMeshMaterialData : public RendererRD::MaterialStorage::MaterialData {
 		RasterizeMeshShaderData *shader_data = nullptr;
 		RID material_uniforms;
+		RID material_uniforms_srgb;
 
 		virtual void set_render_priority(int p_priority) {}
 		virtual void set_next_pass(RID p_pass) {}
 		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+
+		~RasterizeMeshMaterialData();
 	};
 
 	enum {
@@ -85,10 +88,17 @@ private:
 	MeshRasterizerShaderRD shader_file_rd;
 	ShaderCompiler compiler;
 
+	Mutex material_mutex;
+	RID default_blit_shader;
+	RID default_blit_material;
+	RID default_blit_mesh;
+
 public:
 	void texture_drawable_draw_mesh(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color);
+	void texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color);
 
 	static MeshRasterizerRD *get_singleton();
 	MeshRasterizerRD();
+	~MeshRasterizerRD();
 };
 } //namespace RendererRD

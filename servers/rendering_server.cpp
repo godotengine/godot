@@ -2505,6 +2505,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_drawable_create", "width", "height", "texture_format", "use_mipmaps"), &RenderingServer::texture_drawable_create, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("texture_drawable_generate_mipmaps", "texture_drawable"), &RenderingServer::texture_drawable_generate_mipmaps);
 	ClassDB::bind_method(D_METHOD("texture_drawable_draw_mesh", "texture_drawable", "material", "mesh", "surface_index", "blend_mode", "clear_color"), &RenderingServer::texture_drawable_draw_mesh);
+	ClassDB::bind_method(D_METHOD("texture_drawable_blit_rect", "texture_drawable", "rect", "source_texture", "modulate", "blend_mode", "clear_color"), &RenderingServer::texture_drawable_blit_rect);
 
 	/* SKELETON API */
 

@@ -122,8 +122,14 @@ MeshRasterizerRD::RasterizeMeshShaderData::~RasterizeMeshShaderData() {
 
 bool MeshRasterizerRD::RasterizeMeshMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
 	MeshRasterizerRD *rasterizer = MeshRasterizerRD::get_singleton();
-	// Always use non-srgb view. We don't know whether the srgb view is available.
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, material_uniforms, rasterizer->shader_file_rd.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, false, false);
+	bool uniform_set_changed = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, material_uniforms, rasterizer->shader_file_rd.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
+	bool uniform_set_changed_srgb = update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, material_uniforms, rasterizer->shader_file_rd.version_get_shader(shader_data->version, 0), MATERIAL_UNIFORM_SET, true, false);
+	return uniform_set_changed || uniform_set_changed_srgb;
+}
+
+MeshRasterizerRD::RasterizeMeshMaterialData::~RasterizeMeshMaterialData() {
+	free_parameters_uniform_set(material_uniforms);
+	free_parameters_uniform_set(material_uniforms_srgb);
 }
 
 RendererRD::MaterialStorage::ShaderData *MeshRasterizerRD::_create_mesh_rasterizer_shader_funcs() {
@@ -180,8 +186,8 @@ void MeshRasterizerRD::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_
 	mesh_storage->mesh_surface_get_vertex_arrays_and_format(surface, input_mask, false, vertex_array_rid, vertex_format);
 
 	TextureStorage *texture_storage = TextureStorage::get_singleton();
-	// Always use non-srgb view. We don't know whether the srgb view is available.
-	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, false);
+	bool use_srgb = texture_storage->texture_drawable_is_srgb(p_texture_drawable);
+	RID rd_texture = texture_storage->texture_get_rd_texture(p_texture_drawable, use_srgb);
 	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
 
 	RID framebuffer_rid = FramebufferCacheRD::get_singleton()->get_cache(rd_texture);
@@ -195,7 +201,7 @@ void MeshRasterizerRD::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_
 
 	RID pipeline = RD::get_singleton()->render_pipeline_create(shader_data->shader_rd, fb_fmt, vertex_format, primitive, rasterization_state, {}, {}, blend_state);
 
-	LocalVector<Color> clear_colors = { p_clear_color };
+	LocalVector<Color> clear_colors = { use_srgb ? p_clear_color.srgb_to_linear() : p_clear_color };
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer_rid, p_blend_mode == RS::BLEND_MODE_CLEAR ? RD::DRAW_CLEAR_ALL : RD::DRAW_DEFAULT_ALL, clear_colors);
 	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, pipeline);
 
@@ -209,7 +215,9 @@ void MeshRasterizerRD::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_
 
 	// Uniforms
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, shader_data->base_uniforms, BASE_UNIFORM_SET);
-	if (material_data->material_uniforms.is_valid()) {
+	if (use_srgb && material_data->material_uniforms_srgb.is_valid()) {
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->material_uniforms_srgb, MATERIAL_UNIFORM_SET);
+	} else if (material_data->material_uniforms.is_valid()) {
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->material_uniforms, MATERIAL_UNIFORM_SET);
 	}
 
@@ -217,6 +225,19 @@ void MeshRasterizerRD::texture_drawable_draw_mesh(RID p_texture_drawable, RID p_
 	RD::get_singleton()->draw_list_end();
 
 	RD::get_singleton()->free(pipeline);
+}
+
+void MeshRasterizerRD::texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
+	Vector2 size = TextureStorage::get_singleton()->texture_2d_get_size(p_texture_drawable);
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+	MutexLock local_lock(material_mutex);
+	material_storage->material_set_param(default_blit_material, SNAME("source_tex"), p_source_texture);
+	material_storage->material_set_param(default_blit_material, SNAME("modulate"), p_modulate);
+	material_storage->material_set_param(default_blit_material, SNAME("offset"), p_rect.position);
+	material_storage->material_set_param(default_blit_material, SNAME("region"), p_rect.size);
+	material_storage->material_set_param(default_blit_material, SNAME("size"), size);
+
+	texture_drawable_draw_mesh(p_texture_drawable, default_blit_material, default_blit_mesh, 0, p_blend_mode, p_clear_color);
 }
 
 MeshRasterizerRD::MeshRasterizerRD() {
@@ -236,6 +257,7 @@ MeshRasterizerRD::MeshRasterizerRD() {
 		actions.renames["NORMAL"] = "normal_interp";
 		actions.renames["TANGENT"] = "tangent";
 		actions.renames["BINORMAL"] = "binormal";
+		actions.renames["VERTEX"] = "position.xyz";
 		actions.renames["POSITION"] = "position";
 		actions.renames["UV"] = "uv_interp";
 		actions.renames["UV2"] = "uv2_interp";
@@ -279,6 +301,61 @@ MeshRasterizerRD::MeshRasterizerRD() {
 
 	String defines = "\n#define SAMPLERS_BINDING_FIRST_INDEX " + itos(SAMPLERS_BINDING_FIRST_INDEX) + "\n";
 	shader_file_rd.initialize({ "" }, defines);
+
+	default_blit_shader = material_storage->shader_allocate();
+	default_blit_material = material_storage->material_allocate();
+	material_storage->shader_initialize(default_blit_shader);
+	material_storage->material_initialize(default_blit_material);
+	material_storage->shader_set_code(default_blit_shader, R"(
+		shader_type mesh_rasterizer;
+
+		uniform vec2 size;
+		uniform vec2 offset;
+		uniform vec2 region;
+		uniform sampler2D source_tex: source_color;
+		uniform vec4 modulate: source_color = vec4(1.0);
+
+		void vertex(){
+			POSITION.xy = region/size * POSITION.xy + offset/size;
+			POSITION.w=0.5;
+		}
+
+		void fragment(){
+			OUTPUT_COLOR = modulate * texture(source_tex, UV);
+		}
+	)");
+	material_storage->material_set_shader(default_blit_material, default_blit_shader);
+
+	MeshStorage *mesh_storage = MeshStorage::get_singleton();
+	default_blit_mesh = mesh_storage->mesh_allocate();
+	mesh_storage->mesh_initialize(default_blit_mesh);
+
+	Array surface_arrays;
+	surface_arrays.resize(RS::ArrayType::ARRAY_MAX);
+	surface_arrays[RS::ARRAY_VERTEX] = Vector<Vector2>{
+		Vector2(0, 0),
+		Vector2(1, 1),
+		Vector2(1, 0),
+		Vector2(0, 1),
+	};
+	surface_arrays[RS::ArrayType::ARRAY_INDEX] = Vector<int32_t>{
+		0, 1, 2, 0, 3, 1
+	};
+	surface_arrays[RS::ArrayType::ARRAY_TEX_UV] = Vector<Vector2>{
+		Vector2(0, 1),
+		Vector2(1, 0),
+		Vector2(1, 1),
+		Vector2(0, 0),
+	};
+	RS::SurfaceData surface_data;
+	RS::get_singleton()->mesh_create_surface_data_from_arrays(&surface_data, RS::PRIMITIVE_TRIANGLES, surface_arrays);
+	mesh_storage->mesh_add_surface(default_blit_mesh, surface_data);
+}
+
+MeshRasterizerRD::~MeshRasterizerRD() {
+	MaterialStorage::get_singleton()->free(default_blit_material);
+	MaterialStorage::get_singleton()->free(default_blit_shader);
+	MeshStorage::get_singleton()->free(default_blit_mesh);
 }
 
 } //namespace RendererRD

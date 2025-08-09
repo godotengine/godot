@@ -2104,6 +2104,10 @@ void GLES3::TextureStorage::texture_drawable_draw_mesh(RID p_texture_drawable, R
 	// TODO
 }
 
+void GLES3::TextureStorage::texture_drawable_blit_rect(RID p_texture_drawable, Rect2i p_rect, RID p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color) {
+	// TODO
+}
+
 /* RENDER TARGET API */
 
 GLuint TextureStorage::system_fbo = 0;
