@@ -60,7 +60,10 @@ void EditorResourcePicker::_update_resource() {
 		preview_rect->set_texture(Ref<Texture2D>());
 
 		assign_button->set_custom_minimum_size(assign_button_min_size);
+		Ref<Texture2D> unique_icon = get_editor_theme_icon(SNAME("Duplicate"));
+		make_unique_button->set_button_icon(unique_icon);
 
+		make_unique_button->set_custom_minimum_size(unique_icon->get_size());
 		if (edited_resource == Ref<Resource>()) {
 			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
@@ -69,7 +72,7 @@ void EditorResourcePicker::_update_resource() {
 			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 
 			if (!edited_resource->get_name().is_empty()) {
-				assign_button->set_text(edited_resource->get_name());
+				assign_button->set_text(edited_resource->get_name() + edited_resource->get_copy_count());
 			} else if (edited_resource->get_path().is_resource_file()) {
 				assign_button->set_text(edited_resource->get_path().get_file());
 			} else {
@@ -89,6 +92,7 @@ void EditorResourcePicker::_update_resource() {
 	}
 
 	assign_button->set_disabled(!editable && edited_resource.is_null());
+	make_unique_button->set_visible(editable && !edited_resource.is_null() && edited_resource->get_copy_count() > 1);
 	quick_load_button->set_visible(editable && edited_resource.is_null());
 }
 
@@ -378,7 +382,6 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
-
 			Ref<Resource> unique_resource = edited_resource->duplicate();
 			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
@@ -598,6 +601,16 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 			edit_menu->popup();
 		}
 	}
+}
+
+void EditorResourcePicker::_unique_button_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+
+		if(make_unique_button->is_visible()){
+			_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE_RECURSIVE);
+		}
+	}		
 }
 
 String EditorResourcePicker::_get_owner_path() const {
@@ -1155,6 +1168,15 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 }
 
 EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
+
+	make_unique_button = memnew(Button);
+	make_unique_button->set_flat(true);
+	make_unique_button->set_accessibility_name(TTRC("Make Resource Unique"));
+	make_unique_button->set_tooltip_text("Make Resources Unique");
+	add_child(make_unique_button);
+	make_unique_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk).bind(OBJ_MENU_MAKE_UNIQUE));
+	make_unique_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_unique_button_input));		
+
 	assign_button = memnew(Button);
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);

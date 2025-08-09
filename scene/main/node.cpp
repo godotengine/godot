@@ -3040,6 +3040,10 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 				if (property_node && (p_root == property_node || p_root->is_ancestor_of(property_node))) {
 					out_value = p_copy->get_node_or_null(p_original->get_path_to(property_node));
 				}
+				Resource *res = Object::cast_to<Resource>(value);
+				if (res) { 
+					res->increment_copy_count(1);
+				}					
 				p_copy->set(name, out_value);
 			} else if (value.get_type() == Variant::ARRAY) {
 				Array arr = value;

@@ -391,7 +391,7 @@ Ref<Resource> Resource::_duplicate(const DuplicateParams &p_params) const {
 		if (!(E.usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
 		}
-		if (E.name == "script") {
+		if (E.name == "script" || E.name == "copies") {
 			continue;
 		}
 
@@ -576,6 +576,14 @@ Ref<Resource> Resource::_duplicate_from_variant(bool p_deep, ResourceDeepDuplica
 	return dupe;
 }
 
+void Resource::increment_copy_count(int amount){
+	linked_copies += amount;
+}
+
+int Resource::get_copy_count(){
+	return linked_copies;
+}
+
 void Resource::_teardown_duplicate_from_variant() {
 	if (thread_duplicate_remap_cache) {
 		memdelete(thread_duplicate_remap_cache);
@@ -714,6 +722,8 @@ void Resource::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_local_to_scene"), &Resource::is_local_to_scene);
 	ClassDB::bind_method(D_METHOD("get_local_scene"), &Resource::get_local_scene);
 	ClassDB::bind_method(D_METHOD("setup_local_to_scene"), &Resource::setup_local_to_scene);
+	ClassDB::bind_method(D_METHOD("increment_copy_count"), &Resource::increment_copy_count);
+	ClassDB::bind_method(D_METHOD("get_copy_count"), &Resource::get_copy_count);
 	ClassDB::bind_method(D_METHOD("reset_state"), &Resource::reset_state);
 
 	ClassDB::bind_method(D_METHOD("set_id_for_path", "path", "id"), &Resource::set_id_for_path);
@@ -744,6 +754,7 @@ void Resource::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_path", "get_path");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_name"), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "resource_scene_unique_id", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_scene_unique_id", "get_scene_unique_id");
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"copies"),"increment_copy_count","get_copy_count");
 
 	GDVIRTUAL_BIND(_setup_local_to_scene);
 	GDVIRTUAL_BIND(_get_rid);

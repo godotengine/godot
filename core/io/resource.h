@@ -84,6 +84,7 @@ private:
 		EMIT_CHANGED_BLOCKED_PENDING_EMIT,
 	};
 	EmitChangedState emit_changed_state = EMIT_CHANGED_UNBLOCKED;
+	int linked_copies = 0;
 	bool local_to_scene = false;
 	friend class SceneState;
 	Node *local_scene = nullptr;
@@ -154,6 +155,8 @@ public:
 	static void _teardown_duplicate_from_variant();
 	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache) const;
 	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
+	void increment_copy_count(int amount);
+	int get_copy_count();
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
