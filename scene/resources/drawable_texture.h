@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_server_globals.h                                            */
+/*  drawable_texture.h                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,45 +30,33 @@
 
 #pragma once
 
-#include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/environment/renderer_gi.h"
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/storage/camera_attributes_storage.h"
-#include "servers/rendering/storage/light_storage.h"
-#include "servers/rendering/storage/material_storage.h"
-#include "servers/rendering/storage/mesh_rasterizer.h"
-#include "servers/rendering/storage/mesh_storage.h"
-#include "servers/rendering/storage/particles_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
-#include "servers/rendering/storage/utilities.h"
+#include "scene/resources/texture.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RenderingMethod;
+class Mesh;
+class Material;
 
-class RenderingServerGlobals {
+class DrawableTexture2D : public Texture2D {
+	GDCLASS(DrawableTexture2D, Texture2D);
+
+	Size2i size = Size2i(256, 256);
+
+	RID texture;
+
+protected:
+	static void _bind_methods();
+
 public:
-	static bool threaded;
+	int get_width() const override;
+	int get_height() const override;
+	bool has_alpha() const override;
+	RID get_rid() const override;
 
-	static RendererUtilities *utilities;
-	static RendererLightStorage *light_storage;
-	static RendererMaterialStorage *material_storage;
-	static RendererMeshStorage *mesh_storage;
-	static RendererParticlesStorage *particles_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererGI *gi;
-	static RendererFog *fog;
-	static RendererCameraAttributes *camera_attributes;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
+	Ref<Image> get_image() const override;
 
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RenderingMethod *scene;
+	void setup(Size2i p_size, RD::DataFormat p_texture_format, bool p_use_mipmaps = false);
+	void draw_mesh(const Ref<Material> &p_material, const Ref<Mesh> &p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color);
+	void blit_rect(Rect2i p_rect, const Ref<Texture2D> &p_source_texture, const Color &p_modulate, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color);
 
-	static MeshRasterizer *mesh_rasterizer;
+	DrawableTexture2D();
+	~DrawableTexture2D();
 };
-
-#define RSG RenderingServerGlobals

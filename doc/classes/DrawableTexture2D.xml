@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DrawableTexture2D" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="blit_rect">
+			<return type="void" />
+			<param index="0" name="rect" type="Rect2i" />
+			<param index="1" name="source_texture" type="Texture2D" />
+			<param index="2" name="modulate" type="Color" />
+			<param index="3" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="4" name="clear_color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="draw_mesh">
+			<return type="void" />
+			<param index="0" name="material" type="Material" />
+			<param index="1" name="mesh" type="Mesh" />
+			<param index="2" name="surface_index" type="int" />
+			<param index="3" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="4" name="clear_color" type="Color" />
+			<description>
+			</description>
+		</method>
+		<method name="setup">
+			<return type="void" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="texture_format" type="int" enum="RenderingDevice.DataFormat" />
+			<param index="2" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+	</members>
+</class>

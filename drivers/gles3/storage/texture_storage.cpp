@@ -1838,6 +1838,11 @@ void TextureStorage::texture_bind(RID p_texture, uint32_t p_texture_no) {
 	glBindTexture(texture->target, texture->tex_id);
 }
 
+Size2i GLES3::TextureStorage::texture_2d_get_size(RID p_texture) {
+	Vector3i size = texture_get_size(p_texture);
+	return Size2i(size.x, size.y);
+}
+
 /* TEXTURE ATLAS API */
 
 void TextureStorage::texture_add_to_texture_atlas(RID p_texture) {
@@ -2088,6 +2093,75 @@ void TextureStorage::decal_set_normal_fade(RID p_decal, float p_fade) {
 
 AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	return AABB();
+}
+
+/* TEXTURE DRAWABLE API */
+
+void GLES3::TextureStorage::texture_drawable_initialize(RID p_rid, int p_width, int p_height, RD::DataFormat p_texture_format, bool p_use_mipmaps) {
+	Image::Format format;
+	switch (p_texture_format) {
+		case RD::DATA_FORMAT_R8_UNORM:
+			format = Image::FORMAT_R8;
+			break;
+		case RD::DATA_FORMAT_R16_SFLOAT:
+			format = Image::FORMAT_RH;
+			break;
+		case RD::DATA_FORMAT_R32_SFLOAT:
+			format = Image::FORMAT_RF;
+			break;
+		case RD::DATA_FORMAT_R8G8_UNORM:
+			format = Image::FORMAT_RG8;
+			break;
+		case RD::DATA_FORMAT_R16G16_SFLOAT:
+			format = Image::FORMAT_RGH;
+			break;
+		case RD::DATA_FORMAT_R32G32_SFLOAT:
+			format = Image::FORMAT_RGF;
+			break;
+		case RD::DATA_FORMAT_R8G8B8A8_UNORM:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RD::DATA_FORMAT_R8G8B8A8_SRGB:
+			format = Image::FORMAT_RGBA8;
+			break;
+		case RD::DATA_FORMAT_R16G16B16A16_SFLOAT:
+			format = Image::FORMAT_RGBAH;
+			break;
+		case RD::DATA_FORMAT_R32G32B32A32_SFLOAT:
+			format = Image::FORMAT_RGBAF;
+			break;
+		default:
+			format = Image::FORMAT_RGBA8;
+	}
+
+	Ref<Image> image = Image::create_empty(p_width, p_height, p_use_mipmaps, format);
+	image->fill(Color(1, 1, 1, 1));
+	Texture texture;
+	texture.width = image->get_width();
+	texture.height = image->get_height();
+	texture.alloc_width = texture.width;
+	texture.alloc_height = texture.height;
+	texture.mipmaps = image->get_mipmap_count() + 1;
+	texture.format = image->get_format();
+	texture.type = Texture::TYPE_2D;
+	texture.target = GL_TEXTURE_2D;
+	_get_gl_image_and_format(Ref<Image>(), texture.format, texture.real_format, texture.gl_format_cache, texture.gl_internal_format_cache, texture.gl_type_cache, texture.compressed, false);
+	texture.total_data_size = image->get_image_data_size(texture.width, texture.height, texture.format, texture.mipmaps);
+	texture.active = true;
+	glGenTextures(1, &texture.tex_id);
+	GLES3::Utilities::get_singleton()->texture_allocated_data(texture.tex_id, texture.total_data_size, "Texture Drawable");
+	texture_owner.initialize_rid(p_rid, texture);
+	texture_set_data(p_rid, image);
+}
+
+void GLES3::TextureStorage::texture_drawable_generate_mipmaps(RID p_texture_drawable) {
+	Texture *texture = texture_owner.get_or_null(p_texture_drawable);
+	ERR_FAIL_NULL(texture);
+	Rect2i region;
+	region.size = Vector2i(texture->width, texture->height);
+	glDisable(GL_BLEND);
+	GLES3::CopyEffects::get_singleton()->gaussian_blur(texture->tex_id, texture->mipmaps, region, region.size);
+	glEnable(GL_BLEND);
 }
 
 /* RENDER TARGET API */
