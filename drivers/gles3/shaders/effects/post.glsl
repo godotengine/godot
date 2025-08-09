@@ -112,6 +112,8 @@ void main() {
 	vec4 color = texture(source_color, uv_interp);
 #endif
 
+	// SSAO might be better here, but the colors are still SRGB.
+
 #ifdef USE_GLOW
 	vec4 glow = get_glow_color(uv_interp) * glow_intensity;
 
@@ -127,6 +129,7 @@ void main() {
 	color.rgb = srgb_to_linear(color.rgb);
 
 #ifdef USE_SSAO
+	// Putting SSAO after the conversion to linear color, though it might be better before the glow.
 	color.rgb *= s4ao(uv_interp);
 #endif
 
