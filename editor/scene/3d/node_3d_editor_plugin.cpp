@@ -2986,6 +2986,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_update_name();
+			_update_centered_labels();
 			message_time = MIN(message_time, 0.001); // Make it disappear.
 
 			Key key = (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) ? Key::META : Key::CTRL;
@@ -3092,9 +3093,11 @@ void Node3DEditorViewport::_notification(int p_what) {
 					//then switch the viewport's camera to the scene's viewport camera
 					if (previewing != nullptr) {
 						previewing->disconnect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+						previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 					}
 					previewing = cam;
 					previewing->connect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+					previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 					RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), cam->get_camera());
 					surface->queue_redraw();
 				}
@@ -3273,13 +3276,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 								Math::remap(fps, 110, 10, 0, 1)));
 			}
 
-			bool show_cinema = view_display_menu->get_popup()->is_item_checked(view_display_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW));
-			cinema_label->set_visible(show_cinema);
-			if (show_cinema) {
-				float cinema_half_width = cinema_label->get_size().width / 2.0f;
-				cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
-			}
-
 			if (lock_rotation) {
 				float locked_half_width = locked_label->get_size().width / 2.0f;
 				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
@@ -3363,6 +3359,8 @@ void Node3DEditorViewport::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			_update_centered_labels();
+
 			view_display_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			preview_camera->set_button_icon(get_editor_theme_icon(SNAME("Camera3D")));
 			Control *gui_base = EditorNode::get_singleton()->get_gui_base();
@@ -3823,6 +3821,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			previewing_cinema = true;
 			_toggle_cinema_preview(current);
 
+			cinema_label->set_visible(current);
+			_update_centered_labels();
+			surface->queue_redraw();
+
 			if (current) {
 				preview_camera->hide();
 			} else {
@@ -4003,6 +4005,20 @@ void Node3DEditorViewport::_preview_exited_scene() {
 	view_display_menu->show();
 }
 
+void Node3DEditorViewport::_preview_camera_property_changed() {
+	if (previewing) {
+		surface->queue_redraw();
+	}
+}
+
+void Node3DEditorViewport::_update_centered_labels() {
+	if (cinema_label->is_visible()) {
+		cinema_label->reset_size();
+		float cinema_half_width = cinema_label->get_size().width / 2.0f;
+		cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
+	}
+}
+
 void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 	uint32_t layer = 1 << (GIZMO_BASE_LAYER + p_idx);
 
@@ -4096,6 +4112,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	if (!p_activate) {
 		previewing->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+		previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		previewing = nullptr;
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), camera->get_camera()); //restore
 		if (!preview) {
@@ -4106,6 +4123,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	} else {
 		previewing = preview;
 		previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+		previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		surface->queue_redraw();
 	}
@@ -4118,6 +4136,7 @@ void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	if (!previewing_cinema) {
 		if (previewing != nullptr) {
 			previewing->disconnect(SceneStringName(tree_exited), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+			previewing->disconnect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 		}
 
 		previewing = nullptr;
@@ -4369,6 +4388,12 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 
 		int idx = view_display_menu->get_popup()->get_item_index(VIEW_CINEMATIC_PREVIEW);
 		view_display_menu->get_popup()->set_item_checked(idx, previewing_cinema);
+
+		cinema_label->set_visible(previewing_cinema);
+		if (previewing_cinema) {
+			_update_centered_labels();
+			surface->queue_redraw();
+		}
 	}
 
 	if (preview_camera->is_connected(SceneStringName(toggled), callable_mp(this, &Node3DEditorViewport::_toggle_camera_preview))) {
@@ -4379,6 +4404,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		if (Object::cast_to<Camera3D>(pv)) {
 			previewing = Object::cast_to<Camera3D>(pv);
 			previewing->connect(SceneStringName(tree_exiting), callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
+			previewing->connect(CoreStringName(property_list_changed), callable_mp(this, &Node3DEditorViewport::_preview_camera_property_changed));
 			RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), previewing->get_camera()); //replace
 			surface->queue_redraw();
 			previewing_camera = true;
