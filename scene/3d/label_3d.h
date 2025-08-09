@@ -128,6 +128,10 @@ private:
 
 	float line_spacing = 0.f;
 
+	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
+	int visible_characters = -1;
+	float visible_ratio = 1.0;
+
 	String language;
 	TextServer::Direction text_direction = TextServer::DIRECTION_AUTO;
 	TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
@@ -145,6 +149,8 @@ private:
 	bool dirty_lines = true;
 	bool dirty_font = true;
 	bool dirty_text = true;
+
+	bool _is_glyph_visible(const Glyph &p_glyph);
 
 	void _generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, const Color &p_modulate, int p_priority = 0, int p_outline_size = 0);
 
@@ -200,6 +206,17 @@ public:
 
 	void set_font_size(int p_size);
 	int get_font_size() const;
+
+	void set_visible_characters_behavior(TextServer::VisibleCharactersBehavior p_behavior);
+	TextServer::VisibleCharactersBehavior get_visible_characters_behavior() const;
+
+	void set_visible_characters(int p_amount);
+	int get_visible_characters() const;
+
+	void set_visible_ratio(float p_ratio);
+	float get_visible_ratio() const;
+
+	int get_total_character_count() const;
 
 	void set_outline_size(int p_size);
 	int get_outline_size() const;
