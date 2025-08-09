@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorHScrollBox" inherits="EditorScrollBox" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Allow adding a control that can be scrolled horizontally with buttons.
+	</brief_description>
+	<description>
+		A variant of [EditorScrollBox] that allow adding a control that can be scrolled horizontally with buttons.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
