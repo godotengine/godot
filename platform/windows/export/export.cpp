@@ -263,21 +263,13 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		rcedit_path = "rcedit";
 
 		// --- Preflight Test ---
-		String pre_out;
-		String pre_err;
 		int pre_exit = 0;
-
 		List<String> help_args;
 		help_args.push_back("--help");
 
+		// child_id=nullptr, pipe=nullptr, exitcode=&pre_exit, read_stderr=false
 		Error pre_res = OS::get_singleton()->execute(
-				rcedit_path,
-				help_args,
-				/*blocking=*/true,
-				&pre_exit,
-				&pre_out,
-				&pre_err,
-				/*read_stderr=*/true);
+				rcedit_path, help_args, true, nullptr, nullptr, &pre_exit, false);
 
 		if (pre_res != OK || pre_exit != 0) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
@@ -301,28 +293,20 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		wine_path = "wine";
 
 		// --- Preflight Test for Wine ---
-		String wine_out;
-		String wine_err;
 		int wine_exit = 0;
-
 		List<String> wine_version_args;
 		wine_version_args.push_back("--version");
 
+		// child_id=nullptr, pipe=nullptr, exitcode=&wine_exit, read_stderr=false
 		Error wine_res = OS::get_singleton()->execute(
-				wine_path,
-				wine_version_args,
-				/*blocking=*/true,
-				&wine_exit,
-				&wine_out,
-				&wine_err,
-				/*read_stderr=*/true);
+				wine_path, wine_version_args, true, nullptr, nullptr, &wine_exit, false);
 
 		if (wine_res != OK || wine_exit != 0) {
 			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
 					TTR("No wine found in PATH. Configure wine in the Editor Settings (Export > Windows > wine), or install it so it is available in PATH."));
 			return ERR_FILE_NOT_FOUND;
 		} else {
-			print_line("wine preflight check passed via PATH: " + wine_out.strip_edges());
+			print_line("wine preflight check passed via PATH.");
 		}
 	}
 #endif
@@ -339,7 +323,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	}
 
 	// Metadata
-	String file_verion = p_preset->get("application/file_version"); // sic: Beibehaltung des vorhandenen Bezeichners
+	String file_verion = p_preset->get("application/file_version");
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
@@ -400,34 +384,26 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 
 #ifdef WINDOWS_ENABLED
 	exec_prog = rcedit_path;
-	exec_args = args; // direkt rcedit mit args
+	exec_args = args;
 #else
-	// wine rcedit <args...>
 	exec_prog = EditorSettings::get_singleton()->get("export/windows/wine");
 	if (exec_prog == String()) {
 		exec_prog = "wine";
 	}
 	exec_args.push_back(rcedit_path);
-	// hänge alle rcedit-args an
 	for (const List<String>::Element *E = args.front(); E; E = E->next()) {
 		exec_args.push_back(E->get());
 	}
 #endif
 
 	int exit_code = 0;
-	String cmd_out, cmd_err;
+	String pipe; // wir erfassen stderr (read_stderr=true)
 	Error run_res = OS::get_singleton()->execute(
-			exec_prog,
-			exec_args,
-			/*blocking=*/true,
-			&exit_code,
-			&cmd_out,
-			&cmd_err,
-			/*read_stderr=*/true);
+			exec_prog, exec_args, true, nullptr, &pipe, &exit_code, /*read_stderr=*/true);
 
 	if (run_res != OK || exit_code != 0) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
-				vformat(TTR("rcedit failed (code %d). Stderr:\n%s"), exit_code, cmd_err));
+				vformat(TTR("rcedit failed (code %d). Output:\n%s"), exit_code, pipe));
 		return ERR_CANT_OPEN;
 	}
 
