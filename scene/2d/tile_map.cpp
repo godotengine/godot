@@ -843,7 +843,7 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 	warnings.push_back(RTR("The TileMap node is deprecated as it is superseded by the use of multiple TileMapLayer nodes.\nTo convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom panel with this node selected, click the toolbox icon in the top-right corner and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."));
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
-	RBSet<int> y_sorted_z_index;
+	HashSet<int> y_sorted_z_index;
 	for (const TileMapLayer *layer : layers) {
 		if (layer->is_y_sort_enabled()) {
 			y_sorted_z_index.insert(layer->get_z_index());

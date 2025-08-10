@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "resource_preloader.h"
-#include "core/templates/rb_set.h"
+
 void ResourcePreloader::_set_resources(const Array &p_data) {
 	resources.clear();
 
@@ -54,17 +54,19 @@ Array ResourcePreloader::_get_resources() const {
 	arr.resize(resources.size());
 	names.resize(resources.size());
 
-	RBSet<String> sorted_names;
-
+	String *ptrw = names.ptrw();
+	int i = 0;
 	for (const KeyValue<StringName, Ref<Resource>> &E : resources) {
-		sorted_names.insert(E.key);
+		ptrw[i] = E.key;
+		i++;
 	}
 
-	int i = 0;
-	for (const String &E : sorted_names) {
-		names.set(i, E);
-		arr[i] = resources[E];
-		i++;
+	names.sort();
+
+	Array::Iterator it = arr.begin();
+	for (const String &E : names) {
+		*it = resources[E];
+		++it;
 	}
 
 	return Array{ names, arr };
