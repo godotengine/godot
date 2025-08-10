@@ -39,6 +39,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector/add_metadata_dialog.h"
 #include "editor/inspector/editor_properties.h"
@@ -1062,6 +1063,16 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (check_rect.has_point(mpos)) {
 			accept_event();
+			if (!checked && Object::cast_to<Control>(object) && property_path.begins_with("theme_override_")) {
+				List<PropertyInfo> pinfo;
+				object->get_property_list(&pinfo);
+				for (const PropertyInfo &E : pinfo) {
+					if (E.type == Variant::OBJECT && E.name == property_path) {
+						EditorToaster::get_singleton()->popup_str(TTR("Toggling the checkbox is disabled for Resource properties. Modify the property using the resource picker instead."), EditorToaster::SEVERITY_WARNING);
+						return; // Disallow clicking to toggle the checkbox of type Resource to checked.
+					}
+				}
+			}
 			checked = !checked;
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
@@ -1080,6 +1091,17 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 void EditorProperty::_accessibility_action_click(const Variant &p_data) {
 	select();
 	if (checkable) {
+		if (!checked && Object::cast_to<Control>(object) && property_path.begins_with("theme_override_")) {
+			List<PropertyInfo> pinfo;
+			object->get_property_list(&pinfo);
+			for (const PropertyInfo &E : pinfo) {
+				if (E.type == Variant::OBJECT && E.name == property_path) {
+					EditorToaster::get_singleton()->popup_str(TTR("Toggling the checkbox is disabled for Resource properties. Modify the property using the resource picker instead."), EditorToaster::SEVERITY_WARNING);
+					return;
+				}
+			}
+		}
+
 		checked = !checked;
 		queue_redraw();
 		emit_signal(SNAME("property_checked"), property, checked);
@@ -5155,17 +5177,9 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 		} else {
 			Variant to_create;
 			Control *control = Object::cast_to<Control>(object);
-			bool skip = false;
 			if (control && p_path.begins_with("theme_override_")) {
 				to_create = control->get_used_theme_item(p_path);
-				Ref<Resource> resource = to_create;
-				if (resource.is_valid()) {
-					to_create = resource->duplicate();
-				}
-				skip = true;
-			}
-
-			if (!skip) {
+			} else {
 				List<PropertyInfo> pinfo;
 				object->get_property_list(&pinfo);
 				for (const PropertyInfo &E : pinfo) {
