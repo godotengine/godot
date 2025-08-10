@@ -106,6 +106,7 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_quick_open_dialog.h"
+#include "editor/gui/editor_scroll_box.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/progress_dialog.h"
@@ -365,6 +366,7 @@ void EditorNode::_update_title() {
 	DisplayServer::get_singleton()->window_set_title(title + String(" - ") + GODOT_VERSION_NAME);
 	if (project_title) {
 		project_title->set_text(title);
+		_adjust_project_title();
 	}
 }
 
@@ -1480,14 +1482,13 @@ void EditorNode::_reload_project_settings() {
 	ProjectSettings::get_singleton()->setup(ProjectSettings::get_singleton()->get_resource_path(), String(), true, true);
 }
 
-void EditorNode::_vp_resized() {
-}
-
 void EditorNode::_viewport_resized() {
 	Window *w = get_window();
 	if (w) {
 		was_window_windowed_last = w->get_mode() == Window::MODE_WINDOWED;
 	}
+
+	callable_mp(this, &EditorNode::_adjust_project_title).call_deferred();
 }
 
 void EditorNode::_titlebar_resized() {
@@ -1503,6 +1504,30 @@ void EditorNode::_titlebar_resized() {
 	}
 	if (title_bar) {
 		title_bar->set_custom_minimum_size(Size2(0, margin.z - title_bar->get_global_position().y));
+	}
+
+	callable_mp(this, &EditorNode::_adjust_project_title).call_deferred();
+}
+
+void EditorNode::_adjust_project_title() {
+	if (!project_title) {
+		return;
+	}
+
+	project_title->set_anchors_and_offsets_preset(Control::PRESET_CENTER_LEFT);
+	const int offset = 28 * EDSCALE;
+
+	if (gui_base->is_layout_rtl()) {
+		Control *cc = title_bar->get_center_control();
+		int init_pos = project_title->get_global_position().x;
+		HScrollBar *hsb = main_scroll_box->get_scroll_container()->get_h_scroll_bar();
+		int scroll_offset = cc->get_size().width - hsb->get_page() - hsb->get_value();
+		project_title->set_position(Point2(MIN(0, (cc->get_global_position().x + cc->get_size().width + offset) - init_pos - scroll_offset), project_title->get_position().y));
+		project_title->set_size(Size2(MAX(0, Math::abs((cc->get_global_position().x + cc->get_size().width) - scroll_offset - init_pos) - offset), 0));
+	} else {
+		int main_screen_position = title_bar->get_center_control()->get_global_position().x;
+		int label_size = main_screen_position - project_title->get_global_position().x;
+		project_title->set_size(Size2(MAX(0, label_size - offset), 0));
 	}
 }
 
@@ -7419,28 +7444,31 @@ void EditorNode::_update_main_menu_type() {
 		main_menu_button->get_popup()->add_theme_constant_override("v_separation", 16 * EDSCALE);
 		menu_btn_spacer = memnew(Control);
 		menu_btn_spacer->set_custom_minimum_size(Vector2(8, 0) * EDSCALE);
-		title_bar->add_child(menu_btn_spacer);
-		title_bar->move_child(menu_btn_spacer, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
+		title_left_hbox->add_child(menu_btn_spacer);
+		title_left_hbox->move_child(menu_btn_spacer, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
 #endif
-		title_bar->add_child(main_menu_button);
+		title_left_hbox->add_child(main_menu_button);
 		if (menu_btn_spacer == nullptr) {
-			title_bar->move_child(main_menu_button, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
+			title_left_hbox->move_child(main_menu_button, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
 		} else {
-			title_bar->move_child(main_menu_button, menu_btn_spacer->get_index() + 1);
+			title_left_hbox->move_child(main_menu_button, menu_btn_spacer->get_index() + 1);
 		}
 		memdelete_notnull(main_menu_bar);
 		main_menu_bar = nullptr;
-
-		if (project_run_bar != nullptr) {
-			// Adjust spacers to center 2D / 3D / Script buttons.
-			int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu_button->get_minimum_size().x);
-			left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu_button->get_minimum_size().x), 0));
-			right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
-		}
+#ifndef MACOS_ENABLED
+		memdelete_notnull(menu_scroll_box);
+		menu_scroll_box = nullptr;
+#endif
 	} else {
+#ifndef MACOS_ENABLED
+		menu_scroll_box = memnew(EditorScrollBox);
+		menu_scroll_box->set_custom_minimum_size(Size2(128 * EDSCALE, 0));
+		title_left_hbox->add_child(menu_scroll_box);
+#endif
 		main_menu_bar = memnew(MenuBar);
 		main_menu_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-		main_menu_bar->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
+		main_menu_bar->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_BEGIN);
+		main_menu_bar->set_v_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_CENTER);
 		main_menu_bar->set_theme_type_variation("MainMenuBar");
 		main_menu_bar->set_start_index(0); // Main menu, add to the start of global menu.
 		main_menu_bar->set_prefer_global_menu(global_menu);
@@ -7459,21 +7487,16 @@ void EditorNode::_update_main_menu_type() {
 				main_menu_bar->add_child(menu);
 			}
 		}
-
-		title_bar->add_child(main_menu_bar);
-		title_bar->move_child(main_menu_bar, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
-
+#ifndef MACOS_ENABLED
+		menu_scroll_box->set_control(main_menu_bar);
+#else
+		title_left_hbox->add_child(main_menu_bar);
+		title_left_hbox->move_child(main_menu_bar, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
+#endif
 		memdelete_notnull(menu_btn_spacer);
 		memdelete_notnull(main_menu_button);
 		menu_btn_spacer = nullptr;
 		main_menu_button = nullptr;
-
-		if (project_run_bar != nullptr) {
-			// Adjust spacers to center 2D / 3D / Script buttons.
-			int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu_bar->get_minimum_size().x);
-			left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu_bar->get_minimum_size().x), 0));
-			right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
-		}
 	}
 }
 
@@ -7654,7 +7677,7 @@ EditorNode::EditorNode() {
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
 	if (w) {
-		const Size2 minimum_size = Size2(1024, 600) * EDSCALE;
+		const Size2 minimum_size = Size2(640, 480) * EDSCALE;
 		w->set_min_size(minimum_size); // Calling it this early doesn't sync the property with DS.
 		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
 	}
@@ -8012,11 +8035,16 @@ EditorNode::EditorNode() {
 	bool dark_mode = DisplayServer::get_singleton()->is_dark_mode_supported() && DisplayServer::get_singleton()->is_dark_mode();
 	bool can_expand = bool(EDITOR_GET("interface/editor/expand_to_title")) && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EXTEND_TO_TITLE);
 
+	title_left_hbox = memnew(HBoxContainer);
+	title_left_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	title_left_hbox->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	title_bar->add_child(title_left_hbox);
+
 	if (can_expand) {
 		// Add spacer to avoid other controls under window minimize/maximize/close buttons (left side).
 		left_menu_spacer = memnew(Control);
 		left_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		title_bar->add_child(left_menu_spacer);
+		title_left_hbox->add_child(left_menu_spacer);
 	}
 
 	_update_main_menu_type();
@@ -8181,28 +8209,31 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::META + KeyModifierMask::CTRL + KeyModifierMask::ALT + Key::Q);
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), PROJECT_QUIT_TO_PROJECT_MANAGER, true);
 
-	// Spacer to center 2D / 3D / Script buttons.
-	left_spacer = memnew(HBoxContainer);
-	left_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	left_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	title_bar->add_child(left_spacer);
-
 	if (can_expand && global_menu) {
+		Control *project_title_control = memnew(Control);
+		project_title_control->set_h_size_flags(Control::SIZE_SHRINK_BEGIN);
+		project_title_control->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		project_title = memnew(Label);
 		project_title->add_theme_font_override(SceneStringName(font), theme->get_font(SNAME("bold"), EditorStringName(EditorFonts)));
 		project_title->add_theme_font_size_override(SceneStringName(font_size), theme->get_font_size(SNAME("bold_size"), EditorStringName(EditorFonts)));
 		project_title->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
-		project_title->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
-		project_title->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		project_title->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		left_spacer->add_child(project_title);
+		project_title_control->add_child(project_title);
+		title_left_hbox->add_child(project_title_control, false, INTERNAL_MODE_BACK);
 	}
 
+	main_scroll_box = memnew(EditorScrollBox);
+	main_scroll_box->set_custom_minimum_size(Size2(128 * EDSCALE, 0));
+	main_scroll_box->set_stretch_ratio(1.5);
+	title_bar->add_child(main_scroll_box);
+
 	HBoxContainer *main_editor_button_hb = memnew(HBoxContainer);
+	main_editor_button_hb->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_CENTER);
 	main_editor_button_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
 	main_editor_button_hb->set_name("EditorMainScreenButtons");
+	main_editor_button_hb->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_adjust_project_title));
 	editor_main_screen->set_button_container(main_editor_button_hb);
-	title_bar->add_child(main_editor_button_hb);
+	main_scroll_box->set_control(main_editor_button_hb);
 	title_bar->set_center_control(main_editor_button_hb);
 
 	// Options are added and handled by DebuggerEditorPlugin.
@@ -8286,21 +8317,17 @@ EditorNode::EditorNode() {
 	}
 	help_menu->add_icon_shortcut(_get_editor_theme_native_menu_icon(SNAME("Heart"), global_menu, dark_mode), ED_SHORTCUT_AND_COMMAND("editor/support_development", TTRC("Support Godot Development")), HELP_SUPPORT_GODOT_DEVELOPMENT);
 
-	// Spacer to center 2D / 3D / Script buttons.
-	right_spacer = memnew(Control);
-	right_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-	right_spacer->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	title_bar->add_child(right_spacer);
+	title_right_hbox = memnew(HBoxContainer);
+	title_right_hbox->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	title_right_hbox->set_mouse_filter(Control::MOUSE_FILTER_PASS);
+	title_bar->add_child(title_right_hbox);
 
 	project_run_bar = memnew(EditorRunBar);
+	project_run_bar->set_h_size_flags(Control::SIZE_EXPAND | Control::SIZE_SHRINK_END);
 	project_run_bar->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	title_bar->add_child(project_run_bar);
+	title_right_hbox->add_child(project_run_bar);
 	project_run_bar->connect("play_pressed", callable_mp(this, &EditorNode::_project_run_started));
 	project_run_bar->connect("stop_pressed", callable_mp(this, &EditorNode::_project_run_stopped));
-
-	right_menu_hb = memnew(HBoxContainer);
-	right_menu_hb->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	title_bar->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
 	renderer->set_visible(true);
@@ -8313,13 +8340,13 @@ EditorNode::EditorNode() {
 	renderer->set_tooltip_text(TTRC("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
 	renderer->set_accessibility_name(TTRC("Rendering Method"));
 
-	right_menu_hb->add_child(renderer);
+	title_right_hbox->add_child(renderer);
 
 	if (can_expand) {
 		// Add spacer to avoid other controls under the window minimize/maximize/close buttons (right side).
 		right_menu_spacer = memnew(Control);
 		right_menu_spacer->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		title_bar->add_child(right_menu_spacer);
+		title_right_hbox->add_child(right_menu_spacer, false, INTERNAL_MODE_BACK);
 	}
 
 	String current_renderer_ps = GLOBAL_GET("rendering/renderer/rendering_method");
@@ -8369,7 +8396,7 @@ EditorNode::EditorNode() {
 	layout_dialog->connect("name_confirmed", callable_mp(this, &EditorNode::_dialog_action));
 
 	update_spinner = memnew(MenuButton);
-	right_menu_hb->add_child(update_spinner);
+	title_right_hbox->add_child(update_spinner);
 	update_spinner->set_button_icon(theme->get_icon(SNAME("Progress1"), EditorStringName(EditorIcons)));
 	update_spinner->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_menu_option));
 	update_spinner->set_accessibility_name(TTRC("Update Mode"));
@@ -8447,8 +8474,6 @@ EditorNode::EditorNode() {
 	log = memnew(EditorLog);
 	Button *output_button = bottom_panel->add_item(TTRC("Output"), log, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_output_bottom_panel", TTRC("Toggle Output Bottom Panel"), KeyModifierMask::ALT | Key::O));
 	log->set_tool_button(output_button);
-
-	center_split->connect(SceneStringName(resized), callable_mp(this, &EditorNode::_vp_resized));
 
 	native_shader_source_visualizer = memnew(EditorNativeShaderSourceVisualizer);
 	gui_base->add_child(native_shader_source_visualizer);
@@ -8837,16 +8862,6 @@ EditorNode::EditorNode() {
 	add_child(screenshot_timer);
 	screenshot_timer->set_owner(get_owner());
 
-	// Adjust spacers to center 2D / 3D / Script buttons.
-	if (main_menu_button != nullptr) {
-		int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu_button->get_minimum_size().x);
-		left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu_button->get_minimum_size().x), 0));
-		right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
-	} else {
-		int max_w = MAX(project_run_bar->get_minimum_size().x + right_menu_hb->get_minimum_size().x, main_menu_bar->get_minimum_size().x);
-		left_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - main_menu_bar->get_minimum_size().x), 0));
-		right_spacer->set_custom_minimum_size(Size2(MAX(0, max_w - project_run_bar->get_minimum_size().x - right_menu_hb->get_minimum_size().x), 0));
-	}
 	// Extend menu bar to window title.
 	if (can_expand) {
 		DisplayServer::get_singleton()->process_events();
