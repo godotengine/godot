@@ -626,6 +626,12 @@ bool DisplayServerAndroid::can_any_window_draw() const {
 	return true;
 }
 
+void DisplayServerAndroid::window_set_color(const Color &p_color) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL(godot_java);
+	godot_java->set_window_color(p_color);
+}
+
 void DisplayServerAndroid::process_events() {
 	Input::get_singleton()->flush_buffered_events();
 }

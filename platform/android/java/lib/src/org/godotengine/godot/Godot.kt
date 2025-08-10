@@ -260,16 +260,7 @@ class Godot private constructor(val context: Context) {
 					useImmersive.set(true)
 					newArgs.add(commandLine[i])
 				} else if (commandLine[i] == "--background_color") {
-					val colorStr = commandLine[i + 1]
-					try {
-						backgroundColor = colorStr.toColorInt()
-						Log.d(TAG, "background color = $backgroundColor")
-					} catch (e: java.lang.IllegalArgumentException) {
-						Log.d(TAG, "Failed to parse background color: $colorStr")
-					}
-					runOnHostThread {
-						getActivity()?.window?.decorView?.setBackgroundColor(backgroundColor)
-					}
+					setWindowColor(commandLine[i + 1])
 				} else if (commandLine[i] == "--use_apk_expansion") {
 					useApkExpansion = true
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_md5") {
@@ -489,6 +480,21 @@ class Godot private constructor(val context: Context) {
 			background.color
 		} else {
 			backgroundColor
+		}
+	}
+
+	fun setWindowColor(colorStr: String) {
+		val color = try {
+			colorStr.toColorInt()
+		} catch (e: java.lang.IllegalArgumentException) {
+			Log.w(TAG, "Failed to parse background color: $colorStr", e)
+			return
+		}
+		val decorView = getActivity()?.window?.decorView ?: return
+		runOnHostThread {
+			decorView.setBackgroundColor(color)
+			backgroundColor = color
+			setSystemBarsAppearance()
 		}
 	}
 
