@@ -266,9 +266,13 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		String pre_out;
 		String pre_err;
 		int pre_exit = 0;
+
+		List<String> help_args;
+		help_args.push_back("--help");
+
 		Error pre_res = OS::get_singleton()->execute(
 				rcedit_path,
-				List<String>({ "--help" }),
+				help_args,
 				/*blocking=*/true,
 				&pre_exit,
 				&pre_out,
@@ -295,6 +299,31 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	}
 	if (wine_path == String()) {
 		wine_path = "wine";
+
+		// --- Preflight Test for Wine ---
+		String wine_out;
+		String wine_err;
+		int wine_exit = 0;
+
+		List<String> wine_version_args;
+		wine_version_args.push_back("--version");
+
+		Error wine_res = OS::get_singleton()->execute(
+				wine_path,
+				wine_version_args,
+				/*blocking=*/true,
+				&wine_exit,
+				&wine_out,
+				&wine_err,
+				/*read_stderr=*/true);
+
+		if (wine_res != OK || wine_exit != 0) {
+			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+					TTR("No wine found in PATH. Configure wine in the Editor Settings (Export > Windows > wine), or install it so it is available in PATH."));
+			return ERR_FILE_NOT_FOUND;
+		} else {
+			print_line("wine preflight check passed via PATH: " + wine_out.strip_edges());
+		}
 	}
 #endif
 
@@ -310,7 +339,7 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	}
 
 	// Metadata
-	String file_verion = p_preset->get("application/file_version");
+	String file_verion = p_preset->get("application/file_version"); // sic: Beibehaltung des vorhandenen Bezeichners
 	String product_version = p_preset->get("application/product_version");
 	String company_name = p_preset->get("application/company_name");
 	String product_name = p_preset->get("application/product_name");
@@ -365,40 +394,44 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 		args.push_back(comments);
 	}
 
-#ifndef WINDOWS_ENABLED
-	// On non-Windows we need WINE to run rcedit
-	String wine_path = EditorSettings::get_singleton()->get("export/windows/wine");
+	// --- Execute rcedit ---
+	String exec_prog;
+	List<String> exec_args;
 
-	if (wine_path != String() && !FileAccess::exists(wine_path)) {
-		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
-				vformat(TTR("Could not find wine executable at \"%s\"."), wine_path));
-		return ERR_FILE_NOT_FOUND;
+#ifdef WINDOWS_ENABLED
+	exec_prog = rcedit_path;
+	exec_args = args; // direkt rcedit mit args
+#else
+	// wine rcedit <args...>
+	exec_prog = EditorSettings::get_singleton()->get("export/windows/wine");
+	if (exec_prog == String()) {
+		exec_prog = "wine";
 	}
-	if (wine_path == String()) {
-		wine_path = "wine";
-
-		// --- Preflight Test for Wine ---
-		String wine_out;
-		String wine_err;
-		int wine_exit = 0;
-		Error wine_res = OS::get_singleton()->execute(
-				wine_path,
-				List<String>({ "--version" }),
-				/*blocking=*/true,
-				&wine_exit,
-				&wine_out,
-				&wine_err,
-				/*read_stderr=*/true);
-
-		if (wine_res != OK || wine_exit != 0) {
-			add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
-					TTR("No wine found in PATH. Configure wine in the Editor Settings (Export > Windows > wine), or install it so it is available in PATH."));
-			return ERR_FILE_NOT_FOUND;
-		} else {
-			print_line("wine preflight check passed via PATH: " + wine_out.strip_edges());
-		}
+	exec_args.push_back(rcedit_path);
+	// hänge alle rcedit-args an
+	for (const List<String>::Element *E = args.front(); E; E = E->next()) {
+		exec_args.push_back(E->get());
 	}
 #endif
+
+	int exit_code = 0;
+	String cmd_out, cmd_err;
+	Error run_res = OS::get_singleton()->execute(
+			exec_prog,
+			exec_args,
+			/*blocking=*/true,
+			&exit_code,
+			&cmd_out,
+			&cmd_err,
+			/*read_stderr=*/true);
+
+	if (run_res != OK || exit_code != 0) {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Resources Modification"),
+				vformat(TTR("rcedit failed (code %d). Stderr:\n%s"), exit_code, cmd_err));
+		return ERR_CANT_OPEN;
+	}
+
+	return OK;
 }
 
 Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
