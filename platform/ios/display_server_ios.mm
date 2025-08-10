@@ -282,7 +282,9 @@ Error DisplayServerIOS::file_dialog_with_options_show(const String &p_title, con
 							break;
 						}
 					}
-					if (keyWindow) break;
+					if (keyWindow) {
+						break;
+					}
 				}
 			}
 		}
@@ -415,9 +417,9 @@ Error DisplayServerIOS::file_dialog_with_options_show(const String &p_title, con
 		if (![fileManager fileExistsAtPath:documentsDirectory]) {
 			NSError *createError = nil;
 			BOOL created = [fileManager createDirectoryAtPath:documentsDirectory
-											withIntermediateDirectories:YES
-													attributes:nil
-														 error:&createError];
+								  withIntermediateDirectories:YES
+												   attributes:nil
+														error:&createError];
 			if (!created) {
 				ERR_PRINT(vformat("Failed to create documents directory: %s", [createError.localizedDescription UTF8String]));
 				return FAILED;
@@ -489,9 +491,9 @@ Error DisplayServerIOS::file_dialog_with_options_show(const String &p_title, con
 
 		// Use document picker for exporting the file
 		if (@available(iOS 14.0, *)) {
-			documentPicker = [[UIDocumentPickerViewController alloc] initForExportingURLs:@[tempFileURL] asCopy:YES];
+			documentPicker = [[UIDocumentPickerViewController alloc] initForExportingURLs:@[ tempFileURL ] asCopy:YES];
 		} else {
-			NSArray<NSString *> *saveTypes = legacyTypes.count > 0 ? legacyTypes : @[@"public.data"];
+			NSArray<NSString *> *saveTypes = legacyTypes.count > 0 ? legacyTypes : @[ @"public.data" ];
 			documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:saveTypes inMode:UIDocumentPickerModeExportToService];
 		}
 	} else {
@@ -501,7 +503,7 @@ Error DisplayServerIOS::file_dialog_with_options_show(const String &p_title, con
 			documentPicker.allowsMultipleSelection = (p_mode == FILE_DIALOG_MODE_OPEN_FILES);
 		} else {
 			// Fallback for older iOS versions
-			NSArray<NSString *> *openTypes = legacyTypes.count > 0 ? legacyTypes : @[@"public.data"];
+			NSArray<NSString *> *openTypes = legacyTypes.count > 0 ? legacyTypes : @[ @"public.data" ];
 			documentPicker = [[UIDocumentPickerViewController alloc] initWithDocumentTypes:openTypes inMode:UIDocumentPickerModeOpen];
 			documentPicker.allowsMultipleSelection = (p_mode == FILE_DIALOG_MODE_OPEN_FILES);
 		}
@@ -556,9 +558,9 @@ Error DisplayServerIOS::file_dialog_with_options_show(const String &p_title, con
 													options:NSFileCoordinatorWritingForReplacing
 													  error:&coordinatedError
 												 byAccessor:^(NSURL *writingURL) {
-						// If we can coordinate writing, we have permission
-						canWrite = YES;
-					}];
+													 // If we can coordinate writing, we have permission
+													 canWrite = YES;
+												 }];
 
 					if (!canWrite || coordinatedError) {
 						// Fallback: Check parent directory permissions
@@ -677,12 +679,14 @@ Error DisplayServerIOS::file_dialog_with_options_show(const String &p_title, con
 	[rootViewController.view endEditing:YES];
 
 	// Present the document picker
-	[rootViewController presentViewController:documentPicker animated:YES completion:^{
-		// Add a safety timeout to clean up the delegate if something goes wrong
-		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-			[delegate cleanup];
-		});
-	}];
+	[rootViewController presentViewController:documentPicker
+									 animated:YES
+								   completion:^{
+									   // Add a safety timeout to clean up the delegate if something goes wrong
+									   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+										   [delegate cleanup];
+									   });
+								   }];
 
 	return OK;
 }
