@@ -3337,11 +3337,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 						frame_time_gradient->get_color_at_offset(
 								Math::remap(fps, 110, 10, 0, 1)));
 			}
-
-			if (lock_rotation) {
-				float locked_half_width = locked_label->get_size().width / 2.0f;
-				locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
-			}
 		} break;
 
 		case NOTIFICATION_PHYSICS_PROCESS: {
@@ -4078,6 +4073,12 @@ void Node3DEditorViewport::_update_centered_labels() {
 		cinema_label->reset_size();
 		float cinema_half_width = cinema_label->get_size().width / 2.0f;
 		cinema_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -cinema_half_width);
+	}
+
+	if (locked_label->is_visible()) {
+		locked_label->reset_size();
+		float locked_half_width = locked_label->get_size().width / 2.0f;
+		locked_label->set_anchor_and_offset(SIDE_LEFT, 0.5f, -locked_half_width);
 	}
 }
 
