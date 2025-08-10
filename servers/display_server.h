@@ -525,6 +525,8 @@ public:
 
 	virtual void window_start_drag(WindowID p_window = MAIN_WINDOW_ID) {}
 
+	virtual void window_set_color(const Color &p_color) {}
+
 	enum WindowResizeEdge {
 		WINDOW_EDGE_TOP_LEFT,
 		WINDOW_EDGE_TOP,
