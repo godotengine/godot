@@ -401,7 +401,6 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 #endif
 }
 
-
 Error EditorExportPlatformWindows::_code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 	List<String> args;
 
