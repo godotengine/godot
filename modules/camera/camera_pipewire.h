@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_pipewire.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#if defined(PIPEWIRE_ENABLED)
-#include "camera_pipewire.h"
-#endif
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_macos.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
+#include "platform/linuxbsd/freedesktop_portal_desktop.h"
+#include "servers/camera_server.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#if defined(LINUXBSD_ENABLED)
-#if defined(PIPEWIRE_ENABLED)
-#if defined(SOWRAP_ENABLED)
-#if defined(DEBUG_ENABLED)
-	int dylibloader_verbose = 1;
+#ifdef SOWRAP_ENABLED
+#include "drivers/pipewire/pipewire-so_wrap.h"
 #else
-	int dylibloader_verbose = 0;
+#include <pipewire/pipewire.h>
 #endif
-	if (initialize_pipewire(dylibloader_verbose) == 0) {
-		CameraServer::make_default<CameraPipeWire>();
-	} else {
-		CameraServer::make_default<CameraLinux>();
-	}
-#else
-	CameraServer::make_default<CameraPipeWire>();
-#endif
-#else
-	CameraServer::make_default<CameraLinux>();
-#endif
-#endif
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
-#endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraMacOS>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-}
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+class CameraPipeWire : public CameraServer {
+private:
+	static void on_registry_event_global(void *data, uint32_t id, uint32_t permissions, const char *type, uint32_t version, const struct spa_dict *props);
+	static void on_registry_event_global_remove(void *data, uint32_t id);
+	static void on_core_done(void *data, uint32_t id, int seq);
+
+	static const struct pw_registry_events registry_events;
+	static const struct pw_core_events core_events;
+
+	pw_thread_loop *loop = nullptr;
+	pw_core *core = nullptr;
+	pw_context *context = nullptr;
+	pw_registry *registry = nullptr;
+	spa_hook registry_listener = {};
+	spa_hook core_listener = {};
+	uint32_t pending_id = PW_ID_ANY;
+	int pending_seq = 0;
+#ifdef DBUS_ENABLED
+	FreeDesktopPortalDesktop *portal = nullptr;
+#endif
+
+	void on_access_camera_response(int p_resp_code);
+	bool pipewire_connect(int p_fd = -1);
+	void pipewire_disconnect();
+
+public:
+	CameraPipeWire();
+	~CameraPipeWire();
+
+	void thread_lock();
+	void thread_unlock();
+	void sync_wait(pw_proxy *p_proxy);
+
+	void set_monitoring_feeds(bool p_monitoring_feeds) override;
+};

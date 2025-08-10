@@ -23,3 +23,6 @@ elif env["platform"] == "linuxbsd":
     env_camera.add_source_files(env.modules_sources, "camera_linux.cpp")
     env_camera.add_source_files(env.modules_sources, "camera_feed_linux.cpp")
     env_camera.add_source_files(env.modules_sources, "buffer_decoder.cpp")
+    if env["pipewire"]:
+        env_camera.add_source_files(env.modules_sources, "camera_pipewire.cpp")
+        env_camera.add_source_files(env.modules_sources, "camera_feed_pipewire.cpp")
