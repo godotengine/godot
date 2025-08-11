@@ -351,7 +351,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, int p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -405,7 +405,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		}
 
 		if (!image->has_mipmaps() || p_force_normal) {
-			image->generate_mipmaps(p_force_normal);
+			image->generate_mipmaps(p_force_normal, p_limit_mipmap);
 		}
 
 	} else {
@@ -712,7 +712,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 	// Mipmaps.
 	const bool mipmaps = p_options["mipmaps/generate"];
-	const uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
+	const int mipmap_limit = int(p_options["mipmaps/limit"]);
 
 	// Roughness.
 	const int roughness = p_options["roughness/mode"];

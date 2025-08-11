@@ -1725,16 +1725,12 @@ int64_t Image::_get_dst_image_size(int p_width, int p_height, Format p_format, i
 
 		size += s;
 
-		if (p_mipmaps >= 0) {
-			w = MAX(minw, w >> 1);
-			h = MAX(minh, h >> 1);
-		} else {
-			if (w == minw && h == minh) {
-				break;
-			}
-			w = MAX(minw, w >> 1);
-			h = MAX(minh, h >> 1);
+		if (w == minw && h == minh) {
+			break;
 		}
+
+		w = MAX(minw, w >> 1);
+		h = MAX(minh, h >> 1);
 
 		// Set mipmap size.
 		if (r_mm_width) {
