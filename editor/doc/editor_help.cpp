@@ -2965,7 +2965,7 @@ String EditorHelp::get_cache_full_path() {
 }
 
 String EditorHelp::get_script_doc_cache_full_path() {
-	return EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_script_doc_cache.res");
+	return EditorPaths::get_singleton()->get_project_settings_dir().path_join("editor_script_doc_cache.bin");
 }
 
 DocTools *EditorHelp::get_doc_data() {
@@ -3110,7 +3110,7 @@ void EditorHelp::load_script_doc_cache() {
 
 	_wait_for_thread();
 
-	if (!ResourceLoader::exists(get_script_doc_cache_full_path())) {
+	if (!FileAccess::exists(get_script_doc_cache_full_path())) {
 		print_verbose("Script documentation cache not found. Regenerating it may take a while for projects with many scripts.");
 		regenerate_script_doc_cache();
 		return;
@@ -3142,17 +3142,17 @@ void EditorHelp::_process_postponed_docs() {
 
 void EditorHelp::_load_script_doc_cache_thread(void *p_udata) {
 	ERR_FAIL_COND_MSG(!ProjectSettings::get_singleton()->is_project_loaded(), "Error: cannot load script doc cache without a project.");
-	ERR_FAIL_COND_MSG(!ResourceLoader::exists(get_script_doc_cache_full_path()), "Error: cannot load script doc cache from inexistent file.");
+	ERR_FAIL_COND_MSG(!FileAccess::exists(get_script_doc_cache_full_path()), "Error: cannot load script doc cache from inexistent file.");
 
-	Ref<Resource> script_doc_cache_res = ResourceLoader::load(get_script_doc_cache_full_path(), "", ResourceFormatLoader::CACHE_MODE_IGNORE);
-	if (script_doc_cache_res.is_null()) {
+	Ref<FileAccess> script_doc_cache_file = FileAccess::open_compressed(get_script_doc_cache_full_path(), FileAccess::READ);
+	if (script_doc_cache_file.is_null()) {
 		print_verbose("Script doc cache is corrupted. Regenerating it instead.");
 		_delete_script_doc_cache();
 		callable_mp_static(EditorHelp::regenerate_script_doc_cache).call_deferred();
 		return;
 	}
 
-	Array classes = script_doc_cache_res->get_meta("classes", Array());
+	Array classes = script_doc_cache_file->get_var();
 	for (const Dictionary dict : classes) {
 		doc->add_doc(DocData::ClassDoc::from_dict(dict));
 	}
@@ -3243,8 +3243,9 @@ void EditorHelp::save_script_doc_cache() {
 		return;
 	}
 
-	Ref<Resource> cache_res;
-	cache_res.instantiate();
+	Ref<FileAccess> cache_file = FileAccess::open_compressed(get_script_doc_cache_full_path(), FileAccess::WRITE);
+	ERR_FAIL_COND_MSG(cache_file.is_null(), vformat("Cannot open script documentation cache file in %s for writing.", get_script_doc_cache_full_path()));
+
 	Array classes;
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
 		if (E.value.is_script_doc) {
@@ -3252,9 +3253,8 @@ void EditorHelp::save_script_doc_cache() {
 		}
 	}
 
-	cache_res->set_meta("classes", classes);
-	Error err = ResourceSaver::save(cache_res, get_script_doc_cache_full_path(), ResourceSaver::FLAG_COMPRESS);
-	ERR_FAIL_COND_MSG(err != OK, vformat("Cannot save script documentation cache in %s.", get_script_doc_cache_full_path()));
+	bool stored = cache_file->store_var(classes);
+	ERR_FAIL_COND_MSG(!stored, vformat("Cannot store script documentation cache in %s.", get_script_doc_cache_full_path()));
 }
 
 void EditorHelp::generate_doc(bool p_use_cache, bool p_use_script_cache) {
