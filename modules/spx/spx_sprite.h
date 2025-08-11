@@ -61,6 +61,18 @@ private:
 	bool enable_dynamic_frame_offset = true;  // enable dynamic frame offset
 	Vector2 base_offset = Vector2(0, 0);      // base offset
 	void _on_frame_changed();                 // frame changed callback
+	
+	// Simplified SVG state tracking
+	bool is_single_image_mode = false; // Whether it's a single image animation mode
+	bool is_svg_mode = false; // Whether it's an SVG animation mode
+	int current_svg_scale = 1; // Current SVG animation scale
+	String current_svg_path; // Name of the current SVG animation (image)
+	String current_svg_anim_key; // Name of the current SVG animation
+	
+	
+	void update_anim_scale();
+	Vector2 _get_actual_render_scale();
+	int _get_actual_match_render_scale();
 
 protected:
 	void _notification(int p_what);
@@ -71,6 +83,7 @@ protected:
 	CollisionShape2D *trigger2d;
 	CollisionShape2D *collider2d;
 	VisibleOnScreenNotifier2D *visible_notifier;
+	Vector2 _render_scale = Vector2(1.0f, 1.0f);
 
 public:
 	AnimatedSprite2D *anim2d;
@@ -108,7 +121,10 @@ public:
 
 	void set_spx_type_name(String type_name);
 	String get_spx_type_name();
-
+	// Enhanced animation scaling support
+	void _check_and_switch_animation_scale();
+	String _extract_base_animation_name(const String& full_anim_name);
+	void _play_single_image_animation(Ref<Texture2D> texture);
 public:
 	void set_gid(GdObj id);
 	GdObj get_gid();
@@ -136,7 +152,7 @@ public:
 	void set_texture_direct(GdString path, GdBool direct);
 
 	GdString get_texture();
-
+	
 	// animation
 	void play_anim(GdString p_name, GdFloat p_speed = 1.0, GdBool isLoop = false, GdBool p_from_end = false);
 	void play_backwards_anim(GdString p_name);

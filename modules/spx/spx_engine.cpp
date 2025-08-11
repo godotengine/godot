@@ -122,7 +122,7 @@ void SpxEngine::register_callbacks(GDExtensionSpxCallbackInfoPtr callback_ptr) {
 	singleton->mgrs.append((SpxBaseMgr *)singleton->res);
 	singleton->ext = memnew(SpxExtMgr);
 	singleton->mgrs.append((SpxBaseMgr *)singleton->ext);
-
+	
 	singleton->callbacks = *(SpxCallbackInfo *)callback_ptr;
 	singleton->global_id = 1;
 }
@@ -213,6 +213,10 @@ void SpxEngine::on_destroy() {
 		}
 	}
 	callbacks = get_default_spx_callbacks();
+	
+	// Destroy svg global manager
+	svgMgr->destroy();
+	
 	memdelete(input);
 	memdelete(audio);
 	memdelete(physic);
