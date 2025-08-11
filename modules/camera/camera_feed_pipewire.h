@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  camera_feed_pipewire.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,59 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#if defined(LINUXBSD_ENABLED)
-#include "camera_linux.h"
-#if defined(PIPEWIRE_ENABLED)
-#include "camera_pipewire.h"
-#endif
-#endif
-#if defined(WINDOWS_ENABLED)
-#include "camera_win.h"
-#endif
-#if defined(MACOS_ENABLED)
-#include "camera_apple.h"
-#endif
-#if defined(ANDROID_ENABLED)
-#include "camera_android.h"
-#endif
+#include "servers/camera/camera_feed.h"
 
-void initialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#if defined(LINUXBSD_ENABLED)
-#if defined(PIPEWIRE_ENABLED)
-	bool pipewire_supported = true;
-#if defined(SOWRAP_ENABLED)
-#if defined(DEBUG_ENABLED)
-	int dylibloader_verbose = 1;
+#ifdef SOWRAP_ENABLED
+#include "drivers/pipewire/pipewire-so_wrap.h" // IWYU pragma: keep. For PipeWire transitive includes.
 #else
-	int dylibloader_verbose = 0;
-#endif // defined(DEBUG_ENABLED)
-	pipewire_supported = false;
-	if (initialize_pipewire(dylibloader_verbose) == 0) {
-		if (pw_check_library_version_dylibloader_wrapper_pipewire) {
-			pipewire_supported = pw_check_library_version(PW_MAJOR, PW_MINOR, PW_MICRO);
-		}
-	}
-#endif // defined(SOWRAP_ENABLED)
-	if (pipewire_supported) {
-		print_verbose("CameraServer: Using PipeWire driver.");
-		CameraServer::make_default<CameraPipeWire>();
-		return;
-	}
-#endif // defined(PIPEWIRE_ENABLED)
-	print_verbose("CameraServer: Using V4L2 driver.");
-	CameraServer::make_default<CameraLinux>();
-#endif // defined(LINUXBSD_ENABLED)
-#if defined(WINDOWS_ENABLED)
-	CameraServer::make_default<CameraWindows>();
+#include <pipewire/pipewire.h>
 #endif
-#if defined(MACOS_ENABLED)
-	CameraServer::make_default<CameraApple>();
-#endif
-#if defined(ANDROID_ENABLED)
-	CameraServer::make_default<CameraAndroid>();
-#endif
-}
 
-void uninitialize_camera_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-}
+#include <spa/param/format.h>
+#include <spa/param/video/raw.h>
+
+class CameraFeedPipeWire : public CameraFeed {
+	GDSOFTCLASS(CameraFeedPipeWire, CameraFeed);
+
+	struct FeedFormat {
+		uint32_t media_subtype = SPA_MEDIA_SUBTYPE_unknown;
+		uint32_t format = SPA_VIDEO_FORMAT_UNKNOWN;
+		spa_rectangle resolution = {};
+		spa_fraction framerate = {};
+	};
+
+	static void on_node_info(void *data, const struct pw_node_info *info);
+	static void on_node_param(void *data, int seq, uint32_t id, uint32_t index, uint32_t next, const struct spa_pod *param);
+	static void on_proxy_destroy(void *data);
+	static void on_stream_destroy(void *data);
+	static void on_stream_process(void *data);
+
+	static const struct pw_node_events node_events;
+	static const struct pw_proxy_events proxy_events;
+	static const struct pw_stream_events stream_events;
+
+	uint32_t object_id = 0;
+	pw_stream *stream = nullptr;
+	pw_proxy *proxy = nullptr;
+	Vector<FeedFormat> formats;
+	spa_hook node_listener = {};
+	spa_hook proxy_listener = {};
+	spa_hook stream_listener = {};
+
+	void add_format(const uint32_t media_subtype, const uint32_t format, const spa_rectangle resolution, const spa_fraction framerate);
+	int set_stream_format(FeedFormat p_format);
+
+public:
+	CameraFeedPipeWire(int p_id, pw_stream *p_stream, pw_proxy *p_proxy, const char *p_name);
+	virtual ~CameraFeedPipeWire() override;
+
+	uint32_t get_object_id() const;
+
+	virtual bool set_format(int p_index, const Dictionary &p_parameters) override;
+	virtual Array get_formats() const override;
+
+	virtual bool activate_feed() override;
+	virtual void deactivate_feed() override;
+};
