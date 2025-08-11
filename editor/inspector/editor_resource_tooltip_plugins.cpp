@@ -81,6 +81,12 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		Label *label = memnew(Label(vformat(TTR("Type: %s"), type)));
 		vb->add_child(label);
 	}
+
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->is_link(p_resource_path)) {
+		Label *link = memnew(Label(vformat(TTR("Link to: %s"), da->read_link(p_resource_path))));
+		vb->add_child(link);
+	}
 	return vb;
 }
 
