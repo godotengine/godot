@@ -1792,10 +1792,14 @@ void OpenXRAPI::set_xr_interface(OpenXRInterface *p_xr_interface) {
 }
 
 void OpenXRAPI::register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_COND_MSG(openxr_api && openxr_api->instance != XR_NULL_HANDLE, "Cannot register OpenXR extension wrappers after the OpenXR instance has been created.");
 	registered_extension_wrappers.push_back(p_extension_wrapper);
 }
 
 void OpenXRAPI::unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_COND_MSG(openxr_api && openxr_api->instance != XR_NULL_HANDLE, "Cannot unregister OpenXR extension wrappers after the OpenXR instance has been created.");
 	registered_extension_wrappers.erase(p_extension_wrapper);
 }
 
@@ -3711,26 +3715,32 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_freque
 }
 
 void OpenXRAPI::register_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot register OpenXR composition layer providers while the session is running.");
 	composition_layer_providers.append(p_extension);
 }
 
 void OpenXRAPI::unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR composition layer providers while the session is running.");
 	composition_layer_providers.erase(p_extension);
 }
 
 void OpenXRAPI::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot register OpenXR projection views extensions while the session is running.");
 	projection_views_extensions.append(p_extension);
 }
 
 void OpenXRAPI::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR projection views extensions while the session is running.");
 	projection_views_extensions.erase(p_extension);
 }
 
 void OpenXRAPI::register_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot register OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.append(p_extension);
 }
 
 void OpenXRAPI::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_COND_MSG(running, "Cannot unregister OpenXR frame info extensions while the session is running.");
 	frame_info_extensions.erase(p_extension);
 }
 
