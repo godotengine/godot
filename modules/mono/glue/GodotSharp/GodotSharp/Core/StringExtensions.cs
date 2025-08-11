@@ -1115,7 +1115,7 @@ namespace Godot
                         sb.Append("\\t");
                         break;
                     default:
-                        // ASCII control characters (0x00-0x1F) must be escaped using \uXXXX format
+                        // ASCII control characters (0x00-0x1F) must be escaped using \uXXXX format.
                         if (c >= 0x00 && c <= 0x1F)
                         {
                             sb.AppendFormat("\\u{0:X4}", (int)c);
