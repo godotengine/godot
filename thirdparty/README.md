@@ -972,6 +972,7 @@ Patches:
 - `0003-std-include.patch` (GH-108144)
 - `0004-errno-include.patch` (GH-108354)
 - `0005-fix-libudev-dbus.patch` (GH-108373)
+- `0006-fix-cs-environ.patch` (GH-109283)
 
 The SDL source code folder includes `hidapi` library inside of folder `thirdparty/sdl/hidapi/`.
 Its version and license is described in this file under `hidapi`.
