@@ -6593,23 +6593,36 @@ bool RichTextLabel::_is_click_inside_selection() const {
 	}
 }
 
+bool RichTextLabel::_search_table_cell(ItemTable *p_table, List<Item *>::Element *p_cell, const String &p_string, bool p_reverse_search, int p_from_line) {
+	ERR_FAIL_COND_V(p_cell->get()->type != ITEM_FRAME, false); // Children should all be frames.
+	ItemFrame *frame = static_cast<ItemFrame *>(p_cell->get());
+	if (p_from_line < 0) {
+		p_from_line = (int)frame->lines.size() - 1;
+	}
+
+	if (p_reverse_search) {
+		for (int i = p_from_line; i >= 0; i--) {
+			if (_search_line(frame, i, p_string, -1, p_reverse_search)) {
+				return true;
+			}
+		}
+	} else {
+		for (int i = p_from_line; i < (int)frame->lines.size(); i++) {
+			if (_search_line(frame, i, p_string, 0, p_reverse_search)) {
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 bool RichTextLabel::_search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search) {
 	List<Item *>::Element *E = p_from;
 	while (E != nullptr) {
-		ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
-		ItemFrame *frame = static_cast<ItemFrame *>(E->get());
-		if (p_reverse_search) {
-			for (int i = (int)frame->lines.size() - 1; i >= 0; i--) {
-				if (_search_line(frame, i, p_string, -1, p_reverse_search)) {
-					return true;
-				}
-			}
-		} else {
-			for (int i = 0; i < (int)frame->lines.size(); i++) {
-				if (_search_line(frame, i, p_string, 0, p_reverse_search)) {
-					return true;
-				}
-			}
+		int from_line = p_reverse_search ? -1 : 0;
+		if (_search_table_cell(p_table, E, p_string, p_reverse_search, from_line)) {
+			return true;
 		}
 		E = p_reverse_search ? E->prev() : E->next();
 	}
@@ -6697,7 +6710,8 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 		char_idx = p_search_previous ? -1 : 0;
 
 		// Next, check to see if the current search result is in a table
-		if (selection.from_frame->parent != nullptr && selection.from_frame->parent->type == ITEM_TABLE) {
+		bool in_table = selection.from_frame->parent != nullptr && selection.from_frame->parent->type == ITEM_TABLE;
+		if (in_table) {
 			// Find last search result in table
 			ItemTable *parent_table = static_cast<ItemTable *>(selection.from_frame->parent);
 			List<Item *>::Element *parent_element = p_search_previous ? parent_table->subitems.back() : parent_table->subitems.front();
@@ -6707,9 +6721,17 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 				ERR_FAIL_NULL_V(parent_element, false);
 			}
 
+			// Search remainder of current cell
+			int from_line = p_search_previous ? selection.from_line - 1 : selection.from_line + 1;
+			if (from_line >= 0 && _search_table_cell(parent_table, parent_element, p_string, p_search_previous, from_line)) {
+				scroll_to_selection();
+				queue_redraw();
+				return true;
+			}
+
 			// Search remainder of table
 			if (!(p_search_previous && parent_element == parent_table->subitems.front()) &&
-					parent_element != parent_table->subitems.back()) {
+					!(!p_search_previous && parent_element == parent_table->subitems.back())) {
 				parent_element = p_search_previous ? parent_element->prev() : parent_element->next(); // Don't want to search current item
 				ERR_FAIL_NULL_V(parent_element, false);
 
@@ -6722,7 +6744,10 @@ bool RichTextLabel::search(const String &p_string, bool p_from_selection, bool p
 			}
 		}
 
-		ending_line = selection.from_frame->line + selection.from_line;
+		ending_line = selection.from_frame->line;
+		if (!in_table) {
+			ending_line += selection.from_line;
+		}
 		current_line = p_search_previous ? ending_line - 1 : ending_line + 1;
 	} else if (p_search_previous) {
 		current_line = ending_line;
