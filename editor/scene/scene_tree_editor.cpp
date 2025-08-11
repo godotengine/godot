@@ -770,20 +770,24 @@ void SceneTreeEditor::_node_script_changed(Node *p_node) {
 
 void SceneTreeEditor::_move_node_children(HashMap<Node *, CachedNode>::Iterator &p_I) {
 	TreeItem *item = p_I->value.item;
+	TreeItem *previous_item = nullptr;
 	Node *node = p_I->key;
 	int cc = node->get_child_count(false);
 
 	for (int i = 0; i < cc; i++) {
 		HashMap<Node *, CachedNode>::Iterator CI = node_cache.get(node->get_child(i, false));
 		if (CI) {
-			_move_node_item(item, CI);
+			_move_node_item(item, CI, previous_item);
+			previous_item = CI->value.item;
+		} else {
+			previous_item = nullptr;
 		}
 	}
 
 	p_I->value.has_moved_children = false;
 }
 
-void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I) {
+void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, CachedNode>::Iterator &p_I, TreeItem *p_correct_prev) {
 	if (!p_parent) {
 		return;
 	}
@@ -806,13 +810,19 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 	}
 
 	if (p_I->value.index != current_node_index) {
-		// If we just re-parented we know our index.
-		if (current_item_index == -1) {
-			current_item_index = item->get_index();
+		bool already_in_correct_location;
+		if (current_item_index >= 0) {
+			// If we just re-parented we know our index.
+			already_in_correct_location = current_item_index == current_node_index;
+		} else if (p_correct_prev) {
+			// It's cheaper to check if we're set up correctly by checking via correct_prev if we can
+			already_in_correct_location = item->get_prev() == p_correct_prev;
+		} else {
+			already_in_correct_location = item->get_index() == current_node_index;
 		}
 
 		// Are we already in the right place?
-		if (current_node_index == current_item_index) {
+		if (already_in_correct_location) {
 			p_I->value.index = current_node_index;
 			return;
 		}
@@ -820,11 +830,14 @@ void SceneTreeEditor::_move_node_item(TreeItem *p_parent, HashMap<Node *, Cached
 		// Are we the first node?
 		if (current_node_index == 0) {
 			// There has to be at least 1 other node, otherwise we would not have gotten here.
-			TreeItem *neighbor_item = p_parent->get_child(0);
+			TreeItem *neighbor_item = p_parent->get_first_child();
 			item->move_before(neighbor_item);
 		} else {
-			TreeItem *neighbor_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
-			item->move_after(neighbor_item);
+			TreeItem *prev_item = p_correct_prev;
+			if (!prev_item) {
+				prev_item = p_parent->get_child(CLAMP(current_node_index - 1, 0, p_parent->get_child_count() - 1));
+			}
+			item->move_after(prev_item);
 		}
 
 		p_I->value.index = current_node_index;
