@@ -60,16 +60,16 @@ double Math::randfn(double p_mean, double p_deviation) {
 
 int Math::step_decimals(double p_step) {
 	if (p_step <= 0) {
-        return 0;
-    }
-    const double EPSILON = 1e-10;
-    double scaled = p_step;
-    int decimals = 0;
-    while (abs(scaled - round(scaled)) > EPSILON && decimals < 10) {
-        scaled *= 10.0;
-        decimals++;
-    }
-    return decimals;
+		return 0;
+	}
+	const double EPSILON = 1e-10;
+	double scaled = p_step;
+	int decimals = 0;
+	while (abs(scaled - round(scaled)) > EPSILON && decimals < 10) {
+		scaled *= 10.0;
+		decimals++;
+	}
+	return decimals;
 }
 
 // Only meant for editor usage in float ranges, where a step of 0
