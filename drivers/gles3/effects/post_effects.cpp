@@ -134,7 +134,10 @@ void PostEffects::post_copy(
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_INTENSITY, p_ssao_strength, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_RADIUS_FRAC, p_ssao_radius, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_FALLOFF_FRAC, p_ssao_falloff, post.shader_version, mode, flags);
-		post.shader.version_set_uniform(PostShaderGLES3::VIEWPORT_SIZE, p_source_size.x, p_source_size.y, post.shader_version, mode, flags);
+		post.shader.version_set_uniform(PostShaderGLES3::SSAO_PRN_UV, // This converts the UV coordinate into a pseudo-random number.
+				p_source_size.x * 1.087f * ((1.0f + sqrt(5.0f)) / 2.0f),
+				p_source_size.y * 1.087f * ((9.0f + sqrt(221.0f)) / 10.0f),
+				post.shader_version, mode, flags);
 	}
 
 	if (p_glow_buffers != nullptr) {

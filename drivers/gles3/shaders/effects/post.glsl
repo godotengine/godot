@@ -96,7 +96,7 @@ vec3 apply_bcs(vec3 color) {
 uniform float ssao_intensity;
 uniform float ssao_radius_frac;
 uniform float ssao_falloff_frac;
-uniform vec2 viewport_size;
+uniform vec2 ssao_prn_UV;
 uniform sampler2D depth_buffer; // texunit:3
 #include "../s4ao_inc.glsl"
 #endif
