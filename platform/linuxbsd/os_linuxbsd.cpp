@@ -256,6 +256,12 @@ void OS_LinuxBSD::finalize() {
 		memdelete(joypad_sdl);
 	}
 #endif
+
+#ifdef DBUS_ENABLED
+	if (portal_desktop) {
+		memdelete(portal_desktop);
+	}
+#endif
 }
 
 MainLoop *OS_LinuxBSD::get_main_loop() const {
@@ -1208,6 +1214,15 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 
 	return f->get_as_text();
 }
+
+#ifdef DBUS_ENABLED
+FreeDesktopPortalDesktop *OS_LinuxBSD::get_portal_desktop() {
+	if (portal_desktop == nullptr) {
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+	}
+	return portal_desktop;
+}
+#endif
 
 #ifdef TOOLS_ENABLED
 bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
