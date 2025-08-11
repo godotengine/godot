@@ -42,6 +42,7 @@ def get_opts():
         BoolVariable("use_sowrap", "Dynamically load system libraries", True),
         BoolVariable("alsa", "Use ALSA", True),
         BoolVariable("pulseaudio", "Use PulseAudio", True),
+        BoolVariable("pipewire", "Use PipeWire", True),
         BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
         BoolVariable("speechd", "Use Speech Dispatcher for Text-to-Speech support", True),
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
@@ -350,6 +351,17 @@ def configure(env: "SConsEnvironment"):
                 env["pulseaudio"] = False
         else:
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+
+    if env["pipewire"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libpipewire-0.3") == 0:  # 0 means found
+                env.ParseConfig("pkg-config libpipewire-0.3 --cflags --libs")
+                env.Append(CPPDEFINES=["PIPEWIRE_ENABLED"])
+            else:
+                print_warning("PipeWire development libraries not found. Disabling PipeWire drivers.")
+                env["pipewire"] = False
+        else:
+            env.Append(CPPDEFINES=["PIPEWIRE_ENABLED", "_REENTRANT"])
 
     if env["dbus"] and env["threads"]:  # D-Bus functionality expects threads.
         if not env["use_sowrap"]:
