@@ -50,6 +50,7 @@
 #define BUS_OBJECT_PATH "/org/freedesktop/portal/desktop"
 
 #define BUS_INTERFACE_PROPERTIES "org.freedesktop.DBus.Properties"
+#define BUS_INTERFACE_CAMERA "org.freedesktop.portal.Camera"
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
 #define BUS_INTERFACE_SCREENSHOT "org.freedesktop.portal.Screenshot"
@@ -586,6 +587,14 @@ bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface, uint
 	return supported;
 }
 
+bool FreeDesktopPortalDesktop::is_camera_supported() {
+	static int supported = -1;
+	if (supported == -1) {
+		supported = _is_interface_supported(BUS_INTERFACE_CAMERA, 1);
+	}
+	return supported;
+}
+
 bool FreeDesktopPortalDesktop::is_file_chooser_supported() {
 	static int supported = -1;
 	if (supported == -1) {
@@ -677,6 +686,142 @@ bool FreeDesktopPortalDesktop::send_request(DBusMessage *p_message, const String
 	}
 	dbus_message_unref(reply);
 	return true;
+}
+
+bool FreeDesktopPortalDesktop::is_camera_present() {
+	bool is_present = false;
+
+	if (unsupported) {
+		return is_present;
+	}
+
+	DBusError err;
+	dbus_error_init(&err);
+
+	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	if (dbus_error_is_set(&err)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT(vformat("Error opening D-Bus connection: %s", err.message));
+		}
+		dbus_error_free(&err);
+		return is_present;
+	}
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_PROPERTIES, "Get");
+
+	if (message) {
+		const char *name_space = BUS_INTERFACE_CAMERA;
+		const char *key = "IsCameraPresent";
+		dbus_message_append_args(
+				message,
+				DBUS_TYPE_STRING, &name_space,
+				DBUS_TYPE_STRING, &key,
+				DBUS_TYPE_INVALID);
+		DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, DBUS_TIMEOUT_INFINITE, &err);
+		if (dbus_error_is_set(&err)) {
+			dbus_error_free(&err);
+		} else if (reply) {
+			DBusMessageIter iter;
+			if (dbus_message_iter_init(reply, &iter)) {
+				DBusMessageIter iter_is_present;
+				dbus_message_iter_recurse(&iter, &iter_is_present);
+				dbus_message_iter_get_basic(&iter_is_present, &is_present);
+			}
+			dbus_message_unref(reply);
+		}
+		dbus_message_unref(message);
+	}
+
+	dbus_connection_unref(bus);
+
+	return is_present;
+}
+
+bool FreeDesktopPortalDesktop::access_camera(const Callable &p_callback) {
+	if (unsupported) {
+		return false;
+	}
+
+	String token;
+	if (make_request_token(token) != OK) {
+		return false;
+	}
+
+	MutexLock lock(access_camera_mutex);
+	if (!access_camera_data.path.is_empty()) {
+		if (!access_camera_data.pending_cbs.find(p_callback)) {
+			access_camera_data.pending_cbs.push_back(p_callback);
+		}
+		return true;
+	}
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_CAMERA, "AccessCamera");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+
+		DBusMessageIter arr_iter;
+		dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
+		append_dbus_dict_string(&arr_iter, "handle_token", token);
+		dbus_message_iter_close_container(&iter, &arr_iter);
+	}
+
+	if (!send_request(message, token, access_camera_data.path, access_camera_data.filter)) {
+		return false;
+	}
+
+	access_camera_data.pending_cbs.push_back(p_callback);
+	return true;
+}
+
+int FreeDesktopPortalDesktop::open_pipewire_remote() {
+	int fd = -1;
+
+	if (unsupported) {
+		return fd;
+	}
+
+	DBusError err;
+	dbus_error_init(&err);
+
+	DBusConnection *bus = dbus_bus_get(DBUS_BUS_SESSION, &err);
+	if (dbus_error_is_set(&err)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT(vformat("Error opening D-Bus connection: %s", err.message));
+		}
+		dbus_error_free(&err);
+		return fd;
+	}
+
+	DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_CAMERA, "OpenPipeWireRemote");
+	{
+		DBusMessageIter iter;
+		dbus_message_iter_init_append(message, &iter);
+
+		DBusMessageIter arr_iter;
+		dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &arr_iter);
+
+		dbus_message_iter_close_container(&iter, &arr_iter);
+	}
+
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, DBUS_TIMEOUT_INFINITE, &err);
+	dbus_message_unref(message);
+
+	if (!reply || dbus_error_is_set(&err)) {
+		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
+		dbus_error_free(&err);
+		return fd;
+	}
+
+	DBusMessageIter iter;
+	if (dbus_message_iter_init(reply, &iter)) {
+		dbus_message_iter_get_basic(&iter, &fd);
+	}
+	dbus_message_unref(reply);
+
+	dbus_connection_unref(bus);
+
+	return fd;
 }
 
 Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
@@ -855,6 +1000,14 @@ void FreeDesktopPortalDesktop::uninhibit() {
 
 void FreeDesktopPortalDesktop::process_callbacks() {
 	{
+		MutexLock lock(access_camera_mutex);
+		while (!pending_camera_cbs.is_empty()) {
+			Callable cb = pending_camera_cbs.front()->get();
+			pending_camera_cbs.pop_front();
+			cb.call();
+		}
+	}
+	{
 		MutexLock lock(file_dialog_mutex);
 		while (!pending_file_cbs.is_empty()) {
 			FileDialogCallback cb = pending_file_cbs.front()->get();
@@ -924,6 +1077,28 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 					}
 				} else if (dbus_message_is_signal(msg, "org.freedesktop.portal.Request", "Response")) {
 					String path = String::utf8(dbus_message_get_path(msg));
+					{
+						MutexLock lock(portal->access_camera_mutex);
+						FreeDesktopPortalDesktop::AccessCameraData &data = portal->access_camera_data;
+						if (data.path == path) {
+							DBusMessageIter iter;
+							if (dbus_message_iter_init(msg, &iter)) {
+								dbus_uint32_t resp_code;
+								dbus_message_iter_get_basic(&iter, &resp_code);
+								while (!data.pending_cbs.is_empty()) {
+									Callable cb = data.pending_cbs.front()->get();
+									data.pending_cbs.pop_front();
+									portal->pending_camera_cbs.push_back(cb.bind(resp_code));
+								}
+							}
+							DBusError err;
+							dbus_error_init(&err);
+							dbus_bus_remove_match(portal->monitor_connection, data.filter.utf8().get_data(), &err);
+							dbus_error_free(&err);
+							data.path.clear();
+							data.filter.clear();
+						}
+					}
 					{
 						MutexLock lock(portal->file_dialog_mutex);
 						for (int i = 0; i < portal->file_dialogs.size(); i++) {
