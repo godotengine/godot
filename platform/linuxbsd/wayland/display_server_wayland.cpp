@@ -30,6 +30,8 @@
 
 #include "display_server_wayland.h"
 
+#include "os_linuxbsd.h"
+
 #ifdef WAYLAND_ENABLED
 
 #define WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
@@ -2260,7 +2262,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Dis
 	}
 	if (dbus_ok) {
 		screensaver = memnew(FreeDesktopScreenSaver);
-		portal_desktop = memnew(FreeDesktopPortalDesktop);
+		portal_desktop = ((OS_LinuxBSD *)OS::get_singleton())->get_portal_desktop();
 		atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 	}
 #endif // DBUS_ENABLED
@@ -2316,9 +2318,6 @@ DisplayServerWayland::~DisplayServerWayland() {
 #endif
 
 #ifdef DBUS_ENABLED
-	if (portal_desktop) {
-		memdelete(portal_desktop);
-	}
 	if (screensaver) {
 		memdelete(screensaver);
 	}
