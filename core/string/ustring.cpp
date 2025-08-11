@@ -4731,7 +4731,6 @@ String String::c_escape_multiline() const {
 
 String String::json_escape() const {
 	String escaped;
-	escaped.reserve(length() * 2);
 	const char32_t *str_data = get_data();
 
 	for (int i = 0; i < length(); i++) {

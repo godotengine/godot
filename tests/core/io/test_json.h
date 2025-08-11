@@ -74,7 +74,6 @@ TEST_CASE("[JSON] Stringify ASCII control characters") {
 		CHECK_MESSAGE(result == expected, vformat("JSON control char 0x%02X failed", i));
 	}
 }
-}
 
 TEST_CASE("[JSON] Stringify arrays") {
 	CHECK(JSON::stringify(Array()) == "[]");
