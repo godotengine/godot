@@ -41,6 +41,11 @@
 #include "scene/theme/default_theme.h"
 #include "servers/text_server.h"
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/svg_utils.h"
+#endif
+
 // Default engine theme creation and configuration.
 
 void ThemeDB::initialize_theme() {
@@ -78,6 +83,12 @@ void ThemeDB::initialize_theme() {
 		project_font = ResourceLoader::load(project_font_path);
 		if (project_font.is_valid()) {
 			set_fallback_font(project_font);
+			// update svg
+		#ifdef MODULE_SVG_ENABLED
+			Ref<FontFile> font_file = project_font;
+			PackedByteArray font_data = font_file->get_data();
+			SVGUtils::set_default_font(font_data.ptrw(), (int)font_data.size());
+		#endif
 		} else {
 			ERR_PRINT("Error loading custom project font '" + project_font_path + "'");
 		}

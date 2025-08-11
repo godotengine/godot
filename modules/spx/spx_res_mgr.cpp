@@ -448,17 +448,20 @@ GdBool SpxResMgr::has_file(GdString p_path) {
 
 void SpxResMgr::set_default_font(GdString font_path) {
 	String path = SpxStr(font_path);
-	String engine_path = _to_engine_path(path);
-	Ref<FileAccess> f = FileAccess::open(engine_path, FileAccess::READ);
-	if (f.is_null()) {
-		ERR_PRINT("Can not open font file: " + path + " engine_path= " + engine_path );
-		return ;
-	}
-
 	Vector<uint8_t> font_data;
-	font_data.resize(f->get_length());
-	f->get_buffer(font_data.ptrw(), font_data.size());
-
+	Ref<FontFile> rawFont = ResourceLoader::load(path);
+	if (!rawFont.is_null()) {
+		font_data = rawFont->get_data();
+	}else{
+		String engine_path = _to_engine_path(path);
+		Ref<FileAccess> f = FileAccess::open(engine_path, FileAccess::READ);
+		if (f.is_null()) {
+			ERR_PRINT("Can not open font file: " + path + " engine_path= " + engine_path );
+			return ;
+		}
+		font_data.resize(f->get_length());
+		f->get_buffer(font_data.ptrw(), font_data.size());
+	}
 	// update svg
 #ifdef MODULE_SVG_ENABLED
 	SVGUtils::set_default_font(font_data.ptrw(), (int)font_data.size());
