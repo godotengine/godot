@@ -100,6 +100,10 @@
 #endif
 #endif
 
+#ifdef DBUS_ENABLED
+#include "freedesktop_portal_desktop.h"
+#endif
+
 void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	const char *message_programs[] = { "zenity", "kdialog", "Xdialog", "xmessage" };
 
@@ -263,6 +267,10 @@ void OS_LinuxBSD::finalize() {
 
 #ifdef SDL_ENABLED
 	memdelete(joypad_sdl);
+#endif
+
+#ifdef DBUS_ENABLED
+	memdelete(portal_desktop);
 #endif
 }
 
@@ -1216,6 +1224,15 @@ String OS_LinuxBSD::get_system_ca_certificates() {
 
 	return f->get_as_text();
 }
+
+#ifdef DBUS_ENABLED
+FreeDesktopPortalDesktop *OS_LinuxBSD::get_portal_desktop() {
+	if (portal_desktop == nullptr) {
+		portal_desktop = memnew(FreeDesktopPortalDesktop);
+	}
+	return portal_desktop;
+}
+#endif
 
 #ifdef TOOLS_ENABLED
 bool OS_LinuxBSD::_test_create_rendering_device(const String &p_display_driver) const {
