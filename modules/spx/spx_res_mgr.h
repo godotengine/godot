@@ -54,6 +54,8 @@ private:
 	String game_data_root = "res://";
 	Ref<SpriteFrames> anim_frames;
 	bool is_dynamic_anim = false;
+	// store animation frame offset information: anim_name -> frame_offset_list
+	HashMap<String, Vector<Vector2>> animation_frame_offsets;
 private:
 	static Ref<AudioStreamWAV> _load_wav(const String &path);
 	static Ref<AudioStream> _load_mp3(const String &path);
@@ -70,9 +72,10 @@ public:
 	Ref<SpriteFrames> get_anim_frames(const String& anim_name);
 	String get_anim_key_name(const String& sprite_type_name,const String& anim_name);
 	bool is_dynamic_anim_mode() const;
+	Vector2 get_animation_frame_offset(String anim_key, int frame_index);
+
 public:
 	void create_animation(GdString sprite_type_name,GdString anim_name, GdString context, GdInt fps, GdBool is_altas);
-
 	void set_load_mode(GdBool is_direct_mode);
 	GdBool get_load_mode();
 	GdRect2 get_bound_from_alpha(GdString p_path);

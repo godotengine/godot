@@ -227,6 +227,7 @@ String SpxResMgr::get_anim_key_name(const String &sprite_type_name, const String
 	return sprite_type_name + "::" + anim_name;
 }
 
+
 void SpxResMgr::create_animation(GdString p_sprite_type_name, GdString p_anim_name, GdString p_context,GdInt fps, GdBool is_altas) {
 	is_dynamic_anim = true;
 	auto sprite_type_name = SpxStr(p_sprite_type_name);
@@ -239,15 +240,36 @@ void SpxResMgr::create_animation(GdString p_sprite_type_name, GdString p_anim_na
 	}
 	frames->add_animation(anim_key);
 	frames->set_animation_speed(anim_key,fps);
+	
+	// store frame offset information
+	Vector<Vector2> frame_offsets;
+	
 	if (!is_altas) {
 		auto strs = context.split(";");
-		for (const String &path : strs) {
+		for (const String &path_with_offset : strs) {
+			Vector2 offset(0, 0);  // default offset
+			String path = path_with_offset;
+			
+			// check if contains offset information (format: path|offset_x,offset_y)
+			if (path_with_offset.contains("|")) {
+				auto parts = path_with_offset.split("|");
+				if (parts.size() == 2) {
+					path = parts[0];
+					auto offset_parts = parts[1].split(",");
+					if (offset_parts.size() >= 2) {
+						offset.x = offset_parts[0].to_float();
+						offset.y = offset_parts[1].to_float();
+					}
+				}
+			}
+			
 			Ref<Texture2D> texture = load_texture(path);
 			if (!texture.is_valid()) {
 				print_error("animation parse error" + sprite_type_name + " " + anim_key + " can not find path " + path);
 				return ;
 			}
 			frames->add_frame(anim_key, texture);
+			frame_offsets.push_back(offset);
 		}
 	} else {
 		auto strs = context.split(";");
@@ -262,29 +284,81 @@ void SpxResMgr::create_animation(GdString p_sprite_type_name, GdString p_anim_na
 			return ;
 		}
 
-		auto paramStrs = strs[1].split(",");
-
-		if (paramStrs.size() % 4 != 0) {
-			print_error("create_animation context error, params count % 4 != 0: " + context +" size = "+ paramStrs.size() );
+		String param_str = strs[1];
+		
+		// support two formats:
+		// 1. old format: x1,y1,w1,h1,x2,y2,w2,h2
+		// 2. new format: x1,y1,w1,h1,offset_x1,offset_y1;x2,y2,w2,h2,offset_x2,offset_y2
+		
+		Vector<double> params;
+		Vector<Vector2> frame_offsets_atlas;
+		
+		if (param_str.contains(";")) {
+			// new format: each frame data is separated by semicolon, each frame can contain 6 parameters (region + offset)
+			auto frame_strs = param_str.split(";");
+			for (const String &frame_str : frame_strs) {
+				auto values = frame_str.split(",");
+				if (values.size() >= 4) {
+					for (int i = 0; i < 4; i++) {
+						params.push_back(values[i].to_float());
+					}
+					if (values.size() >= 6) {
+						Vector2 offset(values[4].to_float(), values[5].to_float());
+						frame_offsets_atlas.push_back(offset);
+					} else {
+						frame_offsets_atlas.push_back(Vector2(0, 0));
+					}
+				}
+			}
+		} else {
+			// old format: all parameters are separated by commas
+			auto paramStrs = param_str.split(",");
+			
+			if (paramStrs.size() % 4 != 0) {
+				print_error("create_animation context error, params count % 4 != 0: " + context +" size = "+ paramStrs.size() );
+				return ;
+			}
+			
+			for (const String &str : paramStrs) {
+				params.push_back(str.to_float());
+			}
+			
+			// old format use default offset
+			int frame_count = params.size() / 4;
+			for (int i = 0; i < frame_count; i++) {
+				frame_offsets_atlas.push_back(Vector2(0, 0));
+			}
+		}
+		
+		if (params.size() % 4 != 0) {
+			print_error("create_animation context error, params count % 4 != 0: " + context +" size = "+ params.size() );
 			return ;
 		}
-		Vector<double> params;
-		for (const String &str : paramStrs) {
-			params.push_back(str.to_float());
-		}
+		
 		auto count = params.size() / 4;
 		for (int i = 0; i < count; i++) {
+			Vector2 offset(0, 0);  // default offset
+			
+			// use parsed offset
+			if (i < frame_offsets_atlas.size()) {
+				offset = frame_offsets_atlas[i];
+			}
+			
 			Ref<AtlasTexture> texture;
 			texture.instantiate();
 			texture->set_atlas(altas_texture);
-			auto offset= i * 4;
+			auto offset_param = i * 4;
 			Rect2 rect2;
-			rect2.position = Vector2(params[offset + 0], params[offset + 1]);
-			rect2.size = Vector2(params[offset + 2], params[offset + 3]);
+			rect2.position = Vector2(params[offset_param + 0], params[offset_param + 1]);
+			rect2.size = Vector2(params[offset_param + 2], params[offset_param + 3]);
 			texture->set_region(rect2);
 			frames->add_frame(anim_key, texture);
+			frame_offsets.push_back(offset);
 		}
 	}
+	
+	// store animation frame offset information
+	animation_frame_offsets[anim_key] = frame_offsets;
 }
 void SpxResMgr::set_load_mode(GdBool is_direct_mode) {
 	is_load_direct = is_direct_mode;
@@ -404,4 +478,14 @@ void SpxResMgr::set_default_font(GdString font_path) {
 	font->set_fixed_size(0);
 	font->set_allow_system_fallback(true);
 	ThemeDB::get_singleton()->set_default_font(font);
+}
+
+Vector2 SpxResMgr::get_animation_frame_offset(String anim_key, int frame_index) {
+	if (animation_frame_offsets.has(anim_key)) {
+		const Vector<Vector2>& offsets = animation_frame_offsets[anim_key];
+		if (frame_index >= 0 && frame_index < offsets.size()) {
+			return offsets[frame_index];
+		}
+	}
+	return Vector2(0, 0);
 }

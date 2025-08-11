@@ -35,6 +35,11 @@
 #include "core/templates/local_vector.h"
 #include "servers/audio_server.h"
 
+class HybridAudioDriver;
+class AudioDriver;
+
+
+
 class MovieWriter : public Object {
 	GDCLASS(MovieWriter, Object);
 
@@ -49,13 +54,31 @@ class MovieWriter : public Object {
 
 	LocalVector<int32_t> audio_mix_buffer;
 
+	// Real-time recording support
+	bool realtime_mode = false;
+	static class HybridAudioDriver *hybrid_driver;
+	class AudioDriver *original_driver = nullptr;
+#ifdef WEB_ENABLED
+	// Web platform audio recording support (Option 1: MediaRecorder API)
+	bool web_audio_recorder_initialized = false;
+	bool web_audio_recording_active = false;
+	Vector<uint8_t> web_audio_buffer; // Stores audio data recorded on the web platform
+
+	// Web platform Canvas video recording support (Option 2: Canvas.captureStream + MediaRecorder)
+	bool web_video_recorder_initialized = false;
+	bool web_video_recording_active = false;
+
+#endif
+
 	enum {
 		MAX_WRITERS = 8
 	};
 	static MovieWriter *writers[];
 	static uint32_t writer_count;
-
 protected:
+	// Web platform configuration
+	bool enable_web_auto_download = false;    // Enable automatic file download on web platform
+	
 	virtual uint32_t get_audio_mix_rate() const;
 	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
 
@@ -76,6 +99,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	MovieWriter() {} // 确保成员变量正确初始化
+	
 	virtual bool handles_file(const String &p_path) const;
 	virtual void get_supported_extensions(List<String> *r_extensions) const;
 
@@ -88,6 +113,29 @@ public:
 	static void set_extensions_hint();
 
 	void end();
+
+	// Real-time recording control
+	void set_realtime_mode(bool p_enable);
+	bool is_realtime_mode() const { return realtime_mode; }
+
+	// Get HybridAudioDriver instance (for other recorders to use)
+	static class HybridAudioDriver *get_hybrid_audio_driver();
+
+private:
+	void setup_hybrid_audio_driver();
+	void restore_original_audio_driver();
+
+#ifdef WEB_ENABLED
+	// Web platform audio recording specific methods
+	void setup_web_audio_recorder();
+	void cleanup_web_audio_recorder();
+	bool process_web_audio_data();
+
+	// Web platform Canvas video recording specific methods
+	void setup_web_video_recorder(uint32_t p_fps);
+	void cleanup_web_video_recorder();
+	bool process_web_video_data();
+#endif
 };
 
 #endif // MOVIE_WRITER_H

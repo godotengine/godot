@@ -56,6 +56,11 @@ private:
 	bool use_default_frames;
 	void set_use_default_frames(bool is_on);
 	bool get_use_default_frames();
+	
+	// animation frame offset
+	bool enable_dynamic_frame_offset = true;  // enable dynamic frame offset
+	Vector2 base_offset = Vector2(0, 0);      // base offset
+	void _on_frame_changed();                 // frame changed callback
 
 protected:
 	void _notification(int p_what);
@@ -153,6 +158,9 @@ public:
 	GdBool is_anim_flipped_h() const;
 	void set_anim_flip_v(GdBool p_flip);
 	GdBool is_anim_flipped_v() const;
+
+	void set_dynamic_frame_offset_enabled(GdBool enabled);
+	GdBool is_dynamic_frame_offset_enabled() const;
 
 	// physics
 	void set_gravity(GdFloat gravity);

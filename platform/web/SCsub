@@ -42,6 +42,7 @@ sys_env = env.Clone()
 sys_env.AddJSLibraries(
     [
         "js/libs/library_godot_audio.js",
+        "js/libs/library_godot_recorder.js",
         "js/libs/library_godot_display.js",
         "js/libs/library_godot_fetch.js",
         "js/libs/library_godot_webmidi.js",

@@ -2644,10 +2644,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		audio_driver_idx = 0;
 	}
 
+
 	if (Engine::get_singleton()->get_write_movie_path() != String()) {
-		// Always use dummy driver for audio driver (which is last), also in no threaded mode.
-		audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
-		AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
+		// Check if real-time recording mode is enabled
+		bool realtime_recording = false;
+		if (ProjectSettings::get_singleton()->has_setting("movie_writer/realtime_mode")) {
+			realtime_recording = (bool)ProjectSettings::get_singleton()->get_setting("movie_writer/realtime_mode");
+		}
+		if (realtime_recording) {
+			// Real-time recording mode: keep the original audio driver, the hybrid driver will be set later
+			if (Engine::get_singleton()->is_editor_hint() || OS::get_singleton()->is_stdout_verbose()) {
+				print_line("MovieWriter: Realtime recording mode enabled");
+			}
+		} else {
+			// Traditional offline recording mode: use dummy driver
+			audio_driver_idx = AudioDriverManager::get_driver_count() - 1;
+			AudioDriverDummy::get_dummy_singleton()->set_use_threads(false);
+		}
 	}
 
 	{
@@ -3226,6 +3239,15 @@ Error Main::setup2(bool p_show_boot_logo) {
 			if (movie_writer == nullptr) {
 				ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
 				Engine::get_singleton()->set_write_movie_path(String());
+			} else {
+				// Check if real-time recording mode is enabled
+				bool realtime_recording = false;
+				if (ProjectSettings::get_singleton()->has_setting("movie_writer/realtime_mode")) {
+					realtime_recording = (bool)ProjectSettings::get_singleton()->get_setting("movie_writer/realtime_mode");
+				}
+				if (realtime_recording) {
+					movie_writer->set_realtime_mode(true);
+				}
 			}
 		}
 

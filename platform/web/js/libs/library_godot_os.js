@@ -116,6 +116,8 @@ const GodotFS = {
 		'Module["deleteDirFS"] = GodotFS.rm_dir;',
 		'Module["copyToAdapter"] = GodotFS.copy_to_adapter;',
 		'Module["updateGameDatas"] = GodotFS.update_game_datas;',
+		'Module["readAllFS"] = GodotFS.read_all;',
+		'Module["getFileSize"] = GodotFS.get_file_size;',
 		
 	].join(''),
 	$GodotFS: {
@@ -275,6 +277,28 @@ const GodotFS = {
 			if ( !GodotFS._syncing ) {
 				GodotFS.sync()
 			}
+		},
+
+		// Read all data from a binary file
+		read_all: function (path) {
+			try {
+				const stat = FS.stat(path);
+				if (!FS.isFile(stat.mode)) {
+					throw new Error(`Path is not a file: ${path}`);
+				}
+				return FS.readFile(path);
+			} catch (e) {
+				if (e.errno === GodotFS.ENOENT) {
+					GodotRuntime.error(`File not found: ${path}`);
+				} else {
+					GodotRuntime.error(`Failed to read file: ${path}`, e);
+				}
+				return null;
+			}
+		},
+		get_file_size: function (path) {
+			const stat = FS.stat(path);
+			return stat.size;
 		},
 	},
 };

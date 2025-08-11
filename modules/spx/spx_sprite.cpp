@@ -242,6 +242,10 @@ void SpxSprite::on_sprite_frame_changed() {
 	if (!Spx::initialed) {
 		return;
 	}
+	
+	// Handle dynamic frame offset
+	_on_frame_changed();
+	
 	SPX_CALLBACK->func_on_sprite_frame_changed(this->gid);
 
 	// update effect shader's atlas's uv rect
@@ -502,6 +506,7 @@ GdBool SpxSprite::is_anim_centered() const {
 }
 
 void SpxSprite::set_anim_offset(GdVec2 p_offset) {
+	base_offset = p_offset;  // Save base offset
 	anim2d->set_offset(p_offset);
 }
 
@@ -662,4 +667,37 @@ void SpxSprite::set_render_scale(GdVec2 new_scale) {
 }
 GdVec2 SpxSprite::get_render_scale() {
 	return anim2d->get_scale();
+}
+
+void SpxSprite::_on_frame_changed() {
+	if (!enable_dynamic_frame_offset || anim2d == nullptr) {
+		return;
+	}
+	
+	String current_anim = String(anim2d->get_animation());
+	int current_frame = anim2d->get_frame();
+	
+	Vector2 frame_offset = resMgr->get_animation_frame_offset(
+		current_anim, 
+		current_frame
+	);
+	
+	Vector2 final_offset = base_offset + frame_offset;
+	anim2d->set_offset(final_offset);
+}
+
+void SpxSprite::set_dynamic_frame_offset_enabled(GdBool enabled) {
+	enable_dynamic_frame_offset = enabled;
+	
+	// if enable dynamic frame offset, update current frame offset immediately
+	if (enabled) {
+		_on_frame_changed();
+	} else {
+		// if disable, restore to base offset
+		anim2d->set_offset(base_offset);
+	}
+}
+
+GdBool SpxSprite::is_dynamic_frame_offset_enabled() const {
+	return enable_dynamic_frame_offset;
 }
