@@ -150,7 +150,7 @@ private:
 	TreeItem *first_child = nullptr;
 	TreeItem *last_child = nullptr;
 
-	Vector<TreeItem *> children_cache;
+	LocalVector<TreeItem *> children_cache;
 	bool is_root = false; // For tree root.
 	Tree *tree = nullptr; // Tree (for reference).
 
@@ -169,7 +169,7 @@ private:
 		if (children_cache.is_empty()) {
 			TreeItem *c = first_child;
 			while (c) {
-				children_cache.append(c);
+				children_cache.push_back(c);
 				c = c->next;
 			}
 		}
@@ -201,7 +201,7 @@ private:
 		}
 		if (parent) {
 			if (!parent->children_cache.is_empty()) {
-				parent->children_cache.remove_at(get_index());
+				parent->children_cache.erase(this);
 			}
 			if (parent->first_child == this) {
 				parent->first_child = next;

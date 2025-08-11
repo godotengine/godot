@@ -895,7 +895,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 	} else {
 		int idx = 0;
 		if (!children_cache.is_empty()) {
-			idx = MIN(children_cache.size() - 1, p_index);
+			idx = MIN(int(children_cache.size()) - 1, p_index);
 			item_next = children_cache[idx];
 			item_prev = item_next->prev;
 		}
@@ -920,7 +920,7 @@ TreeItem *TreeItem::create_child(int p_index) {
 			if (ti->next) {
 				children_cache.insert(p_index, ti);
 			} else {
-				children_cache.append(ti);
+				children_cache.push_back(ti);
 			}
 		}
 	} else {
@@ -957,7 +957,7 @@ void TreeItem::add_child(TreeItem *p_item) {
 	last_child = p_item;
 
 	if (!children_cache.is_empty()) {
-		children_cache.append(p_item);
+		children_cache.push_back(p_item);
 	}
 
 	validate_cache();
@@ -1111,15 +1111,15 @@ TreeItem *TreeItem::get_child(int p_index) {
 	if (p_index < 0) {
 		p_index += children_cache.size();
 	}
-	ERR_FAIL_INDEX_V(p_index, children_cache.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, (int)children_cache.size(), nullptr);
 
-	return children_cache.get(p_index);
+	return children_cache[p_index];
 }
 
 int TreeItem::get_visible_child_count() {
 	_create_children_cache();
 	int visible_count = 0;
-	for (int i = 0; i < children_cache.size(); i++) {
+	for (uint32_t i = 0; i < children_cache.size(); i++) {
 		if (children_cache[i]->is_visible()) {
 			visible_count += 1;
 		}
@@ -1175,7 +1175,7 @@ void TreeItem::validate_cache() const {
 		return;
 	}
 	TreeItem *scan = parent->first_child;
-	int index = 0;
+	uint32_t index = 0;
 	while (scan) {
 		DEV_ASSERT(parent->children_cache[index] == scan);
 		++index;
@@ -1265,7 +1265,7 @@ void TreeItem::move_after(TreeItem *p_item) {
 		// If the cache is empty, it has not been built but there
 		// are items in the tree (note p_item != nullptr,) so we cannot update it.
 		if (!parent->children_cache.is_empty()) {
-			parent->children_cache.append(this);
+			parent->children_cache.push_back(this);
 		}
 	}
 
