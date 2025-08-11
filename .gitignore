@@ -272,6 +272,8 @@ bld/
 !thirdparty/**/arm/
 !thirdparty/**/arm64/
 
+!thirdparty/**/[Dd]ebug/
+
 thirdparty/swappy-frame-pacing/arm64-v8a/abi.json
 thirdparty/swappy-frame-pacing/armeabi-v7a/abi.json
 thirdparty/swappy-frame-pacing/x86/abi.json
