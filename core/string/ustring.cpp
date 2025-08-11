@@ -4731,12 +4731,12 @@ String String::c_escape_multiline() const {
 
 String String::json_escape() const {
 	String escaped;
-	escaped.reserve(length() * 2); 
+	escaped.reserve(length() * 2);
 	const char32_t *str_data = get_data();
-	
+
 	for (int i = 0; i < length(); i++) {
 		char32_t c = str_data[i];
-		
+
 		if (c == '\\') {
 			escaped += "\\\\";
 		} else if (c == '"') {
@@ -4761,7 +4761,7 @@ String String::json_escape() const {
 			escaped += c;
 		}
 	}
-	
+
 	return escaped;
 }
 

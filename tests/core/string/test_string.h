@@ -1905,25 +1905,28 @@ TEST_CASE("[String] json_escape") {
 	CHECK(String("\n").json_escape() == "\\n");
 	CHECK(String("\f").json_escape() == "\\f");
 	CHECK(String("\r").json_escape() == "\\r");
-	
+
 	// Quotes and backslash
 	CHECK(String("\"").json_escape() == "\\\"");
 	CHECK(String("\\").json_escape() == "\\\\");
-	
+
 	// ASCII control characters use \uXXXX format
-	CHECK(String::chr(0).json_escape() == "\\u0000");  // null
-	CHECK(String::chr(1).json_escape() == "\\u0001");  // ctrl+a
-	CHECK(String("\v").json_escape() == "\\u000B");    // vertical tab
+	CHECK(String::chr(0).json_escape() == "\\u0000"); // null
+	CHECK(String::chr(1).json_escape() == "\\u0001"); // ctrl+a
+	CHECK(String("\v").json_escape() == "\\u000B"); // vertical tab
 	CHECK(String::chr(0x1F).json_escape() == "\\u001F"); // unit separator
-	
+
 	// Test all control characters 0x00-0x1F
 	for (int i = 0; i <= 0x1F; i++) {
 		String result = String::chr(i).json_escape();
-		String expected = (i == 8) ? "\\b" : (i == 9) ? "\\t" : (i == 10) ? "\\n" : 
-		                  (i == 12) ? "\\f" : (i == 13) ? "\\r" : vformat("\\u%04X", i);
+		String expected = (i == 8) ? "\\b" : (i == 9) ? "\\t"
+				: (i == 10)							  ? "\\n"
+				: (i == 12)							  ? "\\f"
+				: (i == 13)							  ? "\\r"
+													  : vformat("\\u%04X", i);
 		CHECK_MESSAGE(result == expected, vformat("Control char 0x%02X failed", i));
 	}
-	
+
 	// Regular characters and mixed content
 	CHECK(String("Hello World").json_escape() == "Hello World");
 	CHECK(String("Test\u0001\tEnd").json_escape() == "Test\\u0001\\tEnd");
