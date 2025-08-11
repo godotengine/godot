@@ -2140,6 +2140,15 @@ void OpenXRAPI::_set_render_display_info(XrTime p_predicted_display_time, bool p
 	openxr_api->render_state.should_render = p_should_render;
 }
 
+void OpenXRAPI::_set_render_environment_blend_mode(int32_t p_environment_blend_mode) {
+	// Must be called from rendering thread!
+	ERR_NOT_ON_RENDER_THREAD;
+
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+	ERR_FAIL_NULL(openxr_api);
+	openxr_api->render_state.environment_blend_mode = XrEnvironmentBlendMode(p_environment_blend_mode);
+}
+
 void OpenXRAPI::_set_render_play_space(uint64_t p_play_space) {
 	// Must be called from rendering thread!
 	ERR_NOT_ON_RENDER_THREAD;
@@ -2491,7 +2500,7 @@ void OpenXRAPI::end_frame() {
 			XR_TYPE_FRAME_END_INFO, // type
 			nullptr, // next
 			render_state.predicted_display_time, // displayTime
-			environment_blend_mode, // environmentBlendMode
+			render_state.environment_blend_mode, // environmentBlendMode
 			0, // layerCount
 			nullptr // layers
 		};
@@ -2541,7 +2550,7 @@ void OpenXRAPI::end_frame() {
 	}
 
 	XrCompositionLayerFlags layer_flags = XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
-	if (!projection_layer_is_first || environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
+	if (!projection_layer_is_first || render_state.environment_blend_mode != XR_ENVIRONMENT_BLEND_MODE_OPAQUE) {
 		layer_flags |= XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT;
 	}
 
@@ -2586,7 +2595,7 @@ void OpenXRAPI::end_frame() {
 		XR_TYPE_FRAME_END_INFO, // type
 		frame_end_info_next_pointer, // next
 		render_state.predicted_display_time, // displayTime
-		environment_blend_mode, // environmentBlendMode
+		render_state.environment_blend_mode, // environmentBlendMode
 		static_cast<uint32_t>(layers_list.size()), // layerCount
 		layers_list.ptr() // layers
 	};
@@ -3746,6 +3755,7 @@ bool OpenXRAPI::set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode) 
 	if (emulate_environment_blend_mode_alpha_blend && p_blend_mode == XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND) {
 		requested_environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND;
 		environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+		set_render_environment_blend_mode(environment_blend_mode);
 		return true;
 	}
 	// We allow setting this when not initialized and will check if it is supported when initializing.
@@ -3753,6 +3763,7 @@ bool OpenXRAPI::set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode) 
 	else if (!is_initialized() || is_environment_blend_mode_supported(p_blend_mode)) {
 		requested_environment_blend_mode = p_blend_mode;
 		environment_blend_mode = p_blend_mode;
+		set_render_environment_blend_mode(environment_blend_mode);
 		return true;
 	}
 	return false;

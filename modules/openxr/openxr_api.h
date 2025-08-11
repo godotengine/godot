@@ -337,6 +337,7 @@ private:
 		bool has_xr_viewport = false;
 		XrTime predicted_display_time = 0;
 		XrSpace play_space = XR_NULL_HANDLE;
+		XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
 		Rect2i render_region;
@@ -367,6 +368,7 @@ private:
 	static void _set_render_session_running(bool p_is_running);
 	static void _set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
 	static void _set_render_play_space(uint64_t p_play_space);
+	static void _set_render_environment_blend_mode(int32_t p_environment_blend_mode);
 	static void _set_render_state_multiplier(double p_render_target_size_multiplier);
 	static void _set_render_state_render_region(const Rect2i &p_render_region);
 
@@ -400,6 +402,14 @@ private:
 		ERR_FAIL_NULL(rendering_server);
 
 		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_play_space).bind(uint64_t(p_play_space)));
+	}
+
+	_FORCE_INLINE_ void set_render_environment_blend_mode(XrEnvironmentBlendMode p_mode) {
+		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_environment_blend_mode).bind((int32_t)p_mode));
 	}
 
 	_FORCE_INLINE_ void set_render_state_multiplier(double p_render_target_size_multiplier) {
