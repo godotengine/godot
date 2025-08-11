@@ -58,9 +58,9 @@ public:
 	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id = MAIN_WINDOW_ID) override;
 
 	// iOS-specific methods for security-scoped URL management
-	static void release_file_access(const String &p_file_path);
-	static void release_all_file_access();
+	virtual void release_file_access(const String &p_file_path) override;
+	virtual void release_all_file_access() override;
 
 	// iOS-specific method to get temporary file path for save operations
-	static String get_temp_file_path_for_save(const String &p_filename);
+	virtual String get_temp_file_path_for_save(const String &p_filename) override;
 };
