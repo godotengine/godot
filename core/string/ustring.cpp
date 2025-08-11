@@ -4750,7 +4750,7 @@ String String::json_escape() const {
 			escaped += "\\r";
 		} else if (c == '\t') {
 			escaped += "\\t";
-		} else if (c >= 0x00 && c <= 0x1F) {
+		} else if (c <= 0x1F) {
 			// ASCII control characters must be escaped using \uXXXX format.
 			escaped += "\\u";
 			escaped += "00";
