@@ -4191,6 +4191,11 @@ int Node::get_persistent_signal_connection_count() const {
 	return Object::get_persistent_signal_connection_count();
 }
 
+uint32_t Node::get_signal_connection_flags(const StringName &p_signal, const Callable &p_callable) const {
+	ERR_THREAD_GUARD_V(0);
+	return Object::get_signal_connection_flags(p_signal, p_callable);
+}
+
 void Node::get_signals_connected_to_this(List<Connection> *p_connections) const {
 	ERR_THREAD_GUARD;
 	Object::get_signals_connected_to_this(p_connections);
@@ -4214,14 +4219,13 @@ void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 
 #ifdef TOOLS_ENABLED
 	// Already under thread guard, don't check again.
-	int old_connection_count = Object::get_persistent_signal_connection_count();
+	uint32_t connection_flags = Object::get_signal_connection_flags(p_signal, p_callable);
 #endif
 
-	Object::disconnect(p_signal, p_callable);
+	[[maybe_unused]] bool changed = Object::_disconnect(p_signal, p_callable);
 
 #ifdef TOOLS_ENABLED
-	int new_connection_count = Object::get_persistent_signal_connection_count();
-	if (old_connection_count != new_connection_count) {
+	if (changed && connection_flags & CONNECT_PERSIST) {
 		_emit_editor_state_changed();
 	}
 #endif

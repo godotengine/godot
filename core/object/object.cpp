@@ -1522,6 +1522,18 @@ int Object::get_persistent_signal_connection_count() const {
 	return count;
 }
 
+uint32_t Object::get_signal_connection_flags(const StringName &p_name, const Callable &p_callable) const {
+	OBJ_SIGNAL_LOCK
+	const SignalData *signal_data = signal_map.getptr(p_name);
+	if (signal_data) {
+		const SignalData::Slot *slot = signal_data->slot_map.getptr(p_callable);
+		if (slot) {
+			return slot->conn.flags;
+		}
+	}
+	return 0;
+}
+
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
 	OBJ_SIGNAL_LOCK
 
