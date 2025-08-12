@@ -1988,16 +1988,49 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 					bool node_selected = get_selected_count() > 0;
 
-					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM && !b->is_alt_pressed()) {
+					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						// Single item selection.
 						clicked = _select_ray(b->get_position());
 
 						if (clicked.is_valid() && !editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked))) {
-							selection_in_progress = true;
-							break;
+							if (!node_selected || (!b->is_alt_pressed() && !(spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()))) {
+								selection_in_progress = true;
+								break;
+							}
 						}
 
 						if (clicked.is_null()) {
+							if (node_selected) {
+								TransformMode mode = TRANSFORM_NONE;
+
+								if (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT) {
+									if (b->is_command_or_control_pressed()) {
+										mode = TRANSFORM_ROTATE;
+									} else if (b->is_alt_pressed()) {
+										mode = TRANSFORM_TRANSLATE;
+									}
+								} else if (b->is_alt_pressed()) {
+									switch (spatial_editor->get_tool_mode()) {
+										case Node3DEditor::TOOL_MODE_ROTATE:
+											mode = TRANSFORM_ROTATE;
+											break;
+										case Node3DEditor::TOOL_MODE_MOVE:
+											mode = TRANSFORM_TRANSLATE;
+											break;
+										case Node3DEditor::TOOL_MODE_SCALE:
+											mode = TRANSFORM_SCALE;
+											break;
+										default:
+											break;
+									}
+								}
+
+								if (mode != TRANSFORM_NONE) {
+									begin_transform(mode, false);
+									break;
+								}
+							}
+
 							// Default to region select.
 							cursor.region_select = true;
 							cursor.region_begin = b->get_position();
@@ -2006,19 +2039,43 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 						}
 					}
 
-					if (!clicked_wants_append && node_selected && ((spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT && b->is_command_or_control_pressed()) || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_ROTATE)) {
-						begin_transform(TRANSFORM_ROTATE, false);
-						break;
-					}
+					if (clicked.is_valid() && !clicked_wants_append) {
+						bool is_clicked_node_selected = editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked));
+						TransformMode mode = TRANSFORM_NONE;
 
-					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
-						begin_transform(TRANSFORM_TRANSLATE, false);
-						break;
-					}
+						switch (spatial_editor->get_tool_mode()) {
+							case Node3DEditor::TOOL_MODE_SELECT:
+								if (b->is_command_or_control_pressed() && node_selected) {
+									mode = TRANSFORM_ROTATE;
+								} else if (b->is_alt_pressed() && node_selected) {
+									mode = TRANSFORM_TRANSLATE;
+								} else if (is_clicked_node_selected) {
+									mode = TRANSFORM_TRANSLATE;
+								}
+								break;
+							case Node3DEditor::TOOL_MODE_ROTATE:
+								if (is_clicked_node_selected || (b->is_alt_pressed() && node_selected)) {
+									mode = TRANSFORM_ROTATE;
+								}
+								break;
+							case Node3DEditor::TOOL_MODE_MOVE:
+								if (is_clicked_node_selected || (b->is_alt_pressed() && node_selected)) {
+									mode = TRANSFORM_TRANSLATE;
+								}
+								break;
+							case Node3DEditor::TOOL_MODE_SCALE:
+								if (is_clicked_node_selected || (b->is_alt_pressed() && node_selected)) {
+									mode = TRANSFORM_SCALE;
+								}
+								break;
+							default:
+								break;
+						}
 
-					if (!clicked_wants_append && node_selected && spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SCALE) {
-						begin_transform(TRANSFORM_SCALE, false);
-						break;
+						if (mode != TRANSFORM_NONE) {
+							begin_transform(mode, false);
+							break;
+						}
 					}
 
 					surface->queue_redraw();
@@ -2046,7 +2103,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					if (after != EditorPlugin::AFTER_GUI_INPUT_CUSTOM) {
 						selection_in_progress = false;
 
-						if (clicked.is_valid()) {
+						if (clicked.is_valid() && _edit.mode == TRANSFORM_NONE) {
 							_select_clicked(false);
 						}
 
@@ -2178,9 +2235,14 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				}
 
 				if (clicked.is_valid() && movement_threshold_passed && (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE)) {
-					_compute_edit(_edit.original_mouse_pos);
-					clicked = ObjectID();
-					_edit.mode = TRANSFORM_TRANSLATE;
+					bool is_select_mode = (spatial_editor->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT);
+					bool is_clicked_selected = editor_selection->is_selected(ObjectDB::get_instance<Node>(clicked));
+
+					if (_edit.mode == TRANSFORM_NONE && (is_select_mode || is_clicked_selected)) {
+						_compute_edit(_edit.original_mouse_pos);
+						clicked = ObjectID();
+						_edit.mode = TRANSFORM_TRANSLATE;
+					}
 				}
 
 				if (_edit.mode == TRANSFORM_NONE || _edit.numeric_input != 0 || _edit.numeric_next_decimal != 0) {
