@@ -4645,7 +4645,11 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 	}
 
 	if (Object::cast_to<JSON>(p_object)) {
-		return true;
+		// This is here to stop resource files of class JSON from getting confused
+		// with json files and being opened in the text editor.
+		if (Object::cast_to<JSON>(p_object)->get_path().get_extension().to_lower() == "json") {
+			return true;
+		}
 	}
 
 	return p_object->is_class("Script");
