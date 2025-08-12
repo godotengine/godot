@@ -112,7 +112,7 @@ void main() {
 	vec4 color = texture(source_color, uv_interp);
 #endif
 
-	// SSAO might be better here, but the colors are still SRGB.
+	// SSAO might be better here, before the glow, but the colors are still SRGB.
 
 #ifdef USE_GLOW
 	vec4 glow = get_glow_color(uv_interp) * glow_intensity;

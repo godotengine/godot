@@ -3,7 +3,7 @@
 // The sample_width should be even, else the midpoint is at UV.
 #define SAMPLE_WIDTH_LOW_QUALITY 2
 #define SAMPLE_WIDTH_MID_QUALITY 4
-#define SAMPLE_WIDTH_HIGH_QUALITY 6
+#define SAMPLE_WIDTH_GOOD_QUALITY 6
 
 // Takes sample_width^2 samples in a grid, with the corners notched.
 const int sample_width = SAMPLE_WIDTH_MID_QUALITY;
@@ -17,20 +17,23 @@ float s4ao(vec2 UV) {
 	float depth = texture(depth_buffer, UV).r;
 	float radius = max(1e-4f, depth * ssao_radius_frac);
 	float inv_falloff = 1.0f / max(1e-4f, depth * ssao_falloff_frac);
-	// Random 2D rotation per pixel (+/-45 deg, with 0 having a higher probability).
-	vec2 rcos = (inv_half_width * radius) * (vec2(0.5f, fract(dot(UV, ssao_prn_UV)) - 0.5f)); // Random cosine vector.
+	// Random 2D rotation per pixel (+/-45 deg, with 0 having a lower probability).
+	// The random cosine vector is vec2( 0.5, -0.5 to +0.5 ) and *1.7 makes the average length ~ 1.
+	vec2 rcos = (inv_half_width * radius) * vec2(0.5f, fract(dot(UV, ssao_prn_UV)) - 0.5f);
 	vec2 rsin = rcos.yx * vec2(-1, 1); // Perpendicular to the random cosine vector.
 	// Grab the samples and determine the occlusion.
 	float occlusion = 0.0f;
-	for (int j = 0; j < sample_width; ++j) {
-		vec2 pre_ray = (float(j) - sample_mid) * rsin;
+	vec2 base_duv = -sample_mid * rsin;
+	for (int j = sample_width; --j >= 0;) {
 		int o = notch_01 & int((j <= 0) || (j >= (sample_width - 1))); // Notch corners of the grid.
-		for (int i = o; i < (sample_width - o); ++i) {
-			vec3 ray = vec3((float(i) - sample_mid) * rcos + pre_ray, 0.0f);
-			ray.z = texture(depth_buffer, UV + ray.xy).r - depth;
-			float validity = smoothstep(1.0f, 0.0f, ray.z * inv_falloff);
-			occlusion += normalize(ray).z * validity; // How 'directly overhead' is it?
+		vec2 duv = (float(o) - sample_mid) * rcos + base_duv;
+		for (int i = sample_width - o - o; --i >= 0;) {
+			float dz = texture(depth_buffer, UV + duv).r - depth;
+			float validity = smoothstep(1.0f, 0.0f, dz * inv_falloff);
+			occlusion += normalize(vec3(duv, dz)).z * validity; // How 'directly overhead' is it?
+			duv += rcos; // March along the rcos direction with i.
 		}
+		base_duv += rsin; // March along the rsin direction with j.
 	}
 	// Adjust the occlusion for intensity, and # samples.
 	occlusion *= ssao_intensity * average_samples;
