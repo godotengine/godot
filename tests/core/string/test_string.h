@@ -1916,6 +1916,11 @@ TEST_CASE("[String] json_escape") {
 	CHECK(String("\v").json_escape() == "\\u000B"); // vertical tab
 	CHECK(String::chr(0x1F).json_escape() == "\\u001F"); // unit separator
 
+	// C1 control characters also use \uXXXX format
+	CHECK(String::chr(0x7F).json_escape() == "\\u007F"); // Delete
+	CHECK(String::chr(0x80).json_escape() == "\\u0080"); // Padding character
+	CHECK(String::chr(0x9F).json_escape() == "\\u009F"); // Application program command
+
 	// Test all control characters 0x00-0x1F
 	for (int i = 0; i <= 0x1F; i++) {
 		String result = String::chr(i).json_escape();
@@ -1924,6 +1929,13 @@ TEST_CASE("[String] json_escape") {
 				: (i == 12)							  ? "\\f"
 				: (i == 13)							  ? "\\r"
 													  : vformat("\\u%04X", i);
+		CHECK_MESSAGE(result == expected, vformat("Control char 0x%02X failed", i));
+	}
+
+	// Test C1 control characters 0x7F-0x9F
+	for (int i = 0x7F; i <= 0x9F; i++) {
+		String result = String::chr(i).json_escape();
+		String expected = vformat("\\u%04X", i);
 		CHECK_MESSAGE(result == expected, vformat("Control char 0x%02X failed", i));
 	}
 

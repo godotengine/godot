@@ -48,7 +48,7 @@ TEST_CASE("[JSON] Stringify single data types") {
 }
 
 TEST_CASE("[JSON] Stringify ASCII control characters") {
-	// Test that ASCII control characters (0x00-0x1F) are properly escaped
+	// Test that control characters (0x00-0x1F and 0x7F-0x9F) are properly escaped
 
 	// Short-form escapes for standard characters
 	CHECK(JSON::stringify("\b") == "\"\\b\""); // 0x08
@@ -57,13 +57,18 @@ TEST_CASE("[JSON] Stringify ASCII control characters") {
 	CHECK(JSON::stringify("\f") == "\"\\f\""); // 0x0C
 	CHECK(JSON::stringify("\r") == "\"\\r\""); // 0x0D
 
-	// Key test cases
+	// Key test cases for ASCII control characters
 	CHECK(JSON::stringify(String::chr(0x00)) == "\"\\u0000\""); // Null
 	CHECK(JSON::stringify(String::chr(0x01)) == "\"\\u0001\""); // Start of heading
 	CHECK(JSON::stringify(String::chr(0x0B)) == "\"\\u000B\""); // Vertical tab
 	CHECK(JSON::stringify(String::chr(0x1F)) == "\"\\u001F\""); // Unit separator
 
-	// All control characters 0x00-0x1F
+	// Key test cases for C1 control characters
+	CHECK(JSON::stringify(String::chr(0x7F)) == "\"\\u007F\""); // Delete
+	CHECK(JSON::stringify(String::chr(0x80)) == "\"\\u0080\""); // Padding character
+	CHECK(JSON::stringify(String::chr(0x9F)) == "\"\\u009F\""); // Application program command
+
+	// All ASCII control characters (0x00-0x1F)
 	for (int i = 0; i <= 0x1F; i++) {
 		String result = JSON::stringify(String::chr(i));
 		String expected = (i == 8) ? "\"\\b\"" : (i == 9) ? "\"\\t\""
@@ -71,6 +76,13 @@ TEST_CASE("[JSON] Stringify ASCII control characters") {
 				: (i == 12)								  ? "\"\\f\""
 				: (i == 13)								  ? "\"\\r\""
 														  : vformat("\"\\u%04X\"", i);
+		CHECK_MESSAGE(result == expected, vformat("JSON control char 0x%02X failed", i));
+	}
+
+	// All C1 control characters (0x7F-0x9F)
+	for (int i = 0x7F; i <= 0x9F; i++) {
+		String result = JSON::stringify(String::chr(i));
+		String expected = vformat("\"\\u%04X\"", i);
 		CHECK_MESSAGE(result == expected, vformat("JSON control char 0x%02X failed", i));
 	}
 }

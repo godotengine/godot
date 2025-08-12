@@ -4750,11 +4750,20 @@ String String::json_escape() const {
 			escaped += "\\r";
 		} else if (c == '\t') {
 			escaped += "\\t";
-		} else if (c <= 0x1F) {
-			// ASCII control characters must be escaped using \uXXXX format.
-			escaped += "\\u00";
-			escaped += hex_char_table_upper[(c >> 4) & 0xF];
-			escaped += hex_char_table_upper[c & 0xF];
+		} else if (c <= 0x1F || (c >= 0x7F && c <= 0x9F)) {
+			// ASCII control characters (0x00-0x1F) and C1 control characters (0x7F-0x9F) must be escaped using \uXXXX format.
+			escaped += "\\u";
+			if (c <= 0xFF) {
+				escaped += "00";
+				escaped += hex_char_table_upper[(c >> 4) & 0xF];
+				escaped += hex_char_table_upper[c & 0xF];
+			} else {
+				// For characters > 0xFF
+				escaped += hex_char_table_upper[(c >> 12) & 0xF];
+				escaped += hex_char_table_upper[(c >> 8) & 0xF];
+				escaped += hex_char_table_upper[(c >> 4) & 0xF];
+				escaped += hex_char_table_upper[c & 0xF];
+			}
 		} else {
 			escaped += c;
 		}
