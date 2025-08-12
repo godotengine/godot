@@ -3783,8 +3783,6 @@ bool ScriptEditor::_help_tab_goto(const String &p_name, const String &p_desc) {
 }
 
 void ScriptEditor::update_doc(const String &p_name) {
-	ERR_FAIL_COND_MSG(!EditorHelp::has_doc(p_name), vformat("Can't update documentation for \"%s\".", p_name));
-
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		EditorHelp *eh = Object::cast_to<EditorHelp>(tab_container->get_tab_control(i));
 		if (eh && eh->get_class() == p_name) {
