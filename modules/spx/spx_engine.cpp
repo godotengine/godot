@@ -49,6 +49,10 @@ void SpxEngine::register_runtime_panic_callbacks(GDExtensionSpxGlobalRuntimePani
 	singleton->on_runtime_panic = callback;
 }
 
+void SpxEngine::register_runtime_exit_callbacks(GDExtensionSpxGlobalRuntimeExitCallback callback) {
+	singleton->on_runtime_exit = callback;
+}
+
 static SpxCallbackInfo get_default_spx_callbacks() {
 	SpxCallbackInfo callbacks;
 	callbacks.func_on_engine_start = [](){};
