@@ -3585,6 +3585,10 @@ void Image::_bind_methods() {
 	ClassDB::bind_static_method("Image", D_METHOD("create_from_data", "width", "height", "use_mipmaps", "format", "data"), &Image::create_from_data);
 	ClassDB::bind_method(D_METHOD("set_data", "width", "height", "use_mipmaps", "format", "data"), &Image::set_data);
 
+	ClassDB::bind_static_method("Image", D_METHOD("create_empty_partial_mipmaps", "width", "height", "mipmap_limit", "format"), &Image::create_empty_partial_mipmaps);
+	ClassDB::bind_static_method("Image", D_METHOD("create_from_data_partial_mipmaps", "width", "height", "mipmap_limit", "format", "data"), &Image::create_from_data_partial_mipmaps);
+	ClassDB::bind_method(D_METHOD("set_data_partial_mipmaps", "width", "height", "mipmap_limit", "format", "data"), &Image::set_data_partial_mipmaps);
+
 	ClassDB::bind_method(D_METHOD("is_empty"), &Image::is_empty);
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);

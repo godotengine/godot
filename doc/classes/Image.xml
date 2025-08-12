@@ -139,6 +139,16 @@
 				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
+		<method name="create_empty_partial_mipmaps" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="mipmap_limit" type="int" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+				Creates an empty image of the given size and format. Generates [param mipmap_limit] mipmaps for this image. See the [method generate_mipmaps].
+			</description>
+		</method>
 		<method name="create_from_data" qualifiers="static">
 			<return type="Image" />
 			<param index="0" name="width" type="int" />
@@ -148,6 +158,18 @@
 			<param index="4" name="data" type="PackedByteArray" />
 			<description>
 				Creates a new image of the given size and format. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code], loads the mipmaps for this image from [param data]. See [method generate_mipmaps].
+			</description>
+		</method>
+		<method name="create_from_data_partial_mipmaps" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="mipmap_limit" type="int" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<param index="4" name="data" type="PackedByteArray" />
+			<description>
+				Creates a new image of the given size and format. Fills the image with the given raw data. Loads [param mipmap_limit] mipmaps for this image from [param data]. See [method generate_mipmaps].
+				[b]Note:[/b] [param mipmap_limit] has to be equal to the amount of mipmaps present in [param data].
 			</description>
 		</method>
 		<method name="crop">
@@ -558,6 +580,18 @@
 			<param index="4" name="data" type="PackedByteArray" />
 			<description>
 				Overwrites data of an existing [Image]. Non-static equivalent of [method create_from_data].
+			</description>
+		</method>
+		<method name="set_data_partial_mipmaps">
+			<return type="void" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="mipmap_limit" type="int" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<param index="4" name="data" type="PackedByteArray" />
+			<description>
+				Overwrites data of an existing [Image]. Non-static equivalent of [method create_from_data].
+				[b]Note:[/b] [param mipmap_limit] has to be equal to the amount of mipmaps present in [param data].
 			</description>
 		</method>
 		<method name="set_pixel">
