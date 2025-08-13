@@ -3953,6 +3953,14 @@ void FileSystemDock::_project_settings_changed() {
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 }
 
+void FileSystemDock::_editor_scene_tab_changed(int p_tab) {
+	EditorData& ed = EditorNode::get_editor_data();
+	String path = ed.get_scene_path(p_tab);
+	if (!path.is_empty()) {
+		navigate_to_path(path);
+	}
+}
+
 void FileSystemDock::set_file_sort(FileSortOption p_file_sort) {
 	for (int i = 0; i != (int)FileSortOption::FILE_SORT_MAX; i++) {
 		tree_button_sort->get_popup()->set_item_checked(i, (i == (int)p_file_sort));
@@ -4406,6 +4414,7 @@ FileSystemDock::FileSystemDock() {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
+	EditorSceneTabs::get_singleton()->connect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
 	add_resource_tooltip_plugin(memnew(EditorAudioStreamTooltipPlugin));
 }

@@ -357,6 +357,7 @@ private:
 
 	void _feature_profile_changed();
 	void _project_settings_changed();
+	void _editor_scene_tab_changed(int p_tab);
 	static Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 	void _change_bottom_dock_placement();
