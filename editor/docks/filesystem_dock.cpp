@@ -3969,7 +3969,7 @@ void FileSystemDock::_editor_settings_changed() {
 }
 
 void FileSystemDock::_editor_scene_tab_changed(int p_tab) {
-	EditorData& ed = EditorNode::get_editor_data();
+	EditorData &ed = EditorNode::get_editor_data();
 	String path = ed.get_scene_path(p_tab);
 	if (!path.is_empty()) {
 		navigate_to_path(path);
