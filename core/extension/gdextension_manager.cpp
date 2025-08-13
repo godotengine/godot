@@ -55,6 +55,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 		gdextension_class_icon_paths[kv.key] = kv.value;
 	}
 
+	return LOAD_STATUS_OK;
+}
+
+void GDExtensionManager::_finish_load_extension(const Ref<GDExtension> &p_extension) {
 #ifdef TOOLS_ENABLED
 	// Signals that a new extension is loaded so GDScript can register new class names.
 	emit_signal("extension_loaded", p_extension);
@@ -67,8 +71,6 @@ GDExtensionManager::LoadStatus GDExtensionManager::_load_extension_internal(cons
 			p_extension->startup_callback();
 		}
 	}
-
-	return LOAD_STATUS_OK;
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(const Ref<GDExtension> &p_extension) {
@@ -134,6 +136,8 @@ GDExtensionManager::LoadStatus GDExtensionManager::load_extension_with_loader(co
 		return status;
 	}
 
+	_finish_load_extension(extension);
+
 	extension->set_path(p_path);
 	gdextension_map[p_path] = extension;
 	return LOAD_STATUS_OK;
@@ -185,6 +189,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	}
 
 	extension->finish_reload();
+
+	// Needs to come after reload is fully finished, so all objects using
+	// extension classes are in a consistent state.
+	_finish_load_extension(extension);
 
 	return LOAD_STATUS_OK;
 #endif

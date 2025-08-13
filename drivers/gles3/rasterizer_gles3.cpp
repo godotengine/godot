@@ -207,11 +207,6 @@ typedef void(GLAPIENTRY *DebugMessageCallbackARB)(DEBUGPROCARB callback, const v
 
 void RasterizerGLES3::initialize() {
 	Engine::get_singleton()->print_header(vformat("OpenGL API %s - Compatibility - Using Device: %s - %s", RS::get_singleton()->get_video_adapter_api_version(), RS::get_singleton()->get_video_adapter_vendor(), RS::get_singleton()->get_video_adapter_name()));
-
-	// FLIP XY Bug: Are more devices affected?
-	// Confirmed so far: all Adreno 3xx with old driver (until 2018)
-	// ok on some tested Adreno devices: 4xx, 5xx and 6xx
-	flip_xy_workaround = GLES3::Config::get_singleton()->flip_xy_workaround;
 }
 
 void RasterizerGLES3::finalize() {
@@ -431,19 +426,11 @@ void RasterizerGLES3::_blit_render_target_to_screen(DisplayServer::WindowID p_sc
 
 	Vector2 screen_rect_end = p_blit.dst_rect.get_end();
 
-	// Adreno (TM) 3xx devices have a bug that create wrong Landscape rotation of 180 degree
-	// Reversing both the X and Y axis is equivalent to rotating 180 degrees
-	bool flip_x = false;
-	if (flip_xy_workaround && screen_rect_end.x > screen_rect_end.y) {
-		flip_y = !flip_y;
-		flip_x = !flip_x;
-	}
-
-	Vector2 p1 = Vector2(flip_x ? screen_rect_end.x : p_blit.dst_rect.position.x, flip_y ? screen_rect_end.y : p_blit.dst_rect.position.y);
-	Vector2 p2 = Vector2(flip_x ? p_blit.dst_rect.position.x : screen_rect_end.x, flip_y ? p_blit.dst_rect.position.y : screen_rect_end.y);
+	Vector2 p1 = Vector2(p_blit.dst_rect.position.x, flip_y ? screen_rect_end.y : p_blit.dst_rect.position.y);
+	Vector2 p2 = Vector2(screen_rect_end.x, flip_y ? p_blit.dst_rect.position.y : screen_rect_end.y);
 	Vector2 size = p2 - p1;
 
-	Rect2 screenrect = Rect2(Vector2(flip_x ? 1.0 : 0.0, flip_y ? 1.0 : 0.0), Vector2(flip_x ? -1.0 : 1.0, flip_y ? -1.0 : 1.0));
+	Rect2 screenrect = Rect2(Vector2(0.0, flip_y ? 1.0 : 0.0), Vector2(1.0, flip_y ? -1.0 : 1.0));
 
 	glViewport(int(MIN(p1.x, p2.x)), int(MIN(p1.y, p2.y)), Math::abs(size.x), Math::abs(size.y));
 

@@ -22,6 +22,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Viss atpazīts"
 
+msgid "Save"
+msgstr "Saglabāt"
+
+msgid "Clear"
+msgstr "Notīrīt"
+
 msgid "Add current color as a preset."
 msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
 
@@ -30,9 +36,6 @@ msgstr "Atvērt"
 
 msgid "Select Current Folder"
 msgstr "Izvēlēties pašreizējo mapi"
-
-msgid "Save"
-msgstr "Saglabāt"
 
 msgid "Select This Folder"
 msgstr "Izvēlēties Šo Mapi"
@@ -67,11 +70,11 @@ msgstr "Ceļš:"
 msgid "Refresh files."
 msgstr "Atjaunot failus."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Pārslēgt slēpto failu redzamību."
-
 msgid "Directories & Files:"
 msgstr "Mapes & Faili:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Pārslēgt slēpto failu redzamību."
 
 msgid "File:"
 msgstr "Fails:"
@@ -105,9 +108,6 @@ msgstr "Ielīmēt"
 
 msgid "Select All"
 msgstr "Izvēlēties visu"
-
-msgid "Clear"
-msgstr "Notīrīt"
 
 msgid "Undo"
 msgstr "Atsaukt"

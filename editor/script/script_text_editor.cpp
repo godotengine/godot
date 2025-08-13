@@ -31,11 +31,13 @@
 #include "script_text_editor.h"
 
 #include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc/editor_help.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
@@ -1241,7 +1243,11 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	if (ScriptServer::is_global_class(p_symbol)) {
 		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
 	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
-		EditorNode::get_singleton()->load_scene_or_resource(p_symbol);
+		if (DirAccess::dir_exists_absolute(p_symbol)) {
+			FileSystemDock::get_singleton()->navigate_to_path(p_symbol);
+		} else {
+			EditorNode::get_singleton()->load_scene_or_resource(p_symbol);
+		}
 	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
@@ -2290,7 +2296,21 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				parts.append(_quote_drop_data(path));
 			}
 		}
-		text_to_drop = String(is_empty_line ? "\n" : ", ").join(parts);
+		String join_string;
+		if (is_empty_line) {
+			int indent_level = te->get_indent_level(drop_at_line);
+			if (te->is_indent_using_spaces()) {
+				join_string = "\n" + String(" ").repeat(indent_level);
+			} else {
+				join_string = "\n" + String("\t").repeat(indent_level / te->get_tab_size());
+			}
+		} else {
+			join_string = ", ";
+		}
+		text_to_drop = join_string.join(parts);
+		if (is_empty_line) {
+			text_to_drop += join_string;
+		}
 	}
 
 	if (type == "nodes") {
@@ -2351,7 +2371,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				}
 			}
 
-			if (!is_empty_line && drop_at_column == 0) {
+			if (is_empty_line || drop_at_column == 0) {
 				text_to_drop += "\n";
 			}
 		} else {

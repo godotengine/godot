@@ -349,6 +349,13 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point, bool p_allow_partial_
 				continue;
 			}
 
+			if (neighbor_filter_enabled) {
+				bool filtered;
+				if (GDVIRTUAL_CALL(_filter_neighbor, p->id, e->id, filtered) && filtered) {
+					continue;
+				}
+			}
+
 			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
 
 			bool new_point = false;
@@ -524,6 +531,14 @@ Vector<int64_t> AStar3D::get_id_path(int64_t p_from_id, int64_t p_to_id, bool p_
 	return path;
 }
 
+bool AStar3D::is_neighbor_filter_enabled() const {
+	return neighbor_filter_enabled;
+}
+
+void AStar3D::set_neighbor_filter_enabled(bool p_enabled) {
+	neighbor_filter_enabled = p_enabled;
+}
+
 void AStar3D::set_point_disabled(int64_t p_id, bool p_disabled) {
 	Point **p_entry = points.getptr(p_id);
 	ERR_FAIL_COND_MSG(!p_entry, vformat("Can't set if point is disabled. Point with id: %d doesn't exist.", p_id));
@@ -555,6 +570,9 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar3D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar3D::is_point_disabled);
 
+	ClassDB::bind_method(D_METHOD("set_neighbor_filter_enabled", "enabled"), &AStar3D::set_neighbor_filter_enabled);
+	ClassDB::bind_method(D_METHOD("is_neighbor_filter_enabled"), &AStar3D::is_neighbor_filter_enabled);
+
 	ClassDB::bind_method(D_METHOD("connect_points", "id", "to_id", "bidirectional"), &AStar3D::connect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id", "bidirectional"), &AStar3D::disconnect_points, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id", "bidirectional"), &AStar3D::are_points_connected, DEFVAL(true));
@@ -570,8 +588,11 @@ void AStar3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar3D::get_id_path, DEFVAL(false));
 
+	GDVIRTUAL_BIND(_filter_neighbor, "from_id", "neighbor_id")
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
 }
 
 AStar3D::~AStar3D() {
@@ -619,6 +640,14 @@ Vector<int64_t> AStar2D::get_point_connections(int64_t p_id) {
 
 PackedInt64Array AStar2D::get_point_ids() {
 	return astar.get_point_ids();
+}
+
+bool AStar2D::is_neighbor_filter_enabled() const {
+	return astar.neighbor_filter_enabled;
+}
+
+void AStar2D::set_neighbor_filter_enabled(bool p_enabled) {
+	astar.neighbor_filter_enabled = p_enabled;
 }
 
 void AStar2D::set_point_disabled(int64_t p_id, bool p_disabled) {
@@ -854,6 +883,13 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point, boo
 				continue;
 			}
 
+			if (astar.neighbor_filter_enabled) {
+				bool filtered;
+				if (GDVIRTUAL_CALL(_filter_neighbor, p->id, e->id, filtered) && filtered) {
+					continue;
+				}
+			}
+
 			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * e->weight_scale;
 
 			bool new_point = false;
@@ -895,6 +931,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_connections", "id"), &AStar2D::get_point_connections);
 	ClassDB::bind_method(D_METHOD("get_point_ids"), &AStar2D::get_point_ids);
 
+	ClassDB::bind_method(D_METHOD("set_neighbor_filter_enabled", "enabled"), &AStar2D::set_neighbor_filter_enabled);
+	ClassDB::bind_method(D_METHOD("is_neighbor_filter_enabled"), &AStar2D::is_neighbor_filter_enabled);
+
 	ClassDB::bind_method(D_METHOD("set_point_disabled", "id", "disabled"), &AStar2D::set_point_disabled, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_disabled", "id"), &AStar2D::is_point_disabled);
 
@@ -913,6 +952,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_point_path, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id", "allow_partial_path"), &AStar2D::get_id_path, DEFVAL(false));
 
+	GDVIRTUAL_BIND(_filter_neighbor, "from_id", "neighbor_id")
 	GDVIRTUAL_BIND(_estimate_cost, "from_id", "end_id")
 	GDVIRTUAL_BIND(_compute_cost, "from_id", "to_id")
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "neighbor_filter_enabled"), "set_neighbor_filter_enabled", "is_neighbor_filter_enabled");
 }

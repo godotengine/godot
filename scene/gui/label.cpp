@@ -159,7 +159,7 @@ void Label::_shape() const {
 		for (const String &str : para_text) {
 			Paragraph para;
 			para.text_rid = TS->create_shaped_text();
-			para.text = str;
+			para.text = str + String::chr(0x200B);
 			para.start = start;
 			start += str.length() + ps.length();
 			paragraphs.push_back(para);

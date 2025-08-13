@@ -21,14 +21,17 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Minden Felismert"
 
+msgid "Save"
+msgstr "Mentés"
+
+msgid "Clear"
+msgstr "Töröl"
+
 msgid "Open"
 msgstr "Megnyitás"
 
 msgid "Select Current Folder"
 msgstr "Aktuális Mappa Kiválasztása"
-
-msgid "Save"
-msgstr "Mentés"
 
 msgid "Select This Folder"
 msgstr "Válassza ezt a mappát"
@@ -63,11 +66,11 @@ msgstr "Útvonal:"
 msgid "Refresh files."
 msgstr "Fájlok frissítése."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
-
 msgid "Directories & Files:"
 msgstr "Könyvtárak és Fájlok:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "A rejtett fájlok láthatóságának ki- és bekapcsolása."
 
 msgid "File:"
 msgstr "Fájl:"
@@ -101,9 +104,6 @@ msgstr "Beillesztés"
 
 msgid "Select All"
 msgstr "Összes Kijelölése"
-
-msgid "Clear"
-msgstr "Töröl"
 
 msgid "Undo"
 msgstr "Visszavonás"

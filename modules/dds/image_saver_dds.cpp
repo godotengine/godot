@@ -366,7 +366,7 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 		stream_buffer->put_32(b_mask);
 		stream_buffer->put_32(a_mask);
 
-		if (image->get_format() == Image::FORMAT_RGBA4444 || image->get_format() == Image::FORMAT_RGB565 || image->get_format() == Image::FORMAT_RGB8) {
+		if (image->get_format() == Image::FORMAT_RGBA4444 || image->get_format() == Image::FORMAT_RGB8) {
 			needs_pixeldata_swap = true;
 		}
 	} else if (format_type == DDFT_FOURCC) {
@@ -441,23 +441,6 @@ Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img) {
 
 					wb[data_i + 1] = ((ar & 0x0F) << 4) | ((gb & 0xF0) >> 4);
 					wb[data_i + 0] = ((ar & 0xF0) >> 4) | ((gb & 0x0F) << 4);
-				}
-			} else if (mip_image->get_format() == Image::FORMAT_RGB565) {
-				// RGB565 to BGR565
-				const int64_t data_size = data.size();
-				uint8_t *wb = data.ptrw();
-
-				for (int64_t data_i = 0; data_i < data_size; data_i += 2) {
-					uint16_t px = wb[data_i] | (wb[data_i + 1] << 8);
-
-					uint8_t r = (px >> 11) & 0x1F;
-					uint8_t g = (px >> 5) & 0x3F;
-					uint8_t b = px & 0x1F;
-
-					uint16_t out_px = (b << 11) | (g << 5) | r;
-
-					wb[data_i + 0] = out_px & 0xFF;
-					wb[data_i + 1] = (out_px >> 8) & 0xFF;
 				}
 			} else if (mip_image->get_format() == Image::FORMAT_RGB8) {
 				// RGB8 to BGR8

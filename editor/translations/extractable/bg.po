@@ -21,6 +21,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "Всички разпознати"
 
+msgid "Save"
+msgstr "Запазване"
+
+msgid "Clear"
+msgstr "Изчистване"
+
 msgid "Network"
 msgstr "Мрежа"
 
@@ -29,9 +35,6 @@ msgstr "Отваряне"
 
 msgid "Select Current Folder"
 msgstr "Избиране на текущата папка"
-
-msgid "Save"
-msgstr "Запазване"
 
 msgid "Select This Folder"
 msgstr "Избиране на тази папка"
@@ -66,11 +69,11 @@ msgstr "Път:"
 msgid "Refresh files."
 msgstr "Опресняване на файловете."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Превключване на видимостта на скритите файлове."
-
 msgid "Directories & Files:"
 msgstr "Папки и файлове:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Превключване на видимостта на скритите файлове."
 
 msgid "File:"
 msgstr "Файл:"
@@ -104,9 +107,6 @@ msgstr "Поставяне"
 
 msgid "Select All"
 msgstr "Избиране на всичко"
-
-msgid "Clear"
-msgstr "Изчистване"
 
 msgid "Undo"
 msgstr "Отмяна"

@@ -106,7 +106,7 @@ void BonePropertiesEditor::create_editors() {
 	meta_section->setup("bone_meta", TTR("Bone Metadata"), this, Color(.0f, .0f, .0f), true);
 	section->get_vbox()->add_child(meta_section);
 
-	add_metadata_button = EditorInspector::create_inspector_action_button(TTR("Add Bone Metadata"));
+	EditorInspectorActionButton *add_metadata_button = memnew(EditorInspectorActionButton(TTRC("Add Bone Metadata"), SNAME("Add")));
 	add_metadata_button->connect(SceneStringName(pressed), callable_mp(this, &BonePropertiesEditor::_show_add_meta_dialog));
 	section->get_vbox()->add_child(add_metadata_button);
 
@@ -121,7 +121,6 @@ void BonePropertiesEditor::_notification(int p_what) {
 			const Color section_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			section->set_bg_color(section_color);
 			rest_section->set_bg_color(section_color);
-			add_metadata_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }

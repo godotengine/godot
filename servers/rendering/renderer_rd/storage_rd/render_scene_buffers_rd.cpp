@@ -255,11 +255,20 @@ void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
 	if (mfx_spatial_context) {
 		return;
 	}
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RenderingDevice *rd = RD::get_singleton();
+
+	// Determine the output format of the render target.
+	RID dest = texture_storage->render_target_get_rd_texture(render_target);
+	RD::TextureFormat tf = rd->texture_get_format(dest);
+	RD::DataFormat output_format = tf.format;
+
 	RendererRD::MFXSpatialEffect::CreateParams params = {
 		.input_size = internal_size,
 		.output_size = target_size,
 		.input_format = base_data_format,
-		.output_format = RD::DATA_FORMAT_R8G8B8A8_UNORM,
+		.output_format = output_format,
 	};
 
 	mfx_spatial_context = p_effect->create_context(params);

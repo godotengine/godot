@@ -98,7 +98,6 @@ public:
 
 	// Adreno 3XX compatibility.
 	bool disable_particles_workaround = false; // Set to 'true' to disable 'GPUParticles'.
-	bool flip_xy_workaround = false;
 
 	// PowerVR GE 8320 workaround.
 	bool disable_transform_feedback_shader_cache = false;

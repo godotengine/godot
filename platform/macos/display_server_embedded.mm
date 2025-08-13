@@ -320,6 +320,11 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 	return mouse_mode_override_enabled;
 }
 
+void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
+	_THREAD_SAFE_METHOD_
+	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
+}
+
 Point2i DisplayServerEmbedded::mouse_get_position() const {
 	_THREAD_SAFE_METHOD_
 
@@ -470,19 +475,19 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CURSOR_SHAPE:
 		case FEATURE_IME:
-			// case FEATURE_CUSTOM_CURSOR_SHAPE:
+		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
-			// case FEATURE_MOUSE:
-			// case FEATURE_MOUSE_WARP:
+		case FEATURE_MOUSE:
+		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
 			// case FEATURE_WINDOW_TRANSPARENCY:
-			// case FEATURE_CLIPBOARD:
+		case FEATURE_CLIPBOARD:
 			// case FEATURE_KEEP_SCREEN_ON:
 			// case FEATURE_ORIENTATION:
 			// case FEATURE_VIRTUAL_KEYBOARD:
-			// case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_TEXT_TO_SPEECH:
 			// case FEATURE_TOUCHSCREEN:
 			return true;
 		default:
@@ -540,6 +545,21 @@ int DisplayServerEmbedded::screen_get_dpi(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
 
 	return 96;
+}
+
+float DisplayServerEmbedded::screen_get_scale(int p_screen) const {
+	_THREAD_SAFE_METHOD_
+
+	switch (p_screen) {
+		case SCREEN_WITH_MOUSE_FOCUS:
+		case SCREEN_WITH_KEYBOARD_FOCUS:
+		case SCREEN_PRIMARY:
+		case SCREEN_OF_MAIN_WINDOW:
+		case 0:
+			return state.screen_window_scale;
+		default:
+			return 1.0;
+	}
 }
 
 float DisplayServerEmbedded::screen_get_refresh_rate(int p_screen) const {
@@ -830,15 +850,16 @@ void DisplayServerEmbedded::swap_buffers() {
 }
 
 void DisplayServerEmbeddedState::serialize(PackedByteArray &r_data) {
-	r_data.resize(12);
+	r_data.resize(16);
 
 	uint8_t *data = r_data.ptrw();
 	data += encode_float(screen_max_scale, data);
 	data += encode_float(screen_dpi, data);
+	data += encode_float(screen_window_scale, data);
 	data += encode_uint32(display_id, data);
 
 	// Assert we had enough space.
-	DEV_ASSERT((data - r_data.ptrw()) >= r_data.size());
+	DEV_ASSERT(r_data.size() >= (data - r_data.ptrw()));
 }
 
 Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
@@ -847,6 +868,8 @@ Error DisplayServerEmbeddedState::deserialize(const PackedByteArray &p_data) {
 	screen_max_scale = decode_float(data);
 	data += sizeof(float);
 	screen_dpi = decode_float(data);
+	data += sizeof(float);
+	screen_window_scale = decode_float(data);
 	data += sizeof(float);
 	display_id = decode_uint32(data);
 

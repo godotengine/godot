@@ -662,6 +662,7 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOri
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX(p_screen, screen_count);
 
+	screen_orientation = p_orientation;
 	if (@available(iOS 16.0, *)) {
 		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
 	}

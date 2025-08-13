@@ -298,6 +298,19 @@ void __print_line_rich(const String &p_string) {
 	is_printing = false;
 }
 
+void print_raw(const String &p_string) {
+	if (is_printing) {
+		__print_fallback(p_string, true);
+		return;
+	}
+
+	is_printing = true;
+
+	OS::get_singleton()->print("%s", p_string.utf8().get_data());
+
+	is_printing = false;
+}
+
 void print_error(const String &p_string) {
 	if (!CoreGlobals::print_error_enabled) {
 		return;

@@ -4255,6 +4255,19 @@ void DisplayServerWindows::window_start_drag(WindowID p_window) {
 	ScreenToClient(wd.hWnd, &coords);
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
+
+	for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton(btn))) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(p_window);
+			mb->set_pressed(false);
+			mb->set_button_index(MouseButton::LEFT);
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(mb->get_position());
+			Input::get_singleton()->parse_input_event(mb);
+		}
+	}
 }
 
 void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
@@ -4305,6 +4318,19 @@ void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID
 	}
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_SIZE | op, MAKELPARAM(coords.x, coords.y));
+
+	for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton(btn))) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(p_window);
+			mb->set_pressed(false);
+			mb->set_button_index(MouseButton::LEFT);
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(mb->get_position());
+			Input::get_singleton()->parse_input_event(mb);
+		}
+	}
 }
 
 void DisplayServerWindows::set_context(Context p_context) {

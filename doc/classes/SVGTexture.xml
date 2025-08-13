@@ -19,6 +19,12 @@
 				Creates a new [SVGTexture] and initializes it by allocating and setting the SVG data from string.
 			</description>
 		</method>
+		<method name="get_scaled_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the texture rasterized to match the oversampling of the currently drawn canvas item.
+			</description>
+		</method>
 		<method name="get_source" qualifiers="const">
 			<return type="String" />
 			<description>

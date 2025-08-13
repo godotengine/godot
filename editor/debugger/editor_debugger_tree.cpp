@@ -95,10 +95,7 @@ void EditorDebuggerTree::_scene_tree_selection_changed(TreeItem *p_item, int p_c
 		if (inspected_object_ids.size() == (int)EDITOR_GET("debugger/max_node_selection")) {
 			selection_surpassed_limit = true;
 			p_item->deselect(0);
-			return;
-		}
-
-		if (!inspected_object_ids.has(id)) {
+		} else if (!inspected_object_ids.has(id)) {
 			inspected_object_ids.append(id);
 		}
 	} else if (inspected_object_ids.has(id)) {

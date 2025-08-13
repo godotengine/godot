@@ -423,8 +423,18 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		actions_cache = p_action_infos;
 	}
 
+	HashSet<String> collapsed_actions;
+	TreeItem *root = action_tree->get_root();
+	if (root) {
+		for (TreeItem *child = root->get_first_child(); child; child = child->get_next()) {
+			if (child->is_collapsed()) {
+				collapsed_actions.insert(child->get_meta("__name"));
+			}
+		}
+	}
+
 	action_tree->clear();
-	TreeItem *root = action_tree->create_item();
+	root = action_tree->create_item();
 
 	for (const ActionInfo &action_info : actions_cache) {
 		const Array events = action_info.action["events"];
@@ -444,6 +454,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 		ERR_FAIL_NULL(action_item);
 		action_item->set_meta("__action", action_info.action);
 		action_item->set_meta("__name", action_info.name);
+		action_item->set_collapsed(collapsed_actions.has(action_info.name));
 
 		// First Column - Action Name
 		action_item->set_auto_translate_mode(0, AUTO_TRANSLATE_MODE_DISABLED);

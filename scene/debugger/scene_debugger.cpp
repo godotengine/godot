@@ -1922,18 +1922,6 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		return;
 	}
 
-	int limit = max_selection - selected_ci_nodes.size();
-#ifndef _3D_DISABLED
-	limit -= selected_3d_nodes.size();
-#endif // _3D_DISABLED
-	if (limit <= 0) {
-		return;
-	}
-	if (picked_nodes.size() > limit) {
-		picked_nodes.resize(limit);
-		EngineDebugger::get_singleton()->send_message("show_selection_limit_warning", Array());
-	}
-
 	LocalVector<Node *> nodes;
 	LocalVector<ObjectID> ids;
 	for (Node *node : picked_nodes) {
@@ -1963,6 +1951,16 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		}
 	}
 
+	uint32_t limit = max_selection - selected_ci_nodes.size();
+#ifndef _3D_DISABLED
+	limit -= selected_3d_nodes.size();
+#endif // _3D_DISABLED
+	if (ids.size() > limit) {
+		ids.resize(limit);
+		nodes.resize(limit);
+		EngineDebugger::get_singleton()->send_message("show_selection_limit_warning", Array());
+	}
+
 	for (ObjectID id : selected_ci_nodes) {
 		ids.push_back(id);
 		nodes.push_back(ObjectDB::get_instance<Node>(id));
@@ -1973,11 +1971,6 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		nodes.push_back(ObjectDB::get_instance<Node>(KV.key));
 	}
 #endif // _3D_DISABLED
-
-	if (ids.size() > (unsigned)max_selection) {
-		ids.resize(max_selection);
-		EngineDebugger::get_singleton()->send_message("show_selection_limit_warning", Array());
-	}
 
 	if (ids.is_empty()) {
 		EngineDebugger::get_singleton()->send_message("remote_nothing_selected", message);
