@@ -32,7 +32,7 @@
 #include "core/extension/gdextension.h"
 #include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/variant/variant.h"
-#include "core/extension/gdextension_interface.h"
+#include "gdextension_interface.h"
 #include "scene/main/window.h"
 #include "spx_engine.h"
 #include "spx_audio_mgr.h"

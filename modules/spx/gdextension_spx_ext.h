@@ -31,7 +31,7 @@
 #ifndef GDEXTENSION_SPX_EXT_H
 #define GDEXTENSION_SPX_EXT_H
 
-#include "core/extension/gdextension_interface.h"
+#include "gdextension_interface.h"
 #ifndef NOT_GODOT_ENGINE
 #include "core/variant/variant.h"
 extern void gdextension_spx_setup_interface();
