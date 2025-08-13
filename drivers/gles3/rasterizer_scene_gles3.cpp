@@ -2516,8 +2516,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	scene_state.reset_gl_state();
 
 	// If SSAO is enabled, we definitely need the depth buffer.
-	if (environment_get_ssao_enabled(render_data.environment)) {
-		scene_state.used_depth_texture = true;
+	if (render_data.environment.is_valid()) {
+		if (environment_get_ssao_enabled(render_data.environment)) {
+			scene_state.used_depth_texture = true;
+		}
 	}
 
 	// Do depth prepass if it's explicitly enabled
