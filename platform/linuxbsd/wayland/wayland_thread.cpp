@@ -3082,6 +3082,8 @@ void WaylandThread::_godot_embedded_client_on_window_focus_out(void *data, struc
 
 // NOTE: This must be started after a valid wl_display is loaded.
 void WaylandThread::_poll_events_thread(void *p_data) {
+	Thread::set_name("Wayland Events");
+
 	ThreadData *data = (ThreadData *)p_data;
 	ERR_FAIL_NULL(data);
 	ERR_FAIL_NULL(data->wl_display);

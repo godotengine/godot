@@ -2422,6 +2422,8 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 }
 
 void WaylandEmbedder::_thread_loop(void *p_data) {
+	Thread::set_name("Wayland Embed");
+
 	ERR_FAIL_NULL(p_data);
 	WaylandEmbedder *proxy = (WaylandEmbedder *)p_data;
 
