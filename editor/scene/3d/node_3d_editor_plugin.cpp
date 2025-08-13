@@ -97,8 +97,11 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/shader.h"
 #include "scene/resources/surface_tool.h"
 
 constexpr real_t DISTANCE_DEFAULT = 4;
@@ -632,6 +635,9 @@ void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 		position_control->queue_redraw();
 		look_control->queue_redraw();
 		spatial_editor->update_grid();
+		if (spatial_editor->outline_enabled) {
+			_queue_update_outline();
+		}
 	}
 }
 
@@ -3237,6 +3243,10 @@ void Node3DEditorViewport::_notification(int p_what) {
 
 		case NOTIFICATION_RESIZED: {
 			callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view).call_deferred();
+			selection_buffer_viewport->set_size(viewport->get_size());
+			if (spatial_editor->outline_enabled) {
+				callable_mp(this, &Node3DEditorViewport::_update_outline).call_deferred();
+			}
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -3325,34 +3335,16 @@ void Node3DEditorViewport::_notification(int p_what) {
 				se->last_xform_dirty = false;
 				se->last_xform = t;
 
-				se->aabb = new_aabb;
-
-				Transform3D t_offset = t;
-
-				// apply AABB scaling before item's global transform
-				{
-					const Vector3 offset(0.005, 0.005, 0.005);
-					Basis aabb_s;
-					aabb_s.scale(se->aabb.size + offset);
-					t.translate_local(se->aabb.position - offset / 2);
-					t.basis = t.basis * aabb_s;
-				}
-				{
-					const Vector3 offset(0.01, 0.01, 0.01);
-					Basis aabb_s;
-					aabb_s.scale(se->aabb.size + offset);
-					t_offset.translate_local(se->aabb.position - offset / 2);
-					t_offset.basis = t_offset.basis * aabb_s;
-				}
-
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
-				RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
+				_update_selected_item_aabb(sp);
 			}
 
 			if (changed || (spatial_editor->is_gizmo_visible() && !exist)) {
 				spatial_editor->update_transform_gizmo();
+			}
+
+			if (changed) {
+				// This is only triggered in the first viewport since the cache will be already updated for the rest.
+				spatial_editor->update_outlines_all_viewports();
 			}
 
 			if (message_time > 0) {
@@ -3547,6 +3539,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 			surface->connect(SceneStringName(focus_exited), callable_mp(this, &Node3DEditorViewport::_surface_focus_exit));
 
 			_init_gizmo_instance(index);
+			if (spatial_editor->outline_enabled) {
+				callable_mp(this, &Node3DEditorViewport::_queue_update_outline).call_deferred();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -4142,6 +4137,8 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 					preview_camera->show();
 				}
 			}
+
+			_queue_update_outline();
 		} break;
 		case VIEW_GIZMOS: {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS);
@@ -4155,6 +4152,9 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			camera->set_cull_mask(layers);
 			view_display_menu->get_popup()->set_item_checked(idx, current);
 
+			gizmos_visible = current;
+
+			_queue_update_outline();
 		} break;
 		case VIEW_TRANSFORM_GIZMO: {
 			int idx = view_display_menu->get_popup()->get_item_index(VIEW_TRANSFORM_GIZMO);
@@ -4443,6 +4443,8 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 		RS::get_singleton()->viewport_attach_camera(viewport->get_viewport_rid(), preview->get_camera()); //replace
 		surface->queue_redraw();
 	}
+
+	_queue_update_outline();
 }
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
@@ -4664,6 +4666,7 @@ void Node3DEditorViewport::set_state(const Dictionary &p_state) {
 		int idx = view_display_menu->get_popup()->get_item_index(VIEW_GIZMOS);
 		if (view_display_menu->get_popup()->is_item_checked(idx) != gizmos) {
 			_menu_option(VIEW_GIZMOS);
+			_queue_update_outline();
 		}
 	}
 	if (p_state.has("transform_gizmo")) {
@@ -5557,6 +5560,7 @@ void Node3DEditorViewport::commit_transform() {
 		undo_redo->add_do_method(sp, "set_transform", sp->get_local_gizmo_transform());
 		undo_redo->add_undo_method(sp, "set_transform", se->original_local);
 	}
+
 	undo_redo->commit_action();
 
 	collision_reposition = false;
@@ -6043,7 +6047,6 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	c->add_child(viewport);
 	surface = memnew(Control);
 	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
-	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);
 	camera = memnew(Camera3D);
@@ -6419,9 +6422,26 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::update_transform_gizmo_view));
+	_init_outline();
+	add_child(surface);
+
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &Node3DEditorViewport::_update_outline));
 }
 
 Node3DEditorViewport::~Node3DEditorViewport() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	for (const KeyValue<ObjectID, Vector<RID>> &E : cached_outline_instances) {
+		for (const RID &instance : E.value) {
+			if (instance.is_valid()) {
+				rs->free(instance);
+			}
+		}
+	}
+
+	cached_outline_instances.clear();
+	cached_base_rids.clear();
+
 	memdelete(ruler);
 	memdelete(frame_time_gradient);
 }
@@ -6853,6 +6873,14 @@ void Node3DEditor::update_all_gizmos(Node *p_node) {
 	_update_all_gizmos(p_node);
 }
 
+void Node3DEditor::update_outlines_all_viewports() {
+	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
+		if (viewports[i]->is_visible_in_tree()) {
+			viewports[i]->_queue_update_outline();
+		}
+	}
+}
+
 Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	Node3D *sp = Object::cast_to<Node3D>(p_what);
 	if (!sp) {
@@ -6904,6 +6932,407 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
 	return si;
+}
+
+void Node3DEditorViewport::_init_outline() {
+	selection_buffer_viewport = memnew(SubViewport);
+	selection_buffer_viewport->set_size(viewport->get_size());
+	selection_buffer_viewport->set_update_mode(SubViewport::UPDATE_DISABLED);
+	selection_buffer_viewport->set_clear_mode(SubViewport::CLEAR_MODE_ALWAYS);
+	selection_buffer_viewport->set_use_hdr_2d(false);
+	selection_buffer_viewport->set_default_canvas_item_texture_filter(Viewport::DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	selection_buffer_viewport->set_world_3d(memnew(World3D));
+	selection_buffer_viewport->set_transparent_background(true);
+
+	add_child(selection_buffer_viewport);
+
+	selection_buffer_camera = memnew(Camera3D);
+	selection_buffer_camera->set_cull_mask(1 << SELECTION_OUTLINE_LAYER);
+	selection_buffer_viewport->add_child(selection_buffer_camera);
+	selection_buffer_camera->make_current();
+
+	_create_outline_shaders();
+	_create_outline_compositor();
+}
+
+void Node3DEditorViewport::_create_outline_shaders() {
+	selection_buffer_shader.instantiate();
+	// Encode presence in R, active in G to distinguish active vs selected in post.
+	selection_buffer_shader->set_code(R"(
+shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+uniform float object_present = 0.0;
+uniform float color_code = 0.0;
+
+void fragment() {
+	ALBEDO = vec3(object_present, color_code, 0.0);
+}
+)");
+}
+
+static Ref<ShaderMaterial> _make_selection_material(const Ref<Shader> &p_shader, bool p_active) {
+	Ref<ShaderMaterial> mat;
+	mat.instantiate();
+	mat->set_shader(p_shader);
+	mat->set_shader_parameter("object_present", 1.0f);
+	mat->set_shader_parameter("color_code", p_active ? 1.0f : 0.0f);
+	return mat;
+}
+
+void Node3DEditorViewport::_create_outline_compositor() {
+	outline_compositor = memnew(TextureRect);
+	outline_compositor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+	outline_compositor->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	outline_compositor->set_stretch_mode(TextureRect::STRETCH_SCALE);
+	outline_compositor->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+
+	Ref<Shader> edge_shader;
+	edge_shader.instantiate();
+	// 8-neighbor edge detection.
+	edge_shader->set_code(R"(
+shader_type canvas_item;
+
+uniform sampler2D selection_buffer_texture : filter_nearest;
+uniform vec4 outline_color : source_color = vec4(1.0, 0.5, 0.0, 1.0);
+uniform vec4 active_outline_color : source_color = vec4(1.5, 0.75, 0.0, 1.0);
+uniform float outline_width : hint_range(0.5, 5.0) = 1.0;
+
+void fragment() {
+	vec2 size = vec2(textureSize(selection_buffer_texture, 0));
+	vec2 pixel = outline_width / size;
+
+	vec2 center_rg = texture(selection_buffer_texture, UV).rg;
+	float center_present = center_rg.r;
+	float center_active = center_rg.g;
+
+	vec4 scene_color = texture(TEXTURE, UV);
+	vec4 out_color = scene_color;
+
+	vec2 left_rg   = texture(selection_buffer_texture, UV + vec2(-pixel.x, 0.0)).rg;
+	vec2 right_rg  = texture(selection_buffer_texture, UV + vec2(pixel.x, 0.0)).rg;
+	vec2 top_rg    = texture(selection_buffer_texture, UV + vec2(0.0, -pixel.y)).rg;
+	vec2 bottom_rg = texture(selection_buffer_texture, UV + vec2(0.0, pixel.y)).rg;
+	vec2 tl_rg = texture(selection_buffer_texture, UV + vec2(-pixel.x, -pixel.y)).rg;
+	vec2 tr_rg = texture(selection_buffer_texture, UV + vec2(pixel.x, -pixel.y)).rg;
+	vec2 bl_rg = texture(selection_buffer_texture, UV + vec2(-pixel.x, pixel.y)).rg;
+	vec2 br_rg = texture(selection_buffer_texture, UV + vec2(pixel.x, pixel.y)).rg;
+
+	float active_threshold = 0.5;
+	bool center_is_active = center_present > 0.0 && center_active >= active_threshold;
+	bool center_is_selected = center_present > 0.0 && center_active < active_threshold;
+	bool center_is_background = center_present <= 0.0;
+	bool has_edge = false;
+	bool edge_has_active = false;
+
+	vec2 neighbors[8] = vec2[8](left_rg, right_rg, top_rg, bottom_rg, tl_rg, tr_rg, bl_rg, br_rg);
+	for (int i = 0; i < 8; i++) {
+		float neighbor_present = neighbors[i].r;
+		float neighbor_active = neighbors[i].g;
+		bool neighbor_is_active = neighbor_present > 0.0 && neighbor_active >= active_threshold;
+		bool neighbor_is_selected = neighbor_present > 0.0 && neighbor_active < active_threshold;
+		bool neighbor_is_background = neighbor_present <= 0.0;
+
+		if ((center_is_background && neighbor_present > 0.0) ||
+			(neighbor_is_background && center_present > 0.0) ||
+			(center_is_active && neighbor_is_selected) ||
+			(center_is_selected && neighbor_is_active)) {
+			has_edge = true;
+			if (neighbor_is_active || center_is_active) {
+				edge_has_active = true;
+			}
+		}
+	}
+
+	if (has_edge) {
+		vec4 color = edge_has_active ? active_outline_color : outline_color;
+		out_color = mix(scene_color, vec4(color.rgb, 1.0), color.a);
+	}
+
+	COLOR = out_color;
+}
+)");
+
+	Ref<ShaderMaterial> edge_material;
+	edge_material.instantiate();
+	edge_material->set_shader(edge_shader);
+	outline_compositor->set_material(edge_material);
+	add_child(outline_compositor);
+	outline_compositor->set_visible(false);
+}
+
+void Node3DEditorViewport::_update_outline_material(Ref<ShaderMaterial> p_material) {
+	ERR_FAIL_COND(p_material.is_null());
+
+	Color outline_color = EDITOR_GET("editors/3d/selection_outline/color");
+	Color active_outline_color = EDITOR_GET("editors/3d/selection_outline/active_color");
+	float thickness = EDITOR_GET("editors/3d/selection_outline/thickness");
+
+	p_material->set_shader_parameter("outline_color", outline_color);
+	p_material->set_shader_parameter("active_outline_color", active_outline_color);
+	p_material->set_shader_parameter("outline_width", thickness);
+}
+
+void Node3DEditorViewport::_create_selection_buffer_instances(Node3D *p_node, bool p_is_active, RID p_scenario) {
+	ERR_FAIL_NULL(p_node);
+
+	List<GeometryInstance3D *> geometry_instances;
+	_find_geometry_instances_recursive(p_node, geometry_instances);
+	if (geometry_instances.is_empty()) {
+		return;
+	}
+
+	if (selection_buffer_material_active.is_null()) {
+		selection_buffer_material_active = _make_selection_material(selection_buffer_shader, true);
+	}
+	if (selection_buffer_material_selected.is_null()) {
+		selection_buffer_material_selected = _make_selection_material(selection_buffer_shader, false);
+	}
+	Ref<ShaderMaterial> id_mat = p_is_active ? selection_buffer_material_active : selection_buffer_material_selected;
+
+	ObjectID node_id = p_node->get_instance_id();
+	if (!selection_id_instances.has(node_id)) {
+		selection_id_instances[node_id] = Vector<RID>();
+	}
+
+	if (cached_outline_instances.has(node_id)) {
+		Vector<RID> &cached_instances = cached_outline_instances[node_id];
+
+		bool geometry_valid = (cached_instances.size() == geometry_instances.size());
+		if (geometry_valid && cached_base_rids.has(node_id)) {
+			Vector<RID> &cached_bases = cached_base_rids[node_id];
+			if (cached_bases.size() == geometry_instances.size()) {
+				int i = 0;
+				for (GeometryInstance3D *geom_inst : geometry_instances) {
+					RID current_base = geom_inst->get_base();
+					RID cached_base = cached_bases[i];
+
+					if (current_base != cached_base) {
+						geometry_valid = false;
+						break;
+					}
+					i++;
+				}
+			} else {
+				geometry_valid = false;
+			}
+		}
+
+		if (geometry_valid) {
+			RenderingServer *rs = RenderingServer::get_singleton();
+			int i = 0;
+			for (GeometryInstance3D *geom_inst : geometry_instances) {
+				RID instance = cached_instances[i];
+
+				rs->instance_set_transform(instance, geom_inst->get_global_transform());
+				rs->instance_geometry_set_material_override(instance, id_mat->get_rid());
+				rs->instance_set_layer_mask(instance, 1 << SELECTION_OUTLINE_LAYER);
+				rs->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
+				rs->instance_set_visible(instance, true);
+
+				selection_id_instances[node_id].push_back(instance);
+				i++;
+			}
+			return;
+		}
+
+		RenderingServer *rs = RenderingServer::get_singleton();
+		for (const RID &instance : cached_instances) {
+			if (instance.is_valid()) {
+				rs->free(instance);
+			}
+		}
+		cached_instances.clear();
+
+		if (cached_base_rids.has(node_id)) {
+			cached_base_rids[node_id].clear();
+		}
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+	Vector<RID> new_instances;
+	Vector<RID> new_base_rids;
+
+	for (GeometryInstance3D *geom_inst : geometry_instances) {
+		RID base = geom_inst->get_base();
+		if (!base.is_valid()) {
+			continue;
+		}
+
+		RID instance = rs->instance_create2(base, p_scenario);
+		rs->instance_set_transform(instance, geom_inst->get_global_transform());
+		rs->instance_geometry_set_material_override(instance, id_mat->get_rid());
+		rs->instance_set_layer_mask(instance, 1 << SELECTION_OUTLINE_LAYER);
+		rs->instance_geometry_set_cast_shadows_setting(instance, RS::SHADOW_CASTING_SETTING_OFF);
+		rs->instance_set_visible(instance, true);
+
+		selection_id_instances[node_id].push_back(instance);
+		new_instances.push_back(instance);
+		new_base_rids.push_back(base);
+	}
+
+	cached_outline_instances[node_id] = new_instances;
+	cached_base_rids[node_id] = new_base_rids;
+}
+
+void Node3DEditorViewport::_hide_aabb_instances(const HashMap<Node *, Object *> &p_selection) {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	for (const KeyValue<Node *, Object *> &E : p_selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
+		if (!sp) {
+			continue;
+		}
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+		if (!se) {
+			continue;
+		}
+
+		rs->instance_set_visible(se->sbox_instance, false);
+		rs->instance_set_visible(se->sbox_instance_offset, false);
+		rs->instance_set_visible(se->sbox_instance_xray, false);
+		rs->instance_set_visible(se->sbox_instance_xray_offset, false);
+	}
+}
+
+void Node3DEditorViewport::_update_outline() {
+	_clear_outline();
+	EditorSelection *es = EditorNode::get_singleton()->get_editor_selection();
+	ERR_FAIL_NULL(es);
+
+	const HashMap<Node *, Object *> &selection = es->get_selection();
+	if (selection.is_empty()) {
+		outline_compositor->set_visible(false);
+		return;
+	}
+
+	bool should_show_outline = spatial_editor->outline_enabled && gizmos_visible && !previewing_cinema && !previewing;
+	if (!should_show_outline) {
+		outline_compositor->set_visible(false);
+		return;
+	}
+
+	_sync_selection_buffer_camera();
+
+	Node3D *active_node = spatial_editor->get_active_node();
+	RID scenario = selection_buffer_viewport->get_world_3d()->get_scenario();
+	if (!active_node && !selection.is_empty()) {
+		active_node = Object::cast_to<Node3D>(selection.begin()->key);
+	}
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
+		if (!sp) {
+			continue;
+		}
+		_create_selection_buffer_instances(sp, (sp == active_node), scenario);
+	}
+
+	RenderingServer::get_singleton()->viewport_set_update_mode(selection_buffer_viewport->get_viewport_rid(), RenderingServer::VIEWPORT_UPDATE_ONCE);
+
+	outline_compositor->set_texture(viewport->get_texture());
+	Ref<ShaderMaterial> mat = outline_compositor->get_material();
+	if (mat.is_valid()) {
+		mat->set_shader_parameter("selection_buffer_texture", selection_buffer_viewport->get_texture());
+		_update_outline_material(mat);
+	}
+	outline_compositor->set_visible(true);
+	_hide_aabb_instances(selection);
+}
+
+void Node3DEditorViewport::_queue_update_outline() {
+	if (outline_update_pending) {
+		return;
+	}
+	outline_update_pending = true;
+	callable_mp(this, &Node3DEditorViewport::_deferred_update_outline).call_deferred();
+}
+
+void Node3DEditorViewport::_deferred_update_outline() {
+	outline_update_pending = false;
+	_update_outline();
+}
+
+void Node3DEditorViewport::_sync_selection_buffer_camera() {
+	selection_buffer_camera->set_global_transform(camera->get_global_transform());
+	selection_buffer_camera->set_fov(camera->get_fov());
+	selection_buffer_camera->set_near(camera->get_near());
+	selection_buffer_camera->set_far(camera->get_far());
+	selection_buffer_camera->set_projection(camera->get_projection());
+	selection_buffer_camera->set_size(camera->get_size());
+	selection_buffer_camera->set_frustum_offset(camera->get_frustum_offset());
+}
+
+void Node3DEditorViewport::_update_selected_item_aabb(Node3D *p_node) {
+	ERR_FAIL_NULL(p_node);
+
+	Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(p_node);
+	ERR_FAIL_NULL(se);
+	Transform3D t = p_node->get_global_gizmo_transform();
+	if (!t.is_finite()) {
+		return;
+	}
+	AABB new_aabb = _calculate_spatial_bounds(p_node);
+	se->aabb = new_aabb;
+	Transform3D t_offset = t;
+	{
+		const Vector3 offset(0.005, 0.005, 0.005);
+		Basis aabb_s;
+		aabb_s.scale(se->aabb.size + offset);
+		t.translate_local(se->aabb.position - offset / 2);
+		t.basis = t.basis * aabb_s;
+	}
+	{
+		const Vector3 offset(0.01, 0.01, 0.01);
+		Basis aabb_s;
+		aabb_s.scale(se->aabb.size + offset);
+		t_offset.translate_local(se->aabb.position - offset / 2);
+		t_offset.basis = t_offset.basis * aabb_s;
+	}
+	bool show_aabb = !spatial_editor->outline_enabled;
+	RenderingServer::get_singleton()->instance_set_visible(se->sbox_instance, show_aabb);
+	RenderingServer::get_singleton()->instance_set_visible(se->sbox_instance_offset, show_aabb);
+	RenderingServer::get_singleton()->instance_set_visible(se->sbox_instance_xray, show_aabb);
+	RenderingServer::get_singleton()->instance_set_visible(se->sbox_instance_xray_offset, show_aabb);
+	if (show_aabb) {
+		RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance, t);
+		RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_offset, t_offset);
+		RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray, t);
+		RenderingServer::get_singleton()->instance_set_transform(se->sbox_instance_xray_offset, t_offset);
+	}
+}
+
+void Node3DEditorViewport::_clear_outline() {
+	RenderingServer *rs = RenderingServer::get_singleton();
+	for (const KeyValue<ObjectID, Vector<RID>> &E : selection_id_instances) {
+		ObjectID node_id = E.key;
+		const Vector<RID> &instances = E.value;
+
+		if (cached_outline_instances.has(node_id)) {
+			for (const RID &instance : instances) {
+				if (instance.is_valid()) {
+					rs->instance_set_visible(instance, false);
+				}
+			}
+		} else {
+			for (const RID &instance : instances) {
+				if (instance.is_valid()) {
+					rs->free(instance);
+				}
+			}
+		}
+	}
+	selection_id_instances.clear();
+}
+
+void Node3DEditorViewport::_find_geometry_instances_recursive(Node *p_node, List<GeometryInstance3D *> &r_list) {
+	ERR_FAIL_NULL(p_node);
+	GeometryInstance3D *geom_instance = Object::cast_to<GeometryInstance3D>(p_node);
+	if (geom_instance && geom_instance->is_visible_in_tree() && geom_instance->get_base().is_valid()) {
+		r_list.push_back(geom_instance);
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_find_geometry_instances_recursive(p_node->get_child(i), r_list);
+	}
 }
 
 void Node3DEditor::_generate_selection_boxes() {
@@ -8451,6 +8880,8 @@ void Node3DEditor::_selection_changed() {
 
 	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
 
+	update_outlines_all_viewports();
+
 	for (const KeyValue<Node *, Object *> &E : selection) {
 		Node3D *sp = Object::cast_to<Node3D>(E.key);
 		if (!sp) {
@@ -8927,6 +9358,22 @@ void Node3DEditor::_notification(int p_what) {
 					active_selection_box_mat->set_albedo(active_selection_box_color);
 					active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
 				}
+				outline_enabled = EDITOR_GET("editors/3d/selection_outline/enabled");
+				update_outlines_all_viewports();
+				{
+					EditorSelection *es = EditorNode::get_singleton()->get_editor_selection();
+					if (es) {
+						const HashMap<Node *, Object *> &selection = es->get_selection();
+						for (const KeyValue<Node *, Object *> &E : selection) {
+							Node3D *sp = Object::cast_to<Node3D>(E.key);
+							if (!sp) {
+								continue;
+							}
+							viewports[0]->_update_selected_item_aabb(sp);
+						}
+					}
+				}
+				update_transform_gizmo();
 
 				// Update grid color by rebuilding grid.
 				_finish_grid();
@@ -9963,6 +10410,8 @@ Node3DEditor::Node3DEditor() {
 		viewports[i]->assign_pending_data_pointers(preview_node, &preview_bounds, accept);
 		viewport_base->add_child(viewports[i]);
 	}
+
+	outline_enabled = EDITOR_GET("editors/3d/selection_outline/enabled");
 
 	/* SNAP DIALOG */
 
