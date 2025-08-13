@@ -127,9 +127,9 @@ void PostEffects::post_copy(
 
 	if (p_ssao_enabled) {
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, p_source_depth);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Thanks to mrjustaguy!
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glBindTexture(texture_target, p_source_depth);
+		glTexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // Thanks to mrjustaguy!
+		glTexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_INTENSITY, p_ssao_strength, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_RADIUS_FRAC, p_ssao_radius, post.shader_version, mode, flags);
@@ -160,7 +160,7 @@ void PostEffects::post_copy(
 	}
 	if (p_ssao_enabled) {
 		glActiveTexture(GL_TEXTURE3);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(texture_target, 0);
 	}
 
 	// Return back to nearest

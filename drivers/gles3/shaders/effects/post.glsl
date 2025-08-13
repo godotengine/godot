@@ -97,7 +97,12 @@ uniform float ssao_intensity;
 uniform float ssao_radius_frac;
 uniform float ssao_falloff_frac;
 uniform vec2 ssao_prn_UV;
+#ifdef USE_MULTIVIEW
+// VR will have 2 depth buffers.
+uniform sampler2DArray depth_buffer_array; // texunit:3
+#else
 uniform sampler2D depth_buffer; // texunit:3
+#endif
 #include "../s4ao_inc.glsl"
 #endif
 
