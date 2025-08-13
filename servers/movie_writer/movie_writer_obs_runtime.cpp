@@ -1,12 +1,12 @@
 /**************************************************************************/
-/*  obs_style_movie_writer.cpp                                           */
+/*  movie_writer_obs_runtime.cpp                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
 
-#include "obs_style_movie_writer.h"
+#include "movie_writer_obs_runtime.h"
 #include "core/string/print_string.h"
 #include "core/config/project_settings.h"
 #include "servers/audio_server.h"
@@ -57,10 +57,6 @@ ObsStyleMovieWriter::ObsStyleMovieWriter() :
     if (ProjectSettings::get_singleton()->has_setting("movie_writer/obs_ffmpeg_path")) {
         obs_config.ffmpeg_path = GLOBAL_GET("movie_writer/obs_ffmpeg_path");
     }
-    if (ProjectSettings::get_singleton()->has_setting("movie_writer/obs_enable_web_auto_download")) {
-        enable_web_auto_download = GLOBAL_GET("movie_writer/obs_enable_web_auto_download");
-    }
-    
     // Initialize post-merge processor
     post_merge_processor = new PostMergeProcessor();
     

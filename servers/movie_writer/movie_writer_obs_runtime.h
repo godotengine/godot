@@ -1,13 +1,13 @@
 /**************************************************************************/
-/*  obs_style_movie_writer.h                                             */
+/*  movie_writer_obs_runtime.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
 /*                        https://godotengine.org                         */
 /**************************************************************************/
 
-#ifndef OBS_STYLE_MOVIE_WRITER_H
-#define OBS_STYLE_MOVIE_WRITER_H
+#ifndef MOVIE_WRITER_OBS_RUNTIME_H
+#define MOVIE_WRITER_OBS_RUNTIME_H
 
 #include "movie_writer.h"
 #include "thread_safe_frame_buffer.h"
@@ -179,4 +179,4 @@ public:
     static bool is_supported_format(const String &p_extension);
 };
 
-#endif // OBS_STYLE_MOVIE_WRITER_H 
+#endif // MOVIE_WRITER_OBS_RUNTIME_H 

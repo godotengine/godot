@@ -348,13 +348,82 @@ const GodotAudioRecorder = {
 			return 'video/webm';
 		},
 		
-		tryStartRecording: function() {
-			console.log("TODO request to record video ")
+		tryStartRecording: function(filename = "recording") {			
+			try {
+				// 1. Check preconditions
+				if (!GodotAudioRecorder.targetCanvas) {
+					console.error("Canvas not set. Call Module.setRecorderCanvas() first");
+					return false;
+				}
+				
+				// 2. Call C++ bridge function to synchronize state
+				const filenamePtr = GodotRuntime.allocString(filename);
+				const cppResult = Module._godot_web_recording_request_start(filenamePtr);
+				GodotRuntime.free(filenamePtr);
+				
+				if (cppResult !== 1) {
+					console.error("C++ recording start failed");
+					return false;
+				}
+				
+				// 3. Start actual recording functionality (using existing code)
+				if (!GodotAudioRecorder.initVideoRecorder(30)) {
+					console.error("Failed to initialize video recorder");
+					Module._godot_web_recording_request_stop(); // Rollback C++ state
+					return false;
+				}
+				
+				if (!GodotAudioRecorder.startVideoRecording()) {
+					console.error("Failed to start video recording");
+					Module._godot_web_recording_request_stop(); // Rollback C++ state
+					return false;
+				}
+				
+				return true;
+				
+			} catch (error) {
+				console.error("Error in tryStartRecording:", error.message);
+				// Ensure C++ state rollback
+				try { Module._godot_web_recording_request_stop(); } catch(e) {}
+				return false;
+			}
 		},
 
-		tryStopRecording: async function() {
-			console.log("TODO request to record video ")
-			return null // return the video data
+		tryStopRecording: async function() {			
+			try {
+				// 1. Check if recording is active
+				if (Module._godot_web_recording_is_active && !Module._godot_web_recording_is_active()) {
+					console.warn("No active recording to stop");
+					return null;
+				}
+				
+				// 2. Stop actual recording (using existing code)
+				if (!GodotAudioRecorder.stopVideoRecording()) {
+					console.error("Failed to stop video recording");
+					return null;
+				}
+				
+				// 3. Wait for recording data processing to complete
+				await new Promise(resolve => setTimeout(resolve, 300));
+				
+				// 4. Update C++ state
+				Module._godot_web_recording_request_stop();
+				
+				// 5. Get recording result
+				const videoBlob = GodotAudioRecorder.getRecordedVideoBlob();
+				if (videoBlob && videoBlob.size > 0) {
+					return videoBlob;
+				} else {
+					console.warn("No video data available");
+					return null;
+				}
+				
+			} catch (error) {
+				console.error("Error in tryStopRecording:", error.message);
+				// Ensure C++ state synchronization
+				try { Module._godot_web_recording_request_stop(); } catch(e) {}
+				return null;
+			}
 		},
 
 		/**
