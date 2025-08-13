@@ -35,6 +35,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/create_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
+#include "editor/settings/editor_feature_profile.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
@@ -67,6 +68,12 @@ void SceneCreateDialog::config(const String &p_dir) {
 	scene_name_edit->set_text("");
 	callable_mp((Control *)scene_name_edit, &Control::grab_focus).call_deferred();
 	validation_panel->update();
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	node_type_3d->set_visible(profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D));
+	if (!node_type_3d->is_visible() && node_type_3d->is_pressed()) {
+		node_type_2d->set_pressed(true);
+	}
 }
 
 void SceneCreateDialog::accept_create() {
