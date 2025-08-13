@@ -3953,6 +3953,21 @@ void FileSystemDock::_project_settings_changed() {
 	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
 }
 
+void FileSystemDock::_editor_settings_changed() {
+	bool prev_value = auto_nav_on_tab_changed;
+	auto_nav_on_tab_changed = EditorSettings::get_singleton()->get_setting("interface/scene_tabs/auto_nav_in_file_system");
+	if (prev_value == auto_nav_on_tab_changed) {
+		return;
+	}
+
+	if (auto_nav_on_tab_changed) {
+		EditorSceneTabs::get_singleton()->connect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
+		_editor_scene_tab_changed(EditorSceneTabs::get_singleton()->get_current_tab());
+	} else {
+		EditorSceneTabs::get_singleton()->disconnect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
+	}
+}
+
 void FileSystemDock::_editor_scene_tab_changed(int p_tab) {
 	EditorData& ed = EditorNode::get_editor_data();
 	String path = ed.get_scene_path(p_tab);
@@ -4414,7 +4429,12 @@ FileSystemDock::FileSystemDock() {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
-	EditorSceneTabs::get_singleton()->connect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
+	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_editor_settings_changed));
+	auto_nav_on_tab_changed = EditorSettings::get_singleton()->get_setting("interface/scene_tabs/auto_nav_in_file_system");
+	if (auto_nav_on_tab_changed) {
+		EditorSceneTabs::get_singleton()->connect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
+	}
+
 	add_resource_tooltip_plugin(memnew(EditorTextureTooltipPlugin));
 	add_resource_tooltip_plugin(memnew(EditorAudioStreamTooltipPlugin));
 }
