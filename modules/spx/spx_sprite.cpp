@@ -30,6 +30,7 @@
 
 #include "spx_sprite.h"
 
+#include "spx_base_mgr.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
@@ -42,6 +43,8 @@
 #include "spx_engine.h"
 #include "spx_res_mgr.h"
 #include "spx_sprite_mgr.h"
+#include "spx_camera_mgr.h"
+#include "svg_mgr.h"
 #define SPX_CALLBACK SpxEngine::get_singleton()->get_callbacks()
 #define spriteMgr SpxEngine::get_singleton()->get_sprite()
 
@@ -386,30 +389,36 @@ GdColor SpxSprite::get_material_params_color(GdString effect) {
 
 void SpxSprite::set_texture_altas_direct(GdString path, GdRect2 rect2, GdBool direct) {
 	auto path_str = SpxStr(path);
+	is_svg_mode = false;// svg don't support atlas
 	Ref<Texture2D> texture = resMgr->load_texture(path_str, direct);
 
 	Ref<AtlasTexture> atlas_texture_frame = memnew(AtlasTexture);
 	atlas_texture_frame->set_atlas(texture);
 	atlas_texture_frame->set_region(rect2);
 
-	if (texture.is_valid()) {
-		anim2d->set_sprite_frames(default_sprite_frames);
-		auto frames = anim2d->get_sprite_frames();
-		if (frames->get_frame_count(SpxSpriteMgr::default_texture_anim) == 0) {
-			frames->add_frame(SpxSpriteMgr::default_texture_anim, atlas_texture_frame);
-		} else {
-			frames->set_frame(SpxSpriteMgr::default_texture_anim, 0, atlas_texture_frame);
-		}
-		anim2d->set_animation(SpxSpriteMgr::default_texture_anim);
-	} else {
-		print_error("can not find a texture: " + path_str);
-	}
+	_play_single_image_animation(atlas_texture_frame);
 }
+
 
 void SpxSprite::set_texture_direct(GdString path, GdBool direct) {
 	auto path_str = SpxStr(path);
-	Ref<Texture2D> texture = resMgr->load_texture(path_str, direct);
+
+	Ref<Texture2D> texture = nullptr;
+	is_svg_mode = svgMgr->is_svg_file(path_str);
+	if (is_svg_mode){
+		int target_scale = _get_actual_match_render_scale();
+		current_svg_scale = target_scale;
+		current_svg_path = path_str;
+		texture = svgMgr->get_svg_image(path_str, target_scale);
+	}else{
+		texture = resMgr->load_texture(path_str, direct);
+	}
+	_play_single_image_animation(texture);
+}
+
+void SpxSprite::_play_single_image_animation(Ref<Texture2D> texture){
 	if (texture.is_valid()) {
+		is_single_image_mode = true;
 		anim2d->set_sprite_frames(default_sprite_frames);
 		auto frames = anim2d->get_sprite_frames();
 		if (frames->get_frame_count(SpxSpriteMgr::default_texture_anim) == 0) {
@@ -419,9 +428,10 @@ void SpxSprite::set_texture_direct(GdString path, GdBool direct) {
 		}
 		anim2d->set_animation(SpxSpriteMgr::default_texture_anim);
 	} else {
-		print_error("can not find a texture: " + path_str);
+		print_error("can not set single image animation, texture is null");
 	}
 }
+
 void SpxSprite::set_texture_altas(GdString path, GdRect2 rect2) {
 	return set_texture_altas_direct(path, rect2, false);
 }
@@ -435,15 +445,39 @@ GdString SpxSprite::get_texture() {
 	return SpxReturnStr(tex->get_name());
 }
 
+
 void SpxSprite::play_anim(GdString p_name, GdFloat p_speed, GdBool isLoop, GdBool p_from_end) {
 	String anim_name = SpxStr(p_name);
+	// Enhanced: Check if we need to use a scaled version of the animation
+	String final_anim_key;
+	is_svg_mode = false;
+	is_single_image_mode = false;
+
 	if (resMgr->is_dynamic_anim_mode()) {
-		anim_name = resMgr->get_anim_key_name(get_spx_type_name(), anim_name);
-		auto frames = resMgr->get_anim_frames(anim_name);
+		String sprite_type = get_spx_type_name();
+		String base_anim_key = resMgr->get_anim_key_name(sprite_type, anim_name);
+		current_svg_anim_key = base_anim_key;
+		Ref<SpriteFrames> frames;
+		is_svg_mode = svgMgr->is_svg_animation(base_anim_key);
+		// Check if this is an SVG animation that supports scaling
+		if (is_svg_mode) {
+			// Calculate required scale based on current render scale
+			int target_scale = _get_actual_match_render_scale();
+			frames = svgMgr->get_svg_animation(base_anim_key, target_scale);
+			final_anim_key = base_anim_key;
+		} else {
+			frames = resMgr->get_anim_frames(final_anim_key);
+			// Use base animation for non-SVG animations
+			final_anim_key = base_anim_key;
+		}
 		anim2d->set_sprite_frames(frames);
-		frames->set_animation_loop(anim_name, isLoop);
+		frames->set_animation_loop(final_anim_key, isLoop);
+	} else {
+		final_anim_key = anim_name;
 	}
-	anim2d->play(anim_name, p_speed, p_from_end);
+	
+	anim2d->play(final_anim_key, p_speed, p_from_end);
+	
 }
 
 void SpxSprite::play_backwards_anim(GdString p_name) {
@@ -662,28 +696,111 @@ GdBool SpxSprite::check_collision_with_point(GdVec2 point, GdBool is_trigger) {
 	bool is_colliding = this_shape->get_shape()->collide(sprite_transform, point_shape, point_transform);
 	return is_colliding;
 }
+
 void SpxSprite::set_render_scale(GdVec2 new_scale) {
-	anim2d->set_scale(new_scale);
+	_render_scale = new_scale;
+	update_anim_scale();
 }
+
+void SpxSprite::update_anim_scale(){
+	GdVec2 finalScale = _render_scale;
+	auto target_scale = _get_actual_match_render_scale();
+	if(target_scale != current_svg_scale){
+		current_svg_scale = target_scale;
+		if(is_svg_mode){
+			if(is_single_image_mode){
+				Ref<Texture2D> texture = svgMgr->get_svg_image(current_svg_path, target_scale);
+				_play_single_image_animation(texture);
+			}else{ 
+				// Save current animation state
+				bool was_playing = anim2d->is_playing();
+				int current_frame = anim2d->get_frame();
+				float frame_progress = anim2d->get_frame_progress();
+				float custom_speed_scale = anim2d->get_playing_speed() / anim2d->get_speed_scale();
+				
+				auto loop = false;
+				auto animation = anim2d->get_animation();
+				auto old_frames = anim2d->get_sprite_frames();
+				if(old_frames.is_valid() && old_frames->has_animation(animation)){
+					loop = old_frames->get_animation_loop(animation);
+				}
+				auto base_anim_key = current_svg_anim_key;
+				auto frames = svgMgr->get_svg_animation(base_anim_key, target_scale);
+				if (frames.is_valid()) {
+					anim2d->set_sprite_frames(frames);
+					frames->set_animation_loop(base_anim_key, loop);
+					
+					// Set animation without resetting state
+					anim2d->set_animation(base_anim_key);
+					
+					// Restore animation state
+					int max_frame = frames->get_frame_count(base_anim_key) - 1;
+					if (current_frame > max_frame) {
+						current_frame = max_frame;
+					}
+					anim2d->set_frame_and_progress(current_frame, frame_progress);
+					
+					// Resume playing if it was playing before
+					if (was_playing) {
+						anim2d->play(base_anim_key, custom_speed_scale);
+					}
+				}
+			}
+		}
+	}
+	if(is_svg_mode){
+		finalScale.x = finalScale.x / current_svg_scale;
+		finalScale.y = finalScale.y / current_svg_scale;
+	}
+	anim2d->set_scale(finalScale);
+}
+
 GdVec2 SpxSprite::get_render_scale() {
-	return anim2d->get_scale();
+	return _render_scale;
+}
+
+int SpxSprite::_get_actual_match_render_scale() {
+	Vector2 current_scale = _get_actual_render_scale();
+	int optimal_scale = svgMgr->calculate_svg_scale(current_scale);
+	return optimal_scale;
+}
+
+Vector2 SpxSprite::_get_actual_render_scale() {
+	if (!anim2d) {
+		return Vector2(1.0f, 1.0f);
+	}
+	
+	// Get the global transform scale
+	Vector2 global_scale = get_global_transform().get_scale() * _render_scale;
+	
+	// Consider camera zoom if available
+	auto camera_mgr = SpxEngine::get_singleton()->get_camera();
+	if (camera_mgr) {
+		Vector2 camera_zoom = camera_mgr->get_camera_zoom();
+		global_scale *= camera_zoom;
+	}
+	
+	return global_scale;
 }
 
 void SpxSprite::_on_frame_changed() {
-	if (!enable_dynamic_frame_offset || anim2d == nullptr) {
+	if (anim2d == nullptr) {
 		return;
 	}
 	
-	String current_anim = String(anim2d->get_animation());
-	int current_frame = anim2d->get_frame();
-	
-	Vector2 frame_offset = resMgr->get_animation_frame_offset(
-		current_anim, 
-		current_frame
-	);
-	
-	Vector2 final_offset = base_offset + frame_offset;
-	anim2d->set_offset(final_offset);
+	// Handle dynamic frame offset
+	if (enable_dynamic_frame_offset) {
+		String current_anim = String(anim2d->get_animation());
+		int current_frame = anim2d->get_frame();
+		
+		Vector2 frame_offset = resMgr->get_animation_frame_offset(
+			current_anim, 
+			current_frame
+		);
+		
+		Vector2 final_offset = base_offset + frame_offset;
+		anim2d->set_offset(final_offset);
+	}
 }
 
 void SpxSprite::set_dynamic_frame_offset_enabled(GdBool enabled) {
@@ -701,3 +818,4 @@ void SpxSprite::set_dynamic_frame_offset_enabled(GdBool enabled) {
 GdBool SpxSprite::is_dynamic_frame_offset_enabled() const {
 	return enable_dynamic_frame_offset;
 }
+

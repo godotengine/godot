@@ -36,7 +36,19 @@ const GodotGdspx = {
 
 	godot_js_spx_on_runtime_panic__sig: 'vi',
 	godot_js_spx_on_runtime_panic: function (msg) {
+		if (!FFI.gdspx_on_runtime_panic) {
+			return;
+		}
 		FFI.gdspx_on_runtime_panic(GodotRuntime.parseString(msg));
+	},
+
+	godot_js_spx_on_runtime_exit__proxy: 'sync',
+	godot_js_spx_on_runtime_exit__sig: 'vi',
+	godot_js_spx_on_runtime_exit: function (code) {
+		if (!FFI.gdspx_on_runtime_exit) {
+			return;
+		}
+		FFI.gdspx_on_runtime_exit(code);
 	},
 
 

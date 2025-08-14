@@ -129,7 +129,7 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_stri
 	}
 
 	PackedByteArray bytes = p_string.to_utf8_buffer();
-
+	
 	return create_image_from_utf8_buffer(p_image, bytes, p_scale, p_upsample);
 }
 

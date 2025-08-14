@@ -50,6 +50,7 @@ class SpxResMgr;
 class SpxExtMgr;
 
 typedef void (*GDExtensionSpxGlobalRuntimePanicCallback)(GdString msg);
+typedef void (*GDExtensionSpxGlobalRuntimeExitCallback)(GdInt code);
 
 class SpxEngine : SpxBaseMgr {
 	static SpxEngine *singleton;
@@ -59,7 +60,8 @@ public:
 	static bool has_initialed() { return singleton != nullptr; }
 	static void register_callbacks(GDExtensionSpxCallbackInfoPtr callback);
 	static void register_runtime_panic_callbacks(GDExtensionSpxGlobalRuntimePanicCallback callback);
-	virtual ~SpxEngine() = default; 
+	static void register_runtime_exit_callbacks(GDExtensionSpxGlobalRuntimeExitCallback callback);
+	virtual ~SpxEngine() = default;
 
 private:
 	Vector<SpxBaseMgr *> mgrs;
@@ -92,10 +94,12 @@ private:
 	GdInt global_id;
 	SpxCallbackInfo callbacks;
 	GDExtensionSpxGlobalRuntimePanicCallback on_runtime_panic;
+	GDExtensionSpxGlobalRuntimeExitCallback on_runtime_exit;
 	bool has_exit;
 public:
 	SpxCallbackInfo *get_callbacks() ;
 	GDExtensionSpxGlobalRuntimePanicCallback get_on_runtime_panic() { return on_runtime_panic; }
+	GDExtensionSpxGlobalRuntimeExitCallback get_on_runtime_exit() { return on_runtime_exit; }
 
 public:
 	GdInt get_unique_id() override;

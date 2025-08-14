@@ -1,4 +1,4 @@
-﻿/**************************************************************************/
+/**************************************************************************/
 /*  spx_platform_mgr.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
@@ -32,6 +32,9 @@
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
+#include "core/math/vector2.h"
+#include "svg_mgr.h"
+#include "spx_engine.h"
 #include "modules/minimp3/audio_stream_mp3.h"
 #include "modules/modules_enabled.gen.h"
 #include "scene/2d/audio_stream_player_2d.h"
@@ -187,7 +190,15 @@ void SpxResMgr::reload_texture(GdString path) {
 	_reload_texture(path_str);
 }
 
+
 Ref<Texture2D> SpxResMgr::load_texture(String path, GdBool direct) {
+
+	// If SVG file, use SVG manager
+	if (svgMgr->is_svg_file(path)) {
+		return svgMgr->get_svg_image(path, 1); // Default 1x scale
+	}
+	
+	// For non-SVG files, use original logic
 	if (!is_load_direct && !direct) {
 		Ref<Resource> res = ResourceLoader::load(path);
 		if (res.is_null()) {
@@ -243,7 +254,7 @@ void SpxResMgr::create_animation(GdString p_sprite_type_name, GdString p_anim_na
 	
 	// store frame offset information
 	Vector<Vector2> frame_offsets;
-	
+	int svg_count = 0;
 	if (!is_altas) {
 		auto strs = context.split(";");
 		for (const String &path_with_offset : strs) {
@@ -261,16 +272,24 @@ void SpxResMgr::create_animation(GdString p_sprite_type_name, GdString p_anim_na
 						offset.y = offset_parts[1].to_float();
 					}
 				}
+			}	
+			if (svgMgr->is_svg_file(path)) {
+				svg_count++;
 			}
-			
+		
 			Ref<Texture2D> texture = load_texture(path);
 			if (!texture.is_valid()) {
 				print_error("animation parse error" + sprite_type_name + " " + anim_key + " can not find path " + path);
-				return ;
+				continue;
 			}
 			frames->add_frame(anim_key, texture);
 			frame_offsets.push_back(offset);
 		}
+		if (svg_count>0 && svg_count != strs.size()){
+			print_error("animation parse error " + sprite_type_name + " " + anim_key + " svg path count not match frame count");
+			return ;
+		}
+		svgMgr->mark_svg_animation(anim_key, svg_count > 0);
 	} else {
 		auto strs = context.split(";");
 		if (strs.size() < 2) {
@@ -359,7 +378,10 @@ void SpxResMgr::create_animation(GdString p_sprite_type_name, GdString p_anim_na
 	
 	// store animation frame offset information
 	animation_frame_offsets[anim_key] = frame_offsets;
+	
 }
+
+
 void SpxResMgr::set_load_mode(GdBool is_direct_mode) {
 	is_load_direct = is_direct_mode;
 }
@@ -448,17 +470,20 @@ GdBool SpxResMgr::has_file(GdString p_path) {
 
 void SpxResMgr::set_default_font(GdString font_path) {
 	String path = SpxStr(font_path);
-	String engine_path = _to_engine_path(path);
-	Ref<FileAccess> f = FileAccess::open(engine_path, FileAccess::READ);
-	if (f.is_null()) {
-		ERR_PRINT("Can not open font file: " + path + " engine_path= " + engine_path );
-		return ;
-	}
-
 	Vector<uint8_t> font_data;
-	font_data.resize(f->get_length());
-	f->get_buffer(font_data.ptrw(), font_data.size());
-
+	Ref<FontFile> rawFont = ResourceLoader::load(path);
+	if (!rawFont.is_null()) {
+		font_data = rawFont->get_data();
+	}else{
+		String engine_path = _to_engine_path(path);
+		Ref<FileAccess> f = FileAccess::open(engine_path, FileAccess::READ);
+		if (f.is_null()) {
+			ERR_PRINT("Can not open font file: " + path + " engine_path= " + engine_path );
+			return ;
+		}
+		font_data.resize(f->get_length());
+		f->get_buffer(font_data.ptrw(), font_data.size());
+	}
 	// update svg
 #ifdef MODULE_SVG_ENABLED
 	SVGUtils::set_default_font(font_data.ptrw(), (int)font_data.size());
