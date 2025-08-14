@@ -52,6 +52,11 @@
 		<member name="gradle_build/android_source_template" type="String" setter="" getter="">
 			Path to a ZIP file holding the source for the export template used in a Gradle build. If left empty, the default template is used.
 		</member>
+		<member name="gradle_build/compress_native_libraries" type="bool" setter="" getter="">
+			If [code]true[/code], native libraries are compressed when performing a Gradle build.
+			[b]Note:[/b] While enabling compression can reduce the size of the binary, it may result in slower application startup because the native libraries must be extracted before use, rather than being loaded directly.
+			If you're distributing your app via the Play Store, it's generally recommended to keep this option [code]false[/code], see [url=https://developer.android.com/build/releases/past-releases/agp-3-6-0-release-notes#extractNativeLibs]official documentation[/url].
+		</member>
 		<member name="gradle_build/custom_theme_attributes" type="Dictionary" setter="" getter="">
 			A dictionary of custom theme attributes to include in the exported Android project. Each entry defines a theme attribute name and its value, and will be added to the [b]GodotAppMainTheme[/b].
 			For example, the key [code]android:windowSwipeToDismiss[/code] with the value [code]false[/code] is resolved to [code]&lt;item name="android:windowSwipeToDismiss"&gt;false&lt;/item&gt;[/code].
@@ -597,6 +602,9 @@
 		</member>
 		<member name="permissions/write_user_dictionary" type="bool" setter="" getter="">
 			Allows an application to write to the user dictionary.
+		</member>
+		<member name="screen/background_color" type="Color" setter="" getter="">
+			The background color used for the root window. Default is [code]black[/code].
 		</member>
 		<member name="screen/edge_to_edge" type="bool" setter="" getter="">
 			If [code]true[/code], this makes the navigation and status bars translucent and allows the application content to extend edge to edge.

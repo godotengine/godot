@@ -433,7 +433,7 @@ void vertex_shader(in vec3 vertex,
 	float roughness_highp = 1.0;
 
 #ifdef USE_DOUBLE_PRECISION
-	mat4 modelview = scene_data.view_matrix * model_matrix;
+	mat4 modelview = view_matrix * model_matrix;
 
 	// We separate the basis from the origin because the basis is fine with single point precision.
 	// Then we combine the translations from the model matrix and the view matrix using emulated doubles.
@@ -448,14 +448,14 @@ void vertex_shader(in vec3 vertex,
 
 	// Overwrite the translation part of modelview with improved precision.
 	vec3 temp_precision; // Will be ignored.
-	modelview[3].xyz = double_add_vec3(model_origin, model_precision, scene_data.inv_view_matrix[3].xyz, view_precision, temp_precision);
-	modelview[3].xyz = mat3(scene_data.view_matrix) * modelview[3].xyz;
+	modelview[3].xyz = double_add_vec3(model_origin, model_precision, inv_view_matrix[3].xyz, view_precision, temp_precision);
+	modelview[3].xyz = mat3(view_matrix) * modelview[3].xyz;
 #else
-	mat4 modelview = scene_data.view_matrix * model_matrix;
+	mat4 modelview = view_matrix * model_matrix;
 #endif
-	mat3 modelview_normal = mat3(scene_data.view_matrix) * model_normal_matrix;
-	mat4 read_view_matrix = scene_data.view_matrix;
-	vec2 read_viewport_size = scene_data.viewport_size;
+	mat3 modelview_normal = mat3(view_matrix) * model_normal_matrix;
+	mat4 read_view_matrix = view_matrix;
+	vec2 read_viewport_size = viewport_size;
 
 	{
 #CODE : VERTEX
@@ -1628,7 +1628,7 @@ void main() {
 				half(0.429043) // l2p2 			sqrt(15.0/(16.0*PI))* PI*1.0/4.0
 		);
 
-		half norm = half(scene_data.emissive_exposure_normalization);
+		half norm = half(scene_data.IBL_exposure_normalization);
 		ambient_light += c[0] * hvec3(lightmap_captures.data[index].sh[0].rgb) * norm;
 		ambient_light += c[1] * hvec3(lightmap_captures.data[index].sh[1].rgb) * wnormal.y * norm;
 		ambient_light += c[1] * hvec3(lightmap_captures.data[index].sh[2].rgb) * wnormal.z * norm;

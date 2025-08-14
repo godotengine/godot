@@ -1596,7 +1596,9 @@
 			<return type="String" />
 			<description>
 				Returns the name of the current rendering driver. This can be [code]vulkan[/code], [code]d3d12[/code], [code]metal[/code], [code]opengl3[/code], [code]opengl3_es[/code], or [code]opengl3_angle[/code]. See also [method get_current_rendering_method].
-				The rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver], the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+				When [member ProjectSettings.rendering/renderer/rendering_method] is [code]forward_plus[/code] or [code]mobile[/code], the rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver].
+				When [member ProjectSettings.rendering/renderer/rendering_method] is [code]gl_compatibility[/code], the rendering driver is determined by [member ProjectSettings.rendering/gl_compatibility/driver].
+				The rendering driver is also determined by the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
 			</description>
 		</method>
 		<method name="get_current_rendering_method" qualifiers="const">
@@ -4232,7 +4234,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] or [member Viewport.use_debanding].
+				Equivalent to [member Viewport.use_debanding]. See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
 			</description>
 		</method>
 		<method name="viewport_set_use_hdr_2d">
@@ -4240,8 +4242,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
-				[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility rendering method this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile rendering method it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">

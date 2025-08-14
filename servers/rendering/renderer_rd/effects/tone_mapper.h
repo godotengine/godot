@@ -63,8 +63,9 @@ private:
 		TONEMAP_FLAG_USE_AUTO_EXPOSURE = (1 << 2),
 		TONEMAP_FLAG_USE_COLOR_CORRECTION = (1 << 3),
 		TONEMAP_FLAG_USE_FXAA = (1 << 4),
-		TONEMAP_FLAG_USE_DEBANDING = (1 << 5),
-		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 6),
+		TONEMAP_FLAG_USE_8_BIT_DEBANDING = (1 << 5),
+		TONEMAP_FLAG_USE_10_BIT_DEBANDING = (1 << 6),
+		TONEMAP_FLAG_CONVERT_TO_SRGB = (1 << 7),
 	};
 
 	struct TonemapPushConstant {
@@ -141,7 +142,12 @@ public:
 		RID color_correction_texture;
 
 		bool use_fxaa = false;
-		bool use_debanding = false;
+		enum DebandingMode {
+			DEBANDING_MODE_DISABLED,
+			DEBANDING_MODE_8_BIT,
+			DEBANDING_MODE_10_BIT,
+		};
+		DebandingMode debanding_mode = DEBANDING_MODE_DISABLED;
 		Vector2i texture_size;
 		uint32_t view_count = 1;
 

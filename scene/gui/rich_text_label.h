@@ -527,6 +527,8 @@ private:
 
 	bool scroll_visible = false;
 	bool scroll_follow = false;
+	bool scroll_follow_visible_characters = false;
+	int follow_vc_pos = 0;
 	bool scroll_following = false;
 	bool scroll_active = true;
 	int scroll_w = 0;
@@ -536,6 +538,7 @@ private:
 	int current_char_ofs = 0;
 	int visible_paragraph_count = 0;
 	int visible_line_count = 0;
+	Rect2i visible_rect;
 
 	int tab_size = 4;
 	bool underline_meta = true;
@@ -554,6 +557,7 @@ private:
 
 	HashMap<RID, Rect2> ac_element_bounds_cache;
 
+	void _update_follow_vc();
 	void _invalidate_accessibility();
 	void _invalidate_current_line(ItemFrame *p_frame);
 
@@ -627,8 +631,9 @@ private:
 	void _find_click(ItemFrame *p_frame, const Point2i &p_click, ItemFrame **r_click_frame = nullptr, int *r_click_line = nullptr, Item **r_click_item = nullptr, int *r_click_char = nullptr, bool *r_outside = nullptr, bool p_meta = false);
 
 	String _get_line_text(ItemFrame *p_frame, int p_line, Selection p_sel) const;
-	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
+	bool _search_table_cell(ItemTable *p_table, List<Item *>::Element *p_cell, const String &p_string, bool p_reverse_search, int p_from_line);
 	bool _search_table(ItemTable *p_table, List<Item *>::Element *p_from, const String &p_string, bool p_reverse_search);
+	bool _search_line(ItemFrame *p_frame, int p_line, const String &p_string, int p_char_idx, bool p_reverse_search);
 
 	float _shape_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h, int *r_char_offset);
 	float _resize_line(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size, int p_width, float p_h);
@@ -839,6 +844,9 @@ public:
 	void set_scroll_follow(bool p_follow);
 	bool is_scroll_following() const;
 
+	void set_scroll_follow_visible_characters(bool p_follow);
+	bool is_scroll_following_visible_characters() const;
+
 	void set_tab_size(int p_spaces);
 	int get_tab_size() const;
 
@@ -870,6 +878,8 @@ public:
 
 	int get_line_height(int p_line) const;
 	int get_line_width(int p_line) const;
+
+	Rect2i get_visible_content_rect() const;
 
 	void scroll_to_selection();
 

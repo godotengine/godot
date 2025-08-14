@@ -62,8 +62,8 @@
 #undef MAX
 
 void MDCommandBuffer::begin() {
-	DEV_ASSERT(commandBuffer == nil);
-	commandBuffer = queue.commandBuffer;
+	DEV_ASSERT(commandBuffer == nil && !state_begin);
+	state_begin = true;
 }
 
 void MDCommandBuffer::end() {
@@ -83,6 +83,7 @@ void MDCommandBuffer::commit() {
 	end();
 	[commandBuffer commit];
 	commandBuffer = nil;
+	state_begin = false;
 }
 
 void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
@@ -136,7 +137,7 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 				render.desc.colorAttachments[0].resolveTexture = res_tex;
 			}
 #endif
-			render.encoder = [commandBuffer renderCommandEncoderWithDescriptor:render.desc];
+			render.encoder = [command_buffer() renderCommandEncoderWithDescriptor:render.desc];
 		}
 
 		if (render.pipeline != rp) {
@@ -160,9 +161,44 @@ void MDCommandBuffer::bind_pipeline(RDD::PipelineID p_pipeline) {
 		DEV_ASSERT(type == MDCommandBufferStateType::None);
 		type = MDCommandBufferStateType::Compute;
 
-		compute.pipeline = (MDComputePipeline *)p;
-		compute.encoder = commandBuffer.computeCommandEncoder;
-		[compute.encoder setComputePipelineState:compute.pipeline->state];
+		if (compute.pipeline != p) {
+			compute.dirty.set_flag(ComputeState::DIRTY_PIPELINE);
+			compute.mark_uniforms_dirty();
+			compute.pipeline = (MDComputePipeline *)p;
+		}
+	}
+}
+
+void MDCommandBuffer::encode_push_constant_data(RDD::ShaderID p_shader, VectorView<uint32_t> p_data) {
+	switch (type) {
+		case MDCommandBufferStateType::Render: {
+			MDRenderShader *shader = (MDRenderShader *)(p_shader.id);
+			if (shader->push_constants.vert.binding == -1 && shader->push_constants.frag.binding == -1) {
+				return;
+			}
+			render.push_constant_bindings[0] = shader->push_constants.vert.binding;
+			render.push_constant_bindings[1] = shader->push_constants.frag.binding;
+			void const *ptr = p_data.ptr();
+			render.push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			DEV_ASSERT(render.push_constant_data_len <= sizeof(RenderState::push_constant_data));
+			memcpy(render.push_constant_data, ptr, render.push_constant_data_len);
+			render.mark_push_constants_dirty();
+		} break;
+		case MDCommandBufferStateType::Compute: {
+			MDComputeShader *shader = (MDComputeShader *)(p_shader.id);
+			if (shader->push_constants.binding == -1) {
+				return;
+			}
+			compute.push_constant_bindings[0] = shader->push_constants.binding;
+			void const *ptr = p_data.ptr();
+			compute.push_constant_data_len = p_data.size() * sizeof(uint32_t);
+			DEV_ASSERT(compute.push_constant_data_len <= sizeof(ComputeState::push_constant_data));
+			memcpy(compute.push_constant_data, ptr, compute.push_constant_data_len);
+			compute.mark_push_constants_dirty();
+		} break;
+		case MDCommandBufferStateType::Blit:
+		case MDCommandBufferStateType::None:
+			return;
 	}
 }
 
@@ -181,7 +217,7 @@ id<MTLBlitCommandEncoder> MDCommandBuffer::blit_command_encoder() {
 	}
 
 	type = MDCommandBufferStateType::Blit;
-	blit.encoder = commandBuffer.blitCommandEncoder;
+	blit.encoder = command_buffer().blitCommandEncoder;
 	return blit.encoder;
 }
 
@@ -200,7 +236,7 @@ void MDCommandBuffer::encodeRenderCommandEncoderWithDescriptor(MTLRenderPassDesc
 			break;
 	}
 
-	id<MTLRenderCommandEncoder> enc = [commandBuffer renderCommandEncoderWithDescriptor:p_desc];
+	id<MTLRenderCommandEncoder> enc = [command_buffer() renderCommandEncoderWithDescriptor:p_desc];
 	if (p_label != nil) {
 		[enc pushDebugGroup:p_label];
 		[enc popDebugGroup];
@@ -343,6 +379,19 @@ void MDCommandBuffer::render_clear_attachments(VectorView<RDD::AttachmentClear> 
 
 void MDCommandBuffer::_render_set_dirty_state() {
 	_render_bind_uniform_sets();
+
+	if (render.dirty.has_flag(RenderState::DIRTY_PUSH)) {
+		if (render.push_constant_bindings[0] != (uint32_t)-1) {
+			[render.encoder setVertexBytes:render.push_constant_data
+									length:render.push_constant_data_len
+								   atIndex:render.push_constant_bindings[0]];
+		}
+		if (render.push_constant_bindings[1] != (uint32_t)-1) {
+			[render.encoder setFragmentBytes:render.push_constant_data
+									  length:render.push_constant_data_len
+									 atIndex:render.push_constant_bindings[1]];
+		}
+	}
 
 	MDSubpass const &subpass = render.get_subpass();
 	if (subpass.view_count > 1) {
@@ -552,7 +601,7 @@ uint32_t MDCommandBuffer::_populate_vertices(simd::float4 *p_vertices, uint32_t 
 }
 
 void MDCommandBuffer::render_begin_pass(RDD::RenderPassID p_render_pass, RDD::FramebufferID p_frameBuffer, RDD::CommandBufferType p_cmd_buffer_type, const Rect2i &p_rect, VectorView<RDD::RenderPassClearValue> p_clear_values) {
-	DEV_ASSERT(commandBuffer != nil);
+	DEV_ASSERT(command_buffer() != nil);
 	end();
 
 	MDRenderPass *pass = (MDRenderPass *)(p_render_pass.id);
@@ -639,7 +688,7 @@ void MDCommandBuffer::_render_clear_render_area() {
 }
 
 void MDCommandBuffer::render_next_subpass() {
-	DEV_ASSERT(commandBuffer != nil);
+	DEV_ASSERT(command_buffer() != nil);
 
 	if (render.current_subpass == UINT32_MAX) {
 		render.current_subpass = 0;
@@ -726,7 +775,7 @@ void MDCommandBuffer::render_next_subpass() {
 		// the defaultRasterSampleCount from the pipeline's sample count.
 		render.desc = desc;
 	} else {
-		render.encoder = [commandBuffer renderCommandEncoderWithDescriptor:desc];
+		render.encoder = [command_buffer() renderCommandEncoderWithDescriptor:desc];
 
 		if (!render.is_rendering_entire_area) {
 			_render_clear_render_area();
@@ -895,6 +944,7 @@ void MDCommandBuffer::RenderState::reset() {
 	dirty = DIRTY_NONE;
 	uniform_sets.clear();
 	uniform_set_mask = 0;
+	push_constant_data_len = 0;
 	clear_values.clear();
 	viewports.clear();
 	scissors.clear();
@@ -960,28 +1010,107 @@ void MDCommandBuffer::ComputeState::end_encoding() {
 
 #pragma mark - Compute
 
+void MDCommandBuffer::_compute_set_dirty_state() {
+	if (compute.dirty.has_flag(ComputeState::DIRTY_PIPELINE)) {
+		compute.encoder = [command_buffer() computeCommandEncoderWithDispatchType:MTLDispatchTypeConcurrent];
+		[compute.encoder setComputePipelineState:compute.pipeline->state];
+	}
+
+	_compute_bind_uniform_sets();
+
+	if (compute.dirty.has_flag(ComputeState::DIRTY_PUSH)) {
+		if (compute.push_constant_bindings[0] != (uint32_t)-1) {
+			[compute.encoder setBytes:compute.push_constant_data
+							   length:compute.push_constant_data_len
+							  atIndex:compute.push_constant_bindings[0]];
+		}
+	}
+
+	compute.dirty.clear();
+}
+
+void MDCommandBuffer::_compute_bind_uniform_sets() {
+	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
+	if (!compute.dirty.has_flag(ComputeState::DIRTY_UNIFORMS)) {
+		return;
+	}
+
+	compute.dirty.clear_flag(ComputeState::DIRTY_UNIFORMS);
+	uint64_t set_uniforms = compute.uniform_set_mask;
+	compute.uniform_set_mask = 0;
+
+	MDComputeShader *shader = compute.pipeline->shader;
+
+	while (set_uniforms != 0) {
+		// Find the index of the next set bit.
+		uint32_t index = (uint32_t)__builtin_ctzll(set_uniforms);
+		// Clear the set bit.
+		set_uniforms &= (set_uniforms - 1);
+		MDUniformSet *set = compute.uniform_sets[index];
+		if (set == nullptr || index >= (uint32_t)shader->sets.size()) {
+			continue;
+		}
+		set->bind_uniforms(shader, compute, index);
+	}
+}
+
+void MDCommandBuffer::ComputeState::reset() {
+	pipeline = nil;
+	encoder = nil;
+	dirty = DIRTY_NONE;
+	uniform_sets.clear();
+	uniform_set_mask = 0;
+	push_constant_data_len = 0;
+	// Keep the keys, as they are likely to be used again.
+	for (KeyValue<StageResourceUsage, LocalVector<__unsafe_unretained id<MTLResource>>> &kv : resource_usage) {
+		kv.value.clear();
+	}
+}
+
 void MDCommandBuffer::compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-	MDShader *shader = (MDShader *)(p_shader.id);
 	MDUniformSet *set = (MDUniformSet *)(p_uniform_set.id);
-	set->bind_uniforms(shader, compute, p_set_index);
+	if (compute.uniform_sets.size() <= p_set_index) {
+		uint32_t s = render.uniform_sets.size();
+		compute.uniform_sets.resize(p_set_index + 1);
+		// Set intermediate values to null.
+		std::fill(&compute.uniform_sets[s], &compute.uniform_sets[p_set_index] + 1, nullptr);
+	}
+
+	if (compute.uniform_sets[p_set_index] != set) {
+		compute.dirty.set_flag(ComputeState::DIRTY_UNIFORMS);
+		compute.uniform_set_mask |= 1ULL << p_set_index;
+		compute.uniform_sets[p_set_index] = set;
+	}
 }
 
 void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-	MDShader *shader = (MDShader *)(p_shader.id);
-
-	// TODO(sgc): Bind multiple buffers using [encoder setBuffers:offsets:withRange:]
-	for (size_t i = 0u; i < p_set_count; ++i) {
+	for (size_t i = 0; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);
-		set->bind_uniforms(shader, compute, p_first_set_index + i);
+
+		uint32_t index = p_first_set_index + i;
+		if (compute.uniform_sets.size() <= index) {
+			uint32_t s = compute.uniform_sets.size();
+			compute.uniform_sets.resize(index + 1);
+			// Set intermediate values to null.
+			std::fill(&compute.uniform_sets[s], &compute.uniform_sets[index] + 1, nullptr);
+		}
+
+		if (compute.uniform_sets[index] != set) {
+			compute.dirty.set_flag(ComputeState::DIRTY_UNIFORMS);
+			compute.uniform_set_mask |= 1ULL << index;
+			compute.uniform_sets[index] = set;
+		}
 	}
 }
 
 void MDCommandBuffer::compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
+
+	_compute_set_dirty_state();
 
 	MTLRegion region = MTLRegionMake3D(0, 0, 0, p_x_groups, p_y_groups, p_z_groups);
 
@@ -991,6 +1120,8 @@ void MDCommandBuffer::compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups,
 
 void MDCommandBuffer::compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
+
+	_compute_set_dirty_state();
 
 	id<MTLBuffer> indirectBuffer = rid::get(p_indirect_buffer);
 
@@ -1021,20 +1152,6 @@ MDComputeShader::MDComputeShader(CharString p_name,
 		MDShader(p_name, p_sets, p_uses_argument_buffers), kernel(p_kernel) {
 }
 
-void MDComputeShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) {
-	DEV_ASSERT(p_cb->type == MDCommandBufferStateType::Compute);
-	if (push_constants.binding == (uint32_t)-1) {
-		return;
-	}
-
-	id<MTLComputeCommandEncoder> enc = p_cb->compute.encoder;
-
-	void const *ptr = p_data.ptr();
-	size_t length = p_data.size() * sizeof(uint32_t);
-
-	[enc setBytes:ptr length:length atIndex:push_constants.binding];
-}
-
 MDRenderShader::MDRenderShader(CharString p_name,
 		Vector<UniformSet> p_sets,
 		bool p_needs_view_mask_buffer,
@@ -1044,22 +1161,6 @@ MDRenderShader::MDRenderShader(CharString p_name,
 		needs_view_mask_buffer(p_needs_view_mask_buffer),
 		vert(p_vert),
 		frag(p_frag) {
-}
-
-void MDRenderShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) {
-	DEV_ASSERT(p_cb->type == MDCommandBufferStateType::Render);
-	id<MTLRenderCommandEncoder> __unsafe_unretained enc = p_cb->render.encoder;
-
-	void const *ptr = p_data.ptr();
-	size_t length = p_data.size() * sizeof(uint32_t);
-
-	if (push_constants.vert.binding > -1) {
-		[enc setVertexBytes:ptr length:length atIndex:push_constants.vert.binding];
-	}
-
-	if (push_constants.frag.binding > -1) {
-		[enc setFragmentBytes:ptr length:length atIndex:push_constants.frag.binding];
-	}
 }
 
 void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index) {

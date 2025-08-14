@@ -964,7 +964,7 @@ void BindingsGenerator::_append_text_enum(StringBuilder &p_output, const TypeInt
 		p_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 		p_output.append("'");
 	} else {
-		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 
@@ -1258,7 +1258,7 @@ void BindingsGenerator::_append_xml_enum(StringBuilder &p_xml_output, const Type
 			p_xml_output.append("\"/>");
 		}
 	} else {
-		if (!p_target_itype->is_intentionally_ignored(p_link_target)) {
+		if (p_target_itype == nullptr || !p_target_itype->is_intentionally_ignored(p_link_target)) {
 			ERR_PRINT("Cannot resolve enum reference in documentation: '" + p_link_target + "'.");
 		}
 

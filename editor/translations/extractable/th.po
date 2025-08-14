@@ -21,6 +21,12 @@ msgstr ""
 msgid "All Recognized"
 msgstr "ทุกนามสุกลที่รู้จัก"
 
+msgid "Save"
+msgstr "บันทึก"
+
+msgid "Clear"
+msgstr "เคลียร์"
+
 msgid "Add current color as a preset."
 msgstr "เพิ่มสีปัจจุบันเป็นพรีเซ็ต"
 
@@ -29,9 +35,6 @@ msgstr "เปิด"
 
 msgid "Select Current Folder"
 msgstr "เลือกโฟลเดอร์ปัจจุบัน"
-
-msgid "Save"
-msgstr "บันทึก"
 
 msgid "Select This Folder"
 msgstr "เลือกโฟลเดอร์นี้"
@@ -66,11 +69,11 @@ msgstr "ตำแหน่ง:"
 msgid "Refresh files."
 msgstr "รีเฟรชไฟล์"
 
-msgid "Toggle the visibility of hidden files."
-msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
-
 msgid "Directories & Files:"
 msgstr "ไฟล์และโฟลเดอร์:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "เปิด/ปิดการแสดงไฟล์ที่ซ่อน"
 
 msgid "File:"
 msgstr "ไฟล์:"
@@ -104,9 +107,6 @@ msgstr "วาง"
 
 msgid "Select All"
 msgstr "เลือกทั้งหมด"
-
-msgid "Clear"
-msgstr "เคลียร์"
 
 msgid "Undo"
 msgstr "ยกเลิกการกระทำ"

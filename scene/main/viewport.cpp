@@ -1678,26 +1678,28 @@ void Viewport::_gui_show_tooltip_at(const Point2i &p_pos) {
 	r.size = r.size.ceil();
 	r.size = r.size.min(panel->get_max_size());
 
-	if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
-		// Place it in the opposite direction. If it fails, just hug the border.
-		r.position.x = gui.tooltip_pos.x - r.size.x - tooltip_offset.x;
+	if (!DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS) || gui.tooltip_popup->is_embedded()) {
+		if (r.size.x + r.position.x > vr.size.x + vr.position.x) {
+			// Place it in the opposite direction. If it fails, just hug the border.
+			r.position.x = gui.tooltip_pos.x - r.size.x - tooltip_offset.x;
 
-		if (r.position.x < vr.position.x) {
-			r.position.x = vr.position.x + vr.size.x - r.size.x;
+			if (r.position.x < vr.position.x) {
+				r.position.x = vr.position.x + vr.size.x - r.size.x;
+			}
+		} else if (r.position.x < vr.position.x) {
+			r.position.x = vr.position.x;
 		}
-	} else if (r.position.x < vr.position.x) {
-		r.position.x = vr.position.x;
-	}
 
-	if (r.size.y + r.position.y > vr.size.y + vr.position.y) {
-		// Same as above.
-		r.position.y = gui.tooltip_pos.y - r.size.y - tooltip_offset.y;
+		if (r.size.y + r.position.y > vr.size.y + vr.position.y) {
+			// Same as above.
+			r.position.y = gui.tooltip_pos.y - r.size.y - tooltip_offset.y;
 
-		if (r.position.y < vr.position.y) {
-			r.position.y = vr.position.y + vr.size.y - r.size.y;
+			if (r.position.y < vr.position.y) {
+				r.position.y = vr.position.y + vr.size.y - r.size.y;
+			}
+		} else if (r.position.y < vr.position.y) {
+			r.position.y = vr.position.y;
 		}
-	} else if (r.position.y < vr.position.y) {
-		r.position.y = vr.position.y;
 	}
 
 	DisplayServer::WindowID active_popup = DisplayServer::get_singleton()->window_get_active_popup();
@@ -2299,15 +2301,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (joypadmotion_event.is_valid()) {
 				Input *input = Input::get_singleton();
 
-				if (p_event->is_action_pressed(SNAME("ui_focus_next")) && input->is_action_just_pressed(SNAME("ui_focus_next"))) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_next")) && input->is_action_just_pressed_by_event(SNAME("ui_focus_next"), p_event)) {
 					next = from->find_next_valid_focus();
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed(SNAME("ui_focus_prev"))) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed_by_event(SNAME("ui_focus_prev"), p_event)) {
 					next = from->find_prev_valid_focus();
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop")) && input->is_action_just_pressed(SNAME("ui_accessibility_drag_and_drop"))) {
+				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop")) && input->is_action_just_pressed_by_event(SNAME("ui_accessibility_drag_and_drop"), p_event)) {
 					if (gui_is_dragging()) {
 						from->accessibility_drop();
 					} else {
@@ -2315,19 +2317,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed(SNAME("ui_up"))) {
+				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed_by_event(SNAME("ui_up"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_TOP);
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_left")) && input->is_action_just_pressed(SNAME("ui_left"))) {
+				if (p_event->is_action_pressed(SNAME("ui_left")) && input->is_action_just_pressed_by_event(SNAME("ui_left"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_LEFT);
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_right")) && input->is_action_just_pressed(SNAME("ui_right"))) {
+				if (p_event->is_action_pressed(SNAME("ui_right")) && input->is_action_just_pressed_by_event(SNAME("ui_right"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_RIGHT);
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_down")) && input->is_action_just_pressed(SNAME("ui_down"))) {
+				if (p_event->is_action_pressed(SNAME("ui_down")) && input->is_action_just_pressed_by_event(SNAME("ui_down"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_BOTTOM);
 				}
 			} else {
@@ -3090,6 +3092,24 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (!gui.subwindow_focused) {
+		// No window focus, check for unfocusable windows under the cursor.
+		Ref<InputEventMouse> me = p_event;
+		if (me.is_valid()) {
+			for (int i = gui.sub_windows.size() - 1; i >= 0; i--) {
+				const SubWindow &sw = gui.sub_windows[i];
+				if (!sw.window->get_flag(Window::FLAG_NO_FOCUS) || sw.window->get_flag(Window::FLAG_MOUSE_PASSTHROUGH)) {
+					continue;
+				}
+				Rect2i r = Rect2i(sw.window->get_position(), sw.window->get_size());
+				if (r.has_point(me->get_position())) {
+					Transform2D window_ofs;
+					window_ofs.set_origin(-sw.window->get_position());
+					Ref<InputEvent> ev = p_event->xformed_by(window_ofs);
+					sw.window->_window_input(ev);
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 

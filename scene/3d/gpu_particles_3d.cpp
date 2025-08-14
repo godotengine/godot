@@ -42,7 +42,7 @@ AABB GPUParticles3D::get_aabb() const {
 
 void GPUParticles3D::set_emitting(bool p_emitting) {
 	// Do not return even if `p_emitting == emitting` because `emitting` is just an approximation.
-	if (p_emitting && p_emitting != emitting && !use_fixed_seed) {
+	if (p_emitting && p_emitting != emitting && !use_fixed_seed && one_shot) {
 		set_seed(Math::rand());
 	}
 	if (p_emitting && one_shot) {
@@ -244,7 +244,7 @@ void GPUParticles3D::set_trail_enabled(bool p_enabled) {
 }
 
 void GPUParticles3D::set_trail_lifetime(double p_seconds) {
-	ERR_FAIL_COND(p_seconds < 0.01);
+	ERR_FAIL_COND(p_seconds < 0.01 - CMP_EPSILON);
 	trail_lifetime = p_seconds;
 	RS::get_singleton()->particles_set_trails(particles, trail_enabled, trail_lifetime);
 }

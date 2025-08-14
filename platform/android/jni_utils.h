@@ -96,3 +96,18 @@ static inline String jstring_to_string(jstring source, JNIEnv *env = nullptr) {
 	}
 	return result;
 }
+
+/**
+ * Set up thread-safe Android ClassLoader (used by jni_find_class() below).
+ */
+void setup_android_class_loader();
+void cleanup_android_class_loader();
+
+/**
+ * Thread-safe JNI class finder using Android ClassLoader.
+ * Works on any thread, unlike standard FindClass which may fail on non-main threads.
+ * @param p_env JNI environment instance.
+ * @param p_class_name Class name to find.
+ * @return jclass reference or null if not found.
+ */
+jclass jni_find_class(JNIEnv *p_env, const char *p_class_name);

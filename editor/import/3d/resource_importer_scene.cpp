@@ -36,8 +36,8 @@
 #include "core/object/script_language.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/import/3d/scene_import_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
@@ -1386,6 +1386,13 @@ Node *ResourceImporterScene::_replace_node_with_type_and_script(Node *p_node, St
 			p_script = ResourceLoader::load(ScriptServer::get_global_class_path(p_node_type));
 		}
 		p_node_type = ScriptServer::get_global_class_base(p_node_type);
+		while (!p_node_type.is_empty()) {
+			if (ScriptServer::is_global_class(p_node_type)) {
+				p_node_type = ScriptServer::get_global_class_base(p_node_type);
+			} else {
+				break;
+			}
+		}
 	}
 	if (!p_node_type.is_empty() && p_node->get_class_name() != p_node_type) {
 		// If the user specified a Godot node type that does not match
@@ -2071,6 +2078,7 @@ void ResourceImporterScene::_create_slices(AnimationPlayer *ap, Ref<Animation> a
 			}
 		}
 
+		new_anim->set_name(name);
 		new_anim->set_loop_mode(loop_mode);
 		new_anim->set_length(to - from);
 		new_anim->set_step(anim->get_step());
@@ -2956,15 +2964,6 @@ void ResourceImporterScene::_optimize_track_usage(AnimationPlayer *p_player, Ani
 	}
 }
 
-void ResourceImporterScene::_generate_editor_preview_for_scene(const String &p_path, Node *p_scene) {
-	if (!Engine::get_singleton()->is_editor_hint()) {
-		return;
-	}
-	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
-	ERR_FAIL_NULL_MSG(p_scene, "Scene is null, cannot generate preview.");
-	EditorInterface::get_singleton()->make_scene_preview(p_path, p_scene, 1024);
-}
-
 Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_source_file.get_extension().to_lower();
@@ -3352,7 +3351,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		print_verbose("Saving scene to: " + p_save_path + ".scn");
 		err = ResourceSaver::save(packer, p_save_path + ".scn", flags); //do not take over, let the changed files reload themselves
 		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
-		_generate_editor_preview_for_scene(p_source_file, scene);
+		EditorInterface::get_singleton()->make_scene_preview(p_source_file, scene, 1024);
 	} else {
 		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown scene import type: " + _scene_import_type);
 	}

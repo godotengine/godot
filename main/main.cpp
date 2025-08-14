@@ -109,24 +109,24 @@
 #ifdef TOOLS_ENABLED
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/doc_data_class_path.gen.h"
-#include "editor/doc_tools.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_help.h"
+#include "editor/doc/doc_data_class_path.gen.h"
+#include "editor/doc/doc_tools.h"
+#include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
-#include "editor/editor_translation.h"
-#include "editor/progress_dialog.h"
-#include "editor/project_manager.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/gui/progress_dialog.h"
+#include "editor/project_manager/project_manager.h"
 #include "editor/register_editor_types.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/translations/editor_translation.h"
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 #include "main/splash_editor.gen.h"
 #endif
 
 #ifndef DISABLE_DEPRECATED
-#include "editor/project_converter_3_to_4.h"
+#include "editor/project_upgrade/project_converter_3_to_4.h"
 #endif // DISABLE_DEPRECATED
 #endif // TOOLS_ENABLED
 
@@ -1653,6 +1653,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			upwards = true;
 		} else if (arg == "--quit") { // Auto quit at the end of the first main loop iteration
 			quit_after = 1;
+#ifdef TOOLS_ENABLED
+			wait_for_import = true;
+#endif
 		} else if (arg == "--quit-after") { // Quit after the given number of iterations
 			if (N) {
 				quit_after = N->get().to_int();
@@ -2366,6 +2369,34 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		FORCE_ANGLE("0x8086", "0x193B"); // Intel(R) Iris Pro Graphics 580, Gen9, Skylake
 		FORCE_ANGLE("Intel", "Intel(R) Iris Pro Graphics P580");
 		FORCE_ANGLE("0x8086", "0x193D"); // Intel(R) Iris Pro Graphics P580, Gen9, Skylake
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 610");
+		FORCE_ANGLE("0x8086", "0x5902"); // Intel(R) HD Graphics 610, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x5906");
+		FORCE_ANGLE("0x8086", "0x5908");
+		FORCE_ANGLE("0x8086", "0x590A");
+		FORCE_ANGLE("0x8086", "0x590B");
+		FORCE_ANGLE("0x8086", "0x590E");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 615");
+		FORCE_ANGLE("0x8086", "0x5913"); // Intel(R) HD Graphics 615, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x5915");
+		FORCE_ANGLE("0x8086", "0x591E");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 620");
+		FORCE_ANGLE("0x8086", "0x5916"); // Intel(R) HD Graphics 620, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x5917");
+		FORCE_ANGLE("0x8086", "0x5921");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 630");
+		FORCE_ANGLE("0x8086", "0x5912"); // Intel(R) HD Graphics 630, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x591B");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics 635");
+		FORCE_ANGLE("0x8086", "0x5923"); // Intel(R) HD Graphics 635, Gen9.5, Kaby Lake
+		FORCE_ANGLE("Intel", "Intel(R) Iris Plus Graphics 640");
+		FORCE_ANGLE("0x8086", "0x5926"); // Intel(R) Iris Plus Graphics 640, Gen9.5, Kaby Lake
+		FORCE_ANGLE("Intel", "Intel(R) Iris Plus Graphics 650");
+		FORCE_ANGLE("0x8086", "0x5927"); // Iris Plus Graphics 650, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x593B");
+		FORCE_ANGLE("Intel", "Intel(R) HD Graphics P630");
+		FORCE_ANGLE("0x8086", "0x591A"); // Intel(R) HD Graphics P630, Gen9.5, Kaby Lake
+		FORCE_ANGLE("0x8086", "0x591D");
 
 #undef FORCE_ANGLE
 
@@ -2532,7 +2563,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	default_renderer = renderer_hints.get_slicec(',', 0);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
+	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method.web", PROPERTY_HINT_ENUM, "gl_compatibility"), "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
 
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {

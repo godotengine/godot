@@ -314,6 +314,10 @@
 #endif
 #endif
 
+#ifndef HB_HOT
+#define HB_HOT __attribute__((hot))
+#endif
+
 /*
  * Borrowed from https://bugzilla.mozilla.org/show_bug.cgi?id=1215411
  * HB_FALLTHROUGH is an annotation to suppress compiler warnings about switch

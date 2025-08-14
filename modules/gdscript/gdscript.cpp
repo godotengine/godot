@@ -56,7 +56,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/extension/gdextension_manager.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_paths.h"
 #endif
 
 ///////////////////////////
@@ -187,9 +187,9 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		return instance;
 	}
 
-	initializer = _super_constructor(this);
-	if (initializer != nullptr) {
-		initializer->call(instance, p_args, p_argcount, r_error);
+	GDScriptFunction *applicable_initializer = _super_constructor(this);
+	if (applicable_initializer != nullptr) {
+		applicable_initializer->call(instance, p_args, p_argcount, r_error);
 		if (r_error.error != Callable::CallError::CALL_OK) {
 			String error_text = Variant::get_call_error_text(instance->owner, "_init", p_args, p_argcount, r_error);
 			instance->script = Ref<GDScript>();
@@ -2329,8 +2329,6 @@ void GDScriptLanguage::finish() {
 	}
 	finishing = true;
 
-	_call_stack.free();
-
 	// Clear the cache before parsing the script_list
 	GDScriptCache::clear();
 
@@ -2922,7 +2920,19 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
 
-thread_local GDScriptLanguage::CallStack GDScriptLanguage::_call_stack;
+thread_local GDScriptLanguage::CallLevel *GDScriptLanguage::_call_stack = nullptr;
+thread_local uint32_t GDScriptLanguage::_call_stack_size = 0;
+
+GDScriptLanguage::CallLevel *GDScriptLanguage::_get_stack_level(uint32_t p_level) {
+	ERR_FAIL_UNSIGNED_INDEX_V(p_level, _call_stack_size, nullptr);
+	CallLevel *level = _call_stack; // Start from top
+	uint32_t level_index = 0;
+	while (p_level > level_index) {
+		level_index++;
+		level = level->prev;
+	}
+	return level;
+}
 
 GDScriptLanguage::GDScriptLanguage() {
 	ERR_FAIL_COND(singleton);

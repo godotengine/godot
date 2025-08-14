@@ -31,11 +31,11 @@
 #include "editor_bottom_panel.h"
 
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
+#include "editor/settings/editor_command_palette.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

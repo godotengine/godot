@@ -286,7 +286,7 @@ namespace GodotTools.Export
                     if (!BuildManager.PublishProjectBlocking(buildConfig, platform,
                             runtimeIdentifier, publishOutputDir, includeDebugSymbols))
                     {
-                        throw new InvalidOperationException("Failed to build project.");
+                        throw new InvalidOperationException("Failed to build project. Check MSBuild panel for details.");
                     }
 
                     string soExt = ridOS switch

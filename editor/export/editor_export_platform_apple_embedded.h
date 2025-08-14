@@ -40,8 +40,8 @@
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
 #include "core/templates/safe_refcount.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform.h"
+#include "editor/settings/editor_settings.h"
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
@@ -202,7 +202,7 @@ public:
 
 	virtual int get_options_count() const override;
 	virtual String get_options_tooltip() const override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
 	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) override;

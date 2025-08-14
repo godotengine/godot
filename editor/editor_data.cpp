@@ -36,8 +36,8 @@
 #include "core/io/resource_loader.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/multi_node_edit.h"
-#include "editor/plugins/editor_context_menu_plugin.h"
+#include "editor/inspector/editor_context_menu_plugin.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
@@ -950,6 +950,7 @@ void EditorData::clear_edited_scenes() {
 		}
 	}
 	edited_scene.clear();
+	SceneTree::get_singleton()->set_edited_scene_root(nullptr);
 }
 
 void EditorData::set_plugin_window_layout(Ref<ConfigFile> p_layout) {

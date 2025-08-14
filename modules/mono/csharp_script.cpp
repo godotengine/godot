@@ -59,11 +59,11 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/os/keyboard.h"
-#include "editor/editor_file_system.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/node_dock.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
-#include "editor/inspector_dock.h"
-#include "editor/node_dock.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.

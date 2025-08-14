@@ -424,7 +424,7 @@ void TextureProgressBar::draw_nine_patch_stretched(const Ref<Texture2D> &p_textu
 	p_texture->get_rect_region(dst_rect, src_rect, dst_rect, src_rect);
 
 	RID ci = get_canvas_item();
-	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
+	RS::get_singleton()->canvas_item_add_nine_patch(ci, dst_rect, src_rect, p_texture->get_scaled_rid(), topleft, bottomright, RS::NINE_PATCH_STRETCH, RS::NINE_PATCH_STRETCH, true, p_modulate);
 }
 
 void TextureProgressBar::_notification(int p_what) {

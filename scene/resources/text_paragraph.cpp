@@ -38,7 +38,7 @@ void TextParagraph::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_direction"), &TextParagraph::get_direction);
 	ClassDB::bind_method(D_METHOD("get_inferred_direction"), &TextParagraph::get_inferred_direction);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Light-to-right,Right-to-left"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Auto,Left-to-right,Right-to-left"), "set_direction", "get_direction");
 	// If compiling the editor with TextServerFallback only,
 	// `--doctool` would change the default value to `TextServer::DIRECTION_LTR`.
 	// Force it so that it's consistent regardless of the backend.

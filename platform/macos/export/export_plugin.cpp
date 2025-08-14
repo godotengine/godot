@@ -38,11 +38,11 @@
 #include "core/string/translation.h"
 #include "drivers/png/png_driver_common.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/codesign.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/image_texture.h"
@@ -2527,8 +2527,12 @@ bool EditorExportPlatformMacOS::poll_export() {
 	return menu_options != prev;
 }
 
-Ref<ImageTexture> EditorExportPlatformMacOS::get_option_icon(int p_index) const {
-	return p_index == 1 ? stop_icon : EditorExportPlatform::get_option_icon(p_index);
+Ref<Texture2D> EditorExportPlatformMacOS::get_option_icon(int p_index) const {
+	if (p_index == 1) {
+		return stop_icon;
+	} else {
+		return EditorExportPlatform::get_option_icon(p_index);
+	}
 }
 
 int EditorExportPlatformMacOS::get_options_count() const {

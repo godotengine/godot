@@ -44,7 +44,7 @@
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #endif
 
 // This function is used to determine that a type is "built-in" as opposed to native
@@ -3371,6 +3371,9 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 	if (previous.type == GDScriptTokenizer::Token::SUPER) {
 		// Super call.
 		call->is_super = true;
+		if (!check(GDScriptTokenizer::Token::PERIOD)) {
+			make_completion_context(COMPLETION_SUPER, call);
+		}
 		push_multiline(true);
 		if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
 			// Implicit call to the parent method of the same name.
@@ -3387,7 +3390,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			}
 		} else {
 			consume(GDScriptTokenizer::Token::PERIOD, R"(Expected "." or "(" after "super".)");
-			make_completion_context(COMPLETION_SUPER_METHOD, call, true);
+			make_completion_context(COMPLETION_SUPER_METHOD, call);
 			if (!consume(GDScriptTokenizer::Token::IDENTIFIER, R"(Expected function name after ".".)")) {
 				pop_multiline();
 				complete_extents(call);
@@ -3615,6 +3618,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 
 	bool multiline_context = multiline_stack.back()->get();
 
+	push_completion_call(nullptr);
+
 	// Reset the multiline stack since we don't want the multiline mode one in the lambda body.
 	push_multiline(false);
 	if (multiline_context) {
@@ -3661,6 +3666,8 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	complete_extents(lambda);
 
 	pop_multiline();
+
+	pop_completion_call();
 
 	if (multiline_context) {
 		// If we're in multiline mode, we want to skip the spurious DEDENT and NEWLINE tokens.

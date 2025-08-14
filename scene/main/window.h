@@ -419,6 +419,7 @@ public:
 
 	void grab_focus();
 	bool has_focus() const;
+	bool has_focus_or_active_popup() const;
 
 	void start_drag();
 	void start_resize(DisplayServer::WindowResizeEdge p_edge);

@@ -34,13 +34,13 @@
 #include "core/io/plist.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"
 
@@ -2325,10 +2325,10 @@ String EditorExportPlatformAppleEmbedded::get_options_tooltip() const {
 	return TTR("Select device from the list");
 }
 
-Ref<ImageTexture> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
+Ref<Texture2D> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
 	MutexLock lock(device_lock);
 
-	Ref<ImageTexture> icon;
+	Ref<Texture2D> icon;
 	if (p_index >= 0 || p_index < devices.size()) {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {

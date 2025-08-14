@@ -322,6 +322,7 @@ private:
 
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
+	void _graph_element_visibility_changed(GraphElement *p_graph_element);
 	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
 	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);

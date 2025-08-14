@@ -56,7 +56,6 @@ private:
 	float delta = 0;
 
 	double time_total = 0.0;
-	bool flip_xy_workaround = false;
 
 #ifdef WINDOWS_ENABLED
 	static bool screen_flipped_y;

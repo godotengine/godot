@@ -321,7 +321,7 @@ open class GodotService : Service() {
 		Log.d(TAG, "Performing engine initialization")
 		try {
 			// Initialize the Godot instance
-			if (!godot.initEngine(godotHost.commandLine, godotHost.getHostPlugins(godot))) {
+			if (!godot.initEngine(godotHost, godotHost.commandLine, godotHost.getHostPlugins(godot))) {
 				throw IllegalStateException("Unable to initialize Godot engine layer")
 			}
 

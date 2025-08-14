@@ -233,11 +233,9 @@ void Logger::log_message(const String &p_text, bool p_error) {
 ////// OS //////
 
 void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
-	if (!should_log(p_err) || is_logging) {
+	if (!should_log(p_err)) {
 		return;
 	}
-
-	is_logging = true;
 
 	constexpr int static_buf_size = 1024;
 	char static_buf[static_buf_size] = { '\0' };
@@ -260,12 +258,10 @@ void OS::LoggerBind::logv(const char *p_format, va_list p_list, bool p_err) {
 	if (len >= static_buf_size) {
 		Memory::free_static(buf);
 	}
-
-	is_logging = false;
 }
 
 void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify, ErrorType p_type, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces) {
-	if (!should_log(true) || is_logging) {
+	if (!should_log(true)) {
 		return;
 	}
 
@@ -275,13 +271,9 @@ void OS::LoggerBind::log_error(const char *p_function, const char *p_file, int p
 		backtraces[i] = p_script_backtraces[i];
 	}
 
-	is_logging = true;
-
 	for (Ref<CoreBind::Logger> &logger : loggers) {
 		logger->log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, CoreBind::Logger::ErrorType(p_type), backtraces);
 	}
-
-	is_logging = false;
 }
 
 PackedByteArray OS::get_entropy(int p_bytes) {
@@ -724,6 +716,27 @@ void OS::remove_logger(const Ref<Logger> &p_logger) {
 	ERR_FAIL_COND(p_logger.is_null());
 	ERR_FAIL_COND_MSG(!logger_bind || logger_bind->loggers.find(p_logger) == -1, "Could not remove logger, as it hasn't been added.");
 	logger_bind->loggers.erase(p_logger);
+}
+
+void OS::remove_script_loggers(const ScriptLanguage *p_script) {
+	if (logger_bind) {
+		LocalVector<Ref<CoreBind::Logger>> to_remove;
+		for (const Ref<CoreBind::Logger> &logger : logger_bind->loggers) {
+			if (logger.is_null()) {
+				continue;
+			}
+			ScriptInstance *si = logger->get_script_instance();
+			if (!si) {
+				continue;
+			}
+			if (si->get_language() == p_script) {
+				to_remove.push_back(logger);
+			}
+		}
+		for (const Ref<CoreBind::Logger> &logger : to_remove) {
+			logger_bind->loggers.erase(logger);
+		}
+	}
 }
 
 void OS::_bind_methods() {

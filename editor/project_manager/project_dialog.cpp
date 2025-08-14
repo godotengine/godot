@@ -34,12 +34,12 @@
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_vcs_interface.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/version_control/editor_vcs_interface.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
@@ -739,10 +739,11 @@ void ProjectDialog::ok_pressed() {
 	hide();
 	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
 #ifdef ANDROID_ENABLED
+		// Create a .nomedia file to hide assets from media apps on Android.
 		// Android 11 has some issues with nomedia files, so it's disabled there. See GH-106479, GH-105399 for details.
+		// NOTE: Nomedia file is also handled during the first filesystem scan. See editor_file_system.cpp -> EditorFileSystem::scan().
 		String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
 		if (sdk_version != "30") {
-			// Create a .nomedia file to hide assets from media apps on Android.
 			const String nomedia_file_path = path.path_join(".nomedia");
 			Ref<FileAccess> f2 = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
 			if (f2.is_null()) {

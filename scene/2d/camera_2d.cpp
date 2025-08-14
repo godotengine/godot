@@ -224,7 +224,7 @@ Transform2D Camera2D::get_camera_transform() {
 	Rect2 screen_rect(-screen_offset + ret_camera_pos, screen_size * zoom_scale);
 
 	if (limit_enabled && (!position_smoothing_enabled || !limit_smoothing_enabled)) {
-		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (camera_pos - screen_rect.position));
+		Point2 bottom_right_corner = Point2(screen_rect.position + 2.0 * (ret_camera_pos - screen_rect.position));
 		// Apply horizontal limiting.
 		if (bottom_right_corner.x - screen_rect.position.x > limit[SIDE_RIGHT] - limit[SIDE_LEFT]) {
 			// Split the difference horizontally (center it).
@@ -929,7 +929,7 @@ void Camera2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position_smoothing_speed", "position_smoothing_speed"), &Camera2D::set_position_smoothing_speed);
 	ClassDB::bind_method(D_METHOD("get_position_smoothing_speed"), &Camera2D::get_position_smoothing_speed);
 
-	ClassDB::bind_method(D_METHOD("set_position_smoothing_enabled", "position_smoothing_speed"), &Camera2D::set_position_smoothing_enabled);
+	ClassDB::bind_method(D_METHOD("set_position_smoothing_enabled", "enabled"), &Camera2D::set_position_smoothing_enabled);
 	ClassDB::bind_method(D_METHOD("is_position_smoothing_enabled"), &Camera2D::is_position_smoothing_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_rotation_smoothing_enabled", "enabled"), &Camera2D::set_rotation_smoothing_enabled);

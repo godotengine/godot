@@ -42,13 +42,13 @@
 #include "core/io/zip_io.h"
 #include "core/math/random_pcg.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/file_system/editor_file_system.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor_export_plugin.h"
 #include "scene/resources/image_texture.h"
@@ -417,9 +417,9 @@ Error EditorExportPlatform::_save_zip_patch_file(void *p_userdata, const String 
 	return _save_zip_file(p_userdata, p_path, p_data, p_file, p_total, p_enc_in_filters, p_enc_ex_filters, p_key, p_seed);
 }
 
-Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
+Ref<Texture2D> EditorExportPlatform::get_option_icon(int p_index) const {
 	Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
-	ERR_FAIL_COND_V(theme.is_null(), Ref<ImageTexture>());
+	ERR_FAIL_COND_V(theme.is_null(), Ref<Texture2D>());
 	return theme->get_icon(SNAME("Play"), EditorStringName(EditorIcons));
 }
 

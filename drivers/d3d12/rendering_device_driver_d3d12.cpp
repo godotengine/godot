@@ -5586,6 +5586,10 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
 			return true;
+		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
+			return true;
+		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return false;
 		default:
 			return false;
 	}
@@ -5837,7 +5841,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 
 #define D3D_SHADER_MODEL_TO_STRING(m_sm) vformat("%d.%d", (m_sm >> 4), (m_sm & 0xf))
 
-		ERR_FAIL_COND_V_MSG(!shader_capabilities.shader_model, ERR_UNAVAILABLE,
+		ERR_FAIL_COND_V_MSG(shader_capabilities.shader_model < SMS_TO_CHECK[ARRAY_SIZE(SMS_TO_CHECK) - 1], ERR_UNAVAILABLE,
 				vformat("No support for any of the suitable shader models (%s-%s) has been found.", D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[ARRAY_SIZE(SMS_TO_CHECK) - 1]), D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[0])));
 
 		print_verbose("- Shader:");
@@ -6056,6 +6060,8 @@ Error RenderingDeviceDriverD3D12::_initialize_command_signatures() {
 }
 
 Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
+	glsl_type_singleton_init_or_ref();
+
 	context_device = context_driver->device_get(p_device_index);
 	adapter = context_driver->create_adapter(p_device_index);
 	ERR_FAIL_NULL_V(adapter, ERR_CANT_CREATE);
@@ -6084,8 +6090,6 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 
 	err = _initialize_command_signatures();
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
-
-	glsl_type_singleton_init_or_ref();
 
 	return OK;
 }

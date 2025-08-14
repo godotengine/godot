@@ -31,19 +31,19 @@
 #include "editor_debugger_node.h"
 
 #include "core/object/undo_redo.h"
+#include "editor/debugger/editor_debugger_plugin.h"
 #include "editor/debugger/editor_debugger_tree.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/docks/inspector_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/inspector_dock.h"
-#include "editor/plugins/editor_debugger_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
-#include "editor/scene_tree_dock.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/tab_container.h"
@@ -311,7 +311,9 @@ void EditorDebuggerNode::stop(bool p_force) {
 
 	// Also close all debugging sessions.
 	_for_all(tabs, [&](ScriptEditorDebugger *dbg) {
-		dbg->_stop_and_notify();
+		if (dbg->is_session_active()) {
+			dbg->_stop_and_notify();
+		}
 	});
 	_break_state_changed();
 	breakpoints.clear();
@@ -471,8 +473,11 @@ void EditorDebuggerNode::_debugger_stopped(int p_id) {
 	if (!found) {
 		EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
 		EditorRunBar::get_singleton()->get_pause_button()->set_disabled(true);
-		SceneTreeDock::get_singleton()->hide_remote_tree();
-		SceneTreeDock::get_singleton()->hide_tab_buttons();
+		SceneTreeDock *dock = SceneTreeDock::get_singleton();
+		if (dock->is_inside_tree()) {
+			dock->hide_remote_tree();
+			dock->hide_tab_buttons();
+		}
 		EditorNode::get_singleton()->notify_all_debug_sessions_exited();
 	}
 }

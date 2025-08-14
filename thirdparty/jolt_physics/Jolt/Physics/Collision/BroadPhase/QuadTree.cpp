@@ -301,7 +301,7 @@ void QuadTree::UpdatePrepare(const BodyVector &inBodies, TrackingVector &ioTrack
 #endif
 
 	// Create space for all body ID's
-	NodeID *node_ids = new NodeID [mNumBodies];
+	NodeID *node_ids = mNumBodies > 0? new NodeID [mNumBodies] : nullptr;
 	NodeID *cur_node_id = node_ids;
 
 	// Collect all bodies

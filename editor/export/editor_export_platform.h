@@ -326,7 +326,7 @@ public:
 	virtual bool poll_export() { return false; }
 	virtual int get_options_count() const { return 0; }
 	virtual String get_options_tooltip() const { return ""; }
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const;
 	virtual String get_option_label(int p_device) const { return ""; }
 	virtual String get_option_tooltip(int p_device) const { return ""; }
 	virtual String get_device_architecture(int p_device) const { return ""; }

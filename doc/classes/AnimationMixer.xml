@@ -350,6 +350,7 @@
 			<param index="0" name="anim_name" type="StringName" />
 			<description>
 				Notifies when an animation starts playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping.
 			</description>
 		</signal>
 		<signal name="caches_cleared">

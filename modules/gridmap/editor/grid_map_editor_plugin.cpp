@@ -31,15 +31,15 @@
 #include "grid_map_editor_plugin.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_zoom_widget.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/scene/3d/node_3d_editor_plugin.h"
+#include "editor/settings/editor_command_palette.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/dialogs.h"
@@ -535,7 +535,6 @@ void GridMapEditor::_set_clipboard_data() {
 				item.cell_item = itm;
 				item.grid_offset = Vector3(selected) - selection.begin;
 				item.orientation = node->get_cell_item_orientation(selected);
-				item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);
 
 				if (mesh.is_valid()) {
 					item.instance = RenderingServer::get_singleton()->instance_create2(mesh->get_rid(), scenario);

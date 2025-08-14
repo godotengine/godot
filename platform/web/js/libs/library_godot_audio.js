@@ -408,7 +408,7 @@ class SampleNode {
 	 * @returns {void}
 	 */
 	static delete(id) {
-		GodotAudio.sampleNodes.delete(id);
+		GodotAudio.deleteSampleNode(id);
 	}
 
 	/**
@@ -776,15 +776,9 @@ class SampleNode {
 			}
 
 			switch (self.getSample().loopMode) {
-			case 'disabled': {
-				const id = this.id;
+			case 'disabled':
 				self.stop();
-				if (GodotAudio.sampleFinishedCallback != null) {
-					const idCharPtr = GodotRuntime.allocString(id);
-					GodotAudio.sampleFinishedCallback(idCharPtr);
-					GodotRuntime.free(idCharPtr);
-				}
-			} break;
+				break;
 			case 'forward':
 			case 'backward':
 				self.restart();
@@ -1175,6 +1169,15 @@ const _GodotAudio = {
 		 */
 		sampleNodes: null,
 		SampleNode,
+		deleteSampleNode: (pSampleNodeId) => {
+			GodotAudio.sampleNodes.delete(pSampleNodeId);
+			if (GodotAudio.sampleFinishedCallback == null) {
+				return;
+			}
+			const sampleNodeIdPtr = GodotRuntime.allocString(pSampleNodeId);
+			GodotAudio.sampleFinishedCallback(sampleNodeIdPtr);
+			GodotRuntime.free(sampleNodeIdPtr);
+		},
 
 		// `Bus` class
 		/**

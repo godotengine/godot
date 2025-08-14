@@ -952,6 +952,208 @@ typedef uint32_t psa_pake_primitive_t;
  */
 #define PSA_PAKE_STEP_ZK_PROOF                  ((psa_pake_step_t) 0x03)
 
+/**@}*/
+
+/** A sufficient output buffer size for psa_pake_output().
+ *
+ * If the size of the output buffer is at least this large, it is guaranteed
+ * that psa_pake_output() will not fail due to an insufficient output buffer
+ * size. The actual size of the output might be smaller in any given call.
+ *
+ * See also #PSA_PAKE_OUTPUT_MAX_SIZE
+ *
+ * \param alg           A PAKE algorithm (\c PSA_ALG_XXX value such that
+ *                      #PSA_ALG_IS_PAKE(\p alg) is true).
+ * \param primitive     A primitive of type ::psa_pake_primitive_t that is
+ *                      compatible with algorithm \p alg.
+ * \param output_step   A value of type ::psa_pake_step_t that is valid for the
+ *                      algorithm \p alg.
+ * \return              A sufficient output buffer size for the specified
+ *                      PAKE algorithm, primitive, and output step. If the
+ *                      PAKE algorithm, primitive, or output step is not
+ *                      recognized, or the parameters are incompatible,
+ *                      return 0.
+ */
+#define PSA_PAKE_OUTPUT_SIZE(alg, primitive, output_step)               \
+    (alg == PSA_ALG_JPAKE &&                                           \
+     primitive == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,      \
+                                     PSA_ECC_FAMILY_SECP_R1, 256) ?    \
+     (                                                                 \
+         output_step == PSA_PAKE_STEP_KEY_SHARE ? 65 :                   \
+         output_step == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                   \
+         32                                                              \
+     ) :                                                               \
+     0)
+
+/** A sufficient input buffer size for psa_pake_input().
+ *
+ * The value returned by this macro is guaranteed to be large enough for any
+ * valid input to psa_pake_input() in an operation with the specified
+ * parameters.
+ *
+ * See also #PSA_PAKE_INPUT_MAX_SIZE
+ *
+ * \param alg           A PAKE algorithm (\c PSA_ALG_XXX value such that
+ *                      #PSA_ALG_IS_PAKE(\p alg) is true).
+ * \param primitive     A primitive of type ::psa_pake_primitive_t that is
+ *                      compatible with algorithm \p alg.
+ * \param input_step    A value of type ::psa_pake_step_t that is valid for the
+ *                      algorithm \p alg.
+ * \return              A sufficient input buffer size for the specified
+ *                      input, cipher suite and algorithm. If the cipher suite,
+ *                      the input type or PAKE algorithm is not recognized, or
+ *                      the parameters are incompatible, return 0.
+ */
+#define PSA_PAKE_INPUT_SIZE(alg, primitive, input_step)                 \
+    (alg == PSA_ALG_JPAKE &&                                           \
+     primitive == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,      \
+                                     PSA_ECC_FAMILY_SECP_R1, 256) ?    \
+     (                                                                 \
+         input_step == PSA_PAKE_STEP_KEY_SHARE ? 65 :                    \
+         input_step == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                    \
+         32                                                              \
+     ) :                                                               \
+     0)
+
+/** Output buffer size for psa_pake_output() for any of the supported PAKE
+ * algorithm and primitive suites and output step.
+ *
+ * This macro must expand to a compile-time constant integer.
+ *
+ * The value of this macro must be at least as large as the largest value
+ * returned by PSA_PAKE_OUTPUT_SIZE()
+ *
+ * See also #PSA_PAKE_OUTPUT_SIZE(\p alg, \p primitive, \p output_step).
+ */
+#define PSA_PAKE_OUTPUT_MAX_SIZE 65
+
+/** Input buffer size for psa_pake_input() for any of the supported PAKE
+ * algorithm and primitive suites and input step.
+ *
+ * This macro must expand to a compile-time constant integer.
+ *
+ * The value of this macro must be at least as large as the largest value
+ * returned by PSA_PAKE_INPUT_SIZE()
+ *
+ * See also #PSA_PAKE_INPUT_SIZE(\p alg, \p primitive, \p output_step).
+ */
+#define PSA_PAKE_INPUT_MAX_SIZE 65
+
+/** Returns a suitable initializer for a PAKE cipher suite object of type
+ * psa_pake_cipher_suite_t.
+ */
+#define PSA_PAKE_CIPHER_SUITE_INIT { PSA_ALG_NONE, 0, 0, 0, PSA_ALG_NONE }
+
+/** Returns a suitable initializer for a PAKE operation object of type
+ * psa_pake_operation_t.
+ */
+#if defined(MBEDTLS_PSA_CRYPTO_CLIENT) && !defined(MBEDTLS_PSA_CRYPTO_C)
+#define PSA_PAKE_OPERATION_INIT { 0 }
+#else
+#define PSA_PAKE_OPERATION_INIT { 0, PSA_ALG_NONE, 0, PSA_PAKE_OPERATION_STAGE_SETUP, \
+                                  { 0 }, { { 0 } } }
+#endif
+
+struct psa_pake_cipher_suite_s {
+    psa_algorithm_t algorithm;
+    psa_pake_primitive_type_t type;
+    psa_pake_family_t family;
+    uint16_t  bits;
+    psa_algorithm_t hash;
+};
+
+struct psa_crypto_driver_pake_inputs_s {
+    uint8_t *MBEDTLS_PRIVATE(password);
+    size_t MBEDTLS_PRIVATE(password_len);
+    uint8_t *MBEDTLS_PRIVATE(user);
+    size_t MBEDTLS_PRIVATE(user_len);
+    uint8_t *MBEDTLS_PRIVATE(peer);
+    size_t MBEDTLS_PRIVATE(peer_len);
+    psa_key_attributes_t MBEDTLS_PRIVATE(attributes);
+    struct psa_pake_cipher_suite_s MBEDTLS_PRIVATE(cipher_suite);
+};
+
+typedef enum psa_crypto_driver_pake_step {
+    PSA_JPAKE_STEP_INVALID        = 0,  /* Invalid step */
+    PSA_JPAKE_X1_STEP_KEY_SHARE   = 1,  /* Round 1: input/output key share (for ephemeral private key X1).*/
+    PSA_JPAKE_X1_STEP_ZK_PUBLIC   = 2,  /* Round 1: input/output Schnorr NIZKP public key for the X1 key */
+    PSA_JPAKE_X1_STEP_ZK_PROOF    = 3,  /* Round 1: input/output Schnorr NIZKP proof for the X1 key */
+    PSA_JPAKE_X2_STEP_KEY_SHARE   = 4,  /* Round 1: input/output key share (for ephemeral private key X2).*/
+    PSA_JPAKE_X2_STEP_ZK_PUBLIC   = 5,  /* Round 1: input/output Schnorr NIZKP public key for the X2 key */
+    PSA_JPAKE_X2_STEP_ZK_PROOF    = 6,  /* Round 1: input/output Schnorr NIZKP proof for the X2 key */
+    PSA_JPAKE_X2S_STEP_KEY_SHARE  = 7,  /* Round 2: output X2S key (our key) */
+    PSA_JPAKE_X2S_STEP_ZK_PUBLIC  = 8,  /* Round 2: output Schnorr NIZKP public key for the X2S key (our key) */
+    PSA_JPAKE_X2S_STEP_ZK_PROOF   = 9,  /* Round 2: output Schnorr NIZKP proof for the X2S key (our key) */
+    PSA_JPAKE_X4S_STEP_KEY_SHARE  = 10, /* Round 2: input X4S key (from peer) */
+    PSA_JPAKE_X4S_STEP_ZK_PUBLIC  = 11, /* Round 2: input Schnorr NIZKP public key for the X4S key (from peer) */
+    PSA_JPAKE_X4S_STEP_ZK_PROOF   = 12  /* Round 2: input Schnorr NIZKP proof for the X4S key (from peer) */
+} psa_crypto_driver_pake_step_t;
+
+typedef enum psa_jpake_round {
+    PSA_JPAKE_FIRST = 0,
+    PSA_JPAKE_SECOND = 1,
+    PSA_JPAKE_FINISHED = 2
+} psa_jpake_round_t;
+
+typedef enum psa_jpake_io_mode {
+    PSA_JPAKE_INPUT = 0,
+    PSA_JPAKE_OUTPUT = 1
+} psa_jpake_io_mode_t;
+
+struct psa_jpake_computation_stage_s {
+    /* The J-PAKE round we are currently on */
+    psa_jpake_round_t MBEDTLS_PRIVATE(round);
+    /* The 'mode' we are currently in (inputting or outputting) */
+    psa_jpake_io_mode_t MBEDTLS_PRIVATE(io_mode);
+    /* The number of completed inputs so far this round */
+    uint8_t MBEDTLS_PRIVATE(inputs);
+    /* The number of completed outputs so far this round */
+    uint8_t MBEDTLS_PRIVATE(outputs);
+    /* The next expected step (KEY_SHARE, ZK_PUBLIC or ZK_PROOF) */
+    psa_pake_step_t MBEDTLS_PRIVATE(step);
+};
+
+#define PSA_JPAKE_EXPECTED_INPUTS(round) ((round) == PSA_JPAKE_FINISHED ? 0 : \
+                                          ((round) == PSA_JPAKE_FIRST ? 2 : 1))
+#define PSA_JPAKE_EXPECTED_OUTPUTS(round) ((round) == PSA_JPAKE_FINISHED ? 0 : \
+                                           ((round) == PSA_JPAKE_FIRST ? 2 : 1))
+
+struct psa_pake_operation_s {
+#if defined(MBEDTLS_PSA_CRYPTO_CLIENT) && !defined(MBEDTLS_PSA_CRYPTO_C)
+    mbedtls_psa_client_handle_t handle;
+#else
+    /** Unique ID indicating which driver got assigned to do the
+     * operation. Since driver contexts are driver-specific, swapping
+     * drivers halfway through the operation is not supported.
+     * ID values are auto-generated in psa_crypto_driver_wrappers.h
+     * ID value zero means the context is not valid or not assigned to
+     * any driver (i.e. none of the driver contexts are active). */
+    unsigned int MBEDTLS_PRIVATE(id);
+    /* Algorithm of the PAKE operation */
+    psa_algorithm_t MBEDTLS_PRIVATE(alg);
+    /* A primitive of type compatible with algorithm */
+    psa_pake_primitive_t MBEDTLS_PRIVATE(primitive);
+    /* Stage of the PAKE operation: waiting for the setup, collecting inputs
+     * or computing. */
+    uint8_t MBEDTLS_PRIVATE(stage);
+    /* Holds computation stage of the PAKE algorithms. */
+    union {
+        uint8_t MBEDTLS_PRIVATE(dummy);
+#if defined(PSA_WANT_ALG_JPAKE)
+        struct psa_jpake_computation_stage_s MBEDTLS_PRIVATE(jpake);
+#endif
+    } MBEDTLS_PRIVATE(computation_stage);
+    union {
+        psa_driver_pake_context_t MBEDTLS_PRIVATE(ctx);
+        struct psa_crypto_driver_pake_inputs_s MBEDTLS_PRIVATE(inputs);
+    } MBEDTLS_PRIVATE(data);
+#endif
+};
+
+/** \addtogroup pake
+ * @{
+ */
+
 /** The type of the data structure for PAKE cipher suites.
  *
  * This is an implementation-defined \c struct. Applications should not
@@ -1658,114 +1860,6 @@ psa_status_t psa_pake_abort(psa_pake_operation_t *operation);
 
 /**@}*/
 
-/** A sufficient output buffer size for psa_pake_output().
- *
- * If the size of the output buffer is at least this large, it is guaranteed
- * that psa_pake_output() will not fail due to an insufficient output buffer
- * size. The actual size of the output might be smaller in any given call.
- *
- * See also #PSA_PAKE_OUTPUT_MAX_SIZE
- *
- * \param alg           A PAKE algorithm (\c PSA_ALG_XXX value such that
- *                      #PSA_ALG_IS_PAKE(\p alg) is true).
- * \param primitive     A primitive of type ::psa_pake_primitive_t that is
- *                      compatible with algorithm \p alg.
- * \param output_step   A value of type ::psa_pake_step_t that is valid for the
- *                      algorithm \p alg.
- * \return              A sufficient output buffer size for the specified
- *                      PAKE algorithm, primitive, and output step. If the
- *                      PAKE algorithm, primitive, or output step is not
- *                      recognized, or the parameters are incompatible,
- *                      return 0.
- */
-#define PSA_PAKE_OUTPUT_SIZE(alg, primitive, output_step)               \
-    (alg == PSA_ALG_JPAKE &&                                           \
-     primitive == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,      \
-                                     PSA_ECC_FAMILY_SECP_R1, 256) ?    \
-     (                                                                 \
-         output_step == PSA_PAKE_STEP_KEY_SHARE ? 65 :                   \
-         output_step == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                   \
-         32                                                              \
-     ) :                                                               \
-     0)
-
-/** A sufficient input buffer size for psa_pake_input().
- *
- * The value returned by this macro is guaranteed to be large enough for any
- * valid input to psa_pake_input() in an operation with the specified
- * parameters.
- *
- * See also #PSA_PAKE_INPUT_MAX_SIZE
- *
- * \param alg           A PAKE algorithm (\c PSA_ALG_XXX value such that
- *                      #PSA_ALG_IS_PAKE(\p alg) is true).
- * \param primitive     A primitive of type ::psa_pake_primitive_t that is
- *                      compatible with algorithm \p alg.
- * \param input_step    A value of type ::psa_pake_step_t that is valid for the
- *                      algorithm \p alg.
- * \return              A sufficient input buffer size for the specified
- *                      input, cipher suite and algorithm. If the cipher suite,
- *                      the input type or PAKE algorithm is not recognized, or
- *                      the parameters are incompatible, return 0.
- */
-#define PSA_PAKE_INPUT_SIZE(alg, primitive, input_step)                 \
-    (alg == PSA_ALG_JPAKE &&                                           \
-     primitive == PSA_PAKE_PRIMITIVE(PSA_PAKE_PRIMITIVE_TYPE_ECC,      \
-                                     PSA_ECC_FAMILY_SECP_R1, 256) ?    \
-     (                                                                 \
-         input_step == PSA_PAKE_STEP_KEY_SHARE ? 65 :                    \
-         input_step == PSA_PAKE_STEP_ZK_PUBLIC ? 65 :                    \
-         32                                                              \
-     ) :                                                               \
-     0)
-
-/** Output buffer size for psa_pake_output() for any of the supported PAKE
- * algorithm and primitive suites and output step.
- *
- * This macro must expand to a compile-time constant integer.
- *
- * The value of this macro must be at least as large as the largest value
- * returned by PSA_PAKE_OUTPUT_SIZE()
- *
- * See also #PSA_PAKE_OUTPUT_SIZE(\p alg, \p primitive, \p output_step).
- */
-#define PSA_PAKE_OUTPUT_MAX_SIZE 65
-
-/** Input buffer size for psa_pake_input() for any of the supported PAKE
- * algorithm and primitive suites and input step.
- *
- * This macro must expand to a compile-time constant integer.
- *
- * The value of this macro must be at least as large as the largest value
- * returned by PSA_PAKE_INPUT_SIZE()
- *
- * See also #PSA_PAKE_INPUT_SIZE(\p alg, \p primitive, \p output_step).
- */
-#define PSA_PAKE_INPUT_MAX_SIZE 65
-
-/** Returns a suitable initializer for a PAKE cipher suite object of type
- * psa_pake_cipher_suite_t.
- */
-#define PSA_PAKE_CIPHER_SUITE_INIT { PSA_ALG_NONE, 0, 0, 0, PSA_ALG_NONE }
-
-/** Returns a suitable initializer for a PAKE operation object of type
- * psa_pake_operation_t.
- */
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT) && !defined(MBEDTLS_PSA_CRYPTO_C)
-#define PSA_PAKE_OPERATION_INIT { 0 }
-#else
-#define PSA_PAKE_OPERATION_INIT { 0, PSA_ALG_NONE, 0, PSA_PAKE_OPERATION_STAGE_SETUP, \
-                                  { 0 }, { { 0 } } }
-#endif
-
-struct psa_pake_cipher_suite_s {
-    psa_algorithm_t algorithm;
-    psa_pake_primitive_type_t type;
-    psa_pake_family_t family;
-    uint16_t  bits;
-    psa_algorithm_t hash;
-};
-
 static inline psa_algorithm_t psa_pake_cs_get_algorithm(
     const psa_pake_cipher_suite_t *cipher_suite)
 {
@@ -1826,94 +1920,6 @@ static inline void psa_pake_cs_set_hash(psa_pake_cipher_suite_t *cipher_suite,
         cipher_suite->hash = hash;
     }
 }
-
-struct psa_crypto_driver_pake_inputs_s {
-    uint8_t *MBEDTLS_PRIVATE(password);
-    size_t MBEDTLS_PRIVATE(password_len);
-    uint8_t *MBEDTLS_PRIVATE(user);
-    size_t MBEDTLS_PRIVATE(user_len);
-    uint8_t *MBEDTLS_PRIVATE(peer);
-    size_t MBEDTLS_PRIVATE(peer_len);
-    psa_key_attributes_t MBEDTLS_PRIVATE(attributes);
-    psa_pake_cipher_suite_t MBEDTLS_PRIVATE(cipher_suite);
-};
-
-typedef enum psa_crypto_driver_pake_step {
-    PSA_JPAKE_STEP_INVALID        = 0,  /* Invalid step */
-    PSA_JPAKE_X1_STEP_KEY_SHARE   = 1,  /* Round 1: input/output key share (for ephemeral private key X1).*/
-    PSA_JPAKE_X1_STEP_ZK_PUBLIC   = 2,  /* Round 1: input/output Schnorr NIZKP public key for the X1 key */
-    PSA_JPAKE_X1_STEP_ZK_PROOF    = 3,  /* Round 1: input/output Schnorr NIZKP proof for the X1 key */
-    PSA_JPAKE_X2_STEP_KEY_SHARE   = 4,  /* Round 1: input/output key share (for ephemeral private key X2).*/
-    PSA_JPAKE_X2_STEP_ZK_PUBLIC   = 5,  /* Round 1: input/output Schnorr NIZKP public key for the X2 key */
-    PSA_JPAKE_X2_STEP_ZK_PROOF    = 6,  /* Round 1: input/output Schnorr NIZKP proof for the X2 key */
-    PSA_JPAKE_X2S_STEP_KEY_SHARE  = 7,  /* Round 2: output X2S key (our key) */
-    PSA_JPAKE_X2S_STEP_ZK_PUBLIC  = 8,  /* Round 2: output Schnorr NIZKP public key for the X2S key (our key) */
-    PSA_JPAKE_X2S_STEP_ZK_PROOF   = 9,  /* Round 2: output Schnorr NIZKP proof for the X2S key (our key) */
-    PSA_JPAKE_X4S_STEP_KEY_SHARE  = 10, /* Round 2: input X4S key (from peer) */
-    PSA_JPAKE_X4S_STEP_ZK_PUBLIC  = 11, /* Round 2: input Schnorr NIZKP public key for the X4S key (from peer) */
-    PSA_JPAKE_X4S_STEP_ZK_PROOF   = 12  /* Round 2: input Schnorr NIZKP proof for the X4S key (from peer) */
-} psa_crypto_driver_pake_step_t;
-
-typedef enum psa_jpake_round {
-    PSA_JPAKE_FIRST = 0,
-    PSA_JPAKE_SECOND = 1,
-    PSA_JPAKE_FINISHED = 2
-} psa_jpake_round_t;
-
-typedef enum psa_jpake_io_mode {
-    PSA_JPAKE_INPUT = 0,
-    PSA_JPAKE_OUTPUT = 1
-} psa_jpake_io_mode_t;
-
-struct psa_jpake_computation_stage_s {
-    /* The J-PAKE round we are currently on */
-    psa_jpake_round_t MBEDTLS_PRIVATE(round);
-    /* The 'mode' we are currently in (inputting or outputting) */
-    psa_jpake_io_mode_t MBEDTLS_PRIVATE(io_mode);
-    /* The number of completed inputs so far this round */
-    uint8_t MBEDTLS_PRIVATE(inputs);
-    /* The number of completed outputs so far this round */
-    uint8_t MBEDTLS_PRIVATE(outputs);
-    /* The next expected step (KEY_SHARE, ZK_PUBLIC or ZK_PROOF) */
-    psa_pake_step_t MBEDTLS_PRIVATE(step);
-};
-
-#define PSA_JPAKE_EXPECTED_INPUTS(round) ((round) == PSA_JPAKE_FINISHED ? 0 : \
-                                          ((round) == PSA_JPAKE_FIRST ? 2 : 1))
-#define PSA_JPAKE_EXPECTED_OUTPUTS(round) ((round) == PSA_JPAKE_FINISHED ? 0 : \
-                                           ((round) == PSA_JPAKE_FIRST ? 2 : 1))
-
-struct psa_pake_operation_s {
-#if defined(MBEDTLS_PSA_CRYPTO_CLIENT) && !defined(MBEDTLS_PSA_CRYPTO_C)
-    mbedtls_psa_client_handle_t handle;
-#else
-    /** Unique ID indicating which driver got assigned to do the
-     * operation. Since driver contexts are driver-specific, swapping
-     * drivers halfway through the operation is not supported.
-     * ID values are auto-generated in psa_crypto_driver_wrappers.h
-     * ID value zero means the context is not valid or not assigned to
-     * any driver (i.e. none of the driver contexts are active). */
-    unsigned int MBEDTLS_PRIVATE(id);
-    /* Algorithm of the PAKE operation */
-    psa_algorithm_t MBEDTLS_PRIVATE(alg);
-    /* A primitive of type compatible with algorithm */
-    psa_pake_primitive_t MBEDTLS_PRIVATE(primitive);
-    /* Stage of the PAKE operation: waiting for the setup, collecting inputs
-     * or computing. */
-    uint8_t MBEDTLS_PRIVATE(stage);
-    /* Holds computation stage of the PAKE algorithms. */
-    union {
-        uint8_t MBEDTLS_PRIVATE(dummy);
-#if defined(PSA_WANT_ALG_JPAKE)
-        psa_jpake_computation_stage_t MBEDTLS_PRIVATE(jpake);
-#endif
-    } MBEDTLS_PRIVATE(computation_stage);
-    union {
-        psa_driver_pake_context_t MBEDTLS_PRIVATE(ctx);
-        psa_crypto_driver_pake_inputs_t MBEDTLS_PRIVATE(inputs);
-    } MBEDTLS_PRIVATE(data);
-#endif
-};
 
 static inline struct psa_pake_cipher_suite_s psa_pake_cipher_suite_init(void)
 {
