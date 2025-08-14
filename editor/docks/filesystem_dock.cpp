@@ -4430,7 +4430,7 @@ FileSystemDock::FileSystemDock() {
 
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_project_settings_changed));
 	EditorSettings::get_singleton()->connect("settings_changed", callable_mp(this, &FileSystemDock::_editor_settings_changed));
-	auto_nav_on_tab_changed = EditorSettings::get_singleton()->get_setting("interface/scene_tabs/auto_nav_in_file_system");
+	auto_nav_on_tab_changed = EDITOR_GET("interface/scene_tabs/auto_nav_in_file_system");
 	if (auto_nav_on_tab_changed) {
 		EditorSceneTabs::get_singleton()->connect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
 	}
