@@ -545,11 +545,12 @@ void View3DController::update_freelook(const float p_delta) {
 		forward = Vector3(0, 0, -1).rotated(Vector3(0, 1, 0), camera_transform.get_basis().get_euler().y);
 	} else {
 		// Forward/backward keys will be relative to the camera pitch.
-		forward = camera_transform.basis.xform(Vector3(0, 0, -1));
+		forward = -camera_transform.basis.get_column(2);
 	}
 
-	const Vector3 right = camera_transform.basis.xform(Vector3(1, 0, 0));
+	const Vector3 right = camera_transform.basis.get_column(0);
 
+	Vector3 local_up = camera_transform.basis.get_column(1);
 	Vector3 up;
 	if (freelook_scheme == View3DController::FREELOOK_PARTIALLY_AXIS_LOCKED || freelook_scheme == View3DController::FREELOOK_FULLY_AXIS_LOCKED) {
 		// Up/down keys will always go up/down regardless of camera pitch.
@@ -577,6 +578,21 @@ void View3DController::update_freelook(const float p_delta) {
 	}
 	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_DOWN)) {
 		direction -= up;
+	}
+	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_GLOBAL_UP)) {
+		direction += Vector3(0, 1, 0);
+	}
+	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_GLOBAL_DOWN)) {
+		direction -= Vector3(0, 1, 0);
+	}
+	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_LOCAL_UP)) {
+		direction += local_up;
+	}
+	if (_is_shortcut_pressed(SHORTCUT_FREELOOK_LOCAL_DOWN)) {
+		// Avoid conflict with Shift+F to toggle freelook (alternative to right click).
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::RIGHT) || !Input::get_singleton()->is_action_pressed("spatial_editor/freelook_toggle")) {
+			direction -= local_up;
+		}
 	}
 
 	real_t speed = freelook_speed;
