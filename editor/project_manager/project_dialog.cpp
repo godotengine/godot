@@ -43,6 +43,7 @@
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
+#include "scene/gui/link_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
@@ -1080,6 +1081,11 @@ ProjectDialog::ProjectDialog() {
 	rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
 	rs_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_renderer_selected));
 	rvb->add_child(rs_button);
+	LinkButton *ri_link = memnew(LinkButton);
+	ri_link->set_text(TTRC("More information"));
+	ri_link->set_uri(GODOT_VERSION_DOCS_URL "/tutorials/rendering/renderers.html");
+	ri_link->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	rvb->add_child(ri_link);
 #if defined(GLES3_ENABLED)
 	if (default_renderer_type == "gl_compatibility") {
 		rs_button->set_pressed(true);
