@@ -61,6 +61,12 @@
 				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
 			</description>
 		</method>
+		<method name="get_connection_angle" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the angle in degrees that a connection line should approach this port from.
+			</description>
+		</method>
 		<method name="get_connection_count" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -175,6 +181,9 @@
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="get_exclusive" default="false">
 			If [code]true[/code], when a connection is added to this port, all existing connections to it will be cleared first.
 		</member>
+		<member name="imply_direction" type="bool" setter="set_imply_direction" getter="is_implying_direction" default="false">
+			If [code]true[/code], this port will be Undirected unless it has a connection to an Input or Output port. It will then take on the opposite direction of the other port.
+		</member>
 		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
 		<member name="on_disabled_behaviour" type="int" setter="set_disabled_behaviour" getter="get_disabled_behaviour" enum="GraphPort.DisconnectBehaviour" default="0">
 			The way [GraphConnection]s connected to this port in the graph should be handled when this port is disabled.
@@ -251,6 +260,12 @@
 		<theme_item name="selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
 		</theme_item>
 		<theme_item name="selected_rim_color" data_type="color" type="Color" default="Color(0.1, 0.1, 0.1, 0.6)">
+		</theme_item>
+		<theme_item name="connection_angle_input" data_type="constant" type="int" default="180">
+		</theme_item>
+		<theme_item name="connection_angle_output" data_type="constant" type="int" default="0">
+		</theme_item>
+		<theme_item name="connection_angle_undirected" data_type="constant" type="int" default="0">
 		</theme_item>
 		<theme_item name="hotzone_extent_h_input" data_type="constant" type="int" default="26">
 		</theme_item>

@@ -235,6 +235,8 @@
 			<return type="PackedVector2Array" />
 			<param index="0" name="from_node" type="Vector2" />
 			<param index="1" name="to_node" type="Vector2" />
+			<param index="2" name="from_angle" type="int" />
+			<param index="3" name="to_angle" type="int" />
 			<description>
 				Returns the points which would make up a connection between [param from_node] and [param to_node].
 			</description>
@@ -451,8 +453,8 @@
 		<member name="snapping_enabled" type="bool" setter="set_snapping_enabled" getter="is_snapping_enabled" default="true">
 			If [code]true[/code], enables snapping.
 		</member>
-		<member name="type_colors" type="Color[]" setter="set_type_colors" getter="get_type_colors" default="[]">
-			[Array] of [Color]s used to draw [GraphPort]s, where type is used as an array index to get the associated color, if it exists.
+		<member name="type_colors" type="Dictionary[int, Color]" setter="set_type_colors" getter="get_type_colors" default="{}">
+			[Dictionary] of [Color]s used to draw [GraphPort]s by their port types.
 		</member>
 		<member name="type_names" type="Dictionary" setter="set_type_names" getter="get_type_names" default="{}">
 			[Dictionary] of human readable port type names.

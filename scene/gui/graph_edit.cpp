@@ -3118,7 +3118,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_valid_input_disconnect_type", "type"), &GraphEdit::remove_valid_input_disconnect_type);
 	ClassDB::bind_method(D_METHOD("add_valid_output_disconnect_type", "type"), &GraphEdit::add_valid_output_disconnect_type);
 	ClassDB::bind_method(D_METHOD("remove_valid_output_disconnect_type", "type"), &GraphEdit::remove_valid_output_disconnect_type);
-	ClassDB::bind_method(D_METHOD("get_connection_line", "from_node", "to_node"), &GraphEdit::get_connection_line);
+	ClassDB::bind_method(D_METHOD("get_connection_line", "from_node", "to_node", "from_angle", "to_angle"), &GraphEdit::get_connection_line);
 
 	ClassDB::bind_method(D_METHOD("attach_graph_element_to_frame", "element", "frame"), &GraphEdit::attach_graph_element_to_frame);
 	ClassDB::bind_method(D_METHOD("detach_graph_element_from_frame", "element"), &GraphEdit::detach_graph_element_from_frame);

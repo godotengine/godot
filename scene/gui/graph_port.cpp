@@ -501,7 +501,7 @@ void GraphPort::_on_connected(const Ref<GraphConnection> p_conn) {
 	if (p_conn.is_valid() && imply_direction && direction == GraphPort::PortDirection::UNDIRECTED) {
 		GraphPort *other_port = p_conn->get_other_port(this);
 		if (other_port && other_port->direction != GraphPort::PortDirection::UNDIRECTED) {
-			direction = other_port->direction;
+			direction = other_port->direction == GraphPort::PortDirection::INPUT ? GraphPort::PortDirection::OUTPUT : GraphPort::PortDirection::INPUT;
 		}
 	}
 	emit_signal(SNAME("connected"), p_conn);
