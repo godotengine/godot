@@ -2597,16 +2597,16 @@ void VisualShaderEditor::_update_graph() {
 	GraphEdit::GridPattern graph_grid_pattern = (GraphEdit::GridPattern) int(EDITOR_GET("editors/visual_editors/grid_pattern"));
 	graph->set_grid_pattern(graph_grid_pattern);
 
-	const TypedArray<Color> type_color = {
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector2_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector3_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector4_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/boolean_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/transform_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
+	const TypedDictionary<int, Color> type_color = {
+		{ 0, EDITOR_GET("editors/visual_editors/connection_colors/scalar_color") },
+		{ 1, EDITOR_GET("editors/visual_editors/connection_colors/scalar_color") },
+		{ 2, EDITOR_GET("editors/visual_editors/connection_colors/scalar_color") },
+		{ 3, EDITOR_GET("editors/visual_editors/connection_colors/vector2_color") },
+		{ 4, EDITOR_GET("editors/visual_editors/connection_colors/vector3_color") },
+		{ 5, EDITOR_GET("editors/visual_editors/connection_colors/vector4_color") },
+		{ 6, EDITOR_GET("editors/visual_editors/connection_colors/boolean_color") },
+		{ 7, EDITOR_GET("editors/visual_editors/connection_colors/transform_color") },
+		{ 8, EDITOR_GET("editors/visual_editors/connection_colors/sampler_color") },
 	};
 	graph->set_type_colors(type_color);
 
@@ -6544,16 +6544,16 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_input_disconnect_type(VisualShaderNode::PORT_TYPE_TRANSFORM);
 	graph->add_valid_input_disconnect_type(VisualShaderNode::PORT_TYPE_SAMPLER);
 	//graph->add_valid_left_disconnect_type(0);
-	const TypedArray<Color> type_color = {
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/scalar_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector2_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector3_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/vector4_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/boolean_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/transform_color"),
-		EDITOR_GET("editors/visual_editors/connection_colors/sampler_color"),
+	const TypedDictionary<int, Color> type_color = {
+		{ 0, EDITOR_GET("editors/visual_editors/connection_colors/scalar_color") },
+		{ 1, EDITOR_GET("editors/visual_editors/connection_colors/scalar_color") },
+		{ 2, EDITOR_GET("editors/visual_editors/connection_colors/scalar_color") },
+		{ 3, EDITOR_GET("editors/visual_editors/connection_colors/vector2_color") },
+		{ 4, EDITOR_GET("editors/visual_editors/connection_colors/vector3_color") },
+		{ 5, EDITOR_GET("editors/visual_editors/connection_colors/vector4_color") },
+		{ 6, EDITOR_GET("editors/visual_editors/connection_colors/boolean_color") },
+		{ 7, EDITOR_GET("editors/visual_editors/connection_colors/transform_color") },
+		{ 8, EDITOR_GET("editors/visual_editors/connection_colors/sampler_color") },
 	};
 	graph->set_type_colors(type_color);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);

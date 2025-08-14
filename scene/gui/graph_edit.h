@@ -267,7 +267,7 @@ private:
 	HashMap<StringName, StringName> linked_parent_map;
 
 	Dictionary type_names;
-	TypedArray<Color> type_colors;
+	TypedDictionary<int, Color> type_colors;
 
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
@@ -432,8 +432,8 @@ public:
 	Dictionary get_type_names() const;
 	void set_type_names(const Dictionary &p_names);
 
-	const TypedArray<Color> &get_type_colors();
-	void set_type_colors(const TypedArray<Color> &p_type_colors);
+	const TypedDictionary<int, Color> &get_type_colors();
+	void set_type_colors(const TypedDictionary<int, Color> &p_type_colors);
 
 	virtual bool is_node_hover_valid(const GraphPort *p_first_port, const GraphPort *p_second_port);
 

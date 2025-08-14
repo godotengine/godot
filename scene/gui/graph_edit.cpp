@@ -1395,11 +1395,11 @@ void GraphEdit::set_type_names(const Dictionary &p_names) {
 	type_names = p_names;
 }
 
-const TypedArray<Color> &GraphEdit::get_type_colors() {
+const TypedDictionary<int, Color> &GraphEdit::get_type_colors() {
 	return type_colors;
 }
 
-void GraphEdit::set_type_colors(const TypedArray<Color> &p_type_colors) {
+void GraphEdit::set_type_colors(const TypedDictionary<int, Color> &p_type_colors) {
 	type_colors = p_type_colors;
 }
 
@@ -3214,7 +3214,7 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "panning_scheme", PROPERTY_HINT_ENUM, "Scroll Zooms,Scroll Pans"), "set_panning_scheme", "get_panning_scheme");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_disconnects"), "set_input_disconnects", "is_input_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_self_connection"), "set_allow_self_connection", "is_self_connection_allowed");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "type_colors", PROPERTY_HINT_ARRAY_TYPE, "Color"), "set_type_colors", "get_type_colors");
+	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "type_colors", PROPERTY_HINT_DICTIONARY_TYPE, "int;Color"), "set_type_colors", "get_type_colors");
 
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "type_names", PROPERTY_HINT_DICTIONARY_TYPE, "int;String"), "set_type_names", "get_type_names");
 

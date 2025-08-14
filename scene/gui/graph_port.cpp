@@ -252,7 +252,7 @@ Color GraphPort::get_color() const {
 	if (!graph_edit) {
 		return base_col;
 	}
-	const TypedArray<Color> &graph_colors = graph_edit->get_type_colors();
+	const TypedDictionary<int, Color> &graph_colors = graph_edit->get_type_colors();
 	return (port_type > 0 && port_type < graph_colors.size()) ? Color(graph_colors[port_type]) : base_col;
 }
 
