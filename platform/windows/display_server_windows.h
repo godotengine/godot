@@ -538,6 +538,10 @@ class DisplayServerWindows : public DisplayServer {
 	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
 
 	void initialize_tts() const;
+	void process_raw_input();
+	Vector2 _get_raw_mouse_motion(const RAWINPUT &p_raw, DisplayServer::WindowID p_window_id);
+	void _process_raw_mouse_motion(const Vector2 &p_relative, bool p_left_button_down, DisplayServer::WindowID p_window_id);
+	void _process_raw_input_event(const RAWINPUT &p_raw, DisplayServer::WindowID p_window_id);
 
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
