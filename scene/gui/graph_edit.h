@@ -296,7 +296,7 @@ private:
 	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
 
 	float _get_shader_line_width() const;
-	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color);
+	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color, const int p_from_angle, const int p_to_angle);
 	void _invalidate_connection_line_cache();
 	void _invalidate_graph_node_connections(GraphNode *p_node);
 	void _update_top_connection_layer();
@@ -420,7 +420,8 @@ public:
 	void clear_port_connections(const GraphPort *p_port);
 	void clear_node_connections(const GraphNode *p_node);
 	Ref<GraphConnection> get_connection(const GraphPort *p_first_port, const GraphPort *p_second_port) const;
-	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
+	PackedVector2Array get_connection_line_referenced(const Ref<GraphConnection> p_conn) const;
+	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to, const int p_from_angle, const int p_to_angle) const;
 	Ref<GraphConnection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Ref<GraphConnection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
 	void force_connection_drag_end();

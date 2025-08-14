@@ -790,6 +790,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("hotzone_offset_h", "GraphPort", 7);
 	theme->set_constant("hotzone_offset_v", "GraphPort", 0);
 
+	theme->set_constant("connection_angle_input", "GraphPort", 180);
+	theme->set_constant("connection_angle_output", "GraphPort", 0);
+	theme->set_constant("connection_angle_undirected", "GraphPort", 0);
+
 	// GraphNode
 
 	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 12, 18, 12);

@@ -1557,7 +1557,11 @@ bool GraphEdit::is_in_port_hotzone(const GraphPort *p_port, const Vector2 &p_mou
 	return true;
 }
 
-PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const {
+PackedVector2Array GraphEdit::get_connection_line_referenced(const Ref<GraphConnection> p_conn) const {
+	return get_connection_line(p_conn->_cache.from_pos * zoom, p_conn->_cache.to_pos * zoom, p_conn->_cache.from_angle, p_conn->_cache.to_angle);
+}
+
+PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const Vector2 &p_to, const int p_from_angle, const int p_to_angle) const {
 	Vector<Vector2> ret;
 	if (GDVIRTUAL_CALL(_get_connection_line, p_from, p_to, ret)) {
 		return ret;
@@ -1569,11 +1573,14 @@ PackedVector2Array GraphEdit::get_connection_line(const Vector2 &p_from, const V
 		cp_offset *= -1;
 	}
 
+	Vector2 point_out = Vector2(cos(Math::deg_to_rad(float(p_from_angle))), sin(Math::deg_to_rad(float(p_from_angle)))) * cp_offset;
+	Vector2 point_in = Vector2(cos(Math::deg_to_rad(float(p_to_angle))), sin(Math::deg_to_rad(float(p_to_angle)))) * cp_offset;
+
 	Curve2D curve;
 	curve.add_point(p_from);
-	curve.set_point_out(0, Vector2(cp_offset, 0));
+	curve.set_point_out(0, point_out);
 	curve.add_point(p_to);
-	curve.set_point_in(1, Vector2(-cp_offset, 0));
+	curve.set_point_in(1, point_in);
 
 	if (lines_curvature > 0) {
 		return curve.tessellate(MAX_CONNECTION_LINE_CURVE_TESSELATION_STAGES, 2.0);
@@ -1592,7 +1599,7 @@ Ref<GraphConnection> GraphEdit::get_closest_connection_at_point(const Vector2 &p
 			continue;
 		}
 
-		Vector<Vector2> points = get_connection_line(conn->_cache.from_pos * zoom, conn->_cache.to_pos * zoom);
+		Vector<Vector2> points = get_connection_line_referenced(conn);
 		for (int i = 0; i < points.size() - 1; i++) {
 			const real_t distance = Geometry2D::get_distance_to_segment(transformed_point, points[i], points[i + 1]);
 			if (distance <= lines_thickness * 0.5 + p_max_distance && distance < closest_distance) {
@@ -1615,7 +1622,7 @@ TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_intersecting_with_re
 			continue;
 		}
 
-		Vector<Vector2> points = get_connection_line(conn->_cache.from_pos * zoom, conn->_cache.to_pos * zoom);
+		Vector<Vector2> points = get_connection_line_referenced(conn);
 		for (int i = 0; i < points.size() - 1; i++) {
 			if (Geometry2D::segment_intersects_rect(points[i], points[i + 1], transformed_rect)) {
 				intersecting_connections.push_back(conn);
@@ -1626,8 +1633,8 @@ TypedArray<Ref<GraphConnection>> GraphEdit::get_connections_intersecting_with_re
 	return intersecting_connections;
 }
 
-void GraphEdit::_draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color) {
-	Vector<Vector2> points = get_connection_line(p_from_graph_position, p_to_graph_position);
+void GraphEdit::_draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color, const int p_from_angle, const int p_to_angle) {
+	Vector<Vector2> points = get_connection_line(p_from_graph_position, p_to_graph_position, p_from_angle, p_to_angle);
 	ERR_FAIL_COND_MSG(points.size() < 2, "\"_get_connection_line()\" returned an invalid line.");
 	// Convert to minimap points.
 	for (Vector2 &point : points) {
@@ -1667,7 +1674,7 @@ void GraphEdit::_update_connections() {
 
 			conn->update_cache();
 
-			PackedVector2Array line_points = get_connection_line(conn->_cache.from_pos * zoom, conn->_cache.to_pos * zoom);
+			PackedVector2Array line_points = get_connection_line_referenced(conn);
 			conn->_cache.line->set_points(line_points);
 
 			conn->set_line_width(_get_shader_line_width());
@@ -1746,14 +1753,17 @@ void GraphEdit::_update_top_connection_layer() {
 	}
 	int from_type = connecting_from_port->get_port_type();
 	Color from_color = connecting_from_port->get_color();
+	int from_angle = connecting_from_port->get_connection_angle();
 
 	Vector2 to_pos = connecting_to_point / zoom;
 	int to_type = from_type;
 	Color to_color = from_color;
+	int to_angle = 180;
 	if (connecting_target_valid) {
 		ERR_FAIL_NULL(connecting_to_port);
 		to_type = connecting_to_port->get_port_type();
 		to_color = connecting_to_port->get_color();
+		to_angle = connecting_to_port->get_connection_angle();
 
 		// Highlight the line to the mouse cursor when it's over a valid target port.
 		from_color = from_color.blend(theme_cache.connection_valid_target_tint_color);
@@ -1765,9 +1775,10 @@ void GraphEdit::_update_top_connection_layer() {
 		SWAP(from_pos, to_pos);
 		SWAP(from_type, to_type);
 		SWAP(from_color, to_color);
+		SWAP(from_angle, to_angle);
 	}
 
-	PackedVector2Array line_points = get_connection_line(from_pos * zoom, to_pos * zoom);
+	PackedVector2Array line_points = get_connection_line(from_pos * zoom, to_pos * zoom, from_angle, to_angle);
 	dragged_connection_line->set_points(line_points);
 
 	Ref<ShaderMaterial> line_material = dragged_connection_line->get_material();
@@ -1869,7 +1880,7 @@ void GraphEdit::_minimap_draw() {
 			to_color = to_color.lerp(theme_cache.activity_color, conn->activity);
 		}
 
-		_draw_minimap_connection_line(from_graph_position, to_graph_position, from_color, to_color);
+		_draw_minimap_connection_line(from_graph_position, to_graph_position, from_color, to_color, conn->_cache.from_angle, conn->_cache.to_angle);
 	}
 
 	// Draw the "camera" viewport.

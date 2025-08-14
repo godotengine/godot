@@ -84,6 +84,10 @@ protected:
 		float hotzone_extent_v_undirected;
 		float hotzone_offset_h = 0.9;
 		float hotzone_offset_v = 0.5;
+
+		int connection_angle_input = 180;
+		int connection_angle_output = 0;
+		int connection_angle_undirected = 0;
 	} theme_cache;
 
 	bool enabled = false;
@@ -171,6 +175,7 @@ public:
 	GraphNode *get_first_connected_node() const;
 
 	Vector2 get_connection_point() const;
+	int get_connection_angle() const;
 
 	virtual Size2 get_minimum_size() const override;
 

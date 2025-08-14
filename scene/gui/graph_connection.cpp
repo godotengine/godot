@@ -175,16 +175,12 @@ void GraphConnection::update_cache() {
 		to_pos += second_port->graph_node->get_position_offset();
 	}
 
-	const Color from_color = first_port->get_color();
-	const Color to_color = second_port->get_color();
-
-	const int from_type = first_port->get_port_type();
-	const int to_type = second_port->get_port_type();
-
 	_cache.from_pos = from_pos;
 	_cache.to_pos = to_pos;
-	_cache.from_color = from_color;
-	_cache.to_color = to_color;
+	_cache.from_color = first_port->get_color();
+	_cache.to_color = second_port->get_color();
+	_cache.from_angle = first_port->get_connection_angle();
+	_cache.to_angle = second_port->get_connection_angle();
 
 	Ref<ShaderMaterial> line_material = _cache.line->get_material();
 	if (line_material.is_null()) {
@@ -192,8 +188,8 @@ void GraphConnection::update_cache() {
 		set_line_material(line_material);
 	}
 
-	line_material->set_shader_parameter("from_type", from_type);
-	line_material->set_shader_parameter("to_type", to_type);
+	line_material->set_shader_parameter("from_type", first_port->get_port_type());
+	line_material->set_shader_parameter("to_type", second_port->get_port_type());
 }
 
 void GraphConnection::_bind_methods() {

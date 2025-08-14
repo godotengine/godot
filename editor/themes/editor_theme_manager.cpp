@@ -1727,6 +1727,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 			p_theme->set_constant("hotzone_offset_h", "GraphPort", 7);
 			p_theme->set_constant("hotzone_offset_v", "GraphPort", 0);
 
+			p_theme->set_constant("connection_angle_input", "GraphPort", 180);
+			p_theme->set_constant("connection_angle_output", "GraphPort", 0);
+			p_theme->set_constant("connection_angle_undirected", "GraphPort", 0);
+
 			Ref<SVGTexture> port_icon = p_theme->get_icon(SNAME("GuiGraphNodePort"), EditorStringName(EditorIcons));
 			// The true size is 24x24 This is necessary for sharp port icons at high zoom levels in GraphEdit (up to ~200%).
 			port_icon->set_size_override(Size2(12, 12));

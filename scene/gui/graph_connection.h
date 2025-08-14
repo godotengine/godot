@@ -72,6 +72,8 @@ protected:
 		bool dirty = true;
 		Vector2 from_pos; // In graph space.
 		Vector2 to_pos; // In graph space.
+		int from_angle;
+		int to_angle;
 		Color from_color;
 		Color to_color;
 		Rect2 aabb; // In local screen space.

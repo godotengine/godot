@@ -422,6 +422,18 @@ Vector2 GraphPort::get_connection_point() const {
 	return theme_cache.icon.is_valid() ? theme_cache.icon->get_size() / 2 : Vector2(0, 0);
 }
 
+int GraphPort::get_connection_angle() const {
+	switch (direction) {
+		case GraphPort::INPUT:
+			return theme_cache.connection_angle_input;
+		case GraphPort::OUTPUT:
+			return theme_cache.connection_angle_output;
+		case GraphPort::UNDIRECTED:
+		default:
+			return theme_cache.connection_angle_undirected;
+	}
+}
+
 Size2 GraphPort::get_minimum_size() const {
 	return theme_cache.icon.is_valid() ? theme_cache.icon->get_size() : Size2(0, 0);
 }
@@ -505,7 +517,9 @@ void GraphPort::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_color"), &GraphPort::get_color);
 	ClassDB::bind_method(D_METHOD("get_icon"), &GraphPort::get_icon);
 	ClassDB::bind_method(D_METHOD("get_graph_node"), &GraphPort::get_graph_node);
+
 	ClassDB::bind_method(D_METHOD("get_connection_point"), &GraphPort::get_connection_point);
+	ClassDB::bind_method(D_METHOD("get_connection_angle"), &GraphPort::get_connection_angle);
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);
@@ -576,6 +590,10 @@ void GraphPort::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_extent_v_undirected);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_offset_h);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, hotzone_offset_v);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, connection_angle_input);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, connection_angle_output);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, connection_angle_undirected);
 }
 
 GraphPort::GraphPort() {
