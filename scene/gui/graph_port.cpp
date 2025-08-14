@@ -174,7 +174,6 @@ void GraphPort::enable() {
 	set_mouse_filter(MOUSE_FILTER_STOP);
 
 	queue_redraw();
-	notify_property_list_changed();
 
 	_on_enabled();
 	_on_modified();
@@ -215,7 +214,6 @@ void GraphPort::disable() {
 	}
 
 	queue_redraw();
-	notify_property_list_changed();
 
 	_on_disabled();
 	_on_modified();
@@ -244,7 +242,6 @@ void GraphPort::set_port_type(int p_type) {
 	port_type = p_type;
 
 	queue_redraw();
-	notify_property_list_changed();
 
 	_on_changed_type(p_type);
 	_on_modified();
@@ -275,7 +272,16 @@ void GraphPort::set_exclusive(bool p_exclusive) {
 	exclusive = p_exclusive;
 
 	queue_redraw();
-	notify_property_list_changed();
+
+	_on_modified();
+}
+
+bool GraphPort::is_implying_direction() const {
+	return imply_direction;
+}
+
+void GraphPort::set_imply_direction(bool p_imply_direction) {
+	imply_direction = p_imply_direction;
 
 	_on_modified();
 }
@@ -288,7 +294,6 @@ void GraphPort::set_direction(const GraphPort::PortDirection p_direction) {
 	direction = p_direction;
 
 	queue_redraw();
-	notify_property_list_changed();
 
 	_on_changed_direction(p_direction);
 	_on_modified();
@@ -470,9 +475,18 @@ void GraphPort::_on_modified() {
 	emit_signal(SNAME("modified"));
 }
 void GraphPort::_on_connected(const Ref<GraphConnection> p_conn) {
+	if (p_conn.is_valid() && imply_direction && direction == GraphPort::PortDirection::UNDIRECTED) {
+		GraphPort *other_port = p_conn->get_other_port(this);
+		if (other_port && other_port->direction != GraphPort::PortDirection::UNDIRECTED) {
+			direction = other_port->direction;
+		}
+	}
 	emit_signal(SNAME("connected"), p_conn);
 }
 void GraphPort::_on_disconnected(const Ref<GraphConnection> p_conn) {
+	if (imply_direction && !has_connection()) {
+		direction = GraphPort::PortDirection::UNDIRECTED;
+	}
 	emit_signal(SNAME("disconnected"), p_conn);
 }
 
@@ -495,6 +509,8 @@ void GraphPort::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &GraphPort::set_direction);
 	ClassDB::bind_method(D_METHOD("get_direction"), &GraphPort::get_direction);
+	ClassDB::bind_method(D_METHOD("set_imply_direction", "imply"), &GraphPort::set_imply_direction);
+	ClassDB::bind_method(D_METHOD("is_implying_direction"), &GraphPort::is_implying_direction);
 
 	ClassDB::bind_method(D_METHOD("set_disabled_behaviour", "on_disabled_behaviour"), &GraphPort::set_disabled_behaviour);
 	ClassDB::bind_method(D_METHOD("get_disabled_behaviour"), &GraphPort::get_disabled_behaviour);
@@ -522,6 +538,7 @@ void GraphPort::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_type"), "set_port_type", "get_port_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "imply_direction"), "set_imply_direction", "is_implying_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
 
 	ADD_SIGNAL(MethodInfo("on_enabled"));

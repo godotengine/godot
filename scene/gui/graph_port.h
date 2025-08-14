@@ -88,6 +88,7 @@ protected:
 
 	bool enabled = false;
 	bool exclusive = false;
+	bool imply_direction = false;
 	int port_type = 0;
 	PortDirection direction = PortDirection::UNDIRECTED;
 	DisconnectBehaviour on_disabled_behaviour = DisconnectBehaviour::DISCONNECT_ALL;
@@ -136,6 +137,9 @@ public:
 
 	bool get_exclusive() const;
 	void set_exclusive(bool p_exclusive);
+
+	bool is_implying_direction() const;
+	void set_imply_direction(bool p_imply_direction);
 
 	PortDirection get_direction() const;
 	void set_direction(const PortDirection p_direction);
