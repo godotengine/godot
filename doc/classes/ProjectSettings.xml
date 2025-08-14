@@ -2776,6 +2776,17 @@
 		<member name="rendering/camera/depth_of_field/depth_of_field_use_jitter" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], jitters DOF samples to make effect slightly blurrier and hide lines created from low sample rates. This can result in a slightly grainy appearance when used with a low number of samples.
 		</member>
+		<member name="rendering/camera/transparency_sort/default_transparency_sort_axis" type="Vector3" setter="" getter="" default="Vector3(0, 0, 1)">
+			Sets the axis used when [member rendering/camera/transparency_sort/default_transparency_sort_mode] is set to [b]CustomAxis[/b].
+			[b]Note:[/b] This property is only read when the project starts. To control the default transparency sorting axis at runtime, call [method RenderingServer.set_default_transparency_sort_axis] instead.
+		</member>
+		<member name="rendering/camera/transparency_sort/default_transparency_sort_mode" type="int" setter="" getter="" default="1">
+			Sets the default mode used to sort transparent meshes on [Camera3D] nodes whose [member Camera3D.transparency_sort_mode] is set to [constant RenderingServer.TRANSPARENCY_SORT_DEFAULT].
+			- [code]Depth[/code]: Sort based on depth. Equivalent to [code]Orthogonal[/code] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+			- [code]Orthogonal[/code]: Sort based on distance to camera's near plane. Equivalent to [code]Depth[/code] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+			- [code]CustomAxis[/code]: Sort based on a dot product of the mesh's position and [member rendering/camera/transparency_sort/default_transparency_sort_axis]. For example, when set to the value [code]Vector3(0, 0, 1)[/code] meshes are sorted based on their position on the Z-axis regardless of camera orientation.
+			[b]Note:[/b] This property is only read when the project starts. To control the default transparency sorting mode at runtime, call [method RenderingServer.set_default_transparency_sort_mode] instead.
+		</member>
 		<member name="rendering/driver/depth_prepass/disable_for_vendors" type="String" setter="" getter="" default="&quot;PowerVR,Mali,Adreno,Apple&quot;">
 			Disables [member rendering/driver/depth_prepass/enable] conditionally for certain vendors. By default, disables the depth prepass for mobile devices as mobile devices do not benefit from the depth prepass due to their unique architecture.
 		</member>

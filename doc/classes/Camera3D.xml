@@ -210,6 +210,12 @@
 		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
 			The camera's size in meters measured as the diameter of the width or height, depending on [member keep_aspect]. Only applicable in orthogonal and frustum modes.
 		</member>
+		<member name="transparency_sort_axis" type="Vector3" setter="set_transparency_sort_axis" getter="get_transparency_sort_axis" default="Vector3(0, 0, 1)">
+			The axis used when [member transparency_sort_mode] is set to [constant RenderingServer.TRANSPARENCY_SORT_CUSTOM_AXIS].
+		</member>
+		<member name="transparency_sort_mode" type="int" setter="set_transparency_sort_mode" getter="get_transparency_sort_mode" enum="RenderingServer.TransparencySortMode" default="0">
+			The mode this camera uses to sort transparent meshes. See [enum RenderingServer.TransparencySortMode] for possible values.
+		</member>
 		<member name="v_offset" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The vertical (Y) offset of the camera viewport.
 		</member>
