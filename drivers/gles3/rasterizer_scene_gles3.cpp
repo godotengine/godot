@@ -1111,6 +1111,7 @@ void RasterizerSceneGLES3::environment_set_ssr_roughness_quality(RS::Environment
 }
 
 void RasterizerSceneGLES3::environment_set_ssao_quality(RS::EnvironmentSSAOQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
+	ssao_quality = p_quality;
 }
 
 void RasterizerSceneGLES3::environment_set_ssil_quality(RS::EnvironmentSSILQuality p_quality, bool p_half_size, float p_adaptive_target, int p_blur_passes, float p_fadeout_from, float p_fadeout_to) {
@@ -2818,7 +2819,6 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 	bool ssao_enabled = false;
 	float ssao_strength = 4.0;
 	float ssao_radius = 0.5;
-	float ssao_falloff = 0.25;
 	if (p_render_data->environment.is_valid()) {
 		ssao_enabled = environment_get_ssao_enabled(p_render_data->environment);
 		// This SSAO is not implemented the same way, but uses the intensity and radius
@@ -2826,7 +2826,6 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 		// The parameters are scaled so the SSAO defaults look good (though different).
 		ssao_strength = environment_get_ssao_intensity(p_render_data->environment) * 2.0;
 		ssao_radius = environment_get_ssao_radius(p_render_data->environment) * 0.5;
-		ssao_falloff = environment_get_ssao_detail(p_render_data->environment) * 0.5f;
 	}
 
 	if (ssao_enabled) {
@@ -2902,7 +2901,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 
 			// Copy color buffer
 			post_effects->post_copy(fbo_rt, target_size, color,
-					depth_buffer, ssao_enabled, ssao_strength, ssao_radius, ssao_falloff, // These are new for SSAO.
+					depth_buffer, ssao_enabled, ssao_quality, ssao_strength, ssao_radius, // These are new for SSAO.
 					internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, 0, false, bcs_spec_constants);
 
 			// Copy depth buffer
@@ -2975,7 +2974,7 @@ void RasterizerSceneGLES3::_render_post_processing(const RenderDataGLES3 *p_rend
 				glBindFramebuffer(GL_FRAMEBUFFER, fbos[2]);
 				glFramebufferTextureLayer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, write_color, 0, v);
 				post_effects->post_copy(fbos[2], target_size, source_color,
-						read_depth, ssao_enabled, ssao_strength, ssao_radius, ssao_falloff, // These are new for SSAO.
+						read_depth, ssao_enabled, ssao_quality, ssao_strength, ssao_radius, // These are new for SSAO.
 						internal_size, p_render_data->luminance_multiplier, glow_buffers, glow_intensity, v, true, bcs_spec_constants);
 			}
 

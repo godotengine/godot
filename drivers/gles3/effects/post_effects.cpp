@@ -89,7 +89,7 @@ void PostEffects::_draw_screen_triangle() {
 
 void PostEffects::post_copy(
 		GLuint p_dest_framebuffer, Size2i p_dest_size, GLuint p_source_color,
-		GLuint p_source_depth, bool p_ssao_enabled, float p_ssao_strength, float p_ssao_radius, float p_ssao_falloff, // These are for SSAO.
+		GLuint p_source_depth, bool p_ssao_enabled, int p_ssao_quality_level, float p_ssao_strength, float p_ssao_radius, // These are for SSAO.
 		Size2i p_source_size, float p_luminance_multiplier, const Glow::GLOWLEVEL *p_glow_buffers, float p_glow_intensity, uint32_t p_view, bool p_use_multiview, uint64_t p_spec_constants) {
 	glDisable(GL_DEPTH_TEST);
 	glDepthMask(GL_FALSE);
@@ -107,7 +107,13 @@ void PostEffects::post_copy(
 		flags |= PostShaderGLES3::USE_GLOW;
 	}
 	if (p_ssao_enabled) {
-		flags |= PostShaderGLES3::USE_SSAO;
+		if (p_ssao_quality_level <= RS::ENV_SSAO_QUALITY_LOW) {
+			flags |= PostShaderGLES3::USE_SSAO_LOW;
+		} else if (p_ssao_quality_level >= RS::ENV_SSAO_QUALITY_HIGH) {
+			flags |= PostShaderGLES3::USE_SSAO_HIGH;
+		} else {
+			flags |= PostShaderGLES3::USE_SSAO_MED;
+		}
 	}
 	if (p_luminance_multiplier != 1.0) {
 		flags |= PostShaderGLES3::USE_LUMINANCE_MULTIPLIER;
@@ -133,7 +139,6 @@ void PostEffects::post_copy(
 
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_INTENSITY, p_ssao_strength, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_RADIUS_FRAC, p_ssao_radius, post.shader_version, mode, flags);
-		post.shader.version_set_uniform(PostShaderGLES3::SSAO_FALLOFF_FRAC, p_ssao_falloff, post.shader_version, mode, flags);
 		post.shader.version_set_uniform(PostShaderGLES3::SSAO_PRN_UV, // This converts the UV coordinate into a pseudo-random number.
 				p_source_size.x * 1.087f * ((1.0f + sqrt(5.0f)) / 2.0f),
 				p_source_size.y * 1.087f * ((9.0f + sqrt(221.0f)) / 10.0f),

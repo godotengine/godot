@@ -10,7 +10,9 @@ USE_LUMINANCE_MULTIPLIER = false
 USE_BCS = false
 USE_COLOR_CORRECTION = false
 USE_1D_LUT = false
-USE_SSAO = false
+USE_SSAO_LOW = false
+USE_SSAO_MED = false
+USE_SSAO_HIGH = false
 
 #[vertex]
 layout(location = 0) in vec2 vertex_attrib;
@@ -92,10 +94,9 @@ vec3 apply_bcs(vec3 color) {
 }
 #endif
 
-#ifdef USE_SSAO
+#if defined(USE_SSAO_LOW) || defined(USE_SSAO_MED) || defined(USE_SSAO_HIGH)
 uniform float ssao_intensity;
 uniform float ssao_radius_frac;
-uniform float ssao_falloff_frac;
 uniform vec2 ssao_prn_UV;
 #ifdef USE_MULTIVIEW
 // VR will have 2 depth buffers.
@@ -133,9 +134,9 @@ void main() {
 
 	color.rgb = srgb_to_linear(color.rgb);
 
-#ifdef USE_SSAO
+#if defined(USE_SSAO_LOW) || defined(USE_SSAO_MED) || defined(USE_SSAO_HIGH)
 	// Putting SSAO after the conversion to linear color, though it might be better before the glow.
-	color.rgb *= s4ao(uv_interp);
+	color.rgb *= s4ao(uv_interp); // The USE_SSAO_X controls the number of samples.
 #endif
 
 	color.rgb = apply_tonemapping(color.rgb, white);
