@@ -1072,6 +1072,9 @@
 		<member name="interface/scene_tabs/show_thumbnail_on_hover" type="bool" setter="" getter="">
 			If [code]true[/code], display an automatically-generated thumbnail when hovering scene tabs with the mouse. Scene thumbnails are generated when saving the scene.
 		</member>
+		<member name="interface/scene_tabs/auto_nav_in_file_system" type="bool" setter="" getter="">
+			If [code]true[/code], FileSystem will automatically navigate to the currently selected scene tab.
+		</member>
 		<member name="interface/theme/accent_color" type="Color" setter="" getter="">
 			The color to use for "highlighted" user interface elements in the editor (pressed and hovered items).
 		</member>
