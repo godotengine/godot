@@ -45,6 +45,11 @@ RendererCompositor *RendererCompositor::create() {
 	return _create_func();
 }
 
+void RendererCompositor::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	RenderingServer::SplashStretchMode stretch_mode = RenderingServer::map_scaling_option_to_stretch_mode(p_scale);
+	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
+}
+
 bool RendererCompositor::is_xr_enabled() const {
 	return xr_enabled;
 }

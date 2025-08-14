@@ -3446,14 +3446,24 @@
 				Sets the screen-space roughness limiter parameters, such as whether it should be enabled and its thresholds. Equivalent to [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/enabled], [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/amount] and [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/limit].
 			</description>
 		</method>
-		<method name="set_boot_image">
+		<method name="set_boot_image" deprecated="Use [method set_boot_image_with_stretch] instead.">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="scale" type="bool" />
 			<param index="3" name="use_filter" type="bool" default="true" />
 			<description>
-				Sets a boot image. The color defines the background color. If [param scale] is [code]true[/code], the image will be scaled to fit the screen size. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+				Sets a boot image. The [param color] defines the background color. The value of [param scale] indicates if the image will be scaled to fit the screen size. If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+			</description>
+		</method>
+		<method name="set_boot_image_with_stretch">
+			<return type="void" />
+			<param index="0" name="image" type="Image" />
+			<param index="1" name="color" type="Color" />
+			<param index="2" name="stretch_mode" type="int" enum="RenderingServer.SplashStretchMode" />
+			<param index="3" name="use_filter" type="bool" default="true" />
+			<description>
+				Sets a boot image. The [param color] defines the background color. The value of [param stretch_mode] indicates how the image will be stretched (see [enum SplashStretchMode] for possible values). If [param use_filter] is [code]true[/code], the image will be scaled with linear interpolation. If [param use_filter] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -5981,6 +5991,24 @@
 		</constant>
 		<constant name="PIPELINE_SOURCE_MAX" value="5" enum="PipelineSource">
 			Represents the size of the [enum PipelineSource] enum.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_DISABLED" value="0" enum="SplashStretchMode">
+			No stretching is applied.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_KEEP" value="1" enum="SplashStretchMode">
+			Stretches image to fullscreen while preserving aspect ratio.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_KEEP_WIDTH" value="2" enum="SplashStretchMode">
+			Stretches the height of the image based on the width of the screen.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_KEEP_HEIGHT" value="3" enum="SplashStretchMode">
+			Stretches the width of the image based on the height of the screen.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_COVER" value="4" enum="SplashStretchMode">
+			Stretches the image to cover the entire screen while preserving aspect ratio.
+		</constant>
+		<constant name="SPLASH_STRETCH_MODE_IGNORE" value="5" enum="SplashStretchMode">
+			Stretches the image to cover the entire screen but doesn't preserve aspect ratio.
 		</constant>
 		<constant name="FEATURE_SHADERS" value="0" enum="Features" deprecated="This constant has not been used since Godot 3.0.">
 		</constant>
