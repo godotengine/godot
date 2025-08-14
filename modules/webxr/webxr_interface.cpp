@@ -29,8 +29,7 @@
 /**************************************************************************/
 
 #include "webxr_interface.h"
-
-#include <stdlib.h>
+#include "webxr_interface.compat.inc"
 
 void WebXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_session_supported", "session_mode"), &WebXRInterface::is_session_supported);
@@ -41,6 +40,7 @@ void WebXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_optional_features", "optional_features"), &WebXRInterface::set_optional_features);
 	ClassDB::bind_method(D_METHOD("get_optional_features"), &WebXRInterface::get_optional_features);
 	ClassDB::bind_method(D_METHOD("get_reference_space_type"), &WebXRInterface::get_reference_space_type);
+	ClassDB::bind_method(D_METHOD("get_enabled_features"), &WebXRInterface::get_enabled_features);
 	ClassDB::bind_method(D_METHOD("set_requested_reference_space_types", "requested_reference_space_types"), &WebXRInterface::set_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("get_requested_reference_space_types"), &WebXRInterface::get_requested_reference_space_types);
 	ClassDB::bind_method(D_METHOD("is_input_source_active", "input_source_id"), &WebXRInterface::is_input_source_active);
@@ -56,6 +56,7 @@ void WebXRInterface::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "optional_features", PROPERTY_HINT_NONE), "set_optional_features", "get_optional_features");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "requested_reference_space_types", PROPERTY_HINT_NONE), "set_requested_reference_space_types", "get_requested_reference_space_types");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "reference_space_type", PROPERTY_HINT_NONE), "", "get_reference_space_type");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "enabled_features", PROPERTY_HINT_NONE), "", "get_enabled_features");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "visibility_state", PROPERTY_HINT_NONE), "", "get_visibility_state");
 
 	ADD_SIGNAL(MethodInfo("session_supported", PropertyInfo(Variant::STRING, "session_mode"), PropertyInfo(Variant::BOOL, "supported")));

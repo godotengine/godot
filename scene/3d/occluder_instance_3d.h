@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OCCLUDER_INSTANCE_3D_H
-#define OCCLUDER_INSTANCE_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 
@@ -49,7 +48,6 @@ protected:
 	void _update();
 	virtual void _update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) = 0;
 
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
@@ -161,7 +159,7 @@ public:
 };
 
 class OccluderInstance3D : public VisualInstance3D {
-	GDCLASS(OccluderInstance3D, Node3D);
+	GDCLASS(OccluderInstance3D, VisualInstance3D);
 
 private:
 	Ref<Occluder3D> occluder;
@@ -210,5 +208,3 @@ public:
 	OccluderInstance3D();
 	~OccluderInstance3D();
 };
-
-#endif // OCCLUDER_INSTANCE_3D_H

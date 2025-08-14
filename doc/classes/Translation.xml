@@ -8,6 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Localization using gettext">$DOCS_URL/tutorials/i18n/localization_using_gettext.html</link>
 		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
@@ -33,7 +34,7 @@
 			<return type="void" />
 			<param index="0" name="src_message" type="StringName" />
 			<param index="1" name="xlated_message" type="StringName" />
-			<param index="2" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="2" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Adds a message if nonexistent, followed by its translation.
 				An additional context could be used to specify the translation context or differentiate polysemic words.
@@ -43,16 +44,17 @@
 			<return type="void" />
 			<param index="0" name="src_message" type="StringName" />
 			<param index="1" name="xlated_messages" type="PackedStringArray" />
-			<param index="2" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="2" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Adds a message involving plural translation if nonexistent, followed by its translation.
 				An additional context could be used to specify the translation context or differentiate polysemic words.
+				[b]Note:[/b] Plurals are only supported in [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]gettext-based translations (PO)[/url], not CSV.
 			</description>
 		</method>
 		<method name="erase_message">
 			<return type="void" />
 			<param index="0" name="src_message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Erases a message.
 			</description>
@@ -60,7 +62,7 @@
 		<method name="get_message" qualifiers="const">
 			<return type="StringName" />
 			<param index="0" name="src_message" type="StringName" />
-			<param index="1" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a message's translation.
 			</description>
@@ -82,10 +84,11 @@
 			<param index="0" name="src_message" type="StringName" />
 			<param index="1" name="src_plural_message" type="StringName" />
 			<param index="2" name="n" type="int" />
-			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
 			<description>
 				Returns a message's translation involving plurals.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] Plurals are only supported in [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]gettext-based translations (PO)[/url], not CSV.
 			</description>
 		</method>
 		<method name="get_translated_message_list" qualifiers="const">

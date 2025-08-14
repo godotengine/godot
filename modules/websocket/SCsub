@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 Import("env_modules")
@@ -22,7 +23,7 @@ elif env["builtin_wslay"]:
     ]
     thirdparty_sources = [thirdparty_dir + s for s in thirdparty_sources]
 
-    env_ws.Prepend(CPPPATH=[thirdparty_dir])
+    env_ws.Prepend(CPPEXTPATH=[thirdparty_dir])
     env_ws.Append(CPPDEFINES=["HAVE_CONFIG_H"])
 
     if env["platform"] == "windows":

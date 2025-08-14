@@ -6,28 +6,12 @@
  */
 /*
  *  Copyright The Mbed TLS Contributors
- *  SPDX-License-Identifier: Apache-2.0
- *
- *  Licensed under the Apache License, Version 2.0 (the "License"); you may
- *  not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
+ *  SPDX-License-Identifier: Apache-2.0 OR GPL-2.0-or-later
  */
 #ifndef MBEDTLS_PLATFORM_UTIL_H
 #define MBEDTLS_PLATFORM_UTIL_H
 
-#if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
-#else
-#include MBEDTLS_CONFIG_FILE
-#endif
+#include "mbedtls/build_info.h"
 
 #include <stddef.h>
 #if defined(MBEDTLS_HAVE_TIME_DATE)
@@ -39,85 +23,9 @@
 extern "C" {
 #endif
 
-#if defined(MBEDTLS_CHECK_PARAMS)
-
-#if defined(MBEDTLS_CHECK_PARAMS_ASSERT)
-/* Allow the user to define MBEDTLS_PARAM_FAILED to something like assert
- * (which is what our config.h suggests). */
-#include <assert.h>
-#endif /* MBEDTLS_CHECK_PARAMS_ASSERT */
-
-#if defined(MBEDTLS_PARAM_FAILED)
-/** An alternative definition of MBEDTLS_PARAM_FAILED has been set in config.h.
- *
- * This flag can be used to check whether it is safe to assume that
- * MBEDTLS_PARAM_FAILED() will expand to a call to mbedtls_param_failed().
- */
-#define MBEDTLS_PARAM_FAILED_ALT
-
-#elif defined(MBEDTLS_CHECK_PARAMS_ASSERT)
-#define MBEDTLS_PARAM_FAILED(cond) assert(cond)
-#define MBEDTLS_PARAM_FAILED_ALT
-
-#else /* MBEDTLS_PARAM_FAILED */
-#define MBEDTLS_PARAM_FAILED(cond) \
-    mbedtls_param_failed( #cond, __FILE__, __LINE__)
-
-/**
- * \brief       User supplied callback function for parameter validation failure.
- *              See #MBEDTLS_CHECK_PARAMS for context.
- *
- *              This function will be called unless an alternative treatment
- *              is defined through the #MBEDTLS_PARAM_FAILED macro.
- *
- *              This function can return, and the operation will be aborted, or
- *              alternatively, through use of setjmp()/longjmp() can resume
- *              execution in the application code.
- *
- * \param failure_condition The assertion that didn't hold.
- * \param file  The file where the assertion failed.
- * \param line  The line in the file where the assertion failed.
- */
-void mbedtls_param_failed(const char *failure_condition,
-                          const char *file,
-                          int line);
-#endif /* MBEDTLS_PARAM_FAILED */
-
-/* Internal macro meant to be called only from within the library. */
-#define MBEDTLS_INTERNAL_VALIDATE_RET(cond, ret)  \
-    do {                                            \
-        if (!(cond))                               \
-        {                                           \
-            MBEDTLS_PARAM_FAILED(cond);           \
-            return ret;                          \
-        }                                           \
-    } while (0)
-
-/* Internal macro meant to be called only from within the library. */
-#define MBEDTLS_INTERNAL_VALIDATE(cond)           \
-    do {                                            \
-        if (!(cond))                               \
-        {                                           \
-            MBEDTLS_PARAM_FAILED(cond);           \
-            return;                                 \
-        }                                           \
-    } while (0)
-
-#else /* MBEDTLS_CHECK_PARAMS */
-
-/* Internal macros meant to be called only from within the library. */
-#define MBEDTLS_INTERNAL_VALIDATE_RET(cond, ret)  do { } while (0)
-#define MBEDTLS_INTERNAL_VALIDATE(cond)           do { } while (0)
-
-#endif /* MBEDTLS_CHECK_PARAMS */
-
 /* Internal helper macros for deprecating API constants. */
 #if !defined(MBEDTLS_DEPRECATED_REMOVED)
 #if defined(MBEDTLS_DEPRECATED_WARNING)
-/* Deliberately don't (yet) export MBEDTLS_DEPRECATED here
- * to avoid conflict with other headers which define and use
- * it, too. We might want to move all these definitions here at
- * some point for uniformity. */
 #define MBEDTLS_DEPRECATED __attribute__((deprecated))
 MBEDTLS_DEPRECATED typedef char const *mbedtls_deprecated_string_constant_t;
 #define MBEDTLS_DEPRECATED_STRING_CONSTANT(VAL)       \
@@ -125,15 +33,15 @@ MBEDTLS_DEPRECATED typedef char const *mbedtls_deprecated_string_constant_t;
 MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
 #define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT(VAL)       \
     ((mbedtls_deprecated_numeric_constant_t) (VAL))
-#undef MBEDTLS_DEPRECATED
 #else /* MBEDTLS_DEPRECATED_WARNING */
+#define MBEDTLS_DEPRECATED
 #define MBEDTLS_DEPRECATED_STRING_CONSTANT(VAL) VAL
 #define MBEDTLS_DEPRECATED_NUMERIC_CONSTANT(VAL) VAL
 #endif /* MBEDTLS_DEPRECATED_WARNING */
 #endif /* MBEDTLS_DEPRECATED_REMOVED */
 
 /* Implementation of the check-return facility.
- * See the user documentation in config.h.
+ * See the user documentation in mbedtls_config.h.
  *
  * Do not use this macro directly to annotate function: instead,
  * use one of MBEDTLS_CHECK_RETURN_CRITICAL or MBEDTLS_CHECK_RETURN_TYPICAL
@@ -250,6 +158,56 @@ MBEDTLS_DEPRECATED typedef int mbedtls_deprecated_numeric_constant_t;
  */
 void mbedtls_platform_zeroize(void *buf, size_t len);
 #endif
+
+/** \brief              The type of custom random generator (RNG) callbacks.
+ *
+ *                      Many Mbed TLS functions take two parameters
+ *                      `mbedtls_f_rng_t *f_rng, void *p_rng`. The
+ *                      library will call \c f_rng to generate
+ *                      random values.
+ *
+ * \note                This is typically one of the following:
+ *                      - mbedtls_ctr_drbg_random() with \c p_rng
+ *                        pointing to a #mbedtls_ctr_drbg_context;
+ *                      - mbedtls_hmac_drbg_random() with \c p_rng
+ *                        pointing to a #mbedtls_hmac_drbg_context;
+ *                      - mbedtls_psa_get_random() with
+ *                        `prng = MBEDTLS_PSA_RANDOM_STATE`.
+ *
+ * \note                Generally, given a call
+ *                      `mbedtls_foo(f_rng, p_rng, ....)`, the RNG callback
+ *                      and the context only need to remain valid until
+ *                      the call to `mbedtls_foo` returns. However, there
+ *                      are a few exceptions where the callback is stored
+ *                      in for future use. Check the documentation of
+ *                      the calling function.
+ *
+ * \warning             In a multithreaded environment, calling the
+ *                      function should be thread-safe. The standard
+ *                      functions provided by the library are thread-safe
+ *                      when #MBEDTLS_THREADING_C is enabled.
+ *
+ * \warning             This function must either provide as many
+ *                      bytes as requested of **cryptographic quality**
+ *                      random data, or return a negative error code.
+ *
+ * \param p_rng         The \c p_rng argument that was passed along \c f_rng.
+ *                      The library always passes \c p_rng unchanged.
+ *                      This is typically a pointer to the random generator
+ *                      state, or \c NULL if the custom random generator
+ *                      doesn't need a context-specific state.
+ * \param[out] output   On success, this must be filled with \p output_size
+ *                      bytes of cryptographic-quality random data.
+ * \param output_size   The number of bytes to output.
+ *
+ * \return              \c 0 on success, or a negative error code on failure.
+ *                      Library functions will generally propagate this
+ *                      error code, so \c MBEDTLS_ERR_xxx values are
+ *                      recommended. #MBEDTLS_ERR_ENTROPY_SOURCE_FAILED is
+ *                      typically sensible for RNG failures.
+ */
+typedef int mbedtls_f_rng_t(void *p_rng,
+                            unsigned char *output, size_t output_size);
 
 #if defined(MBEDTLS_HAVE_TIME_DATE)
 /**

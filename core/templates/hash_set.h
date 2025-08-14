@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HASH_SET_H
-#define HASH_SET_H
+#pragma once
 
-#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
-#include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/paged_allocator.h"
 
 /**
  * Implementation of Set using a bidi indexed hash map.
@@ -46,9 +42,9 @@
  *
  */
 
-template <class TKey,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class HashSet {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
@@ -74,9 +70,19 @@ private:
 		return hash;
 	}
 
+	_FORCE_INLINE_ static constexpr void _increment_mod(uint32_t &r_pos, const uint32_t p_capacity) {
+		r_pos++;
+		// `if` is faster than both fastmod and mod.
+		if (unlikely(r_pos == p_capacity)) {
+			r_pos = 0;
+		}
+	}
+
 	static _FORCE_INLINE_ uint32_t _get_probe_length(const uint32_t p_pos, const uint32_t p_hash, const uint32_t p_capacity, const uint64_t p_capacity_inv) {
 		const uint32_t original_pos = fastmod(p_hash, p_capacity_inv, p_capacity);
-		return fastmod(p_pos - original_pos + p_capacity, p_capacity_inv, p_capacity);
+		const uint32_t distance_pos = p_pos - original_pos + p_capacity;
+		// At most p_capacity over 0, so we can use an if (faster than fastmod).
+		return distance_pos >= p_capacity ? distance_pos - p_capacity : distance_pos;
 	}
 
 	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
@@ -95,16 +101,16 @@ private:
 				return false;
 			}
 
-			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
-				return false;
-			}
-
 			if (hashes[pos] == hash && Comparator::compare(keys[hash_to_key[pos]], p_key)) {
 				r_pos = hash_to_key[pos];
 				return true;
 			}
 
-			pos = fastmod(pos + 1, capacity_inv, capacity);
+			if (distance > _get_probe_length(pos, hashes[pos], capacity, capacity_inv)) {
+				return false;
+			}
+
+			_increment_mod(pos, capacity);
 			distance++;
 		}
 	}
@@ -134,7 +140,7 @@ private:
 				distance = existing_probe_len;
 			}
 
-			pos = fastmod(pos + 1, capacity_inv, capacity);
+			_increment_mod(pos, capacity);
 			distance++;
 		}
 	}
@@ -148,14 +154,11 @@ private:
 		uint32_t *old_hashes = hashes;
 		uint32_t *old_key_to_hash = key_to_hash;
 
-		hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
+		static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+		hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 		keys = reinterpret_cast<TKey *>(Memory::realloc_static(keys, sizeof(TKey) * capacity));
 		key_to_hash = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
 		hash_to_key = reinterpret_cast<uint32_t *>(Memory::realloc_static(hash_to_key, sizeof(uint32_t) * capacity));
-
-		for (uint32_t i = 0; i < capacity; i++) {
-			hashes[i] = EMPTY_HASH;
-		}
 
 		for (uint32_t i = 0; i < num_elements; i++) {
 			uint32_t h = old_hashes[old_key_to_hash[i]];
@@ -171,14 +174,11 @@ private:
 		if (unlikely(keys == nullptr)) {
 			// Allocate on demand to save memory.
 
-			hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
+			static_assert(EMPTY_HASH == 0, "Assuming EMPTY_HASH = 0 for alloc_static_zeroed call");
+			hashes = reinterpret_cast<uint32_t *>(Memory::alloc_static_zeroed(sizeof(uint32_t) * capacity));
 			keys = reinterpret_cast<TKey *>(Memory::alloc_static(sizeof(TKey) * capacity));
 			key_to_hash = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
 			hash_to_key = reinterpret_cast<uint32_t *>(Memory::alloc_static(sizeof(uint32_t) * capacity));
-
-			for (uint32_t i = 0; i < capacity; i++) {
-				hashes[i] = EMPTY_HASH;
-			}
 		}
 
 		uint32_t pos = 0;
@@ -278,7 +278,7 @@ public:
 			SWAP(hash_to_key[next_pos], hash_to_key[pos]);
 
 			pos = next_pos;
-			next_pos = fastmod(pos + 1, capacity_inv, capacity);
+			_increment_mod(next_pos, capacity);
 		}
 
 		hashes[pos] = EMPTY_HASH;
@@ -298,6 +298,7 @@ public:
 	// Reserves space for a number of elements, useful to avoid many resizes and rehashes.
 	// If adding a known (possibly large) number of elements at once, must be larger than old capacity.
 	void reserve(uint32_t p_new_capacity) {
+		ERR_FAIL_COND_MSG(p_new_capacity < size(), "reserve() called with a capacity smaller than the current size. This is likely a mistake.");
 		uint32_t new_index = capacity_index;
 
 		while (hash_table_size_primes[new_index] < p_new_capacity) {
@@ -436,6 +437,21 @@ public:
 		_init_from(p_other);
 	}
 
+	bool operator==(const HashSet &p_other) const {
+		if (num_elements != p_other.num_elements) {
+			return false;
+		}
+		for (uint32_t i = 0; i < num_elements; i++) {
+			if (!p_other.has(keys[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	bool operator!=(const HashSet &p_other) const {
+		return !(*this == p_other);
+	}
+
 	HashSet(uint32_t p_initial_capacity) {
 		// Capacity can't be 0.
 		capacity_index = 0;
@@ -443,6 +459,13 @@ public:
 	}
 	HashSet() {
 		capacity_index = MIN_CAPACITY_INDEX;
+	}
+
+	HashSet(std::initializer_list<TKey> p_init) {
+		reserve(p_init.size());
+		for (const TKey &E : p_init) {
+			insert(E);
+		}
 	}
 
 	void reset() {
@@ -472,5 +495,3 @@ public:
 		}
 	}
 };
-
-#endif // HASH_SET_H

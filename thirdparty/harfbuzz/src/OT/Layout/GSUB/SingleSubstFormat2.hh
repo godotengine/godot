@@ -104,7 +104,7 @@ struct SingleSubstFormat2_4
   {
     TRACE_APPLY (this);
     unsigned int index = (this+coverage).get_coverage (c->buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+    if (index == NOT_COVERED) return_trace (false);
 
     if (unlikely (index >= substitute.len)) return_trace (false);
 

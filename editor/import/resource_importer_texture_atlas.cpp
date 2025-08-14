@@ -31,12 +31,13 @@
 #include "resource_importer_texture_atlas.h"
 
 #include "atlas_import_failed.xpm"
-#include "core/io/file_access.h"
+#include "core/config/project_settings.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
-#include "editor/editor_atlas_packer.h"
+#include "editor/import/editor_atlas_packer.h"
 #include "scene/resources/atlas_texture.h"
+#include "scene/resources/bit_map.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/mesh_texture.h"
@@ -90,7 +91,7 @@ String ResourceImporterTextureAtlas::get_option_group_file() const {
 	return "atlas_file";
 }
 
-Error ResourceImporterTextureAtlas::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterTextureAtlas::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* If this happens, it's because the atlas_file field was not filled, so just import a broken texture */
 
 	//use an xpm because it's size independent, the editor images are vector and size dependent
@@ -192,7 +193,7 @@ static void _plot_triangle(Vector2i *p_vertices, const Vector2i &p_offset, bool 
 }
 
 Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) {
-	ERR_FAIL_COND_V(p_source_file_options.size() == 0, ERR_BUG); //should never happen
+	ERR_FAIL_COND_V(p_source_file_options.is_empty(), ERR_BUG); //should never happen
 
 	Vector<EditorAtlasPacker::Chart> charts;
 	Vector<PackData> pack_data_files;
@@ -276,9 +277,15 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		idx++;
 	}
 
+	const int max_width = (int)GLOBAL_GET("editor/import/atlas_max_width");
+
 	//pack the charts
 	int atlas_width, atlas_height;
-	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height);
+	EditorAtlasPacker::chart_pack(charts, atlas_width, atlas_height, max_width);
+
+	if (atlas_height > max_width * 2) {
+		WARN_PRINT(vformat(TTR("%s: Atlas texture significantly larger on one axis (%d), consider changing the `editor/import/atlas_max_width` Project Setting to allow a wider texture, making the result more even in size."), p_group_file, atlas_height));
+	}
 
 	//blit the atlas
 	Ref<Image> new_atlas = Image::create_empty(atlas_width, atlas_height, false, Image::FORMAT_RGBA8);
@@ -307,7 +314,7 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	//update cache if existing, else create
 	Ref<Texture2D> cache;
 	cache = ResourceCache::get_ref(p_group_file);
-	if (!cache.is_valid()) {
+	if (cache.is_null()) {
 		Ref<ImageTexture> res_cache = ImageTexture::create_from_image(new_atlas);
 		res_cache->set_path(p_group_file);
 		cache = res_cache;
@@ -396,7 +403,4 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 	}
 
 	return OK;
-}
-
-ResourceImporterTextureAtlas::ResourceImporterTextureAtlas() {
 }

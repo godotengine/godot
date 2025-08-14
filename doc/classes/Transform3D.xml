@@ -4,22 +4,24 @@
 		A 3×4 matrix representing a 3D transformation.
 	</brief_description>
 	<description>
-		A 3×4 matrix (3 rows, 4 columns) used for 3D linear transformations. It can represent transformations such as translation, rotation, and scaling. It consists of a [member basis] (first 3 columns) and a [Vector3] for the [member origin] (last column).
-		For more information, read the "Matrices and transforms" documentation article.
+		The [Transform3D] built-in [Variant] type is a 3×4 matrix representing a transformation in 3D space. It contains a [Basis], which on its own can represent rotation, scale, and shear. Additionally, combined with its own [member origin], the transform can also represent a translation.
+		For a general introduction, see the [url=$DOCS_URL/tutorials/math/matrices_and_transforms.html]Matrices and transforms[/url] tutorial.
+		[b]Note:[/b] Godot uses a [url=https://en.wikipedia.org/wiki/Right-hand_rule]right-handed coordinate system[/url], which is a common standard. For directions, the convention for built-in types like [Camera3D] is for -Z to point forward (+X is right, +Y is up, and +Z is back). Other objects may use different direction conventions. For more information, see the [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/model_export_considerations.html#d-asset-direction-conventions]3D asset direction conventions[/url] tutorial.
 	</description>
 	<tutorials>
 		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
 		<link title="Matrices and transforms">$DOCS_URL/tutorials/math/matrices_and_transforms.html</link>
 		<link title="Using 3D transforms">$DOCS_URL/tutorials/3d/using_transforms.html</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
-		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/125</link>
-		<link title="2.5D Demo">https://godotengine.org/asset-library/asset/583</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
+		<link title="3D Platformer Demo">https://godotengine.org/asset-library/asset/2748</link>
+		<link title="2.5D Game Demo">https://godotengine.org/asset-library/asset/2783</link>
 	</tutorials>
 	<constructors>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
 			<description>
-				Constructs a default-initialized [Transform3D] set to [constant IDENTITY].
+				Constructs a [Transform3D] identical to [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Transform3D] with its [member origin] and the components of its [member basis] set to [constant Vector3.ZERO].
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
@@ -34,14 +36,14 @@
 			<param index="0" name="basis" type="Basis" />
 			<param index="1" name="origin" type="Vector3" />
 			<description>
-				Constructs a Transform3D from a [Basis] and [Vector3].
+				Constructs a [Transform3D] from a [Basis] and [Vector3].
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
 			<return type="Transform3D" />
 			<param index="0" name="from" type="Projection" />
 			<description>
-				Constructs a Transform3D from a [Projection] by trimming the last row of the projection matrix ([code]from.x.w[/code], [code]from.y.w[/code], [code]from.z.w[/code], and [code]from.w.w[/code] are not copied over).
+				Constructs a [Transform3D] from a [Projection]. Because [Transform3D] is a 3×4 matrix and [Projection] is a 4×4 matrix, this operation trims the last row of the projection matrix ([code]from.x.w[/code], [code]from.y.w[/code], [code]from.z.w[/code], and [code]from.w.w[/code] are not included in the new transform).
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
@@ -51,7 +53,8 @@
 			<param index="2" name="z_axis" type="Vector3" />
 			<param index="3" name="origin" type="Vector3" />
 			<description>
-				Constructs a Transform3D from four [Vector3] values (matrix columns). Each axis corresponds to local basis vectors (some of which may be scaled).
+				Constructs a [Transform3D] from four [Vector3] values (also called matrix columns).
+				The first three arguments are the [member basis]'s axes ([member Basis.x], [member Basis.y], and [member Basis.z]).
 			</description>
 		</constructor>
 	</constructors>
@@ -59,7 +62,8 @@
 		<method name="affine_inverse" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the basis is invertible (must have non-zero determinant).
+				Returns the inverted version of this transform. Unlike [method inverse], this method works with almost any [member basis], including non-uniform ones, but is slower. See also [method Basis.inverse].
+				[b]Note:[/b] For this method to return correctly, the transform's [member basis] needs to have a determinant that is not exactly [code]0.0[/code] (see [method Basis.determinant]).
 			</description>
 		</method>
 		<method name="interpolate_with" qualifiers="const">
@@ -67,13 +71,15 @@
 			<param index="0" name="xform" type="Transform3D" />
 			<param index="1" name="weight" type="float" />
 			<description>
-				Returns a transform interpolated between this transform and another by a given [param weight] (on the range of 0.0 to 1.0).
+				Returns the result of the linear interpolation between this transform and [param xform] by the given [param weight].
+				The [param weight] should be between [code]0.0[/code] and [code]1.0[/code] (inclusive). Values outside this range are allowed and can be used to perform [i]extrapolation[/i] instead.
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the inverse of the transform, under the assumption that the transformation basis is orthonormal (i.e. rotation/reflection is fine, scaling/skew is not). Use [method affine_inverse] for non-orthonormal transforms (e.g. with scaling).
+				Returns the [url=https://en.wikipedia.org/wiki/Invertible_matrix]inverted version of this transform[/url]. See also [method Basis.inverse].
+				[b]Note:[/b] For this method to return correctly, the transform's [member basis] needs to be [i]orthonormal[/i] (see [method orthonormalized]). That means the basis should only represent a rotation. If it does not, use [method affine_inverse] instead.
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -95,7 +101,7 @@
 			<param index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)" />
 			<param index="2" name="use_model_front" type="bool" default="false" />
 			<description>
-				Returns a copy of the transform rotated such that the forward axis (-Z) points towards the [param target] position.
+				Returns a copy of this transform rotated so that the forward axis (-Z) points towards the [param target] position.
 				The up axis (+Y) points as close to the [param up] vector as possible while staying perpendicular to the forward axis. The resulting transform is orthonormalized. The existing rotation, scale, and skew information from the original transform is discarded. The [param target] and [param up] vectors cannot be zero, cannot be parallel to each other, and are defined in global/parent space.
 				If [param use_model_front] is [code]true[/code], the +Z axis (asset front) is treated as forward (implies +X is left) and points toward the [param target] position. By default, the -Z axis (camera forward) is treated as forward (implies +X is right).
 			</description>
@@ -103,7 +109,7 @@
 		<method name="orthonormalized" qualifiers="const">
 			<return type="Transform3D" />
 			<description>
-				Returns the transform with the basis orthogonal (90 degrees), and normalized axis vectors (scale of 1 or -1).
+				Returns a copy of this transform with its [member basis] orthonormalized. An orthonormal basis is both [i]orthogonal[/i] (the axes are perpendicular to each other) and [i]normalized[/i] (the axes have a length of [code]1.0[/code]), which also means it can only represent a rotation. See also [method Basis.orthonormalized].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -111,8 +117,8 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated around the given [param axis] by the given [param angle] (in radians).
-				The [param axis] must be a normalized vector.
+				Returns a copy of this transform rotated around the given [param axis] by the given [param angle] (in radians).
+				The [param axis] must be a normalized vector (see [method Vector3.normalized]). If [param angle] is positive, the basis is rotated counter-clockwise around the axis.
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the left, i.e., [code]R * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
@@ -122,8 +128,8 @@
 			<param index="0" name="axis" type="Vector3" />
 			<param index="1" name="angle" type="float" />
 			<description>
-				Returns a copy of the transform rotated around the given [param axis] by the given [param angle] (in radians).
-				The [param axis] must be a normalized vector.
+				Returns a copy of this transform rotated around the given [param axis] by the given [param angle] (in radians).
+				The [param axis] must be a normalized vector in the transform's local coordinate system. For example, to rotate around the local X-axis, use [constant Vector3.RIGHT].
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding rotation transform [code]R[/code] from the right, i.e., [code]X * R[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
@@ -132,7 +138,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Returns a copy of the transform scaled by the given [param scale] factor.
+				Returns a copy of this transform scaled by the given [param scale] factor.
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding scaling transform [code]S[/code] from the left, i.e., [code]S * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
@@ -141,7 +147,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="scale" type="Vector3" />
 			<description>
-				Returns a copy of the transform scaled by the given [param scale] factor.
+				Returns a copy of this transform scaled by the given [param scale] factor.
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding scaling transform [code]S[/code] from the right, i.e., [code]X * S[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
@@ -150,7 +156,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="offset" type="Vector3" />
 			<description>
-				Returns a copy of the transform translated by the given [param offset].
+				Returns a copy of this transform translated by the given [param offset].
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding translation transform [code]T[/code] from the left, i.e., [code]T * X[/code].
 				This can be seen as transforming with respect to the global/parent frame.
 			</description>
@@ -159,7 +165,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="offset" type="Vector3" />
 			<description>
-				Returns a copy of the transform translated by the given [param offset].
+				Returns a copy of this transform translated by the given [param offset].
 				This method is an optimized version of multiplying the given transform [code]X[/code] with a corresponding translation transform [code]T[/code] from the right, i.e., [code]X * T[/code].
 				This can be seen as transforming with respect to the local frame.
 			</description>
@@ -167,24 +173,42 @@
 	</methods>
 	<members>
 		<member name="basis" type="Basis" setter="" getter="" default="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
-			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
+			The [Basis] of this transform. It is composed by 3 axes ([member Basis.x], [member Basis.y], and [member Basis.z]). Together, these represent the transform's rotation, scale, and shear.
 		</member>
 		<member name="origin" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The translation offset of the transform (column 3, the fourth column). Equivalent to array index [code]3[/code].
+			The translation offset of this transform. In 3D space, this can be seen as the position.
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
-			[Transform3D] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
+			The identity [Transform3D]. This is a transform with no translation, no rotation, and a scale of [constant Vector3.ONE]. Its [member basis] is equal to [constant Basis.IDENTITY]. This also means that:
+			- Its [member Basis.x] points right ([constant Vector3.RIGHT]);
+			- Its [member Basis.y] points up ([constant Vector3.UP]);
+			- Its [member Basis.z] points back ([constant Vector3.BACK]).
+			[codeblock]
+			var transform = Transform3D.IDENTITY
+			var basis = transform.basis
+			print("| X | Y | Z | Origin")
+			print("| %.f | %.f | %.f | %.f" % [basis.x.x, basis.y.x, basis.z.x, transform.origin.x])
+			print("| %.f | %.f | %.f | %.f" % [basis.x.y, basis.y.y, basis.z.y, transform.origin.y])
+			print("| %.f | %.f | %.f | %.f" % [basis.x.z, basis.y.z, basis.z.z, transform.origin.z])
+			# Prints:
+			# | X | Y | Z | Origin
+			# | 1 | 0 | 0 | 0
+			# | 0 | 1 | 0 | 0
+			# | 0 | 0 | 1 | 0
+			[/codeblock]
+			If a [Vector3], an [AABB], a [Plane], a [PackedVector3Array], or another [Transform3D] is transformed (multiplied) by this constant, no transformation occurs.
+			[b]Note:[/b] In GDScript, this constant is equivalent to creating a [constructor Transform3D] without any arguments. It can be used to make your code clearer, and for consistency with C#.
 		</constant>
 		<constant name="FLIP_X" value="Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
-			[Transform3D] with mirroring applied perpendicular to the YZ plane.
+			[Transform3D] with mirroring applied perpendicular to the YZ plane. Its [member basis] is equal to [constant Basis.FLIP_X].
 		</constant>
 		<constant name="FLIP_Y" value="Transform3D(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0)">
-			[Transform3D] with mirroring applied perpendicular to the XZ plane.
+			[Transform3D] with mirroring applied perpendicular to the XZ plane. Its [member basis] is equal to [constant Basis.FLIP_Y].
 		</constant>
 		<constant name="FLIP_Z" value="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)">
-			[Transform3D] with mirroring applied perpendicular to the XY plane.
+			[Transform3D] with mirroring applied perpendicular to the XY plane. Its [member basis] is equal to [constant Basis.FLIP_Z].
 		</constant>
 	</constants>
 	<operators>
@@ -192,7 +216,7 @@
 			<return type="bool" />
 			<param index="0" name="right" type="Transform3D" />
 			<description>
-				Returns [code]true[/code] if the transforms are not equal.
+				Returns [code]true[/code] if the components of both transforms are not equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>
@@ -200,56 +224,76 @@
 			<return type="AABB" />
 			<param index="0" name="right" type="AABB" />
 			<description>
-				Transforms (multiplies) the [AABB] by the given [Transform3D] matrix.
+				Transforms (multiplies) the [AABB] by this transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="PackedVector3Array" />
 			<param index="0" name="right" type="PackedVector3Array" />
 			<description>
-				Transforms (multiplies) each element of the [Vector3] array by the given [Transform3D] matrix.
+				Transforms (multiplies) every [Vector3] element of the given [PackedVector3Array] by this transformation matrix.
+				On larger arrays, this operation is much faster than transforming each [Vector3] individually.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Plane" />
 			<param index="0" name="right" type="Plane" />
 			<description>
-				Transforms (multiplies) the [Plane] by the given [Transform3D] transformation matrix.
+				Transforms (multiplies) the [Plane] by this transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
 			<param index="0" name="right" type="Transform3D" />
 			<description>
-				Composes these two transformation matrices by multiplying them together. This has the effect of transforming the second transform (the child) by the first transform (the parent).
+				Transforms (multiplies) this transform by the [param right] transform.
+				This is the operation performed between parent and child [Node3D]s.
+				[b]Note:[/b] If you need to only modify one attribute of this transform, consider using one of the following methods, instead:
+				- For translation, see [method translated] or [method translated_local].
+				- For rotation, see [method rotated] or [method rotated_local].
+				- For scale, see [method scaled] or [method scaled_local].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Vector3" />
 			<param index="0" name="right" type="Vector3" />
 			<description>
-				Transforms (multiplies) the [Vector3] by the given [Transform3D] matrix.
+				Transforms (multiplies) the [Vector3] by this transformation matrix.
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
 			<param index="0" name="right" type="float" />
 			<description>
-				This operator multiplies all components of the [Transform3D], including the [member origin] vector, which scales it uniformly.
+				Multiplies all components of the [Transform3D] by the given [float], including the [member origin]. This affects the transform's scale uniformly, scaling the [member basis].
 			</description>
 		</operator>
 		<operator name="operator *">
 			<return type="Transform3D" />
 			<param index="0" name="right" type="int" />
 			<description>
-				This operator multiplies all components of the [Transform3D], including the [member origin] vector, which scales it uniformly.
+				Multiplies all components of the [Transform3D] by the given [int], including the [member origin]. This affects the transform's scale uniformly, scaling the [member basis].
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform3D" />
+			<param index="0" name="right" type="float" />
+			<description>
+				Divides all components of the [Transform3D] by the given [float], including the [member origin]. This affects the transform's scale uniformly, scaling the [member basis].
+			</description>
+		</operator>
+		<operator name="operator /">
+			<return type="Transform3D" />
+			<param index="0" name="right" type="int" />
+			<description>
+				Divides all components of the [Transform3D] by the given [int], including the [member origin]. This affects the transform's scale uniformly, scaling the [member basis].
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="Transform3D" />
 			<description>
-				Returns [code]true[/code] if the transforms are exactly equal.
+				Returns [code]true[/code] if the components of both transforms are exactly equal.
 				[b]Note:[/b] Due to floating-point precision errors, consider using [method is_equal_approx] instead, which is more reliable.
 			</description>
 		</operator>

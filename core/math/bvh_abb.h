@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BVH_ABB_H
-#define BVH_ABB_H
+#pragma once
+
+#include "core/math/aabb.h"
 
 // special optimized version of axis aligned bounding box
-template <class BOUNDS = AABB, class POINT = Vector3>
+template <typename BOUNDS = AABB, typename POINT = Vector3>
 struct BVH_ABB {
 	struct ConvexHull {
 		// convex hulls (optional)
@@ -258,7 +259,7 @@ struct BVH_ABB {
 	}
 
 	// Actually surface area metric.
-	float get_area() const {
+	real_t get_area() const {
 		POINT d = calculate_size();
 		return 2.0f * (d.x * d.y + d.y * d.z + d.z * d.x);
 	}
@@ -288,5 +289,3 @@ struct BVH_ABB {
 		return false;
 	}
 };
-
-#endif // BVH_ABB_H

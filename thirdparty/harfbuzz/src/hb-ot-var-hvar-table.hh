@@ -156,7 +156,7 @@ struct index_map_subset_plan_t
       unsigned outer = (*new_varidx) >> 16;
       unsigned bit_count = (outer == 0) ? 1 : hb_bit_storage (outer);
       outer_bit_count = hb_max (bit_count, outer_bit_count);
-      
+
       unsigned inner = (*new_varidx) & 0xFFFF;
       bit_count = (inner == 0) ? 1 : hb_bit_storage (inner);
       inner_bit_count = hb_max (bit_count, inner_bit_count);
@@ -188,7 +188,7 @@ struct hvarvvar_subset_plan_t
   ~hvarvvar_subset_plan_t() { fini (); }
 
   void init (const hb_array_t<const DeltaSetIndexMap *> &index_maps,
-	     const VariationStore &_var_store,
+	     const ItemVariationStore &_var_store,
 	     const hb_subset_plan_t *plan)
   {
     index_map_plans.resize (index_maps.length);
@@ -263,7 +263,7 @@ struct hvarvvar_subset_plan_t
   hb_inc_bimap_t outer_map;
   hb_vector_t<hb_inc_bimap_t> inner_maps;
   hb_vector_t<index_map_subset_plan_t> index_map_plans;
-  const VariationStore *var_store;
+  const ItemVariationStore *var_store;
 
   protected:
   hb_vector_t<hb_set_t *> inner_sets;
@@ -284,10 +284,13 @@ struct HVARVVAR
   static constexpr hb_tag_t HVARTag = HB_OT_TAG_HVAR;
   static constexpr hb_tag_t VVARTag = HB_OT_TAG_VVAR;
 
+  bool has_data () const { return version.major != 0; }
+
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (version.sanitize (c) &&
+		  hb_barrier () &&
 		  likely (version.major == 1) &&
 		  varStore.sanitize (c, this) &&
 		  advMap.sanitize (c, this) &&
@@ -295,7 +298,7 @@ struct HVARVVAR
 		  rsbMap.sanitize (c, this));
   }
 
-  const VariationStore& get_var_store () const
+  const ItemVariationStore& get_var_store () const
   { return this+varStore; }
 
   void listup_index_maps (hb_vector_t<const DeltaSetIndexMap *> &index_maps) const
@@ -381,9 +384,10 @@ struct HVARVVAR
 						hvar_plan.index_map_plans.as_array ()));
   }
 
+  HB_ALWAYS_INLINE
   float get_advance_delta_unscaled (hb_codepoint_t  glyph,
 				    const int *coords, unsigned int coord_count,
-				    VariationStore::cache_t *store_cache = nullptr) const
+				    hb_scalar_cache_t *store_cache = nullptr) const
   {
     uint32_t varidx = (this+advMap).map (glyph);
     return (this+varStore).get_delta (varidx,
@@ -391,20 +395,10 @@ struct HVARVVAR
 				      store_cache);
   }
 
-  bool get_lsb_delta_unscaled (hb_codepoint_t glyph,
-			       const int *coords, unsigned int coord_count,
-			       float *lsb) const
-  {
-    if (!lsbMap) return false;
-    uint32_t varidx = (this+lsbMap).map (glyph);
-    *lsb = (this+varStore).get_delta (varidx, coords, coord_count);
-    return true;
-  }
-
   public:
   FixedVersion<>version;	/* Version of the metrics variation table
 				 * initially set to 0x00010000u */
-  Offset32To<VariationStore>
+  Offset32To<ItemVariationStore>
 		varStore;	/* Offset to item variation store table. */
   Offset32To<DeltaSetIndexMap>
 		advMap;		/* Offset to advance var-idx mapping. */
@@ -453,14 +447,16 @@ struct VVAR : HVARVVAR {
 
   bool subset (hb_subset_context_t *c) const { return HVARVVAR::_subset<VVAR> (c); }
 
-  bool get_vorg_delta_unscaled (hb_codepoint_t glyph,
-				const int *coords, unsigned int coord_count,
-				float *delta) const
+  HB_ALWAYS_INLINE
+  float get_vorg_delta_unscaled (hb_codepoint_t glyph,
+				 const int *coords, unsigned int coord_count,
+				 hb_scalar_cache_t *store_cache = nullptr) const
   {
-    if (!vorgMap) return false;
+    if (!vorgMap) return 0.f;
     uint32_t varidx = (this+vorgMap).map (glyph);
-    *delta = (this+varStore).get_delta (varidx, coords, coord_count);
-    return true;
+    return (this+varStore).get_delta (varidx,
+				      coords, coord_count,
+				      store_cache);
   }
 
   protected:

@@ -28,27 +28,28 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UTIL_H
-#define UTIL_H
+#pragma once
 
 #define UNPACK(...) __VA_ARGS__
 
 #define INIT_XR_FUNC_V(openxr_api, name)                                                                              \
-	do {                                                                                                              \
+	if constexpr (true) {                                                                                             \
 		XrResult get_instance_proc_addr_result;                                                                       \
 		get_instance_proc_addr_result = openxr_api->get_instance_proc_addr(#name, (PFN_xrVoidFunction *)&name##_ptr); \
 		ERR_FAIL_COND_V(XR_FAILED(get_instance_proc_addr_result), false);                                             \
-	} while (0)
+	} else                                                                                                            \
+		((void)0)
 
 #define EXT_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(this, name)
 
 #define INIT_XR_FUNC(openxr_api, name)                                                                                \
-	do {                                                                                                              \
+	if constexpr (true) {                                                                                             \
 		XrResult get_instance_proc_addr_result;                                                                       \
 		get_instance_proc_addr_result = openxr_api->get_instance_proc_addr(#name, (PFN_xrVoidFunction *)&name##_ptr); \
 		ERR_FAIL_COND(XR_FAILED(get_instance_proc_addr_result));                                                      \
-	} while (0)
+	} else                                                                                                            \
+		((void)0)
 
 #define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC(name) INIT_XR_FUNC(this, name)
@@ -59,16 +60,18 @@
 #define EXT_TRY_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_TRY_API_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(this, name)
 #define GDEXTENSION_INIT_XR_FUNC(name)                                                              \
-	do {                                                                                            \
+	if constexpr (true) {                                                                           \
 		name##_ptr = reinterpret_cast<PFN_##name>(get_openxr_api()->get_instance_proc_addr(#name)); \
 		ERR_FAIL_NULL(name##_ptr);                                                                  \
-	} while (0)
+	} else                                                                                          \
+		((void)0)
 
 #define GDEXTENSION_INIT_XR_FUNC_V(name)                                                            \
-	do {                                                                                            \
+	if constexpr (true) {                                                                           \
 		name##_ptr = reinterpret_cast<PFN_##name>(get_openxr_api()->get_instance_proc_addr(#name)); \
 		ERR_FAIL_NULL_V(name##_ptr, false);                                                         \
-	} while (0)
+	} else                                                                                          \
+		((void)0)
 
 #define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \
 	PFN_##func_name func_name##_ptr = nullptr;                                  \
@@ -123,5 +126,3 @@
 		}                                                                                                                                                                                                              \
 		return (*func_name##_ptr)(p_##arg1, p_##arg2, p_##arg3, p_##arg4, p_##arg5, p_##arg6);                                                                                                                         \
 	}
-
-#endif // UTIL_H

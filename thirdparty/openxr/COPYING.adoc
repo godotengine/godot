@@ -1,12 +1,12 @@
 = COPYING.adoc for the Khronos Group OpenXR projects
 
-// Copyright (c) 2020-2023, The Khronos Group Inc.
+// Copyright (c) 2020-2025 The Khronos Group Inc.
 //
 // SPDX-License-Identifier: CC-BY-4.0
 
 This document is shared across a number of OpenXR GitHub projects, as the
 set of files in those projects is partially overlapping.
-(There is a single "source of truth" internal Khronos GitLab repo these
+(There is a single "source of truth" internal Khronos GitLab monorepo these
 GitHub repositories interact with.)
 
 == Licenses
@@ -17,7 +17,7 @@ https://reuse.software/spec/[REUSE 3.0 specification] with clear copyright
 holders and license identifier listed for each file, preferably in each
 file.
 Where this is not possible, or e.g. when we are using files unmodified from
-other open-source projects, license data is listed:
+other open source projects, license data is listed:
 
 * in an adjacent file of the same name, with the additional extension
   "`.license`"

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARTICLE_PROCESS_MATERIAL_H
-#define PARTICLE_PROCESS_MATERIAL_H
+#pragma once
 
 #include "core/templates/rid.h"
 #include "core/templates/self_list.h"
@@ -96,6 +95,7 @@ public:
 		SUB_EMITTER_CONSTANT,
 		SUB_EMITTER_AT_END,
 		SUB_EMITTER_AT_COLLISION,
+		SUB_EMITTER_AT_START,
 		SUB_EMITTER_MAX
 	};
 
@@ -117,7 +117,7 @@ private:
 		uint64_t emission_shape : 3;
 		uint64_t invalid_key : 1;
 		uint64_t has_emission_color : 1;
-		uint64_t sub_emitter : 2;
+		uint64_t sub_emitter : 3;
 		uint64_t attractor_enabled : 1;
 		uint64_t collision_mode : 2;
 		uint64_t collision_scale : 1;
@@ -148,9 +148,12 @@ private:
 		int users = 0;
 	};
 
+	static Mutex shader_map_mutex;
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
+	static RBSet<String> min_max_properties;
 
 	MaterialKey current_key;
+	RID shader_rid;
 
 	_FORCE_INLINE_ MaterialKey _compute_key() const {
 		MaterialKey mk;
@@ -184,8 +187,8 @@ private:
 		return mk;
 	}
 
-	static Mutex material_mutex;
-	static SelfList<ParticleProcessMaterial>::List *dirty_materials;
+	static Mutex dirty_materials_mutex;
+	static SelfList<ParticleProcessMaterial>::List dirty_materials;
 
 	struct ShaderNames {
 		StringName direction;
@@ -258,6 +261,7 @@ private:
 		StringName emission_ring_height;
 		StringName emission_ring_radius;
 		StringName emission_ring_inner_radius;
+		StringName emission_ring_cone_angle;
 		StringName emission_shape_offset;
 		StringName emission_shape_scale;
 
@@ -280,6 +284,7 @@ private:
 		StringName sub_emitter_frequency;
 		StringName sub_emitter_amount_at_end;
 		StringName sub_emitter_amount_at_collision;
+		StringName sub_emitter_amount_at_start;
 		StringName sub_emitter_keep_velocity;
 
 		StringName collision_friction;
@@ -292,7 +297,6 @@ private:
 
 	void _update_shader();
 	_FORCE_INLINE_ void _queue_shader_change();
-	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
 	Vector3 direction;
 	float spread = 0.0f;
@@ -325,6 +329,7 @@ private:
 	real_t emission_ring_height = 0.0f;
 	real_t emission_ring_radius = 0.0f;
 	real_t emission_ring_inner_radius = 0.0f;
+	real_t emission_ring_cone_angle = 0.0f;
 	int emission_point_count = 1;
 	Vector3 emission_shape_offset;
 	Vector3 emission_shape_scale;
@@ -347,6 +352,7 @@ private:
 	double sub_emitter_frequency = 0.0;
 	int sub_emitter_amount_at_end = 0;
 	int sub_emitter_amount_at_collision = 0;
+	int sub_emitter_amount_at_start = 0;
 	bool sub_emitter_keep_velocity = false;
 	//do not save emission points here
 
@@ -361,6 +367,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
+	static bool has_min_max_property(const String &p_name);
+
 	void set_direction(Vector3 p_direction);
 	Vector3 get_direction() const;
 
@@ -372,6 +380,9 @@ public:
 
 	void set_velocity_pivot(const Vector3 &p_pivot);
 	Vector3 get_velocity_pivot();
+
+	void set_param(Parameter p_param, const Vector2 &p_value);
+	Vector2 get_param(Parameter p_param) const;
 
 	void set_param_min(Parameter p_param, float p_value);
 	float get_param_min(Parameter p_param) const;
@@ -412,6 +423,7 @@ public:
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);
+	void set_emission_ring_cone_angle(real_t p_angle);
 	void set_emission_point_count(int p_count);
 
 	EmissionShape get_emission_shape() const;
@@ -424,6 +436,7 @@ public:
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
 	real_t get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_cone_angle() const;
 	int get_emission_point_count() const;
 
 	void set_turbulence_enabled(bool p_turbulence_enabled);
@@ -478,6 +491,9 @@ public:
 	void set_sub_emitter_amount_at_collision(int p_amount);
 	int get_sub_emitter_amount_at_collision() const;
 
+	void set_sub_emitter_amount_at_start(int p_amount);
+	int get_sub_emitter_amount_at_start() const;
+
 	void set_sub_emitter_keep_velocity(bool p_enable);
 	bool get_sub_emitter_keep_velocity() const;
 
@@ -487,6 +503,7 @@ public:
 	void set_emission_shape_scale(const Vector3 &p_emission_shape_scale);
 	Vector3 get_emission_shape_scale() const;
 
+	virtual RID get_rid() const override;
 	virtual RID get_shader_rid() const override;
 
 	virtual Shader::Mode get_shader_mode() const override;
@@ -500,5 +517,3 @@ VARIANT_ENUM_CAST(ParticleProcessMaterial::ParticleFlags)
 VARIANT_ENUM_CAST(ParticleProcessMaterial::EmissionShape)
 VARIANT_ENUM_CAST(ParticleProcessMaterial::SubEmitterMode)
 VARIANT_ENUM_CAST(ParticleProcessMaterial::CollisionMode)
-
-#endif // PARTICLE_PROCESS_MATERIAL_H

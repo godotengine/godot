@@ -4,6 +4,7 @@ class Parent:
 
 	var parent_variable := 2
 
+	@warning_ignore("unused_signal")
 	signal parent_signal
 
 	var parent_attribute: int:

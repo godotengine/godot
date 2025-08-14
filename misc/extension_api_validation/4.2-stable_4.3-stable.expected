@@ -1,0 +1,377 @@
+This file contains, when concatenated to the expected output since 4.3, the expected output of --validate-extension-api
+when run against the extension_api.json of the 4.2-stable tag (first part of the basename of this file).
+
+## Changes between 4.2-stable and 4.3-stable
+
+GH-84660
+--------
+Validate extension JSON: Error: Field 'classes/TileData/methods/get_navigation_polygon/arguments': size changed value in new API, from 1 to 4.
+Validate extension JSON: Error: Field 'classes/TileData/methods/get_occluder/arguments': size changed value in new API, from 1 to 4.
+
+Added optional argument to get_navigation_polygon and get_occluder to specify a polygon transform.
+
+
+GH-85393
+--------
+Validate extension JSON: Error: Field 'classes/PhysicsShapeQueryParameters3D/properties/motion': type changed value in new API, from "Vector2" to "Vector3".
+
+The type was registered wrongly, this was a bug.
+
+
+GH-86687
+--------
+Validate extension JSON: Error: Field 'classes/AnimationMixer/methods/_post_process_key_value/arguments/3': type changed value in new API, from "Object" to "int".
+
+Exposing the pointer was dangerous and it must be changed to avoid crash. Compatibility methods registered.
+
+
+GH-84976
+--------
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/FinalAction/values/FINAL_ACTION_CONTINUE': value changed value in new API, from 2.0 to 0.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/FinalAction/values/FINAL_ACTION_MAX': value changed value in new API, from 3.0 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_CLEAR': value changed value in new API, from 0.0 to 1.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_CLEAR_REGION_CONTINUE': value changed value in new API, from 2.0 to 1.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_CONTINUE': value changed value in new API, from 5.0 to 0.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_DROP': value changed value in new API, from 4.0 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_KEEP': value changed value in new API, from 3.0 to 0.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/enums/InitialAction/values/INITIAL_ACTION_MAX': value changed value in new API, from 6.0 to 3.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_clear/arguments': size changed value in new API, from 4 to 3.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/buffer_update/arguments': size changed value in new API, from 5 to 4.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/draw_list_begin/arguments': size changed value in new API, from 10 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_clear/arguments': size changed value in new API, from 7 to 6.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_copy/arguments': size changed value in new API, from 10 to 9.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_resolve_multisample/arguments': size changed value in new API, from 3 to 2.
+Validate extension JSON: Error: Field 'classes/RenderingDevice/methods/texture_update/arguments': size changed value in new API, from 4 to 3.
+
+Barrier arguments have been removed from all relevant functions as they're no longer required.
+Draw and compute list overlap no longer needs to be specified.
+Initial and final actions have been simplified into fewer options.
+
+
+GH-87115
+--------
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_collision_visibility_mode': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/TileMap/methods/get_navigation_visibility_mode': is_const changed value in new API, from false to true.
+
+Two TileMap getters were made const. No adjustments should be necessary.
+
+
+GH-86158
+--------
+Validate extension JSON: Error: Field 'classes/GraphEdit/methods/get_connection_line': is_const changed value in new API, from false to true.
+
+get_connection_line was made const.
+
+
+GH-87668
+--------
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 8 to 9.
+
+Added optional "baseline_offset" argument. Compatibility method registered.
+
+
+GH-81996
+--------
+Validate extension JSON: Error: Field 'classes/GPUParticles2D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/GPUParticles3D/properties/process_material': type changed value in new API, from "ShaderMaterial,ParticleProcessMaterial" to "ParticleProcessMaterial,ShaderMaterial".
+Validate extension JSON: Error: Field 'classes/Sky/properties/sky_material': type changed value in new API, from "ShaderMaterial,PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial" to "PanoramaSkyMaterial,ProceduralSkyMaterial,PhysicalSkyMaterial,ShaderMaterial".
+
+Property hints reordered to improve editor usability. The types allowed are still the same as before. No adjustments should be necessary.
+
+
+GH-86907
+--------
+
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer2D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/AudioStreamPlayer3D/methods/is_autoplay_enabled': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_buffer': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_length': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_offset': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_byte_stride': is_const changed value in new API, from false to true.
+Validate extension JSON: Error: Field 'classes/GLTFBufferView/methods/get_indices': is_const changed value in new API, from false to true.
+
+Change AudioStreamPlayer* is_autoplay_enabled and GLTFBufferView getters to be const.
+
+
+GH-87340
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderingDevice/methods/screen_get_framebuffer_format': arguments
+
+screen_get_framebuffer_format can now specify the screen it should get the format from. The argument defaults to the main window to emulate the behavior of the old function.
+
+
+GH-88418
+--------
+Validate extension JSON: API was removed: classes/GDExtension/methods/close_library
+Validate extension JSON: API was removed: classes/GDExtension/methods/initialize_library
+Validate extension JSON: API was removed: classes/GDExtension/methods/open_library
+
+Since it was basically impossible to use these methods in any useful way, the GDExtension team agreed that breaking compatibility by removing them was OK.
+
+
+GH-86629
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/position_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/rotation_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/scale_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/blend_shape_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/Animation/methods/value_track_interpolate/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to track_interpolate to treat playing backward correctly. Compatibility method registered.
+
+
+GH-84792
+--------
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/environment_set_fog/arguments': size changed value in new API, from 10 to 11.
+
+Added fog mode argument. Compatibility method registered.
+
+
+GH-80214
+--------
+
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersRD/methods/get_color_layer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersRD/methods/get_depth_layer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/RenderSceneBuffersRD/methods/get_velocity_layer/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_color_texture': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_depth_texture': arguments
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/RenderSceneBuffersRD/methods/get_velocity_texture': arguments
+
+MSAA flag was added, compatibility functions exist for these.
+
+
+GH-84906
+--------
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/play/arguments/0': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/AnimationPlayer/methods/play_backwards/arguments/0': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/CodeEdit/methods/add_code_completion_option/arguments/5': default_value changed value in new API, from "0" to "null".
+Validate extension JSON: Error: Field 'classes/Control/methods/get_theme_color/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/get_theme_constant/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/get_theme_font/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/get_theme_font_size/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/get_theme_icon/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/get_theme_stylebox/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/has_theme_color/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/has_theme_constant/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/has_theme_font/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/has_theme_font_size/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/has_theme_icon/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Control/methods/has_theme_stylebox/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Object/methods/tr/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Object/methods/tr_n/arguments/3': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Translation/methods/add_message/arguments/2': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Translation/methods/add_plural_message/arguments/2': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Translation/methods/erase_message/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Translation/methods/get_message/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Translation/methods/get_plural_message/arguments/3': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/TranslationServer/methods/translate/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/TranslationServer/methods/translate_plural/arguments/3': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/get_theme_color/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/get_theme_constant/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/get_theme_font/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/get_theme_font_size/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/get_theme_icon/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/get_theme_stylebox/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_color/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_constant/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_font/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_font_size/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_icon/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+Validate extension JSON: Error: Field 'classes/Window/methods/has_theme_stylebox/arguments/1': default_value changed value in new API, from "\"\"" to "&\"\"".
+
+Fix the default parameter value for StringName and Variant.
+The changes to StringName parameters should be equivalent to the previous default values.
+The change to the Variant parameter in 'add_code_completion_option' breaks behavior compatibility.
+
+
+GH-81746
+--------
+Validate extension JSON: API was removed: classes/EditorSceneFormatImporterFBX
+
+Renamed to EditorSceneFormatImporterFBX2GLTF.
+
+The compat breakage was deemed necessary as this is a class most users wouldn't
+use directly, and the name needs to be disambiguated with the new
+EditorSceneFormatImporterUFBX.
+
+
+GH-88791
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Skeleton3D/methods/add_bone': return_value
+
+Added a return value for add_bone.
+Should not affect existing regular use - the return value would just be unused.
+Compatibility method registered.
+
+
+GH-89024
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_meta/arguments': size changed value in new API, from 1 to 3.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-88081
+--------
+Validate extension JSON: Error: Field 'classes/EditorPlugin/methods/add_control_to_bottom_panel/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/EditorPlugin/methods/add_control_to_dock/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument to add_control_to_bottom_panel and add_control_to_dock to specify a shortcut that toggles the bottom panel/dock's visibility.
+Compatibility method registered.
+
+
+GH-89419
+--------
+Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/register_text_enter/arguments/0': type changed value in new API, from "Control" to "LineEdit".
+Validate extension JSON: Error: Field 'classes/AcceptDialog/methods/remove_button/arguments/0': type changed value in new API, from "Control" to "Button".
+
+Changed argument type to the more specific one actually expected by the method. Compatibility method registered.
+
+
+GH-88047
+--------
+Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar2D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar3D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStar3D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_id_path/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/AStarGrid2D/methods/get_point_path/arguments': size changed value in new API, from 2 to 3.
+
+Added optional "allow_partial_path" argument to get_id_path and get_point_path methods in AStar classes.
+Compatibility methods registered.
+
+
+GH-88014
+--------
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/get_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/methods/set_title
+Validate extension JSON: API was removed: classes/VisualShaderNodeComment/properties/title
+
+
+GH-90575
+--------
+Validate extension JSON: API was removed: classes/BoneAttachment3D/methods/on_bone_pose_update
+Validate extension JSON: API was removed: classes/Skeleton3D/signals/bone_pose_changed
+
+They have been replaced by a safer API due to performance concerns. Compatibility method registered.
+
+
+GH-90747
+--------
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/avoidance_layers
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_avoidance_layer_value
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/set_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/methods/get_constrain_avoidance
+Validate extension JSON: API was removed: classes/NavigationRegion2D/properties/constrain_avoidance
+
+Experimental NavigationRegion2D feature "constrain_avoidance" was discontinued with no replacement.
+
+
+GH-90645
+--------
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_desc
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/get_tracker_type
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_desc
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/methods/set_tracker_type
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/description
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/name
+Validate extension JSON: API was removed: classes/XRPositionalTracker/properties/type
+Validate extension JSON: Error: Field 'classes/WebXRInterface/methods/get_input_source_tracker/return_value': type changed value in new API, from "XRPositionalTracker" to "XRControllerTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/add_tracker/arguments/0': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/get_tracker/return_value': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+Validate extension JSON: Error: Field 'classes/XRServer/methods/remove_tracker/arguments/0': type changed value in new API, from "XRPositionalTracker" to "XRTracker".
+
+All trackers now have an XRTracker base, and the XRServer uses the XRTracker type.
+
+
+GH-90732
+--------
+Validate extension JSON: Error: Field 'classes/TextServer/methods/shaped_text_get_word_breaks/arguments': size changed value in new API, from 2 to 3.
+Validate extension JSON: Error: Field 'classes/TextServerExtension/methods/_shaped_text_get_word_breaks/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-86978
+--------
+Validate extension JSON: Error: Field 'classes/TextEdit/methods/set_selection_mode/arguments': size changed value in new API, from 4 to 1.
+
+Removed optional arguments set_selection_mode, use set_selection_origin_line/column instead.
+Compatibility methods registered.
+
+
+GH-84472
+--------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_circle/arguments': size changed value in new API, from 3 to 6.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-91098
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/remove_paragraph/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-91143
+--------
+Validate extension JSON: Error: Field 'classes/Input/methods/vibrate_handheld/arguments': size changed value in new API, from 1 to 2.
+
+Added optional argument. Compatibility method registered.
+
+
+GH-84523
+--------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_dashed_line/arguments': size changed value in new API, from 6 to 7.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_multiline_colors/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_rect/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_circle/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_multiline/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_rect/arguments': size changed value in new API, from 3 to 4.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-92322
+--------
+Validate extension JSON: Error: Field 'classes/EditorInspectorPlugin/methods/add_property_editor/arguments': size changed value in new API, from 3 to 4.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-92861
+--------
+Validate extension JSON: Error: Field 'classes/Animation/methods/track_find_key/arguments': size changed value in new API, from 3 to 5.
+
+Added optional arguments to avoid finding keys out of the animation range (GH-86661), and to handle backward seeking.
+Compatibility method registered.
+
+
+GH-91382
+--------
+Validate extension JSON: Error: Field 'classes/AudioStreamPlaybackPolyphonic/methods/play_stream/arguments': size changed value in new API, from 4 to 6.
+
+Optional arguments added. Compatibility methods registered.
+
+
+GH-93982
+--------
+Validate extension JSON: Error: Field 'classes/Sprite3D/properties/frame_coords': type changed value in new API, from "Vector2" to "Vector2i".
+
+The type was wrong to begin with and has been corrected. Vector2 and Vector2i are convertible, so it should be compatible.
+
+
+GH-94243
+--------
+Validate extension JSON: Error: Field 'classes/Image/methods/get_mipmap_offset/return_value': meta changed value in new API, from "int32" to "int64".
+
+Type changed to int64_t to support baking large lightmaps.
+No compatibility method needed, both GDExtension and C# generate it as int64_t anyway.

@@ -61,6 +61,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="linked_parent_graph_frame" type="int" setter="set_frame" getter="get_frame" default="-1">
+			Represents the index of the frame this node is linked to. If set to [code]-1[/code] the node is not linked to any frame.
+		</member>
 		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
 			Sets the output port index which will be showed for preview. If set to [code]-1[/code] no port will be open for preview.
 		</member>

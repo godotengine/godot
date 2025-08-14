@@ -30,6 +30,20 @@
 
 #include "environment_storage.h"
 
+// Storage
+
+RendererEnvironmentStorage *RendererEnvironmentStorage::singleton = nullptr;
+
+RendererEnvironmentStorage::RendererEnvironmentStorage() {
+	singleton = this;
+}
+
+RendererEnvironmentStorage::~RendererEnvironmentStorage() {
+	singleton = nullptr;
+}
+
+// Environment
+
 RID RendererEnvironmentStorage::environment_allocate() {
 	return environment_owner.allocate_rid();
 }
@@ -175,6 +189,18 @@ RS::EnvironmentReflectionSource RendererEnvironmentStorage::environment_get_refl
 	return env->reflection_source;
 }
 
+void RendererEnvironmentStorage::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->camera_feed_id = p_camera_feed_id;
+}
+
+int RendererEnvironmentStorage::environment_get_camera_feed_id(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, -1);
+	return env->camera_feed_id;
+}
+
 // Tonemap
 
 void RendererEnvironmentStorage::environment_set_tonemap(RID p_env, RS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white) {
@@ -205,10 +231,11 @@ float RendererEnvironmentStorage::environment_get_white(RID p_env) const {
 
 // Fog
 
-void RendererEnvironmentStorage::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective, float p_sky_affect) {
+void RendererEnvironmentStorage::environment_set_fog(RID p_env, bool p_enable, const Color &p_light_color, float p_light_energy, float p_sun_scatter, float p_density, float p_height, float p_height_density, float p_fog_aerial_perspective, float p_sky_affect, RS::EnvironmentFogMode p_mode) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	env->fog_enabled = p_enable;
+	env->fog_mode = p_mode;
 	env->fog_light_color = p_light_color;
 	env->fog_light_energy = p_light_energy;
 	env->fog_sun_scatter = p_sun_scatter;
@@ -223,6 +250,12 @@ bool RendererEnvironmentStorage::environment_get_fog_enabled(RID p_env) const {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL_V(env, false);
 	return env->fog_enabled;
+}
+
+RS::EnvironmentFogMode RendererEnvironmentStorage::environment_get_fog_mode(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, RS::ENV_FOG_MODE_EXPONENTIAL);
+	return env->fog_mode;
 }
 
 Color RendererEnvironmentStorage::environment_get_fog_light_color(RID p_env) const {
@@ -273,6 +306,34 @@ float RendererEnvironmentStorage::environment_get_fog_sky_affect(RID p_env) cons
 	return env->fog_sky_affect;
 }
 
+// Depth Fog
+
+void RendererEnvironmentStorage::environment_set_fog_depth(RID p_env, float p_curve, float p_begin, float p_end) {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL(env);
+	env->fog_depth_curve = p_curve;
+	env->fog_depth_begin = p_begin;
+	env->fog_depth_end = p_end;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_curve(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.0);
+	return env->fog_depth_curve;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_begin(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.0);
+	return env->fog_depth_begin;
+}
+
+float RendererEnvironmentStorage::environment_get_fog_depth_end(RID p_env) const {
+	Environment *env = environment_owner.get_or_null(p_env);
+	ERR_FAIL_NULL_V(env, 0.0);
+	return env->fog_depth_end;
+}
+
 // Volumetric Fog
 
 void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool p_enable, float p_density, const Color &p_albedo, const Color &p_emission, float p_emission_energy, float p_anisotropy, float p_length, float p_detail_spread, float p_gi_inject, bool p_temporal_reprojection, float p_temporal_reprojection_amount, float p_ambient_inject, float p_sky_affect) {
@@ -280,7 +341,7 @@ void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Volumetric fog can only be enabled when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Volumetric fog can only be enabled when using the Forward+ renderer.");
 	}
 #endif
 	env->volumetric_fog_enabled = p_enable;
@@ -382,11 +443,6 @@ void RendererEnvironmentStorage::environment_set_glow(RID p_env, bool p_enable, 
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
 	ERR_FAIL_COND_MSG(p_levels.size() != 7, "Size of array of glow levels must be 7");
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_enable) {
-		WARN_PRINT_ONCE_ED("Glow is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
-	}
-#endif
 	env->glow_enabled = p_enable;
 	env->glow_levels = p_levels;
 	env->glow_intensity = p_intensity;
@@ -480,7 +536,7 @@ void RendererEnvironmentStorage::environment_set_ssr(RID p_env, bool p_enable, i
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space reflections (SSR) can only be enabled when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Screen-space reflections (SSR) can only be enabled when using the Forward+ renderer.");
 	}
 #endif
 	env->ssr_enabled = p_enable;
@@ -527,7 +583,7 @@ void RendererEnvironmentStorage::environment_set_ssao(RID p_env, bool p_enable, 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) can only be enabled when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Screen-space ambient occlusion (SSAO) can only be enabled when using the Forward+ renderer.");
 	}
 #endif
 	env->ssao_enabled = p_enable;
@@ -602,7 +658,7 @@ void RendererEnvironmentStorage::environment_set_ssil(RID p_env, bool p_enable, 
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) can only be enabled when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Screen-space indirect lighting (SSIL) can only be enabled when using the Forward+ renderer.");
 	}
 #endif
 	env->ssil_enabled = p_enable;
@@ -649,7 +705,7 @@ void RendererEnvironmentStorage::environment_set_sdfgi(RID p_env, bool p_enable,
 	ERR_FAIL_NULL(env);
 #ifdef DEBUG_ENABLED
 	if (OS::get_singleton()->get_current_rendering_method() != "forward_plus" && p_enable) {
-		WARN_PRINT_ONCE_ED("SDFGI can only be enabled when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("SDFGI can only be enabled when using the Forward+ renderer.");
 	}
 #endif
 	env->sdfgi_enabled = p_enable;
@@ -729,11 +785,7 @@ RS::EnvironmentSDFGIYScale RendererEnvironmentStorage::environment_get_sdfgi_y_s
 void RendererEnvironmentStorage::environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, bool p_use_1d_color_correction, RID p_color_correction) {
 	Environment *env = environment_owner.get_or_null(p_env);
 	ERR_FAIL_NULL(env);
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility" && p_enable) {
-		WARN_PRINT_ONCE_ED("Adjustments are not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
-	}
-#endif
+
 	env->adjustments_enabled = p_enable;
 	env->adjustments_brightness = p_brightness;
 	env->adjustments_contrast = p_contrast;

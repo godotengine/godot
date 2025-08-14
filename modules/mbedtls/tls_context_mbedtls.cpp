@@ -30,6 +30,12 @@
 
 #include "tls_context_mbedtls.h"
 
+#include "core/config/project_settings.h"
+
+#ifdef TOOLS_ENABLED
+#include "editor/settings/editor_settings.h"
+#endif // TOOLS_ENABLED
+
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
 		const char *str) {
@@ -144,6 +150,22 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 		cookies = p_cookies;
 		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &(cookies->cookie_ctx));
 	}
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		if (!EditorSettings::get_singleton()->get_setting("network/tls/enable_tls_v1.3").operator bool()) {
+			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
+		}
+	} else
+#endif
+	{
+		if (!GLOBAL_GET("network/tls/enable_tls_v1.3").operator bool()) {
+			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
+		}
+	}
+#endif
+
 	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
 }
@@ -152,21 +174,23 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 	ERR_FAIL_COND_V(p_options.is_null() || p_options->is_server(), ERR_INVALID_PARAMETER);
 
 	int authmode = MBEDTLS_SSL_VERIFY_REQUIRED;
-	if (p_options->get_verify_mode() == TLSOptions::TLS_VERIFY_NONE) {
+	bool unsafe = p_options->is_unsafe_client();
+	if (unsafe && p_options->get_trusted_ca_chain().is_null()) {
 		authmode = MBEDTLS_SSL_VERIFY_NONE;
 	}
 
 	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, authmode);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	if (p_options->get_verify_mode() == TLSOptions::TLS_VERIFY_FULL) {
-		String cn = p_options->get_common_name();
+	if (unsafe) {
+		// No hostname verification for unsafe clients.
+		mbedtls_ssl_set_hostname(&tls, nullptr);
+	} else {
+		String cn = p_options->get_common_name_override();
 		if (cn.is_empty()) {
 			cn = p_hostname;
 		}
 		mbedtls_ssl_set_hostname(&tls, cn.utf8().get_data());
-	} else {
-		mbedtls_ssl_set_hostname(&tls, nullptr);
 	}
 
 	X509CertificateMbedTLS *cas = nullptr;
@@ -184,6 +208,21 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 		}
 	}
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton()) {
+		if (!EditorSettings::get_singleton()->get_setting("network/tls/enable_tls_v1.3").operator bool()) {
+			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
+		}
+	} else
+#endif
+	{
+		if (!GLOBAL_GET("network/tls/enable_tls_v1.3").operator bool()) {
+			mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
+		}
+	}
+#endif
 
 	// Set valid CAs
 	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), nullptr);

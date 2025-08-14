@@ -1,4 +1,4 @@
-const Features = { // eslint-disable-line no-unused-vars
+const Features = {
 	/**
 	 * Check whether WebGL is available. Optionally, specify a particular version of WebGL to check for.
 	 *
@@ -72,8 +72,14 @@ const Features = { // eslint-disable-line no-unused-vars
 	 *
 	 * @returns {Array<string>} A list of human-readable missing features.
 	 * @function Engine.getMissingFeatures
+	 * @param {{threads: (boolean|undefined)}} supportedFeatures
 	 */
-	getMissingFeatures: function () {
+	getMissingFeatures: function (supportedFeatures = {}) {
+		const {
+			// Quotes are needed for the Closure compiler.
+			'threads': supportsThreads = true,
+		} = supportedFeatures;
+
 		const missing = [];
 		if (!Features.isWebGLAvailable(2)) {
 			missing.push('WebGL2 - Check web browser configuration and hardware support');
@@ -84,12 +90,16 @@ const Features = { // eslint-disable-line no-unused-vars
 		if (!Features.isSecureContext()) {
 			missing.push('Secure Context - Check web server configuration (use HTTPS)');
 		}
-		if (!Features.isCrossOriginIsolated()) {
-			missing.push('Cross Origin Isolation - Check web server configuration (send correct headers)');
+
+		if (supportsThreads) {
+			if (!Features.isCrossOriginIsolated()) {
+				missing.push('Cross-Origin Isolation - Check that the web server configuration sends the correct headers.');
+			}
+			if (!Features.isSharedArrayBufferAvailable()) {
+				missing.push('SharedArrayBuffer - Check that the web server configuration sends the correct headers.');
+			}
 		}
-		if (!Features.isSharedArrayBufferAvailable()) {
-			missing.push('SharedArrayBuffer - Check web server configuration (send correct headers)');
-		}
+
 		// Audio is normally optional since we have a dummy fallback.
 		return missing;
 	},

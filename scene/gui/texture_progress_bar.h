@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_PROGRESS_BAR_H
-#define TEXTURE_PROGRESS_BAR_H
+#pragma once
 
 #include "scene/gui/range.h"
 
@@ -43,6 +42,7 @@ class TextureProgressBar : public Range {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 
 public:
 	enum FillMode {
@@ -121,5 +121,3 @@ private:
 };
 
 VARIANT_ENUM_CAST(TextureProgressBar::FillMode);
-
-#endif // TEXTURE_PROGRESS_BAR_H

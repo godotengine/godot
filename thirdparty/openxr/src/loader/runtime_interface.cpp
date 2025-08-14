@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -9,13 +9,14 @@
 
 #include "runtime_interface.hpp"
 
+#include <openxr/openxr.h>
+#include <openxr/openxr_loader_negotiation.h>
+
 #include "manifest_file.hpp"
-#include "loader_interfaces.h"
+#include "loader_init_data.hpp"
 #include "loader_logger.hpp"
 #include "loader_platform.hpp"
 #include "xr_generated_dispatch_table_core.h"
-
-#include <openxr/openxr.h>
 
 #include <cstring>
 #include <memory>
@@ -26,8 +27,6 @@
 #include <vector>
 
 #ifdef XR_USE_PLATFORM_ANDROID
-#include "android_utilities.h"
-#include <android/asset_manager_jni.h>
 #include <json/value.h>
 
 // Needed for the loader init struct
@@ -35,113 +34,7 @@
 #include <openxr/openxr_platform.h>
 #endif  // XR_USE_PLATFORM_ANDROID
 
-#ifdef XR_KHR_LOADER_INIT_SUPPORT
-namespace {
-/*!
- * Stores a copy of the data passed to the xrInitializeLoaderKHR function in a singleton.
- */
-class LoaderInitData {
-   public:
-    /*!
-     * Singleton accessor.
-     */
-    static LoaderInitData& instance() {
-        static LoaderInitData obj;
-        return obj;
-    }
-
-#ifdef XR_USE_PLATFORM_ANDROID
-    /*!
-     * Type alias for the platform-specific structure type.
-     */
-    using StructType = XrLoaderInitInfoAndroidKHR;
-    /*!
-     * Native library path.
-     */
-    std::string _native_library_path;
-    /*!
-     * Android asset manager.
-     */
-    AAssetManager* _android_asset_manager;
-#endif
-
-    /*!
-     * Get our copy of the data, casted to pass to the runtime's matching method.
-     */
-    const XrLoaderInitInfoBaseHeaderKHR* getParam() const { return reinterpret_cast<const XrLoaderInitInfoBaseHeaderKHR*>(&_data); }
-
-    /*!
-     * Get the data via its real structure type.
-     */
-    const StructType& getData() const { return _data; }
-
-    /*!
-     * Has this been correctly initialized?
-     */
-    bool initialized() const noexcept { return _initialized; }
-
-    /*!
-     * Initialize loader data - called by InitializeLoader() and thus ultimately by the loader's xrInitializeLoaderKHR
-     * implementation. Each platform that needs this extension will provide an implementation of this.
-     */
-    XrResult initialize(const XrLoaderInitInfoBaseHeaderKHR* info);
-
-   private:
-    //! Private constructor, forces use of singleton accessor.
-    LoaderInitData() = default;
-    //! Platform-specific init data
-    StructType _data = {};
-    //! Flag for indicating whether _data is valid.
-    bool _initialized = false;
-};
-
-#ifdef XR_USE_PLATFORM_ANDROID
-// Check and copy the Android-specific init data.
-XrResult LoaderInitData::initialize(const XrLoaderInitInfoBaseHeaderKHR* info) {
-    if (info->type != XR_TYPE_LOADER_INIT_INFO_ANDROID_KHR) {
-        return XR_ERROR_VALIDATION_FAILURE;
-    }
-    auto cast_info = reinterpret_cast<XrLoaderInitInfoAndroidKHR const*>(info);
-
-    if (cast_info->applicationVM == nullptr) {
-        return XR_ERROR_VALIDATION_FAILURE;
-    }
-    if (cast_info->applicationContext == nullptr) {
-        return XR_ERROR_VALIDATION_FAILURE;
-    }
-
-    // Copy and store the JVM pointer and Android Context, ensuring the JVM is initialised.
-    _data = *cast_info;
-    _data.next = nullptr;
-    jni::init(static_cast<jni::JavaVM*>(_data.applicationVM));
-    const jni::Object context = jni::Object{static_cast<jni::jobject>(_data.applicationContext)};
-
-    // Retrieve a reference to the Android AssetManager.
-    const auto assetManager = context.call<jni::Object>("getAssets()Landroid/content/res/AssetManager;");
-    _android_asset_manager = AAssetManager_fromJava(jni::env(), assetManager.getHandle());
-
-    // Retrieve the path to the native libraries.
-    const auto applicationContext = context.call<jni::Object>("getApplicationContext()Landroid/content/Context;");
-    const auto applicationInfo = context.call<jni::Object>("getApplicationInfo()Landroid/content/pm/ApplicationInfo;");
-    _native_library_path = applicationInfo.get<std::string>("nativeLibraryDir");
-
-    _initialized = true;
-    return XR_SUCCESS;
-}
-#endif  // XR_USE_PLATFORM_ANDROID
-}  // namespace
-
-XrResult InitializeLoader(const XrLoaderInitInfoBaseHeaderKHR* loaderInitInfo) {
-    return LoaderInitData::instance().initialize(loaderInitInfo);
-}
-
-std::string GetAndroidNativeLibraryDir() { return LoaderInitData::instance()._native_library_path; }
-
-void* Android_Get_Asset_Manager() { return LoaderInitData::instance()._android_asset_manager; }
-
-#endif  // XR_KHR_LOADER_INIT_SUPPORT
-
-#ifdef XR_USE_PLATFORM_ANDROID
+#if defined(XR_KHR_LOADER_INIT_SUPPORT) && defined(XR_USE_PLATFORM_ANDROID)
 XrResult GetPlatformRuntimeVirtualManifest(Json::Value& out_manifest) {
     using wrap::android::content::Context;
     auto& initData = LoaderInitData::instance();
@@ -159,7 +52,7 @@ XrResult GetPlatformRuntimeVirtualManifest(Json::Value& out_manifest) {
     out_manifest = virtualManifest;
     return XR_SUCCESS;
 }
-#endif  // XR_USE_PLATFORM_ANDROID
+#endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_KHR_LOADER_INIT_SUPPORT)
 
 XrResult RuntimeInterface::TryLoadingSingleRuntime(const std::string& openxr_command,
                                                    std::unique_ptr<RuntimeManifestFile>& manifest_file) {
@@ -233,6 +126,10 @@ XrResult RuntimeInterface::TryLoadingSingleRuntime(const std::string& openxr_com
     XrResult res = XR_ERROR_RUNTIME_FAILURE;
     if (nullptr != negotiate) {
         res = negotiate(&loader_info, &runtime_info);
+    } else {
+        std::string error_message = "RuntimeInterface::LoadRuntime failed to find negotiate function ";
+        error_message += function_name;
+        LoaderLogger::LogErrorMessage(openxr_command, error_message);
     }
     // If we supposedly succeeded, but got a nullptr for GetInstanceProcAddr
     // then something still went wrong, so return with an error.
@@ -334,7 +231,6 @@ XrResult RuntimeInterface::LoadRuntime(const std::string& openxr_command) {
         return XR_SUCCESS;
     }
 #ifdef XR_KHR_LOADER_INIT_SUPPORT
-
     if (!LoaderInitData::instance().initialized()) {
         LoaderLogger::LogErrorMessage(
             openxr_command, "RuntimeInterface::LoadRuntime cannot run because xrInitializeLoaderKHR was not successfully called.");
@@ -345,7 +241,7 @@ XrResult RuntimeInterface::LoadRuntime(const std::string& openxr_command) {
     std::vector<std::unique_ptr<RuntimeManifestFile>> runtime_manifest_files = {};
 
     // Find the available runtimes which we may need to report information for.
-    XrResult last_error = RuntimeManifestFile::FindManifestFiles(runtime_manifest_files);
+    XrResult last_error = RuntimeManifestFile::FindManifestFiles(openxr_command, runtime_manifest_files);
     if (XR_FAILED(last_error)) {
         LoaderLogger::LogErrorMessage(openxr_command, "RuntimeInterface::LoadRuntimes - unknown error");
     } else {
@@ -378,8 +274,8 @@ XrResult RuntimeInterface::GetInstanceProcAddr(XrInstance instance, const char* 
     return GetInstance()->_get_instance_proc_addr(instance, name, function);
 }
 
-const XrGeneratedDispatchTable* RuntimeInterface::GetDispatchTable(XrInstance instance) {
-    XrGeneratedDispatchTable* table = nullptr;
+const XrGeneratedDispatchTableCore* RuntimeInterface::GetDispatchTable(XrInstance instance) {
+    XrGeneratedDispatchTableCore* table = nullptr;
     std::lock_guard<std::mutex> mlock(GetInstance()->_dispatch_table_mutex);
     auto it = GetInstance()->_dispatch_table_map.find(instance);
     if (it != GetInstance()->_dispatch_table_map.end()) {
@@ -388,7 +284,7 @@ const XrGeneratedDispatchTable* RuntimeInterface::GetDispatchTable(XrInstance in
     return table;
 }
 
-const XrGeneratedDispatchTable* RuntimeInterface::GetDebugUtilsMessengerDispatchTable(XrDebugUtilsMessengerEXT messenger) {
+const XrGeneratedDispatchTableCore* RuntimeInterface::GetDebugUtilsMessengerDispatchTable(XrDebugUtilsMessengerEXT messenger) {
     XrInstance runtime_instance = XR_NULL_HANDLE;
     {
         std::lock_guard<std::mutex> mlock(GetInstance()->_messenger_to_instance_mutex);
@@ -457,8 +353,8 @@ XrResult RuntimeInterface::CreateInstance(const XrInstanceCreateInfo* info, XrIn
     res = rt_xrCreateInstance(info, instance);
     if (XR_SUCCEEDED(res)) {
         create_succeeded = true;
-        std::unique_ptr<XrGeneratedDispatchTable> dispatch_table(new XrGeneratedDispatchTable());
-        GeneratedXrPopulateDispatchTable(dispatch_table.get(), *instance, _get_instance_proc_addr);
+        std::unique_ptr<XrGeneratedDispatchTableCore> dispatch_table(new XrGeneratedDispatchTableCore());
+        GeneratedXrPopulateDispatchTableCore(dispatch_table.get(), *instance, _get_instance_proc_addr);
         std::lock_guard<std::mutex> mlock(_dispatch_table_mutex);
         _dispatch_table_map[*instance] = std::move(dispatch_table);
     }

@@ -1,0 +1,2426 @@
+# Arabic translation of the Godot Engine properties.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+# Adel <dragonhunter250@gmail.com>, 2018.
+# athomield <athomield@hotmail.com>, 2017.
+# Basil Al-Khateeb <basil.y.alkhateeb@gmail.com>, 2017.
+# Jamal Alyafei <jamal.qassim@gmail.com>, 2017.
+# john lennon <khoanantonio@outlook.com>, 2017.
+# Mohammmad Khashashneh <mohammad.rasmi@gmail.com>, 2016, 2020.
+# Mr ChaosXD <mrchaosxd3@gmail.com>, 2018.
+# Mrwan Ashraf <mrwan.ashraf94@gmail.com>, 2017.
+# noureldin sharaf <sharaf.noureldin@yahoo.com>, 2017.
+# omar anwar aglan <omar.aglan91@yahoo.com>, 2017-2018.
+# OWs Tetra <owstetra@gmail.com>, 2017.
+# Rached Noureddine <rached.noureddine@gmail.com>, 2018.
+# Rex_sa <asd1234567890m@gmail.com>, 2017, 2018, 2019.
+# Wajdi Feki <wajdi.feki@gmail.com>, 2017.
+# Omar Aglan <omar.aglan91@yahoo.com>, 2018, 2019, 2020.
+# Codes Otaku <ilyas.gamerz@gmail.com>, 2018, 2019.
+# Takai Eddine Kennouche <takai.kenn@gmail.com>, 2018.
+# Mohamed El-Baz <albaz2000eg@gmail.com>, 2018.
+# عاصم شكر - Aasem shokr <aasemshokr@gmail.com>, 2018.
+# Mohammad Fares <mhdchehade@gmail.com>, 2018.
+# NewFriskFan26 <newfriskfan26@gmail.com>, 2019.
+# spiderx0x <legendofdarks@gmail.com>, 2019.
+# Ibraheem Tawfik <tawfikibraheem@gmail.com>, 2019.
+# DiscoverSquishy <noaimi@discoversquishy.me>, 2019.
+# ButterflyOfFire <ButterflyOfFire@protonmail.com>, 2019.
+# PhoenixHO <oussamahaddouche0@gmail.com>, 2019.
+# orcstudio <orcstudio@orcstudio.org>, 2019.
+# Rachid Graphicos <graphicos1d@gmail.com>, 2019.
+# traveller010 <manar.bushnaq.001@gmail.com>, 2019.
+# Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>, 2019.
+# hshw <shw@tutanota.com>, 2020.
+# Youssef Harmal <the.coder.crab@gmail.com>, 2020.
+# Nabeel20 <nabeelandnizam@gmail.com>, 2020, 2021, 2022.
+# merouche djallal <kbordora@gmail.com>, 2020.
+# Airbus5717 <Abdussamadf350@gmail.com>, 2020.
+# tamsamani mohamed <tamsmoha@gmail.com>, 2020.
+# Anas <anas.ghamdi61@gmail.com>, 2020.
+# R-K <raouf9005@gmail.com>, 2020.
+# HeroFight dev <abdkafi2002@gmail.com>, 2020.
+# أحمد مصطفى الطبراني <eltabaraniahmed@gmail.com>, 2020.
+# ChemicalInk <aladdinalkhafaji@gmail.com>, 2020.
+# Musab Alasaifer <mousablasefer@gmail.com>, 2020.
+# Yassine Oudjana <y.oudjana@protonmail.com>, 2020, 2022.
+# bruvzg <bruvzg13@gmail.com>, 2020.
+# StarlkYT <mrsstarlkps4@gmail.com>, 2020, 2021.
+# Games Toon <xxtvgoodxx@gmail.com>, 2021, 2022.
+# Kareem Abduljaleel <karemjaleel34@gmail.com>, 2021.
+# ILG - Game <moegypt277@gmail.com>, 2021.
+# Hatim Jamal <hatimjamal8@gmail.com>, 2021.
+# HASSAN GAMER - حسن جيمر <gamerhassan55@gmail.com>, 2021, 2022.
+# abubakrAlsaab <madeinsudan19@gmail.com>, 2021.
+# Hafid Talbi <atalbiie@gmail.com>, 2021.
+# Hareth Mohammed <harethpy@gmail.com>, 2021.
+# Mohammed Mubarak <modymu9@gmail.com>, 2021, 2022.
+# Spirit <i8bou3@gmail.com>, 2021, 2022.
+# TURKYM7MD <turkytb7700@gmail.com>, 2022.
+# zeyad majed <zmajd62@gmail.com>, 2022.
+# Whales State <whalesstate@gmail.com>, 2022.
+# Mr.k <mineshtine28546271@gmail.com>, 2022.
+# ywmaa <ywmaa.personal@gmail.com>, 2022.
+# Awab Najim <dev.djvan@gmail.com>, 2022.
+# Abderrahim <abdoudido117@gmail.com>, 2022.
+# Jhon Smith <jhonsmaith3@gmail.com>, 2022.
+# Oo mohab oO <mohab9225@gmail.com>, 2022.
+# عبد الرحمن أبو سعدة ||Abd Alrahman abo saada <abdalrahmanabs2005@gmail.com>, 2022.
+# xX-Void-Xx <arandomdude75@gmail.com>, 2022.
+# أحمد النور <ahmed2699@gmail.com>, 2022.
+# Commander Gordon <gordoncommander@gmail.com>, 2022.
+# Abdulrahman <abdelrahman.ramadan686@gmail.com>, 2022.
+# بسام العوفي <co-able@hotmail.com>, 2023, 2024.
+# Abdulkarim <abwkhaldalhwsawy@gmail.com>, 2023.
+# KhalilBenGaied <grozz1@yahoo.com>, 2023.
+# "Mr.k" <mineshtine28546271@gmail.com>, 2023.
+# Ibraheem Asad <ibo.asad.97@gmail.com>, 2023.
+# Aya Ichrak <ayaichrack@gmail.com>, 2023.
+# Jugy <hellowo038@gmail.com>, 2023.
+# Emad Alhaddad <emad142240@gmail.com>, 2023.
+# cat lover <mongo@users.noreply.hosted.weblate.org>, 2024.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine properties\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2024-07-15 21:54+0000\n"
+"Last-Translator: cat lover <mongo@users.noreply.hosted.weblate.org>\n"
+"Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot-"
+"properties/ar/>\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
+"n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
+"X-Generator: Weblate 5.7-dev\n"
+
+msgid "Application"
+msgstr "التطبيق"
+
+msgid "Config"
+msgstr "إعداد"
+
+msgid "Name"
+msgstr "الاسم"
+
+msgid "Name Localized"
+msgstr "الاسم المحلي"
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Version"
+msgstr "الإصدار"
+
+msgid "Run"
+msgstr "تشغيل"
+
+msgid "Main Scene"
+msgstr "المشهد الرئيس"
+
+msgid "Disable stdout"
+msgstr "تعطيل stdout"
+
+msgid "Disable stderr"
+msgstr "تعطيل stderr"
+
+msgid "Use Hidden Project Data Directory"
+msgstr "استخدم دليل بيانات المشروع المخفية"
+
+msgid "Use Custom User Dir"
+msgstr "استخدم دليل المستخدم المخصص"
+
+msgid "Custom User Dir Name"
+msgstr "اسم دليل المستخدم المخصص"
+
+msgid "Project Settings Override"
+msgstr "تجاوز إعدادات المشروع"
+
+msgid "Main Loop Type"
+msgstr "نوع الحلقة الرئيسية"
+
+msgid "Auto Accept Quit"
+msgstr "قبول الإنهاء التلقائي"
+
+msgid "Quit on Go Back"
+msgstr "الرجوع للخلف"
+
+msgid "Display"
+msgstr "الإظهار"
+
+msgid "Window"
+msgstr "نافذة"
+
+msgid "Size"
+msgstr "الحجم"
+
+msgid "Viewport Width"
+msgstr "عرض منفذ العرض"
+
+msgid "Viewport Height"
+msgstr "طول منفذ العرض"
+
+msgid "Mode"
+msgstr "وضع"
+
+msgid "Initial Position Type"
+msgstr "نوع المركز الأولي"
+
+msgid "Initial Position"
+msgstr "الوضعية الأولية"
+
+msgid "Initial Screen"
+msgstr "الشاشة الاولية"
+
+msgid "Resizable"
+msgstr "متغير الحجم"
+
+msgid "Borderless"
+msgstr "بلا إطار"
+
+msgid "Always on Top"
+msgstr "عرض نافذة المشروع امام كل النوافذ"
+
+msgid "Transparent"
+msgstr "شفاف"
+
+msgid "Extend to Title"
+msgstr "يمتد إلى العنوان"
+
+msgid "No Focus"
+msgstr "لا يوجد تركيز"
+
+msgid "Window Width Override"
+msgstr "تجاوز عرض النافذة"
+
+msgid "Window Height Override"
+msgstr "تجاوز ارتفاع النافذة"
+
+msgid "Energy Saving"
+msgstr "توفير الطاقة"
+
+msgid "Keep Screen On"
+msgstr "إبقاء الشاشة قيد التشغيل"
+
+msgid "Animation"
+msgstr "التحريك"
+
+msgid "Warnings"
+msgstr "تحذيرات"
+
+msgid "Audio"
+msgstr "الصوت"
+
+msgid "Buses"
+msgstr "الباصات"
+
+msgid "Default Bus Layout"
+msgstr "تخطيط الناقل الافتراضي"
+
+msgid "General"
+msgstr "عام"
+
+msgid "Text to Speech"
+msgstr "تحويل النص إلى صوت"
+
+msgid "2D Panning Strength"
+msgstr "قوة الغسل ثنائية الأبعاد"
+
+msgid "3D Panning Strength"
+msgstr "قوة الغسل ثلاثية الأبعاد"
+
+msgid "iOS"
+msgstr "IOS"
+
+msgid "Session Category"
+msgstr "فئة الجلسة"
+
+msgid "Mix With Others"
+msgstr "ختلط مع الآخرين"
+
+msgid "Subwindows"
+msgstr "النوافذ الفرعية"
+
+msgid "Embed Subwindows"
+msgstr "تضمين النوافذ الفرعية"
+
+msgid "Physics"
+msgstr "الفيزياء"
+
+msgid "2D"
+msgstr "الثنائي"
+
+msgid "Run on Separate Thread"
+msgstr "تشغيل على سلسلة منفصلة"
+
+msgid "3D"
+msgstr "الثلاثي"
+
+msgid "Stretch"
+msgstr "التمدد"
+
+msgid "Aspect"
+msgstr "الجانب"
+
+msgid "Scale"
+msgstr "المقياس"
+
+msgid "Scale Mode"
+msgstr "وضع المقياس"
+
+msgid "Debug"
+msgstr "تصحيح الأخطاء"
+
+msgid "Settings"
+msgstr "الإعدادات"
+
+msgid "Profiler"
+msgstr "المحلل"
+
+msgid "Compression"
+msgstr "ضغط"
+
+msgid "Formats"
+msgstr "التنسيقات"
+
+msgid "Long Distance Matching"
+msgstr "مطابقة المسافة الطويلة"
+
+msgid "Compression Level"
+msgstr "مستوى الضغط"
+
+msgid "Crash Handler"
+msgstr "معالج الأعطال"
+
+msgid "Message"
+msgstr "رسالة"
+
+msgid "Rendering"
+msgstr "معالَجة"
+
+msgid "Internationalization"
+msgstr "التدويل (لغوي)"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "فرض اتجاه النسق من اليمين لليسار"
+
+msgid "Root Node Layout Direction"
+msgstr "اتجاه نسق أصل العُقدة"
+
+msgid "GUI"
+msgstr "الواجهة الرسومية"
+
+msgid "Timers"
+msgstr "المواقيت"
+
+msgid "Common"
+msgstr "شائع"
+
+msgid "Fonts"
+msgstr "الخطوط"
+
+msgid "Dynamic Fonts"
+msgstr "الخطوط التكيُّفية"
+
+msgid "Use Oversampling"
+msgstr "استخدام الإفراط في أخذ العينات"
+
+msgid "Rendering Device"
+msgstr "جهاز التكوين"
+
+msgid "V-Sync"
+msgstr "مزامنة (مزامنة كرت الشاشة)"
+
+msgid "Staging Buffer"
+msgstr "المخزن الؤقت التدريجي"
+
+msgid "Block Size (KB)"
+msgstr "حجم الكتلة (كيلو بايت)"
+
+msgid "Max Size (MB)"
+msgstr "الحجم الأقصى (ميقا بايت)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "حجم منطقة تحميل النسيج Px"
+
+msgid "Pipeline Cache"
+msgstr "ذاكرة التخزين المؤقت لخط الأنابيب"
+
+msgid "Enable"
+msgstr "تفعيل"
+
+msgid "Save Chunk Size (MB)"
+msgstr "حفظ جزء من القطعة (ميجابايت)"
+
+msgid "Vulkan"
+msgstr "فُلقَان"
+
+msgid "Max Descriptors per Pool"
+msgstr "أقصى عدد الواصِفات للمجموعة"
+
+msgid "Textures"
+msgstr "المَلْمَس"
+
+msgid "Canvas Textures"
+msgstr "ملمس اللوحة"
+
+msgid "Default Texture Filter"
+msgstr "تصفية الملمس الافتراضي"
+
+msgid "Default Texture Repeat"
+msgstr "تكرار الملْمَس الافتراضي"
+
+msgid "Collada"
+msgstr "Collada (كولادا)"
+
+msgid "Use Ambient"
+msgstr "استخدم Ambient"
+
+msgid "Low Processor Usage Mode"
+msgstr "وضع استخدام المعالج المنخفض"
+
+msgid "Print Error Messages"
+msgstr "طباعة رسائل الخطأ"
+
+msgid "Max Physics Steps per Frame"
+msgstr "الخطوات الفزيائية القصوى لكل إطار"
+
+msgid "Max FPS"
+msgstr "أقصى عدد الإطار"
+
+msgid "Time Scale"
+msgstr "مقياس الوقت"
+
+msgid "Physics Jitter Fix"
+msgstr "إصلاح الرجفان الفيزيائي"
+
+msgid "Mouse Mode"
+msgstr "وضع الفأرة"
+
+msgid "Use Accumulated Input"
+msgstr "استخدم المدخلات المتراكمة"
+
+msgid "Emulate Mouse From Touch"
+msgstr "محاكاة الفأرة من لوحة المفاتيح"
+
+msgid "Emulate Touch From Mouse"
+msgstr "محاكاة لوحة المفاتيح من الفأرة"
+
+msgid "Input Devices"
+msgstr "أجهزة الإدخال"
+
+msgid "Compatibility"
+msgstr "المتوافق"
+
+msgid "Device"
+msgstr "الجهاز"
+
+msgid "Window ID"
+msgstr "معرف النافذة"
+
+msgid "Command or Control Autoremap"
+msgstr "القيادة أو التحكم التلقائي في الخريطة"
+
+msgid "Alt Pressed"
+msgstr "تم الضغط على البديل(Alt)"
+
+msgid "Shift Pressed"
+msgstr "تم الضغط على Shift"
+
+msgid "Ctrl Pressed"
+msgstr "تم الضغط على Ctrl"
+
+msgid "Pressed"
+msgstr "ضٌغط (الزر)"
+
+msgid "Keycode"
+msgstr "رمز المفتاح"
+
+msgid "Physical Keycode"
+msgstr "رمز المفتاح الفيزيائي"
+
+msgid "Key Label"
+msgstr "تسمية المفتاح"
+
+msgid "Unicode"
+msgstr "الحروف القياسية يونيكود"
+
+msgid "Echo"
+msgstr "صدى"
+
+msgid "Button Mask"
+msgstr "قناع الزر"
+
+msgid "Position"
+msgstr "موقع"
+
+msgid "Global Position"
+msgstr "الموقع العالمي"
+
+msgid "Factor"
+msgstr "العامل"
+
+msgid "Button Index"
+msgstr "مؤشر الزر"
+
+msgid "Canceled"
+msgstr "ألغيت"
+
+msgid "Double Click"
+msgstr "نقرة مضاعفة"
+
+msgid "Tilt"
+msgstr "إمالة"
+
+msgid "Pressure"
+msgstr "الضغط"
+
+msgid "Pen Inverted"
+msgstr "قُلب القلم"
+
+msgid "Relative"
+msgstr "نسبي"
+
+msgid "Velocity"
+msgstr "التسارع"
+
+msgid "Axis"
+msgstr "محور"
+
+msgid "Axis Value"
+msgstr "قيمة المحور"
+
+msgid "Index"
+msgstr "المؤشر"
+
+msgid "Double Tap"
+msgstr "اضغط مرتين"
+
+msgid "Action"
+msgstr "إجراء"
+
+msgid "Strength"
+msgstr "القوة"
+
+msgid "Delta"
+msgstr "دلتا"
+
+msgid "Channel"
+msgstr "قناة"
+
+msgid "Pitch"
+msgstr "الحدّة"
+
+msgid "Instrument"
+msgstr "أداة"
+
+msgid "Controller Number"
+msgstr "رقم وحدة التحكم"
+
+msgid "Controller Value"
+msgstr "قيمة/(رقم تعريف) وحدة التحكم"
+
+msgid "Shortcut"
+msgstr "الاختصارات"
+
+msgid "Events"
+msgstr "الأحداث"
+
+msgid "Include Navigational"
+msgstr "تضمين الملاحة"
+
+msgid "Include Hidden"
+msgstr "تضمين المخفي"
+
+msgid "Big Endian"
+msgstr "Endian الكبيرة"
+
+msgid "Blocking Mode Enabled"
+msgstr "تمكين وضع الحظر"
+
+msgid "Read Chunk Size"
+msgstr "حجم قطعة القراءة"
+
+msgid "Data"
+msgstr "بيانات"
+
+msgid "Object ID"
+msgstr "معرف الكائن"
+
+msgid "Encode Buffer Max Size"
+msgstr "الحجم الأقصى لمخزن التشفير المؤقت"
+
+msgid "Input Buffer Max Size"
+msgstr "الحجم الأقصى لمخزن المدخلات المؤقت"
+
+msgid "Output Buffer Max Size"
+msgstr "الحجم الأقصى لمخزن المخرجات المؤقت"
+
+msgid "Resource"
+msgstr "المصدر"
+
+msgid "Local to Scene"
+msgstr "المحلية للمشهد"
+
+msgid "Path"
+msgstr "المسار"
+
+msgid "Data Array"
+msgstr "مصفوفة البيانات"
+
+msgid "Max Pending Connections"
+msgstr "الحد الأقصى للاتصالات المعلقة"
+
+msgid "Region"
+msgstr "الإقليم"
+
+msgid "Offset"
+msgstr "المُعاد الإزاحة"
+
+msgid "Cell Size"
+msgstr "حجم الخلية"
+
+msgid "Jumping Enabled"
+msgstr "تمكين القفز"
+
+msgid "Default Compute Heuristic"
+msgstr "إرشادي حسابي افتراضي"
+
+msgid "Default Estimate Heuristic"
+msgstr "التقدير التجريبي الافتراضي"
+
+msgid "Seed"
+msgstr "بذرة"
+
+msgid "State"
+msgstr "الحالة"
+
+msgid "Memory"
+msgstr "الذاكرة"
+
+msgid "Limits"
+msgstr "الحدود"
+
+msgid "Message Queue"
+msgstr "قائمة انتظار الرسائل"
+
+msgid "Network"
+msgstr "الشبكة"
+
+msgid "TCP"
+msgstr "بروتوكول التحكم بالإرسال (TCP)"
+
+msgid "Connect Timeout Seconds"
+msgstr "توصيل المهلة بالثواني"
+
+msgid "Packet Peer Stream"
+msgstr "تدفق نظير الحزمة"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "الحد الأقصى للمخزن المؤقت (قوة 2)"
+
+msgid "Certificate Bundle Override"
+msgstr "تجاوز حزمة الشهادة"
+
+msgid "Worker Pool"
+msgstr "تجمع العمال"
+
+msgid "Locale"
+msgstr "محلي"
+
+msgid "Test"
+msgstr "إختبار"
+
+msgid "Fallback"
+msgstr "تراجع | انسحاب"
+
+msgid "Pseudolocalization"
+msgstr "التعريب الزائف"
+
+msgid "Use Pseudolocalization"
+msgstr "استخدم التوطين الزائف"
+
+msgid "Replace With Accents"
+msgstr "استبدال مع لهجات"
+
+msgid "Double Vowels"
+msgstr "حروف العلة مزدوجة"
+
+msgid "Override"
+msgstr "تجاوز"
+
+msgid "Expansion Ratio"
+msgstr "نسبة التوسع"
+
+msgid "Prefix"
+msgstr "بادئة"
+
+msgid "Skip Placeholders"
+msgstr "تخطي العناصر النائبة"
+
+msgid "Rotation"
+msgstr "التدوير"
+
+msgid "Value"
+msgstr "قيمة"
+
+msgid "Type"
+msgstr "النوع"
+
+msgid "Stream"
+msgstr "المجرى (Stream)"
+
+msgid "FileSystem"
+msgstr "نظام الملفات"
+
+msgid "File Server"
+msgstr "خادم الملفات"
+
+msgid "Port"
+msgstr "منفذ"
+
+msgid "Password"
+msgstr "كلمة المرور"
+
+msgid "Text Editor"
+msgstr "محرر النصوص"
+
+msgid "Help"
+msgstr "المساعدة"
+
+msgid "Sort Functions Alphabetically"
+msgstr "ترتيب الدوال أبجديا"
+
+msgid "Checked"
+msgstr "التحقق"
+
+msgid "Draw Warning"
+msgstr "رسم التحذير"
+
+msgid "Deletable"
+msgstr "قابل للحذف"
+
+msgid "Distraction Free Mode"
+msgstr "وضع خالي من الإلهاء"
+
+msgid "Movie Maker Enabled"
+msgstr "تم تمكين صانع الأفلام"
+
+msgid "Theme"
+msgstr "الموضوع"
+
+msgid "Line Spacing"
+msgstr "تباعد الأسطر"
+
+msgid "Base Type"
+msgstr "النوع الأساسي"
+
+msgid "Editable"
+msgstr "قابل للتعديل"
+
+msgid "Toggle Mode"
+msgstr "أظهر الوضع"
+
+msgid "Interface"
+msgstr "واجهة المستخدم"
+
+msgid "Editor"
+msgstr "المحرّر"
+
+msgid "Editor Language"
+msgstr "لغة المحرر"
+
+msgid "Localize Settings"
+msgstr "ترجمة الإعدادات"
+
+msgid "Display Scale"
+msgstr "مقياس العرض"
+
+msgid "Custom Display Scale"
+msgstr "مقياس العرض المخصص"
+
+msgid "Editor Screen"
+msgstr "شاشة المحرر"
+
+msgid "Project Manager Screen"
+msgstr "شاشة مدير المشروع"
+
+msgid "Use Embedded Menu"
+msgstr "استعمال القائمة المُضمّنة"
+
+msgid "Expand to Title"
+msgstr "التوسيع إلى العنوان"
+
+msgid "Main Font Size"
+msgstr "حجم الخط الرئيسي"
+
+msgid "Code Font Size"
+msgstr "حجم خط الشِفرة"
+
+msgid "Font Hinting"
+msgstr "تلميح الخط (Hinting)"
+
+msgid "Main Font"
+msgstr "الخط الأساسي"
+
+msgid "Main Font Bold"
+msgstr "الخط الرئيسي الغليظ"
+
+msgid "Code Font"
+msgstr "خط الكود"
+
+msgid "Automatically Open Screenshots"
+msgstr "فتح لقطات الشاشة تلقائيًا"
+
+msgid "Single Window Mode"
+msgstr "وضع النافذة الواحدة"
+
+msgid "Mouse Extra Buttons Navigate History"
+msgstr "تنقل في سجل أزرار الماوس الإضافية"
+
+msgid "Update Continuously"
+msgstr "تحديث متواصل"
+
+msgid "Inspector"
+msgstr "الفاحص"
+
+msgid "Float Drag Speed"
+msgstr "تعويم سرعة السحب"
+
+msgid "Default Property Name Style"
+msgstr "نمط اسم الخاصية الافتراضي"
+
+msgid "Default Float Step"
+msgstr "خطوة الfloat الافتراضية"
+
+msgid "Disable Folding"
+msgstr "تعطيل الطي"
+
+msgid "Auto Unfold Foreign Scenes"
+msgstr "إكشف المشاهد الأجنبية تلقائيا"
+
+msgid "Horizontal Vector2 Editing"
+msgstr "تحرير Vector2 الأفقي"
+
+msgid "Horizontal Vector Types Editing"
+msgstr "تحرير أنواع المتجهات الأفقية"
+
+msgid "Open Resources in Current Inspector"
+msgstr "الموارد المفتوحة في المفتش الحالي"
+
+msgid "Resources to Open in New Inspector"
+msgstr "الموارد التي سيتم فتحها في المفتش الجديد"
+
+msgid "Default Color Picker Mode"
+msgstr "وضع منتقي الألوان الافتراضي"
+
+msgid "Default Color Picker Shape"
+msgstr "شكل منتقي الألوان الافتراضي"
+
+msgid "Preset"
+msgstr "المعد مسبقا"
+
+msgid "Base Color"
+msgstr "اللون الاساسي"
+
+msgid "Contrast"
+msgstr "التباين"
+
+msgid "Relationship Line Opacity"
+msgstr "عتامة خط العلاقة"
+
+msgid "Border Size"
+msgstr "حجم الحدود"
+
+msgid "Corner Radius"
+msgstr "قطر الزاوية"
+
+msgid "Additional Spacing"
+msgstr "مساحة اضافية"
+
+msgid "Touchscreen"
+msgstr "شاشة اللمس"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "زيادة منطقة اللمس في شريط التمرير"
+
+msgid "Enable Long Press as Right Click"
+msgstr "تمكين الضغط لفترة طويلة عند النقر بزر الماوس الأيمن"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "تمكين إيماءات التحريك والقياس"
+
+msgid "Display Close Button"
+msgstr "عرض زر الإغلاق"
+
+msgid "Maximum Width"
+msgstr "الحد الأقصى للعرض"
+
+msgid "Show Script Button"
+msgstr "اضهار زر السكربت"
+
+msgid "Restore Scenes on Load"
+msgstr "استعادة المشاهد عند التحميل"
+
+msgid "Multi Window"
+msgstr "نافذة متعددة"
+
+msgid "Restore Windows on Load"
+msgstr "استعادة ويندوز عند التحميل"
+
+msgid "Maximize Window"
+msgstr "تكبير النافذة"
+
+msgid "External Programs"
+msgstr "البرامج الخارجية"
+
+msgid "Raster Image Editor"
+msgstr "محرر الصور النقطية (العادية)"
+
+msgid "Vector Image Editor"
+msgstr "محرر الصور المتجهة"
+
+msgid "Audio Editor"
+msgstr "محرر الصوت"
+
+msgid "3D Model Editor"
+msgstr "محرر الأبعاد الثلاثية"
+
+msgid "Directories"
+msgstr "الدلائل"
+
+msgid "Autoscan Project Path"
+msgstr "المسح التلقائي لمسار المشروع"
+
+msgid "Default Project Path"
+msgstr "مسار المشروع الافتراضي"
+
+msgid "On Save"
+msgstr "عند الحفظ"
+
+msgid "File Dialog"
+msgstr "حوار الملف"
+
+msgid "Show Hidden Files"
+msgstr "أظهر الملفات المخفية"
+
+msgid "Display Mode"
+msgstr "وضع العرض"
+
+msgid "Import"
+msgstr "استيراد"
+
+msgid "Tools"
+msgstr "أدوات"
+
+msgid "Docks"
+msgstr "النوافذ المثبتة (Docked)"
+
+msgid "Start Create Dialog Fully Expanded"
+msgstr "بدء نافذة حوار الإنشاء موسعة بالكامل"
+
+msgid "Auto Expand to Selected"
+msgstr "التوسيع التلقائي للمختارة"
+
+msgid "Always Show Folders"
+msgstr "إظهار الملفات دوماً"
+
+msgid "Property Editor"
+msgstr "محرر الخصائص"
+
+msgid "Auto Refresh Interval"
+msgstr "الفاصل الزمني للتحديث التلقائي"
+
+msgid "Appearance"
+msgstr "المظهر"
+
+msgid "Caret Blink"
+msgstr "وميض علامة الإقحام"
+
+msgid "Highlight Current Line"
+msgstr "تمييز السطر الحالي"
+
+msgid "Highlight All Occurrences"
+msgstr "قم بتمييز جميع التكرارات"
+
+msgid "Guidelines"
+msgstr "إرشادات"
+
+msgid "Show Line Length Guidelines"
+msgstr "إظهار إرشادات طول السطر"
+
+msgid "Line Length Guideline Soft Column"
+msgstr "عمود ناعم لتوجيه طول السطر"
+
+msgid "Line Length Guideline Hard Column"
+msgstr "عمود غامق لتوجيه طول السطر"
+
+msgid "Show Line Numbers"
+msgstr "اظهار رقم الخط"
+
+msgid "Highlight Type Safe Lines"
+msgstr "تمييز سطور الأنواع الآمنة"
+
+msgid "Show Info Gutter"
+msgstr "إظهار معلومات المزراب"
+
+msgid "Minimap"
+msgstr "الخريطة المصغرة"
+
+msgid "Show Minimap"
+msgstr "إظهار الخريطة"
+
+msgid "Minimap Width"
+msgstr "عرض الخريطة المصغرة"
+
+msgid "Lines"
+msgstr "خطوط"
+
+msgid "Code Folding"
+msgstr "طي الكود"
+
+msgid "Word Wrap"
+msgstr "التفاف الكلمات"
+
+msgid "Autowrap Mode"
+msgstr "وضع الالتفاف التلقائي"
+
+msgid "Whitespace"
+msgstr "مسافة بيضاء"
+
+msgid "Draw Tabs"
+msgstr "رسم فراغات زر التاب"
+
+msgid "Draw Spaces"
+msgstr "رسم فراغات زر السبايس"
+
+msgid "Behavior"
+msgstr "سلوك"
+
+msgid "Navigation"
+msgstr "تنقل"
+
+msgid "Move Caret on Right Click"
+msgstr "حرك علامة الإقحام عند النقر بزر الماوس الأيمن"
+
+msgid "Scroll Past End of File"
+msgstr "قم بالتمرير إلى ما بعد نهاية الملف"
+
+msgid "Smooth Scrolling"
+msgstr "التمرير السلس"
+
+msgid "V Scroll Speed"
+msgstr "سرعة التمرير العمودي"
+
+msgid "Drag and Drop Selection"
+msgstr "سحب وإسقاط التحديد"
+
+msgid "Stay in Script Editor on Node Selected"
+msgstr "ابق في المحرر البرمجي على العقدة المختارة"
+
+msgid "Indent"
+msgstr "التصدُّر"
+
+msgid "Auto Indent"
+msgstr "تصدُّر تلقائي"
+
+msgid "Files"
+msgstr "ملفات"
+
+msgid "Trim Trailing Whitespace on Save"
+msgstr "قم بقص المسافة البيضاء الزائدة عند الحفظ"
+
+msgid "Autosave Interval Secs"
+msgstr "الفاصل الزمني للحفظ التلقائي بالثواني"
+
+msgid "Convert Indent on Save"
+msgstr "تحويل المسافة البادئة عند الحفظ"
+
+msgid "Script List"
+msgstr "لائحة السكربتات"
+
+msgid "Show Members Overview"
+msgstr "عرض نظرة عامة على الأعضاء"
+
+msgid "Sort Members Outline Alphabetically"
+msgstr "فرز الخطوط العريضة للأعضاء أبجدياً"
+
+msgid "Completion"
+msgstr "تكملة"
+
+msgid "Idle Parse Delay"
+msgstr "تأخير التحليل الخامل"
+
+msgid "Auto Brace Complete"
+msgstr "اكمال القوس التلقائي"
+
+msgid "Code Complete Enabled"
+msgstr "تم تمكين إكمال الكود"
+
+msgid "Code Complete Delay"
+msgstr "تأخير الإكمال التلقائي للكود"
+
+msgid "Put Callhint Tooltip Below Current Line"
+msgstr "ضع تلميح أداة Callhint أسفل السطر الحالي"
+
+msgid "Complete File Paths"
+msgstr "مسارات الملفات الكاملة"
+
+msgid "Add Type Hints"
+msgstr "إضافة تلميحات النوع"
+
+msgid "Use Single Quotes"
+msgstr "استخدم علامات الاقتباس المفردة"
+
+msgid "Colorize Suggestions"
+msgstr "تلوين الاقتراحات"
+
+msgid "Show Help Index"
+msgstr "إظهار فهرس المساعدة"
+
+msgid "Help Font Size"
+msgstr "حجم خط المساعدة"
+
+msgid "Help Source Font Size"
+msgstr "حجم خط مصدر المساعدة"
+
+msgid "Help Title Font Size"
+msgstr "حجم خط عنوان المساعدة"
+
+msgid "Class Reference Examples"
+msgstr "أمثلة مرجعية للفئة"
+
+msgid "Editors"
+msgstr "المحرّرات"
+
+msgid "Grid Map"
+msgstr "خريطة الشبكة"
+
+msgid "Pick Distance"
+msgstr "اختر المسافة"
+
+msgid "Primary Grid Color"
+msgstr "لون الشبكة الأساسي"
+
+msgid "Secondary Grid Color"
+msgstr "لون الشبكة الثانوي"
+
+msgid "Selection Box Color"
+msgstr "تحديد لون المربع"
+
+msgid "Instantiated"
+msgstr "تم إنشاء مثيل له"
+
+msgid "Joint"
+msgstr "مشترك"
+
+msgid "Primary Grid Steps"
+msgstr "خطوات الشبكة الاساسية"
+
+msgid "Grid Size"
+msgstr "حجم الشبكة"
+
+msgid "Grid Division Level Max"
+msgstr "الحد الأقصى لمستوى تقسيم الشبكة"
+
+msgid "Grid Division Level Min"
+msgstr "الحد الأدنى لمستوى تقسيم الشبكة"
+
+msgid "Grid Division Level Bias"
+msgstr "التحيز على مستوى تقسيم الشبكة"
+
+msgid "Emulate Numpad"
+msgstr "محاكاة لوحة مفاتيح الأرقام"
+
+msgid "Emulate 3 Button Mouse"
+msgstr "محاكاة الماوس ذو الثلاثة أزرار"
+
+msgid "Zoom Modifier"
+msgstr "معدل التكبير"
+
+msgid "Warped Mouse Panning"
+msgstr "التفاف الحركة بالماوس"
+
+msgid "Orbit Sensitivity"
+msgstr "حساسية التدوير"
+
+msgid "Orbit Inertia"
+msgstr "القصور الذاتي المداري"
+
+msgid "Freelook"
+msgstr "رؤية حُرّة"
+
+msgid "Bone Width"
+msgstr "عرض العظام"
+
+msgid "Bone Color 1"
+msgstr "لون العظام 1"
+
+msgid "Bone Color 2"
+msgstr "لون العظام 2"
+
+msgid "Bone Selected Color"
+msgstr "لون العظام المختار"
+
+msgid "Bone IK Color"
+msgstr "لون IK العظام"
+
+msgid "Bone Outline Color"
+msgstr "لون حدود العظام"
+
+msgid "Bone Outline Size"
+msgstr "حجم مخطط العظام"
+
+msgid "Viewport Border Color"
+msgstr "لون حدود إطار العرض"
+
+msgid "Use Integer Zoom by Default"
+msgstr "استخدم التكبير العدد الصحيح بشكل افتراضي"
+
+msgid "Simple Panning"
+msgstr "التحريك البسيط"
+
+msgid "Tiles Editor"
+msgstr "محرر البلاط"
+
+msgid "Display Grid"
+msgstr "عرض الشبكة"
+
+msgid "Polygon Editor"
+msgstr "محرر المضلعات"
+
+msgid "Point Grab Radius"
+msgstr "قطر نقطة الإنتزاع"
+
+msgid "Show Previous Outline"
+msgstr "إظهار المخطط التفصيلي السابق"
+
+msgid "Autorename Animation Tracks"
+msgstr "إعادة تسمية مسارات الرسوم المتحركة تلقائيًا"
+
+msgid "Default Create Bezier Tracks"
+msgstr "إنشاء مسارات Bezier الإفتراضية"
+
+msgid "Onion Layers Past Color"
+msgstr "لون Onion Layers في الماضي"
+
+msgid "Onion Layers Future Color"
+msgstr "لون Onion Layers في المستقبل"
+
+msgid "Visual Editors"
+msgstr "المحررات البصرية"
+
+msgid "Minimap Opacity"
+msgstr "عتامة الخريطة المصغرة"
+
+msgid "Window Placement"
+msgstr "موضع النافذة"
+
+msgid "Rect"
+msgstr "مستطيل"
+
+msgid "Screen"
+msgstr "شاشة"
+
+msgid "Android Window"
+msgstr "نافذة أندرويد"
+
+msgid "Auto Save"
+msgstr "حفظ تلقائي"
+
+msgid "Save Before Running"
+msgstr "حفظ قبل التشغيل"
+
+msgid "Output"
+msgstr "المخرجات"
+
+msgid "Font Size"
+msgstr "حجم الخط"
+
+msgid "Linuxbsd"
+msgstr "Linuxbsd"
+
+msgid "HTTP Proxy"
+msgstr "وكيل (Proxy) HTTP"
+
+msgid "Host"
+msgstr "المضيف"
+
+msgid "Remote Host"
+msgstr "المضيف عن بعد"
+
+msgid "Debugger"
+msgstr "مُنقح الأخطاء"
+
+msgid "Profiler Frame History Size"
+msgstr "حجم تاريخ إطار المحلل"
+
+msgid "Input"
+msgstr "إدخال"
+
+msgid "Project Manager"
+msgstr "مدير المشروع"
+
+msgid "Default Renderer"
+msgstr "العارض الافتراضي"
+
+msgid "Highlighting"
+msgstr "تسليط الضوء"
+
+msgid "Symbol Color"
+msgstr "لون الرمز"
+
+msgid "Keyword Color"
+msgstr "لون الكلمة المفتاحية"
+
+msgid "Control Flow Keyword Color"
+msgstr "لون الكلمة المفتاحية لتدفق التحكم"
+
+msgid "Engine Type Color"
+msgstr "لون نوع المحرك"
+
+msgid "User Type Color"
+msgstr "لون نوع المستخدم"
+
+msgid "Comment Color"
+msgstr "لون التعليق"
+
+msgid "Background Color"
+msgstr "لون الخلفية"
+
+msgid "Completion Background Color"
+msgstr "لون خلفية عند الانتهاء"
+
+msgid "Completion Existing Color"
+msgstr "لون الإكمال الموجود"
+
+msgid "Completion Scroll Color"
+msgstr "لون تمرير الإكمال"
+
+msgid "Completion Font Color"
+msgstr "لون خط الإكمال"
+
+msgid "Text Color"
+msgstr "لون الخط"
+
+msgid "Line Number Color"
+msgstr "لون رقم الخط"
+
+msgid "Safe Line Number Color"
+msgstr "لون رقم الخط الآمن"
+
+msgid "Caret Color"
+msgstr "لون علامة الإقحام"
+
+msgid "Text Selected Color"
+msgstr "لون النص المحدد"
+
+msgid "Selection Color"
+msgstr "لون الاختيار"
+
+msgid "Brace Mismatch Color"
+msgstr "لون عدم تطابق الأقواس"
+
+msgid "Line Length Guideline Color"
+msgstr "لون إرشاد طول السطر"
+
+msgid "Word Highlighted Color"
+msgstr "اللون المميز للكلمة"
+
+msgid "Number Color"
+msgstr "لون الرقم"
+
+msgid "Bookmark Color"
+msgstr "لون الإشارة المرجعية"
+
+msgid "Breakpoint Color"
+msgstr "لون نقطة التوقف"
+
+msgid "Executing Line Color"
+msgstr "لون سطر التنفيذ"
+
+msgid "Code Folding Color"
+msgstr "لون الكود القابل للطي"
+
+msgid "Folded Code Region Color"
+msgstr "لون منطقة الكود المطوية"
+
+msgid "Search Result Color"
+msgstr "لون نتيجة البحث"
+
+msgid "Release"
+msgstr "الإصدار"
+
+msgid "Binary Format"
+msgstr "تنسيق ثنائي"
+
+msgid "Embed PCK"
+msgstr "تضمين PCK"
+
+msgid "Export"
+msgstr "تصدير"
+
+msgid "Export Path"
+msgstr "مسار التصدير"
+
+msgid "Access"
+msgstr "الوصول (للملف)"
+
+msgid "File Mode"
+msgstr "وضع الملف"
+
+msgid "Filters"
+msgstr "المصافي"
+
+msgid "Disable Overwrite Warning"
+msgstr "تعطيل تحذير الإستبدال"
+
+msgid "Flat"
+msgstr "مسطحة"
+
+msgid "Hide Slider"
+msgstr "إخفاء المنزلق"
+
+msgid "Zoom"
+msgstr "تكبير"
+
+msgid "Rename Bones"
+msgstr "إعادة تسمية العظام"
+
+msgid "Unique Node"
+msgstr "العقدة الفريدة"
+
+msgid "Make Unique"
+msgstr "اجعلْه فريدًا"
+
+msgid "Skeleton Name"
+msgstr "اسم الهيكل العظمي"
+
+msgid "Overwrite Axis"
+msgstr "الكتابة فوق المحور"
+
+msgid "Filter"
+msgstr "التصفية"
+
+msgid "Threshold"
+msgstr "عتبة"
+
+msgid "Remove Tracks"
+msgstr "إزالة المسارات"
+
+msgid "Generate"
+msgstr "توليد"
+
+msgid "Layer"
+msgstr "طبقة"
+
+msgid "Mask"
+msgstr "قناع"
+
+msgid "Layers"
+msgstr "طبقات"
+
+msgid "Visibility Range Begin"
+msgstr "بداية نطاق الرؤية"
+
+msgid "Visibility Range Begin Margin"
+msgstr "بداية هامش نطاق الرؤية"
+
+msgid "Visibility Range End"
+msgstr "نهاية نطاق الرؤية"
+
+msgid "Visibility Range End Margin"
+msgstr "نهاية هامش نطاق الرؤية"
+
+msgid "Decomposition"
+msgstr "تقسيم"
+
+msgid "Advanced"
+msgstr "إعدادات متقدمة"
+
+msgid "Precision"
+msgstr "دقة"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "انحياز قص مستويات التماثل"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "تحيز قص محاور التقدم"
+
+msgid "Resolution"
+msgstr "الدقة"
+
+msgid "Height"
+msgstr "الارتفاع"
+
+msgid "Radius"
+msgstr "نصف القطر"
+
+msgid "Simplification Distance"
+msgstr "مسافة التبسيط"
+
+msgid "Save to File"
+msgstr "حفظ في الملف"
+
+msgid "Enabled"
+msgstr "مفعل"
+
+msgid "Loop Mode"
+msgstr "وضعية التكرار"
+
+msgid "Keep Custom Tracks"
+msgstr "احتفظ بالمسارات المخصصة"
+
+msgid "Slices"
+msgstr "شرائح"
+
+msgid "Amount"
+msgstr "الكمية"
+
+msgid "Optimizer"
+msgstr "المحسن"
+
+msgid "Page Size"
+msgstr "حجم الصفحة"
+
+msgid "Nodes"
+msgstr "العُقد"
+
+msgid "Meshes"
+msgstr "المجسّمات"
+
+msgid "FPS"
+msgstr "ط/ث"
+
+msgid "Generate Mipmaps"
+msgstr "إنشاء خرائط ميماب"
+
+msgid "Multichannel Signed Distance Field"
+msgstr "حقل مسافة متعدد"
+
+msgid "Hinting"
+msgstr "التلميح"
+
+msgid "Oversampling"
+msgstr "الإفراط في أخذ العينات"
+
+msgid "Language Support"
+msgstr "دعم اللغة"
+
+msgid "Script Support"
+msgstr "دعم البرنامج النصي"
+
+msgid "Compress"
+msgstr "ضغط"
+
+msgid "Language"
+msgstr "اللغة"
+
+msgid "Embolden"
+msgstr "تغميق"
+
+msgid "Transform"
+msgstr "التَحَوّل"
+
+msgid "Create From"
+msgstr "إنشاء من"
+
+msgid "Delimiter"
+msgstr "محدد"
+
+msgid "Character Ranges"
+msgstr "نطاقات الأحرف"
+
+msgid "Columns"
+msgstr "أعمدة"
+
+msgid "Rows"
+msgstr "الصفوف"
+
+msgid "Image Margin"
+msgstr "هامش الصورة"
+
+msgid "Character Margin"
+msgstr "هامش الحرف"
+
+msgid "High Quality"
+msgstr "جودة عالية"
+
+msgid "Lossy Quality"
+msgstr "جودة ضائعة (Lossy)"
+
+msgid "HDR Compression"
+msgstr "ضغط HDR"
+
+msgid "Limit"
+msgstr "حد"
+
+msgid "Horizontal"
+msgstr "أفقي"
+
+msgid "Vertical"
+msgstr "عمودي"
+
+msgid "Arrangement"
+msgstr "ترتيب"
+
+msgid "Layout"
+msgstr "المخطط"
+
+msgid "Normal Map"
+msgstr "خريطة عادية"
+
+msgid "Roughness"
+msgstr "خشونة"
+
+msgid "Process"
+msgstr "المعالجة"
+
+msgid "Fix Alpha Border"
+msgstr "إصلاح حدود ألفا"
+
+msgid "HDR as sRGB"
+msgstr "HDR بهيئة RGB"
+
+msgid "Size Limit"
+msgstr "الحد الأقصى للحجم"
+
+msgid "Detect 3D"
+msgstr "كشف 3D"
+
+msgid "Trim Alpha Border From Region"
+msgstr "تقليم حدود ألفا من المنطقة"
+
+msgid "8 Bit"
+msgstr "8 بت"
+
+msgid "Mono"
+msgstr "احاديه"
+
+msgid "Edit"
+msgstr "تعديل"
+
+msgid "Trim"
+msgstr "تقليم"
+
+msgid "Asset Library"
+msgstr "مكتبة المُلحقات"
+
+msgid "Use Threads"
+msgstr "استخدم خطوط المعالجة"
+
+msgid "Unset"
+msgstr "غير محدد"
+
+msgid "Error"
+msgstr "خطأ"
+
+msgid "Particles"
+msgstr "جسيمات"
+
+msgid "Decal"
+msgstr "طَبْعة"
+
+msgid "Use External Editor"
+msgstr "استعمال محرر خارجي"
+
+msgid "Skeleton"
+msgstr "الهيكل"
+
+msgid "ID"
+msgstr "بطاقة تعريف"
+
+msgid "Separation"
+msgstr "التباعُد"
+
+msgid "Alternative ID"
+msgstr "معرف بديل"
+
+msgid "Speed"
+msgstr "السرعة"
+
+msgid "Frames Count"
+msgstr "عدد الإطارات"
+
+msgid "Duration"
+msgstr "المدة"
+
+msgid "Version Control"
+msgstr "إدارة الإصدارات (Version Control)"
+
+msgid "Username"
+msgstr "اسم المستخدم"
+
+msgid "SSH Public Key Path"
+msgstr "مسار المفتاح العام لSSH"
+
+msgid "SSH Private Key Path"
+msgstr "مسار المفتاح الخاص لSSH"
+
+msgid "Main Run Args"
+msgstr "معاملات المشهد الرئيس"
+
+msgid "Script"
+msgstr "سكربت"
+
+msgid "Templates Search Path"
+msgstr "مسار البحث عن القوالب"
+
+msgid "Naming"
+msgstr "تسمية"
+
+msgid "Default Signal Callback Name"
+msgstr "الاسم الافتراضي لمعاودة الاتصال"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "إعادة اتصال الإشارة الافتراضية إلى الاسم الذاتي"
+
+msgid "Reimport Missing Imported Files"
+msgstr "إعادة استيراد الملفات المستوردة المفقودة"
+
+msgid "Per Pixel Transparency"
+msgstr "شفافية بيكسل القلم"
+
+msgid "Allowed"
+msgstr "مسموح"
+
+msgid "Threads"
+msgstr "مسارات"
+
+msgid "Thread Model"
+msgstr "نوع المسار"
+
+msgid "stdout"
+msgstr "إخراج"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "Icon"
+msgstr "الأيقونة"
+
+msgid "Pointing"
+msgstr "يشير"
+
+msgid "Android"
+msgstr "أندرويد"
+
+msgid "Search in File Extensions"
+msgstr "البحث في امتدادات الملف"
+
+msgid "Fullsize"
+msgstr "الحجم الكامل"
+
+msgid "Project"
+msgstr "المشروع"
+
+msgid "Time"
+msgstr "الوقت"
+
+msgid "Polygons"
+msgstr "المُضلعات"
+
+msgid "Operation"
+msgstr "عملية"
+
+msgid "Snap"
+msgstr "محاذاة"
+
+msgid "Calculate Tangents"
+msgstr "احسب الظلال"
+
+msgid "Collision"
+msgstr "التصادم"
+
+msgid "Use Collision"
+msgstr "استخدم التصادم"
+
+msgid "Mesh"
+msgstr "مجسّم"
+
+msgid "Rings"
+msgstr "خواتم"
+
+msgid "Smooth Faces"
+msgstr "وجوه ناعمة"
+
+msgid "Sides"
+msgstr "جهات"
+
+msgid "Inner Radius"
+msgstr "القطر الداخلي"
+
+msgid "Outer Radius"
+msgstr "القطر الخارجي"
+
+msgid "Ring Sides"
+msgstr "جهات الخاتم"
+
+msgid "Depth"
+msgstr "العمق"
+
+msgid "Spin Degrees"
+msgstr "درجة الدوران"
+
+msgid "Spin Sides"
+msgstr "جهة الدوران"
+
+msgid "Path Node"
+msgstr "مسار العقدة"
+
+msgid "Path U Distance"
+msgstr "المسار المحلي"
+
+msgid "GDScript"
+msgstr "لغة جي دي"
+
+msgid "Function Definition Color"
+msgstr "لون تعريف الدالة"
+
+msgid "Node Path Color"
+msgstr "لون مسار العقدة"
+
+msgid "Language Server"
+msgstr "لغة الخادك"
+
+msgid "Enable Smart Resolve"
+msgstr "تفعيل الحل الذكي"
+
+msgid "Show Native Symbols in Editor"
+msgstr "عرض الرموز الأصلية في المحرر"
+
+msgid "Use Thread"
+msgstr "استخدم المسار"
+
+msgid "Color"
+msgstr "الألوان"
+
+msgid "Intensity"
+msgstr "الكثافة | الشدة"
+
+msgid "Range"
+msgstr "نطاق"
+
+msgid "Inner Cone Angle"
+msgstr "زاوية المخروط الداخلية"
+
+msgid "Outer Cone Angle"
+msgstr "زاوية المخروط الخارجية"
+
+msgid "Gloss Factor"
+msgstr "عامل اللمعان"
+
+msgid "Specular Factor"
+msgstr "عامل ال"
+
+msgid "Json"
+msgstr "جيسون"
+
+msgid "Major Version"
+msgstr "إصدار رئيسي"
+
+msgid "Minor Version"
+msgstr "إصدار فرعي"
+
+msgid "Buffers"
+msgstr "المخازن المؤقته"
+
+msgid "Materials"
+msgstr "المواد"
+
+msgid "Scene Name"
+msgstr "اسم المشهد"
+
+msgid "Images"
+msgstr "الصور"
+
+msgid "Cameras"
+msgstr "الكاميرات"
+
+msgid "Lights"
+msgstr "الأضواء"
+
+msgid "Unique Names"
+msgstr "أسماء مميزة"
+
+msgid "Unique Animation Names"
+msgstr "أسماء حركات مميزة"
+
+msgid "Animations"
+msgstr "الحركات"
+
+msgid "Component Type"
+msgstr "نوع المكون"
+
+msgid "Count"
+msgstr "العدد"
+
+msgid "Min"
+msgstr "أقل"
+
+msgid "Max"
+msgstr "القيمة القصوى"
+
+msgid "Loop"
+msgstr "حلقة Loop"
+
+msgid "Perspective"
+msgstr "منظوري"
+
+msgid "Parent"
+msgstr "أب"
+
+msgid "Skin"
+msgstr "بشرة"
+
+msgid "Light"
+msgstr "ضوء"
+
+msgid "Roots"
+msgstr "الجذور"
+
+msgid "Non Joints"
+msgstr "بلا مفاصل"
+
+msgid "Src Image"
+msgstr "مصدر الصورة"
+
+msgid "Sampler"
+msgstr "عينات (صوتية)"
+
+msgid "Preview Size"
+msgstr "حجم العرض"
+
+msgid "Editor Side"
+msgstr "جانب المحرر"
+
+msgid "Mesh Library"
+msgstr "مكتبة المجسم"
+
+msgid "Physics Material"
+msgstr "مادة"
+
+msgid "Cell"
+msgstr "خلية"
+
+msgid "Center X"
+msgstr "منتصف س"
+
+msgid "Center Y"
+msgstr "منتصف ص"
+
+msgid "Center Z"
+msgstr "منتصف"
+
+msgid "Priority"
+msgstr "الأولية"
+
+msgid "Loop Offset"
+msgstr "إزاحة الحلقة"
+
+msgid "Eye Height"
+msgstr "ارتفاع الغين"
+
+msgid "IOD"
+msgstr "المسافة بين النووية IOD"
+
+msgid "Display Width"
+msgstr "عرض الشاشة"
+
+msgid "Allow Object Decoding"
+msgstr "السماح بفك ترميز الكائن"
+
+msgid "Refuse New Connections"
+msgstr "رفض الإتصالات الجديدة"
+
+msgid "Width"
+msgstr "العرض"
+
+msgid "Invert"
+msgstr "اقْلبْ"
+
+msgid "As Normal Map"
+msgstr "كخريطة عادية"
+
+msgid "Noise"
+msgstr "ضوضاء"
+
+msgid "Names"
+msgstr "الأسماء"
+
+msgid "Strings"
+msgstr "النصوص"
+
+msgid "Description URL"
+msgstr "وصف الرابط"
+
+msgid "Service Type"
+msgstr "نوع الخدمة"
+
+msgid "Plugins"
+msgstr "إضافات"
+
+msgid "Package"
+msgstr "حُزمة"
+
+msgid "Icons"
+msgstr "الأيقونات"
+
+msgid "Access Wi-Fi"
+msgstr "الوصول للواي-فاي"
+
+msgid "Xcode Build"
+msgstr "بناء اكس كود"
+
+msgid "Provisioning Profile"
+msgstr "الملف المقدم"
+
+msgid "Notarization"
+msgstr "توطين/تصديق"
+
+msgid "Variant"
+msgstr "متغير"
+
+msgid "Centered"
+msgstr "المتوسطة"
+
+msgid "Left"
+msgstr "يساراً"
+
+msgid "Top"
+msgstr "فوق"
+
+msgid "Right"
+msgstr "يميناً"
+
+msgid "One Shot"
+msgstr "محاولة واحدة"
+
+msgid "Shape"
+msgstr "شكل"
+
+msgid "Sphere Radius"
+msgstr "قطر الجسم الكروى"
+
+msgid "Points"
+msgstr "النقاط"
+
+msgid "Colors"
+msgstr "الألوان"
+
+msgid "Editor Only"
+msgstr "المحرر فقط"
+
+msgid "Default Color"
+msgstr "اللون الإفتراضي"
+
+msgid "Fill"
+msgstr "التعبئة"
+
+msgid "Repeat"
+msgstr "كرر"
+
+msgid "End"
+msgstr "النهاية"
+
+msgid "Point"
+msgstr "نقطة"
+
+msgid "Disabled"
+msgstr "معطّل"
+
+msgid "Linear"
+msgstr "خطي"
+
+msgid "UV"
+msgstr "ال UV"
+
+msgid "Update"
+msgstr "تحديث"
+
+msgid "Editor Settings"
+msgstr "إعدادات المُحرر"
+
+msgid "Y Sort Origin"
+msgstr "فرز مركز ص"
+
+msgid "Bitmask"
+msgstr "قناع-البِت"
+
+msgid "Cull Mask"
+msgstr "إطار الغربلة"
+
+msgid "Modulate"
+msgstr "نظام تعديل"
+
+msgid "Update Mode"
+msgstr "وضع التحديث"
+
+msgid "Pixel Size"
+msgstr "حجم البكسل"
+
+msgid "Flags"
+msgstr "الأعلام"
+
+msgid "Text"
+msgstr "نص"
+
+msgid "Uppercase"
+msgstr "الأحرف الكبيرة (Uppercase)"
+
+msgid "Blur"
+msgstr "الضبابية"
+
+msgid "Quality"
+msgstr "جودة"
+
+msgid "Upper Angle"
+msgstr "الزاوية العلوية"
+
+msgid "Lower Angle"
+msgstr "الزاوية السفلية"
+
+msgid "Engine Force"
+msgstr "قوة المحرك"
+
+msgid "Brake"
+msgstr "فرامل | مكابح"
+
+msgid "Wheel"
+msgstr "عجلة"
+
+msgid "Travel"
+msgstr "السفر"
+
+msgid "Bones"
+msgstr "العظام"
+
+msgid "Target"
+msgstr "الهدف"
+
+msgid "Pose"
+msgstr "وضعية"
+
+msgid "Sync"
+msgstr "مزامنة"
+
+msgid "Auto Restart"
+msgstr "إعادة تشغيل تلقائية"
+
+msgid "Autorestart"
+msgstr "إعادة تشغيل تلقائية"
+
+msgid "Root Node"
+msgstr "العُقدة الرئيسة (الجذر)"
+
+msgid "Reset"
+msgstr "إعادة تعيين"
+
+msgid "Condition"
+msgstr "شرط"
+
+msgid "Button Group"
+msgstr "مجموعة الأزرار"
+
+msgid "Indentation"
+msgstr "التصدُّر عن بداية السطر"
+
+msgid "Font Sizes"
+msgstr "أحجام الخط"
+
+msgid "Localization"
+msgstr "توطين"
+
+msgid "Focus"
+msgstr "التركيز"
+
+msgid "Next"
+msgstr "التالي"
+
+msgid "Previous"
+msgstr "السابق"
+
+msgid "Select Mode"
+msgstr "وضع الاختيار"
+
+msgid "Items"
+msgstr "العناصر"
+
+msgid "Icon Mode"
+msgstr "وضع الأيقونة"
+
+msgid "Step"
+msgstr "الخطوة"
+
+msgid "Page"
+msgstr "صفحة"
+
+msgid "Tabs"
+msgstr "تبويبات"
+
+msgid "Syntax Highlighter"
+msgstr "مُعلّم التركيب Syntax"
+
+msgid "Expand"
+msgstr "توسيع"
+
+msgid "Z Index"
+msgstr "مؤشر ز"
+
+msgid "NormalMap"
+msgstr "خريطة عادية"
+
+msgid "Download Chunk Size"
+msgstr "حجم جزء التنزيل"
+
+msgid "Transfer Mode"
+msgstr "وضع التحويل"
+
+msgid "Editor Description"
+msgstr "وصف المحرر"
+
+msgid "SDF"
+msgstr "SDF"
+
+msgid "Audio Listener"
+msgstr "المستمع الصوتي"
+
+msgid "Enable 3D"
+msgstr "تفعيل 3D"
+
+msgid "Object Picking"
+msgstr "اختيار الكائن"
+
+msgid "Disable Input"
+msgstr "تعطيل الإدخال"
+
+msgid "Quad 0"
+msgstr "رباعي 0"
+
+msgid "Quad 1"
+msgstr "رباعية 1"
+
+msgid "Quad 2"
+msgstr "رباعية 2"
+
+msgid "Quad 3"
+msgstr "رباعية 3"
+
+msgid "Current Screen"
+msgstr "الشاشة الحالية"
+
+msgid "Layer Names"
+msgstr "أسماء الطبقات"
+
+msgid "2D Render"
+msgstr "إنشاء صورة 2D"
+
+msgid "3D Render"
+msgstr "إنشاء صورة 3D"
+
+msgid "2D Physics"
+msgstr "فيزياء 2D"
+
+msgid "3D Physics"
+msgstr "فيزياء 3D"
+
+msgid "B"
+msgstr "بايت (Byte)"
+
+msgid "Terrains"
+msgstr "التضاريس"
+
+msgid "Custom Data"
+msgstr "البيانات مخصصة"
+
+msgid "Scene"
+msgstr "المشهد"
+
+msgid "Transpose"
+msgstr "المصفوفة المنقولة Transpose"
+
+msgid "Texture Origin"
+msgstr "أصل الملمس"
+
+msgid "Miscellaneous"
+msgstr "متنوع"
+
+msgid "Probability"
+msgstr "الاحتمال"
+
+msgid "Item"
+msgstr "عنصر"
+
+msgid "Preview"
+msgstr "معاينة"
+
+msgid "Sky"
+msgstr "سَمَاء"
+
+msgid "Rayleigh"
+msgstr "التبعثر الضوئي"
+
+msgid "Ground Color"
+msgstr "اللون الأرض"
+
+msgid "Atlas"
+msgstr "أطلس"
+
+msgid "Format"
+msgstr "البنية (اللاحقة)"
+
+msgid "Source"
+msgstr "مصدر"
+
+msgid "Tonemap"
+msgstr "خريطة تناغم الألوان"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "Glow"
+msgstr "توهُّج"
+
+msgid "2"
+msgstr "2"
+
+msgid "Mix"
+msgstr "خلط"
+
+msgid "Fog"
+msgstr "ضباب"
+
+msgid "Features"
+msgstr "المزايا"
+
+msgid "Shader"
+msgstr "مُظلل"
+
+msgid "Subsurface Scattering"
+msgstr "التشتت تحت السطح"
+
+msgid "MSDF"
+msgstr "حقل مسافة متعدد (ح م ع)(MSDF)"
+
+msgid "Image Size"
+msgstr "حجم الصورة"
+
+msgid "Blend"
+msgstr "دمج"
+
+msgid "Top Left"
+msgstr "في الأعلى يساراً"
+
+msgid "Top Right"
+msgstr "في الأعلى يميناً"
+
+msgid "Bottom Right"
+msgstr "في الأسفل يميناً"
+
+msgid "Bottom Left"
+msgstr "في الأسفل يساراً"
+
+msgid "File"
+msgstr "ملف"
+
+msgid "Constant"
+msgstr "ثابت"
+
+msgid "Function"
+msgstr "الوظائف البرمجية"
+
+msgid "Clear"
+msgstr "مسح"
+
+msgid "Close"
+msgstr "إغلاق"
+
+msgid "Reload"
+msgstr "إعادة تحميل"
+
+msgid "Submenu"
+msgstr "القائمة الفرعية"
+
+msgid "Cursor"
+msgstr "المؤشر"
+
+msgid "Node"
+msgstr "عقدة"
+
+msgid "Custom"
+msgstr "مخصص"
+
+msgid "Pan"
+msgstr "توسيع مجال الرؤية"
+
+msgid "Sidechain"
+msgstr "سلسلة جانبية"
+
+msgid "Tap 1"
+msgstr "النقرة الأولى"
+
+msgid "Tap 2"
+msgstr "النقرة الثانية"
+
+msgid "Drive"
+msgstr "قيادة"
+
+msgid "Soft Clip dB"
+msgstr "مقطع ناعم ديسيبل"
+
+msgid "Soft Clip Ratio"
+msgstr "مقطع ناعم نسبة"
+
+msgid "Vertex"
+msgstr "رأس"
+
+msgid "Fragment"
+msgstr "شظايا"
+
+msgid "Cull"
+msgstr "غربلة"
+
+msgid "Shadow Atlas"
+msgstr "أطلس الظل"
+
+msgid "Reflections"
+msgstr "انعكاسات"
+
+msgid "GI"
+msgstr "الإضاءة العالمية"
+
+msgid "Overrides"
+msgstr "يتجاوز"
+
+msgid "Default Filters"
+msgstr "التأثيرات الافتراضية"
+
+msgid "Half Size"
+msgstr "نصف الحجم"
+
+msgid "Decals"
+msgstr "الشارات"
+
+msgid "Frames to Update Lights"
+msgstr "إطارات لتحديث الاضائات"
+
+msgid "OpenGL"
+msgstr "أُبِن-جي-إل"
+
+msgid "Shaders"
+msgstr "مُظللات"
+
+msgid "AR"
+msgstr "الواقع المعزز"
+
+msgid "World Origin"
+msgstr "مركز العالم"
+
+msgid "Primary Interface"
+msgstr "الواجهة الأساسية"

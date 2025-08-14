@@ -28,12 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIST_H
-#define LIST_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
-#include "core/templates/sort_array.h"
+#include "core/templates/sort_list.h"
+
+#include <initializer_list>
 
 /**
  * Generic Templatized Linked List Implementation.
@@ -43,7 +44,7 @@
  * from the iterator.
  */
 
-template <class T, class A = DefaultAllocator>
+template <typename T, typename A = DefaultAllocator>
 class List {
 	struct _Data;
 
@@ -139,31 +140,6 @@ public:
 
 	typedef T ValueType;
 
-	struct Iterator {
-		_FORCE_INLINE_ T &operator*() const {
-			return E->get();
-		}
-		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
-		_FORCE_INLINE_ Iterator &operator++() {
-			E = E->next();
-			return *this;
-		}
-		_FORCE_INLINE_ Iterator &operator--() {
-			E = E->prev();
-			return *this;
-		}
-
-		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
-
-		Iterator(Element *p_E) { E = p_E; }
-		Iterator() {}
-		Iterator(const Iterator &p_it) { E = p_it.E; }
-
-	private:
-		Element *E = nullptr;
-	};
-
 	struct ConstIterator {
 		_FORCE_INLINE_ const T &operator*() const {
 			return E->get();
@@ -187,6 +163,35 @@ public:
 
 	private:
 		const Element *E = nullptr;
+	};
+
+	struct Iterator {
+		_FORCE_INLINE_ T &operator*() const {
+			return E->get();
+		}
+		_FORCE_INLINE_ T *operator->() const { return &E->get(); }
+		_FORCE_INLINE_ Iterator &operator++() {
+			E = E->next();
+			return *this;
+		}
+		_FORCE_INLINE_ Iterator &operator--() {
+			E = E->prev();
+			return *this;
+		}
+
+		_FORCE_INLINE_ bool operator==(const Iterator &b) const { return E == b.E; }
+		_FORCE_INLINE_ bool operator!=(const Iterator &b) const { return E != b.E; }
+
+		Iterator(Element *p_E) { E = p_E; }
+		Iterator() {}
+		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
+
+	private:
+		Element *E = nullptr;
 	};
 
 	_FORCE_INLINE_ Iterator begin() {
@@ -220,7 +225,7 @@ private:
 		Element *last = nullptr;
 		int size_cache = 0;
 
-		bool erase(const Element *p_I) {
+		bool erase(Element *p_I) {
 			ERR_FAIL_NULL_V(p_I, false);
 			ERR_FAIL_COND_V(p_I->data != this, false);
 
@@ -240,7 +245,7 @@ private:
 				p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 			}
 
-			memdelete_allocator<Element, A>(const_cast<Element *>(p_I));
+			memdelete_allocator<Element, A>(p_I);
 			size_cache--;
 
 			return true;
@@ -410,7 +415,7 @@ public:
 	/**
 	 * find an element in the list,
 	 */
-	template <class T_v>
+	template <typename T_v>
 	Element *find(const T_v &p_val) {
 		Element *it = front();
 		while (it) {
@@ -426,7 +431,7 @@ public:
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
-	bool erase(const Element *p_I) {
+	bool erase(Element *p_I) {
 		if (_data && p_I) {
 			bool ret = _data->erase(p_I);
 
@@ -518,8 +523,19 @@ public:
 			it = it->next();
 		}
 	}
+	void operator=(List &&p_list) {
+		if (unlikely(this == &p_list)) {
+			return;
+		}
 
-	T &operator[](int p_index) {
+		clear();
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
+
+	// Random access to elements, use with care,
+	// do not use for iteration.
+	T &get(int p_index) {
 		CRASH_BAD_INDEX(p_index, size());
 
 		Element *I = front();
@@ -532,7 +548,9 @@ public:
 		return I->get();
 	}
 
-	const T &operator[](int p_index) const {
+	// Random access to elements, use with care,
+	// do not use for iteration.
+	const T &get(int p_index) const {
 		CRASH_BAD_INDEX(p_index, size());
 
 		const Element *I = front();
@@ -638,104 +656,18 @@ public:
 		where->prev_ptr = value;
 	}
 
-	/**
-	 * simple insertion sort
-	 */
-
 	void sort() {
 		sort_custom<Comparator<T>>();
 	}
 
-	template <class C>
-	void sort_custom_inplace() {
+	template <typename C>
+	void sort_custom() {
 		if (size() < 2) {
 			return;
 		}
 
-		Element *from = front();
-		Element *current = from;
-		Element *to = from;
-
-		while (current) {
-			Element *next = current->next_ptr;
-
-			if (from != current) {
-				current->prev_ptr = nullptr;
-				current->next_ptr = from;
-
-				Element *find = from;
-				C less;
-				while (find && less(find->value, current->value)) {
-					current->prev_ptr = find;
-					current->next_ptr = find->next_ptr;
-					find = find->next_ptr;
-				}
-
-				if (current->prev_ptr) {
-					current->prev_ptr->next_ptr = current;
-				} else {
-					from = current;
-				}
-
-				if (current->next_ptr) {
-					current->next_ptr->prev_ptr = current;
-				} else {
-					to = current;
-				}
-			} else {
-				current->prev_ptr = nullptr;
-				current->next_ptr = nullptr;
-			}
-
-			current = next;
-		}
-		_data->first = from;
-		_data->last = to;
-	}
-
-	template <class C>
-	struct AuxiliaryComparator {
-		C compare;
-		_FORCE_INLINE_ bool operator()(const Element *a, const Element *b) const {
-			return compare(a->value, b->value);
-		}
-	};
-
-	template <class C>
-	void sort_custom() {
-		//this version uses auxiliary memory for speed.
-		//if you don't want to use auxiliary memory, use the in_place version
-
-		int s = size();
-		if (s < 2) {
-			return;
-		}
-
-		Element **aux_buffer = memnew_arr(Element *, s);
-
-		int idx = 0;
-		for (Element *E = front(); E; E = E->next_ptr) {
-			aux_buffer[idx] = E;
-			idx++;
-		}
-
-		SortArray<Element *, AuxiliaryComparator<C>> sort;
-		sort.sort(aux_buffer, s);
-
-		_data->first = aux_buffer[0];
-		aux_buffer[0]->prev_ptr = nullptr;
-		aux_buffer[0]->next_ptr = aux_buffer[1];
-
-		_data->last = aux_buffer[s - 1];
-		aux_buffer[s - 1]->prev_ptr = aux_buffer[s - 2];
-		aux_buffer[s - 1]->next_ptr = nullptr;
-
-		for (int i = 1; i < s - 1; i++) {
-			aux_buffer[i]->prev_ptr = aux_buffer[i - 1];
-			aux_buffer[i]->next_ptr = aux_buffer[i + 1];
-		}
-
-		memdelete_arr(aux_buffer);
+		SortList<Element, T, &Element::value, &Element::prev_ptr, &Element::next_ptr, C> sorter;
+		sorter.sort(_data->first, _data->last);
 	}
 
 	const void *id() const {
@@ -752,8 +684,18 @@ public:
 			it = it->next();
 		}
 	}
+	List(List &&p_list) {
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	List() {}
+
+	List(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			push_back(E);
+		}
+	}
 
 	~List() {
 		clear();
@@ -764,7 +706,7 @@ public:
 	}
 };
 
-template <class T, class A>
+template <typename T, typename A>
 void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
 	// Detach from current.
 
@@ -800,5 +742,3 @@ void List<T, A>::Element::transfer_to_back(List<T, A> *p_dst_list) {
 	data = p_dst_list->_data;
 	p_dst_list->_data->size_cache++;
 }
-
-#endif // LIST_H

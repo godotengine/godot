@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationServer2D" inherits="Object" is_experimental="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationServer2D" inherits="Object" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A server interface for low-level 2D navigation access.
 	</brief_description>
 	<description>
 		NavigationServer2D is the server that handles navigation maps, regions and agents. It does not handle A* navigation from [AStar2D] or [AStarGrid2D].
-		Maps are made up of regions, which are made of navigation polygons. Together, they define the traversable areas in the 2D world.
+		Maps are divided into regions, which are composed of navigation polygons. Together, they define the traversable areas in the 2D world.
 		[b]Note:[/b] Most [NavigationServer2D] changes take effect after the next physics frame and not immediately. This includes all changes made to maps, regions or agents by navigation-related nodes in the scene tree or made through scripts.
 		For two regions to be connected to each other, they must share a similar edge. An edge is considered connected to another if both of its two vertices are at a distance less than [code]edge_connection_margin[/code] to the respective other edge's vertex.
 		You may assign navigation layers to regions with [method NavigationServer2D.region_set_navigation_layers], which then can be checked upon when requesting a path with [method NavigationServer2D.map_get_path]. This can be used to allow or deny certain areas for some objects.
@@ -14,8 +14,8 @@
 		This server keeps tracks of any call and executes them during the sync phase. This means that you can request any change to the map, using any thread, without worrying.
 	</description>
 	<tutorials>
-		<link title="2D Navigation Demo">https://godotengine.org/asset-library/asset/117</link>
 		<link title="Using NavigationServer">$DOCS_URL/tutorials/navigation/navigation_using_navigationservers.html</link>
+		<link title="Navigation Polygon 2D Demo">https://godotengine.org/asset-library/asset/2722</link>
 	</tutorials>
 	<methods>
 		<method name="agent_create">
@@ -31,11 +31,53 @@
 				Return [code]true[/code] if the specified [param agent] uses avoidance.
 			</description>
 		</method>
+		<method name="agent_get_avoidance_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]avoidance_layers[/code] bitmask of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_avoidance_mask" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]avoidance_mask[/code] bitmask of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_avoidance_priority" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the [code]avoidance_priority[/code] of the specified [param agent].
+			</description>
+		</method>
 		<method name="agent_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="agent" type="RID" />
 			<description>
 				Returns the navigation map [RID] the requested [param agent] is currently assigned to.
+			</description>
+		</method>
+		<method name="agent_get_max_neighbors" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the maximum number of other agents the specified [param agent] takes into account in the navigation.
+			</description>
+		</method>
+		<method name="agent_get_max_speed" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the maximum speed of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_neighbor_distance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the maximum distance to other agents the specified [param agent] takes into account in the navigation.
 			</description>
 		</method>
 		<method name="agent_get_paused" qualifiers="const">
@@ -45,11 +87,53 @@
 				Returns [code]true[/code] if the specified [param agent] is paused.
 			</description>
 		</method>
+		<method name="agent_get_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the position of the specified [param agent] in world space.
+			</description>
+		</method>
+		<method name="agent_get_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the radius of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_get_time_horizon_agents" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the minimal amount of time for which the specified [param agent]'s velocities that are computed by the simulation are safe with respect to other agents.
+			</description>
+		</method>
+		<method name="agent_get_time_horizon_obstacles" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the minimal amount of time for which the specified [param agent]'s velocities that are computed by the simulation are safe with respect to static avoidance obstacles.
+			</description>
+		</method>
+		<method name="agent_get_velocity" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Returns the velocity of the specified [param agent].
+			</description>
+		</method>
+		<method name="agent_has_avoidance_callback" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="agent" type="RID" />
+			<description>
+				Return [code]true[/code] if the specified [param agent] has an avoidance callback.
+			</description>
+		</method>
 		<method name="agent_is_map_changed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
 			<description>
-				Returns true if the map got changed the previous frame.
+				Returns [code]true[/code] if the map got changed the previous frame.
 			</description>
 		</method>
 		<method name="agent_set_avoidance_callback">
@@ -91,7 +175,7 @@
 			<param index="1" name="priority" type="float" />
 			<description>
 				Set the agent's [code]avoidance_priority[/code] with a [param priority] between 0.0 (lowest priority) to 1.0 (highest priority).
-				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code] avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
+				The specified [param agent] does not adjust the velocity for other agents that would match the [code]avoidance_mask[/code] but have a lower [code]avoidance_priority[/code]. This in turn makes the other agents with lower priority adjust their velocities even more to avoid collision with this agent.
 			</description>
 		</method>
 		<method name="agent_set_map">
@@ -131,7 +215,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+				If [param paused] is [code]true[/code] the specified [param agent] will not be processed. For example, it will not calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -219,6 +303,20 @@
 				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
 			</description>
 		</method>
+		<method name="get_process_info" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="process_info" type="int" enum="NavigationServer2D.ProcessInfo" />
+			<description>
+				Returns information about the current state of the NavigationServer.
+			</description>
+		</method>
+		<method name="is_baking_navigation_polygon" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<description>
+				Returns [code]true[/code] when the provided navigation polygon is being baked on a background thread.
+			</description>
+		</method>
 		<method name="link_create">
 			<return type="RID" />
 			<description>
@@ -244,6 +342,14 @@
 			<param index="0" name="link" type="RID" />
 			<description>
 				Returns the enter cost of this [param link].
+			</description>
+		</method>
+		<method name="link_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the current iteration ID of the navigation link. Every time the navigation link changes and synchronizes, the iteration ID increases. An iteration ID of [code]0[/code] means the navigation link has never synchronized.
+				[b]Note:[/b] The iteration ID will wrap around to [code]1[/code] after reaching its range limit.
 			</description>
 		</method>
 		<method name="link_get_map" qualifiers="const">
@@ -366,13 +472,13 @@
 				Create a new map.
 			</description>
 		</method>
-		<method name="map_force_update">
+		<method name="map_force_update" deprecated="This method is no longer supported, as it is incompatible with asynchronous updates. It can only be used in a single-threaded context, at your own risk.">
 			<return type="void" />
 			<param index="0" name="map" type="RID" />
 			<description>
 				This function immediately forces synchronization of the specified navigation [param map] [RID]. By default navigation maps are only synchronized at the end of each physics frame. This function can be used to immediately (re)calculate all the navigation meshes and region connections of the navigation map. This makes it possible to query a navigation path for a changed map immediately and in the same frame (multiple times if needed).
 				Due to technical restrictions the current NavigationServer command queue will be flushed. This means all already queued update commands for this physics frame will be executed, even those intended for other maps, regions and agents not part of the specified map. The expensive computation of the navigation meshes and region connections of a map will only be done for the specified map. Other maps will receive the normal synchronization at the end of the physics frame. Should the specified map receive changes after the forced update it will update again as well when the other maps receive their update.
-				Avoidance processing and dispatch of the [code]safe_velocity[/code] signals is untouched by this function and continues to happen for all maps and agents at the end of the physics frame.
+				Avoidance processing and dispatch of the [code]safe_velocity[/code] signals is unaffected by this function and continues to happen for all maps and agents at the end of the physics frame.
 				[b]Note:[/b] With great power comes great responsibility. This function should only be used by users that really know what they are doing and have a good reason for it. Forcing an immediate update of a navigation map requires locking the NavigationServer and flushing the entire NavigationServer command queue. Not only can this severely impact the performance of a game but it can also introduce bugs if used inappropriately without much foresight.
 			</description>
 		</method>
@@ -395,7 +501,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector2" />
 			<description>
-				Returns the point closest to the provided [param to_point] on the navigation mesh surface.
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_closest_point_owner" qualifiers="const">
@@ -403,7 +509,7 @@
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="to_point" type="Vector2" />
 			<description>
-				Returns the owner region RID for the point returned by [method map_get_closest_point].
+				Returns the owner region RID for the navigation mesh surface point closest to the provided [param to_point] on the navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_edge_connection_margin" qualifiers="const">
@@ -411,6 +517,14 @@
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns the edge connection margin of the map. The edge connection margin is a distance used to connect two regions.
+			</description>
+		</method>
+		<method name="map_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns the current iteration id of the navigation map. Every time the navigation map changes and synchronizes the iteration id increases. An iteration id of 0 means the navigation map has never synchronized.
+				[b]Note:[/b] The iteration id will wrap back to 1 after reaching its range limit.
 			</description>
 		</method>
 		<method name="map_get_link_connection_radius" qualifiers="const">
@@ -427,6 +541,13 @@
 				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
+		<method name="map_get_merge_rasterizer_cell_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns map's internal merge rasterizer cell scale.
+			</description>
+		</method>
 		<method name="map_get_obstacles" qualifiers="const">
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
@@ -434,7 +555,7 @@
 				Returns all navigation obstacle [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
-		<method name="map_get_path" qualifiers="const">
+		<method name="map_get_path">
 			<return type="PackedVector2Array" />
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="origin" type="Vector2" />
@@ -445,11 +566,29 @@
 				Returns the navigation path to reach the destination from the origin. [param navigation_layers] is a bitmask of all region navigation layers that are allowed to be in the path.
 			</description>
 		</method>
+		<method name="map_get_random_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<param index="2" name="uniformly" type="bool" />
+			<description>
+				Returns a random position picked from all map region polygons with matching [param navigation_layers].
+				If [param uniformly] is [code]true[/code], all map regions, polygons, and faces are weighted by their surface area (slower).
+				If [param uniformly] is [code]false[/code], just a random region and a random polygon are picked (faster).
+			</description>
+		</method>
 		<method name="map_get_regions" qualifiers="const">
 			<return type="RID[]" />
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [param map].
+			</description>
+		</method>
+		<method name="map_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param map] synchronization uses an async process that runs on a background thread.
 			</description>
 		</method>
 		<method name="map_get_use_edge_connections" qualifiers="const">
@@ -463,7 +602,7 @@
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns true if the map is active.
+				Returns [code]true[/code] if the map is active.
 			</description>
 		</method>
 		<method name="map_set_active">
@@ -498,6 +637,22 @@
 				Set the map's link connection radius used to connect links to navigation polygons.
 			</description>
 		</method>
+		<method name="map_set_merge_rasterizer_cell_scale">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Set the map's internal merge rasterizer cell scale used to control merging sensitivity.
+			</description>
+		</method>
+		<method name="map_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param map] synchronization uses an async process that runs on a background thread.
+			</description>
+		</method>
 		<method name="map_set_use_edge_connections">
 			<return type="void" />
 			<param index="0" name="map" type="RID" />
@@ -519,6 +674,13 @@
 				Returns [code]true[/code] if the provided [param obstacle] has avoidance enabled.
 			</description>
 		</method>
+		<method name="obstacle_get_avoidance_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the [code]avoidance_layers[/code] bitmask of the specified [param obstacle].
+			</description>
+		</method>
 		<method name="obstacle_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="obstacle" type="RID" />
@@ -531,6 +693,34 @@
 			<param index="0" name="obstacle" type="RID" />
 			<description>
 				Returns [code]true[/code] if the specified [param obstacle] is paused.
+			</description>
+		</method>
+		<method name="obstacle_get_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the position of the specified [param obstacle] in world space.
+			</description>
+		</method>
+		<method name="obstacle_get_radius" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the radius of the specified dynamic [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_get_velocity" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the velocity of the specified dynamic [param obstacle].
+			</description>
+		</method>
+		<method name="obstacle_get_vertices" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="obstacle" type="RID" />
+			<description>
+				Returns the outline vertices for the specified [param obstacle].
 			</description>
 		</method>
 		<method name="obstacle_set_avoidance_enabled">
@@ -562,7 +752,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed. For example, it will no longer affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">
@@ -609,18 +799,34 @@
 				[b]Performance:[/b] While convenient, reading data arrays from [Mesh] resources can affect the frame rate negatively. The data needs to be received from the GPU, stalling the [RenderingServer] in the process. For performance prefer the use of e.g. collision shapes or creating the data arrays entirely in code.
 			</description>
 		</method>
-		<method name="query_path" qualifiers="const">
+		<method name="query_path">
 			<return type="void" />
 			<param index="0" name="parameters" type="NavigationPathQueryParameters2D" />
 			<param index="1" name="result" type="NavigationPathQueryResult2D" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<description>
-				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters2D]. Updates the provided [NavigationPathQueryResult2D] result object with the path among other results requested by the query.
+				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters2D]. Updates the provided [NavigationPathQueryResult2D] result object with the path among other results requested by the query. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="region_create">
 			<return type="RID" />
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_bounds" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the axis-aligned rectangle for the [param region]'s transformed navigation mesh.
+			</description>
+		</method>
+		<method name="region_get_closest_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="to_point" type="Vector2" />
+			<description>
+				Returns the navigation mesh surface point closest to the provided [param to_point] on the navigation [param region].
 			</description>
 		</method>
 		<method name="region_get_connection_pathway_end" qualifiers="const">
@@ -660,6 +866,14 @@
 				Returns the enter cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the current iteration ID of the navigation region. Every time the navigation region changes and synchronizes, the iteration ID increases. An iteration ID of [code]0[/code] means the navigation region has never synchronized.
+				[b]Note:[/b] The iteration ID will wrap around to [code]1[/code] after reaching its range limit.
+			</description>
+		</method>
 		<method name="region_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="region" type="RID" />
@@ -681,11 +895,36 @@
 				Returns the [code]ObjectID[/code] of the object which manages this region.
 			</description>
 		</method>
+		<method name="region_get_random_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<param index="2" name="uniformly" type="bool" />
+			<description>
+				Returns a random position picked from all region polygons with matching [param navigation_layers].
+				If [param uniformly] is [code]true[/code], all region polygons and faces are weighted by their surface area (slower).
+				If [param uniformly] is [code]false[/code], just a random polygon and face is picked (faster).
+			</description>
+		</method>
+		<method name="region_get_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the global transformation of this [param region].
+			</description>
+		</method>
 		<method name="region_get_travel_cost" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the travel cost of this [param region].
+			</description>
+		</method>
+		<method name="region_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param region] uses an async synchronization process that runs on a background thread.
 			</description>
 		</method>
 		<method name="region_get_use_edge_connections" qualifiers="const">
@@ -769,12 +1008,27 @@
 				Sets the [param travel_cost] for this [param region].
 			</description>
 		</method>
+		<method name="region_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param region] uses an async synchronization process that runs on a background thread.
+			</description>
+		</method>
 		<method name="region_set_use_edge_connections">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
 				If [param enabled] is [code]true[/code], the navigation [param region] will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
+			</description>
+		</method>
+		<method name="set_active">
+			<return type="void" />
+			<param index="0" name="active" type="bool" />
+			<description>
+				Control activation of this server.
 			</description>
 		</method>
 		<method name="set_debug_enabled">
@@ -784,8 +1038,39 @@
 				If [code]true[/code] enables debug mode on the NavigationServer.
 			</description>
 		</method>
+		<method name="simplify_path">
+			<return type="PackedVector2Array" />
+			<param index="0" name="path" type="PackedVector2Array" />
+			<param index="1" name="epsilon" type="float" />
+			<description>
+				Returns a simplified version of [param path] with less critical path points removed. The simplification amount is in worlds units and controlled by [param epsilon]. The simplification uses a variant of Ramer-Douglas-Peucker algorithm for curve point decimation.
+				Path simplification can be helpful to mitigate various path following issues that can arise with certain agent types and script behaviors. E.g. "steering" agents or avoidance in "open fields".
+			</description>
+		</method>
+		<method name="source_geometry_parser_create">
+			<return type="RID" />
+			<description>
+				Creates a new source geometry parser. If a [Callable] is set for the parser with [method source_geometry_parser_set_callback] the callback will be called for every single node that gets parsed whenever [method parse_source_geometry_data] is used.
+			</description>
+		</method>
+		<method name="source_geometry_parser_set_callback">
+			<return type="void" />
+			<param index="0" name="parser" type="RID" />
+			<param index="1" name="callback" type="Callable" />
+			<description>
+				Sets the [param callback] [Callable] for the specific source geometry [param parser]. The [Callable] will receive a call with the following parameters:
+				- [code]navigation_mesh[/code] - The [NavigationPolygon] reference used to define the parse settings. Do NOT edit or add directly to the navigation mesh.
+				- [code]source_geometry_data[/code] - The [NavigationMeshSourceGeometryData2D] reference. Add custom source geometry for navigation mesh baking to this object.
+				- [code]node[/code] - The [Node] that is parsed.
+			</description>
+		</method>
 	</methods>
 	<signals>
+		<signal name="avoidance_debug_changed">
+			<description>
+				Emitted when avoidance debug settings are changed. Only available in debug builds.
+			</description>
+		</signal>
 		<signal name="map_changed">
 			<param index="0" name="map" type="RID" />
 			<description>
@@ -798,4 +1083,36 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="INFO_ACTIVE_MAPS" value="0" enum="ProcessInfo">
+			Constant to get the number of active navigation maps.
+		</constant>
+		<constant name="INFO_REGION_COUNT" value="1" enum="ProcessInfo">
+			Constant to get the number of active navigation regions.
+		</constant>
+		<constant name="INFO_AGENT_COUNT" value="2" enum="ProcessInfo">
+			Constant to get the number of active navigation agents processing avoidance.
+		</constant>
+		<constant name="INFO_LINK_COUNT" value="3" enum="ProcessInfo">
+			Constant to get the number of active navigation links.
+		</constant>
+		<constant name="INFO_POLYGON_COUNT" value="4" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygons.
+		</constant>
+		<constant name="INFO_EDGE_COUNT" value="5" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges.
+		</constant>
+		<constant name="INFO_EDGE_MERGE_COUNT" value="6" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges that were merged due to edge key overlap.
+		</constant>
+		<constant name="INFO_EDGE_CONNECTION_COUNT" value="7" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges that are considered connected by edge proximity.
+		</constant>
+		<constant name="INFO_EDGE_FREE_COUNT" value="8" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges that could not be merged but may be still connected by edge proximity or with links.
+		</constant>
+		<constant name="INFO_OBSTACLE_COUNT" value="9" enum="ProcessInfo">
+			Constant to get the number of active navigation obstacles.
+		</constant>
+	</constants>
 </class>

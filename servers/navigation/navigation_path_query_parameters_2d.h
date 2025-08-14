@@ -28,28 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_PATH_QUERY_PARAMETERS_2D_H
-#define NAVIGATION_PATH_QUERY_PARAMETERS_2D_H
+#pragma once
 
 #include "core/object/ref_counted.h"
+#include "servers/navigation/navigation_globals.h"
 #include "servers/navigation/navigation_utilities.h"
 
 class NavigationPathQueryParameters2D : public RefCounted {
 	GDCLASS(NavigationPathQueryParameters2D, RefCounted);
-
-	NavigationUtilities::PathQueryParameters parameters;
 
 protected:
 	static void _bind_methods();
 
 public:
 	enum PathfindingAlgorithm {
-		PATHFINDING_ALGORITHM_ASTAR = 0,
+		PATHFINDING_ALGORITHM_ASTAR = NavigationUtilities::PATHFINDING_ALGORITHM_ASTAR,
 	};
 
 	enum PathPostProcessing {
-		PATH_POSTPROCESSING_CORRIDORFUNNEL = 0,
-		PATH_POSTPROCESSING_EDGECENTERED,
+		PATH_POSTPROCESSING_CORRIDORFUNNEL = NavigationUtilities::PATH_POSTPROCESSING_CORRIDORFUNNEL,
+		PATH_POSTPROCESSING_EDGECENTERED = NavigationUtilities::PATH_POSTPROCESSING_EDGECENTERED,
+		PATH_POSTPROCESSING_NONE = NavigationUtilities::PATH_POSTPROCESSING_NONE,
 	};
 
 	enum PathMetadataFlags {
@@ -60,16 +59,34 @@ public:
 		PATH_METADATA_INCLUDE_ALL = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_ALL
 	};
 
-	const NavigationUtilities::PathQueryParameters &get_parameters() const { return parameters; }
+private:
+	PathfindingAlgorithm pathfinding_algorithm = PATHFINDING_ALGORITHM_ASTAR;
+	PathPostProcessing path_postprocessing = PATH_POSTPROCESSING_CORRIDORFUNNEL;
+	RID map;
+	Vector2 start_position;
+	Vector2 target_position;
+	uint32_t navigation_layers = 1;
+	BitField<PathMetadataFlags> metadata_flags = PATH_METADATA_INCLUDE_ALL;
+	bool simplify_path = false;
+	real_t simplify_epsilon = 0.0;
 
+	LocalVector<RID> _excluded_regions;
+	LocalVector<RID> _included_regions;
+
+	float path_return_max_length = 0.0;
+	float path_return_max_radius = 0.0;
+	int path_search_max_polygons = NavigationDefaults2D::path_search_max_polygons;
+	float path_search_max_distance = 0.0;
+
+public:
 	void set_pathfinding_algorithm(const PathfindingAlgorithm p_pathfinding_algorithm);
 	PathfindingAlgorithm get_pathfinding_algorithm() const;
 
 	void set_path_postprocessing(const PathPostProcessing p_path_postprocessing);
 	PathPostProcessing get_path_postprocessing() const;
 
-	void set_map(const RID &p_map);
-	const RID &get_map() const;
+	void set_map(RID p_map);
+	RID get_map() const;
 
 	void set_start_position(const Vector2 p_start_position);
 	Vector2 get_start_position() const;
@@ -82,10 +99,32 @@ public:
 
 	void set_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_flags);
 	BitField<NavigationPathQueryParameters2D::PathMetadataFlags> get_metadata_flags() const;
+
+	void set_simplify_path(bool p_enabled);
+	bool get_simplify_path() const;
+
+	void set_simplify_epsilon(real_t p_epsilon);
+	real_t get_simplify_epsilon() const;
+
+	void set_excluded_regions(const TypedArray<RID> &p_regions);
+	TypedArray<RID> get_excluded_regions() const;
+
+	void set_included_regions(const TypedArray<RID> &p_regions);
+	TypedArray<RID> get_included_regions() const;
+
+	void set_path_return_max_length(float p_length);
+	float get_path_return_max_length() const;
+
+	void set_path_return_max_radius(float p_radius);
+	float get_path_return_max_radius() const;
+
+	void set_path_search_max_polygons(int p_max_polygons);
+	int get_path_search_max_polygons() const;
+
+	void set_path_search_max_distance(float p_distance);
+	float get_path_search_max_distance() const;
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryParameters2D::PathfindingAlgorithm);
 VARIANT_ENUM_CAST(NavigationPathQueryParameters2D::PathPostProcessing);
 VARIANT_BITFIELD_CAST(NavigationPathQueryParameters2D::PathMetadataFlags);
-
-#endif // NAVIGATION_PATH_QUERY_PARAMETERS_2D_H

@@ -45,7 +45,7 @@ import java.io.File
 /**
  * Handles directories access with the internal and external filesystem.
  */
-internal class FilesystemDirectoryAccess(private val context: Context):
+internal class FilesystemDirectoryAccess(private val context: Context, private val storageScopeIdentifier: StorageScope.Identifier):
 	DirectoryAccessHandler.DirectoryAccess {
 
 	companion object {
@@ -54,7 +54,6 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 
 	private data class DirData(val dirFile: File, val files: Array<File>, var current: Int = 0)
 
-	private val storageScopeIdentifier = StorageScope.Identifier(context)
 	private val storageManager = context.getSystemService(Context.STORAGE_SERVICE) as StorageManager
 	private var lastDirId = STARTING_DIR_ID
 	private val dirs = SparseArray<DirData>()
@@ -63,7 +62,8 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 		// Directory access is available for shared storage on Android 11+
 		// On Android 10, access is also available as long as the `requestLegacyExternalStorage`
 		// tag is available.
-		return storageScopeIdentifier.identifyStorageScope(path) != StorageScope.UNKNOWN
+		val storageScope = storageScopeIdentifier.identifyStorageScope(path)
+		return storageScope != StorageScope.UNKNOWN && storageScope != StorageScope.ASSETS
 	}
 
 	override fun hasDirId(dirId: Int) = dirs.indexOfKey(dirId) >= 0
@@ -150,24 +150,20 @@ internal class FilesystemDirectoryAccess(private val context: Context):
 	}
 
 	override fun getDriveCount(): Int {
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			storageManager.storageVolumes.size
-		} else {
-			0
-		}
+		return storageManager.storageVolumes.size
 	}
 
 	override fun getDrive(drive: Int): String {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-			return ""
-		}
-
 		if (drive < 0 || drive >= storageManager.storageVolumes.size) {
 			return ""
 		}
 
 		val storageVolume = storageManager.storageVolumes[drive]
-		return storageVolume.getDescription(context)
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			storageVolume.directory?.absolutePath ?: ""
+		} else {
+			""
+		}
 	}
 
 	override fun makeDir(dir: String): Boolean {

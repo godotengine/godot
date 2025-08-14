@@ -30,15 +30,7 @@
 
 #include "multiplayer_api.h"
 
-#include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
-
-#include <stdint.h>
-
-#ifdef DEBUG_ENABLED
-#include "core/os/os.h"
-#endif
-
 StringName MultiplayerAPI::default_interface;
 
 void MultiplayerAPI::set_default_interface(const StringName &p_interface) {
@@ -265,10 +257,6 @@ Error MultiplayerAPI::decode_and_decompress_variants(Vector<Variant> &r_variants
 		r_variants.write[0] = pba;
 		return OK;
 	}
-
-	Vector<Variant> args;
-	Vector<const Variant *> argp;
-	args.resize(argc);
 
 	for (int i = 0; i < argc; i++) {
 		ERR_FAIL_COND_V_MSG(r_len >= p_len, ERR_INVALID_DATA, "Invalid packet received. Size too small.");

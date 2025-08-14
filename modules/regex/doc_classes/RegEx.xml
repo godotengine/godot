@@ -17,7 +17,7 @@
 		regex.compile("\\w-(\\d+)")
 		var result = regex.search("abc n-0123")
 		if result:
-		    print(result.get_string()) # Would print n-0123
+			print(result.get_string()) # Prints "n-0123"
 		[/codeblock]
 		The results of capturing groups [code]()[/code] can be retrieved by passing the group number to the various methods in [RegExMatch]. Group 0 is the default and will always refer to the entire pattern. In the above example, calling [code]result.get_string(1)[/code] would give you [code]0123[/code].
 		This version of RegEx also supports named capturing groups, and the names can be used to retrieve the results. If two or more groups have the same name, the name would only refer to the first one with a match.
@@ -26,22 +26,22 @@
 		regex.compile("d(?&lt;digit&gt;[0-9]+)|x(?&lt;digit&gt;[0-9a-f]+)")
 		var result = regex.search("the number is x2f")
 		if result:
-		    print(result.get_string("digit")) # Would print 2f
+			print(result.get_string("digit")) # Prints "2f"
 		[/codeblock]
 		If you need to process multiple results, [method search_all] generates a list of all non-overlapping results. This can be combined with a [code]for[/code] loop for convenience.
 		[codeblock]
+		# Prints "01 03 0 3f 42"
 		for result in regex.search_all("d01, d03, d0c, x3f and x42"):
-		    print(result.get_string("digit"))
-		# Would print 01 03 0 3f 42
+			print(result.get_string("digit"))
 		[/codeblock]
-		[b]Example of splitting a string using a RegEx:[/b]
+		[b]Example:[/b] Split a string using a RegEx:
 		[codeblock]
 		var regex = RegEx.new()
 		regex.compile("\\S+") # Negated whitespace character class.
 		var results = []
 		for result in regex.search_all("One  Two \n\tThree"):
-		    results.push_back(result.get_string())
-		# The `results` array now contains "One", "Two", "Three".
+			results.push_back(result.get_string())
+		print(results) # Prints ["One", "Two", "Three"]
 		[/codeblock]
 		[b]Note:[/b] Godot's regex implementation is based on the [url=https://www.pcre.org/]PCRE2[/url] library. You can view the full pattern reference [url=https://www.pcre.org/current/doc/html/pcre2pattern.html]here[/url].
 		[b]Tip:[/b] You can use [url=https://regexr.com/]Regexr[/url] to test regular expressions online.
@@ -58,15 +58,17 @@
 		<method name="compile">
 			<return type="int" enum="Error" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="show_error" type="bool" default="true" />
 			<description>
-				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If an error is encountered, details are printed to standard output and an error is returned.
+				Compiles and assign the search pattern to use. Returns [constant OK] if the compilation is successful. If compilation fails, returns [constant FAILED] and when [param show_error] is [code]true[/code], details are printed to standard output.
 			</description>
 		</method>
 		<method name="create_from_string" qualifiers="static">
 			<return type="RegEx" />
 			<param index="0" name="pattern" type="String" />
+			<param index="1" name="show_error" type="bool" default="true" />
 			<description>
-				Creates and compiles a new [RegEx] object.
+				Creates and compiles a new [RegEx] object. See also [method compile].
 			</description>
 		</method>
 		<method name="get_group_count" qualifiers="const">

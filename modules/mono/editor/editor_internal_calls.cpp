@@ -41,12 +41,14 @@
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_scale.h"
-#include "editor/editor_settings.h"
-#include "editor/gui/editor_run_bar.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/export/lipo.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/run/editor_run_bar.h"
+#include "editor/script/script_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/themes/editor_scale.h"
 #include "main/main.h"
 
 #ifdef UNIX_ENABLED
@@ -66,23 +68,15 @@ void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 }
 
 void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_build_logs_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {
-	memnew_placement(r_dest, String(path::get_csharp_project_name()));
+	memnew_placement(r_dest, String(Path::get_csharp_project_name()));
 }
 
 void godot_icall_EditorProgress_Create(const godot_string *p_task, const godot_string *p_label, int32_t p_amount, bool p_can_cancel) {
@@ -103,7 +97,7 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 }
 
 void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
-	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
 	memnew_placement(r_dest, String(full_templates_dir));
 }
 
@@ -115,6 +109,13 @@ bool godot_icall_Internal_IsMacOSAppBundleInstalled(const godot_string *p_bundle
 	(void)p_bundle_id; // UNUSED
 	return (bool)false;
 #endif
+}
+
+bool godot_icall_Internal_LipOCreateFile(const godot_string *p_output_path, const godot_packed_array *p_files) {
+	String output_path = *reinterpret_cast<const String *>(p_output_path);
+	PackedStringArray files = *reinterpret_cast<const PackedStringArray *>(p_files);
+	LipO lip;
+	return lip.create_file(output_path, files);
 }
 
 bool godot_icall_Internal_GodotIs32Bits() {
@@ -143,12 +144,12 @@ bool godot_icall_Internal_IsAssembliesReloadingNeeded() {
 
 void godot_icall_Internal_ReloadAssemblies(bool p_soft_reload) {
 #ifdef GD_MONO_HOT_RELOAD
-	mono_bind::GodotSharp::get_singleton()->call_deferred(SNAME("_reload_assemblies"), (bool)p_soft_reload);
+	callable_mp(MonoBind::GodotSharp::get_singleton(), &MonoBind::GodotSharp::reload_assemblies).call_deferred(p_soft_reload);
 #endif
 }
 
 void godot_icall_Internal_EditorDebuggerNodeReloadScripts() {
-	EditorDebuggerNode::get_singleton()->reload_scripts();
+	EditorDebuggerNode::get_singleton()->reload_all_scripts();
 }
 
 bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line, int32_t p_col, bool p_grab_focus) {
@@ -157,7 +158,7 @@ bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line,
 }
 
 void godot_icall_Internal_EditorNodeShowScriptScreen() {
-	EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
+	EditorNode::get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 }
 
 void godot_icall_Internal_EditorRunPlay() {
@@ -175,7 +176,7 @@ void godot_icall_Internal_EditorPlugin_AddControlToEditorRunBar(Control *p_contr
 void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	if (ed) {
-		ed->reload_scripts();
+		ed->reload_all_scripts();
 	}
 }
 
@@ -258,6 +259,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_EditorProgress_Step,
 	(void *)godot_icall_Internal_FullExportTemplatesDir,
 	(void *)godot_icall_Internal_IsMacOSAppBundleInstalled,
+	(void *)godot_icall_Internal_LipOCreateFile,
 	(void *)godot_icall_Internal_GodotIs32Bits,
 	(void *)godot_icall_Internal_GodotIsRealTDouble,
 	(void *)godot_icall_Internal_GodotMainIteration,

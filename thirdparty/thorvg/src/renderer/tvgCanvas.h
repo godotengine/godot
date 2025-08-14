@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -20,36 +20,49 @@
  * SOFTWARE.
  */
 
-#ifndef _TVG_CANVAS_IMPL_H_
-#define _TVG_CANVAS_IMPL_H_
+#ifndef _TVG_CANVAS_H_
+#define _TVG_CANVAS_H_
 
 #include "tvgPaint.h"
 
-/************************************************************************/
-/* Internal Class Implementation                                        */
-/************************************************************************/
+
+enum Status : uint8_t {Synced = 0, Updating, Drawing, Damaged};
 
 struct Canvas::Impl
 {
     list<Paint*> paints;
     RenderMethod* renderer;
-    bool refresh = false;   //if all paints should be updated by force.
-    bool drawing = false;   //on drawing condition?
+    RenderRegion vport = {0, 0, INT32_MAX, INT32_MAX};
+    Status status = Status::Synced;
 
-    Impl(RenderMethod* pRenderer):renderer(pRenderer)
+    Impl(RenderMethod* pRenderer) : renderer(pRenderer)
     {
+        renderer->ref();
     }
 
     ~Impl()
     {
-        clear(true);
-        delete(renderer);
+        //make it sure any deferred jobs
+        renderer->sync();
+        renderer->clear();
+
+        clearPaints();
+
+        if (renderer->unref() == 0) delete(renderer);
+    }
+
+    void clearPaints()
+    {
+        for (auto paint : paints) {
+            if (P(paint)->unref() == 0) delete(paint);
+        }
+        paints.clear();
     }
 
     Result push(unique_ptr<Paint> paint)
     {
-        //You can not push paints during rendering.
-        if (drawing) return Result::InsufficientCondition;
+        //You cannot push paints during rendering.
+        if (status == Status::Drawing) return Result::InsufficientCondition;
 
         auto p = paint.release();
         if (!p) return Result::MemoryCorruption;
@@ -62,85 +75,81 @@ struct Canvas::Impl
     Result clear(bool free)
     {
         //Clear render target before drawing
-        if (!renderer || !renderer->clear()) return Result::InsufficientCondition;
+        if (!renderer->clear()) return Result::InsufficientCondition;
 
         //Free paints
-        if (free) {
-            for (auto paint : paints) {
-                P(paint)->unref();
-                if (paint->pImpl->dispose(*renderer) && P(paint)->refCnt == 0) {
-                    delete(paint);
-                }
-            }
-            paints.clear();
-        }
-        drawing = false;
+        if (free) clearPaints();
+
+        status = Status::Synced;
 
         return Result::Success;
     }
 
-    void needRefresh()
-    {
-        refresh = true;
-    }
-
     Result update(Paint* paint, bool force)
     {
-        if (paints.empty() || drawing || !renderer) return Result::InsufficientCondition;
+        if (paints.empty() || status == Status::Drawing) return Result::InsufficientCondition;
 
         Array<RenderData> clips;
         auto flag = RenderUpdateFlag::None;
-        if (refresh || force) flag = RenderUpdateFlag::All;
+        if (status == Status::Damaged || force) flag = RenderUpdateFlag::All;
 
-        //Update single paint node
+        auto m = Matrix{1, 0, 0, 0, 1, 0, 0, 0, 1};
+
         if (paint) {
-            //Optimize Me: Can we skip the searching?
-            for (auto paint2 : paints) {
-                if (paint2 == paint) {
-                    paint->pImpl->update(*renderer, nullptr, clips, 255, flag);
-                    return Result::Success;
-                }
-            }
-            return Result::InvalidArguments;
-        //Update all retained paint nodes
+            paint->pImpl->update(renderer, m, clips, 255, flag);
         } else {
             for (auto paint : paints) {
-                paint->pImpl->update(*renderer, nullptr, clips, 255, flag);
+                paint->pImpl->update(renderer, m, clips, 255, flag);
             }
         }
-
-        refresh = false;
-
+        status = Status::Updating;
         return Result::Success;
     }
 
     Result draw()
     {
-        if (drawing || paints.empty() || !renderer || !renderer->preRender()) return Result::InsufficientCondition;
+        if (status == Status::Damaged) update(nullptr, false);
+        if (status == Status::Drawing || paints.empty() || !renderer->preRender()) return Result::InsufficientCondition;
 
         bool rendered = false;
         for (auto paint : paints) {
-            if (paint->pImpl->render(*renderer)) rendered = true;
+            if (paint->pImpl->render(renderer)) rendered = true;
         }
 
         if (!rendered || !renderer->postRender()) return Result::InsufficientCondition;
 
-        drawing = true;
-
+        status = Status::Drawing;
         return Result::Success;
     }
 
     Result sync()
     {
-        if (!drawing) return Result::InsufficientCondition;
+        if (status == Status::Synced || status == Status::Damaged) return Result::InsufficientCondition;
 
         if (renderer->sync()) {
-            drawing = false;
+            status = Status::Synced;
             return Result::Success;
         }
 
-        return Result::InsufficientCondition;
+        return Result::Unknown;
+    }
+
+    Result viewport(int32_t x, int32_t y, int32_t w, int32_t h)
+    {
+        if (status != Status::Damaged && status != Status::Synced) return Result::InsufficientCondition;
+
+        RenderRegion val = {x, y, w, h};
+        //intersect if the target buffer is already set.
+        auto surface = renderer->mainSurface();
+        if (surface && surface->w > 0 && surface->h > 0) {
+            val.intersect({0, 0, (int32_t)surface->w, (int32_t)surface->h});
+        }
+        if (vport == val) return Result::Success;
+        renderer->viewport(val);
+        vport = val;
+        status = Status::Damaged;
+        return Result::Success;
     }
 };
 
-#endif /* _TVG_CANVAS_IMPL_H_ */
+#endif /* _TVG_CANVAS_H_ */

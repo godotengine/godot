@@ -10,7 +10,7 @@
 	</tutorials>
 	<members>
 		<member name="function" type="int" setter="set_function" getter="get_function" enum="VisualShaderNodeIs.Function" default="0">
-			The comparison function. See [enum Function] for options.
+			The comparison function.
 		</member>
 	</members>
 	<constants>
@@ -18,7 +18,7 @@
 			Comparison with [code]INF[/code] (Infinity).
 		</constant>
 		<constant name="FUNC_IS_NAN" value="1" enum="Function">
-			Comparison with [code]NaN[/code] (Not a Number; denotes invalid numeric results, e.g. division by zero).
+			Comparison with [code]NaN[/code] (Not a Number; indicates invalid numeric results, such as division by zero).
 		</constant>
 		<constant name="FUNC_MAX" value="2" enum="Function">
 			Represents the size of the [enum Function] enum.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Decal" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="Decal" inherits="VisualInstance3D" keywords="stain" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Node that projects a texture onto a [MeshInstance3D].
 	</brief_description>
@@ -24,12 +24,12 @@
 				[codeblocks]
 				[gdscript]
 				for i in Decal.TEXTURE_MAX:
-				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
+					$NewDecal.set_texture(i, $OldDecal.get_texture(i))
 				[/gdscript]
 				[csharp]
 				for (int i = 0; i &lt; (int)Decal.DecalTexture.Max; i++)
 				{
-				    GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
+					GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
 				}
 				[/csharp]
 				[/codeblocks]
@@ -46,12 +46,12 @@
 				[codeblocks]
 				[gdscript]
 				for i in Decal.TEXTURE_MAX:
-				    $NewDecal.set_texture(i, $OldDecal.get_texture(i))
+					$NewDecal.set_texture(i, $OldDecal.get_texture(i))
 				[/gdscript]
 				[csharp]
 				for (int i = 0; i &lt; (int)Decal.DecalTexture.Max; i++)
 				{
-				    GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
+					GetNode&lt;Decal&gt;("NewDecal").SetTexture(i, GetNode&lt;Decal&gt;("OldDecal").GetTexture(i));
 				}
 				[/csharp]
 				[/codeblocks]
@@ -65,13 +65,13 @@
 		<member name="cull_mask" type="int" setter="set_cull_mask" getter="get_cull_mask" default="1048575">
 			Specifies which [member VisualInstance3D.layers] this decal will project on. By default, Decals affect all layers. This is used so you can specify which types of objects receive the Decal and which do not. This is especially useful so you can ensure that dynamic objects don't accidentally receive a Decal intended for the terrain under them.
 		</member>
-		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="40.0">
+		<member name="distance_fade_begin" type="float" setter="set_distance_fade_begin" getter="get_distance_fade_begin" default="40.0" keywords="lod_begin">
 			The distance from the camera at which the Decal begins to fade away (in 3D units).
 		</member>
-		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false">
+		<member name="distance_fade_enabled" type="bool" setter="set_enable_distance_fade" getter="is_distance_fade_enabled" default="false" keywords="lod_enabled">
 			If [code]true[/code], decals will smoothly fade away when far from the active [Camera3D] starting at [member distance_fade_begin]. The Decal will fade out over [member distance_fade_begin] + [member distance_fade_length], after which it will be culled and not sent to the shader at all. Use this to reduce the number of active Decals in a scene and thus improve performance.
 		</member>
-		<member name="distance_fade_length" type="float" setter="set_distance_fade_length" getter="get_distance_fade_length" default="10.0">
+		<member name="distance_fade_length" type="float" setter="set_distance_fade_length" getter="get_distance_fade_length" default="10.0" keywords="lod_length">
 			The distance over which the Decal fades (in 3D units). The Decal becomes slowly more transparent over this distance and is completely invisible at the end. Higher values result in a smoother fade-out transition, which is more suited when the camera moves fast.
 		</member>
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
@@ -80,7 +80,7 @@
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member upper_fade].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)" keywords="color, colour">
 			Changes the [Color] of the Decal by multiplying the albedo and emission colors with this value. The alpha component is only taken into account when multiplying the albedo color, not the emission color. See also [member emission_energy] and [member albedo_mix] to change the emission and albedo intensity independently of each other.
 		</member>
 		<member name="normal_fade" type="float" setter="set_normal_fade" getter="get_normal_fade" default="0.0">

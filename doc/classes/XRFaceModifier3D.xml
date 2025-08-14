@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRFaceModifier3D" inherits="Node3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node for driving standard face meshes from [XRFaceTracker] weights.
+	</brief_description>
+	<description>
+		This node applies weights from an [XRFaceTracker] to a mesh with supporting face blend shapes.
+		The [url=https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/unified-blendshapes]Unified Expressions[/url] blend shapes are supported, as well as ARKit and SRanipal blend shapes.
+		The node attempts to identify blend shapes based on name matching. Blend shapes should match the names listed in the [url=https://docs.vrcft.io/docs/tutorial-avatars/tutorial-avatars-extras/compatibility/overview]Unified Expressions Compatibility[/url] chart.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<members>
+		<member name="face_tracker" type="StringName" setter="set_face_tracker" getter="get_face_tracker" default="&amp;&quot;/user/face_tracker&quot;">
+			The [XRFaceTracker] path.
+		</member>
+		<member name="target" type="NodePath" setter="set_target" getter="get_target" default="NodePath(&quot;&quot;)">
+			The [NodePath] of the face [MeshInstance3D].
+		</member>
+	</members>
+</class>

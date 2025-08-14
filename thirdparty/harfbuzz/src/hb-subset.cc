@@ -48,6 +48,7 @@
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "hb-ot-name-table.hh"
+#include "hb-ot-layout-base-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
 #include "hb-ot-var-avar-table.hh"
@@ -294,8 +295,8 @@ _try_subset (const TableType *table,
   DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c ran out of room; reallocating to %u bytes.",
              HB_UNTAG (c->table_tag), buf_size);
 
-  if (unlikely (buf_size > c->source_blob->length * 16 ||
-		!buf->alloc (buf_size, true)))
+  if (unlikely (buf_size > c->source_blob->length * 256 ||
+		!buf->alloc_exact (buf_size)))
   {
     DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c failed to reallocate %u bytes.",
                HB_UNTAG (c->table_tag), buf_size);
@@ -460,9 +461,10 @@ _dependencies_satisfied (hb_subset_plan_t *plan, hb_tag_t tag,
   case HB_OT_TAG_hmtx:
   case HB_OT_TAG_vmtx:
   case HB_OT_TAG_maxp:
+  case HB_OT_TAG_OS2:
     return !plan->normalized_coords || !pending_subset_tags.has (HB_OT_TAG_glyf);
   case HB_OT_TAG_GPOS:
-    return !plan->normalized_coords || plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
+    return plan->all_axes_pinned || !pending_subset_tags.has (HB_OT_TAG_GDEF);
   default:
     return true;
   }
@@ -502,6 +504,7 @@ _subset_table (hb_subset_plan_t *plan,
   case HB_OT_TAG_CBLC: return _subset<const OT::CBLC> (plan, buf);
   case HB_OT_TAG_CBDT: return true; /* skip CBDT, handled by CBLC */
   case HB_OT_TAG_MATH: return _subset<const OT::MATH> (plan, buf);
+  case HB_OT_TAG_BASE: return _subset<const OT::BASE> (plan, buf);
 
 #ifndef HB_NO_SUBSET_CFF
   case HB_OT_TAG_CFF1: return _subset<const OT::cff1> (plan, buf);
@@ -547,6 +550,7 @@ _subset_table (hb_subset_plan_t *plan,
     }
 #endif
     return _passthrough (plan, tag);
+
   default:
     if (plan->flags & HB_SUBSET_FLAGS_PASSTHROUGH_UNRECOGNIZED)
       return _passthrough (plan, tag);
@@ -590,14 +594,20 @@ static void _attach_accelerator_data (hb_subset_plan_t* plan,
  * @input: input to use for the subsetting.
  *
  * Subsets a font according to provided input. Returns nullptr
- * if the subset operation fails.
+ * if the subset operation fails or the face has no glyphs.
  *
  * Since: 2.9.0
  **/
 hb_face_t *
 hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input)
 {
-  if (unlikely (!input || !source)) return hb_face_get_empty ();
+  if (unlikely (!input || !source)) return nullptr;
+
+  if (unlikely (!source->get_num_glyphs ()))
+  {
+    DEBUG_MSG (SUBSET, nullptr, "No glyphs in source font.");
+    return nullptr;
+  }
 
   hb_subset_plan_t *plan = hb_subset_plan_create_or_fail (source, input);
   if (unlikely (!plan)) {
@@ -698,3 +708,107 @@ hb_subset_plan_execute_or_fail (hb_subset_plan_t *plan)
 end:
   return success ? hb_face_reference (plan->dest) : nullptr;
 }
+
+
+#ifdef HB_EXPERIMENTAL_API
+
+#include "hb-ot-cff1-table.hh"
+
+template<typename accel_t>
+static hb_blob_t* get_charstrings_data(accel_t& accel, hb_codepoint_t glyph_index) {
+  if (!accel.is_valid()) {
+    return hb_blob_get_empty ();
+  }
+
+  hb_ubytes_t bytes = (*accel.charStrings)[glyph_index];
+  if (!bytes) {
+    return hb_blob_get_empty ();
+  }
+
+  hb_blob_t* cff_blob = accel.get_blob();
+  uint32_t length;
+  const char* cff_data = hb_blob_get_data(cff_blob, &length) ;
+
+  long int offset = (const char*) bytes.arrayZ - cff_data;
+  if (offset < 0 || offset > INT32_MAX) {
+    return hb_blob_get_empty ();
+  }
+
+  return hb_blob_create_sub_blob(cff_blob, (uint32_t) offset, bytes.length);
+}
+
+template<typename accel_t>
+static hb_blob_t* get_charstrings_index(accel_t& accel) {
+  if (!accel.is_valid()) {
+    return hb_blob_get_empty ();
+  }
+
+  const char* charstrings_start = (const char*) accel.charStrings;
+  unsigned charstrings_length = accel.charStrings->get_size();
+
+  hb_blob_t* cff_blob = accel.get_blob();
+  uint32_t length;
+  const char* cff_data = hb_blob_get_data(cff_blob, &length) ;
+
+  long int offset = charstrings_start - cff_data;
+  if (offset < 0 || offset > INT32_MAX) {
+    return hb_blob_get_empty ();
+  }
+
+  return hb_blob_create_sub_blob(cff_blob, (uint32_t) offset, charstrings_length);
+}
+
+/**
+ * hb_subset_cff_get_charstring_data:
+ * @face: A face object
+ * @glyph_index: Glyph index to get data for.
+ *
+ * Returns the raw outline data from the CFF/CFF2 table associated with the given glyph index.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff_get_charstring_data(hb_face_t* face, hb_codepoint_t glyph_index) {
+  return get_charstrings_data(*face->table.cff1, glyph_index);
+}
+
+/**
+ * hb_subset_cff_get_charstrings_index:
+ * @face: A face object
+ *
+ * Returns the raw CFF CharStrings INDEX from the CFF table.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff_get_charstrings_index (hb_face_t* face) {
+  return get_charstrings_index (*face->table.cff1);
+}
+ 
+/**
+ * hb_subset_cff2_get_charstring_data:
+ * @face: A face object
+ * @glyph_index: Glyph index to get data for.
+ *
+ * Returns the raw outline data from the CFF/CFF2 table associated with the given glyph index.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff2_get_charstring_data(hb_face_t* face, hb_codepoint_t glyph_index) {
+  return get_charstrings_data(*face->table.cff2, glyph_index);
+}
+
+/**
+ * hb_subset_cff2_get_charstrings_index:
+ * @face: A face object
+ *
+ * Returns the raw CFF2 CharStrings INDEX from the CFF2 table.
+ *
+ * XSince: EXPERIMENTAL
+ **/
+HB_EXTERN hb_blob_t*
+hb_subset_cff2_get_charstrings_index (hb_face_t* face) {
+  return get_charstrings_index (*face->table.cff2);
+}
+#endif

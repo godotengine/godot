@@ -25,27 +25,27 @@
 		var thread = null
 
 		func _upnp_setup(server_port):
-		    # UPNP queries take some time.
-		    var upnp = UPNP.new()
-		    var err = upnp.discover()
+			# UPNP queries take some time.
+			var upnp = UPNP.new()
+			var err = upnp.discover()
 
-		    if err != OK:
-		        push_error(str(err))
-		        emit_signal("upnp_completed", err)
-		        return
+			if err != OK:
+				push_error(str(err))
+				upnp_completed.emit(err)
+				return
 
-		    if upnp.get_gateway() and upnp.get_gateway().is_valid_gateway():
-		        upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "UDP")
-		        upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "TCP")
-		        emit_signal("upnp_completed", OK)
+			if upnp.get_gateway() and upnp.get_gateway().is_valid_gateway():
+				upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "UDP")
+				upnp.add_port_mapping(server_port, server_port, ProjectSettings.get_setting("application/config/name"), "TCP")
+				upnp_completed.emit(OK)
 
 		func _ready():
-		    thread = Thread.new()
-		    thread.start(_upnp_setup.bind(SERVER_PORT))
+			thread = Thread.new()
+			thread.start(_upnp_setup.bind(SERVER_PORT))
 
 		func _exit_tree():
-		    # Wait for thread finish here to handle game exit while the thread is running.
-		    thread.wait_to_finish()
+			# Wait for thread finish here to handle game exit while the thread is running.
+			thread.wait_to_finish()
 		[/codeblock]
 		[b]Terminology:[/b] In the context of UPnP networking, "gateway" (or "internet gateway device", short IGD) refers to network devices that allow computers in the local network to access the internet ("wide area network", WAN). These gateways are often also called "routers".
 		[b]Pitfalls:[/b]
@@ -173,7 +173,7 @@
 			Inconsistent parameters.
 		</constant>
 		<constant name="UPNP_RESULT_NO_SUCH_ENTRY_IN_ARRAY" value="4" enum="UPNPResult">
-			No such entry in array. May be returned if a given port, protocol combination is not found on an [UPNPDevice].
+			No such entry in array. May be returned if a given port, protocol combination is not found on a [UPNPDevice].
 		</constant>
 		<constant name="UPNP_RESULT_ACTION_FAILED" value="5" enum="UPNPResult">
 			The action failed.

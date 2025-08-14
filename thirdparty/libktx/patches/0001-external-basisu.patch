@@ -1,0 +1,30 @@
+diff --git a/thirdparty/libktx/lib/basis_transcode.cpp b/thirdparty/libktx/lib/basis_transcode.cpp
+index ca68545e4a..d7ecb7a0fd 100644
+--- a/thirdparty/libktx/lib/basis_transcode.cpp
++++ b/thirdparty/libktx/lib/basis_transcode.cpp
+@@ -29,9 +29,9 @@
+ #include "vkformat_enum.h"
+ #include "vk_format.h"
+ #include "basis_sgd.h"
+-#include "basisu/transcoder/basisu_file_headers.h"
+-#include "basisu/transcoder/basisu_transcoder.h"
+-#include "basisu/transcoder/basisu_transcoder_internal.h"
++#include "transcoder/basisu_file_headers.h"
++#include "transcoder/basisu_transcoder.h"
++#include "transcoder/basisu_transcoder_internal.h"
+ 
+ #undef DECLARE_PRIVATE
+ #undef DECLARE_PROTECTED
+diff --git a/thirdparty/libktx/lib/miniz_wrapper.cpp b/thirdparty/libktx/lib/miniz_wrapper.cpp
+index 07920c4809..cbd7da540a 100644
+--- a/thirdparty/libktx/lib/miniz_wrapper.cpp
++++ b/thirdparty/libktx/lib/miniz_wrapper.cpp
+@@ -30,7 +30,7 @@
+ #pragma GCC diagnostic ignored "-Wextra"
+ #pragma GCC diagnostic ignored "-Wmisleading-indentation"
+ #endif
+-#include "basisu/encoder/basisu_miniz.h"
++#include "encoder/basisu_miniz.h"
+ #ifdef __GNUC__
+ #pragma GCC diagnostic pop
+ #endif

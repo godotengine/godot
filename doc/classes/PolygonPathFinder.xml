@@ -42,6 +42,30 @@
 			<return type="bool" />
 			<param index="0" name="point" type="Vector2" />
 			<description>
+				Returns [code]true[/code] if [param point] falls inside the polygon area.
+				[codeblocks]
+				[gdscript]
+				var polygon_path_finder = PolygonPathFinder.new()
+				var points = [Vector2(0.0, 0.0), Vector2(1.0, 0.0), Vector2(0.0, 1.0)]
+				var connections = [0, 1, 1, 2, 2, 0]
+				polygon_path_finder.setup(points, connections)
+				print(polygon_path_finder.is_point_inside(Vector2(0.2, 0.2))) # Prints true
+				print(polygon_path_finder.is_point_inside(Vector2(1.0, 1.0))) # Prints false
+				[/gdscript]
+				[csharp]
+				var polygonPathFinder = new PolygonPathFinder();
+				Vector2[] points =
+				[
+					new Vector2(0.0f, 0.0f),
+					new Vector2(1.0f, 0.0f),
+					new Vector2(0.0f, 1.0f)
+				];
+				int[] connections = [0, 1, 1, 2, 2, 0];
+				polygonPathFinder.Setup(points, connections);
+				GD.Print(polygonPathFinder.IsPointInside(new Vector2(0.2f, 0.2f))); // Prints True
+				GD.Print(polygonPathFinder.IsPointInside(new Vector2(1.0f, 1.0f))); // Prints False
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_point_penalty">
@@ -56,6 +80,27 @@
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="connections" type="PackedInt32Array" />
 			<description>
+				Sets up [PolygonPathFinder] with an array of points that define the vertices of the polygon, and an array of indices that determine the edges of the polygon.
+				The length of [param connections] must be even, returns an error if odd.
+				[codeblocks]
+				[gdscript]
+				var polygon_path_finder = PolygonPathFinder.new()
+				var points = [Vector2(0.0, 0.0), Vector2(1.0, 0.0), Vector2(0.0, 1.0)]
+				var connections = [0, 1, 1, 2, 2, 0]
+				polygon_path_finder.setup(points, connections)
+				[/gdscript]
+				[csharp]
+				var polygonPathFinder = new PolygonPathFinder();
+				Vector2[] points =
+				[
+					new Vector2(0.0f, 0.0f),
+					new Vector2(1.0f, 0.0f),
+					new Vector2(0.0f, 1.0f)
+				];
+				int[] connections = [0, 1, 1, 2, 2, 0];
+				polygonPathFinder.Setup(points, connections);
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 	</methods>

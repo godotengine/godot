@@ -30,8 +30,6 @@
 
 #include "image_loader.h"
 
-#include "core/string/print_string.h"
-
 void ImageFormatLoader::_bind_methods() {
 	BIND_BITFIELD_FLAG(FLAG_NONE);
 	BIND_BITFIELD_FLAG(FLAG_FORCE_LINEAR);
@@ -80,17 +78,18 @@ void ImageFormatLoaderExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_format_loader"), &ImageFormatLoaderExtension::remove_format_loader);
 }
 
-Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
-	ERR_FAIL_COND_V_MSG(p_image.is_null(), ERR_INVALID_PARAMETER, "It's not a reference to a valid Image object.");
+Error ImageLoader::load_image(const String &p_file, Ref<Image> p_image, Ref<FileAccess> p_custom, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) {
+	ERR_FAIL_COND_V_MSG(p_image.is_null(), ERR_INVALID_PARAMETER, "Can't load an image: invalid Image object.");
+	const String file = ResourceUID::ensure_path(p_file);
 
 	Ref<FileAccess> f = p_custom;
 	if (f.is_null()) {
 		Error err;
-		f = FileAccess::open(p_file, FileAccess::READ, &err);
-		ERR_FAIL_COND_V_MSG(f.is_null(), err, "Error opening file '" + p_file + "'.");
+		f = FileAccess::open(file, FileAccess::READ, &err);
+		ERR_FAIL_COND_V_MSG(f.is_null(), err, vformat("Error opening file '%s'.", file));
 	}
 
-	String extension = p_file.get_extension();
+	String extension = file.get_extension();
 
 	for (int i = 0; i < loader.size(); i++) {
 		if (!loader[i]->recognize(extension)) {
@@ -98,7 +97,7 @@ Error ImageLoader::load_image(String p_file, Ref<Image> p_image, Ref<FileAccess>
 		}
 		Error err = loader.write[i]->load_image(p_image, f, p_flags, p_scale);
 		if (err != OK) {
-			ERR_PRINT("Error loading image: " + p_file);
+			ERR_PRINT(vformat("Error loading image: '%s'.", file));
 		}
 
 		if (err != ERR_FILE_UNRECOGNIZED) {
@@ -124,8 +123,6 @@ Ref<ImageFormatLoader> ImageLoader::recognize(const String &p_extension) {
 
 	return nullptr;
 }
-
-Vector<Ref<ImageFormatLoader>> ImageLoader::loader;
 
 void ImageLoader::add_image_format_loader(Ref<ImageFormatLoader> p_loader) {
 	loader.push_back(p_loader);

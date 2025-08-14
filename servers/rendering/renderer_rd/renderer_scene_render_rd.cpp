@@ -31,12 +31,15 @@
 #include "renderer_scene_render_rd.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/io/image.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -133,7 +136,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 
 	if (use_cube_map) {
 		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
-		if (use_ambient_light) {
+		if (use_ambient_light && panorama.is_valid()) {
 			for (int x = 0; x < p_size.width; x++) {
 				for (int y = 0; y < p_size.height; y++) {
 					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
@@ -220,7 +223,7 @@ void RendererSceneRenderRD::voxel_gi_update(RID p_probe, bool p_update_light_ins
 	gi.voxel_gi_update(p_probe, p_update_light_instances, p_light_instances, p_dynamic_objects);
 }
 
-void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms, bool p_will_continue_color, bool p_will_continue_depth) {
+void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_framebuffer, const uint32_t p_view_count, const Projection *p_camera_with_transforms) {
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
 	if (!p_render_buffers->has_custom_data(RB_SCOPE_SDFGI)) {
@@ -229,7 +232,7 @@ void RendererSceneRenderRD::_debug_sdfgi_probes(Ref<RenderSceneBuffersRD> p_rend
 
 	Ref<RendererRD::GI::SDFGI> sdfgi = p_render_buffers->get_custom_data(RB_SCOPE_SDFGI);
 
-	sdfgi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms, p_will_continue_color, p_will_continue_depth);
+	sdfgi->debug_probes(p_framebuffer, p_view_count, p_camera_with_transforms);
 }
 
 ////////////////////////////////
@@ -247,6 +250,95 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	setup_render_buffer_data(rb);
 
 	return rb;
+}
+
+bool RendererSceneRenderRD::_compositor_effects_has_flag(const RenderDataRD *p_render_data, RS::CompositorEffectFlags p_flag, RS::CompositorEffectCallbackType p_callback_type) {
+	RendererCompositorStorage *comp_storage = RendererCompositorStorage::get_singleton();
+
+	if (p_render_data->compositor.is_null()) {
+		return false;
+	}
+
+	if (p_render_data->reflection_probe.is_valid()) {
+		return false;
+	}
+
+	ERR_FAIL_COND_V(!comp_storage->is_compositor(p_render_data->compositor), false);
+	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
+
+	for (RID rid : re_rids) {
+		if (comp_storage->compositor_effect_get_flag(rid, p_flag)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool RendererSceneRenderRD::_has_compositor_effect(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
+	RendererCompositorStorage *comp_storage = RendererCompositorStorage::get_singleton();
+
+	if (p_render_data->compositor.is_null()) {
+		return false;
+	}
+
+	if (p_render_data->reflection_probe.is_valid()) {
+		return false;
+	}
+
+	ERR_FAIL_COND_V(!comp_storage->is_compositor(p_render_data->compositor), false);
+
+	Vector<RID> effects = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
+
+	return effects.size() > 0;
+}
+
+void RendererSceneRenderRD::_process_compositor_effects(RS::CompositorEffectCallbackType p_callback_type, const RenderDataRD *p_render_data) {
+	RendererCompositorStorage *comp_storage = RendererCompositorStorage::get_singleton();
+
+	if (p_render_data->compositor.is_null()) {
+		return;
+	}
+
+	if (p_render_data->reflection_probe.is_valid()) {
+		return;
+	}
+
+	ERR_FAIL_COND(!comp_storage->is_compositor(p_render_data->compositor));
+
+	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
+
+	for (RID rid : re_rids) {
+		Callable callback = comp_storage->compositor_effect_get_callback(rid);
+		Array arr = { p_callback_type, p_render_data };
+		callback.callv(arr);
+	}
+}
+
+void RendererSceneRenderRD::_render_buffers_ensure_screen_texture(const RenderDataRD *p_render_data) {
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	if (!rb->has_internal_texture()) {
+		// We're likely rendering reflection probes where we can't use our backbuffers.
+		return;
+	}
+
+	bool can_use_storage = _render_buffers_can_be_storage();
+	Size2i size = rb->get_internal_size();
+
+	// When upscaling, the blur texture needs to be at the target size for post-processing to work. We prefer to use a
+	// dedicated backbuffer copy texture instead if the blur texture is not an option so shader effects work correctly.
+	Size2i target_size = rb->get_target_size();
+	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
+	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
+	if (reuse_blur_texture) {
+		rb->allocate_blur_textures();
+	} else {
+		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
+	}
 }
 
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
@@ -270,12 +362,8 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	bool internal_size_matches = (size.width == target_size.width) && (size.height == target_size.height);
 	bool reuse_blur_texture = !rb->has_upscaled_texture() || internal_size_matches;
 	if (reuse_blur_texture) {
-		rb->allocate_blur_textures();
 		texture_name = RB_TEX_BLUR_0;
 	} else {
-		uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
-		usage_bits |= can_use_storage ? RD::TEXTURE_USAGE_STORAGE_BIT : RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-		rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_COLOR, rb->get_base_data_format(), usage_bits);
 		texture_name = RB_TEX_BACK_COLOR;
 	}
 
@@ -307,6 +395,23 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	RD::get_singleton()->draw_command_end_label();
 }
 
+void RendererSceneRenderRD::_render_buffers_ensure_depth_texture(const RenderDataRD *p_render_data) {
+	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+
+	if (!rb->has_depth_texture()) {
+		// We're likely rendering reflection probes where we can't use our backbuffers.
+		return;
+	}
+
+	// Note, this only creates our back depth texture if we haven't already created it.
+	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
+	usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // Set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
+
+	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
+}
+
 void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -317,13 +422,6 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
-
-	// note, this only creates our back depth texture if we haven't already created it.
-	uint32_t usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT;
-	usage_bits |= RD::TEXTURE_USAGE_CAN_COPY_TO_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
-	usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT; // set this as color attachment because we're copying data into it, it's not actually used as a depth buffer
-
-	rb->create_texture(RB_SCOPE_BUFFERS, RB_TEX_BACK_DEPTH, RD::DATA_FORMAT_R32_SFLOAT, usage_bits, RD::TEXTURE_SAMPLES_1);
 
 	bool can_use_storage = _render_buffers_can_be_storage();
 	Size2i size = rb->get_internal_size();
@@ -356,10 +454,23 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	Size2i target_size = rb->get_target_size();
 	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8; // FIXME I think this should check internal size, we do all our post processing at this size...
+	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
 	bool can_use_storage = _render_buffers_can_be_storage();
 
-	bool use_fsr = fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR;
-	bool use_upscaled_texture = rb->has_upscaled_texture() && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+	RS::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
+	bool use_upscaled_texture = rb->has_upscaled_texture() && (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	SpatialUpscaler *spatial_upscaler = nullptr;
+	if (can_use_effects) {
+		if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+			spatial_upscaler = fsr;
+		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+#if METAL_ENABLED
+			spatial_upscaler = mfx_spatial;
+#endif
+		}
+	}
+
+	bool use_smaa = smaa && rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_SMAA;
 
 	RID render_target = rb->get_render_target();
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
@@ -504,6 +615,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
+		bool using_hdr = texture_storage->render_target_is_using_hdr(render_target);
+
 		tonemap.exposure_texture = luminance->get_current_luminance_buffer(rb);
 		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && tonemap.exposure_texture.is_valid()) {
 			tonemap.use_auto_exposure = true;
@@ -542,7 +655,6 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			tonemap.use_fxaa = true;
 		}
 
-		tonemap.use_debanding = rb->get_use_debanding();
 		tonemap.texture_size = Vector2i(color_size.x, color_size.y);
 
 		if (p_render_data->environment.is_valid()) {
@@ -554,6 +666,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.use_color_correction = false;
 		tonemap.use_1d_color_correction = false;
 		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+		tonemap.convert_to_srgb = !using_hdr;
 
 		if (can_use_effects && p_render_data->environment.is_valid()) {
 			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
@@ -563,21 +676,20 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
 				tonemap.use_color_correction = true;
 				tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
-				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
+				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment), !tonemap.convert_to_srgb);
 			}
 		}
 
 		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = rb->get_view_count();
 
-		tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(render_target);
-
 		RID dest_fb;
-		bool use_intermediate_fb = use_fsr;
-		if (use_intermediate_fb) {
-			// If we use FSR to upscale we need to write our result into an intermediate buffer.
+		RD::DataFormat dest_fb_format;
+		if (spatial_upscaler != nullptr || use_smaa) {
+			// If we use a spatial upscaler to upscale or SMAA to antialias we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
-			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+			dest_fb_format = _render_buffers_get_color_format();
+			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), dest_fb_format, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 		} else {
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
@@ -585,11 +697,28 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			// Bit nasty but...
 
 			if (dest_is_msaa_2d) {
+				// Assume that the DataFormat of render_target_get_rd_texture_msaa is the same as render_target_get_color_format.
+				dest_fb_format = texture_storage->render_target_get_color_format(using_hdr, tonemap.convert_to_srgb);
 				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
 				texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
 			} else {
+				// Assume that the DataFormat of render_target_get_rd_framebuffer is the same as render_target_get_color_format.
+				dest_fb_format = texture_storage->render_target_get_color_format(using_hdr, tonemap.convert_to_srgb);
 				dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 			}
+		}
+
+		if (rb->get_use_debanding()) {
+			if (dest_fb_format >= RD::DATA_FORMAT_R8_UNORM && dest_fb_format <= RD::DATA_FORMAT_A8B8G8R8_SRGB_PACK32) {
+				tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_8_BIT;
+			} else if (dest_fb_format >= RD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32 && dest_fb_format <= RD::DATA_FORMAT_A2B10G10R10_SINT_PACK32) {
+				tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_10_BIT;
+			} else {
+				// In this case, debanding will be handled later when quantizing to an integer data format. (During blit, for example.)
+				tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
+			}
+		} else {
+			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
 		}
 
 		tone_mapper->tonemapper(color_texture, dest_fb, tonemap);
@@ -597,14 +726,64 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (use_fsr) {
-		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
+	if (use_smaa) {
+		RENDER_TIMESTAMP("SMAA");
+		RD::get_singleton()->draw_command_begin_label("SMAA");
+
+		RID dest_fb;
+		if (spatial_upscaler) {
+			rb->create_texture(SNAME("SMAA"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
+		}
+		if (rb->get_view_count() > 1) {
+			for (uint32_t v = 0; v < rb->get_view_count(); v++) {
+				RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
+
+				RID dest_texture;
+				if (spatial_upscaler) {
+					dest_texture = rb->get_texture_slice(SNAME("SMAA"), SNAME("destination"), v, 0);
+				} else {
+					dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
+				}
+				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+
+				smaa->process(rb, source_texture, dest_fb);
+			}
+		} else {
+			RID source_texture = rb->get_texture(SNAME("Tonemapper"), SNAME("destination"));
+
+			if (spatial_upscaler) {
+				RID dest_texture = rb->create_texture(SNAME("SMAA"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
+				dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
+			} else {
+				if (dest_is_msaa_2d) {
+					dest_fb = FramebufferCacheRD::get_singleton()->get_cache(texture_storage->render_target_get_rd_texture_msaa(render_target));
+					texture_storage->render_target_set_msaa_needs_resolve(render_target, true); // Make sure this gets resolved.
+				} else {
+					dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
+				}
+			}
+
+			smaa->process(rb, source_texture, dest_fb);
+		}
+
+		RD::get_singleton()->draw_command_end_label();
+	}
+
+	if (rb.is_valid() && spatial_upscaler) {
+		spatial_upscaler->ensure_context(rb);
+
+		RD::get_singleton()->draw_command_begin_label(spatial_upscaler->get_label());
 
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-			RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
+			RID source_texture;
+			if (use_smaa) {
+				source_texture = rb->get_texture_slice(SNAME("SMAA"), SNAME("destination"), v, 0);
+			} else {
+				source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
+			}
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
 
-			fsr->fsr_upscale(rb, source_texture, dest_texture);
+			spatial_upscaler->process(rb, source_texture, dest_texture);
 		}
 
 		if (dest_is_msaa_2d) {
@@ -632,7 +811,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	// FIXME: Our input it our internal_texture, shouldn't this be using internal_size ??
 	// Seeing we don't support FSR in our mobile renderer right now target_size = internal_size...
 	Size2i target_size = rb->get_target_size();
-	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8;
+	bool can_use_effects = target_size.x >= 8 && target_size.y >= 8 && debug_draw == RS::VIEWPORT_DEBUG_DRAW_DISABLED;
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
@@ -655,6 +834,8 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		ERR_FAIL_MSG("Auto Exposure is not supported when using subpasses.");
 	}
 
+	bool using_hdr = texture_storage->render_target_is_using_hdr(rb->get_render_target());
+
 	tonemap.use_glow = false;
 	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
 	tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
@@ -664,6 +845,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.use_color_correction = false;
 	tonemap.use_1d_color_correction = false;
 	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+	tonemap.convert_to_srgb = !using_hdr;
 
 	if (can_use_effects && p_render_data->environment.is_valid()) {
 		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
@@ -673,17 +855,29 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
 			tonemap.use_color_correction = true;
 			tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
-			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
+			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment), !tonemap.convert_to_srgb);
 		}
 	}
 
-	tonemap.use_debanding = rb->get_use_debanding();
 	tonemap.texture_size = Vector2i(target_size.x, target_size.y);
 
 	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	tonemap.view_count = rb->get_view_count();
 
-	tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(rb->get_render_target());
+	if (rb->get_use_debanding()) {
+		// Assume that the DataFormat of p_framebuffer is the same as render_target_get_color_format.
+		RD::DataFormat dest_fb_format = texture_storage->render_target_get_color_format(using_hdr, tonemap.convert_to_srgb);
+		if (dest_fb_format >= RD::DATA_FORMAT_R8_UNORM && dest_fb_format <= RD::DATA_FORMAT_A8B8G8R8_SRGB_PACK32) {
+			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_8_BIT;
+		} else if (dest_fb_format >= RD::DATA_FORMAT_A2R10G10B10_UNORM_PACK32 && dest_fb_format <= RD::DATA_FORMAT_A2B10G10R10_SINT_PACK32) {
+			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_10_BIT;
+		} else {
+			// In this case, debanding will be handled later when quantizing to an integer data format. (During blit, for example.)
+			tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
+		}
+	} else {
+		tonemap.debanding_mode = RendererRD::ToneMapper::TonemapSettings::DebandingMode::DEBANDING_MODE_DISABLED;
+	}
 
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
 
@@ -695,6 +889,56 @@ void RendererSceneRenderRD::_disable_clear_request(const RenderDataRD *p_render_
 
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	texture_storage->render_target_disable_clear_request(p_render_data->render_buffers->get_render_target());
+}
+
+bool RendererSceneRenderRD::_debug_draw_can_use_effects(RS::ViewportDebugDraw p_debug_draw) {
+	bool can_use_effects = true;
+	switch (p_debug_draw) {
+		// No debug draw, use camera effects
+		case RS::VIEWPORT_DEBUG_DRAW_DISABLED:
+			can_use_effects = true;
+			break;
+		// Modes that completely override rendering to draw debug information should disable camera effects.
+		case RS::VIEWPORT_DEBUG_DRAW_UNSHADED:
+		case RS::VIEWPORT_DEBUG_DRAW_OVERDRAW:
+		case RS::VIEWPORT_DEBUG_DRAW_WIREFRAME:
+		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_ALBEDO:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_OMNI_LIGHTS:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_SPOT_LIGHTS:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_DECALS:
+		case RS::VIEWPORT_DEBUG_DRAW_CLUSTER_REFLECTION_PROBES:
+		case RS::VIEWPORT_DEBUG_DRAW_INTERNAL_BUFFER:
+			can_use_effects = false;
+			break;
+		// Modes that draws information over part of the viewport needs camera effects because we see partially the normal draw mode.
+		case RS::VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_DECAL_ATLAS:
+		case RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS:
+		// Modes that draws a buffer over viewport needs camera effects because if the buffer is not available it will be equivalent to normal draw mode.
+		case RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER:
+		case RS::VIEWPORT_DEBUG_DRAW_SSAO:
+		case RS::VIEWPORT_DEBUG_DRAW_SSIL:
+		case RS::VIEWPORT_DEBUG_DRAW_SDFGI:
+		case RS::VIEWPORT_DEBUG_DRAW_GI_BUFFER:
+		case RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS:
+			can_use_effects = true;
+			break;
+		// Other debug draw modes keep camera effects.
+		case RS::VIEWPORT_DEBUG_DRAW_LIGHTING:
+		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_LIGHTING:
+		case RS::VIEWPORT_DEBUG_DRAW_VOXEL_GI_EMISSION:
+		case RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE:
+		case RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS:
+		case RS::VIEWPORT_DEBUG_DRAW_SDFGI_PROBES:
+		case RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD:
+			can_use_effects = true;
+			break;
+		default:
+			break;
+	}
+
+	return can_use_effects;
 }
 
 void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_render_data) {
@@ -773,7 +1017,7 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(const RenderDataRD *p_ren
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER && _render_buffers_get_normal_texture(rb).is_valid()) {
 		Size2 rtsize = texture_storage->render_target_get_size(render_target);
-		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false);
+		copy_effects->copy_to_fb_rect(_render_buffers_get_normal_texture(rb), texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize), false, false, false, false, RID(), false, false, false, true);
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_OCCLUDERS) {
@@ -922,6 +1166,14 @@ void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightPr
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::lightmaps_set_bicubic_filter(bool p_enable) {
+	if (lightmap_filter_bicubic == p_enable) {
+		return;
+	}
+	lightmap_filter_bicubic = p_enable;
+	_update_shader_quality_settings();
+}
+
 int RendererSceneRenderRD::get_roughness_layers() const {
 	return sky.roughness_layers;
 }
@@ -987,15 +1239,7 @@ void RendererSceneRenderRD::_post_prepass_render(RenderDataRD *p_render_data, bo
 	}
 }
 
-void RendererSceneRenderRD::_pre_resolve_render(RenderDataRD *p_render_data, bool p_use_gi) {
-	if (p_render_data->render_buffers.is_valid()) {
-		if (p_use_gi) {
-			RD::get_singleton()->compute_list_end();
-		}
-	}
-}
-
-void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
+void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render_buffers, const CameraData *p_camera_data, const CameraData *p_prev_camera_data, const PagedArray<RenderGeometryInstance *> &p_instances, const PagedArray<RID> &p_lights, const PagedArray<RID> &p_reflection_probes, const PagedArray<RID> &p_voxel_gi_instances, const PagedArray<RID> &p_decals, const PagedArray<RID> &p_lightmaps, const PagedArray<RID> &p_fog_volumes, RID p_environment, RID p_camera_attributes, RID p_compositor, RID p_shadow_atlas, RID p_occluder_debug_tex, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass, float p_screen_mesh_lod_threshold, const RenderShadowData *p_render_shadows, int p_render_shadow_count, const RenderSDFGIData *p_render_sdfgi_regions, int p_render_sdfgi_region_count, const RenderSDFGIUpdateData *p_sdfgi_update_data, RenderingMethod::RenderInfo *r_render_info) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
@@ -1011,8 +1255,12 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		scene_data.cam_frustum = p_camera_data->is_frustum;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
+		scene_data.taa_frame_count = p_camera_data->taa_frame_count;
+		scene_data.main_cam_transform = p_camera_data->main_transform;
+		scene_data.flip_y = !p_reflection_probe.is_valid();
 
 		scene_data.view_count = p_camera_data->view_count;
 		for (uint32_t v = 0; v < p_camera_data->view_count; v++) {
@@ -1036,7 +1284,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		// Also, take into account resolution scaling for the multiplier, since we have more leeway with quality
 		// degradation visibility. Conversely, allow upwards scaling, too, for increased mesh detail at high res.
-		const float scaling_3d_scale = GLOBAL_GET("rendering/scaling_3d/scale");
+		const float scaling_3d_scale = GLOBAL_GET_CACHED(float, "rendering/scaling_3d/scale");
 		scene_data.lod_distance_multiplier = lod_distance_multiplier * (1.0 / scaling_3d_scale);
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_DISABLE_LOD) {
@@ -1074,6 +1322,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.lightmaps = &p_lightmaps;
 		render_data.fog_volumes = &p_fog_volumes;
 		render_data.environment = p_environment;
+		render_data.compositor = p_compositor;
 		render_data.camera_attributes = p_camera_attributes;
 		render_data.shadow_atlas = p_shadow_atlas;
 		render_data.occluder_debug_tex = p_occluder_debug_tex;
@@ -1088,14 +1337,27 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		render_data.sdfgi_update_data = p_sdfgi_update_data;
 
 		render_data.render_info = r_render_info;
+
+		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
+			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
+			render_data.render_region = texture_storage->render_target_get_render_region(rb->get_render_target());
+		}
 	}
 
 	PagedArray<RID> empty;
 
-	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
 		render_data.lights = &empty;
 		render_data.reflection_probes = &empty;
 		render_data.voxel_gi_instances = &empty;
+		render_data.lightmaps = &empty;
+	}
+
+	if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_UNSHADED ||
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_OVERDRAW ||
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_LIGHTING ||
+			get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_PSSM_SPLITS) {
+		render_data.decals = &empty;
 	}
 
 	Color clear_color;
@@ -1135,6 +1397,10 @@ void RendererSceneRenderRD::render_particle_collider_heightfield(RID p_collider,
 bool RendererSceneRenderRD::free(RID p_rid) {
 	if (is_environment(p_rid)) {
 		environment_free(p_rid);
+	} else if (is_compositor(p_rid)) {
+		compositor_free(p_rid);
+	} else if (is_compositor_effect(p_rid)) {
+		compositor_effect_free(p_rid);
 	} else if (RSG::camera_attributes->owns_camera_attributes(p_rid)) {
 		RSG::camera_attributes->camera_attributes_free(p_rid);
 	} else if (gi.voxel_gi_instance_owns(p_rid)) {
@@ -1298,7 +1564,7 @@ bool RendererSceneRenderRD::is_volumetric_supported() const {
 }
 
 uint32_t RendererSceneRenderRD::get_max_elements() const {
-	return GLOBAL_GET("rendering/limits/cluster_builder/max_clustered_elements");
+	return GLOBAL_GET_CACHED(uint32_t, "rendering/limits/cluster_builder/max_clustered_elements");
 }
 
 RendererSceneRenderRD::RendererSceneRenderRD() {
@@ -1311,6 +1577,13 @@ void RendererSceneRenderRD::init() {
 
 	/* Forward ID */
 	forward_id_storage = create_forward_id_storage();
+
+	/* Register the include files we make available by default to our users */
+	{
+		ShaderIncludeDB::register_built_in_include_file("godot/decal_data_inc.glsl", decal_data_inc_shader_glsl);
+		ShaderIncludeDB::register_built_in_include_file("godot/light_data_inc.glsl", light_data_inc_shader_glsl);
+		ShaderIncludeDB::register_built_in_include_file("godot/scene_data_inc.glsl", scene_data_inc_shader_glsl);
+	}
 
 	/* SKY SHADER */
 
@@ -1354,6 +1627,7 @@ void RendererSceneRenderRD::init() {
 
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 
@@ -1363,6 +1637,7 @@ void RendererSceneRenderRD::init() {
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
 	debug_effects = memnew(RendererRD::DebugEffects);
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
+	smaa = memnew(RendererRD::SMAA);
 	tone_mapper = memnew(RendererRD::ToneMapper);
 	if (can_use_vrs) {
 		vrs = memnew(RendererRD::VRS);
@@ -1370,6 +1645,9 @@ void RendererSceneRenderRD::init() {
 	if (can_use_storage) {
 		fsr = memnew(RendererRD::FSR);
 	}
+#ifdef METAL_ENABLED
+	mfx_spatial = memnew(RendererRD::MFXSpatialEffect);
+#endif
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
@@ -1389,6 +1667,9 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	if (luminance) {
 		memdelete(luminance);
 	}
+	if (smaa) {
+		memdelete(smaa);
+	}
 	if (tone_mapper) {
 		memdelete(tone_mapper);
 	}
@@ -1398,6 +1679,11 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	if (fsr) {
 		memdelete(fsr);
 	}
+#ifdef METAL_ENABLED
+	if (mfx_spatial) {
+		memdelete(mfx_spatial);
+	}
+#endif
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);

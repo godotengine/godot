@@ -30,6 +30,9 @@
 // When targeting Wasm SIMD we can't use runtime cpuid checks so we unconditionally enable SIMD
 #if defined(__wasm_simd128__)
 #define SIMD_WASM
+// Prevent compiling other variant when wasm simd compilation is active
+#undef SIMD_NEON
+#undef SIMD_SSE
 #endif
 
 #endif // !MESHOPTIMIZER_NO_SIMD
@@ -61,6 +64,10 @@
 #define wasmx_unpackhi_v16x8(a, b) wasm_v16x8_shuffle(a, b, 4, 12, 5, 13, 6, 14, 7, 15)
 #define wasmx_unziplo_v32x4(a, b) wasm_v32x4_shuffle(a, b, 0, 2, 4, 6)
 #define wasmx_unziphi_v32x4(a, b) wasm_v32x4_shuffle(a, b, 1, 3, 5, 7)
+#endif
+
+#ifndef __has_builtin
+#define __has_builtin(x) 0
 #endif
 
 namespace meshopt
@@ -185,9 +192,7 @@ inline uint64_t rotateleft64(uint64_t v, int x)
 {
 #if defined(_MSC_VER) && !defined(__clang__)
 	return _rotl64(v, x);
-// Apple's Clang 8 is actually vanilla Clang 3.9, there we need to look for
-// version 11 instead: https://en.wikipedia.org/wiki/Xcode#Toolchain_versions
-#elif defined(__clang__) && ((!defined(__apple_build_version__) && __clang_major__ >= 8) || __clang_major__ >= 11)
+#elif defined(__clang__) && __has_builtin(__builtin_rotateleft64)
 	return __builtin_rotateleft64(v, x);
 #else
 	return (v << (x & 63)) | (v >> ((64 - x) & 63));
@@ -196,7 +201,7 @@ inline uint64_t rotateleft64(uint64_t v, int x)
 #endif
 
 #ifdef SIMD_SSE
-static void decodeFilterOctSimd(signed char* data, size_t count)
+static void decodeFilterOctSimd8(signed char* data, size_t count)
 {
 	const __m128 sign = _mm_set1_ps(-0.f);
 
@@ -241,7 +246,7 @@ static void decodeFilterOctSimd(signed char* data, size_t count)
 	}
 }
 
-static void decodeFilterOctSimd(short* data, size_t count)
+static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const __m128 sign = _mm_set1_ps(-0.f);
 
@@ -290,8 +295,9 @@ static void decodeFilterOctSimd(short* data, size_t count)
 		__m128i res_1 = _mm_unpackhi_epi16(xzr, y0r);
 
 		// patch in .w
-		res_0 = _mm_or_si128(res_0, _mm_and_si128(_mm_castps_si128(n4_0), _mm_set1_epi64x(0xffff000000000000)));
-		res_1 = _mm_or_si128(res_1, _mm_and_si128(_mm_castps_si128(n4_1), _mm_set1_epi64x(0xffff000000000000)));
+		__m128i maskw = _mm_set_epi32(0xffff0000, 0, 0xffff0000, 0);
+		res_0 = _mm_or_si128(res_0, _mm_and_si128(_mm_castps_si128(n4_0), maskw));
+		res_1 = _mm_or_si128(res_1, _mm_and_si128(_mm_castps_si128(n4_1), maskw));
 
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[(i + 0) * 4]), res_0);
 		_mm_storeu_si128(reinterpret_cast<__m128i*>(&data[(i + 2) * 4]), res_1);
@@ -399,7 +405,7 @@ inline float32x4_t vdivq_f32(float32x4_t x, float32x4_t y)
 #endif
 
 #ifdef SIMD_NEON
-static void decodeFilterOctSimd(signed char* data, size_t count)
+static void decodeFilterOctSimd8(signed char* data, size_t count)
 {
 	const int32x4_t sign = vdupq_n_s32(0x80000000);
 
@@ -448,7 +454,7 @@ static void decodeFilterOctSimd(signed char* data, size_t count)
 	}
 }
 
-static void decodeFilterOctSimd(short* data, size_t count)
+static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const int32x4_t sign = vdupq_n_s32(0x80000000);
 
@@ -593,7 +599,7 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 #endif
 
 #ifdef SIMD_WASM
-static void decodeFilterOctSimd(signed char* data, size_t count)
+static void decodeFilterOctSimd8(signed char* data, size_t count)
 {
 	const v128_t sign = wasm_f32x4_splat(-0.f);
 
@@ -642,7 +648,7 @@ static void decodeFilterOctSimd(signed char* data, size_t count)
 	}
 }
 
-static void decodeFilterOctSimd(short* data, size_t count)
+static void decodeFilterOctSimd16(short* data, size_t count)
 {
 	const v128_t sign = wasm_f32x4_splat(-0.f);
 	const v128_t zmask = wasm_i32x4_splat(0x7fff);
@@ -791,6 +797,33 @@ static void decodeFilterExpSimd(unsigned int* data, size_t count)
 }
 #endif
 
+// optimized variant of frexp
+inline int optlog2(float v)
+{
+	union
+	{
+		float f;
+		unsigned int ui;
+	} u;
+
+	u.f = v;
+	// +1 accounts for implicit 1. in mantissa; denormalized numbers will end up clamped to min_exp by calling code
+	return v == 0 ? 0 : int((u.ui >> 23) & 0xff) - 127 + 1;
+}
+
+// optimized variant of ldexp
+inline float optexp2(int e)
+{
+	union
+	{
+		float f;
+		unsigned int ui;
+	} u;
+
+	u.ui = unsigned(e + 127) << 23;
+	return u.f;
+}
+
 } // namespace meshopt
 
 void meshopt_decodeFilterOct(void* buffer, size_t count, size_t stride)
@@ -801,9 +834,9 @@ void meshopt_decodeFilterOct(void* buffer, size_t count, size_t stride)
 
 #if defined(SIMD_SSE) || defined(SIMD_NEON) || defined(SIMD_WASM)
 	if (stride == 4)
-		dispatchSimd(decodeFilterOctSimd, static_cast<signed char*>(buffer), count, 4);
+		dispatchSimd(decodeFilterOctSimd8, static_cast<signed char*>(buffer), count, 4);
 	else
-		dispatchSimd(decodeFilterOctSimd, static_cast<short*>(buffer), count, 4);
+		dispatchSimd(decodeFilterOctSimd16, static_cast<short*>(buffer), count, 4);
 #else
 	if (stride == 4)
 		decodeFilterOct(static_cast<signed char*>(buffer), count);
@@ -918,39 +951,91 @@ void meshopt_encodeFilterQuat(void* destination_, size_t count, size_t stride, i
 	}
 }
 
-void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, int bits, const float* data)
+void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, int bits, const float* data, enum meshopt_EncodeExpMode mode)
 {
-	assert(stride > 0 && stride % 4 == 0);
+	using namespace meshopt;
+
+	assert(stride > 0 && stride % 4 == 0 && stride <= 256);
 	assert(bits >= 1 && bits <= 24);
 
 	unsigned int* destination = static_cast<unsigned int*>(destination_);
 	size_t stride_float = stride / sizeof(float);
+
+	int component_exp[64];
+	assert(stride_float <= sizeof(component_exp) / sizeof(int));
+
+	const int min_exp = -100;
+
+	if (mode == meshopt_EncodeExpSharedComponent)
+	{
+		for (size_t j = 0; j < stride_float; ++j)
+			component_exp[j] = min_exp;
+
+		for (size_t i = 0; i < count; ++i)
+		{
+			const float* v = &data[i * stride_float];
+
+			// use maximum exponent to encode values; this guarantees that mantissa is [-1, 1]
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				component_exp[j] = (component_exp[j] < e) ? e : component_exp[j];
+			}
+		}
+	}
 
 	for (size_t i = 0; i < count; ++i)
 	{
 		const float* v = &data[i * stride_float];
 		unsigned int* d = &destination[i * stride_float];
 
-		// use maximum exponent to encode values; this guarantees that mantissa is [-1, 1]
-		int exp = -100;
+		int vector_exp = min_exp;
 
-		for (size_t j = 0; j < stride_float; ++j)
+		if (mode == meshopt_EncodeExpSharedVector)
 		{
-			int e;
-			frexp(v[j], &e);
+			// use maximum exponent to encode values; this guarantees that mantissa is [-1, 1]
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
 
-			exp = (exp < e) ? e : exp;
+				vector_exp = (vector_exp < e) ? e : vector_exp;
+			}
+		}
+		else if (mode == meshopt_EncodeExpSeparate)
+		{
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				component_exp[j] = (min_exp < e) ? e : min_exp;
+			}
+		}
+		else if (mode == meshopt_EncodeExpClamped)
+		{
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				component_exp[j] = (0 < e) ? e : 0;
+			}
+		}
+		else
+		{
+			// the code below assumes component_exp is initialized outside of the loop
+			assert(mode == meshopt_EncodeExpSharedComponent);
 		}
 
-		// note that we additionally scale the mantissa to make it a K-bit signed integer (K-1 bits for magnitude)
-		exp -= (bits - 1);
-
-		// compute renormalized rounded mantissa for each component
-		int mmask = (1 << 24) - 1;
-
 		for (size_t j = 0; j < stride_float; ++j)
 		{
-			int m = int(ldexp(v[j], -exp) + (v[j] >= 0 ? 0.5f : -0.5f));
+			int exp = (mode == meshopt_EncodeExpSharedVector) ? vector_exp : component_exp[j];
+
+			// note that we additionally scale the mantissa to make it a K-bit signed integer (K-1 bits for magnitude)
+			exp -= (bits - 1);
+
+			// compute renormalized rounded mantissa for each component
+			int mmask = (1 << 24) - 1;
+			int m = int(v[j] * optexp2(-exp) + (v[j] >= 0 ? 0.5f : -0.5f));
 
 			d[j] = (m & mmask) | (unsigned(exp) << 24);
 		}

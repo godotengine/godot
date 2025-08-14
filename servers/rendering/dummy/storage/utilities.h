@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef UTILITIES_DUMMY_H
-#define UTILITIES_DUMMY_H
+#pragma once
 
-#include "mesh_storage.h"
 #include "servers/rendering/storage/utilities.h"
-#include "texture_storage.h"
 
 namespace RendererDummy {
 
@@ -49,27 +46,12 @@ public:
 
 	/* INSTANCES */
 
-	virtual RS::InstanceType get_base_type(RID p_rid) const override {
-		if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-			return RS::INSTANCE_MESH;
-		}
-		return RS::INSTANCE_NONE;
-	}
-
-	virtual bool free(RID p_rid) override {
-		if (RendererDummy::TextureStorage::get_singleton()->owns_texture(p_rid)) {
-			RendererDummy::TextureStorage::get_singleton()->texture_free(p_rid);
-			return true;
-		} else if (RendererDummy::MeshStorage::get_singleton()->owns_mesh(p_rid)) {
-			RendererDummy::MeshStorage::get_singleton()->mesh_free(p_rid);
-			return true;
-		}
-		return false;
-	}
+	virtual RS::InstanceType get_base_type(RID p_rid) const override;
+	virtual bool free(RID p_rid) override;
 
 	/* DEPENDENCIES */
 
-	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override {}
+	virtual void base_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
 	/* VISIBILITY NOTIFIER */
 
@@ -99,7 +81,7 @@ public:
 	virtual void set_debug_generate_wireframes(bool p_generate) override {}
 
 	virtual bool has_os_feature(const String &p_feature) const override {
-		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc" || p_feature == "etc2";
+		return p_feature == "rgtc" || p_feature == "bptc" || p_feature == "s3tc" || p_feature == "etc2";
 	}
 
 	virtual void update_memory_info() override {}
@@ -110,9 +92,9 @@ public:
 	virtual RenderingDevice::DeviceType get_video_adapter_type() const override { return RenderingDevice::DeviceType::DEVICE_TYPE_OTHER; }
 	virtual String get_video_adapter_api_version() const override { return String(); }
 
-	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); };
+	virtual Size2i get_maximum_viewport_size() const override { return Size2i(); }
+	virtual uint32_t get_maximum_shader_varyings() const override { return 31; } // Fair assumption for everything except old OpenGL-only phones.
+	virtual uint64_t get_maximum_uniform_buffer_size() const override { return 65536; } // Fair assumption for all devices.
 };
 
 } // namespace RendererDummy
-
-#endif // UTILITIES_DUMMY_H

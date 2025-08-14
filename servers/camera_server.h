@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_SERVER_H
-#define CAMERA_SERVER_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
@@ -60,18 +59,20 @@ public:
 	};
 
 	typedef CameraServer *(*CreateFunc)();
+	static inline constexpr const char feeds_updated_signal_name[] = "camera_feeds_updated";
 
 private:
 protected:
 	static CreateFunc create_func;
 
+	bool monitoring_feeds = false;
 	Vector<Ref<CameraFeed>> feeds;
 
 	static CameraServer *singleton;
 
 	static void _bind_methods();
 
-	template <class T>
+	template <typename T>
 	static CameraServer *_create_builtin() {
 		return memnew(T);
 	}
@@ -79,7 +80,7 @@ protected:
 public:
 	static CameraServer *get_singleton();
 
-	template <class T>
+	template <typename T>
 	static void make_default() {
 		create_func = _create_builtin<T>;
 	}
@@ -87,7 +88,10 @@ public:
 	static CameraServer *create() {
 		CameraServer *server = create_func ? create_func() : memnew(CameraServer);
 		return server;
-	};
+	}
+
+	virtual void set_monitoring_feeds(bool p_monitoring_feeds);
+	_FORCE_INLINE_ bool is_monitoring_feeds() const { return monitoring_feeds; }
 
 	// Right now we identify our feed by it's ID when it's used in the background.
 	// May see if we can change this to purely relying on CameraFeed objects or by name.
@@ -112,5 +116,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(CameraServer::FeedImage);
-
-#endif // CAMERA_SERVER_H

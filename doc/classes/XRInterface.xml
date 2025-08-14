@@ -26,13 +26,13 @@
 		<method name="get_name" qualifiers="const">
 			<return type="StringName" />
 			<description>
-				Returns the name of this interface (OpenXR, OpenVR, OpenHMD, ARKit, etc).
+				Returns the name of this interface ([code]"OpenXR"[/code], [code]"OpenVR"[/code], [code]"OpenHMD"[/code], [code]"ARKit"[/code], etc.).
 			</description>
 		</method>
 		<method name="get_play_area" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns an array of vectors that denotes the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
+				Returns an array of vectors that represent the physical play area mapped to the virtual space around the [XROrigin3D] point. The points form a convex polygon that can be used to react to or visualize the play area. This returns an empty array if this feature is not supported or if the information is not yet available.
 			</description>
 		</method>
 		<method name="get_projection_for_view">
@@ -99,19 +99,19 @@
 		<method name="is_initialized" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface has been initialized.
+				Returns [code]true[/code] if this interface has been initialized.
 			</description>
 		</method>
-		<method name="is_passthrough_enabled">
+		<method name="is_passthrough_enabled" deprecated="Check if [member environment_blend_mode] is [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if passthrough is enabled.
+				Returns [code]true[/code] if passthrough is enabled.
 			</description>
 		</method>
-		<method name="is_passthrough_supported">
+		<method name="is_passthrough_supported" deprecated="Check that [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND] is supported using [method get_supported_environment_blend_modes], instead.">
 			<return type="bool" />
 			<description>
-				Is [code]true[/code] if this interface supports passthrough.
+				Returns [code]true[/code] if this interface supports passthrough.
 			</description>
 		</method>
 		<method name="set_environment_blend_mode">
@@ -119,20 +119,20 @@
 			<param index="0" name="mode" type="int" enum="XRInterface.EnvironmentBlendMode" />
 			<description>
 				Sets the active environment blend mode.
-				[param mode] is the [enum XRInterface.EnvironmentBlendMode] starting with the next frame.
+				[param mode] is the environment blend mode starting with the next frame.
 				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
 				[codeblock]
-				                func _ready():
-				                    var xr_interface: XRInterface = XRServer.find_interface("OpenXR")
-				                    if xr_interface and xr_interface.is_initialized():
-				                        var vp: Viewport = get_viewport()
-				                        vp.use_xr = true
-				                        var acceptable_modes = [ XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE ]
-				                        var modes = xr_interface.get_supported_environment_blend_modes()
-				                        for mode in acceptable_modes:
-				                            if mode in modes:
-				                                xr_interface.set_environment_blend_mode(mode)
-				                                break
+				func _ready():
+					var xr_interface = XRServer.find_interface("OpenXR")
+					if xr_interface and xr_interface.is_initialized():
+						var vp = get_viewport()
+						vp.use_xr = true
+						var acceptable_modes = [XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE]
+						var modes = xr_interface.get_supported_environment_blend_modes()
+						for mode in acceptable_modes:
+							if mode in modes:
+								xr_interface.set_environment_blend_mode(mode)
+								break
 				[/codeblock]
 			</description>
 		</method>
@@ -141,16 +141,17 @@
 			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Sets the active play area mode, will return [code]false[/code] if the mode can't be used with this interface.
+				[b]Note:[/b] Changing this after the interface has already been initialized can be jarring for the player, so it's recommended to recenter on the HMD with [method XRServer.center_on_hmd] (if switching to [constant XRInterface.XR_PLAY_AREA_STAGE]) or make the switch during a scene change.
 			</description>
 		</method>
-		<method name="start_passthrough">
+		<method name="start_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_ALPHA_BLEND], instead.">
 			<return type="bool" />
 			<description>
 				Starts passthrough, will return [code]false[/code] if passthrough couldn't be started.
 				[b]Note:[/b] The viewport used for XR must have a transparent background, otherwise passthrough may not properly render.
 			</description>
 		</method>
-		<method name="stop_passthrough">
+		<method name="stop_passthrough" deprecated="Set the [member environment_blend_mode] to [constant XRInterface.XR_ENV_BLEND_MODE_OPAQUE], instead.">
 			<return type="void" />
 			<description>
 				Stops passthrough.
@@ -175,6 +176,10 @@
 				Triggers a haptic pulse on a device associated with this interface.
 				[param action_name] is the name of the action for this pulse.
 				[param tracker_name] is optional and can be used to direct the pulse to a specific device provided that device is bound to this haptic.
+				[param frequency] is the frequency of the pulse, set to [code]0.0[/code] to have the system use a default frequency.
+				[param amplitude] is the amplitude of the pulse between [code]0.0[/code] and [code]1.0[/code].
+				[param duration_sec] is the duration of the pulse in seconds.
+				[param delay_sec] is a delay in seconds before the pulse is given.
 			</description>
 		</method>
 		<method name="uninitialize">
@@ -256,7 +261,10 @@
 			Player is free to move around, full positional tracking.
 		</constant>
 		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
-			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space, [method XRServer.center_on_hmd] disabled.
+			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space. In this mode, system-level recentering may be disabled, requiring the use of [method XRServer.center_on_hmd].
+		</constant>
+		<constant name="XR_PLAY_AREA_CUSTOM" value="2147483647" enum="PlayAreaMode">
+			Custom play area set by a GDExtension.
 		</constant>
 		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
 			Opaque blend mode. This is typically used for VR devices.
@@ -266,6 +274,15 @@
 		</constant>
 		<constant name="XR_ENV_BLEND_MODE_ALPHA_BLEND" value="2" enum="EnvironmentBlendMode">
 			Alpha blend mode. This is typically used for AR or VR devices with passthrough capabilities. The alpha channel controls how much of the passthrough is visible. Alpha of 0.0 means the passthrough is visible and this pixel works in ADDITIVE mode. Alpha of 1.0 means that the passthrough is not visible and this pixel works in OPAQUE mode.
+		</constant>
+		<constant name="XR_VRS_TEXTURE_FORMAT_UNIFIED" value="0" enum="VRSTextureFormat">
+			The texture format is the same as returned by [method XRVRS.make_vrs_texture].
+		</constant>
+		<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_SHADING_RATE" value="1" enum="VRSTextureFormat">
+			The texture format is the same as expected by the Vulkan [code]VK_KHR_fragment_shading_rate[/code] extension.
+		</constant>
+		<constant name="XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP" value="2" enum="VRSTextureFormat">
+			The texture format is the same as expected by the Vulkan [code]VK_EXT_fragment_density_map[/code] extension.
 		</constant>
 	</constants>
 </class>

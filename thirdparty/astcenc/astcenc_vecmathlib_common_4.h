@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2020-2021 Arm Limited
+// Copyright 2020-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -31,26 +31,7 @@
 #endif
 
 #include <cstdio>
-
-// ============================================================================
-// vmask4 operators and functions
-// ============================================================================
-
-/**
- * @brief True if any lanes are enabled, false otherwise.
- */
-ASTCENC_SIMD_INLINE bool any(vmask4 a)
-{
-	return mask(a) != 0;
-}
-
-/**
- * @brief True if all lanes are enabled, false otherwise.
- */
-ASTCENC_SIMD_INLINE bool all(vmask4 a)
-{
-	return mask(a) == 0xF;
-}
+#include <limits>
 
 // ============================================================================
 // vint4 operators and functions
@@ -127,6 +108,31 @@ ASTCENC_SIMD_INLINE vint4 clamp(int minv, int maxv, vint4 a)
 ASTCENC_SIMD_INLINE int hadd_rgb_s(vint4 a)
 {
 	return a.lane<0>() + a.lane<1>() + a.lane<2>();
+}
+
+/**
+ * @brief Return the horizontal minimum of a vector.
+ */
+ASTCENC_SIMD_INLINE int hmin_s(vint4 a)
+{
+	return hmin(a).lane<0>();
+}
+
+/**
+ * @brief Generate a vint4 from a size_t.
+ */
+ ASTCENC_SIMD_INLINE vint4 vint4_from_size(size_t a)
+ {
+	assert(a <= std::numeric_limits<int>::max());
+	return vint4(static_cast<int>(a));
+ }
+
+/**
+ * @brief Return the horizontal maximum of a vector.
+ */
+ASTCENC_SIMD_INLINE int hmax_s(vint4 a)
+{
+	return hmax(a).lane<0>();
 }
 
 // ============================================================================
@@ -220,18 +226,6 @@ ASTCENC_SIMD_INLINE vfloat4 clamp(float minv, float maxv, vfloat4 a)
 {
 	// Do not reorder - second operand will return if either is NaN
 	return min(max(a, minv), maxv);
-}
-
-/**
- * @brief Return the clamped value between 0.0f and max.
- *
- * It is assumed that  @c max is not a NaN value. If @c a is NaN then zero will
- * be returned for that lane.
- */
-ASTCENC_SIMD_INLINE vfloat4 clampz(float maxv, vfloat4 a)
-{
-	// Do not reorder - second operand will return if either is NaN
-	return min(max(a, vfloat4::zero()), maxv);
 }
 
 /**
@@ -383,7 +377,7 @@ static ASTCENC_SIMD_INLINE void bit_transfer_signed(
  */
 ASTCENC_SIMD_INLINE void print(vint4 a)
 {
-	alignas(16) int v[4];
+	ASTCENC_ALIGNAS int v[4];
 	storea(a, v);
 	printf("v4_i32:\n  %8d %8d %8d %8d\n",
 	       v[0], v[1], v[2], v[3]);
@@ -394,10 +388,14 @@ ASTCENC_SIMD_INLINE void print(vint4 a)
  */
 ASTCENC_SIMD_INLINE void printx(vint4 a)
 {
-	alignas(16) int v[4];
+	ASTCENC_ALIGNAS int v[4];
 	storea(a, v);
+
+	unsigned int uv[4];
+	std::memcpy(uv, v, sizeof(int) * 4);
+
 	printf("v4_i32:\n  %08x %08x %08x %08x\n",
-	       v[0], v[1], v[2], v[3]);
+		uv[0], uv[1], uv[2], uv[3]);
 }
 
 /**
@@ -405,7 +403,7 @@ ASTCENC_SIMD_INLINE void printx(vint4 a)
  */
 ASTCENC_SIMD_INLINE void print(vfloat4 a)
 {
-	alignas(16) float v[4];
+	ASTCENC_ALIGNAS float v[4];
 	storea(a, v);
 	printf("v4_f32:\n  %0.4f %0.4f %0.4f %0.4f\n",
 	       static_cast<double>(v[0]), static_cast<double>(v[1]),

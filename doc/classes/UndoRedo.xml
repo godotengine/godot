@@ -12,47 +12,47 @@
 		var undo_redo = UndoRedo.new()
 
 		func do_something():
-		    pass # Put your code here.
+			pass # Put your code here.
 
 		func undo_something():
-		    pass # Put here the code that reverts what's done by "do_something()".
+			pass # Put here the code that reverts what's done by "do_something()".
 
 		func _on_my_button_pressed():
-		    var node = get_node("MyNode2D")
-		    undo_redo.create_action("Move the node")
-		    undo_redo.add_do_method(do_something)
-		    undo_redo.add_undo_method(undo_something)
-		    undo_redo.add_do_property(node, "position", Vector2(100,100))
-		    undo_redo.add_undo_property(node, "position", node.position)
-		    undo_redo.commit_action()
+			var node = get_node("MyNode2D")
+			undo_redo.create_action("Move the node")
+			undo_redo.add_do_method(do_something)
+			undo_redo.add_undo_method(undo_something)
+			undo_redo.add_do_property(node, "position", Vector2(100, 100))
+			undo_redo.add_undo_property(node, "position", node.position)
+			undo_redo.commit_action()
 		[/gdscript]
 		[csharp]
 		private UndoRedo _undoRedo;
 
 		public override void _Ready()
 		{
-		    _undoRedo = new UndoRedo();
+			_undoRedo = new UndoRedo();
 		}
 
 		public void DoSomething()
 		{
-		    // Put your code here.
+			// Put your code here.
 		}
 
 		public void UndoSomething()
 		{
-		    // Put here the code that reverts what's done by "DoSomething()".
+			// Put here the code that reverts what's done by "DoSomething()".
 		}
 
 		private void OnMyButtonPressed()
 		{
-		    var node = GetNode&lt;Node2D&gt;("MyNode2D");
-		    _undoRedo.CreateAction("Move the node");
-		    _undoRedo.AddDoMethod(new Callable(this, MethodName.DoSomething));
-		    _undoRedo.AddUndoMethod(new Callable(this, MethodName.UndoSomething));
-		    _undoRedo.AddDoProperty(node, "position", new Vector2(100, 100));
-		    _undoRedo.AddUndoProperty(node, "position", node.Position);
-		    _undoRedo.CommitAction();
+			var node = GetNode&lt;Node2D&gt;("MyNode2D");
+			_undoRedo.CreateAction("Move the node");
+			_undoRedo.AddDoMethod(new Callable(this, MethodName.DoSomething));
+			_undoRedo.AddUndoMethod(new Callable(this, MethodName.UndoSomething));
+			_undoRedo.AddDoProperty(node, "position", new Vector2(100, 100));
+			_undoRedo.AddUndoProperty(node, "position", node.Position);
+			_undoRedo.CommitAction();
 		}
 		[/csharp]
 		[/codeblocks]
@@ -112,7 +112,8 @@
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
 			<description>
-				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
+				Register a reference to an object that will be erased if the "do" history is deleted. This is useful for objects added by the "do" action and removed by the "undo" action.
+				When the "do" history is deleted, if the object is a [RefCounted], it will be unreferenced. Otherwise, it will be freed. Do not use for resources.
 				[codeblock]
 				var node = Node2D.new()
 				undo_redo.create_action("Add node")
@@ -143,7 +144,8 @@
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
 			<description>
-				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
+				Register a reference to an object that will be erased if the "undo" history is deleted. This is useful for objects added by the "undo" action and removed by the "do" action.
+				When the "undo" history is deleted, if the object is a [RefCounted], it will be unreferenced. Otherwise, it will be freed. Do not use for resources.
 				[codeblock]
 				var node = $Node2D
 				undo_redo.create_action("Remove node")
@@ -176,7 +178,7 @@
 			<param index="2" name="backward_undo_ops" type="bool" default="false" />
 			<description>
 				Create a new action. After this is called, do all your calls to [method add_do_method], [method add_undo_method], [method add_do_property], and [method add_undo_property], then commit the action with [method commit_action].
-				The way actions are merged is dictated by [param merge_mode]. See [enum MergeMode] for details.
+				The way actions are merged is dictated by [param merge_mode].
 				The way undo operation are ordered in actions is dictated by [param backward_undo_ops]. When [param backward_undo_ops] is [code]false[/code] undo option are ordered in the same order they were added. Which means the first operation to be added will be the first to be undone.
 			</description>
 		</method>
@@ -255,6 +257,11 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="max_steps" type="int" setter="set_max_steps" getter="get_max_steps" default="0">
+			The maximum number of steps that can be stored in the undo/redo history. If the number of stored steps exceeds this limit, older steps are removed from history and can no longer be reached by calling [method undo]. A value of [code]0[/code] or lower means no limit.
+		</member>
+	</members>
 	<signals>
 		<signal name="version_changed">
 			<description>
@@ -267,10 +274,10 @@
 			Makes "do"/"undo" operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Makes so that the action's "undo" operations are from the first action created and the "do" operations are from the last subsequent action with the same name.
+			Merges this action with the previous one if they have the same name. Keeps only the first action's "undo" operations and the last action's "do" operations. Useful for sequential changes to a single value.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
-			Makes subsequent actions with the same name be merged into one.
+			Merges this action with the previous one if they have the same name.
 		</constant>
 	</constants>
 </class>

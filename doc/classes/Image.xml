@@ -19,6 +19,7 @@
 			<param index="1" name="contrast" type="float" />
 			<param index="2" name="saturation" type="float" />
 			<description>
+				Adjusts this image's [param brightness], [param contrast], and [param saturation] by the given values. Does not work if the image is compressed (see [method is_compressed]).
 			</description>
 		</method>
 		<method name="blend_rect">
@@ -47,6 +48,7 @@
 			<param index="2" name="dst" type="Vector2i" />
 			<description>
 				Copies [param src_rect] from [param src] image to this image at coordinates [param dst], clipped accordingly to both image bounds. This image and [param src] image [b]must[/b] have the same format. [param src_rect] with non-positive size is treated as empty.
+				[b]Note:[/b] The alpha channel data in [param src] will overwrite the corresponding data in this image at the target position. To blend alpha channels, use [method blend_rect] instead.
 			</description>
 		</method>
 		<method name="blit_rect_mask">
@@ -107,7 +109,7 @@
 			<return type="void" />
 			<param index="0" name="format" type="int" enum="Image.Format" />
 			<description>
-				Converts the image's format. See [enum Format] constants.
+				Converts this image's format to the given [param format].
 			</description>
 		</method>
 		<method name="copy_from">
@@ -117,14 +119,24 @@
 				Copies [param src] image to this image.
 			</description>
 		</method>
-		<method name="create" qualifiers="static">
+		<method name="create" qualifiers="static" deprecated="Use [method create_empty].">
 			<return type="Image" />
 			<param index="0" name="width" type="int" />
 			<param index="1" name="height" type="int" />
 			<param index="2" name="use_mipmaps" type="bool" />
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<description>
-				Creates an empty image of given size and format. See [enum Format] constants. If [param use_mipmaps] is [code]true[/code], then generate mipmaps for this image. See the [method generate_mipmaps].
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
+			</description>
+		</method>
+		<method name="create_empty" qualifiers="static">
+			<return type="Image" />
+			<param index="0" name="width" type="int" />
+			<param index="1" name="height" type="int" />
+			<param index="2" name="use_mipmaps" type="bool" />
+			<param index="3" name="format" type="int" enum="Image.Format" />
+			<description>
+				Creates an empty image of the given size and format. If [param use_mipmaps] is [code]true[/code], generates mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data" qualifiers="static">
@@ -135,7 +147,7 @@
 			<param index="3" name="format" type="int" enum="Image.Format" />
 			<param index="4" name="data" type="PackedByteArray" />
 			<description>
-				Creates a new image of given size and format. See [enum Format] constants. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code] then loads mipmaps for this image from [param data]. See [method generate_mipmaps].
+				Creates a new image of the given size and format. Fills the image with the given raw data. If [param use_mipmaps] is [code]true[/code], loads the mipmaps for this image from [param data]. See [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -163,6 +175,7 @@
 			<return type="int" enum="Image.UsedChannels" />
 			<param index="0" name="source" type="int" enum="Image.CompressSource" default="0" />
 			<description>
+				Returns the color channels used by this image. If the image is compressed, the original [param source] must be specified.
 			</description>
 		</method>
 		<method name="fill">
@@ -212,10 +225,16 @@
 				Returns a copy of the image's raw data.
 			</description>
 		</method>
+		<method name="get_data_size" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns size (in bytes) of the image's raw data.
+			</description>
+		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
-				Returns the image's format. See [enum Format] constants.
+				Returns this image's format.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -303,6 +322,12 @@
 				Returns [code]true[/code] if all the image's pixels have an alpha value of 0. Returns [code]false[/code] if any pixel has an alpha value higher than 0.
 			</description>
 		</method>
+		<method name="linear_to_srgb">
+			<return type="void" />
+			<description>
+				Converts the entire image from the linear colorspace to the sRGB colorspace. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
+			</description>
+		</method>
 		<method name="load">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -319,6 +344,14 @@
 				Loads an image from the binary contents of a BMP file.
 				[b]Note:[/b] Godot's BMP module doesn't support 16-bit per pixel images. Only 1-bit, 4-bit, 8-bit, 24-bit, and 32-bit per pixel images are supported.
 				[b]Note:[/b] This method is only available in engine builds with the BMP module enabled. By default, the BMP module is enabled, but it can be disabled at build-time using the [code]module_bmp_enabled=no[/code] SCons option.
+			</description>
+		</method>
+		<method name="load_dds_from_buffer">
+			<return type="int" enum="Error" />
+			<param index="0" name="buffer" type="PackedByteArray" />
+			<description>
+				Loads an image from the binary contents of a DDS file.
+				[b]Note:[/b] This method is only available in engine builds with the DDS module enabled. By default, the DDS module is enabled, but it can be disabled at build-time using the [code]module_dds_enabled=no[/code] SCons option.
 			</description>
 		</method>
 		<method name="load_from_file" qualifiers="static">
@@ -366,7 +399,7 @@
 			<param index="0" name="svg_str" type="String" />
 			<param index="1" name="scale" type="float" default="1.0" />
 			<description>
-				Loads an image from the string contents of a SVG file ([b].svg[/b]).
+				Loads an image from the string contents of an SVG file ([b].svg[/b]).
 				[b]Note:[/b] This method is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
 			</description>
 		</method>
@@ -411,7 +444,7 @@
 			<param index="0" name="square" type="bool" default="false" />
 			<param index="1" name="interpolation" type="int" enum="Image.Interpolation" default="1" />
 			<description>
-				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code] then set width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
+				Resizes the image to the nearest power of 2 for the width and height. If [param square] is [code]true[/code], sets width and height to be the same. New pixels are calculated using the [param interpolation] mode defined via [enum Interpolation] constants.
 			</description>
 		</method>
 		<method name="rgbe_to_srgb">
@@ -433,6 +466,21 @@
 				Rotates the image by [code]180[/code] degrees. The width and height of the image must be greater than [code]1[/code].
 			</description>
 		</method>
+		<method name="save_dds" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Saves the image as a DDS (DirectDraw Surface) file to [param path]. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the DDS module.
+				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+			</description>
+		</method>
+		<method name="save_dds_to_buffer" qualifiers="const">
+			<return type="PackedByteArray" />
+			<description>
+				Saves the image as a DDS (DirectDraw Surface) file to a byte array. DDS is a container format that can store textures in various compression formats, such as DXT1, DXT5, or BC7. This function will return an empty byte array if Godot was compiled without the DDS module.
+				[b]Note:[/b] The DDS module may be disabled in certain builds, which means [method save_dds_to_buffer] will return an empty byte array when it is called from an exported project.
+			</description>
+		</method>
 		<method name="save_exr" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -447,7 +495,7 @@
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr_to_buffer] will return an empty byte array when it is called from an exported project.
 			</description>
 		</method>
 		<method name="save_jpg" qualifiers="const">
@@ -486,7 +534,7 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
@@ -495,7 +543,7 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive). Lossless WebP offers more efficient compression than PNG.
+				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is [code]true[/code], the image will be saved lossy, using the [param quality] setting between [code]0.0[/code] and [code]1.0[/code] (inclusive). Lossless WebP offers more efficient compression than PNG.
 				[b]Note:[/b] The WebP format is limited to a size of 16383×16383 pixels, while PNG can save larger images.
 			</description>
 		</method>
@@ -517,7 +565,6 @@
 			<param index="2" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [code](x, y)[/code] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -543,7 +590,6 @@
 			<param index="1" name="color" type="Color" />
 			<description>
 				Sets the [Color] of the pixel at [param point] to [param color].
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var img_width = 10
@@ -572,7 +618,7 @@
 		<method name="srgb_to_linear">
 			<return type="void" />
 			<description>
-				Converts the raw data from the sRGB colorspace to a linear scale.
+				Converts the raw data from the sRGB colorspace to a linear scale. Only works on images with [constant FORMAT_RGB8] or [constant FORMAT_RGBA8] formats.
 			</description>
 		</method>
 	</methods>
@@ -612,6 +658,7 @@
 			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
 		</constant>
 		<constant name="FORMAT_RGB565" value="7" enum="Format">
+			OpenGL texture format [code]RGB[/code] with three components. Red and blue have a bitdepth of 5, and green has a bitdepth of 6.
 		</constant>
 		<constant name="FORMAT_RF" value="8" enum="Format">
 			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
@@ -696,17 +743,19 @@
 			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RA_AS_RG" value="33" enum="Format">
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code] variant), which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_ETC2_RGBA8].
 		</constant>
 		<constant name="FORMAT_DXT5_RA_AS_RG" value="34" enum="Format">
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3, which compresses RA data and interprets it as two channels (red and green). See also [constant FORMAT_DXT5].
 		</constant>
 		<constant name="FORMAT_ASTC_4x4" value="35" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 4x4 (high quality) mode.
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 4×4 (high quality) mode.
 		</constant>
 		<constant name="FORMAT_ASTC_4x4_HDR" value="36" enum="Format">
 			Same format as [constant FORMAT_ASTC_4x4], but with the hint to let the GPU know it is used for HDR.
 		</constant>
 		<constant name="FORMAT_ASTC_8x8" value="37" enum="Format">
-			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 8x8 (low quality) mode.
+			[url=https://en.wikipedia.org/wiki/Adaptive_scalable_texture_compression]Adaptive Scalable Texture Compression[/url]. This implements the 8×8 (low quality) mode.
 		</constant>
 		<constant name="FORMAT_ASTC_8x8_HDR" value="38" enum="Format">
 			Same format as [constant FORMAT_ASTC_8x8], but with the hint to let the GPU know it is used for HDR.
@@ -731,7 +780,7 @@
 			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
 		</constant>
 		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
-			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscalng images.
+			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscaling images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 			Image does not have alpha.
@@ -761,16 +810,22 @@
 			Represents the size of the [enum CompressMode] enum.
 		</constant>
 		<constant name="USED_CHANNELS_L" value="0" enum="UsedChannels">
+			The image only uses one channel for luminance (grayscale).
 		</constant>
 		<constant name="USED_CHANNELS_LA" value="1" enum="UsedChannels">
+			The image uses two channels for luminance and alpha, respectively.
 		</constant>
 		<constant name="USED_CHANNELS_R" value="2" enum="UsedChannels">
+			The image only uses the red channel.
 		</constant>
 		<constant name="USED_CHANNELS_RG" value="3" enum="UsedChannels">
+			The image uses two channels for red and green.
 		</constant>
 		<constant name="USED_CHANNELS_RGB" value="4" enum="UsedChannels">
+			The image uses three channels for red, green, and blue.
 		</constant>
 		<constant name="USED_CHANNELS_RGBA" value="5" enum="UsedChannels">
+			The image uses four channels for red, green, blue, and alpha.
 		</constant>
 		<constant name="COMPRESS_SOURCE_GENERIC" value="0" enum="CompressSource">
 			Source texture (before compression) is a regular texture. Default for all textures.
@@ -782,10 +837,10 @@
 			Source texture (before compression) is a normal texture (e.g. it can be compressed into two channels).
 		</constant>
 		<constant name="ASTC_FORMAT_4x4" value="0" enum="ASTCFormat">
-			Hint to indicate that the high quality 4x4 ASTC compression format should be used.
+			Hint to indicate that the high quality 4×4 ASTC compression format should be used.
 		</constant>
 		<constant name="ASTC_FORMAT_8x8" value="1" enum="ASTCFormat">
-			Hint to indicate that the low quality 8x8 ASTC compression format should be used.
+			Hint to indicate that the low quality 8×8 ASTC compression format should be used.
 		</constant>
 	</constants>
 </class>

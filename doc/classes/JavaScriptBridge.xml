@@ -16,6 +16,7 @@
 			<param index="0" name="callable" type="Callable" />
 			<description>
 				Creates a reference to a [Callable] that can be used as a callback by JavaScript. The reference must be kept until the callback happens, or it won't be called at all. See [JavaScriptObject] for usage.
+				[b]Note:[/b] The callback function must take exactly one [Array] argument, which is going to be the JavaScript [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments]arguments object[/url] converted to an array.
 			</description>
 		</method>
 		<method name="create_object" qualifiers="vararg">
@@ -58,6 +59,20 @@
 			<param index="0" name="interface" type="String" />
 			<description>
 				Returns an interface to a JavaScript object that can be used by scripts. The [param interface] must be a valid property of the JavaScript [code]window[/code]. The callback must accept a single [Array] argument, which will contain the JavaScript [code]arguments[/code]. See [JavaScriptObject] for usage.
+			</description>
+		</method>
+		<method name="is_js_buffer">
+			<return type="bool" />
+			<param index="0" name="javascript_object" type="JavaScriptObject" />
+			<description>
+				Returns [code]true[/code] if the given [param javascript_object] is of type [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer][code]ArrayBuffer[/code][/url], [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView][code]DataView[/code][/url], or one of the many [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray]typed array objects[/url].
+			</description>
+		</method>
+		<method name="js_buffer_to_packed_byte_array">
+			<return type="PackedByteArray" />
+			<param index="0" name="javascript_buffer" type="JavaScriptObject" />
+			<description>
+				Returns a copy of [param javascript_buffer]'s contents as a [PackedByteArray]. See also [method is_js_buffer].
 			</description>
 		</method>
 		<method name="pwa_needs_update" qualifiers="const">

@@ -56,10 +56,10 @@
 	</methods>
 	<members>
 		<member name="axis_stretch_horizontal" type="int" setter="set_h_axis_stretch_mode" getter="get_h_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">
-			Controls how the stylebox's texture will be stretched or tiled horizontally. See [enum AxisStretchMode] for possible values.
+			Controls how the stylebox's texture will be stretched or tiled horizontally.
 		</member>
 		<member name="axis_stretch_vertical" type="int" setter="set_v_axis_stretch_mode" getter="get_v_axis_stretch_mode" enum="StyleBoxTexture.AxisStretchMode" default="0">
-			Controls how the stylebox's texture will be stretched or tiled vertically. See [enum AxisStretchMode] for possible values.
+			Controls how the stylebox's texture will be stretched or tiled vertically.
 		</member>
 		<member name="draw_center" type="bool" setter="set_draw_center" getter="is_draw_center_enabled" default="true">
 			If [code]true[/code], the nine-patch texture's center tile will be drawn.
@@ -80,9 +80,9 @@
 			Modulates the color of the texture when this style box is drawn.
 		</member>
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
-			Species a sub-region of the texture to use.
-			This is equivalent to first wrapping the texture in an [AtlasTexture] with the same region.
-			If empty ([code]Rect2(0, 0, 0, 0)[/code]), the whole texture will be used.
+			The region to use from the [member texture].
+			This is equivalent to first wrapping the [member texture] in an [AtlasTexture] with the same region.
+			If empty ([code]Rect2(0, 0, 0, 0)[/code]), the whole [member texture] is used.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The texture to use when drawing this style box.

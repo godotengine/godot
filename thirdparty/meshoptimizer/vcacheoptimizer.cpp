@@ -195,9 +195,8 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 	TriangleAdjacency adjacency = {};
 	buildTriangleAdjacency(adjacency, indices, index_count, vertex_count, allocator);
 
-	// live triangle counts
-	unsigned int* live_triangles = allocator.allocate<unsigned int>(vertex_count);
-	memcpy(live_triangles, adjacency.counts, vertex_count * sizeof(unsigned int));
+	// live triangle counts; note, we alias adjacency.counts as we remove triangles after emitting them so the counts always match
+	unsigned int* live_triangles = adjacency.counts;
 
 	// emitted flags
 	unsigned char* emitted_flags = allocator.allocate<unsigned char>(face_count);
@@ -221,9 +220,9 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 		triangle_scores[i] = vertex_scores[a] + vertex_scores[b] + vertex_scores[c];
 	}
 
-	unsigned int cache_holder[2 * (kCacheSizeMax + 3)];
+	unsigned int cache_holder[2 * (kCacheSizeMax + 4)];
 	unsigned int* cache = cache_holder;
-	unsigned int* cache_new = cache_holder + kCacheSizeMax + 3;
+	unsigned int* cache_new = cache_holder + kCacheSizeMax + 4;
 	size_t cache_count = 0;
 
 	unsigned int current_triangle = 0;
@@ -260,23 +259,17 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 		{
 			unsigned int index = cache[i];
 
-			if (index != a && index != b && index != c)
-			{
-				cache_new[cache_write++] = index;
-			}
+			cache_new[cache_write] = index;
+			cache_write += (index != a) & (index != b) & (index != c);
 		}
 
 		unsigned int* cache_temp = cache;
 		cache = cache_new, cache_new = cache_temp;
 		cache_count = cache_write > cache_size ? cache_size : cache_write;
 
-		// update live triangle counts
-		live_triangles[a]--;
-		live_triangles[b]--;
-		live_triangles[c]--;
-
 		// remove emitted triangle from adjacency data
 		// this makes sure that we spend less time traversing these lists on subsequent iterations
+		// live triangle counts are updated as a byproduct of these adjustments
 		for (size_t k = 0; k < 3; ++k)
 		{
 			unsigned int index = indices[current_triangle * 3 + k];
@@ -305,6 +298,10 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 		{
 			unsigned int index = cache[i];
 
+			// no need to update scores if we are never going to use this vertex
+			if (adjacency.counts[index] == 0)
+				continue;
+
 			int cache_position = i >= cache_size ? -1 : int(i);
 
 			// update vertex score
@@ -325,11 +322,8 @@ void meshopt_optimizeVertexCacheTable(unsigned int* destination, const unsigned 
 				float tri_score = triangle_scores[tri] + score_diff;
 				assert(tri_score > 0);
 
-				if (best_score < tri_score)
-				{
-					best_triangle = tri;
-					best_score = tri_score;
-				}
+				best_triangle = best_score < tri_score ? tri : best_triangle;
+				best_score = best_score < tri_score ? tri_score : best_score;
 
 				triangle_scores[tri] = tri_score;
 			}

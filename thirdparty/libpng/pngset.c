@@ -1,7 +1,6 @@
-
 /* pngset.c - storage of image information into info struct
  *
- * Copyright (c) 2018-2023 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -42,27 +41,21 @@ png_set_cHRM_fixed(png_const_structrp png_ptr, png_inforp info_ptr,
     png_fixed_point red_y, png_fixed_point green_x, png_fixed_point green_y,
     png_fixed_point blue_x, png_fixed_point blue_y)
 {
-   png_xy xy;
-
    png_debug1(1, "in %s storage function", "cHRM fixed");
 
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
-   xy.redx = red_x;
-   xy.redy = red_y;
-   xy.greenx = green_x;
-   xy.greeny = green_y;
-   xy.bluex = blue_x;
-   xy.bluey = blue_y;
-   xy.whitex = white_x;
-   xy.whitey = white_y;
+   info_ptr->cHRM.redx = red_x;
+   info_ptr->cHRM.redy = red_y;
+   info_ptr->cHRM.greenx = green_x;
+   info_ptr->cHRM.greeny = green_y;
+   info_ptr->cHRM.bluex = blue_x;
+   info_ptr->cHRM.bluey = blue_y;
+   info_ptr->cHRM.whitex = white_x;
+   info_ptr->cHRM.whitey = white_y;
 
-   if (png_colorspace_set_chromaticities(png_ptr, &info_ptr->colorspace, &xy,
-       2/* override with app values*/) != 0)
-      info_ptr->colorspace.flags |= PNG_COLORSPACE_FROM_cHRM;
-
-   png_colorspace_sync_info(png_ptr, info_ptr);
+   info_ptr->valid |= PNG_INFO_cHRM;
 }
 
 void PNGFAPI
@@ -74,6 +67,7 @@ png_set_cHRM_XYZ_fixed(png_const_structrp png_ptr, png_inforp info_ptr,
     png_fixed_point int_blue_Z)
 {
    png_XYZ XYZ;
+   png_xy xy;
 
    png_debug1(1, "in %s storage function", "cHRM XYZ fixed");
 
@@ -90,11 +84,14 @@ png_set_cHRM_XYZ_fixed(png_const_structrp png_ptr, png_inforp info_ptr,
    XYZ.blue_Y = int_blue_Y;
    XYZ.blue_Z = int_blue_Z;
 
-   if (png_colorspace_set_endpoints(png_ptr, &info_ptr->colorspace,
-       &XYZ, 2) != 0)
-      info_ptr->colorspace.flags |= PNG_COLORSPACE_FROM_cHRM;
+   if (png_xy_from_XYZ(&xy, &XYZ) == 0)
+   {
+      info_ptr->cHRM = xy;
+      info_ptr->valid |= PNG_INFO_cHRM;
+   }
 
-   png_colorspace_sync_info(png_ptr, info_ptr);
+   else
+      png_app_error(png_ptr, "invalid cHRM XYZ");
 }
 
 #  ifdef PNG_FLOATING_POINT_SUPPORTED
@@ -133,6 +130,189 @@ png_set_cHRM_XYZ(png_const_structrp png_ptr, png_inforp info_ptr, double red_X,
 #  endif /* FLOATING_POINT */
 
 #endif /* cHRM */
+
+#ifdef PNG_cICP_SUPPORTED
+void PNGAPI
+png_set_cICP(png_const_structrp png_ptr, png_inforp info_ptr,
+             png_byte colour_primaries, png_byte transfer_function,
+             png_byte matrix_coefficients, png_byte video_full_range_flag)
+{
+   png_debug1(1, "in %s storage function", "cICP");
+
+   if (png_ptr == NULL || info_ptr == NULL)
+      return;
+
+   info_ptr->cicp_colour_primaries = colour_primaries;
+   info_ptr->cicp_transfer_function = transfer_function;
+   info_ptr->cicp_matrix_coefficients = matrix_coefficients;
+   info_ptr->cicp_video_full_range_flag = video_full_range_flag;
+
+   if (info_ptr->cicp_matrix_coefficients != 0)
+   {
+      png_warning(png_ptr, "Invalid cICP matrix coefficients");
+      return;
+   }
+
+   info_ptr->valid |= PNG_INFO_cICP;
+}
+#endif /* cICP */
+
+#ifdef PNG_cLLI_SUPPORTED
+void PNGFAPI
+png_set_cLLI_fixed(png_const_structrp png_ptr, png_inforp info_ptr,
+    /* The values below are in cd/m2 (nits) and are scaled by 10,000; not
+     * 100,000 as in the case of png_fixed_point.
+     */
+    png_uint_32 maxCLL, png_uint_32 maxFALL)
+{
+   png_debug1(1, "in %s storage function", "cLLI");
+
+   if (png_ptr == NULL || info_ptr == NULL)
+      return;
+
+   /* Check the light level range: */
+   if (maxCLL > 0x7FFFFFFFU || maxFALL > 0x7FFFFFFFU)
+   {
+      /* The limit is 200kcd/m2; somewhat bright but not inconceivable because
+       * human vision is said to run up to 100Mcd/m2.  The sun is about 2Gcd/m2.
+       *
+       * The reference sRGB monitor is 80cd/m2 and the limit of PQ encoding is
+       * 2kcd/m2.
+       */
+      png_chunk_report(png_ptr, "cLLI light level exceeds PNG limit",
+            PNG_CHUNK_WRITE_ERROR);
+      return;
+   }
+
+   info_ptr->maxCLL = maxCLL;
+   info_ptr->maxFALL = maxFALL;
+   info_ptr->valid |= PNG_INFO_cLLI;
+}
+
+#  ifdef PNG_FLOATING_POINT_SUPPORTED
+void PNGAPI
+png_set_cLLI(png_const_structrp png_ptr, png_inforp info_ptr,
+   double maxCLL, double maxFALL)
+{
+   png_set_cLLI_fixed(png_ptr, info_ptr,
+       png_fixed_ITU(png_ptr, maxCLL, "png_set_cLLI(maxCLL)"),
+       png_fixed_ITU(png_ptr, maxFALL, "png_set_cLLI(maxFALL)"));
+}
+#  endif /* FLOATING_POINT */
+#endif /* cLLI */
+
+#ifdef PNG_mDCV_SUPPORTED
+static png_uint_16
+png_ITU_fixed_16(int *error, png_fixed_point v)
+{
+   /* Return a safe uint16_t value scaled according to the ITU H273 rules for
+    * 16-bit display chromaticities.  Functions like the corresponding
+    * png_fixed() internal function with regard to errors: it's an error on
+    * write, a chunk_benign_error on read: See the definition of
+    * png_chunk_report in pngpriv.h.
+    */
+   v /= 2; /* rounds to 0 in C: avoids insignificant arithmetic errors */
+   if (v > 65535 || v < 0)
+   {
+      *error = 1;
+      return 0;
+   }
+
+   return (png_uint_16)/*SAFE*/v;
+}
+
+void PNGAPI
+png_set_mDCV_fixed(png_const_structrp png_ptr, png_inforp info_ptr,
+    png_fixed_point white_x, png_fixed_point white_y,
+    png_fixed_point red_x, png_fixed_point red_y,
+    png_fixed_point green_x, png_fixed_point green_y,
+    png_fixed_point blue_x, png_fixed_point blue_y,
+    png_uint_32 maxDL,
+    png_uint_32 minDL)
+{
+   png_uint_16 rx, ry, gx, gy, bx, by, wx, wy;
+   int error;
+
+   png_debug1(1, "in %s storage function", "mDCV");
+
+   if (png_ptr == NULL || info_ptr == NULL)
+      return;
+
+   /* Check the input values to ensure they are in the expected range: */
+   error = 0;
+   rx = png_ITU_fixed_16(&error, red_x);
+   ry = png_ITU_fixed_16(&error, red_y);
+   gx = png_ITU_fixed_16(&error, green_x);
+   gy = png_ITU_fixed_16(&error, green_y);
+   bx = png_ITU_fixed_16(&error, blue_x);
+   by = png_ITU_fixed_16(&error, blue_y);
+   wx = png_ITU_fixed_16(&error, white_x);
+   wy = png_ITU_fixed_16(&error, white_y);
+
+   if (error)
+   {
+      png_chunk_report(png_ptr,
+         "mDCV chromaticities outside representable range",
+         PNG_CHUNK_WRITE_ERROR);
+      return;
+   }
+
+   /* Check the light level range: */
+   if (maxDL > 0x7FFFFFFFU || minDL > 0x7FFFFFFFU)
+   {
+      /* The limit is 200kcd/m2; somewhat bright but not inconceivable because
+       * human vision is said to run up to 100Mcd/m2.  The sun is about 2Gcd/m2.
+       *
+       * The reference sRGB monitor is 80cd/m2 and the limit of PQ encoding is
+       * 2kcd/m2.
+       */
+      png_chunk_report(png_ptr, "mDCV display light level exceeds PNG limit",
+            PNG_CHUNK_WRITE_ERROR);
+      return;
+   }
+
+   /* All values are safe, the settings are accepted.
+    *
+    * IMPLEMENTATION NOTE: in practice the values can be checked and assigned
+    * but the result is confusing if a writing app calls png_set_mDCV more than
+    * once, the second time with an invalid value.  This approach is more
+    * obviously correct at the cost of typing and a very slight machine
+    * overhead.
+    */
+   info_ptr->mastering_red_x = rx;
+   info_ptr->mastering_red_y = ry;
+   info_ptr->mastering_green_x = gx;
+   info_ptr->mastering_green_y = gy;
+   info_ptr->mastering_blue_x = bx;
+   info_ptr->mastering_blue_y = by;
+   info_ptr->mastering_white_x = wx;
+   info_ptr->mastering_white_y = wy;
+   info_ptr->mastering_maxDL = maxDL;
+   info_ptr->mastering_minDL = minDL;
+   info_ptr->valid |= PNG_INFO_mDCV;
+}
+
+#  ifdef PNG_FLOATING_POINT_SUPPORTED
+void PNGAPI
+png_set_mDCV(png_const_structrp png_ptr, png_inforp info_ptr,
+    double white_x, double white_y, double red_x, double red_y, double green_x,
+    double green_y, double blue_x, double blue_y,
+    double maxDL, double minDL)
+{
+   png_set_mDCV_fixed(png_ptr, info_ptr,
+      png_fixed(png_ptr, white_x, "png_set_mDCV(white(x))"),
+      png_fixed(png_ptr, white_y, "png_set_mDCV(white(y))"),
+      png_fixed(png_ptr, red_x, "png_set_mDCV(red(x))"),
+      png_fixed(png_ptr, red_y, "png_set_mDCV(red(y))"),
+      png_fixed(png_ptr, green_x, "png_set_mDCV(green(x))"),
+      png_fixed(png_ptr, green_y, "png_set_mDCV(green(y))"),
+      png_fixed(png_ptr, blue_x, "png_set_mDCV(blue(x))"),
+      png_fixed(png_ptr, blue_y, "png_set_mDCV(blue(y))"),
+      png_fixed_ITU(png_ptr, maxDL, "png_set_mDCV(maxDL)"),
+      png_fixed_ITU(png_ptr, minDL, "png_set_mDCV(minDL)"));
+}
+#  endif /* FLOATING_POINT */
+#endif /* mDCV */
 
 #ifdef PNG_eXIf_SUPPORTED
 void PNGAPI
@@ -185,8 +365,8 @@ png_set_gAMA_fixed(png_const_structrp png_ptr, png_inforp info_ptr,
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
-   png_colorspace_set_gamma(png_ptr, &info_ptr->colorspace, file_gamma);
-   png_colorspace_sync_info(png_ptr, info_ptr);
+   info_ptr->gamma = file_gamma;
+   info_ptr->valid |= PNG_INFO_gAMA;
 }
 
 #  ifdef PNG_FLOATING_POINT_SUPPORTED
@@ -645,8 +825,8 @@ png_set_sRGB(png_const_structrp png_ptr, png_inforp info_ptr, int srgb_intent)
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
-   (void)png_colorspace_set_sRGB(png_ptr, &info_ptr->colorspace, srgb_intent);
-   png_colorspace_sync_info(png_ptr, info_ptr);
+   info_ptr->rendering_intent = srgb_intent;
+   info_ptr->valid |= PNG_INFO_sRGB;
 }
 
 void PNGAPI
@@ -658,15 +838,20 @@ png_set_sRGB_gAMA_and_cHRM(png_const_structrp png_ptr, png_inforp info_ptr,
    if (png_ptr == NULL || info_ptr == NULL)
       return;
 
-   if (png_colorspace_set_sRGB(png_ptr, &info_ptr->colorspace,
-       srgb_intent) != 0)
-   {
-      /* This causes the gAMA and cHRM to be written too */
-      info_ptr->colorspace.flags |=
-         PNG_COLORSPACE_FROM_gAMA|PNG_COLORSPACE_FROM_cHRM;
-   }
+   png_set_sRGB(png_ptr, info_ptr, srgb_intent);
 
-   png_colorspace_sync_info(png_ptr, info_ptr);
+#  ifdef PNG_gAMA_SUPPORTED
+      png_set_gAMA_fixed(png_ptr, info_ptr, PNG_GAMMA_sRGB_INVERSE);
+#  endif /* gAMA */
+
+#  ifdef PNG_cHRM_SUPPORTED
+      png_set_cHRM_fixed(png_ptr, info_ptr,
+         /* color      x       y */
+         /* white */ 31270, 32900,
+         /* red   */ 64000, 33000,
+         /* green */ 30000, 60000,
+         /* blue  */ 15000,  6000);
+#  endif /* cHRM */
 }
 #endif /* sRGB */
 
@@ -688,27 +873,6 @@ png_set_iCCP(png_const_structrp png_ptr, png_inforp info_ptr,
 
    if (compression_type != PNG_COMPRESSION_TYPE_BASE)
       png_app_error(png_ptr, "Invalid iCCP compression method");
-
-   /* Set the colorspace first because this validates the profile; do not
-    * override previously set app cHRM or gAMA here (because likely as not the
-    * application knows better than libpng what the correct values are.)  Pass
-    * the info_ptr color_type field to png_colorspace_set_ICC because in the
-    * write case it has not yet been stored in png_ptr.
-    */
-   {
-      int result = png_colorspace_set_ICC(png_ptr, &info_ptr->colorspace, name,
-          proflen, profile, info_ptr->color_type);
-
-      png_colorspace_sync_info(png_ptr, info_ptr);
-
-      /* Don't do any of the copying if the profile was bad, or inconsistent. */
-      if (result == 0)
-         return;
-
-      /* But do write the gAMA and cHRM chunks from the profile. */
-      info_ptr->colorspace.flags |=
-         PNG_COLORSPACE_FROM_gAMA|PNG_COLORSPACE_FROM_cHRM;
-   }
 
    length = strlen(name)+1;
    new_iccp_name = png_voidcast(png_charp, png_malloc_warn(png_ptr, length));
@@ -763,11 +927,11 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
 {
    int i;
 
-   png_debug1(1, "in %lx storage function", png_ptr == NULL ? 0xabadca11U :
-      (unsigned long)png_ptr->chunk_name);
+   png_debug1(1, "in text storage function, chunk typeid = 0x%lx",
+      png_ptr == NULL ? 0xabadca11UL : (unsigned long)png_ptr->chunk_name);
 
    if (png_ptr == NULL || info_ptr == NULL || num_text <= 0 || text_ptr == NULL)
-      return(0);
+      return 0;
 
    /* Make sure we have enough space in the "text" array in info_struct
     * to hold all of the incoming text_ptr objects.  This compare can't overflow
@@ -947,7 +1111,7 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
       png_debug1(3, "transferred text chunk %d", info_ptr->num_text);
    }
 
-   return(0);
+   return 0;
 }
 #endif
 
@@ -1062,6 +1226,8 @@ png_set_sPLT(png_const_structrp png_ptr,
  */
 {
    png_sPLT_tp np;
+
+   png_debug1(1, "in %s storage function", "sPLT");
 
    if (png_ptr == NULL || info_ptr == NULL || nentries <= 0 || entries == NULL)
       return;
@@ -1393,11 +1559,14 @@ png_set_keep_unknown_chunks(png_structrp png_ptr, int keep,
       static const png_byte chunks_to_ignore[] = {
          98,  75,  71,  68, '\0',  /* bKGD */
          99,  72,  82,  77, '\0',  /* cHRM */
+         99,  73,  67,  80, '\0',  /* cICP */
+         99,  76,  76,  73, '\0',  /* cLLI */
         101,  88,  73, 102, '\0',  /* eXIf */
         103,  65,  77,  65, '\0',  /* gAMA */
         104,  73,  83,  84, '\0',  /* hIST */
         105,  67,  67,  80, '\0',  /* iCCP */
         105,  84,  88, 116, '\0',  /* iTXt */
+        109,  68,  67,  86, '\0',  /* mDCV */
         111,  70,  70, 115, '\0',  /* oFFs */
         112,  67,  65,  76, '\0',  /* pCAL */
         112,  72,  89, 115, '\0',  /* pHYs */
@@ -1537,7 +1706,7 @@ void PNGAPI
 png_set_rows(png_const_structrp png_ptr, png_inforp info_ptr,
     png_bytepp row_pointers)
 {
-   png_debug1(1, "in %s storage function", "rows");
+   png_debug(1, "in png_set_rows");
 
    if (png_ptr == NULL || info_ptr == NULL)
       return;
@@ -1556,6 +1725,8 @@ png_set_rows(png_const_structrp png_ptr, png_inforp info_ptr,
 void PNGAPI
 png_set_compression_buffer_size(png_structrp png_ptr, size_t size)
 {
+   png_debug(1, "in png_set_compression_buffer_size");
+
    if (png_ptr == NULL)
       return;
 
@@ -1627,6 +1798,8 @@ void PNGAPI
 png_set_user_limits(png_structrp png_ptr, png_uint_32 user_width_max,
     png_uint_32 user_height_max)
 {
+   png_debug(1, "in png_set_user_limits");
+
    /* Images with dimensions larger than these limits will be
     * rejected by png_set_IHDR().  To accept any PNG datastream
     * regardless of dimensions, set both limits to 0x7fffffff.
@@ -1642,6 +1815,8 @@ png_set_user_limits(png_structrp png_ptr, png_uint_32 user_width_max,
 void PNGAPI
 png_set_chunk_cache_max(png_structrp png_ptr, png_uint_32 user_chunk_cache_max)
 {
+   png_debug(1, "in png_set_chunk_cache_max");
+
    if (png_ptr != NULL)
       png_ptr->user_chunk_cache_max = user_chunk_cache_max;
 }
@@ -1651,8 +1826,26 @@ void PNGAPI
 png_set_chunk_malloc_max(png_structrp png_ptr,
     png_alloc_size_t user_chunk_malloc_max)
 {
+   png_debug(1, "in png_set_chunk_malloc_max");
+
+   /* pngstruct::user_chunk_malloc_max is initialized to a non-zero value in
+    * png.c.  This API supports '0' for unlimited, make sure the correct
+    * (unlimited) value is set here to avoid a need to check for 0 everywhere
+    * the parameter is used.
+    */
    if (png_ptr != NULL)
-      png_ptr->user_chunk_malloc_max = user_chunk_malloc_max;
+   {
+      if (user_chunk_malloc_max == 0U) /* unlimited */
+      {
+#        ifdef PNG_MAX_MALLOC_64K
+            png_ptr->user_chunk_malloc_max = 65536U;
+#        else
+            png_ptr->user_chunk_malloc_max = PNG_SIZE_MAX;
+#        endif
+      }
+      else
+         png_ptr->user_chunk_malloc_max = user_chunk_malloc_max;
+   }
 }
 #endif /* ?SET_USER_LIMITS */
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 //
@@ -14,6 +14,7 @@
 #include "api_layer_interface.hpp"
 #include "exception_handling.hpp"
 #include "hex_and_handles.h"
+#include "loader_init_data.hpp"
 #include "loader_instance.hpp"
 #include "loader_logger_recorders.hpp"
 #include "loader_logger.hpp"
@@ -77,7 +78,7 @@ inline bool IsMissingNullTerminator(const char (&str)[max_length]) {
 #ifdef XR_KHR_LOADER_INIT_SUPPORT  // platforms that support XR_KHR_loader_init.
 XRAPI_ATTR XrResult XRAPI_CALL LoaderXrInitializeLoaderKHR(const XrLoaderInitInfoBaseHeaderKHR *loaderInitInfo) XRLOADER_ABI_TRY {
     LoaderLogger::LogVerboseMessage("xrInitializeLoaderKHR", "Entering loader trampoline");
-    return InitializeLoader(loaderInitInfo);
+    return InitializeLoaderInitData(loaderInitInfo);
 }
 XRLOADER_ABI_CATCH_FALLBACK
 #endif
@@ -333,7 +334,7 @@ static XRAPI_ATTR XrResult XRAPI_CALL LoaderXrDestroyInstance(XrInstance instanc
         return result;
     }
 
-    const std::unique_ptr<XrGeneratedDispatchTable> &dispatch_table = loader_instance->DispatchTable();
+    const std::unique_ptr<XrGeneratedDispatchTableCore> &dispatch_table = loader_instance->DispatchTable();
 
     // If we allocated a default debug utils messenger, free it
     XrDebugUtilsMessengerEXT messenger = loader_instance->DefaultDebugUtilsMessenger();
@@ -545,7 +546,7 @@ LoaderTrampolineSessionBeginDebugUtilsLabelRegionEXT(XrSession session, const Xr
         return result;
     }
     LoaderLogger::GetInstance().BeginLabelRegion(session, labelInfo);
-    const std::unique_ptr<XrGeneratedDispatchTable> &dispatch_table = loader_instance->DispatchTable();
+    const std::unique_ptr<XrGeneratedDispatchTableCore> &dispatch_table = loader_instance->DispatchTable();
     if (nullptr != dispatch_table->SessionBeginDebugUtilsLabelRegionEXT) {
         return dispatch_table->SessionBeginDebugUtilsLabelRegionEXT(session, labelInfo);
     }
@@ -566,7 +567,7 @@ static XRAPI_ATTR XrResult XRAPI_CALL LoaderTrampolineSessionEndDebugUtilsLabelR
     }
 
     LoaderLogger::GetInstance().EndLabelRegion(session);
-    const std::unique_ptr<XrGeneratedDispatchTable> &dispatch_table = loader_instance->DispatchTable();
+    const std::unique_ptr<XrGeneratedDispatchTableCore> &dispatch_table = loader_instance->DispatchTable();
     if (nullptr != dispatch_table->SessionEndDebugUtilsLabelRegionEXT) {
         return dispatch_table->SessionEndDebugUtilsLabelRegionEXT(session);
     }
@@ -596,7 +597,7 @@ LoaderTrampolineSessionInsertDebugUtilsLabelEXT(XrSession session, const XrDebug
 
     LoaderLogger::GetInstance().InsertLabel(session, labelInfo);
 
-    const std::unique_ptr<XrGeneratedDispatchTable> &dispatch_table = loader_instance->DispatchTable();
+    const std::unique_ptr<XrGeneratedDispatchTableCore> &dispatch_table = loader_instance->DispatchTable();
     if (nullptr != dispatch_table->SessionInsertDebugUtilsLabelEXT) {
         return dispatch_table->SessionInsertDebugUtilsLabelEXT(session, labelInfo);
     }
@@ -642,7 +643,7 @@ XRAPI_ATTR XrResult XRAPI_CALL LoaderXrTermCreateDebugUtilsMessengerEXT(XrInstan
                                                 "xrCreateDebugUtilsMessengerEXT", "invalid messenger pointer");
         return XR_ERROR_VALIDATION_FAILURE;
     }
-    const XrGeneratedDispatchTable *dispatch_table = RuntimeInterface::GetDispatchTable(instance);
+    const XrGeneratedDispatchTableCore *dispatch_table = RuntimeInterface::GetDispatchTable(instance);
     XrResult result = XR_SUCCESS;
     // This extension is supported entirely by the loader which means the runtime may or may not support it.
     if (nullptr != dispatch_table->CreateDebugUtilsMessengerEXT) {
@@ -663,7 +664,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 
 XRAPI_ATTR XrResult XRAPI_CALL LoaderXrTermDestroyDebugUtilsMessengerEXT(XrDebugUtilsMessengerEXT messenger) XRLOADER_ABI_TRY {
     LoaderLogger::LogVerboseMessage("xrDestroyDebugUtilsMessengerEXT", "Entering loader terminator");
-    const XrGeneratedDispatchTable *dispatch_table = RuntimeInterface::GetDebugUtilsMessengerDispatchTable(messenger);
+    const XrGeneratedDispatchTableCore *dispatch_table = RuntimeInterface::GetDebugUtilsMessengerDispatchTable(messenger);
     XrResult result = XR_SUCCESS;
     LoaderLogger::GetInstance().RemoveLogRecorder(MakeHandleGeneric(messenger));
     RuntimeInterface::GetRuntime().ForgetDebugMessenger(messenger);
@@ -683,7 +684,7 @@ XRAPI_ATTR XrResult XRAPI_CALL LoaderXrTermSubmitDebugUtilsMessageEXT(
     XrInstance instance, XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageTypes,
     const XrDebugUtilsMessengerCallbackDataEXT *callbackData) XRLOADER_ABI_TRY {
     LoaderLogger::LogVerboseMessage("xrSubmitDebugUtilsMessageEXT", "Entering loader terminator");
-    const XrGeneratedDispatchTable *dispatch_table = RuntimeInterface::GetDispatchTable(instance);
+    const XrGeneratedDispatchTableCore *dispatch_table = RuntimeInterface::GetDispatchTable(instance);
     XrResult result = XR_SUCCESS;
     if (nullptr != dispatch_table->SubmitDebugUtilsMessageEXT) {
         result = dispatch_table->SubmitDebugUtilsMessageEXT(instance, messageSeverity, messageTypes, callbackData);
@@ -700,7 +701,7 @@ XRLOADER_ABI_CATCH_FALLBACK
 XRAPI_ATTR XrResult XRAPI_CALL
 LoaderXrTermSetDebugUtilsObjectNameEXT(XrInstance instance, const XrDebugUtilsObjectNameInfoEXT *nameInfo) XRLOADER_ABI_TRY {
     LoaderLogger::LogVerboseMessage("xrSetDebugUtilsObjectNameEXT", "Entering loader terminator");
-    const XrGeneratedDispatchTable *dispatch_table = RuntimeInterface::GetDispatchTable(instance);
+    const XrGeneratedDispatchTableCore *dispatch_table = RuntimeInterface::GetDispatchTable(instance);
     XrResult result = XR_SUCCESS;
     if (nullptr != dispatch_table->SetDebugUtilsObjectNameEXT) {
         result = dispatch_table->SetDebugUtilsObjectNameEXT(instance, nameInfo);

@@ -9,8 +9,8 @@
 		[codeblocks]
 		[gdscript]
 		var fv = FontVariation.new()
-		fv.set_base_font(load("res://BarlowCondensed-Regular.ttf"))
-		fv.set_variation_embolden(1.2)
+		fv.base_font = load("res://BarlowCondensed-Regular.ttf")
+		fv.variation_embolden = 1.2
 		$Label.add_theme_font_override("font", fv)
 		$Label.add_theme_font_size_override("font_size", 64)
 		[/gdscript]
@@ -38,13 +38,16 @@
 			<param index="0" name="spacing" type="int" enum="TextServer.SpacingType" />
 			<param index="1" name="value" type="int" />
 			<description>
-				Sets the spacing for [param spacing] (see [enum TextServer.SpacingType]) to [param value] in pixels (not relative to the font size).
+				Sets the spacing for [param spacing] to [param value] in pixels (not relative to the font size).
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="base_font" type="Font" setter="set_base_font" getter="get_base_font">
 			Base font used to create a variation. If not set, default [Theme] font is used.
+		</member>
+		<member name="baseline_offset" type="float" setter="set_baseline_offset" getter="get_baseline_offset" default="0.0">
+			Extra baseline offset (as a fraction of font height).
 		</member>
 		<member name="opentype_features" type="Dictionary" setter="set_opentype_features" getter="get_opentype_features" default="{}">
 			A set of OpenType feature tags. More info: [url=https://docs.microsoft.com/en-us/typography/opentype/spec/featuretags]OpenType feature tags[/url].

@@ -1,6 +1,13 @@
-import glob, os, shutil, subprocess, re
+import glob
+import os
+import re
+import shutil
+import stat
+import subprocess
+import sys
+from typing import Any, Callable
 
-git_tag = "v3.13.5"
+git_tag = "v4.4.0"
 
 include_dirs = [
     "common/tasking",
@@ -15,7 +22,7 @@ include_dirs = [
     "common/simd",
     "common/simd/arm",
     "common/simd/wasm",
-    "include/embree3",
+    "include/embree4",
     "kernels/subdiv",
     "kernels/geometry",
 ]
@@ -23,10 +30,10 @@ include_dirs = [
 cpp_files = [
     "common/sys/sysinfo.cpp",
     "common/sys/alloc.cpp",
+    "common/sys/estring.cpp",
     "common/sys/filename.cpp",
     "common/sys/library.cpp",
     "common/sys/thread.cpp",
-    "common/sys/string.cpp",
     "common/sys/regression.cpp",
     "common/sys/mutex.cpp",
     "common/sys/condition.cpp",
@@ -44,6 +51,7 @@ cpp_files = [
     "kernels/common/rtcore.cpp",
     "kernels/common/rtcore_builder.cpp",
     "kernels/common/scene.cpp",
+    "kernels/common/scene_verify.cpp",
     "kernels/common/alloc.cpp",
     "kernels/common/geometry.cpp",
     "kernels/common/scene_triangle_mesh.cpp",
@@ -65,17 +73,25 @@ cpp_files = [
     "kernels/bvh/bvh_intersector1.cpp",
     "kernels/bvh/bvh_intersector1_bvh4.cpp",
     "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
-    "kernels/bvh/bvh_intersector_stream_bvh4.cpp",
-    "kernels/bvh/bvh_intersector_stream_filters.cpp",
     "kernels/bvh/bvh_intersector_hybrid.cpp",
-    "kernels/bvh/bvh_intersector_stream.cpp",
 ]
 
-os.chdir("../../thirdparty")
+config_files = [
+    "kernels/config.h.in",
+    "kernels/rtcore_config.h.in",
+]
+
+license_file = "LICENSE.txt"
+
+os.chdir(f"{os.path.dirname(__file__)}/../../thirdparty")
 
 dir_name = "embree"
 if os.path.exists(dir_name):
     shutil.rmtree(dir_name)
+
+# In case something went wrong and embree-tmp stayed on the system.
+if os.path.exists("embree-tmp"):
+    shutil.rmtree("embree-tmp")
 
 subprocess.run(["git", "clone", "https://github.com/embree/embree.git", "embree-tmp"])
 os.chdir("embree-tmp")
@@ -83,7 +99,31 @@ subprocess.run(["git", "checkout", git_tag])
 
 commit_hash = str(subprocess.check_output(["git", "rev-parse", "HEAD"], universal_newlines=True)).strip()
 
+
+def on_rm_error(function: Callable[..., Any], path: str, excinfo: Exception) -> None:
+    """
+    Error handler for `shutil.rmtree()`.
+
+    If the error is due to read-only files,
+    it will change the file permissions and retry.
+    """
+    os.chmod(path, stat.S_IWRITE)
+    os.unlink(path)
+
+
+# We remove the .git directory because it contains
+# a lot of read-only files that are problematic on Windows.
+if sys.version_info >= (3, 12):
+    shutil.rmtree(".git", onexc=on_rm_error)
+else:
+    shutil.rmtree(".git", onerror=on_rm_error)  # type: ignore
+
 all_files = set(cpp_files)
+
+for config_file in config_files:
+    all_files.add(config_file)
+
+all_files.add(license_file)
 
 dest_dir = os.path.join("..", dir_name)
 for include_dir in include_dirs:
@@ -96,7 +136,7 @@ for f in all_files:
         os.makedirs(d)
     shutil.copy2(f, d)
 
-with open(os.path.join(dest_dir, "kernels/hash.h"), "w") as hash_file:
+with open(os.path.join(dest_dir, "kernels/hash.h"), "w", encoding="utf-8", newline="\n") as hash_file:
     hash_file.write(
         f"""// Copyright 2009-2021 Intel Corporation
 // SPDX-License-Identifier: Apache-2.0
@@ -105,156 +145,34 @@ with open(os.path.join(dest_dir, "kernels/hash.h"), "w") as hash_file:
 """
     )
 
-with open(os.path.join(dest_dir, "kernels/config.h"), "w") as config_file:
-    config_file.write(
-        """// Copyright 2009-2021 Intel Corporation
-// SPDX-License-Identifier: Apache-2.0
+for config_file in config_files:
+    os.rename(os.path.join(dest_dir, config_file), os.path.join(dest_dir, config_file[:-3]))
 
-/* #undef EMBREE_RAY_MASK */
-/* #undef EMBREE_STAT_COUNTERS */
-/* #undef EMBREE_BACKFACE_CULLING */
-/* #undef EMBREE_BACKFACE_CULLING_CURVES */
-#define EMBREE_FILTER_FUNCTION
-/* #undef EMBREE_IGNORE_INVALID_RAYS */
-#define EMBREE_GEOMETRY_TRIANGLE
-/* #undef EMBREE_GEOMETRY_QUAD */
-/* #undef EMBREE_GEOMETRY_CURVE */
-/* #undef EMBREE_GEOMETRY_SUBDIVISION */
-/* #undef EMBREE_GEOMETRY_USER */
-/* #undef EMBREE_GEOMETRY_INSTANCE */
-/* #undef EMBREE_GEOMETRY_GRID */
-/* #undef EMBREE_GEOMETRY_POINT */
-#define EMBREE_RAY_PACKETS
-/* #undef EMBREE_COMPACT_POLYS */
-
-#define EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR 2.0
-#define EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE
-
-#if defined(EMBREE_GEOMETRY_TRIANGLE)
-  #define IF_ENABLED_TRIS(x) x
-#else
-  #define IF_ENABLED_TRIS(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_QUAD)
-  #define IF_ENABLED_QUADS(x) x
-#else
-  #define IF_ENABLED_QUADS(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_CURVE) || defined(EMBREE_GEOMETRY_POINT)
-  #define IF_ENABLED_CURVES_OR_POINTS(x) x
-#else
-  #define IF_ENABLED_CURVES_OR_POINTS(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_CURVE)
-  #define IF_ENABLED_CURVES(x) x
-#else
-  #define IF_ENABLED_CURVES(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_POINT)
-  #define IF_ENABLED_POINTS(x) x
-#else
-  #define IF_ENABLED_POINTS(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_SUBDIVISION)
-  #define IF_ENABLED_SUBDIV(x) x
-#else
-  #define IF_ENABLED_SUBDIV(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_USER)
-  #define IF_ENABLED_USER(x) x
-#else
-  #define IF_ENABLED_USER(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_INSTANCE)
-  #define IF_ENABLED_INSTANCE(x) x
-#else
-  #define IF_ENABLED_INSTANCE(x)
-#endif
-
-#if defined(EMBREE_GEOMETRY_GRID)
-  #define IF_ENABLED_GRIDS(x) x
-#else
-  #define IF_ENABLED_GRIDS(x)
-#endif
-"""
-    )
-
-
-with open("CMakeLists.txt", "r") as cmake_file:
+with open("CMakeLists.txt", "r", encoding="utf-8") as cmake_file:
     cmake_content = cmake_file.read()
     major_version = int(re.compile(r"EMBREE_VERSION_MAJOR\s(\d+)").findall(cmake_content)[0])
     minor_version = int(re.compile(r"EMBREE_VERSION_MINOR\s(\d+)").findall(cmake_content)[0])
     patch_version = int(re.compile(r"EMBREE_VERSION_PATCH\s(\d+)").findall(cmake_content)[0])
 
-with open(os.path.join(dest_dir, "include/embree3/rtcore_config.h"), "w") as config_file:
-    config_file.write(
-        f"""// Copyright 2009-2021 Intel Corporation
-// SPDX-License-Identifier: Apache-2.0
+shutil.move(os.path.join(dest_dir, "kernels/rtcore_config.h"), os.path.join(dest_dir, ("include/embree4/")))
 
-#pragma once
-
-#define RTC_VERSION_MAJOR {major_version}
-#define RTC_VERSION_MINOR {minor_version}
-#define RTC_VERSION_PATCH {patch_version}
-#define RTC_VERSION {major_version}{minor_version:02d}{patch_version:02d}
-#define RTC_VERSION_STRING "{major_version}.{minor_version}.{patch_version}"
-
-#define RTC_MAX_INSTANCE_LEVEL_COUNT 1
-
-#define EMBREE_MIN_WIDTH 0
-#define RTC_MIN_WIDTH EMBREE_MIN_WIDTH
-
-#if !defined(EMBREE_STATIC_LIB)
-#   define EMBREE_STATIC_LIB
-#endif
-/* #undef EMBREE_API_NAMESPACE*/
-
-#if defined(EMBREE_API_NAMESPACE)
-#  define RTC_NAMESPACE
-#  define RTC_NAMESPACE_BEGIN namespace {{
-#  define RTC_NAMESPACE_END }}
-#  define RTC_NAMESPACE_USE using namespace;
-#  define RTC_API_EXTERN_C
-#  undef EMBREE_API_NAMESPACE
-#else
-#  define RTC_NAMESPACE_BEGIN
-#  define RTC_NAMESPACE_END
-#  define RTC_NAMESPACE_USE
-#  if defined(__cplusplus)
-#    define RTC_API_EXTERN_C extern "C"
-#  else
-#    define RTC_API_EXTERN_C
-#  endif
-#endif
-
-#if defined(ISPC)
-#  define RTC_API_IMPORT extern "C" unmasked
-#  define RTC_API_EXPORT extern "C" unmasked
-#elif defined(EMBREE_STATIC_LIB)
-#  define RTC_API_IMPORT RTC_API_EXTERN_C
-#  define RTC_API_EXPORT RTC_API_EXTERN_C
-#elif defined(_WIN32)
-#  define RTC_API_IMPORT RTC_API_EXTERN_C __declspec(dllimport)
-#  define RTC_API_EXPORT RTC_API_EXTERN_C __declspec(dllexport)
-#else
-#  define RTC_API_IMPORT RTC_API_EXTERN_C
-#  define RTC_API_EXPORT RTC_API_EXTERN_C __attribute__ ((visibility ("default")))
-#endif
-
-#if defined(RTC_EXPORT_API)
-#  define RTC_API RTC_API_EXPORT
-#else
-#  define RTC_API RTC_API_IMPORT
-#endif
-"""
-    )
+with open(
+    os.path.join(dest_dir, "include/embree4/rtcore_config.h"), "r+", encoding="utf-8", newline="\n"
+) as rtcore_config:
+    lines = rtcore_config.readlines()
+    rtcore_config.seek(0)
+    for i, line in enumerate(lines):
+        if line.startswith("#define RTC_VERSION_MAJOR"):
+            lines[i : i + 5] = [
+                f"#define RTC_VERSION_MAJOR {major_version}\n",
+                f"#define RTC_VERSION_MINOR {minor_version}\n",
+                f"#define RTC_VERSION_PATCH {patch_version}\n",
+                f"#define RTC_VERSION {major_version}{minor_version:02d}{patch_version:02d}\n",
+                f'#define RTC_VERSION_STRING "{major_version}.{minor_version}.{patch_version}"\n',
+            ]
+            break
+    rtcore_config.writelines(lines)
+    rtcore_config.truncate()
 
 os.chdir("..")
 shutil.rmtree("embree-tmp")
@@ -262,4 +180,4 @@ shutil.rmtree("embree-tmp")
 subprocess.run(["git", "restore", "embree/patches"])
 
 for patch in os.listdir("embree/patches"):
-    subprocess.run(["git", "apply", "embree/patches/" + patch])
+    subprocess.run(["git", "apply", f"embree/patches/{patch}"])

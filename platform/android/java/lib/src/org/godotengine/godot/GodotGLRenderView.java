@@ -42,12 +42,10 @@ import org.godotengine.godot.xr.regular.RegularContextFactory;
 import org.godotengine.godot.xr.regular.RegularFallbackConfigChooser;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PixelFormat;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -77,34 +75,25 @@ import java.io.InputStream;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
-	private final GodotHost host;
+class GodotGLRenderView extends GLSurfaceView implements GodotRenderView {
 	private final Godot godot;
 	private final GodotInputHandler inputHandler;
 	private final GodotRenderer godotRenderer;
 	private final SparseArray<PointerIcon> customPointerIcons = new SparseArray<>();
 
-	public GodotGLRenderView(GodotHost host, Godot godot, XRMode xrMode, boolean useDebugOpengl) {
-		super(host.getActivity());
+	public GodotGLRenderView(Godot godot, GodotInputHandler inputHandler, XRMode xrMode, boolean useDebugOpengl, boolean shouldBeTranslucent) {
+		super(godot.getContext());
 
-		this.host = host;
 		this.godot = godot;
-		this.inputHandler = new GodotInputHandler(this);
+		this.inputHandler = inputHandler;
 		this.godotRenderer = new GodotRenderer();
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
-		}
-		init(xrMode, false, useDebugOpengl);
+		setPointerIcon(PointerIcon.getSystemIcon(getContext(), PointerIcon.TYPE_DEFAULT));
+		init(xrMode, shouldBeTranslucent, useDebugOpengl);
 	}
 
 	@Override
 	public SurfaceView getView() {
 		return this;
-	}
-
-	@Override
-	public void initInputDevices() {
-		this.inputHandler.initInputDevices();
 	}
 
 	@Override
@@ -114,17 +103,35 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 
 	@Override
 	public void onActivityPaused() {
-		onPause();
+		queueEvent(() -> {
+			GodotLib.focusout();
+			// Pause the renderer
+			godotRenderer.onActivityPaused();
+		});
+	}
+
+	@Override
+	public void onActivityStopped() {
+		pauseGLThread();
 	}
 
 	@Override
 	public void onActivityResumed() {
-		onResume();
+		queueEvent(() -> {
+			// Resume the renderer
+			godotRenderer.onActivityResumed();
+			GodotLib.focusin();
+		});
 	}
 
 	@Override
-	public void onBackPressed() {
-		godot.onBackPressed(host);
+	public void onActivityStarted() {
+		resumeGLThread();
+	}
+
+	@Override
+	public void onActivityDestroyed() {
+		requestRenderThreadExitAndWait();
 	}
 
 	@Override
@@ -187,27 +194,25 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	@Keep
 	@Override
 	public void configurePointerIcon(int pointerType, String imagePath, float hotSpotX, float hotSpotY) {
-		if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-			try {
-				Bitmap bitmap = null;
-				if (!TextUtils.isEmpty(imagePath)) {
-					if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
-						// Try to load the bitmap from the file system
-						bitmap = BitmapFactory.decodeFile(imagePath);
-					} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
-						// Try to load the bitmap from the assets directory
-						AssetManager am = getContext().getAssets();
-						InputStream imageInputStream = am.open(imagePath);
-						bitmap = BitmapFactory.decodeStream(imageInputStream);
-					}
+		try {
+			Bitmap bitmap = null;
+			if (!TextUtils.isEmpty(imagePath)) {
+				if (godot.getDirectoryAccessHandler().filesystemFileExists(imagePath)) {
+					// Try to load the bitmap from the file system
+					bitmap = BitmapFactory.decodeFile(imagePath);
+				} else if (godot.getDirectoryAccessHandler().assetsFileExists(imagePath)) {
+					// Try to load the bitmap from the assets directory
+					AssetManager am = getContext().getAssets();
+					InputStream imageInputStream = am.open(imagePath);
+					bitmap = BitmapFactory.decodeStream(imageInputStream);
 				}
-
-				PointerIcon customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY);
-				customPointerIcons.put(pointerType, customPointerIcon);
-			} catch (Exception e) {
-				// Reset the custom pointer icon
-				customPointerIcons.delete(pointerType);
 			}
+
+			PointerIcon customPointerIcon = PointerIcon.create(bitmap, hotSpotX, hotSpotY);
+			customPointerIcons.put(pointerType, customPointerIcon);
+		} catch (Exception e) {
+			// Reset the custom pointer icon
+			customPointerIcons.delete(pointerType);
 		}
 	}
 
@@ -217,21 +222,16 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	@Keep
 	@Override
 	public void setPointerIcon(int pointerType) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			PointerIcon pointerIcon = customPointerIcons.get(pointerType);
-			if (pointerIcon == null) {
-				pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
-			}
-			setPointerIcon(pointerIcon);
+		PointerIcon pointerIcon = customPointerIcons.get(pointerType);
+		if (pointerIcon == null) {
+			pointerIcon = PointerIcon.getSystemIcon(getContext(), pointerType);
 		}
+		setPointerIcon(pointerIcon);
 	}
 
 	@Override
 	public PointerIcon onResolvePointerIcon(MotionEvent me, int pointerIndex) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			return getPointerIcon();
-		}
-		return super.onResolvePointerIcon(me, pointerIndex);
+		return getPointerIcon();
 	}
 
 	private void init(XRMode xrMode, boolean translucent, boolean useDebugOpengl) {
@@ -282,27 +282,5 @@ public class GodotGLRenderView extends GLSurfaceView implements GodotRenderView 
 	public void startRenderer() {
 		/* Set the renderer responsible for frame rendering */
 		setRenderer(godotRenderer);
-	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-
-		queueEvent(() -> {
-			// Resume the renderer
-			godotRenderer.onActivityResumed();
-			GodotLib.focusin();
-		});
-	}
-
-	@Override
-	public void onPause() {
-		super.onPause();
-
-		queueEvent(() -> {
-			GodotLib.focusout();
-			// Pause the renderer
-			godotRenderer.onActivityPaused();
-		});
 	}
 }

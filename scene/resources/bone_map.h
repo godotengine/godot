@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_MAP_H
-#define BONE_MAP_H
+#pragma once
 
 #include "skeleton_profile.h"
 
@@ -53,16 +52,14 @@ public:
 	Ref<SkeletonProfile> get_profile() const;
 	void set_profile(const Ref<SkeletonProfile> &p_profile);
 
-	int get_skeleton_bone_name_count(const StringName p_skeleton_bone_name) const;
+	int get_skeleton_bone_name_count(const StringName &p_skeleton_bone_name) const;
 
-	StringName get_skeleton_bone_name(StringName p_profile_bone_name) const;
-	void set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name);
-	void _set_skeleton_bone_name(StringName p_profile_bone_name, const StringName p_skeleton_bone_name); // Avoid to emit signal for editor.
+	StringName get_skeleton_bone_name(const StringName &p_profile_bone_name) const;
+	void set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name);
+	void _set_skeleton_bone_name(const StringName &p_profile_bone_name, const StringName &p_skeleton_bone_name); // Avoid to emit signal for editor.
 
-	StringName find_profile_bone_name(StringName p_skeleton_bone_name) const;
+	StringName find_profile_bone_name(const StringName &p_skeleton_bone_name) const;
 
 	BoneMap();
 	~BoneMap();
 };
-
-#endif // BONE_MAP_H

@@ -4,12 +4,6 @@
 
 #VERSION_DEFINES
 
-#define MAX_VIEWS 2
-
-#if defined(USE_MULTIVIEW) && defined(has_VK_KHR_multiview)
-#extension GL_EXT_multiview : enable
-#endif
-
 layout(location = 0) out vec2 uv_interp;
 
 layout(push_constant, std430) uniform Params {
@@ -17,15 +11,16 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec3 pad;
+	vec2 pad;
 	float luminance_multiplier;
+	float brightness_multiplier;
 }
 params;
 
 void main() {
 	vec2 base_arr[3] = vec2[](vec2(-1.0, -3.0), vec2(-1.0, 1.0), vec2(3.0, 1.0));
 	uv_interp = base_arr[gl_VertexIndex];
-	gl_Position = vec4(uv_interp, 1.0, 1.0);
+	gl_Position = vec4(uv_interp, 0.0, 1.0);
 }
 
 #[fragment]
@@ -35,20 +30,11 @@ void main() {
 #VERSION_DEFINES
 
 #ifdef USE_MULTIVIEW
-#ifdef has_VK_KHR_multiview
 #extension GL_EXT_multiview : enable
 #define ViewIndex gl_ViewIndex
-#else // has_VK_KHR_multiview
-// !BAS! This needs to become an input once we implement our fallback!
-#define ViewIndex 0
-#endif // has_VK_KHR_multiview
-#else // USE_MULTIVIEW
-// Set to zero, not supported in non stereo
-#define ViewIndex 0
-#endif //USE_MULTIVIEW
+#endif
 
 #define M_PI 3.14159265359
-#define MAX_VIEWS 2
 
 layout(location = 0) in vec2 uv_interp;
 
@@ -57,8 +43,9 @@ layout(push_constant, std430) uniform Params {
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
 	float time;
-	vec3 pad;
+	vec2 pad;
 	float luminance_multiplier;
+	float brightness_multiplier;
 }
 params;
 
@@ -106,9 +93,11 @@ layout(set = 0, binding = 3, std140) uniform DirectionalLights {
 directional_lights;
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 1, binding = 0, std140) uniform MaterialUniforms{
+/* clang-format off */
+layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
+/* clang-format on */
 #endif
 
 layout(set = 2, binding = 0) uniform textureCube radiance;
@@ -158,7 +147,7 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 
 vec4 volumetric_fog_process(vec2 screen_uv) {
 #ifdef USE_MULTIVIEW
-	vec4 reprojected = sky_scene_data.combined_reprojection[ViewIndex] * (vec4(screen_uv * 2.0 - 1.0, 1.0, 1.0) * sky_scene_data.z_far);
+	vec4 reprojected = sky_scene_data.combined_reprojection[ViewIndex] * vec4(screen_uv * 2.0 - 1.0, 0.0, 1.0); // Unproject at the far plane
 	vec3 fog_pos = vec3(reprojected.xy / reprojected.w, 1.0) * 0.5 + 0.5;
 #else
 	vec3 fog_pos = vec3(screen_uv, 1.0);
@@ -175,7 +164,7 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 		float sun_total = 0.0;
 		for (uint i = 0; i < sky_scene_data.directional_light_count; i++) {
 			vec3 light_color = directional_lights.data[i].color_size.xyz * directional_lights.data[i].direction_energy.w;
-			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0);
+			float light_amount = pow(max(dot(view, directional_lights.data[i].direction_energy.xyz), 0.0), 8.0) * M_PI;
 			fog_color += light_color * light_amount * sky_scene_data.fog_sun_scatter;
 		}
 	}
@@ -183,25 +172,53 @@ vec4 fog_process(vec3 view, vec3 sky_color) {
 	return vec4(fog_color, 1.0);
 }
 
+// Eberly approximation from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+// input [-1, 1] and output [0, PI]
+float acos_approx(float p_x) {
+	float x = abs(p_x);
+	float res = -0.156583f * x + (M_PI / 2.0);
+	res *= sqrt(1.0f - x);
+	return (p_x >= 0.0) ? res : M_PI - res;
+}
+
+// Based on https://math.stackexchange.com/questions/1098487/atan2-faster-approximation
+// but using the Eberly coefficients from https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/.
+float atan2_approx(float y, float x) {
+	float a = min(abs(x), abs(y)) / max(abs(x), abs(y));
+	float s = a * a;
+	float poly = 0.0872929f;
+	poly = -0.301895f + poly * s;
+	poly = 1.0f + poly * s;
+	poly = poly * a;
+
+	float r = abs(y) > abs(x) ? (M_PI / 2.0) - poly : poly;
+	r = x < 0.0 ? M_PI - r : r;
+	r = y < 0.0 ? -r : r;
+
+	return r;
+}
+
 void main() {
 	vec3 cube_normal;
 #ifdef USE_MULTIVIEW
 	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
-	vec4 unproject = vec4(uv_interp.x, -uv_interp.y, 1.0, 1.0);
+	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 0.0, 1.0); // unproject at the far plane
 	vec4 unprojected = sky_scene_data.view_inv_projections[ViewIndex] * unproject;
 	cube_normal = unprojected.xyz / unprojected.w;
+
+	// Unproject will give us the position between the eyes, need to re-offset
 	cube_normal += sky_scene_data.view_eye_offsets[ViewIndex].xyz;
 #else
 	cube_normal.z = -1.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.projection.x)) / params.projection.y;
-	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.projection.z)) / params.projection.w;
+	cube_normal.y = -(cube_normal.z * (uv_interp.y - params.projection.z)) / params.projection.w;
 #endif
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
 
 	vec2 uv = uv_interp * 0.5 + 0.5;
 
-	vec2 panorama_coords = vec2(atan(cube_normal.x, -cube_normal.z), acos(cube_normal.y));
+	vec2 panorama_coords = vec2(atan2_approx(cube_normal.x, -cube_normal.z), acos_approx(cube_normal.y));
 
 	if (panorama_coords.x < 0.0) {
 		panorama_coords.x += M_PI * 2.0;
@@ -245,17 +262,14 @@ void main() {
 #endif //USE_CUBEMAP_PASS
 
 	{
-
 #CODE : SKY
-
 	}
 
 	frag_color.rgb = color;
 	frag_color.a = alpha;
 
-	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
-	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
-	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
+	// Apply environment 'brightness' setting separately before fog to ensure consistent luminance.
+	frag_color.rgb = frag_color.rgb * params.brightness_multiplier;
 
 #if !defined(DISABLE_FOG) && !defined(USE_CUBEMAP_PASS)
 
@@ -275,6 +289,10 @@ void main() {
 	}
 
 #endif // DISABLE_FOG
+
+	// For mobile renderer we're multiplying by 0.5 as we're using a UNORM buffer.
+	// For both mobile and clustered, we also bake in the exposure value for the environment and camera.
+	frag_color.rgb = frag_color.rgb * params.luminance_multiplier;
 
 	// Blending is disabled for Sky, so alpha doesn't blend.
 	// Alpha is used for subsurface scattering so make sure it doesn't get applied to Sky.

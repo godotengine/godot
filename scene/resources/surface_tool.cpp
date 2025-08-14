@@ -30,13 +30,15 @@
 
 #include "surface_tool.h"
 
+#include "core/templates/a_hash_map.h"
+
 #define EQ_VERTEX_DIST 0.00001
 
 SurfaceTool::OptimizeVertexCacheFunc SurfaceTool::optimize_vertex_cache_func = nullptr;
+SurfaceTool::OptimizeVertexFetchRemapFunc SurfaceTool::optimize_vertex_fetch_remap_func = nullptr;
 SurfaceTool::SimplifyFunc SurfaceTool::simplify_func = nullptr;
 SurfaceTool::SimplifyWithAttribFunc SurfaceTool::simplify_with_attrib_func = nullptr;
 SurfaceTool::SimplifyScaleFunc SurfaceTool::simplify_scale_func = nullptr;
-SurfaceTool::SimplifySloppyFunc SurfaceTool::simplify_sloppy_func = nullptr;
 SurfaceTool::GenerateRemapFunc SurfaceTool::generate_remap_func = nullptr;
 SurfaceTool::RemapVertexFunc SurfaceTool::remap_vertex_func = nullptr;
 SurfaceTool::RemapIndexFunc SurfaceTool::remap_index_func = nullptr;
@@ -51,7 +53,7 @@ void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32A
 	r_vertices.resize(new_vertex_count);
 	remap_index_func((unsigned int *)r_indices.ptrw(), (unsigned int *)r_indices.ptr(), r_indices.size(), remap.ptr());
 
-	HashMap<const int *, bool, TriangleHasher, TriangleHasher> found_triangles;
+	AHashMap<const int *, bool, TriangleHasher, TriangleHasher> found_triangles;
 	int *idx_ptr = r_indices.ptrw();
 
 	int filtered_indices_count = 0;
@@ -70,7 +72,7 @@ void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32A
 			memcpy(idx_ptr + (filtered_indices_count * 3), tri, sizeof(int) * 3);
 		}
 
-		found_triangles[tri] = true;
+		found_triangles.insert_new(tri, true);
 		filtered_indices_count++;
 	}
 	r_indices.resize(filtered_indices_count * 3);
@@ -94,6 +96,10 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 	}
 
 	if (binormal != p_vertex.binormal) {
+		return false;
+	}
+
+	if (tangent != p_vertex.tangent) {
 		return false;
 	}
 
@@ -131,18 +137,12 @@ bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
 }
 
 uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
-	uint32_t h = hash_djb2_buffer((const uint8_t *)&p_vtx.vertex, sizeof(real_t) * 3);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.normal, sizeof(real_t) * 3, h);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.binormal, sizeof(real_t) * 3, h);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.tangent, sizeof(real_t) * 3, h);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.uv, sizeof(real_t) * 2, h);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.uv2, sizeof(real_t) * 2, h);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.color, sizeof(real_t) * 4, h);
-	h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int), h);
+	uint32_t h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int));
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
-	h = hash_djb2_buffer((const uint8_t *)&p_vtx.custom[0], sizeof(Color) * RS::ARRAY_CUSTOM_COUNT, h);
-	h = hash_murmur3_one_32(p_vtx.smooth_group, h);
-	h = hash_fmix32(h);
+
+	const int64_t length = (int64_t)&p_vtx.vertex - (int64_t)&p_vtx.smooth_group + sizeof(p_vtx.vertex);
+	const void *key = &p_vtx.smooth_group;
+	h = hash_murmur3_buffer(key, length, h);
 	return h;
 }
 
@@ -159,7 +159,7 @@ bool SurfaceTool::SmoothGroupVertex::operator==(const SmoothGroupVertex &p_verte
 }
 
 uint32_t SurfaceTool::SmoothGroupVertexHasher::hash(const SmoothGroupVertex &p_vtx) {
-	uint32_t h = hash_djb2_buffer((const uint8_t *)&p_vtx.vertex, sizeof(real_t) * 3);
+	uint32_t h = HashMapHasherDefault::hash(p_vtx.vertex);
 	h = hash_murmur3_one_32(p_vtx.smooth_group, h);
 	h = hash_fmix32(h);
 	return h;
@@ -645,8 +645,7 @@ Array SurfaceTool::commit_to_arrays() {
 			case Mesh::ARRAY_BONES: {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
-				array.resize(varr_len * count);
-				array.fill(0);
+				array.resize_initialized(varr_len * count);
 				int *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
@@ -669,8 +668,7 @@ Array SurfaceTool::commit_to_arrays() {
 				Vector<float> array;
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
-				array.resize(varr_len * count);
-				array.fill(0.0f);
+				array.resize_initialized(varr_len * count);
 				float *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
@@ -690,7 +688,7 @@ Array SurfaceTool::commit_to_arrays() {
 
 			} break;
 			case Mesh::ARRAY_INDEX: {
-				ERR_CONTINUE(index_array.size() == 0);
+				ERR_CONTINUE(index_array.is_empty());
 
 				Vector<int> array;
 				array.resize(index_array.size());
@@ -751,17 +749,17 @@ void SurfaceTool::index() {
 		return; //already indexed
 	}
 
-	HashMap<Vertex, int, VertexHasher> indices;
-	LocalVector<Vertex> old_vertex_array = vertex_array;
-	vertex_array.clear();
+	AHashMap<Vertex &, int, VertexHasher> indices = vertex_array.size();
 
-	for (const Vertex &vertex : old_vertex_array) {
+	uint32_t new_size = 0;
+	for (Vertex &vertex : vertex_array) {
 		int *idxptr = indices.getptr(vertex);
 		int idx;
 		if (!idxptr) {
 			idx = indices.size();
-			vertex_array.push_back(vertex);
-			indices[vertex] = idx;
+			vertex_array[new_size] = vertex;
+			indices.insert_new(vertex_array[new_size], idx);
+			new_size++;
 		} else {
 			idx = *idxptr;
 		}
@@ -769,11 +767,12 @@ void SurfaceTool::index() {
 		index_array.push_back(idx);
 	}
 
+	vertex_array.resize(new_size);
 	format |= Mesh::ARRAY_FORMAT_INDEX;
 }
 
 void SurfaceTool::deindex() {
-	if (index_array.size() == 0) {
+	if (index_array.is_empty()) {
 		return; //nothing to deindex
 	}
 
@@ -788,7 +787,7 @@ void SurfaceTool::deindex() {
 }
 
 void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::_create_list() must be a valid object of type Mesh");
 
 	Array arr = p_existing->surface_get_arrays(p_surface);
 	ERR_FAIL_COND(arr.size() != RS::ARRAY_MAX);
@@ -798,7 +797,9 @@ void SurfaceTool::_create_list(const Ref<Mesh> &p_existing, int p_surface, Local
 const uint32_t SurfaceTool::custom_mask[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0, Mesh::ARRAY_FORMAT_CUSTOM1, Mesh::ARRAY_FORMAT_CUSTOM2, Mesh::ARRAY_FORMAT_CUSTOM3 };
 const uint32_t SurfaceTool::custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
 
-void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint64_t *r_format) {
+void SurfaceTool::create_vertex_array_from_arrays(const Array &p_arrays, LocalVector<SurfaceTool::Vertex> &ret, uint64_t *r_format) {
+	ERR_FAIL_INDEX(RS::ARRAY_WEIGHTS, p_arrays.size());
+
 	ret.clear();
 
 	Vector<Vector3> varr = p_arrays[RS::ARRAY_VERTEX];
@@ -880,9 +881,9 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 			v.normal = narr[i];
 		}
 		if (lformat & RS::ARRAY_FORMAT_TANGENT) {
-			Plane p(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2], tarr[i * 4 + 3]);
-			v.tangent = p.normal;
-			v.binormal = p.normal.cross(v.tangent).normalized() * p.d;
+			v.tangent = Vector3(tarr[i * 4 + 0], tarr[i * 4 + 1], tarr[i * 4 + 2]);
+			float d = tarr[i * 4 + 3];
+			v.binormal = v.normal.cross(v.tangent).normalized() * d;
 		}
 		if (lformat & RS::ARRAY_FORMAT_COLOR) {
 			v.color = carr[i];
@@ -928,7 +929,7 @@ void SurfaceTool::create_vertex_array_from_triangle_arrays(const Array &p_arrays
 }
 
 void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_vertex, LocalVector<int> *r_index, uint64_t &lformat) {
-	create_vertex_array_from_triangle_arrays(arr, *r_vertex, &lformat);
+	create_vertex_array_from_arrays(arr, *r_vertex, &lformat);
 	ERR_FAIL_COND(r_vertex->size() == 0);
 
 	//indices
@@ -945,9 +946,9 @@ void SurfaceTool::_create_list_from_arrays(Array arr, LocalVector<Vertex> *r_ver
 	}
 }
 
-void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
+void SurfaceTool::create_from_arrays(const Array &p_arrays, Mesh::PrimitiveType p_primitive_type) {
 	clear();
-	primitive = Mesh::PRIMITIVE_TRIANGLES;
+	primitive = p_primitive_type;
 	_create_list_from_arrays(p_arrays, &vertex_array, &index_array, format);
 
 	for (int j = 0; j < RS::ARRAY_CUSTOM_COUNT; j++) {
@@ -957,8 +958,12 @@ void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
 	}
 }
 
+void SurfaceTool::create_from_triangle_arrays(const Array &p_arrays) {
+	create_from_arrays(p_arrays, Mesh::PRIMITIVE_TRIANGLES);
+}
+
 void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from() must be a valid object of type Mesh");
 
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
@@ -973,7 +978,7 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 }
 
 void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::create_from_blend_shape() must be a valid object of type Mesh");
 
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
@@ -1013,9 +1018,9 @@ void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_sur
 }
 
 void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform3D &p_xform) {
-	ERR_FAIL_NULL_MSG(p_existing, "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
+	ERR_FAIL_COND_MSG(p_existing.is_null(), "First argument in SurfaceTool::append_from() must be a valid object of type Mesh");
 
-	if (vertex_array.size() == 0) {
+	if (vertex_array.is_empty()) {
 		primitive = p_existing->surface_get_primitive_type(p_surface);
 		format = 0;
 	}
@@ -1148,7 +1153,7 @@ void SurfaceTool::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, cons
 }
 
 void SurfaceTool::generate_tangents() {
-	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_TEX_UV));
+	ERR_FAIL_COND_MSG(!(format & Mesh::ARRAY_FORMAT_TEX_UV), "UVs are required to generate tangents.");
 	ERR_FAIL_COND(!(format & Mesh::ARRAY_FORMAT_NORMAL));
 
 	SMikkTSpaceInterface mkif;
@@ -1187,7 +1192,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 
 	ERR_FAIL_COND((vertex_array.size() % 3) != 0);
 
-	HashMap<SmoothGroupVertex, Vector3, SmoothGroupVertexHasher> smooth_hash;
+	AHashMap<SmoothGroupVertex, Vector3, SmoothGroupVertexHasher> smooth_hash = vertex_array.size();
 
 	for (uint32_t vi = 0; vi < vertex_array.size(); vi += 3) {
 		Vertex *v = &vertex_array[vi];
@@ -1204,7 +1209,7 @@ void SurfaceTool::generate_normals(bool p_flip) {
 			if (v[i].smooth_group != UINT32_MAX) {
 				Vector3 *lv = smooth_hash.getptr(v[i]);
 				if (!lv) {
-					smooth_hash.insert(v[i], normal);
+					smooth_hash.insert_new(v[i], normal);
 				} else {
 					(*lv) += normal;
 				}
@@ -1280,7 +1285,7 @@ SurfaceTool::CustomFormat SurfaceTool::get_custom_format(int p_channel_index) co
 }
 void SurfaceTool::optimize_indices_for_cache() {
 	ERR_FAIL_NULL(optimize_vertex_cache_func);
-	ERR_FAIL_COND(index_array.size() == 0);
+	ERR_FAIL_COND(index_array.is_empty());
 	ERR_FAIL_COND(primitive != Mesh::PRIMITIVE_TRIANGLES);
 	ERR_FAIL_COND(index_array.size() % 3 != 0);
 
@@ -1290,7 +1295,7 @@ void SurfaceTool::optimize_indices_for_cache() {
 }
 
 AABB SurfaceTool::get_aabb() const {
-	ERR_FAIL_COND_V(vertex_array.size() == 0, AABB());
+	ERR_FAIL_COND_V(vertex_array.is_empty(), AABB());
 
 	AABB aabb;
 	for (uint32_t i = 0; i < vertex_array.size(); i++) {
@@ -1310,8 +1315,8 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 
 	ERR_FAIL_NULL_V(simplify_func, lod);
 	ERR_FAIL_COND_V(p_target_index_count < 0, lod);
-	ERR_FAIL_COND_V(vertex_array.size() == 0, lod);
-	ERR_FAIL_COND_V(index_array.size() == 0, lod);
+	ERR_FAIL_COND_V(vertex_array.is_empty(), lod);
+	ERR_FAIL_COND_V(index_array.is_empty(), lod);
 	ERR_FAIL_COND_V(index_array.size() % 3 != 0, lod);
 	ERR_FAIL_COND_V(index_array.size() < (unsigned int)p_target_index_count, lod);
 
@@ -1373,6 +1378,7 @@ void SurfaceTool::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &SurfaceTool::clear);
 
 	ClassDB::bind_method(D_METHOD("create_from", "existing", "surface"), &SurfaceTool::create_from);
+	ClassDB::bind_method(D_METHOD("create_from_arrays", "arrays", "primitive_type"), &SurfaceTool::create_from_arrays, DEFVAL(Mesh::PRIMITIVE_TRIANGLES));
 	ClassDB::bind_method(D_METHOD("create_from_blend_shape", "existing", "surface", "blend_shape"), &SurfaceTool::create_from_blend_shape);
 	ClassDB::bind_method(D_METHOD("append_from", "existing", "surface", "transform"), &SurfaceTool::append_from);
 	ClassDB::bind_method(D_METHOD("commit", "existing", "flags"), &SurfaceTool::commit, DEFVAL(Variant()), DEFVAL(0));

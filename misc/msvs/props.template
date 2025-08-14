@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="%%CONDITION%%">
+    <NMakeBuildCommandLine>%%BUILD%%</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>%%REBUILD%%</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>%%CLEAN%%</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(NMakeOutput)' == ''">%%OUTPUT%%</NMakeOutput>
+    <NMakePreprocessorDefinitions>%%DEFINES%%;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>%%INCLUDES%%;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes>$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath>$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies>$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <AdditionalOptions>%%OPTIONS%% $(AdditionalOptions)</AdditionalOptions>
+  </PropertyGroup>
+  <PropertyGroup Condition="%%CONDITION%%">
+    %%PROPERTIES%%
+  </PropertyGroup>
+  <ItemGroup Condition="%%CONDITION%%">
+    %%EXTRA_ITEMS%%
+  </ItemGroup>
+
+  <!-- Build/Rebuild/Clean targets for NMake are defined in MSVC, so we need to provide them, when using MSBuild without MSVC targets -->
+  <Import Project="$(MSBuildProjectDirectory)\misc\msvs\nmake.substitution.props" Condition="%%CONDITION%% And !Exists('$(VCTargetsPath)\Microsoft.Cpp.targets')" />
+</Project>
+<!-- CHECKSUM
+%%HASH%%
+-->

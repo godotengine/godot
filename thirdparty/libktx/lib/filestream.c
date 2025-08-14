@@ -307,15 +307,17 @@ KTX_error_code ktxFileStream_getsize(ktxStream* str, ktx_size_t* size)
 
     assert(str->type == eStreamTypeFile);
 
-  // Need to flush so that fstat will return the current size.
-  // Can ignore return value. The only error that can happen is to tell you
-  // it was a NOP because the file is read only.
+    // Need to flush so that fstat will return the current size.
+    // Can ignore return value. The only error that can happen is to tell you
+    // it was a NOP because the file is read only.
 #if (defined(_MSC_VER) && _MSC_VER < 1900) || defined(__MINGW64__) && !defined(_UCRT)
-  // Bug in VS2013 msvcrt. fflush on FILE open for READ changes file offset
-  // to 4096.
-  if (str->data.file->_flag & _IOWRT)
-#endif
+    // Bug in VS2013 msvcrt. fflush on FILE open for READ changes file offset
+    // to 4096.
+    if (str->data.file->_flag & _IOWRT)
+        (void)fflush(str->data.file);
+#else
     (void)fflush(str->data.file);
+#endif
     statret = fstat(fileno(str->data.file), &statbuf);
     if (statret < 0) {
         switch (errno) {

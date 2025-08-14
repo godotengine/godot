@@ -17,8 +17,9 @@
 	<methods>
 		<method name="post">
 			<return type="void" />
+			<param index="0" name="count" type="int" default="1" />
 			<description>
-				Lowers the [Semaphore], allowing one more thread in.
+				Lowers the [Semaphore], allowing one thread in, or more if [param count] is specified.
 			</description>
 		</method>
 		<method name="try_wait">

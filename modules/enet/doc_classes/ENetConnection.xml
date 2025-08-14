@@ -51,7 +51,7 @@
 			<param index="3" name="data" type="int" default="0" />
 			<description>
 				Initiates a connection to a foreign [param address] using the specified [param port] and allocating the requested [param channels]. Optional [param data] can be passed during connection in the form of a 32 bit integer.
-				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] before calling this method.
+				[b]Note:[/b] You must call either [method create_host] or [method create_host_bound] on both ends before calling this method.
 			</description>
 		</method>
 		<method name="create_host">
@@ -61,7 +61,9 @@
 			<param index="2" name="in_bandwidth" type="int" default="0" />
 			<param index="3" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost that will allow up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth].
+				Creates an ENetHost that allows up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth] (if greater than zero).
+				This method binds a random available dynamic UDP port on the host machine at the [i]unspecified[/i] address. Use [method create_host_bound] to specify the address and port.
+				[b]Note:[/b] It is necessary to create a host in both client and server in order to establish a connection.
 			</description>
 		</method>
 		<method name="create_host_bound">
@@ -73,7 +75,8 @@
 			<param index="4" name="in_bandwidth" type="int" default="0" />
 			<param index="5" name="out_bandwidth" type="int" default="0" />
 			<description>
-				Create an ENetHost like [method create_host] which is also bound to the given [param bind_address] and [param bind_port].
+				Creates an ENetHost bound to the given [param bind_address] and [param bind_port] that allows up to [param max_peers] connected peers, each allocating up to [param max_channels] channels, optionally limiting bandwidth to [param in_bandwidth] and [param out_bandwidth] (if greater than zero).
+				[b]Note:[/b] It is necessary to create a host in both client and server in order to establish a connection.
 			</description>
 		</method>
 		<method name="destroy">
@@ -126,7 +129,7 @@
 			<return type="float" />
 			<param index="0" name="statistic" type="int" enum="ENetConnection.HostStatistic" />
 			<description>
-				Returns and resets host statistics. See [enum HostStatistic] for more info.
+				Returns and resets host statistics.
 			</description>
 		</method>
 		<method name="refuse_new_connections">
@@ -141,8 +144,9 @@
 			<return type="Array" />
 			<param index="0" name="timeout" type="int" default="0" />
 			<description>
-				Waits for events on the host specified and shuttles packets between the host and its peers. The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
+				Waits for events on this connection and shuttles packets between the host and its peers, with the given [param timeout] (in milliseconds). The returned [Array] will have 4 elements. An [enum EventType], the [ENetPacketPeer] which generated the event, the event associated data (if any), the event associated channel (if any). If the generated event is [constant EVENT_RECEIVE], the received packet will be queued to the associated [ENetPacketPeer].
 				Call this function regularly to handle connections, disconnections, and to receive new packets.
+				[b]Note:[/b] This method must be called on both ends involved in the event (sending and receiving hosts).
 			</description>
 		</method>
 		<method name="socket_send">
@@ -151,7 +155,7 @@
 			<param index="1" name="destination_port" type="int" />
 			<param index="2" name="packet" type="PackedByteArray" />
 			<description>
-				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance. 
+				Sends a [param packet] toward a destination from the address and port currently bound by this ENetConnection instance.
 				This is useful as it serves to establish entries in NAT routing tables on all devices between this bound instance and the public facing internet, allowing a prospective client's connection packets to be routed backward through the NAT device(s) between the public internet and this host.
 				This requires forward knowledge of a prospective client's address and communication port as seen by the public internet - after any NAT devices have handled their connection request. This information can be obtained by a [url=https://en.wikipedia.org/wiki/STUN]STUN[/url] service, and must be handed off to your host by an entity that is not the prospective client. This will never work for a client behind a Symmetric NAT due to the nature of the Symmetric NAT routing algorithm, as their IP and Port cannot be known beforehand.
 			</description>

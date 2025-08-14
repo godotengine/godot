@@ -28,11 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_TOASTER_H
-#define EDITOR_TOASTER_H
+#pragma once
 
-#include "core/string/ustring.h"
-#include "core/templates/local_vector.h"
 #include "scene/gui/box_container.h"
 
 class Button;
@@ -76,6 +73,10 @@ private:
 		real_t remaining_time = 0.0;
 		bool popped = false;
 
+		// Buttons
+		Button *copy_button = nullptr;
+		Button *close_button = nullptr;
+
 		// Messages
 		String message;
 		String tooltip;
@@ -100,26 +101,26 @@ private:
 
 	void _set_notifications_enabled(bool p_enabled);
 	void _repop_old();
-	void _popup_str(String p_message, Severity p_severity, String p_tooltip);
-	void _close_button_theme_changed(Control *p_close_button);
+	void _popup_str(const String &p_message, Severity p_severity, const String &p_tooltip);
+	void _toast_theme_changed(Control *p_control);
 
 protected:
-	static EditorToaster *singleton;
 	static void _bind_methods();
+	static EditorToaster *singleton;
 
 	void _notification(int p_what);
 
 public:
 	static EditorToaster *get_singleton();
 
-	Control *popup(Control *p_control, Severity p_severity = SEVERITY_INFO, double p_time = 0.0, String p_tooltip = String());
-	void popup_str(String p_message, Severity p_severity = SEVERITY_INFO, String p_tooltip = String());
+	Control *popup(Control *p_control, Severity p_severity = SEVERITY_INFO, double p_time = 0.0, const String &p_tooltip = String());
+	void popup_str(const String &p_message, Severity p_severity = SEVERITY_INFO, const String &p_tooltip = String());
 	void close(Control *p_control);
+	void instant_close(Control *p_control);
+	void copy(Control *p_control);
 
 	EditorToaster();
 	~EditorToaster();
 };
 
 VARIANT_ENUM_CAST(EditorToaster::Severity);
-
-#endif // EDITOR_TOASTER_H

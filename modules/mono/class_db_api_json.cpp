@@ -30,7 +30,7 @@
 
 #include "class_db_api_json.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
@@ -166,10 +166,10 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 				Array arguments;
 				signal_dict["arguments"] = arguments;
-				for (int i = 0; i < mi.arguments.size(); i++) {
+				for (const PropertyInfo &pi : mi.arguments) {
 					Dictionary argument_dict;
 					arguments.push_back(argument_dict);
-					argument_dict["type"] = mi.arguments[i].type;
+					argument_dict["type"] = pi.type;
 				}
 			}
 
@@ -232,4 +232,4 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));
 }
 
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED

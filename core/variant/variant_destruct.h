@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_DESTRUCT_H
-#define VARIANT_DESTRUCT_H
+#pragma once
 
 #include "core/variant/variant.h"
 
 #include "core/object/class_db.h"
 
-template <class T>
+template <typename T>
 struct VariantDestruct {};
 
 #define MAKE_PTRDESTRUCT(m_type)                               \
@@ -65,7 +64,6 @@ MAKE_PTRDESTRUCT(PackedStringArray);
 MAKE_PTRDESTRUCT(PackedVector2Array);
 MAKE_PTRDESTRUCT(PackedVector3Array);
 MAKE_PTRDESTRUCT(PackedColorArray);
+MAKE_PTRDESTRUCT(PackedVector4Array);
 
 #undef MAKE_PTRDESTRUCT
-
-#endif // VARIANT_DESTRUCT_H

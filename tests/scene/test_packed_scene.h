@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PACKED_SCENE_H
-#define TEST_PACKED_SCENE_H
+#pragma once
 
 #include "scene/resources/packed_scene.h"
 
@@ -54,6 +53,72 @@ TEST_CASE("[PackedScene] Pack Scene and Retrieve State") {
 	CHECK(state->get_node_name(0) == "TestScene");
 
 	memdelete(scene);
+}
+
+TEST_CASE("[PackedScene] Signals Preserved when Packing Scene") {
+	// Create main scene
+	// root
+	// `- sub_node (local)
+	// `- sub_scene (instance of another scene)
+	//    `- sub_scene_node (owned by sub_scene)
+	Node *main_scene_root = memnew(Node);
+	Node *sub_node = memnew(Node);
+	Node *sub_scene_root = memnew(Node);
+	Node *sub_scene_node = memnew(Node);
+
+	main_scene_root->add_child(sub_node);
+	sub_node->set_owner(main_scene_root);
+
+	sub_scene_root->add_child(sub_scene_node);
+	sub_scene_node->set_owner(sub_scene_root);
+
+	main_scene_root->add_child(sub_scene_root);
+	sub_scene_root->set_owner(main_scene_root);
+
+	SUBCASE("Signals that should be saved") {
+		int main_flags = Object::CONNECT_PERSIST;
+		// sub node to a node in main scene
+		sub_node->connect("ready", callable_mp(main_scene_root, &Node::is_ready), main_flags);
+		// subscene root to a node in main scene
+		sub_scene_root->connect("ready", callable_mp(main_scene_root, &Node::is_ready), main_flags);
+		//subscene root to subscene root (connected within main scene)
+		sub_scene_root->connect("ready", callable_mp(sub_scene_root, &Node::is_ready), main_flags);
+
+		// Pack the scene.
+		Ref<PackedScene> packed_scene;
+		packed_scene.instantiate();
+		const Error err = packed_scene->pack(main_scene_root);
+		CHECK(err == OK);
+
+		// Make sure the right connections are in packed scene.
+		Ref<SceneState> state = packed_scene->get_state();
+		CHECK_EQ(state->get_connection_count(), 3);
+	}
+
+	/*
+	// FIXME: This subcase requires GH-48064 to be fixed.
+	SUBCASE("Signals that should not be saved") {
+		int subscene_flags = Object::CONNECT_PERSIST | Object::CONNECT_INHERITED;
+		// subscene node to itself
+		sub_scene_node->connect("ready", callable_mp(sub_scene_node, &Node::is_ready), subscene_flags);
+		// subscene node to subscene root
+		sub_scene_node->connect("ready", callable_mp(sub_scene_root, &Node::is_ready), subscene_flags);
+		//subscene root to subscene root (connected within sub scene)
+		sub_scene_root->connect("ready", callable_mp(sub_scene_root, &Node::is_ready), subscene_flags);
+
+		// Pack the scene.
+		Ref<PackedScene> packed_scene;
+		packed_scene.instantiate();
+		const Error err = packed_scene->pack(main_scene_root);
+		CHECK(err == OK);
+
+		// Make sure the right connections are in packed scene.
+		Ref<SceneState> state = packed_scene->get_state();
+		CHECK_EQ(state->get_connection_count(), 0);
+	}
+	*/
+
+	memdelete(main_scene_root);
 }
 
 TEST_CASE("[PackedScene] Clear Packed Scene") {
@@ -150,6 +215,69 @@ TEST_CASE("[PackedScene] Instantiate Packed Scene With Children") {
 	memdelete(instance);
 }
 
-} // namespace TestPackedScene
+TEST_CASE("[PackedScene] Set Path") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
 
-#endif // TEST_PACKED_SCENE_H
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Set a new path for the packed scene.
+	const String new_path = "NewTestPath";
+	packed_scene.set_path(new_path);
+
+	// Check if the path has been set correctly.
+	Ref<SceneState> state = packed_scene.get_state();
+	CHECK(state.is_valid());
+	CHECK(state->get_path() == new_path);
+
+	memdelete(scene);
+}
+
+TEST_CASE("[PackedScene] Replace State") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Create another scene state to replace with.
+	Ref<SceneState> new_state = memnew(SceneState);
+	new_state->set_path("NewPath");
+
+	// Replace the state.
+	packed_scene.replace_state(new_state);
+
+	// Check if the state has been replaced.
+	Ref<SceneState> state = packed_scene.get_state();
+	CHECK(state.is_valid());
+	CHECK(state == new_state);
+
+	memdelete(scene);
+}
+
+TEST_CASE("[PackedScene] Recreate State") {
+	// Create a scene to pack.
+	Node *scene = memnew(Node);
+	scene->set_name("TestScene");
+
+	// Pack the scene.
+	PackedScene packed_scene;
+	packed_scene.pack(scene);
+
+	// Recreate the state.
+	packed_scene.recreate_state();
+
+	// Check if the state has been recreated.
+	Ref<SceneState> state = packed_scene.get_state();
+	CHECK(state.is_valid());
+	CHECK(state->get_node_count() == 0); // Since the state was recreated, it should be empty.
+
+	memdelete(scene);
+}
+
+} // namespace TestPackedScene

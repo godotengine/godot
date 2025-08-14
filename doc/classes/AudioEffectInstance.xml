@@ -1,23 +1,30 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectInstance" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		Manipulates the audio it receives for a given effect.
 	</brief_description>
 	<description>
+		An audio effect instance manipulates the audio it receives for a given effect. This instance is automatically created by an [AudioEffect] when it is added to a bus, and should usually not be created directly. If necessary, it can be fetched at run-time with [method AudioServer.get_bus_effect_instance].
 	</description>
 	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
 	</tutorials>
 	<methods>
-		<method name="_process" qualifiers="virtual">
+		<method name="_process" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="src_buffer" type="const void*" />
 			<param index="1" name="dst_buffer" type="AudioFrame*" />
 			<param index="2" name="frame_count" type="int" />
 			<description>
+				Called by the [AudioServer] to process this effect. When [method _process_silence] is not overridden or it returns [code]false[/code], this method is called only when the bus is active.
+				[b]Note:[/b] It is not useful to override this method in GDScript or C#. Only GDExtension can take advantage of it.
 			</description>
 		</method>
 		<method name="_process_silence" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
+				Override this method to customize the processing behavior of this effect instance.
+				Should return [code]true[/code] to force the [AudioServer] to always call [method _process], even if the bus has been muted or cannot otherwise be heard.
 			</description>
 		</method>
 	</methods>

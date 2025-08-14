@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MISSING_NODE_H
-#define MISSING_NODE_H
+#pragma once
 
-#include "core/io/missing_resource.h"
 #include "scene/main/node.h"
 
 class MissingNode : public Node {
@@ -39,6 +37,7 @@ class MissingNode : public Node {
 	HashMap<StringName, Variant> properties;
 
 	String original_class;
+	String original_scene;
 	bool recording_properties = false;
 
 protected:
@@ -52,6 +51,9 @@ public:
 	void set_original_class(const String &p_class);
 	String get_original_class() const;
 
+	void set_original_scene(const String &p_scene);
+	String get_original_scene() const;
+
 	void set_recording_properties(bool p_enable);
 	bool is_recording_properties() const;
 
@@ -59,5 +61,3 @@ public:
 
 	MissingNode();
 };
-
-#endif // MISSING_NODE_H

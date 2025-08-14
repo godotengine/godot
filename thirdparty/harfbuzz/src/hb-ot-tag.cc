@@ -326,7 +326,7 @@ hb_ot_tags_from_language (const char   *lang_str,
 
     hb_tag_t lang_tag = hb_tag_from_string (lang_str, first_len);
 
-    static hb_atomic_int_t last_tag_idx; /* Poor man's cache. */
+    static hb_atomic_t<unsigned> last_tag_idx = 0; /* Poor man's cache. */
     unsigned tag_idx = last_tag_idx;
 
     if (likely (tag_idx < ot_languages_len && ot_languages[tag_idx].language == lang_tag) ||
@@ -547,7 +547,7 @@ hb_ot_tag_to_language (hb_tag_t tag)
       buf[3] = '-';
       str += 4;
     }
-    snprintf (str, 16, "x-hbot-%08x", tag);
+    snprintf (str, 16, "x-hbot-%08" PRIx32, tag);
     return hb_language_from_string (&*buf, -1);
   }
 }

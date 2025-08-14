@@ -1,18 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffect" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Audio effect for audio.
+		Base class for audio effect resources.
 	</brief_description>
 	<description>
-		Base resource for audio bus. Applies an audio effect on the bus that the resource is applied on.
+		The base [Resource] for every audio effect. In the editor, an audio effect can be added to the current bus layout through the Audio panel. At run-time, it is also possible to manipulate audio effects through [method AudioServer.add_bus_effect], [method AudioServer.remove_bus_effect], and [method AudioServer.get_bus_effect].
+		When applied on a bus, an audio effect creates a corresponding [AudioEffectInstance]. The instance is directly responsible for manipulating the sound, based on the original audio effect's properties.
 	</description>
 	<tutorials>
-		<link title="Audio Mic Record Demo">https://godotengine.org/asset-library/asset/527</link>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+		<link title="Audio Microphone Record Demo">https://godotengine.org/asset-library/asset/2760</link>
 	</tutorials>
 	<methods>
-		<method name="_instantiate" qualifiers="virtual">
+		<method name="_instantiate" qualifiers="virtual required">
 			<return type="AudioEffectInstance" />
 			<description>
+				Override this method to customize the [AudioEffectInstance] created when this effect is applied on a bus in the editor's Audio panel, or through [method AudioServer.add_bus_effect].
+				[codeblock]
+				extends AudioEffect
+
+				@export var strength = 4.0
+
+				func _instantiate():
+					var effect = CustomAudioEffectInstance.new()
+					effect.base = self
+
+					return effect
+				[/codeblock]
+				[b]Note:[/b] It is recommended to keep a reference to the original [AudioEffect] in the new instance. Depending on the implementation this allows the effect instance to listen for changes at run-time and be modified accordingly.
 			</description>
 		</method>
 	</methods>

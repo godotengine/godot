@@ -5,14 +5,14 @@
 	</brief_description>
 	<description>
 		Tweens are mostly useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them. Animating something with a [Tween] is called tweening.
-		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a fire-and-forget manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
+		[Tween] is more suited than [AnimationPlayer] for animations where you don't know the final values in advance. For example, interpolating a dynamically-chosen camera zoom value is best done with a [Tween]; it would be difficult to do the same thing with an [AnimationPlayer] node. Tweens are also more light-weight than [AnimationPlayer], so they are very much suited for simple animations or general tasks that don't require visual tweaking provided by the editor. They can be used in a "fire-and-forget" manner for some logic that normally would be done by code. You can e.g. make something shoot periodically by using a looped [CallbackTweener] with a delay.
 		A [Tween] can be created by using either [method SceneTree.create_tween] or [method Node.create_tween]. [Tween]s created manually (i.e. by using [code]Tween.new()[/code]) are invalid and can't be used for tweening values.
 		A tween animation is created by adding [Tweener]s to the [Tween] object, using [method tween_property], [method tween_interval], [method tween_callback] or [method tween_method]:
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
-		tween.tween_property($Sprite, "modulate", Color.RED, 1)
-		tween.tween_property($Sprite, "scale", Vector2(), 1)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1.0)
+		tween.tween_property($Sprite, "scale", Vector2(), 1.0)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
 		[csharp]
@@ -27,8 +27,8 @@
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
-		tween.tween_property($Sprite, "modulate", Color.RED, 1).set_trans(Tween.TRANS_SINE)
-		tween.tween_property($Sprite, "scale", Vector2(), 1).set_trans(Tween.TRANS_BOUNCE)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1.0).set_trans(Tween.TRANS_SINE)
+		tween.tween_property($Sprite, "scale", Vector2(), 1.0).set_trans(Tween.TRANS_BOUNCE)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
 		[csharp]
@@ -42,8 +42,8 @@
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween().bind_node(self).set_trans(Tween.TRANS_ELASTIC)
-		tween.tween_property($Sprite, "modulate", Color.RED, 1)
-		tween.tween_property($Sprite, "scale", Vector2(), 1)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1.0)
+		tween.tween_property($Sprite, "scale", Vector2(), 1.0)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
 		[csharp]
@@ -58,38 +58,38 @@
 		[gdscript]
 		var tween = create_tween()
 		for sprite in get_children():
-		    tween.tween_property(sprite, "position", Vector2(0, 0), 1)
+			tween.tween_property(sprite, "position", Vector2(0, 0), 1.0)
 		[/gdscript]
 		[csharp]
 		Tween tween = CreateTween();
 		foreach (Node sprite in GetChildren())
-		    tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
+			tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
 		[/csharp]
 		[/codeblocks]
-		In the example above, all children of a node are moved one after another to position (0, 0).
+		In the example above, all children of a node are moved one after another to position [code](0, 0)[/code].
 		You should avoid using more than one [Tween] per object's property. If two or more tweens animate one property at the same time, the last one created will take priority and assign the final value. If you want to interrupt and restart an animation, consider assigning the [Tween] to a variable:
 		[codeblocks]
 		[gdscript]
 		var tween
 		func animate():
-		    if tween:
-		        tween.kill() # Abort the previous animation.
-		    tween = create_tween()
+			if tween:
+				tween.kill() # Abort the previous animation.
+			tween = create_tween()
 		[/gdscript]
 		[csharp]
 		private Tween _tween;
 
 		public void Animate()
 		{
-		    if (_tween != null)
-		        _tween.Kill(); // Abort the previous animation
-		    _tween = CreateTween();
+			if (_tween != null)
+				_tween.Kill(); // Abort the previous animation
+			_tween = CreateTween();
 		}
 		[/csharp]
 		[/codeblocks]
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.webp]Tween easing and transition types cheatsheet[/url]
-		[b]Note:[/b] Tweens are not designed to be re-used and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
+		[b]Note:[/b] Tweens are not designed to be reused and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
 		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the tween (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
 	</description>
 	<tutorials>
@@ -183,7 +183,6 @@
 			<return type="Tween" />
 			<description>
 				Makes the next [Tweener] run parallelly to the previous one.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
@@ -219,8 +218,21 @@
 			<return type="Tween" />
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
-				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant EASE_IN_OUT].
+				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default ease type is [constant EASE_IN_OUT].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses EASE_IN_OUT.
+				tween.set_ease(Tween.EASE_IN)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses EASE_IN.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="set_ignore_time_scale">
+			<return type="Tween" />
+			<param index="0" name="ignore" type="bool" default="true" />
+			<description>
+				If [param ignore] is [code]true[/code], the tween will ignore [member Engine.time_scale] and update with the real, elapsed time. This affects all [Tweener]s and their delays. Default value is [code]false[/code].
 			</description>
 		</method>
 		<method name="set_loops">
@@ -237,13 +249,19 @@
 			<param index="0" name="parallel" type="bool" default="true" />
 			<description>
 				If [param parallel] is [code]true[/code], the [Tweener]s appended after this method will by default run simultaneously, as opposed to sequentially.
+				[b]Note:[/b] Just like with [method parallel], the tweener added right before this method will also be part of the parallel step.
+				[codeblock]
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5)
+				tween.set_parallel()
+				tween.tween_property(self, "modulate", Color.GREEN, 0.5) # Runs together with the position tweener.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_pause_mode">
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
 			<description>
-				Determines the behavior of the [Tween] when the [SceneTree] is paused. Check [enum TweenPauseMode] for options.
+				Determines the behavior of the [Tween] when the [SceneTree] is paused.
 				Default value is [constant TWEEN_PAUSE_BOUND].
 			</description>
 		</method>
@@ -266,14 +284,36 @@
 			<return type="Tween" />
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
-				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant TRANS_LINEAR].
+				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default transition type is [constant TRANS_LINEAR].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses TRANS_LINEAR.
+				tween.set_trans(Tween.TRANS_SINE)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses TRANS_SINE.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				[b]Note:[/b] This does [i]not[/i] reset targets of [PropertyTweener]s to their values when the [Tween] first started.
+				[codeblock]
+				var tween = create_tween()
+
+				# Will move from 0 to 500 over 1 second.
+				position.x = 0.0
+				tween.tween_property(self, "position:x", 500, 1.0)
+
+				# Will be at (about) 250 when the timer finishes.
+				await get_tree().create_timer(0.5).timeout
+
+				# Will now move from (about) 250 to 500 over 1 second,
+				# thus at half the speed as before.
+				tween.stop()
+				tween.play()
+				[/codeblock]
 				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
@@ -286,7 +326,7 @@
 				[codeblocks]
 				[gdscript]
 				var tween = get_tree().create_tween().set_loops()
-				tween.tween_callback(shoot).set_delay(1)
+				tween.tween_callback(shoot).set_delay(1.0)
 				[/gdscript]
 				[csharp]
 				Tween tween = GetTree().CreateTween().SetLoops();
@@ -331,10 +371,10 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween().set_loops()
-				tween.tween_property($Sprite, "position:x", 200.0, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", 200.0, 1.0).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
-				tween.tween_property($Sprite, "position:x", -200.0, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", -200.0, 1.0).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
 				[/gdscript]
@@ -362,7 +402,7 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
-				tween.tween_method(look_at.bind(Vector3.UP), Vector3(-1, 0, -1), Vector3(1, 0, -1), 1) # The look_at() method takes up vector as second argument.
+				tween.tween_method(look_at.bind(Vector3.UP), Vector3(-1, 0, -1), Vector3(1, 0, -1), 1.0) # The look_at() method takes up vector as second argument.
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
@@ -373,24 +413,24 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var tween = create_tween()
-				    tween.tween_method(set_label_text, 0, 10, 1).set_delay(1)
+					var tween = create_tween()
+					tween.tween_method(set_label_text, 0, 10, 1.0).set_delay(1.0)
 
 				func set_label_text(value: int):
-				    $Label.text = "Counting " + str(value)
+					$Label.text = "Counting " + str(value)
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    base._Ready();
+					base._Ready();
 
-				    Tween tween = CreateTween();
-				    tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
+					Tween tween = CreateTween();
+					tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
 				}
 
 				private void SetLabelText(int value)
 				{
-				    GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
+					GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
 				}
 				[/csharp]
 				[/codeblocks]
@@ -404,12 +444,11 @@
 			<param index="3" name="duration" type="float" />
 			<description>
 				Creates and appends a [PropertyTweener]. This method tweens a [param property] of an [param object] between an initial value and [param final_val] in a span of time equal to [param duration], in seconds. The initial value by default is the property's value at the time the tweening of the [PropertyTweener] starts.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2(100, 200), 1)
-				tween.tween_property($Sprite, "position", Vector2(200, 300), 1)
+				tween.tween_property($Sprite, "position", Vector2(100, 200), 1.0)
+				tween.tween_property($Sprite, "position", Vector2(200, 300), 1.0)
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
@@ -423,8 +462,8 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().set_trans(Tween.TRANS_SINE)
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1.0).as_relative().set_trans(Tween.TRANS_SINE)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1.0).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
@@ -432,6 +471,27 @@
 				tween.TweenProperty(GetNode("Sprite"), "position", Vector2.Right * 300.0f, 1.0f).AsRelative().FromCurrent().SetTrans(Tween.TransitionType.Expo);
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="tween_subtween">
+			<return type="SubtweenTweener" />
+			<param index="0" name="subtween" type="Tween" />
+			<description>
+				Creates and appends a [SubtweenTweener]. This method can be used to nest [param subtween] within this [Tween], allowing for the creation of more complex and composable sequences.
+				[codeblock]
+				# Subtween will rotate the object.
+				var subtween = create_tween()
+				subtween.tween_property(self, "rotation_degrees", 45.0, 1.0)
+				subtween.tween_property(self, "rotation_degrees", 0.0, 1.0)
+
+				# Parent tween will execute the subtween as one of its steps.
+				var tween = create_tween()
+				tween.tween_property(self, "position:x", 500, 3.0)
+				tween.tween_subtween(subtween)
+				tween.tween_property(self, "position:x", 300, 2.0)
+				[/codeblock]
+				[b]Note:[/b] The methods [method pause], [method stop], and [method set_loops] can cause the parent [Tween] to get stuck on the subtween step; see the documentation for those methods for more information.
+				[b]Note:[/b] The pause and process modes set by [method set_pause_mode] and [method set_process_mode] on [param subtween] will be overridden by the parent [Tween]'s settings.
 			</description>
 		</method>
 	</methods>

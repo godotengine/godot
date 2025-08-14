@@ -15,6 +15,7 @@
 #define WEBP_DEC_VP8_DEC_H_
 
 #include "src/webp/decode.h"
+#include "src/webp/types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -108,16 +109,14 @@ struct VP8Io {
 };
 
 // Internal, version-checked, entry point
-int VP8InitIoInternal(VP8Io* const, int);
+WEBP_NODISCARD int VP8InitIoInternal(VP8Io* const, int);
 
 // Set the custom IO function pointers and user-data. The setter for IO hooks
 // should be called before initiating incremental decoding. Returns true if
 // WebPIDecoder object is successfully modified, false otherwise.
-int WebPISetIOHooks(WebPIDecoder* const idec,
-                    VP8IoPutHook put,
-                    VP8IoSetupHook setup,
-                    VP8IoTeardownHook teardown,
-                    void* user_data);
+WEBP_NODISCARD int WebPISetIOHooks(WebPIDecoder* const idec, VP8IoPutHook put,
+                                   VP8IoSetupHook setup,
+                                   VP8IoTeardownHook teardown, void* user_data);
 
 // Main decoding object. This is an opaque structure.
 typedef struct VP8Decoder VP8Decoder;
@@ -128,17 +127,17 @@ VP8Decoder* VP8New(void);
 // Must be called to make sure 'io' is initialized properly.
 // Returns false in case of version mismatch. Upon such failure, no other
 // decoding function should be called (VP8Decode, VP8GetHeaders, ...)
-static WEBP_INLINE int VP8InitIo(VP8Io* const io) {
+WEBP_NODISCARD static WEBP_INLINE int VP8InitIo(VP8Io* const io) {
   return VP8InitIoInternal(io, WEBP_DECODER_ABI_VERSION);
 }
 
 // Decode the VP8 frame header. Returns true if ok.
 // Note: 'io->data' must be pointing to the start of the VP8 frame header.
-int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io);
+WEBP_NODISCARD int VP8GetHeaders(VP8Decoder* const dec, VP8Io* const io);
 
 // Decode a picture. Will call VP8GetHeaders() if it wasn't done already.
 // Returns false in case of error.
-int VP8Decode(VP8Decoder* const dec, VP8Io* const io);
+WEBP_NODISCARD int VP8Decode(VP8Decoder* const dec, VP8Io* const io);
 
 // Return current status of the decoder:
 VP8StatusCode VP8Status(VP8Decoder* const dec);

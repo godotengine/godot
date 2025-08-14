@@ -8,7 +8,7 @@
 
 /**
  * @internal
- * @file hashlist.c
+ * @file
  * @~English
  *
  * @brief Functions for creating and using a hash list of key-value
@@ -525,14 +525,38 @@ ktxHashList_Deserialize(ktxHashList* pHead, unsigned int kvdLen, void* pKvd)
 
     result = KTX_SUCCESS;
     while (result == KTX_SUCCESS && src < (char *)pKvd + kvdLen) {
+        if (src + 6 > (char *)pKvd + kvdLen) {
+            // Not enough space for another entry
+            return KTX_FILE_DATA_ERROR;
+        }
+
         char* key;
         unsigned int keyLen, valueLen;
         void* value;
         ktx_uint32_t keyAndValueByteSize = *((ktx_uint32_t*)src);
 
+        if (src + 4 + keyAndValueByteSize > (char *)pKvd + kvdLen) {
+            // Not enough space for this entry
+            return KTX_FILE_DATA_ERROR;
+        }
+
         src += sizeof(keyAndValueByteSize);
         key = src;
-        keyLen = (unsigned int)strlen(key) + 1;
+        keyLen = 0;
+
+        while (keyLen < keyAndValueByteSize && key[keyLen] != '\0') keyLen++;
+
+        if (keyLen == keyAndValueByteSize || key[keyLen] != '\0') {
+            // Missing NULL terminator or no value
+            return KTX_FILE_DATA_ERROR;
+        }
+
+        if (keyLen >= 3 && key[0] == '\xEF' && key[1] == '\xBB' && key[2] == '\xBF') {
+            // Forbidden BOM
+            return KTX_FILE_DATA_ERROR;
+        }
+
+        keyLen += 1;
         value = key + keyLen;
 
         valueLen = keyAndValueByteSize - keyLen;

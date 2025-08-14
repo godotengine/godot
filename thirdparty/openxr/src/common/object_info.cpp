@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Khronos Group Inc.
+// Copyright (c) 2017-2025 The Khronos Group Inc.
 // Copyright (c) 2017-2019 Valve Corporation
 // Copyright (c) 2017-2019 LunarG, Inc.
 // Copyright (c) 2019 Collabora, Ltd.
@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 //
 // Initial Authors: Mark Young <marky@lunarg.com>
-//                  Ryan Pavlik <ryan.pavlik@collabora.com>
+//                  Rylie Pavlik <rylie.pavlik@collabora.com>
 //                  Dave Houlton <daveh@lunarg.com>
 //
 

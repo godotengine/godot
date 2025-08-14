@@ -1,0 +1,2 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/invalid_property_assignment.gd:9 on test(): Invalid assignment of property or key 'obj' with value of type 'RefCounted (MyObj)' on a base object of type 'RefCounted (MyObj)'.

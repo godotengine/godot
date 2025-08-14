@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_H
-#define STYLE_BOX_H
+#pragma once
 
 #include "core/io/resource.h"
-#include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
 
 class CanvasItem;
@@ -48,7 +46,7 @@ protected:
 	static void _bind_methods();
 	virtual float get_style_margin(Side p_side) const { return 0; }
 
-	GDVIRTUAL2C(_draw, RID, Rect2)
+	GDVIRTUAL2C_REQUIRED(_draw, RID, Rect2)
 	GDVIRTUAL1RC(Rect2, _get_draw_rect, Rect2)
 	GDVIRTUAL0RC(Size2, _get_minimum_size)
 	GDVIRTUAL2RC(bool, _test_mask, Point2, Rect2)
@@ -80,7 +78,4 @@ class StyleBoxEmpty : public StyleBox {
 
 public:
 	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override {}
-	StyleBoxEmpty() {}
 };
-
-#endif // STYLE_BOX_H

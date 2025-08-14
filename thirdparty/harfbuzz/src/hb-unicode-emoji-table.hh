@@ -7,13 +7,13 @@
  * on file with this header:
  *
  * # emoji-data.txt
- * # Date: 2023-02-01, 02:22:54 GMT
- * # © 2023 Unicode®, Inc.
+ * # Date: 2024-05-01, 21:25:24 GMT
+ * # © 2024 Unicode®, Inc.
  * # Unicode and the Unicode Logo are registered trademarks of Unicode, Inc. in the U.S. and other countries.
- * # For terms of use, see https://www.unicode.org/terms_of_use.html
+ * # For terms of use and license, see https://www.unicode.org/terms_of_use.html
  * #
  * # Emoji Data for UTS #51
- * # Used with Emoji Version 15.1 and subsequent minor revisions (if any)
+ * # Used with Emoji Version 16.0 and subsequent minor revisions (if any)
  * #
  * # For documentation and usage, see https://www.unicode.org/reports/tr51
  */
@@ -23,8 +23,9 @@
 
 #include "hb-unicode.hh"
 
-static const uint8_t
-_hb_emoji_u8[464] =
+#include <stdint.h>
+
+static const uint8_t _hb_emoji_u8[464]=
 {
    16, 17, 17, 17, 50, 20, 21, 17, 17, 17, 17, 17, 17, 17, 17, 17,
    17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17, 17,
@@ -57,20 +58,17 @@ _hb_emoji_u8[464] =
     0,192,255,255,  0,240,255,255,255,255,255,247,191,255,255,255,
 };
 
-static inline unsigned
-_hb_emoji_b4 (const uint8_t* a, unsigned i)
+static inline uint8_t _hb_emoji_b4 (const uint8_t* a, unsigned i)
 {
-  return (a[i>>1]>>((i&1u)<<2))&15u;
+  return (a[i>>1]>>((i&1)<<2))&15;
 }
-static inline unsigned
-_hb_emoji_b1 (const uint8_t* a, unsigned i)
+static inline uint8_t _hb_emoji_b1 (const uint8_t* a, unsigned i)
 {
-  return (a[i>>3]>>((i&7u)<<0))&1u;
+  return (a[i>>3]>>((i&7)<<0))&1;
 }
-static inline uint_fast8_t
-_hb_emoji_is_Extended_Pictographic (unsigned u)
+static inline uint8_t _hb_emoji_is_Extended_Pictographic (unsigned u)
 {
-  return u<131070u?_hb_emoji_b1(264+_hb_emoji_u8,((_hb_emoji_u8[144+(((_hb_emoji_u8[64+(((_hb_emoji_b4(_hb_emoji_u8,u>>5>>2>>3))<<3)+((u>>5>>2)&7u))])<<2)+((u>>5)&3u))])<<5)+((u)&31u)):0;
+  return u<131070 ? _hb_emoji_b1(_hb_emoji_u8+264u,((_hb_emoji_u8[144u+(((_hb_emoji_u8[64u+(((_hb_emoji_b4(_hb_emoji_u8,u>>5>>2>>3))<<3)+((u>>5>>2)&7))])<<2)+((u>>5)&3))])<<5)+((u)&31)) : 0;
 }
 
 

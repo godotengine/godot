@@ -71,10 +71,7 @@
 		<member name="antialiased" type="bool" setter="set_antialiased" getter="get_antialiased" default="false">
 			If [code]true[/code], polygon edges will be anti-aliased.
 		</member>
-		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones" default="[]">
-			Internal list of [Bone2D] nodes used by the assigned [member skeleton]. Edited using the Polygon2D editor ("UV" button on the top toolbar).
-		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)" keywords="colour">
 			The polygon's fill color. If [member texture] is set, it will be multiplied by this color. It will also be the default color for vertices not set in [member vertex_colors].
 		</member>
 		<member name="internal_vertex_count" type="int" setter="set_internal_vertex_count" getter="get_internal_vertex_count" default="0">
@@ -91,7 +88,6 @@
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			The polygon's list of vertices. The final point will be connected to the first.
-			[b]Note:[/b] This returns a copy of the [PackedVector2Array] rather than a reference.
 		</member>
 		<member name="polygons" type="Array" setter="set_polygons" getter="get_polygons" default="[]">
 			The list of polygons, in case more than one is being represented. Every individual polygon is stored as a [PackedInt32Array] where each [int] is an index to a point in [member polygon]. If empty, this property will be ignored, and the resulting single polygon will be composed of all points in [member polygon], using the order they are stored in.

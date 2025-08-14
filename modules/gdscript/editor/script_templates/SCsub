@@ -1,16 +1,8 @@
 #!/usr/bin/env python
+from misc.utility.scons_hints import *
 
 Import("env")
 
 import editor.template_builders as build_template_gd
 
-env["BUILDERS"]["MakeGDTemplateBuilder"] = Builder(
-    action=env.Run(build_template_gd.make_templates, "Generating GDScript templates header."),
-    suffix=".h",
-    src_suffix=".gd",
-)
-
-# Template files
-templates_sources = Glob("*/*.gd")
-
-env.Alias("editor_template_gd", [env.MakeGDTemplateBuilder("templates.gen.h", templates_sources)])
+env.CommandNoCache("templates.gen.h", Glob("*/*.gd"), env.Run(build_template_gd.make_templates))

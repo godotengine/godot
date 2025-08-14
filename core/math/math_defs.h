@@ -28,21 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATH_DEFS_H
-#define MATH_DEFS_H
+#pragma once
+
+#include "core/typedefs.h"
+
+#include <limits>
+
+namespace Math {
+inline constexpr double SQRT2 = 1.4142135623730950488016887242;
+inline constexpr double SQRT3 = 1.7320508075688772935274463415059;
+inline constexpr double SQRT12 = 0.7071067811865475244008443621048490;
+inline constexpr double SQRT13 = 0.57735026918962576450914878050196;
+inline constexpr double LN2 = 0.6931471805599453094172321215;
+inline constexpr double TAU = 6.2831853071795864769252867666;
+inline constexpr double PI = 3.1415926535897932384626433833;
+inline constexpr double E = 2.7182818284590452353602874714;
+inline constexpr double INF = std::numeric_limits<double>::infinity();
+inline constexpr double NaN = std::numeric_limits<double>::quiet_NaN();
+} // namespace Math
 
 #define CMP_EPSILON 0.00001
 #define CMP_EPSILON2 (CMP_EPSILON * CMP_EPSILON)
 
 #define CMP_NORMALIZE_TOLERANCE 0.000001
 #define CMP_POINT_IN_PLANE_EPSILON 0.00001
-
-#define Math_SQRT12 0.7071067811865475244008443621048490
-#define Math_SQRT2 1.4142135623730950488016887242
-#define Math_LN2 0.6931471805599453094172321215
-#define Math_TAU 6.2831853071795864769252867666
-#define Math_PI 3.1415926535897932384626433833
-#define Math_E 2.7182818284590452353602874714
 
 #ifdef DEBUG_ENABLED
 #define MATH_CHECKS
@@ -136,5 +145,3 @@ typedef double real_t;
 #else
 typedef float real_t;
 #endif
-
-#endif // MATH_DEFS_H

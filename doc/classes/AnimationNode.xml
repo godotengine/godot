@@ -6,6 +6,13 @@
 	<description>
 		Base resource for [AnimationTree] nodes. In general, it's not used directly, but you can create custom ones with custom blending formulas.
 		Inherit this when creating animation nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
+		You can access the time information as read-only parameter which is processed and stored in the previous frame for all nodes except [AnimationNodeOutput].
+		[b]Note:[/b] If multiple inputs exist in the [AnimationNode], which time information takes precedence depends on the type of [AnimationNode].
+		[codeblock]
+		var current_length = $AnimationTree["parameters/AnimationNodeName/current_length"]
+		var current_position = $AnimationTree["parameters/AnimationNodeName/current_position"]
+		var current_delta = $AnimationTree["parameters/AnimationNodeName/current_delta"]
+		[/codeblock]
 	</description>
 	<tutorials>
 		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
@@ -27,7 +34,7 @@
 		<method name="_get_child_nodes" qualifiers="virtual const">
 			<return type="Dictionary" />
 			<description>
-				When inheriting from [AnimationRootNode], implement this virtual method to return all children animation nodes in order as a [code]name: node[/code] dictionary.
+				When inheriting from [AnimationRootNode], implement this virtual method to return all child animation nodes in order as a [code]name: node[/code] dictionary.
 			</description>
 		</method>
 		<method name="_get_parameter_default_value" qualifiers="virtual const">
@@ -56,7 +63,7 @@
 				When inheriting from [AnimationRootNode], implement this virtual method to return whether the [param parameter] is read-only. Parameters are custom local memory used for your animation nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
-		<method name="_process" qualifiers="virtual const">
+		<method name="_process" qualifiers="virtual" deprecated="Currently this is mostly useless as there is a lack of many APIs to extend AnimationNode by GDScript. It is planned that a more flexible API using structures will be provided in the future.">
 			<return type="float" />
 			<param index="0" name="time" type="float" />
 			<param index="1" name="seek" type="bool" />
@@ -65,7 +72,7 @@
 			<description>
 				When inheriting from [AnimationRootNode], implement this virtual method to run some code when this animation node is processed. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute.
 				Here, call the [method blend_input], [method blend_node] or [method blend_animation] functions. You can also use [method get_parameter] and [method set_parameter] to modify local memory.
-				This function should return the time left for the current animation to finish (if unsure, pass the value from the main blend being called).
+				This function should return the delta.
 			</description>
 		</method>
 		<method name="add_input">
@@ -85,8 +92,8 @@
 			<param index="5" name="blend" type="float" />
 			<param index="6" name="looped_flag" type="int" enum="Animation.LoopedFlag" default="0" />
 			<description>
-				Blend an animation by [param blend] amount (name must be valid in the linked [AnimationPlayer]). A [param time] and [param delta] may be passed, as well as whether [param seeked] happened.
-				A [param looped_flag] is used by internal processing immediately after the loop. See also [enum Animation.LoopedFlag].
+				Blends an animation by [param blend] amount (name must be valid in the linked [AnimationPlayer]). A [param time] and [param delta] may be passed, as well as whether [param seeked] happened.
+				A [param looped_flag] is used by internal processing immediately after the loop.
 			</description>
 		</method>
 		<method name="blend_input">
@@ -100,7 +107,7 @@
 			<param index="6" name="sync" type="bool" default="true" />
 			<param index="7" name="test_only" type="bool" default="false" />
 			<description>
-				Blend an input. This is only useful for animation nodes created for an [AnimationNodeBlendTree]. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed (see [enum FilterAction] for options).
+				Blends an input. This is only useful for animation nodes created for an [AnimationNodeBlendTree]. The [param time] parameter is a relative delta, unless [param seek] is [code]true[/code], in which case it is absolute. A filter mode may be optionally passed.
 			</description>
 		</method>
 		<method name="blend_node">
@@ -115,7 +122,7 @@
 			<param index="7" name="sync" type="bool" default="true" />
 			<param index="8" name="test_only" type="bool" default="false" />
 			<description>
-				Blend another animation node (in case this animation node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your animation node for addition.
+				Blend another animation node (in case this animation node contains child animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, otherwise editors will not display your animation node for addition.
 			</description>
 		</method>
 		<method name="find_input" qualifiers="const">
@@ -145,11 +152,24 @@
 				Gets the value of a parameter. Parameters are custom local memory used for your animation nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
+		<method name="get_processing_animation_tree_instance_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the object id of the [AnimationTree] that owns this node.
+				[b]Note:[/b] This method should only be called from within the [method AnimationNodeExtension._process_animation_node] method, and will return an invalid id otherwise.
+			</description>
+		</method>
 		<method name="is_path_filtered" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
 			<description>
-				Returns whether the given path is filtered.
+				Returns [code]true[/code] if the given path is filtered.
+			</description>
+		</method>
+		<method name="is_process_testing" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this animation node is being processed in test-only mode.
 			</description>
 		</method>
 		<method name="remove_input">

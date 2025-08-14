@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_PATH_H
-#define NODE_PATH_H
+#pragma once
 
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
 
-class NodePath {
+class [[nodiscard]] NodePath {
 	struct Data {
 		SafeRefCount refcount;
 		Vector<StringName> path;
@@ -57,10 +56,12 @@ public:
 	StringName get_name(int p_idx) const;
 	int get_subname_count() const;
 	StringName get_subname(int p_idx) const;
+	int get_total_name_count() const;
 	Vector<StringName> get_names() const;
 	Vector<StringName> get_subnames() const;
 	StringName get_concatenated_names() const;
 	StringName get_concatenated_subnames() const;
+	NodePath slice(int p_begin, int p_end = INT_MAX) const;
 
 	NodePath rel_path_to(const NodePath &p_np) const;
 	NodePath get_as_property_path() const;
@@ -77,7 +78,7 @@ public:
 		return data->hash_cache;
 	}
 
-	operator String() const;
+	explicit operator String() const;
 	bool is_empty() const;
 
 	bool operator==(const NodePath &p_path) const;
@@ -95,4 +96,6 @@ public:
 	~NodePath();
 };
 
-#endif // NODE_PATH_H
+// Zero-constructing NodePath initializes data to nullptr (and thus empty).
+template <>
+struct is_zero_constructible<NodePath> : std::true_type {};

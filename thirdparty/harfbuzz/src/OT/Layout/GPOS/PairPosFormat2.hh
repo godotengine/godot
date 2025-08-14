@@ -8,7 +8,7 @@ namespace Layout {
 namespace GPOS_impl {
 
 template <typename Types>
-struct PairPosFormat2_4
+struct PairPosFormat2_4 : ValueBase
 {
   protected:
   HBUINT16      format;                 /* Format identifier--format = 2 */
@@ -123,14 +123,63 @@ struct PairPosFormat2_4
 
   const Coverage &get_coverage () const { return this+coverage; }
 
-  bool apply (hb_ot_apply_context_t *c) const
+  struct pair_pos_cache_t
+  {
+    hb_ot_lookup_cache_t coverage;
+    hb_ot_lookup_cache_t first;
+    hb_ot_lookup_cache_t second;
+  };
+
+  unsigned cache_cost () const
+  {
+    return (this+coverage).cost () + (this+classDef1).cost () + (this+classDef2).cost ();
+  }
+  static void * cache_func (void *p, hb_ot_lookup_cache_op_t op)
+  {
+    switch (op)
+    {
+      case hb_ot_lookup_cache_op_t::CREATE:
+      {
+	pair_pos_cache_t *cache = (pair_pos_cache_t *) hb_malloc (sizeof (pair_pos_cache_t));
+	if (likely (cache))
+	{
+	  cache->coverage.clear ();
+	  cache->first.clear ();
+	  cache->second.clear ();
+	}
+	return cache;
+      }
+      case hb_ot_lookup_cache_op_t::ENTER:
+	return (void *) true;
+      case hb_ot_lookup_cache_op_t::LEAVE:
+	return nullptr;
+      case hb_ot_lookup_cache_op_t::DESTROY:
+	{
+	  pair_pos_cache_t *cache = (pair_pos_cache_t *) p;
+	  hb_free (cache);
+	  return nullptr;
+	}
+    }
+    return nullptr;
+  }
+
+  bool apply_cached (hb_ot_apply_context_t *c) const { return _apply (c, true); }
+  bool apply (hb_ot_apply_context_t *c) const { return _apply (c, false); }
+  bool _apply (hb_ot_apply_context_t *c, bool cached) const
   {
     TRACE_APPLY (this);
-    hb_buffer_t *buffer = c->buffer;
-    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
-    if (likely (index == NOT_COVERED)) return_trace (false);
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    hb_buffer_t *buffer = c->buffer;
+
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    pair_pos_cache_t *cache = cached ? (pair_pos_cache_t *) c->lookup_accel->cache : nullptr;
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint, cache ? &cache->coverage : nullptr);
+#else
+    unsigned int index = (this+coverage).get_coverage  (buffer->cur().codepoint);
+#endif
+    if (index == NOT_COVERED) return_trace (false);
+
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_to;
     if (unlikely (!skippy_iter.next (&unsafe_to)))
@@ -139,14 +188,13 @@ struct PairPosFormat2_4
       return_trace (false);
     }
 
-    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
-    if (!klass2)
-    {
-      buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
-      return_trace (false);
-    }
-
+#ifndef HB_NO_OT_LAYOUT_LOOKUP_CACHE
+    unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint, cache ? &cache->first : nullptr);
+    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint, cache ? &cache->second : nullptr);
+#else
     unsigned int klass1 = (this+classDef1).get_class (buffer->cur().codepoint);
+    unsigned int klass2 = (this+classDef2).get_class (buffer->info[skippy_iter.idx].codepoint);
+#endif
     if (unlikely (klass1 >= class1Count || klass2 >= class2Count))
     {
       buffer->unsafe_to_concat (buffer->idx, skippy_iter.idx + 1);
@@ -287,17 +335,30 @@ struct PairPosFormat2_4
     unsigned len2 = valueFormat2.get_len ();
 
     hb_pair_t<unsigned, unsigned> newFormats = hb_pair (valueFormat1, valueFormat2);
-    if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
-      newFormats = compute_effective_value_formats (klass1_map, klass2_map);
+
+    if (c->plan->normalized_coords)
+    {
+      /* in case of full instancing, all var device flags will be dropped so no
+       * need to strip hints here */
+      newFormats = compute_effective_value_formats (klass1_map, klass2_map, false, false, &c->plan->layout_variation_idx_delta_map);
+    }
+    /* do not strip hints for VF */
+    else if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+    {
+      hb_blob_t* blob = hb_face_reference_table (c->plan->source, HB_TAG ('f','v','a','r'));
+      bool has_fvar = (blob != hb_blob_get_empty ());
+      hb_blob_destroy (blob);
+
+      bool strip = !has_fvar;
+      /* special case: strip hints when a VF has no GDEF varstore after
+       * subsetting*/
+      if (has_fvar && !c->plan->has_gdef_varstore)
+        strip = true;
+      newFormats = compute_effective_value_formats (klass1_map, klass2_map, strip, true);
+    }
 
     out->valueFormat1 = newFormats.first;
     out->valueFormat2 = newFormats.second;
-
-    if (c->plan->all_axes_pinned)
-    {
-      out->valueFormat1 = out->valueFormat1.drop_device_table_flags ();
-      out->valueFormat2 = out->valueFormat2.drop_device_table_flags ();
-    }
 
     unsigned total_len = len1 + len2;
     hb_vector_t<unsigned> class2_idxs (+ hb_range ((unsigned) class2Count) | hb_filter (klass2_map));
@@ -311,22 +372,15 @@ struct PairPosFormat2_4
       }
     }
 
-    const hb_set_t &glyphset = *c->plan->glyphset_gsub ();
-    const hb_map_t &glyph_map = *c->plan->glyph_map;
-
-    auto it =
-    + hb_iter (this+coverage)
-    | hb_filter (glyphset)
-    | hb_map_retains_sorting (glyph_map)
-    ;
-
-    out->coverage.serialize_serialize (c->serializer, it);
-    return_trace (out->class1Count && out->class2Count && bool (it));
+    bool ret = out->coverage.serialize_subset(c, coverage, this);
+    return_trace (out->class1Count && out->class2Count && ret);
   }
 
 
   hb_pair_t<unsigned, unsigned> compute_effective_value_formats (const hb_map_t& klass1_map,
-                                                                 const hb_map_t& klass2_map) const
+                                                                 const hb_map_t& klass2_map,
+                                                                 bool strip_hints, bool strip_empty,
+                                                                 const hb_hashmap_t<unsigned, hb_pair_t<unsigned, int>> *varidx_delta_map = nullptr) const
   {
     unsigned len1 = valueFormat1.get_len ();
     unsigned len2 = valueFormat2.get_len ();
@@ -340,8 +394,8 @@ struct PairPosFormat2_4
       for (unsigned class2_idx : + hb_range ((unsigned) class2Count) | hb_filter (klass2_map))
       {
         unsigned idx = (class1_idx * (unsigned) class2Count + class2_idx) * record_size;
-        format1 = format1 | valueFormat1.get_effective_format (&values[idx]);
-        format2 = format2 | valueFormat2.get_effective_format (&values[idx + len1]);
+        format1 = format1 | valueFormat1.get_effective_format (&values[idx], strip_hints, strip_empty, this, varidx_delta_map);
+        format2 = format2 | valueFormat2.get_effective_format (&values[idx + len1], strip_hints, strip_empty, this, varidx_delta_map);
       }
 
       if (format1 == valueFormat1 && format2 == valueFormat2)

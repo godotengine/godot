@@ -4,7 +4,7 @@
 		A 4×4 matrix for 3D projective transformations.
 	</brief_description>
 	<description>
-		A 4x4 matrix used for 3D projective transformations. It can represent transformations such as translation, rotation, scaling, shearing, and perspective division. It consists of four [Vector4] columns.
+		A 4×4 matrix used for 3D projective transformations. It can represent transformations such as translation, rotation, scaling, shearing, and perspective division. It consists of four [Vector4] columns.
 		For purely linear transformations (translation, rotation, and scale), it is recommended to use [Transform3D], as it is more performant and requires less memory.
 		Used internally as [Camera3D]'s projection matrix.
 	</description>
@@ -14,7 +14,8 @@
 		<constructor name="Projection">
 			<return type="Projection" />
 			<description>
-				Constructs a default-initialized [Projection] set to [constant IDENTITY].
+				Constructs a default-initialized [Projection] identical to [constant IDENTITY].
+				[b]Note:[/b] In C#, this constructs a [Projection] identical to [constant ZERO].
 			</description>
 		</constructor>
 		<constructor name="Projection">
@@ -193,6 +194,7 @@
 			<param index="1" name="aspect" type="float" />
 			<description>
 				Returns the vertical field of view of the projection (in degrees) associated with the given horizontal field of view (in degrees) and aspect ratio.
+				[b]Note:[/b] Unlike most methods of [Projection], [param aspect] is expected to be 1 divided by the X:Y aspect ratio.
 			</description>
 		</method>
 		<method name="get_lod_multiplier" qualifiers="const">
@@ -205,7 +207,7 @@
 			<return type="int" />
 			<param index="0" name="for_pixel_width" type="int" />
 			<description>
-				Returns the number of pixels with the given pixel width displayed per meter, after this [Projection] is applied.
+				Returns [param for_pixel_width] divided by the viewport's width measured in meters on the near plane, after this [Projection] is applied.
 			</description>
 		</method>
 		<method name="get_projection_plane" qualifiers="const">
@@ -277,22 +279,22 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PLANE_NEAR" value="0">
+		<constant name="PLANE_NEAR" value="0" enum="Planes">
 			The index value of the projection's near clipping plane.
 		</constant>
-		<constant name="PLANE_FAR" value="1">
+		<constant name="PLANE_FAR" value="1" enum="Planes">
 			The index value of the projection's far clipping plane.
 		</constant>
-		<constant name="PLANE_LEFT" value="2">
+		<constant name="PLANE_LEFT" value="2" enum="Planes">
 			The index value of the projection's left clipping plane.
 		</constant>
-		<constant name="PLANE_TOP" value="3">
+		<constant name="PLANE_TOP" value="3" enum="Planes">
 			The index value of the projection's top clipping plane.
 		</constant>
-		<constant name="PLANE_RIGHT" value="4">
+		<constant name="PLANE_RIGHT" value="4" enum="Planes">
 			The index value of the projection's right clipping plane.
 		</constant>
-		<constant name="PLANE_BOTTOM" value="5">
+		<constant name="PLANE_BOTTOM" value="5" enum="Planes">
 			The index value of the projection bottom clipping plane.
 		</constant>
 		<constant name="IDENTITY" value="Projection(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)">

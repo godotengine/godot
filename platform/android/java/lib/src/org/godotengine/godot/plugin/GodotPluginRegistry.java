@@ -32,7 +32,7 @@ package org.godotengine.godot.plugin;
 
 import org.godotengine.godot.Godot;
 
-import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -43,6 +43,7 @@ import androidx.annotation.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -82,6 +83,9 @@ public final class GodotPluginRegistry {
 	 * Retrieve the full set of loaded plugins.
 	 */
 	public Collection<GodotPlugin> getAllPlugins() {
+		if (registry.isEmpty()) {
+			return Collections.emptyList();
+		}
 		return registry.values();
 	}
 
@@ -130,10 +134,10 @@ public final class GodotPluginRegistry {
 
 		// Register the manifest plugins
 		try {
-			final Activity activity = godot.getActivity();
-			ApplicationInfo appInfo = activity
+			final Context context = godot.getContext();
+			ApplicationInfo appInfo = context
 											  .getPackageManager()
-											  .getApplicationInfo(activity.getPackageName(),
+											  .getApplicationInfo(context.getPackageName(),
 													  PackageManager.GET_META_DATA);
 			Bundle metaData = appInfo.metaData;
 			if (metaData == null || metaData.isEmpty()) {

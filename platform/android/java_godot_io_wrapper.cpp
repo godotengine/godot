@@ -30,7 +30,6 @@
 
 #include "java_godot_io_wrapper.h"
 
-#include "core/error/error_list.h"
 #include "core/math/rect2.h"
 #include "core/variant/variant.h"
 
@@ -52,6 +51,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 
 		_open_URI = p_env->GetMethodID(cls, "openURI", "(Ljava/lang/String;)I");
 		_get_cache_dir = p_env->GetMethodID(cls, "getCacheDir", "()Ljava/lang/String;");
+		_get_temp_dir = p_env->GetMethodID(cls, "getTempDir", "()Ljava/lang/String;");
 		_get_data_dir = p_env->GetMethodID(cls, "getDataDir", "()Ljava/lang/String;");
 		_get_display_cutouts = p_env->GetMethodID(cls, "getDisplayCutouts", "()[I"),
 		_get_display_safe_area = p_env->GetMethodID(cls, "getDisplaySafeArea", "()[I"),
@@ -63,14 +63,20 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_get_unique_id = p_env->GetMethodID(cls, "getUniqueID", "()Ljava/lang/String;");
 		_show_keyboard = p_env->GetMethodID(cls, "showKeyboard", "(Ljava/lang/String;IIII)V");
 		_hide_keyboard = p_env->GetMethodID(cls, "hideKeyboard", "()V");
+		_has_hardware_keyboard = p_env->GetMethodID(cls, "hasHardwareKeyboard", "()Z");
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
 		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(IZ)Ljava/lang/String;");
+		_get_display_rotation = p_env->GetMethodID(cls, "getDisplayRotation", "()I");
 	}
 }
 
 GodotIOJavaWrapper::~GodotIOJavaWrapper() {
-	// nothing to do here for now
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	env->DeleteGlobalRef(cls);
+	env->DeleteGlobalRef(godot_io_instance);
 }
 
 jobject GodotIOJavaWrapper::get_instance() {
@@ -82,7 +88,9 @@ Error GodotIOJavaWrapper::open_uri(const String &p_uri) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, ERR_UNAVAILABLE);
 		jstring jStr = env->NewStringUTF(p_uri.utf8().get_data());
-		return env->CallIntMethod(godot_io_instance, _open_URI, jStr) ? ERR_CANT_OPEN : OK;
+		Error result = env->CallIntMethod(godot_io_instance, _open_URI, jStr) ? ERR_CANT_OPEN : OK;
+		env->DeleteLocalRef(jStr);
+		return result;
 	} else {
 		return ERR_UNAVAILABLE;
 	}
@@ -99,7 +107,18 @@ String GodotIOJavaWrapper::get_cache_dir() {
 	}
 }
 
-String GodotIOJavaWrapper::get_user_data_dir() {
+String GodotIOJavaWrapper::get_temp_dir() {
+	if (_get_temp_dir) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, String());
+		jstring s = (jstring)env->CallObjectMethod(godot_io_instance, _get_temp_dir);
+		return jstring_to_string(s, env);
+	} else {
+		return String();
+	}
+}
+
+String GodotIOJavaWrapper::get_user_data_dir(const String &p_user_dir) {
 	if (_get_data_dir) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, String());
@@ -214,12 +233,23 @@ bool GodotIOJavaWrapper::has_vk() {
 	return (_show_keyboard != nullptr) && (_hide_keyboard != nullptr);
 }
 
+bool GodotIOJavaWrapper::has_hardware_keyboard() {
+	if (_has_hardware_keyboard) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, false);
+		return env->CallBooleanMethod(godot_io_instance, _has_hardware_keyboard);
+	} else {
+		return false;
+	}
+}
+
 void GodotIOJavaWrapper::show_vk(const String &p_existing, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {
 	if (_show_keyboard) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL(env);
 		jstring jStr = env->NewStringUTF(p_existing.utf8().get_data());
 		env->CallVoidMethod(godot_io_instance, _show_keyboard, jStr, p_type, p_max_input_length, p_cursor_start, p_cursor_end);
+		env->DeleteLocalRef(jStr);
 	}
 }
 
@@ -257,6 +287,16 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir, bool p_shared_storage) {
 		return jstring_to_string(s, env);
 	} else {
 		return String(".");
+	}
+}
+
+int GodotIOJavaWrapper::get_display_rotation() {
+	if (_get_display_rotation) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_io_instance, _get_display_rotation);
+	} else {
+		return 0;
 	}
 }
 

@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MIDI_DRIVER_WINMIDI_H
-#define MIDI_DRIVER_WINMIDI_H
+#pragma once
 
 #ifdef WINMIDI_ENABLED
 
 #include "core/os/midi_driver.h"
 #include "core/templates/vector.h"
 
-#include <stdio.h>
+#include <cstdio>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
@@ -48,15 +47,11 @@ class MIDIDriverWinMidi : public MIDIDriver {
 	static void CALLBACK read(HMIDIIN hMidiIn, UINT wMsg, DWORD_PTR dwInstance, DWORD_PTR dwParam1, DWORD_PTR dwParam2);
 
 public:
-	virtual Error open();
-	virtual void close();
+	virtual Error open() override;
+	virtual void close() override;
 
-	virtual PackedStringArray get_connected_inputs();
-
-	MIDIDriverWinMidi();
+	MIDIDriverWinMidi() = default;
 	virtual ~MIDIDriverWinMidi();
 };
 
 #endif // WINMIDI_ENABLED
-
-#endif // MIDI_DRIVER_WINMIDI_H

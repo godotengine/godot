@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptSyntaxHighlighter" inherits="EditorSyntaxHighlighter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A GDScript syntax highlighter that can be used with [TextEdit] and [CodeEdit] nodes.
+	</brief_description>
+	<description>
+		[b]Note:[/b] This class can only be used for editor plugins because it relies on editor settings.
+		[codeblocks]
+		[gdscript]
+		var code_preview = TextEdit.new()
+		var highlighter = GDScriptSyntaxHighlighter.new()
+		code_preview.syntax_highlighter = highlighter
+		[/gdscript]
+		[csharp]
+		var codePreview = new TextEdit();
+		var highlighter = new GDScriptSyntaxHighlighter();
+		codePreview.SyntaxHighlighter = highlighter;
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

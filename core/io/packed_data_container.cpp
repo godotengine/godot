@@ -30,7 +30,6 @@
 
 #include "packed_data_container.h"
 
-#include "core/core_string_names.h"
 #include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
@@ -244,6 +243,7 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 		case Variant::PACKED_VECTOR2_ARRAY:
 		case Variant::PACKED_VECTOR3_ARRAY:
 		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
 		case Variant::STRING_NAME:
 		case Variant::NODE_PATH: {
 			uint32_t pos = tmpdata.size();
@@ -268,14 +268,12 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 			encode_uint32(TYPE_DICT, &tmpdata.write[pos + 0]);
 			encode_uint32(len, &tmpdata.write[pos + 4]);
 
-			List<Variant> keys;
-			d.get_key_list(&keys);
 			List<DictKey> sortk;
 
-			for (const Variant &key : keys) {
+			for (const KeyValue<Variant, Variant> &kv : d) {
 				DictKey dk;
-				dk.hash = key.hash();
-				dk.key = key;
+				dk.hash = kv.key.hash();
+				dk.key = kv.key;
 				sortk.push_back(dk);
 			}
 

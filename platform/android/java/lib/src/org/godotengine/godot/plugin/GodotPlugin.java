@@ -34,6 +34,7 @@ import org.godotengine.godot.BuildConfig;
 import org.godotengine.godot.Godot;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -46,10 +47,8 @@ import androidx.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -110,21 +109,27 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Register the plugin with Godot native code.
-	 * <p>
-	 * This method is invoked by the Godot Engine on the render thread.
+	 * Provides access to the {@link Context}.
 	 */
-	public final void onRegisterPluginWithGodotNative() {
-		registeredSignals.putAll(
-				registerPluginWithGodotNative(this, getPluginName(), getPluginMethods(), getPluginSignals()));
+	protected Context getContext() {
+		return godot.getContext();
 	}
 
-	private static Map<String, SignalInfo> registerPluginWithGodotNative(Object pluginObject,
-			String pluginName, List<String> pluginMethods, Set<SignalInfo> pluginSignals) {
-		nativeRegisterSingleton(pluginName, pluginObject);
+	/**
+	 * Register the plugin with Godot native code.
+	 * <p>
+	 * This method is invoked on the render thread to register the plugin on engine startup.
+	 */
+	public final void onRegisterPluginWithGodotNative() {
+		final String pluginName = getPluginName();
+		if (!nativeRegisterSingleton(pluginName, this)) {
+			return;
+		}
+
+		List<String> pluginMethods = getPluginMethods();
 
 		Set<Method> filteredMethods = new HashSet<>();
-		Class<?> clazz = pluginObject.getClass();
+		Class<?> clazz = getClass();
 
 		Method[] methods = clazz.getDeclaredMethods();
 		for (Method method : methods) {
@@ -156,15 +161,14 @@ public abstract class GodotPlugin {
 			nativeRegisterMethod(pluginName, method.getName(), method.getReturnType().getName(), pt);
 		}
 
+		Set<SignalInfo> pluginSignals = getPluginSignals();
+
 		// Register the signals for this plugin.
-		Map<String, SignalInfo> registeredSignals = new HashMap<>();
 		for (SignalInfo signalInfo : pluginSignals) {
 			String signalName = signalInfo.getName();
 			nativeRegisterSignal(pluginName, signalName, signalInfo.getParamTypesNames());
 			registeredSignals.put(signalName, signalInfo);
 		}
-
-		return registeredSignals;
 	}
 
 	/**
@@ -181,7 +185,7 @@ public abstract class GodotPlugin {
 	 * @return the plugin's view to be included; null if no views should be included.
 	 */
 	@Nullable
-	public View onMainCreate(Activity activity) {
+	public View onMainCreate(@Nullable Activity activity) {
 		return null;
 	}
 
@@ -325,14 +329,24 @@ public abstract class GodotPlugin {
 	}
 
 	/**
-	 * Runs the specified action on the UI thread. If the current thread is the UI
-	 * thread, then the action is executed immediately. If the current thread is
-	 * not the UI thread, the action is posted to the event queue of the UI thread.
+	 * Runs the specified action on the host thread.
 	 *
-	 * @param action the action to run on the UI thread
+	 * @param action the action to run on the host thread
+	 *
+	 * @deprecated Use the {@link GodotPlugin#runOnHostThread} instead.
 	 */
+	@Deprecated
 	protected void runOnUiThread(Runnable action) {
-		godot.runOnUiThread(action);
+		runOnHostThread(action);
+	}
+
+	/**
+	 * Runs the specified action on the host thread.
+	 *
+	 * @param action the action to run on the host thread
+	 */
+	protected void runOnHostThread(Runnable action) {
+		godot.runOnHostThread(action);
 	}
 
 	/**
@@ -408,7 +422,7 @@ public abstract class GodotPlugin {
 	 * Used to setup a {@link GodotPlugin} instance.
 	 * @param p_name Name of the instance.
 	 */
-	private static native void nativeRegisterSingleton(String p_name, Object object);
+	private static native boolean nativeRegisterSingleton(String p_name, Object object);
 
 	/**
 	 * Used to complete registration of the {@link GodotPlugin} instance's methods.

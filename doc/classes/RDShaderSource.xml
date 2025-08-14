@@ -23,6 +23,7 @@
 			<param index="1" name="source" type="String" />
 			<description>
 				Sets [param source] code for the specified shader [param stage]. Equivalent to setting one of [member source_compute], [member source_fragment], [member source_tesselation_control], [member source_tesselation_evaluation] or [member source_vertex].
+				[b]Note:[/b] If you set the compute shader source code using this method directly, remember to remove the Godot-specific hint [code]#[compute][/code].
 			</description>
 		</method>
 	</methods>

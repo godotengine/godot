@@ -131,7 +131,11 @@ extern "C" {
 
 #ifndef TINYEXR_USE_THREAD
 #define TINYEXR_USE_THREAD (0)  // No threaded loading.
-// http://computation.llnl.gov/projects/floating-point-compression
+#else
+// When using threading a reduced custom upperbound can be specified by setting TINYEXR_MAX_THREADS
+#ifndef TINYEXR_MAX_THREADS // if not defined define it as 0 meaning upper limit is taken from hardware_concurrency()
+#define TINYEXR_MAX_THREADS (0)
+#endif
 #endif
 
 #ifndef TINYEXR_USE_OPENMP
@@ -140,6 +144,41 @@ extern "C" {
 #else
 #define TINYEXR_USE_OPENMP (0)
 #endif
+#endif
+
+#ifndef TINYEXR_USE_COMPILER_FP16
+#define TINYEXR_USE_COMPILER_FP16 (0)
+#endif
+
+#if TINYEXR_USE_COMPILER_FP16
+#ifndef _MSC_VER
+#if defined( __GNUC__ ) || defined( __clang__ )
+#if defined( __SSE2__ )
+#if ( __GNUC__ > 11 ) || ( __clang_major__ > 14 )
+#ifndef __STDC_WANT_IEC_60559_TYPES_EXT__
+#define __STDC_WANT_IEC_60559_TYPES_EXT__
+#endif
+#include <float.h>
+#include <math.h>
+#define TINYEXR_FP16_COMPILER_TYPE _Float16
+#endif
+#endif
+#if defined( __ARM_NEON__ ) || defined( __ARM_NEON )
+#define TINYEXR_FP16_COMPILER_TYPE __fp16
+#endif
+#endif
+#else
+#if (defined(_M_IX86) || defined(_M_X64)) && defined(__AVX2__)
+#include <intrin.h>
+#define TINYEXR_FP16_COMPILER_TYPE uint16_t
+#endif
+#endif
+#endif
+
+#ifdef TINYEXR_FP16_COMPILER_TYPE
+#define TINYEXR_HAS_FP16_COMPILER_TYPE (1)
+#else
+#define TINYEXR_HAS_FP16_COMPILER_TYPE (0)
 #endif
 
 #define TINYEXR_SUCCESS (0)
@@ -386,7 +425,7 @@ extern int IsEXRFromMemory(const unsigned char *memory, size_t size);
 // error
 extern int SaveEXRToMemory(const float *data, const int width, const int height,
                    const int components, const int save_as_fp16,
-                   const unsigned char **buffer, const char **err);
+                   unsigned char **buffer, const char **err);
 
 // @deprecated { Not recommended, but handy to use. }
 // Saves single-frame OpenEXR image to a buffer. Assume EXR image contains RGB(A) channels.
@@ -771,7 +810,7 @@ static void SetWarningMessage(const std::string &msg, const char **warn) {
 
 static const int kEXRVersionSize = 8;
 
-static void cpy2(unsigned short *dst_val, const unsigned short *src_val) {
+static void inline cpy2(unsigned short *dst_val, const unsigned short *src_val) {
   unsigned char *dst = reinterpret_cast<unsigned char *>(dst_val);
   const unsigned char *src = reinterpret_cast<const unsigned char *>(src_val);
 
@@ -779,8 +818,8 @@ static void cpy2(unsigned short *dst_val, const unsigned short *src_val) {
   dst[1] = src[1];
 }
 
-static void swap2(unsigned short *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+static void inline swap2(unsigned short *val) {
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   unsigned short tmp = *val;
@@ -801,7 +840,7 @@ static void swap2(unsigned short *val) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
-static void cpy4(int *dst_val, const int *src_val) {
+static void inline cpy4(int *dst_val, const int *src_val) {
   unsigned char *dst = reinterpret_cast<unsigned char *>(dst_val);
   const unsigned char *src = reinterpret_cast<const unsigned char *>(src_val);
 
@@ -811,7 +850,7 @@ static void cpy4(int *dst_val, const int *src_val) {
   dst[3] = src[3];
 }
 
-static void cpy4(unsigned int *dst_val, const unsigned int *src_val) {
+static void inline cpy4(unsigned int *dst_val, const unsigned int *src_val) {
   unsigned char *dst = reinterpret_cast<unsigned char *>(dst_val);
   const unsigned char *src = reinterpret_cast<const unsigned char *>(src_val);
 
@@ -821,7 +860,7 @@ static void cpy4(unsigned int *dst_val, const unsigned int *src_val) {
   dst[3] = src[3];
 }
 
-static void cpy4(float *dst_val, const float *src_val) {
+static void inline cpy4(float *dst_val, const float *src_val) {
   unsigned char *dst = reinterpret_cast<unsigned char *>(dst_val);
   const unsigned char *src = reinterpret_cast<const unsigned char *>(src_val);
 
@@ -838,8 +877,8 @@ static void cpy4(float *dst_val, const float *src_val) {
 #pragma GCC diagnostic pop
 #endif
 
-static void swap4(unsigned int *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+static void inline swap4(unsigned int *val) {
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   unsigned int tmp = *val;
@@ -853,8 +892,8 @@ static void swap4(unsigned int *val) {
 #endif
 }
 
-static void swap4(int *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+static void inline swap4(int *val) {
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   int tmp = *val;
@@ -868,8 +907,8 @@ static void swap4(int *val) {
 #endif
 }
 
-static void swap4(float *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+static void inline swap4(float *val) {
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   float tmp = *val;
@@ -884,7 +923,7 @@ static void swap4(float *val) {
 }
 
 #if 0
-static void cpy8(tinyexr::tinyexr_uint64 *dst_val, const tinyexr::tinyexr_uint64 *src_val) {
+static void inline cpy8(tinyexr::tinyexr_uint64 *dst_val, const tinyexr::tinyexr_uint64 *src_val) {
   unsigned char *dst = reinterpret_cast<unsigned char *>(dst_val);
   const unsigned char *src = reinterpret_cast<const unsigned char *>(src_val);
 
@@ -899,8 +938,8 @@ static void cpy8(tinyexr::tinyexr_uint64 *dst_val, const tinyexr::tinyexr_uint64
 }
 #endif
 
-static void swap8(tinyexr::tinyexr_uint64 *val) {
-#ifdef TINYEXR_LITTLE_ENDIAN
+static void inline swap8(tinyexr::tinyexr_uint64 *val) {
+#if TINYEXR_LITTLE_ENDIAN
   (void)val;
 #else
   tinyexr::tinyexr_uint64 tmp = (*val);
@@ -919,6 +958,11 @@ static void swap8(tinyexr::tinyexr_uint64 *val) {
 }
 
 // https://gist.github.com/rygorous/2156668
+#if TINYEXR_HAS_FP16_COMPILER_TYPE && (TINYEXR_USE_COMPILER_FP16 > 0)
+union FP32 {
+  float f;
+};
+#else
 union FP32 {
   unsigned int u;
   float f;
@@ -934,11 +978,20 @@ union FP32 {
 #endif
   } s;
 };
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpadded"
 #endif
+
+#if TINYEXR_HAS_FP16_COMPILER_TYPE && (TINYEXR_USE_COMPILER_FP16 > 0)
+union FP16 {
+  TINYEXR_FP16_COMPILER_TYPE f;
+  unsigned short u;
+};
+
+#else
 
 union FP16 {
   unsigned short u;
@@ -954,11 +1007,32 @@ union FP16 {
 #endif
   } s;
 };
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 
+#if TINYEXR_HAS_FP16_COMPILER_TYPE && (TINYEXR_USE_COMPILER_FP16 > 0)
+static inline FP32 half_to_float(FP16 h) {
+  FP32 o;
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && defined(__AVX2__)
+   o.f =_mm_cvtss_f32(_mm_cvtph_ps(_mm_cvtsi32_si128(static_cast<int> (h.u))));
+#else
+   o.f = static_cast<float> (h.f);
+#endif
+  return o;
+}
+static inline FP16 float_to_half_full(FP32 f) {
+  FP16 o;
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && defined(__AVX2__)
+  o.f  = static_cast<TINYEXR_FP16_COMPILER_TYPE> (_mm_cvtsi128_si32(_mm_cvtps_ph(_mm_set_ss(f.f), _MM_FROUND_CUR_DIRECTION)));
+#else
+  o.f = static_cast<TINYEXR_FP16_COMPILER_TYPE> (f.f);
+#endif
+  return o;
+}
+#else
 static FP32 half_to_float(FP16 h) {
   static const FP32 magic = {113 << 23};
   static const unsigned int shifted_exp = 0x7c00
@@ -1018,7 +1092,7 @@ static FP16 float_to_half_full(FP32 f) {
   o.s.Sign = f.s.Sign;
   return o;
 }
-
+#endif
 // NOTE: From OpenEXR code
 // #define IMF_INCREASING_Y  0
 // #define IMF_DECREASING_Y  1
@@ -4212,7 +4286,7 @@ static bool DecodePixelData(/* out */ unsigned char **out_images,
 static bool DecodeTiledPixelData(
     unsigned char **out_images, int *width, int *height,
     const int *requested_pixel_types, const unsigned char *data_ptr,
-    size_t data_len, int compression_type, int line_order, int data_width,
+    size_t data_len, int compression_type, int data_width,
     int data_height, int tile_offset_x, int tile_offset_y, int tile_size_x,
     int tile_size_y, size_t pixel_data_size, size_t num_attributes,
     const EXRAttribute *attributes, size_t num_channels,
@@ -4238,8 +4312,9 @@ static bool DecodeTiledPixelData(
   }
 
   // Image size = tile size.
+  // Line order within tiles is always increasing.
   return DecodePixelData(out_images, requested_pixel_types, data_ptr, data_len,
-                         compression_type, line_order, (*width), tile_size_y,
+                         compression_type, /* line_order*/ 0, (*width), tile_size_y,
                          /* stride */ tile_size_x, /* y */ 0, /* line_no */ 0,
                          (*height), pixel_data_size, num_attributes, attributes,
                          num_channels, channels, channel_offset_list);
@@ -4923,17 +4998,19 @@ static int DecodeTiledLevel(EXRImage* exr_image, const EXRHeader* exr_header,
   }
 #endif
   exr_image->tiles = static_cast<EXRTile*>(
-    calloc(sizeof(EXRTile), static_cast<size_t>(num_tiles)));
+    calloc(static_cast<size_t>(num_tiles), sizeof(EXRTile)));
 
 #if TINYEXR_HAS_CXX11 && (TINYEXR_USE_THREAD > 0)
   std::vector<std::thread> workers;
   std::atomic<int> tile_count(0);
 
   int num_threads = std::max(1, int(std::thread::hardware_concurrency()));
+#if (TINYEXR_MAX_THREADS > 0)
+  num_threads = std::min(num_threads,TINYEXR_MAX_THREADS);
+#endif
   if (num_threads > int(num_tiles)) {
     num_threads = int(num_tiles);
   }
-
   for (int t = 0; t < num_threads; t++) {
     workers.emplace_back(std::thread([&]()
       {
@@ -5012,7 +5089,6 @@ static int DecodeTiledLevel(EXRImage* exr_image, const EXRHeader* exr_header,
       &(exr_image->tiles[tile_idx].height),
       exr_header->requested_pixel_types, data_ptr,
       static_cast<size_t>(data_len), exr_header->compression_type,
-      exr_header->line_order,
       exr_image->width, exr_image->height,
       tile_coordinates[0], tile_coordinates[1], exr_header->tile_size_x,
       exr_header->tile_size_y, static_cast<size_t>(pixel_data_size),
@@ -5286,10 +5362,12 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
     std::atomic<int> y_count(0);
 
     int num_threads = std::max(1, int(std::thread::hardware_concurrency()));
+#if (TINYEXR_MAX_THREADS > 0)
+    num_threads = std::min(num_threads,TINYEXR_MAX_THREADS);
+#endif
     if (num_threads > int(num_blocks)) {
       num_threads = int(num_blocks);
     }
-
     for (int t = 0; t < num_threads; t++) {
       workers.emplace_back(std::thread([&]() {
         int y = 0;
@@ -5364,10 +5442,11 @@ static int DecodeChunk(EXRImage *exr_image, const EXRHeader *exr_header,
                 if (line_no < 0) {
                   invalid_data = true;
                 } else {
+                  // Line order is increasing because we read in line offset table order.
                   if (!tinyexr::DecodePixelData(
                           exr_image->images, exr_header->requested_pixel_types,
                           data_ptr, static_cast<size_t>(data_len),
-                          exr_header->compression_type, exr_header->line_order,
+                          exr_header->compression_type, /* line_order*/ 0,
                           int(data_width), int(data_height), int(data_width), y, line_no,
                           num_lines, static_cast<size_t>(pixel_data_size),
                           static_cast<size_t>(
@@ -7268,6 +7347,9 @@ static int EncodeTiledLevel(const EXRImage* level_image, const EXRHeader* exr_he
   std::atomic<int> tile_count(0);
 
   int num_threads = std::max(1, int(std::thread::hardware_concurrency()));
+#if (TINYEXR_MAX_THREADS > 0)
+  num_threads = std::min(num_threads,TINYEXR_MAX_THREADS);
+#endif
   if (num_threads > int(num_tiles)) {
     num_threads = int(num_tiles);
   }
@@ -7517,7 +7599,9 @@ static int EncodeChunk(const EXRImage* exr_image, const EXRHeader* exr_header,
     std::atomic<int> block_count(0);
 
     int num_threads = std::min(std::max(1, int(std::thread::hardware_concurrency())), num_blocks);
-
+#if (TINYEXR_MAX_THREADS > 0)
+    num_threads = std::min(num_threads,TINYEXR_MAX_THREADS);
+#endif
     for (int t = 0; t < num_threads; t++) {
       workers.emplace_back(std::thread([&]() {
         int i = 0;
@@ -8066,7 +8150,7 @@ size_t SaveEXRMultipartImageToMemory(const EXRImage* exr_images,
                                      const EXRHeader** exr_headers,
                                      unsigned int num_parts,
                                      unsigned char** memory_out, const char** err) {
-  if (exr_images == NULL || exr_headers == NULL || num_parts < 2 ||
+  if (exr_images == NULL || exr_headers == NULL || num_parts == 0 ||
       memory_out == NULL) {
     tinyexr::SetErrorMessage("Invalid argument for SaveEXRNPartImageToMemory",
                               err);
@@ -8080,7 +8164,7 @@ int SaveEXRMultipartImageToFile(const EXRImage* exr_images,
                                 unsigned int num_parts,
                                 const char* filename,
                                 const char** err) {
-  if (exr_images == NULL || exr_headers == NULL || num_parts < 2) {
+  if (exr_images == NULL || exr_headers == NULL || num_parts == 0) {
     tinyexr::SetErrorMessage("Invalid argument for SaveEXRMultipartImageToFile",
                               err);
     return TINYEXR_ERROR_INVALID_ARGUMENT;
@@ -9008,7 +9092,7 @@ int LoadEXRMultipartImageFromFile(EXRImage *exr_images,
 }
 
 int SaveEXRToMemory(const float *data, int width, int height, int components,
-            const int save_as_fp16, const unsigned char **outbuf, const char **err) {
+            const int save_as_fp16, unsigned char **outbuf, const char **err) {
 
   if ((components == 1) || components == 3 || components == 4) {
     // OK
@@ -9047,13 +9131,19 @@ int SaveEXRToMemory(const float *data, int width, int height, int components,
     images[3].resize(static_cast<size_t>(width * height));
 
     // Split RGB(A)RGB(A)RGB(A)... into R, G and B(and A) layers
-    for (size_t i = 0; i < static_cast<size_t>(width * height); i++) {
-      images[0][i] = data[static_cast<size_t>(components) * i + 0];
-      images[1][i] = data[static_cast<size_t>(components) * i + 1];
-      images[2][i] = data[static_cast<size_t>(components) * i + 2];
-      if (components == 4) {
-        images[3][i] = data[static_cast<size_t>(components) * i + 3];
-      }
+    if (components == 4) {
+        for (size_t i = 0; i < static_cast<size_t>(width * height); i++) {
+          images[0][i] = data[static_cast<size_t>(components) * i + 0];
+          images[1][i] = data[static_cast<size_t>(components) * i + 1];
+          images[2][i] = data[static_cast<size_t>(components) * i + 2];
+          images[3][i] = data[static_cast<size_t>(components) * i + 3];
+        }
+    } else {
+       for (size_t i = 0; i < static_cast<size_t>(width * height); i++) {
+          images[0][i] = data[static_cast<size_t>(components) * i + 0];
+          images[1][i] = data[static_cast<size_t>(components) * i + 1];
+          images[2][i] = data[static_cast<size_t>(components) * i + 2];
+        }
     }
   }
 
@@ -9198,13 +9288,19 @@ int SaveEXR(const float *data, int width, int height, int components,
     images[3].resize(pixel_count);
 
     // Split RGB(A)RGB(A)RGB(A)... into R, G and B(and A) layers
-    for (size_t i = 0; i < pixel_count; i++) {
-      images[0][i] = data[static_cast<size_t>(components) * i + 0];
-      images[1][i] = data[static_cast<size_t>(components) * i + 1];
-      images[2][i] = data[static_cast<size_t>(components) * i + 2];
-      if (components == 4) {
-        images[3][i] = data[static_cast<size_t>(components) * i + 3];
-      }
+    if (components == 4) {
+       for (size_t i = 0; i < pixel_count; i++) {
+         images[0][i] = data[static_cast<size_t>(components) * i + 0];
+         images[1][i] = data[static_cast<size_t>(components) * i + 1];
+         images[2][i] = data[static_cast<size_t>(components) * i + 2];
+         images[3][i] = data[static_cast<size_t>(components) * i + 3];
+       }
+    } else {
+       for (size_t i = 0; i < pixel_count; i++) {
+         images[0][i] = data[static_cast<size_t>(components) * i + 0];
+         images[1][i] = data[static_cast<size_t>(components) * i + 1];
+         images[2][i] = data[static_cast<size_t>(components) * i + 2];
+       }
     }
   }
 
@@ -9287,9 +9383,6 @@ int SaveEXR(const float *data, int width, int height, int components,
   }
 
   int ret = SaveEXRImageToFile(&image, &header, outfilename, err);
-  if (ret != TINYEXR_SUCCESS) {
-    return ret;
-  }
 
   free(header.channels);
   free(header.pixel_types);

@@ -7,7 +7,7 @@
 #define MBLUR_NUM_OBJECT_BINS   32
 
 #include "../bvh/bvh.h"
-#include "../common/primref_mb.h"
+#include "../builders/primref_mb.h"
 #include "heuristic_binning_array_aligned.h"
 #include "heuristic_timesplit_array.h"
 
@@ -141,16 +141,17 @@ namespace embree
     struct VirtualRecalculatePrimRef
     {
       Scene* scene;
+      const SubGridBuildData * const sgrids;
       
-      __forceinline VirtualRecalculatePrimRef (Scene* scene)
-        : scene(scene) {}
+      __forceinline VirtualRecalculatePrimRef (Scene* scene, const SubGridBuildData * const sgrids = nullptr)
+        : scene(scene), sgrids(sgrids) {}
       
       __forceinline PrimRefMB operator() (const PrimRefMB& prim, const BBox1f time_range) const
       {
         const unsigned geomID = prim.geomID();
         const unsigned primID = prim.primID();
         const Geometry* mesh = scene->get(geomID);
-        const LBBox3fa lbounds = mesh->vlinearBounds(primID, time_range);
+        const LBBox3fa lbounds = mesh->vlinearBounds(primID, time_range, sgrids);
         const range<int> tbounds = mesh->timeSegmentRange(time_range);
         return PrimRefMB (lbounds, tbounds.size(), mesh->time_range, mesh->numTimeSegments(), geomID, primID);
       }
@@ -166,7 +167,7 @@ namespace embree
       }
       
       __forceinline LBBox3fa linearBounds(const PrimRefMB& prim, const BBox1f time_range) const {
-        return scene->get(prim.geomID())->vlinearBounds(prim.primID(), time_range);
+        return scene->get(prim.geomID())->vlinearBounds(prim.primID(), time_range, sgrids);
       }
       
       __forceinline LBBox3fa linearBounds(const PrimRefMB& prim, const BBox1f time_range, const LinearSpace3fa& space) const {

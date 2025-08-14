@@ -14,7 +14,7 @@ used by this platform.
 
 ## Artwork license
 
-[`logo.png`](logo.png) is derived from the [Linux logo](https://isc.tamu.edu/~lewing/linux/):
+[`logo.svg`](export/logo.svg) is derived from the [Linux logo](https://isc.tamu.edu/~lewing/linux/):
 
 > Permission to use and/or modify this image is granted provided you acknowledge me
 > <lewing@isc.tamu.edu> and [The GIMP](https://isc.tamu.edu/~lewing/gimp/)

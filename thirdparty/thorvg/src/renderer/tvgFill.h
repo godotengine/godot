@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 - 2023 the ThorVG project. All rights reserved.
+ * Copyright (c) 2020 - 2024 the ThorVG project. All rights reserved.
 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,7 +55,6 @@ struct Fill::Impl
     uint32_t cnt = 0;
     FillSpread spread;
     DuplicateMethod<Fill>* dup = nullptr;
-    uint8_t id;
 
     ~Impl()
     {
@@ -77,7 +76,7 @@ struct Fill::Impl
         ret->pImpl->cnt = cnt;
         ret->pImpl->spread = spread;
         ret->pImpl->colorStops = static_cast<ColorStop*>(malloc(sizeof(ColorStop) * cnt));
-        memcpy(ret->pImpl->colorStops, colorStops, sizeof(ColorStop) * cnt);
+        if (cnt > 0) memcpy(ret->pImpl->colorStops, colorStops, sizeof(ColorStop) * cnt);
         if (transform) {
             ret->pImpl->transform = static_cast<Matrix*>(malloc(sizeof(Matrix)));
             *ret->pImpl->transform = *transform;

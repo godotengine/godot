@@ -30,13 +30,11 @@
 
 #include "editor_debugger_server.h"
 
-#include "core/io/marshalls.h"
 #include "core/io/tcp_server.h"
-#include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 
 class EditorDebuggerServerTCP : public EditorDebuggerServer {
 private:
@@ -77,8 +75,8 @@ Error EditorDebuggerServerTCP::start(const String &p_uri) {
 
 	// Optionally override
 	if (!p_uri.is_empty() && p_uri != "tcp://") {
-		String scheme, path;
-		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path);
+		String scheme, path, fragment;
+		Error err = p_uri.parse_url(scheme, bind_host, bind_port, path, fragment);
 		ERR_FAIL_COND_V(err != OK, ERR_INVALID_PARAMETER);
 		ERR_FAIL_COND_V(!bind_host.is_valid_ip_address() && bind_host != "*", ERR_INVALID_PARAMETER);
 	}

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AABB_H
-#define AABB_H
+#pragma once
 
 #include "core/math/plane.h"
 #include "core/math/vector3.h"
@@ -41,7 +40,7 @@
 
 class Variant;
 
-struct _NO_DISCARD_ AABB {
+struct [[nodiscard]] AABB {
 	Vector3 position;
 	Vector3 size;
 
@@ -59,10 +58,15 @@ struct _NO_DISCARD_ AABB {
 	const Vector3 &get_size() const { return size; }
 	void set_size(const Vector3 &p_size) { size = p_size; }
 
-	bool operator==(const AABB &p_rval) const;
-	bool operator!=(const AABB &p_rval) const;
+	constexpr bool operator==(const AABB &p_rval) const {
+		return position == p_rval.position && size == p_rval.size;
+	}
+	constexpr bool operator!=(const AABB &p_rval) const {
+		return position != p_rval.position || size != p_rval.size;
+	}
 
 	bool is_equal_approx(const AABB &p_aabb) const;
+	bool is_same(const AABB &p_aabb) const;
 	bool is_finite() const;
 	_FORCE_INLINE_ bool intersects(const AABB &p_aabb) const; /// Both AABBs overlap
 	_FORCE_INLINE_ bool intersects_inclusive(const AABB &p_aabb) const; /// Both AABBs (or their faces) overlap
@@ -71,16 +75,21 @@ struct _NO_DISCARD_ AABB {
 	AABB merge(const AABB &p_with) const;
 	void merge_with(const AABB &p_aabb); ///merge with another AABB
 	AABB intersection(const AABB &p_aabb) const; ///get box where two intersect, empty if no intersection occurs
-	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_clip = nullptr, Vector3 *r_normal = nullptr) const;
-	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 *r_clip = nullptr, Vector3 *r_normal = nullptr) const;
-	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const;
+	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_t0, real_t p_t1) const;
+
+	bool intersects_segment(const Vector3 &p_from, const Vector3 &p_to, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
+	bool intersects_ray(const Vector3 &p_from, const Vector3 &p_dir) const {
+		bool inside;
+		return find_intersects_ray(p_from, p_dir, inside);
+	}
+	bool find_intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, bool &r_inside, Vector3 *r_intersection_point = nullptr, Vector3 *r_normal = nullptr) const;
 
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count) const;
 	_FORCE_INLINE_ bool inside_convex_shape(const Plane *p_planes, int p_plane_count) const;
 	bool intersects_plane(const Plane &p_plane) const;
 
 	_FORCE_INLINE_ bool has_point(const Vector3 &p_point) const;
-	_FORCE_INLINE_ Vector3 get_support(const Vector3 &p_normal) const;
+	_FORCE_INLINE_ Vector3 get_support(const Vector3 &p_direction) const;
 
 	Vector3 get_longest_axis() const;
 	int get_longest_axis_index() const;
@@ -101,7 +110,7 @@ struct _NO_DISCARD_ AABB {
 	_FORCE_INLINE_ void expand_to(const Vector3 &p_vector); /** expand to contain a point if necessary */
 
 	_FORCE_INLINE_ AABB abs() const {
-		return AABB(Vector3(position.x + MIN(size.x, (real_t)0), position.y + MIN(size.y, (real_t)0), position.z + MIN(size.z, (real_t)0)), size.abs());
+		return AABB(position + size.minf(0), size.abs());
 	}
 
 	Variant intersects_segment_bind(const Vector3 &p_from, const Vector3 &p_to) const;
@@ -122,10 +131,10 @@ struct _NO_DISCARD_ AABB {
 		return position + (size * 0.5f);
 	}
 
-	operator String() const;
+	explicit operator String() const;
 
-	_FORCE_INLINE_ AABB() {}
-	inline AABB(const Vector3 &p_pos, const Vector3 &p_size) :
+	AABB() = default;
+	constexpr AABB(const Vector3 &p_pos, const Vector3 &p_size) :
 			position(p_pos),
 			size(p_size) {
 	}
@@ -200,22 +209,25 @@ inline bool AABB::encloses(const AABB &p_aabb) const {
 
 	return (
 			(src_min.x <= dst_min.x) &&
-			(src_max.x > dst_max.x) &&
+			(src_max.x >= dst_max.x) &&
 			(src_min.y <= dst_min.y) &&
-			(src_max.y > dst_max.y) &&
+			(src_max.y >= dst_max.y) &&
 			(src_min.z <= dst_min.z) &&
-			(src_max.z > dst_max.z));
+			(src_max.z >= dst_max.z));
 }
 
-Vector3 AABB::get_support(const Vector3 &p_normal) const {
-	Vector3 half_extents = size * 0.5f;
-	Vector3 ofs = position + half_extents;
-
-	return Vector3(
-				   (p_normal.x > 0) ? half_extents.x : -half_extents.x,
-				   (p_normal.y > 0) ? half_extents.y : -half_extents.y,
-				   (p_normal.z > 0) ? half_extents.z : -half_extents.z) +
-			ofs;
+Vector3 AABB::get_support(const Vector3 &p_direction) const {
+	Vector3 support = position;
+	if (p_direction.x > 0.0f) {
+		support.x += size.x;
+	}
+	if (p_direction.y > 0.0f) {
+		support.y += size.y;
+	}
+	if (p_direction.z > 0.0f) {
+		support.z += size.z;
+	}
+	return support;
 }
 
 Vector3 AABB::get_endpoint(int p_point) const {
@@ -401,7 +413,7 @@ inline real_t AABB::get_shortest_axis_size() const {
 	return max_size;
 }
 
-bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t t0, real_t t1) const {
+bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_t0, real_t p_t1) const {
 #ifdef MATH_CHECKS
 	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
@@ -452,7 +464,7 @@ bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real
 	if (tzmax < tmax) {
 		tmax = tzmax;
 	}
-	return ((tmin < t1) && (tmax > t0));
+	return ((tmin < p_t1) && (tmax > p_t0));
 }
 
 void AABB::grow_by(real_t p_amount) {
@@ -488,4 +500,5 @@ AABB AABB::quantized(real_t p_unit) const {
 	return ret;
 }
 
-#endif // AABB_H
+template <>
+struct is_zero_constructible<AABB> : std::true_type {};

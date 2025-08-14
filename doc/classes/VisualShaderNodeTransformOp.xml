@@ -4,13 +4,13 @@
 		A [Transform3D] operator to be used within the visual shader graph.
 	</brief_description>
 	<description>
-		Applies [member operator] to two transform (4x4 matrices) inputs.
+		Applies [member operator] to two transform (4×4 matrices) inputs.
 	</description>
 	<tutorials>
 	</tutorials>
 	<members>
 		<member name="operator" type="int" setter="set_operator" getter="get_operator" enum="VisualShaderNodeTransformOp.Operator" default="0">
-			The type of the operation to be performed on the transforms. See [enum Operator] for options.
+			The type of the operation to be performed on the transforms.
 		</member>
 	</members>
 	<constants>
