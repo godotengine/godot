@@ -119,6 +119,7 @@ protected:
 	void _notification(int p_what);
 	virtual void _draw();
 
+	void _validate_property(PropertyInfo &p_property) const;
 	void _accessibility_action(const Variant &p_data);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;

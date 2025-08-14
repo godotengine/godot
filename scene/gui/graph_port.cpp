@@ -281,8 +281,13 @@ bool GraphPort::is_implying_direction() const {
 }
 
 void GraphPort::set_imply_direction(bool p_imply_direction) {
+	if (imply_direction == p_imply_direction) {
+		return;
+	}
+
 	imply_direction = p_imply_direction;
 
+	notify_property_list_changed();
 	_on_modified();
 }
 
@@ -471,6 +476,12 @@ void GraphPort::_draw() {
 	port_icon->draw(get_canvas_item(), get_position_offset(), get_color());
 }
 
+void GraphPort::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "direction") {
+		p_property.usage = imply_direction ? PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY : PROPERTY_USAGE_DEFAULT;
+	}
+}
+
 void GraphPort::_on_enabled() {
 	emit_signal(SNAME("on_enabled"), this);
 }
@@ -550,7 +561,7 @@ void GraphPort::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "port_type"), "set_port_type", "get_port_type");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected"), "set_direction", "get_direction");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "direction", PROPERTY_HINT_ENUM, "Input,Output,Undirected", PROPERTY_USAGE_DEFAULT), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclusive"), "set_exclusive", "get_exclusive");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "imply_direction"), "set_imply_direction", "is_implying_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "on_disabled_behaviour", PROPERTY_HINT_ENUM, "Disconnect all,Move to previous port or disconnect,Move to next port or disconnect"), "set_disabled_behaviour", "get_disabled_behaviour");
