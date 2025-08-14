@@ -3427,11 +3427,9 @@ void TileMapLayerEditorTerrainsPlugin::_update_tiles_list() {
 							icon = atlas_source->get_texture();
 							region = atlas_source->get_tile_texture_region(cell.get_atlas_coords());
 							if (tile_data->get_flip_h()) {
-								region.position.x += region.size.x;
 								region.size.x = -region.size.x;
 							}
 							if (tile_data->get_flip_v()) {
-								region.position.y += region.size.y;
 								region.size.y = -region.size.y;
 							}
 							transpose = tile_data->get_transpose();

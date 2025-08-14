@@ -117,7 +117,29 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 #endif
 
 	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
-		save_path = path;
+		// Set save path to the symlink target, not the link itself.
+		String link;
+		bool is_link = false;
+		{
+			CharString cs = path.utf8();
+			struct stat lst = {};
+			if (lstat(cs.get_data(), &lst) == 0) {
+				is_link = S_ISLNK(lst.st_mode);
+			}
+			if (is_link) {
+				char buf[PATH_MAX];
+				memset(buf, 0, PATH_MAX);
+				ssize_t len = readlink(cs.get_data(), buf, sizeof(buf));
+				if (len > 0) {
+					link.append_utf8(buf, len);
+				}
+				if (!link.is_absolute_path()) {
+					link = path.get_base_dir().path_join(link);
+				}
+			}
+		}
+		save_path = is_link ? link : path;
+
 		// Create a temporary file in the same directory as the target file.
 		path = path + "-XXXXXX";
 		CharString cs = path.utf8();

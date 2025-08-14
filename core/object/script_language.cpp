@@ -31,6 +31,7 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
@@ -330,6 +331,9 @@ void ScriptServer::finish_languages() {
 	}
 
 	for (ScriptLanguage *E : langs_to_finish) {
+		if (CoreBind::OS::get_singleton()) {
+			CoreBind::OS::get_singleton()->remove_script_loggers(E); // Unregister loggers using this script language.
+		}
 		E->finish();
 	}
 

@@ -246,7 +246,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 		path_label->set_text(p_io_path->display_name);
 	} else {
 		path_label->set_text(p_io_path->display_name + "*");
-		p_container->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
+		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
 	}
 	path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	path_hb->add_child(path_label);

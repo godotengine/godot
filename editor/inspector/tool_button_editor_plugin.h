@@ -36,7 +36,6 @@
 class EditorInspectorToolButtonPlugin : public EditorInspectorPlugin {
 	GDCLASS(EditorInspectorToolButtonPlugin, EditorInspectorPlugin);
 
-	void _update_action_icon(Button *p_action_button, const String &p_action_icon);
 	void _call_action(const Variant &p_object, const StringName &p_property);
 
 public:

@@ -32,6 +32,9 @@
 
 #include "api/java_class_wrapper.h"
 
+static jobject android_class_loader = nullptr;
+static jmethodID load_class_method = nullptr;
+
 jobject callable_to_jcallable(JNIEnv *p_env, const Variant &p_callable) {
 	ERR_FAIL_NULL_V(p_env, nullptr);
 	if (p_callable.get_type() != Variant::CALLABLE) {
@@ -40,7 +43,7 @@ jobject callable_to_jcallable(JNIEnv *p_env, const Variant &p_callable) {
 
 	Variant *callable_jcopy = memnew(Variant(p_callable));
 
-	jclass bclass = p_env->FindClass("org/godotengine/godot/variant/Callable");
+	jclass bclass = jni_find_class(p_env, "org/godotengine/godot/variant/Callable");
 	jmethodID ctor = p_env->GetMethodID(bclass, "<init>", "(J)V");
 	jobject jcallable = p_env->NewObject(bclass, ctor, reinterpret_cast<int64_t>(callable_jcopy));
 	p_env->DeleteLocalRef(bclass);
@@ -52,7 +55,7 @@ Callable jcallable_to_callable(JNIEnv *p_env, jobject p_jcallable_obj) {
 	ERR_FAIL_NULL_V(p_env, Callable());
 
 	const Variant *callable_variant = nullptr;
-	jclass callable_class = p_env->FindClass("org/godotengine/godot/variant/Callable");
+	jclass callable_class = jni_find_class(p_env, "org/godotengine/godot/variant/Callable");
 	if (callable_class && p_env->IsInstanceOf(p_jcallable_obj, callable_class)) {
 		jmethodID get_native_pointer = p_env->GetMethodID(callable_class, "getNativePointer", "()J");
 		jlong native_callable = p_env->CallLongMethod(p_jcallable_obj, get_native_pointer);
@@ -70,7 +73,7 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 	ERR_FAIL_NULL_V(p_env, String());
 
 	String result;
-	jclass bclass = p_env->FindClass("java/lang/CharSequence");
+	jclass bclass = jni_find_class(p_env, "java/lang/CharSequence");
 	if (bclass && p_env->IsInstanceOf(p_charsequence, bclass)) {
 		jmethodID to_string = p_env->GetMethodID(bclass, "toString", "()Ljava/lang/String;");
 		jstring obj_string = (jstring)p_env->CallObjectMethod(p_charsequence, to_string);
@@ -89,7 +92,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 	switch (p_type) {
 		case Variant::BOOL: {
 			if (force_jobject) {
-				jclass bclass = env->FindClass("java/lang/Boolean");
+				jclass bclass = jni_find_class(env, "java/lang/Boolean");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(Z)V");
 				jvalue val;
 				val.z = (bool)(*p_arg);
@@ -103,7 +106,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 		} break;
 		case Variant::INT: {
 			if (force_jobject) {
-				jclass bclass = env->FindClass("java/lang/Integer");
+				jclass bclass = jni_find_class(env, "java/lang/Integer");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(I)V");
 				jvalue val;
 				val.i = (int)(*p_arg);
@@ -118,7 +121,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 		} break;
 		case Variant::FLOAT: {
 			if (force_jobject) {
-				jclass bclass = env->FindClass("java/lang/Double");
+				jclass bclass = jni_find_class(env, "java/lang/Double");
 				jmethodID ctor = env->GetMethodID(bclass, "<init>", "(D)V");
 				jvalue val;
 				val.d = (double)(*p_arg);
@@ -139,7 +142,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 		} break;
 		case Variant::PACKED_STRING_ARRAY: {
 			Vector<String> sarray = *p_arg;
-			jobjectArray arr = env->NewObjectArray(sarray.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+			jobjectArray arr = env->NewObjectArray(sarray.size(), jni_find_class(env, "java/lang/String"), env->NewStringUTF(""));
 
 			for (int j = 0; j < sarray.size(); j++) {
 				jstring str = env->NewStringUTF(sarray[j].utf8().get_data());
@@ -159,13 +162,13 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 		case Variant::DICTIONARY: {
 			Dictionary dict = *p_arg;
-			jclass dclass = env->FindClass("org/godotengine/godot/Dictionary");
+			jclass dclass = jni_find_class(env, "org/godotengine/godot/Dictionary");
 			jmethodID ctor = env->GetMethodID(dclass, "<init>", "()V");
 			jobject jdict = env->NewObject(dclass, ctor);
 
 			Array keys = dict.keys();
 
-			jobjectArray jkeys = env->NewObjectArray(keys.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
+			jobjectArray jkeys = env->NewObjectArray(keys.size(), jni_find_class(env, "java/lang/String"), env->NewStringUTF(""));
 			for (int j = 0; j < keys.size(); j++) {
 				jstring str = env->NewStringUTF(String(keys[j]).utf8().get_data());
 				env->SetObjectArrayElement(jkeys, j, str);
@@ -178,7 +181,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			env->CallVoidMethodA(jdict, set_keys, &val);
 			env->DeleteLocalRef(jkeys);
 
-			jobjectArray jvalues = env->NewObjectArray(keys.size(), env->FindClass("java/lang/Object"), nullptr);
+			jobjectArray jvalues = env->NewObjectArray(keys.size(), jni_find_class(env, "java/lang/Object"), nullptr);
 
 			for (int j = 0; j < keys.size(); j++) {
 				Variant var = dict[keys[j]];
@@ -201,7 +204,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 
 		case Variant::ARRAY: {
 			Array array = *p_arg;
-			jobjectArray arr = env->NewObjectArray(array.size(), env->FindClass("java/lang/Object"), nullptr);
+			jobjectArray arr = env->NewObjectArray(array.size(), jni_find_class(env, "java/lang/Object"), nullptr);
 
 			for (int j = 0; j < array.size(); j++) {
 				Variant var = array[j];
@@ -279,7 +282,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 }
 
 String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
-	jclass cclass = env->FindClass("java/lang/Class");
+	jclass cclass = jni_find_class(env, "java/lang/Class");
 	jmethodID getName = env->GetMethodID(cclass, "getName", "()Ljava/lang/String;");
 	jstring clsName = (jstring)env->CallObjectMethod(cls, getName);
 
@@ -346,7 +349,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	}
 
 	if (name == "java.lang.Integer" || name == "java.lang.Long") {
-		jclass nclass = env->FindClass("java/lang/Number");
+		jclass nclass = jni_find_class(env, "java/lang/Number");
 		jmethodID longValue = env->GetMethodID(nclass, "longValue", "()J");
 		jlong ret = env->CallLongMethod(obj, longValue);
 		return ret;
@@ -386,7 +389,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 	}
 
 	if (name == "java.lang.Float" || name == "java.lang.Double") {
-		jclass nclass = env->FindClass("java/lang/Number");
+		jclass nclass = jni_find_class(env, "java/lang/Number");
 		jmethodID doubleValue = env->GetMethodID(nclass, "doubleValue", "()D");
 		double ret = env->CallDoubleMethod(obj, doubleValue);
 		return ret;
@@ -508,4 +511,75 @@ Variant::Type get_jni_type(const String &p_type) {
 	}
 
 	return Variant::OBJECT;
+}
+
+void setup_android_class_loader() {
+	// Find a known class defined in the Godot package and obtain its ClassLoader.
+	// This ClassLoader will be used by jni_find_class() to locate classes at runtime
+	// in a thread-safe manner, avoiding issues with FindClass in non-main threads.
+
+	if (android_class_loader) {
+		cleanup_android_class_loader();
+	}
+
+	JNIEnv *env = get_jni_env();
+	ERR_FAIL_NULL(env);
+
+	jclass known_class = env->FindClass("org/godotengine/godot/Godot");
+	ERR_FAIL_NULL(known_class);
+
+	jclass class_class = env->FindClass("java/lang/Class");
+	ERR_FAIL_NULL(class_class);
+
+	jmethodID get_class_loader_method = env->GetMethodID(class_class, "getClassLoader", "()Ljava/lang/ClassLoader;");
+	ERR_FAIL_NULL(get_class_loader_method);
+
+	jobject class_loader = env->CallObjectMethod(known_class, get_class_loader_method);
+	ERR_FAIL_NULL(class_loader);
+
+	// NOTE: Make global ref so it can be used later.
+	android_class_loader = env->NewGlobalRef(class_loader);
+	ERR_FAIL_NULL(android_class_loader);
+
+	jclass class_loader_class = env->FindClass("java/lang/ClassLoader");
+	ERR_FAIL_NULL(class_loader_class);
+
+	load_class_method = env->GetMethodID(class_loader_class, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+	if (!load_class_method) {
+		env->DeleteGlobalRef(android_class_loader);
+		android_class_loader = nullptr;
+		ERR_FAIL_MSG("Failed to find method ID for ClassLoader::loadClass.");
+	}
+}
+
+void cleanup_android_class_loader() {
+	if (android_class_loader != nullptr) {
+		JNIEnv *env = get_jni_env();
+		if (env) {
+			env->DeleteGlobalRef(android_class_loader);
+		} else {
+			ERR_PRINT("Failed to release Android ClassLoader - JNIEnv is not available.");
+		}
+		android_class_loader = nullptr;
+		load_class_method = nullptr;
+	}
+}
+
+jclass jni_find_class(JNIEnv *p_env, const char *p_class_name) {
+	ERR_FAIL_NULL_V(p_env, nullptr);
+	ERR_FAIL_NULL_V(p_class_name, nullptr);
+
+	if (!android_class_loader || !load_class_method) {
+		ERR_PRINT("Android ClassLoader is not initialized. Falling back to FindClass.");
+		return p_env->FindClass(p_class_name);
+	}
+
+	jstring java_class_name = p_env->NewStringUTF(p_class_name);
+	jobject class_object = p_env->CallObjectMethod(
+			android_class_loader,
+			load_class_method,
+			java_class_name);
+	p_env->DeleteLocalRef(java_class_name);
+	ERR_FAIL_NULL_V_MSG(class_object, nullptr, vformat("Failed to find Java class: \"%s\".", p_class_name));
+	return static_cast<jclass>(class_object);
 }

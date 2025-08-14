@@ -1269,7 +1269,9 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		}
 
 		// Fallback to p_path if new_path does not exist.
-		if (!FileAccess::exists(new_path + ".import") && !FileAccess::exists(new_path)) {
+		if (!FileAccess::exists(new_path + ".import") &&
+				!FileAccess::exists(new_path + ".remap") &&
+				!FileAccess::exists(new_path)) {
 			WARN_PRINT(vformat("Translation remap '%s' does not exist. Falling back to '%s'.", new_path, p_path));
 			new_path = p_path;
 		}

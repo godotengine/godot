@@ -288,8 +288,6 @@ GameViewDebugger::GameViewDebugger() {
 	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
 
 	ED_SHORTCUT("editor/next_frame_embedded_project", TTRC("Next Frame"), Key::F10);
-
-	ED_SHORTCUT("spatial_editor/tool_select", TTRC("Select Mode"), Key::Q);
 }
 
 ///////

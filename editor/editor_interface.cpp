@@ -230,9 +230,12 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 }
 
 void EditorInterface::make_scene_preview(const String &p_path, Node *p_scene, int p_preview_size) {
-	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null.");
+	if (!Engine::get_singleton()->is_editor_hint() || !DisplayServer::get_singleton()->window_can_draw()) {
+		return;
+	}
+	ERR_FAIL_COND_MSG(p_path.is_empty(), "Path is empty, cannot generate preview.");
+	ERR_FAIL_NULL_MSG(p_scene, "The provided scene is null, cannot generate preview.");
 	ERR_FAIL_COND_MSG(p_scene->is_inside_tree(), "The scene must not be inside the tree.");
-	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be called from the editor.");
 	ERR_FAIL_NULL_MSG(EditorNode::get_singleton(), "EditorNode doesn't exist.");
 
 	SubViewport *sub_viewport_node = memnew(SubViewport);

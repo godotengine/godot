@@ -4339,9 +4339,12 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 	Ref<GLTFTexture> gltf_texture;
 	gltf_texture.instantiate();
 	ERR_FAIL_COND_V(p_texture->get_image().is_null(), -1);
-	GLTFImageIndex gltf_src_image_i = p_state->images.size();
-	p_state->images.push_back(p_texture);
-	p_state->source_images.push_back(p_texture->get_image());
+	GLTFImageIndex gltf_src_image_i = p_state->images.find(p_texture);
+	if (gltf_src_image_i == -1) {
+		gltf_src_image_i = p_state->images.size();
+		p_state->images.push_back(p_texture);
+		p_state->source_images.push_back(p_texture->get_image());
+	}
 	gltf_texture->set_src_image(gltf_src_image_i);
 	gltf_texture->set_sampler(_set_sampler_for_mode(p_state, p_filter_mode, p_repeats));
 	GLTFTextureIndex gltf_texture_i = p_state->textures.size();

@@ -19,6 +19,12 @@ runs:
 
     # Editor is quite complicated piece of software, so it is easy to introduce bug here.
 
+    - name: Open and close editor (Headless)
+      shell: sh
+      run: |
+        xvfb-run ${{ inputs.bin }} --headless --import --path test_project 2>&1 | tee sanitizers_log.txt || true
+        misc/scripts/check_ci_log.py sanitizers_log.txt
+
     - name: Open and close editor (Vulkan)
       shell: sh
       run: |

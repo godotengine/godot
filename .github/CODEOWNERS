@@ -56,12 +56,11 @@
 /editor/icons/                                @godotengine/usability
 /editor/import/                               @godotengine/import
 /editor/inspector/                            @godotengine/docks
-/editor/scene/                                @godotengine/core
 /editor/scene/2d/                             @godotengine/2d-editor
 /editor/scene/2d/physics                      @godotengine/2d-editor @godotengine/physics
 /editor/scene/3d/                             @godotengine/3d-editor
 /editor/scene/3d/physics                      @godotengine/3d-editor @godotengine/physics
-/editor/scene/gui/                            @godotengine/usability @godotengine/gui-nodes
+/editor/scene/gui/                            @godotengine/gui-nodes
 /editor/themes/                               @godotengine/usability @godotengine/gui-nodes
 /editor/translations/                         @godotengine/usability
 

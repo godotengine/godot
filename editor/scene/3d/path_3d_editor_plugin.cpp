@@ -741,7 +741,7 @@ void Path3DEditorPlugin::edit(Object *p_object) {
 	} else {
 		Path3D *pre = path;
 		path = nullptr;
-		if (pre) {
+		if (pre && pre->get_curve().is_valid()) {
 			pre->get_curve()->emit_signal(CoreStringName(changed));
 		}
 	}
