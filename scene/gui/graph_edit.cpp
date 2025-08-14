@@ -922,6 +922,7 @@ void GraphEdit::_graph_element_moved(Node *p_node) {
 
 void GraphEdit::_graph_node_ports_updated(GraphNode *p_node) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
+	ERR_FAIL_NULL(p_node);
 
 	_invalidate_graph_node_connections(p_node);
 	minimap->queue_redraw();
@@ -934,6 +935,7 @@ void GraphEdit::_graph_node_ports_updated(GraphNode *p_node) {
 
 void GraphEdit::_graph_node_rect_changed(GraphNode *p_node) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
+	ERR_FAIL_NULL(p_node);
 
 	// Only invalidate the cache when zooming or the node is moved/resized in graph space.
 	if (panner->is_panning()) {
@@ -2409,7 +2411,6 @@ void GraphEdit::clear_connections() {
 
 void GraphEdit::clear_port_connections(const GraphPort *p_port) {
 	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
-	ERR_FAIL_NULL(p_port);
 	if (!is_port_connected(p_port)) {
 		return;
 	}
