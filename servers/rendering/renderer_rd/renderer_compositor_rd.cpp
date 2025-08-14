@@ -185,7 +185,7 @@ void RendererCompositorRD::finalize() {
 	RD::get_singleton()->free(blit.sampler);
 }
 
-void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+void RendererCompositorRD::set_boot_image_with_stretch(const Ref<Image> &p_image, const Color &p_color, RenderingServer::SplashStretchMode p_stretch_mode, bool p_use_filter) {
 	if (p_image.is_null() || p_image->is_empty()) {
 		return;
 	}
@@ -220,15 +220,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	Size2 window_size = DisplayServer::get_singleton()->window_get_size();
 
-	Rect2 imgrect(0, 0, p_image->get_width(), p_image->get_height());
-	Rect2 screenrect;
-	if (p_scale) {
-		screenrect = OS::get_singleton()->calculate_boot_screen_rect(window_size, imgrect.size);
-	} else {
-		screenrect = imgrect;
-		screenrect.position += ((window_size - screenrect.size) / 2.0).floor();
-	}
-
+	Rect2 screenrect = RenderingServer::get_splash_stretched_screen_rect(p_image->get_size(), window_size, p_stretch_mode);
 	screenrect.position /= window_size;
 	screenrect.size /= window_size;
 
@@ -269,6 +261,11 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 
 	texture_storage->texture_free(texture);
 	RD::get_singleton()->free(sampler);
+}
+
+void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
+	RenderingServer::SplashStretchMode stretch_mode = RenderingServer::map_scaling_option_to_stretch_mode(p_scale);
+	set_boot_image_with_stretch(p_image, p_color, stretch_mode, p_use_filter);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
