@@ -39,6 +39,7 @@
 #include "servers/rendering/renderer_rd/shaders/blit.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/storage_rd/mesh_rasterizer_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
@@ -58,6 +59,7 @@ protected:
 	RendererRD::TextureStorage *texture_storage = nullptr;
 	RendererRD::Fog *fog = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
+	RendererRD::MeshRasterizerRD *mesh_rasterizer = nullptr;
 
 	enum BlitMode {
 		BLIT_MODE_NORMAL,
@@ -118,6 +120,7 @@ public:
 	RendererFog *get_fog() { return fog; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
+	MeshRasterizer *get_mesh_rasterizer() { return mesh_rasterizer; }
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter);
 

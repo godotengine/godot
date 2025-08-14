@@ -68,6 +68,9 @@ void TextureStorage::Texture::cleanup() {
 	if (canvas_texture) {
 		memdelete(canvas_texture);
 	}
+	if (drawable_texture) {
+		memdelete(drawable_texture); // slices should be freed automatically as dependents.
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -1551,6 +1554,11 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		tex->canvas_texture = nullptr;
 	}
 
+	if (tex->drawable_texture) {
+		memdelete(tex->drawable_texture);
+		tex->drawable_texture = nullptr;
+	}
+
 	Vector<RID> proxies_to_update = tex->proxies;
 	Vector<RID> proxies_to_redirect = by_tex->proxies;
 
@@ -1766,6 +1774,18 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 	} else {
 		return RD::get_singleton()->get_driver_resource(RD::DRIVER_RESOURCE_TEXTURE, tex->rd_texture);
 	}
+}
+
+Size2i RendererRD::TextureStorage::texture_2d_get_size(RID p_texture) {
+	if (p_texture.is_null()) {
+		return Size2i();
+	}
+	RendererRD::TextureStorage::Texture *tex = texture_owner.get_or_null(p_texture);
+
+	if (!tex) {
+		return Size2i();
+	}
+	return Size2i(tex->width_2d, tex->height_2d);
 }
 
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
@@ -3262,6 +3282,180 @@ void TextureStorage::update_decal_buffer(const PagedArray<RID> &p_decals, const 
 	if (decal_count > 0) {
 		RD::get_singleton()->buffer_update(decal_buffer, 0, sizeof(DecalData) * decal_count, decals);
 	}
+}
+
+/* TEXTURE DRAWABLE API */
+
+void TextureStorage::texture_drawable_2d_initialize(RID p_texture_drawable, int p_width, int p_height, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps) {
+	TextureFromRDFormat imfmt;
+	_texture_format_from_rd((RD::DataFormat)p_texture_format, imfmt);
+	ERR_FAIL_COND(imfmt.image_format == Image::FORMAT_MAX);
+
+	uint32_t mipmaps = 1 + (p_use_mipmaps ? (Image::get_image_required_mipmaps(p_width, p_height, imfmt.image_format)) : 0);
+
+	RD::TextureFormat rd_format;
+	rd_format.width = p_width;
+	rd_format.height = p_height;
+	rd_format.mipmaps = mipmaps;
+	rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+
+	rd_format.format = imfmt.rd_format;
+	rd_format.texture_type = RD::TEXTURE_TYPE_2D;
+
+	Texture texture;
+	texture.type = TextureStorage::TYPE_2D;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = 1;
+	texture.mipmaps = mipmaps;
+	texture.depth = 1;
+	texture.format = imfmt.image_format;
+	texture.validated_format = imfmt.image_format;
+	texture.rd_type = rd_format.texture_type;
+	texture.rd_format = imfmt.rd_format;
+	texture.rd_format_srgb = imfmt.rd_format_srgb;
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.is_proxy = false;
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_format.shareable_formats.push_back(texture.rd_format);
+		rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+	}
+
+	RD::TextureView rd_view;
+	rd_view.format_override = (imfmt.rd_format == rd_format.format) ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
+	rd_view.swizzle_r = imfmt.swizzle_r;
+	rd_view.swizzle_g = imfmt.swizzle_g;
+	rd_view.swizzle_b = imfmt.swizzle_b;
+	rd_view.swizzle_a = imfmt.swizzle_a;
+	texture.rd_view = rd_view;
+	ERR_FAIL_COND(!RD::get_singleton()->texture_is_format_supported_for_usage(imfmt.rd_format, rd_format.usage_bits));
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view);
+
+	rd_view.format_override = (imfmt.rd_format_srgb == rd_format.format) ? RD::DATA_FORMAT_MAX : imfmt.rd_format_srgb;
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX && RD::get_singleton()->texture_is_format_supported_for_usage(imfmt.rd_format_srgb, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+	}
+
+	texture.drawable_texture = memnew(DrawableTexture);
+	texture.drawable_texture->use_srgb = (RD::DataFormat)p_texture_format == imfmt.rd_format_srgb;
+	texture.drawable_texture->slices.resize(1);
+	texture.drawable_texture->slices[0].resize(mipmaps);
+	for (uint32_t i = 0; i < mipmaps; i++) {
+		texture.drawable_texture->slices[0][i] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture.rd_texture, 0, i);
+	}
+
+	texture_owner.initialize_rid(p_texture_drawable, texture);
+}
+
+void TextureStorage::texture_drawable_2d_layered_initialize(RID p_texture_drawable, int p_width, int p_height, int p_layers, RS::TextureLayeredType p_layered_type, RS::TextureDrawableFormat p_texture_format, bool p_use_mipmaps) {
+	ERR_FAIL_COND(p_layers <= 0);
+	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP && p_layers != 6);
+	ERR_FAIL_COND(p_layered_type == RS::TEXTURE_LAYERED_CUBEMAP_ARRAY && (p_layers < 6 || (p_layers % 6) != 0));
+
+	TextureFromRDFormat imfmt;
+	_texture_format_from_rd((RD::DataFormat)p_texture_format, imfmt);
+	ERR_FAIL_COND(imfmt.image_format == Image::FORMAT_MAX);
+
+	uint32_t mipmaps = 1 + (p_use_mipmaps ? (Image::get_image_required_mipmaps(p_width, p_height, imfmt.image_format)) : 0);
+
+	RD::TextureFormat rd_format;
+	rd_format.width = p_width;
+	rd_format.height = p_height;
+	rd_format.mipmaps = mipmaps;
+	rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+
+	rd_format.format = imfmt.rd_format;
+
+	Texture texture;
+	texture.type = TextureStorage::TYPE_LAYERED;
+	texture.width = p_width;
+	texture.height = p_height;
+	texture.layers = p_layers;
+	texture.mipmaps = mipmaps;
+	texture.depth = 1;
+	switch (p_layered_type) {
+		case RS::TEXTURE_LAYERED_2D_ARRAY: {
+			texture.rd_type = RD::TEXTURE_TYPE_2D_ARRAY;
+		} break;
+		case RS::TEXTURE_LAYERED_CUBEMAP: {
+			texture.rd_type = RD::TEXTURE_TYPE_CUBE;
+		} break;
+		case RS::TEXTURE_LAYERED_CUBEMAP_ARRAY: {
+			texture.rd_type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+		} break;
+		default:
+			ERR_FAIL(); // Shouldn't happen, silence warnings.
+	}
+	rd_format.texture_type = texture.rd_type;
+	rd_format.array_layers = texture.layers;
+
+	texture.format = imfmt.image_format;
+	texture.validated_format = imfmt.image_format;
+	texture.rd_format = imfmt.rd_format;
+	texture.rd_format_srgb = imfmt.rd_format_srgb;
+	texture.width_2d = texture.width;
+	texture.height_2d = texture.height;
+	texture.is_render_target = false;
+	texture.is_proxy = false;
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
+		rd_format.shareable_formats.push_back(texture.rd_format);
+		rd_format.shareable_formats.push_back(texture.rd_format_srgb);
+	}
+
+	RD::TextureView rd_view;
+	rd_view.format_override = (imfmt.rd_format == rd_format.format) ? RD::DATA_FORMAT_MAX : imfmt.rd_format;
+	rd_view.swizzle_r = imfmt.swizzle_r;
+	rd_view.swizzle_g = imfmt.swizzle_g;
+	rd_view.swizzle_b = imfmt.swizzle_b;
+	rd_view.swizzle_a = imfmt.swizzle_a;
+	texture.rd_view = rd_view;
+	ERR_FAIL_COND(!RD::get_singleton()->texture_is_format_supported_for_usage(imfmt.rd_format, rd_format.usage_bits));
+	texture.rd_texture = RD::get_singleton()->texture_create(rd_format, rd_view);
+
+	rd_view.format_override = (imfmt.rd_format_srgb == rd_format.format) ? RD::DATA_FORMAT_MAX : imfmt.rd_format_srgb;
+	if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX && RD::get_singleton()->texture_is_format_supported_for_usage(imfmt.rd_format_srgb, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		texture.rd_texture_srgb = RD::get_singleton()->texture_create_shared(rd_view, texture.rd_texture);
+	}
+
+	texture.drawable_texture = memnew(DrawableTexture);
+	texture.drawable_texture->use_srgb = (RD::DataFormat)p_texture_format == imfmt.rd_format_srgb;
+	texture.drawable_texture->slices.resize(p_layers);
+	for (int layer = 0; layer < p_layers; layer++) {
+		texture.drawable_texture->slices[layer].resize(mipmaps);
+		for (uint32_t i = 0; i < mipmaps; i++) {
+			texture.drawable_texture->slices[layer][i] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), texture.rd_texture, layer, i);
+		}
+	}
+
+	texture_owner.initialize_rid(p_texture_drawable, texture);
+}
+
+void TextureStorage::texture_drawable_generate_mipmaps(RID p_texture_drawable, int p_layer) {
+	ERR_FAIL_COND(!texture_owner.owns(p_texture_drawable));
+	RID rd_texture = texture_get_rd_texture(p_texture_drawable);
+	RD::TextureFormat tex_fmt = RD::get_singleton()->texture_get_format(rd_texture);
+	int mipmap_count = tex_fmt.mipmaps;
+	for (int i = 1; i < mipmap_count; i++) {
+		Size2i mipmap_size = Size2i(tex_fmt.width / (1 << i), tex_fmt.height / (1 << i)).maxi(1);
+		RID tex_src = texture_drawable_get_slice(p_texture_drawable, p_layer, i - 1);
+		RID tex_dst = texture_drawable_get_slice(p_texture_drawable, p_layer, i);
+
+		CopyEffects::get_singleton()->make_mipmap_raster(tex_src, tex_dst, mipmap_size);
+	}
+}
+
+bool TextureStorage::texture_drawable_is_srgb(RID p_texture_drawable) {
+	Texture *texture = texture_owner.get_or_null(p_texture_drawable);
+	ERR_FAIL_NULL_V(texture, false);
+	return texture->drawable_texture->use_srgb;
+}
+
+RID TextureStorage::texture_drawable_get_slice(RID p_texture_drawable, int p_layer, int p_mipmaps) {
+	Texture *texture = texture_owner.get_or_null(p_texture_drawable);
+	ERR_FAIL_NULL_V(texture, RID());
+	return texture->drawable_texture->slices[p_layer][p_mipmaps];
 }
 
 /* RENDER TARGET API */

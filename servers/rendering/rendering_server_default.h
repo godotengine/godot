@@ -171,6 +171,17 @@ public:
 		return ret;                                                                                                  \
 	}
 
+#define FUNCRIDTEX4(m_type, m_type1, m_type2, m_type3, m_type4)                                                          \
+	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4) override {                               \
+		RID ret = RSG::texture_storage->texture_allocate();                                                              \
+		if (Thread::get_caller_id() == server_thread || RSG::rasterizer->can_create_resources_async()) {                 \
+			RSG::texture_storage->m_type##_initialize(ret, p1, p2, p3, p4);                                              \
+		} else {                                                                                                         \
+			command_queue.push(RSG::texture_storage, &RendererTextureStorage::m_type##_initialize, ret, p1, p2, p3, p4); \
+		}                                                                                                                \
+		return ret;                                                                                                      \
+	}
+
 #define FUNCRIDTEX6(m_type, m_type1, m_type2, m_type3, m_type4, m_type5, m_type6)                                                \
 	virtual RID m_type##_create(m_type1 p1, m_type2 p2, m_type3 p3, m_type4 p4, m_type5 p5, m_type6 p6) override {               \
 		RID ret = RSG::texture_storage->texture_allocate();                                                                      \
@@ -232,6 +243,21 @@ public:
 	FUNCRIDTEX2(texture_rd, const RID &, const RS::TextureLayeredType)
 	FUNC2RC(RID, texture_get_rd_texture, RID, bool)
 	FUNC2RC(uint64_t, texture_get_native_handle, RID, bool)
+
+	/* TEXTURE DRAWABLE API */
+
+	FUNCRIDTEX4(texture_drawable_2d, int, int, RS::TextureDrawableFormat, bool);
+	FUNCRIDTEX6(texture_drawable_2d_layered, int, int, int, RS::TextureLayeredType, RS::TextureDrawableFormat, bool);
+	FUNC2(texture_drawable_generate_mipmaps, RID, int);
+
+#undef ServerName
+#undef server_name
+
+#define ServerName MeshRasterizer
+#define server_name RSG::mesh_rasterizer
+
+	FUNC7(texture_drawable_blit_mesh_advanced, RID, RID, RID, uint32_t, RS::TextureDrawableBlendMode, const Color &, int);
+	FUNC8(texture_drawable_blit_texture_rect_region, RID, RID, Rect2, Rect2, const Color &, TextureDrawableBlendMode, const Color &, int);
 
 	/* SHADER API */
 

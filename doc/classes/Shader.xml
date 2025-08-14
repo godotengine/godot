@@ -74,5 +74,7 @@
 		<constant name="MODE_FOG" value="4" enum="Mode">
 			Mode used for setting the color and density of volumetric fog effect.
 		</constant>
+		<constant name="MODE_MESH_RASTERIZER" value="5" enum="Mode">
+		</constant>
 	</constants>
 </class>

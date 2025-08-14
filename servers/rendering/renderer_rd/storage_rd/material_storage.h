@@ -33,7 +33,6 @@
 #include "texture_storage.h"
 
 #include "core/math/projection.h"
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
 #include "servers/rendering/shader_compiler.h"
@@ -51,6 +50,7 @@ public:
 		SHADER_TYPE_PARTICLES,
 		SHADER_TYPE_SKY,
 		SHADER_TYPE_FOG,
+		SHADER_TYPE_MESH_RASTERIZER,
 		SHADER_TYPE_MAX
 	};
 

@@ -39,6 +39,8 @@
 #include "servers/display_server.h"
 #include "servers/rendering/rendering_device.h"
 
+class RasterizerBlendState;
+
 // Helper macros for code outside of the rendering server, but that is
 // called by the rendering server.
 #ifdef DEBUG_ENABLED
@@ -218,7 +220,8 @@ public:
 		SHADER_PARTICLES,
 		SHADER_SKY,
 		SHADER_FOG,
-		SHADER_MAX
+		SHADER_MESH_RASTERIZER,
+		SHADER_MAX,
 	};
 
 	enum CullMode {
@@ -1174,6 +1177,37 @@ public:
 	virtual void viewport_set_vrs_update_mode(RID p_viewport, ViewportVRSUpdateMode p_mode) = 0;
 	virtual void viewport_set_vrs_texture(RID p_viewport, RID p_texture) = 0;
 
+	/* TEXTURE DRAWABLE API*/
+
+	enum TextureDrawableBlendMode {
+		TEXTURE_DRAWABLE_BLEND_CLEAR = -1,
+		TEXTURE_DRAWABLE_BLEND_DISABLED,
+		TEXTURE_DRAWABLE_BLEND_MIX,
+		TEXTURE_DRAWABLE_BLEND_ADD,
+		TEXTURE_DRAWABLE_BLEND_SUB,
+		TEXTURE_DRAWABLE_BLEND_MUL,
+		TEXTURE_DRAWABLE_BLEND_PREMULTIPLIED_ALPHA,
+	};
+
+	enum TextureDrawableFormat {
+		TEXTURE_DRAWABLE_FORMAT_R8 = RD::DATA_FORMAT_R8_UNORM,
+		TEXTURE_DRAWABLE_FORMAT_RH = RD::DATA_FORMAT_R16_SFLOAT,
+		TEXTURE_DRAWABLE_FORMAT_RF = RD::DATA_FORMAT_R32_SFLOAT,
+		TEXTURE_DRAWABLE_FORMAT_RG8 = RD::DATA_FORMAT_R8G8_UNORM,
+		TEXTURE_DRAWABLE_FORMAT_RGH = RD::DATA_FORMAT_R16G16_SFLOAT,
+		TEXTURE_DRAWABLE_FORMAT_RGF = RD::DATA_FORMAT_R32G32_SFLOAT,
+		TEXTURE_DRAWABLE_FORMAT_RGBA8_SRGB = RD::DATA_FORMAT_R8G8B8A8_SRGB,
+		TEXTURE_DRAWABLE_FORMAT_RGBA8 = RD::DATA_FORMAT_R8G8B8A8_UNORM,
+		TEXTURE_DRAWABLE_FORMAT_RGBAH = RD::DATA_FORMAT_R16G16B16A16_SFLOAT,
+		TEXTURE_DRAWABLE_FORMAT_RGBAF = RD::DATA_FORMAT_R32G32B32A32_SFLOAT
+	};
+
+	virtual RID texture_drawable_2d_create(int p_width, int p_height, TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual RID texture_drawable_2d_layered_create(int p_width, int p_height, int p_layers, TextureLayeredType p_layered_type, TextureDrawableFormat p_texture_format, bool p_use_mipmaps = false) = 0;
+	virtual void texture_drawable_blit_mesh_advanced(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color, int p_layer = 0) = 0;
+	virtual void texture_drawable_blit_texture_rect_region(RID p_texture_drawable, RID p_source_texture, Rect2 p_dst_rect, Rect2 p_src_rect, const Color &p_modulate, TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color, int p_layer = 0) = 0;
+	virtual void texture_drawable_generate_mipmaps(RID p_texture_drawable, int p_layer = 0) = 0;
+
 	/* SKY API */
 
 	enum SkyMode {
@@ -1956,6 +1990,8 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportSDFOversize);
 VARIANT_ENUM_CAST(RenderingServer::ViewportSDFScale);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportVRSUpdateMode);
+VARIANT_ENUM_CAST(RenderingServer::TextureDrawableBlendMode);
+VARIANT_ENUM_CAST(RenderingServer::TextureDrawableFormat);
 VARIANT_ENUM_CAST(RenderingServer::SkyMode);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectCallbackType);
 VARIANT_ENUM_CAST(RenderingServer::CompositorEffectFlags);

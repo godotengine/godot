@@ -69,6 +69,7 @@ public:
 	void copy_cube_to_panorama(float p_mip_level);
 	void bilinear_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region);
 	void gaussian_blur(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size);
+	void gaussian_blur_layer(GLuint p_source_texture, int p_mipmap_count, const Rect2i &p_region, const Size2i &p_size, int p_layer);
 	void set_color(const Color &p_color, const Rect2i &p_region);
 	void draw_screen_triangle();
 	void draw_screen_quad();

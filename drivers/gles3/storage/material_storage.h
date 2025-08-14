@@ -40,6 +40,7 @@
 #include "servers/rendering/storage/utilities.h"
 
 #include "drivers/gles3/shaders/canvas.glsl.gen.h"
+#include "drivers/gles3/shaders/mesh_rasterizer.glsl.gen.h"
 #include "drivers/gles3/shaders/particles.glsl.gen.h"
 #include "drivers/gles3/shaders/scene.glsl.gen.h"
 #include "drivers/gles3/shaders/sky.glsl.gen.h"
@@ -423,6 +424,57 @@ struct ParticleProcessMaterialData : public MaterialData {
 
 MaterialData *_create_particles_material_func(ShaderData *p_shader);
 
+struct MeshRasterizerShaderData : public ShaderData {
+	RID version;
+
+	int cull_modei = RS::CULL_MODE_BACK;
+
+	bool valid = false;
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size = 0;
+
+	bool uses_normal;
+	bool uses_tangent;
+	bool uses_color;
+	bool uses_uv;
+	bool uses_uv2;
+	bool uses_custom0;
+	bool uses_custom1;
+	bool uses_custom2;
+	bool uses_custom3;
+	bool uses_bones;
+	bool uses_weights;
+
+	uint64_t vertex_input_mask;
+
+	String code;
+
+	virtual void set_code(const String &p_code);
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	virtual ~MeshRasterizerShaderData();
+};
+
+ShaderData *_create_mesh_rasterizer_shader_func();
+
+struct MeshRasterizerMaterialData : public MaterialData {
+	MeshRasterizerShaderData *shader_data = nullptr;
+	RID material_uniforms;
+	RID material_uniforms_srgb;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+
+	virtual ~MeshRasterizerMaterialData();
+};
+
+MaterialData *_create_mesh_rasterizer_material_func(ShaderData *p_shader);
+
 /* Global shader uniform structs */
 struct GlobalShaderUniforms {
 	enum {
@@ -560,11 +612,13 @@ public:
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
 		ParticlesShaderGLES3 particles_process_shader;
+		MeshRasterizerShaderGLES3 mesh_rasterizer_shader;
 
 		ShaderCompiler compiler_canvas;
 		ShaderCompiler compiler_scene;
 		ShaderCompiler compiler_particles;
 		ShaderCompiler compiler_sky;
+		ShaderCompiler compiler_mesh_rasterizer;
 	} shaders;
 
 	/* GLOBAL SHADER UNIFORM API */

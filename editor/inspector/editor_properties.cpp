@@ -57,6 +57,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/rasterized_mesh_texture.h"
 #include "scene/resources/visual_shader_nodes.h"
 
 ///////////////////// NIL /////////////////////////
@@ -3360,6 +3361,8 @@ void EditorPropertyResource::_update_preferred_shader() {
 			shader_picker->set_preferred_mode(Shader::MODE_SPATIAL);
 		} else if (Object::cast_to<Sky>(ed_object)) {
 			shader_picker->set_preferred_mode(Shader::MODE_SKY);
+		} else if (Object::cast_to<RasterizedMeshTexture>(ed_object)) {
+			shader_picker->set_preferred_mode(Shader::MODE_MESH_RASTERIZER);
 		}
 	}
 }

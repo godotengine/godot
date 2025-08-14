@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RasterizedMeshTexture" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="force_draw">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clear_color" type="Color" setter="set_clear_color" getter="get_clear_color" default="Color(0, 0, 0, 0)">
+		</member>
+		<member name="generate_mipmaps" type="bool" setter="set_generate_mipmaps" getter="is_generating_mipmaps" default="false">
+		</member>
+		<member name="height" type="int" setter="set_height" getter="get_height" default="256">
+		</member>
+		<member name="material" type="Material" setter="set_material" getter="get_material">
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+		<member name="surface_index" type="int" setter="set_surface_index" getter="get_surface_index" default="0">
+		</member>
+		<member name="texture_format" type="int" setter="set_texture_format" getter="get_texture_format" enum="RenderingServer.TextureDrawableFormat" default="36">
+		</member>
+		<member name="width" type="int" setter="set_width" getter="get_width" default="256">
+		</member>
+	</members>
+</class>

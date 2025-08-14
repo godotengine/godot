@@ -233,13 +233,15 @@ void RenderingServerDefault::_init() {
 	RSG::fog = RSG::rasterizer->get_fog();
 	RSG::canvas_render = RSG::rasterizer->get_canvas();
 	sr->set_scene_render(RSG::rasterizer->get_scene());
+	RSG::mesh_rasterizer = RSG::rasterizer->get_mesh_rasterizer();
+	RSG::mesh_rasterizer->initialize();
 }
 
 void RenderingServerDefault::_finish() {
 	if (test_cube.is_valid()) {
 		free(test_cube);
 	}
-
+	RSG::mesh_rasterizer->finalize();
 	RSG::canvas->finalize();
 	memdelete(RSG::canvas);
 	RSG::rasterizer->finalize();

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rendering_server_globals.h                                            */
+/*  mesh_rasterizer_gles3.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -29,46 +29,19 @@
 /**************************************************************************/
 
 #pragma once
-
-#include "servers/rendering/environment/renderer_fog.h"
-#include "servers/rendering/environment/renderer_gi.h"
-#include "servers/rendering/renderer_canvas_cull.h"
-#include "servers/rendering/renderer_canvas_render.h"
-#include "servers/rendering/rendering_method.h"
-#include "servers/rendering/storage/camera_attributes_storage.h"
-#include "servers/rendering/storage/light_storage.h"
-#include "servers/rendering/storage/material_storage.h"
 #include "servers/rendering/storage/mesh_rasterizer.h"
-#include "servers/rendering/storage/mesh_storage.h"
-#include "servers/rendering/storage/particles_storage.h"
-#include "servers/rendering/storage/texture_storage.h"
-#include "servers/rendering/storage/utilities.h"
 
-class RendererCanvasCull;
-class RendererViewport;
-class RenderingMethod;
+namespace GLES3 {
 
-class RenderingServerGlobals {
-public:
-	static bool threaded;
-
-	static RendererUtilities *utilities;
-	static RendererLightStorage *light_storage;
-	static RendererMaterialStorage *material_storage;
-	static RendererMeshStorage *mesh_storage;
-	static RendererParticlesStorage *particles_storage;
-	static RendererTextureStorage *texture_storage;
-	static RendererGI *gi;
-	static RendererFog *fog;
-	static RendererCameraAttributes *camera_attributes;
-	static RendererCanvasRender *canvas_render;
-	static RendererCompositor *rasterizer;
-
-	static RendererCanvasCull *canvas;
-	static RendererViewport *viewport;
-	static RenderingMethod *scene;
-
-	static MeshRasterizer *mesh_rasterizer;
+enum MeshRasterizerUniformLocation {
+	MESH_RASTERIZER_GLOBALS_UNIFORM_LOCATION,
+	MESH_RASTERIZER_MATERIAL_UNIFORM_LOCATION,
 };
 
-#define RSG RenderingServerGlobals
+class MeshRasterizerGLES3 : public MeshRasterizer {
+public:
+	void texture_drawable_blit_mesh_advanced(RID p_texture_drawable, RID p_material, RID p_mesh, uint32_t p_surface_index, RS::TextureDrawableBlendMode p_blend_mode, const Color &p_clear_color, int p_layer = 0) override;
+
+	MeshRasterizerGLES3();
+};
+} //namespace GLES3

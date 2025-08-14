@@ -39,6 +39,7 @@
 #include "servers/rendering/dummy/rasterizer_scene_dummy.h"
 #include "servers/rendering/dummy/storage/light_storage.h"
 #include "servers/rendering/dummy/storage/material_storage.h"
+#include "servers/rendering/dummy/storage/mesh_rasterizer.h"
 #include "servers/rendering/dummy/storage/mesh_storage.h"
 #include "servers/rendering/dummy/storage/particles_storage.h"
 #include "servers/rendering/dummy/storage/texture_storage.h"
@@ -63,9 +64,11 @@ protected:
 	RendererDummy::GI gi;
 	RendererDummy::Fog fog;
 	RasterizerSceneDummy scene;
+	RendererDummy::MeshRasterizerDummy mesh_rasterizer;
 
 public:
-	RendererUtilities *get_utilities() override { return &utilities; }
+	RendererUtilities *
+	get_utilities() override { return &utilities; }
 	RendererLightStorage *get_light_storage() override { return &light_storage; }
 	RendererMaterialStorage *get_material_storage() override { return &material_storage; }
 	RendererMeshStorage *get_mesh_storage() override { return &mesh_storage; }
@@ -75,6 +78,7 @@ public:
 	RendererFog *get_fog() override { return &fog; }
 	RendererCanvasRender *get_canvas() override { return &canvas; }
 	RendererSceneRender *get_scene() override { return &scene; }
+	MeshRasterizer *get_mesh_rasterizer() override { return &mesh_rasterizer; }
 
 	void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) override {}
 
