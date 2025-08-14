@@ -1271,22 +1271,22 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 		}
 	}
 
+	Plane sort_plane = near_plane; // Shared by orthogonal and custom axis. Depth uses camera position.
+	if (p_render_data->transparency_sort_mode == RS::TRANSPARENCY_SORT_CUSTOM_AXIS) {
+		sort_plane.normal = -p_render_data->transparency_sort_axis;
+	}
 	//fill list
 
 	for (int i = 0; i < (int)p_render_data->instances->size(); i++) {
 		GeometryInstanceGLES3 *inst = static_cast<GeometryInstanceGLES3 *>((*p_render_data->instances)[i]);
 
-		Vector3 center = inst->transform.origin;
-		if (p_render_data->cam_orthogonal) {
-			if (inst->use_aabb_center) {
-				center = inst->transformed_aabb.get_support(-near_plane.normal);
-			}
-			inst->depth = near_plane.distance_to(center) - inst->sorting_offset;
-		} else {
-			if (inst->use_aabb_center) {
-				center = inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5);
-			}
+		if (p_render_data->transparency_sort_mode == RS::TRANSPARENCY_SORT_DEPTH && !p_render_data->cam_orthogonal) {
+			Vector3 center = inst->use_aabb_center ? inst->transformed_aabb.get_center() : inst->transform.origin;
 			inst->depth = p_render_data->cam_transform.origin.distance_to(center) - inst->sorting_offset;
+		} else {
+			// Intentionally uses support despite the name for compatibility reasons.
+			Vector3 sort_position = inst->use_aabb_center ? inst->transformed_aabb.get_support(-sort_plane.normal) : inst->transform.origin;
+			inst->depth = sort_plane.distance_to(sort_position) - inst->sorting_offset;
 		}
 		uint32_t depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
 
@@ -2295,6 +2295,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		render_data.z_near = p_camera_data->main_projection.get_z_near();
 		render_data.z_far = p_camera_data->main_projection.get_z_far();
+		render_data.transparency_sort_mode = p_camera_data->transparency_sort_mode;
+		render_data.transparency_sort_axis = p_camera_data->transparency_sort_axis;
 
 		render_data.instances = &p_instances;
 		render_data.lights = &p_lights;
