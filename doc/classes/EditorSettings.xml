@@ -1056,6 +1056,9 @@
 		<member name="interface/multi_window/restore_windows_on_load" type="bool" setter="" getter="">
 			If [code]true[/code], the floating panel position, size, and screen will be saved on editor exit. On next launch the panels that were floating will be made floating in the saved positions, sizes and screens, if possible.
 		</member>
+		<member name="interface/scene_tabs/auto_nav_in_file_system" type="bool" setter="" getter="">
+			If [code]true[/code], FileSystem will automatically navigate to the currently selected scene tab.
+		</member>
 		<member name="interface/scene_tabs/display_close_button" type="int" setter="" getter="">
 			Controls when the Close (X) button is displayed on scene tabs at the top of the editor.
 		</member>
@@ -1071,9 +1074,6 @@
 		</member>
 		<member name="interface/scene_tabs/show_thumbnail_on_hover" type="bool" setter="" getter="">
 			If [code]true[/code], display an automatically-generated thumbnail when hovering scene tabs with the mouse. Scene thumbnails are generated when saving the scene.
-		</member>
-		<member name="interface/scene_tabs/auto_nav_in_file_system" type="bool" setter="" getter="">
-			If [code]true[/code], FileSystem will automatically navigate to the currently selected scene tab.
 		</member>
 		<member name="interface/theme/accent_color" type="Color" setter="" getter="">
 			The color to use for "highlighted" user interface elements in the editor (pressed and hovered items).
