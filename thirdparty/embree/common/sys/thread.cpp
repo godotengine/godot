@@ -442,8 +442,8 @@ namespace embree
 #elif defined(__OPEN_HARMONY__)
     FATAL("Can't destroy threads on OpenHarmony."); // pthread_cancel not implemented.
 #else
-    pthread_cancel(*(pthread_t *)tid);
-    delete (pthread_t *)tid;
+    pthread_cancel(*(pthread_t*)tid);
+    delete (pthread_t*)tid;
 #endif
   }
 
