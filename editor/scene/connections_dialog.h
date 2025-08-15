@@ -159,7 +159,7 @@ private:
 
 	void _unbind_count_changed(double p_count);
 	void _add_bind();
-	void _remove_bind();
+	void _remove_bind(const String &p_bind);
 	void _advanced_pressed();
 	void _update_ok_enabled();
 	void _update_warning_label();
