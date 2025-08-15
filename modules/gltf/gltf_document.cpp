@@ -4353,6 +4353,7 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 }
 
 Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<Texture2D>(), "glTF import: Tried to read texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
 	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
@@ -4392,7 +4393,8 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_sta
 }
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<GLTFTextureSampler>(), "glTF import: Tried to read sampler for texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
+	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<GLTFTextureSampler>());
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
 
 	if (sampler == -1) {
@@ -4850,10 +4852,13 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, bct["index"]);
-					material->set_texture_filter(bct_sampler->get_filter_mode());
-					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+					const GLTFTextureIndex base_color_texture_index = bct["index"];
+					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, base_color_texture_index, TEXTURE_TYPE_GENERIC));
+					const Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, base_color_texture_index);
+					if (bct_sampler.is_valid()) {
+						material->set_texture_filter(bct_sampler->get_filter_mode());
+						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
+					}
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
