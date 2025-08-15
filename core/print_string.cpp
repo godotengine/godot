@@ -38,6 +38,41 @@ static PrintHandlerList *print_handler_list = nullptr;
 bool _print_line_enabled = true;
 bool _print_error_enabled = true;
 
+const char *TerminalColor::_terminal_color_strings[] = {
+	"\033[0m",
+
+	"\033[30m",
+	"\033[31m",
+	"\033[32m",
+	"\033[33m",
+	"\033[34m",
+	"\033[35m",
+	"\033[36m",
+	"\033[37m",
+
+	"\033[90m",
+	"\033[91m",
+	"\033[92m",
+	"\033[93m",
+	"\033[94m",
+	"\033[95m",
+	"\033[96m",
+	"\033[97m",
+
+	"\033[40m",
+	"\033[41m",
+	"\033[42m",
+	"\033[43m",
+	"\033[44m",
+	"\033[45m",
+	"\033[46m",
+	"\033[47m",
+
+	"\033[1m",
+	"\033[3m",
+	"\033[4m"
+};
+
 void add_print_handler(PrintHandlerList *p_handler) {
 	_global_lock();
 	p_handler->next = print_handler_list;

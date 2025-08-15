@@ -38,6 +38,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "gdscript_compiler.h"
+#include "gdscript_optimizer.h"
 
 ///////////////////////////
 
@@ -611,6 +612,11 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
+	GDScriptOptimizer optimizer;
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		optimizer.optimize(parser, path, parser.requests_optimization());
+	}
+
 	bool can_run = ScriptServer::is_scripting_enabled() || parser.is_tool_script();
 
 	GDScriptCompiler compiler;
@@ -622,6 +628,11 @@ Error GDScript::reload(bool p_keep_state) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), compiler.get_error_line(), "Parser Error: " + compiler.get_error());
 			}
 			_err_print_error("GDScript::reload", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
+
+			if (!Engine::get_singleton()->is_editor_hint() && parser.requests_optimization()) {
+				optimizer.generate_error_report(parser);
+			}
+
 			return ERR_COMPILATION_FAILED;
 		} else {
 			return err;
@@ -673,6 +684,7 @@ Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p
 		Map<StringName, GDScriptFunction *>::Element *E = top->member_functions.find(p_method);
 		if (E) {
 			ERR_FAIL_COND_V_MSG(!E->get()->is_static(), Variant(), "Can't call non-static function '" + String(p_method) + "' in script.");
+			ERR_FAIL_COND_V_MSG(E->get()->is_inline() && (top != this), Variant(), "Can't call inline function '" + String(p_method) + "' from a different script.");
 
 			return E->get()->call(nullptr, p_args, p_argcount, r_error);
 		}
@@ -796,11 +808,21 @@ Error GDScript::load_byte_code(const String &p_path) {
 		ERR_FAIL_V(ERR_PARSE_ERROR);
 	}
 
+	GDScriptOptimizer optimizer;
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		optimizer.optimize(parser, path, parser.requests_optimization());
+	}
+
 	GDScriptCompiler compiler;
 	err = compiler.compile(&parser, this);
 
 	if (err) {
 		_err_print_error("GDScript::load_byte_code", path.empty() ? "built-in" : (const char *)path.utf8().get_data(), compiler.get_error_line(), ("Compile Error: " + compiler.get_error()).utf8().get_data(), ERR_HANDLER_SCRIPT);
+
+		if (!Engine::get_singleton()->is_editor_hint() && parser.requests_optimization()) {
+			optimizer.generate_error_report(parser);
+		}
+
 		ERR_FAIL_V(ERR_COMPILATION_FAILED);
 	}
 
@@ -1214,6 +1236,11 @@ Variant GDScriptInstance::call(const StringName &p_method, const Variant **p_arg
 	while (sptr) {
 		Map<StringName, GDScriptFunction *>::Element *E = sptr->member_functions.find(p_method);
 		if (E) {
+#ifdef TOOLS_ENABLED
+			// Technically we *can* call inlines from another script, however this would result in inconsistent behaviour
+			// depending on whether the function was inlined or not, so we enforce this.
+			ERR_FAIL_COND_V_MSG(E->get()->is_inline() && (sptr != script.ptr()), Variant(), "Can't call inline function '" + String(p_method) + "' from a different script.");
+#endif
 			return E->get()->call(this, p_args, p_argcount, r_error);
 		}
 		sptr = sptr->_base;
@@ -1798,6 +1825,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"export",
 		"onready",
 		"static",
+		"inline",
+		"unroll",
 		"var",
 		// control flow
 		"break",
@@ -2162,6 +2191,15 @@ GDScriptLanguage::GDScriptLanguage() {
 		GLOBAL_DEF("debug/gdscript/warnings/" + warning, default_enabled);
 	}
 #endif // DEBUG_ENABLED
+
+	GDScriptOptimizer::active_optimization = GLOBAL_DEF("scripting/gdscript/general/optimization", true);
+	GDScriptOptimizer::active_inlining = GLOBAL_DEF("scripting/gdscript/optimization/inlining", true);
+	GDScriptOptimizer::active_LICM = GLOBAL_DEF("scripting/gdscript/optimization/LICM", true);
+	GDScriptOptimizer::active_remove_unused = GLOBAL_DEF("scripting/gdscript/optimization/unused", true);
+	GDScriptOptimizer::active_constant_folding = GLOBAL_DEF("scripting/gdscript/optimization/constant_folding", true);
+	GDScriptOptimizer::active_unrolling = GLOBAL_DEF("scripting/gdscript/optimization/loop_unrolling", true);
+	GDScriptOptimizer::active_logging_level = GLOBAL_DEF("scripting/gdscript/debug/logging_level", 2); // 2 should be default.
+	ProjectSettings::get_singleton()->set_custom_property_info("scripting/gdscript/debug/logging_level", PropertyInfo(Variant::INT, "scripting/gdscript/debug/logging_level", PROPERTY_HINT_RANGE, "0,5,1"));
 }
 
 GDScriptLanguage::~GDScriptLanguage() {
