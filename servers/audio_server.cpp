@@ -214,6 +214,9 @@ void AudioDriverManager::initialize(int p_driver) {
 	GLOBAL_DEF_RST("audio/driver/enable_input", false);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate", PROPERTY_HINT_RANGE, "11025,192000,1,or_greater,suffix:Hz"), DEFAULT_MIX_RATE);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/mix_rate.web", PROPERTY_HINT_RANGE, "0,192000,1,or_greater,suffix:Hz"), 0); // Safer default output_latency for web (use browser default).
+	GLOBAL_DEF_RST("audio/driver/override_channels", false);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/driver/override_speaker_channels", PROPERTY_HINT_RANGE, "2,8,1"), 8);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "audio/driver/override_channel_out", PROPERTY_HINT_RANGE, "0,6,1"), 0);
 
 	int failed_driver = -1;
 
