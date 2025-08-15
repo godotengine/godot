@@ -1073,6 +1073,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_soft_body_get_point_radius" qualifiers="virtual required const">
+			<return type="float" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_soft_body_get_pressure_coefficient" qualifiers="virtual required const">
 			<return type="float" />
 			<param index="0" name="body" type="RID" />
@@ -1185,6 +1191,13 @@
 			<return type="void" />
 			<param index="0" name="body" type="RID" />
 			<param index="1" name="mesh" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_soft_body_set_point_radius" qualifiers="virtual required">
+			<return type="void" />
+			<param index="0" name="body" type="RID" />
+			<param index="1" name="radius" type="float" />
 			<description>
 			</description>
 		</method>

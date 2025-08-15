@@ -346,6 +346,9 @@ void SoftBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_simulation_precision", "simulation_precision"), &SoftBody3D::set_simulation_precision);
 	ClassDB::bind_method(D_METHOD("get_simulation_precision"), &SoftBody3D::get_simulation_precision);
 
+	ClassDB::bind_method(D_METHOD("set_point_radius", "radius"), &SoftBody3D::set_point_radius);
+	ClassDB::bind_method(D_METHOD("get_point_radius"), &SoftBody3D::get_point_radius);
+
 	ClassDB::bind_method(D_METHOD("set_total_mass", "mass"), &SoftBody3D::set_total_mass);
 	ClassDB::bind_method(D_METHOD("get_total_mass"), &SoftBody3D::get_total_mass);
 
@@ -383,6 +386,7 @@ void SoftBody3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "parent_collision_ignore", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "CollisionObject3D"), "set_parent_collision_ignore", "get_parent_collision_ignore");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "simulation_precision", PROPERTY_HINT_RANGE, "1,100,1"), "set_simulation_precision", "get_simulation_precision");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "point_radius", PROPERTY_HINT_RANGE, "0.0,1.0,0.0001,or_greater"), "set_point_radius", "get_point_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "total_mass", PROPERTY_HINT_RANGE, "0.01,10000,1"), "set_total_mass", "get_total_mass");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "linear_stiffness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_linear_stiffness", "get_linear_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "shrinking_factor", PROPERTY_HINT_RANGE, "-1,1,0.01,or_less,or_greater"), "set_shrinking_factor", "get_shrinking_factor");
@@ -634,6 +638,14 @@ int SoftBody3D::get_simulation_precision() {
 
 void SoftBody3D::set_simulation_precision(int p_simulation_precision) {
 	PhysicsServer3D::get_singleton()->soft_body_set_simulation_precision(physics_rid, p_simulation_precision);
+}
+
+real_t SoftBody3D::get_point_radius() {
+	return PhysicsServer3D::get_singleton()->soft_body_get_point_radius(physics_rid);
+}
+
+void SoftBody3D::set_point_radius(real_t p_radius) {
+	PhysicsServer3D::get_singleton()->soft_body_set_point_radius(physics_rid, p_radius);
 }
 
 real_t SoftBody3D::get_total_mass() {
