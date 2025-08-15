@@ -187,7 +187,18 @@ bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
 	return true;
 }
 
+bool GDScriptFunctionState::warn_on_cross_thread_await = true;
+
+void GDScriptFunctionState::set_warn_on_cross_thread_await(bool p_enable) {
+	warn_on_cross_thread_await = p_enable;
+}
+
 Variant GDScriptFunctionState::resume(const Variant &p_arg) {
+#ifdef DEBUG_ENABLED
+	if (warn_on_cross_thread_await && await_id != Thread::get_caller_id()) {
+		WARN_PRINT("Function " + function->get_name() + " was resumed on a different thread than it was awaited. If you really intend to do this, Use Thread.suspend() for cross thread suspension or disable the 'warn_on_cross_thread_await' warning on project settings.");
+	}
+#endif
 	ERR_FAIL_NULL_V(function, Variant());
 	{
 		MutexLock lock(GDScriptLanguage::singleton->mutex);

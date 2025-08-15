@@ -49,6 +49,7 @@
 #include "tests/test_gdscript.h"
 #endif
 
+#include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 
@@ -152,6 +153,8 @@ void initialize_gdscript_module(ModuleInitializationLevel p_level) {
 		gdscript_cache = memnew(GDScriptCache);
 
 		GDScriptUtilityFunctions::register_functions();
+
+		GDScriptFunctionState::set_warn_on_cross_thread_await(GLOBAL_DEF("threading/warnings/warn_on_cross_thread_await", true));
 	}
 
 #ifdef TOOLS_ENABLED
