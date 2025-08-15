@@ -69,6 +69,10 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base_path", "base_path"), &GLTFState::set_base_path);
 	ClassDB::bind_method(D_METHOD("get_filename"), &GLTFState::get_filename);
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &GLTFState::set_filename);
+	ClassDB::bind_method(D_METHOD("is_text_gltf"), &GLTFState::is_text_gltf);
+	ClassDB::bind_method(D_METHOD("get_external_data_mode"), &GLTFState::get_external_data_mode);
+	ClassDB::bind_method(D_METHOD("set_external_data_mode", "mode"), &GLTFState::set_external_data_mode);
+	ClassDB::bind_method(D_METHOD("should_separate_resource_files"), &GLTFState::should_separate_resource_files);
 	ClassDB::bind_method(D_METHOD("get_root_nodes"), &GLTFState::get_root_nodes);
 	ClassDB::bind_method(D_METHOD("set_root_nodes", "root_nodes"), &GLTFState::set_root_nodes);
 	ClassDB::bind_method(D_METHOD("get_textures"), &GLTFState::get_textures);
@@ -99,8 +103,8 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_node_index", "scene_node"), &GLTFState::get_node_index);
 	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFState::get_additional_data);
 	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFState::set_additional_data);
-	ClassDB::bind_method(D_METHOD("get_handle_binary_image"), &GLTFState::get_handle_binary_image);
-	ClassDB::bind_method(D_METHOD("set_handle_binary_image", "method"), &GLTFState::set_handle_binary_image);
+	ClassDB::bind_method(D_METHOD("get_handle_binary_image_mode"), &GLTFState::get_handle_binary_image_mode);
+	ClassDB::bind_method(D_METHOD("set_handle_binary_image_mode", "method"), &GLTFState::set_handle_binary_image_mode);
 	ClassDB::bind_method(D_METHOD("set_bake_fps", "value"), &GLTFState::set_bake_fps);
 	ClassDB::bind_method(D_METHOD("get_bake_fps"), &GLTFState::get_bake_fps);
 
@@ -132,9 +136,25 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "import_as_skeleton_bones"), "set_import_as_skeleton_bones", "get_import_as_skeleton_bones"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_handle_binary_image", "get_handle_binary_image"); // enum
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "external_data_mode", PROPERTY_HINT_ENUM, "Automatic,Embed Everything,Separate All Files,Separate Binary Blobs,Separate Resource Files"), "set_external_data_mode", "get_external_data_mode"); // enum
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image_mode", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed"), "set_handle_binary_image_mode", "get_handle_binary_image_mode"); // enum
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_fps"), "set_bake_fps", "get_bake_fps");
 
+	BIND_ENUM_CONSTANT(EXTERNAL_DATA_MODE_AUTOMATIC);
+	BIND_ENUM_CONSTANT(EXTERNAL_DATA_MODE_EMBED_EVERYTHING);
+	BIND_ENUM_CONSTANT(EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES);
+	BIND_ENUM_CONSTANT(EXTERNAL_DATA_MODE_SEPARATE_BINARY_BLOBS);
+	BIND_ENUM_CONSTANT(EXTERNAL_DATA_MODE_SEPARATE_RESOURCE_FILES);
+
+	BIND_ENUM_CONSTANT(HANDLE_BINARY_IMAGE_MODE_DISCARD_TEXTURES);
+	BIND_ENUM_CONSTANT(HANDLE_BINARY_IMAGE_MODE_EXTRACT_TEXTURES);
+	BIND_ENUM_CONSTANT(HANDLE_BINARY_IMAGE_MODE_EMBED_AS_BASISU);
+	BIND_ENUM_CONSTANT(HANDLE_BINARY_IMAGE_MODE_EMBED_AS_UNCOMPRESSED);
+
+	// Deprecated non-type-safe versions for backward compatibility, remove in Godot 5.0.
+	ClassDB::bind_method(D_METHOD("get_handle_binary_image"), &GLTFState::get_handle_binary_image);
+	ClassDB::bind_method(D_METHOD("set_handle_binary_image", "method"), &GLTFState::set_handle_binary_image);
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_INTERNAL), "set_handle_binary_image", "get_handle_binary_image"); // enum as int
 	BIND_CONSTANT(HANDLE_BINARY_DISCARD_TEXTURES);
 	BIND_CONSTANT(HANDLE_BINARY_EXTRACT_TEXTURES);
 	BIND_CONSTANT(HANDLE_BINARY_EMBED_AS_BASISU);
@@ -429,6 +449,35 @@ void GLTFState::set_filename(const String &p_filename) {
 	if (extract_prefix.is_empty()) {
 		extract_prefix = p_filename.get_basename();
 	}
+}
+
+bool GLTFState::is_text_gltf() const {
+	return filename.to_lower().ends_with(".gltf");
+}
+
+bool GLTFState::should_separate_binary_blobs() const {
+	if (external_data_mode == EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES || external_data_mode == EXTERNAL_DATA_MODE_SEPARATE_BINARY_BLOBS) {
+		ERR_FAIL_COND_V_MSG(base_path.is_empty(), false, "glTF: No base path is set, cannot separate binary blob files.");
+		return true;
+	}
+	if (external_data_mode == EXTERNAL_DATA_MODE_EMBED_EVERYTHING || external_data_mode == EXTERNAL_DATA_MODE_SEPARATE_RESOURCE_FILES) {
+		return false;
+	}
+	// EXTERNAL_DATA_MODE_AUTOMATIC embeds everything for binary files (.glb, .vrm),
+	// byte arrays in memory (no extension), and when there is no base path set,
+	// but separates for text files (.gltf) when the base path is valid.
+	return is_text_gltf() && !base_path.is_empty();
+}
+
+bool GLTFState::should_separate_resource_files() const {
+	if (external_data_mode == EXTERNAL_DATA_MODE_SEPARATE_ALL_FILES || external_data_mode == EXTERNAL_DATA_MODE_SEPARATE_RESOURCE_FILES) {
+		ERR_FAIL_COND_V_MSG(base_path.is_empty(), false, "glTF: No base path is set, cannot separate resource files.");
+		return true;
+	}
+	if (external_data_mode == EXTERNAL_DATA_MODE_EMBED_EVERYTHING || external_data_mode == EXTERNAL_DATA_MODE_SEPARATE_BINARY_BLOBS) {
+		return false;
+	}
+	return is_text_gltf() && !base_path.is_empty();
 }
 
 Variant GLTFState::get_additional_data(const StringName &p_extension_name) {
