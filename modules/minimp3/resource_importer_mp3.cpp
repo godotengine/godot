@@ -108,7 +108,10 @@ Error ResourceImporterMP3::import(ResourceUID::ID p_source_id, const String &p_s
 
 	mp3_stream->set_loop(loop);
 	mp3_stream->set_loop_offset(loop_offset);
-	mp3_stream->set_bpm(bpm);
+	// MP3 BPM can be set from metadata tags, so overwrite it only if the option is set.
+	if (bpm > 0.0) {
+		mp3_stream->set_bpm(bpm);
+	}
 	mp3_stream->set_beat_count(beat_count);
 	mp3_stream->set_bar_beats(bar_beats);
 
