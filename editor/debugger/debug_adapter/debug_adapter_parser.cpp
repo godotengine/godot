@@ -184,6 +184,20 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 	return Dictionary();
 }
 
+Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &p_args) const {
+	Vector<String> play_args;
+	if (p_args.has("playArgs")) {
+		Variant v = p_args["playArgs"];
+		if (v.get_type() == Variant::ARRAY) {
+			Array arr = v;
+			for (const Variant &arg : arr) {
+				play_args.push_back(String(arg));
+			}
+		}
+	}
+	return play_args;
+}
+
 Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
@@ -193,7 +207,15 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 
 	String platform_string = args.get("platform", "host");
 	if (platform_string == "host") {
-		EditorRunBar::get_singleton()->play_main_scene();
+		Vector<String> play_args = _extract_play_arguments(args);
+		const String scene = args.get("scene", "main");
+		if (scene == "main") {
+			EditorRunBar::get_singleton()->play_main_scene(false, play_args);
+		} else if (scene == "current") {
+			EditorRunBar::get_singleton()->play_current_scene(false, play_args);
+		} else {
+			EditorRunBar::get_singleton()->play_custom_scene(scene, play_args);
+		}
 	} else {
 		int device = args.get("device", -1);
 		int idx = -1;
