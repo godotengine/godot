@@ -1731,12 +1731,43 @@
 				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will not include other application windows or OS elements not related to the application.
 			</description>
 		</method>
+		<method name="screen_get_max_full_frame_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the maximum full screen luminance of [param screen] in nits (cd/m²).
+				Some displays support brighter luminance in small areas, but this is the maximum luminance that can be achieved across the entire screen.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
+				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
+			</description>
+		</method>
+		<method name="screen_get_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the maximum luminance of a pixel on [param screen] in nits (cd/m²).
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
+				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
+			</description>
+		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
 				Returns the greatest scale factor of all screens.
 				[b]Note:[/b] On macOS returned value is [code]2.0[/code] if there is at least one hiDPI (Retina) screen in the system, and [code]1.0[/code] in all other cases.
 				[b]Note:[/b] This method is implemented only on macOS.
+			</description>
+		</method>
+		<method name="screen_get_min_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the minimum luminance of a pixel on [param screen] in nits (cd/m²).
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
+				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
 			</description>
 		</method>
 		<method name="screen_get_orientation" qualifiers="const">
@@ -1800,6 +1831,16 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland). On other platforms, this method always returns [code]1.0[/code].
 			</description>
 		</method>
+		<method name="screen_get_sdr_white_level" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns the standard dynamic range (SDR) white level of [param screen] in nits (cd/m²).
+				This is the maximum brightness SDR content (such as UI) should be rendered at to match other applications on the display.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
+			</description>
+		</method>
 		<method name="screen_get_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
@@ -1815,6 +1856,17 @@
 				Returns the portion of the screen that is not obstructed by a status bar in pixels. See also [method screen_get_size].
 				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows. On other platforms, this method always returns [code]Rect2i(screen_get_position(screen), screen_get_size(screen))[/code].
+			</description>
+		</method>
+		<method name="screen_is_hdr_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="screen" type="int" default="-1" />
+			<description>
+				Returns [code]true[/code] if the [param screen] supports HDR.
+				Use [method window_is_hdr_output_supported] to check if a specific window can output HDR content.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] This method is intended to be informational and may not be implemented even if [constant FEATURE_HDR] is supported.
+				[b]Note:[/b] On Windows, this method is implemented only in builds with D3D12 enabled.
 			</description>
 		</method>
 		<method name="screen_is_kept_on" qualifiers="const">
@@ -2131,6 +2183,32 @@
 				Returns the current value of the given window's [param flag].
 			</description>
 		</method>
+		<method name="window_get_hdr_output_max_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum luminance in nits (cd/m²) set for HDR content for the window specified by [param window_id].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_max_value" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the maximum value for color components that can be displayed in HDR mode for the window specified by [param window_id].
+				Use this to scale HDR content to max out the display's brightness, for example lasers or other bright effects.
+				Will return 1.0 if HDR is not enabled or not supported.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_get_hdr_output_reference_luminance" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns the SDR reference luminance in nits (cd/m²) set for HDR content for the window specified by [param window_id].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
 		<method name="window_get_max_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -2226,6 +2304,45 @@
 				Returns [code]true[/code] if the window specified by [param window_id] is focused.
 			</description>
 		</method>
+		<method name="window_is_hdr_output_auto_adjusting_max_luminance" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether the window specified by [param window_id] automatically adjusts the maximum luminance for HDR output based on the display's capabilities.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_is_hdr_output_auto_adjusting_reference_luminance" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether the window specified by [param window_id] automatically adjusts the reference luminance for HDR output based on the display's capabilities.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_is_hdr_output_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether HDR output is requested for the window specified by [param window_id].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
+		<method name="window_is_hdr_output_preferring_high_precision" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether the window specified by [param window_id] prefers a high precision (16-bit per color) HDR framebuffer.
+			</description>
+		</method>
+		<method name="window_is_hdr_output_supported" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Returns whether the window specified by [param window_id] supports HDR output.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+			</description>
+		</method>
 		<method name="window_is_maximize_allowed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="window_id" type="int" default="0" />
@@ -2298,6 +2415,70 @@
 			<param index="2" name="window_id" type="int" default="0" />
 			<description>
 				Enables or disables the given window's given [param flag].
+			</description>
+		</method>
+		<method name="window_set_hdr_output_auto_adjust_max_luminance">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets whether the window specified by [param window_id] should automatically adjust the maximum luminance for HDR content based on the display's brightness.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_auto_adjust_reference_luminance">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets whether the window specified by [param window_id] should automatically adjust the SDR reference luminance for HDR content based on the display's brightness.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets whether HDR output should be enabled for the window specified by [param window_id], falling back to SDR if not supported.
+				Only available on platforms that support HDR output, have HDR enabled in the system settings, and have a compatible display connected.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_max_luminance">
+			<return type="void" />
+			<param index="0" name="max_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the maximum luminance in nits (cd/m²) for HDR content for the window specified by [param window_id].
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+				[b]Note:[/b] Will not immediately take effect while [method window_is_hdr_output_auto_adjusting_max_luminance] is [code]true[/code]. Any value set will take effect once auto-adjustment is disabled.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_prefer_high_precision">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets whether the window specified by [param window_id] prefers a high precision (16-bit per color) framebuffer.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+			</description>
+		</method>
+		<method name="window_set_hdr_output_reference_luminance">
+			<return type="void" />
+			<param index="0" name="reference_luminance" type="float" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Sets the SDR reference luminance in nits (cd/m²) for HDR content for the window specified by [param window_id].
+				This controls the brightness of SDR content (such as UI) when HDR is enabled.
+				[b]Note:[/b] Requires support for [constant FEATURE_HDR].
+				[b]Note:[/b] Requires support by the rendering device.
+				[b]Note:[/b] Will not immediately take effect while [method window_is_hdr_output_auto_adjusting_reference_luminance] is [code]true[/code]. Any value set will take effect once auto-adjustment is disabled.
 			</description>
 		</method>
 		<method name="window_set_ime_active">
@@ -2611,6 +2792,9 @@
 		</constant>
 		<constant name="FEATURE_ACCESSIBILITY_SCREEN_READER" value="34" enum="Feature">
 			Display server supports interaction with screen reader or Braille display. [b]Linux (X11/Wayland), macOS, Windows[/b]
+		</constant>
+		<constant name="FEATURE_HDR" value="35" enum="Feature">
+			Display server supports HDR output. [b]Windows[/b]
 		</constant>
 		<constant name="ROLE_UNKNOWN" value="0" enum="AccessibilityRole">
 			Unknown or custom role.

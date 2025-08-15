@@ -317,6 +317,13 @@ public:
 		DATA_FORMAT_MAX,
 	};
 
+	enum ColorSpace {
+		COLOR_SPACE_REC709_LINEAR,
+		COLOR_SPACE_REC709_SRGB,
+		COLOR_SPACE_REC2020_ST2084,
+		COLOR_SPACE_MAX,
+	};
+
 	// Breadcrumb markers are useful for debugging GPU crashes (i.e. DEVICE_LOST). Internally
 	// they're just an uint32_t to "tag" a GPU command. These are only used for debugging and do not
 	// (or at least shouldn't) alter the execution behavior in any way.
@@ -954,6 +961,7 @@ public:
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_HDR_OUTPUT,
 	};
 
 	enum SubgroupOperations {
