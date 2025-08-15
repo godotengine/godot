@@ -321,6 +321,9 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 			}
 		} break;
 		case Variant::ARRAY: {
+			if (p_usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
+				return p_variant;
+			}
 			const Array &src = p_variant;
 			Array dst;
 			if (src.is_typed()) {
@@ -333,6 +336,9 @@ Variant Resource::_duplicate_recursive(const Variant &p_variant, const Duplicate
 			return dst;
 		} break;
 		case Variant::DICTIONARY: {
+			if (p_usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
+				return p_variant;
+			}
 			const Dictionary &src = p_variant;
 			Dictionary dst;
 			if (src.is_typed()) {
