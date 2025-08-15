@@ -109,6 +109,9 @@ void AudioDriver::input_buffer_write(int32_t sample) {
 			input_size++;
 		}
 	} else {
+		// This protection was added at https://github.com/godotengine/godot/commit/f529649cece9f08002c527fca25c45a5e66d2a4b due to a "possible crash".
+		// This cannot have happened unless two non-locked threads entered function simultaneously, which was possible when multiple calls to
+		// AudioDriver::input_start() did not raise an error condition.
 		WARN_PRINT("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
 	}
 }
