@@ -32,8 +32,8 @@
 
 #include "../action_map/openxr_action_map.h"
 
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/settings/editor_command_palette.h"
 
 void OpenXREditorPlugin::edit(Object *p_node) {
@@ -54,7 +54,7 @@ void OpenXREditorPlugin::make_visible(bool p_visible) {
 
 OpenXREditorPlugin::OpenXREditorPlugin() {
 	action_map_editor = memnew(OpenXRActionMapEditor);
-	EditorNode::get_bottom_panel()->add_item(TTRC("OpenXR Action Map"), action_map_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Bottom Panel")));
+	EditorDockManager::get_singleton()->add_dock(action_map_editor, TTRC("OpenXR Action Map"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_openxr_action_map_bottom_panel", TTRC("Toggle OpenXR Action Map Bottom Panel")), "Joypad");
 
 	binding_modifier_inspector_plugin = Ref<EditorInspectorPluginBindingModifier>(memnew(EditorInspectorPluginBindingModifier));
 	EditorInspector::add_inspector_plugin(binding_modifier_inspector_plugin);
