@@ -174,12 +174,14 @@
 			<return type="float" />
 			<description>
 				Returns the X:Y aspect ratio of this [Projection]'s viewport.
+				[b]Note:[/b] The returned value may be negative.
 			</description>
 		</method>
 		<method name="get_far_plane_half_extents" qualifiers="const">
 			<return type="Vector2" />
 			<description>
 				Returns the dimensions of the far clipping plane of the projection, divided by two.
+				[b]Note:[/b] Either of the components of the returned vector may be negative.
 			</description>
 		</method>
 		<method name="get_fov" qualifiers="const">
@@ -222,6 +224,7 @@
 			<return type="Vector2" />
 			<description>
 				Returns the dimensions of the viewport plane that this [Projection] projects positions onto, divided by two.
+				[b]Note:[/b] Either of the components of the returned vector may be negative.
 			</description>
 		</method>
 		<method name="get_z_far" qualifiers="const">
@@ -234,6 +237,7 @@
 			<return type="float" />
 			<description>
 				Returns the distance for this [Projection] before which positions are clipped.
+				[b]Note:[/b] The returned value may be negative.
 			</description>
 		</method>
 		<method name="inverse" qualifiers="const">
