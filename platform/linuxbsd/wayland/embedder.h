@@ -511,6 +511,9 @@ private:
 		send_wayland_message(ProxyDirection::CLIENT, p_socket, p_id, p_interface, p_opcode, p_args);
 	}
 
+	// Closes the socket.
+	static void socket_error(int p_socket, uint32_t p_object_id, uint32_t p_code, String p_message);
+
 	// NOTE: Yes, in our case object arguments are actually uints for now.
 	// Best way I found to reuse the Wayland stuff. Might need to make our
 	// own eventually.
@@ -557,7 +560,7 @@ private:
 	WaylandObject *get_object(uint32_t id);
 	Error delete_object(uint32_t id);
 
-	void client_disconnect(int p_socket);
+	void cleanup_socket(int p_socket);
 
 	void sync();
 

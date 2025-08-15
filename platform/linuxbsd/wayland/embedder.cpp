@@ -306,9 +306,18 @@ Error WaylandEmbedder::Client::delete_object(uint32_t p_local_id) {
 	return embedder->delete_object(global_id);
 }
 
+// Returns INVALID_ID if the creation fails. In that case, the user can assume
+// that the client got kicked out.
 uint32_t WaylandEmbedder::Client::new_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
-	CRASH_COND(embedder == nullptr);
-	CRASH_COND_MSG(get_object(p_local_id) != nullptr, vformat("Tried to create %s l0x%x but it already exists as %s", p_interface->name, p_local_id, get_object(p_local_id)->interface->name));
+	if (embedder == nullptr) {
+		socket_error(socket, p_local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, "No embedder set.");
+		ERR_FAIL_V(INVALID_ID);
+	}
+
+	if (get_object(p_local_id) != nullptr) {
+		socket_error(socket, p_local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, vformat("Tried to create %s l0x%x but it already exists as %s", p_interface->name, p_local_id, get_object(p_local_id)->interface->name));
+		ERR_FAIL_V(INVALID_ID);
+	}
 
 	uint32_t new_global_id = embedder->new_object(p_interface, p_version, p_data);
 
@@ -415,21 +424,21 @@ void WaylandEmbedder::Client::send_wl_drm_state(uint32_t p_id, WaylandDrmGlobalD
 	send_wayland_message(socket, p_id, WL_DRM_CAPABILITIES, { p_state->capabilities });
 }
 
-void WaylandEmbedder::client_disconnect(int p_socket) {
-	ERR_FAIL_COND(!clients.has(p_socket));
+void WaylandEmbedder::cleanup_socket(int p_socket) {
+	DEBUG_LOG_WAYLAND_EMBED(vformat("Cleaning up socket %d.", p_socket));
 
-	Client &client = clients[p_socket];
-
-	DEBUG_LOG_WAYLAND_EMBED(vformat("Disconnecting client %d (pid %d)", client.socket, client.pid));
-
-	close(client.socket);
+	close(p_socket);
 
 	for (size_t i = 0; i < pollfds.size(); ++i) {
-		if (pollfds[i].fd == client.socket) {
+		if (pollfds[i].fd == p_socket) {
 			pollfds.remove_at_unordered(i);
 			break;
 		}
 	}
+
+	ERR_FAIL_COND(!clients.has(p_socket));
+
+	Client &client = clients[p_socket];
 
 	for (KeyValue<uint32_t, WaylandObject> &pair : client.fake_objects) {
 		WaylandObject &object = pair.value;
@@ -514,17 +523,29 @@ void WaylandEmbedder::client_disconnect(int p_socket) {
 	clients.erase(client.socket);
 
 	WaylandObject *eclient = main_client->get_object(eclient_id);
-	ERR_FAIL_NULL(eclient);
 
-	EmbeddedClientData *eclient_data = (EmbeddedClientData *)eclient->data;
-	ERR_FAIL_NULL(eclient_data);
+	if (eclient) {
+		EmbeddedClientData *eclient_data = (EmbeddedClientData *)eclient->data;
+		ERR_FAIL_NULL(eclient_data);
 
-	if (!eclient_data->disconnected) {
-		// godot_embedded_client::disconnected
-		send_wayland_message(main_client->socket, eclient_id, 0, {});
+		if (!eclient_data->disconnected) {
+			// godot_embedded_client::disconnected
+			send_wayland_message(main_client->socket, eclient_id, 0, {});
+		}
+
+		eclient_data->disconnected = true;
 	}
+}
 
-	eclient_data->disconnected = true;
+void WaylandEmbedder::socket_error(int p_socket, uint32_t p_object_id, uint32_t p_code, String p_message) {
+	LocalVector<union wl_argument> args;
+	args.push_back(wl_arg_object(p_object_id));
+	args.push_back(wl_arg_uint(p_code));
+	args.push_back(wl_arg_string(vformat("[Godot Embedder] %s", p_message).utf8().get_data()));
+
+	send_wayland_event(p_socket, DISPLAY_ID, wl_display_interface, WL_DISPLAY_ERROR, args);
+
+	close(p_socket);
 }
 
 void WaylandEmbedder::poll_sockets() {
@@ -921,9 +942,20 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 				if (info->direction == ProxyDirection::COMPOSITOR) {
 					uint32_t new_local_id = arg;
 					body[buf_idx] = client->new_object(new_local_id, new_interface, new_version);
+
+					if (body[buf_idx] == INVALID_ID) {
+						valid = false;
+						break;
+					}
+
 				} else if (info->direction == ProxyDirection::CLIENT) {
 					uint32_t new_global_id = arg;
 					body[buf_idx] = client->new_server_object(new_global_id, new_interface, new_version);
+
+					if (body[buf_idx] == INVALID_ID) {
+						valid = false;
+						break;
+					}
 				}
 			} break;
 
@@ -1066,6 +1098,8 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 				// Passthrough.
 				uint32_t instance_gid = client->new_object(new_local_id, global_info.interface, version);
+				ERR_FAIL_COND_V(instance_gid == INVALID_ID, true);
+
 				instance = get_object(instance_gid);
 
 				registry_globals_names[instance_gid] = global_name;
@@ -1149,6 +1183,8 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 		data->client = client;
 
 		uint32_t new_global_id = client->new_object(new_local_id, &wl_surface_interface, object->version, data);
+		ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Keeping track of surface l0x%x g0x%x.", new_local_id, new_global_id));
 
 		send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
@@ -1215,6 +1251,8 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			new_data->wl_seat_id = global_id;
 
 			uint32_t new_global_id = client->new_object(new_local_id, &wl_pointer_interface, object->version, new_data);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+
 			instance_data->wl_pointer_id = new_global_id;
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
@@ -1231,6 +1269,8 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			new_data->wl_seat_id = global_id;
 
 			uint32_t new_global_id = client->new_object(new_local_id, &wl_keyboard_interface, object->version, new_data);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+
 			instance_data->wl_keyboard_id = new_global_id;
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
@@ -1243,6 +1283,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 		if (p_opcode == XDG_WM_BASE_CREATE_POSITIONER) {
 			uint32_t new_local_id = body[0];
 			uint32_t new_global_id = client->new_object(new_local_id, &xdg_positioner_interface, object->version, memnew(XdgPositionerData));
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
 
 			send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id });
 			return true;
@@ -1265,6 +1306,8 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Created fake xdg_surface l0x%x for surface l0x%x", new_local_id, surface_id));
 			} else {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_surface_interface, object->version, data);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
+
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Created real xdg_surface l0x%x g0x%x for surface l0x%x", new_local_id, new_global_id, surface_id));
 
 				send_wayland_message(compositor_socket, global_id, p_opcode, { new_global_id, global_surface_id });
@@ -1297,6 +1340,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 			if (!is_embedded) {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version, popup_data);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
 
 				uint32_t global_parent_id = client->get_global_id(local_parent_id);
 				uint32_t global_positioner_id = client->get_global_id(local_positioner_id);
@@ -1311,6 +1355,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				client->fake_objects.erase(local_id);
 
 				global_id = client->new_object(local_id, copy.interface, copy.version, copy.data);
+				ERR_FAIL_COND_V(global_id == INVALID_ID, true);
 				object = get_object(global_id);
 
 				// xdg_wm_base::get_xdg_surface(no);
@@ -1318,6 +1363,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 			}
 
 			uint32_t new_global_id = client->new_object(new_local_id, &xdg_popup_interface, object->version, popup_data);
+			ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
 
 			uint32_t global_parent_id = INVALID_ID;
 			if (local_parent_id != INVALID_ID) {
@@ -1381,6 +1427,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				send_wayland_message(main_client->socket, client->embedded_client_id, 1, {});
 			} else {
 				uint32_t new_global_id = client->new_object(new_local_id, &xdg_toplevel_interface, object->version, data);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
 
 				if (main_toplevel_id == 0) {
 					main_toplevel_id = new_global_id;
@@ -1467,6 +1514,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 				CRASH_COND(subsurf_data == nullptr);
 
 				uint32_t new_global_id = client->new_object(new_local_id, &zwp_locked_pointer_v1_interface, object->version);
+				ERR_FAIL_COND_V(new_global_id == INVALID_ID, true);
 
 				uint32_t x = subsurf_data->position.x;
 				uint32_t y = subsurf_data->position.y;
@@ -1506,7 +1554,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 		if (p_opcode == GODOT_EMBEDDED_CLIENT_DESTROY) {
 			if (!eclient_data->disconnected) {
-				client_disconnect(eclient->socket);
+				close(eclient->socket);
 			}
 
 			client->delete_object(local_id);
@@ -2054,15 +2102,9 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 	if (object == nullptr) {
 		if (info->direction == ProxyDirection::COMPOSITOR) {
 			uint32_t local_id = info->raw_id;
-			ERR_PRINT(vformat("Couldn't client %d requested object l0x%x, disconnecting.", client->socket, local_id));
+			ERR_PRINT(vformat("Couldn't find requested object l0x%x for client %d, disconnecting.", local_id, client->socket));
 
-			LocalVector<union wl_argument> args;
-			args.push_back(wl_arg_object(local_id));
-			args.push_back(wl_arg_uint(WL_DISPLAY_ERROR_INVALID_OBJECT));
-			args.push_back(wl_arg_string(vformat("[Godot Embedder] Object l0x%x not found.", local_id).utf8().get_data()));
-
-			send_wayland_event(client->socket, DISPLAY_ID, wl_display_interface, WL_DISPLAY_ERROR, args);
-			client_disconnect(client->socket);
+			socket_error(client->socket, local_id, WL_DISPLAY_ERROR_INVALID_OBJECT, vformat("[Godot Embedder] Object l0x%x not found.", local_id));
 			return;
 		} else {
 			CRASH_NOW_MSG(vformat("No object found for r0x%x", info->raw_id));
@@ -2590,7 +2632,7 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 		if (p_revents & POLLIN) {
 			if (!handle_sock(client.socket)) {
 				DEBUG_LOG_WAYLAND_EMBED("disconnecting");
-				client_disconnect(p_fd);
+				cleanup_socket(client.socket);
 			}
 			return;
 		} else if (p_revents & (POLLHUP | POLLERR | POLLNVAL)) {
@@ -2604,7 +2646,7 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d invalid fd.", p_fd));
 			}
 
-			client_disconnect(client.socket);
+			cleanup_socket(client.socket);
 
 			return;
 		}
