@@ -32,8 +32,13 @@
 
 #include "servers/rendering/rendering_shader_container.h"
 
+#ifdef DEBUG_ENABLED
+#define RENDERING_SHADER_CONTAINER_VULKAN_COMPRESSION 0
+#define RENDERING_SHADER_CONTAINER_VULKAN_SMOLV 0
+#else
 #define RENDERING_SHADER_CONTAINER_VULKAN_COMPRESSION 1
 #define RENDERING_SHADER_CONTAINER_VULKAN_SMOLV 1
+#endif
 
 class RenderingShaderContainerVulkan : public RenderingShaderContainer {
 	GDSOFTCLASS(RenderingShaderContainerVulkan, RenderingShaderContainer);
