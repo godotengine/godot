@@ -3916,10 +3916,25 @@ void DisplayServerWindows::process_events() {
 		return ret;
 	};
 
-	while (peekNotInput()) {
+	// Only process a limited number of events per frame to avoid blocking for too long
+	// due to `PeekMessage()` being relatively slow.
+	// This is what avoids performance issues with high polling rate mice (2,000 Hz and above).
+	//
+	// In practice, when input accumulation is disabled:
+	//
+	// - In captured mouse mode, as many mouse events as possible will be processed
+	//   (this seems to perform fine).
+	// - In other mouse modes, up to 5 events per rendered frame will be processed.
+	//
+	// See <https://ph3at.github.io/posts/Windows-Input/> for more information.
+	int events_processed_this_frame = 0;
+	constexpr int MAX_EVENTS_PER_FRAME = 5;
+	while (events_processed_this_frame < MAX_EVENTS_PER_FRAME && peekNotInput()) {
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
+		events_processed_this_frame += 1;
 	}
+
 	_THREAD_SAFE_UNLOCK_
 
 	if (tts) {
