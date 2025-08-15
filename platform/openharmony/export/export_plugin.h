@@ -56,6 +56,7 @@ class EditorExportPlatformOpenHarmony : public EditorExportPlatform {
 	String get_hvigor_path() const;
 	String get_hvigor_path_ide() const;
 	String get_hdc_path() const;
+	String get_sign_tool_path() const;
 
 	Vector<String> devices;
 	SafeFlag devices_changed;
