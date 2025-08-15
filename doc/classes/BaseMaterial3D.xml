@@ -297,6 +297,9 @@
 		<member name="msdf_pixel_range" type="float" setter="set_msdf_pixel_range" getter="get_msdf_pixel_range" default="4.0">
 			The width of the range around the shape between the minimum and maximum representable signed distance.
 		</member>
+		<member name="msdf_rounded_outline" type="float" setter="set_msdf_rounded_outline" getter="get_msdf_rounded_outline" default="1.0">
+			MSDF outline rounding factor. [code]0.0[/code] is a sharp outline, while [code]1.0[/code] is a rounded outline. Values between result in a slightly rounded outline.
+		</member>
 		<member name="no_depth_test" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
 		</member>
