@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://b3c88rve5w8t"
+path="res://.godot/imported/food_apple_01_1k_mesh.obj-d819933576ef29b4038576ce85d5155a.mesh"
+
+[deps]
+
+files=["res://.godot/imported/food_apple_01_1k_mesh.obj-d819933576ef29b4038576ce85d5155a.mesh"]
+
+source_file="res://polyhaven/food_apple_01/food_apple_01_1k_mesh.obj"
+dest_files=["res://.godot/imported/food_apple_01_1k_mesh.obj-d819933576ef29b4038576ce85d5155a.mesh", "res://.godot/imported/food_apple_01_1k_mesh.obj-d819933576ef29b4038576ce85d5155a.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(10, 10, 10)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

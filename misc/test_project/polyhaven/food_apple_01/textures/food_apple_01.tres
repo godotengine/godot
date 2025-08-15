@@ -1,0 +1,11 @@
+[gd_resource type="StandardMaterial3D" load_steps=4 format=3 uid="uid://c5o3j3qc6tb8x"]
+
+[ext_resource type="Texture2D" uid="uid://dwbfuck2q0ng5" path="res://polyhaven/food_apple_01/textures/food_apple_01_diff_1k.jpg" id="1_0ct2l"]
+[ext_resource type="Texture2D" uid="uid://dat8ihys6xevt" path="res://polyhaven/food_apple_01/textures/food_apple_01_nor_gl_1k.jpg" id="2_cdw1x"]
+[ext_resource type="Texture2D" uid="uid://05n3s1n73lv3" path="res://polyhaven/food_apple_01/textures/food_apple_01_rough_1k.jpg" id="3_hlvpx"]
+
+[resource]
+albedo_texture = ExtResource("1_0ct2l")
+roughness_texture = ExtResource("3_hlvpx")
+normal_enabled = true
+normal_texture = ExtResource("2_cdw1x")

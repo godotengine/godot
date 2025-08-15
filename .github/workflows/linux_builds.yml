@@ -32,6 +32,7 @@ jobs:
             build-mono: true
             doc-test: true
             proj-conv: true
+            proj-export: true
             api-compat: true
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
@@ -112,7 +113,7 @@ jobs:
           submodules: recursive
 
       - name: Linux dependencies for tests
-        if: matrix.proj-test
+        if: matrix.proj-test || matrix.proj-export
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-get install mesa-vulkan-drivers
@@ -247,6 +248,13 @@ jobs:
       - name: Test Godot project
         uses: ./.github/actions/godot-project-test
         if: matrix.proj-test
+        with:
+          bin: ${{ matrix.bin }}
+
+      # Test project export
+      - name: Test project export
+        uses: ./.github/actions/godot-project-export
+        if: matrix.proj-export
         with:
           bin: ${{ matrix.bin }}
 
