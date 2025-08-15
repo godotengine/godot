@@ -54,6 +54,7 @@ class MenuBar : public Control {
 		bool hidden = false;
 		bool disabled = false;
 		RID submenu_rid;
+		NativeMenu::SystemMenus sysmenu_id = NativeMenu::INVALID_MENU_ID;
 
 		Menu(const String &p_name) {
 			name = p_name;
