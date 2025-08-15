@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DrawableTextureLayered" inherits="TextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="blit_mesh_advanced">
+			<return type="void" />
+			<param index="0" name="material" type="Material" />
+			<param index="1" name="mesh" type="Mesh" />
+			<param index="2" name="surface_index" type="int" />
+			<param index="3" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="4" name="clear_color" type="Color" />
+			<param index="5" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="blit_texture_rect">
+			<return type="void" />
+			<param index="0" name="source_texture" type="Texture2D" />
+			<param index="1" name="dst_rect" type="Rect2" />
+			<param index="2" name="modulate" type="Color" />
+			<param index="3" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="4" name="clear_color" type="Color" />
+			<param index="5" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="blit_texture_rect_region">
+			<return type="void" />
+			<param index="0" name="source_texture" type="Texture2D" />
+			<param index="1" name="dst_rect" type="Rect2" />
+			<param index="2" name="src_rect" type="Rect2" />
+			<param index="3" name="modulate" type="Color" />
+			<param index="4" name="blend_mode" type="int" enum="RenderingServer.TextureDrawableBlendMode" />
+			<param index="5" name="clear_color" type="Color" />
+			<param index="6" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="generate_mipmaps">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<description>
+			</description>
+		</method>
+		<method name="setup">
+			<return type="void" />
+			<param index="0" name="size" type="Vector2i" />
+			<param index="1" name="layers" type="int" />
+			<param index="2" name="layer_type" type="int" enum="TextureLayered.LayeredType" />
+			<param index="3" name="texture_format" type="int" enum="RenderingServer.TextureDrawableFormat" />
+			<param index="4" name="use_mipmaps" type="bool" default="false" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

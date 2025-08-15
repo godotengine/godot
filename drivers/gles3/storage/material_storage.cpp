@@ -39,6 +39,7 @@
 
 #include "drivers/gles3/rasterizer_canvas_gles3.h"
 #include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/gles3/storage/mesh_rasterizer_gles3.h"
 #include "servers/rendering/storage/variant_converters.h"
 
 using namespace GLES3;
@@ -1121,12 +1122,14 @@ MaterialStorage::MaterialStorage() {
 	shader_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_shader_func;
 	shader_data_request_func[RS::SHADER_PARTICLES] = _create_particles_shader_func;
 	shader_data_request_func[RS::SHADER_SKY] = _create_sky_shader_func;
+	shader_data_request_func[RS::SHADER_MESH_RASTERIZER] = _create_mesh_rasterizer_shader_func;
 	shader_data_request_func[RS::SHADER_FOG] = nullptr;
 
 	material_data_request_func[RS::SHADER_SPATIAL] = _create_scene_material_func;
 	material_data_request_func[RS::SHADER_CANVAS_ITEM] = _create_canvas_material_func;
 	material_data_request_func[RS::SHADER_PARTICLES] = _create_particles_material_func;
 	material_data_request_func[RS::SHADER_SKY] = _create_sky_material_func;
+	material_data_request_func[RS::SHADER_MESH_RASTERIZER] = _create_mesh_rasterizer_material_func;
 	material_data_request_func[RS::SHADER_FOG] = nullptr;
 
 	static_assert(sizeof(GlobalShaderUniforms::Value) == 16);
@@ -1530,6 +1533,52 @@ MaterialStorage::MaterialStorage() {
 		actions.global_buffer_array_variable = "global_shader_uniforms";
 
 		shaders.compiler_sky.initialize(actions);
+	}
+
+	{
+		// Setup Mesh Rasterizer compiler
+		ShaderCompiler::DefaultIdentifierActions actions;
+
+		actions.renames["VERTEX"] = "vertex_interp";
+		actions.renames["NORMAL"] = "normal_interp";
+		actions.renames["TANGENT"] = "tangent";
+		actions.renames["BINORMAL"] = "binormal";
+		actions.renames["POSITION"] = "position";
+		actions.renames["UV"] = "uv_interp";
+		actions.renames["UV2"] = "uv2_interp";
+		actions.renames["COLOR"] = "color_interp";
+		actions.renames["OUTPUT_COLOR"] = "output_color";
+
+		actions.renames["POINT_SIZE"] = "gl_PointSize";
+		actions.renames["VERTEX_ID"] = "gl_VertexID";
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+		actions.renames["POINT_COORD"] = "gl_PointCoord";
+		actions.renames["FRONT_FACING"] = "gl_FrontFacing";
+
+		actions.renames["PI"] = String::num(Math::PI);
+		actions.renames["TAU"] = String::num(Math::TAU);
+		actions.renames["E"] = String::num(Math::E);
+
+		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
+		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
+		actions.usage_defines["BINORMAL"] = "@TANGENT";
+		actions.usage_defines["UV"] = "#define UV_USED\n";
+		actions.usage_defines["UV2"] = "#define UV2_USED\n";
+		actions.usage_defines["BONE_INDICES"] = "#define BONES_USED\n";
+		actions.usage_defines["BONE_WEIGHTS"] = "#define WEIGHTS_USED\n";
+		actions.usage_defines["CUSTOM0"] = "#define CUSTOM0_USED\n";
+		actions.usage_defines["CUSTOM1"] = "#define CUSTOM1_USED\n";
+		actions.usage_defines["CUSTOM2"] = "#define CUSTOM2_USED\n";
+		actions.usage_defines["CUSTOM3"] = "#define CUSTOM3_USED\n";
+		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
+		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
+
+		actions.default_filter = ShaderLanguage::FILTER_LINEAR;
+		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
+
+		actions.global_buffer_array_variable = "global_shader_uniforms";
+
+		shaders.compiler_mesh_rasterizer.initialize(actions);
 	}
 }
 
@@ -2215,6 +2264,8 @@ void MaterialStorage::shader_set_code(RID p_shader, const String &p_code) {
 		new_mode = RS::SHADER_SKY;
 		//} else if (mode_string == "fog") {
 		//	new_mode = RS::SHADER_FOG;
+	} else if (mode_string == "mesh_rasterizer") {
+		new_mode = RS::SHADER_MESH_RASTERIZER;
 	} else {
 		new_mode = RS::SHADER_MAX;
 		ERR_PRINT("shader type " + mode_string + " not supported in OpenGL renderer");
@@ -3307,6 +3358,132 @@ void ParticleProcessMaterialData::bind_uniforms() {
 	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::PARTICLES_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
 
 	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms, 1); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
+}
+
+/* Mesh Rasterizer SHADER */
+
+void MeshRasterizerShaderData::set_code(const String &p_code) {
+	//compile
+
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+
+	if (code.is_empty()) {
+		return; //just invalid, but no error
+	}
+
+	uses_normal = false;
+	uses_tangent = false;
+	uses_color = false;
+	uses_uv = false;
+	uses_uv2 = false;
+	uses_custom0 = false;
+	uses_custom1 = false;
+	uses_custom2 = false;
+	uses_custom3 = false;
+	uses_bones = false;
+	uses_weights = false;
+
+	ShaderCompiler::GeneratedCode gen_code;
+	ShaderCompiler::IdentifierActions actions;
+
+	actions.entry_point_stages["vertex"] = ShaderCompiler::STAGE_VERTEX;
+	actions.entry_point_stages["fragment"] = ShaderCompiler::STAGE_FRAGMENT;
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_BACK);
+
+	actions.usage_flag_pointers["NORMAL"] = &uses_normal;
+	actions.usage_flag_pointers["TANGENT"] = &uses_tangent;
+	actions.usage_flag_pointers["BINORMAL"] = &uses_tangent;
+	actions.usage_flag_pointers["COLOR"] = &uses_color;
+	actions.usage_flag_pointers["UV"] = &uses_uv;
+	actions.usage_flag_pointers["UV2"] = &uses_uv2;
+	actions.usage_flag_pointers["CUSTOM0"] = &uses_custom0;
+	actions.usage_flag_pointers["CUSTOM1"] = &uses_custom1;
+	actions.usage_flag_pointers["CUSTOM2"] = &uses_custom2;
+	actions.usage_flag_pointers["CUSTOM3"] = &uses_custom3;
+	actions.usage_flag_pointers["BONE_INDICES"] = &uses_bones;
+	actions.usage_flag_pointers["BONE_WEIGHTS"] = &uses_weights;
+
+	actions.uniforms = &uniforms;
+
+	MaterialStorage *material_storage = MaterialStorage::get_singleton();
+
+	Error err = material_storage->shaders.compiler_mesh_rasterizer.compile(RS::SHADER_MESH_RASTERIZER, code, &actions, path, gen_code);
+	ERR_FAIL_COND_MSG(err != OK, "Shader compilation failed.");
+
+	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX; // We can always read vertices.
+	vertex_input_mask |= uses_normal << RS::ARRAY_NORMAL;
+	vertex_input_mask |= uses_tangent << RS::ARRAY_TANGENT;
+	vertex_input_mask |= uses_color << RS::ARRAY_COLOR;
+	vertex_input_mask |= uses_uv << RS::ARRAY_TEX_UV;
+	vertex_input_mask |= uses_uv2 << RS::ARRAY_TEX_UV2;
+	vertex_input_mask |= uses_custom0 << RS::ARRAY_CUSTOM0;
+	vertex_input_mask |= uses_custom1 << RS::ARRAY_CUSTOM1;
+	vertex_input_mask |= uses_custom2 << RS::ARRAY_CUSTOM2;
+	vertex_input_mask |= uses_custom3 << RS::ARRAY_CUSTOM3;
+	vertex_input_mask |= uses_bones << RS::ARRAY_BONES;
+	vertex_input_mask |= uses_weights << RS::ARRAY_WEIGHTS;
+
+	if (version.is_null()) {
+		version = material_storage->shaders.mesh_rasterizer_shader.version_create();
+	}
+
+	LocalVector<ShaderGLES3::TextureUniformData> texture_uniform_data = get_texture_uniform_data(gen_code.texture_uniforms);
+
+	material_storage->shaders.mesh_rasterizer_shader.version_set_code(version, gen_code.code, gen_code.uniforms, gen_code.stage_globals[ShaderCompiler::STAGE_VERTEX], gen_code.stage_globals[ShaderCompiler::STAGE_FRAGMENT], gen_code.defines, texture_uniform_data);
+	ERR_FAIL_COND(!material_storage->shaders.mesh_rasterizer_shader.version_is_valid(version));
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	valid = true;
+}
+
+bool MeshRasterizerShaderData::is_animated() const {
+	return false;
+}
+
+bool MeshRasterizerShaderData::casts_shadows() const {
+	return false;
+}
+
+RS::ShaderNativeSourceCode MeshRasterizerShaderData::get_native_source_code() const {
+	return MaterialStorage::get_singleton()->shaders.mesh_rasterizer_shader.version_get_native_source_code(version);
+}
+
+MeshRasterizerShaderData::~MeshRasterizerShaderData() {
+	if (version.is_valid()) {
+		MaterialStorage::get_singleton()->shaders.mesh_rasterizer_shader.version_free(version);
+	}
+}
+
+GLES3::ShaderData *GLES3::_create_mesh_rasterizer_shader_func() {
+	MeshRasterizerShaderData *shader_data = memnew(MeshRasterizerShaderData);
+	return shader_data;
+}
+
+void MeshRasterizerMaterialData::update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+	update_parameters_internal(p_parameters, p_uniform_dirty, p_textures_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, shader_data->ubo_size, false);
+}
+
+MeshRasterizerMaterialData::~MeshRasterizerMaterialData() {
+}
+
+GLES3::MaterialData *GLES3::_create_mesh_rasterizer_material_func(ShaderData *p_shader) {
+	MeshRasterizerMaterialData *material_data = memnew(MeshRasterizerMaterialData);
+	material_data->shader_data = static_cast<MeshRasterizerShaderData *>(p_shader);
+	return material_data;
+}
+
+void MeshRasterizerMaterialData::bind_uniforms() {
+	glBindBufferBase(GL_UNIFORM_BUFFER, GLES3::MESH_RASTERIZER_MATERIAL_UNIFORM_LOCATION, uniform_buffer);
+
+	bind_uniforms_generic(texture_cache, shader_data->texture_uniforms);
 }
 
 #endif // !GLES3_ENABLED

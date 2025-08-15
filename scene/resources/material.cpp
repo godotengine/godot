@@ -450,30 +450,42 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		param_cache.erase(p_param);
 		if (material_rid.is_valid()) {
 			RS::get_singleton()->material_set_param(material_rid, p_param, Variant());
+			_shader_parameter_changed();
 		}
 	} else {
 		Variant *v = param_cache.getptr(p_param);
+		Variant prev_v;
 		if (!v) {
 			// Never assigned, also update the remap cache.
 			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
 			param_cache.insert(p_param, p_value);
 		} else {
+			prev_v = *v;
 			*v = p_value;
 		}
 
 		if (p_value.get_type() == Variant::OBJECT) {
-			RID tex_rid = p_value;
+			Resource *tex = Object::cast_to<Resource>(p_value);
+			RID tex_rid = tex == nullptr ? RID() : tex->get_rid();
 			if (tex_rid == RID()) {
 				param_cache.erase(p_param);
 
 				if (material_rid.is_valid()) {
 					RS::get_singleton()->material_set_param(material_rid, p_param, Variant());
+					_shader_parameter_changed();
 				}
 			} else if (material_rid.is_valid()) {
 				RS::get_singleton()->material_set_param(material_rid, p_param, tex_rid);
+				_shader_parameter_changed();
+				Resource *prev_tex = Object::cast_to<Resource>(prev_v);
+				if (prev_tex != nullptr) {
+					prev_tex->disconnect_changed(callable_mp(this, &ShaderMaterial::_shader_parameter_changed));
+				}
+				tex->connect_changed(callable_mp(this, &ShaderMaterial::_shader_parameter_changed));
 			}
 		} else if (material_rid.is_valid()) {
 			RS::get_singleton()->material_set_param(material_rid, p_param, p_value);
+			_shader_parameter_changed();
 		}
 	}
 }
@@ -490,6 +502,10 @@ void ShaderMaterial::_shader_changed() {
 	notify_property_list_changed(); //update all properties
 }
 
+void ShaderMaterial::_shader_parameter_changed() {
+	emit_signal(SNAME("shader_parameter_changed"));
+}
+
 void ShaderMaterial::_check_material_rid() const {
 	MutexLock lock(material_rid_mutex);
 	if (_get_material().is_null()) {
@@ -503,15 +519,18 @@ void ShaderMaterial::_check_material_rid() const {
 
 		for (KeyValue<StringName, Variant> param : param_cache) {
 			if (param.value.get_type() == Variant::OBJECT) {
-				RID tex_rid = param.value;
+				Resource *tex = Object::cast_to<Resource>(param.value);
+				RID tex_rid = tex == nullptr ? RID() : tex->get_rid();
 				if (tex_rid.is_valid()) {
 					RS::get_singleton()->material_set_param(_get_material(), param.key, tex_rid);
+					tex->connect_changed(Callable(this, SNAME("_shader_parameter_changed")));
 				} else {
 					RS::get_singleton()->material_set_param(_get_material(), param.key, Variant());
 				}
 			} else {
 				RS::get_singleton()->material_set_param(_get_material(), param.key, param.value);
 			}
+			MessageQueue::get_main_singleton()->push_call(this->get_instance_id(), SNAME("_shader_parameter_changed"));
 		}
 	}
 }
@@ -522,7 +541,11 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_shader_parameter", "param", "value"), &ShaderMaterial::set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
 
+	ClassDB::bind_method(D_METHOD("_shader_parameter_changed"), &ShaderMaterial::_shader_parameter_changed);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
+
+	ADD_SIGNAL(MethodInfo("shader_parameter_changed"));
 }
 
 #ifdef TOOLS_ENABLED

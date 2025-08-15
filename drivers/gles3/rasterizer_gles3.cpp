@@ -210,6 +210,7 @@ void RasterizerGLES3::initialize() {
 }
 
 void RasterizerGLES3::finalize() {
+	memdelete(mesh_rasterizer);
 	memdelete(scene);
 	memdelete(canvas);
 	memdelete(gi);
@@ -372,6 +373,7 @@ RasterizerGLES3::RasterizerGLES3() {
 	fog = memnew(GLES3::Fog);
 	canvas = memnew(RasterizerCanvasGLES3());
 	scene = memnew(RasterizerSceneGLES3());
+	mesh_rasterizer = memnew(GLES3::MeshRasterizerGLES3);
 
 	// Disable OpenGL linear to sRGB conversion, because Godot will always do this conversion itself.
 	if (config->srgb_framebuffer_supported) {
