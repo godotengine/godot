@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GraphPort" inherits="GraphElement" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [GraphElement] used for connections between elements.
+	</brief_description>
+	<description>
+		[GraphPort] is a [GraphElement] that marks a point where connections can be made. They are drawn using a [TextureRect], and are typically attached to [GraphNode]s. Like most [GraphElement]s, they should have a [GraphEdit] as an ancestor.
+		If a port is enabled, it will be drawn and allow user interaction. When a port is disabled, it will modify its connections according to its [member on_disabled_behaviour], then ignore interaction and draw calls.
+		A port may also be typed with an arbitrary integer. This is useful for marking categories of ports that may only be connected to other similar types, or simply for storing a small amount of data on a port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member port_type], this port will be drawn using that color.
+		[b]Warning:[/b] When this node enters the tree, it looks for its first ancestor [GraphEdit], searching up through its parents until it finds one. Ports in hierarchies of nested [GraphEdit]s, or ports without a [GraphEdit] ancestor, may not work as expected. Methods expected to fail are noted below.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_connection">
+			<return type="void" />
+			<param index="0" name="connection" type="GraphConnection" />
+			<description>
+				Adds the [param connection] to the graph.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor, or if [param connection] is not connected to this port.
+			</description>
+		</method>
+		<method name="clear_connections">
+			<return type="void" />
+			<description>
+				Removes all connections from this port, if any exist.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="connect_to_port">
+			<return type="void" />
+			<param index="0" name="port" type="GraphPort" />
+			<param index="1" name="clear_if_invalid" type="bool" default="true" />
+			<description>
+				Adds a new [GraphConnection] to the graph, connecting this [GraphPort] and the given [param port].
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="disable">
+			<return type="void" />
+			<description>
+				Disables this port, modifying connections according to [member on_disabled_behaviour] and preventing it from being drawn or interacted with.
+			</description>
+		</method>
+		<method name="enable">
+			<return type="void" />
+			<description>
+				Enables this port, allowing it to be drawn and interacted with.
+			</description>
+		</method>
+		<method name="get_color" qualifiers="const">
+			<return type="Color" />
+			<description>
+				Returns the [Color] of this port. If the parent [GraphEdit] has an entry in its [member GraphEdit.type_colors] at index [member port_type], returns the color at that index instead.
+			</description>
+		</method>
+		<method name="get_connected_ports" qualifiers="const">
+			<return type="GraphPort[]" />
+			<description>
+				Returns an [Array] of all [GraphPort]s connected to this port by [GraphConnection]s.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="get_connection_angle" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the angle in degrees that a connection line should approach this port from.
+			</description>
+		</method>
+		<method name="get_connection_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of [GraphConnection]s connected to this port.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="get_connection_point" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns the local position to which a [GraphConnection] line would be drawn.
+				By default, this is half the icon size, or the center of the port.
+			</description>
+		</method>
+		<method name="get_connections" qualifiers="const">
+			<return type="GraphConnection[]" />
+			<description>
+				Returns an [Array] of all [GraphConnection]s connected to this port.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="get_filtered_port_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
+			<description>
+				If this port is attached to a [GraphNode], returns the index of this port in the node, filtered by [member direction].
+				If [param include_disabled] is [code]false[/code], indexes only *enabled* ports that match.
+				[b]Note:[/b] Fails if this [GraphPort] is not attached to a [GraphNode].
+			</description>
+		</method>
+		<method name="get_first_connected_node" qualifiers="const">
+			<return type="GraphNode" />
+			<description>
+				Returns the first [GraphNode] connected to this port, if any [GraphConnection] is connected to this port in the graph.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="get_first_connected_port" qualifiers="const">
+			<return type="GraphPort" />
+			<description>
+				Returns the first [GraphPort] connected to this port, if any [GraphConnection] is connected to this port in the graph.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="get_first_connection" qualifiers="const">
+			<return type="GraphConnection" />
+			<description>
+				Returns the first [GraphConnection] connected to this port, if any exists in the graph.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="get_graph_node" qualifiers="const">
+			<return type="GraphNode" />
+			<description>
+				Returns the [GraphNode] this port is attached to, if one exists.
+			</description>
+		</method>
+		<method name="get_icon" qualifiers="const">
+			<return type="Texture2D" />
+			<description>
+				Returns the icon this port is drawn with.
+			</description>
+		</method>
+		<method name="get_port_index" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="include_disabled" type="bool" default="true" />
+			<description>
+				If this port is attached to a [GraphNode], returns the index of this port in the node.
+				If [param include_disabled] is [code]false[/code], indexes only enabled ports.
+				[b]Note:[/b] Fails if this [GraphPort] is not attached to a [GraphNode].
+			</description>
+		</method>
+		<method name="has_connection" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a [GraphConnection] is connected to this port in the graph.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="is_connected_to" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="port" type="GraphPort" />
+			<description>
+				Returns [code]true[/code] if a [GraphConnection] exists in the graph that connects this [GraphPort] and the given [param port].
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor.
+			</description>
+		</method>
+		<method name="remove_connection">
+			<return type="void" />
+			<param index="0" name="connection" type="GraphConnection" />
+			<description>
+				Removes the given [param connection] from the graph.
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor, or if [param connection] is not connected to this port.
+			</description>
+		</method>
+		<method name="set_connections">
+			<return type="void" />
+			<param index="0" name="connections" type="GraphConnection[]" />
+			<description>
+				Clears all existing [GraphConnection]s connected to this port in the graph, then adds each connection in [param connections].
+				[b]Note:[/b] Fails if this [GraphPort] does not have a [GraphEdit] ancestor. Each connection in [param connections] fails to be added if it is not connected to this port.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="GraphPort.PortDirection" default="2">
+			The direction of this port. Input ports are not allowed to connect to other Input ports, and Output ports are not allowed to connect to other Output ports.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="false">
+			If [code]true[/code], this port is drawn and can be interacted with.
+		</member>
+		<member name="exclusive" type="bool" setter="set_exclusive" getter="get_exclusive" default="false">
+			If [code]true[/code], when a connection is added to this port, all existing connections to it will be cleared first.
+		</member>
+		<member name="imply_direction" type="bool" setter="set_imply_direction" getter="is_implying_direction" default="false">
+			If [code]true[/code], this port will be Undirected unless it has a connection to an Input or Output port. It will then take on the opposite direction of the other port.
+		</member>
+		<member name="mouse_filter" type="int" setter="set_mouse_filter" getter="get_mouse_filter" overrides="Control" enum="Control.MouseFilter" default="2" />
+		<member name="on_disabled_behaviour" type="int" setter="set_disabled_behaviour" getter="get_disabled_behaviour" enum="GraphPort.DisconnectBehaviour" default="0">
+			The way [GraphConnection]s connected to this port in the graph should be handled when this port is disabled.
+		</member>
+		<member name="port_type" type="int" setter="set_port_type" getter="get_port_type" default="0">
+			The type of this port.
+		</member>
+	</members>
+	<signals>
+		<signal name="changed_direction">
+			<param index="0" name="direction" type="int" />
+			<description>
+				Emitted when this port changes direction.
+			</description>
+		</signal>
+		<signal name="changed_type">
+			<param index="0" name="type" type="int" />
+			<description>
+				Emitted when this port changes type.
+			</description>
+		</signal>
+		<signal name="connected">
+			<param index="0" name="connection" type="GraphConnection" />
+			<description>
+				Emitted when [param connection] is added to this port in the graph.
+			</description>
+		</signal>
+		<signal name="disconnected">
+			<param index="0" name="connection" type="GraphConnection" />
+			<description>
+				Emitted when [param connection] is removed from this port in the graph.
+			</description>
+		</signal>
+		<signal name="modified">
+			<description>
+				Emitted when this port's parameters are changed in a way that might affect its connections.
+			</description>
+		</signal>
+		<signal name="on_disabled">
+			<description>
+				Emitted when this port is disabled.
+			</description>
+		</signal>
+		<signal name="on_enabled">
+			<description>
+				Emitted when this port is enabled.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="INPUT" value="0" enum="PortDirection">
+		</constant>
+		<constant name="OUTPUT" value="1" enum="PortDirection">
+		</constant>
+		<constant name="UNDIRECTED" value="2" enum="PortDirection">
+			Undirected ports may be connected ports of any direction, including other undirected ports.
+		</constant>
+		<constant name="DISCONNECT_ALL" value="0" enum="DisconnectBehaviour">
+			When this port is disabled, disconnect all [GraphConnection]s connected to it in the graph.
+		</constant>
+		<constant name="MOVE_TO_PREVIOUS_PORT_OR_DISCONNECT" value="1" enum="DisconnectBehaviour">
+			When this port is disabled, if it's attached to a [GraphNode], try to move its connections to the previous matching port in the node before disconnecting them.
+		</constant>
+		<constant name="MOVE_TO_NEXT_PORT_OR_DISCONNECT" value="2" enum="DisconnectBehaviour">
+			When this port is disabled, if it's attached to a [GraphNode], try to move its connections to the next matching port in the node before disconnecting them.
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+			The color this port's icon will be drawn with. Overridden by [member GraphEdit.type_colors], if one exists for this port's [member port_type].
+		</theme_item>
+		<theme_item name="rim_color" data_type="color" type="Color" default="Color(0.1, 0.1, 0.1, 0.6)">
+		</theme_item>
+		<theme_item name="selected_color" data_type="color" type="Color" default="Color(1, 1, 1, 1)">
+		</theme_item>
+		<theme_item name="selected_rim_color" data_type="color" type="Color" default="Color(0.1, 0.1, 0.1, 0.6)">
+		</theme_item>
+		<theme_item name="connection_angle_input" data_type="constant" type="int" default="180">
+		</theme_item>
+		<theme_item name="connection_angle_output" data_type="constant" type="int" default="0">
+		</theme_item>
+		<theme_item name="connection_angle_undirected" data_type="constant" type="int" default="0">
+		</theme_item>
+		<theme_item name="hotzone_extent_h_input" data_type="constant" type="int" default="26">
+		</theme_item>
+		<theme_item name="hotzone_extent_h_output" data_type="constant" type="int" default="26">
+		</theme_item>
+		<theme_item name="hotzone_extent_h_undirected" data_type="constant" type="int" default="26">
+		</theme_item>
+		<theme_item name="hotzone_extent_v_input" data_type="constant" type="int" default="22">
+		</theme_item>
+		<theme_item name="hotzone_extent_v_output" data_type="constant" type="int" default="22">
+		</theme_item>
+		<theme_item name="hotzone_extent_v_undirected" data_type="constant" type="int" default="22">
+		</theme_item>
+		<theme_item name="hotzone_offset_h" data_type="constant" type="int" default="7">
+		</theme_item>
+		<theme_item name="hotzone_offset_v" data_type="constant" type="int" default="0">
+		</theme_item>
+		<theme_item name="rim_size" data_type="constant" type="int" default="0">
+		</theme_item>
+		<theme_item name="icon" data_type="icon" type="Texture2D">
+			The icon this port will be drawn with.
+		</theme_item>
+		<theme_item name="panel_focus" data_type="style" type="StyleBox">
+		</theme_item>
+	</theme_items>
+</class>
