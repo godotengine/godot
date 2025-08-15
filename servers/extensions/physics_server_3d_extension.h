@@ -88,6 +88,12 @@ public:
 	EXBIND1(set_sleep_state, bool)
 	EXBIND0RC(bool, is_sleeping)
 
+	EXBIND1(set_collision_layer, uint32_t);
+	EXBIND0RC(uint32_t, get_collision_layer);
+
+	EXBIND1(set_collision_mask, uint32_t);
+	EXBIND0RC(uint32_t, get_collision_mask);
+
 	EXBIND0RC(int, get_contact_count)
 
 	EXBIND1RC(Vector3, get_contact_local_position, int)
