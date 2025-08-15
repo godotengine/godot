@@ -37,6 +37,8 @@
 #include "core/io/resource_saver.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/os.h"
+#include "core/string/ustring.h"
+#include "core/variant/dictionary.h"
 #include "core/variant/variant_parser.h"
 #include "editor/doc/editor_help.h"
 #include "editor/editor_node.h"
@@ -52,7 +54,7 @@ int EditorFileSystem::nb_files_total = 0;
 EditorFileSystem::ScannedDirectory *EditorFileSystem::first_scan_root_dir = nullptr;
 
 //the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache10"
+#define CACHE_FILE_NAME "filesystem_cache11"
 
 int EditorFileSystemDirectory::find_file_index(const String &p_file) const {
 	for (int i = 0; i < files.size(); i++) {
@@ -438,7 +440,7 @@ void EditorFileSystem::_scan_filesystem() {
 
 				} else {
 					// The last section (deps) may contain the same splitter, so limit the maxsplit to 8 to get the complete deps.
-					Vector<String> split = l.split("::", true, 8);
+					Vector<String> split = l.split("::", true, 9);
 					ERR_CONTINUE(split.size() < 9);
 					String name = split[0];
 					String file;
@@ -453,9 +455,10 @@ void EditorFileSystem::_scan_filesystem() {
 					fc.modification_time = split[3].to_int();
 					fc.import_modification_time = split[4].to_int();
 					fc.import_valid = split[5].to_int() != 0;
-					fc.import_group_file = split[6].strip_edges();
+					fc.has_editor_variant = split[6].to_int() != 0;
+					fc.import_group_file = split[7].strip_edges();
 					{
-						const Vector<String> &slices = split[7].split("<>");
+						const Vector<String> &slices = split[8].split("<>");
 						ERR_CONTINUE(slices.size() < 7);
 						fc.class_info.name = slices[0];
 						fc.class_info.extends = slices[1];
@@ -465,7 +468,7 @@ void EditorFileSystem::_scan_filesystem() {
 						fc.import_md5 = slices[5];
 						fc.import_dest_paths = slices[6].split("<*>");
 					}
-					fc.deps = split[8].strip_edges().split("<>");
+					fc.deps = split[9].strip_edges().split("<>");
 
 					file_cache[name] = fc;
 				}
@@ -567,6 +570,7 @@ bool EditorFileSystem::_is_test_for_reimport_needed(const String &p_path, uint64
 			}
 		}
 	}
+
 	return false;
 }
 
@@ -1243,6 +1247,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				fi->import_md5 = fc->import_md5;
 				fi->import_dest_paths = fc->import_dest_paths;
 				fi->import_valid = fc->import_valid;
+				fi->has_editor_variant = fc->has_editor_variant;
 				fi->import_group_file = fc->import_group_file;
 				fi->class_info = fc->class_info;
 
@@ -1258,7 +1263,7 @@ void EditorFileSystem::_process_file_system(const ScannedDirectory *p_scan_dir, 
 				// If something is different, we will queue a test for reimportation that will check
 				// the md5 of all files and import settings and, if necessary, execute a reimportation.
 				if (_is_test_for_reimport_needed(path, fc->modification_time, mt, fc->import_modification_time, import_mt, fi->import_dest_paths) ||
-						(revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path))) {
+						(revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) || fi->has_editor_variant) {
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 					ia.dir = p_dir;
@@ -1843,6 +1848,7 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		cache_string.append(itos(file_info->modified_time));
 		cache_string.append(itos(file_info->import_modified_time));
 		cache_string.append(itos(file_info->import_valid));
+		cache_string.append(itos(file_info->has_editor_variant));
 		cache_string.append(file_info->import_group_file);
 		cache_string.append(String("<>").join({ file_info->class_info.name, file_info->class_info.extends, file_info->class_info.icon_path, itos(file_info->class_info.is_abstract), itos(file_info->class_info.is_tool), file_info->import_md5, String("<*>").join(file_info->import_dest_paths) }));
 		cache_string.append(String("<>").join(file_info->deps));
@@ -2842,6 +2848,7 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			fs->files[cpos]->deps.clear();
 			fs->files[cpos]->type = "";
 			fs->files[cpos]->import_valid = false;
+			fs->files[cpos]->has_editor_variant = false;
 			EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 		}
 		return OK;
@@ -3013,6 +3020,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 		fs->files[cpos]->type = importer->get_resource_type();
 		fs->files[cpos]->uid = uid;
 		fs->files[cpos]->import_valid = fs->files[cpos]->type == "TextFile" ? true : ResourceLoader::is_import_valid(p_file);
+		// Update if the file has an editor variant.
+		fs->files[cpos]->has_editor_variant = (meta != Variant() && ((Dictionary)meta).has("has_editor_variant"));
 	}
 
 	for (const String &path : gen_files) {

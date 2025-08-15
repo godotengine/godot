@@ -62,6 +62,7 @@ class EditorFileSystemDirectory : public Object {
 		String import_md5;
 		Vector<String> import_dest_paths;
 		bool import_valid = false;
+		bool has_editor_variant = false;
 		String import_group_file;
 		Vector<String> deps;
 		bool verified = false; //used for checking changes
@@ -223,6 +224,7 @@ class EditorFileSystem : public Node {
 		Vector<String> import_dest_paths;
 		Vector<String> deps;
 		bool import_valid = false;
+		bool has_editor_variant = false;
 		String import_group_file;
 		ScriptClassInfo class_info;
 	};
