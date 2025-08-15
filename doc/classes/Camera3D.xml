@@ -157,6 +157,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="alpha_sort_axis" type="Vector3" setter="set_alpha_sort_axis" getter="get_alpha_sort_axis" default="Vector3(0, 0, 1)">
+			The axis used when [member alpha_sort_heuristic] is set to [constant RenderingServer.ALPHA_SORT_CUSTOM_AXIS].
+		</member>
+		<member name="alpha_sort_heuristic" type="int" setter="set_alpha_sort_heuristic" getter="get_alpha_sort_heuristic" enum="RenderingServer.AlphaSortHeuristic" default="0">
+			The heuristic this camera uses to sort alpha blended meshes. See [enum RenderingServer.AlphaSortHeuristic] for possible values.
+		</member>
 		<member name="attributes" type="CameraAttributes" setter="set_attributes" getter="get_attributes">
 			The [CameraAttributes] to use for this camera.
 		</member>

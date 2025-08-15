@@ -2817,6 +2817,16 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_set_camera_attributes", "camera", "effects"), &RenderingServer::camera_set_camera_attributes);
 	ClassDB::bind_method(D_METHOD("camera_set_compositor", "camera", "compositor"), &RenderingServer::camera_set_compositor);
 	ClassDB::bind_method(D_METHOD("camera_set_use_vertical_aspect", "camera", "enable"), &RenderingServer::camera_set_use_vertical_aspect);
+	ClassDB::bind_method(D_METHOD("camera_set_alpha_sort_heuristic", "camera", "heuristic"), &RenderingServer::camera_set_alpha_sort_heuristic);
+	ClassDB::bind_method(D_METHOD("camera_set_alpha_sort_axis", "camera", "axis"), &RenderingServer::camera_set_alpha_sort_axis);
+
+	ClassDB::bind_method(D_METHOD("set_default_alpha_sort_heuristic", "heuristic"), &RenderingServer::set_default_alpha_sort_heuristic);
+	ClassDB::bind_method(D_METHOD("set_default_alpha_sort_axis", "axis"), &RenderingServer::set_default_alpha_sort_axis);
+
+	BIND_ENUM_CONSTANT(ALPHA_SORT_DEFAULT);
+	BIND_ENUM_CONSTANT(ALPHA_SORT_DEPTH);
+	BIND_ENUM_CONSTANT(ALPHA_SORT_ORTHOGRAPHIC);
+	BIND_ENUM_CONSTANT(ALPHA_SORT_CUSTOM_AXIS);
 
 	/* VIEWPORT */
 
@@ -3666,6 +3676,9 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
+
+	GLOBAL_DEF(PropertyInfo(Variant::VECTOR3, "rendering/camera/alpha_sort/default_alpha_sort_axis"), Vector3(0, 0, 1));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/alpha_sort/default_alpha_sort_heuristic", PROPERTY_HINT_ENUM, "Depth:1,Orthographic:2,CustomAxis:3"), 1);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);

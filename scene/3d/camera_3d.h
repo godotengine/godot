@@ -74,6 +74,8 @@ private:
 	real_t v_offset = 0.0;
 	real_t h_offset = 0.0;
 	KeepAspect keep_aspect = KEEP_HEIGHT;
+	RS::AlphaSortHeuristic alpha_sort_heuristic = RS::ALPHA_SORT_DEFAULT;
+	Vector3 alpha_sort_axis = Vector3(0, 0, 1);
 
 	RID camera;
 	RID scenario_id;
@@ -205,6 +207,12 @@ public:
 	DopplerTracking get_doppler_tracking() const;
 
 	Vector3 get_doppler_tracked_velocity() const;
+
+	void set_alpha_sort_heuristic(RS::AlphaSortHeuristic p_heuristic);
+	RS::AlphaSortHeuristic get_alpha_sort_heuristic() const;
+
+	void set_alpha_sort_axis(const Vector3 &p_axis);
+	Vector3 get_alpha_sort_axis() const;
 
 #ifndef PHYSICS_3D_DISABLED
 	RID get_pyramid_shape_rid();

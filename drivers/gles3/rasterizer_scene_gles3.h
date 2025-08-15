@@ -143,6 +143,9 @@ struct RenderDataGLES3 {
 	/* Shadow data */
 	const RendererSceneRender::RenderShadowData *render_shadows = nullptr;
 	int render_shadow_count = 0;
+
+	RS::AlphaSortHeuristic alpha_sort_heuristic;
+	Vector3 alpha_sort_axis = Vector3(0, 0, 1);
 };
 
 class RasterizerCanvasGLES3;

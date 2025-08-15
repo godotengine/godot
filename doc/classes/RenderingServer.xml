@@ -110,6 +110,23 @@
 				[b]Note:[/b] The equivalent node is [Camera3D].
 			</description>
 		</method>
+		<method name="camera_set_alpha_sort_axis">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="axis" type="Vector3" />
+			<description>
+				Sets the axis used when alpha sorting heuristic is set to [constant ALPHA_SORT_CUSTOM_AXIS]. Equivalent to [member Camera3D.alpha_sort_axis].
+				[b]Note:[/b] This method does not override the axis of the default heuristic. To change the default axis, see [method set_default_alpha_sort_axis].
+			</description>
+		</method>
+		<method name="camera_set_alpha_sort_heuristic">
+			<return type="void" />
+			<param index="0" name="camera" type="RID" />
+			<param index="1" name="heuristic" type="int" enum="RenderingServer.AlphaSortHeuristic" />
+			<description>
+				Sets the heuristic this camera uses to sort alpha blended meshes. Equivalent to [member Camera3D.alpha_sort_heuristic].
+			</description>
+		</method>
 		<method name="camera_set_camera_attributes">
 			<return type="void" />
 			<param index="0" name="camera" type="RID" />
@@ -3436,6 +3453,21 @@
 				[b]Note:[/b] You must call this method before loading any meshes when using the Compatibility renderer, otherwise wireframes will not be used.
 			</description>
 		</method>
+		<method name="set_default_alpha_sort_axis">
+			<return type="void" />
+			<param index="0" name="axis" type="Vector3" />
+			<description>
+				Sets the axis used when the default alpha sorting heuristic is set to [constant ALPHA_SORT_CUSTOM_AXIS]. Runtime equivalent to [member ProjectSettings.rendering/camera/alpha_sort/default_alpha_sort_axis].
+			</description>
+		</method>
+		<method name="set_default_alpha_sort_heuristic">
+			<return type="void" />
+			<param index="0" name="heuristic" type="int" enum="RenderingServer.AlphaSortHeuristic" />
+			<description>
+				Sets the heuristic used to sort alpha blended meshes for cameras that use [constant ALPHA_SORT_DEFAULT]. To change the heuristic of a camera, see [method camera_set_alpha_sort_heuristic] and [member Camera3D.alpha_sort_heuristic]. Runtime equivalent to [member ProjectSettings.rendering/camera/alpha_sort/default_alpha_sort_heuristic].
+				[b]Note:[/b] Setting the default heuristic to [constant ALPHA_SORT_DEFAULT] is equivalent to setting it to [constant ALPHA_SORT_DEPTH].
+			</description>
+		</method>
 		<method name="set_default_clear_color">
 			<return type="void" />
 			<param index="0" name="color" type="Color" />
@@ -5044,6 +5076,18 @@
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_MAX" value="5" enum="FogVolumeShape">
 			Represents the size of the [enum FogVolumeShape] enum.
+		</constant>
+		<constant name="ALPHA_SORT_DEFAULT" value="0" enum="AlphaSortHeuristic">
+			Alpha blended meshes are sorted by the default heuristic. If unchanged, the default heuristic is [constant ALPHA_SORT_DEPTH]. To change it to other value, see [method set_default_alpha_sort_heuristic] and [member ProjectSettings.rendering/camera/alpha_sort/default_alpha_sort_heuristic].
+		</constant>
+		<constant name="ALPHA_SORT_DEPTH" value="1" enum="AlphaSortHeuristic">
+			Alpha blended meshes are sorted based on their depth. Equivalent to [constant ALPHA_SORT_ORTHOGRAPHIC] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+		</constant>
+		<constant name="ALPHA_SORT_ORTHOGRAPHIC" value="2" enum="AlphaSortHeuristic">
+			Alpha blended meshes are sorted based on a dot product of their position and the camera normal.  Equivalent to [constant ALPHA_SORT_DEPTH] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+		</constant>
+		<constant name="ALPHA_SORT_CUSTOM_AXIS" value="3" enum="AlphaSortHeuristic">
+			Alpha blended meshes are sorted based on a dot product of their position and a custom axis. For example, when the axis is set to the value [code]Vector3(0, 0, 1)[/code] meshes are sorted based on their position on the Z-axis regardless of camera orientation. The default axis can be changed via [method set_default_alpha_sort_axis] and [member ProjectSettings.rendering/camera/alpha_sort/default_alpha_sort_axis].
 		</constant>
 		<constant name="VIEWPORT_SCALING_3D_MODE_BILINEAR" value="0" enum="ViewportScaling3DMode">
 			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.

@@ -920,6 +920,18 @@ public:
 	virtual void camera_set_compositor(RID p_camera, RID p_compositor) = 0;
 	virtual void camera_set_use_vertical_aspect(RID p_camera, bool p_enable) = 0;
 
+	enum AlphaSortHeuristic {
+		ALPHA_SORT_DEFAULT,
+		ALPHA_SORT_DEPTH,
+		ALPHA_SORT_ORTHOGRAPHIC,
+		ALPHA_SORT_CUSTOM_AXIS,
+	};
+
+	virtual void set_default_alpha_sort_heuristic(AlphaSortHeuristic p_heuristic) = 0;
+	virtual void set_default_alpha_sort_axis(const Vector3 &p_axis) = 0;
+	virtual void camera_set_alpha_sort_heuristic(RID p_camera, AlphaSortHeuristic p_heuristic) = 0;
+	virtual void camera_set_alpha_sort_axis(RID p_camera, const Vector3 &p_axis) = 0;
+
 	/* VIEWPORT API */
 
 	enum CanvasItemTextureFilter {
@@ -1941,6 +1953,7 @@ VARIANT_ENUM_CAST(RenderingServer::ParticlesEmitFlags);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionType);
 VARIANT_ENUM_CAST(RenderingServer::ParticlesCollisionHeightfieldResolution);
 VARIANT_ENUM_CAST(RenderingServer::FogVolumeShape);
+VARIANT_ENUM_CAST(RenderingServer::AlphaSortHeuristic);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScaling3DMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);

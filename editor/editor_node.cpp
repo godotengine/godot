@@ -455,7 +455,10 @@ void EditorNode::_update_from_settings() {
 		TranslationServer::get_singleton()->set_fallback_locale(current_fallback_locale);
 		scene_root->propagate_notification(Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED);
 	}
-
+	Vector3 default_alpha_sort_axis = GLOBAL_GET("rendering/camera/alpha_sort/default_alpha_sort_axis");
+	RS::get_singleton()->set_default_alpha_sort_axis(default_alpha_sort_axis);
+	RS::AlphaSortHeuristic default_alpha_sort_heuristic = RS::AlphaSortHeuristic(int(GLOBAL_GET("rendering/camera/alpha_sort/default_alpha_sort_heuristic")));
+	RS::get_singleton()->set_default_alpha_sort_heuristic(default_alpha_sort_heuristic);
 	RS::DOFBokehShape dof_shape = RS::DOFBokehShape(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_shape")));
 	RS::get_singleton()->camera_attributes_set_dof_blur_bokeh_shape(dof_shape);
 	RS::DOFBlurQuality dof_quality = RS::DOFBlurQuality(int(GLOBAL_GET("rendering/camera/depth_of_field/depth_of_field_bokeh_quality")));

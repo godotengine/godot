@@ -907,16 +907,28 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		GeometryInstanceForwardClustered *inst = static_cast<GeometryInstanceForwardClustered *>((*p_render_data->instances)[i]);
 
 		Vector3 center = inst->transform.origin;
-		if (p_render_data->scene_data->cam_orthogonal) {
+		if (p_render_data->scene_data->alpha_sort_heuristic == RS::ALPHA_SORT_DEPTH) {
+			if (p_render_data->scene_data->cam_orthogonal) {
+				if (inst->use_aabb_center) {
+					center = inst->transformed_aabb.get_support(-near_plane.normal);
+				}
+				inst->depth = near_plane.distance_to(center) - inst->sorting_offset;
+			} else {
+				if (inst->use_aabb_center) {
+					center = inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5);
+				}
+				inst->depth = p_render_data->scene_data->cam_transform.origin.distance_to(center) - inst->sorting_offset;
+			}
+		} else if (p_render_data->scene_data->alpha_sort_heuristic == RS::ALPHA_SORT_ORTHOGRAPHIC) {
 			if (inst->use_aabb_center) {
 				center = inst->transformed_aabb.get_support(-near_plane.normal);
 			}
 			inst->depth = near_plane.distance_to(center) - inst->sorting_offset;
-		} else {
+		} else { // RS::ALPHA_SORT_CUSTOM_AXIS
 			if (inst->use_aabb_center) {
 				center = inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5);
 			}
-			inst->depth = p_render_data->scene_data->cam_transform.origin.distance_to(center) - inst->sorting_offset;
+			inst->depth = p_render_data->scene_data->alpha_sort_axis.dot(p_render_data->scene_data->cam_transform.origin - center) - inst->sorting_offset;
 		}
 		uint32_t depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
 

@@ -2767,6 +2767,17 @@
 		<member name="rendering/anti_aliasing/screen_space_roughness_limiter/limit" type="float" setter="" getter="" default="0.18">
 			[b]Note:[/b] This property is only read when the project starts. To control the screen-space roughness limiter at runtime, call [method RenderingServer.screen_space_roughness_limiter_set_active] instead.
 		</member>
+		<member name="rendering/camera/alpha_sort/default_alpha_sort_axis" type="Vector3" setter="" getter="" default="Vector3(0, 0, 1)">
+			Sets the axis to use when [member rendering/camera/alpha_sort/default_alpha_sort_heuristic] is set to [b]CustomAxis[/b].
+			[b]Note:[/b] This property is only read when the project starts. To control the default alpha sorting axis at runtime, call [method RenderingServer.set_default_alpha_sort_axis] instead.
+		</member>
+		<member name="rendering/camera/alpha_sort/default_alpha_sort_heuristic" type="int" setter="" getter="" default="1">
+			Sets the default heuristic used to sort alpha blended meshes on [Camera3D] nodes whose [member Camera3D.alpha_sort_heuristic] is set to [constant RenderingServer.ALPHA_SORT_DEFAULT].
+			- [code]Depth[/code]: Sort based on depth. Equivalent to [code]Orthographic[/code] when camera projection is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+			- [code]Orthographic[/code]: Sort based on a dot product of the position of the mesh and the camera normal. Equivalent to [code]Depth[/code] when camera projeciton is set to [constant Camera3D.PROJECTION_ORTHOGONAL].
+			- [code]CustomAxis[/code]: Sort based on a dot product of the position of the mesh and [member rendering/camera/alpha_sort/default_alpha_sort_axis]. For example, when set to the value [code]Vector3(0, 0, 1)[/code] meshes are sorted based on their position on the Z-axis regardless of camera orientation.
+			[b]Note:[/b] This property is only read when the project starts. To control the default alpha sorting heuristic at runtime, call [method RenderingServer.set_default_alpha_sort_heuristic] instead.
+		</member>
 		<member name="rendering/camera/depth_of_field/depth_of_field_bokeh_quality" type="int" setter="" getter="" default="1">
 			Sets the quality of the depth of field effect. Higher quality takes more samples, which is slower but looks smoother.
 		</member>
