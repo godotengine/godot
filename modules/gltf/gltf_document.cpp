@@ -4195,74 +4195,34 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			} else { // Relative path to an external image file.
 				ERR_FAIL_COND_V(p_base_path.is_empty(), ERR_INVALID_PARAMETER);
 				uri = uri.uri_file_decode();
-
-				// Create placeholder texture for missing files
-				bool create_placeholder = false;
-				String missing_reason = "";
-
-				if (uri.is_absolute_path()) {
-					if (!FileAccess::exists(uri)) {
-						// Try local fallback
-						String filename = uri.get_file();
-						String fallback_path = p_base_path.path_join(filename);
-						if (FileAccess::exists(fallback_path)) {
-							uri = fallback_path;
-							String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-							WARN_PRINT(vformat("GLTF: Corrected texture path in '%s'. Using '%s' instead of missing absolute path.",
-									file_info, filename));
-						} else {
-							create_placeholder = true;
-							missing_reason = "Absolute path not found, local fallback also missing";
-						}
+				uri = p_base_path.path_join(uri).replace_char('\\', '/'); // Fix for Windows.
+				resource_uri = uri.simplify_path();
+				// ResourceLoader will rely on the file extension to use the relevant loader.
+				// The spec says that if mimeType is defined, it should take precedence (e.g.
+				// there could be a `.png` image which is actually JPEG), but there's no easy
+				// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
+				// the material), so we only do that only as fallback.
+				if (ResourceLoader::exists(resource_uri)) {
+					Ref<Texture2D> texture = ResourceLoader::load(resource_uri, "Texture2D");
+					if (texture.is_valid()) {
+						p_state->images.push_back(texture);
+						p_state->source_images.push_back(texture->get_image());
+						continue;
 					}
 				}
-
-				if (!create_placeholder) {
-					uri = p_base_path.path_join(uri).replace_char('\\', '/');
-					resource_uri = uri.simplify_path();
-
-					// Try ResourceLoader first
-					if (ResourceLoader::exists(resource_uri)) {
-						Ref<Texture2D> texture = ResourceLoader::load(resource_uri, "Texture2D");
-						if (texture.is_valid()) {
-							p_state->images.push_back(texture);
-							p_state->source_images.push_back(texture->get_image());
-							continue;
-						}
-					}
-
-					// Try loading as bytes
-					if (mime_type.is_empty()) {
-						mime_type = "image/" + resource_uri.get_extension();
-					}
-					data = FileAccess::get_file_as_bytes(resource_uri);
-					if (data.is_empty()) {
-						create_placeholder = true;
-						missing_reason = "Could not load texture data";
-					}
+				// mimeType is optional, but if we have it in the file extension, let's use it.
+				// If the mimeType does not match with the file extension, either it should be
+				// specified in the file, or the GLTFDocumentExtension should handle it.
+				if (mime_type.is_empty()) {
+					mime_type = "image/" + resource_uri.get_extension();
 				}
-
-				if (create_placeholder) {
-					String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-					WARN_PRINT(vformat("GLTF: Creating placeholder for missing texture in '%s'. Reason: %s",
-							file_info, missing_reason));
-
-					// Create in-memory placeholder texture - 128x128 for better visibility
-					Ref<Image> placeholder_image = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
-					// Fill with bright magenta checkerboard pattern
-					for (int y = 0; y < 128; y++) {
-						for (int x = 0; x < 128; x++) {
-							Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.8, 0.0, 0.8);
-							placeholder_image->set_pixel(x, y, color);
-						}
-					}
-
-					Ref<ImageTexture> placeholder_texture;
-					placeholder_texture.instantiate();
-					placeholder_texture->set_name(image_name + "_placeholder");
-					placeholder_texture->create_from_image(placeholder_image);
-					p_state->images.push_back(placeholder_texture);
-					p_state->source_images.push_back(placeholder_image);
+				// Fallback to loading as byte array. This enables us to support the
+				// spec's requirement that we honor mimetype regardless of file URI.
+				data = FileAccess::get_file_as_bytes(resource_uri);
+				if (data.is_empty()) {
+					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded as a buffer of MIME type '%s' from URI: %s because there was no data to load. Skipping it.", i, mime_type, resource_uri));
+					p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
+					p_state->source_images.push_back(Ref<Image>());
 					continue;
 				}
 			}
@@ -4282,20 +4242,14 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		// Note: There are paths above that return early, so this point might not be reached.
 		if (data.is_empty()) {
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-			WARN_PRINT(vformat("GLTF: No image data for index %d in '%s'. Using placeholder.", i, file_info));
+			WARN_PRINT(vformat("GLTF: No image data for index %d in '%s'. Using 1x1 white placeholder to maintain array indexing.", i, file_info));
 
-			// Create placeholder texture - 128x128 for better visibility
-			Ref<Image> placeholder_image = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
-			// Fill with bright magenta checkerboard pattern
-			for (int y = 0; y < 128; y++) {
-				for (int x = 0; x < 128; x++) {
-					Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.8, 0.0, 0.8);
-					placeholder_image->set_pixel(x, y, color);
-				}
-			}
+			// Create a minimal 1x1 white placeholder to maintain proper array indexing
+			Ref<Image> placeholder_image = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
+			placeholder_image->fill(Color(1, 1, 1)); // White placeholder
 			Ref<ImageTexture> placeholder_texture;
 			placeholder_texture.instantiate();
-			placeholder_texture->set_name(image_name + "_empty");
+			placeholder_texture->set_name(image_name + "_placeholder");
 			placeholder_texture->create_from_image(placeholder_image);
 			p_state->images.push_back(placeholder_texture);
 			p_state->source_images.push_back(placeholder_image);
@@ -4308,17 +4262,11 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		// Check for zero-dimension textures that can cause crashes (issue #109295)
 		if (!img->is_empty() && (img->get_width() == 0 || img->get_height() == 0)) {
 			String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-			WARN_PRINT(vformat("GLTF: Invalid zero-dimension texture in '%s' (index %d). Using placeholder.",
+			WARN_PRINT(vformat("GLTF: Invalid zero-dimension texture in '%s' (index %d). Using 1x1 white placeholder to maintain array indexing.",
 					file_info, i));
-			// Create a 128x128 placeholder for better visibility
-			img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
-			// Fill with bright magenta checkerboard pattern
-			for (int y = 0; y < 128; y++) {
-				for (int x = 0; x < 128; x++) {
-					Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
-					img->set_pixel(x, y, color);
-				}
-			}
+			// Create a minimal 1x1 white placeholder to maintain proper array indexing
+			img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
+			img->fill(Color(1, 1, 1)); // White placeholder
 		}
 
 		img->set_name(image_name);
@@ -4425,47 +4373,20 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 }
 
 Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<Texture2D>(), "glTF import: Tried to read texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
 	if (p_texture >= p_state->textures.size()) {
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture reference detected in '%s'.\n"
-						   "Material references texture index %d, but only %d textures exist in the file.\n"
-						   "Using placeholder texture. Please check the source file for export errors.",
+		WARN_PRINT(vformat("GLTF: Invalid texture reference in '%s'. Index %d is out of bounds (only %d textures available). Using 1x1 white placeholder to prevent cascading crashes.",
 				file_info, p_texture, p_state->textures.size()));
-
-		// Create a 128x128 placeholder texture for invalid references
-		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
-		// Fill with bright magenta checkerboard pattern
-		for (int y = 0; y < 128; y++) {
-			for (int x = 0; x < 128; x++) {
-				Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
-				placeholder_img->set_pixel(x, y, color);
-			}
-		}
-
+		
+		// Create a minimal 1x1 white placeholder to prevent cascading crashes
+		Ref<Image> placeholder_img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
+		placeholder_img->fill(Color(1, 1, 1)); // White placeholder
 		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
 		return placeholder_texture;
 	}
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
-	if (image >= p_state->images.size()) {
-		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-		WARN_PRINT(vformat("GLTF Import Warning: Invalid image reference detected in '%s'.\n"
-						   "Texture index %d references image index %d, but only %d images exist in the file.\n"
-						   "Using placeholder texture. Please check the source file for export errors.",
-				file_info, p_texture, image, p_state->images.size()));
-
-		// Create a 128x128 placeholder texture for invalid image references
-		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
-		// Fill with bright magenta checkerboard pattern
-		for (int y = 0; y < 128; y++) {
-			for (int x = 0; x < 128; x++) {
-				Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
-				placeholder_img->set_pixel(x, y, color);
-			}
-		}
-
-		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
-		return placeholder_texture;
-	}
+	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
 	if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
 		ERR_FAIL_INDEX_V(image, p_state->source_images.size(), Ref<Texture2D>());
 		Ref<PortableCompressedTexture2D> portable_texture;
@@ -4482,29 +4403,7 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		p_state->images.write[image] = portable_texture;
 		p_state->source_images.write[image] = new_img;
 	}
-
-	// Final safety check - if the texture is null, return a placeholder
-	Ref<Texture2D> texture = p_state->images[image];
-	if (texture.is_null()) {
-		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-		WARN_PRINT(vformat("GLTF Import Warning: Null texture detected at image index %d in '%s'. Using placeholder texture.",
-				image, file_info));
-
-		// Create a 128x128 placeholder texture for null textures
-		Ref<Image> placeholder_img = Image::create_empty(128, 128, false, Image::FORMAT_RGB8);
-		// Fill with bright magenta checkerboard pattern
-		for (int y = 0; y < 128; y++) {
-			for (int x = 0; x < 128; x++) {
-				Color color = ((x / 16 + y / 16) % 2 == 0) ? Color(1.0, 0.0, 1.0) : Color(0.6, 0.0, 0.6);
-				placeholder_img->set_pixel(x, y, color);
-			}
-		}
-
-		Ref<ImageTexture> placeholder_texture = ImageTexture::create_from_image(placeholder_img);
-		return placeholder_texture;
-	}
-
-	return texture;
+	return p_state->images[image];
 }
 
 GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_state, StandardMaterial3D::TextureFilter p_filter_mode, bool p_repeats) {
@@ -4524,14 +4423,8 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_sta
 }
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
-	if (p_texture >= p_state->textures.size()) {
-		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
-		WARN_PRINT(vformat("GLTF Import Warning: Invalid texture sampler reference in '%s'.\n"
-						   "Texture index %d is out of bounds (only %d textures available).\n"
-						   "Using default texture sampler settings.",
-				file_info, p_texture, p_state->textures.size()));
-		return p_state->default_texture_sampler;
-	}
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<GLTFTextureSampler>(), "glTF import: Tried to read sampler for texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
+	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<GLTFTextureSampler>());
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
 
 	if (sampler == -1) {
@@ -4989,10 +4882,13 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, bct["index"]);
-					material->set_texture_filter(bct_sampler->get_filter_mode());
-					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+					const GLTFTextureIndex base_color_texture_index = bct["index"];
+					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, base_color_texture_index, TEXTURE_TYPE_GENERIC));
+					const Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, base_color_texture_index);
+					if (bct_sampler.is_valid()) {
+						material->set_texture_filter(bct_sampler->get_filter_mode());
+						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
+					}
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -9075,35 +8971,6 @@ Error GLTFDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
-
-	// Handle hardcoded absolute paths that don't exist
-	if (err != OK && p_path.is_absolute_path()) {
-		String filename = p_path.get_file();
-		String base_dir = p_base_path.is_empty() ? "." : p_base_path;
-		String local_path = base_dir.path_join(filename);
-
-		// Try to find the file locally
-		if (FileAccess::exists(local_path)) {
-			file = FileAccess::open(local_path, FileAccess::READ, &err);
-			if (err == OK) {
-				WARN_PRINT(vformat("Found local file '%s' instead of hardcoded path '%s'", local_path, p_path));
-				p_path = local_path; // Update path for further processing
-			}
-		}
-
-		// If still can't find it, try in current directory
-		if (err != OK) {
-			String current_dir_path = filename; // Just the filename in current directory
-			if (FileAccess::exists(current_dir_path)) {
-				file = FileAccess::open(current_dir_path, FileAccess::READ, &err);
-				if (err == OK) {
-					WARN_PRINT(vformat("Found file '%s' in current directory instead of hardcoded path '%s'", current_dir_path, p_path));
-					p_path = current_dir_path;
-				}
-			}
-		}
-	}
-
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat(R"(Can't open file at path "%s")", p_path));
 	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
