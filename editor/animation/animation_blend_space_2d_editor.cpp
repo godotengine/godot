@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -88,6 +89,8 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	tool_triangle->set_disabled(read_only);
 	auto_triangles->set_disabled(read_only);
 	sync->set_disabled(read_only);
+	default_velocity_limit->set_editable(!read_only);
+	use_velocity_limit->set_disabled(read_only);
 	interpolation->set_disabled(read_only);
 }
 
@@ -176,7 +179,8 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 			if (points[i].distance_to(mb->get_position()) < 10 * EDSCALE) {
 				selected_point = i;
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
-				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+				current_blend_point_editor->setup(blend_space, selected_point, node);
+				InspectorDock::get_inspector_singleton()->edit(current_blend_point_editor.ptr());
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
 				_update_tool_erase();
@@ -184,7 +188,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				return;
 			}
 		}
-
 		//then try to see if a triangle can be selected
 		if (!blend_space->get_auto_triangles()) { //if autotriangles use, disable this
 			for (int i = 0; i < blend_space->get_triangle_count(); i++) {
@@ -650,6 +653,8 @@ void AnimationNodeBlendSpace2DEditor::_update_space() {
 
 	sync->set_pressed(blend_space->is_using_sync());
 	interpolation->select(blend_space->get_blend_mode());
+	use_velocity_limit->set_pressed(blend_space->get_use_velocity_limit());
+	default_velocity_limit->set_value(blend_space->get_velocity_limit());
 
 	max_x_value->set_value(blend_space->get_max_space().x);
 	max_y_value->set_value(blend_space->get_max_space().y);
@@ -686,6 +691,13 @@ void AnimationNodeBlendSpace2DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
+	undo_redo->add_do_method(blend_space.ptr(), "set_use_velocity_limit", use_velocity_limit->is_pressed());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_use_velocity_limit", blend_space->get_use_velocity_limit());
+	undo_redo->add_do_method(blend_space.ptr(), "set_velocity_limit", default_velocity_limit->get_value());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_velocity_limit", blend_space->get_velocity_limit());
+	blending_hb->set_visible(sync->is_pressed());
+	//edit_fade_hb->set_visible(sync->is_pressed() && !Math::is_zero_approx(default_blend_time->get_value()));
+
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -792,6 +804,7 @@ void AnimationNodeBlendSpace2DEditor::_edit_point_pos(double) {
 
 void AnimationNodeBlendSpace2DEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -860,6 +873,83 @@ void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 	undo_redo->commit_action();
 }
 
+void BlendPointEditor2D::setup(Ref<AnimationNodeBlendSpace2D> p_blend_space, int p_idx, Ref<AnimationNode> p_anim_node) {
+	blend_space = p_blend_space;
+	selected_point = p_idx;
+	anim_node = p_anim_node;
+}
+
+void BlendPointEditor2D::set_velocity_limit(float p_value) {
+	if (blend_space.is_valid()) {
+		if (updating) {
+			return;
+		}
+		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Node Velocity Limit"));
+		undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_vl", selected_point, p_value);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_vl", selected_point, blend_space->get_blend_point_vl(selected_point));
+		undo_redo->commit_action();
+		updating = false;
+	}
+}
+double BlendPointEditor2D::get_velocity_limit() const {
+	return (blend_space.is_valid()) ? blend_space->get_blend_point_vl(selected_point) : 0.0;
+}
+
+Ref<AnimationNode> BlendPointEditor2D::get_anim_node() const {
+	return anim_node;
+}
+void BlendPointEditor2D::set_velocity_limit_ease(float const p_ease) {
+	if (blend_space.is_valid()) {
+		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Blendspace Velocity Limit Ease"));
+		undo_redo->add_do_method(blend_space.ptr(), "set_velocity_limit_ease", p_ease);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_velocity_limit_ease", blend_space->get_velocity_limit_ease());
+		undo_redo->commit_action();
+		updating = false;
+	}
+}
+float BlendPointEditor2D::get_velocity_limit_ease() const {
+	return (blend_space.is_valid()) ? blend_space->get_velocity_limit_ease() : 1.0;
+}
+
+void BlendPointEditor2D::set_override_velocity_limit(bool const p_ovl) {
+	if (blend_space.is_valid()) {
+		updating = true;
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change Node Override Velocity Limit"));
+		undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_ovl", selected_point, p_ovl);
+		undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_ovl", selected_point, blend_space->get_blend_point_ovl(selected_point));
+		undo_redo->commit_action();
+		updating = false;
+	}
+}
+bool BlendPointEditor2D::get_override_velocity_limit() const {
+	return (blend_space.is_valid()) ? blend_space->get_blend_point_ovl(selected_point) : false;
+}
+
+void BlendPointEditor2D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_velocity_limit", "value"), &BlendPointEditor2D::set_velocity_limit);
+	ClassDB::bind_method(D_METHOD("get_velocity_limit"), &BlendPointEditor2D::get_velocity_limit);
+	ClassDB::bind_method(D_METHOD("_dont_undo_redo"), &BlendPointEditor2D::_dont_undo_redo);
+	ClassDB::bind_method(D_METHOD("_hide_script_from_inspector"), &BlendPointEditor2D::_hide_script_from_inspector);
+	ClassDB::bind_method(D_METHOD("_hide_metadata_from_inspector"), &BlendPointEditor2D::_hide_metadata_from_inspector);
+
+	ClassDB::bind_method(D_METHOD("get_velocity_limit_ease"), &BlendPointEditor2D::get_velocity_limit_ease);
+	ClassDB::bind_method(D_METHOD("set_velocity_limit_ease"), &BlendPointEditor2D::set_velocity_limit_ease);
+
+	ClassDB::bind_method(D_METHOD("set_override_velocity_limit"), &BlendPointEditor2D::set_override_velocity_limit);
+	ClassDB::bind_method(D_METHOD("get_override_velocity_limit"), &BlendPointEditor2D::get_override_velocity_limit);
+
+	ClassDB::bind_method(D_METHOD("get_anim_node"), &BlendPointEditor2D::get_anim_node);
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "velocity_limit_ease", PROPERTY_HINT_EXP_EASING), "set_velocity_limit_ease", "get_velocity_limit_ease");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_velocity_limit", PROPERTY_HINT_NONE), "set_override_velocity_limit", "get_override_velocity_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "velocity_limit", PROPERTY_HINT_NONE, "0,60,0.01,or_greater,suffix:/s"), "set_velocity_limit", "get_velocity_limit");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_node", PROPERTY_HINT_RESOURCE_TYPE, "AnimationNode"), "", "get_anim_node");
+}
+
 void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_space", &AnimationNodeBlendSpace2DEditor::_update_space);
 	ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpace2DEditor::_update_tool_erase);
@@ -886,6 +976,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(tool_blend);
 	tool_blend->set_pressed(true);
 	tool_blend->set_tooltip_text(TTR("Set the blending position within the space"));
+	tool_blend->set_accessibility_name(TTRC("Set Blending Position"));
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
@@ -894,6 +985,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
 	tool_select->set_tooltip_text(TTR("Select and move points, create points with RMB."));
+	tool_select->set_accessibility_name(TTRC("Edit Points"));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
@@ -902,6 +994,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
 	tool_create->set_tooltip_text(TTR("Create points."));
+	tool_create->set_accessibility_name(TTRC("Create Points"));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
 	tool_triangle = memnew(Button);
@@ -910,6 +1003,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
 	tool_triangle->set_tooltip_text(TTR("Create triangles by connecting points."));
+	tool_triangle->set_accessibility_name(TTRC("Create Triangles"));
 	tool_triangle->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(2));
 
 	tool_erase_sep = memnew(VSeparator);
@@ -918,6 +1012,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
+	tool_erase->set_accessibility_name(TTRC("Erase Points"));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
 	tool_erase->set_disabled(true);
 
@@ -929,6 +1024,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
 	auto_triangles->set_tooltip_text(TTR("Generate blend triangles automatically (instead of manually)"));
+	auto_triangles->set_accessibility_name(TTRC("Generate Triangles"));
 
 	top_hb->add_child(memnew(VSeparator));
 
@@ -938,6 +1034,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
 	snap->set_tooltip_text(TTR("Enable snap and show grid."));
+	snap->set_accessibility_name(TTRC("Snap to Grid"));
 	snap->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_snap_toggled));
 
 	snap_x = memnew(SpinBox);
@@ -970,6 +1067,26 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(interpolation);
 	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
 
+	blending_hb = memnew(HBoxContainer);
+	top_hb->add_child(blending_hb);
+	blending_hb->add_child(memnew(VSeparator));
+
+	blending_hb->add_child(memnew(Label(TTR("Use Velocity Limit:"))));
+	use_velocity_limit = memnew(CheckBox);
+	blending_hb->add_child(use_velocity_limit);
+	use_velocity_limit->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+
+	blending_hb->add_child(memnew(Label(TTR("Default Velocity limit:"))));
+	default_velocity_limit = memnew(SpinBox);
+	blending_hb->add_child(default_velocity_limit);
+	default_velocity_limit->set_min(0.0);
+	default_velocity_limit->set_step(0.01);
+	default_velocity_limit->set_max(60.0);
+	default_velocity_limit->set_suffix("/s");
+	default_velocity_limit->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_config_changed));
+
+	current_blend_point_editor.instantiate();
+
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
 	edit_hb->add_child(memnew(VSeparator));
@@ -988,6 +1105,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_y->set_max(1000);
 	edit_y->set_accessibility_name(TTRC("Blend X Value"));
 	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
+
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
 	open_editor->set_text(TTR("Open Editor"));
@@ -1105,4 +1223,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 
 	dragging_selected = false;
 	dragging_selected_attempt = false;
+}
+AnimationNodeBlendSpace2DEditor::~AnimationNodeBlendSpace2DEditor() {
+	SceneTree::get_singleton()->queue_delete(current_blend_point_editor.ptr());
 }
