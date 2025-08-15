@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectDelay" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Adds a delay audio effect to an audio bus. Plays input signal back after a period of time.
+		Adds a delay audio effect. Plays input signal back after a period of time.
 		Two tap delay and feedback options.
 	</brief_description>
 	<description>
