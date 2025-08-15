@@ -143,6 +143,10 @@ real_t WorldBoundaryShape2D::get_enclosing_radius() const {
 	return distance;
 }
 
+bool WorldBoundaryShape2D::contains_point(const Vector2 &p_point) const {
+	return normal.dot(p_point) < distance;
+}
+
 void WorldBoundaryShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_normal", "normal"), &WorldBoundaryShape2D::set_normal);
 	ClassDB::bind_method(D_METHOD("get_normal"), &WorldBoundaryShape2D::get_normal);
