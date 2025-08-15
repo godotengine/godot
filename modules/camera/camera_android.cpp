@@ -307,7 +307,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				return;
 			}
 			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, false);
+				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_R8, 0);
 				data_y.resize(len > size ? len : size);
 			}
 			memcpy(data_y.ptrw(), data, len);
@@ -319,7 +319,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				return;
 			}
 			if (len != data_uv.size()) {
-				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, false);
+				int64_t size = Image::get_image_data_size(width / 2, height / 2, Image::FORMAT_RG8, 0);
 				data_uv.resize(len > size ? len : size);
 			}
 			memcpy(data_uv.ptrw(), data, len);
@@ -335,7 +335,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				return;
 			}
 			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, false);
+				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGBA8, 0);
 				data_y.resize(len > size ? len : size);
 			}
 			memcpy(data_y.ptrw(), data, len);
@@ -350,7 +350,7 @@ void CameraFeedAndroid::onImage(void *context, AImageReader *p_reader) {
 				return;
 			}
 			if (len != data_y.size()) {
-				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGB8, false);
+				int64_t size = Image::get_image_data_size(width, height, Image::FORMAT_RGB8, 0);
 				data_y.resize(len > size ? len : size);
 			}
 			memcpy(data_y.ptrw(), data, len);
