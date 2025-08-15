@@ -30,7 +30,6 @@
 
 #include "post_import_plugin_skeleton_renamer.h"
 
-#include "editor/import/3d/scene_import_settings.h"
 #include "scene/3d/bone_attachment_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -229,9 +228,9 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 									}
 								} else {
 									if (anim->track_get_path(i).get_subname_count() > 0) {
-										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + node->get_path_to(orig_node) + String(":") + anim->track_get_path(i).get_concatenated_subnames());
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + String(node->get_path_to(orig_node)) + String(":") + anim->track_get_path(i).get_concatenated_subnames());
 									} else {
-										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + node->get_path_to(orig_node));
+										anim->track_set_path(i, UNIQUE_NODE_PREFIX + unique_name + "/" + String(node->get_path_to(orig_node)));
 									}
 								}
 								break;
@@ -245,7 +244,4 @@ void PostImportPluginSkeletonRenamer::internal_process(InternalImportCategory p_
 			skeleton->set_unique_name_in_owner(true);
 		}
 	}
-}
-
-PostImportPluginSkeletonRenamer::PostImportPluginSkeletonRenamer() {
 }

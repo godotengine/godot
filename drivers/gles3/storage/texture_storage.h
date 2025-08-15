@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_STORAGE_GLES3_H
-#define TEXTURE_STORAGE_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -348,6 +347,7 @@ struct RenderTarget {
 	GLuint backbuffer_fbo = 0;
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
+	bool depth_has_stencil = true;
 
 	bool hdr = false; // For Compatibility this effects both 2D and 3D rendering!
 	GLuint color_internal_format = GL_RGBA8;
@@ -372,8 +372,11 @@ struct RenderTarget {
 	RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
 	bool reattach_textures = false;
 
+	Rect2i render_region;
+
 	struct RTOverridden {
 		bool is_overridden = false;
+		bool depth_has_stencil = false;
 		RID color;
 		RID depth;
 		RID velocity;
@@ -384,6 +387,7 @@ struct RenderTarget {
 			GLuint depth;
 			Size2i size;
 			Vector<GLuint> allocated_textures;
+			bool depth_has_stencil;
 		};
 		RBMap<uint32_t, FBOCacheEntry> fbo_cache;
 	} overridden;
@@ -643,6 +647,8 @@ public:
 	virtual void render_target_do_msaa_resolve(RID p_render_target) override {}
 	virtual void render_target_set_use_hdr(RID p_render_target, bool p_use_hdr_2d) override;
 	virtual bool render_target_is_using_hdr(RID p_render_target) const override;
+	virtual void render_target_set_use_debanding(RID p_render_target, bool p_use_debanding) override {}
+	virtual bool render_target_is_using_debanding(RID p_render_target) const override { return false; }
 
 	// new
 	void render_target_set_as_unused(RID p_render_target) override {
@@ -663,6 +669,7 @@ public:
 	GLuint render_target_get_fbo(RID p_render_target) const;
 	GLuint render_target_get_color(RID p_render_target) const;
 	GLuint render_target_get_depth(RID p_render_target) const;
+	bool render_target_get_depth_has_stencil(RID p_render_target) const;
 	void render_target_set_reattach_textures(RID p_render_target, bool p_reattach_textures) const;
 	bool render_target_is_reattach_textures(RID p_render_target) const;
 
@@ -690,6 +697,9 @@ public:
 	virtual RID render_target_get_override_depth(RID p_render_target) const override;
 	virtual RID render_target_get_override_velocity(RID p_render_target) const override;
 	virtual RID render_target_get_override_velocity_depth(RID p_render_target) const override { return RID(); }
+
+	virtual void render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) override;
+	virtual Rect2i render_target_get_render_region(RID p_render_target) const override;
 
 	virtual RID render_target_get_texture(RID p_render_target) override;
 
@@ -725,5 +735,3 @@ inline String TextureStorage::get_framebuffer_error(GLenum p_status) {
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // TEXTURE_STORAGE_GLES3_H

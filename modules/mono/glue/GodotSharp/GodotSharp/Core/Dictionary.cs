@@ -476,13 +476,18 @@ namespace Godot.Collections
     }
 
     /// <summary>
-    /// Typed wrapper around Godot's Dictionary class, a dictionary of Variant
-    /// typed elements allocated in the engine in C++. Useful when
-    /// interfacing with the engine. Otherwise prefer .NET collections
+    /// Typed wrapper around Godot's Dictionary class, a dictionary of <typeparamref name="TKey"/>
+    /// and <typeparamref name="TValue"/> annotated, Variant typed elements allocated in the engine in C++.
+    /// Useful when interfacing with the engine. Otherwise prefer .NET collections
     /// such as <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>.
     /// </summary>
     /// <typeparam name="TKey">The type of the dictionary's keys.</typeparam>
     /// <typeparam name="TValue">The type of the dictionary's values.</typeparam>
+    /// <remarks>
+    /// While the elements are statically annotated to <typeparamref name="TKey"/> and <typeparamref name="TValue"/>,
+    /// the underlying dictionary still stores <see cref="Variant"/>, which has the same memory footprint per element
+    /// as an untyped <see cref="Dictionary"/>.
+    /// </remarks>
     [DebuggerTypeProxy(typeof(DictionaryDebugView<,>))]
     [DebuggerDisplay("Count = {Count}")]
     [SuppressMessage("Design", "CA1001", MessageId = "Types that own disposable fields should be disposable",

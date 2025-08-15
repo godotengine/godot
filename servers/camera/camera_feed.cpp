@@ -58,6 +58,9 @@ void CameraFeed::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_formats"), &CameraFeed::get_formats);
 	ClassDB::bind_method(D_METHOD("set_format", "index", "parameters"), &CameraFeed::set_format);
 
+	GDVIRTUAL_BIND(_activate_feed);
+	GDVIRTUAL_BIND(_deactivate_feed);
+
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("format_changed"));
 
@@ -193,12 +196,13 @@ void CameraFeed::set_rgb_image(const Ref<Image> &p_rgb_img) {
 			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_rgb_img);
 			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
 
-			emit_signal(SNAME("format_changed"));
+			emit_signal(format_changed_signal_name);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_rgb_img);
 		}
 
 		datatype = CameraFeed::FEED_RGB;
+		emit_signal(frame_changed_signal_name);
 	}
 }
 
@@ -216,12 +220,13 @@ void CameraFeed::set_ycbcr_image(const Ref<Image> &p_ycbcr_img) {
 			RID new_texture = RenderingServer::get_singleton()->texture_2d_create(p_ycbcr_img);
 			RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_RGBA_IMAGE], new_texture);
 
-			emit_signal(SNAME("format_changed"));
+			emit_signal(format_changed_signal_name);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
 		}
 
 		datatype = CameraFeed::FEED_YCBCR;
+		emit_signal(frame_changed_signal_name);
 	}
 }
 
@@ -249,13 +254,14 @@ void CameraFeed::set_ycbcr_images(const Ref<Image> &p_y_img, const Ref<Image> &p
 				RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_CBCR_IMAGE], new_texture);
 			}
 
-			emit_signal(SNAME("format_changed"));
+			emit_signal(format_changed_signal_name);
 		} else {
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
 			RenderingServer::get_singleton()->texture_2d_update(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
 		}
 
 		datatype = CameraFeed::FEED_YCBCR_SEP;
+		emit_signal(frame_changed_signal_name);
 	}
 }
 
@@ -265,20 +271,22 @@ void CameraFeed::set_external(int p_width, int p_height) {
 		base_width = p_width;
 		base_height = p_height;
 
-		auto new_texture = RenderingServer::get_singleton()->texture_external_create(p_width, p_height, 0);
+		RID new_texture = RenderingServer::get_singleton()->texture_external_create(p_width, p_height, 0);
 		RenderingServer::get_singleton()->texture_replace(texture[CameraServer::FEED_YCBCR_IMAGE], new_texture);
 	}
 
 	datatype = CameraFeed::FEED_EXTERNAL;
+	emit_signal(frame_changed_signal_name);
 }
 
 bool CameraFeed::activate_feed() {
-	// nothing to do here
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_activate_feed, ret);
+	return ret;
 }
 
 void CameraFeed::deactivate_feed() {
-	// nothing to do here
+	GDVIRTUAL_CALL(_deactivate_feed);
 }
 
 bool CameraFeed::set_format(int p_index, const Dictionary &p_parameters) {

@@ -30,11 +30,16 @@
 
 #include "file_access_encrypted.h"
 
-#include "core/crypto/crypto_core.h"
-#include "core/string/print_string.h"
 #include "core/variant/variant.h"
 
-#include <stdio.h>
+CryptoCore::RandomGenerator *FileAccessEncrypted::_fae_static_rng = nullptr;
+
+void FileAccessEncrypted::deinitialize() {
+	if (_fae_static_rng) {
+		memdelete(_fae_static_rng);
+		_fae_static_rng = nullptr;
+	}
+}
 
 Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic, const Vector<uint8_t> &p_iv) {
 	ERR_FAIL_COND_V_MSG(file.is_valid(), ERR_ALREADY_IN_USE, vformat("Can't open file while another file from path '%s' is open.", file->get_path_absolute()));
@@ -51,9 +56,15 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		key = p_key;
 		if (p_iv.is_empty()) {
 			iv.resize(16);
-			CryptoCore::RandomGenerator rng;
-			ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
-			Error err = rng.get_random_bytes(iv.ptrw(), 16);
+			if (unlikely(!_fae_static_rng)) {
+				_fae_static_rng = memnew(CryptoCore::RandomGenerator);
+				if (_fae_static_rng->init() != OK) {
+					memdelete(_fae_static_rng);
+					_fae_static_rng = nullptr;
+					ERR_FAIL_V_MSG(FAILED, "Failed to initialize random number generator.");
+				}
+			}
+			Error err = _fae_static_rng->get_random_bytes(iv.ptrw(), 16);
 			ERR_FAIL_COND_V(err != OK, err);
 		} else {
 			ERR_FAIL_COND_V(p_iv.size() != 16, ERR_INVALID_PARAMETER);
@@ -210,10 +221,16 @@ bool FileAccessEncrypted::eof_reached() const {
 }
 
 uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
-	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 
+	if (!p_length) {
+		return 0;
+	}
+
+	ERR_FAIL_NULL_V(p_dst, -1);
+
 	uint64_t to_copy = MIN(p_length, get_length() - pos);
+
 	memcpy(p_dst, data.ptr() + pos, to_copy);
 	pos += to_copy;
 
@@ -230,7 +247,12 @@ Error FileAccessEncrypted::get_error() const {
 
 bool FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 	ERR_FAIL_COND_V_MSG(!writing, false, "File has not been opened in write mode.");
-	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+
+	if (!p_length) {
+		return true;
+	}
+
+	ERR_FAIL_NULL_V(p_src, false);
 
 	if (pos + p_length >= get_length()) {
 		ERR_FAIL_COND_V(data.resize(pos + p_length) != OK, false);
@@ -238,6 +260,7 @@ bool FileAccessEncrypted::store_buffer(const uint8_t *p_src, uint64_t p_length) 
 
 	memcpy(data.ptrw() + pos, p_src, p_length);
 	pos += p_length;
+
 	return true;
 }
 
@@ -256,7 +279,27 @@ bool FileAccessEncrypted::file_exists(const String &p_name) {
 }
 
 uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
-	return 0;
+	if (file.is_valid()) {
+		return file->get_modified_time(p_file);
+	} else {
+		return 0;
+	}
+}
+
+uint64_t FileAccessEncrypted::_get_access_time(const String &p_file) {
+	if (file.is_valid()) {
+		return file->get_access_time(p_file);
+	} else {
+		return 0;
+	}
+}
+
+int64_t FileAccessEncrypted::_get_size(const String &p_file) {
+	if (file.is_valid()) {
+		return file->get_size(p_file);
+	} else {
+		return -1;
+	}
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessEncrypted::_get_unix_permissions(const String &p_file) {

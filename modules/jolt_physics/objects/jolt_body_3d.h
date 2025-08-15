@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_BODY_3D_H
-#define JOLT_BODY_3D_H
+#pragma once
 
 #include "jolt_physics_direct_body_state_3d.h"
 #include "jolt_shaped_object_3d.h"
@@ -57,6 +56,10 @@ public:
 	};
 
 private:
+	friend class JoltBodyActivationListener3D;
+
+	SelfList<JoltBody3D> call_queries_element;
+
 	LocalVector<RID> exceptions;
 	LocalVector<Contact> contacts;
 	LocalVector<JoltArea3D *> areas;
@@ -96,7 +99,7 @@ private:
 
 	uint32_t locked_axes = 0;
 
-	bool sync_state = false;
+	bool sleep_allowed = true;
 	bool sleep_initially = false;
 	bool custom_center_of_mass = false;
 	bool custom_integrator = false;
@@ -108,18 +111,19 @@ private:
 
 	virtual void _add_to_space() override;
 
+	bool _should_call_queries() const { return state_sync_callback.is_valid() || custom_integration_callback.is_valid(); }
+	void _enqueue_call_queries();
+	void _dequeue_call_queries();
+
 	void _integrate_forces(float p_step, JPH::Body &p_jolt_body);
-
 	void _move_kinematic(float p_step, JPH::Body &p_jolt_body);
-
-	void _pre_step_static(float p_step, JPH::Body &p_jolt_body);
-	void _pre_step_rigid(float p_step, JPH::Body &p_jolt_body);
-	void _pre_step_kinematic(float p_step, JPH::Body &p_jolt_body);
 
 	JPH::EAllowedDOFs _calculate_allowed_dofs() const;
 
 	JPH::MassProperties _calculate_mass_properties(const JPH::Shape &p_shape) const;
 	JPH::MassProperties _calculate_mass_properties() const;
+
+	void _on_wake_up();
 
 	void _update_mass_properties();
 	void _update_gravity(JPH::Body &p_jolt_body);
@@ -128,13 +132,14 @@ private:
 	void _update_group_filter();
 	void _update_joint_constraints();
 	void _update_possible_kinematic_contacts();
+	void _update_sleep_allowed();
 
 	void _destroy_joint_constraints();
 
 	void _exit_all_areas();
 
 	void _mode_changed();
-	virtual void _shapes_built() override;
+	virtual void _shapes_committed() override;
 	virtual void _space_changing() override;
 	virtual void _space_changed() override;
 	void _areas_changed();
@@ -144,6 +149,7 @@ private:
 	void _exceptions_changed();
 	void _axis_lock_changed();
 	void _contact_reporting_changed();
+	void _sleep_allowed_changed();
 
 public:
 	JoltBody3D();
@@ -175,8 +181,9 @@ public:
 	void put_to_sleep() { set_is_sleeping(true); }
 	void wake_up() { set_is_sleeping(false); }
 
-	bool can_sleep() const;
-	void set_can_sleep(bool p_enabled);
+	bool is_sleep_allowed() const { return sleep_allowed; }
+	bool is_sleep_actually_allowed() const;
+	void set_is_sleep_allowed(bool p_enabled);
 
 	Basis get_principal_inertia_axes() const;
 	Vector3 get_inverse_inertia() const;
@@ -238,7 +245,7 @@ public:
 	void add_joint(JoltJoint3D *p_joint);
 	void remove_joint(JoltJoint3D *p_joint);
 
-	void call_queries(JPH::Body &p_jolt_body);
+	void call_queries();
 
 	virtual void pre_step(float p_step, JPH::Body &p_jolt_body) override;
 
@@ -287,10 +294,10 @@ public:
 	void set_collision_priority(float p_priority) { collision_priority = p_priority; }
 
 	DampMode get_linear_damp_mode() const { return linear_damp_mode; }
-	void set_linear_damp_mode(DampMode p_mode) { linear_damp_mode = p_mode; }
+	void set_linear_damp_mode(DampMode p_mode);
 
 	DampMode get_angular_damp_mode() const { return angular_damp_mode; }
-	void set_angular_damp_mode(DampMode p_mode) { angular_damp_mode = p_mode; }
+	void set_angular_damp_mode(DampMode p_mode);
 
 	bool is_axis_locked(PhysicsServer3D::BodyAxis p_axis) const;
 	void set_axis_lock(PhysicsServer3D::BodyAxis p_axis, bool p_enabled);
@@ -300,5 +307,3 @@ public:
 	virtual bool can_interact_with(const JoltSoftBody3D &p_other) const override;
 	virtual bool can_interact_with(const JoltArea3D &p_other) const override;
 };
-
-#endif // JOLT_BODY_3D_H

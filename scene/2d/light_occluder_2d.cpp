@@ -51,7 +51,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 			}
 			rect_cache_dirty = false;
 		} else {
-			if (polygon.size() == 0) {
+			if (polygon.is_empty()) {
 				item_rect = Rect2();
 			} else {
 				Vector2 d = Vector2(LINE_GRAB_WIDTH, LINE_GRAB_WIDTH);
@@ -74,7 +74,7 @@ bool OccluderPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, double
 		const real_t d = LINE_GRAB_WIDTH / 2 + p_tolerance;
 		const Vector2 *points = polygon.ptr();
 		for (int i = 0; i < polygon.size() - 1; i++) {
-			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, &points[i]);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, points[i], points[i + 1]);
 			if (p.distance_to(p_point) <= d) {
 				return true;
 			}
@@ -206,7 +206,7 @@ void LightOccluder2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_visible_in_tree() && is_physics_interpolated()) {
+			if (is_visible_in_tree() && is_physics_interpolated_and_enabled()) {
 				// Explicitly make sure the transform is up to date in RenderingServer before
 				// resetting. This is necessary because NOTIFICATION_TRANSFORM_CHANGED
 				// is normally deferred, and a client change to transform will not always be sent
@@ -266,11 +266,11 @@ int LightOccluder2D::get_occluder_light_mask() const {
 PackedStringArray LightOccluder2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
-	if (!occluder_polygon.is_valid()) {
+	if (occluder_polygon.is_null()) {
 		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
-	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
+	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().is_empty()) {
 		warnings.push_back(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 

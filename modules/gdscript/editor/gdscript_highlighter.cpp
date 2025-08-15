@@ -34,8 +34,10 @@
 #include "../gdscript_tokenizer.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_settings.h"
+#include "core/core_constants.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/text_edit.h"
 
 Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_line) {
 	Dictionary color_map;
@@ -93,7 +95,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 		in_region = color_region_cache[p_line - 1];
 	}
 
-	const String &str = text_edit->get_line(p_line);
+	const String &str = text_edit->get_line_with_ime(p_line);
 	const int line_length = str.length();
 	Color prev_color;
 
@@ -147,6 +149,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							if (start_key[k] != str[from + k]) {
 								match = false;
 								break;
+							}
+						}
+						// "#region" and "#endregion" only highlighted if they're the first region on the line.
+						if (color_regions[c].type == ColorRegion::TYPE_CODE_REGION) {
+							Vector<String> str_stripped_split = str.strip_edges().split_spaces(1);
+							if (!str_stripped_split.is_empty() &&
+									str_stripped_split[0] != "#region" &&
+									str_stripped_split[0] != "#endregion") {
+								match = false;
 							}
 						}
 						if (!match) {
@@ -350,15 +361,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		// Special cases for numbers.
 		if (in_number && !is_a_digit) {
-			if (str[j] == 'b' && str[j - 1] == '0') {
+			if ((str[j] == 'b' || str[j] == 'B') && str[j - 1] == '0') {
 				is_bin_notation = true;
-			} else if (str[j] == 'x' && str[j - 1] == '0') {
+			} else if ((str[j] == 'x' || str[j] == 'X') && str[j - 1] == '0') {
 				is_hex_notation = true;
-			} else if (!((str[j] == '-' || str[j] == '+') && str[j - 1] == 'e' && !prev_is_digit) &&
-					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'x' || str[j - 1] == '.')) &&
-					!(str[j] == 'e' && (prev_is_digit || str[j - 1] == '_')) &&
+			} else if (!((str[j] == '-' || str[j] == '+') && (str[j - 1] == 'e' || str[j - 1] == 'E') && !prev_is_digit) &&
+					!(str[j] == '_' && (prev_is_digit || str[j - 1] == 'b' || str[j - 1] == 'B' || str[j - 1] == 'x' || str[j - 1] == 'X' || str[j - 1] == '.')) &&
+					!((str[j] == 'e' || str[j] == 'E') && (prev_is_digit || str[j - 1] == '_')) &&
 					!(str[j] == '.' && (prev_is_digit || (!prev_is_binary_op && (j > 0 && (str[j - 1] == '_' || str[j - 1] == '-' || str[j - 1] == '+' || str[j - 1] == '~'))))) &&
-					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e')) {
+					!((str[j] == '-' || str[j] == '+' || str[j] == '~') && !is_binary_op && !prev_is_binary_op && str[j - 1] != 'e' && str[j - 1] != 'E')) {
 				/* This condition continues number highlighting in special cases.
 				1st row: '+' or '-' after scientific notation (like 3e-4);
 				2nd row: '_' as a numeric separator;
@@ -420,6 +431,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				expect_type = false;
 			} else if (member_keywords.has(word)) {
 				col = member_keywords[word];
+				in_member_variable = true;
 			}
 
 			if (col != Color()) {
@@ -432,7 +444,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					}
 				}
 
-				if (col != Color()) {
+				if (!in_member_variable && col != Color()) {
 					in_keyword = true;
 					keyword_color = col;
 				}
@@ -458,7 +470,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FUNC)) {
 						in_function_declaration = true;
 					}
-				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::CONST)) {
+				} else if (prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::VAR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::FOR) || prev_text == GDScriptTokenizer::get_token_name(GDScriptTokenizer::Token::TK_CONST)) {
 					in_var_const_declaration = true;
 				}
 
@@ -482,7 +494,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				k--;
 			}
 
-			if (str[k] == '.') {
+			if (str[k] == '.' && (k < 1 || str[k - 1] != '.')) {
 				in_member_variable = true;
 			}
 		}
@@ -560,12 +572,17 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 		}
 
-		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand.
+		// Set color of StringName, keeping symbol color for binary '&&' and '&'.
 		if (!in_string_name && in_region == -1 && str[j] == '&' && !is_binary_op) {
-			if (j >= 2 && str[j - 1] == '&' && str[j - 2] != '&' && prev_is_binary_op) {
-				is_binary_op = true;
-			} else if (j == 0 || (j > 0 && str[j - 1] != '&') || prev_is_binary_op) {
+			if (j + 1 <= line_length - 1 && (str[j + 1] == '\'' || str[j + 1] == '"')) {
 				in_string_name = true;
+				// Cover edge cases of i.e. '+&""' and '&&&""', so the StringName is properly colored.
+				if (prev_is_binary_op && j >= 2 && str[j - 1] == '&' && str[j - 2] != '&') {
+					in_string_name = false;
+					is_binary_op = true;
+				}
+			} else {
+				is_binary_op = true;
 			}
 		} else if (in_region != -1 || is_a_symbol) {
 			in_string_name = false;
@@ -612,7 +629,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color = keyword_color;
 		} else if (in_signal_declaration) {
 			next_type = SIGNAL;
-			color = member_color;
+			color = member_variable_color;
 		} else if (in_function_name) {
 			next_type = FUNCTION;
 			if (!in_lambda && in_function_declaration) {
@@ -631,7 +648,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			color = type_color;
 		} else if (in_member_variable) {
 			next_type = MEMBER;
-			color = member_color;
+			color = member_variable_color;
 		} else {
 			next_type = IDENTIFIER;
 		}
@@ -694,7 +711,7 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	symbol_color = EDITOR_GET("text_editor/theme/highlighting/symbol_color");
 	function_color = EDITOR_GET("text_editor/theme/highlighting/function_color");
 	number_color = EDITOR_GET("text_editor/theme/highlighting/number_color");
-	member_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
+	member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 
 	/* Engine types. */
 	const Color types_color = EDITOR_GET("text_editor/theme/highlighting/engine_type_color");
@@ -704,6 +721,13 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		if (ClassDB::is_class_exposed(E)) {
 			class_names[E] = types_color;
 		}
+	}
+
+	/* Global enums. */
+	List<StringName> global_enums;
+	CoreConstants::get_global_enums(&global_enums);
+	for (const StringName &enum_name : global_enums) {
+		class_names[enum_name] = types_color;
 	}
 
 	/* User types. */
@@ -741,13 +765,11 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	/* Reserved words. */
 	const Color keyword_color = EDITOR_GET("text_editor/theme/highlighting/keyword_color");
 	const Color control_flow_keyword_color = EDITOR_GET("text_editor/theme/highlighting/control_flow_keyword_color");
-	List<String> keyword_list;
-	gdscript->get_reserved_words(&keyword_list);
-	for (const String &E : keyword_list) {
-		if (gdscript->is_control_flow_keyword(E)) {
-			reserved_keywords[StringName(E)] = control_flow_keyword_color;
+	for (const String &keyword : gdscript->get_reserved_words()) {
+		if (gdscript->is_control_flow_keyword(keyword)) {
+			reserved_keywords[StringName(keyword)] = control_flow_keyword_color;
 		} else {
-			reserved_keywords[StringName(E)] = keyword_color;
+			reserved_keywords[StringName(keyword)] = keyword_color;
 		}
 	}
 
@@ -766,23 +788,19 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 		global_functions.insert(E);
 	}
 
-	/* Comments */
+	/* Comments. */
 	const Color comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
-	List<String> comments;
-	gdscript->get_comment_delimiters(&comments);
-	for (const String &comment : comments) {
-		String beg = comment.get_slice(" ", 0);
-		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+	for (const String &comment : gdscript->get_comment_delimiters()) {
+		String beg = comment.get_slicec(' ', 0);
+		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, comment_color, end.is_empty());
 	}
 
 	/* Doc comments */
 	const Color doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
-	List<String> doc_comments;
-	gdscript->get_doc_comment_delimiters(&doc_comments);
-	for (const String &doc_comment : doc_comments) {
-		String beg = doc_comment.get_slice(" ", 0);
-		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+	for (const String &doc_comment : gdscript->get_doc_comment_delimiters()) {
+		String beg = doc_comment.get_slicec(' ', 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, doc_comment_color, end.is_empty());
 	}
 
@@ -802,15 +820,14 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "\"\"\"", "\"\"\"", string_color, false, true);
 	add_color_region(ColorRegion::TYPE_MULTILINE_STRING, "'''", "'''", string_color, false, true);
 
-	const Ref<Script> scr = _get_edited_resource();
+	/* Members. */
+	Ref<Script> scr = _get_edited_resource();
 	if (scr.is_valid()) {
-		/* Member types. */
-		const Color member_variable_color = EDITOR_GET("text_editor/theme/highlighting/member_variable_color");
 		StringName instance_base = scr->get_instance_base_type();
 		if (instance_base != StringName()) {
-			List<PropertyInfo> plist;
-			ClassDB::get_property_list(instance_base, &plist);
-			for (const PropertyInfo &E : plist) {
+			List<PropertyInfo> property_list;
+			ClassDB::get_property_list(instance_base, &property_list);
+			for (const PropertyInfo &E : property_list) {
 				String prop_name = E.name;
 				if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
 					continue;
@@ -821,91 +838,67 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 				member_keywords[prop_name] = member_variable_color;
 			}
 
-			List<String> clist;
-			ClassDB::get_integer_constant_list(instance_base, &clist);
-			for (const String &E : clist) {
+			List<MethodInfo> signal_list;
+			ClassDB::get_signal_list(instance_base, &signal_list);
+			for (const MethodInfo &E : signal_list) {
+				member_keywords[E.name] = member_variable_color;
+			}
+
+			// For callables.
+			List<MethodInfo> method_list;
+			ClassDB::get_method_list(instance_base, &method_list);
+			for (const MethodInfo &E : method_list) {
+				member_keywords[E.name] = member_variable_color;
+			}
+
+			List<String> constant_list;
+			ClassDB::get_integer_constant_list(instance_base, &constant_list);
+			for (const String &E : constant_list) {
 				member_keywords[E] = member_variable_color;
 			}
+
+			List<StringName> builtin_enums;
+			ClassDB::get_enum_list(instance_base, &builtin_enums);
+			for (const StringName &E : builtin_enums) {
+				member_keywords[E] = types_color;
+			}
 		}
-	}
 
-	const String text_edit_color_theme = EDITOR_GET("text_editor/theme/color_theme");
-	const bool godot_2_theme = text_edit_color_theme == "Godot 2";
+		List<PropertyInfo> scr_property_list;
+		scr->get_script_property_list(&scr_property_list);
+		for (const PropertyInfo &E : scr_property_list) {
+			String prop_name = E.name;
+			if (E.usage & PROPERTY_USAGE_CATEGORY || E.usage & PROPERTY_USAGE_GROUP || E.usage & PROPERTY_USAGE_SUBGROUP) {
+				continue;
+			}
+			if (prop_name.contains_char('/')) {
+				continue;
+			}
+			member_keywords[prop_name] = member_variable_color;
+		}
 
-	if (godot_2_theme || EditorThemeManager::is_dark_theme()) {
-		function_definition_color = Color(0.4, 0.9, 1.0);
-		global_function_color = Color(0.64, 0.64, 0.96);
-		node_path_color = Color(0.72, 0.77, 0.49);
-		node_ref_color = Color(0.39, 0.76, 0.35);
-		annotation_color = Color(1.0, 0.7, 0.45);
-		string_name_color = Color(1.0, 0.76, 0.65);
-		comment_marker_colors[COMMENT_MARKER_CRITICAL] = Color(0.77, 0.35, 0.35);
-		comment_marker_colors[COMMENT_MARKER_WARNING] = Color(0.72, 0.61, 0.48);
-		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.56, 0.67, 0.51);
-	} else {
-		function_definition_color = Color(0, 0.6, 0.6);
-		global_function_color = Color(0.36, 0.18, 0.72);
-		node_path_color = Color(0.18, 0.55, 0);
-		node_ref_color = Color(0.0, 0.5, 0);
-		annotation_color = Color(0.8, 0.37, 0);
-		string_name_color = Color(0.8, 0.56, 0.45);
-		comment_marker_colors[COMMENT_MARKER_CRITICAL] = Color(0.8, 0.14, 0.14);
-		comment_marker_colors[COMMENT_MARKER_WARNING] = Color(0.75, 0.39, 0.03);
-		comment_marker_colors[COMMENT_MARKER_NOTICE] = Color(0.24, 0.54, 0.09);
-	}
+		List<MethodInfo> scr_signal_list;
+		scr->get_script_signal_list(&scr_signal_list);
+		for (const MethodInfo &E : scr_signal_list) {
+			member_keywords[E.name] = member_variable_color;
+		}
 
-	// TODO: Move to editor_settings.cpp
-	EDITOR_DEF("text_editor/theme/highlighting/gdscript/function_definition_color", function_definition_color);
-	EDITOR_DEF("text_editor/theme/highlighting/gdscript/global_function_color", global_function_color);
-	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_path_color", node_path_color);
-	EDITOR_DEF("text_editor/theme/highlighting/gdscript/node_reference_color", node_ref_color);
-	EDITOR_DEF("text_editor/theme/highlighting/gdscript/annotation_color", annotation_color);
-	EDITOR_DEF("text_editor/theme/highlighting/gdscript/string_name_color", string_name_color);
-	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/critical_color", comment_marker_colors[COMMENT_MARKER_CRITICAL]);
-	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/warning_color", comment_marker_colors[COMMENT_MARKER_WARNING]);
-	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/notice_color", comment_marker_colors[COMMENT_MARKER_NOTICE]);
-	// The list is based on <https://github.com/KDE/syntax-highlighting/blob/master/data/syntax/alert.xml>.
-	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/critical_list", "ALERT,ATTENTION,CAUTION,CRITICAL,DANGER,SECURITY");
-	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/warning_list", "BUG,DEPRECATED,FIXME,HACK,TASK,TBD,TODO,WARNING");
-	EDITOR_DEF("text_editor/theme/highlighting/comment_markers/notice_list", "INFO,NOTE,NOTICE,TEST,TESTING");
+		// For callables.
+		List<MethodInfo> scr_method_list;
+		scr->get_script_method_list(&scr_method_list);
+		for (const MethodInfo &E : scr_method_list) {
+			member_keywords[E.name] = member_variable_color;
+		}
 
-	if (text_edit_color_theme == "Default" || godot_2_theme) {
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/gdscript/function_definition_color",
-				function_definition_color,
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/gdscript/global_function_color",
-				global_function_color,
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/gdscript/node_path_color",
-				node_path_color,
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/gdscript/node_reference_color",
-				node_ref_color,
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/gdscript/annotation_color",
-				annotation_color,
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/gdscript/string_name_color",
-				string_name_color,
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/comment_markers/critical_color",
-				comment_marker_colors[COMMENT_MARKER_CRITICAL],
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/comment_markers/warning_color",
-				comment_marker_colors[COMMENT_MARKER_WARNING],
-				true);
-		EditorSettings::get_singleton()->set_initial_value(
-				"text_editor/theme/highlighting/comment_markers/notice_color",
-				comment_marker_colors[COMMENT_MARKER_NOTICE],
-				true);
+		Ref<Script> scr_class = scr;
+		while (scr_class.is_valid()) {
+			HashMap<StringName, Variant> scr_constant_list;
+			scr_class->get_constants(&scr_constant_list);
+			for (const KeyValue<StringName, Variant> &E : scr_constant_list) {
+				member_keywords[E.key.operator String()] = member_variable_color;
+			}
+			scr_class = scr_class->get_base_script();
+		}
 	}
 
 	function_definition_color = EDITOR_GET("text_editor/theme/highlighting/gdscript/function_definition_color");

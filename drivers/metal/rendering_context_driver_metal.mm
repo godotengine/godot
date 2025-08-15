@@ -45,6 +45,10 @@ RenderingContextDriverMetal::~RenderingContextDriverMetal() {
 }
 
 Error RenderingContextDriverMetal::initialize() {
+	if (OS::get_singleton()->get_environment("MTL_CAPTURE_ENABLED") == "1") {
+		capture_available = true;
+	}
+
 	metal_device = MTLCreateSystemDefaultDevice();
 #if TARGET_OS_OSX
 	if (@available(macOS 13.3, *)) {
@@ -52,7 +56,7 @@ Error RenderingContextDriverMetal::initialize() {
 	}
 #endif
 	device.type = DEVICE_TYPE_INTEGRATED_GPU;
-	device.vendor = VENDOR_APPLE;
+	device.vendor = Vendor::VENDOR_APPLE;
 	device.workarounds = Workarounds();
 
 	MetalDeviceProperties props(metal_device);
@@ -79,7 +83,7 @@ void RenderingContextDriverMetal::driver_free(RenderingDeviceDriver *p_driver) {
 	memdelete(p_driver);
 }
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) SurfaceLayer : public RenderingContextDriverMetal::Surface {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceLayer : public RenderingContextDriverMetal::Surface {
 	CAMetalLayer *__unsafe_unretained layer = nil;
 	LocalVector<MDFrameBuffer> frame_buffers;
 	LocalVector<id<MTLDrawable>> drawables;

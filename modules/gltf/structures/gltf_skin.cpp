@@ -145,9 +145,8 @@ Dictionary GLTFSkin::get_joint_i_to_name() {
 
 void GLTFSkin::set_joint_i_to_name(Dictionary p_joint_i_to_name) {
 	joint_i_to_name = HashMap<int, StringName>();
-	Array keys = p_joint_i_to_name.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		joint_i_to_name[keys[i]] = p_joint_i_to_name[keys[i]];
+	for (const KeyValue<Variant, Variant> &kv : p_joint_i_to_name) {
+		joint_i_to_name[kv.key] = kv.value;
 	}
 }
 
@@ -205,18 +204,18 @@ Error GLTFSkin::from_dictionary(const Dictionary &dict) {
 	ERR_FAIL_COND_V(!dict.has("joint_i_to_bone_i"), ERR_INVALID_DATA);
 	Dictionary joint_i_to_bone_i_dict = dict["joint_i_to_bone_i"];
 	joint_i_to_bone_i.clear();
-	for (int i = 0; i < joint_i_to_bone_i_dict.keys().size(); ++i) {
-		int key = joint_i_to_bone_i_dict.keys()[i];
-		int value = joint_i_to_bone_i_dict[key];
+	for (const KeyValue<Variant, Variant> &kv : joint_i_to_bone_i_dict) {
+		int key = kv.key;
+		int value = kv.value;
 		joint_i_to_bone_i[key] = value;
 	}
 
 	ERR_FAIL_COND_V(!dict.has("joint_i_to_name"), ERR_INVALID_DATA);
 	Dictionary joint_i_to_name_dict = dict["joint_i_to_name"];
 	joint_i_to_name.clear();
-	for (int i = 0; i < joint_i_to_name_dict.keys().size(); ++i) {
-		int key = joint_i_to_name_dict.keys()[i];
-		StringName value = joint_i_to_name_dict[key];
+	for (const KeyValue<Variant, Variant> &kv : joint_i_to_name_dict) {
+		int key = kv.key;
+		StringName value = kv.value;
 		joint_i_to_name[key] = value;
 	}
 	if (dict.has("godot_skin")) {

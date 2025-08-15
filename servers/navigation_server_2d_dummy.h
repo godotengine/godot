@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_SERVER_2D_DUMMY_H
-#define NAVIGATION_SERVER_2D_DUMMY_H
+#pragma once
 
 #include "servers/navigation_server_2d.h"
 
@@ -44,6 +43,8 @@ public:
 	bool map_is_active(RID p_map) const override { return false; }
 	void map_set_cell_size(RID p_map, real_t p_cell_size) override {}
 	real_t map_get_cell_size(RID p_map) const override { return 0; }
+	void map_set_merge_rasterizer_cell_scale(RID p_map, float p_value) override {}
+	float map_get_merge_rasterizer_cell_scale(RID p_map) const override { return 1.0; }
 	void map_set_use_edge_connections(RID p_map, bool p_enabled) override {}
 	bool map_get_use_edge_connections(RID p_map) const override { return false; }
 	void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) override {}
@@ -60,8 +61,13 @@ public:
 	void map_force_update(RID p_map) override {}
 	Vector2 map_get_random_point(RID p_map, uint32_t p_naviation_layers, bool p_uniformly) const override { return Vector2(); }
 	uint32_t map_get_iteration_id(RID p_map) const override { return 0; }
+	void map_set_use_async_iterations(RID p_map, bool p_enabled) override {}
+	bool map_get_use_async_iterations(RID p_map) const override { return false; }
 
 	RID region_create() override { return RID(); }
+	uint32_t region_get_iteration_id(RID p_region) const override { return 0; }
+	void region_set_use_async_iterations(RID p_region, bool p_enabled) override {}
+	bool region_get_use_async_iterations(RID p_region) const override { return false; }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
 	bool region_get_enabled(RID p_region) const override { return false; }
 	void region_set_use_edge_connections(RID p_region, bool p_enabled) override {}
@@ -85,8 +91,10 @@ public:
 	Vector2 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override { return Vector2(); }
 	Vector2 region_get_closest_point(RID p_region, const Vector2 &p_point) const override { return Vector2(); }
 	Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override { return Vector2(); }
+	Rect2 region_get_bounds(RID p_region) const override { return Rect2(); }
 
 	RID link_create() override { return RID(); }
+	uint32_t link_get_iteration_id(RID p_link) const override { return 0; }
 	void link_set_map(RID p_link, RID p_map) override {}
 	RID link_get_map(RID p_link) const override { return RID(); }
 	void link_set_enabled(RID p_link, bool p_enabled) override {}
@@ -160,9 +168,14 @@ public:
 
 	void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result, const Callable &p_callback = Callable()) override {}
 
+	void set_active(bool p_active) override {}
+	void process(double p_delta_time) override {}
+	void physics_process(double p_delta_time) override {}
 	void init() override {}
 	void sync() override {}
 	void finish() override {}
+
+	int get_process_info(ProcessInfo p_info) const override { return 0; }
 
 	void free(RID p_object) override {}
 
@@ -179,5 +192,3 @@ public:
 	void set_debug_enabled(bool p_enabled) {}
 	bool get_debug_enabled() const { return false; }
 };
-
-#endif // NAVIGATION_SERVER_2D_DUMMY_H

@@ -103,15 +103,6 @@
     <GodotDefineConstants>$(GodotDefineConstants);$(GodotPlatformConstants);$(GodotVersionConstants)</GodotDefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <!-- ExportDebug also defines DEBUG like Debug does. -->
-    <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
-    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
-    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
-
-    <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
-  </PropertyGroup>
-
   <Import Project="$(MSBuildThisFileDirectory)\Android.props" Condition=" '$(GodotTargetPlatform)' == 'android' " />
   <Import Project="$(MSBuildThisFileDirectory)\iOSNativeAOT.props" Condition=" '$(GodotTargetPlatform)' == 'ios' " />
 </Project>

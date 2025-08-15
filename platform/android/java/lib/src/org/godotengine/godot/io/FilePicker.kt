@@ -51,6 +51,7 @@ import org.godotengine.godot.io.file.MediaStoreData
 internal class FilePicker {
 	companion object {
 		private const val FILE_PICKER_REQUEST = 1000
+		private const val FILE_SAVE_REQUEST = 1001
 		private val TAG = FilePicker::class.java.simpleName
 
 		// Constants for fileMode values
@@ -70,7 +71,7 @@ internal class FilePicker {
 		 */
 		@RequiresApi(Build.VERSION_CODES.Q)
 		fun handleActivityResult(context: Context, requestCode: Int, resultCode: Int, data: Intent?) {
-			if (requestCode == FILE_PICKER_REQUEST) {
+			if (requestCode == FILE_PICKER_REQUEST || requestCode == FILE_SAVE_REQUEST) {
 				if (resultCode == Activity.RESULT_CANCELED) {
 					Log.d(TAG, "File picker canceled")
 					GodotLib.filePickerCallback(false, emptyArray())
@@ -100,6 +101,10 @@ internal class FilePicker {
 								selectedPaths.add(filepath)
 							} else {
 								Log.d(TAG, "null filepath URI: $it")
+							}
+
+							if (requestCode == FILE_SAVE_REQUEST) {
+								DocumentsContract.deleteDocument(context.contentResolver, it)
 							}
 						}
 					}
@@ -144,19 +149,19 @@ internal class FilePicker {
 			}
 			// ACTION_OPEN_DOCUMENT_TREE does not support intent type
 			if (fileMode != FILE_MODE_OPEN_DIR) {
-				intent.type = "*/*"
-				if (filters.isNotEmpty()) {
-					val resolvedFilters = filters.map { resolveMimeType(it) }.distinct()
-					if (resolvedFilters.size == 1) {
-						intent.type = resolvedFilters[0]
-					} else {
-						intent.putExtra(Intent.EXTRA_MIME_TYPES, resolvedFilters.toTypedArray())
-					}
+				val resolvedFilters = filters.map { resolveMimeType(it) }.distinct()
+				intent.type = resolvedFilters.firstOrNull { it != "application/octet-stream" } ?: "*/*"
+				if (resolvedFilters.size > 1) {
+					intent.putExtra(Intent.EXTRA_MIME_TYPES, resolvedFilters.toTypedArray())
 				}
 				intent.addCategory(Intent.CATEGORY_OPENABLE)
 			}
 			intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-			activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
+			if (fileMode == FILE_MODE_SAVE_FILE) {
+				activity?.startActivityForResult(intent, FILE_SAVE_REQUEST)
+			} else {
+				activity?.startActivityForResult(intent, FILE_PICKER_REQUEST)
+			}
 		}
 
 		/**

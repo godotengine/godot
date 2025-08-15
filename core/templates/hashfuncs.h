@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HASHFUNCS_H
-#define HASHFUNCS_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -53,8 +52,14 @@
 #include "core/string/node_path.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
+#include "core/templates/pair.h"
 #include "core/templates/rid.h"
 #include "core/typedefs.h"
+#include "core/variant/callable.h"
+
+#ifdef _MSC_VER
+#include <intrin.h> // Needed for `__umulh` below.
+#endif
 
 /**
  * Hashing functions
@@ -146,7 +151,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_float(float p_in, uint32_t p_see
 	if (p_in == 0.0f) {
 		u.f = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.f = NAN;
+		u.f = Math::NaN;
 	} else {
 		u.f = p_in;
 	}
@@ -169,7 +174,7 @@ static _FORCE_INLINE_ uint32_t hash_murmur3_one_double(double p_in, uint32_t p_s
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -257,7 +262,7 @@ static _FORCE_INLINE_ uint32_t hash_djb2_one_float(double p_in, uint32_t p_prev 
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -286,7 +291,7 @@ static _FORCE_INLINE_ uint64_t hash_djb2_one_float_64(double p_in, uint64_t p_pr
 	if (p_in == 0.0f) {
 		u.d = 0.0;
 	} else if (Math::is_nan(p_in)) {
-		u.d = NAN;
+		u.d = Math::NaN;
 	} else {
 		u.d = p_in;
 	}
@@ -321,43 +326,51 @@ struct HashMapHasherDefault {
 	template <typename T>
 	static _FORCE_INLINE_ uint32_t hash(const Ref<T> &p_ref) { return hash_one_uint64((uint64_t)p_ref.operator->()); }
 
+	template <typename F, typename S>
+	static _FORCE_INLINE_ uint32_t hash(const Pair<F, S> &p_pair) {
+		uint64_t h1 = hash(p_pair.first);
+		uint64_t h2 = hash(p_pair.second);
+		return hash_one_uint64((h1 << 32) | h2);
+	}
+
 	static _FORCE_INLINE_ uint32_t hash(const String &p_string) { return p_string.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const char *p_cstr) { return hash_djb2(p_cstr); }
-	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return hash_fmix32(p_wchar); }
-	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return hash_fmix32(p_uchar); }
-	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(p_uchar); }
+	static _FORCE_INLINE_ uint32_t hash(const wchar_t p_wchar) { return hash_fmix32(uint32_t(p_wchar)); }
+	static _FORCE_INLINE_ uint32_t hash(const char16_t p_uchar) { return hash_fmix32(uint32_t(p_uchar)); }
+	static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(uint32_t(p_uchar)); }
 	static _FORCE_INLINE_ uint32_t hash(const RID &p_rid) { return hash_one_uint64(p_rid.get_id()); }
 	static _FORCE_INLINE_ uint32_t hash(const CharString &p_char_string) { return hash_djb2(p_char_string.get_data()); }
 	static _FORCE_INLINE_ uint32_t hash(const StringName &p_string_name) { return p_string_name.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const NodePath &p_path) { return p_path.hash(); }
 	static _FORCE_INLINE_ uint32_t hash(const ObjectID &p_id) { return hash_one_uint64(p_id); }
+	static _FORCE_INLINE_ uint32_t hash(const Callable &p_callable) { return p_callable.hash(); }
 
 	static _FORCE_INLINE_ uint32_t hash(const uint64_t p_int) { return hash_one_uint64(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int64_t p_int) { return hash_one_uint64(uint64_t(p_int)); }
 	static _FORCE_INLINE_ uint32_t hash(const float p_float) { return hash_murmur3_one_float(p_float); }
 	static _FORCE_INLINE_ uint32_t hash(const double p_double) { return hash_murmur3_one_double(p_double); }
 	static _FORCE_INLINE_ uint32_t hash(const uint32_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return hash_fmix32(p_int); }
-	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return hash_fmix32(p_int); }
+	static _FORCE_INLINE_ uint32_t hash(const int32_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const uint16_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const int16_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const uint8_t p_int) { return hash_fmix32(uint32_t(p_int)); }
+	static _FORCE_INLINE_ uint32_t hash(const int8_t p_int) { return hash_fmix32(uint32_t(p_int)); }
 	static _FORCE_INLINE_ uint32_t hash(const Vector2i &p_vec) {
-		uint32_t h = hash_murmur3_one_32(p_vec.x);
-		h = hash_murmur3_one_32(p_vec.y, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_vec.x));
+		h = hash_murmur3_one_32(uint32_t(p_vec.y), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Vector3i &p_vec) {
-		uint32_t h = hash_murmur3_one_32(p_vec.x);
-		h = hash_murmur3_one_32(p_vec.y, h);
-		h = hash_murmur3_one_32(p_vec.z, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_vec.x));
+		h = hash_murmur3_one_32(uint32_t(p_vec.y), h);
+		h = hash_murmur3_one_32(uint32_t(p_vec.z), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Vector4i &p_vec) {
-		uint32_t h = hash_murmur3_one_32(p_vec.x);
-		h = hash_murmur3_one_32(p_vec.y, h);
-		h = hash_murmur3_one_32(p_vec.z, h);
-		h = hash_murmur3_one_32(p_vec.w, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_vec.x));
+		h = hash_murmur3_one_32(uint32_t(p_vec.y), h);
+		h = hash_murmur3_one_32(uint32_t(p_vec.z), h);
+		h = hash_murmur3_one_32(uint32_t(p_vec.w), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Vector2 &p_vec) {
@@ -378,11 +391,18 @@ struct HashMapHasherDefault {
 		h = hash_murmur3_one_real(p_vec.w, h);
 		return hash_fmix32(h);
 	}
+	static _FORCE_INLINE_ uint32_t hash(const Color &p_vec) {
+		uint32_t h = hash_murmur3_one_float(p_vec.r);
+		h = hash_murmur3_one_float(p_vec.g, h);
+		h = hash_murmur3_one_float(p_vec.b, h);
+		h = hash_murmur3_one_float(p_vec.a, h);
+		return hash_fmix32(h);
+	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2i &p_rect) {
-		uint32_t h = hash_murmur3_one_32(p_rect.position.x);
-		h = hash_murmur3_one_32(p_rect.position.y, h);
-		h = hash_murmur3_one_32(p_rect.size.x, h);
-		h = hash_murmur3_one_32(p_rect.size.y, h);
+		uint32_t h = hash_murmur3_one_32(uint32_t(p_rect.position.x));
+		h = hash_murmur3_one_32(uint32_t(p_rect.position.y), h);
+		h = hash_murmur3_one_32(uint32_t(p_rect.size.x), h);
+		h = hash_murmur3_one_32(uint32_t(p_rect.size.y), h);
 		return hash_fmix32(h);
 	}
 	static _FORCE_INLINE_ uint32_t hash(const Rect2 &p_rect) {
@@ -426,116 +446,98 @@ struct HashMapComparatorDefault {
 template <>
 struct HashMapComparatorDefault<float> {
 	static bool compare(const float &p_lhs, const float &p_rhs) {
-		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+		return Math::is_same(p_lhs, p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<double> {
 	static bool compare(const double &p_lhs, const double &p_rhs) {
-		return (p_lhs == p_rhs) || (Math::is_nan(p_lhs) && Math::is_nan(p_rhs));
+		return Math::is_same(p_lhs, p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Color> {
 	static bool compare(const Color &p_lhs, const Color &p_rhs) {
-		return ((p_lhs.r == p_rhs.r) || (Math::is_nan(p_lhs.r) && Math::is_nan(p_rhs.r))) && ((p_lhs.g == p_rhs.g) || (Math::is_nan(p_lhs.g) && Math::is_nan(p_rhs.g))) && ((p_lhs.b == p_rhs.b) || (Math::is_nan(p_lhs.b) && Math::is_nan(p_rhs.b))) && ((p_lhs.a == p_rhs.a) || (Math::is_nan(p_lhs.a) && Math::is_nan(p_rhs.a)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector2> {
 	static bool compare(const Vector2 &p_lhs, const Vector2 &p_rhs) {
-		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector3> {
 	static bool compare(const Vector3 &p_lhs, const Vector3 &p_rhs) {
-		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Vector4> {
 	static bool compare(const Vector4 &p_lhs, const Vector4 &p_rhs) {
-		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z))) && ((p_lhs.w == p_rhs.w) || (Math::is_nan(p_lhs.w) && Math::is_nan(p_rhs.w)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Rect2> {
 	static bool compare(const Rect2 &p_lhs, const Rect2 &p_rhs) {
-		return HashMapComparatorDefault<Vector2>().compare(p_lhs.position, p_rhs.position) && HashMapComparatorDefault<Vector2>().compare(p_lhs.size, p_rhs.size);
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<AABB> {
 	static bool compare(const AABB &p_lhs, const AABB &p_rhs) {
-		return HashMapComparatorDefault<Vector3>().compare(p_lhs.position, p_rhs.position) && HashMapComparatorDefault<Vector3>().compare(p_lhs.size, p_rhs.size);
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Plane> {
 	static bool compare(const Plane &p_lhs, const Plane &p_rhs) {
-		return HashMapComparatorDefault<Vector3>().compare(p_lhs.normal, p_rhs.normal) && ((p_lhs.d == p_rhs.d) || (Math::is_nan(p_lhs.d) && Math::is_nan(p_rhs.d)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Transform2D> {
 	static bool compare(const Transform2D &p_lhs, const Transform2D &p_rhs) {
-		for (int i = 0; i < 3; ++i) {
-			if (!HashMapComparatorDefault<Vector2>().compare(p_lhs.columns[i], p_rhs.columns[i])) {
-				return false;
-			}
-		}
-
-		return true;
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Basis> {
 	static bool compare(const Basis &p_lhs, const Basis &p_rhs) {
-		for (int i = 0; i < 3; ++i) {
-			if (!HashMapComparatorDefault<Vector3>().compare(p_lhs.rows[i], p_rhs.rows[i])) {
-				return false;
-			}
-		}
-
-		return true;
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Transform3D> {
 	static bool compare(const Transform3D &p_lhs, const Transform3D &p_rhs) {
-		return HashMapComparatorDefault<Basis>().compare(p_lhs.basis, p_rhs.basis) && HashMapComparatorDefault<Vector3>().compare(p_lhs.origin, p_rhs.origin);
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Projection> {
 	static bool compare(const Projection &p_lhs, const Projection &p_rhs) {
-		for (int i = 0; i < 4; ++i) {
-			if (!HashMapComparatorDefault<Vector4>().compare(p_lhs.columns[i], p_rhs.columns[i])) {
-				return false;
-			}
-		}
-
-		return true;
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
 template <>
 struct HashMapComparatorDefault<Quaternion> {
 	static bool compare(const Quaternion &p_lhs, const Quaternion &p_rhs) {
-		return ((p_lhs.x == p_rhs.x) || (Math::is_nan(p_lhs.x) && Math::is_nan(p_rhs.x))) && ((p_lhs.y == p_rhs.y) || (Math::is_nan(p_lhs.y) && Math::is_nan(p_rhs.y))) && ((p_lhs.z == p_rhs.z) || (Math::is_nan(p_lhs.z) && Math::is_nan(p_rhs.z))) && ((p_lhs.w == p_rhs.w) || (Math::is_nan(p_lhs.w) && Math::is_nan(p_rhs.w)));
+		return p_lhs.is_same(p_rhs);
 	}
 };
 
@@ -634,5 +636,3 @@ static _FORCE_INLINE_ uint32_t fastmod(const uint32_t n, const uint64_t c, const
 #endif // __SIZEOF_INT128__
 #endif // _MSC_VER
 }
-
-#endif // HASHFUNCS_H

@@ -216,7 +216,7 @@ bool Paint::Impl::render(RenderMethod* renderer)
 
         if (MASK_REGION_MERGING(compData->method)) region.add(P(compData->target)->bounds(renderer));
         if (region.w == 0 || region.h == 0) return true;
-        cmp = renderer->target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method));
+        cmp = renderer->target(region, COMPOSITE_TO_COLORSPACE(renderer, compData->method), CompositionFlag::Masking);
         if (renderer->beginComposite(cmp, CompositeMethod::None, 255)) {
             compData->target->pImpl->render(renderer);
         }
@@ -276,16 +276,19 @@ RenderData Paint::Impl::update(RenderMethod* renderer, const Matrix& pm, Array<R
 
     /* 2. Clipping */
     if (this->clipper) {
-        P(this->clipper)->ctxFlag &= ~ContextFlag::FastTrack;   //reset
+        auto pclip = P(this->clipper);
+        if (pclip->renderFlag  | static_cast<Shape*>(this->clipper)->pImpl->rFlag) renderFlag |= RenderUpdateFlag::Clip;
+        pclip->ctxFlag &= ~ContextFlag::FastTrack;   //reset
         viewport = renderer->viewport();
         /* TODO: Intersect the clipper's clipper, if both are FastTrack.
            Update the subsequent clipper first and check its ctxFlag. */
-        if (!P(this->clipper)->clipper && (compFastTrack = _compFastTrack(renderer, this->clipper, pm, viewport)) == Result::Success) {
-            P(this->clipper)->ctxFlag |= ContextFlag::FastTrack;
-        }
-        if (compFastTrack == Result::InsufficientCondition) {
-            trd = P(this->clipper)->update(renderer, pm, clips, 255, pFlag, true);
+        if (!pclip->clipper && _compFastTrack(renderer, this->clipper, pm, viewport) == Result::Success) {
+            pclip->ctxFlag |= ContextFlag::FastTrack;
+            compFastTrack = Result::Success;
+        } else {
+            trd = pclip->update(renderer, pm, clips, 255, pFlag, true);
             clips.push(trd);
+            compFastTrack = Result::InsufficientCondition;
         }
     }
 
@@ -374,7 +377,7 @@ void Paint::Impl::reset()
 
     blendMethod = BlendMethod::Normal;
     renderFlag = RenderUpdateFlag::None;
-    ctxFlag = ContextFlag::Invalid;
+    ctxFlag = ContextFlag::Default;
     opacity = 255;
     paint->id = 0;
 }

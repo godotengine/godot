@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIEW_PANNER_H
-#define VIEW_PANNER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
 class InputEvent;
 class Shortcut;
+class Viewport;
 
 class ViewPanner : public RefCounted {
 	GDCLASS(ViewPanner, RefCounted);
@@ -51,14 +51,31 @@ public:
 		PAN_AXIS_VERTICAL,
 	};
 
+	enum DragType {
+		DRAG_TYPE_NONE,
+		DRAG_TYPE_PAN,
+		DRAG_TYPE_ZOOM,
+	};
+
+	enum ZoomStyle {
+		ZOOM_VERTICAL,
+		ZOOM_HORIZONTAL,
+	};
+
 private:
 	int scroll_speed = 32;
 	float scroll_zoom_factor = 1.1;
 	PanAxis pan_axis = PAN_AXIS_BOTH;
 
-	bool is_dragging = false;
 	bool pan_key_pressed = false;
 	bool force_drag = false;
+
+	DragType drag_type = DragType::DRAG_TYPE_NONE;
+
+	ZoomStyle zoom_style = ZoomStyle::ZOOM_VERTICAL;
+
+	Vector2 drag_zoom_position;
+	float drag_zoom_sensitivity_factor = -0.01f;
 
 	bool enable_rmb = false;
 	bool simple_panning_enabled = false;
@@ -69,6 +86,7 @@ private:
 	Callable zoom_callback;
 
 	ControlScheme control_scheme = SCROLL_ZOOMS;
+	Viewport *warped_panning_viewport = nullptr;
 
 public:
 	void set_callbacks(Callable p_pan_callback, Callable p_zoom_callback);
@@ -79,8 +97,10 @@ public:
 	void set_scroll_speed(int p_scroll_speed);
 	void set_scroll_zoom_factor(float p_scroll_zoom_factor);
 	void set_pan_axis(PanAxis p_pan_axis);
+	void set_zoom_style(ZoomStyle p_zoom_style);
 
 	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
+	void setup_warped_panning(Viewport *p_viewport, bool p_allowed);
 
 	bool is_panning() const;
 	void set_force_drag(bool p_force);
@@ -90,5 +110,3 @@ public:
 
 	ViewPanner();
 };
-
-#endif // VIEW_PANNER_H

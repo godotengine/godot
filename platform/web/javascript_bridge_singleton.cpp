@@ -64,6 +64,8 @@ extern int godot_js_wrapper_object_transfer_buffer(int p_id, void *p_byte_arr, v
 };
 
 class JavaScriptObjectImpl : public JavaScriptObject {
+	GDSOFTCLASS(JavaScriptObjectImpl, JavaScriptObject);
+
 private:
 	friend class JavaScriptBridge;
 

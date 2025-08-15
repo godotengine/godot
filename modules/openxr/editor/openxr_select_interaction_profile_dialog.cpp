@@ -29,7 +29,11 @@
 /**************************************************************************/
 
 #include "openxr_select_interaction_profile_dialog.h"
+
+#include "../action_map/openxr_interaction_profile_metadata.h"
 #include "../openxr_api.h"
+
+#include "editor/themes/editor_scale.h"
 
 void OpenXRSelectInteractionProfileDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("interaction_profile_selected", PropertyInfo(Variant::STRING, "interaction_profile")));
@@ -37,7 +41,6 @@ void OpenXRSelectInteractionProfileDialog::_bind_methods() {
 
 void OpenXRSelectInteractionProfileDialog::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
@@ -114,7 +117,7 @@ OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
 	set_title(TTR("Select an interaction profile"));
 
 	scroll = memnew(ScrollContainer);
-	scroll->set_custom_minimum_size(Size2(600.0, 400.0));
+	scroll->set_custom_minimum_size(Size2(600.0 * EDSCALE, 400.0 * EDSCALE));
 	add_child(scroll);
 
 	main_vb = memnew(VBoxContainer);
@@ -122,6 +125,7 @@ OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
 	scroll->add_child(main_vb);
 
 	all_selected = memnew(Label);
+	all_selected->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	all_selected->set_text(TTR("All interaction profiles have been added to the action map."));
 	main_vb->add_child(all_selected);
 }

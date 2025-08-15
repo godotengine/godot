@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WEB_TOOLS_EDITOR_PLUGIN_H
-#define WEB_TOOLS_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/io/zip_io.h"
 #include "editor/plugins/editor_plugin.h"
@@ -38,8 +37,6 @@ class WebToolsEditorPlugin : public EditorPlugin {
 	GDCLASS(WebToolsEditorPlugin, EditorPlugin);
 
 private:
-	void _zip_file(String p_path, String p_base_path, zipFile p_zip);
-	void _zip_recursive(String p_path, String p_base_path, zipFile p_zip);
 	void _download_zip();
 
 public:
@@ -47,12 +44,3 @@ public:
 
 	WebToolsEditorPlugin();
 };
-
-#else
-
-class WebToolsEditorPlugin {
-public:
-	static void initialize() {}
-};
-
-#endif // WEB_TOOLS_EDITOR_PLUGIN_H

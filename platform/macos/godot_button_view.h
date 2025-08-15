@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_BUTTON_VIEW_H
-#define GODOT_BUTTON_VIEW_H
+#pragma once
 
 #include "servers/display_server.h"
 
@@ -53,5 +52,3 @@
 - (NSPoint)getOffset;
 
 @end
-
-#endif // GODOT_BUTTON_VIEW_H

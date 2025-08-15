@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIEWPORT_H
-#define VIEWPORT_H
+#pragma once
 
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
@@ -100,6 +99,8 @@ public:
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
 		SCALING_3D_MODE_FSR2,
+		SCALING_3D_MODE_METALFX_SPATIAL,
+		SCALING_3D_MODE_METALFX_TEMPORAL,
 		SCALING_3D_MODE_MAX
 	};
 
@@ -123,9 +124,19 @@ public:
 		MSAA_MAX
 	};
 
+	enum AnisotropicFiltering {
+		ANISOTROPY_DISABLED,
+		ANISOTROPY_2X,
+		ANISOTROPY_4X,
+		ANISOTROPY_8X,
+		ANISOTROPY_16X,
+		ANISOTROPY_MAX
+	};
+
 	enum ScreenSpaceAA {
 		SCREEN_SPACE_AA_DISABLED,
 		SCREEN_SPACE_AA_FXAA,
+		SCREEN_SPACE_AA_SMAA,
 		SCREEN_SPACE_AA_MAX
 	};
 
@@ -229,6 +240,10 @@ private:
 
 	HashSet<CanvasLayer *> canvas_layers;
 
+	bool use_font_oversampling = true;
+	float font_oversampling = 1.0;
+	float font_oversampling_override = 0.0;
+
 	RID viewport;
 	RID current_canvas;
 	RID subwindow_canvas;
@@ -241,7 +256,7 @@ private:
 	Transform2D stretch_transform;
 
 	Size2i size = Size2i(512, 512);
-	Size2i size_2d_override;
+	Size2 size_2d_override;
 	bool size_allocated = false;
 
 	RID contact_2d_debug;
@@ -258,6 +273,7 @@ private:
 	bool snap_2d_transforms_to_pixel = false;
 	bool snap_2d_vertices_to_pixel = false;
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	bool physics_object_picking = false;
 	bool physics_object_picking_sort = false;
 	bool physics_object_picking_first_only = false;
@@ -267,6 +283,7 @@ private:
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
@@ -303,6 +320,7 @@ private:
 	float scaling_3d_scale = 1.0;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
+	AnisotropicFiltering anisotropic_filtering_level = ANISOTROPY_4X;
 	bool use_debanding = false;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
@@ -354,7 +372,7 @@ private:
 		HashMap<int, ObjectID> touch_focus;
 		Control *mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		BitField<MouseButtonMask> mouse_focus_mask;
+		BitField<MouseButtonMask> mouse_focus_mask = MouseButtonMask::NONE;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		LocalVector<Control *> mouse_over_hierarchy;
@@ -372,6 +390,7 @@ private:
 		bool drag_attempted = false;
 		Variant drag_data; // Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		ObjectID drag_preview_id;
+		String drag_description;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
 		bool roots_order_dirty = false;
@@ -426,11 +445,14 @@ private:
 	String _gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Control **r_tooltip_owner = nullptr);
 	void _gui_cancel_tooltip();
 	void _gui_show_tooltip();
+	void _gui_show_tooltip_at(const Point2i &p_pos);
 
 	void _gui_remove_control(Control *p_control);
 	void _gui_hide_control(Control *p_control);
 	void _gui_update_mouse_over();
 
+	void _gui_force_drag_start();
+	void _gui_force_drag_cancel();
 	void _gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control);
 	void _gui_set_drag_preview(Control *p_base, Control *p_control);
 	Control *_gui_get_drag_preview();
@@ -476,15 +498,20 @@ private:
 	void _process_dirty_canvas_parent_orders();
 	void _propagate_world_2d_changed(Node *p_node);
 
+	void _window_start_drag(Window *p_window);
+	void _window_start_resize(SubWindowResize p_edge, Window *p_window);
+
 protected:
-	bool _set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated);
+	bool _set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated);
 
 	Size2i _get_size() const;
-	Size2i _get_size_2d_override() const;
+	Size2 _get_size_2d_override() const;
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void _process_picking();
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -493,6 +520,9 @@ public:
 	void canvas_item_top_level_changed();
 
 	uint64_t get_processed_events_count() const { return event_count; }
+
+	void cancel_tooltip();
+	void show_tooltip(Control *p_control);
 
 	void update_canvas_items();
 
@@ -549,6 +579,14 @@ public:
 	void set_use_taa(bool p_use_taa);
 	bool is_using_taa() const;
 
+	void set_use_oversampling(bool p_oversampling);
+	bool is_using_oversampling() const;
+
+	void set_oversampling_override(float p_oversampling);
+	float get_oversampling_override() const;
+
+	float get_oversampling() const { return font_oversampling; }
+
 	void set_scaling_3d_mode(Scaling3DMode p_scaling_3d_mode);
 	Scaling3DMode get_scaling_3d_mode() const;
 
@@ -560,6 +598,9 @@ public:
 
 	void set_texture_mipmap_bias(float p_texture_mipmap_bias);
 	float get_texture_mipmap_bias() const;
+
+	void set_anisotropic_filtering_level(AnisotropicFiltering p_anisotropic_filtering_level);
+	AnisotropicFiltering get_anisotropic_filtering_level() const;
 
 	void set_use_debanding(bool p_use_debanding);
 	bool is_using_debanding() const;
@@ -578,6 +619,8 @@ public:
 #ifndef DISABLE_DEPRECATED
 	void push_unhandled_input(const Ref<InputEvent> &p_event, bool p_local_coords = false);
 #endif // DISABLE_DEPRECATED
+	void notify_mouse_entered();
+	void notify_mouse_exited();
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
@@ -586,16 +629,21 @@ public:
 
 	Vector2 get_mouse_position() const;
 	void warp_mouse(const Vector2 &p_position);
+	Point2 wrap_mouse_in_rect(const Vector2 &p_relative, const Rect2 &p_rect);
 	virtual void update_mouse_cursor_state();
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
 	void set_physics_object_picking_sort(bool p_enable);
 	bool get_physics_object_picking_sort();
 	void set_physics_object_picking_first_only(bool p_enable);
 	bool get_physics_object_picking_first_only();
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	Variant gui_get_drag_data() const;
+	String gui_get_drag_description() const;
+	void gui_set_drag_description(const String &p_description);
 
 	void gui_reset_canvas_sort_index();
 	int gui_get_canvas_sort_index();
@@ -603,6 +651,7 @@ public:
 	void gui_release_focus();
 	Control *gui_get_focus_owner() const;
 	Control *gui_get_hovered_control() const;
+	Window *get_focused_subwindow() const { return gui.subwindow_focused; }
 
 	PackedStringArray get_configuration_warnings() const override;
 
@@ -629,6 +678,7 @@ public:
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
 	void gui_cancel_drag();
+	void gui_perform_drop_at(const Point2 &p_pos, Control *p_control = nullptr);
 
 	Control *gui_find_control(const Point2 &p_global);
 
@@ -680,6 +730,7 @@ public:
 
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
+	virtual Transform2D get_popup_base_transform_native() const { return Transform2D(); }
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 	virtual Viewport *get_section_root_viewport() const { return nullptr; }
 	virtual bool is_attached_in_viewport() const { return false; }
@@ -698,12 +749,14 @@ private:
 	Camera2D *camera_2d = nullptr;
 	void _camera_2d_set(Camera2D *p_camera_2d);
 
+#ifndef PHYSICS_2D_DISABLED
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
-	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
+	HashMap<Pair<ObjectID, int>, uint64_t> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
+#endif // PHYSICS_2D_DISABLED
 
 public:
 	AudioListener2D *get_audio_listener_2d() const;
@@ -729,7 +782,9 @@ private:
 	void _audio_listener_3d_remove(AudioListener3D *p_listener);
 	void _audio_listener_3d_make_next_current(AudioListener3D *p_exclude);
 
+#ifndef PHYSICS_3D_DISABLED
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+#endif // PHYSICS_3D_DISABLED
 
 	struct Camera3DOverrideData {
 		Transform3D transform;
@@ -856,12 +911,12 @@ public:
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
-	~SubViewport();
 };
 VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::AnisotropicFiltering);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);
@@ -873,5 +928,3 @@ VARIANT_ENUM_CAST(Viewport::RenderInfo);
 VARIANT_ENUM_CAST(Viewport::RenderInfoType);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureFilter);
 VARIANT_ENUM_CAST(Viewport::DefaultCanvasItemTextureRepeat);
-
-#endif // VIEWPORT_H

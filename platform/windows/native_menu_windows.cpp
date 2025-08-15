@@ -58,7 +58,7 @@ HBITMAP NativeMenuWindows::_make_bitmap(const Ref<Image> &p_img) const {
 	HDC dc = GetDC(nullptr);
 	HBITMAP bitmap = CreateDIBSection(dc, reinterpret_cast<BITMAPINFO *>(&bi), DIB_RGB_COLORS, reinterpret_cast<void **>(&buffer), nullptr, 0);
 	for (UINT index = 0; index < image_size; index++) {
-		int row_index = floor(index / texture_size.width);
+		int row_index = std::floor(index / texture_size.width);
 		int column_index = (index % int(texture_size.width));
 		const Color &c = p_img->get_pixel(column_index, row_index);
 		*(buffer + index) = c.to_argb32();
@@ -177,6 +177,16 @@ void NativeMenuWindows::popup(const RID &p_rid, const Vector2i &p_position) {
 	}
 	SetForegroundWindow(hwnd);
 	TrackPopupMenuEx(md->menu, flags, p_position.x, p_position.y, hwnd, nullptr);
+
+	if (md->close_cb.is_valid()) {
+		Variant ret;
+		Callable::CallError ce;
+		md->close_cb.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute popup close callback: %s.", Variant::get_callable_error_text(md->close_cb, nullptr, 0, ce)));
+		}
+	}
+
 	PostMessage(hwnd, WM_NULL, 0, 0);
 }
 
@@ -200,12 +210,17 @@ Callable NativeMenuWindows::get_popup_open_callback(const RID &p_rid) const {
 }
 
 void NativeMenuWindows::set_popup_close_callback(const RID &p_rid, const Callable &p_callback) {
-	// Not supported.
+	MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL(md);
+
+	md->close_cb = p_callback;
 }
 
 Callable NativeMenuWindows::get_popup_close_callback(const RID &p_rid) const {
-	// Not supported.
-	return Callable();
+	const MenuData *md = menus.get_or_null(p_rid);
+	ERR_FAIL_NULL_V(md, Callable());
+
+	return md->close_cb;
 }
 
 void NativeMenuWindows::set_minimum_width(const RID &p_rid, float p_width) {
@@ -559,7 +574,7 @@ int NativeMenuWindows::find_item_index_with_text(const RID &p_rid, const String 
 		if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 			item.cch++;
 			Char16String str;
-			str.resize(item.cch);
+			str.resize_uninitialized(item.cch);
 			item.dwTypeData = (LPWSTR)str.ptrw();
 			if (GetMenuItemInfoW(md->menu, i, true, &item)) {
 				if (String::utf16((const char16_t *)str.get_data()) == p_text) {
@@ -713,7 +728,7 @@ String NativeMenuWindows::get_item_text(const RID &p_rid, int p_idx) const {
 	if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 		item.cch++;
 		Char16String str;
-		str.resize(item.cch);
+		str.resize_uninitialized(item.cch);
 		item.dwTypeData = (LPWSTR)str.ptrw();
 		if (GetMenuItemInfoW(md->menu, p_idx, true, &item)) {
 			return String::utf16((const char16_t *)str.get_data());

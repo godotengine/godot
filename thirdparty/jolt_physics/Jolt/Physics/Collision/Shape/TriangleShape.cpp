@@ -91,7 +91,7 @@ class TriangleShape::TriangleNoConvex final : public Support
 {
 public:
 							TriangleNoConvex(Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3) :
-		mTriangleSuport(inV1, inV2, inV3)
+		mTriangleSupport(inV1, inV2, inV3)
 	{
 		static_assert(sizeof(TriangleNoConvex) <= sizeof(SupportBuffer), "Buffer size too small");
 		JPH_ASSERT(IsAligned(this, alignof(TriangleNoConvex)));
@@ -99,7 +99,7 @@ public:
 
 	virtual Vec3			GetSupport(Vec3Arg inDirection) const override
 	{
-		return mTriangleSuport.GetSupport(inDirection);
+		return mTriangleSupport.GetSupport(inDirection);
 	}
 
 	virtual float			GetConvexRadius() const override
@@ -108,7 +108,7 @@ public:
 	}
 
 private:
-	TriangleConvexSupport	mTriangleSuport;
+	TriangleConvexSupport	mTriangleSupport;
 };
 
 class TriangleShape::TriangleWithConvex final : public Support
@@ -116,7 +116,7 @@ class TriangleShape::TriangleWithConvex final : public Support
 public:
 							TriangleWithConvex(Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3, float inConvexRadius) :
 		mConvexRadius(inConvexRadius),
-		mTriangleSuport(inV1, inV2, inV3)
+		mTriangleSupport(inV1, inV2, inV3)
 	{
 		static_assert(sizeof(TriangleWithConvex) <= sizeof(SupportBuffer), "Buffer size too small");
 		JPH_ASSERT(IsAligned(this, alignof(TriangleWithConvex)));
@@ -124,7 +124,7 @@ public:
 
 	virtual Vec3			GetSupport(Vec3Arg inDirection) const override
 	{
-		Vec3 support = mTriangleSuport.GetSupport(inDirection);
+		Vec3 support = mTriangleSupport.GetSupport(inDirection);
 		float len = inDirection.Length();
 		if (len > 0.0f)
 			support += (mConvexRadius / len) * inDirection;
@@ -138,7 +138,7 @@ public:
 
 private:
 	float					mConvexRadius;
-	TriangleConvexSupport	mTriangleSuport;
+	TriangleConvexSupport	mTriangleSupport;
 };
 
 const ConvexShape::Support *TriangleShape::GetSupportFunction(ESupportMode inMode, SupportBuffer &inBuffer, Vec3Arg inScale) const
@@ -188,7 +188,7 @@ MassProperties TriangleShape::GetMassProperties() const
 	// creating a Body:
 	//
 	// BodyCreationSettings::mOverrideMassProperties = EOverrideMassProperties::MassAndInertiaProvided;
-	// BodyCreationSettings::mMassPropertiesOverride.SetMassAndInertiaOfSolidBox(Vec3::sReplicate(1.0f), 1000.0f);
+	// BodyCreationSettings::mMassPropertiesOverride.SetMassAndInertiaOfSolidBox(Vec3::sOne(), 1000.0f);
 	//
 	// Note that this makes the triangle shape behave the same as a mesh shape with a single triangle.
 	// In practice there is very little use for a dynamic triangle shape as back side collisions will be ignored
@@ -413,6 +413,9 @@ void TriangleShape::sRegister()
 	{
 		CollisionDispatch::sRegisterCollideShape(s, EShapeSubType::Triangle, sCollideConvexVsTriangle);
 		CollisionDispatch::sRegisterCastShape(s, EShapeSubType::Triangle, sCastConvexVsTriangle);
+
+		CollisionDispatch::sRegisterCollideShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCollideShape);
+		CollisionDispatch::sRegisterCastShape(EShapeSubType::Triangle, s, CollisionDispatch::sReversedCastShape);
 	}
 
 	// Specialized collision functions

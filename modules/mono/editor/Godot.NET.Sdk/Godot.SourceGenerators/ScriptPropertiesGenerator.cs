@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -463,6 +464,94 @@ namespace Godot.SourceGenerators
                     propertySymbol.ToDisplayString()
                 ));
                 return null;
+            }
+
+            if (exportToolButtonAttr != null && propertySymbol != null)
+            {
+                if (!PropertyIsExpressionBodiedAndReturnsNewCallable(context.Compilation, propertySymbol))
+                {
+                    context.ReportDiagnostic(Diagnostic.Create(
+                        Common.ExportToolButtonMustBeExpressionBodiedProperty,
+                        propertySymbol.Locations.FirstLocationWithSourceTreeOrDefault(),
+                        propertySymbol.ToDisplayString()
+                    ));
+                    return null;
+                }
+
+                static bool PropertyIsExpressionBodiedAndReturnsNewCallable(Compilation compilation, IPropertySymbol? propertySymbol)
+                {
+                    if (propertySymbol == null)
+                    {
+                        return false;
+                    }
+
+                    var propertyDeclarationSyntax = propertySymbol.DeclaringSyntaxReferences
+                        .Select(r => r.GetSyntax() as PropertyDeclarationSyntax).FirstOrDefault();
+                    if (propertyDeclarationSyntax == null || propertyDeclarationSyntax.Initializer != null)
+                    {
+                        return false;
+                    }
+
+                    if (propertyDeclarationSyntax.AccessorList != null)
+                    {
+                        var accessors = propertyDeclarationSyntax.AccessorList.Accessors;
+                        foreach (var accessor in accessors)
+                        {
+                            if (!accessor.IsKind(SyntaxKind.GetAccessorDeclaration))
+                            {
+                                // Only getters are allowed.
+                                return false;
+                            }
+
+                            if (!ExpressionBodyReturnsNewCallable(compilation, accessor.ExpressionBody))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (!ExpressionBodyReturnsNewCallable(compilation, propertyDeclarationSyntax.ExpressionBody))
+                    {
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                static bool ExpressionBodyReturnsNewCallable(Compilation compilation, ArrowExpressionClauseSyntax? expressionSyntax)
+                {
+                    if (expressionSyntax == null)
+                    {
+                        return false;
+                    }
+
+                    var semanticModel = compilation.GetSemanticModel(expressionSyntax.SyntaxTree);
+
+                    switch (expressionSyntax.Expression)
+                    {
+                        case ImplicitObjectCreationExpressionSyntax creationExpression:
+                            // We already validate that the property type must be 'Callable'
+                            // so we can assume this constructor is valid.
+                            return true;
+
+                        case ObjectCreationExpressionSyntax creationExpression:
+                            var typeSymbol = semanticModel.GetSymbolInfo(creationExpression.Type).Symbol as ITypeSymbol;
+                            if (typeSymbol != null)
+                            {
+                                return typeSymbol.FullQualifiedNameOmitGlobal() == GodotClasses.Callable;
+                            }
+                            break;
+
+                        case InvocationExpressionSyntax invocationExpression:
+                            var methodSymbol = semanticModel.GetSymbolInfo(invocationExpression).Symbol as IMethodSymbol;
+                            if (methodSymbol != null && methodSymbol.Name == "From")
+                            {
+                                return methodSymbol.ContainingType.FullQualifiedNameOmitGlobal() == GodotClasses.Callable;
+                            }
+                            break;
+                    }
+
+                    return false;
+                }
             }
 
             var memberType = propertySymbol?.Type ?? fieldSymbol!.Type;

@@ -30,7 +30,6 @@
 
 #include "translation.h"
 
-#include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/string/translation_server.h"
 
@@ -67,30 +66,13 @@ Vector<String> Translation::get_translated_message_list() const {
 }
 
 void Translation::_set_messages(const Dictionary &p_messages) {
-	List<Variant> keys;
-	p_messages.get_key_list(&keys);
-	for (const Variant &E : keys) {
-		translation_map[E] = p_messages[E];
+	for (const KeyValue<Variant, Variant> &kv : p_messages) {
+		translation_map[kv.key] = kv.value;
 	}
 }
 
 void Translation::set_locale(const String &p_locale) {
 	locale = TranslationServer::get_singleton()->standardize_locale(p_locale);
-
-	if (Thread::is_main_thread()) {
-		_notify_translation_changed_if_applies();
-	} else {
-		// This has to happen on the main thread (bypassing the ResourceLoader per-thread call queue)
-		// because it interacts with the generally non-thread-safe window management, leading to
-		// different issues across platforms otherwise.
-		MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &Translation::_notify_translation_changed_if_applies));
-	}
-}
-
-void Translation::_notify_translation_changed_if_applies() {
-	if (OS::get_singleton()->get_main_loop() && TranslationServer::get_singleton()->get_loaded_locales().has(get_locale())) {
-		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_TRANSLATION_CHANGED);
-	}
 }
 
 void Translation::add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context) {

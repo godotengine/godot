@@ -34,6 +34,15 @@
     <!-- Scene api -->
     <uses-permission android:name="com.oculus.permission.USE_SCENE" />
 
+    <!-- Temp removal of the 'REQUEST_INSTALL_PACKAGES' permission as it's currently forbidden by the Horizon OS store -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove" />
+
+    <!-- Passthrough feature -->
+    <uses-feature
+            android:name="android.hardware.camera2.any"
+            android:required="false"/>
+    <uses-permission android:name="horizonos.permission.HEADSET_CAMERA"/>
+
     <application>
 
         <activity
@@ -54,15 +63,8 @@
 
         <activity
             android:name=".GodotXRGame"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
-            android:process=":GodotXRGame"
-            android:launchMode="singleTask"
-            android:icon="@mipmap/ic_play_window"
-            android:label="@string/godot_game_activity_name"
             android:exported="false"
-            android:screenOrientation="landscape"
-            android:resizeableActivity="false"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            tools:node="merge">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -74,25 +76,15 @@
         <!-- Supported Meta devices -->
         <meta-data
             android:name="com.oculus.supportedDevices"
-            android:value="quest3|questpro"
+            android:value="quest2|quest3|questpro"
             tools:replace="android:value" />
-
-        <!--
-        We remove this meta-data originating from the vendors plugin as we only need the loader for
-        now since the project being edited provides its own version of the vendors plugin.
-
-        This needs to be removed once we start implementing the immersive version of the project
-        manager and editor windows.
-         -->
-        <meta-data
-            android:name="org.godotengine.plugin.v2.GodotOpenXRMeta"
-            android:value="org.godotengine.openxr.vendors.meta.GodotOpenXRMeta"
-            tools:node="remove" />
 
         <!-- Enable system splash screen -->
         <meta-data android:name="com.oculus.ossplash" android:value="true"/>
         <!-- Enable passthrough background during the splash screen -->
         <meta-data android:name="com.oculus.ossplash.background" android:value="passthrough-contextual"/>
+
+        <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0" />
 
     </application>
 

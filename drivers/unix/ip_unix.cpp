@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if defined(UNIX_ENABLED)
+#if defined(UNIX_ENABLED) && !defined(UNIX_SOCKET_UNAVAILABLE)
 
 #include "ip_unix.h"
 
@@ -53,8 +53,6 @@
 #endif
 
 #include <net/if.h> // Order is important on OpenBSD, leave as last.
-
-#include <string.h>
 
 static IPAddress _sockaddr2ip(struct sockaddr *p_addr) {
 	IPAddress ip;

@@ -36,6 +36,13 @@
 				Corresponds to the [constant NOTIFICATION_EXIT_TREE] notification in [method Object._notification] and signal [signal tree_exiting]. To get notified when the node has already left the active tree, connect to the [signal tree_exited].
 			</description>
 		</method>
+		<method name="_get_accessibility_configuration_warnings" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				The elements in the array returned from this method are displayed as warnings in the Scene dock if the script that overrides it is a [code]tool[/code] script, and accessibility warnings are enabled in the editor settings.
+				Returning an empty array produces no warnings.
+			</description>
+		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
@@ -44,16 +51,22 @@
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 				[codeblock]
 				@export var energy = 0:
-				    set(value):
-				        energy = value
-				        update_configuration_warnings()
+					set(value):
+						energy = value
+						update_configuration_warnings()
 
 				func _get_configuration_warnings():
-				    if energy &lt; 0:
-				        return ["Energy must be 0 or greater."]
-				    else:
-				        return []
+					if energy &lt; 0:
+						return ["Energy must be 0 or greater."]
+					else:
+						return []
 				[/codeblock]
+			</description>
+		</method>
+		<method name="_get_focused_accessibility_element" qualifiers="virtual const">
+			<return type="RID" />
+			<description>
+				Called during accessibility information updates to determine the currently focused sub-element, should return a sub-element RID or the value returned by [method get_accessibility_element].
 			</description>
 		</method>
 		<method name="_input" qualifiers="virtual">
@@ -71,24 +84,26 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] parameter will [i]generally[/i] be constant (see exceptions below). [param delta] is in seconds.
-				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
+				Called once on each physics tick, and allows Nodes to synchronize their logic with physics ticks. [param delta] is the logical time between physics ticks in seconds and is equal to [member Engine.time_scale] / [member Engine.physics_ticks_per_second].
+				It is only called if physics processing is enabled for this Node, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Processing happens in order of [member process_physics_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] Accumulated [param delta] may diverge from real world seconds.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
-				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the time between frames in seconds.
+				It is only called if processing is enabled for this Node, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Processing happens in order of [member process_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
+				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
+				[b]Note:[/b] Frame delta may be post-processed by [member OS.delta_smoothing] if this is enabled for the project.
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -142,20 +157,20 @@
 			<description>
 				Adds a child [param node]. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param node]. If not named, the [param node] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
-				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. These nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code]. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
+				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. These nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code]. It also prevents these nodes being duplicated with their parent. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker].
 				[b]Note:[/b] If [param node] already has a parent, this method will fail. Use [method remove_child] first to remove [param node] from its current parent. For example:
 				[codeblocks]
 				[gdscript]
 				var child_node = get_child(0)
 				if child_node.get_parent():
-				    child_node.get_parent().remove_child(child_node)
+					child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/gdscript]
 				[csharp]
 				Node childNode = GetChild(0);
 				if (childNode.GetParent() != null)
 				{
-				    childNode.GetParent().RemoveChild(childNode);
+					childNode.GetParent().RemoveChild(childNode);
 				}
 				AddChild(childNode);
 				[/csharp]
@@ -226,6 +241,12 @@
 				This function ensures that the calling of this function will succeed, no matter whether it's being done from a thread or not. If called from a thread that is not allowed to call the function, the call will become deferred. Otherwise, the call will go through directly.
 			</description>
 		</method>
+		<method name="can_auto_translate" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node can automatically translate messages depending on the current locale. See [member auto_translate_mode], [method atr], and [method atr_n].
+			</description>
+		</method>
 		<method name="can_process" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -259,7 +280,7 @@
 			<return type="Node" />
 			<param index="0" name="flags" type="int" default="15" />
 			<description>
-				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]).
+				Duplicates the node, returning a new node with all of its properties, signals, groups, and children copied from the original. The behavior can be tweaked through the [param flags] (see [enum DuplicateFlags]). Internal nodes are not duplicated.
 				[b]Note:[/b] For nodes with a [Script] attached, if [method Object._init] has been defined with required parameters, the duplicated node will not have a [Script].
 			</description>
 		</method>
@@ -299,12 +320,19 @@
 				[b]Note:[/b] As this method walks upwards in the scene tree, it can be slow in large, deeply nested nodes. Consider storing a reference to the found node in a variable. Alternatively, use [method get_node] with unique names (see [member unique_name_in_owner]).
 			</description>
 		</method>
+		<method name="get_accessibility_element" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns main accessibility element RID.
+				[b]Note:[/b] This method should be called only during accessibility information updates ([constant NOTIFICATION_ACCESSIBILITY_UPDATE]).
+			</description>
+		</method>
 		<method name="get_child" qualifiers="const">
 			<return type="Node" />
 			<param index="0" name="idx" type="int" />
 			<param index="1" name="include_internal" type="bool" default="false" />
 			<description>
-				Fetches a child node by its index. Each child node has an index relative its siblings (see [method get_index]). The first child is at index 0. Negative values can also be used to start from the end of the list. This method can be used in combination with [method get_child_count] to iterate over this node's children. If no child exists at the given index, this method returns [code]null[/code] and an error is generated.
+				Fetches a child node by its index. Each child node has an index relative to its siblings (see [method get_index]). The first child is at index 0. Negative values can also be used to start from the end of the list. This method can be used in combination with [method get_child_count] to iterate over this node's children. If no child exists at the given index, this method returns [code]null[/code] and an error is generated.
 				If [param include_internal] is [code]false[/code], internal children are ignored (see [method add_child]'s [code]internal[/code] parameter).
 				[codeblock]
 				# Assuming the following are children of this node, in order:
@@ -345,16 +373,16 @@
 				# Stores the node's non-internal groups only (as an array of StringNames).
 				var non_internal_groups = []
 				for group in get_groups():
-				    if not str(group).begins_with("_"):
-				        non_internal_groups.push_back(group)
+					if not str(group).begins_with("_"):
+						non_internal_groups.push_back(group)
 				[/gdscript]
 				[csharp]
 				// Stores the node's non-internal groups only (as a List of StringNames).
 				List&lt;string&gt; nonInternalGroups = new List&lt;string&gt;();
 				foreach (string group in GetGroups())
 				{
-				    if (!group.BeginsWith("_"))
-				        nonInternalGroups.Add(group);
+					if (!group.BeginsWith("_"))
+						nonInternalGroups.Add(group);
 				}
 				[/csharp]
 				[/codeblocks]
@@ -424,7 +452,7 @@
 				- Element [code]0[/code] is the [Node], or [code]null[/code] if not found;
 				- Element [code]1[/code] is the subname's last nested [Resource], or [code]null[/code] if not found;
 				- Element [code]2[/code] is the remaining [NodePath], referring to an existing, non-[Resource] property (see [method Object.get_indexed]).
-				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned a [AtlasTexture]:
+				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned an [AtlasTexture]:
 				[codeblocks]
 				[gdscript]
 				var a = get_node_and_resource("Area2D/Sprite2D")
@@ -468,6 +496,20 @@
 				Fetches a node by [NodePath]. Similar to [method get_node], but does not generate an error if [param path] does not point to a valid node.
 			</description>
 		</method>
+		<method name="get_node_rpc_config" qualifiers="const">
+			<return type="Variant" />
+			<description>
+				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
+				[b]Note:[/b] This method only returns the RPC configuration assigned via [method rpc_config]. See [method Script.get_rpc_config] to retrieve the RPCs defined by the [Script].
+			</description>
+		</method>
+		<method name="get_orphan_node_ids" qualifiers="static">
+			<return type="int[]" />
+			<description>
+				Returns object IDs of all orphan nodes (nodes outside the [SceneTree]). Used for debugging.
+				[b]Note:[/b] [method get_orphan_node_ids] only works in debug builds. When called in a project exported in release mode, [method get_orphan_node_ids] will return an empty array.
+			</description>
+		</method>
 		<method name="get_parent" qualifiers="const">
 			<return type="Node" />
 			<description>
@@ -502,12 +544,6 @@
 			<description>
 				Returns the time elapsed (in seconds) since the last process callback. This value is identical to [method _process]'s [code]delta[/code] parameter, and may vary from frame to frame. See also [constant NOTIFICATION_PROCESS].
 				[b]Note:[/b] The returned value will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [code]delta[/code] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
-			</description>
-		</method>
-		<method name="get_rpc_config" qualifiers="const">
-			<return type="Variant" />
-			<description>
-				Returns a [Dictionary] mapping method names to their RPC configuration defined for this node using [method rpc_config].
 			</description>
 		</method>
 		<method name="get_scene_instance_load_placeholder" qualifiers="const">
@@ -777,6 +813,12 @@
 				Calls [method Object.notification] with [param what] on this node and all of its children, recursively.
 			</description>
 		</method>
+		<method name="queue_accessibility_update">
+			<return type="void" />
+			<description>
+				Queues an accessibility information update for this node.
+			</description>
+		</method>
 		<method name="queue_free" keywords="delete, remove, kill, die">
 			<return type="void" />
 			<description>
@@ -968,7 +1010,7 @@
 			<return type="void" />
 			<param index="0" name="load_placeholder" type="bool" />
 			<description>
-				If set to [code]true[/code], the node becomes a [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
+				If set to [code]true[/code], the node becomes an [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
 			</description>
 		</method>
 		<method name="set_thread_safe">
@@ -1014,11 +1056,13 @@
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child].
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
-			Allows enabling or disabling physics interpolation per node, offering a finer grain of control than turning physics interpolation on and off globally. See [member ProjectSettings.physics/common/physics_interpolation] and [member SceneTree.physics_interpolation] for the global setting.
-			[b]Note:[/b] When teleporting a node to a distant position you should temporarily disable interpolation with [method Node.reset_physics_interpolation].
+			The physics interpolation mode to use for this node. Only effective if [member ProjectSettings.physics/common/physics_interpolation] or [member SceneTree.physics_interpolation] is [code]true[/code].
+			By default, nodes inherit the physics interpolation mode from their parent. This property can enable or disable physics interpolation individually for each node, regardless of their parents' physics interpolation mode.
+			[b]Note:[/b] Some node types like [VehicleWheel3D] have physics interpolation disabled by default, as they rely on their own custom solution.
+			[b]Note:[/b] When teleporting a node to a distant position, it's recommended to temporarily disable interpolation with [method Node.reset_physics_interpolation] [i]after[/i] moving the node. This avoids creating a visual streak between the old and new positions.
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
-			The node's processing behavior (see [enum ProcessMode]). To check if the node can process in its current mode, use [method can_process].
+			The node's processing behavior. To check if the node can process in its current mode, use [method can_process].
 		</member>
 		<member name="process_physics_priority" type="int" setter="set_physics_process_priority" getter="get_physics_process_priority" default="0">
 			Similar to [member process_priority] but for [constant NOTIFICATION_PHYSICS_PROCESS], [method _physics_process], or [constant NOTIFICATION_INTERNAL_PHYSICS_PROCESS].
@@ -1070,6 +1114,11 @@
 			<param index="0" name="node" type="Node" />
 			<description>
 				Emitted when the node's editor description field changed.
+			</description>
+		</signal>
+		<signal name="editor_state_changed">
+			<description>
+				Emitted when an attribute of the node that is relevant to the editor is changed. Only emitted in the editor.
 			</description>
 		</signal>
 		<signal name="ready">
@@ -1221,6 +1270,9 @@
 		<constant name="NOTIFICATION_VP_MOUSE_EXIT" value="1011">
 			Notification received when the mouse cursor leaves the [Viewport]'s visible area, that is not occluded behind other [Control]s or [Window]s, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 		</constant>
+		<constant name="NOTIFICATION_WM_POSITION_CHANGED" value="1012">
+			Notification received when the window is moved.
+		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
 			Implemented only on iOS.
@@ -1230,10 +1282,10 @@
 			[b]Note:[/b] This notification is received alongside [constant NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup translations for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method is_node_ready].
 			[codeblock]
 			func _notification(what):
-			    if what == NOTIFICATION_TRANSLATION_CHANGED:
-			        if not is_node_ready():
-			            await ready # Wait until ready signal.
-			        $Label.text = atr("%d Bananas") % banana_counter
+				if what == NOTIFICATION_TRANSLATION_CHANGED:
+					if not is_node_ready():
+						await ready # Wait until ready signal.
+					$Label.text = atr("%d Bananas") % banana_counter
 			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="2011">
@@ -1267,6 +1319,12 @@
 		</constant>
 		<constant name="NOTIFICATION_TEXT_SERVER_CHANGED" value="2018">
 			Notification received when the [TextServer] is changed.
+		</constant>
+		<constant name="NOTIFICATION_ACCESSIBILITY_UPDATE" value="3000">
+			Notification received when an accessibility information update is required.
+		</constant>
+		<constant name="NOTIFICATION_ACCESSIBILITY_INVALIDATE" value="3001">
+			Notification received when accessibility elements are invalidated. All node accessibility elements are automatically deleted after receiving this message, therefore all existing references to such elements should be discarded.
 		</constant>
 		<constant name="PROCESS_MODE_INHERIT" value="0" enum="ProcessMode">
 			Inherits [member process_mode] from the node's parent. This is the default for any newly created node.
@@ -1311,7 +1369,7 @@
 			Disables physics interpolation for this node and for children set to [constant PHYSICS_INTERPOLATION_MODE_INHERIT].
 		</constant>
 		<constant name="DUPLICATE_SIGNALS" value="1" enum="DuplicateFlags">
-			Duplicate the node's signal connections.
+			Duplicate the node's signal connections that are connected with the [constant Object.CONNECT_PERSIST] flag.
 		</constant>
 		<constant name="DUPLICATE_GROUPS" value="2" enum="DuplicateFlags">
 			Duplicate the node's groups.

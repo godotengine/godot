@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WINDOWS_EXPORT_PLUGIN_H
-#define WINDOWS_EXPORT_PLUGIN_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "editor/editor_settings.h"
 #include "editor/export/editor_export_platform_pc.h"
+#include "editor/settings/editor_settings.h"
 
 // Optional environment variables for defining confidential information. If any
 // of these is set, they will override the values set in the credentials file.
@@ -70,7 +69,7 @@ class EditorExportPlatformWindows : public EditorExportPlatformPC {
 	int menu_options = 0;
 
 	Error _process_icon(const Ref<EditorExportPreset> &p_preset, const String &p_src_path, const String &p_dst_path);
-	Error _rcedit_add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
+	Error _add_data(const Ref<EditorExportPreset> &p_preset, const String &p_path, bool p_console_icon);
 	Error _code_sign(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 	String _get_exe_arch(const String &p_path) const;
@@ -91,7 +90,7 @@ public:
 
 	virtual Ref<Texture2D> get_run_icon() const override;
 	virtual bool poll_export() override;
-	virtual Ref<ImageTexture> get_option_icon(int p_index) const override;
+	virtual Ref<Texture2D> get_option_icon(int p_index) const override;
 	virtual int get_options_count() const override;
 	virtual String get_option_label(int p_index) const override;
 	virtual String get_option_tooltip(int p_index) const override;
@@ -100,5 +99,3 @@ public:
 
 	EditorExportPlatformWindows();
 };
-
-#endif // WINDOWS_EXPORT_PLUGIN_H

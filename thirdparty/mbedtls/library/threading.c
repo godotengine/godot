@@ -61,7 +61,7 @@ static void threading_mutex_init_pthread(mbedtls_threading_mutex_t *mutex)
      * this here in a thread safe manner without a significant performance
      * hit, so state transitions are checked in tests only via the state
      * variable. Please make sure any new mutex that gets added is exercised in
-     * tests; see tests/src/threading_helpers.c for more details. */
+     * tests; see framework/tests/src/threading_helpers.c for more details. */
     (void) pthread_mutex_init(&mutex->mutex, NULL);
 }
 

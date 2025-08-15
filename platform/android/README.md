@@ -12,7 +12,7 @@ using [Gradle](https://gradle.org/) as a build system.
 
 ## Artwork license
 
-[`logo.png`](logo.png) and [`run_icon.png`](run_icon.png) are licensed under
+[`logo.svg`](export/logo.svg) and [`run_icon.svg`](export/run_icon.svg) are licensed under
 [Creative Commons Attribution 3.0 Unported](https://developer.android.com/distribute/marketing-tools/brand-guidelines#android_robot)
 per the Android logo usage guidelines:
 

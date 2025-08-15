@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_DOCUMENT_H
-#define GLTF_DOCUMENT_H
+#pragma once
 
 #include "extensions/gltf_document_extension.h"
 #include "extensions/gltf_spec_gloss.h"
@@ -39,13 +38,8 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
-#ifdef MODULE_CSG_ENABLED
-#include "modules/csg/csg_shape.h"
-#endif // MODULE_CSG_ENABLED
-#ifdef MODULE_GRIDMAP_ENABLED
-#include "modules/gridmap/grid_map.h"
-#endif // MODULE_GRIDMAP_ENABLED
+class CSGShape3D;
+class GridMap;
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
@@ -66,13 +60,21 @@ public:
 		ROOT_NODE_MODE_KEEP_ROOT,
 		ROOT_NODE_MODE_MULTI_ROOT,
 	};
+	enum VisibilityMode {
+		VISIBILITY_MODE_INCLUDE_REQUIRED,
+		VISIBILITY_MODE_INCLUDE_OPTIONAL,
+		VISIBILITY_MODE_EXCLUDE,
+	};
 
 private:
-	int _naming_version = 1;
+	int _naming_version = 2;
 	String _image_format = "PNG";
 	float _lossy_quality = 0.75f;
+	String _fallback_image_format = "None";
+	float _fallback_image_quality = 0.25f;
 	Ref<GLTFDocumentExtension> _image_save_extension;
 	RootNodeMode _root_node_mode = RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT;
+	VisibilityMode _visibility_mode = VisibilityMode::VISIBILITY_MODE_INCLUDE_REQUIRED;
 
 protected:
 	static void _bind_methods();
@@ -98,12 +100,18 @@ public:
 	String get_image_format() const;
 	void set_lossy_quality(float p_lossy_quality);
 	float get_lossy_quality() const;
+	void set_fallback_image_format(const String &p_fallback_image_format);
+	String get_fallback_image_format() const;
+	void set_fallback_image_quality(float p_fallback_image_quality);
+	float get_fallback_image_quality() const;
 	void set_root_node_mode(RootNodeMode p_root_node_mode);
 	RootNodeMode get_root_node_mode() const;
+	void set_visibility_mode(VisibilityMode p_visibility_mode);
+	VisibilityMode get_visibility_mode() const;
 	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
-	void _build_parent_hierachy(Ref<GLTFState> p_state);
+	void _build_parent_hierarchy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
 	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
 	String _get_component_type_name(const GLTFAccessor::GLTFComponentType p_component_type);
@@ -134,11 +142,11 @@ private:
 	Error _parse_accessors(Ref<GLTFState> p_state);
 	Error _decode_buffer_view(Ref<GLTFState> p_state, double *p_dst,
 			const GLTFBufferViewIndex p_buffer_view,
-			const int p_skip_every, const int p_skip_bytes,
-			const int p_element_size, const int p_count,
-			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int p_component_count,
-			const GLTFAccessor::GLTFComponentType p_component_type, const int p_component_size,
-			const bool p_normalized, const int p_byte_offset,
+			const int64_t p_skip_every, const int64_t p_skip_bytes,
+			const int64_t p_element_size, const int64_t p_count,
+			const GLTFAccessor::GLTFAccessorType p_accessor_type, const int64_t p_component_count,
+			const GLTFAccessor::GLTFComponentType p_component_type, const int64_t p_component_size,
+			const bool p_normalized, const int64_t p_byte_offset,
 			const bool p_for_vertex);
 	Vector<double> _decode_accessor(Ref<GLTFState> p_state,
 			const GLTFAccessorIndex p_accessor,
@@ -188,9 +196,10 @@ private:
 	Error _serialize_textures(Ref<GLTFState> p_state);
 	Error _serialize_texture_samplers(Ref<GLTFState> p_state);
 	Error _serialize_images(Ref<GLTFState> p_state);
+	Dictionary _serialize_image(Ref<GLTFState> p_state, Ref<Image> p_image, const String &p_image_format, float p_lossy_quality, Ref<GLTFDocumentExtension> p_image_save_extension);
 	Error _serialize_lights(Ref<GLTFState> p_state);
 	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension);
-	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_file_extension, int p_index, Ref<Image> p_image);
+	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_resource_uri, const String &p_file_extension, int p_index, Ref<Image> p_image);
 	Error _parse_images(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_textures(Ref<GLTFState> p_state);
 	Error _parse_texture_samplers(Ref<GLTFState> p_state);
@@ -213,10 +222,9 @@ private:
 	Error _parse_animations(Ref<GLTFState> p_state);
 	void _parse_animation_pointer(Ref<GLTFState> p_state, const String &p_animation_json_pointer, const Ref<GLTFAnimation> p_gltf_animation, const GLTFAnimation::Interpolation p_interp, const Vector<double> &p_times, const int p_output_value_accessor_index);
 	Error _serialize_animations(Ref<GLTFState> p_state);
-	BoneAttachment3D *_generate_bone_attachment(Ref<GLTFState> p_state,
-			Skeleton3D *p_skeleton,
-			const GLTFNodeIndex p_node_index,
-			const GLTFNodeIndex p_bone_index);
+	bool _does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node);
+	BoneAttachment3D *_generate_bone_attachment(Skeleton3D *p_godot_skeleton, const Ref<GLTFNode> &p_bone_node);
+	BoneAttachment3D *_generate_bone_attachment_compat_4pt4(Ref<GLTFState> p_state, Skeleton3D *p_skeleton, const GLTFNodeIndex p_node_index, const GLTFNodeIndex p_bone_index);
 	ImporterMeshInstance3D *_generate_mesh_instance(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Camera3D *_generate_camera(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
 	Light3D *_generate_light(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index);
@@ -242,14 +250,14 @@ private:
 			const Vector<Vector2> p_attribs,
 			const bool p_for_vertex);
 
-	void _calc_accessor_vec2_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector2 p_attribs, Vector<double> &p_type_min) {
+	void _calc_accessor_vec2_min_max(int p_i, const int64_t p_element_count, Vector<double> &p_type_max, Vector2 p_attribs, Vector<double> &p_type_min) {
 		if (p_i == 0) {
-			for (int32_t type_i = 0; type_i < p_element_count; type_i++) {
+			for (int64_t type_i = 0; type_i < p_element_count; type_i++) {
 				p_type_max.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
 				p_type_min.write[type_i] = p_attribs[(p_i * p_element_count) + type_i];
 			}
 		}
-		for (int32_t type_i = 0; type_i < p_element_count; type_i++) {
+		for (int64_t type_i = 0; type_i < p_element_count; type_i++) {
 			p_type_max.write[type_i] = MAX(p_attribs[(p_i * p_element_count) + type_i], p_type_max[type_i]);
 			p_type_min.write[type_i] = MIN(p_attribs[(p_i * p_element_count) + type_i], p_type_min[type_i]);
 			p_type_max.write[type_i] = _filter_number(p_type_max.write[type_i]);
@@ -265,7 +273,7 @@ private:
 			const Vector<Color> p_attribs,
 			const bool p_for_vertex);
 
-	void _calc_accessor_min_max(int p_i, const int p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min);
+	void _calc_accessor_min_max(int p_i, const int64_t p_element_count, Vector<double> &p_type_max, Vector<double> p_attribs, Vector<double> &p_type_min);
 
 	GLTFAccessorIndex _encode_accessor_as_ints(Ref<GLTFState> p_state,
 			const Vector<int32_t> p_attribs,
@@ -274,11 +282,11 @@ private:
 	GLTFAccessorIndex _encode_accessor_as_xform(Ref<GLTFState> p_state,
 			const Vector<Transform3D> p_attribs,
 			const bool p_for_vertex);
-	Error _encode_buffer_view(Ref<GLTFState> p_state, const double *p_src,
-			const int p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
+	Error _encode_accessor_into_buffer_view(Ref<GLTFState> p_state, const double *p_src,
+			const int64_t p_count, const GLTFAccessor::GLTFAccessorType p_accessor_type,
 			const GLTFAccessor::GLTFComponentType p_component_type, const bool p_normalized,
-			const int p_byte_offset, const bool p_for_vertex,
-			GLTFBufferViewIndex &r_accessor, const bool p_for_indices = false);
+			const int64_t p_byte_offset, const bool p_for_vertex,
+			GLTFBufferViewIndex &r_buffer_view, const bool p_for_indices = false);
 
 	Error _encode_accessors(Ref<GLTFState> p_state);
 	Error _encode_buffer_views(Ref<GLTFState> p_state);
@@ -328,7 +336,10 @@ public:
 	void _process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root);
 	Node *_generate_scene_node_tree(Ref<GLTFState> p_state);
 	void _generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
-	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
+	void _generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node3D *p_current_node, Node *p_scene_parent, Node *p_scene_root);
+	void _attach_node_to_skeleton(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node3D *p_current_node, Skeleton3D *p_godot_skeleton, Node *p_scene_root, GLTFNodeIndex p_bone_node_index = -1);
+	void _generate_scene_node_compat_4pt4(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
+	void _generate_skeleton_bone_node_compat_4pt4(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root);
 	void _import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player,
 			const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks);
 	void _convert_mesh_instances(Ref<GLTFState> p_state);
@@ -340,20 +351,16 @@ public:
 			const GLTFNodeIndex p_gltf_current,
 			const GLTFNodeIndex p_gltf_root);
 
-#ifdef MODULE_CSG_ENABLED
 	void _convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
-#endif // MODULE_CSG_ENABLED
 
 	void _check_visibility(Node *p_node, bool &r_retflag);
 	void _convert_camera_to_gltf(Camera3D *p_camera, Ref<GLTFState> p_state,
 			Ref<GLTFNode> p_gltf_node);
-#ifdef MODULE_GRIDMAP_ENABLED
 	void _convert_grid_map_to_gltf(
 			GridMap *p_grid_map,
 			GLTFNodeIndex p_parent_node_index,
 			GLTFNodeIndex p_root_node_index,
 			Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
-#endif // MODULE_GRIDMAP_ENABLED
 	void _convert_multi_mesh_instance_to_gltf(
 			MultiMeshInstance3D *p_multi_mesh_instance,
 			GLTFNodeIndex p_parent_node_index,
@@ -388,5 +395,4 @@ public:
 };
 
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
-
-#endif // GLTF_DOCUMENT_H
+VARIANT_ENUM_CAST(GLTFDocument::VisibilityMode);

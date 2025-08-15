@@ -30,11 +30,9 @@
 
 #include "editor_object_selector.h"
 
-#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/editor_data.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/multi_node_edit.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/margin_container.h"
 
@@ -101,10 +99,7 @@ void EditorObjectSelector::_show_popup() {
 	Point2 gp = get_screen_position();
 	gp.y += size.y;
 
-	sub_objects_menu->set_position(gp);
-	sub_objects_menu->set_size(Size2(size.width, 1));
-
-	sub_objects_menu->popup();
+	sub_objects_menu->popup(Rect2(gp, Size2(size.width, 0)));
 }
 
 void EditorObjectSelector::_about_to_show() {
@@ -129,26 +124,7 @@ void EditorObjectSelector::update_path() {
 			continue;
 		}
 
-		Ref<Texture2D> obj_icon;
-		if (Object::cast_to<MultiNodeEdit>(obj)) {
-			obj_icon = EditorNode::get_singleton()->get_class_icon(Object::cast_to<MultiNodeEdit>(obj)->get_edited_class_name());
-		} else if (Object::cast_to<EditorDebuggerRemoteObject>(obj)) {
-			String class_name;
-			Ref<Script> base_script = obj->get_script();
-			if (base_script.is_valid()) {
-				class_name = base_script->get_global_name();
-
-				if (class_name.is_empty()) {
-					// If there is no class_name in this script we just take the script path.
-					class_name = base_script->get_path();
-				}
-			}
-
-			obj_icon = EditorNode::get_singleton()->get_class_icon(class_name.is_empty() ? Object::cast_to<EditorDebuggerRemoteObject>(obj)->type_name : class_name);
-		} else {
-			obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
-		}
-
+		Ref<Texture2D> obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
 		if (obj_icon.is_valid()) {
 			current_object_icon->set_texture(obj_icon);
 		}
@@ -168,7 +144,7 @@ void EditorObjectSelector::update_path() {
 				if (name.is_empty()) {
 					name = r->get_class();
 				}
-			} else if (obj->is_class("EditorDebuggerRemoteObject")) {
+			} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
 				name = obj->call("get_title");
 			} else if (Object::cast_to<Node>(obj)) {
 				name = Object::cast_to<Node>(obj)->get_name();
@@ -211,7 +187,6 @@ void EditorObjectSelector::_id_pressed(int p_idx) {
 
 void EditorObjectSelector::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			update_path();
 
@@ -247,6 +222,7 @@ EditorObjectSelector::EditorObjectSelector(EditorSelectionHistory *p_history) {
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
+	current_object_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	current_object_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	current_object_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	current_object_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

@@ -31,7 +31,6 @@
 #include "openxr_interaction_profile_editor.h"
 #include "../openxr_api.h"
 #include "editor/editor_string_names.h"
-#include "openxr_action_map_editor.h"
 
 ///////////////////////////////////////////////////////////////////////////
 // Interaction profile editor base
@@ -242,16 +241,18 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 	p_container->add_child(path_hb);
 
 	Label *path_label = memnew(Label);
+	path_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	if (p_io_path->openxr_extension_name.is_empty()) {
 		path_label->set_text(p_io_path->display_name);
 	} else {
 		path_label->set_text(p_io_path->display_name + "*");
-		p_container->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
+		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
 	}
 	path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	path_hb->add_child(path_label);
 
 	Label *type_label = memnew(Label);
+	type_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	switch (p_io_path->action_type) {
 		case OpenXRAction::OPENXR_ACTION_BOOL: {
 			type_label->set_text(TTR("Boolean"));
@@ -297,6 +298,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				action_hb->add_child(indent_node);
 
 				Label *action_label = memnew(Label);
+				action_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 				action_label->set_text(action->get_name_with_set() + ": " + action->get_localized_name());
 				action_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				action_hb->add_child(action_label);
@@ -309,6 +311,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				action_binding_modifiers_btn->set_flat(true);
 				action_binding_modifiers_btn->set_button_icon(get_theme_icon(SNAME("Modifiers"), EditorStringName(EditorIcons)));
 				action_binding_modifiers_btn->connect(SceneStringName(pressed), callable_mp((Window *)action_binding_modifiers_dialog, &Window::popup_centered).bind(Size2i(500, 400)));
+				action_binding_modifiers_btn->set_accessibility_name(TTRC("Modifiers"));
 				// TODO change style of button if there are binding modifiers
 				action_hb->add_child(action_binding_modifiers_btn);
 
@@ -316,6 +319,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				action_rem->set_flat(true);
 				action_rem->set_button_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 				action_rem->connect(SceneStringName(pressed), callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
+				action_rem->set_accessibility_name(TTRC("Remove"));
 				action_hb->add_child(action_rem);
 			}
 		}
@@ -359,6 +363,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 		panel->add_child(container);
 
 		Label *label = memnew(Label);
+		label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 		label->set_text(OpenXRInteractionProfileMetadata::get_singleton()->get_top_level_name(top_level_paths[i]));
 		container->add_child(label);
 

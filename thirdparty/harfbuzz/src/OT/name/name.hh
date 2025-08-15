@@ -163,7 +163,7 @@ struct NameRecord
       if (platformID != 1)
       {
         unsigned text_size = hb_ot_name_convert_utf<hb_utf8_t, hb_utf16_be_t> (*name_bytes, nullptr, nullptr);
-  
+
         text_size++; // needs to consider NULL terminator for use in hb_ot_name_convert_utf()
         unsigned byte_len = text_size * hb_utf16_be_t::codepoint_t::static_size;
         name_str_utf16_be = (char *) hb_calloc (byte_len, 1);
@@ -174,14 +174,14 @@ struct NameRecord
         }
         hb_ot_name_convert_utf<hb_utf8_t, hb_utf16_be_t> (*name_bytes, &text_size,
                                                           (hb_utf16_be_t::codepoint_t *) name_str_utf16_be);
-  
+
         unsigned encoded_byte_len = text_size * hb_utf16_be_t::codepoint_t::static_size;
         if (!encoded_byte_len || !c->check_assign (out->length, encoded_byte_len, HB_SERIALIZE_ERROR_INT_OVERFLOW)) {
           c->revert (snap);
           hb_free (name_str_utf16_be);
           return_trace (nullptr);
         }
-  
+
         encoded_bytes = hb_bytes_t (name_str_utf16_be, encoded_byte_len);
       }
       else
@@ -392,7 +392,7 @@ struct name
     const hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> *name_table_overrides =
         &c->plan->name_table_overrides;
 #endif
-    
+
     auto it =
     + nameRecordZ.as_array (count)
     | hb_filter (c->plan->name_ids, &NameRecord::nameID)
@@ -485,7 +485,7 @@ struct name
       const hb_array_t<const NameRecord> all_names (this->table->nameRecordZ.arrayZ,
 						    this->table->count);
 
-      this->names.alloc (all_names.length, true);
+      this->names.alloc_exact (all_names.length);
 
       for (unsigned int i = 0; i < all_names.length; i++)
       {

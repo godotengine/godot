@@ -96,6 +96,12 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_set_sleep_state, "enabled");
 	GDVIRTUAL_BIND(_is_sleeping);
 
+	GDVIRTUAL_BIND(_set_collision_layer, "layer");
+	GDVIRTUAL_BIND(_get_collision_layer);
+
+	GDVIRTUAL_BIND(_set_collision_mask, "mask");
+	GDVIRTUAL_BIND(_get_collision_mask);
+
 	GDVIRTUAL_BIND(_get_contact_count);
 
 	GDVIRTUAL_BIND(_get_contact_local_position, "contact_idx");
@@ -338,6 +344,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_set_linear_stiffness, "body", "linear_stiffness");
 	GDVIRTUAL_BIND(_soft_body_get_linear_stiffness, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_shrinking_factor, "body", "shrinking_factor");
+	GDVIRTUAL_BIND(_soft_body_get_shrinking_factor, "body");
+
 	GDVIRTUAL_BIND(_soft_body_set_pressure_coefficient, "body", "pressure_coefficient");
 	GDVIRTUAL_BIND(_soft_body_get_pressure_coefficient, "body");
 
@@ -357,6 +366,11 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_remove_all_pinned_points, "body");
 	GDVIRTUAL_BIND(_soft_body_pin_point, "body", "point_index", "pin");
 	GDVIRTUAL_BIND(_soft_body_is_point_pinned, "body", "point_index");
+
+	GDVIRTUAL_BIND(_soft_body_apply_point_impulse, "body", "point_index", "impulse");
+	GDVIRTUAL_BIND(_soft_body_apply_point_force, "body", "point_index", "force");
+	GDVIRTUAL_BIND(_soft_body_apply_central_impulse, "body", "impulse");
+	GDVIRTUAL_BIND(_soft_body_apply_central_force, "body", "force");
 
 	/* JOINT API */
 

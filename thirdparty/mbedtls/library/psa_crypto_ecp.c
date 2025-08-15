@@ -321,38 +321,36 @@ psa_status_t mbedtls_psa_ecp_generate_key(
     const psa_key_attributes_t *attributes,
     uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length)
 {
-    psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
-    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
-
     psa_ecc_family_t curve = PSA_KEY_TYPE_ECC_GET_FAMILY(
         attributes->type);
     mbedtls_ecp_group_id grp_id =
         mbedtls_ecc_group_from_psa(curve, attributes->bits);
-
-    const mbedtls_ecp_curve_info *curve_info =
-        mbedtls_ecp_curve_info_from_grp_id(grp_id);
-    mbedtls_ecp_keypair ecp;
-
-    if (grp_id == MBEDTLS_ECP_DP_NONE || curve_info == NULL) {
+    if (grp_id == MBEDTLS_ECP_DP_NONE) {
         return PSA_ERROR_NOT_SUPPORTED;
     }
 
+    mbedtls_ecp_keypair ecp;
     mbedtls_ecp_keypair_init(&ecp);
-    ret = mbedtls_ecp_gen_key(grp_id, &ecp,
-                              mbedtls_psa_get_random,
-                              MBEDTLS_PSA_RANDOM_STATE);
+    int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    ret = mbedtls_ecp_group_load(&ecp.grp, grp_id);
     if (ret != 0) {
-        mbedtls_ecp_keypair_free(&ecp);
-        return mbedtls_to_psa_error(ret);
+        goto exit;
     }
 
-    status = mbedtls_to_psa_error(
-        mbedtls_ecp_write_key_ext(&ecp, key_buffer_length,
-                                  key_buffer, key_buffer_size));
+    ret = mbedtls_ecp_gen_privkey(&ecp.grp, &ecp.d,
+                                  mbedtls_psa_get_random,
+                                  MBEDTLS_PSA_RANDOM_STATE);
+    if (ret != 0) {
+        goto exit;
+    }
 
+    ret = mbedtls_ecp_write_key_ext(&ecp, key_buffer_length,
+                                    key_buffer, key_buffer_size);
+
+exit:
     mbedtls_ecp_keypair_free(&ecp);
-
-    return status;
+    return mbedtls_to_psa_error(ret);
 }
 #endif /* MBEDTLS_PSA_BUILTIN_KEY_TYPE_ECC_KEY_PAIR_GENERATE */
 

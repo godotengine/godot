@@ -32,7 +32,6 @@
 
 #include "core/math/geometry_2d.h"
 #include "core/os/mutex.h"
-#include "servers/navigation_server_2d.h"
 
 #include "thirdparty/misc/polypartition.h"
 
@@ -387,7 +386,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 	TPPLPartition tpart;
 	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
-		ERR_PRINT("NavigationPolygon: Convex partition failed! Failed to convert outlines to a valid NavigationMesh."
+		ERR_PRINT("NavigationPolygon: Convex partition failed! Failed to convert outlines to a valid NavigationPolygon."
 				  "\nNavigationPolygon outlines can not overlap vertices or edges inside same outline or with other outlines or have any intersections."
 				  "\nAdd the outmost and largest outline first. To add holes inside this outline add the smaller outlines with same winding order.");
 		return;
@@ -397,9 +396,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 	vertices.clear();
 
 	HashMap<Vector2, int> points;
-	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		TPPLPoly &tp = I->get();
-
+	for (const TPPLPoly &tp : out_poly) {
 		Vector<int> p;
 
 		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {

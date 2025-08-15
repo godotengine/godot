@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONFIG_GLES3_H
-#define CONFIG_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
-#include "core/templates/vector.h"
 
 #include "platform_gl.h"
 
@@ -63,6 +61,7 @@ public:
 	GLint max_texture_size = 0;
 	GLint max_viewport_size[2] = { 0, 0 };
 	GLint64 max_uniform_buffer_size = 0;
+	uint32_t max_shader_varyings = 0;
 
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
@@ -73,6 +72,7 @@ public:
 	HashSet<String> extensions;
 
 	bool float_texture_supported = false;
+	bool float_texture_linear_supported = false;
 	bool s3tc_supported = false;
 	bool rgtc_supported = false;
 	bool bptc_supported = false;
@@ -83,6 +83,7 @@ public:
 	bool srgb_framebuffer_supported = false;
 
 	bool force_vertex_shading = false;
+	bool specular_occlusion = false;
 
 	bool support_anisotropic_filter = false;
 	float anisotropic_level = 0.0f;
@@ -97,7 +98,6 @@ public:
 
 	// Adreno 3XX compatibility.
 	bool disable_particles_workaround = false; // Set to 'true' to disable 'GPUParticles'.
-	bool flip_xy_workaround = false;
 
 	// PowerVR GE 8320 workaround.
 	bool disable_transform_feedback_shader_cache = false;
@@ -122,5 +122,3 @@ public:
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // CONFIG_GLES3_H

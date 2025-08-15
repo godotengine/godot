@@ -31,7 +31,6 @@
 #include "godot_body_direct_state_2d.h"
 
 #include "godot_body_2d.h"
-#include "godot_physics_server_2d.h"
 #include "godot_space_2d.h"
 
 Vector2 GodotPhysicsDirectBodyState2D::get_total_gravity() const {
@@ -165,6 +164,22 @@ void GodotPhysicsDirectBodyState2D::set_sleep_state(bool p_enable) {
 
 bool GodotPhysicsDirectBodyState2D::is_sleeping() const {
 	return !body->is_active();
+}
+
+void GodotPhysicsDirectBodyState2D::set_collision_layer(uint32_t p_layer) {
+	body->set_collision_layer(p_layer);
+}
+
+uint32_t GodotPhysicsDirectBodyState2D::get_collision_layer() const {
+	return body->get_collision_layer();
+}
+
+void GodotPhysicsDirectBodyState2D::set_collision_mask(uint32_t p_mask) {
+	body->set_collision_mask(p_mask);
+}
+
+uint32_t GodotPhysicsDirectBodyState2D::get_collision_mask() const {
+	return body->get_collision_mask();
 }
 
 int GodotPhysicsDirectBodyState2D::get_contact_count() const {

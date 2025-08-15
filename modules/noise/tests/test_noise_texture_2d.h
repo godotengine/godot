@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_NOISE_TEXTURE_2D_H
-#define TEST_NOISE_TEXTURE_2D_H
+#pragma once
 
 #include "../noise_texture_2d.h"
 
@@ -200,10 +199,11 @@ TEST_CASE("[NoiseTexture2D][SceneTree] Generating a basic noise texture with mip
 	noise_texture->set_noise(noise);
 
 	Ref<Gradient> gradient = memnew(Gradient);
-	Vector<Gradient::Point> points;
-	points.push_back({ 0.0, Color(1, 0, 0) });
-	points.push_back({ 1.0, Color(0, 0, 1) });
-	gradient->set_points(points);
+	Vector<float> offsets = { 0.0, 1.0 };
+	Vector<Color> colors = { Color(1, 0, 0), Color(0, 0, 1) };
+	gradient->set_offsets(offsets);
+	gradient->set_colors(colors);
+
 	noise_texture->set_color_ramp(gradient);
 	noise_texture->set_width(16);
 	noise_texture->set_height(16);
@@ -251,10 +251,12 @@ TEST_CASE("[NoiseTexture2D][SceneTree] Generating a seamless noise texture") {
 
 	SUBCASE("16x16 modulated with default (transparent)black and white gradient (RGBA8), with seamless blend skirt of 1.0") {
 		Ref<Gradient> gradient = memnew(Gradient);
-		Vector<Gradient::Point> points;
-		points.push_back({ 0.0, Color(0, 0, 0, 0) });
-		points.push_back({ 1.0, Color(1, 1, 1, 1) });
-		gradient->set_points(points);
+
+		Vector<float> offsets = { 0.0, 1.0 };
+		Vector<Color> colors = { Color(0, 0, 0, 0), Color(1, 1, 1, 1) };
+		gradient->set_offsets(offsets);
+		gradient->set_colors(colors);
+
 		noise_texture->set_color_ramp(gradient);
 		noise_texture->set_seamless_blend_skirt(1.0);
 		noise_texture->connect_changed(callable_mp(tester.ptr(), &NoiseTextureTester::check_seamless_texture_rgba));
@@ -263,5 +265,3 @@ TEST_CASE("[NoiseTexture2D][SceneTree] Generating a seamless noise texture") {
 }
 
 } //namespace TestNoiseTexture2D
-
-#endif // TEST_NOISE_TEXTURE_2D_H

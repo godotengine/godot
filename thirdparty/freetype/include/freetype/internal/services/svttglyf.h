@@ -4,7 +4,7 @@
  *
  *   The FreeType TrueType glyph service.
  *
- * Copyright (C) 2007-2023 by
+ * Copyright (C) 2007-2024 by
  * David Turner.
  *
  * This file is part of the FreeType project, and may only be used,

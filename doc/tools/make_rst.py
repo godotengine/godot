@@ -10,10 +10,10 @@ import xml.etree.ElementTree as ET
 from collections import OrderedDict
 from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
 
-# Import hardcoded version information from version.py
-root_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
-sys.path.append(root_directory)  # Include the root directory
-import version  # noqa: E402
+sys.path.insert(0, root_directory := os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
+
+import version
+from misc.utility.color import Ansi, force_stderr_color, force_stdout_color
 
 # $DOCS_URL/path/to/page.html(#fragment-tag)
 GODOT_DOCS_PATTERN = re.compile(r"^\$DOCS_URL/(.*)\.html(#.*)?$")
@@ -59,6 +59,7 @@ BASE_STRINGS = [
     "value",
     "Getter",
     "This method should typically be overridden by the user to have any effect.",
+    "This method is required to be overridden when extending its base class.",
     "This method has no side effects. It doesn't modify any of the instance's member variables.",
     "This method accepts any number of arguments after the ones described here.",
     "This method is used to construct a type.",
@@ -89,8 +90,6 @@ BASE_STRINGS = [
     "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will not update the original property value. See [%s] for more details.",
 ]
 strings_l10n: Dict[str, str] = {}
-
-STYLES: Dict[str, str] = {}
 
 CLASS_GROUPS: Dict[str, str] = {
     "global": "Globals",
@@ -699,31 +698,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    should_color = bool(args.color or sys.stdout.isatty() or os.environ.get("CI"))
-
-    # Enable ANSI escape code support on Windows 10 and later (for colored console output).
-    # <https://github.com/python/cpython/issues/73245>
-    if should_color and sys.stdout.isatty() and sys.platform == "win32":
-        try:
-            from ctypes import WinError, byref, windll  # type: ignore
-            from ctypes.wintypes import DWORD  # type: ignore
-
-            stdout_handle = windll.kernel32.GetStdHandle(DWORD(-11))
-            mode = DWORD(0)
-            if not windll.kernel32.GetConsoleMode(stdout_handle, byref(mode)):
-                raise WinError()
-            mode = DWORD(mode.value | 4)
-            if not windll.kernel32.SetConsoleMode(stdout_handle, mode):
-                raise WinError()
-        except Exception:
-            should_color = False
-
-    STYLES["red"] = "\x1b[91m" if should_color else ""
-    STYLES["green"] = "\x1b[92m" if should_color else ""
-    STYLES["yellow"] = "\x1b[93m" if should_color else ""
-    STYLES["bold"] = "\x1b[1m" if should_color else ""
-    STYLES["regular"] = "\x1b[22m" if should_color else ""
-    STYLES["reset"] = "\x1b[0m" if should_color else ""
+    if args.color:
+        force_stdout_color(True)
+        force_stderr_color(True)
 
     # Retrieve heading translations for the given language.
     if not args.dry_run and args.lang != "en":
@@ -834,16 +811,16 @@ def main() -> None:
     if state.script_language_parity_check.hit_count > 0:
         if not args.verbose:
             print(
-                f'{STYLES["yellow"]}{state.script_language_parity_check.hit_count} code samples failed parity check. Use --verbose to get more information.{STYLES["reset"]}'
+                f"{Ansi.YELLOW}{state.script_language_parity_check.hit_count} code samples failed parity check. Use --verbose to get more information.{Ansi.RESET}"
             )
         else:
             print(
-                f'{STYLES["yellow"]}{state.script_language_parity_check.hit_count} code samples failed parity check:{STYLES["reset"]}'
+                f"{Ansi.YELLOW}{state.script_language_parity_check.hit_count} code samples failed parity check:{Ansi.RESET}"
             )
 
             for class_name in state.script_language_parity_check.hit_map.keys():
                 class_hits = state.script_language_parity_check.hit_map[class_name]
-                print(f'{STYLES["yellow"]}- {len(class_hits)} hits in class "{class_name}"{STYLES["reset"]}')
+                print(f'{Ansi.YELLOW}- {len(class_hits)} hits in class "{class_name}"{Ansi.RESET}')
 
                 for context, error in class_hits:
                     print(f"  - {error} in {format_context_name(context)}")
@@ -853,24 +830,22 @@ def main() -> None:
 
     if state.num_warnings >= 2:
         print(
-            f'{STYLES["yellow"]}{state.num_warnings} warnings were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+            f"{Ansi.YELLOW}{state.num_warnings} warnings were found in the class reference XML. Please check the messages above.{Ansi.RESET}"
         )
     elif state.num_warnings == 1:
         print(
-            f'{STYLES["yellow"]}1 warning was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+            f"{Ansi.YELLOW}1 warning was found in the class reference XML. Please check the messages above.{Ansi.RESET}"
         )
 
     if state.num_errors >= 2:
         print(
-            f'{STYLES["red"]}{state.num_errors} errors were found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
+            f"{Ansi.RED}{state.num_errors} errors were found in the class reference XML. Please check the messages above.{Ansi.RESET}"
         )
     elif state.num_errors == 1:
-        print(
-            f'{STYLES["red"]}1 error was found in the class reference XML. Please check the messages above.{STYLES["reset"]}'
-        )
+        print(f"{Ansi.RED}1 error was found in the class reference XML. Please check the messages above.{Ansi.RESET}")
 
     if state.num_warnings == 0 and state.num_errors == 0:
-        print(f'{STYLES["green"]}No warnings or errors found in the class reference XML.{STYLES["reset"]}')
+        print(f"{Ansi.GREEN}No warnings or errors found in the class reference XML.{Ansi.RESET}")
         if not args.dry_run:
             print(f"Wrote reStructuredText files for each class to: {args.output}")
     else:
@@ -881,12 +856,12 @@ def main() -> None:
 
 
 def print_error(error: str, state: State) -> None:
-    print(f'{STYLES["red"]}{STYLES["bold"]}ERROR:{STYLES["regular"]} {error}{STYLES["reset"]}')
+    print(f"{Ansi.RED}{Ansi.BOLD}ERROR:{Ansi.REGULAR} {error}{Ansi.RESET}")
     state.num_errors += 1
 
 
 def print_warning(warning: str, state: State) -> None:
-    print(f'{STYLES["yellow"]}{STYLES["bold"]}WARNING:{STYLES["regular"]} {warning}{STYLES["reset"]}')
+    print(f"{Ansi.YELLOW}{Ansi.BOLD}WARNING:{Ansi.REGULAR} {warning}{Ansi.RESET}")
     state.num_warnings += 1
 
 
@@ -947,7 +922,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
         # Ascendants
         if class_def.inherits:
             inherits = class_def.inherits.strip()
-            f.write(f'**{translate("Inherits:")}** ')
+            f.write(f"**{translate('Inherits:')}** ")
             first = True
             while inherits is not None:
                 if not first:
@@ -974,7 +949,7 @@ def make_rst_class(class_def: ClassDef, state: State, dry_run: bool, output_dir:
                 inherited.append(c.name)
 
         if len(inherited):
-            f.write(f'**{translate("Inherited By:")}** ')
+            f.write(f"**{translate('Inherited By:')}** ")
             for i, child in enumerate(inherited):
                 if i > 0:
                     f.write(", ")
@@ -1523,7 +1498,7 @@ def make_type(klass: str, state: State) -> str:
             return f"``{link_type}``"
 
     if klass.endswith("[]"):  # Typed array, strip [] to link to contained type.
-        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[:-len('[]')])}\\]"
+        return f":ref:`Array<class_Array>`\\[{resolve_type(klass[: -len('[]')])}\\]"
 
     if klass.startswith("Dictionary["):  # Typed dictionary, split elements to link contained types.
         parts = klass[len("Dictionary[") : -len("]")].partition(", ")
@@ -1689,6 +1664,7 @@ def make_footer() -> str:
     # Generate reusable abbreviation substitutions.
     # This way, we avoid bloating the generated rST with duplicate abbreviations.
     virtual_msg = translate("This method should typically be overridden by the user to have any effect.")
+    required_msg = translate("This method is required to be overridden when extending its base class.")
     const_msg = translate("This method has no side effects. It doesn't modify any of the instance's member variables.")
     vararg_msg = translate("This method accepts any number of arguments after the ones described here.")
     constructor_msg = translate("This method is used to construct a type.")
@@ -1701,6 +1677,7 @@ def make_footer() -> str:
 
     return (
         f".. |virtual| replace:: :abbr:`virtual ({virtual_msg})`\n"
+        f".. |required| replace:: :abbr:`required ({required_msg})`\n"
         f".. |const| replace:: :abbr:`const ({const_msg})`\n"
         f".. |vararg| replace:: :abbr:`vararg ({vararg_msg})`\n"
         f".. |constructor| replace:: :abbr:`constructor ({constructor_msg})`\n"
@@ -1863,41 +1840,10 @@ def format_text_block(
     context: DefinitionBase,
     state: State,
 ) -> str:
-    # Linebreak + tabs in the XML should become two line breaks unless in a "codeblock"
-    pos = 0
-    while True:
-        pos = text.find("\n", pos)
-        if pos == -1:
-            break
-
-        pre_text = text[:pos]
-        indent_level = 0
-        while pos + 1 < len(text) and text[pos + 1] == "\t":
-            pos += 1
-            indent_level += 1
-        post_text = text[pos + 1 :]
-
-        # Handle codeblocks
-        if (
-            post_text.startswith("[codeblock]")
-            or post_text.startswith("[codeblock ")
-            or post_text.startswith("[gdscript]")
-            or post_text.startswith("[gdscript ")
-            or post_text.startswith("[csharp]")
-            or post_text.startswith("[csharp ")
-        ):
-            tag_text = post_text[1:].split("]", 1)[0]
-            tag_state = get_tag_and_args(tag_text)
-            result = format_codeblock(tag_state, post_text, indent_level, state)
-            if result is None:
-                return ""
-            text = f"{pre_text}{result[0]}"
-            pos += result[1] - indent_level
-
-        # Handle normal text
-        else:
-            text = f"{pre_text}\n\n{post_text}"
-            pos += 2 - indent_level
+    result = preformat_text_block(text, state)
+    if result is None:
+        return ""
+    text = result
 
     next_brac_pos = text.find("[")
     text = escape_rst(text, next_brac_pos)
@@ -2205,6 +2151,12 @@ def format_text_block(
                                         state,
                                     )
 
+                                elif class_def.properties[target_name].overrides is not None:
+                                    print_error(
+                                        f'{state.current_class}.xml: Invalid member reference "{link_target}" in {context_name}. The reference must point to the original definition, not to the override.',
+                                        state,
+                                    )
+
                             elif tag_state.name == "signal" and target_name not in class_def.signals:
                                 print_error(
                                     f'{state.current_class}.xml: Unresolved signal reference "{link_target}" in {context_name}.',
@@ -2265,6 +2217,8 @@ def format_text_block(
                         repl_text = target_name
                         if target_class_name != state.current_class:
                             repl_text = f"{target_class_name}.{target_name}"
+                        if tag_state.name == "method":
+                            repl_text = f"{repl_text}()"
                         tag_text = f":ref:`{repl_text}<class_{sanitize_class_name(target_class_name)}{ref_type}_{target_name}>`"
                         escape_pre = True
                         escape_post = True
@@ -2447,6 +2401,56 @@ def format_text_block(
     return text
 
 
+def preformat_text_block(text: str, state: State) -> Optional[str]:
+    result = ""
+    codeblock_tag = ""
+    indent_level = 0
+
+    for line in text.splitlines():
+        stripped_line = line.lstrip("\t")
+        tab_count = len(line) - len(stripped_line)
+
+        if codeblock_tag:
+            if line == "":
+                result += "\n"
+                continue
+
+            if tab_count < indent_level:
+                print_error(f"{state.current_class}.xml: Invalid indentation.", state)
+                return None
+
+            if stripped_line.startswith("[/" + codeblock_tag):
+                result += stripped_line
+                codeblock_tag = ""
+            else:
+                # Remove extraneous tabs and replace remaining tabs with spaces.
+                result += "\n" + "    " * (tab_count - indent_level + 1) + stripped_line
+        else:
+            if (
+                stripped_line.startswith("[codeblock]")
+                or stripped_line.startswith("[codeblock ")
+                or stripped_line.startswith("[gdscript]")
+                or stripped_line.startswith("[gdscript ")
+                or stripped_line.startswith("[csharp]")
+                or stripped_line.startswith("[csharp ")
+            ):
+                if result:
+                    result += "\n"
+                result += stripped_line
+
+                tag_text = stripped_line[1:].split("]", 1)[0]
+                tag_state = get_tag_and_args(tag_text)
+                codeblock_tag = tag_state.name
+                indent_level = tab_count
+            else:
+                # A line break in XML should become two line breaks (unless in a code block).
+                if result:
+                    result += "\n\n"
+                result += stripped_line
+
+    return result
+
+
 def format_context_name(context: Union[DefinitionBase, None]) -> str:
     context_name: str = "unknown context"
     if context is not None:
@@ -2489,50 +2493,6 @@ def escape_rst(text: str, until_pos: int = -1) -> str:
     return text
 
 
-def format_codeblock(
-    tag_state: TagState, post_text: str, indent_level: int, state: State
-) -> Union[Tuple[str, int], None]:
-    end_pos = post_text.find("[/" + tag_state.name + "]")
-    if end_pos == -1:
-        print_error(
-            f"{state.current_class}.xml: Tag depth mismatch for [{tag_state.name}]: no closing [/{tag_state.name}].",
-            state,
-        )
-        return None
-
-    opening_formatted = tag_state.name
-    if len(tag_state.arguments) > 0:
-        opening_formatted += " " + tag_state.arguments
-
-    code_text = post_text[len(f"[{opening_formatted}]") : end_pos]
-    post_text = post_text[end_pos:]
-
-    # Remove extraneous tabs
-    code_pos = 0
-    while True:
-        code_pos = code_text.find("\n", code_pos)
-        if code_pos == -1:
-            break
-
-        to_skip = 0
-        while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == "\t":
-            to_skip += 1
-
-        if to_skip > indent_level:
-            print_error(
-                f"{state.current_class}.xml: Four spaces should be used for indentation within [{tag_state.name}].",
-                state,
-            )
-
-        if len(code_text[code_pos + to_skip + 1 :]) == 0:
-            code_text = f"{code_text[:code_pos]}\n"
-            code_pos += 1
-        else:
-            code_text = f"{code_text[:code_pos]}\n    {code_text[code_pos + to_skip + 1 :]}"
-            code_pos += 5 - to_skip
-    return (f"\n[{opening_formatted}]{code_text}{post_text}", len(f"\n[{opening_formatted}]{code_text}"))
-
-
 def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_columns: bool = False) -> None:
     if len(data) == 0:
         return
@@ -2569,7 +2529,7 @@ def format_table(f: TextIO, data: List[Tuple[Optional[str], ...]], remove_empty_
         for i, text in enumerate(row):
             if column_sizes[i] == 0 and remove_empty_columns:
                 continue
-            row_text += f' {(text or "").ljust(column_sizes[i])} |'
+            row_text += f" {(text or '').ljust(column_sizes[i])} |"
         row_text += "\n"
 
         f.write(f"   {row_text}")

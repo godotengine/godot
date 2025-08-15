@@ -28,16 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RAYCAST_OCCLUSION_CULL_H
-#define RAYCAST_OCCLUSION_CULL_H
+#pragma once
 
-#include "core/io/image.h"
 #include "core/math/projection.h"
-#include "core/object/object.h"
-#include "core/object/ref_counted.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
 #include <embree4/rtcore.h>
@@ -166,7 +161,7 @@ private:
 	bool _jitter_enabled = false;
 
 	void _init_embree();
-	Vector2 _jitter_half_extents(const Vector2 &p_half_extents, const Size2i &p_viewport_size);
+	Vector2 _get_jitter(const Rect2 &p_viewport_rect, const Size2i &p_buffer_size);
 
 public:
 	virtual bool is_occluder(RID p_rid) override;
@@ -194,5 +189,3 @@ public:
 	RaycastOcclusionCull();
 	~RaycastOcclusionCull();
 };
-
-#endif // RAYCAST_OCCLUSION_CULL_H

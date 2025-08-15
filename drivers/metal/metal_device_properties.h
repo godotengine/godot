@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -48,9 +50,6 @@
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
 
-#ifndef METAL_DEVICE_PROPERTIES_H
-#define METAL_DEVICE_PROPERTIES_H
-
 #import "servers/rendering/rendering_device.h"
 
 #import <Foundation/Foundation.h>
@@ -70,19 +69,34 @@ typedef NS_OPTIONS(NSUInteger, SampleCount) {
 	SampleCount64 = (1UL << 6),
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) MetalFeatures {
-	uint32_t mslVersion;
-	MTLGPUFamily highestFamily;
-	MTLLanguageVersion mslVersionEnum;
-	SampleCount supportedSampleCounts;
-	long hostMemoryPageSize;
-	bool layeredRendering;
-	bool multisampleLayeredRendering;
-	bool quadPermute; /**< If true, quadgroup permutation functions (vote, ballot, shuffle) are supported in shaders. */
-	bool simdPermute; /**< If true, SIMD-group permutation functions (vote, ballot, shuffle) are supported in shaders. */
-	bool simdReduction; /**< If true, SIMD-group reduction functions (arithmetic) are supported in shaders. */
-	bool tessellationShader; /**< If true, tessellation shaders are supported. */
-	bool imageCubeArray; /**< If true, image cube arrays are supported. */
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
+	uint32_t mslVersionMajor = 0;
+	uint32_t mslVersionMinor = 0;
+	MTLGPUFamily highestFamily = MTLGPUFamilyApple4;
+	bool supportsBCTextureCompression = false;
+	bool supportsDepth24Stencil8 = false;
+	bool supports32BitFloatFiltering = false;
+	bool supports32BitMSAA = false;
+	bool supportsMac = TARGET_OS_OSX;
+	MTLLanguageVersion mslVersionEnum = MTLLanguageVersion1_2;
+	SampleCount supportedSampleCounts = SampleCount1;
+	long hostMemoryPageSize = 0;
+	bool layeredRendering = false;
+	bool multisampleLayeredRendering = false;
+	bool quadPermute = false; /**< If true, quadgroup permutation functions (vote, ballot, shuffle) are supported in shaders. */
+	bool simdPermute = false; /**< If true, SIMD-group permutation functions (vote, ballot, shuffle) are supported in shaders. */
+	bool simdReduction = false; /**< If true, SIMD-group reduction functions (arithmetic) are supported in shaders. */
+	bool tessellationShader = false; /**< If true, tessellation shaders are supported. */
+	bool imageCubeArray = false; /**< If true, image cube arrays are supported. */
+	MTLArgumentBuffersTier argument_buffers_tier = MTLArgumentBuffersTier1;
+	/// If true, argument encoders are required to encode arguments into an argument buffer.
+	bool needs_arg_encoders = true;
+	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
+	bool metal_fx_temporal = false; /**< If true, Metal FX temporal functions are supported. */
+	bool supports_gpu_address = false; /**< If true, referencing a GPU address in a shader is supported. */
+	bool supports_image_atomic_32_bit = false; /**< If true, 32-bit atomic operations on images are supported by the GPU. */
+	bool supports_image_atomic_64_bit = false; /**< If true, 64-bit atomic operations on images are supported by the GPU. */
+	bool supports_native_image_atomics = false; /**< If true, native image atomic operations are supported by the OS. */
 };
 
 struct MetalLimits {
@@ -113,6 +127,11 @@ struct MetalLimits {
 	uint32_t maxVertexInputBindings;
 	uint32_t maxVertexInputBindingStride;
 	uint32_t maxDrawIndexedIndexValue;
+	uint32_t maxShaderVaryings;
+	uint32_t maxThreadGroupMemoryAllocation;
+
+	double temporalScalerInputContentMinScale;
+	double temporalScalerInputContentMaxScale;
 
 	uint32_t minSubgroupSize; /**< The minimum number of threads in a SIMD-group. */
 	uint32_t maxSubgroupSize; /**< The maximum number of threads in a SIMD-group. */
@@ -120,7 +139,7 @@ struct MetalLimits {
 	BitField<RD::SubgroupOperations> subgroupSupportedOperations; /**< The subgroup operations supported by the device. */
 };
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) MetalDeviceProperties {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalDeviceProperties {
 private:
 	void init_features(id<MTLDevice> p_device);
 	void init_limits(id<MTLDevice> p_device);
@@ -137,5 +156,3 @@ public:
 private:
 	static const SampleCount sample_count[RenderingDevice::TextureSamples::TEXTURE_SAMPLES_MAX];
 };
-
-#endif // METAL_DEVICE_PROPERTIES_H

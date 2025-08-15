@@ -10,6 +10,9 @@
 	<tutorials>
 	</tutorials>
 	<members>
+		<member name="editing_integer" type="bool" setter="set_editing_integer" getter="is_editing_integer" default="false">
+			If [code]true[/code], the [EditorSpinSlider] is considered to be editing an integer value. If [code]false[/code], the [EditorSpinSlider] is considered to be editing a floating-point value. This is used to determine whether a slider should be drawn. The slider is only drawn for floats; integers use up-down arrows similar to [SpinBox] instead.
+		</member>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			If [code]true[/code], the slider will not draw background.
 		</member>

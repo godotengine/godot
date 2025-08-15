@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		A fallback implementation of Godot's text server. This fallback is faster than [TextServerAdvanced] for processing a lot of text, but it does not support BiDi and complex text layout.
-		[b]Note:[/b] This text server is not part of official Godot binaries. If you want to use it, compile the engine with the option [code]module_text_server_fb_enabled=yes[/code].
+		[b]Note:[/b] This text server is not part of official Godot binaries. If you want to use it, compile the engine with the option [code]module_text_server_fb_enabled=yes[/code]. When building with [TextServerFallback], consider also disabling [TextServerAdvanced] with [code]module_text_server_adv_enabled=no[/code] to reduce binary size.
 	</description>
 	<tutorials>
 	</tutorials>

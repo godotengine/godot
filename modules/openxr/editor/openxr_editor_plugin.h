@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EDITOR_PLUGIN_H
-#define OPENXR_EDITOR_PLUGIN_H
+#pragma once
 
 #include "openxr_action_map_editor.h"
 #include "openxr_binding_modifier_editor.h"
@@ -47,14 +46,11 @@ class OpenXREditorPlugin : public EditorPlugin {
 #endif
 
 public:
-	virtual String get_name() const override { return "OpenXRPlugin"; }
+	virtual String get_plugin_name() const override { return "OpenXRPlugin"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	OpenXREditorPlugin();
-	~OpenXREditorPlugin();
 };
-
-#endif // OPENXR_EDITOR_PLUGIN_H

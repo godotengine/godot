@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RETARGET_MODIFIER_3D_H
-#define RETARGET_MODIFIER_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/resources/skeleton_profile.h"
@@ -37,12 +36,19 @@
 class RetargetModifier3D : public SkeletonModifier3D {
 	GDCLASS(RetargetModifier3D, SkeletonModifier3D);
 
+public:
+	enum TransformFlag {
+		TRANSFORM_FLAG_POSITION = 1,
+		TRANSFORM_FLAG_ROTATION = 2,
+		TRANSFORM_FLAG_SCALE = 4,
+		TRANSFORM_FLAG_ALL = TRANSFORM_FLAG_POSITION | TRANSFORM_FLAG_ROTATION | TRANSFORM_FLAG_SCALE,
+	};
+
+private:
 	Ref<SkeletonProfile> profile;
 
 	bool use_global_pose = false;
-	bool enable_position = true;
-	bool enable_rotation = true;
-	bool enable_scale = true;
+	BitField<TransformFlag> enable_flags = TRANSFORM_FLAG_ALL;
 
 	struct RetargetBoneInfo {
 		int bone_id = -1;
@@ -62,6 +68,10 @@ class RetargetModifier3D : public SkeletonModifier3D {
 	void _update_child_skeletons();
 	void _reset_child_skeleton_poses();
 	void _reset_child_skeletons();
+
+#ifdef TOOLS_ENABLED
+	void _force_update_child_skeletons();
+#endif // TOOLS_ENABLED
 
 	void cache_rests_with_reset();
 	void cache_rests();
@@ -86,13 +96,16 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 	virtual void _set_active(bool p_active) override;
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
 
 	void set_use_global_pose(bool p_use_global_pose);
 	bool is_using_global_pose() const;
+	void set_enable_flags(BitField<TransformFlag> p_enable_flags);
+	BitField<TransformFlag> get_enable_flags() const;
+
 	void set_position_enabled(bool p_enabled);
 	bool is_position_enabled() const;
 	void set_rotation_enabled(bool p_enabled);
@@ -103,8 +116,12 @@ public:
 	void set_profile(Ref<SkeletonProfile> p_profile);
 	Ref<SkeletonProfile> get_profile() const;
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const override { return true; }
+#endif
+
 	RetargetModifier3D();
 	virtual ~RetargetModifier3D();
 };
 
-#endif // RETARGET_MODIFIER_3D_H
+VARIANT_BITFIELD_CAST(RetargetModifier3D::TransformFlag);

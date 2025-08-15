@@ -30,8 +30,8 @@
 
 #include "editor_toaster.h"
 
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -236,12 +236,12 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	}
 
 	if (toasts.is_empty()) {
-		main_button->set_tooltip_text(TTR("No notifications."));
+		main_button->set_tooltip_text(TTRC("No notifications."));
 		main_button->set_modulate(Color(0.5, 0.5, 0.5));
 		main_button->set_disabled(true);
 		set_process_internal(false);
 	} else {
-		main_button->set_tooltip_text(TTR("Show notifications."));
+		main_button->set_tooltip_text(TTRC("Show notifications."));
 		main_button->set_modulate(Color(1, 1, 1));
 		main_button->set_disabled(false);
 	}
@@ -342,6 +342,7 @@ void EditorToaster::_repop_old() {
 Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_time, const String &p_tooltip) {
 	// Create the panel according to the severity.
 	PanelContainer *panel = memnew(PanelContainer);
+	panel->set_tooltip_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	panel->set_tooltip_text(p_tooltip);
 	switch (p_severity) {
 		case SEVERITY_INFO:
@@ -374,11 +375,13 @@ Control *EditorToaster::popup(Control *p_control, Severity p_severity, double p_
 	// Add buttons.
 	if (p_time > 0.0) {
 		Button *copy_button = memnew(Button);
+		copy_button->set_accessibility_name(TTRC("Copy"));
 		copy_button->set_flat(true);
 		copy_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::copy).bind(panel));
 		hbox_container->add_child(copy_button);
 
 		Button *close_button = memnew(Button);
+		close_button->set_accessibility_name(TTRC("Close"));
 		close_button->set_flat(true);
 		close_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::instant_close).bind(panel));
 		hbox_container->add_child(close_button);
@@ -412,7 +415,7 @@ void EditorToaster::popup_str(const String &p_message, Severity p_severity, cons
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	callable_mp(this, &EditorToaster::_popup_str).call_deferred(p_message, p_severity, p_tooltip);
+	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &EditorToaster::_popup_str), p_message, p_severity, p_tooltip);
 	is_processing_error = false;
 }
 
@@ -433,9 +436,12 @@ void EditorToaster::_popup_str(const String &p_message, Severity p_severity, con
 		hb->add_theme_constant_override("separation", 0);
 
 		Label *label = memnew(Label);
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+		label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		hb->add_child(label);
 
 		Label *count_label = memnew(Label);
+		count_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		hb->add_child(count_label);
 
 		control = popup(hb, p_severity, default_message_duration, p_tooltip);
@@ -572,7 +578,8 @@ EditorToaster::EditorToaster() {
 
 	// Main button.
 	main_button = memnew(Button);
-	main_button->set_tooltip_text(TTR("No notifications."));
+	main_button->set_accessibility_name(TTRC("Notifications:"));
+	main_button->set_tooltip_text(TTRC("No notifications."));
 	main_button->set_modulate(Color(0.5, 0.5, 0.5));
 	main_button->set_disabled(true);
 	main_button->set_theme_type_variation("FlatMenuButton");
@@ -588,7 +595,7 @@ EditorToaster::EditorToaster() {
 	add_child(disable_notifications_panel);
 
 	disable_notifications_button = memnew(Button);
-	disable_notifications_button->set_tooltip_text(TTR("Silence the notifications."));
+	disable_notifications_button->set_tooltip_text(TTRC("Silence the notifications."));
 	disable_notifications_button->set_flat(true);
 	disable_notifications_button->connect(SceneStringName(pressed), callable_mp(this, &EditorToaster::_set_notifications_enabled).bind(false));
 	disable_notifications_panel->add_child(disable_notifications_button);

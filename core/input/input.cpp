@@ -73,10 +73,12 @@ static const char *_joy_axes[(size_t)JoyAxis::SDL_MAX] = {
 	"righttrigger",
 };
 
-Input *Input::singleton = nullptr;
-
 void (*Input::set_mouse_mode_func)(Input::MouseMode) = nullptr;
 Input::MouseMode (*Input::get_mouse_mode_func)() = nullptr;
+void (*Input::set_mouse_mode_override_func)(Input::MouseMode) = nullptr;
+Input::MouseMode (*Input::get_mouse_mode_override_func)() = nullptr;
+void (*Input::set_mouse_mode_override_enabled_func)(bool) = nullptr;
+bool (*Input::is_mouse_mode_override_enabled_func)() = nullptr;
 void (*Input::warp_mouse_func)(const Vector2 &p_position) = nullptr;
 Input::CursorShape (*Input::get_current_cursor_shape_func)() = nullptr;
 void (*Input::set_custom_mouse_cursor_func)(const Ref<Resource> &, Input::CursorShape, const Vector2 &) = nullptr;
@@ -86,51 +88,29 @@ Input *Input::get_singleton() {
 }
 
 void Input::set_mouse_mode(MouseMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 5);
-
-	if (p_mode == mouse_mode) {
-		return;
-	}
-
-	// Allow to be set even if overridden, to see if the platform allows the mode.
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
 	set_mouse_mode_func(p_mode);
-	mouse_mode = get_mouse_mode_func();
-
-	if (mouse_mode_override_enabled) {
-		set_mouse_mode_func(mouse_mode_override);
-	}
 }
 
 Input::MouseMode Input::get_mouse_mode() const {
-	return mouse_mode;
-}
-
-void Input::set_mouse_mode_override_enabled(bool p_enabled) {
-	if (p_enabled == mouse_mode_override_enabled) {
-		return;
-	}
-
-	mouse_mode_override_enabled = p_enabled;
-
-	if (p_enabled) {
-		set_mouse_mode_func(mouse_mode_override);
-		mouse_mode_override = get_mouse_mode_func();
-	} else {
-		set_mouse_mode_func(mouse_mode);
-	}
+	return get_mouse_mode_func();
 }
 
 void Input::set_mouse_mode_override(MouseMode p_mode) {
-	ERR_FAIL_INDEX((int)p_mode, 5);
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	set_mouse_mode_override_func(p_mode);
+}
 
-	if (p_mode == mouse_mode_override) {
-		return;
-	}
+Input::MouseMode Input::get_mouse_mode_override() const {
+	return get_mouse_mode_override_func();
+}
 
-	if (mouse_mode_override_enabled) {
-		set_mouse_mode_func(p_mode);
-		mouse_mode_override = get_mouse_mode_func();
-	}
+void Input::set_mouse_mode_override_enabled(bool p_override_enabled) {
+	set_mouse_mode_override_enabled_func(p_override_enabled);
+}
+
+bool Input::is_mouse_mode_override_enabled() {
+	return is_mouse_mode_override_enabled_func();
 }
 
 void Input::_bind_methods() {
@@ -143,6 +123,8 @@ void Input::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_action_pressed", "action", "exact_match"), &Input::is_action_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_pressed", "action", "exact_match"), &Input::is_action_just_pressed, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_action_just_released", "action", "exact_match"), &Input::is_action_just_released, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_just_pressed_by_event", "action", "event", "exact_match"), &Input::is_action_just_pressed_by_event, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("is_action_just_released_by_event", "action", "event", "exact_match"), &Input::is_action_just_released_by_event, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_strength", "action", "exact_match"), &Input::get_action_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_action_raw_strength", "action", "exact_match"), &Input::get_action_raw_strength, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_axis", "negative_action", "positive_action"), &Input::get_axis);
@@ -199,6 +181,7 @@ void Input::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(CURSOR_ARROW);
 	BIND_ENUM_CONSTANT(CURSOR_IBEAM);
@@ -236,7 +219,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1);
 			r_options->push_back(name.quote());
 		}
 	}
@@ -272,13 +255,16 @@ void Input::VelocityTrack::update(const Vector2 &p_delta_p, const Vector2 &p_scr
 	velocity = accum / accum_t;
 	screen_velocity = screen_accum / accum_t;
 	accum = Vector2();
+	screen_accum = Vector2();
 	accum_t = 0;
 }
 
 void Input::VelocityTrack::reset() {
 	last_tick = OS::get_singleton()->get_ticks_usec();
 	velocity = Vector2();
+	screen_velocity = Vector2();
 	accum = Vector2();
+	screen_accum = Vector2();
 	accum_t = 0;
 }
 
@@ -296,6 +282,26 @@ bool Input::is_anything_pressed() const {
 	}
 
 	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
+		return true;
+	}
+
+	for (const KeyValue<StringName, Input::ActionState> &E : action_states) {
+		if (E.value.cache.pressed) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool Input::is_anything_pressed_except_mouse() const {
+	_THREAD_SAFE_METHOD_
+
+	if (disable_input) {
+		return false;
+	}
+
+	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty()) {
 		return true;
 	}
 
@@ -407,6 +413,37 @@ bool Input::is_action_just_pressed(const StringName &p_action, bool p_exact) con
 	}
 }
 
+bool Input::is_action_just_pressed_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+	ERR_FAIL_COND_V(p_event.is_null(), false);
+
+	if (disable_input) {
+		return false;
+	}
+
+	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->value.exact == false) {
+		return false;
+	}
+
+	if (E->value.pressed_event_id != p_event->get_instance_id()) {
+		return false;
+	}
+
+	// Backward compatibility for legacy behavior, only return true if currently pressed.
+	bool pressed_requirement = legacy_just_pressed_behavior ? E->value.cache.pressed : true;
+
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return pressed_requirement && E->value.pressed_physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return pressed_requirement && E->value.pressed_process_frame == Engine::get_singleton()->get_process_frames();
+	}
+}
+
 bool Input::is_action_just_released(const StringName &p_action, bool p_exact) const {
 	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
 
@@ -420,6 +457,37 @@ bool Input::is_action_just_released(const StringName &p_action, bool p_exact) co
 	}
 
 	if (p_exact && E->value.exact == false) {
+		return false;
+	}
+
+	// Backward compatibility for legacy behavior, only return true if currently released.
+	bool released_requirement = legacy_just_pressed_behavior ? !E->value.cache.pressed : true;
+
+	if (Engine::get_singleton()->is_in_physics_frame()) {
+		return released_requirement && E->value.released_physics_frame == Engine::get_singleton()->get_physics_frames();
+	} else {
+		return released_requirement && E->value.released_process_frame == Engine::get_singleton()->get_process_frames();
+	}
+}
+
+bool Input::is_action_just_released_by_event(const StringName &p_action, const Ref<InputEvent> &p_event, bool p_exact) const {
+	ERR_FAIL_COND_V_MSG(!InputMap::get_singleton()->has_action(p_action), false, InputMap::get_singleton()->suggest_actions(p_action));
+	ERR_FAIL_COND_V(p_event.is_null(), false);
+
+	if (disable_input) {
+		return false;
+	}
+
+	HashMap<StringName, ActionState>::ConstIterator E = action_states.find(p_action);
+	if (!E) {
+		return false;
+	}
+
+	if (p_exact && E->value.exact == false) {
+		return false;
+	}
+
+	if (E->value.released_event_id != p_event->get_instance_id()) {
 		return false;
 	}
 
@@ -586,13 +654,16 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 		js.uid = uidname;
 		js.connected = true;
 		int mapping = fallback_mapping;
-		for (int i = 0; i < map_db.size(); i++) {
-			if (js.uid == map_db[i].uid) {
-				mapping = i;
-				js.name = map_db[i].name;
+		// Bypass the mapping system if the joypad's mapping is already handled by its driver
+		// (for example, the SDL joypad driver).
+		if (!p_joypad_info.get("mapping_handled", false)) {
+			for (int i = 0; i < map_db.size(); i++) {
+				if (js.uid == map_db[i].uid) {
+					mapping = i;
+				}
 			}
 		}
-		js.mapping = mapping;
+		_set_joypad_mapping(js, mapping);
 	} else {
 		js.connected = false;
 		for (int i = 0; i < (int)JoyButton::MAX; i++) {
@@ -612,7 +683,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gravity_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gravity` is not enabled in project settings.");
 	}
@@ -624,7 +695,7 @@ Vector3 Input::get_gravity() const {
 Vector3 Input::get_accelerometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!accelerometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_accelerometer` is not enabled in project settings.");
 	}
@@ -636,7 +707,7 @@ Vector3 Input::get_accelerometer() const {
 Vector3 Input::get_magnetometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!magnetometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_magnetometer` is not enabled in project settings.");
 	}
@@ -648,7 +719,7 @@ Vector3 Input::get_magnetometer() const {
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gyroscope_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gyroscope` is not enabled in project settings.");
 	}
@@ -888,10 +959,12 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		_update_action_cache(E.key, action_state);
 		// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 		if (action_state.cache.pressed && !was_pressed) {
+			action_state.pressed_event_id = p_event->get_instance_id();
 			action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 		}
 		if (!action_state.cache.pressed && was_pressed) {
+			action_state.released_event_id = p_event->get_instance_id();
 			action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 			action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 		}
@@ -1020,6 +1093,7 @@ void Input::action_press(const StringName &p_action, float p_strength) {
 
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
 	if (!action_state.cache.pressed) {
+		action_state.pressed_event_id = ObjectID();
 		action_state.pressed_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 		action_state.pressed_process_frame = Engine::get_singleton()->get_process_frames();
 	}
@@ -1038,6 +1112,7 @@ void Input::action_release(const StringName &p_action) {
 	action_state.cache.strength = 0.0;
 	action_state.cache.raw_strength = 0.0;
 	// As input may come in part way through a physics tick, the earliest we can react to it is the next physics tick.
+	action_state.released_event_id = ObjectID();
 	action_state.released_physics_frame = Engine::get_singleton()->get_physics_frames() + 1;
 	action_state.released_process_frame = Engine::get_singleton()->get_process_frames();
 	action_state.device_states.clear();
@@ -1583,9 +1658,6 @@ void Input::parse_mapping(const String &p_mapping) {
 		return;
 	}
 
-	CharString uid;
-	uid.resize(17);
-
 	mapping.uid = entry[0];
 	mapping.name = entry[1];
 
@@ -1595,8 +1667,8 @@ void Input::parse_mapping(const String &p_mapping) {
 			continue;
 		}
 
-		String output = entry[idx].get_slice(":", 0).replace(" ", "");
-		String input = entry[idx].get_slice(":", 1).replace(" ", "");
+		String output = entry[idx].get_slicec(':', 0).remove_char(' ');
+		String input = entry[idx].get_slicec(':', 1).remove_char(' ');
 		if (output.length() < 1 || input.length() < 2) {
 			continue;
 		}
@@ -1686,24 +1758,92 @@ void Input::add_joy_mapping(const String &p_mapping, bool p_update_existing) {
 		for (KeyValue<int, Joypad> &E : joy_names) {
 			Joypad &joy = E.value;
 			if (joy.uid == uid) {
-				joy.mapping = map_db.size() - 1;
+				_set_joypad_mapping(joy, map_db.size() - 1);
 			}
 		}
 	}
 }
 
 void Input::remove_joy_mapping(const String &p_guid) {
+	// One GUID can exist multiple times in `map_db`, and
+	// `add_joy_mapping` can choose not to update the existing mapping,
+	// so the indices can be all over the place. Therefore we need to remember them.
+	Vector<int> removed_idx;
+	int min_removed_idx = -1;
+	int max_removed_idx = -1;
+	int fallback_mapping_offset = 0;
+
 	for (int i = map_db.size() - 1; i >= 0; i--) {
 		if (p_guid == map_db[i].uid) {
 			map_db.remove_at(i);
+
+			if (max_removed_idx == -1) {
+				max_removed_idx = i;
+			}
+			min_removed_idx = i;
+			removed_idx.push_back(i);
+
+			if (i < fallback_mapping) {
+				fallback_mapping_offset++;
+			} else if (i == fallback_mapping) {
+				fallback_mapping = -1;
+				WARN_PRINT_ONCE(vformat("Removed fallback joypad input mapping \"%s\". This could lead to joypads not working as intended.", p_guid));
+			}
 		}
 	}
+
+	if (min_removed_idx == -1) {
+		return; // Nothing removed.
+	}
+
+	if (fallback_mapping > 0) {
+		// Fix the shifted index.
+		fallback_mapping -= fallback_mapping_offset;
+	}
+
+	int removed_idx_size = removed_idx.size();
+
+	// Update joypad mapping references: some
+	// * should use the fallback_mapping (if set; if not, they get unmapped), or
+	// * need their mapping reference fixed, because the deletion(s) offset them.
 	for (KeyValue<int, Joypad> &E : joy_names) {
 		Joypad &joy = E.value;
-		if (joy.uid == p_guid) {
-			joy.mapping = -1;
+		if (joy.mapping < min_removed_idx) {
+			continue; // Not affected.
+		}
+
+		if (joy.mapping > max_removed_idx) {
+			_set_joypad_mapping(joy, joy.mapping - removed_idx_size);
+			continue; // Simple offset fix.
+		}
+
+		// removed_idx is in reverse order (ie. high to low), because the first loop is in reverse order.
+		for (int i = 0; i < removed_idx.size(); i++) {
+			if (removed_idx[i] == joy.mapping) {
+				// Set to fallback_mapping, if defined, else unmap the joypad.
+				// Currently, the fallback_mapping is only set internally, and only for Android.
+				_set_joypad_mapping(joy, fallback_mapping);
+				break;
+			}
+			if (removed_idx[i] < joy.mapping) {
+				// Complex offset fix:
+				// This mapping was shifted by `(removed_idx_size - i)` deletions.
+				_set_joypad_mapping(joy, joy.mapping - (removed_idx_size - i));
+				break;
+			}
 		}
 	}
+}
+
+void Input::_set_joypad_mapping(Joypad &p_js, int p_map_index) {
+	if (p_map_index != fallback_mapping && p_map_index >= 0 && p_map_index < map_db.size() && p_js.uid != "__XINPUT_DEVICE__") {
+		// Prefer the joypad name defined in the mapping.
+		// Exceptions:
+		// * On Windows for XInput devices the mapping would change the joypad's name to a collective name.
+		// * A fallback mapping is not allowed to override the joypad's name.
+		p_js.name = map_db[p_map_index].name;
+	}
+	p_js.mapping = p_map_index;
 }
 
 void Input::set_fallback_mapping(const String &p_guid) {

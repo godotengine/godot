@@ -52,31 +52,35 @@ void CameraLinux::_update_devices() {
 
 			for (int i = feeds.size() - 1; i >= 0; i--) {
 				Ref<CameraFeedLinux> feed = (Ref<CameraFeedLinux>)feeds[i];
+				if (feed.is_null()) {
+					continue;
+				}
 				String device_name = feed->get_device_name();
 				if (!_is_active(device_name)) {
 					remove_feed(feed);
 				}
 			}
 
-			DIR *devices = opendir("/dev");
+			struct dirent **devices;
+			int count = scandir("/dev", &devices, nullptr, alphasort);
 
-			if (devices) {
-				struct dirent *device;
-
-				while ((device = readdir(devices)) != nullptr) {
-					if (strncmp(device->d_name, "video", 5) != 0) {
-						continue;
+			if (count != -1) {
+				for (int i = 0; i < count; i++) {
+					struct dirent *device = devices[i];
+					if (strncmp(device->d_name, "video", 5) == 0) {
+						String device_name = String("/dev/") + String(device->d_name);
+						if (!_has_device(device_name)) {
+							_add_device(device_name);
+						}
 					}
-					String device_name = String("/dev/") + String(device->d_name);
-					if (!_has_device(device_name)) {
-						_add_device(device_name);
-					}
+					free(device);
 				}
 			}
 
-			closedir(devices);
+			free(devices);
 		}
 
+		call_deferred("emit_signal", SNAME(CameraServer::feeds_updated_signal_name));
 		usleep(1000000);
 	}
 }
@@ -84,6 +88,9 @@ void CameraLinux::_update_devices() {
 bool CameraLinux::_has_device(const String &p_device_name) {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedLinux> feed = (Ref<CameraFeedLinux>)feeds[i];
+		if (feed.is_null()) {
+			continue;
+		}
 		if (feed->get_device_name() == p_device_name) {
 			return true;
 		}
@@ -107,7 +114,7 @@ void CameraLinux::_add_device(const String &p_device_name) {
 int CameraLinux::_open_device(const String &p_device_name) {
 	struct stat s;
 
-	if (stat(p_device_name.ascii(), &s) == -1) {
+	if (stat(p_device_name.ascii().get_data(), &s) == -1) {
 		return -1;
 	}
 
@@ -115,7 +122,7 @@ int CameraLinux::_open_device(const String &p_device_name) {
 		return -1;
 	}
 
-	return open(p_device_name.ascii(), O_RDWR | O_NONBLOCK, 0);
+	return open(p_device_name.ascii().get_data(), O_RDWR | O_NONBLOCK, 0);
 }
 
 // TODO any cheaper/cleaner way to check if file descriptor is invalid?
@@ -156,11 +163,26 @@ bool CameraLinux::_can_query_format(int p_file_descriptor, int p_type) {
 	return ioctl(p_file_descriptor, VIDIOC_G_FMT, &format) != -1;
 }
 
-CameraLinux::CameraLinux() {
-	camera_thread.start(CameraLinux::camera_thread_func, this);
+inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
+
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
+	if (p_monitoring_feeds) {
+		exit_flag.clear();
+		camera_thread.start(CameraLinux::camera_thread_func, this);
+	} else {
+		exit_flag.set();
+		if (camera_thread.is_started()) {
+			camera_thread.wait_to_finish();
+		}
+	}
 }
 
 CameraLinux::~CameraLinux() {
 	exit_flag.set();
-	camera_thread.wait_to_finish();
+	if (camera_thread.is_started()) {
+		camera_thread.wait_to_finish();
+	}
 }

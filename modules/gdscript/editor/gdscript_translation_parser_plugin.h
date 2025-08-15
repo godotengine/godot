@@ -28,26 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
-#define GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H
+#pragma once
 
 #include "../gdscript_parser.h"
 #include "../gdscript_tokenizer.h"
 
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
-#include "editor/editor_translation_parser.h"
+#include "editor/translations/editor_translation_parser.h"
 
 class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlugin {
 	GDCLASS(GDScriptEditorTranslationParserPlugin, EditorTranslationParserPlugin);
 
 	const HashMap<int, GDScriptTokenizer::CommentData> *comment_data = nullptr;
 
-	Vector<String> *ids = nullptr;
-	Vector<Vector<String>> *ids_ctx_plural = nullptr;
-
-	Vector<String> ids_comment;
-	Vector<String> ids_ctx_plural_comment;
+	Vector<Vector<String>> *translations = nullptr;
 
 	// List of patterns used for extracting translation strings.
 	StringName tr_func = "tr";
@@ -81,11 +76,8 @@ class GDScriptEditorTranslationParserPlugin : public EditorTranslationParserPlug
 	void _extract_fd_filter_array(const GDScriptParser::ExpressionNode *p_expression);
 
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) override;
-	virtual void get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) override;
+	virtual Error parse_file(const String &p_path, Vector<Vector<String>> *r_translations) override;
 	virtual void get_recognized_extensions(List<String> *r_extensions) const override;
 
 	GDScriptEditorTranslationParserPlugin();
 };
-
-#endif // GDSCRIPT_TRANSLATION_PARSER_PLUGIN_H

@@ -16,6 +16,7 @@
 			<param index="0" name="callable" type="Callable" />
 			<description>
 				Creates a reference to a [Callable] that can be used as a callback by JavaScript. The reference must be kept until the callback happens, or it won't be called at all. See [JavaScriptObject] for usage.
+				[b]Note:[/b] The callback function must take exactly one [Array] argument, which is going to be the JavaScript [url=https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments]arguments object[/url] converted to an array.
 			</description>
 		</method>
 		<method name="create_object" qualifiers="vararg">

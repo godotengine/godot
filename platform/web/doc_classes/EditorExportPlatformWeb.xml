@@ -79,6 +79,14 @@
 			- [b]Landscape:[/b] Forces a horizontal layout (wider than it is taller).
 			- [b]Portrait:[/b] Forces a vertical layout (taller than it is wider).
 		</member>
+		<member name="threads/emscripten_pool_size" type="int" setter="" getter="">
+			The number of threads that emscripten will allocate at startup. A smaller value will allocate fewer threads and consume fewer system resources, but you may run the risk of running out of threads in the pool and needing to allocate more threads at run time which may cause a deadlock.
+			[b]Note:[/b] Some browsers have a hard cap on the number of threads that can be allocated, so it is best to be cautious and keep this number low.
+		</member>
+		<member name="threads/godot_pool_size" type="int" setter="" getter="">
+			Override for the default size of the [WorkerThreadPool]. This setting is used when [member ProjectSettings.threading/worker_pool/max_threads] size is set to -1 (which it is by default). This size must be smaller than [member threads/emscripten_pool_size] otherwise deadlocks may occur.
+			When using threads this size needs to be large enough to accommodate features that rely on having a dedicated thread like [member ProjectSettings.physics/2d/run_on_separate_thread] or [member ProjectSettings.rendering/driver/threads/thread_model]. In general, it is best to ensure that this is at least 4 and is at least 2 or 3 less than [member threads/emscripten_pool_size].
+		</member>
 		<member name="variant/extensions_support" type="bool" setter="" getter="">
 			If [code]true[/code] enables [GDExtension] support for this web build.
 		</member>
@@ -87,10 +95,10 @@
 			If [code]false[/code], the exported game will not support threads. As a result, it is more prone to performance and audio issues, but will only require to be run on an HTTPS website.
 		</member>
 		<member name="vram_texture_compression/for_desktop" type="bool" setter="" getter="">
-			If [code]true[/code], allows textures to be optimized for desktop through the S3TC algorithm.
+			If [code]true[/code], allows textures to be optimized for desktop through the S3TC/BPTC algorithm.
 		</member>
 		<member name="vram_texture_compression/for_mobile" type="bool" setter="" getter="">
-			If [code]true[/code] allows textures to be optimized for mobile through the ETC2 algorithm.
+			If [code]true[/code] allows textures to be optimized for mobile through the ETC2/ASTC algorithm.
 		</member>
 	</members>
 </class>

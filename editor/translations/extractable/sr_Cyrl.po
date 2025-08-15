@@ -17,14 +17,17 @@ msgstr ""
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 "X-Generator: Weblate 5.0.2\n"
 
+msgid "All Recognized"
+msgstr "Сви препознати"
+
 msgid "Open"
 msgstr "Отвори"
 
 msgid "Select Current Folder"
 msgstr "Одабери тренутни директоријум"
 
-msgid "All Recognized"
-msgstr "Сви препознати"
+msgid "Save"
+msgstr "Сачувај"
 
 msgid "Open a File"
 msgstr "Отвори датотеку"
@@ -37,9 +40,6 @@ msgstr "Отвори директоријум"
 
 msgid "Open a File or Directory"
 msgstr "Отвори датотеку или директоријум"
-
-msgid "Save"
-msgstr "Сачувај"
 
 msgid "Save a File"
 msgstr "Сачувај датотеку"

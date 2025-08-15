@@ -30,7 +30,6 @@
 
 #include "java_godot_io_wrapper.h"
 
-#include "core/error/error_list.h"
 #include "core/math/rect2.h"
 #include "core/variant/variant.h"
 
@@ -68,6 +67,7 @@ GodotIOJavaWrapper::GodotIOJavaWrapper(JNIEnv *p_env, jobject p_godot_io_instanc
 		_set_screen_orientation = p_env->GetMethodID(cls, "setScreenOrientation", "(I)V");
 		_get_screen_orientation = p_env->GetMethodID(cls, "getScreenOrientation", "()I");
 		_get_system_dir = p_env->GetMethodID(cls, "getSystemDir", "(IZ)Ljava/lang/String;");
+		_get_display_rotation = p_env->GetMethodID(cls, "getDisplayRotation", "()I");
 	}
 }
 
@@ -118,7 +118,7 @@ String GodotIOJavaWrapper::get_temp_dir() {
 	}
 }
 
-String GodotIOJavaWrapper::get_user_data_dir() {
+String GodotIOJavaWrapper::get_user_data_dir(const String &p_user_dir) {
 	if (_get_data_dir) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_NULL_V(env, String());
@@ -287,6 +287,16 @@ String GodotIOJavaWrapper::get_system_dir(int p_dir, bool p_shared_storage) {
 		return jstring_to_string(s, env);
 	} else {
 		return String(".");
+	}
+}
+
+int GodotIOJavaWrapper::get_display_rotation() {
+	if (_get_display_rotation) {
+		JNIEnv *env = get_jni_env();
+		ERR_FAIL_NULL_V(env, 0);
+		return env->CallIntMethod(godot_io_instance, _get_display_rotation);
+	} else {
+		return 0;
 	}
 }
 

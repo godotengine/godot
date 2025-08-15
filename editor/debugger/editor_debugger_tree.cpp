@@ -31,10 +31,12 @@
 #include "editor_debugger_tree.h"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/scene_tree_dock.h"
+#include "editor/gui/editor_toaster.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
@@ -43,6 +45,7 @@
 EditorDebuggerTree::EditorDebuggerTree() {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 	set_allow_rmb_select(true);
+	set_select_mode(SELECT_MULTI);
 
 	// Popup
 	item_menu = memnew(PopupMenu);
@@ -53,6 +56,9 @@ EditorDebuggerTree::EditorDebuggerTree() {
 	file_dialog = memnew(EditorFileDialog);
 	file_dialog->connect("file_selected", callable_mp(this, &EditorDebuggerTree::_file_selected));
 	add_child(file_dialog);
+
+	accept = memnew(AcceptDialog);
+	add_child(accept);
 }
 
 void EditorDebuggerTree::_notification(int p_what) {
@@ -60,7 +66,8 @@ void EditorDebuggerTree::_notification(int p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
 			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
-			connect("cell_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selected));
+			connect("multi_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_selection_changed));
+			connect("nothing_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_nothing_selected));
 			connect("item_collapsed", callable_mp(this, &EditorDebuggerTree::_scene_tree_folded));
 			connect("item_mouse_selected", callable_mp(this, &EditorDebuggerTree::_scene_tree_rmb_selected));
 		} break;
@@ -72,24 +79,54 @@ void EditorDebuggerTree::_notification(int p_what) {
 }
 
 void EditorDebuggerTree::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("object_selected", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("objects_selected", PropertyInfo(Variant::ARRAY, "object_ids"), PropertyInfo(Variant::INT, "debugger")));
+	ADD_SIGNAL(MethodInfo("selection_cleared", PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("save_node", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "filename"), PropertyInfo(Variant::INT, "debugger")));
 	ADD_SIGNAL(MethodInfo("open"));
 }
 
-void EditorDebuggerTree::_scene_tree_selected() {
-	if (updating_scene_tree) {
+void EditorDebuggerTree::_scene_tree_selection_changed(TreeItem *p_item, int p_column, bool p_selected) {
+	if (updating_scene_tree || !p_item) {
 		return;
 	}
 
-	TreeItem *item = get_selected();
-	if (!item) {
-		return;
+	uint64_t id = uint64_t(p_item->get_metadata(0));
+	if (p_selected) {
+		if (inspected_object_ids.size() == (int)EDITOR_GET("debugger/max_node_selection")) {
+			selection_surpassed_limit = true;
+			p_item->deselect(0);
+		} else if (!inspected_object_ids.has(id)) {
+			inspected_object_ids.append(id);
+		}
+	} else if (inspected_object_ids.has(id)) {
+		inspected_object_ids.erase(id);
 	}
 
-	inspected_object_id = uint64_t(item->get_metadata(0));
+	if (!notify_selection_queued) {
+		callable_mp(this, &EditorDebuggerTree::_notify_selection_changed).call_deferred();
+		notify_selection_queued = true;
+	}
+}
 
-	emit_signal(SNAME("object_selected"), inspected_object_id, debugger_id);
+void EditorDebuggerTree::_scene_tree_nothing_selected() {
+	deselect_all();
+	inspected_object_ids.clear();
+	emit_signal(SNAME("selection_cleared"), debugger_id);
+}
+
+void EditorDebuggerTree::_notify_selection_changed() {
+	notify_selection_queued = false;
+
+	if (inspected_object_ids.is_empty()) {
+		emit_signal(SNAME("selection_cleared"), debugger_id);
+	} else {
+		emit_signal(SNAME("objects_selected"), inspected_object_ids.duplicate(), debugger_id);
+	}
+
+	if (selection_surpassed_limit) {
+		selection_surpassed_limit = false;
+		EditorToaster::get_singleton()->popup_str(vformat(TTR("Some remote nodes were not selected, as the configured maximum selection is %d. This can be changed at \"debugger/max_node_selection\" in the Editor Settings."), EDITOR_GET("debugger/max_node_selection")), EditorToaster::SEVERITY_WARNING);
+	}
 }
 
 void EditorDebuggerTree::_scene_tree_folded(Object *p_obj) {
@@ -123,7 +160,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 	item->select(0);
 
 	item_menu->clear();
-	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
+	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CreateNewSceneFrom")), TTR("Save Branch as Scene..."), ITEM_MENU_SAVE_REMOTE_NODE);
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("CopyNodePath")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
 	item_menu->add_icon_item(get_editor_theme_icon(SNAME("Collapse")), TTR("Expand/Collapse Branch"), ITEM_MENU_EXPAND_COLLAPSE);
 	item_menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -146,24 +183,51 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 /// |-E
 ///
 void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int p_debugger) {
+	set_hide_root(false);
+
 	updating_scene_tree = true;
 	const String last_path = get_selected_path();
 	const String filter = SceneTreeDock::get_singleton()->get_filter();
+	LocalVector<TreeItem *> select_items;
+	bool hide_filtered_out_parents = EDITOR_GET("docks/scene_tree/hide_filtered_out_parents");
+
 	bool should_scroll = scrolling_to_item || filter != last_filter;
 	scrolling_to_item = false;
 	TreeItem *scroll_item = nullptr;
+	TypedArray<uint64_t> ids_present;
 
 	// Nodes are in a flatten list, depth first. Use a stack of parents, avoid recursion.
-	List<Pair<TreeItem *, int>> parents;
+	List<ParentItem> parents;
 	for (const SceneDebuggerTree::RemoteNode &node : p_tree->nodes) {
 		TreeItem *parent = nullptr;
+		Pair<TreeItem *, TreeItem *> move_from_to;
 		if (parents.size()) { // Find last parent.
-			Pair<TreeItem *, int> &p = parents.front()->get();
-			parent = p.first;
-			if (!(--p.second)) { // If no child left, remove it.
+			ParentItem &p = parents.front()->get();
+			parent = p.tree_item;
+			if (!(--p.child_count)) { // If no child left, remove it.
 				parents.pop_front();
+
+				if (hide_filtered_out_parents && !filter.is_subsequence_ofn(parent->get_text(0))) {
+					if (parent == get_root()) {
+						set_hide_root(true);
+					} else {
+						move_from_to.first = parent;
+						// Find the closest ancestor that matches the filter.
+						for (const ParentItem p2 : parents) {
+							move_from_to.second = p2.tree_item;
+							if (p2.matches_filter || move_from_to.second == get_root()) {
+								break;
+							}
+						}
+
+						if (!move_from_to.second) {
+							move_from_to.second = get_root();
+						}
+					}
+				}
 			}
 		}
+
 		// Add this node.
 		TreeItem *item = create_item(parent);
 		item->set_text(0, node.name);
@@ -178,15 +242,22 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 		}
 		item->set_metadata(0, node.id);
 
-		// Set current item as collapsed if necessary (root is never collapsed).
+		String current_path;
 		if (parent) {
+			current_path += (String)parent->get_meta("node_path");
+
+			// Set current item as collapsed if necessary (root is never collapsed).
 			if (!unfold_cache.has(node.id)) {
 				item->set_collapsed(true);
 			}
 		}
-		// Select previously selected node.
+		item->set_meta("node_path", current_path + "/" + item->get_text(0));
+
+		// Select previously selected nodes.
 		if (debugger_id == p_debugger) { // Can use remote id.
-			if (node.id == inspected_object_id) {
+			if (inspected_object_ids.has(uint64_t(node.id))) {
+				ids_present.append(node.id);
+
 				if (selection_uncollapse_all) {
 					selection_uncollapse_all = false;
 
@@ -196,21 +267,18 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 					updating_scene_tree = true;
 				}
 
-				item->select(0);
-
+				select_items.push_back(item);
 				if (should_scroll) {
 					scroll_item = item;
 				}
 			}
-		} else { // Must use path
-			if (last_path == _get_path(item)) {
-				updating_scene_tree = false; // Force emission of new selection.
-				item->select(0);
-				if (should_scroll) {
-					scroll_item = item;
-				}
-				updating_scene_tree = true;
+		} else if (last_path == (String)item->get_meta("node_path")) { // Must use path.
+			updating_scene_tree = false; // Force emission of new selections.
+			select_items.push_back(item);
+			if (should_scroll) {
+				scroll_item = item;
 			}
+			updating_scene_tree = true;
 		}
 
 		// Add buttons.
@@ -242,7 +310,7 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 
 		// Add in front of the parents stack if children are expected.
 		if (node.child_count) {
-			parents.push_front(Pair<TreeItem *, int>(item, node.child_count));
+			parents.push_front(ParentItem(item, node.child_count, filter.is_subsequence_ofn(item->get_text(0))));
 		} else {
 			// Apply filters.
 			while (parent) {
@@ -250,41 +318,82 @@ void EditorDebuggerTree::update_scene_tree(const SceneDebuggerTree *p_tree, int 
 				if (filter.is_subsequence_ofn(item->get_text(0))) {
 					break; // Filter matches, must survive.
 				}
-				parent->remove_child(item);
-				memdelete(item);
-				if (scroll_item == item) {
+
+				if (select_items.has(item) || scroll_item == item) {
+					select_items.resize(select_items.size() - 1);
 					scroll_item = nullptr;
 				}
+				parent->remove_child(item);
+				memdelete(item);
+
 				if (had_siblings) {
 					break; // Parent must survive.
 				}
+
 				item = parent;
 				parent = item->get_parent();
 				// Check if parent expects more children.
-				for (const Pair<TreeItem *, int> &pair : parents) {
-					if (pair.first == item) {
+				for (ParentItem &pair : parents) {
+					if (pair.tree_item == item) {
 						parent = nullptr;
 						break; // Might have more children.
 					}
 				}
 			}
 		}
+
+		// Move all children to the ancestor that matches the filter, if picked.
+		if (move_from_to.first) {
+			TreeItem *from = move_from_to.first;
+			TypedArray<TreeItem> children = from->get_children();
+			if (!children.is_empty()) {
+				for (Variant &c : children) {
+					TreeItem *ti = Object::cast_to<TreeItem>(c);
+					from->remove_child(ti);
+					move_from_to.second->add_child(ti);
+				}
+
+				from->get_parent()->remove_child(from);
+				memdelete(from);
+				if (select_items.has(from) || scroll_item == from) {
+					select_items.erase(from);
+					scroll_item = nullptr;
+				}
+			}
+		}
 	}
 
+	inspected_object_ids = ids_present;
+
 	debugger_id = p_debugger; // Needed by hook, could be avoided if every debugger had its own tree.
+
+	for (TreeItem *item : select_items) {
+		item->select(0);
+	}
 	if (scroll_item) {
 		scroll_to_item(scroll_item, false);
 	}
+
 	last_filter = filter;
 	updating_scene_tree = false;
 }
 
-void EditorDebuggerTree::select_node(ObjectID p_id) {
+void EditorDebuggerTree::select_nodes(const TypedArray<int64_t> &p_ids) {
 	// Manually select, as the tree control may be out-of-date for some reason (e.g. not shown yet).
 	selection_uncollapse_all = true;
-	inspected_object_id = uint64_t(p_id);
+	inspected_object_ids = p_ids;
 	scrolling_to_item = true;
-	emit_signal(SNAME("object_selected"), inspected_object_id, debugger_id);
+
+	if (!updating_scene_tree) {
+		// Request a tree refresh.
+		EditorDebuggerNode::get_singleton()->request_remote_tree();
+	}
+	// Set the value immediately, so no update flooding happens and causes a crash.
+	updating_scene_tree = true;
+}
+
+void EditorDebuggerTree::clear_selection() {
+	inspected_object_ids.clear();
 
 	if (!updating_scene_tree) {
 		// Request a tree refresh.
@@ -338,22 +447,7 @@ String EditorDebuggerTree::get_selected_path() {
 	if (!get_selected()) {
 		return "";
 	}
-	return _get_path(get_selected());
-}
-
-String EditorDebuggerTree::_get_path(TreeItem *p_item) {
-	ERR_FAIL_NULL_V(p_item, "");
-
-	if (p_item->get_parent() == nullptr) {
-		return "/root";
-	}
-	String text = p_item->get_text(0);
-	TreeItem *cur = p_item->get_parent();
-	while (cur) {
-		text = cur->get_text(0) + "/" + text;
-		cur = cur->get_parent();
-	}
-	return "/" + text;
+	return get_selected()->get_meta("node_path");
 }
 
 void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
@@ -410,8 +504,11 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 }
 
 void EditorDebuggerTree::_file_selected(const String &p_file) {
-	if (inspected_object_id.is_null()) {
+	if (inspected_object_ids.size() != 1) {
+		accept->set_text(vformat(TTR("Saving the branch as a scene requires selecting only one node, but you have selected %d nodes."), inspected_object_ids.size()));
+		accept->popup_centered();
 		return;
 	}
-	emit_signal(SNAME("save_node"), inspected_object_id, p_file, debugger_id);
+
+	emit_signal(SNAME("save_node"), inspected_object_ids[0], p_file, debugger_id);
 }

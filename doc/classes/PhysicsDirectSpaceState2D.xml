@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		Provides direct access to a physics space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
+		[b]Note:[/b] This class is not meant to be instantiated directly. Use [member World2D.direct_space_state] to get the world's physics 2D space state.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
@@ -33,14 +34,14 @@
 			<return type="Dictionary" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters2D" />
 			<description>
-				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. If it collides with more than one shape, the nearest one is selected. If the shape did not intersect anything, then an empty dictionary is returned instead.
-				[b]Note:[/b] This method does not take into account the [code]motion[/code] property of the object. The returned object is a dictionary containing the following fields:
+				Checks the intersections of a shape, given through a [PhysicsShapeQueryParameters2D] object, against the space. If it collides with more than one shape, the nearest one is selected. The returned object is a dictionary containing the following fields:
 				[code]collider_id[/code]: The colliding object's ID.
 				[code]linear_velocity[/code]: The colliding object's velocity [Vector2]. If the object is an [Area2D], the result is [code](0, 0)[/code].
-				[code]normal[/code]: The object's surface normal at the intersection point.
+				[code]normal[/code]: The collision normal of the query shape at the intersection point, pointing away from the intersecting object.
 				[code]point[/code]: The intersection point.
 				[code]rid[/code]: The intersecting object's [RID].
 				[code]shape[/code]: The shape index of the colliding shape.
+				If the shape did not intersect anything, then an empty dictionary is returned instead.
 			</description>
 		</method>
 		<method name="intersect_point">

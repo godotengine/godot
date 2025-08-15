@@ -42,7 +42,7 @@ struct path_builder_t
   {
     bool is_on_curve = point.flag & glyf_impl::SimpleGlyph::FLAG_ON_CURVE;
 #ifdef HB_NO_CUBIC_GLYF
-    bool is_cubic = false;
+    constexpr bool is_cubic = false;
 #else
     bool is_cubic = !is_on_curve && (point.flag & glyf_impl::SimpleGlyph::FLAG_CUBIC);
 #endif
@@ -124,58 +124,60 @@ struct path_builder_t
       }
     }
 
-    if (unlikely (point.is_end_point))
-    {
-      if (first_offcurve && last_offcurve)
-      {
-	optional_point_t mid = last_offcurve.mid (first_offcurve2 ?
-						  first_offcurve2 :
-						  first_offcurve);
-	if (last_offcurve2)
-	  draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
-				  last_offcurve.x, last_offcurve.y,
-				  mid.x, mid.y);
-	else
-	  draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
-				     mid.x, mid.y);
-	last_offcurve = optional_point_t ();
-      }
-      /* now check the rest */
-
-      if (first_offcurve && first_oncurve)
-      {
-        if (first_offcurve2)
-	  draw_session->cubic_to (first_offcurve2.x, first_offcurve2.y,
-				  first_offcurve.x, first_offcurve.y,
-				  first_oncurve.x, first_oncurve.y);
-	else
-	  draw_session->quadratic_to (first_offcurve.x, first_offcurve.y,
-				     first_oncurve.x, first_oncurve.y);
-      }
-      else if (last_offcurve && first_oncurve)
-      {
-	if (last_offcurve2)
-	  draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
-				  last_offcurve.x, last_offcurve.y,
-				  first_oncurve.x, first_oncurve.y);
-	else
-	  draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
-				     first_oncurve.x, first_oncurve.y);
-      }
-      else if (first_oncurve)
-	draw_session->line_to (first_oncurve.x, first_oncurve.y);
-      else if (first_offcurve)
-      {
-	float x = first_offcurve.x, y = first_offcurve.y;
-	draw_session->move_to (x, y);
-	draw_session->quadratic_to (x, y, x, y);
-      }
-
-      /* Getting ready for the next contour */
-      first_oncurve = first_offcurve = last_offcurve = last_offcurve2 = optional_point_t ();
-      draw_session->close_path ();
-    }
   }
+
+  void contour_end ()
+  {
+    if (first_offcurve && last_offcurve)
+    {
+      optional_point_t mid = last_offcurve.mid (first_offcurve2 ?
+						first_offcurve2 :
+						first_offcurve);
+      if (last_offcurve2)
+	draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
+				last_offcurve.x, last_offcurve.y,
+				mid.x, mid.y);
+      else
+	draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
+				   mid.x, mid.y);
+      last_offcurve = optional_point_t ();
+    }
+    /* now check the rest */
+
+    if (first_offcurve && first_oncurve)
+    {
+      if (first_offcurve2)
+	draw_session->cubic_to (first_offcurve2.x, first_offcurve2.y,
+				first_offcurve.x, first_offcurve.y,
+				first_oncurve.x, first_oncurve.y);
+      else
+	draw_session->quadratic_to (first_offcurve.x, first_offcurve.y,
+				   first_oncurve.x, first_oncurve.y);
+    }
+    else if (last_offcurve && first_oncurve)
+    {
+      if (last_offcurve2)
+	draw_session->cubic_to (last_offcurve2.x, last_offcurve2.y,
+				last_offcurve.x, last_offcurve.y,
+				first_oncurve.x, first_oncurve.y);
+      else
+	draw_session->quadratic_to (last_offcurve.x, last_offcurve.y,
+				   first_oncurve.x, first_oncurve.y);
+    }
+    else if (first_oncurve)
+      draw_session->line_to (first_oncurve.x, first_oncurve.y);
+    else if (first_offcurve)
+    {
+      float x = first_offcurve.x, y = first_offcurve.y;
+      draw_session->move_to (x, y);
+      draw_session->quadratic_to (x, y, x, y);
+    }
+
+    /* Getting ready for the next contour */
+    first_oncurve = first_offcurve = last_offcurve = last_offcurve2 = optional_point_t ();
+    draw_session->close_path ();
+  }
+
   void points_end () {}
 
   bool is_consuming_contour_points () { return true; }

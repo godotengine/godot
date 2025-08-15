@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_H
-#define VIDEO_STREAM_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "scene/resources/texture.h"
 
 class VideoStreamPlayback : public Resource {
@@ -111,5 +109,3 @@ public:
 	VideoStream();
 	~VideoStream();
 };
-
-#endif // VIDEO_STREAM_H

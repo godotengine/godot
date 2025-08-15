@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2020-2024 Arm Limited
+// Copyright 2020-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -782,6 +782,20 @@ ASTCENC_PUBLIC astcenc_error astcenc_compress_image(
  * @return @c ASTCENC_SUCCESS on success, or an error if reset failed.
  */
 ASTCENC_PUBLIC astcenc_error astcenc_compress_reset(
+	astcenc_context* context);
+
+/**
+ * @brief Cancel any pending compression operation.
+ *
+ * The caller must behave as if the compression completed normally, even though the data will be
+ * undefined. They are still responsible for synchronizing threads in the worker thread pool, and
+ * must call reset before starting another compression.
+ *
+ * @param context   Codec context.
+ *
+ * @return @c ASTCENC_SUCCESS on success, or an error if cancellation failed.
+ */
+ASTCENC_PUBLIC astcenc_error astcenc_compress_cancel(
 	astcenc_context* context);
 
 /**

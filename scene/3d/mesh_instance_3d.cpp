@@ -30,11 +30,23 @@
 
 #include "mesh_instance_3d.h"
 
+#include "scene/3d/skeleton_3d.h"
+
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
-#include "scene/3d/skeleton_3d.h"
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef NAVIGATION_3D_DISABLED
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_server_3d.h"
+
+Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
+RID MeshInstance3D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -164,7 +176,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node_or_null(skeleton_path)); // skeleton_path may be outdated when reparenting.
 		if (skeleton) {
 			if (skin_internal.is_null()) {
 				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
@@ -216,13 +228,14 @@ NodePath MeshInstance3D::get_skeleton_path() {
 }
 
 AABB MeshInstance3D::get_aabb() const {
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		return mesh->get_aabb();
 	}
 
 	return AABB();
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Node *MeshInstance3D::create_trimesh_collision_node() {
 	if (mesh.is_null()) {
 		return nullptr;
@@ -324,6 +337,7 @@ void MeshInstance3D::create_multiple_convex_collisions(const Ref<MeshConvexDecom
 		}
 	}
 }
+#endif // PHYSICS_3D_DISABLED
 
 void MeshInstance3D::_notification(int p_what) {
 	switch (p_what) {
@@ -366,36 +380,39 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return mat_override;
 	}
 
+	Ref<Mesh> m = get_mesh();
+	if (m.is_null() || m->get_surface_count() == 0) {
+		return Ref<Material>();
+	}
+
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
 	if (surface_material.is_valid()) {
 		return surface_material;
 	}
 
-	Ref<Mesh> m = get_mesh();
-	if (m.is_valid()) {
-		return m->surface_get_material(p_surface);
-	}
-
-	return Ref<Material>();
+	return m->surface_get_material(p_surface);
 }
 
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
-	surface_override_materials.resize(mesh->get_surface_count());
+	const int surface_count = mesh->get_surface_count();
+
+	surface_override_materials.resize(surface_count);
 
 	uint32_t initialize_bs_from = blend_shape_tracks.size();
 	blend_shape_tracks.resize(mesh->get_blend_shape_count());
 
-	for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
-		blend_shape_properties["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = i;
-		if (i < initialize_bs_from) {
-			set_blend_shape_value(i, blend_shape_tracks[i]);
-		} else {
-			set_blend_shape_value(i, 0);
+	if (surface_count > 0) {
+		for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
+			blend_shape_properties["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = i;
+			if (i < initialize_bs_from) {
+				set_blend_shape_value(i, blend_shape_tracks[i]);
+			} else {
+				set_blend_shape_value(i, 0);
+			}
 		}
 	}
 
-	int surface_count = mesh->get_surface_count();
 	for (int surface_index = 0; surface_index < surface_count; ++surface_index) {
 		if (surface_override_materials[surface_index].is_valid()) {
 			RS::get_singleton()->instance_set_surface_override_material(get_instance(), surface_index, surface_override_materials[surface_index]->get_rid());
@@ -410,7 +427,7 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 	Vector<Color> colors;
 
 	Ref<Mesh> m = get_mesh();
-	if (!m.is_valid()) {
+	if (m.is_null()) {
 		return nullptr;
 	}
 
@@ -420,11 +437,11 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
-		if (norms.size() == 0) {
+		if (norms.is_empty()) {
 			continue;
 		}
 		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
-		if (tangents.size() == 0) {
+		if (tangents.is_empty()) {
 			continue;
 		}
 
@@ -574,7 +591,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 
 		for (int blendshape_index = 0; blendshape_index < blend_shape_count; blendshape_index++) {
 			float blend_weight = get_blend_shape_value(blendshape_index);
-			if (abs(blend_weight) <= 0.0001) {
+			if (std::abs(blend_weight) <= 0.0001) {
 				continue;
 			}
 
@@ -832,6 +849,41 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMes
 	return bake_mesh;
 }
 
+Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
+	if (mesh.is_valid()) {
+		return mesh->generate_triangle_mesh();
+	}
+	return Ref<TriangleMesh>();
+}
+
+#ifndef NAVIGATION_3D_DISABLED
+void MeshInstance3D::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&MeshInstance3D::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer3D::get_singleton()->source_geometry_parser_create();
+		NavigationServer3D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void MeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
+	MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
+
+	if (mesh_instance == nullptr) {
+		return;
+	}
+
+	NavigationMesh::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+
+	if (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) {
+		Ref<Mesh> mesh = mesh_instance->get_mesh();
+		if (mesh.is_valid()) {
+			p_source_geometry_data->add_mesh(mesh, mesh_instance->get_global_transform());
+		}
+	}
+}
+#endif // NAVIGATION_3D_DISABLED
+
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance3D::get_mesh);
@@ -846,12 +898,14 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surface_override_material", "surface"), &MeshInstance3D::get_surface_override_material);
 	ClassDB::bind_method(D_METHOD("get_active_material", "surface"), &MeshInstance3D::get_active_material);
 
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);
 	ClassDB::set_method_flags("MeshInstance3D", "create_trimesh_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_convex_collision", "clean", "simplify"), &MeshInstance3D::create_convex_collision, DEFVAL(true), DEFVAL(false));
 	ClassDB::set_method_flags("MeshInstance3D", "create_convex_collision", METHOD_FLAGS_DEFAULT);
 	ClassDB::bind_method(D_METHOD("create_multiple_convex_collisions", "settings"), &MeshInstance3D::create_multiple_convex_collisions, DEFVAL(Ref<MeshConvexDecompositionSettings>()));
 	ClassDB::set_method_flags("MeshInstance3D", "create_multiple_convex_collisions", METHOD_FLAGS_DEFAULT);
+#endif // PHYSICS_3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("get_blend_shape_count"), &MeshInstance3D::get_blend_shape_count);
 	ClassDB::bind_method(D_METHOD("find_blend_shape_by_name", "name"), &MeshInstance3D::find_blend_shape_by_name);

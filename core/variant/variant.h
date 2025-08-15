@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_H
-#define VARIANT_H
+#pragma once
 
 #include "core/core_string_names.h"
 #include "core/input/input_enums.h"
@@ -55,17 +54,22 @@
 #include "core/os/keyboard.h"
 #include "core/string/node_path.h"
 #include "core/string/ustring.h"
+#include "core/templates/bit_field.h"
+#include "core/templates/list.h"
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
+#include "core/variant/variant_deep_duplicate.h"
 
 class Object;
 class RefCounted;
 
 template <typename T>
 class Ref;
+template <typename T>
+class BitField;
 
 struct PropertyInfo;
 struct MethodInfo;
@@ -275,53 +279,53 @@ private:
 
 	void _clear_internal();
 
+	static constexpr bool needs_deinit[Variant::VARIANT_MAX] = {
+		false, //NIL,
+		false, //BOOL,
+		false, //INT,
+		false, //FLOAT,
+		true, //STRING,
+		false, //VECTOR2,
+		false, //VECTOR2I,
+		false, //RECT2,
+		false, //RECT2I,
+		false, //VECTOR3,
+		false, //VECTOR3I,
+		true, //TRANSFORM2D,
+		false, //VECTOR4,
+		false, //VECTOR4I,
+		false, //PLANE,
+		false, //QUATERNION,
+		true, //AABB,
+		true, //BASIS,
+		true, //TRANSFORM,
+		true, //PROJECTION,
+
+		// misc types
+		false, //COLOR,
+		true, //STRING_NAME,
+		true, //NODE_PATH,
+		false, //RID,
+		true, //OBJECT,
+		true, //CALLABLE,
+		true, //SIGNAL,
+		true, //DICTIONARY,
+		true, //ARRAY,
+
+		// typed arrays
+		true, //PACKED_BYTE_ARRAY,
+		true, //PACKED_INT32_ARRAY,
+		true, //PACKED_INT64_ARRAY,
+		true, //PACKED_FLOAT32_ARRAY,
+		true, //PACKED_FLOAT64_ARRAY,
+		true, //PACKED_STRING_ARRAY,
+		true, //PACKED_VECTOR2_ARRAY,
+		true, //PACKED_VECTOR3_ARRAY,
+		true, //PACKED_COLOR_ARRAY,
+		true, //PACKED_VECTOR4_ARRAY,
+	};
+
 	_FORCE_INLINE_ void clear() {
-		static const bool needs_deinit[Variant::VARIANT_MAX] = {
-			false, //NIL,
-			false, //BOOL,
-			false, //INT,
-			false, //FLOAT,
-			true, //STRING,
-			false, //VECTOR2,
-			false, //VECTOR2I,
-			false, //RECT2,
-			false, //RECT2I,
-			false, //VECTOR3,
-			false, //VECTOR3I,
-			true, //TRANSFORM2D,
-			false, //VECTOR4,
-			false, //VECTOR4I,
-			false, //PLANE,
-			false, //QUATERNION,
-			true, //AABB,
-			true, //BASIS,
-			true, //TRANSFORM,
-			true, //PROJECTION,
-
-			// misc types
-			false, //COLOR,
-			true, //STRING_NAME,
-			true, //NODE_PATH,
-			false, //RID,
-			true, //OBJECT,
-			true, //CALLABLE,
-			true, //SIGNAL,
-			true, //DICTIONARY,
-			true, //ARRAY,
-
-			// typed arrays
-			true, //PACKED_BYTE_ARRAY,
-			true, //PACKED_INT32_ARRAY,
-			true, //PACKED_INT64_ARRAY,
-			true, //PACKED_FLOAT32_ARRAY,
-			true, //PACKED_FLOAT64_ARRAY,
-			true, //PACKED_STRING_ARRAY,
-			true, //PACKED_VECTOR2_ARRAY,
-			true, //PACKED_VECTOR3_ARRAY,
-			true, //PACKED_COLOR_ARRAY,
-			true, //PACKED_VECTOR4_ARRAY,
-		};
-
 		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
 			_clear_internal();
 		}
@@ -342,6 +346,44 @@ private:
 	static void _unregister_variant_utility_functions();
 
 	void _variant_call_error(const String &p_method, Callable::CallError &error);
+
+	template <typename T>
+	_ALWAYS_INLINE_ T _to_int() const {
+		switch (get_type()) {
+			case NIL:
+				return 0;
+			case BOOL:
+				return _data._bool ? 1 : 0;
+			case INT:
+				return T(_data._int);
+			case FLOAT:
+				return T(_data._float);
+			case STRING:
+				return reinterpret_cast<const String *>(_data._mem)->to_int();
+			default: {
+				return 0;
+			}
+		}
+	}
+
+	template <typename T>
+	_ALWAYS_INLINE_ T _to_float() const {
+		switch (type) {
+			case NIL:
+				return 0;
+			case BOOL:
+				return _data._bool ? 1 : 0;
+			case INT:
+				return T(_data._int);
+			case FLOAT:
+				return T(_data._float);
+			case STRING:
+				return reinterpret_cast<const String *>(_data._mem)->to_float();
+			default: {
+				return 0;
+			}
+		}
+	}
 
 	// Avoid accidental conversion. If you reached this point, it's because you most likely forgot to dereference
 	// a Variant pointer (so add * like this: *variant_pointer).
@@ -441,11 +483,12 @@ public:
 	operator Vector<Variant>() const;
 	operator Vector<StringName>() const;
 
-	// some core type enums to convert to
-	operator Side() const;
-	operator Orientation() const;
-
 	operator IPAddress() const;
+
+	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+	_FORCE_INLINE_ operator T() const { return static_cast<T>(operator int64_t()); }
+	template <typename T>
+	_FORCE_INLINE_ operator BitField<T>() const { return static_cast<T>(operator uint64_t()); }
 
 	Object *get_validated_object() const;
 	Object *get_validated_object_with_check(bool &r_previously_freed) const;
@@ -489,6 +532,7 @@ public:
 	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
 
+	Variant(std::initializer_list<Variant> p_init);
 	Variant(const Array &p_array);
 	Variant(const PackedByteArray &p_byte_array);
 	Variant(const PackedInt32Array &p_int32_array);
@@ -509,22 +553,12 @@ public:
 
 	Variant(const IPAddress &p_address);
 
-#define VARIANT_ENUM_CLASS_CONSTRUCTOR(m_enum) \
-	Variant(m_enum p_value) :                  \
-			type(INT) {                        \
-		_data._int = (int64_t)p_value;         \
-	}
-
-	// Only enum classes that need to be bound need this to be defined.
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(EulerOrder)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyAxis)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(JoyButton)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(Key)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(KeyLocation)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(MIDIMessage)
-	VARIANT_ENUM_CLASS_CONSTRUCTOR(MouseButton)
-
-#undef VARIANT_ENUM_CLASS_CONSTRUCTOR
+	template <typename T, std::enable_if_t<std::is_enum_v<T>, int> = 0>
+	_FORCE_INLINE_ Variant(T p_enum) :
+			Variant(static_cast<int64_t>(p_enum)) {}
+	template <typename T>
+	_FORCE_INLINE_ Variant(BitField<T> p_bitfield) :
+			Variant(static_cast<uint64_t>(p_bitfield)) {}
 
 	// If this changes the table in variant_op must be updated
 	enum Operator {
@@ -579,7 +613,8 @@ public:
 
 	void zero();
 	Variant duplicate(bool p_deep = false) const;
-	Variant recursive_duplicate(bool p_deep, int recursion_count) const;
+	Variant duplicate_deep(ResourceDeepDuplicateMode p_deep_subresources_mode = RESOURCE_DEEP_DUPLICATE_INTERNAL) const;
+	Variant recursive_duplicate(bool p_deep, ResourceDeepDuplicateMode p_deep_subresources_mode, int recursion_count) const;
 
 	/* Built-In Methods */
 
@@ -811,14 +846,30 @@ public:
 	static void construct_from_string(const String &p_string, Variant &r_value, ObjectConstruct p_obj_construct = nullptr, void *p_construct_ud = nullptr);
 
 	void operator=(const Variant &p_variant); // only this is enough for all the other types
+	void operator=(Variant &&p_variant) {
+		if (unlikely(this == &p_variant)) {
+			return;
+		}
+		clear();
+		type = p_variant.type;
+		_data = p_variant._data;
+		p_variant.type = NIL;
+	}
 
 	static void register_types();
 	static void unregister_types();
 
 	Variant(const Variant &p_variant);
+	Variant(Variant &&p_variant) {
+		type = p_variant.type;
+		_data = p_variant._data;
+		p_variant.type = NIL;
+	}
 	_FORCE_INLINE_ Variant() {}
 	_FORCE_INLINE_ ~Variant() {
-		clear();
+		if (unlikely(needs_deinit[type])) { // Make it fast for types that don't need deinit.
+			_clear_internal();
+		}
 	}
 };
 
@@ -856,12 +907,7 @@ struct StringLikeVariantComparator {
 };
 
 struct StringLikeVariantOrder {
-	static _ALWAYS_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) {
-		if (p_lhs.is_string() && p_rhs.is_string()) {
-			return p_lhs.operator String() < p_rhs.operator String();
-		}
-		return p_lhs < p_rhs;
-	}
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
 
 	_ALWAYS_INLINE_ bool operator()(const Variant &p_lhs, const Variant &p_rhs) const {
 		return compare(p_lhs, p_rhs);
@@ -944,18 +990,10 @@ Array::Iterator &Array::Iterator::operator--() {
 }
 
 const Variant &Array::ConstIterator::operator*() const {
-	if (unlikely(read_only)) {
-		*read_only = *element_ptr;
-		return *read_only;
-	}
 	return *element_ptr;
 }
 
 const Variant *Array::ConstIterator::operator->() const {
-	if (unlikely(read_only)) {
-		*read_only = *element_ptr;
-		return read_only;
-	}
 	return element_ptr;
 }
 
@@ -969,4 +1007,6 @@ Array::ConstIterator &Array::ConstIterator::operator--() {
 	return *this;
 }
 
-#endif // VARIANT_H
+// Zero-constructing Variant results in NULL.
+template <>
+struct is_zero_constructible<Variant> : std::true_type {};

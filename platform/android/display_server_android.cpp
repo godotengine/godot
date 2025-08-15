@@ -63,6 +63,11 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 			return (native_menu && native_menu->has_feature(NativeMenu::FEATURE_GLOBAL_MENU));
 		} break;
 #endif
+		case FEATURE_NATIVE_DIALOG_FILE: {
+			String sdk_version = OS::get_singleton()->get_version().get_slicec('.', 0);
+			return sdk_version.to_int() >= 29;
+		} break;
+
 		case FEATURE_CURSOR_SHAPE:
 		//case FEATURE_CUSTOM_CURSOR_SHAPE:
 		//case FEATURE_HIDPI:
@@ -70,12 +75,12 @@ bool DisplayServerAndroid::has_feature(Feature p_feature) const {
 		//case FEATURE_IME:
 		case FEATURE_MOUSE:
 		//case FEATURE_MOUSE_WARP:
-		//case FEATURE_NATIVE_DIALOG:
+		case FEATURE_NATIVE_DIALOG:
 		case FEATURE_NATIVE_DIALOG_INPUT:
-		case FEATURE_NATIVE_DIALOG_FILE:
 		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case FEATURE_NATIVE_ICON:
-		//case FEATURE_WINDOW_TRANSPARENCY:
+		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_ORIENTATION:
@@ -144,6 +149,16 @@ void DisplayServerAndroid::emit_system_theme_changed() {
 	}
 }
 
+void DisplayServerAndroid::set_hardware_keyboard_connection_change_callback(const Callable &p_callable) {
+	hardware_keyboard_connection_changed = p_callable;
+}
+
+void DisplayServerAndroid::emit_hardware_keyboard_connection_changed(bool p_connected) {
+	if (hardware_keyboard_connection_changed.is_valid()) {
+		hardware_keyboard_connection_changed.call_deferred(p_connected);
+	}
+}
+
 void DisplayServerAndroid::clipboard_set(const String &p_text) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL(godot_java);
@@ -177,6 +192,19 @@ bool DisplayServerAndroid::clipboard_has() const {
 	}
 }
 
+Error DisplayServerAndroid::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, FAILED);
+	dialog_callback = p_callback;
+	return godot_java->show_dialog(p_title, p_description, p_buttons);
+}
+
+void DisplayServerAndroid::emit_dialog_callback(int p_button_index) {
+	if (dialog_callback.is_valid()) {
+		dialog_callback.call_deferred(p_button_index);
+	}
+}
+
 Error DisplayServerAndroid::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, FAILED);
@@ -190,7 +218,7 @@ void DisplayServerAndroid::emit_input_dialog_callback(String p_text) {
 	}
 }
 
-Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+Error DisplayServerAndroid::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, FAILED);
 	file_picker_callback = p_callback;
@@ -207,6 +235,12 @@ Color DisplayServerAndroid::get_accent_color() const {
 	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
 	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
 	return godot_java->get_accent_color();
+}
+
+Color DisplayServerAndroid::get_base_color() const {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	ERR_FAIL_NULL_V(godot_java, Color(0, 0, 0, 0));
+	return godot_java->get_base_color();
 }
 
 TypedArray<Rect2> DisplayServerAndroid::get_display_cutouts() const {
@@ -234,6 +268,10 @@ bool DisplayServerAndroid::screen_is_kept_on() const {
 }
 
 void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientation p_orientation, int p_screen) {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL(godot_io_java);
 
@@ -241,12 +279,23 @@ void DisplayServerAndroid::screen_set_orientation(DisplayServer::ScreenOrientati
 }
 
 DisplayServer::ScreenOrientation DisplayServerAndroid::screen_get_orientation(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_LANDSCAPE);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, SCREEN_LANDSCAPE);
 
 	const int orientation = godot_io_java->get_screen_orientation();
 	ERR_FAIL_INDEX_V_MSG(orientation, 7, SCREEN_LANDSCAPE, "Unrecognized screen orientation");
 	return (ScreenOrientation)orientation;
+}
+
+int DisplayServerAndroid::get_display_rotation() const {
+	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
+	ERR_FAIL_NULL_V(godot_io_java, 0);
+
+	return godot_io_java->get_display_rotation();
 }
 
 int DisplayServerAndroid::get_screen_count() const {
@@ -258,26 +307,46 @@ int DisplayServerAndroid::get_primary_screen() const {
 }
 
 Point2i DisplayServerAndroid::screen_get_position(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	return Point2i(0, 0);
 }
 
 Size2i DisplayServerAndroid::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	return OS_Android::get_singleton()->get_display_size();
 }
 
 Rect2i DisplayServerAndroid::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	Size2i display_size = OS_Android::get_singleton()->get_display_size();
 	return Rect2i(0, 0, display_size.width, display_size.height);
 }
 
 int DisplayServerAndroid::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 160);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
-	ERR_FAIL_NULL_V(godot_io_java, 0);
+	ERR_FAIL_NULL_V(godot_io_java, 160);
 
 	return godot_io_java->get_screen_dpi();
 }
 
 float DisplayServerAndroid::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, 1.0f);
 
@@ -295,6 +364,10 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 }
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	if (!godot_io_java) {
 		ERR_PRINT("An error occurred while trying to get the screen refresh rate.");
@@ -450,7 +523,8 @@ void DisplayServerAndroid::window_set_title(const String &p_title, DisplayServer
 }
 
 int DisplayServerAndroid::window_get_current_screen(DisplayServer::WindowID p_window) const {
-	return SCREEN_OF_MAIN_WINDOW;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerAndroid::window_set_current_screen(int p_screen, DisplayServer::WindowID p_window) {
@@ -522,7 +596,14 @@ void DisplayServerAndroid::window_set_flag(DisplayServer::WindowFlags p_flag, bo
 }
 
 bool DisplayServerAndroid::window_get_flag(DisplayServer::WindowFlags p_flag, DisplayServer::WindowID p_window) const {
-	return false;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, false);
+	switch (p_flag) {
+		case WindowFlags::WINDOW_FLAG_TRANSPARENT:
+			return is_window_transparency_available();
+
+		default:
+			return false;
+	}
 }
 
 void DisplayServerAndroid::window_request_attention(DisplayServer::WindowID p_window) {
@@ -562,8 +643,8 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			OS::get_singleton()->alert(
@@ -630,7 +711,7 @@ void DisplayServerAndroid::notify_surface_changed(int p_width, int p_height) {
 	}
 }
 
-DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 	keep_screen_on = GLOBAL_GET("display/window/energy_saving/keep_screen_on");
@@ -751,31 +832,66 @@ void DisplayServerAndroid::process_gyroscope(const Vector3 &p_gyroscope) {
 	Input::get_singleton()->set_gyroscope(p_gyroscope);
 }
 
-void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerAndroid::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
 	if (!OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_update_pointer_icon() || !OS_Android::get_singleton()->get_godot_java()->get_godot_view()->can_capture_pointer()) {
 		return;
 	}
-	if (mouse_mode == p_mode) {
+	if (mouse_mode == wanted_mouse_mode) {
 		return;
 	}
 
-	if (p_mode == MouseMode::MOUSE_MODE_HIDDEN) {
+	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_HIDDEN) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->set_pointer_icon(CURSOR_TYPE_NULL);
 	} else {
 		cursor_set_shape(cursor_shape);
 	}
 
-	if (p_mode == MouseMode::MOUSE_MODE_CAPTURED) {
+	if (wanted_mouse_mode == MouseMode::MOUSE_MODE_CAPTURED) {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->request_pointer_capture();
 	} else {
 		OS_Android::get_singleton()->get_godot_java()->get_godot_view()->release_pointer_capture();
 	}
 
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
+}
+
+void DisplayServerAndroid::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerAndroid::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerAndroid::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerAndroid::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerAndroid::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 Point2i DisplayServerAndroid::mouse_get_position() const {
@@ -855,4 +971,8 @@ void DisplayServerAndroid::set_native_icon(const String &p_filename) {
 
 void DisplayServerAndroid::set_icon(const Ref<Image> &p_icon) {
 	// NOT SUPPORTED
+}
+
+bool DisplayServerAndroid::is_window_transparency_available() const {
+	return GLOBAL_GET_CACHED(bool, "display/window/per_pixel_transparency/allowed");
 }

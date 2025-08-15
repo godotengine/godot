@@ -36,13 +36,6 @@
 #include "core/debugger/script_debugger.h"
 #include "core/os/os.h"
 
-EngineDebugger *EngineDebugger::singleton = nullptr;
-ScriptDebugger *EngineDebugger::script_debugger = nullptr;
-
-HashMap<StringName, EngineDebugger::Profiler> EngineDebugger::profilers;
-HashMap<StringName, EngineDebugger::Capture> EngineDebugger::captures;
-HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
-
 void (*EngineDebugger::allow_focus_steal_fn)();
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
@@ -127,7 +120,7 @@ void EngineDebugger::iteration(uint64_t p_frame_ticks, uint64_t p_process_ticks,
 	singleton->poll_events(true);
 }
 
-void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
+void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, bool p_ignore_error_breaks, const Vector<String> &p_breakpoints, void (*p_allow_focus_steal_fn)()) {
 	register_uri_handler("tcp://", RemoteDebuggerPeerTCP::create); // TCP is the default protocol. Platforms/modules can add more.
 	if (p_uri.is_empty()) {
 		return;
@@ -149,8 +142,7 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, co
 		singleton = memnew(RemoteDebugger(Ref<RemoteDebuggerPeer>(peer)));
 		script_debugger = memnew(ScriptDebugger);
 		// Notify editor of our pid (to allow focus stealing).
-		Array msg;
-		msg.push_back(OS::get_singleton()->get_process_id());
+		Array msg = { OS::get_singleton()->get_process_id() };
 		singleton->send_message("set_pid", msg);
 	}
 	if (!singleton) {
@@ -160,13 +152,14 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, co
 	// There is a debugger, parse breakpoints.
 	ScriptDebugger *singleton_script_debugger = singleton->get_script_debugger();
 	singleton_script_debugger->set_skip_breakpoints(p_skip_breakpoints);
+	singleton_script_debugger->set_ignore_error_breaks(p_ignore_error_breaks);
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
 		const String &bp = p_breakpoints[i];
 		int sp = bp.rfind_char(':');
 		ERR_CONTINUE_MSG(sp == -1, vformat("Invalid breakpoint: '%s', expected file:line format.", bp));
 
-		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
+		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1).to_int(), bp.substr(0, sp));
 	}
 
 	allow_focus_steal_fn = p_allow_focus_steal_fn;

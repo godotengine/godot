@@ -18,11 +18,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.2\n"
 
+msgid "All Recognized"
+msgstr "Alle Erkende"
+
 msgid "Open"
 msgstr "Oop"
 
-msgid "All Recognized"
-msgstr "Alle Erkende"
+msgid "Save"
+msgstr "Stoor"
 
 msgid "Open a File"
 msgstr "Open 'n Lêer"
@@ -35,9 +38,6 @@ msgstr "Open 'n Gids"
 
 msgid "Open a File or Directory"
 msgstr "Open 'n Lêer of Gids"
-
-msgid "Save"
-msgstr "Stoor"
 
 msgid "Save a File"
 msgstr "Stoor 'n Lêer"

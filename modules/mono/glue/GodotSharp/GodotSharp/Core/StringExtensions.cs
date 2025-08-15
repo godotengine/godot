@@ -314,22 +314,10 @@ namespace Godot
         /// <returns>The capitalized string.</returns>
         public static string Capitalize(this string instance)
         {
-            string aux = instance.CamelcaseToUnderscore(true).Replace("_", " ", StringComparison.Ordinal).Trim();
-            string cap = string.Empty;
-
-            for (int i = 0; i < aux.GetSliceCount(" "); i++)
-            {
-                string slice = aux.GetSliceCharacter(' ', i);
-                if (slice.Length > 0)
-                {
-                    slice = char.ToUpperInvariant(slice[0]) + slice.Substring(1);
-                    if (i > 0)
-                        cap += " ";
-                    cap += slice;
-                }
-            }
-
-            return cap;
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_capitalize(instanceStr, out godot_string capitalized);
+            using (capitalized)
+                return Marshaling.ConvertStringToManaged(capitalized);
         }
 
         /// <summary>
@@ -371,49 +359,17 @@ namespace Godot
                 return Marshaling.ConvertStringToManaged(snakeCase);
         }
 
-        private static string CamelcaseToUnderscore(this string instance, bool lowerCase)
+        /// <summary>
+        /// Returns the string converted to <c>kebab-case</c>.
+        /// </summary>
+        /// <param name="instance">The string to convert.</param>
+        /// <returns>The converted string.</returns>
+        public static string ToKebabCase(this string instance)
         {
-            string newString = string.Empty;
-            int startIndex = 0;
-
-            for (int i = 1; i < instance.Length; i++)
-            {
-                bool isUpper = char.IsUpper(instance[i]);
-                bool isNumber = char.IsDigit(instance[i]);
-
-                bool areNext2Lower = false;
-                bool isNextLower = false;
-                bool isNextNumber = false;
-                bool wasPrecedentUpper = char.IsUpper(instance[i - 1]);
-                bool wasPrecedentNumber = char.IsDigit(instance[i - 1]);
-
-                if (i + 2 < instance.Length)
-                {
-                    areNext2Lower = char.IsLower(instance[i + 1]) && char.IsLower(instance[i + 2]);
-                }
-
-                if (i + 1 < instance.Length)
-                {
-                    isNextLower = char.IsLower(instance[i + 1]);
-                    isNextNumber = char.IsDigit(instance[i + 1]);
-                }
-
-                bool condA = isUpper && !wasPrecedentUpper && !wasPrecedentNumber;
-                bool condB = wasPrecedentUpper && isUpper && areNext2Lower;
-                bool condC = isNumber && !wasPrecedentNumber;
-                bool canBreakNumberLetter = isNumber && !wasPrecedentNumber && isNextLower;
-                bool canBreakLetterNumber = !isNumber && wasPrecedentNumber && (isNextLower || isNextNumber);
-
-                bool shouldSplit = condA || condB || condC || canBreakNumberLetter || canBreakLetterNumber;
-                if (shouldSplit)
-                {
-                    newString += string.Concat(instance.AsSpan(startIndex, i - startIndex), "_");
-                    startIndex = i;
-                }
-            }
-
-            newString += instance.Substring(startIndex, instance.Length - startIndex);
-            return lowerCase ? newString.ToLowerInvariant() : newString;
+            using godot_string instanceStr = Marshaling.ConvertStringToNative(instance);
+            NativeFuncs.godotsharp_string_to_kebab_case(instanceStr, out godot_string kebabCase);
+            using (kebabCase)
+                return Marshaling.ConvertStringToManaged(kebabCase);
         }
 
         /// <summary>
@@ -474,8 +430,8 @@ namespace Godot
         {
             int pos = instance.RFind(".");
 
-            if (pos < 0)
-                return instance;
+            if (pos < 0 || pos < Math.Max(instance.RFind("/"), instance.RFind("\\")))
+                return string.Empty;
 
             return instance.Substring(pos + 1);
         }
@@ -979,7 +935,7 @@ namespace Godot
             {
                 if (instance.Length < 3)
                     return false;
-                if (instance[from] != '0' || instance[from + 1] != 'x')
+                if (instance[from] != '0' || instance[from + 1] != 'x' || instance[from + 1] != 'X')
                     return false;
                 from += 2;
             }
@@ -1359,7 +1315,9 @@ namespace Godot
         /// <returns>The concatenated path with the given file name.</returns>
         public static string PathJoin(this string instance, string file)
         {
-            if (instance.Length > 0 && instance[instance.Length - 1] == '/')
+            if (instance.Length == 0)
+                return file;
+            if (instance[^1] == '/' || (file.Length > 0 && file[0] == '/'))
                 return instance + file;
             return instance + "/" + file;
         }

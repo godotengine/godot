@@ -125,17 +125,17 @@ double Engine::get_unfrozen_time_scale() const {
 
 Dictionary Engine::get_version_info() const {
 	Dictionary dict;
-	dict["major"] = VERSION_MAJOR;
-	dict["minor"] = VERSION_MINOR;
-	dict["patch"] = VERSION_PATCH;
-	dict["hex"] = VERSION_HEX;
-	dict["status"] = VERSION_STATUS;
-	dict["build"] = VERSION_BUILD;
+	dict["major"] = GODOT_VERSION_MAJOR;
+	dict["minor"] = GODOT_VERSION_MINOR;
+	dict["patch"] = GODOT_VERSION_PATCH;
+	dict["hex"] = GODOT_VERSION_HEX;
+	dict["status"] = GODOT_VERSION_STATUS;
+	dict["build"] = GODOT_VERSION_BUILD;
 
-	String hash = String(VERSION_HASH);
+	String hash = String(GODOT_VERSION_HASH);
 	dict["hash"] = hash.is_empty() ? String("unknown") : hash;
 
-	dict["timestamp"] = VERSION_TIMESTAMP;
+	dict["timestamp"] = GODOT_VERSION_TIMESTAMP;
 
 	String stringver = String(dict["major"]) + "." + String(dict["minor"]);
 	if ((int)dict["patch"] != 0) {
@@ -224,39 +224,22 @@ String Engine::get_license_text() const {
 String Engine::get_architecture_name() const {
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	return "x86_64";
-
 #elif defined(__i386) || defined(__i386__) || defined(_M_IX86)
 	return "x86_32";
-
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 	return "arm64";
-
 #elif defined(__arm__) || defined(_M_ARM)
 	return "arm32";
-
 #elif defined(__riscv)
-#if __riscv_xlen == 8
 	return "rv64";
-#else
-	return "riscv";
-#endif
-
-#elif defined(__powerpc__)
-#if defined(__powerpc64__)
+#elif defined(__powerpc64__)
 	return "ppc64";
-#else
-	return "ppc";
-#endif
-
 #elif defined(__loongarch64)
 	return "loongarch64";
-
-#elif defined(__wasm__)
-#if defined(__wasm64__)
+#elif defined(__wasm64__)
 	return "wasm64";
 #elif defined(__wasm32__)
 	return "wasm32";
-#endif
 #endif
 }
 
@@ -400,8 +383,6 @@ String Engine::get_shader_cache_path() const {
 	return shader_cache_path;
 }
 
-Engine *Engine::singleton = nullptr;
-
 Engine *Engine::get_singleton() {
 	return singleton;
 }
@@ -413,6 +394,14 @@ bool Engine::notify_frame_server_synced() {
 
 void Engine::set_freeze_time_scale(bool p_frozen) {
 	freeze_time_scale = p_frozen;
+}
+
+void Engine::set_embedded_in_editor(bool p_enabled) {
+	embedded_in_editor = p_enabled;
+}
+
+bool Engine::is_embedded_in_editor() const {
+	return embedded_in_editor;
 }
 
 Engine::Engine() {

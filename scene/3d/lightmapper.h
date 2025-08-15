@@ -28,22 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHTMAPPER_H
-#define LIGHTMAPPER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 
 class Image;
-
-#if !defined(__aligned)
-
-#if defined(_WIN32) && defined(_MSC_VER)
-#define __aligned(...) __declspec(align(__VA_ARGS__))
-#else
-#define __aligned(...) __attribute__((aligned(__VA_ARGS__)))
-#endif
-
-#endif
 
 class LightmapDenoiser : public RefCounted {
 	GDCLASS(LightmapDenoiser, RefCounted)
@@ -62,7 +51,7 @@ protected:
 
 public:
 	// Compatible with embree4 rays.
-	struct __aligned(16) Ray {
+	struct alignas(16) Ray {
 		const static unsigned int INVALID_GEOMETRY_ID = ((unsigned int)-1); // from rtcore_common.h
 
 		/*! Default construction does nothing. */
@@ -74,7 +63,7 @@ public:
 		_FORCE_INLINE_ Ray(const Vector3 &p_org,
 				const Vector3 &p_dir,
 				float p_tnear = 0.0f,
-				float p_tfar = INFINITY) :
+				float p_tfar = Math::INF) :
 				org(p_org),
 				tnear(p_tnear),
 				dir(p_dir),
@@ -171,6 +160,7 @@ public:
 		Vector<Vector3> points;
 		Vector<Vector2> uv2;
 		Vector<Vector3> normal;
+		Vector<RID> material;
 		Ref<Image> albedo_on_uv2;
 		Ref<Image> emission_on_uv2;
 		Variant userdata;
@@ -181,7 +171,7 @@ public:
 	virtual void add_omni_light(const String &p_name, bool p_static, const Vector3 &p_position, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_size, float p_shadow_blur) = 0;
 	virtual void add_spot_light(const String &p_name, bool p_static, const Vector3 &p_position, const Vector3 p_direction, const Color &p_color, float p_energy, float p_indirect_energy, float p_range, float p_attenuation, float p_spot_angle, float p_spot_attenuation, float p_size, float p_shadow_blur) = 0;
 	virtual void add_probe(const Vector3 &p_position) = 0;
-	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_step_userdata = nullptr, float p_exposure_normalization = 1.0) = 0;
+	virtual BakeError bake(BakeQuality p_quality, bool p_use_denoiser, float p_denoiser_strength, int p_denoiser_range, int p_bounces, float p_bounce_indirect_energy, float p_bias, int p_max_texture_size, bool p_bake_sh, bool p_bake_shadowmask, bool p_texture_for_bounces, GenerateProbes p_generate_probes, const Ref<Image> &p_environment_panorama, const Basis &p_environment_transform, BakeStepFunc p_step_function = nullptr, void *p_step_userdata = nullptr, float p_exposure_normalization = 1.0, float p_supersampling_factor = 1.0) = 0;
 
 	virtual int get_bake_texture_count() const = 0;
 	virtual Ref<Image> get_bake_texture(int p_index) const = 0;
@@ -199,5 +189,3 @@ public:
 
 	Lightmapper();
 };
-
-#endif // LIGHTMAPPER_H

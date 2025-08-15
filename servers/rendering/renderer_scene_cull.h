@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_CULL_H
-#define RENDERER_SCENE_CULL_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "core/math/transform_interpolator.h"
@@ -40,15 +39,12 @@
 #include "core/templates/pass_func.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "servers/rendering/instance_uniforms.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/utilities.h"
-
-#ifndef _3D_DISABLED
-#include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
 
 class RenderingLightCuller;
 
@@ -259,7 +255,7 @@ public:
 	struct InstanceData {
 		// Store instance pointer as well as common instance processing information,
 		// to make processing more cache friendly.
-		enum Flags {
+		enum Flags : uint32_t {
 			FLAG_BASE_TYPE_MASK = 0xFF,
 			FLAG_CAST_SHADOWS = (1 << 8),
 			FLAG_CAST_SHADOWS_ONLY = (1 << 9),
@@ -412,15 +408,8 @@ public:
 
 		RID mesh_instance; //only used for meshes and when skeleton/blendshapes exist
 
-		// This is the main transform to be drawn with ...
-		// This will either be the interpolated transform (when using fixed timestep interpolation)
-		// or the ONLY transform (when not using FTI).
 		Transform3D transform;
-
-		// For interpolation we store the current transform (this physics tick)
-		// and the transform in the previous tick.
-		Transform3D transform_curr;
-		Transform3D transform_prev;
+		bool teleported = false;
 
 		float lod_bias;
 
@@ -440,16 +429,6 @@ public:
 		bool dynamic_gi : 1; // Same as above for dynamic objects.
 		bool redraw_if_visible : 1;
 
-		bool on_interpolate_list : 1;
-		bool on_interpolate_transform_list : 1;
-		bool interpolated : 1;
-		TransformInterpolator::Method interpolation_method : 3;
-
-		// For fixed timestep interpolation.
-		// Note 32 bits is plenty for checksum, no need for real_t
-		float transform_checksum_curr;
-		float transform_checksum_prev;
-
 		Instance *lightmap = nullptr;
 		Rect2 lightmap_uv_scale;
 		int lightmap_slice_index;
@@ -460,16 +439,7 @@ public:
 		AABB transformed_aabb;
 		AABB prev_transformed_aabb;
 
-		struct InstanceShaderParameter {
-			int32_t index = -1;
-			Variant value;
-			Variant default_value;
-			PropertyInfo info;
-		};
-
-		HashMap<StringName, InstanceShaderParameter> instance_shader_uniforms;
-		bool instance_allocated_shader_uniforms = false;
-		int32_t instance_allocated_shader_uniforms_offset = -1;
+		InstanceUniforms instance_uniforms;
 
 		//
 
@@ -534,11 +504,12 @@ public:
 				case Dependency::DEPENDENCY_CHANGED_PARTICLES:
 				case Dependency::DEPENDENCY_CHANGED_MULTIMESH:
 				case Dependency::DEPENDENCY_CHANGED_DECAL:
-				case Dependency::DEPENDENCY_CHANGED_LIGHT:
-				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
+				case Dependency::DEPENDENCY_CHANGED_LIGHT: {
 					singleton->_instance_queue_update(instance, true, true);
 				} break;
-				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
+				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE:
+				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR:
+				case Dependency::DEPENDENCY_CHANGED_CULL_MASK: {
 					//requires repairing
 					if (instance->indexer_id.is_valid()) {
 						singleton->_unpair_instance(instance);
@@ -598,13 +569,6 @@ public:
 			baked_light = true;
 			dynamic_gi = false;
 			redraw_if_visible = false;
-
-			on_interpolate_list = false;
-			on_interpolate_transform_list = false;
-			interpolated = true;
-			interpolation_method = TransformInterpolator::INTERP_LERP;
-			transform_checksum_curr = 0.0;
-			transform_checksum_prev = 0.0;
 
 			lightmap_slice_index = 0;
 			lightmap = nullptr;
@@ -692,6 +656,7 @@ public:
 	struct InstanceDecalData : public InstanceBaseData {
 		Instance *owner = nullptr;
 		RID instance;
+		uint32_t cull_mask = 0xFFFFFFFF;
 
 		HashSet<Instance *> geometries;
 
@@ -703,6 +668,7 @@ public:
 
 	struct InstanceParticlesCollisionData : public InstanceBaseData {
 		RID instance;
+		uint32_t cull_mask = 0xFFFFFFFF;
 	};
 
 	struct InstanceFogVolumeData : public InstanceBaseData {
@@ -736,6 +702,7 @@ public:
 
 		RS::LightBakeMode bake_mode;
 		uint32_t max_sdfgi_cascade = 2;
+		uint32_t cull_mask = 0xFFFFFFFF;
 
 	private:
 		// Instead of a single dirty flag, we maintain a count
@@ -854,12 +821,11 @@ public:
 		DynamicBVH *bvh2 = nullptr; //some may need to cull in two
 		uint32_t pair_mask;
 		uint64_t pair_pass;
-		uint32_t cull_mask = 0xFFFFFFFF; // Needed for decals and lights in the mobile and compatibility renderers.
 
 		_FORCE_INLINE_ bool operator()(void *p_data) {
 			Instance *p_instance = (Instance *)p_data;
 
-			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type)) && (cull_mask & p_instance->layer_mask)) {
+			if (instance != p_instance && instance->transformed_aabb.intersects(p_instance->transformed_aabb) && (pair_mask & (1 << p_instance->base_type))) {
 				//test is more coarse in indexer
 				p_instance->pair_check = pair_pass;
 				InstancePair *pair = pair_allocator->alloc();
@@ -1044,7 +1010,7 @@ public:
 
 	uint32_t thread_cull_threshold = 200;
 
-	mutable RID_Owner<Instance, true> instance_owner;
+	mutable RID_Owner<Instance, true> instance_owner{ 65536, 4194304 };
 
 	uint32_t geometry_instance_pair_mask = 0; // used in traditional forward, unnecessary on clustered
 
@@ -1059,13 +1025,13 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
-	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated);
-	virtual void instance_reset_physics_interpolation(RID p_instance);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
+
+	virtual void instance_teleport(RID p_instance);
 
 	virtual void instance_set_custom_aabb(RID p_instance, AABB p_aabb);
 
@@ -1095,8 +1061,6 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_uniforms_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) const;
-
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const;
@@ -1113,7 +1077,7 @@ public:
 
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 	RID _render_get_compositor(RID p_camera, RID p_scenario);
@@ -1442,17 +1406,9 @@ public:
 	virtual void set_physics_interpolation_enabled(bool p_enabled);
 
 	struct InterpolationData {
-		void notify_free_instance(RID p_rid, Instance &r_instance);
-		LocalVector<RID> instance_interpolate_update_list;
-		LocalVector<RID> instance_transform_update_lists[2];
-		LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
-		LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
-
 		bool interpolation_enabled = false;
 	} _interpolation_data;
 
 	RendererSceneCull();
 	virtual ~RendererSceneCull();
 };
-
-#endif // RENDERER_SCENE_CULL_H

@@ -34,8 +34,13 @@
 #include "core/config/project_settings.h"
 #include "scene/main/node.h"
 #include "servers/navigation/navigation_globals.h"
+#include "servers/navigation_server_3d_dummy.h"
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
+
+RWLock NavigationServer3D::geometry_parser_rwlock;
+RID_Owner<NavMeshGeometryParser3D> NavigationServer3D::geometry_parser_owner;
+LocalVector<NavMeshGeometryParser3D *> NavigationServer3D::generator_parsers;
 
 void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer3D::get_maps);
@@ -70,12 +75,17 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("map_force_update", "map"), &NavigationServer3D::map_force_update);
 	ClassDB::bind_method(D_METHOD("map_get_iteration_id", "map"), &NavigationServer3D::map_get_iteration_id);
+	ClassDB::bind_method(D_METHOD("map_set_use_async_iterations", "map", "enabled"), &NavigationServer3D::map_set_use_async_iterations);
+	ClassDB::bind_method(D_METHOD("map_get_use_async_iterations", "map"), &NavigationServer3D::map_get_use_async_iterations);
 
 	ClassDB::bind_method(D_METHOD("map_get_random_point", "map", "navigation_layers", "uniformly"), &NavigationServer3D::map_get_random_point);
 
 	ClassDB::bind_method(D_METHOD("query_path", "parameters", "result", "callback"), &NavigationServer3D::query_path, DEFVAL(Callable()));
 
 	ClassDB::bind_method(D_METHOD("region_create"), &NavigationServer3D::region_create);
+	ClassDB::bind_method(D_METHOD("region_get_iteration_id", "region"), &NavigationServer3D::region_get_iteration_id);
+	ClassDB::bind_method(D_METHOD("region_set_use_async_iterations", "region", "enabled"), &NavigationServer3D::region_set_use_async_iterations);
+	ClassDB::bind_method(D_METHOD("region_get_use_async_iterations", "region"), &NavigationServer3D::region_get_use_async_iterations);
 	ClassDB::bind_method(D_METHOD("region_set_enabled", "region", "enabled"), &NavigationServer3D::region_set_enabled);
 	ClassDB::bind_method(D_METHOD("region_get_enabled", "region"), &NavigationServer3D::region_get_enabled);
 	ClassDB::bind_method(D_METHOD("region_set_use_edge_connections", "region", "enabled"), &NavigationServer3D::region_set_use_edge_connections);
@@ -104,8 +114,10 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("region_get_closest_point", "region", "to_point"), &NavigationServer3D::region_get_closest_point);
 	ClassDB::bind_method(D_METHOD("region_get_closest_point_normal", "region", "to_point"), &NavigationServer3D::region_get_closest_point_normal);
 	ClassDB::bind_method(D_METHOD("region_get_random_point", "region", "navigation_layers", "uniformly"), &NavigationServer3D::region_get_random_point);
+	ClassDB::bind_method(D_METHOD("region_get_bounds", "region"), &NavigationServer3D::region_get_bounds);
 
 	ClassDB::bind_method(D_METHOD("link_create"), &NavigationServer3D::link_create);
+	ClassDB::bind_method(D_METHOD("link_get_iteration_id", "link"), &NavigationServer3D::link_get_iteration_id);
 	ClassDB::bind_method(D_METHOD("link_set_map", "link", "map"), &NavigationServer3D::link_set_map);
 	ClassDB::bind_method(D_METHOD("link_get_map", "link"), &NavigationServer3D::link_get_map);
 	ClassDB::bind_method(D_METHOD("link_set_enabled", "link", "enabled"), &NavigationServer3D::link_set_enabled);
@@ -232,59 +244,98 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::navmesh_cell_size_hint), NavigationDefaults2D::navmesh_cell_size);
-	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC("navigation/2d/default_edge_connection_margin", NavigationDefaults2D::edge_connection_margin);
-	GLOBAL_DEF_BASIC("navigation/2d/default_link_connection_radius", NavigationDefaults2D::link_connection_radius);
-
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::navmesh_cell_size_hint), NavigationDefaults3D::navmesh_cell_size);
-	GLOBAL_DEF_BASIC("navigation/3d/default_cell_height", NavigationDefaults3D::navmesh_cell_height);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::NAV_MESH_CELL_SIZE_HINT), NavigationDefaults3D::NAV_MESH_CELL_SIZE);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), NavigationDefaults3D::NAV_MESH_CELL_HEIGHT);
 	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "navigation/3d/merge_rasterizer_cell_scale", PROPERTY_HINT_RANGE, "0.001,1,0.001,or_greater"), 1.0);
 	GLOBAL_DEF("navigation/3d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC("navigation/3d/default_edge_connection_margin", NavigationDefaults3D::edge_connection_margin);
-	GLOBAL_DEF_BASIC("navigation/3d/default_link_connection_radius", NavigationDefaults3D::link_connection_radius);
-
-	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
-	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
-
-	GLOBAL_DEF("navigation/pathfinding/max_threads", 4);
-
-	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
-	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
-	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::EDGE_CONNECTION_MARGIN);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::LINK_CONNECTION_RADIUS);
 
 #ifdef DEBUG_ENABLED
-	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
-	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
-	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
-	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
-	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
-	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
-	debug_navigation_link_connection_disabled_color = GLOBAL_DEF("debug/shapes/navigation/link_connection_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
-	debug_navigation_agent_path_color = GLOBAL_DEF("debug/shapes/navigation/agent_path_color", Color(1.0, 0.0, 0.0, 1.0));
+#ifndef DISABLE_DEPRECATED
+#define MOVE_PROJECT_SETTING_1(m_old_setting, m_new_setting)                                                                             \
+	if (!ProjectSettings::get_singleton()->has_setting(m_new_setting) && ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
+		Variant value = GLOBAL_GET(m_old_setting);                                                                                       \
+		ProjectSettings::get_singleton()->set_setting(m_new_setting, value);                                                             \
+		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                          \
+	}
+#define MOVE_PROJECT_SETTING_2(m_old_setting, m_new_setting_1, m_new_setting_2)                                                                 \
+	if ((!ProjectSettings::get_singleton()->has_setting(m_new_setting_1) || !ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) && \
+			ProjectSettings::get_singleton()->has_setting(m_old_setting)) {                                                                     \
+		Variant value = GLOBAL_GET(m_old_setting);                                                                                              \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_1)) {                                                                  \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_1, value);                                                              \
+		}                                                                                                                                       \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) {                                                                  \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_2, value);                                                              \
+		}                                                                                                                                       \
+		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                                 \
+	}
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/edge_connection_color", "debug/shapes/navigation/2d/edge_connection_color", "debug/shapes/navigation/3d/edge_connection_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_edge_color", "debug/shapes/navigation/2d/geometry_edge_color", "debug/shapes/navigation/3d/geometry_edge_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_face_color", "debug/shapes/navigation/2d/geometry_face_color", "debug/shapes/navigation/3d/geometry_face_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_edge_disabled_color", "debug/shapes/navigation/2d/geometry_edge_disabled_color", "debug/shapes/navigation/3d/geometry_edge_disabled_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_face_disabled_color", "debug/shapes/navigation/2d/geometry_face_disabled_color", "debug/shapes/navigation/3d/geometry_face_disabled_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/link_connection_color", "debug/shapes/navigation/2d/link_connection_color", "debug/shapes/navigation/3d/link_connection_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/link_connection_disabled_color", "debug/shapes/navigation/2d/link_connection_disabled_color", "debug/shapes/navigation/3d/link_connection_disabled_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/agent_path_color", "debug/shapes/navigation/2d/agent_path_color", "debug/shapes/navigation/3d/agent_path_color");
 
-	debug_navigation_enable_edge_connections = GLOBAL_DEF("debug/shapes/navigation/enable_edge_connections", true);
-	debug_navigation_enable_edge_connections_xray = GLOBAL_DEF("debug/shapes/navigation/enable_edge_connections_xray", true);
-	debug_navigation_enable_edge_lines = GLOBAL_DEF("debug/shapes/navigation/enable_edge_lines", true);
-	debug_navigation_enable_edge_lines_xray = GLOBAL_DEF("debug/shapes/navigation/enable_edge_lines_xray", true);
-	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/enable_geometry_face_random_color", true);
-	debug_navigation_enable_link_connections = GLOBAL_DEF("debug/shapes/navigation/enable_link_connections", true);
-	debug_navigation_enable_link_connections_xray = GLOBAL_DEF("debug/shapes/navigation/enable_link_connections_xray", true);
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_edge_connections", "debug/shapes/navigation/2d/enable_edge_connections", "debug/shapes/navigation/3d/enable_edge_connections");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_edge_connections_xray", "debug/shapes/navigation/3d/enable_edge_connections_xray");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_edge_lines", "debug/shapes/navigation/2d/enable_edge_lines", "debug/shapes/navigation/3d/enable_edge_lines");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_edge_lines_xray", "debug/shapes/navigation/3d/enable_edge_lines_xray");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_geometry_face_random_color", "debug/shapes/navigation/2d/enable_geometry_face_random_color", "debug/shapes/navigation/3d/enable_geometry_face_random_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_link_connections", "debug/shapes/navigation/2d/enable_link_connections", "debug/shapes/navigation/3d/enable_link_connections");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_link_connections_xray", "debug/shapes/navigation/3d/enable_link_connections_xray");
 
-	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/enable_agent_paths", true);
-	debug_navigation_enable_agent_paths_xray = GLOBAL_DEF("debug/shapes/navigation/enable_agent_paths_xray", true);
-	debug_navigation_agent_path_point_size = GLOBAL_DEF("debug/shapes/navigation/agent_path_point_size", 4.0);
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_agent_paths", "debug/shapes/navigation/2d/enable_agent_paths", "debug/shapes/navigation/3d/enable_agent_paths");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_agent_paths_xray", "debug/shapes/navigation/3d/enable_agent_paths_xray");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/agent_path_point_size", "debug/shapes/navigation/2d/agent_path_point_size", "debug/shapes/navigation/3d/agent_path_point_size");
 
-	debug_navigation_avoidance_agents_radius_color = GLOBAL_DEF("debug/shapes/avoidance/agents_radius_color", Color(1.0, 1.0, 0.0, 0.25));
-	debug_navigation_avoidance_obstacles_radius_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_radius_color", Color(1.0, 0.5, 0.0, 0.25));
-	debug_navigation_avoidance_static_obstacle_pushin_face_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_face_pushin_color", Color(1.0, 0.0, 0.0, 0.0));
-	debug_navigation_avoidance_static_obstacle_pushin_edge_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_edge_pushin_color", Color(1.0, 0.0, 0.0, 1.0));
-	debug_navigation_avoidance_static_obstacle_pushout_face_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_face_pushout_color", Color(1.0, 1.0, 0.0, 0.5));
-	debug_navigation_avoidance_static_obstacle_pushout_edge_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_edge_pushout_color", Color(1.0, 1.0, 0.0, 1.0));
-	debug_navigation_avoidance_enable_agents_radius = GLOBAL_DEF("debug/shapes/avoidance/enable_agents_radius", true);
-	debug_navigation_avoidance_enable_obstacles_radius = GLOBAL_DEF("debug/shapes/avoidance/enable_obstacles_radius", true);
-	debug_navigation_avoidance_enable_obstacles_static = GLOBAL_DEF("debug/shapes/avoidance/enable_obstacles_static", true);
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/agents_radius_color", "debug/shapes/avoidance/2d/agents_radius_color", "debug/shapes/avoidance/3d/agents_radius_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_radius_color", "debug/shapes/avoidance/2d/obstacles_radius_color", "debug/shapes/avoidance/3d/obstacles_radius_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_face_pushin_color", "debug/shapes/avoidance/2d/obstacles_static_face_pushin_color", "debug/shapes/avoidance/3d/obstacles_static_face_pushin_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_edge_pushin_color", "debug/shapes/avoidance/2d/obstacles_static_edge_pushin_color", "debug/shapes/avoidance/3d/obstacles_static_edge_pushin_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_face_pushout_color", "debug/shapes/avoidance/2d/obstacles_static_face_pushout_color", "debug/shapes/avoidance/3d/obstacles_static_face_pushout_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_edge_pushout_color", "debug/shapes/avoidance/2d/obstacles_static_edge_pushout_color", "debug/shapes/avoidance/3d/obstacles_static_edge_pushout_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/enable_agents_radius", "debug/shapes/avoidance/2d/enable_agents_radius", "debug/shapes/avoidance/3d/enable_agents_radius");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/enable_obstacles_radius", "debug/shapes/avoidance/2d/enable_obstacles_radius", "debug/shapes/avoidance/2d/enable_obstacles_static");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/enable_obstacles_radius", "debug/shapes/avoidance/3d/enable_obstacles_radius", "debug/shapes/avoidance/3d/enable_obstacles_static");
+#undef MOVE_PROJECT_SETTING_1
+#undef MOVE_PROJECT_SETTING_2
+#endif // DISABLE_DEPRECATED
+
+	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
+	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
+	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
+	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
+	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
+	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
+	debug_navigation_link_connection_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/link_connection_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
+	debug_navigation_agent_path_color = GLOBAL_DEF("debug/shapes/navigation/3d/agent_path_color", Color(1.0, 0.0, 0.0, 1.0));
+
+	debug_navigation_enable_edge_connections = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_connections", true);
+	debug_navigation_enable_edge_connections_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_connections_xray", true);
+	debug_navigation_enable_edge_lines = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_lines", true);
+	debug_navigation_enable_edge_lines_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_lines_xray", true);
+	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/3d/enable_geometry_face_random_color", true);
+	debug_navigation_enable_link_connections = GLOBAL_DEF("debug/shapes/navigation/3d/enable_link_connections", true);
+	debug_navigation_enable_link_connections_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_link_connections_xray", true);
+
+	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/3d/enable_agent_paths", true);
+	debug_navigation_enable_agent_paths_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_agent_paths_xray", true);
+	debug_navigation_agent_path_point_size = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/navigation/3d/agent_path_point_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 4.0);
+
+	debug_navigation_avoidance_agents_radius_color = GLOBAL_DEF("debug/shapes/avoidance/3d/agents_radius_color", Color(1.0, 1.0, 0.0, 0.25));
+	debug_navigation_avoidance_obstacles_radius_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_radius_color", Color(1.0, 0.5, 0.0, 0.25));
+	debug_navigation_avoidance_static_obstacle_pushin_face_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_face_pushin_color", Color(1.0, 0.0, 0.0, 0.0));
+	debug_navigation_avoidance_static_obstacle_pushin_edge_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_edge_pushin_color", Color(1.0, 0.0, 0.0, 1.0));
+	debug_navigation_avoidance_static_obstacle_pushout_face_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_face_pushout_color", Color(1.0, 1.0, 0.0, 0.5));
+	debug_navigation_avoidance_static_obstacle_pushout_edge_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_edge_pushout_color", Color(1.0, 1.0, 0.0, 1.0));
+	debug_navigation_avoidance_enable_agents_radius = GLOBAL_DEF("debug/shapes/avoidance/3d/enable_agents_radius", true);
+	debug_navigation_avoidance_enable_obstacles_radius = GLOBAL_DEF("debug/shapes/avoidance/3d/enable_obstacles_radius", true);
+	debug_navigation_avoidance_enable_obstacles_static = GLOBAL_DEF("debug/shapes/avoidance/3d/enable_obstacles_static", true);
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// enable NavigationServer3D when in Editor or else navigation mesh edge connections are invisible
@@ -298,6 +349,47 @@ NavigationServer3D::NavigationServer3D() {
 
 NavigationServer3D::~NavigationServer3D() {
 	singleton = nullptr;
+
+	RWLockWrite write_lock(geometry_parser_rwlock);
+	for (NavMeshGeometryParser3D *parser : generator_parsers) {
+		geometry_parser_owner.free(parser->self);
+	}
+	generator_parsers.clear();
+}
+
+RID NavigationServer3D::source_geometry_parser_create() {
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	RID rid = geometry_parser_owner.make_rid();
+
+	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(rid);
+	parser->self = rid;
+
+	generator_parsers.push_back(parser);
+
+	return rid;
+}
+
+void NavigationServer3D::free(RID p_object) {
+	if (!geometry_parser_owner.owns(p_object)) {
+		return;
+	}
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(p_object);
+	ERR_FAIL_NULL(parser);
+
+	generator_parsers.erase(parser);
+	geometry_parser_owner.free(parser->self);
+}
+
+void NavigationServer3D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(p_parser);
+	ERR_FAIL_NULL(parser);
+
+	parser->callback = p_callback;
 }
 
 void NavigationServer3D::set_debug_enabled(bool p_enabled) {
@@ -940,6 +1032,8 @@ bool NavigationServer3D::get_debug_avoidance_enabled() const {
 
 ///////////////////////////////////////////////////////
 
+static NavigationServer3D *navigation_server_3d = nullptr;
+
 NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
 
 void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
@@ -952,4 +1046,28 @@ NavigationServer3D *NavigationServer3DManager::new_default_server() {
 	}
 
 	return create_callback();
+}
+
+void NavigationServer3DManager::initialize_server() {
+	ERR_FAIL_COND(navigation_server_3d != nullptr);
+
+	// Init 3D Navigation Server
+	navigation_server_3d = NavigationServer3DManager::new_default_server();
+
+	// Fall back to dummy if no default server has been registered.
+	if (!navigation_server_3d) {
+		WARN_VERBOSE("Failed to initialize NavigationServer3D. Fall back to dummy server.");
+		navigation_server_3d = memnew(NavigationServer3DDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
+	navigation_server_3d->init();
+}
+
+void NavigationServer3DManager::finalize_server() {
+	ERR_FAIL_NULL(navigation_server_3d);
+	navigation_server_3d->finish();
+	memdelete(navigation_server_3d);
+	navigation_server_3d = nullptr;
 }

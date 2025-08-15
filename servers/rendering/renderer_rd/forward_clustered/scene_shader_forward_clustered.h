@@ -28,11 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_SHADER_FORWARD_CLUSTERED_H
-#define SCENE_SHADER_FORWARD_CLUSTERED_H
+#pragma once
 
+#include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
@@ -50,18 +49,19 @@ public:
 		SHADER_GROUP_ADVANCED_MULTIVIEW,
 	};
 
-	enum ShaderVersion {
-		SHADER_VERSION_DEPTH_PASS,
-		SHADER_VERSION_DEPTH_PASS_DP,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
-		SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW,
-		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
-		SHADER_VERSION_DEPTH_PASS_WITH_SDF,
-		SHADER_VERSION_COLOR_PASS,
-		SHADER_VERSION_MAX
+	// Not an enum because these values are constants that are processed as numbers
+	// to arrive at a unique version for a particular shader.
+	struct ShaderVersion {
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS = 0;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_DP = 1;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS = 2;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI = 3;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_MULTIVIEW = 4;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW = 5;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW = 6;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL = 7;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_SDF = 8;
+		constexpr static uint16_t SHADER_VERSION_COLOR_PASS = 9;
 	};
 
 	enum ShaderColorPassFlags {
@@ -99,6 +99,8 @@ public:
 
 	struct ShaderSpecialization {
 		union {
+			uint32_t packed_0;
+
 			struct {
 				uint32_t use_forward_gi : 1;
 				uint32_t use_light_projector : 1;
@@ -113,19 +115,17 @@ public:
 				uint32_t directional_soft_shadow_samples : 6;
 				uint32_t directional_penumbra_shadow_samples : 6;
 			};
-
-			uint32_t packed_0;
 		};
 
 		union {
+			uint32_t packed_1;
+
 			struct {
 				uint32_t multimesh : 1;
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
 			};
-
-			uint32_t packed_1;
 		};
 
 		uint32_t packed_2;
@@ -133,11 +133,11 @@ public:
 
 	struct UbershaderConstants {
 		union {
+			uint32_t packed_0;
+
 			struct {
 				uint32_t cull_mode : 2;
 			};
-
-			uint32_t packed_0;
 		};
 	};
 
@@ -150,13 +150,8 @@ public:
 
 		enum DepthTest {
 			DEPTH_TEST_DISABLED,
-			DEPTH_TEST_ENABLED
-		};
-
-		enum Cull {
-			CULL_DISABLED,
-			CULL_FRONT,
-			CULL_BACK
+			DEPTH_TEST_ENABLED,
+			DEPTH_TEST_ENABLED_INVERTED,
 		};
 
 		enum CullVariant {
@@ -171,6 +166,23 @@ public:
 			ALPHA_ANTIALIASING_OFF,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
+		};
+
+		enum StencilFlags {
+			STENCIL_FLAG_READ = 1,
+			STENCIL_FLAG_WRITE = 2,
+			STENCIL_FLAG_WRITE_DEPTH_FAIL = 4,
+		};
+
+		enum StencilCompare {
+			STENCIL_COMPARE_LESS,
+			STENCIL_COMPARE_EQUAL,
+			STENCIL_COMPARE_LESS_OR_EQUAL,
+			STENCIL_COMPARE_GREATER,
+			STENCIL_COMPARE_NOT_EQUAL,
+			STENCIL_COMPARE_GREATER_OR_EQUAL,
+			STENCIL_COMPARE_ALWAYS,
+			STENCIL_COMPARE_MAX // Not an actual operator, just the amount of operators.
 		};
 
 		struct PipelineKey {
@@ -205,7 +217,7 @@ public:
 
 		RID version;
 
-		static const uint32_t VERTEX_INPUT_MASKS_SIZE = SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + SHADER_VERSION_COLOR_PASS + SHADER_COLOR_PASS_FLAG_COUNT;
+		static const uint32_t VERTEX_INPUT_MASKS_SIZE = ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_COLOR_PASS + SHADER_COLOR_PASS_FLAG_COUNT;
 		std::atomic<uint64_t> vertex_input_masks[VERTEX_INPUT_MASKS_SIZE] = {};
 
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -219,7 +231,8 @@ public:
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		int blend_mode = BLEND_MODE_MIX;
-		int depth_testi = DEPTH_TEST_ENABLED;
+		int depth_test_disabledi = 0;
+		int depth_test_invertedi = 0;
 		int alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
 
 		bool uses_point_size = false;
@@ -234,6 +247,7 @@ public:
 		bool uses_tangent = false;
 		bool uses_particle_trails = false;
 		bool uses_normal_map = false;
+		bool uses_bent_normal_map = false;
 		bool wireframe = false;
 
 		bool unshaded = false;
@@ -250,7 +264,13 @@ public:
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;
-		Cull cull_mode = CULL_DISABLED;
+		bool uses_z_clip_scale = false;
+		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
+
+		bool stencil_enabled = false;
+		uint32_t stencil_flags = 0;
+		StencilCompare stencil_compare = STENCIL_COMPARE_LESS;
+		uint32_t stencil_reference = 0;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -261,19 +281,19 @@ public:
 			bool has_blend_alpha = uses_blend_alpha;
 			bool has_alpha = has_base_alpha || has_blend_alpha;
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return has_alpha || has_read_screen_alpha || no_depth_draw || no_depth_test;
 		}
 
 		_FORCE_INLINE_ bool uses_depth_in_alpha_pass() const {
 			bool no_depth_draw = depth_draw == DEPTH_DRAW_DISABLED;
-			bool no_depth_test = depth_test == DEPTH_TEST_DISABLED;
+			bool no_depth_test = depth_test != DEPTH_TEST_ENABLED;
 			return (uses_depth_prepass_alpha || uses_alpha_antialiasing) && !(no_depth_draw || no_depth_test);
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			bool backface_culling = cull_mode == CULL_BACK;
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe;
+			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe && !uses_z_clip_scale && !stencil_enabled;
 		}
 
 		virtual void set_code(const String &p_Code);
@@ -281,8 +301,9 @@ public:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		ShaderVersion _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
-		RID _get_shader_variant(ShaderVersion p_shader_version) const;
+		virtual Pair<ShaderRD *, RID> get_native_shader_and_version() const;
+		uint16_t _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
+		RID _get_shader_variant(uint16_t p_shader_version) const;
 		void _clear_vertex_input_mask_cache();
 		RID get_shader_variant(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
 		uint64_t get_vertex_input_mask(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader);
@@ -354,6 +375,7 @@ public:
 
 	void init(const String p_defines);
 	void set_default_specialization(const ShaderSpecialization &p_specialization);
+	void enable_multiview_shader_group();
 	void enable_advanced_shader_group(bool p_needs_multiview = false);
 	bool is_multiview_shader_group_enabled() const;
 	bool is_advanced_shader_group_enabled(bool p_multiview) const;
@@ -361,5 +383,3 @@ public:
 };
 
 } // namespace RendererSceneRenderImplementation
-
-#endif // SCENE_SHADER_FORWARD_CLUSTERED_H

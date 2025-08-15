@@ -33,18 +33,15 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/error/error_macros.h"
-#include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
 #include "core/math/audio_frame.h"
 #include "core/os/os.h"
 #include "core/string/string_name.h"
 #include "core/templates/pair.h"
-#include "scene/resources/audio_stream_wav.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_driver_dummy.h"
+#include "servers/audio/audio_stream.h"
 #include "servers/audio/effects/audio_effect_compressor.h"
-
-#include <cstring>
 
 #ifdef TOOLS_ENABLED
 #define MARK_EDITED set_edited(true);
@@ -295,19 +292,23 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			// The destination start for data will be the same in all cases.
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
+#ifdef DEBUG_ENABLED
+			if (!debug_mute && master->channels[k].active) {
+#else
 			if (master->channels[k].active) {
+#endif // DEBUG_ENABLED
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
 					float l = CLAMP(buf[from + j].left, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
-					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
+					int32_t vl2 = (vl < 0 ? -1 : 1) * (Math::abs(vl) << 11);
 					*dest = vl2;
 					dest++;
 
 					float r = CLAMP(buf[from + j].right, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
-					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
+					int32_t vr2 = (vr < 0 ? -1 : 1) * (Math::abs(vr) << 11);
 					*dest = vr2;
 					dest += stride_minus_one;
 				}
@@ -622,11 +623,11 @@ void AudioServer::_mix_step() {
 			for (uint32_t j = 0; j < buffer_size; j++) {
 				buf[j] *= volume;
 
-				float l = ABS(buf[j].left);
+				float l = Math::abs(buf[j].left);
 				if (l > peak.left) {
 					peak.left = l;
 				}
-				float r = ABS(buf[j].right);
+				float r = Math::abs(buf[j].right);
 				if (r > peak.right) {
 					peak.right = r;
 				}
@@ -765,6 +766,16 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 		return 0;
 	}
 }
+
+#ifdef DEBUG_ENABLED
+void AudioServer::set_debug_mute(bool p_mute) {
+	debug_mute = p_mute;
+}
+
+bool AudioServer::get_debug_mute() const {
+	return debug_mute;
+}
+#endif // DEBUG_ENABLED
 
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
@@ -1004,6 +1015,14 @@ float AudioServer::get_bus_volume_db(int p_bus) const {
 	return buses[p_bus]->volume_db;
 }
 
+void AudioServer::set_bus_volume_linear(int p_bus, float p_volume_linear) {
+	set_bus_volume_db(p_bus, Math::linear_to_db(p_volume_linear));
+}
+
+float AudioServer::get_bus_volume_linear(int p_bus) const {
+	return Math::db_to_linear(get_bus_volume_db(p_bus));
+}
+
 int AudioServer::get_bus_channels(int p_bus) const {
 	ERR_FAIL_INDEX_V(p_bus, buses.size(), 0);
 	return buses[p_bus]->channels.size();
@@ -1223,6 +1242,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	int idx = 0;
 	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
 		if (pair.value.size() < channel_count || pair.value.size() != MAX_CHANNELS_PER_BUS) {
+			delete playback_node;
 			delete new_bus_details;
 			ERR_FAIL();
 		}
@@ -1265,7 +1285,9 @@ void AudioServer::stop_playback_stream(Ref<AudioStreamPlayback> p_playback) {
 		return;
 	}
 
-	p_playback->stop();
+	if (!p_playback->is_playing()) {
+		p_playback->stop();
+	}
 
 	AudioStreamPlaybackListNode *playback_node = _find_playback_list_node(p_playback);
 	if (!playback_node) {
@@ -1313,8 +1335,10 @@ void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_pla
 		if (idx >= MAX_BUSES_PER_PLAYBACK) {
 			break;
 		}
-		ERR_FAIL_COND(pair.value.size() < channel_count);
-		ERR_FAIL_COND(pair.value.size() != MAX_CHANNELS_PER_BUS);
+		if (pair.value.size() < channel_count || pair.value.size() != MAX_CHANNELS_PER_BUS) {
+			delete new_bus_details;
+			ERR_FAIL();
+		}
 
 		new_bus_details->bus_active[idx] = true;
 		new_bus_details->bus[idx] = pair.key;
@@ -1486,7 +1510,7 @@ void AudioServer::init_channels_and_buffers() {
 }
 
 void AudioServer::init() {
-	channel_disable_threshold_db = GLOBAL_DEF_RST("audio/buses/channel_disable_threshold_db", -60.0);
+	channel_disable_threshold_db = GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_threshold_db", PROPERTY_HINT_RANGE, "-80,0,0.1,suffix:dB"), -60.0);
 	channel_disable_frames = float(GLOBAL_DEF_RST(PropertyInfo(Variant::FLOAT, "audio/buses/channel_disable_time", PROPERTY_HINT_RANGE, "0,5,0.01,or_greater"), 2.0)) * get_mix_rate();
 	// TODO: Buffer size is hardcoded for now. This would be really nice to have as a project setting because currently it limits audio latency to an absolute minimum of 11ms with default mix rate, but there's some additional work required to make that happen. See TODOs in `_mix_step_for_channel`.
 	// When this becomes a project setting, it should be specified in milliseconds rather than raw sample count, because 512 samples at 192khz is shorter than it is at 48khz, for example.
@@ -1507,7 +1531,7 @@ void AudioServer::init() {
 	set_edited(false); //avoid editors from thinking this was edited
 #endif
 
-	GLOBAL_DEF_RST("audio/video/video_delay_compensation_ms", 0);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "audio/video/video_delay_compensation_ms", PROPERTY_HINT_RANGE, "-1000,1000,1,suffix:ms"), 0);
 }
 
 void AudioServer::update() {
@@ -1836,7 +1860,7 @@ void AudioServer::get_argument_options(const StringName &p_function, int p_idx, 
 #endif
 
 AudioServer::PlaybackType AudioServer::get_default_playback_type() const {
-	int playback_type = GLOBAL_GET("audio/general/default_playback_type");
+	int playback_type = GLOBAL_GET_CACHED(int, "audio/general/default_playback_type");
 	ERR_FAIL_COND_V_MSG(
 			playback_type < 0 || playback_type >= PlaybackType::PLAYBACK_TYPE_MAX,
 			PlaybackType::PLAYBACK_TYPE_STREAM,
@@ -1894,12 +1918,13 @@ void AudioServer::start_sample_playback(const Ref<AudioSamplePlayback> &p_playba
 
 void AudioServer::stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_MSG(p_playback.is_null(), "Parameter p_playback is null.");
-	if (sample_playback_list.has(p_playback)) {
-		sample_playback_list.erase(p_playback);
-		AudioDriver::get_singleton()->stop_sample_playback(p_playback);
-		p_playback->stream_playback->set_sample_playback(nullptr);
-		stop_playback_stream(p_playback->stream_playback);
+	if (!sample_playback_list.has(p_playback)) {
+		return;
 	}
+	sample_playback_list.erase(p_playback);
+	AudioDriver::get_singleton()->stop_sample_playback(p_playback);
+	p_playback->stream_playback->set_sample_playback(nullptr);
+	stop_playback_stream(p_playback->stream_playback);
 }
 
 void AudioServer::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) {
@@ -1909,7 +1934,7 @@ void AudioServer::set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_pl
 
 bool AudioServer::is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) {
 	ERR_FAIL_COND_V_MSG(p_playback.is_null(), false, "Parameter p_playback is null.");
-	return AudioDriver::get_singleton()->is_sample_playback_active(p_playback);
+	return sample_playback_list.has(p_playback);
 }
 
 double AudioServer::get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) {
@@ -1938,6 +1963,9 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_idx", "volume_db"), &AudioServer::set_bus_volume_db);
 	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_idx"), &AudioServer::get_bus_volume_db);
+
+	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_idx", "volume_linear"), &AudioServer::set_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_idx"), &AudioServer::get_bus_volume_linear);
 
 	ClassDB::bind_method(D_METHOD("set_bus_send", "bus_idx", "send"), &AudioServer::set_bus_send);
 	ClassDB::bind_method(D_METHOD("get_bus_send", "bus_idx"), &AudioServer::get_bus_send);
@@ -2032,14 +2060,14 @@ AudioServer::~AudioServer() {
 bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 	String s = p_name;
 	if (s.begins_with("bus/")) {
-		int index = s.get_slice("/", 1).to_int();
+		int index = s.get_slicec('/', 1).to_int();
 		if (buses.size() <= index) {
 			buses.resize(index + 1);
 		}
 
 		Bus &bus = buses.write[index];
 
-		String what = s.get_slice("/", 2);
+		String what = s.get_slicec('/', 2);
 
 		if (what == "name") {
 			bus.name = p_value;
@@ -2054,14 +2082,14 @@ bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (what == "send") {
 			bus.send = p_value;
 		} else if (what == "effect") {
-			int which = s.get_slice("/", 3).to_int();
+			int which = s.get_slicec('/', 3).to_int();
 			if (bus.effects.size() <= which) {
 				bus.effects.resize(which + 1);
 			}
 
 			Bus::Effect &fx = bus.effects.write[which];
 
-			String fxwhat = s.get_slice("/", 4);
+			String fxwhat = s.get_slicec('/', 4);
 			if (fxwhat == "effect") {
 				fx.effect = p_value;
 			} else if (fxwhat == "enabled") {
@@ -2084,14 +2112,14 @@ bool AudioBusLayout::_set(const StringName &p_name, const Variant &p_value) {
 bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 	String s = p_name;
 	if (s.begins_with("bus/")) {
-		int index = s.get_slice("/", 1).to_int();
+		int index = s.get_slicec('/', 1).to_int();
 		if (index < 0 || index >= buses.size()) {
 			return false;
 		}
 
 		const Bus &bus = buses[index];
 
-		String what = s.get_slice("/", 2);
+		String what = s.get_slicec('/', 2);
 
 		if (what == "name") {
 			r_ret = bus.name;
@@ -2106,14 +2134,14 @@ bool AudioBusLayout::_get(const StringName &p_name, Variant &r_ret) const {
 		} else if (what == "send") {
 			r_ret = bus.send;
 		} else if (what == "effect") {
-			int which = s.get_slice("/", 3).to_int();
+			int which = s.get_slicec('/', 3).to_int();
 			if (which < 0 || which >= bus.effects.size()) {
 				return false;
 			}
 
 			const Bus::Effect &fx = bus.effects[which];
 
-			String fxwhat = s.get_slice("/", 4);
+			String fxwhat = s.get_slicec('/', 4);
 			if (fxwhat == "effect") {
 				r_ret = fx.effect;
 			} else if (fxwhat == "enabled") {

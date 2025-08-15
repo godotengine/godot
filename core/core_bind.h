@@ -28,30 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CORE_BIND_H
-#define CORE_BIND_H
+#pragma once
 
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/script_language.h"
-#include "core/os/os.h"
+#include "core/object/script_backtrace.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
+#include "core/variant/typed_array.h"
 
 class MainLoop;
-template <typename T>
-class TypedArray;
 
-namespace core_bind {
+namespace CoreBind {
 
 class ResourceLoader : public Object {
 	GDCLASS(ResourceLoader, Object);
 
 protected:
 	static void _bind_methods();
-	static ResourceLoader *singleton;
+	static inline ResourceLoader *singleton = nullptr;
 
 public:
 	enum ThreadLoadStatus {
@@ -96,7 +93,7 @@ class ResourceSaver : public Object {
 
 protected:
 	static void _bind_methods();
-	static ResourceSaver *singleton;
+	static inline ResourceSaver *singleton = nullptr;
 
 public:
 	enum SaverFlags {
@@ -113,6 +110,7 @@ public:
 	static ResourceSaver *get_singleton() { return singleton; }
 
 	Error save(const Ref<Resource> &p_resource, const String &p_path, BitField<SaverFlags> p_flags);
+	Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	Vector<String> get_recognized_extensions(const Ref<Resource> &p_resource);
 	void add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front);
 	void remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver);
@@ -122,14 +120,47 @@ public:
 	ResourceSaver() { singleton = this; }
 };
 
+class Logger : public RefCounted {
+	GDCLASS(Logger, RefCounted);
+
+public:
+	enum ErrorType {
+		ERROR_TYPE_ERROR,
+		ERROR_TYPE_WARNING,
+		ERROR_TYPE_SCRIPT,
+		ERROR_TYPE_SHADER,
+	};
+
+protected:
+	GDVIRTUAL2(_log_message, String, bool);
+	GDVIRTUAL8(_log_error, String, String, int, String, String, bool, int, TypedArray<ScriptBacktrace>);
+	static void _bind_methods();
+
+public:
+	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERROR_TYPE_ERROR, const TypedArray<ScriptBacktrace> &p_script_backtraces = {});
+	virtual void log_message(const String &p_text, bool p_error);
+};
+
 class OS : public Object {
 	GDCLASS(OS, Object);
 
 	mutable HashMap<String, bool> feature_cache;
 
+	class LoggerBind : public ::Logger {
+	public:
+		LocalVector<Ref<CoreBind::Logger>> loggers;
+
+		virtual void logv(const char *p_format, va_list p_list, bool p_err) override _PRINTF_FORMAT_ATTRIBUTE_2_0;
+		virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {}) override;
+
+		void clear() { loggers.clear(); }
+	};
+
+	LoggerBind *logger_bind = nullptr;
+
 protected:
 	static void _bind_methods();
-	static OS *singleton;
+	static inline OS *singleton = nullptr;
 
 #ifndef DISABLE_DEPRECATED
 	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
@@ -188,6 +219,7 @@ public:
 	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
 	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
 	int create_instance(const Vector<String> &p_arguments);
+	Error open_with_program(const String &p_program_path, const Vector<String> &p_paths);
 	Error kill(int p_pid);
 	Error shell_open(const String &p_uri);
 	Error shell_show_in_file_manager(const String &p_path, bool p_open_folder = true);
@@ -208,6 +240,7 @@ public:
 	String get_name() const;
 	String get_distribution_name() const;
 	String get_version() const;
+	String get_version_alias() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 
@@ -276,15 +309,20 @@ public:
 	Vector<String> get_granted_permissions() const;
 	void revoke_granted_permissions();
 
+	void add_logger(const Ref<Logger> &p_logger);
+	void remove_logger(const Ref<Logger> &p_logger);
+	void remove_script_loggers(const ScriptLanguage *p_script);
+
 	static OS *get_singleton() { return singleton; }
 
-	OS() { singleton = this; }
+	OS();
+	~OS();
 };
 
 class Geometry2D : public Object {
 	GDCLASS(Geometry2D, Object);
 
-	static Geometry2D *singleton;
+	static inline Geometry2D *singleton = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -350,7 +388,7 @@ public:
 class Geometry3D : public Object {
 	GDCLASS(Geometry3D, Object);
 
-	static Geometry3D *singleton;
+	static inline Geometry3D *singleton = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -381,7 +419,7 @@ public:
 class Marshalls : public Object {
 	GDCLASS(Marshalls, Object);
 
-	static Marshalls *singleton;
+	static inline Marshalls *singleton = nullptr;
 
 protected:
 	static void _bind_methods();
@@ -459,7 +497,7 @@ public:
 	static void set_thread_safety_checks_enabled(bool p_enabled);
 };
 
-namespace special {
+namespace Special {
 
 class ClassDB : public Object {
 	GDCLASS(ClassDB, Object);
@@ -525,14 +563,14 @@ public:
 	~ClassDB() {}
 };
 
-} // namespace special
+} // namespace Special
 
 class Engine : public Object {
 	GDCLASS(Engine, Object);
 
 protected:
 	static void _bind_methods();
-	static Engine *singleton;
+	static inline Engine *singleton = nullptr;
 
 public:
 	static Engine *get_singleton() { return singleton; }
@@ -581,9 +619,12 @@ public:
 	Error unregister_script_language(const ScriptLanguage *p_language);
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
+	TypedArray<ScriptBacktrace> capture_script_backtraces(bool p_include_variables = false) const;
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	bool is_embedded_in_editor() const;
 
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
@@ -609,7 +650,7 @@ class EngineDebugger : public Object {
 
 protected:
 	static void _bind_methods();
-	static EngineDebugger *singleton;
+	static inline EngineDebugger *singleton = nullptr;
 
 public:
 	static EngineDebugger *get_singleton() { return singleton; }
@@ -651,23 +692,22 @@ public:
 	~EngineDebugger();
 };
 
-} // namespace core_bind
+} // namespace CoreBind
 
-VARIANT_ENUM_CAST(core_bind::ResourceLoader::ThreadLoadStatus);
-VARIANT_ENUM_CAST(core_bind::ResourceLoader::CacheMode);
+VARIANT_ENUM_CAST(CoreBind::Logger::ErrorType);
+VARIANT_ENUM_CAST(CoreBind::ResourceLoader::ThreadLoadStatus);
+VARIANT_ENUM_CAST(CoreBind::ResourceLoader::CacheMode);
 
-VARIANT_BITFIELD_CAST(core_bind::ResourceSaver::SaverFlags);
+VARIANT_BITFIELD_CAST(CoreBind::ResourceSaver::SaverFlags);
 
-VARIANT_ENUM_CAST(core_bind::OS::RenderingDriver);
-VARIANT_ENUM_CAST(core_bind::OS::SystemDir);
-VARIANT_ENUM_CAST(core_bind::OS::StdHandleType);
+VARIANT_ENUM_CAST(CoreBind::OS::RenderingDriver);
+VARIANT_ENUM_CAST(CoreBind::OS::SystemDir);
+VARIANT_ENUM_CAST(CoreBind::OS::StdHandleType);
 
-VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyBooleanOperation);
-VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyJoinType);
-VARIANT_ENUM_CAST(core_bind::Geometry2D::PolyEndType);
+VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyBooleanOperation);
+VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyJoinType);
+VARIANT_ENUM_CAST(CoreBind::Geometry2D::PolyEndType);
 
-VARIANT_ENUM_CAST(core_bind::Thread::Priority);
+VARIANT_ENUM_CAST(CoreBind::Thread::Priority);
 
-VARIANT_ENUM_CAST(core_bind::special::ClassDB::APIType);
-
-#endif // CORE_BIND_H
+VARIANT_ENUM_CAST(CoreBind::Special::ClassDB::APIType);

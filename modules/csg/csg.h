@@ -28,17 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_H
-#define CSG_H
+#pragma once
 
 #include "core/math/aabb.h"
-#include "core/math/plane.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
 #include "core/math/vector3.h"
 #include "core/object/ref_counted.h"
-#include "core/templates/list.h"
-#include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
 #include "scene/resources/material.h"
 
@@ -68,5 +64,3 @@ struct CSGBrush {
 	void build_from_faces(const Vector<Vector3> &p_vertices, const Vector<Vector2> &p_uvs, const Vector<bool> &p_smooth, const Vector<Ref<Material>> &p_materials, const Vector<bool> &p_invert_faces);
 	void copy_from(const CSGBrush &p_brush, const Transform3D &p_xform);
 };
-
-#endif // CSG_H

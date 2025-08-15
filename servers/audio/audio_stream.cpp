@@ -31,7 +31,6 @@
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
 	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
@@ -298,6 +297,12 @@ int AudioStream::get_beat_count() const {
 	return ret;
 }
 
+Dictionary AudioStream::get_tags() const {
+	Dictionary ret;
+	GDVIRTUAL_CALL(_get_tags, ret);
+	return ret;
+}
+
 void AudioStream::tag_used(float p_offset) {
 	if (tagged_frame != AudioServer::get_singleton()->get_mixed_frames()) {
 		offset_count = 0;
@@ -351,6 +356,7 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_is_monophonic);
 	GDVIRTUAL_BIND(_get_bpm)
 	GDVIRTUAL_BIND(_get_beat_count)
+	GDVIRTUAL_BIND(_get_tags);
 	GDVIRTUAL_BIND(_get_parameter_list)
 	GDVIRTUAL_BIND(_has_loop);
 	GDVIRTUAL_BIND(_get_bar_beats);
@@ -419,9 +425,6 @@ int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_fra
 
 				p_buffer[i] = AudioFrame(l, r);
 			} else {
-				if (mixed_frames == p_frames) {
-					mixed_frames = i;
-				}
 				p_buffer[i] = AudioFrame(0.0f, 0.0f);
 			}
 		}
@@ -451,7 +454,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 		return;
 	}
 
-	if (!GLOBAL_GET("audio/driver/enable_input")) {
+	if (!GLOBAL_GET_CACHED(bool, "audio/driver/enable_input")) {
 		WARN_PRINT("You must enable the project setting \"audio/driver/enable_input\" to use audio capture.");
 		return;
 	}
@@ -730,7 +733,10 @@ String AudioStreamRandomizer::get_stream_name() const {
 }
 
 double AudioStreamRandomizer::get_length() const {
-	return 0;
+	if (!last_playback.is_valid()) {
+		return 0;
+	}
+	return last_playback->get_length();
 }
 
 bool AudioStreamRandomizer::is_monophonic() const {
@@ -790,10 +796,13 @@ AudioStreamRandomizer::AudioStreamRandomizer() {
 void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 	playing = playback;
 	{
-		float range_from = 1.0 / randomizer->random_pitch_scale;
-		float range_to = randomizer->random_pitch_scale;
+		// GH-10238 : Pitch_scale is multiplicative, so picking a random number for it without log
+		// conversion will bias it towards higher pitches (0.5 is down one octave, 2.0 is up one octave).
+		// See: https://pressbooks.pub/sound/chapter/pitch-and-frequency-in-music/
+		float range_from = Math::log(1.0f / randomizer->random_pitch_scale);
+		float range_to = Math::log(randomizer->random_pitch_scale);
 
-		pitch_scale = range_from + Math::randf() * (range_to - range_from);
+		pitch_scale = Math::exp(range_from + Math::randf() * (range_to - range_from));
 	}
 	{
 		float range_from = -randomizer->random_volume_offset_db;

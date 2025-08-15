@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Todos Reconhecidos"
+
 msgid "New Code Region"
 msgstr "Nova região de código"
 
@@ -27,24 +30,14 @@ msgstr "Escolha uma cor na tela."
 msgid "Pick a color from the application window."
 msgstr "Escolha uma cor na janela da aplicação."
 
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color\n"
-"RMB: Remove preset"
-msgstr ""
-"Cor: #%s\n"
-"LMB: Aplica cor\n"
-"RMB: Remove predefinição"
-
-msgid ""
-"Color: #%s\n"
-"LMB: Apply color"
-msgstr ""
-"Cor: #%s\n"
-"LMB: Aplicar cor"
-
 msgid "Enter a hex code (\"#ff0000\") or named color (\"red\")."
 msgstr "Introduza um código hex (\"#ff0000\") ou nome da cor (\"red\")."
+
+msgid "Save"
+msgstr "Guardar"
+
+msgid "Clear"
+msgstr "Limpar"
 
 msgid "Select a picker shape."
 msgstr "Selecione a forma do seletor."
@@ -80,9 +73,6 @@ msgstr "Selecionar esta Pasta"
 msgid "You don't have permission to access contents of this folder."
 msgstr "Não tem permissão para acessar o conteúdo desta pasta."
 
-msgid "All Recognized"
-msgstr "Todos Reconhecidos"
-
 msgid "All Files"
 msgstr "Todos os Ficheiros"
 
@@ -97,9 +87,6 @@ msgstr "Abrir uma Diretoria"
 
 msgid "Open a File or Directory"
 msgstr "Abrir um Ficheiro ou Diretoria"
-
-msgid "Save"
-msgstr "Guardar"
 
 msgid "Save a File"
 msgstr "Guardar um Ficheiro"
@@ -119,11 +106,11 @@ msgstr "Caminho:"
 msgid "Refresh files."
 msgstr "Atualizar ficheiros."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Alternar a visibilidade de ficheiros escondidos."
-
 msgid "Directories & Files:"
 msgstr "Diretorias e Ficheiros:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Alternar a visibilidade de ficheiros escondidos."
 
 msgid "File:"
 msgstr "Ficheiro:"
@@ -235,9 +222,6 @@ msgstr "Colar"
 
 msgid "Select All"
 msgstr "Selecionar Tudo"
-
-msgid "Clear"
-msgstr "Limpar"
 
 msgid "Undo"
 msgstr "Desfazer"

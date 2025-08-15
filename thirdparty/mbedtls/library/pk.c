@@ -35,10 +35,6 @@
 #include <limits.h>
 #include <stdint.h>
 
-#define PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE \
-    (PSA_EXPORT_KEY_PAIR_MAX_SIZE > PSA_EXPORT_PUBLIC_KEY_MAX_SIZE) ? \
-    PSA_EXPORT_KEY_PAIR_MAX_SIZE : PSA_EXPORT_PUBLIC_KEY_MAX_SIZE
-
 /*
  * Initialise a mbedtls_pk_context
  */

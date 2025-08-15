@@ -32,9 +32,9 @@
 
 #include "core/io/config_file.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 
@@ -63,12 +63,12 @@ void EditorMainScreen::_notification(int p_what) {
 			for (int i = 0; i < buttons.size(); i++) {
 				Button *tb = buttons[i];
 				EditorPlugin *p_editor = editor_table[i];
-				Ref<Texture2D> icon = p_editor->get_icon();
+				Ref<Texture2D> icon = p_editor->get_plugin_icon();
 
 				if (icon.is_valid()) {
 					tb->set_button_icon(icon);
-				} else if (has_theme_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
-					tb->set_button_icon(get_theme_icon(p_editor->get_name(), EditorStringName(EditorIcons)));
+				} else if (has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
+					tb->set_button_icon(get_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons)));
 				}
 			}
 		} break;
@@ -198,7 +198,7 @@ void EditorMainScreen::select(int p_index) {
 	EditorData &editor_data = EditorNode::get_editor_data();
 	int plugin_count = editor_data.get_editor_plugin_count();
 	for (int i = 0; i < plugin_count; i++) {
-		editor_data.get_editor_plugin(i)->notify_main_screen_changed(selected_plugin->get_name());
+		editor_data.get_editor_plugin(i)->notify_main_screen_changed(selected_plugin->get_plugin_name());
 	}
 
 	EditorNode::get_singleton()->update_distraction_free_mode();
@@ -228,6 +228,30 @@ EditorPlugin *EditorMainScreen::get_selected_plugin() const {
 	return selected_plugin;
 }
 
+EditorPlugin *EditorMainScreen::get_plugin_by_name(const String &p_plugin_name) const {
+	ERR_FAIL_COND_V(!main_editor_plugins.has(p_plugin_name), nullptr);
+	return main_editor_plugins[p_plugin_name];
+}
+
+bool EditorMainScreen::can_auto_switch_screens() const {
+	if (selected_plugin == nullptr) {
+		return true;
+	}
+	// Only allow auto-switching if the selected button is to the left of the Script button.
+	for (int i = 0; i < button_hb->get_child_count(); i++) {
+		Button *button = Object::cast_to<Button>(button_hb->get_child(i));
+		if (button->get_text() == "Script") {
+			// Selected button is at or after the Script button.
+			return false;
+		}
+		if (button->get_text() == selected_plugin->get_plugin_name()) {
+			// Selected button is before the Script button.
+			return true;
+		}
+	}
+	return false;
+}
+
 VBoxContainer *EditorMainScreen::get_control() const {
 	return main_screen_vbox;
 }
@@ -236,12 +260,12 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	Button *tb = memnew(Button);
 	tb->set_toggle_mode(true);
 	tb->set_theme_type_variation("MainScreenButton");
-	tb->set_name(p_editor->get_name());
-	tb->set_text(p_editor->get_name());
+	tb->set_name(p_editor->get_plugin_name());
+	tb->set_text(p_editor->get_plugin_name());
 
-	Ref<Texture2D> icon = p_editor->get_icon();
-	if (icon.is_null() && has_theme_icon(p_editor->get_name(), EditorStringName(EditorIcons))) {
-		icon = get_editor_theme_icon(p_editor->get_name());
+	Ref<Texture2D> icon = p_editor->get_plugin_icon();
+	if (icon.is_null() && has_theme_icon(p_editor->get_plugin_name(), EditorStringName(EditorIcons))) {
+		icon = get_editor_theme_icon(p_editor->get_plugin_name());
 	}
 	if (icon.is_valid()) {
 		tb->set_button_icon(icon);
@@ -254,13 +278,14 @@ void EditorMainScreen::add_main_plugin(EditorPlugin *p_editor) {
 	buttons.push_back(tb);
 	button_hb->add_child(tb);
 	editor_table.push_back(p_editor);
+	main_editor_plugins.insert(p_editor->get_plugin_name(), p_editor);
 }
 
 void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 	// Remove the main editor button and update the bindings of
 	// all buttons behind it to point to the correct main window.
 	for (int i = buttons.size() - 1; i >= 0; i--) {
-		if (p_editor->get_name() == buttons[i]->get_text()) {
+		if (p_editor->get_plugin_name() == buttons[i]->get_text()) {
 			if (buttons[i]->is_pressed()) {
 				select(EDITOR_SCRIPT);
 			}
@@ -280,6 +305,7 @@ void EditorMainScreen::remove_main_plugin(EditorPlugin *p_editor) {
 	}
 
 	editor_table.erase(p_editor);
+	main_editor_plugins.erase(p_editor->get_plugin_name());
 }
 
 EditorMainScreen::EditorMainScreen() {

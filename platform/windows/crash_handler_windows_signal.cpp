@@ -31,6 +31,7 @@
 #include "crash_handler_windows.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/version.h"
@@ -39,8 +40,9 @@
 #ifdef CRASH_HANDLER_EXCEPTION
 
 #include <cxxabi.h>
-#include <signal.h>
 #include <algorithm>
+#include <csignal>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -133,10 +135,13 @@ extern void CrashHandlerException(int signal) {
 		return;
 	}
 
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
+	}
+
 	String msg;
-	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
-	if (proj_settings) {
-		msg = proj_settings->get("debug/settings/crash_handler/message");
+	if (ProjectSettings::get_singleton()) {
+		msg = GLOBAL_GET("debug/settings/crash_handler/message");
 	}
 
 	// Tell MainLoop about the crash. This can be handled by users too in Node.
@@ -148,10 +153,10 @@ extern void CrashHandlerException(int signal) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, signal));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 
@@ -167,7 +172,7 @@ extern void CrashHandlerException(int signal) {
 	if (FileAccess::exists(_execpath + ".debugsymbols")) {
 		_execpath = _execpath + ".debugsymbols";
 	}
-	_execpath = _execpath.replace("/", "\\");
+	_execpath = _execpath.replace_char('/', '\\');
 
 	CharString cs = _execpath.utf8(); // Note: should remain in scope during backtrace_simple call.
 	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
@@ -176,8 +181,16 @@ extern void CrashHandlerException(int signal) {
 		backtrace_simple(data.state, 1, &trace_callback, &error_callback, reinterpret_cast<void *>(&data));
 	}
 
-	print_error("-- END OF BACKTRACE --");
+	print_error("-- END OF C++ BACKTRACE --");
 	print_error("================================================================");
+
+	for (const Ref<ScriptBacktrace> &backtrace : ScriptServer::capture_script_backtraces(false)) {
+		if (!backtrace->is_empty()) {
+			print_error(backtrace->format());
+			print_error(vformat("-- END OF %s BACKTRACE --", backtrace->get_language_name().to_upper()));
+			print_error("================================================================");
+		}
+	}
 }
 #endif
 

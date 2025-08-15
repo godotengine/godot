@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_EXTENSION_H
-#define TEXT_SERVER_EXTENSION_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/os/thread_safe.h"
@@ -197,13 +196,20 @@ public:
 
 	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) override;
 	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const override;
+	virtual void font_clear_system_fallback_cache() override;
 	GDVIRTUAL2(_font_set_allow_system_fallback, RID, bool);
 	GDVIRTUAL1RC(bool, _font_is_allow_system_fallback, RID);
+	GDVIRTUAL0(_font_clear_system_fallback_cache);
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) override;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_force_autohinter, RID, bool);
 	GDVIRTUAL1RC(bool, _font_is_force_autohinter, RID);
+
+	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) override;
+	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_modulate_color_glyphs, RID, bool);
+	GDVIRTUAL1RC(bool, _font_is_modulate_color_glyphs, RID);
 
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) override;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const override;
@@ -223,9 +229,11 @@ public:
 	virtual TypedArray<Vector2i> font_get_size_cache_list(const RID &p_font_rid) const override;
 	virtual void font_clear_size_cache(const RID &p_font_rid) override;
 	virtual void font_remove_size_cache(const RID &p_font_rid, const Vector2i &p_size) override;
+	virtual TypedArray<Dictionary> font_get_size_cache_info(const RID &p_font_rid) const override;
 	GDVIRTUAL1RC_REQUIRED(TypedArray<Vector2i>, _font_get_size_cache_list, RID);
 	GDVIRTUAL1_REQUIRED(_font_clear_size_cache, RID);
 	GDVIRTUAL2_REQUIRED(_font_remove_size_cache, RID, const Vector2i &);
+	GDVIRTUAL1RC(TypedArray<Dictionary>, _font_get_size_cache_info, RID);
 
 	virtual void font_set_ascent(const RID &p_font_rid, int64_t p_size, double p_ascent) override;
 	virtual double font_get_ascent(const RID &p_font_rid, int64_t p_size) const override;
@@ -340,10 +348,14 @@ public:
 	GDVIRTUAL4(_font_render_range, RID, const Vector2i &, int64_t, int64_t);
 	GDVIRTUAL3(_font_render_glyph, RID, const Vector2i &, int64_t);
 
-	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
-	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const override;
-	GDVIRTUAL6C_REQUIRED(_font_draw_glyph, RID, RID, int64_t, const Vector2 &, int64_t, const Color &);
-	GDVIRTUAL7C_REQUIRED(_font_draw_glyph_outline, RID, RID, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
+	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	GDVIRTUAL7C_REQUIRED(_font_draw_glyph, RID, RID, int64_t, const Vector2 &, int64_t, const Color &, float);
+	GDVIRTUAL8C_REQUIRED(_font_draw_glyph_outline, RID, RID, int64_t, int64_t, const Vector2 &, int64_t, const Color &, float);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL6C_COMPAT(_font_draw_glyph_bind_compat_104872, _font_draw_glyph, RID, RID, int64_t, const Vector2 &, int64_t, const Color &);
+	GDVIRTUAL7C_COMPAT(_font_draw_glyph_outline_bind_compat_104872, _font_draw_glyph_outline, RID, RID, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
+#endif
 
 	virtual bool font_is_language_supported(const RID &p_font_rid, const String &p_language) const override;
 	virtual void font_set_language_support_override(const RID &p_font_rid, const String &p_language, bool p_supported) override;
@@ -377,10 +389,16 @@ public:
 	GDVIRTUAL1RC(Dictionary, _font_supported_feature_list, RID);
 	GDVIRTUAL1RC(Dictionary, _font_supported_variation_list, RID);
 
+#ifndef DISABLE_DEPRECATED
 	virtual double font_get_global_oversampling() const override;
 	virtual void font_set_global_oversampling(double p_oversampling) override;
 	GDVIRTUAL0RC(double, _font_get_global_oversampling);
 	GDVIRTUAL1(_font_set_global_oversampling, double);
+#endif
+	virtual void reference_oversampling_level(double p_oversampling) override;
+	virtual void unreference_oversampling_level(double p_oversampling) override;
+	GDVIRTUAL1(_reference_oversampling_level, double);
+	GDVIRTUAL1(_unreference_oversampling_level, double);
 
 	virtual Vector2 get_hex_code_box_size(int64_t p_size, int64_t p_index) const override;
 	virtual void draw_hex_code_box(const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const override;
@@ -442,12 +460,38 @@ public:
 	GDVIRTUAL6R_REQUIRED(bool, _shaped_text_add_object, RID, const Variant &, const Size2 &, InlineAlignment, int64_t, double);
 	GDVIRTUAL5R_REQUIRED(bool, _shaped_text_resize_object, RID, const Variant &, const Size2 &, InlineAlignment, double);
 
+	virtual String shaped_get_text(const RID &p_shaped) const override;
+	GDVIRTUAL1RC_REQUIRED(String, _shaped_get_text, RID);
+
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const override;
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const override;
+	virtual Variant shaped_get_span_embedded_object(const RID &p_shaped, int64_t p_index) const override;
+	virtual String shaped_get_span_text(const RID &p_shaped, int64_t p_index) const override;
+	virtual Variant shaped_get_span_object(const RID &p_shaped, int64_t p_index) const override;
 	virtual void shaped_set_span_update_font(const RID &p_shaped, int64_t p_index, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary()) override;
 	GDVIRTUAL1RC_REQUIRED(int64_t, _shaped_get_span_count, RID);
 	GDVIRTUAL2RC_REQUIRED(Variant, _shaped_get_span_meta, RID, int64_t);
+	GDVIRTUAL2RC_REQUIRED(Variant, _shaped_get_span_embedded_object, RID, int64_t);
+	GDVIRTUAL2RC_REQUIRED(String, _shaped_get_span_text, RID, int64_t);
+	GDVIRTUAL2RC_REQUIRED(Variant, _shaped_get_span_object, RID, int64_t);
 	GDVIRTUAL5_REQUIRED(_shaped_set_span_update_font, RID, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
+
+	virtual int64_t shaped_get_run_count(const RID &p_shaped) const override;
+	virtual String shaped_get_run_text(const RID &p_shaped, int64_t p_index) const override;
+	virtual Vector2i shaped_get_run_range(const RID &p_shaped, int64_t p_index) const override;
+	virtual RID shaped_get_run_font_rid(const RID &p_shaped, int64_t p_index) const override;
+	virtual int shaped_get_run_font_size(const RID &p_shaped, int64_t p_index) const override;
+	virtual String shaped_get_run_language(const RID &p_shaped, int64_t p_index) const override;
+	virtual Direction shaped_get_run_direction(const RID &p_shaped, int64_t p_index) const override;
+	virtual Variant shaped_get_run_object(const RID &p_shaped, int64_t p_index) const override;
+	GDVIRTUAL1RC(int64_t, _shaped_get_run_count, RID);
+	GDVIRTUAL2RC(String, _shaped_get_run_text, RID, int64_t);
+	GDVIRTUAL2RC(Vector2i, _shaped_get_run_range, RID, int64_t);
+	GDVIRTUAL2RC(RID, _shaped_get_run_font_rid, RID, int64_t);
+	GDVIRTUAL2RC(int, _shaped_get_run_font_size, RID, int64_t);
+	GDVIRTUAL2RC(String, _shaped_get_run_language, RID, int64_t);
+	GDVIRTUAL2RC(Direction, _shaped_get_run_direction, RID, int64_t);
+	GDVIRTUAL2RC(Variant, _shaped_get_run_object, RID, int64_t);
 
 	virtual RID shaped_text_substr(const RID &p_shaped, int64_t p_start, int64_t p_length) const override;
 	virtual RID shaped_text_get_parent(const RID &p_shaped) const override;
@@ -533,10 +577,14 @@ public:
 	GDVIRTUAL2RC(int64_t, _shaped_text_hit_test_grapheme, RID, double);
 	GDVIRTUAL2RC(int64_t, _shaped_text_hit_test_position, RID, double);
 
-	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1)) const override;
-	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const override;
-	GDVIRTUAL6C(_shaped_text_draw, RID, RID, const Vector2 &, double, double, const Color &);
-	GDVIRTUAL7C(_shaped_text_draw_outline, RID, RID, const Vector2 &, double, double, int64_t, const Color &);
+	virtual void shaped_text_draw(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	virtual void shaped_text_draw_outline(const RID &p_shaped, const RID &p_canvas, const Vector2 &p_pos, double p_clip_l = -1.0, double p_clip_r = -1.0, int64_t p_outline_size = 1, const Color &p_color = Color(1, 1, 1), float p_oversampling = 0.0) const override;
+	GDVIRTUAL7C(_shaped_text_draw, RID, RID, const Vector2 &, double, double, const Color &, float);
+	GDVIRTUAL8C(_shaped_text_draw_outline, RID, RID, const Vector2 &, double, double, int64_t, const Color &, float);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL6C_COMPAT(_shaped_text_draw_bind_compat_104872, _shaped_text_draw, RID, RID, const Vector2 &, double, double, const Color &);
+	GDVIRTUAL7C_COMPAT(_shaped_text_draw_outline_bind_compat_104872, _shaped_text_draw_outline, RID, RID, const Vector2 &, double, double, int64_t, const Color &);
+#endif
 
 	virtual Vector2 shaped_text_get_grapheme_bounds(const RID &p_shaped, int64_t p_pos) const override;
 	virtual int64_t shaped_text_next_grapheme_pos(const RID &p_shaped, int64_t p_pos) const override;
@@ -596,5 +644,3 @@ public:
 	TextServerExtension();
 	~TextServerExtension();
 };
-
-#endif // TEXT_SERVER_EXTENSION_H

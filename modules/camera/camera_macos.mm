@@ -31,7 +31,7 @@
 ///@TODO this is a near duplicate of CameraIOS, we should find a way to combine those to minimize code duplication!!!!
 // If you fix something here, make sure you fix it there as well!
 
-#include "camera_macos.h"
+#import "camera_macos.h"
 
 #include "servers/camera/camera_feed.h"
 
@@ -195,6 +195,8 @@
 // CameraFeedMacOS - Subclass for camera feeds in macOS
 
 class CameraFeedMacOS : public CameraFeed {
+	GDSOFTCLASS(CameraFeedMacOS, CameraFeed);
+
 private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
@@ -206,8 +208,8 @@ public:
 
 	void set_device(AVCaptureDevice *p_device);
 
-	bool activate_feed();
-	void deactivate_feed();
+	bool activate_feed() override;
+	void deactivate_feed() override;
 };
 
 AVCaptureDevice *CameraFeedMacOS::get_device() const {
@@ -307,22 +309,29 @@ MyDeviceNotifications *device_notifications = nil;
 // CameraMacOS - Subclass for our camera server on macOS
 
 void CameraMacOS::update_feeds() {
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 101500
-	AVCaptureDeviceDiscoverySession *session;
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 140000
-	// Avoid deprecated warning if the minimum SDK is 14.0.
-	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
-#else
-	session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+	NSArray<AVCaptureDevice *> *devices = nullptr;
+#if defined(__x86_64__)
+	if (@available(macOS 10.15, *)) {
 #endif
-	NSArray<AVCaptureDevice *> *devices = session.devices;
-#else
-	NSArray<AVCaptureDevice *> *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+		AVCaptureDeviceDiscoverySession *session;
+		if (@available(macOS 14.0, *)) {
+			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternal, AVCaptureDeviceTypeBuiltInWideAngleCamera, AVCaptureDeviceTypeContinuityCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+		} else {
+			session = [AVCaptureDeviceDiscoverySession discoverySessionWithDeviceTypes:[NSArray arrayWithObjects:AVCaptureDeviceTypeExternalUnknown, AVCaptureDeviceTypeBuiltInWideAngleCamera, nil] mediaType:AVMediaTypeVideo position:AVCaptureDevicePositionUnspecified];
+		}
+		devices = session.devices;
+#if defined(__x86_64__)
+	} else {
+		devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+	}
 #endif
 
 	// remove devices that are gone..
 	for (int i = feeds.size() - 1; i >= 0; i--) {
 		Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
+		if (feed.is_null()) {
+			continue;
+		}
 
 		if (![devices containsObject:feed->get_device()]) {
 			// remove it from our array, this will also destroy it ;)
@@ -334,6 +343,9 @@ void CameraMacOS::update_feeds() {
 		bool found = false;
 		for (int i = 0; i < feeds.size() && !found; i++) {
 			Ref<CameraFeedMacOS> feed = (Ref<CameraFeedMacOS>)feeds[i];
+			if (feed.is_null()) {
+				continue;
+			}
 			if (feed->get_device() == device) {
 				found = true;
 			};
@@ -351,12 +363,23 @@ void CameraMacOS::update_feeds() {
 			add_feed(newfeed);
 		};
 	};
+	emit_signal(SNAME(CameraServer::feeds_updated_signal_name));
 }
 
-CameraMacOS::CameraMacOS() {
-	// Find available cameras we have at this time
-	update_feeds();
+void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
 
-	// should only have one of these....
-	device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
+	if (p_monitoring_feeds) {
+		// Find available cameras we have at this time.
+		update_feeds();
+
+		// Get notified on feed changes.
+		device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
+	} else {
+		// Stop monitoring feed changes.
+		device_notifications = nil;
+	}
 }

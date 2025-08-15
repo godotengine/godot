@@ -31,7 +31,6 @@
 #include "ss_effects.h"
 
 #include "core/config/project_settings.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -82,7 +81,7 @@ SSEffects::SSEffects() {
 				int b = spmap[subPass];
 
 				float ca, sa;
-				float angle0 = (float(a) + float(b) / float(sub_pass_count)) * Math_PI * 0.5f;
+				float angle0 = (float(a) + float(b) / float(sub_pass_count)) * Math::PI * 0.5f;
 
 				ca = Math::cos(angle0);
 				sa = Math::sin(angle0);
@@ -707,7 +706,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			}
 		}
 		radius_near_limit /= tan_half_fov_y;
-		ssil.gather_push_constant.intensity = p_settings.intensity * Math_PI;
+		ssil.gather_push_constant.intensity = p_settings.intensity * Math::PI;
 		ssil.gather_push_constant.fade_out_mul = -1.0 / (ssil_fadeout_to - ssil_fadeout_from);
 		ssil.gather_push_constant.fade_out_add = ssil_fadeout_from / (ssil_fadeout_to - ssil_fadeout_from) + 1.0;
 		ssil.gather_push_constant.inv_radius_near_limit = 1.0f / radius_near_limit;
@@ -789,7 +788,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::get_singleton()->draw_command_begin_label("Generate Importance Map");
 			ssil.importance_map_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
 			ssil.importance_map_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
-			ssil.importance_map_push_constant.intensity = p_settings.intensity * Math_PI;
+			ssil.importance_map_push_constant.intensity = p_settings.intensity * Math::PI;
 
 			//base pass
 			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, ssil.pipelines[SSIL_GATHER_BASE]);
@@ -986,7 +985,7 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 			continue;
 		}
 
-		RD::Uniform u_ao_slice(RD::UNIFORM_TYPE_IMAGE, 0, Vector<RID>({ p_ao_slices[i] }));
+		RD::Uniform u_ao_slice(RD::UNIFORM_TYPE_IMAGE, 0, p_ao_slices[i]);
 
 		ssao.gather_push_constant.pass_coord_offset[0] = i % 2;
 		ssao.gather_push_constant.pass_coord_offset[1] = i / 2;
@@ -1420,7 +1419,11 @@ void SSEffects::screen_space_reflection(Ref<RenderSceneBuffersRD> p_render_buffe
 			blur_radius[1] = p_render_buffers->get_texture_slice(RB_SCOPE_SSR, RB_BLUR_RADIUS, 1, 0);
 		}
 
-		RD::get_singleton()->draw_command_begin_label(String("SSR View ") + itos(v));
+		{
+			char label[16];
+			int len = snprintf(label, sizeof(label), "SSR View %d", v);
+			RD::get_singleton()->draw_command_begin_label(Span<char>(label, len));
+		}
 
 		{ //scale color and depth to half
 			RD::get_singleton()->draw_command_begin_label("SSR Scale");

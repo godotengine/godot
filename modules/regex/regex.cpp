@@ -69,7 +69,7 @@ String RegExMatch::get_subject() const {
 }
 
 int RegExMatch::get_group_count() const {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return 0;
 	}
 	return data.size() - 1;
@@ -196,8 +196,8 @@ Error RegEx::compile(const String &p_pattern, bool p_show_error) {
 		if (p_show_error) {
 			PCRE2_UCHAR32 buf[256];
 			pcre2_get_error_message_32(err, buf, 256);
-			String message = String::num(offset) + ": " + String((const char32_t *)buf);
-			ERR_PRINT(message.utf8());
+			String message = String::num_int64(offset) + ": " + String((const char32_t *)buf);
+			ERR_PRINT(message);
 		}
 		return FAILED;
 	}
@@ -326,7 +326,7 @@ int RegEx::_sub(const String &p_subject, const String &p_replacement, int p_offs
 	pcre2_match_context_free_32(mctx);
 
 	if (res >= 0) {
-		r_output = String(output.ptr(), olength) + p_subject.substr(length);
+		r_output = String::utf32(Span(output.ptr(), olength)) + p_subject.substr(length);
 	}
 
 	return res;
@@ -348,7 +348,7 @@ String RegEx::sub(const String &p_subject, const String &p_replacement, bool p_a
 		PCRE2_UCHAR32 buf[256];
 		pcre2_get_error_message_32(res, buf, 256);
 		String message = "PCRE2 Error: " + String((const char32_t *)buf);
-		ERR_PRINT(message.utf8());
+		ERR_PRINT(message);
 
 		if (res == PCRE2_ERROR_NOSUBSTRING) {
 			flags |= PCRE2_SUBSTITUTE_UNKNOWN_UNSET;

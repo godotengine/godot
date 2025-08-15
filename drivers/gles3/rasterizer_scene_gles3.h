@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_SCENE_GLES3_H
-#define RASTERIZER_SCENE_GLES3_H
+#pragma once
 
+#include "platform_gl.h"
 #ifdef GLES3_ENABLED
 
 #include "core/math/projection.h"
@@ -98,6 +98,7 @@ enum SkyUniformLocation {
 struct RenderDataGLES3 {
 	Ref<RenderSceneBuffersGLES3> render_buffers;
 	bool transparent_bg = false;
+	Rect2i render_region;
 
 	Transform3D cam_transform;
 	Transform3D inv_cam_transform;
@@ -246,9 +247,14 @@ private:
 			FLAG_USES_DEPTH_TEXTURE = 4096,
 			FLAG_USES_NORMAL_TEXTURE = 8192,
 			FLAG_USES_DOUBLE_SIDED_SHADOWS = 16384,
+			FLAG_USES_STENCIL = 32768,
 		};
 
 		union {
+			struct {
+				uint64_t sort_key1;
+				uint64_t sort_key2;
+			};
 			struct {
 				uint64_t lod_index : 8;
 				uint64_t surface_index : 8;
@@ -263,10 +269,6 @@ private:
 				uint64_t uses_lightmap : 1;
 				uint64_t depth_layer : 4;
 				uint64_t priority : 8;
-			};
-			struct {
-				uint64_t sort_key1;
-				uint64_t sort_key2;
 			};
 		} sort;
 
@@ -461,7 +463,8 @@ private:
 		bool used_depth_prepass = false;
 
 		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
-		GLES3::SceneShaderData::Cull cull_mode = GLES3::SceneShaderData::CULL_BACK;
+		RS::CullMode cull_mode = RS::CULL_MODE_BACK;
+		GLenum current_depth_function = GL_GEQUAL;
 
 		bool current_blend_enabled = false;
 		bool current_depth_draw_enabled = false;
@@ -477,24 +480,36 @@ private:
 
 			glCullFace(GL_BACK);
 			glEnable(GL_CULL_FACE);
-			cull_mode = GLES3::SceneShaderData::CULL_BACK;
+			cull_mode = RS::CULL_MODE_BACK;
 
 			glDepthMask(GL_FALSE);
 			current_depth_draw_enabled = false;
 			glDisable(GL_DEPTH_TEST);
 			current_depth_test_enabled = false;
+
+			glDepthFunc(GL_GEQUAL);
+			current_depth_function = GL_GEQUAL;
+
+			glDisable(GL_STENCIL_TEST);
+			current_stencil_test_enabled = false;
+			glStencilMask(255);
+			current_stencil_write_mask = 255;
+			glStencilFunc(GL_ALWAYS, 0, 255);
+			current_stencil_compare = GL_ALWAYS;
+			current_stencil_reference = 0;
+			current_stencil_compare_mask = 255;
 		}
 
-		void set_gl_cull_mode(GLES3::SceneShaderData::Cull p_mode) {
+		void set_gl_cull_mode(RS::CullMode p_mode) {
 			if (cull_mode != p_mode) {
-				if (p_mode == GLES3::SceneShaderData::CULL_DISABLED) {
+				if (p_mode == RS::CULL_MODE_DISABLED) {
 					glDisable(GL_CULL_FACE);
 				} else {
-					if (cull_mode == GLES3::SceneShaderData::CULL_DISABLED) {
+					if (cull_mode == RS::CULL_MODE_DISABLED) {
 						// Last time was disabled, so enable and set proper face.
 						glEnable(GL_CULL_FACE);
 					}
-					glCullFace(p_mode == GLES3::SceneShaderData::CULL_FRONT ? GL_FRONT : GL_BACK);
+					glCullFace(p_mode == RS::CULL_MODE_FRONT ? GL_FRONT : GL_BACK);
 				}
 				cull_mode = p_mode;
 			}
@@ -540,10 +555,63 @@ private:
 			}
 		}
 
+		void set_gl_depth_func(GLenum p_depth_func) {
+			if (current_depth_function != p_depth_func) {
+				glDepthFunc(p_depth_func);
+				current_depth_function = p_depth_func;
+			}
+		}
+
+		void enable_gl_stencil_test(bool p_enabled) {
+			if (current_stencil_test_enabled != p_enabled) {
+				if (p_enabled) {
+					glEnable(GL_STENCIL_TEST);
+				} else {
+					glDisable(GL_STENCIL_TEST);
+				}
+				current_stencil_test_enabled = p_enabled;
+			}
+		}
+
+		void set_gl_stencil_func(GLenum p_compare, GLint p_reference, GLenum p_compare_mask) {
+			if (current_stencil_compare != p_compare || current_stencil_reference != p_reference || current_stencil_compare_mask != p_compare_mask) {
+				glStencilFunc(p_compare, p_reference, p_compare_mask);
+				current_stencil_compare = p_compare;
+				current_stencil_reference = p_reference;
+				current_stencil_compare_mask = p_compare_mask;
+			}
+		}
+
+		void set_gl_stencil_write_mask(GLuint p_mask) {
+			if (current_stencil_write_mask != p_mask) {
+				glStencilMask(p_mask);
+				current_stencil_write_mask = p_mask;
+			}
+		}
+
+		void set_gl_stencil_op(GLenum p_op_fail, GLenum p_op_dpfail, GLenum p_op_dppass) {
+			if (current_stencil_op_fail != p_op_fail || current_stencil_op_dpfail != p_op_dpfail || current_stencil_op_dppass != p_op_dppass) {
+				glStencilOp(p_op_fail, p_op_dpfail, p_op_dppass);
+				current_stencil_op_fail = p_op_fail;
+				current_stencil_op_dpfail = p_op_dpfail;
+				current_stencil_op_dppass = p_op_dppass;
+			}
+		}
+
+		GLenum current_stencil_compare = GL_ALWAYS;
+		GLuint current_stencil_compare_mask = 255;
+		GLuint current_stencil_write_mask = 255;
+		GLint current_stencil_reference = 0;
+		GLenum current_stencil_op_fail = GL_KEEP;
+		GLenum current_stencil_op_dpfail = GL_KEEP;
+		GLenum current_stencil_op_dppass = GL_KEEP;
+		bool current_stencil_test_enabled = false;
+
 		bool texscreen_copied = false;
 		bool used_screen_texture = false;
 		bool used_normal_texture = false;
 		bool used_depth_texture = false;
+		bool used_opaque_stencil = false;
 
 		LightData *omni_lights = nullptr;
 		LightData *spot_lights = nullptr;
@@ -739,7 +807,7 @@ protected:
 		float baked_exposure = 1.0;
 
 		//State to track when radiance cubemap needs updating
-		GLES3::SkyMaterialData *prev_material;
+		GLES3::SkyMaterialData *prev_material = nullptr;
 		Vector3 prev_position = Vector3(0.0, 0.0, 0.0);
 		float prev_time = 0.0f;
 	};
@@ -878,5 +946,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // RASTERIZER_SCENE_GLES3_H

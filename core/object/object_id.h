@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OBJECT_ID_H
-#define OBJECT_ID_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -46,7 +45,7 @@ public:
 	_ALWAYS_INLINE_ bool is_valid() const { return id != 0; }
 	_ALWAYS_INLINE_ bool is_null() const { return id == 0; }
 	_ALWAYS_INLINE_ operator uint64_t() const { return id; }
-	_ALWAYS_INLINE_ operator int64_t() const { return id; }
+	_ALWAYS_INLINE_ operator int64_t() const { return (int64_t)id; }
 
 	_ALWAYS_INLINE_ bool operator==(const ObjectID &p_id) const { return id == p_id.id; }
 	_ALWAYS_INLINE_ bool operator!=(const ObjectID &p_id) const { return id != p_id.id; }
@@ -60,4 +59,5 @@ public:
 	_ALWAYS_INLINE_ explicit ObjectID(const int64_t p_id) { id = p_id; }
 };
 
-#endif // OBJECT_ID_H
+template <>
+struct is_zero_constructible<ObjectID> : std::true_type {};

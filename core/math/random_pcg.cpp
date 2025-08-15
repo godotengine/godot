@@ -80,5 +80,15 @@ int RandomPCG::random(int p_from, int p_to) {
 	if (p_from == p_to) {
 		return p_from;
 	}
-	return rand(abs(p_from - p_to) + 1) + MIN(p_from, p_to);
+
+	int64_t min = MIN(p_from, p_to);
+	int64_t max = MAX(p_from, p_to);
+	uint32_t diff = static_cast<uint32_t>(max - min);
+
+	if (diff == UINT32_MAX) {
+		// Can't add 1 to max uint32_t value for inclusive range, so call rand without passing bounds.
+		return static_cast<int64_t>(rand()) + min;
+	}
+
+	return static_cast<int64_t>(rand(diff + 1U)) + min;
 }

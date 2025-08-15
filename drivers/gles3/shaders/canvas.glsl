@@ -83,7 +83,7 @@ layout(location = 15) in highp uvec4 attrib_H;
 #endif
 
 #define read_draw_data_flags attrib_G.z
-#define read_draw_data_specular_shininess attrib_G.w
+#define read_draw_data_instance_offset attrib_G.w
 #define read_draw_data_lights attrib_H
 
 // Varyings so the per-instance info can be used in the fragment shader
@@ -142,7 +142,7 @@ void main() {
 #endif // !USE_ATTRIBUTES
 #endif // USE_PRIMITIVE
 
-	varying_F = uvec2(read_draw_data_flags, read_draw_data_specular_shininess);
+	varying_F = uvec2(read_draw_data_flags, read_draw_data_instance_offset);
 	varying_G = read_draw_data_lights;
 
 	vec4 instance_custom = vec4(0.0);
@@ -208,18 +208,19 @@ void main() {
 	// no crash or freeze on all Adreno 3xx	with 'if / else if' and slightly faster!
 	int vertex_id = gl_VertexID % 6;
 	vec2 vertex_base;
-	if (vertex_id == 0)
+	if (vertex_id == 0) {
 		vertex_base = vec2(0.0, 0.0);
-	else if (vertex_id == 1)
+	} else if (vertex_id == 1) {
 		vertex_base = vec2(0.0, 1.0);
-	else if (vertex_id == 2)
+	} else if (vertex_id == 2) {
 		vertex_base = vec2(1.0, 1.0);
-	else if (vertex_id == 3)
+	} else if (vertex_id == 3) {
 		vertex_base = vec2(1.0, 0.0);
-	else if (vertex_id == 4)
+	} else if (vertex_id == 4) {
 		vertex_base = vec2(0.0, 0.0);
-	else if (vertex_id == 5)
+	} else if (vertex_id == 5) {
 		vertex_base = vec2(1.0, 1.0);
+	}
 
 	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & INSTANCE_FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = read_draw_data_modulation;
@@ -325,7 +326,7 @@ flat in vec4 varying_E;
 flat in uvec2 varying_F;
 flat in uvec4 varying_G;
 #define read_draw_data_flags varying_F.x
-#define read_draw_data_specular_shininess varying_F.y
+#define read_draw_data_instance_offset varying_F.y
 #define read_draw_data_lights varying_G
 
 #ifndef DISABLE_LIGHTING
@@ -340,6 +341,7 @@ uniform sampler2D specular_texture; //texunit:-7
 uniform sampler2D color_texture; //texunit:0
 
 uniform mediump uint batch_flags;
+uniform highp uint specular_shininess_in;
 
 layout(location = 0) out vec4 frag_color;
 
@@ -557,14 +559,20 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 
 #endif
 
-float msdf_median(float r, float g, float b, float a) {
-	return min(max(min(r, g), min(max(r, g), b)), a);
+float msdf_median(float r, float g, float b) {
+	return max(min(r, g), min(max(r, g), b));
 }
 
 void main() {
 	vec4 color = color_interp;
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
+
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+	vec4 region_rect = read_draw_data_src_rect;
+#else
+	vec4 region_rect = vec4(0.0, 0.0, 1.0 / read_draw_data_color_texture_pixel_size);
+#endif
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
@@ -598,14 +606,15 @@ void main() {
 		vec2 msdf_size = vec2(textureSize(color_texture, 0));
 		vec2 dest_size = vec2(1.0) / fwidth(uv);
 		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
-		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
+		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b);
 
 		if (outline_thickness > 0.0) {
 			float cr = clamp(outline_thickness, 0.0, px_range / 2.0) / px_range;
-			float a = clamp((d + cr) * px_size, 0.0, 1.0);
+			d = min(d, msdf_sample.a);
+			float a = clamp((d - 0.5 + cr) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
-			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			float a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
 	} else if (bool(read_draw_data_flags & INSTANCE_FLAGS_USE_LCD)) {
@@ -660,7 +669,7 @@ void main() {
 
 	if (specular_shininess_used || (using_light && normal_used && bool(batch_flags & BATCH_FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(specular_texture, uv);
-		specular_shininess *= godot_unpackUnorm4x8(read_draw_data_specular_shininess);
+		specular_shininess *= godot_unpackUnorm4x8(specular_shininess_in);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);

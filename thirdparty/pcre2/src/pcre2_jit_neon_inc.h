@@ -82,7 +82,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #  endif
 # endif
 
-#if (defined(__GNUC__) && __SANITIZE_ADDRESS__) \
+#if (defined(__GNUC__) && defined(__SANITIZE_ADDRESS__) && __SANITIZE_ADDRESS__ ) \
 	|| (defined(__clang__) \
 	&& ((__clang_major__ == 3 && __clang_minor__ >= 3) || (__clang_major__ > 3)))
 __attribute__((no_sanitize_address))
@@ -198,14 +198,14 @@ vect_t data = VLD1Q(*str_ptr);
 #if PCRE2_CODE_UNIT_WIDTH != 8
 data = VANDQ(data, char_mask);
 #endif
- 
+
 #if defined(FFCS)
 vect_t eq = VCEQQ(data, vc1);
 
 #elif defined(FFCS_2)
 vect_t eq1 = VCEQQ(data, vc1);
 vect_t eq2 = VCEQQ(data, vc2);
-vect_t eq = VORRQ(eq1, eq2);    
+vect_t eq = VORRQ(eq1, eq2);
 
 #elif defined(FFCS_MASK)
 vect_t eq = VORRQ(data, vmask);
@@ -226,7 +226,7 @@ if (p1 < *str_ptr)
   }
 else
   data2 = shift_left_n_lanes(data, offs1 - offs2);
- 
+
 if (compare1_type == compare_match1)
   data = VCEQQ(data, cmp1a);
 else
@@ -281,7 +281,7 @@ while (*str_ptr < str_end)
 #elif defined(FFCS_2)
   eq1 = VCEQQ(data, vc1);
   eq2 = VCEQQ(data, vc2);
-  eq = VORRQ(eq1, eq2);    
+  eq = VORRQ(eq1, eq2);
 
 #elif defined(FFCS_MASK)
   eq = VORRQ(data, vmask);

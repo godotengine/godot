@@ -28,7 +28,7 @@
 
 namespace tvg
 {
-    enum ContextFlag : uint8_t {Invalid = 0, FastTrack = 1};
+    enum ContextFlag : uint8_t {Default = 0, FastTrack = 1};
 
     struct Iterator
     {
@@ -72,8 +72,8 @@ namespace tvg
                 tvg::rotate(&m, degree);
             }
         } tr;
+        RenderUpdateFlag renderFlag = RenderUpdateFlag::None;
         BlendMethod blendMethod;
-        uint8_t renderFlag;
         uint8_t ctxFlag;
         uint8_t opacity;
         uint8_t refCnt = 0;                              //reference count

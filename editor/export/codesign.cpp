@@ -30,19 +30,16 @@
 
 #include "codesign.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
+#include "core/io/plist.h"
+#include "editor/file_system/editor_paths.h"
 #include "lipo.h"
 #include "macho.h"
 
-#include "core/io/plist.h"
-#include "core/os/os.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
-
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex/regex.h"
 
 #include <ctime>
-
-#ifdef MODULE_REGEX_ENABLED
 
 /*************************************************************************/
 /* CodeSignCodeResources                                                 */
@@ -472,13 +469,10 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_certificate_slot(uint32_t &r_po
 _FORCE_INLINE_ void CodeSignRequirements::_parse_key(uint32_t &r_pos, String &r_out, uint32_t p_rq_size) const {
 #define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	uint32_t key_size = _R(r_pos);
+	const uint32_t key_size = _R(r_pos);
 	ERR_FAIL_COND_MSG(r_pos + key_size > p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	CharString key;
-	key.resize(key_size);
-	memcpy(key.ptrw(), blob.ptr() + r_pos + 4, key_size);
 	r_pos += 4 + key_size + PAD(key_size, 4);
-	r_out += "[" + String::utf8(key, key_size) + "]";
+	r_out += "[" + String::utf8((const char *)blob.ptr() + r_pos + 4, key_size) + "]";
 #undef _R
 }
 
@@ -518,10 +512,7 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_hash_string(uint32_t &r_pos, St
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
 	uint32_t tag_size = _R(r_pos);
 	ERR_FAIL_COND_MSG(r_pos + tag_size > p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	PackedByteArray data;
-	data.resize(tag_size);
-	memcpy(data.ptrw(), blob.ptr() + r_pos + 4, tag_size);
-	r_out += "H\"" + String::hex_encode_buffer(data.ptr(), data.size()) + "\"";
+	r_out += "H\"" + String::hex_encode_buffer(blob.ptr() + r_pos + 4, tag_size) + "\"";
 	r_pos += 4 + tag_size + PAD(tag_size, 4);
 #undef _R
 }
@@ -529,13 +520,10 @@ _FORCE_INLINE_ void CodeSignRequirements::_parse_hash_string(uint32_t &r_pos, St
 _FORCE_INLINE_ void CodeSignRequirements::_parse_value(uint32_t &r_pos, String &r_out, uint32_t p_rq_size) const {
 #define _R(x) BSWAP32(*(uint32_t *)(blob.ptr() + x))
 	ERR_FAIL_COND_MSG(r_pos >= p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	uint32_t key_size = _R(r_pos);
+	const uint32_t key_size = _R(r_pos);
 	ERR_FAIL_COND_MSG(r_pos + key_size > p_rq_size, "CodeSign/Requirements: Out of bounds.");
-	CharString key;
-	key.resize(key_size);
-	memcpy(key.ptrw(), blob.ptr() + r_pos + 4, key_size);
 	r_pos += 4 + key_size + PAD(key_size, 4);
-	r_out += "\"" + String::utf8(key, key_size) + "\"";
+	r_out += "\"" + String::utf8((const char *)blob.ptr() + r_pos + 4, key_size) + "\"";
 #undef _R
 }
 
@@ -1569,5 +1557,3 @@ Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String
 		ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown object type.");
 	}
 }
-
-#endif // MODULE_REGEX_ENABLED

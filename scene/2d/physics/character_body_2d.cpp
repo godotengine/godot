@@ -30,6 +30,10 @@
 
 #include "character_body_2d.h"
 
+#ifndef DISABLE_DEPRECATED
+#include "servers/extensions/physics_server_2d_extension.h"
+#endif
+
 // So, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
@@ -409,17 +413,32 @@ void CharacterBody2D::_set_collision_direction(const PhysicsServer2D::MotionResu
 		on_wall = true;
 		wall_normal = p_result.collision_normal;
 		// Don't apply wall velocity when the collider is a CharacterBody2D.
-		if (Object::cast_to<CharacterBody2D>(ObjectDB::get_instance(p_result.collider_id)) == nullptr) {
+		if (ObjectDB::get_instance<CharacterBody2D>(p_result.collider_id) == nullptr) {
 			_set_platform_data(p_result);
 		}
 	}
 }
 
 void CharacterBody2D::_set_platform_data(const PhysicsServer2D::MotionResult &p_result) {
+	PhysicsDirectBodyState2D *bs = PhysicsServer2D::get_singleton()->body_get_direct_state(p_result.collider);
+	if (bs == nullptr) {
+		return;
+	}
+
 	platform_rid = p_result.collider;
 	platform_object_id = p_result.collider_id;
 	platform_velocity = p_result.collider_velocity;
-	platform_layer = PhysicsServer2D::get_singleton()->body_get_collision_layer(platform_rid);
+
+#ifndef DISABLE_DEPRECATED
+	// Try to accommodate for any physics extensions that have yet to implement `PhysicsDirectBodyState2D::get_collision_layer`.
+	PhysicsDirectBodyState2DExtension *bs_ext = Object::cast_to<PhysicsDirectBodyState2DExtension>(bs);
+	if (bs_ext != nullptr && !GDVIRTUAL_IS_OVERRIDDEN_PTR(bs_ext, _get_collision_layer)) {
+		platform_layer = PhysicsServer2D::get_singleton()->body_get_collision_layer(p_result.collider);
+	} else
+#endif
+	{
+		platform_layer = bs->get_collision_layer();
+	}
 }
 
 const Vector2 &CharacterBody2D::get_velocity() const {
@@ -509,7 +528,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision2D> CharacterBody2D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision2D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);
@@ -646,6 +665,9 @@ void CharacterBody2D::_notification(int p_what) {
 }
 
 void CharacterBody2D::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (motion_mode == MOTION_MODE_FLOATING) {
 		if (p_property.name.begins_with("floor_") || p_property.name == "up_direction" || p_property.name == "slide_on_ceiling") {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

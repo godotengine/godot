@@ -11,8 +11,8 @@
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
-		tween.tween_property($Sprite, "modulate", Color.RED, 1)
-		tween.tween_property($Sprite, "scale", Vector2(), 1)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1.0)
+		tween.tween_property($Sprite, "scale", Vector2(), 1.0)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
 		[csharp]
@@ -27,8 +27,8 @@
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween()
-		tween.tween_property($Sprite, "modulate", Color.RED, 1).set_trans(Tween.TRANS_SINE)
-		tween.tween_property($Sprite, "scale", Vector2(), 1).set_trans(Tween.TRANS_BOUNCE)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1.0).set_trans(Tween.TRANS_SINE)
+		tween.tween_property($Sprite, "scale", Vector2(), 1.0).set_trans(Tween.TRANS_BOUNCE)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
 		[csharp]
@@ -42,8 +42,8 @@
 		[codeblocks]
 		[gdscript]
 		var tween = get_tree().create_tween().bind_node(self).set_trans(Tween.TRANS_ELASTIC)
-		tween.tween_property($Sprite, "modulate", Color.RED, 1)
-		tween.tween_property($Sprite, "scale", Vector2(), 1)
+		tween.tween_property($Sprite, "modulate", Color.RED, 1.0)
+		tween.tween_property($Sprite, "scale", Vector2(), 1.0)
 		tween.tween_callback($Sprite.queue_free)
 		[/gdscript]
 		[csharp]
@@ -58,32 +58,32 @@
 		[gdscript]
 		var tween = create_tween()
 		for sprite in get_children():
-		    tween.tween_property(sprite, "position", Vector2(0, 0), 1)
+			tween.tween_property(sprite, "position", Vector2(0, 0), 1.0)
 		[/gdscript]
 		[csharp]
 		Tween tween = CreateTween();
 		foreach (Node sprite in GetChildren())
-		    tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
+			tween.TweenProperty(sprite, "position", Vector2.Zero, 1.0f);
 		[/csharp]
 		[/codeblocks]
-		In the example above, all children of a node are moved one after another to position (0, 0).
+		In the example above, all children of a node are moved one after another to position [code](0, 0)[/code].
 		You should avoid using more than one [Tween] per object's property. If two or more tweens animate one property at the same time, the last one created will take priority and assign the final value. If you want to interrupt and restart an animation, consider assigning the [Tween] to a variable:
 		[codeblocks]
 		[gdscript]
 		var tween
 		func animate():
-		    if tween:
-		        tween.kill() # Abort the previous animation.
-		    tween = create_tween()
+			if tween:
+				tween.kill() # Abort the previous animation.
+			tween = create_tween()
 		[/gdscript]
 		[csharp]
 		private Tween _tween;
 
 		public void Animate()
 		{
-		    if (_tween != null)
-		        _tween.Kill(); // Abort the previous animation
-		    _tween = CreateTween();
+			if (_tween != null)
+				_tween.Kill(); // Abort the previous animation
+			_tween = CreateTween();
 		}
 		[/csharp]
 		[/codeblocks]
@@ -228,6 +228,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="set_ignore_time_scale">
+			<return type="Tween" />
+			<param index="0" name="ignore" type="bool" default="true" />
+			<description>
+				If [param ignore] is [code]true[/code], the tween will ignore [member Engine.time_scale] and update with the real, elapsed time. This affects all [Tweener]s and their delays. Default value is [code]false[/code].
+			</description>
+		</method>
 		<method name="set_loops">
 			<return type="Tween" />
 			<param index="0" name="loops" type="int" default="0" />
@@ -254,7 +261,7 @@
 			<return type="Tween" />
 			<param index="0" name="mode" type="int" enum="Tween.TweenPauseMode" />
 			<description>
-				Determines the behavior of the [Tween] when the [SceneTree] is paused. Check [enum TweenPauseMode] for options.
+				Determines the behavior of the [Tween] when the [SceneTree] is paused.
 				Default value is [constant TWEEN_PAUSE_BOUND].
 			</description>
 		</method>
@@ -319,7 +326,7 @@
 				[codeblocks]
 				[gdscript]
 				var tween = get_tree().create_tween().set_loops()
-				tween.tween_callback(shoot).set_delay(1)
+				tween.tween_callback(shoot).set_delay(1.0)
 				[/gdscript]
 				[csharp]
 				Tween tween = GetTree().CreateTween().SetLoops();
@@ -364,10 +371,10 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween().set_loops()
-				tween.tween_property($Sprite, "position:x", 200.0, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", 200.0, 1.0).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
-				tween.tween_property($Sprite, "position:x", -200.0, 1).as_relative()
+				tween.tween_property($Sprite, "position:x", -200.0, 1.0).as_relative()
 				tween.tween_callback(jump)
 				tween.tween_interval(2)
 				[/gdscript]
@@ -395,7 +402,7 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
-				tween.tween_method(look_at.bind(Vector3.UP), Vector3(-1, 0, -1), Vector3(1, 0, -1), 1) # The look_at() method takes up vector as second argument.
+				tween.tween_method(look_at.bind(Vector3.UP), Vector3(-1, 0, -1), Vector3(1, 0, -1), 1.0) # The look_at() method takes up vector as second argument.
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
@@ -406,24 +413,24 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    var tween = create_tween()
-				    tween.tween_method(set_label_text, 0, 10, 1).set_delay(1)
+					var tween = create_tween()
+					tween.tween_method(set_label_text, 0, 10, 1.0).set_delay(1.0)
 
 				func set_label_text(value: int):
-				    $Label.text = "Counting " + str(value)
+					$Label.text = "Counting " + str(value)
 				[/gdscript]
 				[csharp]
 				public override void _Ready()
 				{
-				    base._Ready();
+					base._Ready();
 
-				    Tween tween = CreateTween();
-				    tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
+					Tween tween = CreateTween();
+					tween.TweenMethod(Callable.From&lt;int&gt;(SetLabelText), 0.0f, 10.0f, 1.0f).SetDelay(1.0f);
 				}
 
 				private void SetLabelText(int value)
 				{
-				    GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
+					GetNode&lt;Label&gt;("Label").Text = $"Counting {value}";
 				}
 				[/csharp]
 				[/codeblocks]
@@ -440,8 +447,8 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2(100, 200), 1)
-				tween.tween_property($Sprite, "position", Vector2(200, 300), 1)
+				tween.tween_property($Sprite, "position", Vector2(100, 200), 1.0)
+				tween.tween_property($Sprite, "position", Vector2(200, 300), 1.0)
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
@@ -455,8 +462,8 @@
 				[codeblocks]
 				[gdscript]
 				var tween = create_tween()
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().set_trans(Tween.TRANS_SINE)
-				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1.0).as_relative().set_trans(Tween.TRANS_SINE)
+				tween.tween_property($Sprite, "position", Vector2.RIGHT * 300, 1.0).as_relative().from_current().set_trans(Tween.TRANS_EXPO)
 				[/gdscript]
 				[csharp]
 				Tween tween = CreateTween();
@@ -464,6 +471,27 @@
 				tween.TweenProperty(GetNode("Sprite"), "position", Vector2.Right * 300.0f, 1.0f).AsRelative().FromCurrent().SetTrans(Tween.TransitionType.Expo);
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="tween_subtween">
+			<return type="SubtweenTweener" />
+			<param index="0" name="subtween" type="Tween" />
+			<description>
+				Creates and appends a [SubtweenTweener]. This method can be used to nest [param subtween] within this [Tween], allowing for the creation of more complex and composable sequences.
+				[codeblock]
+				# Subtween will rotate the object.
+				var subtween = create_tween()
+				subtween.tween_property(self, "rotation_degrees", 45.0, 1.0)
+				subtween.tween_property(self, "rotation_degrees", 0.0, 1.0)
+
+				# Parent tween will execute the subtween as one of its steps.
+				var tween = create_tween()
+				tween.tween_property(self, "position:x", 500, 3.0)
+				tween.tween_subtween(subtween)
+				tween.tween_property(self, "position:x", 300, 2.0)
+				[/codeblock]
+				[b]Note:[/b] The methods [method pause], [method stop], and [method set_loops] can cause the parent [Tween] to get stuck on the subtween step; see the documentation for those methods for more information.
+				[b]Note:[/b] The pause and process modes set by [method set_pause_mode] and [method set_process_mode] on [param subtween] will be overridden by the parent [Tween]'s settings.
 			</description>
 		</method>
 	</methods>

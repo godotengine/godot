@@ -56,7 +56,7 @@ void Curve::set_point_count(int p_count) {
 	notify_property_list_changed();
 }
 
-int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode) {
+int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_tangent, TangentMode p_left_mode, TangentMode p_right_mode, bool p_mark_dirty) {
 	// Add a point and preserve order.
 
 	// Points must remain within the given value and domain ranges.
@@ -65,7 +65,7 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 
 	int ret = -1;
 
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		_points.push_back(Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 		ret = 0;
 
@@ -99,7 +99,9 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 
 	update_auto_tangents(ret);
 
-	mark_dirty();
+	if (p_mark_dirty) {
+		mark_dirty();
+	}
 
 	return ret;
 }
@@ -149,7 +151,7 @@ int Curve::get_index(real_t p_offset) const {
 void Curve::clean_dupes() {
 	bool dirty = false;
 
-	for (int i = 1; i < _points.size(); ++i) {
+	for (uint32_t i = 1; i < _points.size(); ++i) {
 		real_t diff = _points[i - 1].position.x - _points[i].position.x;
 		if (diff <= CMP_EPSILON) {
 			_points.remove_at(i);
@@ -164,67 +166,69 @@ void Curve::clean_dupes() {
 }
 
 void Curve::set_point_left_tangent(int p_index, real_t p_tangent) {
-	ERR_FAIL_INDEX(p_index, _points.size());
-	_points.write[p_index].left_tangent = p_tangent;
-	_points.write[p_index].left_mode = TANGENT_FREE;
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
+	_points[p_index].left_tangent = p_tangent;
+	_points[p_index].left_mode = TANGENT_FREE;
 	mark_dirty();
 }
 
 void Curve::set_point_right_tangent(int p_index, real_t p_tangent) {
-	ERR_FAIL_INDEX(p_index, _points.size());
-	_points.write[p_index].right_tangent = p_tangent;
-	_points.write[p_index].right_mode = TANGENT_FREE;
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
+	_points[p_index].right_tangent = p_tangent;
+	_points[p_index].right_mode = TANGENT_FREE;
 	mark_dirty();
 }
 
 void Curve::set_point_left_mode(int p_index, TangentMode p_mode) {
-	ERR_FAIL_INDEX(p_index, _points.size());
-	_points.write[p_index].left_mode = p_mode;
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
+	_points[p_index].left_mode = p_mode;
 	if (p_index > 0) {
 		if (p_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[p_index - 1].position - _points[p_index].position).normalized();
-			_points.write[p_index].left_tangent = v.y / v.x;
+			_points[p_index].left_tangent = v.y / v.x;
 		}
 	}
 	mark_dirty();
 }
 
 void Curve::set_point_right_mode(int p_index, TangentMode p_mode) {
-	ERR_FAIL_INDEX(p_index, _points.size());
-	_points.write[p_index].right_mode = p_mode;
-	if (p_index + 1 < _points.size()) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
+	_points[p_index].right_mode = p_mode;
+	if ((uint32_t)p_index + 1 < _points.size()) {
 		if (p_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[p_index + 1].position - _points[p_index].position).normalized();
-			_points.write[p_index].right_tangent = v.y / v.x;
+			_points[p_index].right_tangent = v.y / v.x;
 		}
 	}
 	mark_dirty();
 }
 
 real_t Curve::get_point_left_tangent(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), 0);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), 0);
 	return _points[p_index].left_tangent;
 }
 
 real_t Curve::get_point_right_tangent(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), 0);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), 0);
 	return _points[p_index].right_tangent;
 }
 
 Curve::TangentMode Curve::get_point_left_mode(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), TANGENT_FREE);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), TANGENT_FREE);
 	return _points[p_index].left_mode;
 }
 
 Curve::TangentMode Curve::get_point_right_mode(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), TANGENT_FREE);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), TANGENT_FREE);
 	return _points[p_index].right_mode;
 }
 
-void Curve::_remove_point(int p_index) {
-	ERR_FAIL_INDEX(p_index, _points.size());
+void Curve::_remove_point(int p_index, bool p_mark_dirty) {
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
 	_points.remove_at(p_index);
-	mark_dirty();
+	if (p_mark_dirty) {
+		mark_dirty();
+	}
 }
 
 void Curve::remove_point(int p_index) {
@@ -243,40 +247,37 @@ void Curve::clear_points() {
 }
 
 void Curve::set_point_value(int p_index, real_t p_position) {
-	ERR_FAIL_INDEX(p_index, _points.size());
-	_points.write[p_index].position.y = p_position;
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, _points.size());
+	_points[p_index].position.y = p_position;
 	update_auto_tangents(p_index);
 	mark_dirty();
 }
 
 int Curve::set_point_offset(int p_index, real_t p_offset) {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), -1);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), -1);
 	Point p = _points[p_index];
-	_remove_point(p_index);
-	int i = _add_point(Vector2(p_offset, p.position.y));
-	_points.write[i].left_tangent = p.left_tangent;
-	_points.write[i].right_tangent = p.right_tangent;
-	_points.write[i].left_mode = p.left_mode;
-	_points.write[i].right_mode = p.right_mode;
+	_remove_point(p_index, false);
+	int i = _add_point(Vector2(p_offset, p.position.y), p.left_tangent, p.right_tangent, p.left_mode, p.right_mode, false);
 	if (p_index != i) {
 		update_auto_tangents(p_index);
 	}
 	update_auto_tangents(i);
+	mark_dirty();
 	return i;
 }
 
 Vector2 Curve::get_point_position(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), Vector2(0, 0));
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), Vector2(0, 0));
 	return _points[p_index].position;
 }
 
 Curve::Point Curve::get_point(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, _points.size(), Point());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, _points.size(), Point());
 	return _points[p_index];
 }
 
 void Curve::update_auto_tangents(int p_index) {
-	Point &p = _points.write[p_index];
+	Point &p = _points[p_index];
 
 	if (p_index > 0) {
 		if (p.left_mode == TANGENT_LINEAR) {
@@ -285,18 +286,18 @@ void Curve::update_auto_tangents(int p_index) {
 		}
 		if (_points[p_index - 1].right_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[p_index - 1].position - p.position).normalized();
-			_points.write[p_index - 1].right_tangent = v.y / v.x;
+			_points[p_index - 1].right_tangent = v.y / v.x;
 		}
 	}
 
-	if (p_index + 1 < _points.size()) {
+	if ((uint32_t)p_index + 1 < _points.size()) {
 		if (p.right_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[p_index + 1].position - p.position).normalized();
 			p.right_tangent = v.y / v.x;
 		}
 		if (_points[p_index + 1].left_mode == TANGENT_LINEAR) {
 			Vector2 v = (_points[p_index + 1].position - p.position).normalized();
-			_points.write[p_index + 1].left_tangent = v.y / v.x;
+			_points[p_index + 1].left_tangent = v.y / v.x;
 		}
 	}
 }
@@ -376,14 +377,14 @@ void Curve::set_max_domain(real_t p_max) {
 }
 
 real_t Curve::sample(real_t p_offset) const {
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		return 0;
 	}
 	if (_points.size() == 1) {
 		return _points[0].position.y;
 	}
 
-	int i = get_index(p_offset);
+	uint32_t i = get_index(p_offset);
 
 	if (i == _points.size() - 1) {
 		return _points[i].position.y;
@@ -441,9 +442,9 @@ Array Curve::get_data() const {
 	const unsigned int ELEMS = 5;
 	output.resize(_points.size() * ELEMS);
 
-	for (int j = 0; j < _points.size(); ++j) {
+	for (uint32_t j = 0; j < _points.size(); ++j) {
 		const Point p = _points[j];
-		int i = j * ELEMS;
+		uint32_t i = j * ELEMS;
 
 		output[i] = p.position;
 		output[i + 1] = p.left_tangent;
@@ -479,8 +480,8 @@ void Curve::set_data(const Array p_input) {
 		_points.resize(new_size);
 	}
 
-	for (int j = 0; j < _points.size(); ++j) {
-		Point &p = _points.write[j];
+	for (uint32_t j = 0; j < _points.size(); ++j) {
+		Point &p = _points[j];
 		int i = j * ELEMS;
 
 		p.position = p_input[i];
@@ -538,8 +539,8 @@ real_t Curve::sample_baked(real_t p_offset) const {
 	}
 
 	// Special cases if the cache is too small.
-	if (_baked_cache.size() == 0) {
-		if (_points.size() == 0) {
+	if (_baked_cache.is_empty()) {
+		if (_points.is_empty()) {
 			return 0;
 		}
 		return _points[0].position.y;
@@ -568,7 +569,7 @@ real_t Curve::sample_baked(real_t p_offset) const {
 }
 
 void Curve::ensure_default_setup(real_t p_min, real_t p_max) {
-	if (_points.size() == 0 && _min_value == 0 && _max_value == 1) {
+	if (_points.is_empty() && _min_value == 0 && _max_value == 1) {
 		add_point(Vector2(0, 1));
 		add_point(Vector2(1, 1));
 		set_min_value(p_min);
@@ -631,7 +632,7 @@ bool Curve::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Curve::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < _points.size(); i++) {
+	for (uint32_t i = 0; i < _points.size(); i++) {
 		PropertyInfo pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/position", i));
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
@@ -740,7 +741,7 @@ void Curve2D::_add_point(const Vector2 &p_position, const Vector2 &p_in, const V
 	n.position = p_position;
 	n.in = p_in;
 	n.out = p_out;
-	if (p_atpos >= 0 && p_atpos < points.size()) {
+	if ((uint32_t)p_atpos < points.size()) {
 		points.insert(p_atpos, n);
 	} else {
 		points.push_back(n);
@@ -755,43 +756,43 @@ void Curve2D::add_point(const Vector2 &p_position, const Vector2 &p_in, const Ve
 }
 
 void Curve2D::set_point_position(int p_index, const Vector2 &p_position) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].position = p_position;
+	points[p_index].position = p_position;
 	mark_dirty();
 }
 
 Vector2 Curve2D::get_point_position(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), Vector2());
 	return points[p_index].position;
 }
 
 void Curve2D::set_point_in(int p_index, const Vector2 &p_in) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].in = p_in;
+	points[p_index].in = p_in;
 	mark_dirty();
 }
 
 Vector2 Curve2D::get_point_in(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), Vector2());
 	return points[p_index].in;
 }
 
 void Curve2D::set_point_out(int p_index, const Vector2 &p_out) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].out = p_out;
+	points[p_index].out = p_out;
 	mark_dirty();
 }
 
 Vector2 Curve2D::get_point_out(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), Vector2());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), Vector2());
 	return points[p_index].out;
 }
 
 void Curve2D::_remove_point(int p_index) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 	points.remove_at(p_index);
 	mark_dirty();
 }
@@ -880,11 +881,25 @@ void Curve2D::_bake_segment2d_even_length(RBMap<real_t, Vector2> &r_bake, real_t
 
 Vector2 Curve2D::_calculate_tangent(const Vector2 &p_begin, const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t) {
 	// Handle corner cases.
-	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
-		return (p_end - p_begin).normalized();
+	if (Math::is_zero_approx(p_t - 0.0f)) {
+		if (p_control_1.is_equal_approx(p_begin)) {
+			if (p_control_1.is_equal_approx(p_control_2)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_control_2 - p_begin).normalized();
+			}
+		}
+	} else if (Math::is_zero_approx(p_t - 1.0f)) {
+		if (p_control_2.is_equal_approx(p_end)) {
+			if (p_control_2.is_equal_approx(p_control_1)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_end - p_control_1).normalized();
+			}
+		}
 	}
 
-	if (Math::is_zero_approx(p_t - 1.0f) && p_control_2.is_equal_approx(p_end)) {
+	if (p_control_1.is_equal_approx(p_end) && p_control_2.is_equal_approx(p_begin)) {
 		return (p_end - p_begin).normalized();
 	}
 
@@ -899,7 +914,7 @@ void Curve2D::_bake() const {
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		baked_point_cache.clear();
 		baked_dist_cache.clear();
 		baked_forward_vector_cache.clear();
@@ -922,7 +937,7 @@ void Curve2D::_bake() const {
 		Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(10, bake_interval);
 
 		int pc = 1;
-		for (int i = 0; i < points.size() - 1; i++) {
+		for (uint32_t i = 0; i < points.size() - 1; i++) {
 			pc++;
 			pc += midpoints[i].size();
 		}
@@ -939,7 +954,7 @@ void Curve2D::_bake() const {
 		bfw[0] = _calculate_tangent(points[0].position, points[0].position + points[0].out, points[1].position + points[1].in, points[1].position, 0.0);
 		int pidx = 0;
 
-		for (int i = 0; i < points.size() - 1; i++) {
+		for (uint32_t i = 0; i < points.size() - 1; i++) {
 			for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
 				pidx++;
 				bpw[pidx] = E.value;
@@ -1209,7 +1224,7 @@ Dictionary Curve2D::_get_data() const {
 	d.resize(points.size() * 3);
 	Vector2 *w = d.ptrw();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (uint32_t i = 0; i < points.size(); i++) {
 		w[i * 3 + 0] = points[i].in;
 		w[i * 3 + 1] = points[i].out;
 		w[i * 3 + 2] = points[i].position;
@@ -1233,10 +1248,10 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 	}
 	const Vector2 *r = rp.ptr();
 
-	for (int i = 0; i < points.size(); i++) {
-		points.write[i].in = r[i * 3 + 0];
-		points.write[i].out = r[i * 3 + 1];
-		points.write[i].position = r[i * 3 + 2];
+	for (uint32_t i = 0; i < points.size(); i++) {
+		points[i].in = r[i * 3 + 0];
+		points[i].out = r[i * 3 + 1];
+		points[i].position = r[i * 3 + 2];
 	}
 
 	mark_dirty();
@@ -1248,7 +1263,7 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) const {
 	PackedVector2Array tess;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return tess;
 	}
 
@@ -1258,7 +1273,7 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	midpoints.resize(points.size() - 1);
 
 	int pc = 1;
-	for (int i = 0; i < points.size() - 1; i++) {
+	for (uint32_t i = 0; i < points.size() - 1; i++) {
 		_bake_segment2d(midpoints.write[i], 0, 1, points[i].position, points[i].out, points[i + 1].position, points[i + 1].in, 0, p_max_stages, p_tolerance);
 		pc++;
 		pc += midpoints[i].size();
@@ -1269,7 +1284,7 @@ PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) con
 	bpw[0] = points[0].position;
 	int pidx = 0;
 
-	for (int i = 0; i < points.size() - 1; i++) {
+	for (uint32_t i = 0; i < points.size() - 1; i++) {
 		for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
 			pidx++;
 			bpw[pidx] = E.value;
@@ -1288,7 +1303,7 @@ Vector<RBMap<real_t, Vector2>> Curve2D::_tessellate_even_length(int p_max_stages
 
 	midpoints.resize(points.size() - 1);
 
-	for (int i = 0; i < points.size() - 1; i++) {
+	for (uint32_t i = 0; i < points.size() - 1; i++) {
 		_bake_segment2d_even_length(midpoints.write[i], 0, 1, points[i].position, points[i].out, points[i + 1].position, points[i + 1].in, 0, p_max_stages, p_length);
 	}
 	return midpoints;
@@ -1298,12 +1313,12 @@ PackedVector2Array Curve2D::tessellate_even_length(int p_max_stages, real_t p_le
 	PackedVector2Array tess;
 
 	Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(p_max_stages, p_length);
-	if (midpoints.size() == 0) {
+	if (midpoints.is_empty()) {
 		return tess;
 	}
 
 	int pc = 1;
-	for (int i = 0; i < points.size() - 1; i++) {
+	for (uint32_t i = 0; i < points.size() - 1; i++) {
 		pc++;
 		pc += midpoints[i].size();
 	}
@@ -1313,7 +1328,7 @@ PackedVector2Array Curve2D::tessellate_even_length(int p_max_stages, real_t p_le
 	bpw[0] = points[0].position;
 	int pidx = 0;
 
-	for (int i = 0; i < points.size() - 1; i++) {
+	for (uint32_t i = 0; i < points.size() - 1; i++) {
 		for (const KeyValue<real_t, Vector2> &E : midpoints[i]) {
 			pidx++;
 			bpw[pidx] = E.value;
@@ -1365,7 +1380,7 @@ bool Curve2D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Curve2D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < points.size(); i++) {
+	for (uint32_t i = 0; i < points.size(); i++) {
 		PropertyInfo pi = PropertyInfo(Variant::VECTOR2, vformat("point_%d/position", i));
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
@@ -1419,8 +1434,6 @@ void Curve2D::_bind_methods() {
 	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
 }
 
-Curve2D::Curve2D() {}
-
 /***********************************************************************************/
 /***********************************************************************************/
 /***********************************************************************************/
@@ -1455,7 +1468,7 @@ void Curve3D::_add_point(const Vector3 &p_position, const Vector3 &p_in, const V
 	n.position = p_position;
 	n.in = p_in;
 	n.out = p_out;
-	if (p_atpos >= 0 && p_atpos < points.size()) {
+	if ((uint32_t)p_atpos < points.size()) {
 		points.insert(p_atpos, n);
 	} else {
 		points.push_back(n);
@@ -1470,55 +1483,55 @@ void Curve3D::add_point(const Vector3 &p_position, const Vector3 &p_in, const Ve
 }
 
 void Curve3D::set_point_position(int p_index, const Vector3 &p_position) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].position = p_position;
+	points[p_index].position = p_position;
 	mark_dirty();
 }
 
 Vector3 Curve3D::get_point_position(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), Vector3());
 	return points[p_index].position;
 }
 
 void Curve3D::set_point_tilt(int p_index, real_t p_tilt) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].tilt = p_tilt;
+	points[p_index].tilt = p_tilt;
 	mark_dirty();
 }
 
 real_t Curve3D::get_point_tilt(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), 0);
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), 0);
 	return points[p_index].tilt;
 }
 
 void Curve3D::set_point_in(int p_index, const Vector3 &p_in) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].in = p_in;
+	points[p_index].in = p_in;
 	mark_dirty();
 }
 
 Vector3 Curve3D::get_point_in(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), Vector3());
 	return points[p_index].in;
 }
 
 void Curve3D::set_point_out(int p_index, const Vector3 &p_out) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 
-	points.write[p_index].out = p_out;
+	points[p_index].out = p_out;
 	mark_dirty();
 }
 
 Vector3 Curve3D::get_point_out(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, points.size(), Vector3());
+	ERR_FAIL_UNSIGNED_INDEX_V((uint32_t)p_index, points.size(), Vector3());
 	return points[p_index].out;
 }
 
 void Curve3D::_remove_point(int p_index) {
-	ERR_FAIL_INDEX(p_index, points.size());
+	ERR_FAIL_UNSIGNED_INDEX((uint32_t)p_index, points.size());
 	points.remove_at(p_index);
 	mark_dirty();
 }
@@ -1619,11 +1632,25 @@ void Curve3D::_bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t
 
 Vector3 Curve3D::_calculate_tangent(const Vector3 &p_begin, const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t) {
 	// Handle corner cases.
-	if (Math::is_zero_approx(p_t - 0.0f) && p_control_1.is_equal_approx(p_begin)) {
-		return (p_end - p_begin).normalized();
+	if (Math::is_zero_approx(p_t - 0.0f)) {
+		if (p_control_1.is_equal_approx(p_begin)) {
+			if (p_control_1.is_equal_approx(p_control_2)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_control_2 - p_begin).normalized();
+			}
+		}
+	} else if (Math::is_zero_approx(p_t - 1.0f)) {
+		if (p_control_2.is_equal_approx(p_end)) {
+			if (p_control_2.is_equal_approx(p_control_1)) {
+				return (p_end - p_begin).normalized();
+			} else {
+				return (p_end - p_control_1).normalized();
+			}
+		}
 	}
 
-	if (Math::is_zero_approx(p_t - 1.0f) && p_control_2.is_equal_approx(p_end)) {
+	if (p_control_1.is_equal_approx(p_end) && p_control_2.is_equal_approx(p_begin)) {
 		return (p_end - p_begin).normalized();
 	}
 
@@ -1638,7 +1665,7 @@ void Curve3D::_bake() const {
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 #ifdef TOOLS_ENABLED
 		points_in_cache.clear();
 #endif
@@ -1771,7 +1798,7 @@ void Curve3D::_bake() const {
 		{
 			Vector3 forward = forward_ptr[0];
 
-			if (abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
+			if (std::abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
 				frame_prev = Basis::looking_at(forward, Vector3(1, 0, 0));
 			} else {
 				frame_prev = Basis::looking_at(forward, Vector3(0, 1, 0));
@@ -1814,7 +1841,7 @@ void Curve3D::_bake() const {
 			real_t sign = SIGN(up_end.cross(up_start).dot(forward_ptr[0]));
 			real_t full_angle = Quaternion(up_end, up_start).get_angle();
 
-			if (abs(full_angle) < CMP_EPSILON) {
+			if (std::abs(full_angle) < CMP_EPSILON) {
 				return;
 			} else {
 				const real_t *dists = baked_dist_cache.ptr();
@@ -2227,7 +2254,7 @@ Dictionary Curve3D::_get_data() const {
 	t.resize(points.size());
 	real_t *wt = t.ptrw();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (uint32_t i = 0; i < points.size(); i++) {
 		w[i * 3 + 0] = points[i].in;
 		w[i * 3 + 1] = points[i].out;
 		w[i * 3 + 2] = points[i].position;
@@ -2256,11 +2283,11 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 	Vector<real_t> rtl = p_data["tilts"];
 	const real_t *rt = rtl.ptr();
 
-	for (int i = 0; i < points.size(); i++) {
-		points.write[i].in = r[i * 3 + 0];
-		points.write[i].out = r[i * 3 + 1];
-		points.write[i].position = r[i * 3 + 2];
-		points.write[i].tilt = rt[i];
+	for (uint32_t i = 0; i < points.size(); i++) {
+		points[i].in = r[i * 3 + 0];
+		points[i].out = r[i * 3 + 1];
+		points[i].position = r[i * 3 + 2];
+		points[i].tilt = rt[i];
 	}
 
 	mark_dirty();
@@ -2272,7 +2299,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 PackedVector3Array Curve3D::tessellate(int p_max_stages, real_t p_tolerance) const {
 	PackedVector3Array tess;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return tess;
 	}
 	Vector<RBMap<real_t, Vector3>> midpoints;
@@ -2335,7 +2362,7 @@ PackedVector3Array Curve3D::tessellate_even_length(int p_max_stages, real_t p_le
 	PackedVector3Array tess;
 
 	Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(p_max_stages, p_length);
-	if (midpoints.size() == 0) {
+	if (midpoints.is_empty()) {
 		return tess;
 	}
 
@@ -2414,7 +2441,7 @@ bool Curve3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	for (int i = 0; i < points.size(); i++) {
+	for (uint32_t i = 0; i < points.size(); i++) {
 		PropertyInfo pi = PropertyInfo(Variant::VECTOR3, vformat("point_%d/position", i));
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
@@ -2431,7 +2458,7 @@ void Curve3D::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(pi);
 		}
 
-		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i));
+		pi = PropertyInfo(Variant::FLOAT, vformat("point_%d/tilt", i), PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians_as_degrees");
 		pi.usage &= ~PROPERTY_USAGE_STORAGE;
 		p_list->push_back(pi);
 	}
@@ -2485,5 +2512,3 @@ void Curve3D::_bind_methods() {
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");
 }
-
-Curve3D::Curve3D() {}
