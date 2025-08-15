@@ -966,13 +966,13 @@ void ResourceLoaderBinary::get_dependencies(Ref<FileAccess> p_f, List<String> *p
 		}
 
 		if (p_add_types && !external_resources[i].type.is_empty()) {
-			dep += "::" + external_resources[i].type;
+			dep += "<*>" + external_resources[i].type;
 		}
 		if (!fallback_path.is_empty()) {
 			if (!p_add_types) {
-				dep += "::"; // Ensure that path comes third, even if there is no type.
+				dep += "<*>"; // Ensure that path comes third, even if there is no type.
 			}
-			dep += "::" + fallback_path;
+			dep += "<*>" + fallback_path;
 		}
 
 		p_dependencies->push_back(dep);
