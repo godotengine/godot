@@ -109,6 +109,9 @@ public:
 #endif
 
 #define WRITE_ACTION redraw_request();
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread)
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
