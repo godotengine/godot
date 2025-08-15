@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "editor/editor_node.h"
 
 class MultiNodeEdit : public RefCounted {
 	GDCLASS(MultiNodeEdit, RefCounted);
@@ -68,6 +69,11 @@ public:
 	StringName get_edited_class_name() const;
 
 	void set_property_field(const StringName &p_property, const Variant &p_value, const String &p_field);
+
+	void make_group_mask(const StringName &p_identifier, String &p_mask);
+	void add_partial_to_group(const StringName &p_identifier, bool persistent, const String &p_mask);
+	void remove_partial_from_group(const StringName &p_identifier, const String &p_mask);
+	void get_groups(List<Node::GroupInfo> *p_groups);
 
 	// If the nodes selected are the same independently of order then return true.
 	bool is_same_selection(const MultiNodeEdit *p_other) const {
