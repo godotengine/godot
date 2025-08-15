@@ -38,6 +38,16 @@ class GLTFBufferView : public Resource {
 	GDCLASS(GLTFBufferView, Resource);
 	friend class GLTFDocument;
 
+public:
+	// When a buffer view is used by vertex indices or attribute accessors it SHOULD specify
+	// "target" with a value of ELEMENT_ARRAY_BUFFER (34963) or ARRAY_BUFFER (34962) respectively.
+	// https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html#buffers-and-buffer-views-overview
+	enum ArrayBufferTarget {
+		TARGET_NONE = 0,
+		TARGET_ARRAY_BUFFER = 34962,
+		TARGET_ELEMENT_ARRAY_BUFFER = 34963,
+	};
+
 private:
 	GLTFBufferIndex buffer = -1;
 	int64_t byte_offset = 0;
@@ -78,5 +88,8 @@ public:
 	bool get_vertex_attributes() const;
 	void set_vertex_attributes(bool p_attributes);
 
-	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_state) const;
+	Vector<uint8_t> load_buffer_view_data(const Ref<GLTFState> p_gltf_state) const;
+
+	static Ref<GLTFBufferView> from_dictionary(const Dictionary &p_dict);
+	Dictionary to_dictionary() const;
 };

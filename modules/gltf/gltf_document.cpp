@@ -848,30 +848,8 @@ Error GLTFDocument::_parse_buffers(Ref<GLTFState> p_state, const String &p_base_
 Error GLTFDocument::_encode_buffer_views(Ref<GLTFState> p_state) {
 	Array buffers;
 	for (GLTFBufferViewIndex i = 0; i < p_state->buffer_views.size(); i++) {
-		Dictionary d;
-
-		Ref<GLTFBufferView> buffer_view = p_state->buffer_views[i];
-
-		d["buffer"] = buffer_view->buffer;
-		d["byteLength"] = buffer_view->byte_length;
-
-		if (buffer_view->byte_offset > 0) {
-			d["byteOffset"] = buffer_view->byte_offset;
-		}
-
-		if (buffer_view->byte_stride != -1) {
-			d["byteStride"] = buffer_view->byte_stride;
-		}
-
-		if (buffer_view->indices) {
-			d["target"] = GLTFDocument::ELEMENT_ARRAY_BUFFER;
-		} else if (buffer_view->vertex_attributes) {
-			d["target"] = GLTFDocument::ARRAY_BUFFER;
-		}
-
-		ERR_FAIL_COND_V(!d.has("buffer"), ERR_INVALID_DATA);
-		ERR_FAIL_COND_V(!d.has("byteLength"), ERR_INVALID_DATA);
-		buffers.push_back(d);
+		const Ref<GLTFBufferView> buffer_view = p_state->buffer_views[i];
+		buffers.push_back(buffer_view->to_dictionary());
 	}
 	print_verbose("glTF: Total buffer views: " + itos(p_state->buffer_views.size()));
 	if (!buffers.size()) {
@@ -887,33 +865,11 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 	}
 	const Array &buffers = p_state->json["bufferViews"];
 	for (GLTFBufferViewIndex i = 0; i < buffers.size(); i++) {
-		const Dictionary &d = buffers[i];
-
-		Ref<GLTFBufferView> buffer_view;
-		buffer_view.instantiate();
-
-		ERR_FAIL_COND_V(!d.has("buffer"), ERR_PARSE_ERROR);
-		buffer_view->buffer = d["buffer"];
-		ERR_FAIL_COND_V(!d.has("byteLength"), ERR_PARSE_ERROR);
-		buffer_view->byte_length = d["byteLength"];
-
-		if (d.has("byteOffset")) {
-			buffer_view->byte_offset = d["byteOffset"];
-		}
-
-		if (d.has("byteStride")) {
-			buffer_view->byte_stride = d["byteStride"];
-			if (buffer_view->byte_stride < 4 || buffer_view->byte_stride > 252 || buffer_view->byte_stride % 4 != 0) {
-				ERR_PRINT("glTF import: Invalid byte stride " + itos(buffer_view->byte_stride) + " for buffer view at index " + itos(i) + " while importing file '" + p_state->filename + "'. If defined, byte stride must be a multiple of 4 and between 4 and 252.");
-			}
-		}
-
-		if (d.has("target")) {
-			const int target = d["target"];
-			buffer_view->indices = target == GLTFDocument::ELEMENT_ARRAY_BUFFER;
-			buffer_view->vertex_attributes = target == GLTFDocument::ARRAY_BUFFER;
-		}
-
+		const Dictionary &dict = buffers[i];
+		// Both "buffer" and "byteLength" are required by the spec.
+		ERR_FAIL_COND_V(!dict.has("buffer"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!dict.has("byteLength"), ERR_PARSE_ERROR);
+		Ref<GLTFBufferView> buffer_view = GLTFBufferView::from_dictionary(dict);
 		p_state->buffer_views.push_back(buffer_view);
 	}
 
@@ -925,49 +881,8 @@ Error GLTFDocument::_parse_buffer_views(Ref<GLTFState> p_state) {
 Error GLTFDocument::_encode_accessors(Ref<GLTFState> p_state) {
 	Array accessors;
 	for (GLTFAccessorIndex i = 0; i < p_state->accessors.size(); i++) {
-		Dictionary d;
-
-		Ref<GLTFAccessor> accessor = p_state->accessors[i];
-		d["componentType"] = accessor->component_type;
-		d["count"] = accessor->count;
-		d["type"] = _get_accessor_type_name(accessor->accessor_type);
-		d["normalized"] = accessor->normalized;
-		d["max"] = accessor->max;
-		d["min"] = accessor->min;
-		if (accessor->buffer_view != -1) {
-			// bufferView may be omitted to zero-initialize the buffer. When this happens, byteOffset MUST also be omitted.
-			if (accessor->byte_offset > 0) {
-				d["byteOffset"] = accessor->byte_offset;
-			}
-			d["bufferView"] = accessor->buffer_view;
-		}
-
-		if (accessor->sparse_count > 0) {
-			Dictionary s;
-			s["count"] = accessor->sparse_count;
-
-			Dictionary si;
-			si["bufferView"] = accessor->sparse_indices_buffer_view;
-			si["componentType"] = accessor->sparse_indices_component_type;
-			if (accessor->sparse_indices_byte_offset > 0) {
-				si["byteOffset"] = accessor->sparse_indices_byte_offset;
-			}
-			ERR_FAIL_COND_V(!si.has("bufferView") || !si.has("componentType"), ERR_PARSE_ERROR);
-			s["indices"] = si;
-
-			Dictionary sv;
-			sv["bufferView"] = accessor->sparse_values_buffer_view;
-			if (accessor->sparse_values_byte_offset > 0) {
-				sv["byteOffset"] = accessor->sparse_values_byte_offset;
-			}
-			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
-			s["values"] = sv;
-
-			ERR_FAIL_COND_V(!s.has("count") || !s.has("indices") || !s.has("values"), ERR_PARSE_ERROR);
-			d["sparse"] = s;
-		}
-
-		accessors.push_back(d);
+		const Ref<GLTFAccessor> accessor = p_state->accessors[i];
+		accessors.push_back(accessor->to_dictionary());
 	}
 
 	if (!accessors.size()) {
@@ -1040,68 +955,12 @@ Error GLTFDocument::_parse_accessors(Ref<GLTFState> p_state) {
 	}
 	const Array &accessors = p_state->json["accessors"];
 	for (GLTFAccessorIndex i = 0; i < accessors.size(); i++) {
-		const Dictionary &d = accessors[i];
-
-		Ref<GLTFAccessor> accessor;
-		accessor.instantiate();
-
-		ERR_FAIL_COND_V(!d.has("componentType"), ERR_PARSE_ERROR);
-		accessor->component_type = (GLTFAccessor::GLTFComponentType)(int32_t)d["componentType"];
-		ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
-		accessor->count = d["count"];
-		if (accessor->count <= 0) {
-			ERR_PRINT("glTF import: Invalid accessor count " + itos(accessor->count) + " for accessor at index " + itos(i) + " while importing file '" + p_state->filename + "'. Accessor count must be greater than 0.");
-		}
-		ERR_FAIL_COND_V(!d.has("type"), ERR_PARSE_ERROR);
-		accessor->accessor_type = _get_accessor_type_from_str(d["type"]);
-
-		if (d.has("bufferView")) {
-			accessor->buffer_view = d["bufferView"]; //optional because it may be sparse...
-		}
-
-		if (d.has("byteOffset")) {
-			accessor->byte_offset = d["byteOffset"];
-		}
-
-		if (d.has("normalized")) {
-			accessor->normalized = d["normalized"];
-		}
-
-		if (d.has("max")) {
-			accessor->max = d["max"];
-		}
-
-		if (d.has("min")) {
-			accessor->min = d["min"];
-		}
-
-		if (d.has("sparse")) {
-			const Dictionary &s = d["sparse"];
-
-			ERR_FAIL_COND_V(!s.has("count"), ERR_PARSE_ERROR);
-			accessor->sparse_count = s["count"];
-			ERR_FAIL_COND_V(!s.has("indices"), ERR_PARSE_ERROR);
-			const Dictionary &si = s["indices"];
-
-			ERR_FAIL_COND_V(!si.has("bufferView"), ERR_PARSE_ERROR);
-			accessor->sparse_indices_buffer_view = si["bufferView"];
-			ERR_FAIL_COND_V(!si.has("componentType"), ERR_PARSE_ERROR);
-			accessor->sparse_indices_component_type = (GLTFAccessor::GLTFComponentType)(int32_t)si["componentType"];
-
-			if (si.has("byteOffset")) {
-				accessor->sparse_indices_byte_offset = si["byteOffset"];
-			}
-
-			ERR_FAIL_COND_V(!s.has("values"), ERR_PARSE_ERROR);
-			const Dictionary &sv = s["values"];
-
-			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
-			accessor->sparse_values_buffer_view = sv["bufferView"];
-			if (sv.has("byteOffset")) {
-				accessor->sparse_values_byte_offset = sv["byteOffset"];
-			}
-		}
-
+		const Dictionary &dict = accessors[i];
+		// All of these fields are required by the spec.
+		ERR_FAIL_COND_V(!dict.has("componentType"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!dict.has("count"), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(!dict.has("type"), ERR_PARSE_ERROR);
+		Ref<GLTFAccessor> accessor = GLTFAccessor::from_dictionary(dict);
 		p_state->accessors.push_back(accessor);
 	}
 
