@@ -703,6 +703,12 @@ void PhysicsServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_remove_shape", "body", "shape_idx"), &PhysicsServer2D::body_remove_shape);
 	ClassDB::bind_method(D_METHOD("body_clear_shapes", "body"), &PhysicsServer2D::body_clear_shapes);
 
+	ClassDB::bind_method(D_METHOD("body_set_shape_bounce_override", "body", "shape_idx", "enable", "bounce"), &PhysicsServer2D::body_set_shape_bounce_override, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("body_set_shape_friction_override", "body", "shape_idx", "enable", "friction"), &PhysicsServer2D::body_set_shape_friction_override, DEFVAL(0.0));
+
+	ClassDB::bind_method(D_METHOD("body_get_shape_bounce_override", "body", "shape_idx"), &PhysicsServer2D::body_get_shape_bounce_override);
+	ClassDB::bind_method(D_METHOD("body_get_shape_friction_override", "body", "shape_idx"), &PhysicsServer2D::body_get_shape_friction_override);
+
 	ClassDB::bind_method(D_METHOD("body_set_shape_disabled", "body", "shape_idx", "disabled"), &PhysicsServer2D::body_set_shape_disabled);
 	ClassDB::bind_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin"), &PhysicsServer2D::body_set_shape_as_one_way_collision);
 

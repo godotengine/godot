@@ -647,6 +647,46 @@ void GodotPhysicsServer2D::body_clear_shapes(RID p_body) {
 	}
 }
 
+void GodotPhysicsServer2D::body_set_shape_friction_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_friction) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+
+	if (p_enable) {
+		body->set_shape_friction(p_shape_idx, p_friction);
+	} else {
+		body->set_shape_friction(p_shape_idx, NAN);
+	}
+}
+
+void GodotPhysicsServer2D::body_set_shape_bounce_override(RID p_body, int p_shape_idx, bool p_enable, real_t p_bounce) {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL(body);
+	ERR_FAIL_INDEX(p_shape_idx, body->get_shape_count());
+
+	if (p_enable) {
+		body->set_shape_bounce(p_shape_idx, p_bounce);
+	} else {
+		body->set_shape_bounce(p_shape_idx, NAN);
+	}
+}
+
+real_t GodotPhysicsServer2D::body_get_shape_friction_override(RID p_body, int p_shape_idx) const {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, NAN);
+	ERR_FAIL_INDEX_V(p_shape_idx, body->get_shape_count(), NAN);
+
+	return body->get_shape_friction(p_shape_idx);
+}
+
+real_t GodotPhysicsServer2D::body_get_shape_bounce_override(RID p_body, int p_shape_idx) const {
+	GodotBody2D *body = body_owner.get_or_null(p_body);
+	ERR_FAIL_NULL_V(body, NAN);
+	ERR_FAIL_INDEX_V(p_shape_idx, body->get_shape_count(), NAN);
+
+	return body->get_shape_bounce(p_shape_idx);
+}
+
 void GodotPhysicsServer2D::body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) {
 	GodotBody2D *body = body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
