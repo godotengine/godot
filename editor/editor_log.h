@@ -37,6 +37,7 @@
 #include "scene/gui/rich_text_label.h"
 
 class UndoRedo;
+class CheckBox;
 
 class EditorLog : public HBoxContainer {
 	GDCLASS(EditorLog, HBoxContainer);
@@ -49,6 +50,9 @@ public:
 		MSG_TYPE_WARNING,
 		MSG_TYPE_EDITOR,
 	};
+
+	bool is_whole_words() const { return _whole_words; }
+	bool is_match_case() const { return _match_case; }
 
 private:
 	struct LogMessage {
@@ -75,6 +79,13 @@ private:
 
 		Color message_color;
 	} theme_cache;
+
+	struct SearchMatch {
+		int message_index;
+		int visible_index;
+		int text_position;
+		int display_instance = 0; // Which instance of a repeated message (for non-collapsed mode)
+	};
 
 	// Encapsulates all data and functionality regarding filters.
 	struct LogFilter {
@@ -139,6 +150,20 @@ private:
 	Button *show_search_button = nullptr;
 	LineEdit *search_box = nullptr;
 
+	HBoxContainer *search_nav_container = nullptr;
+	Button *search_mode_button = nullptr;
+	Button *search_prev_button = nullptr;
+	Button *search_next_button = nullptr;
+	Label *search_results_label = nullptr;
+	CheckBox *_match_case_checkbox = nullptr;
+	CheckBox *_whole_words_checkbox = nullptr;
+	bool search_mode = false; // If true, search box is in "search mode" (searches for text), otherwise it is in "filter mode" (filters messages by text).
+	bool _match_case = false;
+	bool _whole_words = false;
+	// Classic search state
+	int current_search_index = -1;
+	Vector<SearchMatch> search_matches; // Stores paragraph indices of matches
+
 	// Reference to the "Output" button on the toolbar so we can update its icon when warnings or errors are encountered.
 	Button *tool_button = nullptr;
 
@@ -155,13 +180,27 @@ private:
 	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
-	void _rebuild_log();
-	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false);
-	bool _check_display_message(LogMessage &p_message);
+	void _rebuild_log(const String &p_search_highlight = String());
+	void _add_log_line(LogMessage &p_message, bool p_replace_previous = false,
+			int p_message_index = -1, int p_display_instance = 0,
+			const String &p_search_highlight = String());
+	bool _check_display_message(LogMessage &p_message, bool p_ignore_search_filter = false);
 
 	void _set_filter_active(bool p_active, MessageType p_message_type);
 	void _set_search_visible(bool p_visible);
 	void _search_changed(const String &p_text);
+	void set_whole_words(bool p_whole_word);
+	void set_match_case(bool p_match_case);
+	void _perform_classic_search(const String &p_text);
+	void _find_search_matches(const String &p_search_text);
+	Vector<int> _find_matches_in_text(const String &p_text, const String &p_pattern);
+	void _add_text_with_search_highlighting(const String &p_text, const String &p_search_text, int p_message_index = -1, int p_display_instance = 0);
+	void _scroll_to_current_match();
+	void _scroll_to_current_match_deferred(bool p_restore_scroll_follow);
+	void _navigate_search_result(bool p_next);
+	void _update_search_navigation();
+	void _clear_search_highlights();
+	void _on_search_mode_toggled(bool p_pressed);
 
 	void _process_message(const String &p_msg, MessageType p_type, bool p_clear);
 	void _reset_message_counts();
