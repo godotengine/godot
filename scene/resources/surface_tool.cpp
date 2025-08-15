@@ -749,7 +749,7 @@ void SurfaceTool::index() {
 		return; //already indexed
 	}
 
-	AHashMap<Vertex &, int, VertexHasher> indices = vertex_array.size();
+	AHashMap<const Vertex &, int, VertexHasher> indices = vertex_array.size();
 
 	uint32_t new_size = 0;
 	for (Vertex &vertex : vertex_array) {
@@ -766,6 +766,8 @@ void SurfaceTool::index() {
 
 		index_array.push_back(idx);
 	}
+
+	indices.reset();
 
 	vertex_array.resize(new_size);
 	format |= Mesh::ARRAY_FORMAT_INDEX;
