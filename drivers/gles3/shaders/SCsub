@@ -25,6 +25,7 @@ if "GLES3_GLSL" in env["BUILDERS"]:
     env.GLES3_GLSL("particles.glsl")
     env.GLES3_GLSL("particles_copy.glsl")
     env.GLES3_GLSL("skeleton.glsl")
+    env.GLES3_GLSL("tex_blit.glsl")
 
     # once we finish conversion we can introduce this to cover all files:
     # for glsl_file in glsl_files:
