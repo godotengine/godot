@@ -150,7 +150,7 @@ private:
 
 	static Mutex shader_map_mutex;
 	static HashMap<MaterialKey, ShaderData, MaterialKey> shader_map;
-	static RBSet<String> min_max_properties;
+	static HashSet<String> min_max_properties;
 
 	MaterialKey current_key;
 	RID shader_rid;
