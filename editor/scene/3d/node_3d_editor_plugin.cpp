@@ -1715,7 +1715,7 @@ void Node3DEditorViewport::input(const Ref<InputEvent> &p_event) {
 }
 
 void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
-	if (previewing || get_viewport()->gui_get_drag_data()) {
+	if (get_viewport()->gui_get_drag_data()) {
 		return; //do NONE
 	}
 
@@ -1749,6 +1749,10 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				after = EditorPlugin::AFTER_GUI_INPUT_CUSTOM;
 			}
 		}
+	}
+
+	if (previewing) {
+		return;
 	}
 
 	Ref<InputEventMouseButton> b = p_event;
