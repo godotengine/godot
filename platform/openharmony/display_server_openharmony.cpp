@@ -457,8 +457,8 @@ void DisplayServerOpenHarmony::virtual_keyboard_show(const String &p_existing_te
 	OH_TextEditorProxy_SetSetPreviewTextFunc(text_editor_proxy, _set_preview_text);
 	OH_TextEditorProxy_SetFinishTextPreviewFunc(text_editor_proxy, _finish_text_preview);
 
-	auto retult = OH_InputMethodController_Attach(text_editor_proxy, attach_options, &input_method_proxy);
-	ERR_FAIL_COND_MSG(retult != IME_ERR_OK, vformat("Failed to attach input method controller: %d.", retult));
+	InputMethod_ErrorCode code = OH_InputMethodController_Attach(text_editor_proxy, attach_options, &input_method_proxy);
+	ERR_FAIL_COND_MSG(code != IME_ERR_OK, vformat("Failed to attach input method controller: %d.", code));
 }
 
 void DisplayServerOpenHarmony::virtual_keyboard_hide() {

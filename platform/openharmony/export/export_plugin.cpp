@@ -103,7 +103,7 @@ void EditorExportPlatformOpenHarmony::get_export_options(List<ExportOption> *r_o
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/store_password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/key_alias", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/key_password", PROPERTY_HINT_PASSWORD, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/sign_alg", PROPERTY_HINT_NONE, "SHA256withECDSA", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/sign_alg", PROPERTY_HINT_ENUM_SUGGESTION, "SHA256withECDSA", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), "SHA256withECDSA"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/profile_file", PROPERTY_HINT_GLOBAL_FILE, "*.p7b", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "sign/certpath_file", PROPERTY_HINT_GLOBAL_FILE, "*.cer", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SECRET), ""));
 
@@ -438,6 +438,35 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	if (app_name.is_empty()) {
 		app_name = "template";
 	}
+
+	String app_string_json_path = project_dir.path_join("AppScope/resources/base/element/string.json");
+	if (FileAccess::exists(app_string_json_path)) {
+		Ref<FileAccess> string_json_file = FileAccess::open(app_string_json_path, FileAccess::READ);
+		if (string_json_file.is_valid()) {
+			String content = string_json_file->get_as_text();
+			String key = "\"app_name\"";
+			int pos = content.find(key);
+			if (pos >= 0) {
+				String value = "\"template\"";
+				pos = content.find(value, pos + key.length());
+				if (pos >= 0) {
+					content = content.left(pos) + "\"" + app_name + "\"" + content.right(content.length() - pos - value.length());
+				}
+			}
+
+			string_json_file = FileAccess::open(app_string_json_path, FileAccess::WRITE);
+			if (string_json_file.is_valid()) {
+				string_json_file->store_string(content);
+			} else {
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not write app string json: \"%s\"."), app_string_json_path));
+				return ERR_FILE_CANT_WRITE;
+			}
+		} else {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not read app string json: \"%s\"."), app_string_json_path));
+			return ERR_FILE_CANT_READ;
+		}
+	}
+
 	String string_json_path = project_dir.path_join("entry/src/main/resources/base/element/string.json");
 	if (FileAccess::exists(string_json_path)) {
 		Ref<FileAccess> string_json_file = FileAccess::open(string_json_path, FileAccess::READ);
