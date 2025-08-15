@@ -993,6 +993,7 @@ void ProjectExportDialog::_fill_resource_tree() {
 	include_margin->show();
 
 	_fill_tree(EditorFileSystem::get_singleton()->get_filesystem(), root, current, f);
+	_update_tree(root, current, f);
 
 	if (f == EditorExportPreset::EXPORT_CUSTOMIZED) {
 		_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
@@ -1056,16 +1057,41 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 		file->set_editable(0, true);
 		file->set_metadata(0, path);
 
-		if (p_export_filter == EditorExportPreset::EXPORT_CUSTOMIZED) {
-			_setup_item_for_file_mode(file, current->get_file_export_mode(path));
-		} else {
-			file->set_checked(0, current->has_export_file(path));
-			file->propagate_check(0);
-		}
-
 		used = true;
 	}
 	return used;
+}
+
+void ProjectExportDialog::_update_tree(TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter) {
+	Vector<String> parent_dirs;
+	TreeItem *p_parent_item = p_item->get_parent();
+	while (p_parent_item) {
+		parent_dirs.append(p_parent_item->get_metadata(0));
+		p_parent_item = p_parent_item->get_parent();
+	}
+	bool has_export_dir = false;
+	for (int i = 0; i < parent_dirs.size(); i++) {
+		if (current->has_export_file(parent_dirs[i])) {
+			has_export_dir = true;
+			break;
+		}
+	}
+
+	TreeItem *p_file = p_item;
+	while (p_file) {
+		String path = p_file->get_metadata(0);
+		if (p_export_filter == EditorExportPreset::EXPORT_CUSTOMIZED) {
+			_setup_item_for_file_mode(p_file, current->get_file_export_mode(path));
+		} else if (has_export_dir || current->has_export_file(path)) {
+			p_file->set_checked(0, true);
+			p_file->propagate_check(0);
+		}
+		p_file = p_file->get_next();
+	}
+
+	for (int i = 0; i < p_item->get_child_count(); i++) {
+		_update_tree(p_item->get_child(i), current, p_export_filter);
+	}
 }
 
 void ProjectExportDialog::_propagate_file_export_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_inherited_export_mode) {
@@ -1128,13 +1154,51 @@ void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
 		return;
 	}
 	TreeItem *item = Object::cast_to<TreeItem>(p_obj);
+	TreeItem *parent_item = item->get_parent();
 	String path = item->get_metadata(0);
-	if (item && !path.ends_with("/")) {
-		bool added = item->is_checked(0);
-		if (added) {
+	if (!item) {
+		return;
+	}
+	if (item->is_checked(0)) {
+		if (path.ends_with("/")) {
+			for (int i = 0; i < item->get_child_count(); i++) {
+				TreeItem *child_item = item->get_child(i);
+				current->remove_export_file(child_item->get_metadata(0));
+			}
+		}
+		if (!parent_item || (parent_item && !parent_item->is_checked(0))) {
 			current->add_export_file(path);
-		} else {
-			current->remove_export_file(path);
+			if (parent_item) {
+				Vector<String> checked_items;
+				bool entire_folder_checked = true;
+				for (int i = 0; i < parent_item->get_child_count(); i++) {
+					TreeItem *sibling = parent_item->get_child(i);
+					if (sibling->is_checked(0)) {
+						checked_items.push_back(sibling->get_metadata(0));
+					} else {
+						entire_folder_checked = false;
+						break;
+					}
+				}
+				if (entire_folder_checked) {
+					current->add_export_file(parent_item->get_metadata(0));
+					for (int j = 0; j < checked_items.size(); j++) {
+						current->remove_export_file(checked_items[j]);
+					}
+				}
+			}
+		}
+	} else {
+		current->remove_export_file(path);
+		if (parent_item && parent_item->is_checked(0)) {
+			current->remove_export_file(parent_item->get_metadata(0));
+			for (int i = 0; i < parent_item->get_child_count(); i++) {
+				TreeItem *sibling = parent_item->get_child(i);
+				if (sibling == item) {
+					continue;
+				}
+				current->add_export_file(sibling->get_metadata(0));
+			}
 		}
 	}
 }
