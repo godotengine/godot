@@ -39,7 +39,7 @@ AudioServer::SpeakerMode MovieWriterMJPEG::get_audio_speaker_mode() const {
 }
 
 bool MovieWriterMJPEG::handles_file(const String &p_path) const {
-	return p_path.get_extension().to_lower() == "avi";
+	return p_path.has_extension("avi");
 }
 
 void MovieWriterMJPEG::get_supported_extensions(List<String> *r_extensions) const {
