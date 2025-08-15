@@ -184,6 +184,20 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 	return Dictionary();
 }
 
+Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &args) const {
+	Vector<String> play_args;
+	if (args.has("playArgs")) {
+		Variant v = args["playArgs"];
+		if (v.get_type() == Variant::ARRAY) {
+			Array arr = v;
+			for (int i = 0; i < arr.size(); i++) {
+				play_args.push_back(String(arr[i]));
+			}
+		}
+	}
+	return play_args;
+}
+
 Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
@@ -193,7 +207,14 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 
 	String platform_string = args.get("platform", "host");
 	if (platform_string == "host") {
-		EditorRunBar::get_singleton()->play_main_scene();
+		Vector<String> play_args = _extract_play_arguments(args);
+
+		if (args.has("scenePath")) {
+			const String scene_path = args["scenePath"];
+			EditorRunBar::get_singleton()->play_custom_scene(scene_path, play_args);
+		} else {
+			EditorRunBar::get_singleton()->play_main_scene(false, play_args);
+		}
 	} else {
 		int device = args.get("device", -1);
 		int idx = -1;
