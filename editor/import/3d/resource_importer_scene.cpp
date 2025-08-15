@@ -2496,6 +2496,8 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 }
 
 void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "textures/filter", PROPERTY_HINT_ENUM, "Detect,Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Aniso,Linear Mipmap Aniso"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "textures/repeat", PROPERTY_HINT_ENUM, "Detect,Enable,Disable"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
@@ -3148,6 +3150,10 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		return err;
 	}
 
+	if (p_options.has("textures/filter") || p_options.has("textures/repeat")) {
+		_apply_texture_filter_to_materials(scene, p_options);
+	}
+
 	bool apply_root = true;
 	if (p_options.has("nodes/apply_root_scale")) {
 		apply_root = p_options["nodes/apply_root_scale"];
@@ -3361,6 +3367,33 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	//EditorNode::get_singleton()->reload_scene(p_source_file);
 
 	return OK;
+}
+
+void ResourceImporterScene::_apply_texture_filter_to_materials(Node *p_node, const HashMap<StringName, Variant> &p_options) {
+	ImporterMeshInstance3D *mesh_instance = Object::cast_to<ImporterMeshInstance3D>(p_node);
+	if (mesh_instance) {
+		Ref<ImporterMesh> mesh = mesh_instance->get_mesh();
+		if (mesh.is_valid()) {
+			for (int i = 0; i < mesh->get_surface_count(); i++) {
+				Ref<BaseMaterial3D> mat = mesh->get_surface_material(i);
+				if (mat.is_valid()) {
+					const int filter_choice = p_options.get(SNAME("textures/filter"));
+					if (filter_choice > 0) {
+						mat->set_texture_filter(static_cast<BaseMaterial3D::TextureFilter>(filter_choice - 1));
+					}
+
+					const int repeat_choice = p_options.get(SNAME("textures/repeat"));
+					if (repeat_choice > 0) {
+						mat->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, repeat_choice == 1);
+					}
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_apply_texture_filter_to_materials(p_node->get_child(i), p_options);
+	}
 }
 
 ResourceImporterScene *ResourceImporterScene::scene_singleton = nullptr;

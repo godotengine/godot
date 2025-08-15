@@ -70,10 +70,6 @@ protected:
 	bool create_animations = true;
 	bool force_disable_compression = false;
 	bool import_as_skeleton_bones = false;
-	int texture_filter_min = 0;
-	int texture_filter_mag = 0;
-	int texture_wrap_u = 0;
-	int texture_wrap_v = 0;
 
 	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
 
@@ -241,18 +237,6 @@ public:
 
 	bool get_import_as_skeleton_bones();
 	void set_import_as_skeleton_bones(bool p_import_as_skeleton_bones);
-
-	int get_texture_filter_min();
-	void set_texture_filter_min(int p_texture_filter_min);
-
-	int get_texture_filter_mag();
-	void set_texture_filter_mag(int p_texture_filter_mag);
-
-	int get_texture_wrap_u();
-	void set_texture_wrap_u(int p_texture_wrap_u);
-
-	int get_texture_wrap_v();
-	void set_texture_wrap_v(int p_texture_wrap_v);
 
 	TypedArray<GLTFAnimation> get_animations();
 	void set_animations(TypedArray<GLTFAnimation> p_animations);

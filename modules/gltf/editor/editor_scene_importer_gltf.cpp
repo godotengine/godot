@@ -59,82 +59,6 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	if (p_options.has(SNAME("extract_path"))) {
 		state->set_extract_path(p_options["extract_path"]);
 	}
-	if (p_options.has("gltf/texture_filter/minification")) {
-		int min_filter_index = p_options["gltf/texture_filter/minification"];
-		int min_filter_enum = 0;
-		switch (min_filter_index) {
-			case 0:
-				min_filter_enum = GLTFTextureSampler::FilterMode::NEAREST;
-				break;
-			case 1:
-				min_filter_enum = GLTFTextureSampler::FilterMode::LINEAR;
-				break;
-			case 2:
-				min_filter_enum = GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_NEAREST;
-				break;
-			case 3:
-				min_filter_enum = GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_NEAREST;
-				break;
-			case 4:
-				min_filter_enum = GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_LINEAR;
-				break;
-			case 5:
-				min_filter_enum = GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR;
-				break;
-			case 6:
-				min_filter_enum = GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_ANISOTROPIC;
-				break;
-			case 7:
-				min_filter_enum = GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_ANISOTROPIC;
-				break;
-		}
-		state->set_texture_filter_min(min_filter_enum);
-	}
-	if (p_options.has("gltf/texture_filter/magnification")) {
-		int mag_filter_index = p_options["gltf/texture_filter/magnification"];
-		int mag_filter_enum = 0;
-		switch (mag_filter_index) {
-			case 0:
-				mag_filter_enum = GLTFTextureSampler::FilterMode::NEAREST;
-				break;
-			case 1:
-				mag_filter_enum = GLTFTextureSampler::FilterMode::LINEAR;
-				break;
-		}
-		state->set_texture_filter_mag(mag_filter_enum);
-	}
-	if (p_options.has("gltf/texture_filter/wrap_u")) {
-		int wrap_u_index = p_options["gltf/texture_filter/wrap_u"];
-		int wrap_u_enum = 0;
-		switch (wrap_u_index) {
-			case 0:
-				wrap_u_enum = GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE;
-				break;
-			case 1:
-				wrap_u_enum = GLTFTextureSampler::WrapMode::MIRRORED_REPEAT;
-				break;
-			case 2:
-				wrap_u_enum = GLTFTextureSampler::WrapMode::REPEAT;
-				break;
-		}
-		state->set_texture_wrap_u(wrap_u_enum);
-	}
-	if (p_options.has("gltf/texture_filter/wrap_v")) {
-		int wrap_v_index = p_options["gltf/texture_filter/wrap_v"];
-		int wrap_v_enum = 0;
-		switch (wrap_v_index) {
-			case 0:
-				wrap_v_enum = GLTFTextureSampler::WrapMode::CLAMP_TO_EDGE;
-				break;
-			case 1:
-				wrap_v_enum = GLTFTextureSampler::WrapMode::MIRRORED_REPEAT;
-				break;
-			case 2:
-				wrap_v_enum = GLTFTextureSampler::WrapMode::REPEAT;
-				break;
-		}
-		state->set_texture_wrap_v(wrap_v_enum);
-	}
 	state->set_bake_fps(p_options["animation/fps"]);
 	Error err = gltf->append_from_file(p_path, state, p_flags);
 	if (err != OK) {
@@ -162,10 +86,6 @@ void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 	if (p_path.is_empty() || file_extension == "gltf" || file_extension == "glb") {
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/naming_version", PROPERTY_HINT_ENUM, "Godot 4.0 or 4.1,Godot 4.2 to 4.4,Godot 4.5 or later"), 2));
 		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/minification", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap Nearest,Linear Mipmap Nearest,Nearest Mipmap Linear,Linear Mipmap Linear,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), 7));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/magnification", PROPERTY_HINT_ENUM, "Nearest,Linear"), 1));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/wrap_u", PROPERTY_HINT_ENUM, "Clamp to Edge,Mirrored Repeat,Repeat"), 2));
-		r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/texture_filter/wrap_v", PROPERTY_HINT_ENUM, "Clamp to Edge,Mirrored Repeat,Repeat"), 2));
 	}
 }
 
@@ -174,11 +94,6 @@ void EditorSceneFormatImporterGLTF::handle_compatibility_options(HashMap<StringN
 		// If an existing import file is missing the glTF
 		// compatibility version, we need to use version 0.
 		p_import_params["gltf/naming_version"] = 0;
-	}
-	if (!p_import_params.has("gltf/texture_filter/minification")) {
-		// If an existing import file is missing the glTF
-		// texture filter minification, we need to use linear.
-		p_import_params["gltf/texture_filter/minification"] = 1;
 	}
 }
 

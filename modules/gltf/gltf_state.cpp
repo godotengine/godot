@@ -93,14 +93,6 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_create_animations", "create_animations"), &GLTFState::set_create_animations);
 	ClassDB::bind_method(D_METHOD("get_import_as_skeleton_bones"), &GLTFState::get_import_as_skeleton_bones);
 	ClassDB::bind_method(D_METHOD("set_import_as_skeleton_bones", "import_as_skeleton_bones"), &GLTFState::set_import_as_skeleton_bones);
-	ClassDB::bind_method(D_METHOD("get_texture_filter_min"), &GLTFState::get_texture_filter_min);
-	ClassDB::bind_method(D_METHOD("set_texture_filter_min", "texture_filter_min"), &GLTFState::set_texture_filter_min);
-	ClassDB::bind_method(D_METHOD("get_texture_filter_mag"), &GLTFState::get_texture_filter_mag);
-	ClassDB::bind_method(D_METHOD("set_texture_filter_mag", "texture_filter_mag"), &GLTFState::set_texture_filter_mag);
-	ClassDB::bind_method(D_METHOD("get_texture_wrap_u"), &GLTFState::get_texture_wrap_u);
-	ClassDB::bind_method(D_METHOD("set_texture_wrap_u", "texture_wrap_u"), &GLTFState::set_texture_wrap_u);
-	ClassDB::bind_method(D_METHOD("get_texture_wrap_v"), &GLTFState::get_texture_wrap_v);
-	ClassDB::bind_method(D_METHOD("set_texture_wrap_v", "texture_wrap_v"), &GLTFState::set_texture_wrap_v);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
 	ClassDB::bind_method(D_METHOD("set_animations", "animations"), &GLTFState::set_animations);
 	ClassDB::bind_method(D_METHOD("get_scene_node", "idx"), &GLTFState::get_scene_node);
@@ -139,10 +131,6 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skeletons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeletons", "get_skeletons"); // Vector<Ref<GLTFSkeleton>>
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "import_as_skeleton_bones"), "set_import_as_skeleton_bones", "get_import_as_skeleton_bones"); // bool
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter_min"), "set_texture_filter_min", "get_texture_filter_min"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter_mag"), "set_texture_filter_mag", "get_texture_filter_mag"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_wrap_u"), "set_texture_wrap_u", "get_texture_wrap_u"); // int
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_wrap_v"), "set_texture_wrap_v", "get_texture_wrap_v"); // int
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed as Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_handle_binary_image", "get_handle_binary_image"); // enum
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_fps"), "set_bake_fps", "get_bake_fps");
@@ -362,38 +350,6 @@ bool GLTFState::get_import_as_skeleton_bones() {
 
 void GLTFState::set_import_as_skeleton_bones(bool p_import_as_skeleton_bones) {
 	import_as_skeleton_bones = p_import_as_skeleton_bones;
-}
-
-int GLTFState::get_texture_filter_min() {
-	return texture_filter_min;
-}
-
-void GLTFState::set_texture_filter_min(int p_texture_filter_min) {
-	texture_filter_min = p_texture_filter_min;
-}
-
-int GLTFState::get_texture_filter_mag() {
-	return texture_filter_mag;
-}
-
-void GLTFState::set_texture_filter_mag(int p_texture_filter_mag) {
-	texture_filter_mag = p_texture_filter_mag;
-}
-
-int GLTFState::get_texture_wrap_u() {
-	return texture_wrap_u;
-}
-
-void GLTFState::set_texture_wrap_u(int p_texture_wrap_u) {
-	texture_wrap_u = p_texture_wrap_u;
-}
-
-int GLTFState::get_texture_wrap_v() {
-	return texture_wrap_v;
-}
-
-void GLTFState::set_texture_wrap_v(int p_texture_wrap_v) {
-	texture_wrap_v = p_texture_wrap_v;
 }
 
 TypedArray<GLTFAnimation> GLTFState::get_animations() {

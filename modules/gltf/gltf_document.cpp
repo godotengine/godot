@@ -4426,10 +4426,10 @@ Error GLTFDocument::_serialize_texture_samplers(Ref<GLTFState> p_state) {
 
 Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> p_state) {
 	p_state->default_texture_sampler.instantiate();
-	p_state->default_texture_sampler->set_min_filter(p_state->get_texture_filter_min());
-	p_state->default_texture_sampler->set_mag_filter(p_state->get_texture_filter_mag());
-	p_state->default_texture_sampler->set_wrap_s(p_state->get_texture_wrap_u());
-	p_state->default_texture_sampler->set_wrap_t(p_state->get_texture_wrap_v());
+	p_state->default_texture_sampler->set_min_filter(GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_LINEAR);
+	p_state->default_texture_sampler->set_mag_filter(GLTFTextureSampler::FilterMode::LINEAR);
+	p_state->default_texture_sampler->set_wrap_s(GLTFTextureSampler::WrapMode::REPEAT);
+	p_state->default_texture_sampler->set_wrap_t(GLTFTextureSampler::WrapMode::REPEAT);
 
 	if (!p_state->json.has("samplers")) {
 		return OK;
@@ -4464,26 +4464,6 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> p_state) {
 		} else {
 			sampler->set_wrap_t(GLTFTextureSampler::WrapMode::DEFAULT);
 		}
-		if (d.has("extensions")) {
-			const Dictionary &extensions = d["extensions"];
-			if (extensions.has("GODOT_texture_sampler_anisotropic")) {
-				const Dictionary &anisotropic_ext = extensions["GODOT_texture_sampler_anisotropic"];
-				if (anisotropic_ext.has("anisotropic_filter_level")) {
-					const int filter_level = anisotropic_ext["anisotropic_filter_level"];
-					if (filter_level > 1) {
-						if (sampler->get_min_filter() == GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_LINEAR || sampler->get_min_filter() == GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_NEAREST) {
-							sampler->set_min_filter(GLTFTextureSampler::FilterMode::NEAREST_MIPMAP_ANISOTROPIC);
-						} else {
-							sampler->set_min_filter(GLTFTextureSampler::FilterMode::LINEAR_MIPMAP_ANISOTROPIC);
-						}
-					}
-				}
-			}
-		}
-		sampler->set_min_filter(p_state->get_texture_filter_min());
-		sampler->set_mag_filter(p_state->get_texture_filter_mag());
-		sampler->set_wrap_s(p_state->get_texture_wrap_u());
-		sampler->set_wrap_t(p_state->get_texture_wrap_v());
 		p_state->texture_samplers.push_back(sampler);
 	}
 
