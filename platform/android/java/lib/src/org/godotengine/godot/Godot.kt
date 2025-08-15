@@ -1127,15 +1127,6 @@ class Godot private constructor(val context: Context) {
 		}
 	}
 
-	/**
-	 * Used by the native code (java_godot_wrapper.h) to access the input fallback mapping.
-	 * @return The input fallback mapping for the current XR mode.
-	 */
-	@Keep
-	private fun getInputFallbackMapping(): String? {
-		return xrMode.inputFallbackMapping
-	}
-
 	fun requestPermission(name: String?): Boolean {
 		val activity = getActivity() ?: return false
 		return requestPermission(name, activity)

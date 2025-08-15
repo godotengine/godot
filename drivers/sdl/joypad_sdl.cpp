@@ -44,6 +44,7 @@
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_joystick.h>
+#include <SDL3/SDL_log.h>
 
 JoypadSDL *JoypadSDL::singleton = nullptr;
 
@@ -53,6 +54,16 @@ JoypadSDL *JoypadSDL::singleton = nullptr;
 	if (SDL_IsGamepad(sdl_event.jdevice.which)) { \
 		continue;                                 \
 	}
+
+#if defined(ANDROID_ENABLED) || defined(WEB_ENABLED)
+// Print any information SDL reports
+#undef print_verbose
+#define print_verbose print_line
+#endif
+
+static void SDLCALL sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	print_verbose(vformat("SDL Debug (priority: %d): %s", priority, message));
+}
 
 JoypadSDL::JoypadSDL() {
 	singleton = this;
@@ -75,7 +86,7 @@ JoypadSDL *JoypadSDL::get_singleton() {
 }
 
 Error JoypadSDL::initialize() {
-	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
+	SDL_SetLogOutputFunction(sdl_log, nullptr);
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
 
@@ -123,60 +134,71 @@ void JoypadSDL::process_events() {
 		// A new joypad was attached
 		if (sdl_event.type == SDL_EVENT_JOYSTICK_ADDED) {
 			int joy_id = Input::get_singleton()->get_unused_joy_id();
-			if (joy_id == -1) {
-				// There is no space for more joypads...
-				print_error("A new joypad was attached but couldn't allocate a new id for it because joypad limit was reached.");
+			ERR_CONTINUE_MSG(joy_id == -1, "A new joypad was attached but couldn't allocate a new id for it because joypad limit was reached.");
+
+			SDL_Joystick *joy = nullptr;
+			SDL_Gamepad *gamepad = nullptr;
+			String device_name;
+
+			// Gamepads must be opened with SDL_OpenGamepad to get their special remapped events
+			if (SDL_IsGamepad(sdl_event.jdevice.which)) {
+				gamepad = SDL_OpenGamepad(sdl_event.jdevice.which);
+
+				ERR_CONTINUE_MSG(!gamepad,
+						vformat("Error opening gamepad at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
+
+				device_name = SDL_GetGamepadName(gamepad);
+				joy = SDL_GetGamepadJoystick(gamepad);
+
+				print_verbose(vformat("SDL: Gamepad %s connected", SDL_GetGamepadName(gamepad)));
 			} else {
-				SDL_Joystick *joy = nullptr;
-				String device_name;
+				joy = SDL_OpenJoystick(sdl_event.jdevice.which);
+				ERR_CONTINUE_MSG(!joy,
+						vformat("Error opening joystick at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
 
-				// Gamepads must be opened with SDL_OpenGamepad to get their special remapped events
-				if (SDL_IsGamepad(sdl_event.jdevice.which)) {
-					SDL_Gamepad *gamepad = SDL_OpenGamepad(sdl_event.jdevice.which);
+				device_name = SDL_GetJoystickName(joy);
 
-					ERR_CONTINUE_MSG(!gamepad,
-							vformat("Error opening gamepad at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
-
-					device_name = SDL_GetGamepadName(gamepad);
-					joy = SDL_GetGamepadJoystick(gamepad);
-
-					print_verbose(vformat("SDL: Gamepad %s connected", SDL_GetGamepadName(gamepad)));
-				} else {
-					joy = SDL_OpenJoystick(sdl_event.jdevice.which);
-					ERR_CONTINUE_MSG(!joy,
-							vformat("Error opening joystick at index %d: %s", sdl_event.jdevice.which, SDL_GetError()));
-
-					device_name = SDL_GetJoystickName(joy);
-
-					print_verbose(vformat("SDL: Joystick %s connected", SDL_GetJoystickName(joy)));
-				}
-
-				const int MAX_GUID_SIZE = 64;
-				char guid[MAX_GUID_SIZE] = {};
-
-				SDL_GUIDToString(SDL_GetJoystickGUID(joy), guid, MAX_GUID_SIZE);
-				SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
-
-				joypads[joy_id].attached = true;
-				joypads[joy_id].sdl_instance_idx = sdl_event.jdevice.which;
-				joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
-				joypads[joy_id].guid = StringName(String(guid));
-
-				sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
-
-				// Skip Godot's mapping system because SDL already handles the joypad's mapping
-				Dictionary joypad_info;
-				joypad_info["mapping_handled"] = true;
-
-				Input::get_singleton()->joy_connection_changed(
-						joy_id,
-						true,
-						device_name,
-						joypads[joy_id].guid,
-						joypad_info);
+				print_verbose(vformat("SDL: Joystick %s connected", SDL_GetJoystickName(joy)));
 			}
-			// An event for an attached joypad
+
+#ifdef ANDROID_ENABLED
+			// For some reason the fingerprint sensors are ignored in SDL source code on Linux, but not on Android.
+			if (device_name.begins_with("uinput-")) {
+				if (gamepad != nullptr) {
+					SDL_CloseGamepad(gamepad);
+				} else {
+					SDL_CloseJoystick(joy);
+				}
+				continue;
+			}
+#endif
+
+			const int MAX_GUID_SIZE = 64;
+			char guid[MAX_GUID_SIZE] = {};
+
+			SDL_GUIDToString(SDL_GetJoystickGUID(joy), guid, MAX_GUID_SIZE);
+			SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
+
+			joypads[joy_id].attached = true;
+			joypads[joy_id].sdl_instance_idx = sdl_event.jdevice.which;
+			joypads[joy_id].supports_force_feedback = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RUMBLE_BOOLEAN, false);
+			joypads[joy_id].guid = StringName(String(guid));
+
+			sdl_instance_id_to_joypad_id.insert(sdl_event.jdevice.which, joy_id);
+
+			// Skip Godot's mapping system because SDL already handles the joypad's mapping
+			Dictionary joypad_info;
+			joypad_info["mapping_handled"] = true;
+
+			Input::get_singleton()->joy_connection_changed(
+					joy_id,
+					true,
+					device_name,
+					joypads[joy_id].guid,
+					joypad_info);
+
 		} else if (sdl_event.type >= SDL_EVENT_JOYSTICK_AXIS_MOTION && sdl_event.type < SDL_EVENT_FINGER_DOWN && sdl_instance_id_to_joypad_id.has(sdl_event.jdevice.which)) {
+			// An event for an attached joypad
 			int joy_id = sdl_instance_id_to_joypad_id.get(sdl_event.jdevice.which);
 
 			switch (sdl_event.type) {
@@ -244,6 +266,7 @@ void JoypadSDL::process_events() {
 	}
 }
 
+// TODO: remove this workaround after we update to newer SDL version
 #ifdef WINDOWS_ENABLED
 extern "C" {
 HWND SDL_HelperWindow;
