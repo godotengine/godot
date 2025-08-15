@@ -228,65 +228,99 @@ private:
 
 	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
 
+	struct RegisterClassParams {
+		void (*initialize_class)() = nullptr;
+		const StringName &(*get_class_static)() = nullptr;
+		void *(*get_class_ptr_static)() = nullptr;
+		Object *(*creation_func)(bool) = nullptr;
+		void (*register_custom_data_to_otdb)() = nullptr;
+		bool exposed = false;
+		bool is_virtual = false;
+		bool is_runtime = false;
+	};
+
+	static _NO_INLINE_ void _register_class(const RegisterClassParams &p_params) {
+		Locker::Lock lock(Locker::STATE_WRITE);
+		p_params.initialize_class();
+		ClassInfo *t = classes.getptr(p_params.get_class_static());
+		ERR_FAIL_NULL(t);
+		if (p_params.is_runtime) {
+			ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", p_params.get_class_static()));
+		}
+		t->creation_func = p_params.creation_func;
+		t->exposed = p_params.exposed;
+		t->is_virtual = p_params.is_virtual;
+		t->is_runtime = p_params.is_runtime;
+		t->class_ptr = p_params.get_class_ptr_static();
+		t->api = current_api;
+		if (p_params.register_custom_data_to_otdb) {
+			p_params.register_custom_data_to_otdb();
+		}
+	}
+
 public:
 	template <typename T>
 	static void register_class(bool p_virtual = false) {
-		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->creation_func = &creator<T>;
-		t->exposed = true;
-		t->is_virtual = p_virtual;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
+		RegisterClassParams params = {
+			&T::initialize_class,
+			&T::get_class_static,
+			&T::get_class_ptr_static,
+			&creator<T>,
+			&T::register_custom_data_to_otdb,
+			true, // exposed
+			p_virtual, // is_virtual
+			false, // is_runtime
+		};
+		_register_class(params);
 	}
 
 	template <typename T>
 	static void register_abstract_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->exposed = true;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		//nothing
+		RegisterClassParams params = {
+			&T::initialize_class,
+			&T::get_class_static,
+			&T::get_class_ptr_static,
+			nullptr, // creation_func
+			nullptr, // register_custom_data_to_otdb
+			true, // exposed
+			false, // is_virtual
+			false, // is_runtime
+		};
+		_register_class(params);
 	}
 
 	template <typename T>
 	static void register_internal_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		t->creation_func = &creator<T>;
-		t->exposed = false;
-		t->is_virtual = false;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
+		RegisterClassParams params = {
+			&T::initialize_class,
+			&T::get_class_static,
+			&T::get_class_ptr_static,
+			&creator<T>,
+			&T::register_custom_data_to_otdb,
+			false, // exposed
+			false, // is_virtual
+			false, // is_runtime
+		};
+		_register_class(params);
 	}
 
 	template <typename T>
 	static void register_runtime_class() {
-		Locker::Lock lock(Locker::STATE_WRITE);
 		static_assert(std::is_same_v<typename T::self_type, T>, "Class not declared properly, please use GDCLASS.");
-		T::initialize_class();
-		ClassInfo *t = classes.getptr(T::get_class_static());
-		ERR_FAIL_NULL(t);
-		ERR_FAIL_COND_MSG(t->inherits_ptr && !t->inherits_ptr->creation_func, vformat("Cannot register runtime class '%s' that descends from an abstract parent class.", T::get_class_static()));
-		t->creation_func = &creator<T>;
-		t->exposed = true;
-		t->is_virtual = false;
-		t->is_runtime = true;
-		t->class_ptr = T::get_class_ptr_static();
-		t->api = current_api;
-		T::register_custom_data_to_otdb();
+		RegisterClassParams params = {
+			&T::initialize_class,
+			&T::get_class_static,
+			&T::get_class_ptr_static,
+			&creator<T>,
+			&T::register_custom_data_to_otdb,
+			true, // exposed
+			false, // is_virtual
+			true, // is_runtime
+		};
+		_register_class(params);
 	}
 
 	static void register_extension_class(ObjectGDExtension *p_extension);
