@@ -157,6 +157,7 @@ public:
 		TK_PERIOD,
 		TK_UNIFORM,
 		TK_UNIFORM_GROUP,
+		TK_BUFFER,
 		TK_INSTANCE,
 		TK_GLOBAL,
 		TK_VARYING,
@@ -718,10 +719,43 @@ public:
 			}
 		};
 
+		struct Buffer {
+
+			enum Scope {
+				SCOPE_LOCAL,
+				SCOPE_INSTANCE,
+				SCOPE_GLOBAL,
+			};
+
+			enum BufferType {
+				BUFFERTYPE_UNIFORM,
+				BUFFERTYPE_STORAGE,
+			};
+
+			int order = 0;
+			int prop_order = 0;
+			int texture_order = 0;
+			int texture_binding = 0;
+			Vector<DataType> component_types;
+			Vector<StringName> component_names;
+			Vector<Scalar> default_value;
+			BufferType type;
+			Scope scope = SCOPE_LOCAL;
+			bool use_color = false;
+			int instance_index = 0;
+			StringName name;
+			String group;
+			String subgroup;
+
+			Buffer() {
+			}
+		};
+
 		HashMap<StringName, Constant> constants;
 		HashMap<StringName, Varying> varyings;
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
+		HashMap<StringName, Buffer> buffers;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 		Vector<StringName> stencil_modes;
@@ -1021,6 +1055,7 @@ private:
 	HashMap<StringName, Usage> used_constants;
 	HashMap<StringName, Usage> used_varyings;
 	HashMap<StringName, Usage> used_uniforms;
+	HashMap<StringName, Usage> used_buffers;
 	HashMap<StringName, Usage> used_functions;
 	HashMap<StringName, Usage> used_structs;
 	HashMap<ShaderWarning::Code, HashMap<StringName, Usage> *> warnings_check_map;
