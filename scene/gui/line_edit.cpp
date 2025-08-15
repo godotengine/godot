@@ -503,7 +503,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 						last_dblclk_pos = b->get_position();
 						PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
 						for (int i = 0; i < words.size(); i = i + 2) {
-							if ((words[i] < caret_column && words[i + 1] > caret_column) || (i == words.size() - 2 && caret_column == words[i + 1])) {
+							if (words[i] <= caret_column && words[i + 1] >= caret_column) {
 								selection.enabled = true;
 								selection.begin = words[i];
 								selection.end = words[i + 1];
@@ -597,10 +597,10 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 					PackedInt32Array words = TS->shaped_text_get_word_breaks(text_rid);
 					for (int i = 0; i < words.size(); i = i + 2) {
-						if ((words[i] < selection.begin && words[i + 1] > selection.begin) || (i == words.size() - 2 && selection.begin == words[i + 1])) {
+						if (words[i] <= selection.begin && words[i + 1] >= selection.begin) {
 							selection.begin = words[i];
 						}
-						if ((words[i] < selection.end && words[i + 1] > selection.end) || (i == words.size() - 2 && selection.end == words[i + 1])) {
+						if (words[i] <= selection.end && words[i + 1] >= selection.end) {
 							selection.end = words[i + 1];
 							selection.enabled = true;
 							break;
