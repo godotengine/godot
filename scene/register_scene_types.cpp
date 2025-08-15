@@ -261,6 +261,8 @@
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/3d/tapered_capsule_mesh.h"
+#include "scene/resources/3d/tapered_capsule_shape_3d.h"
 #include "scene/resources/3d/world_3d.h"
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_agent_3d.h"
@@ -958,6 +960,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(PrimitiveMesh);
 	GDREGISTER_CLASS(BoxMesh);
 	GDREGISTER_CLASS(CapsuleMesh);
+	GDREGISTER_CLASS(TaperedCapsuleMesh);
 	GDREGISTER_CLASS(CylinderMesh);
 	GDREGISTER_CLASS(PlaneMesh);
 	GDREGISTER_CLASS(PrismMesh);
@@ -968,6 +971,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(TubeTrailMesh);
 	GDREGISTER_CLASS(RibbonTrailMesh);
 	GDREGISTER_CLASS(PointMesh);
+	GDREGISTER_CLASS(TaperedCapsuleMesh);
 	GDREGISTER_ABSTRACT_CLASS(BaseMaterial3D);
 	GDREGISTER_CLASS(StandardMaterial3D);
 	GDREGISTER_CLASS(ORMMaterial3D);
@@ -992,6 +996,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(WorldBoundaryShape3D);
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
+	GDREGISTER_CLASS(TaperedCapsuleShape3D);
 #endif // PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(World3D);
 
