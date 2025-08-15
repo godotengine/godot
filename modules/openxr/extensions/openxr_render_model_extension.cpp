@@ -345,29 +345,20 @@ RID OpenXRRenderModelExtension::render_model_create(XrRenderModelIdEXT p_render_
 	RenderModel render_model;
 	render_model.xr_render_model_id = p_render_model_id;
 
-	// Start with the extensions that are supported in our base (see GLTFDocument::_parse_gltf_extensions).
-	Vector<const char *> supported_gltf_extensions = {
-		"KHR_lights_punctual",
-		"KHR_materials_pbrSpecularGlossiness",
-		"KHR_texture_transform",
-		"KHR_materials_unlit",
-		"KHR_materials_emissive_strength",
-	};
-
-	// Now find anything we support through plugins, which is a bit of a pain as they are converted to Strings
-	// and we need to convert them back.
-	Vector<CharString> char_extensions; // Just for temp storage of our c-strings.
-	Vector<Ref<GLTFDocumentExtension>> gltf_document_extensions = GLTFDocument::get_all_gltf_document_extensions();
-	for (Ref<GLTFDocumentExtension> &gltf_document_extension : gltf_document_extensions) {
-		Vector<String> supported_extensions = gltf_document_extension->get_supported_extensions();
-		for (const String &extension : supported_extensions) {
-			char_extensions.push_back(extension.utf8());
-		}
+	// Get a list of supported glTF extensions.
+	const HashSet<String> supported_gltf_extensions_hash_set = GLTFDocument::get_supported_gltf_extensions_hashset();
+	Vector<CharString> supported_gltf_extensions_char_string; // Just for temp storage of our c-strings.
+	supported_gltf_extensions_char_string.resize(supported_gltf_extensions_hash_set.size());
+	int64_t supported_gltf_extension_index = 0;
+	for (const String &ext : supported_gltf_extensions_hash_set) {
+		supported_gltf_extensions_char_string.set(supported_gltf_extension_index, ext.utf8());
+		supported_gltf_extension_index++;
 	}
-
-	// Now we can add them to our supported extensions list.
-	for (const CharString &cs : char_extensions) {
-		supported_gltf_extensions.push_back(cs.get_data());
+	// Now we can convert them to the `const char *` format.
+	Vector<const char *> supported_gltf_extensions;
+	supported_gltf_extensions.resize(supported_gltf_extensions_char_string.size());
+	for (int64_t i = 0; i < supported_gltf_extensions_char_string.size(); i++) {
+		supported_gltf_extensions.write[i] = supported_gltf_extensions_char_string[i].get_data();
 	}
 
 	XrRenderModelCreateInfoEXT create_info = {
