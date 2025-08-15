@@ -393,8 +393,8 @@ static char* _idFromUrl(const char* url)
     ++open;
     --close;
 
-    //trim the rest of the spaces if any
-    while (open < close && *close == ' ') --close;
+    //trim the rest of the spaces and the quote marks if any
+    while (open < close && (*close == ' ' || *close == '\'' || *close == '\"')) --close;
 
     //quick verification
     for (auto id = open; id < close; id++) {
@@ -927,43 +927,6 @@ error:
     }
 
 
-static void _postpone(Array<SvgNodeIdPair>& nodes, SvgNode *node, char* id)
-{
-    nodes.push({node, id});
-}
-
-
-/*
-// TODO - remove?
-static constexpr struct
-{
-    const char* tag;
-    int sz;
-    SvgLengthType type;
-} lengthTags[] = {
-    LENGTH_DEF(%, SvgLengthType::Percent),
-    LENGTH_DEF(px, SvgLengthType::Px),
-    LENGTH_DEF(pc, SvgLengthType::Pc),
-    LENGTH_DEF(pt, SvgLengthType::Pt),
-    LENGTH_DEF(mm, SvgLengthType::Mm),
-    LENGTH_DEF(cm, SvgLengthType::Cm),
-    LENGTH_DEF(in, SvgLengthType::In)
-};
-
-static float _parseLength(const char* str, SvgLengthType* type)
-{
-    float value;
-    int sz = strlen(str);
-
-    *type = SvgLengthType::Px;
-    for (unsigned int i = 0; i < sizeof(lengthTags) / sizeof(lengthTags[0]); i++) {
-        if (lengthTags[i].sz - 1 == sz && !strncmp(lengthTags[i].tag, str, sz)) *type = lengthTags[i].type;
-    }
-    value = svgUtilStrtof(str, nullptr);
-    return value;
-}
-*/
-
 static bool _parseStyleAttr(void* data, const char* key, const char* value);
 static bool _parseStyleAttr(void* data, const char* key, const char* value, bool style);
 
@@ -1215,7 +1178,7 @@ static void _handleCssClassAttr(SvgLoaderData* loader, SvgNode* node, const char
         cssCopyStyleAttr(node, cssNode);
     }
 
-    if (!cssClassFound) _postpone(loader->nodesToStyle, node, *cssClass);
+    if (!cssClassFound) loader->nodesToStyle.push({node, *cssClass});
 }
 
 
@@ -2108,6 +2071,23 @@ static SvgNode* _findParentById(SvgNode* node, char* id, SvgNode* doc)
 }
 
 
+static bool _checkPostponed(SvgNode* node, SvgNode* cloneNode, int depth)
+{
+    if (node == cloneNode) return true;
+
+    if (depth == 512) {
+        TVGERR("SVG", "Infinite recursive call - stopped after %d calls! Svg file may be incorrectly formatted.", depth);
+        return false;
+    }
+
+    for (uint32_t i = 0; i < node->child.count; ++i) {
+        if (_checkPostponed(node->child[i], cloneNode, depth + 1)) return true;
+    }
+
+    return false;
+}
+
+
 static constexpr struct
 {
     const char* tag;
@@ -2149,17 +2129,30 @@ static bool _attrParseUseNode(void* data, const char* key, const char* value)
         nodeFrom = _findNodeById(defs, id);
         if (nodeFrom) {
             if (!_findParentById(node, id, loader->doc)) {
-                _cloneNode(nodeFrom, node, 0);
-                if (nodeFrom->type == SvgNodeType::Symbol) use->symbol = nodeFrom;
+                //Check if none of nodeFrom's children are in the cloneNodes list
+                auto postpone = false;
+                for (auto pair = loader->cloneNodes.head; pair; pair = pair->next) {
+                    if (_checkPostponed(nodeFrom, pair->node, 1)) {
+                        postpone = true;
+                        loader->cloneNodes.back(new((SvgNodeIdPair*)malloc(sizeof(SvgNodeIdPair))) SvgNodeIdPair(node, id));
+                        break;
+                    }
+                }
+                //None of the children of nodeFrom are on the cloneNodes list, so it can be cloned immediately
+                if (!postpone) {
+                    _cloneNode(nodeFrom, node, 0);
+                    if (nodeFrom->type == SvgNodeType::Symbol) use->symbol = nodeFrom;
+                    free(id);
+                }
             } else {
                 TVGLOG("SVG", "%s is ancestor element. This reference is invalid.", id);
+                free(id);
             }
-            free(id);
         } else {
             //some svg export software include <defs> element at the end of the file
             //if so the 'from' element won't be found now and we have to repeat finding
             //after the whole file is parsed
-            _postpone(loader->cloneNodes, node, id);
+            loader->cloneNodes.back(new((SvgNodeIdPair*)malloc(sizeof(SvgNodeIdPair))) SvgNodeIdPair(node, id));
         }
     } else {
         return _attrParseGNode(data, key, value);
@@ -3322,22 +3315,39 @@ static void _cloneNode(SvgNode* from, SvgNode* parent, int depth)
 }
 
 
-static void _clonePostponedNodes(Array<SvgNodeIdPair>* cloneNodes, SvgNode* doc)
+static void _clonePostponedNodes(Inlist<SvgNodeIdPair>* cloneNodes, SvgNode* doc)
 {
-    for (uint32_t i = 0; i < cloneNodes->count; ++i) {
-        auto nodeIdPair = (*cloneNodes)[i];
-        auto defs = _getDefsNode(nodeIdPair.node);
-        auto nodeFrom = _findNodeById(defs, nodeIdPair.id);
-        if (!nodeFrom) nodeFrom = _findNodeById(doc, nodeIdPair.id);
-        if (!_findParentById(nodeIdPair.node, nodeIdPair.id, doc)) {
-            _cloneNode(nodeFrom, nodeIdPair.node, 0);
-            if (nodeFrom && nodeFrom->type == SvgNodeType::Symbol && nodeIdPair.node->type == SvgNodeType::Use) {
-                nodeIdPair.node->node.use.symbol = nodeFrom;
+    auto nodeIdPair = cloneNodes->front();
+    while (nodeIdPair) {
+        if (!_findParentById(nodeIdPair->node, nodeIdPair->id, doc)) {
+            //Check if none of nodeFrom's children are in the cloneNodes list
+            auto postpone = false;
+            auto nodeFrom = _findNodeById(_getDefsNode(nodeIdPair->node), nodeIdPair->id);
+            if (!nodeFrom) nodeFrom = _findNodeById(doc, nodeIdPair->id);
+            if (nodeFrom) {
+                for (auto pair = cloneNodes->head; pair; pair = pair->next) {
+                    if (_checkPostponed(nodeFrom, pair->node, 1)) {
+                        postpone = true;
+                        cloneNodes->back(nodeIdPair);
+                        break;
+                    }
+                }
+            }
+            //Since none of the child nodes of nodeFrom are present in the cloneNodes list, it can be cloned immediately
+            if (!postpone) {
+                _cloneNode(nodeFrom, nodeIdPair->node, 0);
+                if (nodeFrom && nodeFrom->type == SvgNodeType::Symbol && nodeIdPair->node->type == SvgNodeType::Use) {
+                    nodeIdPair->node->node.use.symbol = nodeFrom;
+                }
+                free(nodeIdPair->id);
+                free(nodeIdPair);
             }
         } else {
-            TVGLOG("SVG", "%s is ancestor element. This reference is invalid.", nodeIdPair.id);
+            TVGLOG("SVG", "%s is ancestor element. This reference is invalid.", nodeIdPair->id);
+            free(nodeIdPair->id);
+            free(nodeIdPair);
         }
-        free(nodeIdPair.id);
+        nodeIdPair = cloneNodes->front();
     }
 }
 
@@ -3917,7 +3927,7 @@ void SvgLoader::run(unsigned tid)
         if (loaderData.nodesToStyle.count > 0) cssApplyStyleToPostponeds(loaderData.nodesToStyle, loaderData.cssStyle);
         if (loaderData.cssStyle) cssUpdateStyle(loaderData.doc, loaderData.cssStyle);
 
-        if (loaderData.cloneNodes.count > 0) _clonePostponedNodes(&loaderData.cloneNodes, loaderData.doc);
+        if (!loaderData.cloneNodes.empty()) _clonePostponedNodes(&loaderData.cloneNodes, loaderData.doc);
 
         _updateComposite(loaderData.doc, loaderData.doc);
         if (defs) _updateComposite(loaderData.doc, defs);
