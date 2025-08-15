@@ -53,7 +53,7 @@ jobs:
             cache-name: windows-template-gcc
             # MinGW takes MUCH longer to compile; save time by only targeting Template.
             target: template_release
-            scons-flags: use_mingw=yes
+            scons-flags: use_mingw=yes accesskit_sdk_path=
             bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: gcc
 
