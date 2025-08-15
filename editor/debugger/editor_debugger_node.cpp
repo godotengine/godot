@@ -344,6 +344,21 @@ void EditorDebuggerNode::_notification(int p_what) {
 			initializing = false;
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			if (last_error_count != 0 || last_warning_count != 0) {
+				if (last_error_count >= 1 && last_warning_count >= 1) {
+					debugger_button->set_button_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
+					debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				} else if (last_error_count >= 1) {
+					debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Error")));
+					debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+				} else {
+					debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Warning")));
+					debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
+				}
+			}
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			if (server.is_null()) {
 				return;
