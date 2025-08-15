@@ -40,6 +40,7 @@ class GodotJavaWrapper;
 class GodotIOJavaWrapper;
 
 struct ANativeWindow;
+class JoypadSDL;
 
 class OS_Android : public OS_Unix {
 private:
@@ -59,6 +60,10 @@ private:
 	mutable String cache_dir_cache;
 	mutable String temp_dir_cache;
 	mutable String remote_fs_dir;
+
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 
 	AudioDriverOpenSL audio_driver_android;
 

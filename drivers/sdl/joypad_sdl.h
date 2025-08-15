@@ -30,6 +30,14 @@
 
 #pragma once
 
+#define SETUP_JOYPAD_SDL                                           \
+	joypad_sdl = memnew(JoypadSDL());                              \
+	if (joypad_sdl->initialize() != OK) {                          \
+		ERR_PRINT("Couldn't initialize SDL joypad input driver."); \
+		memdelete(joypad_sdl);                                     \
+		joypad_sdl = nullptr;                                      \
+	}
+
 #include "core/input/input.h"
 #include "core/os/thread.h"
 

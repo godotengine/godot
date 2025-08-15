@@ -41,9 +41,15 @@
 
 #include <emscripten/html5.h>
 
+class JoypadSDL;
+
 class OS_Web : public OS_Unix {
 	MainLoop *main_loop = nullptr;
 	List<AudioDriverWeb *> audio_drivers;
+
+#ifdef SDL_ENABLED
+	JoypadSDL *joypad_sdl = nullptr;
+#endif
 
 	MIDIDriverWebMidi midi_driver;
 

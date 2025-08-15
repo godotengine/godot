@@ -73,6 +73,8 @@ import org.godotengine.godot.xr.HybridMode
 import org.godotengine.godot.xr.getHybridAppLaunchMode
 import org.godotengine.godot.xr.HYBRID_APP_PANEL_CATEGORY
 import org.godotengine.godot.xr.HYBRID_APP_IMMERSIVE_CATEGORY
+import org.godotengine.godot.input.SDL
+import org.godotengine.godot.input.HIDDeviceManager
 import kotlin.math.min
 
 /**
@@ -156,6 +158,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		internal const val SNACKBAR_SHOW_DURATION_MS = 5000L
 
 		private const val PREF_KEY_DONT_SHOW_GAME_RESUME_HINT = "pref_key_dont_show_game_resume_hint"
+
+		private lateinit var mHIDDeviceManager: HIDDeviceManager
 	}
 
 	internal val editorMessageDispatcher = EditorMessageDispatcher(this)
@@ -220,6 +224,18 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
+		System.loadLibrary("godot_android")
+
+		Log.v(TAG, "onCreate(), setting up SDL");
+
+		// Set up JNI
+		SDL.setupJNI()
+
+		// Initialize state
+		SDL.initialize()
+
+		mHIDDeviceManager = HIDDeviceManager.acquire(this)
+
 		installSplashScreen()
 
 		val editorWindowInfo = getEditorWindowInfo()
