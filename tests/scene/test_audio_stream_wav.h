@@ -142,6 +142,7 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		Ref<FileAccess> wav_file = FileAccess::open(save_path, FileAccess::READ, &error);
 		REQUIRE(error == OK);
 
+#ifdef MODULE_WAV_LOADER_ENABLED
 		Dictionary options;
 		Ref<AudioStreamWAV> loaded_stream = AudioStreamWAV::load_from_file(save_path, options);
 
@@ -154,6 +155,7 @@ void run_test(String file_name, AudioStreamWAV::Format data_format, bool stereo,
 		CHECK(loaded_stream->get_length() == stream->get_length());
 		CHECK(loaded_stream->is_monophonic() == stream->is_monophonic());
 		CHECK(loaded_stream->get_data() == stream->get_data());
+#endif
 	}
 }
 
