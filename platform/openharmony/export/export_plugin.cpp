@@ -300,6 +300,31 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	String project_name = p_path.get_file().get_basename();
 	String project_dir = base_dir.path_join(project_name);
 	String file_ext = p_path.get_extension();
+	bool is_windows = OS::get_singleton()->get_name() == "Windows";
+	bool is_project_dir_valid = true;
+
+	if (project_dir.is_empty() || project_dir.ends_with(".")) {
+		is_project_dir_valid = false;
+	} else {
+		Vector<String> parts = project_dir.replace("\\", "/").split("/");
+		if (is_windows) {
+			parts.remove_at(0);
+		}
+		for (const String &part : parts) {
+			for (int i = 0; i < part.length(); i++) {
+				char32_t ch = part[i];
+				if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '-')) {
+					is_project_dir_valid = false;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!is_project_dir_valid) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Path"), TTR("Invalid path. Select a path that contains only letters, digits, periods (.), underscores (_), and hyphens (-), and does not end with a period."));
+		return ERR_FILE_BAD_PATH;
+	}
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(base_dir)) {
@@ -707,7 +732,6 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	}
 
 	String hvigor_cmd = get_hvigor_path();
-	bool is_windows = OS::get_singleton()->get_name() == "Windows";
 	String node_bin_path;
 	String java_home = get_java_sdk_path();
 	if (!FileAccess::exists(hvigor_cmd)) {
