@@ -1493,13 +1493,22 @@ public:
      * It sets the font name, size and optionally the style.
      *
      * @param[in] name The name of the font. This should correspond to a font available in the canvas.
+     *                 If set to @c nullptr, ThorVG will attempt to select a fallback font available on the system.
      * @param[in] size The size of the font in points. This determines how large the text will appear.
      * @param[in] style The style of the font. It can be used to set the font to 'italic'.
      *                  If not specified, the default style is used. Only 'italic' style is supported currently.
      *
      * @retval Result::InsufficientCondition when the specified @p name cannot be found.
      *
-     * @note Experimental API
+     * @note If the @p name is not specified, ThorVG will select any available font candidate.
+     * @since 1.0
+     *
+     * @code
+     * // Tip for fallback support to use any available font.
+     * if (text->font("Arial", 24) != tvg::Result::Success) {
+     *     text->font(nullptr, 24);
+     * }
+     * @endcode
      */
     Result font(const char* name, float size, const char* style = nullptr) noexcept;
 
