@@ -46,6 +46,9 @@
 
 #include <openxr/openxr.h>
 
+// Name we add to our extensions if OpenXR 1.1 context is available.
+#define XR_OPENXR_1_1_NAME "OPENXR_1_1"
+
 // forward declarations, we don't want to include these fully
 class OpenXRInterface;
 
@@ -91,7 +94,7 @@ private:
 
 	// extensions
 	LocalVector<XrExtensionProperties> supported_extensions;
-	Vector<CharString> enabled_extensions;
+	LocalVector<CharString> enabled_extensions;
 
 	// composition layer providers
 	Vector<OpenXRExtensionWrapper *> composition_layer_providers;
@@ -112,6 +115,7 @@ private:
 	PackedInt64Array supported_swapchain_formats;
 
 	// system info
+	XrVersion openxr_version;
 	String runtime_name;
 	String runtime_version;
 
@@ -180,7 +184,14 @@ private:
 	bool load_layer_properties();
 	bool load_supported_extensions();
 	bool is_extension_supported(const String &p_extension) const;
-	bool is_extension_enabled(const String &p_extension) const;
+	bool is_any_extension_enabled(const String &p_extensions) const;
+	bool is_promoted(XrVersion p_in_version, const char *p_extension) const;
+
+	struct RequestExtension {
+		String name;
+		bool *enabled;
+	};
+	XrResult attempt_create_instance(XrVersion p_version);
 
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
@@ -299,6 +310,7 @@ private:
 
 	struct InteractionProfile { // Interaction profiles define suggested bindings between the physical inputs on controller types and our actions
 		String name; // Name of the interaction profile (i.e. "/interaction_profiles/valve/index_controller")
+		CharString internal_name; // Internal name of the interaction profile (translated if required)
 		XrPath path; // OpenXR path for this profile
 		Vector<XrActionSuggestedBinding> bindings; // OpenXR action bindings
 		Vector<PackedByteArray> modifiers; // Array of modifiers we'll add into XrBindingModificationsKHR
@@ -306,6 +318,9 @@ private:
 	RID_Owner<InteractionProfile, true> interaction_profile_owner;
 	RID get_interaction_profile_rid(XrPath p_path);
 	XrPath get_interaction_profile_path(RID p_interaction_profile);
+
+	CharString get_interaction_profile_internal_name(const String &p_interaction_profile_name) const;
+	const char *check_profile_path(const CharString &p_interaction_profile_name, const char *p_path) const;
 
 	struct OrderedCompositionLayer {
 		const XrCompositionLayerBaseHeader *composition_layer;
@@ -418,6 +433,7 @@ private:
 	}
 
 public:
+	XrVersion get_openxr_version() const { return openxr_version; }
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
 	XrSession get_session() const { return session; }
@@ -461,7 +477,7 @@ public:
 	static const Vector<OpenXRExtensionWrapper *> &get_registered_extension_wrappers();
 	static void register_extension_metadata();
 	static void cleanup_extension_wrappers();
-	static PackedStringArray get_all_requested_extensions();
+	static PackedStringArray get_all_requested_extensions(XrVersion p_xr_version);
 
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }

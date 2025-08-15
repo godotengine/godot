@@ -46,7 +46,7 @@ OpenXRPerformanceSettingsExtension::~OpenXRPerformanceSettingsExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRPerformanceSettingsExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRPerformanceSettingsExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_EXT_PERFORMANCE_SETTINGS_EXTENSION_NAME] = &available;

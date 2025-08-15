@@ -50,7 +50,7 @@ OpenXRDebugUtilsExtension::~OpenXRDebugUtilsExtension() {
 	singleton = nullptr;
 }
 
-HashMap<String, bool *> OpenXRDebugUtilsExtension::get_requested_extensions() {
+HashMap<String, bool *> OpenXRDebugUtilsExtension::get_requested_extensions(XrVersion p_version) {
 	HashMap<String, bool *> request_extensions;
 
 	request_extensions[XR_EXT_DEBUG_UTILS_EXTENSION_NAME] = &debug_utils_ext;
