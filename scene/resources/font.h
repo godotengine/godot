@@ -108,6 +108,7 @@ protected:
 	real_t _draw_char_outline_bind_compat_104872(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, int p_font_size = DEFAULT_FONT_SIZE, int p_size = 1, const Color &p_modulate = Color(1.0, 1.0, 1.0)) const;
 	RID _find_variation_bind_compat_80954(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D()) const;
 	RID _find_variation_bind_compat_87668(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0) const;
+	RID _find_variation_bind_compat_109629(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const;
 	static void _bind_compatibility_methods();
 #endif
 
@@ -123,7 +124,7 @@ public:
 	virtual TypedArray<Font> get_fallbacks() const;
 
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const { return RID(); }
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, float p_msdf_rounded_outline = 1.0) const { return RID(); }
 	virtual RID _get_rid() const { return RID(); }
 	virtual TypedArray<RID> get_rids() const;
 
@@ -296,7 +297,7 @@ public:
 	virtual real_t get_oversampling() const;
 
 	// Cache.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, float p_msdf_rounded_outline = 1.0) const override;
 	virtual RID _get_rid() const override;
 
 	virtual int get_cache_count() const;
@@ -321,6 +322,9 @@ public:
 
 	virtual float get_extra_baseline_offset(int p_cache_index) const;
 	virtual void set_extra_baseline_offset(int p_cache_index, float p_baseline_offset);
+
+	virtual float get_extra_msdf_rounded_outline(int p_cache_index) const;
+	virtual void set_extra_msdf_rounded_outline(int p_cache_index, float p_msdf_rounded_outline);
 
 	virtual void set_face_index(int p_cache_index, int64_t p_index);
 	virtual int64_t get_face_index(int p_cache_index) const;
@@ -423,6 +427,7 @@ class FontVariation : public Font {
 	Dictionary opentype_features;
 	int extra_spacing[TextServer::SPACING_MAX];
 	float baseline_offset = 0.0;
+	float msdf_rounded_outline = 1.0;
 
 protected:
 	static void _bind_methods();
@@ -457,8 +462,11 @@ public:
 	virtual float get_baseline_offset() const;
 	virtual void set_baseline_offset(float p_baseline_offset);
 
+	virtual float get_msdf_rounded_outline() const;
+	virtual void set_msdf_rounded_outline(float p_msdf_rounded_outline);
+
 	// Output.
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, float p_msdf_rounded_outline = 1.0) const override;
 	virtual RID _get_rid() const override;
 
 	FontVariation();
@@ -564,7 +572,7 @@ public:
 
 	virtual int get_spacing(TextServer::SpacingType p_spacing) const override;
 
-	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0) const override;
+	virtual RID find_variation(const Dictionary &p_variation_coordinates, int p_face_index = 0, float p_strength = 0.0, Transform2D p_transform = Transform2D(), int p_spacing_top = 0, int p_spacing_bottom = 0, int p_spacing_space = 0, int p_spacing_glyph = 0, float p_baseline_offset = 0.0, float p_msdf_rounded_outline = 1.0) const override;
 	virtual RID _get_rid() const override;
 
 	int64_t get_face_count() const override;

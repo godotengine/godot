@@ -2484,7 +2484,7 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 					instance_data->flags |= INSTANCE_FLAGS_USE_MSDF;
 					instance_data->msdf[0] = rect->px_range; // Pixel range.
 					instance_data->msdf[1] = rect->outline; // Outline size.
-					instance_data->msdf[2] = 0.f; // Reserved.
+					instance_data->msdf[2] = rect->msdf_rounded_outline; // Outline true distance blending.
 					instance_data->msdf[3] = 0.f; // Reserved.
 				} else if (rect->flags & CANVAS_RECT_LCD) {
 					instance_data->flags |= INSTANCE_FLAGS_USE_LCD;

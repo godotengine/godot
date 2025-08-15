@@ -506,8 +506,8 @@ void main() {
 	if (bool(draw_data.flags & INSTANCE_FLAGS_USE_MSDF)) {
 		float px_range = draw_data.ninepatch_margins.x;
 		float outline_thickness = draw_data.ninepatch_margins.y;
-		//float reserved1 = draw_data.ninepatch_margins.z;
-		//float reserved2 = draw_data.ninepatch_margins.w;
+		float msdf_rounded_outline = draw_data.ninepatch_margins.z;
+		//float reserved = draw_data.ninepatch_margins.w;
 
 		vec4 msdf_sample = texture(sampler2D(color_texture, texture_sampler), uv);
 		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
@@ -517,7 +517,7 @@ void main() {
 
 		if (outline_thickness > 0) {
 			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
-			d = min(d, msdf_sample.a);
+			d = mix(d, msdf_sample.a, msdf_rounded_outline);
 			float a = clamp((d - 0.5 + cr) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
