@@ -1342,6 +1342,33 @@ bool ClassDB::is_enum_bitfield(const StringName &p_class, const StringName &p_na
 	return false;
 }
 
+void ClassDB::bind_struct(const StringName &p_class, const StringName &p_name, StructDefinitionGetter p_definition) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL(type);
+
+	if (type->struct_map.has(p_name)) {
+		ERR_FAIL();
+	}
+
+	type->struct_map.insert(p_name, p_definition);
+}
+
+const StructDefinition *ClassDB::get_struct(const StringName &p_class, const StringName &p_name) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *type = classes.getptr(p_class);
+	ERR_FAIL_NULL_V(type, nullptr);
+
+	StructDefinitionGetter *getter = type->struct_map.getptr(p_name);
+	if (getter != nullptr) {
+		return (*getter)();
+	}
+
+	return nullptr;
+}
+
 void ClassDB::add_signal(const StringName &p_class, const MethodInfo &p_signal) {
 	Locker::Lock lock(Locker::STATE_WRITE);
 
