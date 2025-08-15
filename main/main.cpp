@@ -75,6 +75,7 @@
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
+#include "servers/movie_writer/movie_recorder_manager.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #include "servers/register_server_types.h"
@@ -250,7 +251,6 @@ static int frame_delay = 0;
 static int audio_output_latency = 0;
 static bool disable_render_loop = false;
 static int fixed_fps = -1;
-static MovieWriter *movie_writer = nullptr;
 static bool disable_vsync = false;
 static bool print_fps = false;
 #ifdef TOOLS_ENABLED
@@ -3234,22 +3234,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 			rendering_server->set_print_gpu_profile(true);
 		}
 
-		if (Engine::get_singleton()->get_write_movie_path() != String()) {
-			movie_writer = MovieWriter::find_writer_for_file(Engine::get_singleton()->get_write_movie_path());
-			if (movie_writer == nullptr) {
-				ERR_PRINT("Can't find movie writer for file type, aborting: " + Engine::get_singleton()->get_write_movie_path());
-				Engine::get_singleton()->set_write_movie_path(String());
-			} else {
-				// Check if real-time recording mode is enabled
-				bool realtime_recording = false;
-				if (ProjectSettings::get_singleton()->has_setting("movie_writer/realtime_mode")) {
-					realtime_recording = (bool)ProjectSettings::get_singleton()->get_setting("movie_writer/realtime_mode");
-				}
-				if (realtime_recording) {
-					movie_writer->set_realtime_mode(true);
-				}
-			}
-		}
+		// Initialize movie recorder manager
+		MovieRecorderManager::set_fixed_fps(fixed_fps);
+		MovieRecorderManager::onInit();
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "Rendering");
 	}
@@ -4427,9 +4414,8 @@ int Main::start() {
 		DisplayServer::get_singleton()->set_icon(icon);
 	}
 
-	if (movie_writer) {
-		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
-	}
+	// Start movie recording if needed
+	MovieRecorderManager::onStart();
 
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
@@ -4663,9 +4649,8 @@ bool Main::iteration() {
 
 	iterating--;
 
-	if (movie_writer) {
-		movie_writer->add_frame();
-	}
+	// Update movie recording
+	MovieRecorderManager::onUpdate();
 
 #ifdef TOOLS_ENABLED
 	bool quit_after_timeout = false;
@@ -4741,9 +4726,8 @@ void Main::cleanup(bool p_force) {
 		TextServerManager::get_singleton()->get_interface(i)->cleanup();
 	}
 
-	if (movie_writer) {
-		movie_writer->end();
-	}
+	// Cleanup movie recording
+	MovieRecorderManager::onCleanup();
 
 	ResourceLoader::clear_thread_load_tasks();
 

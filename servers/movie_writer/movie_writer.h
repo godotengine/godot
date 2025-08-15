@@ -58,17 +58,6 @@ class MovieWriter : public Object {
 	bool realtime_mode = false;
 	static class HybridAudioDriver *hybrid_driver;
 	class AudioDriver *original_driver = nullptr;
-#ifdef WEB_ENABLED
-	// Web platform audio recording support (Option 1: MediaRecorder API)
-	bool web_audio_recorder_initialized = false;
-	bool web_audio_recording_active = false;
-	Vector<uint8_t> web_audio_buffer; // Stores audio data recorded on the web platform
-
-	// Web platform Canvas video recording support (Option 2: Canvas.captureStream + MediaRecorder)
-	bool web_video_recorder_initialized = false;
-	bool web_video_recording_active = false;
-
-#endif
 
 	enum {
 		MAX_WRITERS = 8
@@ -76,9 +65,6 @@ class MovieWriter : public Object {
 	static MovieWriter *writers[];
 	static uint32_t writer_count;
 protected:
-	// Web platform configuration
-	bool enable_web_auto_download = false;    // Enable automatic file download on web platform
-	
 	virtual uint32_t get_audio_mix_rate() const;
 	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
 
@@ -106,13 +92,12 @@ public:
 
 	static void add_writer(MovieWriter *p_writer);
 	static MovieWriter *find_writer_for_file(const String &p_file);
+	static void set_extensions_hint();
 
 	void begin(const Size2i &p_movie_size, uint32_t p_fps, const String &p_base_path);
 	void add_frame();
-
-	static void set_extensions_hint();
-
 	void end();
+
 
 	// Real-time recording control
 	void set_realtime_mode(bool p_enable);
@@ -124,18 +109,6 @@ public:
 private:
 	void setup_hybrid_audio_driver();
 	void restore_original_audio_driver();
-
-#ifdef WEB_ENABLED
-	// Web platform audio recording specific methods
-	void setup_web_audio_recorder();
-	void cleanup_web_audio_recorder();
-	bool process_web_audio_data();
-
-	// Web platform Canvas video recording specific methods
-	void setup_web_video_recorder(uint32_t p_fps);
-	void cleanup_web_video_recorder();
-	bool process_web_video_data();
-#endif
 };
 
 #endif // MOVIE_WRITER_H
