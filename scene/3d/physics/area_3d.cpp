@@ -259,6 +259,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 				node->connect(SceneStringName(tree_entered), callable_mp(this, &Area3D::_body_enter_tree).bind(objid));
 				node->connect(SceneStringName(tree_exiting), callable_mp(this, &Area3D::_body_exit_tree).bind(objid));
 				if (E->value.in_tree) {
+					GDVIRTUAL_CALL(_body_entered, Object::cast_to<Node3D>(node));
 					emit_signal(SceneStringName(body_entered), node);
 				}
 			}
@@ -286,6 +287,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &Area3D::_body_enter_tree));
 				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Area3D::_body_exit_tree));
 				if (in_tree) {
+					GDVIRTUAL_CALL(_body_exited, Object::cast_to<Node3D>(node));
 					emit_signal(SceneStringName(body_exited), obj);
 				}
 			}
@@ -327,6 +329,7 @@ void Area3D::_clear_monitoring() {
 				emit_signal(SceneStringName(body_shape_exited), E.value.rid, node, E.value.shapes[i].body_shape, E.value.shapes[i].area_shape);
 			}
 
+			GDVIRTUAL_CALL(_body_exited, Object::cast_to<Node3D>(node));
 			emit_signal(SceneStringName(body_exited), node);
 		}
 	}
@@ -356,6 +359,7 @@ void Area3D::_clear_monitoring() {
 				emit_signal(SceneStringName(area_shape_exited), E.value.rid, node, E.value.shapes[i].area_shape, E.value.shapes[i].self_shape);
 			}
 
+			GDVIRTUAL_CALL(_area_exited, Object::cast_to<Area3D>(node));
 			emit_signal(SceneStringName(area_exited), obj);
 		}
 	}
@@ -465,6 +469,7 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 				node->connect(SceneStringName(tree_entered), callable_mp(this, &Area3D::_area_enter_tree).bind(objid));
 				node->connect(SceneStringName(tree_exiting), callable_mp(this, &Area3D::_area_exit_tree).bind(objid));
 				if (E->value.in_tree) {
+					GDVIRTUAL_CALL(_area_entered, Object::cast_to<Area3D>(node));
 					emit_signal(SceneStringName(area_entered), node);
 				}
 			}
@@ -492,6 +497,7 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 				node->disconnect(SceneStringName(tree_entered), callable_mp(this, &Area3D::_area_enter_tree));
 				node->disconnect(SceneStringName(tree_exiting), callable_mp(this, &Area3D::_area_exit_tree));
 				if (in_tree) {
+					GDVIRTUAL_CALL(_area_exited, Object::cast_to<Area3D>(node));
 					emit_signal(SceneStringName(area_exited), obj);
 				}
 			}
@@ -810,6 +816,11 @@ void Area3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_COMBINE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE);
 	BIND_ENUM_CONSTANT(SPACE_OVERRIDE_REPLACE_COMBINE);
+
+	GDVIRTUAL_BIND(_body_entered, "body");
+	GDVIRTUAL_BIND(_body_exited, "body");
+	GDVIRTUAL_BIND(_area_entered, "area");
+	GDVIRTUAL_BIND(_area_exited, "area");
 }
 
 Area3D::Area3D() :
