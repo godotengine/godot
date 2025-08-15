@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/math/dynamic_bvh.h"
+#include "core/math/frustum.h"
 #include "core/math/transform_interpolator.h"
 #include "core/templates/bin_sorted_array.h"
 #include "core/templates/local_vector.h"
@@ -154,15 +155,15 @@ public:
 		uint32_t signs[3];
 	};
 
-	struct Frustum {
+	struct FrustumSign {
 		Vector<Plane> planes;
 		Vector<PlaneSign> plane_signs;
 		const Plane *planes_ptr;
 		const PlaneSign *plane_signs_ptr;
 		uint32_t plane_count;
 
-		_ALWAYS_INLINE_ Frustum() {}
-		_ALWAYS_INLINE_ Frustum(const Frustum &p_frustum) {
+		_ALWAYS_INLINE_ FrustumSign() {}
+		_ALWAYS_INLINE_ FrustumSign(const FrustumSign &p_frustum) {
 			planes = p_frustum.planes;
 			plane_signs = p_frustum.plane_signs;
 
@@ -170,7 +171,7 @@ public:
 			plane_signs_ptr = plane_signs.ptr();
 			plane_count = p_frustum.plane_count;
 		}
-		_ALWAYS_INLINE_ void operator=(const Frustum &p_frustum) {
+		_ALWAYS_INLINE_ void operator=(const FrustumSign &p_frustum) {
 			planes = p_frustum.planes;
 			plane_signs = p_frustum.plane_signs;
 
@@ -178,7 +179,7 @@ public:
 			plane_signs_ptr = plane_signs.ptr();
 			plane_count = p_frustum.plane_count;
 		}
-		_ALWAYS_INLINE_ Frustum(const Vector<Plane> &p_planes) {
+		_ALWAYS_INLINE_ FrustumSign(const Vector<Plane> &p_planes) {
 			planes = p_planes;
 			planes_ptr = planes.ptrw();
 			plane_count = planes.size();
@@ -187,6 +188,17 @@ public:
 				plane_signs.push_back(ps);
 			}
 
+			plane_signs_ptr = plane_signs.ptr();
+		}
+		_ALWAYS_INLINE_ FrustumSign(const Frustum &p_frustum) {
+			plane_count = 6;
+			for (int i = 0; i < 6; i++) {
+				planes.push_back(p_frustum[i]);
+				PlaneSign ps(p_frustum[i]);
+				plane_signs.push_back(ps);
+			}
+
+			planes_ptr = planes.ptrw();
 			plane_signs_ptr = plane_signs.ptr();
 		}
 	};
@@ -207,7 +219,7 @@ public:
 			bounds[4] = p_aabb.position.y + p_aabb.size.y;
 			bounds[5] = p_aabb.position.z + p_aabb.size.z;
 		}
-		_ALWAYS_INLINE_ bool in_frustum(const Frustum &p_frustum) const {
+		_ALWAYS_INLINE_ bool in_frustum(const FrustumSign &p_frustum) const {
 			// This is not a full SAT check and the possibility of false positives exist,
 			// but the tradeoff vs performance is still very good.
 
@@ -1075,9 +1087,9 @@ public:
 	_FORCE_INLINE_ void _update_instance_lightmap_captures(Instance *p_instance) const;
 	void _unpair_instance(Instance *p_instance);
 
-	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
+	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Frustum &p_cam_frustum, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 	RID _render_get_compositor(RID p_camera, RID p_scenario);
@@ -1087,7 +1099,7 @@ public:
 			RID light_instance;
 			uint32_t caster_mask;
 			struct Cascade {
-				Frustum frustum;
+				FrustumSign frustum;
 
 				Projection projection;
 				Transform3D transform;
@@ -1118,7 +1130,7 @@ public:
 
 		SpinLock lock;
 
-		Frustum frustum;
+		FrustumSign frustum;
 	} cull;
 
 	struct VisibilityCullData {
