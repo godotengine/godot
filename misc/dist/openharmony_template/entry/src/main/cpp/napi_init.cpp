@@ -466,7 +466,7 @@ static napi_value Init(napi_env env, napi_value exports) {
 		{ "setWindowId", nullptr, NAPI_Global_setWindowId, nullptr, nullptr, nullptr, napi_default, nullptr },
 		{ "sendWindowEvent", nullptr, NAPI_Global_sendWindowEvent, nullptr, nullptr, nullptr, napi_default, nullptr },
 		{ "inputKey", nullptr, NAPI_Global_inputKey, nullptr, nullptr, nullptr, napi_default, nullptr },
-		{ "inputMouse", nullptr, NAPI_Global_inputMouse, nullptr, nullptr, nullptr, napi_default, nullptr }
+		{ "inputMouse", nullptr, NAPI_Global_inputMouse, nullptr, nullptr, nullptr, napi_default, nullptr },
 	};
 	napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc);
 	return exports;

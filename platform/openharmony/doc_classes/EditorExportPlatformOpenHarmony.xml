@@ -4,26 +4,22 @@
 		Export platform for OpenHarmony applications.
 	</brief_description>
 	<description>
-		The OpenHarmony export platform allows you to build and deploy Godot projects as OpenHarmony applications (.hap files). OpenHarmony is an open-source operating system for various smart devices including smartphones, tablets, and IoT devices.
-
+		The OpenHarmony export platform allows you to build and deploy Godot projects as OpenHarmony applications ([code].hap[/code] files). OpenHarmony is an open-source operating system for various smart devices including smartphones, tablets, and IoT devices.
 		This platform handles the complete export process including:
 		- Template extraction and project configuration
 		- Asset packaging and resource management
 		- Native library integration
 		- Application signing and certification
 		- Device deployment and debugging
-
 		[b]Requirements:[/b]
 		- OpenHarmony SDK properly installed and configured
-		- Vulkan renderer (Forward+ or Mobile rendering method with Vulkan driver)
+		- Vulkan renderer (Forward+ or Mobile rendering method with the Vulkan driver)
 		- Valid export templates (debug/release)
 		- For device deployment: HDC (HarmonyOS Device Connector) tool
 		- For signing: Valid certificate files and signing profiles
-
 		[b]Supported Architectures:[/b]
 		- ARM64 (arm64-v8a) - Primary architecture for most OpenHarmony devices
 		- x86_64 - For emulator and development purposes
-
 		[b]Export Process:[/b]
 		1. Template preparation and extraction
 		2. Project configuration and manifest generation
@@ -31,7 +27,7 @@
 		4. Native library integration
 		5. Application building using Hvigor build system
 		6. Optional code signing
-		7. Package generation (.hap or .app files)
+		7. Package generation ([code].hap[/code] or [code].app[/code] files)
 	</description>
 	<tutorials>
 	</tutorials>
@@ -79,7 +75,7 @@
 			Request MICROPHONE permission for the application. This permission allows the application to access the device's microphone for audio recording. When enabled, this permission will be added to the application manifest and requires user consent at runtime.
 		</member>
 		<member name="sign/certpath_file" type="String" setter="" getter="">
-			Path to the certificate file (.cer) used for application signing. This file contains the public key certificate that corresponds to the private key in the keystore. Required when signing is enabled. This option is only visible when build/sign is enabled.
+			Path to the certificate file ([code].cer[/code]) used for application signing. This file contains the public key certificate that corresponds to the private key in the keystore. Required when signing is enabled. This option is only visible when build/sign is enabled.
 		</member>
 		<member name="sign/key_alias" type="String" setter="" getter="">
 			The alias name of the key pair in the keystore file. This identifies which key from the keystore should be used for signing the application. Required when signing is enabled. This option is only visible when build/sign is enabled.
@@ -88,7 +84,7 @@
 			The password for the specific key identified by the key alias in the keystore. This password protects the private key used for signing. Required when signing is enabled. This field is marked as secret in the UI. This option is only visible when build/sign is enabled.
 		</member>
 		<member name="sign/profile_file" type="String" setter="" getter="">
-			Path to the provisioning profile file (.p7b) that authorizes the application to run on OpenHarmony devices. This file contains information about the application's capabilities and the devices it can run on. Required when signing is enabled. This option is only visible when build/sign is enabled.
+			Path to the provisioning profile file ([code].p7b[/code]) that authorizes the application to run on OpenHarmony devices. This file contains information about the application's capabilities and the devices it can run on. Required when signing is enabled. This option is only visible when build/sign is enabled.
 		</member>
 		<member name="sign/sign_alg" type="String" setter="" getter="">
 			The signing algorithm to use for application signing. Default value is "SHA256withECDSA". This determines the cryptographic algorithm used to create the digital signature. This option is only visible when build/sign is enabled.

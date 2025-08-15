@@ -179,8 +179,7 @@ void AudioDriverOpenHarmony::finish() {
 
 Error AudioDriverOpenHarmony::input_start() {
 	if (!OS::get_singleton()->request_permission("ohos.permission.MICROPHONE")) {
-		ERR_PRINT("Microphone permission not granted");
-		return FAILED;
+		ERR_FAIL_V_MSG(FAILED, "Microphone permission not granted.");
 	}
 	if (!audio_stream_capture_builder) {
 		OH_AudioStreamBuilder_Create(&audio_stream_capture_builder, AUDIOSTREAM_TYPE_CAPTURER);
@@ -202,17 +201,11 @@ Error AudioDriverOpenHarmony::input_start() {
 
 	if (!audio_capturer) {
 		OH_AudioStream_Result r = OH_AudioStreamBuilder_GenerateCapturer(audio_stream_capture_builder, &audio_capturer);
-		if (r != AUDIOSTREAM_SUCCESS) {
-			ERR_PRINT(vformat("Failed to generate capturer: %d", r));
-			return FAILED;
-		}
+		ERR_FAIL_COND_V_MSG(r != AUDIOSTREAM_SUCCESS, FAILED, vformat("Failed to generate capturer: %d.", r));
 
 		input_buffer_init(2048);
 		r = OH_AudioCapturer_Start(audio_capturer);
-		if (r != AUDIOSTREAM_SUCCESS) {
-			ERR_PRINT(vformat("Failed to start capturer: %d", r));
-			return FAILED;
-		}
+		ERR_FAIL_COND_V_MSG(r != AUDIOSTREAM_SUCCESS, FAILED, vformat("Failed to start capturer: %d.", r));
 	}
 	return OK;
 }

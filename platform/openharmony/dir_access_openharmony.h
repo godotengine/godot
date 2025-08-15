@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
 #include <rawfile/raw_dir.h>
@@ -42,7 +41,7 @@ class DirAccessOpenHarmony : public DirAccessUnix {
 	int _rawdir_counter = 0;
 	int _rawfile_count = 0;
 	bool _is_rawdir = false;
-	String _cpath = "";
+	String _cpath;
 
 protected:
 	String get_absolute_path(String p_path);

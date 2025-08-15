@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include "os_openharmony.h"
+
 #include "dir_access_openharmony.h"
 #include "display_server_openharmony.h"
 #include "file_access_openharmony.h"
-#include "os_openharmony.h"
 
-#include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "drivers/unix/dir_access_unix.h"
-#include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "scene/main/scene_tree.h"
 
@@ -160,10 +157,7 @@ void OS_OpenHarmony::_load_system_font_config() const {
 
 	OH_Drawing_FontConfigInfoErrorCode error_code;
 	OH_Drawing_FontConfigInfo *font_config_info = OH_Drawing_GetSystemFontConfigInfo(&error_code);
-	if (error_code != SUCCESS_FONT_CONFIG_INFO) {
-		ERR_PRINT(vformat("Failed to load system font config: %d", error_code));
-		return;
-	}
+	ERR_FAIL_COND_MSG(error_code != SUCCESS_FONT_CONFIG_INFO, vformat("Failed to load system font config: %d.", error_code));
 
 	HashSet<String> generic_font_names;
 	for (int i = 0; i < font_config_info->fontGenericInfoSize; i++) {
@@ -315,7 +309,7 @@ Vector<String> OS_OpenHarmony::get_system_font_path_for_text(const String &p_fon
 	if (font_aliases.has(font_name)) {
 		font_name = font_aliases[font_name];
 	}
-	String lang_prefix = p_locale.split("_")[0];
+	String lang_prefix = p_locale.get_slice("_", 0);
 	Vector<String> ret;
 	int best_score = 0;
 	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
@@ -371,7 +365,7 @@ String OS_OpenHarmony::get_system_ca_certificates() {
 	}
 
 	Ref<FileAccess> f = FileAccess::open(certfile, FileAccess::READ);
-	ERR_FAIL_COND_V_MSG(f.is_null(), "", vformat("Failed to open system CA certificates file: '%s'", certfile));
+	ERR_FAIL_COND_V_MSG(f.is_null(), String(), vformat(R"(Failed to open system CA certificates file: "%s".)", certfile));
 
 	String data = f->get_as_text();
 

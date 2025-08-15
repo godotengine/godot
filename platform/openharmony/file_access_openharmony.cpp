@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "file_access_openharmony.h"
+
 #include "dir_access_openharmony.h"
 #include "os_openharmony.h"
 
@@ -38,7 +39,7 @@ void FileAccessOpenHarmony::setup(NativeResourceManager *p_resource_manager) {
 	FileAccessOpenHarmony::resource_manager = p_resource_manager;
 }
 
-Error FileAccessOpenHarmony::get_rawfile_content(const char *p_path, String &content) {
+Error FileAccessOpenHarmony::get_rawfile_content(const char *p_path, String &r_content) {
 	if (resource_manager == nullptr) {
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -54,7 +55,7 @@ Error FileAccessOpenHarmony::get_rawfile_content(const char *p_path, String &con
 		memfree(buffer);
 		return ERR_FILE_CORRUPT;
 	}
-	content = String::utf8((const char *)buffer, length);
+	r_content = String::utf8((const char *)buffer, length);
 	memfree(buffer);
 	return OK;
 }
