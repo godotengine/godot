@@ -229,12 +229,15 @@ Files extracted from upstream:
 
 Patches:
 
+
 - `0001-disable-exceptions.patch` ([GH-48050](https://github.com/godotengine/godot/pull/48050))
 - `0002-godot-config.patch` ([GH-88783](https://github.com/godotengine/godot/pull/88783))
 - `0003-emscripten-nthreads.patch` ([GH-69799](https://github.com/godotengine/godot/pull/69799))
 - `0004-mingw-no-cpuidex.patch` ([GH-92488](https://github.com/godotengine/godot/pull/92488))
 - `0005-mingw-llvm-arm64.patch` ([GH-93364](https://github.com/godotengine/godot/pull/93364))
 - `0006-explicit-includes.patch` ([GH-111557](https://github.com/godotengine/godot/pull/111557))
+- `0007-support-open-harmony.patch` ([GH-108553](https://github.com/godotengine/godot/pull/108553))
+
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -1159,6 +1162,10 @@ Files extracted from upstream source:
 - `volk.h`, `volk.c`
 - `LICENSE.md`
 
+Patches:
+
+- `0001-support-open-harmony.patch` (GH-108553)
+
 
 ## vulkan
 
@@ -1193,7 +1200,7 @@ Patches:
 - `0001-VKEnumStringHelper-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
 - `0002-VMA-godot-vulkan.patch` ([GH-97510](https://github.com/godotengine/godot/pull/97510))
 - `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` ([GH-99257](https://github.com/godotengine/godot/pull/99257))
-
+- `0004-support-open-harmony.patch` ([GH-108553](https://github.com/godotengine/godot/pull/108553))
 
 ## wayland
 
@@ -1306,3 +1313,7 @@ Files extracted from upstream source:
 
 - `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
 - `LICENSE`
+
+Patches:
+
+- `0001-support-open-harmony.patch` (GH-108553)

@@ -673,8 +673,8 @@ namespace embree
     if (nThreads != -1) return nThreads;
 
 #if defined(__MACOSX__) || defined(__ANDROID__) || defined(__OPEN_HARMONY__)
-	nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
-	assert(nThreads);
+    nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
+    assert(nThreads);
 #elif defined(__EMSCRIPTEN__)
     nThreads = godot_js_os_hw_concurrency_get();
 #if 0
