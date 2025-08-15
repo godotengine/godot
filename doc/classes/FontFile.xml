@@ -138,6 +138,13 @@
 				Returns extra baseline offset (as a fraction of font height).
 			</description>
 		</method>
+		<method name="get_extra_msdf_rounded_outline" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="cache_index" type="int" />
+			<description>
+				Returns the MSDF outline rounding factor.
+			</description>
+		</method>
 		<method name="get_extra_spacing" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="cache_index" type="int" />
@@ -458,6 +465,14 @@
 			<param index="1" name="baseline_offset" type="float" />
 			<description>
 				Sets extra baseline offset (as a fraction of font height).
+			</description>
+		</method>
+		<method name="set_extra_msdf_rounded_outline">
+			<return type="void" />
+			<param index="0" name="cache_index" type="int" />
+			<param index="1" name="msdf_rounded_outline" type="float" />
+			<description>
+				Sets the MSDF outline rounding factor. [code]0.0[/code] is a sharp outline, while [code]1.0[/code] is a rounded outline. Values between result in a slightly rounded outline.
 			</description>
 		</method>
 		<method name="set_extra_spacing">

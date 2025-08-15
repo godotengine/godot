@@ -360,9 +360,10 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 	}
 
 	bool msdf = TS->font_is_multichannel_signed_distance_field(p_glyph.font_rid);
+	float msdf_rounded_outline = TS->font_get_msdf_rounded_outline(p_glyph.font_rid);
 
 	for (int j = 0; j < p_glyph.repeat; j++) {
-		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size);
+		SurfaceKey key = SurfaceKey(tex.get_id(), p_priority, p_outline_size, msdf_rounded_outline);
 		if (!surfaces.has(key)) {
 			SurfaceData surf;
 			surf.material = RenderingServer::get_singleton()->material_create();
@@ -381,6 +382,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			if (msdf) {
 				RS::get_singleton()->material_set_param(surf.material, "msdf_pixel_range", TS->font_get_msdf_pixel_range(p_glyph.font_rid));
 				RS::get_singleton()->material_set_param(surf.material, "msdf_outline_size", p_outline_size);
+				RS::get_singleton()->material_set_param(surf.material, "msdf_rounded_outline", msdf_rounded_outline);
 			}
 
 			BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;

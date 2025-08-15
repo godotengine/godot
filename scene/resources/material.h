@@ -499,6 +499,7 @@ private:
 		StringName proximity_fade_distance;
 		StringName msdf_pixel_range;
 		StringName msdf_outline_size;
+		StringName msdf_rounded_outline;
 		StringName distance_fade_min;
 		StringName distance_fade_max;
 		StringName ao_light_affect;
@@ -593,6 +594,7 @@ private:
 
 	float msdf_pixel_range = 4.f;
 	float msdf_outline_size = 0.f;
+	float msdf_rounded_outline = 1.0f;
 
 	DistanceFadeMode distance_fade = DISTANCE_FADE_DISABLED;
 	float distance_fade_max_distance = 0.0f;
@@ -826,8 +828,11 @@ public:
 	void set_msdf_pixel_range(float p_range);
 	float get_msdf_pixel_range() const;
 
-	void set_msdf_outline_size(float p_size);
+	void set_msdf_outline_size(float p_blending);
 	float get_msdf_outline_size() const;
+
+	void set_msdf_rounded_outline(float p_size);
+	float get_msdf_rounded_outline() const;
 
 	void set_distance_fade(DistanceFadeMode p_mode);
 	DistanceFadeMode get_distance_fade() const;

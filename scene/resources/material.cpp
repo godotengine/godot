@@ -630,6 +630,7 @@ void BaseMaterial3D::init_shaders() {
 
 	shader_names->msdf_pixel_range = "msdf_pixel_range";
 	shader_names->msdf_outline_size = "msdf_outline_size";
+	shader_names->msdf_rounded_outline = "msdf_rounded_outline";
 
 	shader_names->metallic_texture_channel = "metallic_texture_channel";
 	shader_names->ao_texture_channel = "ao_texture_channel";
@@ -999,6 +1000,7 @@ uniform float distance_fade_max : hint_range(0.0, 4096.0, 0.01);
 		code += R"(
 uniform float msdf_pixel_range : hint_range(1.0, 100.0, 1.0);
 uniform float msdf_outline_size : hint_range(0.0, 250.0, 1.0);
+uniform float msdf_rounded_outline : hint_range(0.0, 1.0, 0.0001);
 )";
 	}
 
@@ -1640,7 +1642,7 @@ void fragment() {)";
 		float d = msdf_median(albedo_tex.r, albedo_tex.g, albedo_tex.b);
 		if (msdf_outline_size > 0.0) {
 			float cr = clamp(msdf_outline_size, 0.0, (msdf_pixel_range / 2.0) - 1.0) / msdf_pixel_range;
-			d = min(d, albedo_tex.a);
+			d = mix(d, albedo_tex.a, msdf_rounded_outline);
 			albedo_tex.a = clamp((d - 0.5 + cr) * px_size, 0.0, 1.0);
 		} else {
 			albedo_tex.a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
@@ -2599,6 +2601,10 @@ void BaseMaterial3D::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
 
+		if (p_property.name == "msdf_rounded_outline" && !flags[FLAG_ALBEDO_TEXTURE_MSDF]) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
 		if ((p_property.name == "distance_fade_max_distance" || p_property.name == "distance_fade_min_distance") && distance_fade == DISTANCE_FADE_DISABLED) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 		}
@@ -3093,13 +3099,22 @@ float BaseMaterial3D::get_msdf_pixel_range() const {
 	return msdf_pixel_range;
 }
 
-void BaseMaterial3D::set_msdf_outline_size(float p_size) {
-	msdf_outline_size = p_size;
-	_material_set_param(shader_names->msdf_outline_size, p_size);
+void BaseMaterial3D::set_msdf_outline_size(float p_blending) {
+	msdf_outline_size = p_blending;
+	_material_set_param(shader_names->msdf_outline_size, p_blending);
 }
 
 float BaseMaterial3D::get_msdf_outline_size() const {
 	return msdf_outline_size;
+}
+
+void BaseMaterial3D::set_msdf_rounded_outline(float p_blending) {
+	msdf_rounded_outline = p_blending;
+	_material_set_param(shader_names->msdf_rounded_outline, p_blending);
+}
+
+float BaseMaterial3D::get_msdf_rounded_outline() const {
+	return msdf_rounded_outline;
 }
 
 void BaseMaterial3D::set_distance_fade(DistanceFadeMode p_mode) {
@@ -3543,6 +3558,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_msdf_outline_size", "size"), &BaseMaterial3D::set_msdf_outline_size);
 	ClassDB::bind_method(D_METHOD("get_msdf_outline_size"), &BaseMaterial3D::get_msdf_outline_size);
 
+	ClassDB::bind_method(D_METHOD("set_msdf_rounded_outline", "blending"), &BaseMaterial3D::set_msdf_rounded_outline);
+	ClassDB::bind_method(D_METHOD("get_msdf_rounded_outline"), &BaseMaterial3D::get_msdf_rounded_outline);
+
 	ClassDB::bind_method(D_METHOD("set_distance_fade", "mode"), &BaseMaterial3D::set_distance_fade);
 	ClassDB::bind_method(D_METHOD("get_distance_fade"), &BaseMaterial3D::get_distance_fade);
 
@@ -3757,6 +3775,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_GROUP("MSDF", "msdf_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_pixel_range", PROPERTY_HINT_RANGE, "1,100,1"), "set_msdf_pixel_range", "get_msdf_pixel_range");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_outline_size", PROPERTY_HINT_RANGE, "0,250,1"), "set_msdf_outline_size", "get_msdf_outline_size");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "msdf_rounded_outline", PROPERTY_HINT_RANGE, "0.0,1.0,0.0001"), "set_msdf_rounded_outline", "get_msdf_rounded_outline");
 
 	ADD_GROUP("Distance Fade", "distance_fade_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "distance_fade_mode", PROPERTY_HINT_ENUM, "Disabled,PixelAlpha,PixelDither,ObjectDither"), "set_distance_fade", "get_distance_fade");
@@ -3983,6 +4002,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 
 	set_msdf_pixel_range(4.0);
 	set_msdf_outline_size(0.0);
+	set_msdf_rounded_outline(1.0);
 
 	set_heightmap_deep_parallax_min_layers(8);
 	set_heightmap_deep_parallax_max_layers(32);

@@ -1000,7 +1000,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					state.instance_data_array[r_index].flags |= INSTANCE_FLAGS_USE_MSDF;
 					state.instance_data_array[r_index].msdf[0] = rect->px_range; // Pixel range.
 					state.instance_data_array[r_index].msdf[1] = rect->outline; // Outline size.
-					state.instance_data_array[r_index].msdf[2] = 0.f; // Reserved.
+					state.instance_data_array[r_index].msdf[2] = rect->msdf_rounded_outline; // Outline true distance blending.
 					state.instance_data_array[r_index].msdf[3] = 0.f; // Reserved.
 				} else if (rect->flags & CANVAS_RECT_LCD) {
 					state.instance_data_array[r_index].flags |= INSTANCE_FLAGS_USE_LCD;

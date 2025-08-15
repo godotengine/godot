@@ -81,24 +81,30 @@ private:
 	};
 
 	struct SurfaceKey {
-		uint64_t texture_id;
-		int32_t priority;
-		int32_t outline_size;
+		uint64_t texture_id = 0;
+		int32_t priority = 0;
+		int32_t outline_size = 0;
+		float msdf_rounded_outline = 1.0;
 
 		bool operator==(const SurfaceKey &p_b) const {
-			return (texture_id == p_b.texture_id) && (priority == p_b.priority) && (outline_size == p_b.outline_size);
+			return (texture_id == p_b.texture_id) && (priority == p_b.priority) && (outline_size == p_b.outline_size) && (msdf_rounded_outline == p_b.msdf_rounded_outline);
 		}
 
-		SurfaceKey(uint64_t p_texture_id, int p_priority, int p_outline_size) {
+		SurfaceKey(uint64_t p_texture_id, int p_priority, int p_outline_size, float p_msdf_rounded_outline) {
 			texture_id = p_texture_id;
 			priority = p_priority;
 			outline_size = p_outline_size;
+			msdf_rounded_outline = p_msdf_rounded_outline;
 		}
 	};
 
 	struct SurfaceKeyHasher {
 		_FORCE_INLINE_ static uint32_t hash(const SurfaceKey &p_a) {
-			return hash_murmur3_buffer(&p_a, sizeof(SurfaceKey));
+			uint32_t h = hash_one_uint64(p_a.texture_id);
+			h = hash_murmur3_one_32(p_a.priority, h);
+			h = hash_murmur3_one_32(p_a.outline_size, h);
+			h = hash_murmur3_one_float(p_a.msdf_rounded_outline, h);
+			return h;
 		}
 	};
 
