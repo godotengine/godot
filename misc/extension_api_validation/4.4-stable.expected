@@ -328,3 +328,12 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and SVGTexture. Compatibility method registered.
+
+
+GH-109629
+---------
+Validate extension JSON: Error: Field 'classes/CanvasItem/methods/draw_msdf_texture_rect_region/arguments': size changed value in new API, from 7 to 8.
+Validate extension JSON: Error: Field 'classes/Font/methods/find_variation/arguments': size changed value in new API, from 9 to 10.
+Validate extension JSON: Error: Field 'classes/RenderingServer/methods/canvas_item_add_msdf_texture_rect_region/arguments': size changed value in new API, from 8 to 9.
+
+Optional argument added. Compatibility methods registered.
