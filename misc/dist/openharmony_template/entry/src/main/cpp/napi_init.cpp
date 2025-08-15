@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "bridge_openharmony.h"
+
 #include <hilog/log.h>
 #include <napi/native_api.h>
 #include <native_window/external_window.h>

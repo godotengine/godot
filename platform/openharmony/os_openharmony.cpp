@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  os_openharmory.cpp                                                    */
+/*  os_openharmony.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -309,7 +309,7 @@ Vector<String> OS_OpenHarmony::get_system_font_path_for_text(const String &p_fon
 	if (font_aliases.has(font_name)) {
 		font_name = font_aliases[font_name];
 	}
-	String lang_prefix = p_locale.get_slice("_", 0);
+	String lang_prefix = p_locale.get_slicec('_', 0);
 	Vector<String> ret;
 	int best_score = 0;
 	for (const List<FontInfo>::Element *E = fonts.front(); E; E = E->next()) {
