@@ -44,6 +44,7 @@
 #include <SDL3/SDL_gamepad.h>
 #include <SDL3/SDL_iostream.h>
 #include <SDL3/SDL_joystick.h>
+#include <SDL3/SDL_log.h>
 
 JoypadSDL *JoypadSDL::singleton = nullptr;
 
@@ -74,7 +75,12 @@ JoypadSDL *JoypadSDL::get_singleton() {
 	return singleton;
 }
 
+static void SDLCALL sdl_log(void *userdata, int category, SDL_LogPriority priority, const char *message) {
+	print_verbose(vformat("SDL Debug (priority: %d): %s", priority, message));
+}
+
 Error JoypadSDL::initialize() {
+	SDL_SetLogOutputFunction(sdl_log, nullptr);
 	SDL_SetHint(SDL_HINT_JOYSTICK_THREAD, "1");
 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
 	ERR_FAIL_COND_V_MSG(!SDL_Init(SDL_INIT_JOYSTICK | SDL_INIT_GAMEPAD), FAILED, SDL_GetError());
@@ -213,6 +219,15 @@ void JoypadSDL::process_events() {
 					);
 					break;
 
+				case SDL_EVENT_JOYSTICK_BATTERY_UPDATED:
+					// Gamepads also can have battery, so no SKIP_EVENT_FOR_GAMEPAD here
+
+					Input::get_singleton()->set_joy_power_info(
+							joy_id,
+							static_cast<JoyPowerState>(sdl_event.jbattery.state),
+							sdl_event.jbattery.percent);
+					break;
+
 				case SDL_EVENT_GAMEPAD_AXIS_MOTION: {
 					float axis_value;
 
@@ -239,6 +254,44 @@ void JoypadSDL::process_events() {
 							static_cast<JoyButton>(sdl_event.gbutton.button), // Godot button constants are intentionally the same as SDL's, so we can just straight up use them
 							sdl_event.gbutton.down);
 					break;
+
+				case SDL_EVENT_GAMEPAD_SENSOR_UPDATE: {
+					// Godot currently doesn't support anything other than the main accelerometer and the main gyroscope sensors
+					if (sdl_event.gsensor.sensor != SDL_SENSOR_ACCEL && sdl_event.gsensor.sensor != SDL_SENSOR_GYRO) {
+						continue;
+					}
+
+					Vector3 value = Vector3(
+							sdl_event.gsensor.data[0],
+							sdl_event.gsensor.data[1],
+							sdl_event.gsensor.data[2]);
+
+					if (sdl_event.gsensor.sensor == SDL_SENSOR_ACCEL) {
+						Input::get_singleton()->set_joy_accelerometer(joy_id, value);
+					} else if (sdl_event.gsensor.sensor == SDL_SENSOR_GYRO) {
+						// By default the rotation is positive in the counter-clockwise direction.
+						// We revert it here to be positive in the clockwise direction.
+						Input::get_singleton()->set_joy_gyroscope(joy_id, -value);
+					}
+
+					float data_rate = SDL_GetGamepadSensorDataRate(
+							SDL_GetGamepadFromID(sdl_event.gsensor.which),
+							(SDL_SensorType)sdl_event.gsensor.sensor);
+
+					// Data rate for all sensors should be the same
+					Input::get_singleton()->set_joy_sensor_rate(joy_id, data_rate);
+				} break;
+
+				case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+				case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+				case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
+					Input::get_singleton()->set_joy_touchpad_finger(
+							joy_id,
+							sdl_event.gtouchpad.touchpad,
+							sdl_event.gtouchpad.finger,
+							sdl_event.gtouchpad.pressure,
+							Vector2(sdl_event.gtouchpad.x, sdl_event.gtouchpad.y));
+					break;
 			}
 		}
 	}
@@ -255,6 +308,403 @@ void JoypadSDL::setup_sdl_helper_window(HWND p_hwnd) {
 }
 #endif
 
+bool JoypadSDL::enable_accelerometer(int p_pad_idx, bool p_enable) {
+	bool result = SDL_SetGamepadSensorEnabled(get_sdl_gamepad(p_pad_idx), SDL_SENSOR_ACCEL, p_enable);
+	if (!result) {
+		print_verbose(vformat("Error while trying to enable joypad accelerometer: %s", SDL_GetError()));
+	}
+	return result;
+}
+
+bool JoypadSDL::enable_gyroscope(int p_pad_idx, bool p_enable) {
+	bool result = SDL_SetGamepadSensorEnabled(get_sdl_gamepad(p_pad_idx), SDL_SENSOR_GYRO, p_enable);
+	if (!result) {
+		print_verbose(vformat("Error while trying to enable joypad gyroscope: %s", SDL_GetError()));
+	}
+	return result;
+}
+
+bool JoypadSDL::set_light(int p_pad_idx, Color p_color) {
+	Color linear = p_color.srgb_to_linear();
+	return SDL_SetJoystickLED(get_sdl_joystick(p_pad_idx), linear.get_r8(), linear.get_g8(), linear.get_b8());
+}
+
+bool JoypadSDL::has_joy_axis(int p_pad_idx, JoyAxis p_axis) const {
+	SDL_Gamepad *gamepad = get_sdl_gamepad(p_pad_idx);
+	if (gamepad != nullptr) {
+		return SDL_GamepadHasAxis(gamepad, static_cast<SDL_GamepadAxis>(p_axis));
+	}
+
+	SDL_Joystick *joystick = get_sdl_joystick(p_pad_idx);
+	if (joystick != nullptr) {
+		return (int)p_axis >= 0 && (int)p_axis < SDL_GetNumJoystickAxes(joystick);
+	}
+
+	return false;
+}
+
+bool JoypadSDL::has_joy_button(int p_pad_idx, JoyButton p_button) const {
+	SDL_Gamepad *gamepad = get_sdl_gamepad(p_pad_idx);
+	if (gamepad != nullptr) {
+		return SDL_GamepadHasButton(gamepad, static_cast<SDL_GamepadButton>(p_button));
+	}
+
+	SDL_Joystick *joystick = get_sdl_joystick(p_pad_idx);
+	if (joystick != nullptr) {
+		return (int)p_button >= 0 && (int)p_button < SDL_GetNumJoystickButtons(joystick);
+	}
+
+	return false;
+}
+
+String JoypadSDL::get_model_axis_string(JoyModel p_model, JoyAxis p_axis) {
+	if (p_model == JoyModel::INVALID || p_model == JoyModel::UNKNOWN) {
+		return "";
+	}
+
+	SDL_GamepadType gamepad_type = static_cast<SDL_GamepadType>(p_model);
+
+	switch (p_axis) {
+		case JoyAxis::LEFT_X:
+			return "Left Stick X";
+		case JoyAxis::LEFT_Y:
+			return "Left Stick Y";
+		case JoyAxis::RIGHT_X:
+			return "Right Stick X";
+		case JoyAxis::RIGHT_Y:
+			return "Right Stick Y";
+
+		case JoyAxis::TRIGGER_LEFT:
+		case JoyAxis::TRIGGER_RIGHT:
+			switch (gamepad_type) {
+				case SDL_GAMEPAD_TYPE_XBOX360:
+				case SDL_GAMEPAD_TYPE_XBOXONE:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "LT" : "RT";
+
+				case SDL_GAMEPAD_TYPE_PS3:
+				case SDL_GAMEPAD_TYPE_PS4:
+				case SDL_GAMEPAD_TYPE_PS5:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "L2" : "R2";
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+				//case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT: // Horizontal joycons don't have "trigger" buttons
+				//case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "ZL" : "ZR";
+
+				default:
+					return p_axis == JoyAxis::TRIGGER_LEFT ? "Left Trigger" : "Right Trigger";
+			}
+
+		default:
+			break;
+	}
+
+	return "";
+}
+
+static const char *face_buttons_strings[] = {
+	// Xbox/Nintendo names
+	"A",
+	"B",
+	"X",
+	"Y",
+	// PlayStation names
+	"Cross",
+	"Circle",
+	"Square",
+	"Triangle",
+};
+
+static const char *horiz_joycon_face_buttons_strings[] = {
+	// Horizontal joycons names
+	"Face South",
+	"Face East",
+	"Face West",
+	"Face North",
+};
+
+static const char *xb360_buttons[] = {
+	"Back",
+	"Guide",
+	"Start",
+};
+
+static const char *xbone_buttons[] = {
+	"View",
+	"Xbox",
+	"Menu",
+};
+
+static const char *ps3_buttons[] = {
+	"Select",
+	"PS",
+	"Start",
+};
+
+static const char *ps45_buttons[] = {
+	"Share",
+	"PS",
+	"Options",
+};
+
+static const char *switch_pro_buttons[] = {
+	"Minus",
+	"Home",
+	"Plus",
+};
+
+static const char *default_paddles[] = {
+	"Paddle 1",
+	"Paddle 2",
+	"Paddle 3",
+	"Paddle 4",
+};
+
+static const char *dualsense_edge_paddles[] = {
+	"Left Function",
+	"Right Function",
+	"Left Paddle",
+	"Right Paddle",
+};
+
+static const char *joycon_paddles[] = {
+	"SR (R)",
+	"SL (L)",
+	"SL (R)",
+	"SR (L)",
+};
+
+static const char *joycon_horizontal_paddles[] = {
+	"R (R)",
+	"L (L)",
+	"ZR (R)",
+	"ZL (L)",
+};
+
+String JoypadSDL::get_model_button_string(JoyModel p_model, JoyButton p_button) {
+	if (p_model == JoyModel::INVALID || p_model == JoyModel::UNKNOWN) {
+		return "";
+	}
+
+	SDL_GamepadType gamepad_type = static_cast<SDL_GamepadType>(p_model);
+
+	switch (p_button) {
+		case JoyButton::A:
+		case JoyButton::B:
+		case JoyButton::X:
+		case JoyButton::Y: {
+			if (gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT || gamepad_type == SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT) {
+				return horiz_joycon_face_buttons_strings[(int)p_button - (int)JoyButton::A];
+			}
+
+			SDL_GamepadButtonLabel button_label = SDL_GetGamepadButtonLabelForType(gamepad_type, static_cast<SDL_GamepadButton>(p_button));
+
+			// button_label == SDL_GAMEPAD_BUTTON_LABEL_UNKNOWN
+			// Will SDL add new values that are less than 0? Not sure, so we make a check here just in case.
+			if (button_label < SDL_GAMEPAD_BUTTON_LABEL_A || button_label > SDL_GAMEPAD_BUTTON_LABEL_TRIANGLE) {
+				return "";
+			}
+			return face_buttons_strings[button_label - SDL_GAMEPAD_BUTTON_LABEL_A];
+		}
+
+		case JoyButton::BACK:
+		case JoyButton::GUIDE:
+		case JoyButton::START:
+			switch (gamepad_type) {
+				default:
+				case SDL_GAMEPAD_TYPE_STANDARD:
+				case SDL_GAMEPAD_TYPE_XBOX360:
+					return xb360_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case SDL_GAMEPAD_TYPE_XBOXONE:
+					return xbone_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case SDL_GAMEPAD_TYPE_PS3:
+					return ps3_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case SDL_GAMEPAD_TYPE_PS4:
+				case SDL_GAMEPAD_TYPE_PS5:
+					return ps45_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+					return switch_pro_buttons[(int)p_button - (int)JoyButton::BACK];
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+					// Plus button doesn't exist on the left joycon
+					return p_button == JoyButton::GUIDE ? "Capture" : "Minus";
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+					// Minus button doesn't exit on the right joycon
+					return p_button == JoyButton::GUIDE ? "Home" : "Plus";
+			}
+
+		case JoyButton::LEFT_STICK:
+			return "Left Stick";
+		case JoyButton::RIGHT_STICK:
+			return "Right Stick";
+
+		case JoyButton::LEFT_SHOULDER:
+		case JoyButton::RIGHT_SHOULDER:
+			switch (gamepad_type) {
+				case SDL_GAMEPAD_TYPE_XBOX360:
+				case SDL_GAMEPAD_TYPE_XBOXONE:
+					return p_button == JoyButton::LEFT_SHOULDER ? "LB" : "RB";
+
+				case SDL_GAMEPAD_TYPE_PS3:
+				case SDL_GAMEPAD_TYPE_PS4:
+				case SDL_GAMEPAD_TYPE_PS5:
+					return p_button == JoyButton::LEFT_SHOULDER ? "L1" : "R1";
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+					return p_button == JoyButton::LEFT_SHOULDER ? "L" : "R";
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+					return p_button == JoyButton::LEFT_SHOULDER ? "SL" : "SR";
+
+				default:
+					return p_button == JoyButton::LEFT_SHOULDER ? "Left Shoulder" : "Right Shoulder";
+			}
+
+		case JoyButton::DPAD_UP:
+			return "D-pad Up";
+		case JoyButton::DPAD_DOWN:
+			return "D-pad Down";
+		case JoyButton::DPAD_LEFT:
+			return "D-pad Left";
+		case JoyButton::DPAD_RIGHT:
+			return "D-pad Right";
+
+		case JoyButton::MISC1:
+			switch (gamepad_type) {
+				case SDL_GAMEPAD_TYPE_PS5:
+					return "Mute";
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_PRO:
+				//case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT: // Horizontal joycons don't have the Misc1 button
+				//case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT: // (see Back, Guide, Start handling for those above)
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+					return "Capture";
+
+				default:
+					return "Misc1";
+			}
+
+		case JoyButton::PADDLE1:
+		case JoyButton::PADDLE2:
+		case JoyButton::PADDLE3:
+		case JoyButton::PADDLE4:
+			switch (gamepad_type) {
+				case SDL_GAMEPAD_TYPE_PS5:
+					return dualsense_edge_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_PAIR:
+					return joycon_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_LEFT:
+				case SDL_GAMEPAD_TYPE_NINTENDO_SWITCH_JOYCON_RIGHT:
+					return joycon_horizontal_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+
+				default:
+					return default_paddles[(int)p_button - (int)JoyButton::PADDLE1];
+			}
+
+		case JoyButton::TOUCHPAD:
+			return "Touchpad";
+
+		default:
+			break;
+	}
+	return "";
+}
+
+// Override joypad model for controllers whose schemes can't detected by SDL
+JoyModel JoypadSDL::get_scheme_override_model(int p_pad_idx) {
+	SDL_Gamepad *gamepad = get_sdl_gamepad(p_pad_idx);
+	if (gamepad == nullptr) {
+		return JoyModel::UNKNOWN;
+	}
+	SDL_GamepadType gamepad_type = SDL_GetGamepadType(gamepad);
+	// Can a gamepad have SDL_GAMEPAD_TYPE_UNKNOWN type? I'm not sure
+	if (gamepad_type != SDL_GAMEPAD_TYPE_STANDARD) {
+		return JoyModel::UNKNOWN;
+	}
+
+	String joy_name = String(SDL_GetGamepadName(gamepad)).to_lower();
+
+	if (joy_name.contains("xbox")) {
+		return JoyModel::XBOX360;
+	} else if (joy_name.contains("playstation")) {
+		return JoyModel::PS3;
+	}
+
+	return JoyModel::UNKNOWN;
+}
+
+void JoypadSDL::get_joypad_features(int p_pad_idx, Input::Joypad &p_js) {
+	SDL_Joystick *joy = get_sdl_joystick(p_pad_idx);
+	// Shouldn't happen, but I'll leave it here just in case
+	ERR_FAIL_COND_MSG(joy == nullptr, "JoypadSDL::get_joypad_features: joy == nullptr");
+
+	p_js.device_type = static_cast<JoyDeviceType>(SDL_GetJoystickType(joy));
+
+	int battery_percent;
+	SDL_PowerState power_state = SDL_GetJoystickPowerInfo(joy, &battery_percent);
+	p_js.battery_percent = battery_percent;
+	p_js.power_state = static_cast<JoyPowerState>(power_state);
+	p_js.connection_state = static_cast<JoyConnectionState>(SDL_GetJoystickConnectionState(joy));
+
+	SDL_PropertiesID propertiesID = SDL_GetJoystickProperties(joy);
+	p_js.has_light = SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_RGB_LED_BOOLEAN, false) || SDL_GetBooleanProperty(propertiesID, SDL_PROP_JOYSTICK_CAP_MONO_LED_BOOLEAN, false);
+
+	p_js.num_buttons = SDL_GetNumJoystickButtons(joy);
+	p_js.num_axes = SDL_GetNumJoystickAxes(joy);
+
+	SDL_Gamepad *gamepad = get_sdl_gamepad(p_pad_idx);
+	if (gamepad != nullptr) {
+		if (SDL_GamepadHasSensor(gamepad, SDL_SENSOR_ACCEL)) {
+			Input::get_singleton()->joy_motion[p_pad_idx].has_accelerometer = true;
+		}
+		if (SDL_GamepadHasSensor(gamepad, SDL_SENSOR_GYRO)) {
+			Input::get_singleton()->joy_motion[p_pad_idx].has_gyroscope = true;
+		}
+
+		p_js.model = static_cast<JoyModel>(SDL_GetGamepadType(gamepad));
+
+		// Since SDL_GetNumGamepadButtons, etc. don't exist, here's a more reliable way
+		// to get the number of gamepad buttons, etc. since some of them may be remapped
+		// to others (like a cheap controller's axes remapped to directional pad).
+
+		int num_buttons = 0;
+		int num_axes = 0;
+		for (int i = SDL_GAMEPAD_BUTTON_SOUTH; i < SDL_GAMEPAD_BUTTON_COUNT; i++) {
+			if (SDL_GamepadHasButton(gamepad, (SDL_GamepadButton)i)) {
+				num_buttons++;
+			}
+		}
+		for (int i = SDL_GAMEPAD_AXIS_LEFTX; i < SDL_GAMEPAD_AXIS_COUNT; i++) {
+			if (SDL_GamepadHasAxis(gamepad, (SDL_GamepadAxis)i)) {
+				num_axes++;
+			}
+		}
+		p_js.num_buttons = num_buttons;
+		p_js.num_axes = num_axes;
+
+		if (SDL_GetNumGamepadTouchpads(gamepad) > 0) {
+			Input::get_singleton()->joy_touch[p_pad_idx].num_touchpads = SDL_GetNumGamepadTouchpads(gamepad);
+		}
+	}
+}
+
+bool JoypadSDL::send_effect(int p_pad_idx, const void *p_data, int p_size) {
+	return SDL_SendJoystickEffect(get_sdl_joystick(p_pad_idx), p_data, p_size);
+}
+
+void JoypadSDL::start_triggers_vibration(int p_pad_idx, float p_left_rumble, float p_right_rumble, float p_duration) {
+	SDL_RumbleJoystickTriggers(get_sdl_joystick(p_pad_idx), p_left_rumble * 0xFFFF, p_right_rumble * 0xFFFF, p_duration * 1000);
+}
+
 void JoypadSDL::close_joypad(int p_pad_idx) {
 	int sdl_instance_idx = joypads[p_pad_idx].sdl_instance_idx;
 
@@ -268,6 +718,29 @@ void JoypadSDL::close_joypad(int p_pad_idx) {
 		SDL_Joystick *joy = SDL_GetJoystickFromID(sdl_instance_idx);
 		SDL_CloseJoystick(joy);
 	}
+}
+
+SDL_Joystick *JoypadSDL::get_sdl_joystick(int p_pad_idx) const {
+	if (p_pad_idx < 0 || p_pad_idx >= Input::JOYPADS_MAX || !joypads[p_pad_idx].attached) {
+		return nullptr;
+	}
+
+	SDL_JoystickID sdl_instance_idx = joypads[p_pad_idx].sdl_instance_idx;
+	return SDL_GetJoystickFromID(sdl_instance_idx);
+}
+
+SDL_Gamepad *JoypadSDL::get_sdl_gamepad(int p_pad_idx) const {
+	if (p_pad_idx < 0 || p_pad_idx >= Input::JOYPADS_MAX || !joypads[p_pad_idx].attached) {
+		return nullptr;
+	}
+
+	int sdl_instance_idx = joypads[p_pad_idx].sdl_instance_idx;
+
+	if (!SDL_IsGamepad(sdl_instance_idx)) {
+		return nullptr;
+	}
+
+	return SDL_GetGamepadFromID(sdl_instance_idx);
 }
 
 #endif // SDL_ENABLED
