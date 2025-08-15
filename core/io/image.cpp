@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "image.h"
+#include "image.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
@@ -456,15 +457,11 @@ Size2i Image::get_size() const {
 }
 
 bool Image::has_mipmaps() const {
-	return mipmaps;
+	return mipmap_count > 0;
 }
 
 int Image::get_mipmap_count() const {
-	if (mipmaps) {
-		return get_image_required_mipmaps(width, height, format);
-	} else {
-		return 0;
-	}
+	return mipmap_count;
 }
 
 // Using template generates perfectly optimized code due to constant expression reduction and unused variable removal present in all compilers.
@@ -553,13 +550,13 @@ void Image::convert(Format p_new_format) {
 			"Cannot convert to (or from) compressed formats. Use compress() and decompress() instead.");
 
 	// Includes the main image.
-	const int mipmap_count = get_mipmap_count() + 1;
+	const int total_mipmaps = get_mipmap_count() + 1;
 
 	if (!_are_formats_compatible(format, p_new_format)) {
 		// Use put/set pixel which is slower but works with non-byte formats.
-		Image new_img(width, height, mipmaps, p_new_format);
+		Image new_img(width, height, p_new_format, total_mipmaps - 1);
 
-		for (int mip = 0; mip < mipmap_count; mip++) {
+		for (int mip = 0; mip < total_mipmaps; mip++) {
 			Ref<Image> src_mip = get_image_from_mipmap(mip);
 			Ref<Image> new_mip = new_img.get_image_from_mipmap(mip);
 
@@ -582,11 +579,11 @@ void Image::convert(Format p_new_format) {
 	}
 
 	// Convert the formats in an optimized way by removing/adding color channels if necessary.
-	Image new_img(width, height, mipmaps, p_new_format);
+	Image new_img(width, height, p_new_format, total_mipmaps - 1);
 
 	const int conversion_type = format | p_new_format << 8;
 
-	for (int mip = 0; mip < mipmap_count; mip++) {
+	for (int mip = 0; mip < total_mipmaps; mip++) {
 		int64_t mip_offset = 0;
 		int64_t mip_size = 0;
 		int mip_width = 0;
@@ -1166,8 +1163,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		dst2.initialize_data(p_width, p_height, false, format);
 	}
 
-	bool had_mipmaps = mipmaps;
-	if (interpolate_mipmaps && !had_mipmaps) {
+	int had_mipmaps = get_mipmap_count();
+	if (interpolate_mipmaps && !(had_mipmaps > 0)) {
 		generate_mipmaps();
 	}
 	// --
@@ -1424,8 +1421,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 		dst._copy_internals_from(dst2);
 	}
 
-	if (had_mipmaps) {
-		dst.generate_mipmaps();
+	if (had_mipmaps > 0) {
+		dst.generate_mipmaps(false, had_mipmaps);
 	}
 
 	_copy_internals_from(dst);
@@ -1489,8 +1486,8 @@ void Image::rotate_90(ClockDirection p_direction) {
 	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
 	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
+	int used_mipmaps = get_mipmap_count();
+	if (used_mipmaps > 0) {
 		clear_mipmaps();
 	}
 
@@ -1597,8 +1594,8 @@ void Image::rotate_90(ClockDirection p_direction) {
 #undef PREV_INDEX_IN_CYCLE
 	}
 
-	if (used_mipmaps) {
-		generate_mipmaps();
+	if (used_mipmaps > 0) {
+		generate_mipmaps(false, used_mipmaps);
 	}
 }
 
@@ -1607,8 +1604,8 @@ void Image::rotate_180() {
 	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
 	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
+	int used_mipmaps = get_mipmap_count();
+	if (used_mipmaps > 0) {
 		clear_mipmaps();
 	}
 
@@ -1631,16 +1628,16 @@ void Image::rotate_180() {
 		}
 	}
 
-	if (used_mipmaps) {
-		generate_mipmaps();
+	if (used_mipmaps > 0) {
+		generate_mipmaps(false, used_mipmaps);
 	}
 }
 
 void Image::flip_y() {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot flip_y in compressed image formats.");
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
+	int used_mipmaps = get_mipmap_count();
+	if (used_mipmaps > 0) {
 		clear_mipmaps();
 	}
 
@@ -1661,16 +1658,16 @@ void Image::flip_y() {
 		}
 	}
 
-	if (used_mipmaps) {
-		generate_mipmaps();
+	if (used_mipmaps > 0) {
+		generate_mipmaps(false, used_mipmaps);
 	}
 }
 
 void Image::flip_x() {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot flip_x in compressed image formats.");
 
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
+	int used_mipmaps = get_mipmap_count();
+	if (used_mipmaps > 0) {
 		clear_mipmaps();
 	}
 
@@ -1691,8 +1688,8 @@ void Image::flip_x() {
 		}
 	}
 
-	if (used_mipmaps) {
-		generate_mipmaps();
+	if (used_mipmaps > 0) {
+		generate_mipmaps(false, used_mipmaps);
 	}
 }
 
@@ -1881,7 +1878,7 @@ void Image::shrink_x2() {
 	ERR_FAIL_COND(data.is_empty());
 	Vector<uint8_t> new_data;
 
-	if (mipmaps) {
+	if (has_mipmaps()) {
 		// Just use the lower mipmap as base and copy all.
 		int64_t ofs = get_mipmap_offset(1);
 		int64_t new_size = data.size() - ofs;
@@ -1906,8 +1903,8 @@ void Image::shrink_x2() {
 }
 
 void Image::normalize() {
-	bool used_mipmaps = has_mipmaps();
-	if (used_mipmaps) {
+	int used_mipmaps = get_mipmap_count();
+	if (used_mipmaps > 0) {
 		clear_mipmaps();
 	}
 
@@ -1923,19 +1920,19 @@ void Image::normalize() {
 		}
 	}
 
-	if (used_mipmaps) {
-		generate_mipmaps(true);
+	if (used_mipmaps > 0) {
+		generate_mipmaps(true, used_mipmaps);
 	}
 }
 
-Error Image::generate_mipmaps(bool p_renormalize) {
+Error Image::generate_mipmaps(bool p_renormalize, int p_limit) {
 	ERR_FAIL_COND_V_MSG(is_compressed(), ERR_UNAVAILABLE, "Cannot generate mipmaps from compressed image formats.");
 	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444, ERR_UNAVAILABLE, "Cannot generate mipmaps from RGBA4444 format.");
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
 	int gen_mipmap_count;
 
-	int64_t size = _get_dst_image_size(width, height, format, gen_mipmap_count);
+	int64_t size = _get_dst_image_size(width, height, format, gen_mipmap_count, p_limit);
 	data.resize(size);
 	uint8_t *wp = data.ptrw();
 
@@ -1955,7 +1952,7 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 		prev_h = h;
 	}
 
-	mipmaps = true;
+	mipmap_count = gen_mipmap_count;
 
 	return OK;
 }
@@ -2008,7 +2005,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 
 	int mmcount;
 
-	_get_dst_image_size(width, height, format, mmcount);
+	_get_dst_image_size(width, height, format, mmcount, get_mipmap_count());
 
 	uint8_t *base_ptr = data.ptrw();
 
@@ -2129,7 +2126,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 }
 
 void Image::clear_mipmaps() {
-	if (!mipmaps) {
+	if (!has_mipmaps()) {
 		return;
 	}
 
@@ -2142,7 +2139,7 @@ void Image::clear_mipmaps() {
 	_get_mipmap_offset_and_size(1, ofs, w, h);
 	data.resize(ofs);
 
-	mipmaps = false;
+	mipmap_count = 0;
 }
 
 bool Image::is_empty() const {
@@ -2171,7 +2168,33 @@ void Image::set_data(int p_width, int p_height, bool p_use_mipmaps, Format p_for
 	initialize_data(p_width, p_height, p_use_mipmaps, p_format, p_data);
 }
 
+Ref<Image> Image::create_empty_partial_mipmaps(int p_width, int p_height, int p_mipmap_limit, Format p_format) {
+	Ref<Image> image;
+	image.instantiate();
+	image->initialize_data(p_width, p_height, p_format, p_mipmap_limit);
+	return image;
+}
+
+Ref<Image> Image::create_from_data_partial_mipmaps(int p_width, int p_height, int p_mipmap_limit, Format p_format, const Vector<uint8_t> &p_data) {
+	Ref<Image> image;
+	image.instantiate();
+	image->initialize_data(p_width, p_height, p_format, p_mipmap_limit, p_data);
+	return image;
+}
+
+void Image::set_data_partial_mipmaps(int p_width, int p_height, int p_mipmap_limit, Format p_format, const Vector<uint8_t> &p_data) {
+	initialize_data(p_width, p_height, p_format, p_mipmap_limit, p_data);
+}
+
 void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+	initialize_data(p_width, p_height, p_format, p_use_mipmaps ? -1 : 0);
+}
+
+void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+	initialize_data(p_width, p_height, p_format, p_use_mipmaps ? -1 : 0, p_data);
+}
+
+void Image::initialize_data(int p_width, int p_height, Format p_format, int p_mipmap_limit) {
 	ERR_FAIL_COND_MSG(p_width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", p_width));
 	ERR_FAIL_COND_MSG(p_height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", p_height));
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
@@ -2183,7 +2206,7 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_format));
 
 	int mm = 0;
-	int64_t size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
+	int64_t size = _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmap_limit);
 	data.resize(size);
 
 	{
@@ -2193,11 +2216,11 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 
 	width = p_width;
 	height = p_height;
-	mipmaps = p_use_mipmaps;
 	format = p_format;
+	mipmap_count = mm;
 }
 
-void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
+void Image::initialize_data(int p_width, int p_height, Format p_format, int p_mipmap_limit, const Vector<uint8_t> &p_data) {
 	ERR_FAIL_COND_MSG(p_width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", p_width));
 	ERR_FAIL_COND_MSG(p_height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", p_height));
 	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH,
@@ -2208,13 +2231,12 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 			vformat("Too many pixels for Image. Maximum is %dx%d = %d pixels.", MAX_WIDTH, MAX_HEIGHT, MAX_PIXELS));
 	ERR_FAIL_INDEX_MSG(p_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_format));
 
-	int mm;
-	int64_t size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
+	int num_mipmaps;
+	int64_t size = _get_dst_image_size(p_width, p_height, p_format, num_mipmaps, p_mipmap_limit);
 
 	if (unlikely(p_data.size() != size)) {
 		String description_mipmaps = get_format_name(p_format) + " ";
-		if (p_use_mipmaps) {
-			const int num_mipmaps = get_image_required_mipmaps(p_width, p_height, p_format);
+		if (num_mipmaps > 0) {
 			if (num_mipmaps != 1) {
 				description_mipmaps += vformat("with %d mipmaps", num_mipmaps);
 			} else {
@@ -2231,15 +2253,14 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 	width = p_width;
 	format = p_format;
 	data = p_data;
-
-	mipmaps = p_use_mipmaps;
+	mipmap_count = num_mipmaps;
 }
 
 void Image::initialize_data(const char **p_xpm) {
 	int size_width = 0;
 	int size_height = 0;
 	int pixelchars = 0;
-	mipmaps = false;
+	mipmap_count = 0;
 	bool has_alpha = false;
 
 	enum Status {
@@ -2630,9 +2651,9 @@ Vector<uint8_t> Image::save_webp_to_buffer(const bool p_lossy, const float p_qua
 	return save_webp_buffer_func(Ref<Image>((Image *)this), p_lossy, p_quality);
 }
 
-int64_t Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
+int64_t Image::get_image_data_size(int p_width, int p_height, Format p_format, int p_mipmap_limit) {
 	int mm;
-	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmaps ? -1 : 0);
+	return _get_dst_image_size(p_width, p_height, p_format, mm, p_mipmap_limit);
 }
 
 int Image::get_image_required_mipmaps(int p_width, int p_height, Format p_format) {
@@ -2775,7 +2796,7 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 Image::Image(const char **p_xpm) {
 	width = 0;
 	height = 0;
-	mipmaps = false;
+	mipmap_count = 0;
 	format = FORMAT_L8;
 
 	initialize_data(p_xpm);
@@ -2784,7 +2805,7 @@ Image::Image(const char **p_xpm) {
 Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 	width = 0;
 	height = 0;
-	mipmaps = p_use_mipmaps;
+	mipmap_count = 0;
 	format = FORMAT_L8;
 
 	initialize_data(p_width, p_height, p_use_mipmaps, p_format);
@@ -2793,10 +2814,28 @@ Image::Image(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 Image::Image(int p_width, int p_height, bool p_mipmaps, Format p_format, const Vector<uint8_t> &p_data) {
 	width = 0;
 	height = 0;
-	mipmaps = p_mipmaps;
+	mipmap_count = 0;
 	format = FORMAT_L8;
 
 	initialize_data(p_width, p_height, p_mipmaps, p_format, p_data);
+}
+
+Image::Image(int p_width, int p_height, Format p_format, int p_mipmap_limit) {
+	width = 0;
+	height = 0;
+	mipmap_count = 0;
+	format = FORMAT_L8;
+
+	initialize_data(p_width, p_height, p_format, p_mipmap_limit);
+}
+
+Image::Image(int p_width, int p_height, Format p_format, int p_mipmap_limit, const Vector<uint8_t> &p_data) {
+	width = 0;
+	height = 0;
+	mipmap_count = 0;
+	format = FORMAT_L8;
+
+	initialize_data(p_width, p_height, p_format, p_mipmap_limit, p_data);
 }
 
 Rect2i Image::get_used_rect() const {
@@ -2840,7 +2879,7 @@ Rect2i Image::get_used_rect() const {
 }
 
 Ref<Image> Image::get_region(const Rect2i &p_region) const {
-	Ref<Image> img = memnew(Image(p_region.size.x, p_region.size.y, mipmaps, format));
+	Ref<Image> img = memnew(Image(p_region.size.x, p_region.size.y, has_mipmaps(), format));
 	img->blit_rect(Ref<Image>((Image *)this), p_region, Point2i(0, 0));
 	return img;
 }
@@ -3132,7 +3171,14 @@ void Image::_set_data(const Dictionary &p_data) {
 
 	ERR_FAIL_COND(ddformat == FORMAT_MAX);
 
-	initialize_data(dwidth, dheight, dmipmaps, ddformat, ddata);
+	int mip_count = 0;
+	if (p_data.has("mipmap_count")) {
+		mip_count = int(p_data["mipmap_count"]);
+	} else {
+		mip_count = dmipmaps ? -1 : 0;
+	}
+
+	initialize_data(dwidth, dheight, ddformat, mip_count, ddata);
 }
 
 Dictionary Image::_get_data() const {
@@ -3140,7 +3186,8 @@ Dictionary Image::_get_data() const {
 	d["width"] = width;
 	d["height"] = height;
 	d["format"] = get_format_name(format);
-	d["mipmaps"] = mipmaps;
+	d["mipmap_count"] = mipmap_count;
+	d["mipmaps"] = has_mipmaps();
 	d["data"] = data;
 	return d;
 }
@@ -3153,7 +3200,7 @@ void Image::_copy_internals_from(const Image &p_image) {
 	format = p_image.format;
 	width = p_image.width;
 	height = p_image.height;
-	mipmaps = p_image.mipmaps;
+	mipmap_count = p_image.mipmap_count;
 	data = p_image.data;
 }
 
@@ -3532,7 +3579,7 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("crop", "width", "height"), &Image::crop);
 	ClassDB::bind_method(D_METHOD("flip_x"), &Image::flip_x);
 	ClassDB::bind_method(D_METHOD("flip_y"), &Image::flip_y);
-	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize"), &Image::generate_mipmaps, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_mipmaps", "renormalize", "limit"), &Image::generate_mipmaps, DEFVAL(false), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("clear_mipmaps"), &Image::clear_mipmaps);
 
 #ifndef DISABLE_DEPRECATED
@@ -3751,7 +3798,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipmap) const {
 	image->format = format;
 	image->data = new_data;
 
-	image->mipmaps = false;
+	image->mipmap_count = 0;
 	return image;
 }
 
@@ -4249,7 +4296,7 @@ void Image::renormalize_rgbe9995(uint32_t *p_rgb) {
 Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	width = 0;
 	height = 0;
-	mipmaps = false;
+	mipmap_count = 0;
 	format = FORMAT_L8;
 
 	if (_png_mem_loader_func) {
@@ -4281,7 +4328,7 @@ void Image::copy_internals_from(const Ref<Image> &p_image) {
 	format = p_image->format;
 	width = p_image->width;
 	height = p_image->height;
-	mipmaps = p_image->mipmaps;
+	mipmap_count = p_image->mipmap_count;
 	data = p_image->data;
 }
 
