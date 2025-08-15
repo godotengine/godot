@@ -773,7 +773,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	String output;
 	int exit_code;
 	err = OS::get_singleton()->execute(hvigor_cmd, args, &output, &exit_code, true, nullptr, false);
-	OS::get_singleton()->set_cwd(EditorPaths::get_singleton()->get_project_data_dir());
+	OS::get_singleton()->set_cwd(OS::get_singleton()->get_resource_dir());
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Failed to execute build command: \"%s\"."), hvigor_cmd));
 		return err;
@@ -902,7 +902,7 @@ Error EditorExportPlatformOpenHarmony::run(const Ref<EditorExportPreset> &p_pres
 
 	output.clear();
 	err = OS::get_singleton()->execute(hdc, args, &output, &rv, true);
-	OS::get_singleton()->set_cwd(EditorPaths::get_singleton()->get_project_data_dir());
+	OS::get_singleton()->set_cwd(OS::get_singleton()->get_resource_dir());
 	print_verbose(output);
 	if (err || rv != 0 || output.contains("error")) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), vformat(TTR("Could not install to device: %s"), output));
