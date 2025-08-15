@@ -141,7 +141,7 @@ bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char 
 	dbus_message_unref(message);
 	if (dbus_error_is_set(&error)) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
-			ERR_PRINT(vformat("Error on D-Bus communication: %s", error.message));
+			ERR_PRINT(vformat("Failed to read setting %s %s: %s", p_namespace, p_key, error.message));
 		}
 		dbus_error_free(&error);
 		dbus_connection_unref(bus);
@@ -511,29 +511,12 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 		return false;
 	}
 
-	DBusError err;
-	dbus_error_init(&err);
-
 	// Open connection and add signal handler.
 	ColorPickerData cd;
 	cd.callback = p_callback;
 
-	CryptoCore::RandomGenerator rng;
-	ERR_FAIL_COND_V_MSG(rng.init(), false, "Failed to initialize random number generator.");
-	uint8_t uuid[64];
-	Error rng_err = rng.get_random_bytes(uuid, 64);
-	ERR_FAIL_COND_V_MSG(rng_err, false, "Failed to generate unique token.");
-
-	String dbus_unique_name = String::utf8(dbus_bus_get_unique_name(monitor_connection));
-	String token = String::hex_encode_buffer(uuid, 64);
-	String path = vformat("/org/freedesktop/portal/desktop/request/%s/%s", dbus_unique_name.replace_char('.', '_').remove_char(':'), token);
-
-	cd.path = path;
-	cd.filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
-	dbus_bus_add_match(monitor_connection, cd.filter.utf8().get_data(), &err);
-	if (dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
-		dbus_error_free(&err);
+	String token;
+	if (make_request_token(token) != OK) {
 		return false;
 	}
 
@@ -549,42 +532,10 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 		append_dbus_dict_string(&arr_iter, "handle_token", token);
 		dbus_message_iter_close_container(&iter, &arr_iter);
 	}
-	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_INFINITE, &err);
-	dbus_message_unref(message);
 
-	if (!reply || dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
-		dbus_error_free(&err);
-		dbus_bus_remove_match(monitor_connection, cd.filter.utf8().get_data(), &err);
+	if (!send_request(message, token, cd.path, cd.filter)) {
 		return false;
 	}
-
-	// Update signal path.
-	{
-		DBusMessageIter iter;
-		if (dbus_message_iter_init(reply, &iter)) {
-			if (dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_OBJECT_PATH) {
-				const char *new_path = nullptr;
-				dbus_message_iter_get_basic(&iter, &new_path);
-				if (String::utf8(new_path) != path) {
-					dbus_bus_remove_match(monitor_connection, cd.filter.utf8().get_data(), &err);
-					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
-						dbus_error_free(&err);
-						return false;
-					}
-					cd.filter = String::utf8(new_path);
-					dbus_bus_add_match(monitor_connection, cd.filter.utf8().get_data(), &err);
-					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
-						dbus_error_free(&err);
-						return false;
-					}
-				}
-			}
-		}
-	}
-	dbus_message_unref(reply);
 
 	MutexLock lock(color_picker_mutex);
 	color_pickers.push_back(cd);
@@ -592,7 +543,7 @@ bool FreeDesktopPortalDesktop::color_picker(const String &p_xid, const Callable 
 	return true;
 }
 
-bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
+bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface, const uint32_t minimum_version) {
 	bool supported = false;
 	DBusError err;
 	dbus_error_init(&err);
@@ -619,8 +570,8 @@ bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
 					dbus_message_iter_recurse(&iter, &iter_ver);
 					dbus_uint32_t ver_code;
 					dbus_message_iter_get_basic(&iter_ver, &ver_code);
-					print_verbose(vformat("PortalDesktop: %s version %d detected.", p_iface, ver_code));
-					supported = true;
+					print_verbose(vformat("PortalDesktop: %s version %d detected, version %d required.", p_iface, ver_code, minimum_version));
+					supported = ver_code >= minimum_version;
 				}
 				dbus_message_unref(reply);
 			}
@@ -634,7 +585,7 @@ bool FreeDesktopPortalDesktop::_is_interface_supported(const char *p_iface) {
 bool FreeDesktopPortalDesktop::is_file_chooser_supported() {
 	static int supported = -1;
 	if (supported == -1) {
-		supported = _is_interface_supported(BUS_INTERFACE_FILE_CHOOSER);
+		supported = _is_interface_supported(BUS_INTERFACE_FILE_CHOOSER, 3);
 	}
 	return supported;
 }
@@ -642,7 +593,7 @@ bool FreeDesktopPortalDesktop::is_file_chooser_supported() {
 bool FreeDesktopPortalDesktop::is_settings_supported() {
 	static int supported = -1;
 	if (supported == -1) {
-		supported = _is_interface_supported(BUS_INTERFACE_SETTINGS);
+		supported = _is_interface_supported(BUS_INTERFACE_SETTINGS, 1);
 	}
 	return supported;
 }
@@ -650,9 +601,69 @@ bool FreeDesktopPortalDesktop::is_settings_supported() {
 bool FreeDesktopPortalDesktop::is_screenshot_supported() {
 	static int supported = -1;
 	if (supported == -1) {
-		supported = _is_interface_supported(BUS_INTERFACE_SCREENSHOT);
+		supported = _is_interface_supported(BUS_INTERFACE_SCREENSHOT, 1);
 	}
 	return supported;
+}
+
+Error FreeDesktopPortalDesktop::make_request_token(String &token) {
+	CryptoCore::RandomGenerator rng;
+	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
+	uint8_t uuid[64];
+	Error rng_err = rng.get_random_bytes(uuid, 64);
+	ERR_FAIL_COND_V_MSG(rng_err, rng_err, "Failed to generate unique token.");
+
+	token = String::hex_encode_buffer(uuid, 64);
+	return OK;
+}
+
+bool FreeDesktopPortalDesktop::send_request(DBusMessage *message, const String &token, String &path, String &filter) {
+	String dbus_unique_name = String::utf8(dbus_bus_get_unique_name(monitor_connection));
+
+	path = vformat("/org/freedesktop/portal/desktop/request/%s/%s", dbus_unique_name.replace_char('.', '_').remove_char(':'), token);
+	filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
+
+	DBusError err;
+	dbus_error_init(&err);
+
+	dbus_bus_add_match(monitor_connection, filter.utf8().get_data(), &err);
+	if (dbus_error_is_set(&err)) {
+		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
+		dbus_error_free(&err);
+		return false;
+	}
+
+	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_INFINITE, &err);
+	dbus_message_unref(message);
+
+	if (!reply || dbus_error_is_set(&err)) {
+		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
+		dbus_error_free(&err);
+		dbus_bus_remove_match(monitor_connection, filter.utf8().get_data(), &err);
+		return false;
+	}
+
+	// Check request path matches our expectation
+	{
+		DBusMessageIter iter;
+		if (dbus_message_iter_init(reply, &iter)) {
+			if (dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_OBJECT_PATH) {
+				const char *new_path = nullptr;
+				dbus_message_iter_get_basic(&iter, &new_path);
+				if (String::utf8(new_path) != path) {
+					ERR_PRINT(vformat("Expected request path %s but actual path was %s", path, new_path));
+					dbus_bus_remove_match(monitor_connection, filter.utf8().get_data(), &err);
+					if (dbus_error_is_set(&err)) {
+						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
+						dbus_error_free(&err);
+					}
+					return false;
+				}
+			}
+		}
+	}
+	dbus_message_unref(reply);
+	return true;
 }
 
 Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
@@ -699,9 +710,6 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 		filter_names.push_back(RTR("All Files") + " (*.*)");
 	}
 
-	DBusError err;
-	dbus_error_init(&err);
-
 	// Open connection and add signal handler.
 	FileDialogData fd;
 	fd.callback = p_callback;
@@ -709,23 +717,10 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 	fd.filter_names = filter_names;
 	fd.opt_in_cb = p_options_in_cb;
 
-	CryptoCore::RandomGenerator rng;
-	ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
-	uint8_t uuid[64];
-	Error rng_err = rng.get_random_bytes(uuid, 64);
-	ERR_FAIL_COND_V_MSG(rng_err, rng_err, "Failed to generate unique token.");
-
-	String dbus_unique_name = String::utf8(dbus_bus_get_unique_name(monitor_connection));
-	String token = String::hex_encode_buffer(uuid, 64);
-	String path = vformat("/org/freedesktop/portal/desktop/request/%s/%s", dbus_unique_name.replace_char('.', '_').remove_char(':'), token);
-
-	fd.path = path;
-	fd.filter = vformat("type='signal',sender='org.freedesktop.portal.Desktop',path='%s',interface='org.freedesktop.portal.Request',member='Response',destination='%s'", path, dbus_unique_name);
-	dbus_bus_add_match(monitor_connection, fd.filter.utf8().get_data(), &err);
-	if (dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
-		dbus_error_free(&err);
-		return FAILED;
+	String token;
+	Error err = make_request_token(token);
+	if (err != OK) {
+		return err;
 	}
 
 	// Generate FileChooser message.
@@ -761,42 +756,9 @@ Error FreeDesktopPortalDesktop::file_dialog_show(DisplayServer::WindowID p_windo
 		dbus_message_iter_close_container(&iter, &arr_iter);
 	}
 
-	DBusMessage *reply = dbus_connection_send_with_reply_and_block(monitor_connection, message, DBUS_TIMEOUT_INFINITE, &err);
-	dbus_message_unref(message);
-
-	if (!reply || dbus_error_is_set(&err)) {
-		ERR_PRINT(vformat("Failed to send DBus message: %s", err.message));
-		dbus_error_free(&err);
-		dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
+	if (!send_request(message, token, fd.path, fd.filter)) {
 		return FAILED;
 	}
-
-	// Update signal path.
-	{
-		DBusMessageIter iter;
-		if (dbus_message_iter_init(reply, &iter)) {
-			if (dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_OBJECT_PATH) {
-				const char *new_path = nullptr;
-				dbus_message_iter_get_basic(&iter, &new_path);
-				if (String::utf8(new_path) != path) {
-					dbus_bus_remove_match(monitor_connection, fd.filter.utf8().get_data(), &err);
-					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to remove DBus match: %s", err.message));
-						dbus_error_free(&err);
-						return FAILED;
-					}
-					fd.filter = String::utf8(new_path);
-					dbus_bus_add_match(monitor_connection, fd.filter.utf8().get_data(), &err);
-					if (dbus_error_is_set(&err)) {
-						ERR_PRINT(vformat("Failed to add DBus match: %s", err.message));
-						dbus_error_free(&err);
-						return FAILED;
-					}
-				}
-			}
-		}
-	}
-	dbus_message_unref(reply);
 
 	MutexLock lock(file_dialog_mutex);
 	file_dialogs.push_back(fd);
