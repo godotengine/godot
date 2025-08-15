@@ -220,6 +220,7 @@ Patches:
 - `0003-emscripten-nthreads.patch` (GH-69799)
 - `0004-mingw-no-cpuidex.patch` (GH-92488)
 - `0005-mingw-llvm-arm64.patch` (GH-93364)
+- `0006-support-open-harmony.patch` (GH-108553)
 
 The `modules/raycast/godot_update_embree.py` script can be used to pull the
 relevant files from the latest Embree release and apply patches automatically.
@@ -1102,6 +1103,10 @@ Files extracted from upstream source:
 - `volk.h`, `volk.c`
 - `LICENSE.md`
 
+Patches:
+
+- `0001-support-open-harmony.patch` (GH-108553)
+
 
 ## vulkan
 
@@ -1134,6 +1139,7 @@ Patches:
 - `0001-VKEnumStringHelper-godot-vulkan.patch` (GH-97510)
 - `0002-VMA-godot-vulkan.patch` (GH-97510)
 - `0003-VMA-add-vmaCalculateLazilyAllocatedBytes.patch` (GH-99257)
+- `0004-support-open-harmony.patch` (GH-108553)
 
 
 
@@ -1240,3 +1246,7 @@ Files extracted from upstream source:
 
 - `lib/{common/,compress/,decompress/,zstd.h,zstd_errors.h}`
 - `LICENSE`
+
+Patches:
+
+- `0001-support-open-harmony.patch` (GH-108553)
