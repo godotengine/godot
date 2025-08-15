@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "display_server_openharmony.h"
+
 #include "os_openharmony.h"
 #include "rendering_context_driver_vulkan_openharmony.h"
 #include "wrapper_openharmony.h"
@@ -59,7 +60,7 @@ DisplayServer *DisplayServerOpenHarmony::create_func(const String &p_rendering_d
 	if (r_error != OK) {
 		OS::get_singleton()->alert(
 				"Your device seems not to support the required Vulkan version.\n\n"
-				"Unable to initialize Vulkan video driver");
+				"Unable to initialize Vulkan video driver.");
 	}
 	return ds;
 }
@@ -75,7 +76,7 @@ DisplayServerOpenHarmony::DisplayServerOpenHarmony(const String &p_rendering_dri
 	rendering_device = nullptr;
 
 	if (rendering_driver != "vulkan") {
-		ERR_PRINT(vformat("Failed to create %s context", rendering_driver));
+		ERR_PRINT(vformat("Failed to create %s context.", rendering_driver));
 		r_error = ERR_UNAVAILABLE;
 	}
 
@@ -84,7 +85,7 @@ DisplayServerOpenHarmony::DisplayServerOpenHarmony(const String &p_rendering_dri
 	if (rendering_context->initialize() != OK) {
 		memdelete(rendering_context);
 		rendering_context = nullptr;
-		ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+		ERR_PRINT(vformat("Failed to initialize %s context.", rendering_driver));
 		r_error = ERR_UNAVAILABLE;
 		return;
 	}
@@ -124,6 +125,7 @@ DisplayServerOpenHarmony::DisplayServerOpenHarmony(const String &p_rendering_dri
 
 DisplayServerOpenHarmony::~DisplayServerOpenHarmony() {
 }
+
 void DisplayServerOpenHarmony::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
 	if (p_callable.is_valid()) {
 		if (p_deferred) {
@@ -138,8 +140,8 @@ void DisplayServerOpenHarmony::send_input_event(const Ref<InputEvent> &p_event) 
 	_window_callback(input_event_callback, p_event);
 }
 
-void DisplayServerOpenHarmony::resize_window(uint32_t width, uint32_t height) {
-	Size2i size = Size2i(width, height);
+void DisplayServerOpenHarmony::resize_window(uint32_t p_width, uint32_t p_height) {
+	Size2i size = Size2i(p_width, p_height);
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
@@ -247,7 +249,7 @@ void DisplayServerOpenHarmony::clipboard_set(const String &p_text) {
 }
 
 String DisplayServerOpenHarmony::clipboard_get() const {
-	String content = "";
+	String content;
 	OH_Pasteboard *pasteboard = OH_Pasteboard_Create();
 	bool hasPlainTextData = OH_Pasteboard_HasType(pasteboard, "text/plain");
 	if (hasPlainTextData) {
@@ -276,7 +278,7 @@ bool DisplayServerOpenHarmony::screen_is_kept_on() const {
 	return ohos_wrapper_screen_is_kept_on(OS_OpenHarmony::get_singleton()->get_window_id());
 }
 
-void DisplayServerOpenHarmony::_get_text_config(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_TextConfig *text_config) {
+void DisplayServerOpenHarmony::_get_text_config(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_TextConfig *p_text_config) {
 	InputMethod_TextInputType input_type = IME_TEXT_INPUT_TYPE_TEXT;
 	InputMethod_EnterKeyType enter_key_type = IME_ENTER_KEY_DONE;
 	switch (get_singleton()->keyboard_type) {
@@ -308,13 +310,13 @@ void DisplayServerOpenHarmony::_get_text_config(InputMethod_TextEditorProxy *tex
 		default:
 			break;
 	}
-	OH_TextConfig_SetInputType(text_config, input_type);
-	OH_TextConfig_SetPreviewTextSupport(text_config, false);
-	OH_TextConfig_SetEnterKeyType(text_config, enter_key_type);
+	OH_TextConfig_SetInputType(p_text_config, input_type);
+	OH_TextConfig_SetPreviewTextSupport(p_text_config, false);
+	OH_TextConfig_SetEnterKeyType(p_text_config, enter_key_type);
 }
 
-void DisplayServerOpenHarmony::_insert_text(InputMethod_TextEditorProxy *text_editor_proxy, const char16_t *text, size_t length) {
-	String characters = String::utf16(text, length);
+void DisplayServerOpenHarmony::_insert_text(InputMethod_TextEditorProxy *p_text_editor_proxy, const char16_t *p_text, size_t length) {
+	String characters = String::utf16(p_text, length);
 
 	for (int i = 0; i < characters.size(); i++) {
 		int character = characters[i];
@@ -333,30 +335,30 @@ void DisplayServerOpenHarmony::_insert_text(InputMethod_TextEditorProxy *text_ed
 	}
 }
 
-void DisplayServerOpenHarmony::_delete_forward(InputMethod_TextEditorProxy *text_editor_proxy, int32_t length) {
+void DisplayServerOpenHarmony::_delete_forward(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t length) {
 	for (int i = 0; i < length; i++) {
 		_input_text_key(Key::KEY_DELETE, 0, Key::KEY_DELETE, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
 		_input_text_key(Key::KEY_DELETE, 0, Key::KEY_DELETE, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 	}
 }
 
-void DisplayServerOpenHarmony::_delete_backward(InputMethod_TextEditorProxy *text_editor_proxy, int32_t length) {
+void DisplayServerOpenHarmony::_delete_backward(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t length) {
 	for (int i = 0; i < length; i++) {
 		_input_text_key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
 		_input_text_key(Key::BACKSPACE, 0, Key::BACKSPACE, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 	}
 }
 
-void DisplayServerOpenHarmony::_send_keyboard_status(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_KeyboardStatus status) {
+void DisplayServerOpenHarmony::_send_keyboard_status(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_KeyboardStatus status) {
 	get_singleton()->keyboard_status = status;
 }
 
-void DisplayServerOpenHarmony::_send_enter_key(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_EnterKeyType enter_key_type) {
+void DisplayServerOpenHarmony::_send_enter_key(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_EnterKeyType enter_key_type) {
 	_input_text_key(Key::ENTER, 0, Key::ENTER, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
 	_input_text_key(Key::ENTER, 0, Key::ENTER, Key::NONE, 0, false, KeyLocation::UNSPECIFIED);
 }
 
-void DisplayServerOpenHarmony::_move_cursor(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_Direction direction) {
+void DisplayServerOpenHarmony::_move_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_Direction direction) {
 	switch (direction) {
 		case IME_DIRECTION_LEFT:
 			_input_text_key(Key::LEFT, 0, Key::LEFT, Key::NONE, 0, true, KeyLocation::UNSPECIFIED);
@@ -379,38 +381,38 @@ void DisplayServerOpenHarmony::_move_cursor(InputMethod_TextEditorProxy *text_ed
 	}
 }
 
-void DisplayServerOpenHarmony::_handle_set_selection(InputMethod_TextEditorProxy *text_editor_proxy, int32_t start, int32_t end) {
+void DisplayServerOpenHarmony::_handle_set_selection(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t start, int32_t end) {
 	// Not supported by Godot.
 }
 
-void DisplayServerOpenHarmony::_handle_extend_action(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_ExtendAction action) {
+void DisplayServerOpenHarmony::_handle_extend_action(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_ExtendAction action) {
 	// Not supported by Godot.
 }
 
-void DisplayServerOpenHarmony::_get_left_text_of_cursor(InputMethod_TextEditorProxy *text_editor_proxy, int32_t number, char16_t *text, size_t *length) {
+void DisplayServerOpenHarmony::_get_left_text_of_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t number, char16_t *p_text, size_t *p_length) {
 	// Not supported by Godot.
 }
 
-void DisplayServerOpenHarmony::_get_right_text_of_cursor(InputMethod_TextEditorProxy *text_editor_proxy, int32_t number, char16_t *text, size_t *length) {
+void DisplayServerOpenHarmony::_get_right_text_of_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t number, char16_t *p_text, size_t *p_length) {
 	// Not supported by Godot.
 }
 
-int32_t DisplayServerOpenHarmony::_get_text_index_at_cursor(InputMethod_TextEditorProxy *text_editor_proxy) {
-	// Not supported by Godot.
-	return 0;
-}
-
-int32_t DisplayServerOpenHarmony::_receive_private_command(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_PrivateCommand *command[], size_t length) {
+int32_t DisplayServerOpenHarmony::_get_text_index_at_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy) {
 	// Not supported by Godot.
 	return 0;
 }
 
-int32_t DisplayServerOpenHarmony::_set_preview_text(InputMethod_TextEditorProxy *text_editor_proxy, const char16_t *text, size_t length, int32_t start, int32_t end) {
+int32_t DisplayServerOpenHarmony::_receive_private_command(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_PrivateCommand *p_command[], size_t length) {
 	// Not supported by Godot.
 	return 0;
 }
 
-void DisplayServerOpenHarmony::_finish_text_preview(InputMethod_TextEditorProxy *text_editor_proxy) {
+int32_t DisplayServerOpenHarmony::_set_preview_text(InputMethod_TextEditorProxy *p_text_editor_proxy, const char16_t *p_text, size_t length, int32_t start, int32_t end) {
+	// Not supported by Godot.
+	return 0;
+}
+
+void DisplayServerOpenHarmony::_finish_text_preview(InputMethod_TextEditorProxy *p_text_editor_proxy) {
 	// Not supported by Godot.
 }
 
@@ -456,21 +458,18 @@ void DisplayServerOpenHarmony::virtual_keyboard_show(const String &p_existing_te
 	OH_TextEditorProxy_SetFinishTextPreviewFunc(text_editor_proxy, _finish_text_preview);
 
 	auto retult = OH_InputMethodController_Attach(text_editor_proxy, attach_options, &input_method_proxy);
-	if (retult != IME_ERR_OK) {
-		ERR_PRINT(vformat("Failed to attach input method controller: %d", retult));
-		return;
-	}
+	ERR_FAIL_COND_MSG(retult != IME_ERR_OK, vformat("Failed to attach input method controller: %d.", retult));
 }
 
 void DisplayServerOpenHarmony::virtual_keyboard_hide() {
 	if (keyboard_status == IME_KEYBOARD_STATUS_SHOW) {
 		if (OH_InputMethodProxy_HideKeyboard(input_method_proxy) != IME_ERR_OK) {
-			ERR_PRINT("Failed to hide keyboard");
+			ERR_PRINT("Failed to hide keyboard.");
 		}
 	}
 	if (input_method_proxy) {
 		if (OH_InputMethodController_Detach(input_method_proxy) != IME_ERR_OK) {
-			ERR_PRINT("Failed to detach input method controller");
+			ERR_PRINT("Failed to detach input method controller.");
 		}
 		input_method_proxy = nullptr;
 	}

@@ -29,12 +29,12 @@
 /**************************************************************************/
 
 #include "bridge_openharmony.h"
+
 #include "dir_access_openharmony.h"
 #include "file_access_openharmony.h"
 #include "os_openharmony.h"
 
 #include "core/config/project_settings.h"
-#include "core/variant/variant.h"
 #include "display_server_openharmony.h"
 #include "main/main.h"
 
@@ -53,7 +53,7 @@ enum GodotStartupStep {
 	STEP_TERMINATED = -1,
 	STEP_SETUP,
 	STEP_SHOW_LOGO,
-	STEP_STARTED
+	STEP_STARTED,
 };
 
 void godot_finalize() {

@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/os/mutex.h"
 #include "servers/audio_server.h"
 
 #include <ohaudio/native_audiocapturer.h>

@@ -58,21 +58,21 @@ class DisplayServerOpenHarmony : public DisplayServer {
 	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 
-	static void _get_text_config(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_TextConfig *text_config);
-	static void _insert_text(InputMethod_TextEditorProxy *text_editor_proxy, const char16_t *text, size_t length);
-	static void _delete_forward(InputMethod_TextEditorProxy *text_editor_proxy, int32_t length);
-	static void _delete_backward(InputMethod_TextEditorProxy *text_editor_proxy, int32_t length);
-	static void _send_keyboard_status(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_KeyboardStatus keyboard_status);
-	static void _send_enter_key(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_EnterKeyType enter_key_type);
-	static void _move_cursor(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_Direction direction);
-	static void _handle_set_selection(InputMethod_TextEditorProxy *text_editor_proxy, int32_t start, int32_t end);
-	static void _handle_extend_action(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_ExtendAction action);
-	static void _get_left_text_of_cursor(InputMethod_TextEditorProxy *text_editor_proxy, int32_t number, char16_t *text, size_t *length);
-	static void _get_right_text_of_cursor(InputMethod_TextEditorProxy *text_editor_proxy, int32_t number, char16_t *text, size_t *length);
-	static int32_t _get_text_index_at_cursor(InputMethod_TextEditorProxy *text_editor_proxy);
-	static int32_t _receive_private_command(InputMethod_TextEditorProxy *text_editor_proxy, InputMethod_PrivateCommand *command[], size_t length);
-	static int32_t _set_preview_text(InputMethod_TextEditorProxy *text_editor_proxy, const char16_t *text, size_t length, int32_t start, int32_t end);
-	static void _finish_text_preview(InputMethod_TextEditorProxy *text_editor_proxy);
+	static void _get_text_config(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_TextConfig *p_text_config);
+	static void _insert_text(InputMethod_TextEditorProxy *p_text_editor_proxy, const char16_t *p_text, size_t length);
+	static void _delete_forward(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t length);
+	static void _delete_backward(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t length);
+	static void _send_keyboard_status(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_KeyboardStatus keyboard_status);
+	static void _send_enter_key(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_EnterKeyType enter_key_type);
+	static void _move_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_Direction direction);
+	static void _handle_set_selection(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t start, int32_t end);
+	static void _handle_extend_action(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_ExtendAction action);
+	static void _get_left_text_of_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t number, char16_t *p_text, size_t *p_length);
+	static void _get_right_text_of_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy, int32_t number, char16_t *p_text, size_t *p_length);
+	static int32_t _get_text_index_at_cursor(InputMethod_TextEditorProxy *p_text_editor_proxy);
+	static int32_t _receive_private_command(InputMethod_TextEditorProxy *p_text_editor_proxy, InputMethod_PrivateCommand *p_command[], size_t length);
+	static int32_t _set_preview_text(InputMethod_TextEditorProxy *p_text_editor_proxy, const char16_t *p_text, size_t length, int32_t start, int32_t end);
+	static void _finish_text_preview(InputMethod_TextEditorProxy *p_text_editor_proxy);
 
 	static void _input_text_key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, int p_modifier, bool p_pressed, KeyLocation p_location);
 
@@ -86,9 +86,8 @@ public:
 	~DisplayServerOpenHarmony();
 
 	void send_input_event(const Ref<InputEvent> &p_event) const;
-	void resize_window(uint32_t width, uint32_t height);
+	void resize_window(uint32_t p_width, uint32_t p_height);
 	void send_window_event(DisplayServer::WindowEvent p_event) const;
-	void change_window_status(bool shown);
 
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;

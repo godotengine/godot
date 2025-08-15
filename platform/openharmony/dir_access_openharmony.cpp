@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "dir_access_openharmony.h"
+
 #include "os_openharmony.h"
 
 #include <rawfile/raw_dir.h>
