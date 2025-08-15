@@ -593,6 +593,8 @@ public:
 	void set_controller_value(const int p_controller_value);
 	int get_controller_value() const;
 
+	PackedByteArray get_midi_bytes() const;
+
 	virtual String as_text() const override;
 	virtual String to_string() override;
 
