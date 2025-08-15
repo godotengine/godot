@@ -4378,7 +4378,7 @@ Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFText
 		String file_info = p_state->filename.is_empty() ? "GLB/GLTF file" : p_state->filename;
 		WARN_PRINT(vformat("GLTF: Invalid texture reference in '%s'. Index %d is out of bounds (only %d textures available). Using 1x1 white placeholder to prevent cascading crashes.",
 				file_info, p_texture, p_state->textures.size()));
-		
+
 		// Create a minimal 1x1 white placeholder to prevent cascading crashes
 		Ref<Image> placeholder_img = Image::create_empty(1, 1, false, Image::FORMAT_RGB8);
 		placeholder_img->fill(Color(1, 1, 1)); // White placeholder
