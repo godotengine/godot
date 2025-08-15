@@ -148,18 +148,20 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				F.name = F.name.replace_first("metadata/", "Metadata/"); // Trick to not get actual metadata edited from MultiNodeEdit.
 			}
 
-			if (!usage.has(F.name)) {
+			PLData *usage_data = usage.getptr(F.name);
+			if (!usage_data) {
 				PLData pld;
 				pld.uses = 0;
 				pld.info = F;
 				pld.info.name = F.name;
 				usage[F.name] = pld;
-				data_list.push_back(usage.getptr(F.name));
+				usage_data = usage.getptr(F.name);
+				data_list.push_back(usage_data);
 			}
 
 			// Make sure only properties with the same exact PropertyInfo data will appear.
-			if (usage[F.name].info == F) {
-				usage[F.name].uses++;
+			if (usage_data->info == F) {
+				usage_data->uses++;
 			}
 		}
 
