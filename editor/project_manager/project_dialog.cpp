@@ -560,6 +560,18 @@ void ProjectDialog::ok_pressed() {
 		}
 		fa_icon->store_string(get_default_project_icon());
 
+		// Force default project icon to use original resolution when changed texture resolution settings
+		Ref<FileAccess> fa_import = FileAccess::open(path.path_join("icon.svg.import"), FileAccess::WRITE, &err);
+		if (err != OK) {
+			// icon.svg.import isn't critical
+			ERR_PRINT("Couldn't create icon.svg.import in project path.");
+		} else {
+			fa_import->store_line("[params]");
+			fa_import->store_line("");
+			fa_import->store_line("performance/force_original_size=true");
+			fa_import->close();
+		}
+
 		EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), path);
 
 		// Ensures external editors and IDEs use UTF-8 encoding.
