@@ -31,6 +31,7 @@
 #include "theme_editor_plugin.h"
 
 #include "editor/doc/editor_help.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
@@ -3710,7 +3711,7 @@ void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 	}
 
 	if (theme.is_valid()) {
-		theme_name->set_text(TTR("Theme:") + " " + theme->get_path().get_file());
+		_update_theme_name(theme->get_path().get_file());
 	}
 }
 
@@ -3747,6 +3748,23 @@ void ThemeEditor::_scene_closed(const String &p_path) {
 		theme = Ref<Theme>();
 		EditorNode::get_singleton()->hide_unused_editors(plugin);
 	}
+}
+
+void ThemeEditor::_resource_saved(const Ref<Resource> &p_resource) {
+	if (theme.is_valid() && theme == p_resource) {
+		_update_theme_name(theme->get_path().get_file());
+	}
+}
+
+void ThemeEditor::_files_moved(const String &p_old_path, const String &p_new_path) {
+	// Theme's path may not have been updated to new path yet - need to check both old and new.
+	if (theme.is_valid() && (theme->get_path() == p_old_path || theme->get_path() == p_new_path)) {
+		_update_theme_name(p_new_path.get_file());
+	}
+}
+
+void ThemeEditor::_update_theme_name(const String &p_name) {
+	theme_name->set_text(TTR("Theme:") + " " + p_name);
 }
 
 void ThemeEditor::_add_preview_button_cbk() {
@@ -3879,6 +3897,8 @@ void ThemeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			EditorNode::get_singleton()->connect("scene_closed", callable_mp(this, &ThemeEditor::_scene_closed));
+			EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &ThemeEditor::_resource_saved));
+			FileSystemDock::get_singleton()->connect("files_moved", callable_mp(this, &ThemeEditor::_files_moved));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
