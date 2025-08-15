@@ -2682,6 +2682,9 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 
 	CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
+#ifdef SDL_ENABLED
+	AudioDriverManager::add_driver(&driver_sdl);
+#endif
 #ifdef WASAPI_ENABLED
 	AudioDriverManager::add_driver(&driver_wasapi);
 #endif

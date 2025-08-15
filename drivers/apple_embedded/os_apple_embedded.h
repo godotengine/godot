@@ -40,6 +40,10 @@
 #include "servers/audio_server.h"
 #include "servers/rendering/renderer_compositor.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/audio_driver_sdl.h"
+#endif
+
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
@@ -52,6 +56,10 @@ class OS_AppleEmbedded : public OS_Unix {
 private:
 	static HashMap<String, void *> dynamic_symbol_lookup_table;
 	friend void register_dynamic_symbol(char *name, void *address);
+
+#ifdef SDL_ENABLED
+	AudioDriverSDL driver_sdl;
+#endif
 
 	AudioDriverCoreAudio audio_driver;
 
