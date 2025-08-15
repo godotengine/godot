@@ -91,6 +91,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(int, _get_height)
 	GDVIRTUAL0RC_REQUIRED(int, _get_layers)
 	GDVIRTUAL0RC_REQUIRED(bool, _has_mipmaps)
+	GDVIRTUAL0RC_REQUIRED(int, _get_mipmap_count)
 	GDVIRTUAL1RC_REQUIRED(Ref<Image>, _get_layer_data, int)
 public:
 	enum LayeredType {
@@ -105,6 +106,7 @@ public:
 	virtual int get_height() const;
 	virtual int get_layers() const;
 	virtual bool has_mipmaps() const;
+	virtual int get_mipmap_count() const;
 	virtual Ref<Image> get_layer_data(int p_layer) const;
 };
 
@@ -123,6 +125,7 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(int, _get_height)
 	GDVIRTUAL0RC_REQUIRED(int, _get_depth)
 	GDVIRTUAL0RC_REQUIRED(bool, _has_mipmaps)
+	GDVIRTUAL0RC_REQUIRED(int, _get_mipmap_count)
 	GDVIRTUAL0RC_REQUIRED(TypedArray<Image>, _get_data)
 public:
 	virtual Image::Format get_format() const;
@@ -130,6 +133,7 @@ public:
 	virtual int get_height() const;
 	virtual int get_depth() const;
 	virtual bool has_mipmaps() const;
+	virtual int get_mipmap_count() const;
 	virtual Vector<Ref<Image>> get_data() const;
 	virtual Ref<Resource> create_placeholder() const;
 };
