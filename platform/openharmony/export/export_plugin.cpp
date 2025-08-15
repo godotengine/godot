@@ -529,16 +529,6 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 		Ref<FileAccess> build_file = FileAccess::open(build_profile_path, FileAccess::READ);
 		if (build_file.is_valid()) {
 			String content = build_file->get_as_text();
-			if (should_sign) {
-				String certpath_file = p_preset->get("sign/certpath_file");
-				String key_alias = p_preset->get("sign/key_alias");
-				String key_password = p_preset->get("sign/key_password");
-				String profile_file = p_preset->get("sign/profile_file");
-				String sign_alg = p_preset->get("sign/sign_alg");
-				String store_file = p_preset->get("sign/store_file");
-				String store_password = p_preset->get("sign/store_password");
-				content = content.replace("\"signingConfigs\": [],", String("\"signingConfigs\": [\n") + "      {\n" + "        \"name\": \"default\",\n" + "        \"type\": \"HarmonyOS\",\n" + "        \"material\": {\n" + "          \"certpath\": \"" + certpath_file + "\",\n" + "          \"keyAlias\": \"" + key_alias + "\",\n" + "          \"keyPassword\": \"" + key_password + "\",\n" + "          \"profile\": \"" + profile_file + "\",\n" + "          \"signAlg\": \"" + sign_alg + "\",\n" + "          \"storeFile\": \"" + store_file + "\",\n" + "          \"storePassword\": \"" + store_password + "\"\n" + "        }\n" + "      }\n" + "    ],");
-			}
 
 			content = content.replace("\"targetSdkVersion\": \"5.1.0(18)\"", "\"targetSdkVersion\": \"" + sdk_version + "\"");
 			content = content.replace("\"compatibleSdkVersion\": \"5.1.0(18)\"", "\"compatibleSdkVersion\": \"" + sdk_version + "\"");
@@ -794,12 +784,16 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 		bundle_dir->list_dir_begin();
 		String file_name = bundle_dir->get_next();
 		String bundle_file;
+		String signed_file_name;
+		String signed_bundle_file;
 
-		String bundle_ext = String(should_sign ? "-signed" : "-unsigned") + (is_hap ? ".hap" : ".app");
+		String bundle_ext = String("-unsigned") + (is_hap ? ".hap" : ".app");
 
 		while (!file_name.is_empty()) {
 			if (file_name.ends_with(bundle_ext)) {
+				signed_file_name = file_name.trim_suffix(bundle_ext) + "-signed" + (is_hap ? ".hap" : ".app");
 				bundle_file = output_dir.path_join(file_name);
+				signed_bundle_file = output_dir.path_join(signed_file_name);
 				break;
 			}
 			file_name = bundle_dir->get_next();
@@ -807,6 +801,34 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 		bundle_dir->list_dir_end();
 
 		if (!bundle_file.is_empty() && FileAccess::exists(bundle_file)) {
+			if (should_sign) {
+				// java -jar hap-sign-tool.jar sign-app -keyAlias "key0" -signAlg "SHA256withECDSA" -mode "localSign" -appCertFile "test.cer" -profileFile "test.p7b"
+				// -inFile "hap-unsigned.hap" -keystoreFile "test.p12" -outFile "result\hap-signed.hap" -keyPwd "123456" -keystorePwd "123456" -signCode "1"
+				String sign_tool_path = get_sign_tool_path();
+				String certpath_file = p_preset->get("sign/certpath_file");
+				String key_alias = p_preset->get("sign/key_alias");
+				String key_password = p_preset->get("sign/key_password");
+				String profile_file = p_preset->get("sign/profile_file");
+				String sign_alg = p_preset->get("sign/sign_alg");
+				String store_file = p_preset->get("sign/store_file");
+				String store_password = p_preset->get("sign/store_password");
+				List<String> sign_args{ "-jar", sign_tool_path, "sign-app", "-keyAlias", key_alias, "-signAlg", sign_alg, "-mode", "localSign",
+					"-appCertFile", certpath_file, "-profileFile", profile_file, "-inFile", bundle_file, "-keystoreFile", store_file, "-outFile", signed_bundle_file,
+					"-keyPwd", key_password, "-keystorePwd", store_password, "-signCode", "1" };
+
+				String sign_output;
+				int sign_exit_code;
+				err = OS::get_singleton()->execute("java", sign_args, &sign_output, &sign_exit_code, true, nullptr, false);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Failed to sign bundle: \"%s\"."), bundle_file));
+					return err;
+				}
+				if (sign_exit_code != 0) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Sign failed with exit code %d:\n%s"), sign_exit_code, sign_output));
+					return ERR_COMPILATION_FAILED;
+				}
+				bundle_file = signed_bundle_file;
+			}
 			err = da->copy(bundle_file, base_dir.path_join(p_path.get_file()));
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Could not copy bundle file from \"%s\" to \"%s\"."), bundle_file, p_path));
@@ -1208,6 +1230,14 @@ String EditorExportPlatformOpenHarmony::get_hdc_path() const {
 		exe_ext = ".exe";
 	}
 	return sdk_path.path_join("/default/openharmony/toolchains/hdc" + exe_ext);
+}
+
+String EditorExportPlatformOpenHarmony::get_sign_tool_path() const {
+	String sdk_path = get_sdk_path();
+	if (sdk_path.is_empty()) {
+		return "";
+	}
+	return sdk_path.path_join("/default/openharmony/toolchains/lib/hap-sign-tool.jar");
 }
 
 EditorExportPlatformOpenHarmony::EditorExportPlatformOpenHarmony() {
