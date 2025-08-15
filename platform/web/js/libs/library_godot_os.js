@@ -268,6 +268,44 @@ const GodotOS = {
 				}, 0);
 			});
 		},
+
+		getOperatingSystem: () => {
+			const userAgent = navigator.userAgent;
+			if (userAgent.indexOf('Macintosh') !== -1) {
+				return 'macOS';
+			}
+			if ((userAgent.indexOf('iPhone') !== -1) || (userAgent.indexOf('iPad') !== -1) || (userAgent.indexOf('iPod') !== -1)) {
+				return 'iOS';
+			}
+			if (userAgent.indexOf('Windows') !== -1) {
+				return 'Windows';
+			}
+			if (userAgent.indexOf('Android') !== -1) {
+				return 'Android';
+			}
+			if (userAgent.indexOf('CrOS') !== -1) {
+				return 'ChromeOS';
+			}
+			if (userAgent.indexOf('FreeBSD') !== -1) {
+				return 'FreeBSD';
+			}
+			if (userAgent.indexOf('NetBSD') !== -1) {
+				return 'NetBSD';
+			}
+			if (userAgent.indexOf('BSD') !== -1) {
+				return '*BSD';
+			}
+			if (userAgent.indexOf('Linux') !== -1) {
+				return 'Linux';
+			}
+			if (userAgent.indexOf('Haiku') !== -1) {
+				return 'Haiku';
+			}
+			if (userAgent.indexOf('X11') !== -1) {
+				return 'X11';
+			}
+			return '';
+		},
 	},
 
 	godot_js_os_finish_async__proxy: 'sync',
@@ -300,26 +338,42 @@ const GodotOS = {
 	},
 
 	godot_js_os_has_feature__proxy: 'sync',
-	godot_js_os_has_feature__sig: 'ii',
+	godot_js_os_has_feature__sig: 'ip',
 	godot_js_os_has_feature: function (p_ftr) {
 		const ftr = GodotRuntime.parseString(p_ftr);
-		const ua = navigator.userAgent;
+
+		const operatingSystem = GodotOS.getOperatingSystem();
 		if (ftr === 'web_macos') {
-			return (ua.indexOf('Mac') !== -1) ? 1 : 0;
-		}
-		if (ftr === 'web_windows') {
-			return (ua.indexOf('Windows') !== -1) ? 1 : 0;
-		}
-		if (ftr === 'web_android') {
-			return (ua.indexOf('Android') !== -1) ? 1 : 0;
+			return Number(operatingSystem === 'macOS');
 		}
 		if (ftr === 'web_ios') {
-			return ((ua.indexOf('iPhone') !== -1) || (ua.indexOf('iPad') !== -1) || (ua.indexOf('iPod') !== -1)) ? 1 : 0;
+			return Number(operatingSystem === 'iOS');
+		}
+		if (ftr === 'web_windows') {
+			return Number(operatingSystem === 'Windows');
+		}
+		if (ftr === 'web_android') {
+			return Number(operatingSystem === 'Android');
 		}
 		if (ftr === 'web_linuxbsd') {
-			return ((ua.indexOf('CrOS') !== -1) || (ua.indexOf('BSD') !== -1) || (ua.indexOf('Linux') !== -1) || (ua.indexOf('X11') !== -1)) ? 1 : 0;
+			return Number(
+				operatingSystem === 'ChromeOS'
+				|| operatingSystem === 'FreeBSD'
+				|| operatingSystem === 'NetBSD'
+				|| operatingSystem === '*BSD'
+				|| operatingSystem === 'Linux'
+				|| operatingSystem === 'X11'
+			);
 		}
+
 		return 0;
+	},
+
+	godot_js_os_get_operating_system__proxy: 'sync',
+	godot_js_os_get_operating_system__sig: 'p',
+	godot_js_os_get_operating_system: function () {
+		// Caller must free the string.
+		GodotRuntime.allocString(GodotOS.getOperatingSystem());
 	},
 
 	godot_js_os_execute__proxy: 'sync',
