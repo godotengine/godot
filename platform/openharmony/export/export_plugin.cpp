@@ -35,12 +35,9 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
-#include "core/io/file_access.h"
-#include "core/io/image.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
-#include "core/templates/safe_refcount.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/export/editor_export.h"
@@ -246,10 +243,7 @@ String EditorExportPlatformOpenHarmony::get_device_architecture(int p_index) con
 }
 
 List<String> EditorExportPlatformOpenHarmony::get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const {
-	List<String> list;
-	list.push_back("hap");
-	list.push_back("app");
-	return list;
+	return List<String>{ "hap", "app" };
 }
 
 Error EditorExportPlatformOpenHarmony::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
@@ -309,7 +303,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(base_dir)) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\""), base_dir));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Target folder does not exist or is inaccessible: \"%s\"."), base_dir));
 		return ERR_FILE_BAD_PATH;
 	}
 
@@ -330,7 +324,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 
 	Error err = da->make_dir_recursive(project_dir);
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create project directory: \"%s\""), project_dir));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Could not create project directory: \"%s\"."), project_dir));
 		return err;
 	}
 
@@ -591,8 +585,8 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 #else
 			int start = content.find("\"abiFilters\"");
 			if (start != -1) {
-				int bracket_start = content.find("[", start);
-				int bracket_end = content.find("]", bracket_start);
+				int bracket_start = content.find_char('[', start);
+				int bracket_end = content.find_char(']', bracket_start);
 				if (bracket_start != -1 && bracket_end != -1) {
 					String before = content.substr(0, bracket_start + 1);
 					String after = content.substr(bracket_end);
@@ -674,7 +668,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	print_line(vformat("Project exported pck successfully. %s", pck_path));
 
 	if (export_project_only) {
-		print_line(vformat("Project exported successfully. Build skipped as requested."));
+		print_line("Project exported successfully. Build skipped as requested.");
 		return OK;
 	}
 
@@ -695,7 +689,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 
 	String hvigor_cmd = get_hvigor_path();
 	bool is_windows = OS::get_singleton()->get_name() == "Windows";
-	String node_bin_path = "";
+	String node_bin_path;
 	String java_home = get_java_sdk_path();
 	if (!FileAccess::exists(hvigor_cmd)) {
 		String hvigor_cmd_ide = get_hvigor_path_ide();
@@ -711,7 +705,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	} else {
 		node_bin_path = tool_path.path_join(is_windows ? "/tool/node" : "/tool/node/bin");
 		if (java_home.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Java SDK path is required when using command line tools. Please set it in the Editor Settings (Export > OpenHarmony > Java SDK Path).")));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), TTR("Java SDK path is required when using command line tools. Please set it in the Editor Settings (Export > OpenHarmony > Java SDK Path)."));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -752,7 +746,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	err = OS::get_singleton()->execute(hvigor_cmd, args, &output, &exit_code, true, nullptr, false);
 	OS::get_singleton()->set_cwd(EditorPaths::get_singleton()->get_project_data_dir());
 	if (err != OK) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Failed to execute build command: %s"), hvigor_cmd));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Failed to execute build command: \"%s\"."), hvigor_cmd));
 		return err;
 	}
 
@@ -789,7 +783,7 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("Could not copy bundle file from \"%s\" to \"%s\"."), bundle_file, p_path));
 				return err;
 			}
-			print_line(vformat("Build completed successfully."));
+			print_line("Build completed successfully.");
 		} else {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), vformat(TTR("bundle file not found in output directory: \"%s\"."), output_dir));
 			return ERR_FILE_NOT_FOUND;
@@ -1046,19 +1040,17 @@ bool EditorExportPlatformOpenHarmony::has_valid_export_configuration(const Ref<E
 		if (!FileAccess::exists(background_image)) {
 			valid = false;
 			err += TTR("Background image file does not exist.") + "\n";
+		} else if (background_image.get_extension().to_lower() != "png") {
+			valid = false;
+			err += TTR("Background image must be a PNG file.") + "\n";
 		} else {
-			if (background_image.get_extension().to_lower() != "png") {
+			Ref<Image> img = Image::load_from_file(background_image);
+			if (img.is_null()) {
 				valid = false;
-				err += TTR("Background image must be a PNG file.") + "\n";
-			} else {
-				Ref<Image> img = Image::load_from_file(background_image);
-				if (img.is_null()) {
-					valid = false;
-					err += TTR("Failed to load background image.") + "\n";
-				} else if (img->get_width() != 1024 || img->get_height() != 1024) {
-					valid = false;
-					err += TTR("Background image must be 1024x1024 pixels.") + "\n";
-				}
+				err += TTR("Failed to load background image.") + "\n";
+			} else if (img->get_width() != 1024 || img->get_height() != 1024) {
+				valid = false;
+				err += TTR("Background image must be 1024x1024 pixels.") + "\n";
 			}
 		}
 	}
@@ -1067,19 +1059,17 @@ bool EditorExportPlatformOpenHarmony::has_valid_export_configuration(const Ref<E
 		if (!FileAccess::exists(foreground_image)) {
 			valid = false;
 			err += TTR("Foreground image file does not exist.") + "\n";
+		} else if (foreground_image.get_extension().to_lower() != "png") {
+			valid = false;
+			err += TTR("Foreground image must be a PNG file.") + "\n";
 		} else {
-			if (foreground_image.get_extension().to_lower() != "png") {
+			Ref<Image> img = Image::load_from_file(foreground_image);
+			if (img.is_null()) {
 				valid = false;
-				err += TTR("Foreground image must be a PNG file.") + "\n";
-			} else {
-				Ref<Image> img = Image::load_from_file(foreground_image);
-				if (img.is_null()) {
-					valid = false;
-					err += TTR("Failed to load foreground image.") + "\n";
-				} else if (img->get_width() != 1024 || img->get_height() != 1024) {
-					valid = false;
-					err += TTR("Foreground image must be 1024x1024 pixels.") + "\n";
-				}
+				err += TTR("Failed to load foreground image.") + "\n";
+			} else if (img->get_width() != 1024 || img->get_height() != 1024) {
+				valid = false;
+				err += TTR("Foreground image must be 1024x1024 pixels.") + "\n";
 			}
 		}
 	}
@@ -1126,7 +1116,7 @@ bool EditorExportPlatformOpenHarmony::has_valid_project_configuration(const Ref<
 	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.openharmony");
 
-	bool uses_vulkan = (rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "vulkan";
+	bool uses_vulkan = rendering_driver == "vulkan" && (rendering_method == "forward_plus" || rendering_method == "mobile");
 	if (!uses_vulkan) {
 		valid = false;
 		err += TTR("OpenHarmony export requires Vulkan renderer. Set rendering method to 'Forward+' or 'Mobile' and rendering driver to 'Vulkan' in Project Settings.") + "\n";
@@ -1193,7 +1183,8 @@ String EditorExportPlatformOpenHarmony::get_hdc_path() const {
 
 EditorExportPlatformOpenHarmony::EditorExportPlatformOpenHarmony() {
 	if (EditorNode::get_singleton()) {
-		Ref<Image> img = memnew(Image);
+		Ref<Image> img;
+		img.instantiate();
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
 		ImageLoaderSVG::create_image_from_string(img, _openharmony_logo_svg, EDSCALE, upsample, false);
@@ -1208,16 +1199,14 @@ EditorExportPlatformOpenHarmony::EditorExportPlatformOpenHarmony() {
 	}
 }
 
-void EditorExportPlatformOpenHarmony::_check_for_changes_poll_thread(void *ud) {
-	EditorExportPlatformOpenHarmony *ea = static_cast<EditorExportPlatformOpenHarmony *>(ud);
+void EditorExportPlatformOpenHarmony::_check_for_changes_poll_thread(void *p_ud) {
+	EditorExportPlatformOpenHarmony *ea = static_cast<EditorExportPlatformOpenHarmony *>(p_ud);
 
 	while (!ea->quit_request.is_set()) {
 		String hdc = ea->get_hdc_path();
 		if (ea->has_runnable_preset.is_set() && FileAccess::exists(hdc) && EditorNode::get_singleton()->is_editor_ready()) {
 			String devices_output;
-			List<String> args;
-			args.push_back("list");
-			args.push_back("targets");
+			List<String> args{ "list", "targets" };
 			int ec;
 			OS::get_singleton()->execute(hdc, args, &devices_output, &ec);
 

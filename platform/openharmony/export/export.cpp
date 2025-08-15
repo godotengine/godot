@@ -46,6 +46,7 @@ void register_openharmony_exporter() {
 	EDITOR_DEF_BASIC("export/openharmony/java_sdk_path", "");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/openharmony/java_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 
-	Ref<EditorExportPlatformOpenHarmony> exporter = Ref<EditorExportPlatformOpenHarmony>(memnew(EditorExportPlatformOpenHarmony));
+	Ref<EditorExportPlatformOpenHarmony> exporter;
+	exporter.instantiate();
 	EditorExport::get_singleton()->add_export_platform(exporter);
 }

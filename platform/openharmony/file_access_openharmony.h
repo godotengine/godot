@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
 #include "drivers/unix/file_access_unix.h"
 
 #include <rawfile/raw_dir.h>
@@ -40,14 +39,14 @@ class FileAccessOpenHarmony : public FileAccessUnix {
 	static NativeResourceManager *resource_manager;
 	RawFile64 *_rawfile = nullptr;
 	bool _is_rawfile = false;
-	String _cpath = "";
+	String _cpath;
 
 protected:
 	bool is_in_bundle(String p_path);
 
 public:
 	static void setup(NativeResourceManager *p_resource_manager);
-	static Error get_rawfile_content(const char *p_path, String &content);
+	static Error get_rawfile_content(const char *p_path, String &r_content);
 
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override;
 	virtual bool is_open() const override;
