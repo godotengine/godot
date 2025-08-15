@@ -139,7 +139,50 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="preset_index" type="int" />
 			<description>
-				Gets the options and default values for the preset at this index. Returns an Array of Dictionaries with the following keys: [code]name[/code], [code]default_value[/code], [code]property_hint[/code] (optional), [code]hint_string[/code] (optional), [code]usage[/code] (optional).
+				Returns the import options list for the preset at [param preset_index] as an array of dictionaries. Each dictionary contains the following keys:
+				- [code]name[/code] is the name of the option, as a [String].
+				- [code]default_value[/code] is the default value of the option.
+				- [code]type[/code] is the option's type, as an [int] (see [enum Variant.Type]). Defaults to the type of [code]default_value[/code].
+				- [code]property_hint[/code] is [i]how[/i] the option is meant to be edited (see [enum PropertyHint]). Defaults to [constant @GlobalScope.PROPERTY_HINT_NONE].
+				- [code]hint_string[/code] depends on the hint (see [enum PropertyHint]). Defaults to an empty string.
+				- [code]usage[/code] is a combination of [enum PropertyUsageFlags]. Defaults to [constant @GlobalScope.PROPERTY_USAGE_DEFAULT].
+				[codeblock]
+				func _get_import_options(path, preset_index):
+					match preset_index:
+						0:
+							return [
+								{
+									"name": "boolean_option",
+									"default_value": false,
+								},
+								{
+									"name": "enum_option",
+									"default_value": 0,
+									"property_hint": PROPERTY_HINT_ENUM,
+									"hint_string": "One,Two,Three",
+								},
+								{
+									"name": "custom_resource_default_non_null",
+									"default_value": preload("res://addons/my_plugin/custom_resource.tres"),
+									"property_hint": PROPERTY_HINT_RESOURCE_TYPE,
+									"hint_string": "CustomResource",
+								},
+								{
+									"name": "custom_resource_default_null",
+									"default_value": null,
+									"type": TYPE_OBJECT, # Required for the type to be correct, due to the `null` default value.
+									"property_hint": PROPERTY_HINT_RESOURCE_TYPE,
+									"hint_string": "CustomResource",
+								},
+							]
+						1:
+							return [
+								# Return a different array of dictionaries here for a different preset.
+							]
+						_:
+							push_error("Unknown import preset: %d" % preset_index)
+							return []
+				[/codeblock]
 			</description>
 		</method>
 		<method name="_get_import_order" qualifiers="virtual const">
