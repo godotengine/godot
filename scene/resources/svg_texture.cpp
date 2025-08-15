@@ -269,6 +269,10 @@ RID SVGTexture::get_rid() const {
 	return _ensure_scale(1.0);
 }
 
+RID SVGTexture::get_rid_for_scale(double p_scale) const {
+	return _ensure_scale(p_scale);
+}
+
 bool SVGTexture::has_alpha() const {
 	return true;
 }
