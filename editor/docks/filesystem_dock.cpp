@@ -3954,11 +3954,11 @@ void FileSystemDock::_project_settings_changed() {
 }
 
 void FileSystemDock::_editor_settings_changed() {
-	bool prev_value = auto_nav_on_tab_changed;
-	auto_nav_on_tab_changed = EDITOR_GET("interface/scene_tabs/auto_nav_in_file_system");
-	if (prev_value == auto_nav_on_tab_changed) {
+	bool new_value = EDITOR_GET("interface/scene_tabs/auto_nav_in_file_system");
+	if (new_value == auto_nav_on_tab_changed) {
 		return;
 	}
+	auto_nav_on_tab_changed = new_value;
 
 	if (auto_nav_on_tab_changed) {
 		EditorSceneTabs::get_singleton()->connect("tab_changed", callable_mp(this, &FileSystemDock::_editor_scene_tab_changed));
