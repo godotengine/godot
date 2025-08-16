@@ -905,6 +905,8 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	menu_hb = memnew(HBoxContainer);
 	main_container->add_child(menu_hb);
 	file_menu = memnew(MenuButton);
+	file_menu->set_flat(false);
+	file_menu->set_theme_type_variation("FlatMenuButton");
 	file_menu->set_text(TTR("File"));
 	file_menu->set_switch_on_hover(true);
 	file_menu->set_shortcut_context(files_split);
@@ -921,7 +923,6 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	menu_spacer = menu_hb->add_spacer();
 
 	make_floating = memnew(ScreenSelect);
-	make_floating->set_flat(true);
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 	if (!make_floating->is_disabled()) {
 		// Override default ScreenSelect tooltip if multi-window support is available.
