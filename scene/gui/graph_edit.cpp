@@ -1758,7 +1758,7 @@ void GraphEdit::_update_top_connection_layer() {
 	Vector2 to_pos = connecting_to_point / zoom;
 	int to_type = from_type;
 	Color to_color = from_color;
-	int to_angle = 180;
+	int to_angle = from_angle + 180;
 	if (connecting_target_valid) {
 		ERR_FAIL_NULL(connecting_to_port);
 		to_type = connecting_to_port->get_port_type();
