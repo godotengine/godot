@@ -3340,13 +3340,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Vector<int> indices_vec4_mapping;
 			if (mesh_prim.has("indices")) {
 				indices = _decode_accessor_as_ints(p_state, mesh_prim["indices"], false);
-				const int is = indices.size();
+				const int index_count = indices.size();
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
+					ERR_FAIL_COND_V_MSG(index_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices.");
 					// Swap around indices, convert ccw to cw for front face.
 
 					int *w = indices.ptrw();
-					for (int k = 0; k < is; k += 3) {
+					for (int k = 0; k < index_count; k += 3) {
 						SWAP(w[k + 1], w[k + 2]);
 					}
 				}
@@ -3355,7 +3356,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				Vector<bool> used_indices;
 				used_indices.resize_initialized(orig_vertex_num);
 				bool *used_w = used_indices.ptrw();
-				for (int idx_i = 0; idx_i < is; idx_i++) {
+				for (int idx_i = 0; idx_i < index_count; idx_i++) {
 					ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
 					used_w[indices_w[idx_i]] = true;
 				}
@@ -3556,11 +3557,12 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				// Generate indices because they need to be swapped for CW/CCW.
 				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
 				ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
-				const int vs = vertices.size();
-				indices.resize(vs);
+				const int vertex_count = vertices.size();
+				ERR_FAIL_COND_V_MSG(vertex_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Non-indexed triangle meshes MUST have a vertex array with a size that is a multiple of 3, but got " + itos(vertex_count) + " vertices.");
+				indices.resize(vertex_count);
 				{
 					int *w = indices.ptrw();
-					for (int k = 0; k < vs; k += 3) {
+					for (int k = 0; k < vertex_count; k += 3) {
 						w[k] = k;
 						w[k + 1] = k + 2;
 						w[k + 2] = k + 1;
