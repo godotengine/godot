@@ -332,6 +332,7 @@ private:
 	void _minimap_toggled();
 
 	bool _check_clickable_control(const Control *p_control, const Vector2 &r_mouse_pos, const Vector2 &p_offset) const;
+	GraphPort *_try_find_port_at_point(const Vector2 &p_point);
 
 #ifndef DISABLE_DEPRECATED
 	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;

@@ -1275,50 +1275,29 @@ void GraphEdit::_set_position_of_frame_attached_nodes(GraphFrame *p_frame, const
 }
 
 bool GraphEdit::_filter_input(const Point2 &p_point) {
-	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
-		if (!graph_node || !graph_node->is_visible_in_tree()) {
-			continue;
-		}
-
-		for (GraphPort *port : graph_node->ports) {
-			if (is_in_port_hotzone(port, p_point / zoom)) {
-				return true;
-			}
-		}
-
-		// This prevents interactions with a port hotzone that is behind another node.
-		Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
-		if (graph_node_rect.has_point(p_point)) {
-			break;
-		}
-	}
-
-	return false;
+	return _try_find_port_at_point(p_point) != nullptr;
 }
 
 void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 	ERR_FAIL_NULL(p_port);
-	ERR_FAIL_NULL(p_port->graph_node);
 
 	keyboard_connecting = is_keyboard;
-	Vector2 pos = p_port->get_position() * zoom + p_port->graph_node->get_position();
-
-	connecting_target_valid = false;
-	connecting_to_point = pos;
-	connecting = true;
+	Vector2 pos = p_port->get_position() * zoom;
+	if (p_port->graph_node) {
+		pos += p_port->graph_node->get_position();
+	}
 
 	bool can_disconnect;
 	switch (p_port->get_direction()) {
 		case GraphPort::PortDirection::INPUT:
-			can_disconnect = input_disconnects && (valid_input_disconnect_types.has(p_port->get_port_type()) || p_port->graph_node->ignore_invalid_connection_type);
+			can_disconnect = input_disconnects && (valid_input_disconnect_types.has(p_port->get_port_type()) || (p_port->graph_node && p_port->graph_node->ignore_invalid_connection_type));
 			break;
 		case GraphPort::PortDirection::OUTPUT:
-			can_disconnect = valid_output_disconnect_types.has(p_port->get_port_type()) || p_port->graph_node->ignore_invalid_connection_type;
+			can_disconnect = valid_output_disconnect_types.has(p_port->get_port_type()) || (p_port->graph_node && p_port->graph_node->ignore_invalid_connection_type);
 			break;
 		case GraphPort::PortDirection::UNDIRECTED:
 		default:
-			can_disconnect = valid_undirected_disconnect_types.has(p_port->get_port_type()) || p_port->graph_node->ignore_invalid_connection_type;
+			can_disconnect = valid_undirected_disconnect_types.has(p_port->get_port_type()) || (p_port->graph_node && p_port->graph_node->ignore_invalid_connection_type);
 			break;
 	}
 	just_disconnected = false;
@@ -1339,6 +1318,7 @@ void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 	connecting_from_port = p_port;
 	connecting_target_valid = false;
 	connecting_to_point = pos;
+	connecting = true;
 
 	emit_signal(SNAME("connection_drag_started"), p_port, true);
 }
@@ -1349,6 +1329,13 @@ bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 	if (!p_port->enabled || !connecting_from_port->enabled) {
 		return false;
 	}
+	if (!allow_self_connection && p_port->graph_node == connecting_from_port->graph_node) {
+		return false;
+	}
+	if ((p_port->graph_node && p_port->graph_node->is_ignoring_valid_connection_type()) ||
+			(connecting_from_port->graph_node && connecting_from_port->graph_node->is_ignoring_valid_connection_type())) {
+		return true;
+	}
 	int from_type = connecting_from_port->get_port_type();
 	int to_type = p_port->get_port_type();
 	if (p_port->direction == GraphPort::PortDirection::OUTPUT || connecting_from_port->direction == GraphPort::PortDirection::INPUT) {
@@ -1356,8 +1343,7 @@ bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 		from_type = to_type;
 		to_type = swap_type;
 	}
-	return from_type == to_type || valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type)) ||
-			(connecting_from_port->graph_node && connecting_from_port->graph_node->is_ignoring_valid_connection_type());
+	return from_type == to_type || valid_connection_types.has(GraphConnection::ConnectionType(from_type, to_type));
 }
 
 void GraphEdit::_mark_connections_dirty_by_port(const GraphPort *p_port) {
@@ -1372,9 +1358,12 @@ void GraphEdit::_mark_connections_dirty_by_port(const GraphPort *p_port) {
 void GraphEdit::end_connecting(const GraphPort *p_port, bool is_keyboard) {
 	connecting_to_port = p_port;
 
-	connecting_target_valid = _is_connection_valid(p_port);
-	if (connecting_target_valid && p_port->graph_node != nullptr) {
-		connecting_to_point = (p_port->get_position() + p_port->get_connection_point()) * zoom + p_port->graph_node->get_position();
+	connecting_target_valid = p_port && _is_connection_valid(p_port);
+	if (connecting_target_valid) {
+		connecting_to_point = (p_port->get_position() + p_port->get_connection_point()) * zoom;
+		if (p_port->graph_node) {
+			connecting_to_point += p_port->graph_node->get_position();
+		}
 	}
 
 	if (connecting && connecting_target_valid) {
@@ -1408,32 +1397,21 @@ void GraphEdit::set_type_colors(const TypedDictionary<int, Color> &p_type_colors
 void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+		// Left mouse clicked: if clicked on a port, start connecting from it
 		if (keyboard_connecting) {
 			force_connection_drag_end();
 			keyboard_connecting = false;
 		}
-		click_pos = mb->get_position() / zoom;
-		for (int i = get_child_count() - 1; i >= 0; i--) {
-			GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
-			if (!graph_node || !graph_node->is_visible_in_tree()) {
-				continue;
-			}
-
-			for (GraphPort *port : graph_node->ports) {
-				if (!port || !port->enabled) {
-					continue;
-				}
-
-				if (is_in_port_hotzone(port, click_pos)) {
-					start_connecting(port, false);
-					return;
-				}
-			}
+		GraphPort *target_port = _try_find_port_at_point(mb->get_position());
+		if (target_port) {
+			start_connecting(target_port, false);
+			return;
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_ev;
 	if (mm.is_valid() && connecting && !keyboard_connecting) {
+		// Left mouse dragged: check for a target port to connect to
 		connecting_to_point = mm->get_position();
 		minimap->queue_redraw();
 		callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
@@ -1441,37 +1419,24 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 		connecting_valid = just_disconnected || click_pos.distance_to(connecting_to_point / zoom) > MIN_DRAG_DISTANCE_FOR_VALID_CONNECTION;
 
 		if (connecting_valid) {
-			for (int i = get_child_count() - 1; i >= 0; i--) {
-				GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
-				if (!graph_node || !graph_node->is_visible_in_tree() || (!allow_self_connection && graph_node == connecting_from_port->graph_node)) {
-					continue;
-				}
+			GraphPort *target_port = _try_find_port_at_point(mm->get_position());
 
-				for (GraphPort *port : graph_node->ports) {
-					if (!port || !port->enabled) {
-						continue;
-					}
-					if (is_in_port_hotzone(port, mm->get_position() / zoom)) {
-						if (_is_connection_valid(port) && is_node_hover_valid(connecting_from_port, connecting_to_port)) {
-							connecting_target_valid = true;
-							connecting_to_point = (port->get_position() + port->get_connection_point()) * zoom + graph_node->get_position();
-							connecting_to_port = port;
-							return;
-						}
-					}
+			if (target_port && _is_connection_valid(target_port) && is_node_hover_valid(connecting_from_port, target_port)) {
+				connecting_target_valid = true;
+				connecting_to_port = target_port;
+				connecting_to_point = (target_port->get_position() + target_port->get_connection_point()) * zoom;
+				if (target_port->graph_node) {
+					connecting_to_point += target_port->graph_node->get_position();
 				}
+				return;
+			} else {
 				connecting_target_valid = false;
-
-				// This prevents interactions with a port hotzone that is behind another node.
-				Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
-				if (graph_node_rect.has_point(mm->get_position())) {
-					break;
-				}
 			}
 		}
 	}
 
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+		// Left mouse released: stop connecting and create a new connection if a valid target port was found
 		if (connecting_valid) {
 			if (connecting && connecting_target_valid) {
 				emit_signal(SNAME("connection_request"), connecting_from_port, connecting_to_port);
@@ -1479,7 +1444,7 @@ void GraphEdit::_top_connection_layer_input(const Ref<InputEvent> &p_ev) {
 				emit_signal(SNAME("connection_to_empty"), connecting_from_port, mb->get_position());
 			}
 		} else {
-			set_selected(connecting_from_port->graph_node);
+			set_selected(connecting_from_port ? connecting_from_port->graph_node : nullptr);
 		}
 
 		if (connecting) {
@@ -1516,6 +1481,37 @@ bool GraphEdit::_check_clickable_control(const Control *p_control, const Vector2
 	}
 }
 
+GraphPort *GraphEdit::_try_find_port_at_point(const Vector2 &p_point) {
+	for (int i = get_child_count() - 1; i >= 0; i--) {
+		// Query GraphPorts in GraphNodes
+		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
+		if (graph_node && graph_node->is_visible_in_tree()) {
+			for (GraphPort *port : graph_node->ports) {
+				if (!port || !port->enabled) {
+					continue;
+				}
+				if (is_in_port_hotzone(port, p_point / zoom)) {
+					return port;
+				}
+			}
+
+			// This prevents interactions with a port hotzone behind another node.
+			Rect2 graph_node_rect = Rect2(graph_node->get_position(), graph_node->get_size() * zoom);
+			if (graph_node_rect.has_point(p_point)) {
+				break;
+			}
+		}
+		// Query independent GraphPorts as well
+		GraphPort *graph_port = Object::cast_to<GraphPort>(get_child(i));
+		if (graph_port && graph_port->is_visible_in_tree() && graph_port->enabled && graph_port != connecting_from_port) {
+			if (is_in_port_hotzone(graph_port, p_point / zoom)) {
+				return graph_port;
+			}
+		}
+	}
+	return nullptr;
+}
+
 bool GraphEdit::is_in_port_hotzone(const GraphPort *p_port, const Vector2 &p_mouse_pos) const {
 	ERR_FAIL_NULL_V(p_port, false);
 	if (!p_port->enabled) {
@@ -1529,32 +1525,7 @@ bool GraphEdit::is_in_port_hotzone(const GraphPort *p_port, const Vector2 &p_mou
 		local_pos -= p_port->graph_node->get_position() / zoom;
 	}
 
-	if (!hotzone.has_point(local_pos)) {
-		return false;
-	}
-
-	for (int i = 0; i < get_child_count(); i++) {
-		GraphNode *child = Object::cast_to<GraphNode>(get_child(i));
-		if (!child) {
-			continue;
-		}
-
-		Rect2 child_rect = child->get_rect();
-		if (child_rect.has_point(p_mouse_pos * zoom)) {
-			for (int j = 0; j < child->get_child_count(); j++) {
-				Control *subchild = Object::cast_to<Control>(child->get_child(j));
-				if (!subchild) {
-					continue;
-				}
-
-				if (_check_clickable_control(subchild, p_mouse_pos * zoom, child_rect.position)) {
-					return false;
-				}
-			}
-		}
-	}
-
-	return true;
+	return hotzone.has_point(local_pos);
 }
 
 PackedVector2Array GraphEdit::get_connection_line_referenced(const Ref<GraphConnection> p_conn) const {
@@ -2074,6 +2045,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+			// Right mouse pressed: if box selecting or connecting, stop. otherwise, emit a popup request
 			if (box_selecting) {
 				box_selecting = false;
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -2096,6 +2068,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		}
 
 		if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && dragging) {
+			// Left mouse released after dragging: stop dragging node
 			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL)) {
 				// Deselect current node.
 				for (int i = get_child_count() - 1; i >= 0; i--) {

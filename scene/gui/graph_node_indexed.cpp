@@ -143,8 +143,6 @@ void GraphNodeIndexed::_notification(int p_what) {
 			Ref<StyleBox> sb_slot = theme_cache.slot;
 			Ref<StyleBox> sb_slot_selected = theme_cache.slot_selected;
 
-			//int port_h_offset = theme_cache.port_h_offset;
-
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
 			for (int i = 0; i < get_child_count(false); i++) {
@@ -154,13 +152,6 @@ void GraphNodeIndexed::_notification(int p_what) {
 				}
 				int slot_index = _node_to_slot_cache[_child->get_name()];
 				const Slot slot = slots[slot_index];
-
-				// TODO: keyboard navigation override for slot selection
-				/* if (slot_index == selected_slot) {
-					Size2i port_sz = theme_cache.port->get_size();
-					draw_style_box(sb_slot_selected, Rect2i(port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-					draw_style_box(sb_slot_selected, Rect2i(get_size().x - port_h_offset - port_sz.x, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP) - port_sz.y, port_sz.x * 2, port_sz.y * 2));
-				}*/
 
 				if (slot.draw_stylebox) {
 					Rect2 child_rect = _child->get_rect();
@@ -192,7 +183,7 @@ void GraphNodeIndexed::create_slot_and_ports(int p_slot_index, bool p_draw_style
 		p_left->set_name(vformat("InputPort%s", String(p_slot_node_name)));
 		p_right->set_name(vformat("OutputPort%s", String(p_slot_node_name)));
 
-		p_right->add_theme_constant_override("hotzone_offset_h", -p_right->get_theme_constant("hotzone_offset_h"));
+		p_left->add_theme_constant_override("hotzone_offset_h", -p_left->get_theme_constant("hotzone_offset_h"));
 
 		p_slot = Slot(p_draw_stylebox, p_slot_node_name);
 	}

@@ -343,9 +343,11 @@ Rect2 GraphPort::get_hotzone() const {
 			theme_extent.y = theme_cache.hotzone_extent_v_undirected;
 			break;
 	}
-
 	Vector2 size = icon_size.max(theme_extent);
-	return Rect2(pos.x + theme_cache.hotzone_offset_h - size.x / 2, pos.y + theme_cache.hotzone_offset_v - size.y / 2, size.x, size.y);
+
+	Vector2 offset = Vector2(theme_cache.hotzone_offset_h, theme_cache.hotzone_offset_v);
+
+	return Rect2(pos.x + offset.x - size.x / 2, pos.y + offset.y - size.y / 2, size.x, size.y);
 }
 
 int GraphPort::get_port_index(bool p_include_disabled) const {
