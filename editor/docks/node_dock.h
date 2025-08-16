@@ -47,8 +47,6 @@ class NodeDock : public EditorDock {
 
 	HBoxContainer *mode_hb = nullptr;
 
-	Label *select_a_node = nullptr;
-
 private:
 	inline static NodeDock *singleton = nullptr;
 
@@ -62,7 +60,7 @@ protected:
 	virtual void load_layout_from_config(const Ref<ConfigFile> &p_layout, const String &p_section) override;
 
 public:
-	void set_object(Object *p_object);
+	void set_selection(const Vector<Object *> &p_objects);
 
 	void show_groups();
 	void show_connections();
