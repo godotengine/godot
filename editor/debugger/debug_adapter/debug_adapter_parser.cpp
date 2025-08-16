@@ -218,6 +218,8 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 			} else {
 				EditorRunBar::get_singleton()->play_custom_scene(scene, play_args);
 			}
+		} else {
+			EditorRunBar::get_singleton()->play_main_scene(false, play_args);
 		}
 	} else {
 		int device = args.get("device", -1);
