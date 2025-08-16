@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+libdir=${prefix}/@lib_dir@
+pkg_version=@Catch2_VERSION@
+
+Name: Catch2 with main function
+Description: A modern, C++-native test framework for C++14 and above (links in default main)
+URL: https://github.com/catchorg/Catch2
+Version: ${pkg_version}
+Requires: catch2 = ${pkg_version}
+Libs: -L${libdir} -l@lib_name@

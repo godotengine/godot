@@ -1,0 +1,11 @@
+This would not be caught previously
+Nor would this
+A string sent directly to stdout
+A string sent directly to stderr
+A string sent to stderr via clog
+Message from section one
+Message from section two
+loose text artifact
+a!
+b1!
+!

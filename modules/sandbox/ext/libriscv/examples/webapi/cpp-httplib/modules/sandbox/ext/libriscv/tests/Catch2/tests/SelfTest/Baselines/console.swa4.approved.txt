@@ -1,0 +1,973 @@
+Filters: "*" ~[!nonportable] ~[!benchmark] ~[approvals]
+Randomness seeded to: 1
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+<exe-name> is a Catch2 v<version> host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+# A test name that starts with a #
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+with message:
+  yay
+
+-------------------------------------------------------------------------------
+#1027: Bitfields can be captured
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( y.v == 0 )
+with expansion:
+  0 == 0
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( 0 == y.v )
+with expansion:
+  0 == 0
+
+-------------------------------------------------------------------------------
+#1147
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( t1 == t2 )
+with expansion:
+  {?} == {?}
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( t1 != t2 )
+with expansion:
+  {?} != {?}
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( t1 < t2 )
+with expansion:
+  {?} < {?}
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( t1 > t2 )
+with expansion:
+  {?} > {?}
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( t1 <= t2 )
+with expansion:
+  {?} <= {?}
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( t1 >= t2 )
+with expansion:
+  {?} >= {?}
+
+-------------------------------------------------------------------------------
+#1175 - Hidden Test
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+
+-------------------------------------------------------------------------------
+#1238
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( std::memcmp(uarr, "123", sizeof(uarr)) == 0 )
+with expansion:
+  0 == 0
+with messages:
+  uarr := "123"
+  sarr := "456"
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( std::memcmp(sarr, "456", sizeof(sarr)) == 0 )
+with expansion:
+  0 == 0
+with messages:
+  uarr := "123"
+  sarr := "456"
+
+-------------------------------------------------------------------------------
+#1245
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+
+-------------------------------------------------------------------------------
+#1319: Sections can have description (even if it is not saved
+  SectionName
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+
+-------------------------------------------------------------------------------
+#1403
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( h1 == h2 )
+with expansion:
+  [1403 helper] == [1403 helper]
+
+-------------------------------------------------------------------------------
+#1455 - INFO and WARN can start with a linebreak
+-------------------------------------------------------------------------------
+Message.tests.cpp:<line number>
+...............................................................................
+
+Message.tests.cpp:<line number>: warning:
+
+This info message starts with a linebreak
+
+This warning message starts with a linebreak
+
+
+No assertions in test case '#1455 - INFO and WARN can start with a linebreak'
+
+This would not be caught previously
+Nor would this
+-------------------------------------------------------------------------------
+#1514: stderr/stdout is not captured in tests aborted by an exception
+-------------------------------------------------------------------------------
+Tricky.tests.cpp:<line number>
+...............................................................................
+
+Tricky.tests.cpp:<line number>: FAILED:
+explicitly with message:
+  1514
+
+-------------------------------------------------------------------------------
+#1548
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( std::is_same<TypeList<int>, TypeList<int>>::value )
+with expansion:
+  true
+
+-------------------------------------------------------------------------------
+#1905 -- test spec parser properly clears internal state between compound tests
+-------------------------------------------------------------------------------
+TestSpec.tests.cpp:<line number>
+...............................................................................
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE( spec.matches(*fakeTestCase("spec . char")) )
+with expansion:
+  true
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE( spec.matches(*fakeTestCase("spec , char")) )
+with expansion:
+  true
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( spec.matches(*fakeTestCase(R"(spec \, char)")) )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+#1912 -- test spec parser handles escaping
+  Various parentheses
+-------------------------------------------------------------------------------
+TestSpec.tests.cpp:<line number>
+...............................................................................
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE( spec.matches(*fakeTestCase(R"(spec {a} char)")) )
+with expansion:
+  true
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE( spec.matches(*fakeTestCase(R"(spec [a] char)")) )
+with expansion:
+  true
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE_FALSE( spec.matches(*fakeTestCase("differs but has similar tag", "[a]")) )
+with expansion:
+  !false
+
+-------------------------------------------------------------------------------
+#1912 -- test spec parser handles escaping
+  backslash in test name
+-------------------------------------------------------------------------------
+TestSpec.tests.cpp:<line number>
+...............................................................................
+
+TestSpec.tests.cpp:<line number>: PASSED:
+  REQUIRE( spec.matches(*fakeTestCase(R"(spec \ char)")) )
+with expansion:
+  true
+
+-------------------------------------------------------------------------------
+#1913 - GENERATE inside a for loop should not keep recreating the generator
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( counter < 7 )
+with expansion:
+  3 < 7
+
+-------------------------------------------------------------------------------
+#1913 - GENERATE inside a for loop should not keep recreating the generator
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( counter < 7 )
+with expansion:
+  6 < 7
+
+-------------------------------------------------------------------------------
+#1913 - GENERATEs can share a line
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( i != j )
+with expansion:
+  1 != 3
+
+-------------------------------------------------------------------------------
+#1913 - GENERATEs can share a line
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( i != j )
+with expansion:
+  1 != 4
+
+-------------------------------------------------------------------------------
+#1913 - GENERATEs can share a line
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( i != j )
+with expansion:
+  2 != 3
+
+-------------------------------------------------------------------------------
+#1913 - GENERATEs can share a line
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: PASSED:
+  REQUIRE( i != j )
+with expansion:
+  2 != 4
+
+-------------------------------------------------------------------------------
+#1938 - GENERATE after a section
+  A
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  A
+
+-------------------------------------------------------------------------------
+#1938 - GENERATE after a section
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  1
+
+-------------------------------------------------------------------------------
+#1938 - GENERATE after a section
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  2
+
+-------------------------------------------------------------------------------
+#1938 - GENERATE after a section
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  3
+
+-------------------------------------------------------------------------------
+#1938 - Section followed by flat generate
+  A
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( 1 )
+
+-------------------------------------------------------------------------------
+#1938 - Section followed by flat generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  2
+
+-------------------------------------------------------------------------------
+#1938 - Section followed by flat generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  3
+
+-------------------------------------------------------------------------------
+#1938 - flat generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  1
+
+-------------------------------------------------------------------------------
+#1938 - flat generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  2
+
+-------------------------------------------------------------------------------
+#1938 - flat generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  3
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+  A
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  A
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 1
+  j := 3
+  k := 5
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  B
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 1
+  j := 3
+  k := 6
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  B
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 1
+  j := 4
+  k := 5
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 1
+  j := 4
+  k := 6
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+  A
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  A
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 2
+  j := 3
+  k := 5
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  B
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 2
+  j := 3
+  k := 6
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+  B
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with message:
+  B
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 2
+  j := 4
+  k := 5
+
+-------------------------------------------------------------------------------
+#1938 - mixed sections and generates
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+with messages:
+  i := 2
+  j := 4
+  k := 6
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  1
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  1
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  1
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  2
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  1
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  3
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  2
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  1
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  2
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  2
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  2
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  3
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  3
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  1
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  3
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  2
+
+-------------------------------------------------------------------------------
+#1938 - nested generate
+-------------------------------------------------------------------------------
+PartTracker.tests.cpp:<line number>
+...............................................................................
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( m )
+with expansion:
+  3
+
+PartTracker.tests.cpp:<line number>: PASSED:
+  REQUIRE( n )
+with expansion:
+  3
+
+-------------------------------------------------------------------------------
+#1954 - 7 arg template test case sig compiles - 1, 1, 1, 1, 1, 0, 0
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+
+-------------------------------------------------------------------------------
+#1954 - 7 arg template test case sig compiles - 5, 1, 1, 1, 1, 0, 0
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+
+-------------------------------------------------------------------------------
+#1954 - 7 arg template test case sig compiles - 5, 3, 1, 1, 1, 0, 0
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+
+-------------------------------------------------------------------------------
+#2152 - ULP checks between differently signed values were wrong - double
+-------------------------------------------------------------------------------
+Matchers.tests.cpp:<line number>
+...............................................................................
+
+Matchers.tests.cpp:<line number>: PASSED:
+  CHECK_THAT( smallest_non_zero, WithinULP( -smallest_non_zero, 2 ) )
+with expansion:
+  0.0 is within 2 ULPs of -4.9406564584124654e-324 ([-1.4821969375237396e-323,
+  4.9406564584124654e-324])
+
+Matchers.tests.cpp:<line number>: PASSED:
+  CHECK_THAT( smallest_non_zero, !WithinULP( -smallest_non_zero, 1 ) )
+with expansion:
+  0.0 not is within 1 ULPs of -4.9406564584124654e-324 ([-9.8813129168249309e-
+  324, -0.0000000000000000e+00])
+
+-------------------------------------------------------------------------------
+#2152 - ULP checks between differently signed values were wrong - float
+-------------------------------------------------------------------------------
+Matchers.tests.cpp:<line number>
+...............................................................................
+
+Matchers.tests.cpp:<line number>: PASSED:
+  CHECK_THAT( smallest_non_zero, WithinULP( -smallest_non_zero, 2 ) )
+with expansion:
+  0.0f is within 2 ULPs of -1.40129846e-45f ([-4.20389539e-45, 1.40129846e-45])
+
+Matchers.tests.cpp:<line number>: PASSED:
+  CHECK_THAT( smallest_non_zero, !WithinULP( -smallest_non_zero, 1 ) )
+with expansion:
+  0.0f not is within 1 ULPs of -1.40129846e-45f ([-2.80259693e-45, -0.
+  00000000e+00])
+
+-------------------------------------------------------------------------------
+#2615 - Throwing in constructor generator fails test case but does not abort
+-------------------------------------------------------------------------------
+Generators.tests.cpp:<line number>
+...............................................................................
+
+Generators.tests.cpp:<line number>: FAILED:
+  {Unknown expression after the reported line}
+due to unexpected exception with message:
+  failure to init
+
+-------------------------------------------------------------------------------
+#3001: Enum-based bitfields can be captured
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( bf.e == 1 )
+with expansion:
+  1 == 1
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( 1 == bf.e )
+with expansion:
+  1 == 1
+
+-------------------------------------------------------------------------------
+#748 - captures with unexpected exceptions
+  outside assertions
+-------------------------------------------------------------------------------
+Exception.tests.cpp:<line number>
+...............................................................................
+
+Exception.tests.cpp:<line number>: FAILED:
+  {Unknown expression after the reported line}
+due to unexpected exception with message:
+  expected exception
+
+-------------------------------------------------------------------------------
+#748 - captures with unexpected exceptions
+  inside REQUIRE_NOTHROW
+-------------------------------------------------------------------------------
+Exception.tests.cpp:<line number>
+...............................................................................
+
+Exception.tests.cpp:<line number>: FAILED:
+  REQUIRE_NOTHROW( thisThrows() )
+due to unexpected exception with messages:
+  answer := 42
+  expected exception
+
+-------------------------------------------------------------------------------
+#748 - captures with unexpected exceptions
+  inside REQUIRE_THROWS
+-------------------------------------------------------------------------------
+Exception.tests.cpp:<line number>
+...............................................................................
+
+Exception.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( thisThrows() )
+with message:
+  answer := 42
+
+-------------------------------------------------------------------------------
+#809
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( 42 == f )
+with expansion:
+  42 == {?}
+
+-------------------------------------------------------------------------------
+#833
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( a == t )
+with expansion:
+  3 == 3
+
+Compilation.tests.cpp:<line number>: PASSED:
+  CHECK( a == t )
+with expansion:
+  3 == 3
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE_THROWS( throws_int(true) )
+
+Compilation.tests.cpp:<line number>: PASSED:
+  CHECK_THROWS_AS( throws_int(true), int )
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE_NOTHROW( throws_int(false) )
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE_THAT( "aaa", Catch::Matchers::EndsWith("aaa") )
+with expansion:
+  "aaa" ends with: "aaa"
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( templated_tests<int>(3) )
+with expansion:
+  true
+
+-------------------------------------------------------------------------------
+#835 -- errno should not be touched by Catch2
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: FAILED:
+  CHECK( f() == 0 )
+with expansion:
+  1 == 0
+
+Misc.tests.cpp:<line number>: PASSED:
+  REQUIRE( errno_after == 1 )
+with expansion:
+  1 == 1
+
+-------------------------------------------------------------------------------
+#872
+-------------------------------------------------------------------------------
+Compilation.tests.cpp:<line number>
+...............................................................................
+
+Compilation.tests.cpp:<line number>: PASSED:
+  REQUIRE( x == 4 )
+with expansion:
+  {?} == 4
+with message:
+  dummy := 0
+
+-------------------------------------------------------------------------------
+#961 -- Dynamically created sections should all be reported
+  Looped section 0
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+with message:
+  Everything is OK
+
+-------------------------------------------------------------------------------
+#961 -- Dynamically created sections should all be reported
+  Looped section 1
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+with message:
+  Everything is OK
+
+-------------------------------------------------------------------------------
+#961 -- Dynamically created sections should all be reported
+  Looped section 2
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+with message:
+  Everything is OK
+
+-------------------------------------------------------------------------------
+#961 -- Dynamically created sections should all be reported
+  Looped section 3
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+with message:
+  Everything is OK
+
+-------------------------------------------------------------------------------
+#961 -- Dynamically created sections should all be reported
+  Looped section 4
+-------------------------------------------------------------------------------
+Misc.tests.cpp:<line number>
+...............................................................................
+
+Misc.tests.cpp:<line number>: PASSED:
+with message:
+  Everything is OK
+
+-------------------------------------------------------------------------------
+'Not' checks that should fail
+-------------------------------------------------------------------------------
+Condition.tests.cpp:<line number>
+...............................................................................
+
+Condition.tests.cpp:<line number>: FAILED:
+  CHECK( false != false )
+
+Condition.tests.cpp:<line number>: FAILED:
+  CHECK( true != true )
+
+===============================================================================
+test cases:  34 | 28 passed | 3 failed | 3 failed as expected
+assertions: 104 | 96 passed | 4 failed | 4 failed as expected
+
