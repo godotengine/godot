@@ -301,18 +301,17 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	String project_dir = base_dir.path_join(project_name);
 	String file_ext = p_path.get_extension();
 	String path_to_validate = project_dir;
-	bool is_project_dir_valid = true;
+	bool is_project_dir_valid = project_dir.is_absolute_path();
 
 #ifdef WINDOWS_ENABLED
-	int first_at = path_to_validate.find_char('\\');
-	if (first_at < 0) {
-		first_at = path_to_validate.find_char('/');
-	}
-	if (path_to_validate.find_char(':') + 1 != first_at) {
-		is_project_dir_valid = false;
-	} else {
-		path_to_validate = path_to_validate.replace("\\", "/");
-		path_to_validate = path_to_validate.substr(first_at);
+	if (is_project_dir_valid) {
+		int colon_pos = path_to_validate.find_char(':');
+		if (colon_pos + 1 >= path_to_validate.length() || ((path_to_validate[colon_pos + 1] != '\\') && (path_to_validate[colon_pos + 1] != '/'))) {
+			is_project_dir_valid = false;
+		} else {
+			path_to_validate = path_to_validate.replace("\\", "/");
+			path_to_validate = path_to_validate.substr(colon_pos + 1);
+		}
 	}
 #endif
 	if (is_project_dir_valid) {
