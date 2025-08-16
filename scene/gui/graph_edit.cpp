@@ -778,7 +778,7 @@ void GraphEdit::_update_scrollbars() {
 	h_scrollbar->set_min(screen_rect.position.x);
 	h_scrollbar->set_max(screen_rect.position.x + screen_rect.size.width);
 	h_scrollbar->set_page(get_size().x);
-	if (h_scrollbar->get_max() - h_scrollbar->get_min() <= h_scrollbar->get_page()) {
+	if (scrollbar_hidden || h_scrollbar->get_max() - h_scrollbar->get_min() <= h_scrollbar->get_page()) {
 		h_scrollbar->hide();
 	} else {
 		h_scrollbar->show();
@@ -788,7 +788,7 @@ void GraphEdit::_update_scrollbars() {
 	v_scrollbar->set_max(screen_rect.position.y + screen_rect.size.height);
 	v_scrollbar->set_page(get_size().height);
 
-	if (v_scrollbar->get_max() - v_scrollbar->get_min() <= v_scrollbar->get_page()) {
+	if (scrollbar_hidden || v_scrollbar->get_max() - v_scrollbar->get_min() <= v_scrollbar->get_page()) {
 		v_scrollbar->hide();
 	} else {
 		v_scrollbar->show();
@@ -3053,6 +3053,16 @@ bool GraphEdit::is_connection_lines_antialiased() const {
 	return lines_antialiased;
 }
 
+bool GraphEdit::is_scrollbar_hidden() const {
+	return scrollbar_hidden;
+}
+
+void GraphEdit::set_scrollbar_hidden(bool p_hidden) {
+	v_scrollbar->set_visible(!p_hidden);
+	h_scrollbar->set_visible(!p_hidden);
+	scrollbar_hidden = p_hidden;
+}
+
 HBoxContainer *GraphEdit::get_menu_hbox() const {
 	return menu_hbox;
 }
@@ -3110,6 +3120,9 @@ void GraphEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_scroll_offset"), &GraphEdit::get_scroll_offset);
 	ClassDB::bind_method(D_METHOD("set_scroll_offset", "offset"), &GraphEdit::set_scroll_offset);
+
+	ClassDB::bind_method(D_METHOD("is_scrollbar_hidden"), &GraphEdit::is_scrollbar_hidden);
+	ClassDB::bind_method(D_METHOD("set_scrollbar_hidden", "hidden"), &GraphEdit::set_scrollbar_hidden);
 
 	ClassDB::bind_method(D_METHOD("add_valid_connection_type", "from_type", "to_type"), &GraphEdit::add_valid_connection_type);
 	ClassDB::bind_method(D_METHOD("remove_valid_connection_type", "from_type", "to_type"), &GraphEdit::remove_valid_connection_type);
@@ -3227,8 +3240,8 @@ void GraphEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_disconnects"), "set_input_disconnects", "is_input_disconnects_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_self_connection"), "set_allow_self_connection", "is_self_connection_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "type_colors", PROPERTY_HINT_DICTIONARY_TYPE, "int;Color"), "set_type_colors", "get_type_colors");
-
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "type_names", PROPERTY_HINT_DICTIONARY_TYPE, "int;String"), "set_type_names", "get_type_names");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollbar_hidden"), "set_scrollbar_hidden", "is_scrollbar_hidden");
 
 	ADD_GROUP("Connection Lines", "connection_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "connection_lines_curvature"), "set_connection_lines_curvature", "get_connection_lines_curvature");

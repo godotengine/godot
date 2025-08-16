@@ -201,6 +201,7 @@ private:
 	bool input_disconnects = true;
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
+	bool scrollbar_hidden = false;
 
 	TypedArray<Ref<GraphConnection>> graph_connections;
 	HashMap<const GraphPort *, TypedArray<Ref<GraphConnection>>> connection_map;
@@ -538,6 +539,9 @@ public:
 
 	void set_connection_lines_antialiased(bool p_antialiased);
 	bool is_connection_lines_antialiased() const;
+
+	bool is_scrollbar_hidden() const;
+	void set_scrollbar_hidden(bool p_hidden);
 
 	HBoxContainer *get_menu_hbox() const;
 	Ref<ViewPanner> get_panner() const;
