@@ -197,7 +197,7 @@ struct PropertyInfo {
 		}
 	}
 
-	PropertyInfo(const StringName &p_class_name) :
+	constexpr PropertyInfo(const StringName &p_class_name) :
 			type(Variant::OBJECT),
 			class_name(p_class_name) {}
 
@@ -502,18 +502,14 @@ public:                                                                         
 	virtual const StringName *_get_class_namev() const override {                                                                           \
 		return &get_class_static();                                                                                                         \
 	}                                                                                                                                       \
-	static const StringName &get_class_static() {                                                                                           \
-		static StringName _class_name_static;                                                                                               \
-		if (unlikely(!_class_name_static)) {                                                                                                \
-			assign_class_name_static(#m_class, _class_name_static);                                                                         \
-		}                                                                                                                                   \
-		return _class_name_static;                                                                                                          \
+	static constexpr const StringName &get_class_static() {                                                                                 \
+		return ComptimeStringName<#m_class>().value;                                                                                        \
 	}                                                                                                                                       \
 	virtual bool is_class(const String &p_class) const override {                                                                           \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
 			return true;                                                                                                                    \
 		}                                                                                                                                   \
-		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
+		return (p_class == ComptimeString<#m_class>().value) ? true : m_inherits::is_class(p_class);                                        \
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
@@ -553,7 +549,7 @@ protected:                                                                      
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                            \
 		}                                                                                                                                   \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY)); \
-		_get_property_list_from_classdb(#m_class, p_list, true, this);                                                                      \
+		_get_property_list_from_classdb(ComptimeString<#m_class>().value, p_list, true, this);                                              \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                    \
 			_get_property_list(p_list);                                                                                                     \
 		}                                                                                                                                   \
@@ -567,7 +563,7 @@ private:
 #define OBJ_SAVE_TYPE(m_class)                       \
 public:                                              \
 	virtual String get_save_class() const override { \
-		return #m_class;                             \
+		return ComptimeString<#m_class>().value;     \
 	}                                                \
                                                      \
 private:
@@ -823,14 +819,8 @@ public:
 	};
 
 	/* TYPE API */
-	static void assign_class_name_static(const Span<char> &p_name, StringName &r_target);
-
-	static const StringName &get_class_static() {
-		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
-			assign_class_name_static("Object", _class_name_static);
-		}
-		return _class_name_static;
+	static constexpr const StringName &get_class_static() {
+		return ComptimeStringName<"Object">().value;
 	}
 
 	_FORCE_INLINE_ String get_class() const { return get_class_name(); }
@@ -841,7 +831,7 @@ public:
 		if (_extension && _extension->is_class(p_class)) {
 			return true;
 		}
-		return (p_class == "Object");
+		return (p_class == ComptimeString<"Object">().value);
 	}
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
 
@@ -1043,7 +1033,6 @@ class ObjectDB {
 	static void remove_instance(Object *p_object);
 
 	friend void register_core_types();
-	static void setup();
 
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
