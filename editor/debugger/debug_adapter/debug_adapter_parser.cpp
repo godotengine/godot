@@ -190,8 +190,8 @@ Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &arg
 		Variant v = args["playArgs"];
 		if (v.get_type() == Variant::ARRAY) {
 			Array arr = v;
-			for (int i = 0; i < arr.size(); i++) {
-				play_args.push_back(String(arr[i]));
+			for (const Variant &arg : arr) {
+				play_args.push_back(String(arg));
 			}
 		}
 	}
