@@ -1,0 +1,69 @@
+name: Android CMake w/JIT
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+          add-to-path: false
+
+      - name: Set NDK environment
+        run: |
+          echo "ANDROID_NDK_ROOT=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
+          echo "NDK path: ${{ steps.setup-ndk.outputs.ndk-path }}"
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            cmake \
+            ninja-build \
+            pkg-config
+
+      - name: Configure addon
+        run: |
+          cmake -B ${{github.workspace}}/.build \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_ROOT/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DANDROID_STL=c++_shared \
+            -DANDROID_NDK=$ANDROID_NDK_ROOT \
+            -DANDROID_NATIVE_API_LEVEL=26 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DRISCV_LIBTCC=ON \
+            -DANDROID_TOOLCHAIN=ON
+
+      - name: Build the addon
+        working-directory: ${{github.workspace}}/.build
+        run: |
+          ninja -v
+          # Rename the output file to match the expected name
+          mv libgodot-riscv.so libgodot_riscv.android.template_release.arm64.so
+
+      - name: Upload addon shared object
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-jit-android
+          path: ${{github.workspace}}/.build/libgodot_riscv.android.template_release.arm64.so
+          if-no-files-found: error
+          retention-days: 1

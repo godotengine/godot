@@ -1,0 +1,26 @@
+build/
+.build/
+.build_android/
+.build_mingw/
+.zig/
+.godot/
+.mingw/
+.vscode/
+program/test
+.sconsign.dblite
+.DS_Store
+*.o
+*.os
+*.elf
+bin/addons/godot_sandbox/bin/*
+bin/cmake/toolchain.cmake
+
+# Ignore all CPP files in the bintr directory
+src/bintr/*.cpp
+src/gen/
+
+# UID files
+*.uid
+
+# Build files
+*.pyc

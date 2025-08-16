@@ -1,0 +1,50 @@
+name: macOS CMake w/JIT
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          brew update
+          brew install cmake ccache
+
+      - name: '🚧 CCache setup'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: macos-jit
+          max-size: 300M
+
+      - name: Configure addon
+        env:
+          CC: ccache clang
+          CXX: ccache clang++
+        run: cmake -B ${{github.workspace}}/.build -DCMAKE_BUILD_TYPE=Release -DRISCV_LIBTCC=ON
+
+      - name: Build the addon
+        working-directory: ${{github.workspace}}/.build
+        run: |
+          cmake --build . --parallel 6
+          # Rename the output file to match the expected name
+          mv libgodot-riscv.dylib libgodot_riscv.macos.template_release.universal.framework
+
+      - name: Upload addon shared object
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-jit-macos
+          path: ${{github.workspace}}/.build/libgodot_riscv.macos.template_release.universal.framework
+          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`

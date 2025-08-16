@@ -1,0 +1,43 @@
+name: Docker Builds
+on:
+  workflow_dispatch:
+  workflow_call:
+
+env:
+  REGISTRY: ghcr.io
+
+
+jobs:
+  godot:
+    runs-on: "ubuntu-latest"
+    name: Build Dockers
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: cpp
+          - compiler: rust
+          - compiler: zig
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          registry: ${{ env.REGISTRY }}
+          context: program/${{ matrix.compiler }}/docker
+          push: true
+          tags: ghcr.io/libriscv/${{ matrix.compiler }}_compiler:latest

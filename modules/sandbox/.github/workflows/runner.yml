@@ -1,0 +1,75 @@
+name: Builds
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - "main"
+
+jobs:
+  lint:
+    uses: ./.github/workflows/lint.yml
+  build_android:
+    needs: [lint]
+    uses: ./.github/workflows/build_android.yml
+  jit_android:
+    needs: [lint]
+    uses: ./.github/workflows/jit_android.yml
+  build_ios:
+    needs: [lint]
+    uses: ./.github/workflows/build_ios.yml
+  build_linux:
+    needs: [lint]
+    uses: ./.github/workflows/build_linux.yml
+  jit_linux:
+    needs: [lint]
+    uses: ./.github/workflows/jit_linux.yml
+  build_macos:
+    needs: [lint]
+    uses: ./.github/workflows/build_macos.yml
+  jit_macos:
+    needs: [lint]
+    uses: ./.github/workflows/jit_macos.yml
+  build_windows:
+    needs: [lint]
+    uses: ./.github/workflows/build_windows.yml
+  jit_windows:
+    needs: [lint]
+    uses: ./.github/workflows/jit_windows.yml
+  build_web:
+    needs: [lint]
+    uses: ./.github/workflows/build_web.yml
+  build_godot:
+    uses: ./.github/workflows/build_godot.yml
+
+  docker_build:
+    uses: ./.github/workflows/build_docker.yml
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      packages: write
+      contents: read
+      attestations: write
+      id-token: write
+
+  merge:
+    runs-on: ubuntu-latest
+    name: Merge
+    needs: [build_android, build_ios, build_linux, build_macos, build_windows, build_web, build_godot]
+    steps:
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: godot-sandbox
+          pattern: godot-sandbox-*
+      - uses: actions/upload-artifact/merge@v4
+        with:
+          name: godot-jit
+          pattern: godot-jit-*
+
+  release:
+    name: Create Release
+    permissions:
+      contents: write
+    needs: [merge]
+    uses: ./.github/workflows/release.yml
+    if: github.ref == 'refs/heads/main'

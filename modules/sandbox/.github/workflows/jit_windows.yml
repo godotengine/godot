@@ -1,0 +1,65 @@
+name: Windows CMake w/JIT
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { icon: '🟦', sys: mingw64 }
+          #- { icon: '🟨', sys: ucrt64  }
+    name: 🚧${{ matrix.icon }} ${{ matrix.sys }}
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: '🧰 Checkout'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: '${{ matrix.icon }} Setup MSYS2'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{matrix.sys}}
+        update: true
+        install: >-
+          git
+          make
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          ccache:p
+          ninja:p
+
+    - name: '🚧 CCache setup'
+      uses: hendrikmuhs/ccache-action@v1.2
+      with:
+        key: windows-jit
+
+    - name: Configure addon
+      env:
+        CC: ccache gcc
+        CXX: ccache g++
+      run: cmake -B .build -DCMAKE_BUILD_TYPE=Release -DRISCV_LIBTCC=ON
+
+    - name: Build the addon
+      run: |
+        cmake --build .build --parallel 6
+        # Rename the output file to match the expected name
+        mv .build/libgodot-riscv.dll .build/libgodot_riscv.windows.template_release.x86_64.dll
+
+    - name: Upload addon DLL
+      uses: actions/upload-artifact@v4
+      with:
+        name: godot-jit-windows
+        path: .build/libgodot_riscv.windows.template_release.x86_64.dll
+        if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
+        retention-days: 1 # 90 days by default

@@ -1,0 +1,31 @@
+name: Godot Builds
+on:
+  workflow_call:
+
+jobs:
+  godot:
+    runs-on: "ubuntu-latest"
+    name: Copy addon files
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-sandbox-gdextension
+          path: |
+            bin
+            !bin/.godot
+            !bin/.gitattributes
+            !bin/.gitignore
+            !bin/icon.svg
+            !bin/test.elf
+            !bin/icon.svg.import
+            !bin/export_presets.cfg
+            !bin/project.godot
+            !bin/test.gd
+            !bin/test.tscn
+            !bin/src/main.cpp
+            !bin/icon.png
+            !bin/icon.png.import
+          if-no-files-found: error

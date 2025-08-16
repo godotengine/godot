@@ -1,0 +1,46 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "commitType": "docs",
+  "commitConvention": "angular",
+  "contributors": [
+    {
+      "login": "fwsGonzo",
+      "name": "Alf-André Walla",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3758947?v=4",
+      "profile": "https://github.com/fwsGonzo",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "fire",
+      "name": "K. S. Ernest (iFire) Lee",
+      "avatar_url": "https://avatars.githubusercontent.com/u/32321?v=4",
+      "profile": "https://chibifire.com",
+      "contributions": [
+        "code",
+        "research",
+        "test"
+      ]
+    },
+    {
+      "login": "Ughuuu",
+      "name": "Dragos Daian",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2369380?v=4",
+      "profile": "https://appsinacup.com",
+      "contributions": [
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "skipCi": true,
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "projectName": "godot-sandbox",
+  "projectOwner": "libriscv"
+}
