@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiMeshInstance3D" inherits="GeometryInstance3D" keywords="batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Node that instances a [MultiMesh].
+	</brief_description>
+	<description>
+		[MultiMeshInstance3D] is a specialized node to instance [GeometryInstance3D]s based on a [MultiMesh] resource.
+		This is useful to optimize the rendering of a high number of instances of a given mesh (for example trees in a forest or grass strands).
+	</description>
+	<tutorials>
+		<link title="Using MultiMeshInstance">$DOCS_URL/tutorials/3d/using_multi_mesh_instance.html</link>
+		<link title="Optimization using MultiMeshes">$DOCS_URL/tutorials/performance/using_multimesh.html</link>
+		<link title="Animating thousands of fish with MultiMeshInstance">$DOCS_URL/tutorials/performance/vertex_animation/animating_thousands_of_fish.html</link>
+	</tutorials>
+	<members>
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
+			The [MultiMesh] resource that will be used and shared among all instances of the [MultiMeshInstance3D].
+		</member>
+	</members>
+</class>

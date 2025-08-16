@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleSphereEmitter" inherits="VisualShaderNodeParticleEmitter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node that makes particles emitted in a sphere shape.
+	</brief_description>
+	<description>
+		[VisualShaderNodeParticleEmitter] that makes the particles emitted in sphere shape with the specified inner and outer radii.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

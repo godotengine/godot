@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeTexture3D" inherits="VisualShaderNodeSample3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Performs a 3D texture lookup within the visual shader graph.
+	</brief_description>
+	<description>
+		Performs a lookup operation on the provided texture, with support for multiple texture sources to choose from.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="texture" type="Texture3D" setter="set_texture" getter="get_texture">
+			A source texture. Used if [member VisualShaderNodeSample3D.source] is set to [constant VisualShaderNodeSample3D.SOURCE_TEXTURE].
+		</member>
+	</members>
+</class>

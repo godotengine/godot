@@ -1,0 +1,163 @@
+[gd_scene load_steps=3 format=3 uid="uid://l82vam6qgpgf"]
+
+[ext_resource type="Script" uid="uid://dyk2fnsixyben" path="res://addons/godot_sandbox/downloader.gd" id="1_843n5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_843n5"]
+bg_color = Color(0.129412, 0.14902, 0.180392, 1)
+
+[node name="Downloader" type="Window" node_paths=PackedStringArray("cmake_status", "make_status", "git_status", "zig_status", "os_tab_container")]
+title = "Godot Sandbox Dependencies ( macOS arm64 )"
+initial_position = 2
+size = Vector2i(1240, 910)
+visible = false
+wrap_controls = true
+script = ExtResource("1_843n5")
+cmake_status = NodePath("Panel/VBoxContainer/CmakeStatus")
+make_status = NodePath("Panel/VBoxContainer/MakeStatus")
+git_status = NodePath("Panel/VBoxContainer/GitStatus")
+zig_status = NodePath("Panel/VBoxContainer/ZigStatus")
+os_tab_container = NodePath("Panel/VBoxContainer/TabContainer")
+
+[node name="Panel" type="Panel" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+
+[node name="Label2" type="RichTextLabel" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+focus_mode = 2
+bbcode_enabled = true
+text = "You need to install the following dependencies: [url=https://cmake.org/download/]CMake[/url], [url=https://ziglang.org/download/]Zig[/url], [url=https://git-scm.com/downloads]Git[/url]. On windows need additionally [url=https://ninja-build.org]Ninja[/url].
+Either install with the following [b]commands[/b], or download manually to user://godot-sandbox using the below [b]buttons[/b].
+Aslo make sure the paths are set correctly in the [b]PATH[/b] or in the following Project Settings:
+[color=gray]\"editor/script/cmake\", \"editor/script/zig\", \"editor/script/git\", \"editor/script/make\"[/color]"
+fit_content = true
+selection_enabled = true
+
+[node name="TabContainer" type="TabContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+current_tab = 1
+
+[node name="Windows" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_tab_index = 0
+
+[node name="Label" type="RichTextLabel" parent="Panel/VBoxContainer/TabContainer/Windows"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+text = "Commands:
+[color=teal]
+winget install --id Kitware.CMake -e
+winget install --id=zig.zig -e
+winget install --id Git.Git -e
+winget install --id Ninja-build.Ninja -e
+[/color]"
+fit_content = true
+selection_enabled = true
+
+[node name="macOS" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_tab_index = 1
+
+[node name="Label" type="RichTextLabel" parent="Panel/VBoxContainer/TabContainer/macOS"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+text = "Commands:
+[color=teal]
+/bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"
+brew install git cmake zig
+[/color]"
+fit_content = true
+selection_enabled = true
+
+[node name="Linux" type="VBoxContainer" parent="Panel/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+metadata/_tab_index = 2
+
+[node name="Label" type="RichTextLabel" parent="Panel/VBoxContainer/TabContainer/Linux"]
+layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+text = "Commands:
+[color=teal]
+sudo apt install git cmake
+[/color]"
+fit_content = true
+selection_enabled = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="CmakeButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_843n5")
+text = "Download CMake"
+
+[node name="ZigButton" type="Button" parent="Panel/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_843n5")
+text = "Download Zig"
+
+[node name="CmakeStatus" type="RichTextLabel" parent="Panel/VBoxContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "CMake: [color=green]Installed[/color]"
+fit_content = true
+
+[node name="ZigStatus" type="RichTextLabel" parent="Panel/VBoxContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Zig: [color=green]Installed[/color]"
+fit_content = true
+
+[node name="GitStatus" type="RichTextLabel" parent="Panel/VBoxContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Git: [color=green]Installed[/color]"
+fit_content = true
+
+[node name="MakeStatus" type="RichTextLabel" parent="Panel/VBoxContainer"]
+layout_mode = 2
+bbcode_enabled = true
+text = "Make: [color=green]Installed[/color]"
+fit_content = true
+
+[node name="Panel" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="Panel/VBoxContainer/Panel"]
+layout_mode = 2
+text = "Close"
+
+[connection signal="about_to_popup" from="." to="." method="_on_about_to_popup"]
+[connection signal="meta_clicked" from="Panel/VBoxContainer/Label2" to="." method="_on_label_meta_clicked"]
+[connection signal="meta_clicked" from="Panel/VBoxContainer/TabContainer/Windows/Label" to="." method="_on_label_meta_clicked"]
+[connection signal="meta_clicked" from="Panel/VBoxContainer/TabContainer/macOS/Label" to="." method="_on_label_meta_clicked"]
+[connection signal="meta_clicked" from="Panel/VBoxContainer/TabContainer/Linux/Label" to="." method="_on_label_meta_clicked"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/CmakeButton" to="." method="_on_cmake_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/HBoxContainer/ZigButton" to="." method="_on_zig_button_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/Panel/Button" to="." method="_on_button_pressed"]

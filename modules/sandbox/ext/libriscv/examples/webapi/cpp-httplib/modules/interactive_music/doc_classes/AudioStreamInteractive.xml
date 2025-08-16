@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamInteractive" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Audio stream that can playback music interactively, combining clips and a transition table.
+	</brief_description>
+	<description>
+		This is an audio stream that can playback music interactively, combining clips and a transition table. Clips must be added first, and then the transition rules via the [method add_transition]. Additionally, this stream exports a property parameter to control the playback via [AudioStreamPlayer], [AudioStreamPlayer2D], or [AudioStreamPlayer3D].
+		The way this is used is by filling a number of clips, then configuring the transition table. From there, clips are selected for playback and the music will smoothly go from the current to the new one while using the corresponding transition rule defined in the transition table.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_transition">
+			<return type="void" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<param index="2" name="from_time" type="int" enum="AudioStreamInteractive.TransitionFromTime" />
+			<param index="3" name="to_time" type="int" enum="AudioStreamInteractive.TransitionToTime" />
+			<param index="4" name="fade_mode" type="int" enum="AudioStreamInteractive.FadeMode" />
+			<param index="5" name="fade_beats" type="float" />
+			<param index="6" name="use_filler_clip" type="bool" default="false" />
+			<param index="7" name="filler_clip" type="int" default="-1" />
+			<param index="8" name="hold_previous" type="bool" default="false" />
+			<description>
+				Add a transition between two clips. Provide the indices of the source and destination clips, or use the [constant CLIP_ANY] constant to indicate that transition happens to/from any clip to this one.
+				* [param from_time] indicates the moment in the current clip the transition will begin after triggered.
+				* [param to_time] indicates the time in the next clip that the playback will start from.
+				* [param fade_mode] indicates how the fade will happen between clips. If unsure, just use [constant FADE_AUTOMATIC] which uses the most common type of fade for each situation.
+				* [param fade_beats] indicates how many beats the fade will take. Using decimals is allowed.
+				* [param use_filler_clip] indicates that there will be a filler clip used between the source and destination clips.
+				* [param filler_clip] the index of the filler clip.
+				* If [param hold_previous] is used, then this clip will be remembered. This can be used together with [constant AUTO_ADVANCE_RETURN_TO_HOLD] to return to this clip after another is done playing.
+			</description>
+		</method>
+		<method name="erase_transition">
+			<return type="void" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Erase a transition by providing [param from_clip] and [param to_clip] clip indices. [constant CLIP_ANY] can be used for either argument or both.
+			</description>
+		</method>
+		<method name="get_clip_auto_advance" qualifiers="const">
+			<return type="int" enum="AudioStreamInteractive.AutoAdvanceMode" />
+			<param index="0" name="clip_index" type="int" />
+			<description>
+				Return whether a clip has auto-advance enabled. See [method set_clip_auto_advance].
+			</description>
+		</method>
+		<method name="get_clip_auto_advance_next_clip" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="clip_index" type="int" />
+			<description>
+				Return the clip towards which the clip referenced by [param clip_index] will auto-advance to.
+			</description>
+		</method>
+		<method name="get_clip_name" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="clip_index" type="int" />
+			<description>
+				Return the name of a clip.
+			</description>
+		</method>
+		<method name="get_clip_stream" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="clip_index" type="int" />
+			<description>
+				Return the [AudioStream] associated with a clip.
+			</description>
+		</method>
+		<method name="get_transition_fade_beats" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return the time (in beats) for a transition (see [method add_transition]).
+			</description>
+		</method>
+		<method name="get_transition_fade_mode" qualifiers="const">
+			<return type="int" enum="AudioStreamInteractive.FadeMode" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return the mode for a transition (see [method add_transition]).
+			</description>
+		</method>
+		<method name="get_transition_filler_clip" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return the filler clip for a transition (see [method add_transition]).
+			</description>
+		</method>
+		<method name="get_transition_from_time" qualifiers="const">
+			<return type="int" enum="AudioStreamInteractive.TransitionFromTime" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return the source time position for a transition (see [method add_transition]).
+			</description>
+		</method>
+		<method name="get_transition_list" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Return the list of transitions (from, to interleaved).
+			</description>
+		</method>
+		<method name="get_transition_to_time" qualifiers="const">
+			<return type="int" enum="AudioStreamInteractive.TransitionToTime" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return the destination time position for a transition (see [method add_transition]).
+			</description>
+		</method>
+		<method name="has_transition" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Returns [code]true[/code] if a given transition exists (was added via [method add_transition]).
+			</description>
+		</method>
+		<method name="is_transition_holding_previous" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return whether a transition uses the [i]hold previous[/i] functionality (see [method add_transition]).
+			</description>
+		</method>
+		<method name="is_transition_using_filler_clip" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="from_clip" type="int" />
+			<param index="1" name="to_clip" type="int" />
+			<description>
+				Return whether a transition uses the [i]filler clip[/i] functionality (see [method add_transition]).
+			</description>
+		</method>
+		<method name="set_clip_auto_advance">
+			<return type="void" />
+			<param index="0" name="clip_index" type="int" />
+			<param index="1" name="mode" type="int" enum="AudioStreamInteractive.AutoAdvanceMode" />
+			<description>
+				Set whether a clip will auto-advance by changing the auto-advance mode.
+			</description>
+		</method>
+		<method name="set_clip_auto_advance_next_clip">
+			<return type="void" />
+			<param index="0" name="clip_index" type="int" />
+			<param index="1" name="auto_advance_next_clip" type="int" />
+			<description>
+				Set the index of the next clip towards which this clip will auto advance to when finished. If the clip being played loops, then auto-advance will be ignored.
+			</description>
+		</method>
+		<method name="set_clip_name">
+			<return type="void" />
+			<param index="0" name="clip_index" type="int" />
+			<param index="1" name="name" type="StringName" />
+			<description>
+				Set the name of the current clip (for easier identification).
+			</description>
+		</method>
+		<method name="set_clip_stream">
+			<return type="void" />
+			<param index="0" name="clip_index" type="int" />
+			<param index="1" name="stream" type="AudioStream" />
+			<description>
+				Set the [AudioStream] associated with the current clip.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="clip_count" type="int" setter="set_clip_count" getter="get_clip_count" default="0">
+			Amount of clips contained in this interactive player.
+		</member>
+		<member name="initial_clip" type="int" setter="set_initial_clip" getter="get_initial_clip" default="0">
+			Index of the initial clip, which will be played first when this stream is played.
+		</member>
+	</members>
+	<constants>
+		<constant name="TRANSITION_FROM_TIME_IMMEDIATE" value="0" enum="TransitionFromTime">
+			Start transition as soon as possible, don't wait for any specific time position.
+		</constant>
+		<constant name="TRANSITION_FROM_TIME_NEXT_BEAT" value="1" enum="TransitionFromTime">
+			Transition when the clip playback position reaches the next beat.
+		</constant>
+		<constant name="TRANSITION_FROM_TIME_NEXT_BAR" value="2" enum="TransitionFromTime">
+			Transition when the clip playback position reaches the next bar.
+		</constant>
+		<constant name="TRANSITION_FROM_TIME_END" value="3" enum="TransitionFromTime">
+			Transition when the current clip finished playing.
+		</constant>
+		<constant name="TRANSITION_TO_TIME_SAME_POSITION" value="0" enum="TransitionToTime">
+			Transition to the same position in the destination clip. This is useful when both clips have exactly the same length and the music should fade between them.
+		</constant>
+		<constant name="TRANSITION_TO_TIME_START" value="1" enum="TransitionToTime">
+			Transition to the start of the destination clip.
+		</constant>
+		<constant name="FADE_DISABLED" value="0" enum="FadeMode">
+			Do not use fade for the transition. This is useful when transitioning from a clip-end to clip-beginning, and each clip has their begin/end.
+		</constant>
+		<constant name="FADE_IN" value="1" enum="FadeMode">
+			Use a fade-in in the next clip, let the current clip finish.
+		</constant>
+		<constant name="FADE_OUT" value="2" enum="FadeMode">
+			Use a fade-out in the current clip, the next clip will start by itself.
+		</constant>
+		<constant name="FADE_CROSS" value="3" enum="FadeMode">
+			Use a cross-fade between clips.
+		</constant>
+		<constant name="FADE_AUTOMATIC" value="4" enum="FadeMode">
+			Use automatic fade logic depending on the transition from/to. It is recommended to use this by default.
+		</constant>
+		<constant name="AUTO_ADVANCE_DISABLED" value="0" enum="AutoAdvanceMode">
+			Disable auto-advance (default).
+		</constant>
+		<constant name="AUTO_ADVANCE_ENABLED" value="1" enum="AutoAdvanceMode">
+			Enable auto-advance, a clip must be specified.
+		</constant>
+		<constant name="AUTO_ADVANCE_RETURN_TO_HOLD" value="2" enum="AutoAdvanceMode">
+			Enable auto-advance, but instead of specifying a clip, the playback will return to hold (see [method add_transition]).
+		</constant>
+		<constant name="CLIP_ANY" value="-1">
+			This constant describes that any clip is valid for a specific transition as either source or destination.
+		</constant>
+	</constants>
+</class>

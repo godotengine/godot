@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeTimeSeek" inherits="AnimationNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A time-seeking animation node used in [AnimationTree].
+	</brief_description>
+	<description>
+		This animation node can be used to cause a seek command to happen to any sub-children of the animation graph. Use to play an [Animation] from the start or a certain playback position inside the [AnimationNodeBlendTree].
+		After setting the time and changing the animation playback, the time seek node automatically goes into sleep mode on the next process frame by setting its [code]seek_request[/code] value to [code]-1.0[/code].
+		[codeblocks]
+		[gdscript]
+		# Play child animation from the start.
+		animation_tree.set("parameters/TimeSeek/seek_request", 0.0)
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/TimeSeek/seek_request"] = 0.0
+
+		# Play child animation from 12 second timestamp.
+		animation_tree.set("parameters/TimeSeek/seek_request", 12.0)
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/TimeSeek/seek_request"] = 12.0
+		[/gdscript]
+		[csharp]
+		// Play child animation from the start.
+		animationTree.Set("parameters/TimeSeek/seek_request", 0.0);
+
+		// Play child animation from 12 second timestamp.
+		animationTree.Set("parameters/TimeSeek/seek_request", 12.0);
+		[/csharp]
+		[/codeblocks]
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+	<members>
+		<member name="explicit_elapse" type="bool" setter="set_explicit_elapse" getter="is_explicit_elapse" default="true">
+			If [code]true[/code], some processes are executed to handle keys between seeks, such as calculating root motion and finding the nearest discrete key.
+		</member>
+	</members>
+</class>

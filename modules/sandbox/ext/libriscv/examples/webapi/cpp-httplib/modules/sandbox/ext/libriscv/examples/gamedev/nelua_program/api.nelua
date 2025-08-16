@@ -1,0 +1,36 @@
+require 'string'
+
+global MyData = cstring
+
+global api = @record{}
+global api.exit: function(status: integer)
+global api.dyncall1: function(n: integer): integer
+global api.dyncall2: function(s1: string, s2: string)
+global api.dyncall_empty: function()
+global api.dyncall_data: function(data: MyData)
+
+local function fast_exit(status: cint): void <cimport>
+end
+api.exit = function(status: integer)
+	fast_exit(status);
+end
+
+local function dyncall1(n: cint): cint <cimport>
+end
+local function dyncall2(str1: cstring, size1: csize, str2: cstring): void <cimport>
+end
+local function dyncall3(): void <cimport>
+end
+local function dyncall4(data: MyData, size: csize, data: MyData): void <cimport>
+end
+
+api.dyncall1 = function(n: integer): integer
+	return dyncall1(n)
+end
+api.dyncall2 = function(s1: string, s2: string)
+	dyncall2(s1, #s1, s2)
+end
+api.dyncall_empty = dyncall3
+api.dyncall_data = function(data: MyData)
+	dyncall4(data, 1, data)
+end

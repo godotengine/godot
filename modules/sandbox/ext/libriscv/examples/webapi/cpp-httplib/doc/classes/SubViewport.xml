@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SubViewport" inherits="Viewport" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An interface to a game world that doesn't create a window or draw to the screen directly.
+	</brief_description>
+	<description>
+		[SubViewport] Isolates a rectangular region of a scene to be displayed independently. This can be used, for example, to display UI in 3D space.
+		[b]Note:[/b] [SubViewport] is a [Viewport] that isn't a [Window], i.e. it doesn't draw anything by itself. To display anything, [SubViewport] must have a non-zero size and be either put inside a [SubViewportContainer] or assigned to a [ViewportTexture].
+		[b]Note:[/b] [InputEvent]s are not passed to a standalone [SubViewport] by default. To ensure [InputEvent] propagation, a [SubViewport] can be placed inside of a [SubViewportContainer].
+	</description>
+	<tutorials>
+		<link title="Using Viewports">$DOCS_URL/tutorials/rendering/viewports.html</link>
+		<link title="Viewport and canvas transforms">$DOCS_URL/tutorials/2d/2d_transforms.html</link>
+		<link title="GUI in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2807</link>
+		<link title="3D in 2D Viewport Demo">https://godotengine.org/asset-library/asset/2804</link>
+		<link title="2D in 3D Viewport Demo">https://godotengine.org/asset-library/asset/2803</link>
+		<link title="Screen Capture Demo">https://godotengine.org/asset-library/asset/2808</link>
+		<link title="Dynamic Split Screen Demo">https://godotengine.org/asset-library/asset/2806</link>
+		<link title="3D Resolution Scaling Demo">https://godotengine.org/asset-library/asset/2805</link>
+	</tutorials>
+	<members>
+		<member name="render_target_clear_mode" type="int" setter="set_clear_mode" getter="get_clear_mode" enum="SubViewport.ClearMode" default="0">
+			The clear mode when the sub-viewport is used as a render target.
+			[b]Note:[/b] This property is intended for 2D usage.
+		</member>
+		<member name="render_target_update_mode" type="int" setter="set_update_mode" getter="get_update_mode" enum="SubViewport.UpdateMode" default="2">
+			The update mode when the sub-viewport is used as a render target.
+		</member>
+		<member name="size" type="Vector2i" setter="set_size" getter="get_size" default="Vector2i(512, 512)">
+			The width and height of the sub-viewport. Must be set to a value greater than or equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed.
+			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport size cannot be changed manually.
+		</member>
+		<member name="size_2d_override" type="Vector2i" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2i(0, 0)">
+			The 2D size override of the sub-viewport. If either the width or height is [code]0[/code], the override is disabled.
+		</member>
+		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
+			If [code]true[/code], the 2D size override affects stretch as well.
+		</member>
+	</members>
+	<constants>
+		<constant name="CLEAR_MODE_ALWAYS" value="0" enum="ClearMode">
+			Always clear the render target before drawing.
+		</constant>
+		<constant name="CLEAR_MODE_NEVER" value="1" enum="ClearMode">
+			Never clear the render target.
+		</constant>
+		<constant name="CLEAR_MODE_ONCE" value="2" enum="ClearMode">
+			Clear the render target on the next frame, then switch to [constant CLEAR_MODE_NEVER].
+		</constant>
+		<constant name="UPDATE_DISABLED" value="0" enum="UpdateMode">
+			Do not update the render target.
+		</constant>
+		<constant name="UPDATE_ONCE" value="1" enum="UpdateMode">
+			Update the render target once, then switch to [constant UPDATE_DISABLED].
+		</constant>
+		<constant name="UPDATE_WHEN_VISIBLE" value="2" enum="UpdateMode">
+			Update the render target only when it is visible. This is the default value.
+		</constant>
+		<constant name="UPDATE_WHEN_PARENT_VISIBLE" value="3" enum="UpdateMode">
+			Update the render target only when its parent is visible.
+		</constant>
+		<constant name="UPDATE_ALWAYS" value="4" enum="UpdateMode">
+			Always update the render target.
+		</constant>
+	</constants>
+</class>

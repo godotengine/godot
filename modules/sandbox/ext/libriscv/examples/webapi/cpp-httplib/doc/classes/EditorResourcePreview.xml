@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorResourcePreview" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node used to generate previews of resources or files.
+	</brief_description>
+	<description>
+		This node is used to generate previews for resources or files.
+		[b]Note:[/b] This class shouldn't be instantiated directly. Instead, access the singleton using [method EditorInterface.get_resource_previewer].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_preview_generator">
+			<return type="void" />
+			<param index="0" name="generator" type="EditorResourcePreviewGenerator" />
+			<description>
+				Create an own, custom preview generator.
+			</description>
+		</method>
+		<method name="check_for_invalidation">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Check if the resource changed, if so, it will be invalidated and the corresponding signal emitted.
+			</description>
+		</method>
+		<method name="queue_edited_resource_preview">
+			<return type="void" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="receiver" type="Object" />
+			<param index="2" name="receiver_func" type="StringName" />
+			<param index="3" name="userdata" type="Variant" />
+			<description>
+				Queue the [param resource] being edited for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called.
+				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be [code]null[/code].
+			</description>
+		</method>
+		<method name="queue_resource_preview">
+			<return type="void" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="receiver" type="Object" />
+			<param index="2" name="receiver_func" type="StringName" />
+			<param index="3" name="userdata" type="Variant" />
+			<description>
+				Queue a resource file located at [param path] for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called.
+				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be [code]null[/code].
+			</description>
+		</method>
+		<method name="remove_preview_generator">
+			<return type="void" />
+			<param index="0" name="generator" type="EditorResourcePreviewGenerator" />
+			<description>
+				Removes a custom preview generator.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="preview_invalidated">
+			<param index="0" name="path" type="String" />
+			<description>
+				Emitted if a preview was invalidated (changed). [param path] corresponds to the path of the preview.
+			</description>
+		</signal>
+	</signals>
+</class>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeMultiplyAdd" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Performs a fused multiply-add operation within the visual shader graph.
+	</brief_description>
+	<description>
+		Uses three operands to compute [code](a * b + c)[/code] expression.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeMultiplyAdd.OpType" default="0">
+			A type of operands and returned value.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
+			A floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D" value="1" enum="OpType">
+			A 2D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D" value="2" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D" value="3" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="4" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+	</constants>
+</class>

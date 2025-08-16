@@ -1,0 +1,153 @@
+[gd_scene load_steps=3 format=3 uid="uid://bsk32dh41b4gs"]
+
+[ext_resource type="PackedScene" uid="uid://sfb1fw8j6ufu" path="res://addons/gut/gui/ShortcutButton.tscn" id="1"]
+[ext_resource type="Script" uid="uid://vppa8r8uq548" path="res://addons/gut/gui/BottomPanelShortcuts.gd" id="2"]
+
+[node name="BottomPanelShortcuts" type="Popup"]
+title = "Shortcuts"
+size = Vector2i(500, 350)
+visible = true
+exclusive = true
+unresizable = false
+borderless = false
+script = ExtResource("2")
+
+[node name="Layout" type="VBoxContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_right = -5.0
+offset_bottom = 2.0
+
+[node name="TopPad" type="CenterContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="Layout"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+text = "Always Active"
+
+[node name="ColorRect" type="ColorRect" parent="Layout/Label2"]
+show_behind_parent = true
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.196078)
+
+[node name="CPanelButton" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/CPanelButton"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+size_flags_vertical = 7
+text = "Show/Hide GUT Panel"
+
+[node name="ShortcutButton" parent="Layout/CPanelButton" instance=ExtResource("1")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="GutPanelPad" type="CenterContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+text = "Only Active When GUT Panel Shown"
+
+[node name="ColorRect2" type="ColorRect" parent="Layout/Label"]
+show_behind_parent = true
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.196078)
+
+[node name="TopPad2" type="CenterContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+
+[node name="CRunAll" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/CRunAll"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+size_flags_vertical = 7
+text = "Run All"
+
+[node name="ShortcutButton" parent="Layout/CRunAll" instance=ExtResource("1")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CRunCurrentScript" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/CRunCurrentScript"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+size_flags_vertical = 7
+text = "Run Current Script"
+
+[node name="ShortcutButton" parent="Layout/CRunCurrentScript" instance=ExtResource("1")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CRunCurrentInner" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/CRunCurrentInner"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+size_flags_vertical = 7
+text = "Run Current Inner Class"
+
+[node name="ShortcutButton" parent="Layout/CRunCurrentInner" instance=ExtResource("1")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CRunCurrentTest" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Layout/CRunCurrentTest"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+size_flags_vertical = 7
+text = "Run Current Test"
+
+[node name="ShortcutButton" parent="Layout/CRunCurrentTest" instance=ExtResource("1")]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CenterContainer2" type="CenterContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ShiftDisclaimer" type="Label" parent="Layout"]
+layout_mode = 2
+text = "\"Shift\" cannot be the only modifier for a shortcut."
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Layout"]
+layout_mode = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="Layout/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Hide" type="Button" parent="Layout/HBoxContainer"]
+custom_minimum_size = Vector2(60, 30)
+layout_mode = 2
+text = "Close"
+
+[node name="BottomPad" type="CenterContainer" parent="Layout"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[connection signal="popup_hide" from="." to="." method="_on_popup_hide"]
+[connection signal="pressed" from="Layout/HBoxContainer/Hide" to="." method="_on_Hide_pressed"]

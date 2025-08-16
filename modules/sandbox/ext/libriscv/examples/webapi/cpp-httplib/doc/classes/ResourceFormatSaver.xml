@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ResourceFormatSaver" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Saves a specific resource type to a file.
+	</brief_description>
+	<description>
+		The engine can save resources when you do it from the editor, or when you use the [ResourceSaver] singleton. This is accomplished thanks to multiple [ResourceFormatSaver]s, each handling its own format and called automatically by the engine.
+		By default, Godot saves resources as [code].tres[/code] (text-based), [code].res[/code] (binary) or another built-in format, but you can choose to create your own format by extending this class. Be sure to respect the documented return types and values. You should give it a global class name with [code]class_name[/code] for it to be registered. Like built-in ResourceFormatSavers, it will be called automatically when saving resources of its recognized type(s). You may also implement a [ResourceFormatLoader].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_recognized_extensions" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				Returns the list of extensions available for saving the resource object, provided it is recognized (see [method _recognize]).
+			</description>
+		</method>
+		<method name="_recognize" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<description>
+				Returns whether the given resource object can be saved by this saver.
+			</description>
+		</method>
+		<method name="_recognize_path" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
+			<description>
+				Returns [code]true[/code] if this saver handles a given save path and [code]false[/code] otherwise.
+				If this method is not implemented, the default behavior returns whether the path's extension is within the ones provided by [method _get_recognized_extensions].
+			</description>
+		</method>
+		<method name="_save" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="resource" type="Resource" />
+			<param index="1" name="path" type="String" />
+			<param index="2" name="flags" type="int" />
+			<description>
+				Saves the given resource object to a file at the target [param path]. [param flags] is a bitmask composed with [enum ResourceSaver.SaverFlags] constants.
+				Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
+		<method name="_set_uid" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="uid" type="int" />
+			<description>
+				Sets a new UID for the resource at the given [param path]. Returns [constant OK] on success, or an [enum Error] constant in case of failure.
+			</description>
+		</method>
+	</methods>
+</class>

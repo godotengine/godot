@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Marker2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Generic 2D position hint for editing.
+	</brief_description>
+	<description>
+		Generic 2D position hint for editing. It's just like a plain [Node2D], but it displays as a cross in the 2D editor at all times. You can set the cross' visual size by using the gizmo in the 2D editor while the node is selected.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="gizmo_extents" type="float" setter="set_gizmo_extents" getter="get_gizmo_extents" default="10.0">
+			Size of the gizmo cross that appears in the editor.
+		</member>
+	</members>
+</class>

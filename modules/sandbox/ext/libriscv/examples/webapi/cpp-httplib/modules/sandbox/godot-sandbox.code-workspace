@@ -1,0 +1,115 @@
+{
+	"folders": [
+		{
+			"name": "godot-sandbox",
+			"path": "."
+		},
+		{
+			"name": "godot",
+			"path": "../godot"
+		}
+	],
+	"settings": {
+		"lldb.launch.sourceMap": {
+			"src/": "${workspaceFolder:godot-sandbox}/src"
+		},
+		"files.associations": {
+			"vector": "cpp",
+			"chrono": "cpp",
+			"*.inc": "cpp",
+			"__bit_reference": "cpp",
+			"bitset": "cpp",
+			"map": "cpp",
+			"set": "cpp",
+			"unordered_map": "cpp",
+			"unordered_set": "cpp",
+			"algorithm": "cpp",
+			"__locale": "cpp",
+			"string": "cpp",
+			"string_view": "cpp",
+			"__config": "cpp",
+			"deque": "cpp",
+			"list": "cpp",
+			"__hash_table": "cpp",
+			"__split_buffer": "cpp",
+			"__tree": "cpp",
+			"array": "cpp",
+			"initializer_list": "cpp",
+			"queue": "cpp",
+			"span": "cpp",
+			"stack": "cpp",
+			"__node_handle": "cpp"
+		},
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [
+			{
+				"name": "Launch",
+				"program": "${workspaceFolder:godot}/bin/godot.macos.editor.dev.arm64",
+				"type": "cppdbg",
+				"request": "launch",
+				"cwd": "${workspaceFolder:godot-sandbox}",
+				"osx": {
+					"MIMode": "lldb"
+				},
+				"args": [
+					"--path",
+					"${workspaceFolder:godot-sandbox}/Godot-Physics-Tests",
+					"--debug-collisions",
+					"test.tscn"
+				]
+			},
+		]
+	},
+	"tasks": {
+		"version": "2.0.0",
+		"tasks": [
+			{
+				"type": "shell",
+				"label": "godot build dev",
+				"command": "scons",
+				"args": [
+					"arch=arm64",
+					"tools=yes",
+					"target=editor",
+					"dev_build=true",
+					"debug_symbols=true",
+					"precision=single",
+					"--jobs=8"
+				],
+				"options": {
+				  "cwd": "${workspaceFolder:godot}"
+				},
+				"problemMatcher": ["$gcc"],
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				},
+				"detail": "godot build dev"
+			}, 
+			{
+				"type": "shell",
+				"label": "godot build",
+				"command": "scons",
+				"args": [
+					"arch=arm64",
+					"tools=yes",
+					"target=editor",
+					"debug_symbols=false",
+					"precision=single",
+					"--jobs=8"
+				],
+				"options": {
+				  "cwd": "${workspaceFolder:godot}"
+				},
+				"problemMatcher": ["$gcc"],
+				"group": {
+					"kind": "build",
+					"isDefault": true
+				},
+				"detail": "build godot"
+			}
+		]
+	}
+}

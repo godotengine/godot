@@ -1,0 +1,4 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR: Condition "_p->read_only" is true. Returning: false
+>>   Dictionary is in read-only state.
+>> SCRIPT ERROR at runtime/errors/constant_array_is_deep.gd:6 on test(): Invalid assignment on read-only value (on base: 'Dictionary').

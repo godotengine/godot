@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EngineProfiler" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for creating custom profilers.
+	</brief_description>
+	<description>
+		This class can be used to implement custom profilers that are able to interact with the engine and editor debugger.
+		See [EngineDebugger] and [EditorDebuggerPlugin] for more information.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_add_frame" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="data" type="Array" />
+			<description>
+				Called when data is added to profiler using [method EngineDebugger.profiler_add_frame_data].
+			</description>
+		</method>
+		<method name="_tick" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="frame_time" type="float" />
+			<param index="1" name="process_time" type="float" />
+			<param index="2" name="physics_time" type="float" />
+			<param index="3" name="physics_frame_time" type="float" />
+			<description>
+				Called once every engine iteration when the profiler is active with information about the current frame. All time values are in seconds. Lower values represent faster processing times and are therefore considered better.
+			</description>
+		</method>
+		<method name="_toggle" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<param index="1" name="options" type="Array" />
+			<description>
+				Called when the profiler is enabled/disabled, along with a set of [param options].
+			</description>
+		</method>
+	</methods>
+</class>

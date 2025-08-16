@@ -1,0 +1,56 @@
+name: Debian Packaging w/libtcc JIT
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [g++, clang++-17]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y g++ clang
+
+    - name: Install newer Clang
+      run: |
+       wget https://apt.llvm.org/llvm.sh
+       chmod +x ./llvm.sh
+       sudo ./llvm.sh 17
+
+    - name: CMake configuration
+      working-directory: ${{github.workspace}}/
+      env:
+        CXX: ${{ matrix.compiler }}
+
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DRISCV_BINARY_TRANSLATION=ON -DRISCV_LIBTCC=ON
+
+    - name: Build and packaging
+      run: |
+        cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+        pushd build
+        cpack -G DEB
+        popd
+        pushd packages
+        sudo dpkg -i *.deb
+        popd
+
+    - name: Build and run the package example
+      run: |
+        pushd examples/package
+        bash build_and_run.sh
+        popd

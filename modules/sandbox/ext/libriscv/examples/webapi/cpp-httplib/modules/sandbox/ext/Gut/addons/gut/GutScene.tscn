@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3 uid="uid://m28heqtswbuq"]
+
+[ext_resource type="Script" uid="uid://bw7tukh738kw1" path="res://addons/gut/GutScene.gd" id="1_b4m8y"]
+[ext_resource type="PackedScene" uid="uid://duxblir3vu8x7" path="res://addons/gut/gui/NormalGui.tscn" id="2_j6ywb"]
+[ext_resource type="PackedScene" uid="uid://cnqqdfsn80ise" path="res://addons/gut/gui/MinGui.tscn" id="3_3glw1"]
+
+[node name="GutScene" type="Node2D"]
+script = ExtResource("1_b4m8y")
+
+[node name="Normal" parent="." instance=ExtResource("2_j6ywb")]
+
+[node name="Compact" parent="." instance=ExtResource("3_3glw1")]
+offset_left = 5.0
+offset_top = 273.0
+offset_right = 265.0
+offset_bottom = 403.0

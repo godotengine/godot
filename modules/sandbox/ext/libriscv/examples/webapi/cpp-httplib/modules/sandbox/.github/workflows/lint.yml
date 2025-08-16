@@ -1,0 +1,20 @@
+name: Lint
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Setup clang-format
+        shell: bash
+        run: |
+          sudo apt update && sudo apt install -y clang-format
+      - name: Run clang-format
+        shell: bash
+        run: |
+          #./scripts/clang-format.sh

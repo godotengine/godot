@@ -1,0 +1,13 @@
+GDTEST_OK
+hello
+S Greeted say something foo
+
+hi
+SAT Greeted say another thing bar
+
+hello
+howdy, see above
+SN Greeted
+hello
+howdy, see above
+S Greeted

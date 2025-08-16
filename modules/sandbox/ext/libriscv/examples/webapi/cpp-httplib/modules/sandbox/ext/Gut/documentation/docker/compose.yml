@@ -1,0 +1,17 @@
+# docker-compose -f compose.yml build --no-cache --progress plain
+# or just
+# docker-compose -f compose.yml build
+# then, to generate documentation do:
+# docker-compose -f compose.yml up
+# then to view documentation
+# open ../TestReadTheDocsRepo/docs/source/_build/html/index.html
+version: '1.0'
+
+services:
+  gut-sphinx:
+    container_name : 'gut-sphinx'
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ../docs/:/docs

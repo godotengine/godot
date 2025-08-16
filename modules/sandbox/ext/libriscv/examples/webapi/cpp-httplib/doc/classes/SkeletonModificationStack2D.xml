@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModificationStack2D" inherits="Resource" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A resource that holds a stack of [SkeletonModification2D]s.
+	</brief_description>
+	<description>
+		This resource is used by the Skeleton and holds a stack of [SkeletonModification2D]s.
+		This controls the order of the modifications and how they are applied. Modification order is especially important for full-body IK setups, as you need to execute the modifications in the correct order to get the desired results. For example, you want to execute a modification on the spine [i]before[/i] the arms on a humanoid skeleton.
+		This resource also controls how strongly all of the modifications are applied to the [Skeleton2D].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_modification">
+			<return type="void" />
+			<param index="0" name="modification" type="SkeletonModification2D" />
+			<description>
+				Adds the passed-in [SkeletonModification2D] to the stack.
+			</description>
+		</method>
+		<method name="delete_modification">
+			<return type="void" />
+			<param index="0" name="mod_idx" type="int" />
+			<description>
+				Deletes the [SkeletonModification2D] at the index position [param mod_idx], if it exists.
+			</description>
+		</method>
+		<method name="enable_all_modifications">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				Enables all [SkeletonModification2D]s in the stack.
+			</description>
+		</method>
+		<method name="execute">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<param index="1" name="execution_mode" type="int" />
+			<description>
+				Executes all of the [SkeletonModification2D]s in the stack that use the same execution mode as the passed-in [param execution_mode], starting from index [code]0[/code] to [member modification_count].
+				[b]Note:[/b] The order of the modifications can matter depending on the modifications. For example, modifications on a spine should operate before modifications on the arms in order to get proper results.
+			</description>
+		</method>
+		<method name="get_is_setup" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns a boolean that indicates whether the modification stack is setup and can execute.
+			</description>
+		</method>
+		<method name="get_modification" qualifiers="const">
+			<return type="SkeletonModification2D" />
+			<param index="0" name="mod_idx" type="int" />
+			<description>
+				Returns the [SkeletonModification2D] at the passed-in index, [param mod_idx].
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton2D" />
+			<description>
+				Returns the [Skeleton2D] node that the SkeletonModificationStack2D is bound to.
+			</description>
+		</method>
+		<method name="set_modification">
+			<return type="void" />
+			<param index="0" name="mod_idx" type="int" />
+			<param index="1" name="modification" type="SkeletonModification2D" />
+			<description>
+				Sets the modification at [param mod_idx] to the passed-in modification, [param modification].
+			</description>
+		</method>
+		<method name="setup">
+			<return type="void" />
+			<description>
+				Sets up the modification stack so it can execute. This function should be called by [Skeleton2D] and shouldn't be manually called unless you know what you are doing.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="get_enabled" default="false">
+			If [code]true[/code], the modification's in the stack will be called. This is handled automatically through the [Skeleton2D] node.
+		</member>
+		<member name="modification_count" type="int" setter="set_modification_count" getter="get_modification_count" default="0">
+			The number of modifications in the stack.
+		</member>
+		<member name="strength" type="float" setter="set_strength" getter="get_strength" default="1.0">
+			The interpolation strength of the modifications in stack. A value of [code]0[/code] will make it where the modifications are not applied, a strength of [code]0.5[/code] will be half applied, and a strength of [code]1[/code] will allow the modifications to be fully applied and override the [Skeleton2D] [Bone2D] poses.
+		</member>
+	</members>
+</class>

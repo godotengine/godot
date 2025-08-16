@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PhysicsTestMotionResult3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Describes the motion and collision result from [method PhysicsServer3D.body_test_motion].
+	</brief_description>
+	<description>
+		Describes the motion and collision result from [method PhysicsServer3D.body_test_motion].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's attached [Object] given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collider_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the unique instance ID of the colliding body's attached [Object] given a collision index (the deepest collision by default), if a collision occurred. See [method Object.get_instance_id].
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's [RID] used by the [PhysicsServer3D] given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's shape index given a collision index (the deepest collision by default), if a collision occurred. See [CollisionObject3D].
+			</description>
+		</method>
+		<method name="get_collider_velocity" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's velocity given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of detected collisions.
+			</description>
+		</method>
+		<method name="get_collision_depth" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the length of overlap along the collision normal given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collision_local_shape" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the moving object's colliding shape given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the colliding body's shape's normal at the point of collision given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collision_point" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="collision_index" type="int" default="0" />
+			<description>
+				Returns the point of collision in global coordinates given a collision index (the deepest collision by default), if a collision occurred.
+			</description>
+		</method>
+		<method name="get_collision_safe_fraction" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the maximum fraction of the motion that can occur without a collision, between [code]0[/code] and [code]1[/code].
+			</description>
+		</method>
+		<method name="get_collision_unsafe_fraction" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the minimum fraction of the motion needed to collide, if a collision occurred, between [code]0[/code] and [code]1[/code].
+			</description>
+		</method>
+		<method name="get_remainder" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the moving object's remaining movement vector.
+			</description>
+		</method>
+		<method name="get_travel" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the moving object's travel before collision.
+			</description>
+		</method>
+	</methods>
+</class>

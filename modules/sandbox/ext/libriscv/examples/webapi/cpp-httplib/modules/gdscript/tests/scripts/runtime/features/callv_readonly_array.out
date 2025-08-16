@@ -1,0 +1,11 @@
+GDTEST_OK
+TEST Callable::callv
+one two three four
+one two three four
+["one"] ["two"] ["three"] ["four"]
+["one"] ["two"] ["three"] ["four"]
+TEST Object::callv
+one two three four
+one two three four
+["one"] ["two"] ["three"] ["four"]
+["one"] ["two"] ["three"] ["four"]

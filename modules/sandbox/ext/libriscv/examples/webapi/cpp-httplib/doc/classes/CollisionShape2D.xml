@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionShape2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that provides a [Shape2D] to a [CollisionObject2D] parent.
+	</brief_description>
+	<description>
+		A node that provides a [Shape2D] to a [CollisionObject2D] parent and allows to edit it. This can give a detection shape to an [Area2D] or turn a [PhysicsBody2D] into a solid object.
+	</description>
+	<tutorials>
+		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
+		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
+		<link title="2D Pong Demo">https://godotengine.org/asset-library/asset/2728</link>
+		<link title="2D Kinematic Character Demo">https://godotengine.org/asset-library/asset/2719</link>
+	</tutorials>
+	<members>
+		<member name="debug_color" type="Color" setter="set_debug_color" getter="get_debug_color" default="Color(0, 0, 0, 0)">
+			The collision shape color that is displayed in the editor, or in the running project if [b]Debug &gt; Visible Collision Shapes[/b] is checked at the top of the editor.
+			[b]Note:[/b] The default value is [member ProjectSettings.debug/shapes/collision/shape_color]. The [code]Color(0, 0, 0, 0)[/code] value documented here is a placeholder, and not the actual default debug color.
+		</member>
+		<member name="disabled" type="bool" setter="set_disabled" getter="is_disabled" default="false" keywords="enabled">
+			A disabled collision shape has no effect in the world. This property should be changed with [method Object.set_deferred].
+		</member>
+		<member name="one_way_collision" type="bool" setter="set_one_way_collision" getter="is_one_way_collision_enabled" default="false">
+			Sets whether this collision shape should only detect collision on one side (top or bottom).
+			[b]Note:[/b] This property has no effect if this [CollisionShape2D] is a child of an [Area2D] node.
+		</member>
+		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
+			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the shape at a high velocity.
+		</member>
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
+			The actual shape owned by this collision shape.
+		</member>
+	</members>
+</class>

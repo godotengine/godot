@@ -1,0 +1,9 @@
+GDTEST_OK
+~~ WARNING at line 3: (CONFUSABLE_IDENTIFIER) The identifier "my_vАr" has misleading characters and might be confused with something else.
+~~ WARNING at line 8: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).
+~~ WARNING at line 14: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).
+~~ WARNING at line 19: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).
+~~ WARNING at line 24: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).
+~~ WARNING at line 27: (CONFUSABLE_IDENTIFIER) The identifier "_my_vАr" has misleading characters and might be confused with something else.
+~~ WARNING at line 31: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).
+~~ WARNING at line 35: (NARROWING_CONVERSION) Narrowing conversion (float is converted to int and loses precision).

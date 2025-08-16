@@ -1,0 +1,13 @@
+GDTEST_OK
+Outer - Outer
+012
+012
+Outer - Inner
+021
+021
+Inner - Inner
+021
+021
+021
+Inner - Outer
+012

@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+import os
+
+Import("env")
+Import("env_modules")
+
+
+#region Helpers
+def get_addon_platform():
+    return env["platform"].replace("linuxbsd", "linux")
+
+def get_addon_threads():
+    return "yes" if env["threads"] else "no"
+
+def get_addon_llvm():
+    return "yes" if env.get("use_llvm", False) else "no"
+
+def get_addon_devbuild():
+    return "yes" if env.get("dev_build", False) else "no"
+
+def get_addon_target():
+    return "template_release" if env["target"] == "editor" else env["target"]
+
+def get_addon_mingw():
+    return "yes" if env.get("use_mingw", False) else "no"
+
+if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platform"] != "windows":
+    # TODO remove when godot-cpp 4.5 is released
+    # Replace in godot-cpp android ndk from "23.2.8568313" to "28.1.13356709"
+    if env["platform"] == "android":
+        os.system("sed -i 's/23.2.8568313/28.1.13356709/g' ext/godot-cpp/tools/android.py")
+
+    # Only build if we are not using MSVC
+    os.system(f"scons static_build=yes platform={get_addon_platform()} target={get_addon_target()} arch={env['arch']} precision={env['precision']} threads={get_addon_threads()} dev_build={get_addon_devbuild()} use_llvm={get_addon_llvm()} lto={env['lto']} use_mingw={get_addon_mingw()}")
+
+    def get_sufix_before():
+        suffix = f".{get_addon_platform()}.{env['target']}"
+        if env["dev_build"]:
+            suffix += ".dev"
+        if env["precision"] == "double":
+            suffix += ".double"
+        suffix += f".{env['arch']}"
+        if not env["threads"]:
+            suffix += ".nothreads"
+        if env.get("use_llvm", False):
+            suffix += ".llvm"
+        return suffix
+
+
+    def get_sufix_after():
+        suffix = f".{get_addon_platform()}.{get_addon_target()}"
+        if env["dev_build"]:
+            suffix += ".dev"
+        if env["precision"] == "double":
+            suffix += ".double"
+        suffix += f".{env['arch']}"
+        if not env["threads"]:
+            suffix += ".nothreads"
+        return suffix
+    os.system("ls -l bin/")
+    # Rename if target is editor
+    if env["target"] == "editor" or env["platform"] == "windows":
+        lib_extension = ".a" if env["platform"] != "windows" else ".lib"
+        lib_prefix = "lib" if env["platform"] != "windows" else ""
+        if env.get("use_mingw", False):
+            lib_extension = ".a"
+            lib_prefix = "lib"
+        # Rename our lib
+        os.rename(
+            f"bin/libsandbox{get_sufix_after()}{lib_extension}",
+            f"bin/{lib_prefix}sandbox{get_sufix_before()}{lib_extension}"
+        )
+        # Rename godot-cpp lib
+        os.rename(
+            f"ext/godot-cpp/bin/libgodot-cpp{get_sufix_after()}{lib_extension}",
+            f"ext/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}"
+        )
+            
+    # Do an ls on bin folder
+    os.system("ls -l bin/")
+else:
+    print("Skipping sandbox build. All platforms minus windows without mingw are supported.")
+#endregion
+
+
+env_sandbox = env_modules.Clone()
+suffix = get_sufix_before()
+godot_cpp_path = "#modules/sandbox/ext/godot-cpp/bin"
+if env["platform"] == "ios":
+    env_sandbox.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
+    env_sandbox.Append(LIBS=[f"libsandbox{suffix}", f"libgodot-cpp{suffix}"])
+elif env["platform"] != "windows" or env.get("use_mingw", False):
+    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
+    env.Append(LIBS=[f"sandbox{suffix}", f"godot-cpp{suffix}"])
+else:
+    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
+    env.Append(LIBS=["sandbox", "godot-cpp"])
+
+
+env.add_source_files(env.modules_sources, "register_types.cpp")

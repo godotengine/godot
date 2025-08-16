@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+Import("env")
+Import("env_openxr")
+
+module_obj = []
+
+env_openxr.add_source_files(module_obj, "*.cpp")
+
+env.modules_sources += module_obj

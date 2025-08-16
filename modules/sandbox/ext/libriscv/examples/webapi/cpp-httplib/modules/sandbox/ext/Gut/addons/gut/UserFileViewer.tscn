@@ -1,0 +1,92 @@
+[gd_scene load_steps=2 format=3 uid="uid://bsm7wtt1gie4v"]
+
+[ext_resource type="Script" uid="uid://x51wilphva3d" path="res://addons/gut/UserFileViewer.gd" id="1"]
+
+[node name="UserFileViewer" type="Window"]
+exclusive = true
+script = ExtResource("1")
+
+[node name="FileDialog" type="FileDialog" parent="."]
+access = 1
+show_hidden_files = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="TextDisplay" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_right = -10.0
+offset_bottom = -65.0
+color = Color(0.2, 0.188235, 0.188235, 1)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="TextDisplay"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 2
+text = "In publishing and graphic design, Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. Lorem ipsum may be used before final copy is available, but it may also be used to temporarily replace copy in a process called greeking, which allows designers to consider form without the meaning of the text influencing the design.
+
+Lorem ipsum is typically a corrupted version of De finibus bonorum et malorum, a first-century BCE text by the Roman statesman and philosopher Cicero, with words altered, added, and removed to make it nonsensical, improper Latin.
+
+Versions of the Lorem ipsum text have been used in typesetting at least since the 1960s, when it was popularized by advertisements for Letraset transfer sheets. Lorem ipsum was introduced to the digital world in the mid-1980s when Aldus employed it in graphic and word-processing templates for its desktop publishing program PageMaker. Other popular word processors including Pages and Microsoft Word have since adopted Lorem ipsum as well."
+selection_enabled = true
+
+[node name="OpenFile" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -158.0
+offset_top = -50.0
+offset_right = -84.0
+offset_bottom = -30.0
+text = "Open File"
+
+[node name="Home" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -478.0
+offset_top = -50.0
+offset_right = -404.0
+offset_bottom = -30.0
+text = "Home"
+
+[node name="Copy" type="Button" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 160.0
+offset_top = -50.0
+offset_right = 234.0
+offset_bottom = -30.0
+text = "Copy"
+
+[node name="End" type="Button" parent="."]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -318.0
+offset_top = -50.0
+offset_right = -244.0
+offset_bottom = -30.0
+text = "End"
+
+[node name="Close" type="Button" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = -50.0
+offset_right = 80.0
+offset_bottom = -30.0
+text = "Close"
+
+[connection signal="file_selected" from="FileDialog" to="." method="_on_FileDialog_file_selected"]
+[connection signal="visibility_changed" from="FileDialog" to="." method="_on_file_dialog_visibility_changed"]
+[connection signal="pressed" from="OpenFile" to="." method="_on_OpenFile_pressed"]
+[connection signal="pressed" from="Home" to="." method="_on_Home_pressed"]
+[connection signal="pressed" from="Copy" to="." method="_on_Copy_pressed"]
+[connection signal="pressed" from="End" to="." method="_on_End_pressed"]
+[connection signal="pressed" from="Close" to="." method="_on_Close_pressed"]

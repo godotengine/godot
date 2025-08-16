@@ -1,0 +1,55 @@
+name: Unit Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-14-riscv64-linux-gnu g++-14-riscv64-linux-gnu cmake
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/.build -DCMAKE_BUILD_TYPE=Debug
+
+      - name: Build the unittests
+        run: cmake --build ${{github.workspace}}/.build --parallel 6
+
+      - name: Download and extract Godot
+        working-directory: ${{github.workspace}}/tests
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.4.1-stable/Godot_v4.4.1-stable_linux.x86_64.zip
+          unzip -q Godot_v4.4.1-stable_linux.x86_64.zip
+
+      - name: Run Gut tests (RISC-V GNU toolchain)
+        working-directory: ${{github.workspace}}/tests
+        run: |
+          # Run the tests
+          CI=1 GODOT=./Godot_v4.4.1-stable_linux.x86_64 ./run_unittests.sh
+
+      - name: Run Gut tests (Zig)
+        working-directory: ${{github.workspace}}/tests
+        run: |
+          # Download and install Zig
+          wget https://ziglang.org/download/0.14.0/zig-linux-x86_64-0.14.0.tar.xz
+          tar -xf zig-linux-x86_64-0.14.0.tar.xz
+          export PATH=$PWD/zig-linux-x86_64-0.14.0:$PATH
+
+          # Run the tests with Zig
+          CI=1 GODOT=./Godot_v4.4.1-stable_linux.x86_64 ./zig_unittests.sh

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+	<meta charset="utf-8">
+	<title>Compile C/C++ code</title>
+	<style type="text/css" media="screen">
+		body {
+			background: black;
+		}
+	    #editor {
+			height: 360px;
+	    }
+		#content {
+			color: white;
+			background-color: black;
+			height: 50%;
+		}
+		#resultbox {
+			display: block;
+			color: white;
+			background-color: black;
+		}
+		#about {
+			color: lightgray;
+			background-color: black;
+		}
+		#compile_button {
+			color: lightgreen;
+			background-color: black;
+		}
+		#compile_method {
+			color: lightyellow;
+			background-color: black;
+		}
+	</style>
+</head>
+<body>
+	<div id="editor">
+	</div>
+	<div id="content">
+		<button type="button" id="compile_button"> > Compile & Run < </button>
+		<select id="compile_method">
+		  <option value="linux" selected="selected">libc: glibc</option>
+		  <option value="newlib">libc: newlib</option>
+		</select>
+		<hr/>
+		<label for="resultbox">Output:</label>
+		<textarea id="resultbox" rows="8" cols="80">
+		</textarea>
+		<label for="exit_status">Exit status:</label> <label id="exit_status">n/a</label> <br>
+		<label for="instr_count">Instruction count:</label> <label id="instr_count">n/a</label> <br>
+		<label for="mem_usage">Memory usage:</label> <label id="mem_usage">n/a</label> <br>
+
+
+		<label for="startup_time">Startup time:</label> <label id="startup_time">n/a</label> <br>
+		<label for="compile_time">Compile time:</label> <label id="compile_time">n/a</label> <br>
+		<label for="execute_time">Execution time:</label> <label id="execute_time">n/a</label> <br>
+		<label for="binary_size">Binary size:</label> <label id="binary_size">n/a</label> <br>
+
+		<label for="exception">Exception:</label> <label id="exception">None</label> <br>
+	</div>
+	<hr />
+	<div id="about">
+		Code is executed by <a href="https://github.com/fwsGonzo/libriscv">libriscv</a> the C++17 RISC-V emulator. Samples are in microseconds.
+	</div>
+</body>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.31.1/ace.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+	</script>
+	<script type="text/javascript">
+		var editor = ace.edit("editor");
+	    editor.setTheme("ace/theme/monokai");
+	    editor.session.setMode("ace/mode/c_cpp");
+		// default hello world code:
+		editor.setValue(`#include <cassert>
+#include <cstdio>
+#include <string>
+#include <thread> // C++ threads
+
+int main()
+{
+    printf("Test!\\n");
+
+	std::jthread t(
+			[] (int a, long long b, std::string c) -> void {
+				assert(a == 1);
+				assert(b == 2LL);
+				assert(c == std::string("test"));
+				printf("Hello from a thread!\\n");
+			},
+			1, 2L, std::string("test")
+	);
+
+	return 666;
+}
+`);
+		function bytesToSize(bytes) {
+		   var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+		   if (bytes == 0) return '0 Byte';
+		   var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+		   return (bytes / Math.pow(1024, i)).toFixed(3) + ' ' + sizes[i];
+		}
+
+		jQuery(document).ready(function()
+		{
+            // Get button by id
+            var button = jQuery('#compile_button');
+			var resultbox = jQuery('#resultbox');
+            button.bind('click', function ()
+			{
+				var method = jQuery('#compile_method').find('option:selected').val();
+				$.ajax({
+					url: `${location.protocol}//${location.host}/exec?method=` + method,
+					type: "POST",
+					crossDomain: true,
+					data: editor.getValue(),
+					dataType: 'text',
+					success: function (response, status, xhdr) {
+						resultbox.val(response);
+						$('#startup_time').text(xhdr.getResponseHeader('X-Startup-Time'));
+						$('#compile_time').text(xhdr.getResponseHeader('X-Compile-Time'));
+						$('#execute_time').text(
+							"Low: " + xhdr.getResponseHeader('X-Runtime-Lowest') +
+							"  Median: " + xhdr.getResponseHeader('X-Runtime-Median') +
+							"  High: " + xhdr.getResponseHeader('X-Runtime-Highest') +
+							"  (First: " + xhdr.getResponseHeader('X-Runtime-First') +
+							")");
+
+						$('#exit_status').text(xhdr.getResponseHeader('X-Exit-Code'));
+						$('#instr_count').text(xhdr.getResponseHeader('X-Instruction-Count'));
+						var usage = xhdr.getResponseHeader('X-Memory-Usage');
+						var highest = xhdr.getResponseHeader('X-Memory-Max');
+						$('#mem_usage').text(
+							String(bytesToSize(usage)) + ", max: " +
+							String(bytesToSize(highest))
+						);
+						var bsize = xhdr.getResponseHeader('X-Binary-Size');
+						$('#binary_size').text(bytesToSize(bsize));
+						var xe = xhdr.getResponseHeader('X-Exception');
+						var xerr = xhdr.getResponseHeader('X-Error');
+						if (xe) {
+							$('#exception').text(xe);
+						} else {
+							$('#exception').text(xerr ? xerr : "None");
+						}
+					},
+					error: function (xhdr, status) {
+						$('#exit_status').text("-1");
+						$('#req_error').text("An error occurred");
+						resultbox.val("Could not complete the request");
+					}
+				})
+			}); // button click
+		}); // ready
+	</script>
+</html>

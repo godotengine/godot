@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoxContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container that arranges its child controls horizontally or vertically.
+	</brief_description>
+	<description>
+		A container that arranges its child controls horizontally or vertically, rearranging them automatically when their minimum size changes.
+	</description>
+	<tutorials>
+		<link title="Using Containers">$DOCS_URL/tutorials/ui/gui_containers.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_spacer">
+			<return type="Control" />
+			<param index="0" name="begin" type="bool" />
+			<description>
+				Adds a [Control] node to the box as a spacer. If [param begin] is [code]true[/code], it will insert the [Control] node in front of all other children.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="BoxContainer.AlignmentMode" default="0">
+			The alignment of the container's children (must be one of [constant ALIGNMENT_BEGIN], [constant ALIGNMENT_CENTER], or [constant ALIGNMENT_END]).
+		</member>
+		<member name="vertical" type="bool" setter="set_vertical" getter="is_vertical" default="false">
+			If [code]true[/code], the [BoxContainer] will arrange its children vertically, rather than horizontally.
+			Can't be changed when using [HBoxContainer] and [VBoxContainer].
+		</member>
+	</members>
+	<constants>
+		<constant name="ALIGNMENT_BEGIN" value="0" enum="AlignmentMode">
+			The child controls will be arranged at the beginning of the container, i.e. top if orientation is vertical, left if orientation is horizontal (right for RTL layout).
+		</constant>
+		<constant name="ALIGNMENT_CENTER" value="1" enum="AlignmentMode">
+			The child controls will be centered in the container.
+		</constant>
+		<constant name="ALIGNMENT_END" value="2" enum="AlignmentMode">
+			The child controls will be arranged at the end of the container, i.e. bottom if orientation is vertical, right if orientation is horizontal (left for RTL layout).
+		</constant>
+	</constants>
+	<theme_items>
+		<theme_item name="separation" data_type="constant" type="int" default="4">
+			The space between the [BoxContainer]'s elements, in pixels.
+		</theme_item>
+	</theme_items>
+</class>

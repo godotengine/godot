@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeBlend3" inherits="AnimationNodeSync" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Blends two of three animations linearly inside of an [AnimationNodeBlendTree].
+	</brief_description>
+	<description>
+		A resource to add to an [AnimationNodeBlendTree]. Blends two animations out of three linearly out of three based on the amount value.
+		This animation node has three inputs:
+		- The base animation to blend with
+		- A "-blend" animation to blend with when the blend amount is negative value
+		- A "+blend" animation to blend with when the blend amount is positive value
+		In general, the blend value should be in the [code][-1.0, 1.0][/code] range. Values outside of this range can blend amplified animations, however, [AnimationNodeAdd3] works better for this purpose.
+	</description>
+	<tutorials>
+		<link title="Using AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>
+	</tutorials>
+</class>

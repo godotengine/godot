@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CanvasTexture" inherits="Texture2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture with optional normal and specular maps for use in 2D rendering.
+	</brief_description>
+	<description>
+		[CanvasTexture] is an alternative to [ImageTexture] for 2D rendering. It allows using normal maps and specular maps in any node that inherits from [CanvasItem]. [CanvasTexture] also allows overriding the texture's filter and repeat mode independently of the node's properties (or the project settings).
+		[b]Note:[/b] [CanvasTexture] cannot be used in 3D. It will not display correctly when applied to any [VisualInstance3D], such as [Sprite3D] or [Decal]. For physically-based materials in 3D, use [BaseMaterial3D] instead.
+	</description>
+	<tutorials>
+		<link title="2D Lights and Shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
+	</tutorials>
+	<members>
+		<member name="diffuse_texture" type="Texture2D" setter="set_diffuse_texture" getter="get_diffuse_texture">
+			The diffuse (color) texture to use. This is the main texture you want to set in most cases.
+		</member>
+		<member name="normal_texture" type="Texture2D" setter="set_normal_texture" getter="get_normal_texture">
+			The normal map texture to use. Only has a visible effect if [Light2D]s are affecting this [CanvasTexture].
+			[b]Note:[/b] Godot expects the normal map to use X+, Y+, and Z+ coordinates. See [url=http://wiki.polycount.com/wiki/Normal_Map_Technical_Details#Common_Swizzle_Coordinates]this page[/url] for a comparison of normal map coordinates expected by popular engines.
+		</member>
+		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
+		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color(1, 1, 1, 1)">
+			The multiplier for specular reflection colors. The [Light2D]'s color is also taken into account when determining the reflection color. Only has a visible effect if [Light2D]s are affecting this [CanvasTexture].
+		</member>
+		<member name="specular_shininess" type="float" setter="set_specular_shininess" getter="get_specular_shininess" default="1.0">
+			The specular exponent for [Light2D] specular reflections. Higher values result in a more glossy/"wet" look, with reflections becoming more localized and less visible overall. The default value of [code]1.0[/code] disables specular reflections entirely. Only has a visible effect if [Light2D]s are affecting this [CanvasTexture].
+		</member>
+		<member name="specular_texture" type="Texture2D" setter="set_specular_texture" getter="get_specular_texture">
+			The specular map to use for [Light2D] specular reflections. This should be a grayscale or colored texture, with brighter areas resulting in a higher [member specular_shininess] value. Using a colored [member specular_texture] allows controlling specular shininess on a per-channel basis. Only has a visible effect if [Light2D]s are affecting this [CanvasTexture].
+		</member>
+		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
+			The texture filtering mode to use when drawing this [CanvasTexture].
+		</member>
+		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="CanvasItem.TextureRepeat" default="0">
+			The texture repeat mode to use when drawing this [CanvasTexture].
+		</member>
+	</members>
+</class>

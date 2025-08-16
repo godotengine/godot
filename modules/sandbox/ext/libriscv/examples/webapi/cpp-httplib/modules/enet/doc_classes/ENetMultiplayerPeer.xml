@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ENetMultiplayerPeer" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		A MultiplayerPeer implementation using the [url=http://enet.bespin.org/index.html]ENet[/url] library.
+	</brief_description>
+	<description>
+		A MultiplayerPeer implementation that should be passed to [member MultiplayerAPI.multiplayer_peer] after being initialized as either a client, server, or mesh. Events can then be handled by connecting to [MultiplayerAPI] signals. See [ENetConnection] for more information on the ENet library wrapper.
+		[b]Note:[/b] ENet only uses UDP, not TCP. When forwarding the server port to make your server accessible on the public Internet, you only need to forward the server port in UDP. You can use the [UPNP] class to try to forward the server port automatically when starting the server.
+	</description>
+	<tutorials>
+		<link title="High-level multiplayer">$DOCS_URL/tutorials/networking/high_level_multiplayer.html</link>
+		<link title="API documentation on the ENet website">http://enet.bespin.org/usergroup0.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_mesh_peer">
+			<return type="int" enum="Error" />
+			<param index="0" name="peer_id" type="int" />
+			<param index="1" name="host" type="ENetConnection" />
+			<description>
+				Add a new remote peer with the given [param peer_id] connected to the given [param host].
+				[b]Note:[/b] The [param host] must have exactly one peer in the [constant ENetPacketPeer.STATE_CONNECTED] state.
+			</description>
+		</method>
+		<method name="create_client">
+			<return type="int" enum="Error" />
+			<param index="0" name="address" type="String" />
+			<param index="1" name="port" type="int" />
+			<param index="2" name="channel_count" type="int" default="0" />
+			<param index="3" name="in_bandwidth" type="int" default="0" />
+			<param index="4" name="out_bandwidth" type="int" default="0" />
+			<param index="5" name="local_port" type="int" default="0" />
+			<description>
+				Create client that connects to a server at [param address] using specified [param port]. The given address needs to be either a fully qualified domain name (e.g. [code]"www.example.com"[/code]) or an IP address in IPv4 or IPv6 format (e.g. [code]"192.168.1.1"[/code]). The [param port] is the port the server is listening on. The [param channel_count] parameter can be used to specify the number of ENet channels allocated for the connection. The [param in_bandwidth] and [param out_bandwidth] parameters can be used to limit the incoming and outgoing bandwidth to the given number of bytes per second. The default of 0 means unlimited bandwidth. Note that ENet will strategically drop packets on specific sides of a connection between peers to ensure the peer's bandwidth is not overwhelmed. The bandwidth parameters also determine the window size of a connection which limits the amount of reliable packets that may be in transit at any given time. Returns [constant OK] if a client was created, [constant ERR_ALREADY_IN_USE] if this ENetMultiplayerPeer instance already has an open connection (in which case you need to call [method MultiplayerPeer.close] first) or [constant ERR_CANT_CREATE] if the client could not be created. If [param local_port] is specified, the client will also listen to the given port; this is useful for some NAT traversal techniques.
+			</description>
+		</method>
+		<method name="create_mesh">
+			<return type="int" enum="Error" />
+			<param index="0" name="unique_id" type="int" />
+			<description>
+				Initialize this [MultiplayerPeer] in mesh mode. The provided [param unique_id] will be used as the local peer network unique ID once assigned as the [member MultiplayerAPI.multiplayer_peer]. In the mesh configuration you will need to set up each new peer manually using [ENetConnection] before calling [method add_mesh_peer]. While this technique is more advanced, it allows for better control over the connection process (e.g. when dealing with NAT punch-through) and for better distribution of the network load (which would otherwise be more taxing on the server).
+			</description>
+		</method>
+		<method name="create_server">
+			<return type="int" enum="Error" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="max_clients" type="int" default="32" />
+			<param index="2" name="max_channels" type="int" default="0" />
+			<param index="3" name="in_bandwidth" type="int" default="0" />
+			<param index="4" name="out_bandwidth" type="int" default="0" />
+			<description>
+				Create server that listens to connections via [param port]. The port needs to be an available, unused port between 0 and 65535. Note that ports below 1024 are privileged and may require elevated permissions depending on the platform. To change the interface the server listens on, use [method set_bind_ip]. The default IP is the wildcard [code]"*"[/code], which listens on all available interfaces. [param max_clients] is the maximum number of clients that are allowed at once, any number up to 4095 may be used, although the achievable number of simultaneous clients may be far lower and depends on the application. For additional details on the bandwidth parameters, see [method create_client]. Returns [constant OK] if a server was created, [constant ERR_ALREADY_IN_USE] if this ENetMultiplayerPeer instance already has an open connection (in which case you need to call [method MultiplayerPeer.close] first) or [constant ERR_CANT_CREATE] if the server could not be created.
+			</description>
+		</method>
+		<method name="get_peer" qualifiers="const">
+			<return type="ENetPacketPeer" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the [ENetPacketPeer] associated to the given [param id].
+			</description>
+		</method>
+		<method name="set_bind_ip">
+			<return type="void" />
+			<param index="0" name="ip" type="String" />
+			<description>
+				The IP used when creating a server. This is set to the wildcard [code]"*"[/code] by default, which binds to all available interfaces. The given IP needs to be in IPv4 or IPv6 address format, for example: [code]"192.168.1.1"[/code].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="host" type="ENetConnection" setter="" getter="get_host">
+			The underlying [ENetConnection] created after [method create_client] and [method create_server].
+		</member>
+	</members>
+</class>

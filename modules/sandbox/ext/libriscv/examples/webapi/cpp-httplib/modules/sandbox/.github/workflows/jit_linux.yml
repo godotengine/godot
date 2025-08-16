@@ -1,0 +1,51 @@
+name: Linux CMake w/JIT
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-14 g++-14 cmake git ccache
+
+      - name: '🚧 CCache setup'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: linux-jit
+          max-size: 300M
+
+      - name: Configure addon
+        env:
+          CC: ccache gcc-14
+          CXX: ccache g++-14
+        run: cmake -B ${{github.workspace}}/.build -DCMAKE_BUILD_TYPE=Release -DRISCV_LIBTCC=ON
+
+      - name: Build the addon
+        working-directory: ${{github.workspace}}/.build
+        run: |
+          cmake --build . --parallel 6
+          # Rename the output file to match the expected name
+          mv libgodot-riscv.so libgodot_riscv.linux.template_release.x86_64.so
+
+      - name: Upload addon shared object
+        uses: actions/upload-artifact@v4
+        with:
+          name: godot-jit-linux
+          path: ${{github.workspace}}/.build/libgodot_riscv.linux.template_release.x86_64.so
+          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn`
+          retention-days: 1 # 90 days by default

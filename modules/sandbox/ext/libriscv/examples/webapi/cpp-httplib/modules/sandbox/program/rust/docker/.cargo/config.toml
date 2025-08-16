@@ -1,0 +1,6 @@
+[build]
+target = "riscv64gc-unknown-linux-gnu"
+
+[target.riscv64gc-unknown-linux-gnu]
+linker = "riscv64-linux-gnu-gcc-14"
+rustflags = ["-C", "target-feature=+crt-static","-Zexport-executable-symbols", "-C", "link_args=-Wl,--wrap=memcpy,--wrap=memmove,--wrap=memset,--wrap=memcmp,--wrap=strlen,--wrap=strcmp,--wrap=strncmp"]

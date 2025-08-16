@@ -1,0 +1,45 @@
+/* ----------------------------------------------------------------------------*
+Gut Wiki Specific items
+----------------------------------------------------------------------------- */
+.gutwarning{
+    background-color: rgb(60, 0, 0);
+    color: white;
+    text-align: center;
+    font-size: large;
+    font-weight: bold;
+    border-style: dashed;
+    border-width: 5px;
+    border-color: black;
+
+    padding: 20px;
+}
+
+
+/* ----------------------------------------------------------------------------*
+sphinx-rtd-dark-mode
+----------------------------------------------------------------------------- */
+html[data-theme="dark"] li.current > a,
+html[data-theme="dark"] li.current > ul > li
+{
+    background-color: rgb(42, 33, 42) !important;
+}
+
+html[data-theme="dark"]  li.toctree-l3 > a {
+    background-color: rgb(36, 22, 36) !important;
+}
+
+html[data-theme="dark"] a.reference.internal.current{
+    background-color: rgb(155, 152, 152) !important;
+    color: black;
+}
+
+/* ----------------------------------------------------------------------------*
+Customizing the wiki
+----------------------------------------------------------------------------- */
+.wy-menu-vertical p.caption {
+    text-transform: capitalize !important;
+}
+
+.wy-side-nav-search {
+    background-color: rgb(66, 10, 130) !important;
+}

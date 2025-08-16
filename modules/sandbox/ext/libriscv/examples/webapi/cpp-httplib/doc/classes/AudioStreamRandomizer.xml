@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamRandomizer" inherits="AudioStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Wraps a pool of audio streams with pitch and volume shifting.
+	</brief_description>
+	<description>
+		Picks a random AudioStream from the pool, depending on the playback mode, and applies random pitch shifting and volume shifting during playback.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_stream">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="stream" type="AudioStream" />
+			<param index="2" name="weight" type="float" default="1.0" />
+			<description>
+				Insert a stream at the specified index. If the index is less than zero, the insertion occurs at the end of the underlying pool.
+			</description>
+		</method>
+		<method name="get_stream" qualifiers="const">
+			<return type="AudioStream" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the stream at the specified index.
+			</description>
+		</method>
+		<method name="get_stream_probability_weight" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the probability weight associated with the stream at the given index.
+			</description>
+		</method>
+		<method name="move_stream">
+			<return type="void" />
+			<param index="0" name="index_from" type="int" />
+			<param index="1" name="index_to" type="int" />
+			<description>
+				Move a stream from one index to another.
+			</description>
+		</method>
+		<method name="remove_stream">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Remove the stream at the specified index.
+			</description>
+		</method>
+		<method name="set_stream">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="stream" type="AudioStream" />
+			<description>
+				Set the AudioStream at the specified index.
+			</description>
+		</method>
+		<method name="set_stream_probability_weight">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="weight" type="float" />
+			<description>
+				Set the probability weight of the stream at the specified index. The higher this value, the more likely that the randomizer will choose this stream during random playback modes.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="playback_mode" type="int" setter="set_playback_mode" getter="get_playback_mode" enum="AudioStreamRandomizer.PlaybackMode" default="0">
+			Controls how this AudioStreamRandomizer picks which AudioStream to play next.
+		</member>
+		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" default="1.0">
+			The intensity of random pitch variation. A value of 1 means no variation.
+		</member>
+		<member name="random_volume_offset_db" type="float" setter="set_random_volume_offset_db" getter="get_random_volume_offset_db" default="0.0">
+			The intensity of random volume variation. A value of 0 means no variation.
+		</member>
+		<member name="streams_count" type="int" setter="set_streams_count" getter="get_streams_count" default="0">
+			The number of streams in the stream pool.
+		</member>
+	</members>
+	<constants>
+		<constant name="PLAYBACK_RANDOM_NO_REPEATS" value="0" enum="PlaybackMode">
+			Pick a stream at random according to the probability weights chosen for each stream, but avoid playing the same stream twice in a row whenever possible. If only 1 sound is present in the pool, the same sound will always play, effectively allowing repeats to occur.
+		</constant>
+		<constant name="PLAYBACK_RANDOM" value="1" enum="PlaybackMode">
+			Pick a stream at random according to the probability weights chosen for each stream. If only 1 sound is present in the pool, the same sound will always play.
+		</constant>
+		<constant name="PLAYBACK_SEQUENTIAL" value="2" enum="PlaybackMode">
+			Play streams in the order they appear in the stream pool. If only 1 sound is present in the pool, the same sound will always play.
+		</constant>
+	</constants>
+</class>

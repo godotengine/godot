@@ -1,0 +1,66 @@
+name: 🔗 GHA
+on: [push, pull_request, merge_group]
+
+concurrency:
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-runner
+  cancel-in-progress: true
+
+jobs:
+  # First stage: Only static checks, fast and prevent expensive builds from running.
+
+  static-checks:
+    name: 📊 Static Checks
+    if: '!vars.DISABLE_GODOT_CI'
+    uses: ./.github/workflows/static_checks.yml
+
+  # Second stage: Review code changes
+  changes:
+    name: Analyze Changes
+    needs: static-checks
+    runs-on: ubuntu-latest
+    outputs:
+      sources: ${{ steps.filter.outputs.sources_any_changed }}
+      scons: ${{ steps.filter.outputs.scons_any_changed }}
+      cmake: ${{ steps.filter.outputs.cmake_any_changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: tj-actions/changed-files@v45
+        id: filter
+        with:
+          files_yaml: |
+            sources:
+              - '.github/workflows/*.yml'
+              - '**/*.py'
+              - '**/*.cpp'
+              - '**/*.hpp'
+              - '**/*.h'
+              - '**/*.inc'
+              - 'test/build_profile.json'
+              - 'gdextension/extension_api.json'
+            scons:
+              - '**/SConstruct'
+              - '**/SCsub'
+            cmake:
+              - '**/CMakeLists.txt'
+              - '**/*.cmake'
+      - name: echo sources changed
+        run: |
+          echo sources ${{ steps.filter.outputs.sources_any_modified }}
+          echo scons   ${{ steps.filter.outputs.scons_any_modified }}
+          echo cmake   ${{ steps.filter.outputs.cmake_any_modified }}
+
+  # Third stage: Run all the builds and some of the tests.
+
+  ci-scons:
+    name: 🛠️ SCons CI
+    needs: changes
+    if: ${{ needs.changes.outputs.scons == 'true' || needs.changes.outputs.sources == 'true' }}
+    uses: ./.github/workflows/ci-scons.yml
+
+  ci-cmake:
+    name: 🛠️ CMake CI
+    needs: changes
+    if: ${{ needs.changes.outputs.cmake == 'true' || needs.changes.outputs.sources == 'true' }}
+    uses: ./.github/workflows/ci-cmake.yml

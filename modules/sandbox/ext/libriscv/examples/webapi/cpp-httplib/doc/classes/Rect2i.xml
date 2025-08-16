@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Rect2i" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D axis-aligned bounding box using integer coordinates.
+	</brief_description>
+	<description>
+		The [Rect2i] built-in [Variant] type represents an axis-aligned rectangle in a 2D space, using integer coordinates. It is defined by its [member position] and [member size], which are [Vector2i]. Because it does not rotate, it is frequently used for fast overlap tests (see [method intersects]).
+		For floating-point coordinates, see [Rect2].
+		[b]Note:[/b] Negative values for [member size] are not supported. With negative size, most [Rect2i] methods do not work correctly. Use [method abs] to get an equivalent [Rect2i] with a non-negative size.
+		[b]Note:[/b] In a boolean context, a [Rect2i] evaluates to [code]false[/code] if both [member position] and [member size] are zero (equal to [constant Vector2i.ZERO]). Otherwise, it always evaluates to [code]true[/code].
+	</description>
+	<tutorials>
+		<link title="Math documentation index">$DOCS_URL/tutorials/math/index.html</link>
+		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
+	</tutorials>
+	<constructors>
+		<constructor name="Rect2i">
+			<return type="Rect2i" />
+			<description>
+				Constructs a [Rect2i] with its [member position] and [member size] set to [constant Vector2i.ZERO].
+			</description>
+		</constructor>
+		<constructor name="Rect2i">
+			<return type="Rect2i" />
+			<param index="0" name="from" type="Rect2i" />
+			<description>
+				Constructs a [Rect2i] as a copy of the given [Rect2i].
+			</description>
+		</constructor>
+		<constructor name="Rect2i">
+			<return type="Rect2i" />
+			<param index="0" name="from" type="Rect2" />
+			<description>
+				Constructs a [Rect2i] from a [Rect2]. The floating-point coordinates are truncated.
+			</description>
+		</constructor>
+		<constructor name="Rect2i">
+			<return type="Rect2i" />
+			<param index="0" name="position" type="Vector2i" />
+			<param index="1" name="size" type="Vector2i" />
+			<description>
+				Constructs a [Rect2i] by [param position] and [param size].
+			</description>
+		</constructor>
+		<constructor name="Rect2i">
+			<return type="Rect2i" />
+			<param index="0" name="x" type="int" />
+			<param index="1" name="y" type="int" />
+			<param index="2" name="width" type="int" />
+			<param index="3" name="height" type="int" />
+			<description>
+				Constructs a [Rect2i] by setting its [member position] to ([param x], [param y]), and its [member size] to ([param width], [param height]).
+			</description>
+		</constructor>
+	</constructors>
+	<methods>
+		<method name="abs" qualifiers="const">
+			<return type="Rect2i" />
+			<description>
+				Returns a [Rect2i] equivalent to this rectangle, with its width and height modified to be non-negative values, and with its [member position] being the top-left corner of the rectangle.
+				[codeblocks]
+				[gdscript]
+				var rect = Rect2i(25, 25, -100, -50)
+				var absolute = rect.abs() # absolute is Rect2i(-75, -25, 100, 50)
+				[/gdscript]
+				[csharp]
+				var rect = new Rect2I(25, 25, -100, -50);
+				var absolute = rect.Abs(); // absolute is Rect2I(-75, -25, 100, 50)
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] It's recommended to use this method when [member size] is negative, as most other methods in Godot assume that the [member position] is the top-left corner, and the [member end] is the bottom-right corner.
+			</description>
+		</method>
+		<method name="encloses" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="b" type="Rect2i" />
+			<description>
+				Returns [code]true[/code] if this [Rect2i] completely encloses another one.
+			</description>
+		</method>
+		<method name="expand" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="to" type="Vector2i" />
+			<description>
+				Returns a copy of this rectangle expanded to align the edges with the given [param to] point, if necessary.
+				[codeblocks]
+				[gdscript]
+				var rect = Rect2i(0, 0, 5, 2)
+
+				rect = rect.expand(Vector2i(10, 0)) # rect is Rect2i(0, 0, 10, 2)
+				rect = rect.expand(Vector2i(-5, 5)) # rect is Rect2i(-5, 0, 15, 5)
+				[/gdscript]
+				[csharp]
+				var rect = new Rect2I(0, 0, 5, 2);
+
+				rect = rect.Expand(new Vector2I(10, 0)); // rect is Rect2I(0, 0, 10, 2)
+				rect = rect.Expand(new Vector2I(-5, 5)); // rect is Rect2I(-5, 0, 15, 5)
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="get_area" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the rectangle's area. This is equivalent to [code]size.x * size.y[/code]. See also [method has_area].
+			</description>
+		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector2i" />
+			<description>
+				Returns the center point of the rectangle. This is the same as [code]position + (size / 2)[/code].
+				[b]Note:[/b] If the [member size] is odd, the result will be rounded towards [member position].
+			</description>
+		</method>
+		<method name="grow" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="amount" type="int" />
+			<description>
+				Returns a copy of this rectangle extended on all sides by the given [param amount]. A negative [param amount] shrinks the rectangle instead. See also [method grow_individual] and [method grow_side].
+				[codeblocks]
+				[gdscript]
+				var a = Rect2i(4, 4, 8, 8).grow(4) # a is Rect2i(0, 0, 16, 16)
+				var b = Rect2i(0, 0, 8, 4).grow(2) # b is Rect2i(-2, -2, 12, 8)
+				[/gdscript]
+				[csharp]
+				var a = new Rect2I(4, 4, 8, 8).Grow(4); // a is Rect2I(0, 0, 16, 16)
+				var b = new Rect2I(0, 0, 8, 4).Grow(2); // b is Rect2I(-2, -2, 12, 8)
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
+		<method name="grow_individual" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="left" type="int" />
+			<param index="1" name="top" type="int" />
+			<param index="2" name="right" type="int" />
+			<param index="3" name="bottom" type="int" />
+			<description>
+				Returns a copy of this rectangle with its [param left], [param top], [param right], and [param bottom] sides extended by the given amounts. Negative values shrink the sides, instead. See also [method grow] and [method grow_side].
+			</description>
+		</method>
+		<method name="grow_side" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="side" type="int" />
+			<param index="1" name="amount" type="int" />
+			<description>
+				Returns a copy of this rectangle with its [param side] extended by the given [param amount] (see [enum Side] constants). A negative [param amount] shrinks the rectangle, instead. See also [method grow] and [method grow_individual].
+			</description>
+		</method>
+		<method name="has_area" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this rectangle has positive width and height. See also [method get_area].
+			</description>
+		</method>
+		<method name="has_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="point" type="Vector2i" />
+			<description>
+				Returns [code]true[/code] if the rectangle contains the given [param point]. By convention, points on the right and bottom edges are [b]not[/b] included.
+				[b]Note:[/b] This method is not reliable for [Rect2i] with a [i]negative[/i] [member size]. Use [method abs] first to get a valid rectangle.
+			</description>
+		</method>
+		<method name="intersection" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="b" type="Rect2i" />
+			<description>
+				Returns the intersection between this rectangle and [param b]. If the rectangles do not intersect, returns an empty [Rect2i].
+				[codeblocks]
+				[gdscript]
+				var a = Rect2i(0, 0, 5, 10)
+				var b = Rect2i(2, 0, 8, 4)
+
+				var c = a.intersection(b) # c is Rect2i(2, 0, 3, 4)
+				[/gdscript]
+				[csharp]
+				var a = new Rect2I(0, 0, 5, 10);
+				var b = new Rect2I(2, 0, 8, 4);
+
+				var c = rect1.Intersection(rect2); // c is Rect2I(2, 0, 3, 4)
+				[/csharp]
+				[/codeblocks]
+				[b]Note:[/b] If you only need to know whether two rectangles are overlapping, use [method intersects], instead.
+			</description>
+		</method>
+		<method name="intersects" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="b" type="Rect2i" />
+			<description>
+				Returns [code]true[/code] if this rectangle overlaps with the [param b] rectangle. The edges of both rectangles are excluded.
+			</description>
+		</method>
+		<method name="merge" qualifiers="const">
+			<return type="Rect2i" />
+			<param index="0" name="b" type="Rect2i" />
+			<description>
+				Returns a [Rect2i] that encloses both this rectangle and [param b] around the edges. See also [method encloses].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="end" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+			The ending point. This is usually the bottom-right corner of the rectangle, and is equivalent to [code]position + size[/code]. Setting this point affects the [member size].
+		</member>
+		<member name="position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+			The origin point. This is usually the top-left corner of the rectangle.
+		</member>
+		<member name="size" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+			The rectangle's width and height, starting from [member position]. Setting this value also affects the [member end] point.
+			[b]Note:[/b] It's recommended setting the width and height to non-negative values, as most methods in Godot assume that the [member position] is the top-left corner, and the [member end] is the bottom-right corner. To get an equivalent rectangle with non-negative size, use [method abs].
+		</member>
+	</members>
+	<operators>
+		<operator name="operator !=">
+			<return type="bool" />
+			<param index="0" name="right" type="Rect2i" />
+			<description>
+				Returns [code]true[/code] if the [member position] or [member size] of both rectangles are not equal.
+			</description>
+		</operator>
+		<operator name="operator ==">
+			<return type="bool" />
+			<param index="0" name="right" type="Rect2i" />
+			<description>
+				Returns [code]true[/code] if both [member position] and [member size] of the rectangles are equal, respectively.
+			</description>
+		</operator>
+	</operators>
+</class>

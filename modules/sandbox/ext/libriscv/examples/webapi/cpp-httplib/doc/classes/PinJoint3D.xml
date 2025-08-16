@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PinJoint3D" inherits="Joint3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A physics joint that attaches two 3D physics bodies at a single point, allowing them to freely rotate.
+	</brief_description>
+	<description>
+		A physics joint that attaches two 3D physics bodies at a single point, allowing them to freely rotate. For example, a [RigidBody3D] can be attached to a [StaticBody3D] to create a pendulum or a seesaw.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_param" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="param" type="int" enum="PinJoint3D.Param" />
+			<description>
+				Returns the value of the specified parameter.
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void" />
+			<param index="0" name="param" type="int" enum="PinJoint3D.Param" />
+			<param index="1" name="value" type="float" />
+			<description>
+				Sets the value of the specified parameter.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="params/bias" type="float" setter="set_param" getter="get_param" default="0.3">
+			The force with which the pinned objects stay in positional relation to each other. The higher, the stronger.
+		</member>
+		<member name="params/damping" type="float" setter="set_param" getter="get_param" default="1.0">
+			The force with which the pinned objects stay in velocity relation to each other. The higher, the stronger.
+		</member>
+		<member name="params/impulse_clamp" type="float" setter="set_param" getter="get_param" default="0.0">
+			If above 0, this value is the maximum value for an impulse that this Joint3D produces.
+		</member>
+	</members>
+	<constants>
+		<constant name="PARAM_BIAS" value="0" enum="Param">
+			The force with which the pinned objects stay in positional relation to each other. The higher, the stronger.
+		</constant>
+		<constant name="PARAM_DAMPING" value="1" enum="Param">
+			The force with which the pinned objects stay in velocity relation to each other. The higher, the stronger.
+		</constant>
+		<constant name="PARAM_IMPULSE_CLAMP" value="2" enum="Param">
+			If above 0, this value is the maximum value for an impulse that this Joint3D produces.
+		</constant>
+	</constants>
+</class>

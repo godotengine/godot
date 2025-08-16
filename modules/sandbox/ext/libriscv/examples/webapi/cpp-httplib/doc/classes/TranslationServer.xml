@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TranslationServer" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		The server responsible for language translations.
+	</brief_description>
+	<description>
+		The translation server is the API backend that manages all language translations.
+		Translations are stored in [TranslationDomain]s, which can be accessed by name. The most commonly used translation domain is the main translation domain. It always exists and can be accessed using an empty [StringName]. The translation server provides wrapper methods for accessing the main translation domain directly, without having to fetch the translation domain first. Custom translation domains are mainly for advanced usages like editor plugins. Names starting with [code]godot.[/code] are reserved for engine internals.
+	</description>
+	<tutorials>
+		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
+	</tutorials>
+	<methods>
+		<method name="add_translation">
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Adds a translation to the main translation domain.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void" />
+			<description>
+				Removes all translations from the main translation domain.
+			</description>
+		</method>
+		<method name="compare_locales" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="locale_a" type="String" />
+			<param index="1" name="locale_b" type="String" />
+			<description>
+				Compares two locales and returns a similarity score between [code]0[/code] (no match) and [code]10[/code] (full match).
+			</description>
+		</method>
+		<method name="get_all_countries" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of known country codes.
+			</description>
+		</method>
+		<method name="get_all_languages" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns array of known language codes.
+			</description>
+		</method>
+		<method name="get_all_scripts" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of known script codes.
+			</description>
+		</method>
+		<method name="get_country_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="country" type="String" />
+			<description>
+				Returns a readable country name for the [param country] code.
+			</description>
+		</method>
+		<method name="get_language_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="language" type="String" />
+			<description>
+				Returns a readable language name for the [param language] code.
+			</description>
+		</method>
+		<method name="get_loaded_locales" qualifiers="const">
+			<return type="PackedStringArray" />
+			<description>
+				Returns an array of all loaded locales of the project.
+			</description>
+		</method>
+		<method name="get_locale" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the current locale of the project.
+				See also [method OS.get_locale] and [method OS.get_locale_language] to query the locale of the user system.
+			</description>
+		</method>
+		<method name="get_locale_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns a locale's language and its variant (e.g. [code]"en_US"[/code] would return [code]"English (United States)"[/code]).
+			</description>
+		</method>
+		<method name="get_or_add_domain">
+			<return type="TranslationDomain" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Returns the translation domain with the specified name. An empty translation domain will be created and added if it does not exist.
+			</description>
+		</method>
+		<method name="get_script_name" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="script" type="String" />
+			<description>
+				Returns a readable script name for the [param script] code.
+			</description>
+		</method>
+		<method name="get_tool_locale">
+			<return type="String" />
+			<description>
+				Returns the current locale of the editor.
+				[b]Note:[/b] When called from an exported project returns the same value as [method get_locale].
+			</description>
+		</method>
+		<method name="get_translation_object">
+			<return type="Translation" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Returns the [Translation] instance that best matches [param locale] in the main translation domain. Returns [code]null[/code] if there are no matches.
+			</description>
+		</method>
+		<method name="has_domain" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a translation domain with the specified name exists.
+			</description>
+		</method>
+		<method name="pseudolocalize" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<description>
+				Returns the pseudolocalized string based on the [param message] passed in.
+				[b]Note:[/b] This method always uses the main translation domain.
+			</description>
+		</method>
+		<method name="reload_pseudolocalization">
+			<return type="void" />
+			<description>
+				Reparses the pseudolocalization options and reloads the translation for the main translation domain.
+			</description>
+		</method>
+		<method name="remove_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Removes the translation domain with the specified name.
+				[b]Note:[/b] Trying to remove the main translation domain is an error.
+			</description>
+		</method>
+		<method name="remove_translation">
+			<return type="void" />
+			<param index="0" name="translation" type="Translation" />
+			<description>
+				Removes the given translation from the main translation domain.
+			</description>
+		</method>
+		<method name="set_locale">
+			<return type="void" />
+			<param index="0" name="locale" type="String" />
+			<description>
+				Sets the locale of the project. The [param locale] string will be standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				If translations have been loaded beforehand for the new locale, they will be applied.
+			</description>
+		</method>
+		<method name="standardize_locale" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="locale" type="String" />
+			<param index="1" name="add_defaults" type="bool" default="false" />
+			<description>
+				Returns a [param locale] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]). If [param add_defaults] is [code]true[/code], the locale may have a default script or country added.
+			</description>
+		</method>
+		<method name="translate" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns the current locale's translation for the given message and context.
+				[b]Note:[/b] This method always uses the main translation domain.
+			</description>
+		</method>
+		<method name="translate_plural" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="message" type="StringName" />
+			<param index="1" name="plural_message" type="StringName" />
+			<param index="2" name="n" type="int" />
+			<param index="3" name="context" type="StringName" default="&amp;&quot;&quot;" />
+			<description>
+				Returns the current locale's translation for the given message, plural message and context.
+				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] This method always uses the main translation domain.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="pseudolocalization_enabled" type="bool" setter="set_pseudolocalization_enabled" getter="is_pseudolocalization_enabled" default="false">
+			If [code]true[/code], enables the use of pseudolocalization on the main translation domain. See [member ProjectSettings.internationalization/pseudolocalization/use_pseudolocalization] for details.
+		</member>
+	</members>
+</class>

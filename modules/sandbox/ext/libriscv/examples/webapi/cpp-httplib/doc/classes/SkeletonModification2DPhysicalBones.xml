@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModification2DPhysicalBones" inherits="SkeletonModification2D" experimental="Physical bones may be changed in the future to perform the position update of [Bone2D] on their own, without needing this resource." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A modification that applies the transforms of [PhysicalBone2D] nodes to [Bone2D] nodes.
+	</brief_description>
+	<description>
+		This modification takes the transforms of [PhysicalBone2D] nodes and applies them to [Bone2D] nodes. This allows the [Bone2D] nodes to react to physics thanks to the linked [PhysicalBone2D] nodes.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="fetch_physical_bones">
+			<return type="void" />
+			<description>
+				Empties the list of [PhysicalBone2D] nodes and populates it with all [PhysicalBone2D] nodes that are children of the [Skeleton2D].
+			</description>
+		</method>
+		<method name="get_physical_bone_node" qualifiers="const">
+			<return type="NodePath" />
+			<param index="0" name="joint_idx" type="int" />
+			<description>
+				Returns the [PhysicalBone2D] node at [param joint_idx].
+			</description>
+		</method>
+		<method name="set_physical_bone_node">
+			<return type="void" />
+			<param index="0" name="joint_idx" type="int" />
+			<param index="1" name="physicalbone2d_node" type="NodePath" />
+			<description>
+				Sets the [PhysicalBone2D] node at [param joint_idx].
+				[b]Note:[/b] This is just the index used for this modification, not the bone index used in the [Skeleton2D].
+			</description>
+		</method>
+		<method name="start_simulation">
+			<return type="void" />
+			<param index="0" name="bones" type="StringName[]" default="[]" />
+			<description>
+				Tell the [PhysicalBone2D] nodes to start simulating and interacting with the physics world.
+				Optionally, an array of bone names can be passed to this function, and that will cause only [PhysicalBone2D] nodes with those names to start simulating.
+			</description>
+		</method>
+		<method name="stop_simulation">
+			<return type="void" />
+			<param index="0" name="bones" type="StringName[]" default="[]" />
+			<description>
+				Tell the [PhysicalBone2D] nodes to stop simulating and interacting with the physics world.
+				Optionally, an array of bone names can be passed to this function, and that will cause only [PhysicalBone2D] nodes with those names to stop simulating.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="physical_bone_chain_length" type="int" setter="set_physical_bone_chain_length" getter="get_physical_bone_chain_length" default="0">
+			The number of [PhysicalBone2D] nodes linked in this modification.
+		</member>
+	</members>
+</class>

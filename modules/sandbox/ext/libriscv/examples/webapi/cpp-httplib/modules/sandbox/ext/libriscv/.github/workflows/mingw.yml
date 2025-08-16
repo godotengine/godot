@@ -1,0 +1,43 @@
+name: MinGW 64-bit emulator build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        compiler: [x86_64-w64-mingw32-g++]
+        builtype: [Release, Debug]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt install -y g++-mingw-w64-x86-64
+
+    - name: CMake emulator
+      working-directory: ${{github.workspace}}/emulator
+      env:
+        CXX: ${{ matrix.compiler }}
+        BUILD_TYPE: ${{ matrix.buildtype }}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DLTO=OFF -DCMAKE_TOOLCHAIN_FILE=mingw_toolchain.cmake
+
+    - name: Build emulator
+      run: cmake --build ${{github.workspace}}/build --parallel 2
+
+    - name: Emulator with Binary Translation
+      working-directory: ${{github.workspace}}/emulator
+      env:
+        CXX: ${{ matrix.compiler }}
+        BUILD_TYPE: ${{ matrix.buildtype }}
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DRISCV_BINARY_TRANSLATION=ON -DCMAKE_TOOLCHAIN_FILE=mingw_toolchain.cmake
+
+    - name: Build with binary translation
+      run: cmake --build ${{github.workspace}}/build --parallel 2

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="InputEventGesture" inherits="InputEventWithModifiers" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Abstract base class for touch gestures.
+	</brief_description>
+	<description>
+		InputEventGestures are sent when a user performs a supported gesture on a touch screen. Gestures can't be emulated using mouse, because they typically require multi-touch.
+	</description>
+	<tutorials>
+		<link title="Using InputEvent">$DOCS_URL/tutorials/inputs/inputevent.html</link>
+	</tutorials>
+	<members>
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
+			The local gesture position relative to the [Viewport]. If used in [method Control._gui_input], the position is relative to the current [Control] that received this gesture.
+		</member>
+	</members>
+</class>

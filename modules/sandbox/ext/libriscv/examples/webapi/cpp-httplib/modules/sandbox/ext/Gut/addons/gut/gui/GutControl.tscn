@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3 uid="uid://4jb53yqktyfg"]
+
+[ext_resource type="Script" uid="uid://cqlvpwidawld6" path="res://addons/gut/gui/GutControl.gd" id="1_eprql"]
+
+[node name="GutControl" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 295.0
+offset_bottom = 419.0
+script = ExtResource("1_eprql")
+
+[node name="Bg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.36, 0.36, 0.36, 1)
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Tabs" type="TabContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Tests" type="Tree" parent="VBox/Tabs"]
+layout_mode = 2
+size_flags_vertical = 3
+hide_root = true
+
+[node name="SettingsScroll" type="ScrollContainer" parent="VBox/Tabs"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Settings" type="VBoxContainer" parent="VBox/Tabs/SettingsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Buttons" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+
+[node name="RunTests" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Run All"
+
+[node name="RunSelected" type="Button" parent="VBox/Buttons"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Run Selected"
+
+[connection signal="item_activated" from="VBox/Tabs/Tests" to="." method="_on_tests_item_activated"]
+[connection signal="pressed" from="VBox/Buttons/RunTests" to="." method="_on_run_tests_pressed"]
+[connection signal="pressed" from="VBox/Buttons/RunSelected" to="." method="_on_run_selected_pressed"]

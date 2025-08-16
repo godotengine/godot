@@ -1,0 +1,45 @@
+name: Experimental Unit Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}/tests/unit
+    strategy:
+      matrix:
+        compiler: [clang++-20]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-12-riscv64-linux-gnu g++-12-riscv64-linux-gnu
+        git submodule update --init ${{github.workspace}}/tests/Catch2
+        git submodule update --init ${{github.workspace}}/tests/unit/ext/lodepng
+
+    - name: Install newer Clang
+      run: |
+       wget https://apt.llvm.org/llvm.sh
+       chmod +x ./llvm.sh
+       sudo ./llvm.sh 20
+
+    - name: Configure
+      env:
+        CXX: ${{ matrix.compiler }}
+      run: cmake -B ${{github.workspace}}/build -DRISCV_TAILCALL_DISPATCH=ON -DRISCV_THREADED=OFF -DRISCV_BINARY_TRANSLATION=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build the unittests
+      run: cmake --build ${{github.workspace}}/build --parallel 4
+
+    - name: Run tests
+      working-directory: ${{github.workspace}}/build
+      run: ctest --verbose . -j2

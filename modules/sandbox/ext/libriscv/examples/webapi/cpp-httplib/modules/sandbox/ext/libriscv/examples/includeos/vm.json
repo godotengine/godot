@@ -1,0 +1,8 @@
+{
+	"net" : [
+		{"device" : "e1000e"}
+    ],
+	"smp" : 2,
+	"mem" : 256,
+	"cpu" : {"model": "host"}
+}

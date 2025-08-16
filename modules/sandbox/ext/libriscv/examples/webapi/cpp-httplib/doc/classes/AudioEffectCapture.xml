@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectCapture" inherits="AudioEffect" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Captures audio from an audio bus in real-time.
+	</brief_description>
+	<description>
+		AudioEffectCapture is an AudioEffect which copies all audio frames from the attached audio effect bus into its internal ring buffer.
+		Application code should consume these audio frames from this ring buffer using [method get_buffer] and process it as needed, for example to capture data from an [AudioStreamMicrophone], implement application-defined effects, or to transmit audio over the network. When capturing audio data from a microphone, the format of the samples will be stereo 32-bit floating-point PCM.
+		Unlike [AudioEffectRecord], this effect only returns the raw audio samples instead of encoding them into an [AudioStream].
+	</description>
+	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+	</tutorials>
+	<methods>
+		<method name="can_get_buffer" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="frames" type="int" />
+			<description>
+				Returns [code]true[/code] if at least [param frames] audio frames are available to read in the internal ring buffer.
+			</description>
+		</method>
+		<method name="clear_buffer">
+			<return type="void" />
+			<description>
+				Clears the internal ring buffer.
+				[b]Note:[/b] Calling this during a capture can cause the loss of samples which causes popping in the playback.
+			</description>
+		</method>
+		<method name="get_buffer">
+			<return type="PackedVector2Array" />
+			<param index="0" name="frames" type="int" />
+			<description>
+				Gets the next [param frames] audio samples from the internal ring buffer.
+				Returns a [PackedVector2Array] containing exactly [param frames] audio samples if available, or an empty [PackedVector2Array] if insufficient data was available.
+				The samples are signed floating-point PCM between [code]-1[/code] and [code]1[/code]. You will have to scale them if you want to use them as 8 or 16-bit integer samples. ([code]v = 0x7fff * samples[0].x[/code])
+			</description>
+		</method>
+		<method name="get_buffer_length_frames" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total size of the internal ring buffer in frames.
+			</description>
+		</method>
+		<method name="get_discarded_frames" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of audio frames discarded from the audio bus due to full buffer.
+			</description>
+		</method>
+		<method name="get_frames_available" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of frames available to read using [method get_buffer].
+			</description>
+		</method>
+		<method name="get_pushed_frames" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of audio frames inserted from the audio bus.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="buffer_length" type="float" setter="set_buffer_length" getter="get_buffer_length" default="0.1">
+			Length of the internal ring buffer, in seconds. Setting the buffer length will have no effect if already initialized.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,71 @@
+name: Bug report
+description: Report a bug in the godot-cpp GDExtension/GDNative integration
+body:
+
+- type: markdown
+  attributes:
+    value: |
+      - When reporting bugs, you'll make our life simpler (and the fix will come sooner) if you follow the guidelines in this template.
+      - Write a descriptive issue title above.
+      - The golden rule is to **always open *one* issue for *one* bug**. If you notice several bugs and want to report them, make sure to create one new issue for each of them.
+      - Search [open](https://github.com/godotengine/godot-cpp/issues) and [closed](https://github.com/godotengine/godot-cpp/issues?q=is%3Aissue+is%3Aclosed) issues to ensure it has not already been reported. If you don't find a relevant match or if you're unsure, don't hesitate to **open a new issue**. The bugsquad will handle it from there if it's a duplicate.
+      - Verify that you are using a [supported Godot version](https://docs.godotengine.org/en/latest/about/release_policy.html).
+
+- type: input
+  attributes:
+    label: Godot version
+    description: >
+      Specify the Git commit hash if using a development or non-official build.
+      If you use a custom build, please test if your issue is reproducible in official builds too.
+    placeholder: 3.3.stable, 4.0.dev (3041becc6)
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: godot-cpp version
+    description: >
+      Specify the Git commit hash if using a development build.
+    placeholder: 3.3.stable, 4.0.dev (3041becc6)
+  validations:
+    required: true
+
+- type: input
+  attributes:
+    label: System information
+    description: |
+      - Specify the OS version, and when relevant hardware information.
+      - For issues that are likely OS-specific and/or graphics-related, please specify the CPU model and architecture.
+      - **Bug reports not including the required information may be closed at the maintainers' discretion.** If in doubt, always include all the requested information; it's better to include too much information than not enough information.
+    placeholder: Windows 10, Intel Core i5-7200U
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Issue description
+    description: |
+      Describe your issue briefly. What doesn't work, and how do you expect it to work instead?
+      You can include images or videos with drag and drop, and format code blocks or logs with <code>```</code> tags.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Steps to reproduce
+    description: |
+      List of steps or sample code that reproduces the issue. Having reproducible issues is a prerequisite for contributors to be able to solve them.
+      If you include a minimal reproduction project below, you can detail how to use it here.
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Minimal reproduction project
+    description: |
+      - A small Godot project which reproduces the issue, with no unnecessary files included. Be sure to not include the `.godot` folder in the archive (but keep `project.godot`).
+      - Required, unless the reproduction steps are trivial and don't require any project files to be followed. In this case, write "N/A" in the field.
+      - Drag and drop a ZIP archive to upload it. **Do not select another field until the project is done uploading.**
+      - **If you've been asked by a maintainer to upload a minimal reproduction project, you *must* do so within 7 days.** Otherwise, your bug report will be closed as it'll be considered too difficult to diagnose.
+  validations:
+    required: true

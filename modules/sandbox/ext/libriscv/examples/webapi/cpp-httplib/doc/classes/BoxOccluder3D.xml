@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="BoxOccluder3D" inherits="Occluder3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Cuboid shape for use with occlusion culling in [OccluderInstance3D].
+	</brief_description>
+	<description>
+		[BoxOccluder3D] stores a cuboid shape that can be used by the engine's occlusion culling system.
+		See [OccluderInstance3D]'s documentation for instructions on setting up occlusion culling.
+	</description>
+	<tutorials>
+		<link title="Occlusion culling">$DOCS_URL/tutorials/3d/occlusion_culling.html</link>
+	</tutorials>
+	<members>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
+			The box's size in 3D units.
+		</member>
+	</members>
+</class>

@@ -1,0 +1,30 @@
+name: 📊 Static Checks
+on:
+  workflow_call:
+
+concurrency:
+  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-static
+  cancel-in-progress: true
+
+jobs:
+  static-checks:
+    name: Format (clang-format, ruff format, file format)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+
+      - name: Style checks via pre-commit
+        uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --verbose --hook-stage manual --files ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: Check generated files consistency
+        run:
+          python misc/scripts/check_get_file_list.py

@@ -1,0 +1,2 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR at runtime/errors/callable_call_after_free_object.gd:6 on test(): Attempt to call function 'null::is_inside_tree (Callable)' on a null instance.

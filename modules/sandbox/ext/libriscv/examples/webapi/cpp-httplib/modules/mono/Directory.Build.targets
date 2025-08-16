@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <_HasNuGetPackage Condition=" '$(_HasNuGetPackage)' == '' And '$(PackageId)' != '' And '$(GeneratePackageOnBuild.ToLower())' == 'true' ">true</_HasNuGetPackage>
+    <_HasNuGetPackage Condition=" '$(_HasNuGetPackage)' == '' ">false</_HasNuGetPackage>
+    <_HasSymbolsNuGetPackage Condition=" '$(_HasSymbolsNuGetPackage)' == '' And '$(PackageId)' != '' And '$(IncludeSymbols.ToLower())' == 'true' And '$(SymbolPackageFormat)' == 'snupkg' ">true</_HasSymbolsNuGetPackage>
+    <_HasSymbolsNuGetPackage Condition=" '$(_HasSymbolsNuGetPackage)' == '' ">false</_HasSymbolsNuGetPackage>
+  </PropertyGroup>
+  <Target Name="CopyNupkgToSConsOutputDir" AfterTargets="Pack"
+    Condition=" '$(_HasNuGetPackage)' == 'true' ">
+    <PropertyGroup>
+      <GodotSourceRootPath>$(MSBuildThisFileDirectory)\..\..\</GodotSourceRootPath>
+      <GodotOutputDataDir>$(GodotSourceRootPath)\bin\GodotSharp\</GodotOutputDataDir>
+    </PropertyGroup>
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
+    <Copy Condition=" '$(_HasSymbolsNuGetPackage)' == 'true' " SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).snupkg" DestinationFolder="$(GodotOutputDataDir)Tools\nupkgs\" />
+  </Target>
+  <Target Name="PushNuGetPackagesToLocalSource" BeforeTargets="Pack"
+    Condition=" '$(_HasNuGetPackage)' == 'true' And '$(PushNuGetToLocalSource)' != '' ">
+    <Copy SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).nupkg" DestinationFolder="$(PushNuGetToLocalSource)\" />
+    <Copy Condition=" '$(_HasSymbolsNuGetPackage)' == 'true' " SourceFiles="$(PackageOutputPath)$(PackageId).$(PackageVersion).snupkg" DestinationFolder="$(PushNuGetToLocalSource)\" />
+  </Target>
+  <Target Name="ClearNuGetLocalPackageCache" BeforeTargets="Pack"
+    Condition=" '$(_HasNuGetPackage)' == 'true' And '$(ClearNuGetLocalCache.ToLower())' == 'true' ">
+    <RemoveDir Directories="$(NugetPackageRoot)/$(PackageId.ToLower())/$(PackageVersion)" />
+  </Target>
+</Project>

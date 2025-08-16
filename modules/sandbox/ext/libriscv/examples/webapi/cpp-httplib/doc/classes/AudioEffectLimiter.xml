@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectLimiter" inherits="AudioEffect" deprecated="Use [AudioEffectHardLimiter] instead." xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Adds a soft-clip limiter audio effect to an Audio bus.
+	</brief_description>
+	<description>
+		A limiter is similar to a compressor, but it's less flexible and designed to disallow sound going over a given dB threshold. Adding one in the Master bus is always recommended to reduce the effects of clipping.
+		Soft clipping starts to reduce the peaks a little below the threshold level and progressively increases its effect as the input level increases such that the threshold is never exceeded.
+	</description>
+	<tutorials>
+		<link title="Audio buses">$DOCS_URL/tutorials/audio/audio_buses.html</link>
+	</tutorials>
+	<members>
+		<member name="ceiling_db" type="float" setter="set_ceiling_db" getter="get_ceiling_db" default="-0.1">
+			The waveform's maximum allowed value, in decibels. Value can range from -20 to -0.1.
+		</member>
+		<member name="soft_clip_db" type="float" setter="set_soft_clip_db" getter="get_soft_clip_db" default="2.0">
+			Applies a gain to the limited waves, in decibels. Value can range from 0 to 6.
+		</member>
+		<member name="soft_clip_ratio" type="float" setter="set_soft_clip_ratio" getter="get_soft_clip_ratio" default="10.0">
+		</member>
+		<member name="threshold_db" type="float" setter="set_threshold_db" getter="get_threshold_db" default="0.0">
+			Threshold from which the limiter begins to be active, in decibels. Value can range from -30 to 0.
+		</member>
+	</members>
+</class>

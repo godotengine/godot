@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeStep" inherits="VisualShaderNode" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Calculates a Step function within the visual shader graph.
+	</brief_description>
+	<description>
+		Translates to [code]step(edge, x)[/code] in the shader language.
+		Returns [code]0.0[/code] if [code]x[/code] is smaller than [code]edge[/code] and [code]1.0[/code] otherwise.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeStep.OpType" default="0">
+			A type of operands and returned value.
+		</member>
+	</members>
+	<constants>
+		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
+			A floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D" value="1" enum="OpType">
+			A 2D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D_SCALAR" value="2" enum="OpType">
+			The [code]x[/code] port uses a 2D vector type, while the [code]edge[/code] port uses a floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D" value="3" enum="OpType">
+			A 3D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_3D_SCALAR" value="4" enum="OpType">
+			The [code]x[/code] port uses a 3D vector type, while the [code]edge[/code] port uses a floating-point scalar type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D" value="5" enum="OpType">
+			A 4D vector type.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_4D_SCALAR" value="6" enum="OpType">
+			The [code]a[/code] and [code]b[/code] ports use a 4D vector type. The [code]weight[/code] port uses a scalar type.
+		</constant>
+		<constant name="OP_TYPE_MAX" value="7" enum="OpType">
+			Represents the size of the [enum OpType] enum.
+		</constant>
+	</constants>
+</class>

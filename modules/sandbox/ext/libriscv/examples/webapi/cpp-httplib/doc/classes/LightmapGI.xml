@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="LightmapGI" inherits="VisualInstance3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Computes and stores baked lightmaps for fast global illumination.
+	</brief_description>
+	<description>
+		The [LightmapGI] node is used to compute and store baked lightmaps. Lightmaps are used to provide high-quality indirect lighting with very little light leaking. [LightmapGI] can also provide rough reflections using spherical harmonics if [member directional] is enabled. Dynamic objects can receive indirect lighting thanks to [i]light probes[/i], which can be automatically placed by setting [member generate_probes_subdiv] to a value other than [constant GENERATE_PROBES_DISABLED]. Additional lightmap probes can also be added by creating [LightmapProbe] nodes. The downside is that lightmaps are fully static and cannot be baked in an exported project. Baking a [LightmapGI] node is also slower compared to [VoxelGI].
+		[b]Procedural generation:[/b] Lightmap baking functionality is only available in the editor. This means [LightmapGI] is not suited to procedurally generated or user-built levels. For procedurally generated or user-built levels, use [VoxelGI] or SDFGI instead (see [member Environment.sdfgi_enabled]).
+		[b]Performance:[/b] [LightmapGI] provides the best possible run-time performance for global illumination. It is suitable for low-end hardware including integrated graphics and mobile devices.
+		[b]Note:[/b] Due to how lightmaps work, most properties only have a visible effect once lightmaps are baked again.
+		[b]Note:[/b] Lightmap baking on [CSGShape3D]s and [PrimitiveMesh]es is not supported, as these cannot store UV2 data required for baking.
+		[b]Note:[/b] If no custom lightmappers are installed, [LightmapGI] can only be baked from devices that support the Forward+ or Mobile renderers.
+		[b]Note:[/b] The [LightmapGI] node only bakes light data for child nodes of its parent. Nodes further up the hierarchy of the scene will not be baked.
+	</description>
+	<tutorials>
+		<link title="Using Lightmap global illumination">$DOCS_URL/tutorials/3d/global_illumination/using_lightmap_gi.html</link>
+	</tutorials>
+	<members>
+		<member name="bias" type="float" setter="set_bias" getter="get_bias" default="0.0005">
+			The bias to use when computing shadows. Increasing [member bias] can fix shadow acne on the resulting baked lightmap, but can introduce peter-panning (shadows not connecting to their casters). Real-time [Light3D] shadows are not affected by this [member bias] property.
+		</member>
+		<member name="bounce_indirect_energy" type="float" setter="set_bounce_indirect_energy" getter="get_bounce_indirect_energy" default="1.0">
+			The energy multiplier for each bounce. Higher values will make indirect lighting brighter. A value of [code]1.0[/code] represents physically accurate behavior, but higher values can be used to make indirect lighting propagate more visibly when using a low number of bounces. This can be used to speed up bake times by lowering the number of [member bounces] then increasing [member bounce_indirect_energy].
+			[b]Note:[/b] [member bounce_indirect_energy] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
+		</member>
+		<member name="bounces" type="int" setter="set_bounces" getter="get_bounces" default="3">
+			Number of light bounces that are taken into account during baking. Higher values result in brighter, more realistic lighting, at the cost of longer bake times. If set to [code]0[/code], only environment lighting, direct light and emissive lighting is baked.
+		</member>
+		<member name="camera_attributes" type="CameraAttributes" setter="set_camera_attributes" getter="get_camera_attributes">
+			The [CameraAttributes] resource that specifies exposure levels to bake at. Auto-exposure and non exposure properties will be ignored. Exposure settings should be used to reduce the dynamic range present when baking. If exposure is too high, the [LightmapGI] will have banding artifacts or may have over-exposure artifacts.
+		</member>
+		<member name="denoiser_range" type="int" setter="set_denoiser_range" getter="get_denoiser_range" default="10">
+			The distance in pixels from which the denoiser samples. Lower values preserve more details, but may give blotchy results if the lightmap quality is not high enough. Only effective if [member use_denoiser] is [code]true[/code] and [member ProjectSettings.rendering/lightmapping/denoising/denoiser] is set to JNLM.
+		</member>
+		<member name="denoiser_strength" type="float" setter="set_denoiser_strength" getter="get_denoiser_strength" default="0.1">
+			The strength of denoising step applied to the generated lightmaps. Only effective if [member use_denoiser] is [code]true[/code] and [member ProjectSettings.rendering/lightmapping/denoising/denoiser] is set to JNLM.
+		</member>
+		<member name="directional" type="bool" setter="set_directional" getter="is_directional" default="false">
+			If [code]true[/code], bakes lightmaps to contain directional information as spherical harmonics. This results in more realistic lighting appearance, especially with normal mapped materials and for lights that have their direct light baked ([member Light3D.light_bake_mode] set to [constant Light3D.BAKE_STATIC] and with [member Light3D.editor_only] set to [code]false[/code]). The directional information is also used to provide rough reflections for static and dynamic objects. This has a small run-time performance cost as the shader has to perform more work to interpret the direction information from the lightmap. Directional lightmaps also take longer to bake and result in larger file sizes.
+			[b]Note:[/b] The property's name has no relationship with [DirectionalLight3D]. [member directional] works with all light types.
+		</member>
+		<member name="environment_custom_color" type="Color" setter="set_environment_custom_color" getter="get_environment_custom_color" default="Color(1, 1, 1, 1)">
+			The color to use for environment lighting. Only effective if [member environment_mode] is [constant ENVIRONMENT_MODE_CUSTOM_COLOR].
+		</member>
+		<member name="environment_custom_energy" type="float" setter="set_environment_custom_energy" getter="get_environment_custom_energy" default="1.0">
+			The color multiplier to use for environment lighting. Only effective if [member environment_mode] is [constant ENVIRONMENT_MODE_CUSTOM_COLOR].
+		</member>
+		<member name="environment_custom_sky" type="Sky" setter="set_environment_custom_sky" getter="get_environment_custom_sky">
+			The sky to use as a source of environment lighting. Only effective if [member environment_mode] is [constant ENVIRONMENT_MODE_CUSTOM_SKY].
+		</member>
+		<member name="environment_mode" type="int" setter="set_environment_mode" getter="get_environment_mode" enum="LightmapGI.EnvironmentMode" default="1">
+			The environment mode to use when baking lightmaps.
+		</member>
+		<member name="generate_probes_subdiv" type="int" setter="set_generate_probes" getter="get_generate_probes" enum="LightmapGI.GenerateProbes" default="2">
+			The level of subdivision to use when automatically generating [LightmapProbe]s for dynamic object lighting. Higher values result in more accurate indirect lighting on dynamic objects, at the cost of longer bake times and larger file sizes.
+			[b]Note:[/b] Automatically generated [LightmapProbe]s are not visible as nodes in the Scene tree dock, and cannot be modified this way after they are generated.
+			[b]Note:[/b] Regardless of [member generate_probes_subdiv], direct lighting on dynamic objects is always applied using [Light3D] nodes in real-time.
+		</member>
+		<member name="interior" type="bool" setter="set_interior" getter="is_interior" default="false">
+			If [code]true[/code], ignore environment lighting when baking lightmaps.
+		</member>
+		<member name="light_data" type="LightmapGIData" setter="set_light_data" getter="get_light_data">
+			The [LightmapGIData] associated to this [LightmapGI] node. This resource is automatically created after baking, and is not meant to be created manually.
+		</member>
+		<member name="max_texture_size" type="int" setter="set_max_texture_size" getter="get_max_texture_size" default="16384">
+			The maximum texture size for the generated texture atlas. Higher values will result in fewer slices being generated, but may not work on all hardware as a result of hardware limitations on texture sizes. Leave [member max_texture_size] at its default value of [code]16384[/code] if unsure.
+		</member>
+		<member name="quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="LightmapGI.BakeQuality" default="1">
+			The quality preset to use when baking lightmaps. This affects bake times, but output file sizes remain mostly identical across quality levels.
+			To further speed up bake times, decrease [member bounces], disable [member use_denoiser] and/or decrease [member texel_scale].
+			To further increase quality, enable [member supersampling] and/or increase [member texel_scale].
+		</member>
+		<member name="shadowmask_mode" type="int" setter="set_shadowmask_mode" getter="get_shadowmask_mode" enum="LightmapGIData.ShadowmaskMode" default="0" experimental="">
+			The shadowmasking policy to use for directional shadows on static objects that are baked with this [LightmapGI] instance.
+			Shadowmasking allows [DirectionalLight3D] nodes to cast shadows even outside the range defined by their [member DirectionalLight3D.directional_shadow_max_distance] property. This is done by baking a texture that contains a shadowmap for the directional light, then using this texture according to the current shadowmask mode.
+			[b]Note:[/b] The shadowmask texture is only created if [member shadowmask_mode] is not [constant LightmapGIData.SHADOWMASK_MODE_NONE]. To see a difference, you need to bake lightmaps again after switching from [constant LightmapGIData.SHADOWMASK_MODE_NONE] to any other mode.
+		</member>
+		<member name="supersampling" type="bool" setter="set_supersampling_enabled" getter="is_supersampling_enabled" default="false">
+			If [code]true[/code], lightmaps are baked with the texel scale multiplied with [member supersampling_factor] and downsampled before saving the lightmap (so the effective texel density is identical to having supersampling disabled).
+			Supersampling provides increased lightmap quality with less noise, smoother shadows and better shadowing of small-scale features in objects. However, it may result in significantly increased bake times and memory usage while baking lightmaps. Padding is automatically adjusted to avoid increasing light leaking.
+		</member>
+		<member name="supersampling_factor" type="float" setter="set_supersampling_factor" getter="get_supersampling_factor" default="2.0">
+			The factor by which the texel density is multiplied for supersampling. For best results, use an integer value. While fractional values are allowed, they can result in increased light leaking and a blurry lightmap.
+			Higher values may result in better quality, but also increase bake times and memory usage while baking.
+			See [member supersampling] for more information.
+		</member>
+		<member name="texel_scale" type="float" setter="set_texel_scale" getter="get_texel_scale" default="1.0">
+			Scales the lightmap texel density of all meshes for the current bake. This is a multiplier that builds upon the existing lightmap texel size defined in each imported 3D scene, along with the per-mesh density multiplier (which is designed to be used when the same mesh is used at different scales). Lower values will result in faster bake times.
+			For example, doubling [member texel_scale] doubles the lightmap texture resolution for all objects [i]on each axis[/i], so it will [i]quadruple[/i] the texel count.
+		</member>
+		<member name="use_denoiser" type="bool" setter="set_use_denoiser" getter="is_using_denoiser" default="true">
+			If [code]true[/code], uses a GPU-based denoising algorithm on the generated lightmap. This eliminates most noise within the generated lightmap at the cost of longer bake times. File sizes are generally not impacted significantly by the use of a denoiser, although lossless compression may do a better job at compressing a denoised image.
+		</member>
+		<member name="use_texture_for_bounces" type="bool" setter="set_use_texture_for_bounces" getter="is_using_texture_for_bounces" default="true">
+			If [code]true[/code], a texture with the lighting information will be generated to speed up the generation of indirect lighting at the cost of some accuracy. The geometry might exhibit extra light leak artifacts when using low resolution lightmaps or UVs that stretch the lightmap significantly across surfaces. Leave [member use_texture_for_bounces] at its default value of [code]true[/code] if unsure.
+			[b]Note:[/b] [member use_texture_for_bounces] only has an effect if [member bounces] is set to a value greater than or equal to [code]1[/code].
+		</member>
+	</members>
+	<constants>
+		<constant name="BAKE_QUALITY_LOW" value="0" enum="BakeQuality">
+			Low bake quality (fastest bake times). The quality of this preset can be adjusted by changing [member ProjectSettings.rendering/lightmapping/bake_quality/low_quality_ray_count] and [member ProjectSettings.rendering/lightmapping/bake_quality/low_quality_probe_ray_count].
+		</constant>
+		<constant name="BAKE_QUALITY_MEDIUM" value="1" enum="BakeQuality">
+			Medium bake quality (fast bake times). The quality of this preset can be adjusted by changing [member ProjectSettings.rendering/lightmapping/bake_quality/medium_quality_ray_count] and [member ProjectSettings.rendering/lightmapping/bake_quality/medium_quality_probe_ray_count].
+		</constant>
+		<constant name="BAKE_QUALITY_HIGH" value="2" enum="BakeQuality">
+			High bake quality (slow bake times). The quality of this preset can be adjusted by changing [member ProjectSettings.rendering/lightmapping/bake_quality/high_quality_ray_count] and [member ProjectSettings.rendering/lightmapping/bake_quality/high_quality_probe_ray_count].
+		</constant>
+		<constant name="BAKE_QUALITY_ULTRA" value="3" enum="BakeQuality">
+			Highest bake quality (slowest bake times). The quality of this preset can be adjusted by changing [member ProjectSettings.rendering/lightmapping/bake_quality/ultra_quality_ray_count] and [member ProjectSettings.rendering/lightmapping/bake_quality/ultra_quality_probe_ray_count].
+		</constant>
+		<constant name="GENERATE_PROBES_DISABLED" value="0" enum="GenerateProbes">
+			Don't generate lightmap probes for lighting dynamic objects.
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_4" value="1" enum="GenerateProbes">
+			Lowest level of subdivision (fastest bake times, smallest file sizes).
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_8" value="2" enum="GenerateProbes">
+			Low level of subdivision (fast bake times, small file sizes).
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_16" value="3" enum="GenerateProbes">
+			High level of subdivision (slow bake times, large file sizes).
+		</constant>
+		<constant name="GENERATE_PROBES_SUBDIV_32" value="4" enum="GenerateProbes">
+			Highest level of subdivision (slowest bake times, largest file sizes).
+		</constant>
+		<constant name="BAKE_ERROR_OK" value="0" enum="BakeError">
+			Lightmap baking was successful.
+		</constant>
+		<constant name="BAKE_ERROR_NO_SCENE_ROOT" value="1" enum="BakeError">
+			Lightmap baking failed because the root node for the edited scene could not be accessed.
+		</constant>
+		<constant name="BAKE_ERROR_FOREIGN_DATA" value="2" enum="BakeError">
+			Lightmap baking failed as the lightmap data resource is embedded in a foreign resource.
+		</constant>
+		<constant name="BAKE_ERROR_NO_LIGHTMAPPER" value="3" enum="BakeError">
+			Lightmap baking failed as there is no lightmapper available in this Godot build.
+		</constant>
+		<constant name="BAKE_ERROR_NO_SAVE_PATH" value="4" enum="BakeError">
+			Lightmap baking failed as the [LightmapGIData] save path isn't configured in the resource.
+		</constant>
+		<constant name="BAKE_ERROR_NO_MESHES" value="5" enum="BakeError">
+			Lightmap baking failed as there are no meshes whose [member GeometryInstance3D.gi_mode] is [constant GeometryInstance3D.GI_MODE_STATIC] and with valid UV2 mapping in the current scene. You may need to select 3D scenes in the Import dock and change their global illumination mode accordingly.
+		</constant>
+		<constant name="BAKE_ERROR_MESHES_INVALID" value="6" enum="BakeError">
+			Lightmap baking failed as the lightmapper failed to analyze some of the meshes marked as static for baking.
+		</constant>
+		<constant name="BAKE_ERROR_CANT_CREATE_IMAGE" value="7" enum="BakeError">
+			Lightmap baking failed as the resulting image couldn't be saved or imported by Godot after it was saved.
+		</constant>
+		<constant name="BAKE_ERROR_USER_ABORTED" value="8" enum="BakeError">
+			The user aborted the lightmap baking operation (typically by clicking the [b]Cancel[/b] button in the progress dialog).
+		</constant>
+		<constant name="BAKE_ERROR_TEXTURE_SIZE_TOO_SMALL" value="9" enum="BakeError">
+			Lightmap baking failed as the maximum texture size is too small to fit some of the meshes marked for baking.
+		</constant>
+		<constant name="BAKE_ERROR_LIGHTMAP_TOO_SMALL" value="10" enum="BakeError">
+			Lightmap baking failed as the lightmap is too small.
+		</constant>
+		<constant name="BAKE_ERROR_ATLAS_TOO_SMALL" value="11" enum="BakeError">
+			Lightmap baking failed as the lightmap was unable to fit into an atlas.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_DISABLED" value="0" enum="EnvironmentMode">
+			Ignore environment lighting when baking lightmaps.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_SCENE" value="1" enum="EnvironmentMode">
+			Use the scene's environment lighting when baking lightmaps.
+			[b]Note:[/b] If baking lightmaps in a scene with no [WorldEnvironment] node, this will act like [constant ENVIRONMENT_MODE_DISABLED]. The editor's preview sky and sun is [i]not[/i] taken into account by [LightmapGI] when baking lightmaps.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_SKY" value="2" enum="EnvironmentMode">
+			Use [member environment_custom_sky] as a source of environment lighting when baking lightmaps.
+		</constant>
+		<constant name="ENVIRONMENT_MODE_CUSTOM_COLOR" value="3" enum="EnvironmentMode">
+			Use [member environment_custom_color] multiplied by [member environment_custom_energy] as a constant source of environment lighting when baking lightmaps.
+		</constant>
+	</constants>
+</class>

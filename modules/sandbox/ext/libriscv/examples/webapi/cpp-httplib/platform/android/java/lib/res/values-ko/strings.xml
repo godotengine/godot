@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_paused_cellular">모바일 네트워크를 사용하여 다운로드 하시겠습니까? 남은 데이터 사용량에 따라, 요금이 부과될 수 있습니다.</string>
+    <string name="text_paused_cellular_2">모바일 네트워크를 사용하여 다운로드 하지 않을 경우, 와이파이 연결이 가능할 때 자동적으로 다운로드가 이루어집니다.</string>
+    <string name="text_button_resume_cellular">다운로드 계속하기</string>
+    <string name="text_button_wifi_settings">와이파이 설정</string>
+    <string name="text_verifying_download">다운로드 확인중</string>
+    <string name="text_validation_complete">추가 파일 확인이 완료되었습니다. 확인을 눌러 진행하세요.</string>
+    <string name="text_validation_failed">추가 파일 확인에 실패하였습니다.</string>
+    <string name="text_button_pause">다운로드 일시정지</string>
+    <string name="text_button_resume">다운로드 계속하기</string>
+    <string name="text_button_cancel">취소</string>
+    <string name="text_button_cancel_verify">파일 확인 취소</string>
+
+    <!-- APK Expansion Strings -->
+
+    <!-- When a download completes, a notification is displayed, and this
+        string is used to indicate that the download successfully completed.
+        Note that such a download could have been initiated by a variety of
+        applications, including (but not limited to) the browser, an email
+        application, a content marketplace. -->
+    <string name="notification_download_complete">다운로드 완료</string>
+
+    <!-- When a download completes, a notification is displayed, and this
+        string is used to indicate that the download failed.
+        Note that such a download could have been initiated by a variety of
+        applications, including (but not limited to) the browser, an email
+        application, a content marketplace. -->
+    <string name="notification_download_failed">다운로드 실패</string>
+
+
+    <string name="state_unknown">시작중…</string>
+    <string name="state_idle">다운로드 시작을 기다리는 중</string>
+    <string name="state_fetching_url">다운로드할 항목을 찾는 중</string>
+    <string name="state_connecting">다운로드 서버에 연결 중</string>
+    <string name="state_downloading">다운로드 중</string>
+    <string name="state_completed">다운로드 종료</string>
+    <string name="state_paused_network_unavailable">와이파이를 찾을 수 없어 다운로드가 일시정지 되었습니다.</string>
+    <string name="state_paused_network_setup_failure">다운로드가 일시정지 되었습니다. 네트워크 연결 상태를 확인하세요.</string>
+    <string name="state_paused_by_request">다운로드 일시정지</string>
+    <string name="state_paused_wifi_unavailable">와이파이가 사용하능하지 않아 다운로드가 일시정지 되었습니다.</string>
+    <string name="state_paused_wifi_disabled">와이파이가 비활성화 되어 다운로드가 일시정지 되었습니다.</string>
+    <string name="state_paused_roaming">로밍 상태이어서 다운로드가 일시정지 되었습니다.</string>
+    <string name="state_paused_sdcard_unavailable">외부 저장소를 사용할 수 없어 다운로드가 일시정지 되었습니다.</string>
+    <string name="state_failed_unlicensed">이 앱을 구매하지 않아 다운로드가 정지 되었습니다.</string>
+    <string name="state_failed_fetching_url">다운로드 항목을 찾을 수 없어 다운로드가 정지 되었습니다.</string>
+    <string name="state_failed_sdcard_full">외부 저장소가 가득차서 다운로드가 실패하였습니다.</string>
+    <string name="state_failed_cancelled">다운로드 취소</string>
+    <string name="state_failed">다운로드 실패</string>
+
+    <string name="kilobytes_per_second">%1$s KB/s</string>
+    <string name="time_remaining">남은 시간: %1$s</string>
+    <string name="time_remaining_notification">%1$s 남음</string>
+</resources>

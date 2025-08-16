@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeParticleMeshEmitter" inherits="VisualShaderNodeParticleEmitter" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A visual shader node that makes particles emitted in a shape defined by a [Mesh].
+	</brief_description>
+	<description>
+		[VisualShaderNodeParticleEmitter] that makes the particles emitted in a shape of the assigned [member mesh]. It will emit from the mesh's surfaces, either all or only the specified one.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The [Mesh] that defines emission shape.
+		</member>
+		<member name="surface_index" type="int" setter="set_surface_index" getter="get_surface_index" default="0">
+			Index of the surface that emits particles. [member use_all_surfaces] must be [code]false[/code] for this to take effect.
+		</member>
+		<member name="use_all_surfaces" type="bool" setter="set_use_all_surfaces" getter="is_use_all_surfaces" default="true">
+			If [code]true[/code], the particles will emit from all surfaces of the mesh.
+		</member>
+	</members>
+</class>

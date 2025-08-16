@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CSGPrimitive3D" inherits="CSGShape3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base class for CSG primitives.
+	</brief_description>
+	<description>
+		Parent class for various CSG primitives. It contains code and functionality that is common between them. It cannot be used directly. Instead use one of the various classes that inherit from it.
+		[b]Note:[/b] CSG nodes are intended to be used for level prototyping. Creating CSG nodes has a significant CPU cost compared to creating a [MeshInstance3D] with a [PrimitiveMesh]. Moving a CSG node within another CSG node also has a significant CPU cost, so it should be avoided during gameplay.
+	</description>
+	<tutorials>
+		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
+	</tutorials>
+	<members>
+		<member name="flip_faces" type="bool" setter="set_flip_faces" getter="get_flip_faces" default="false">
+			If set, the order of the vertices in each triangle are reversed resulting in the backside of the mesh being drawn.
+		</member>
+	</members>
+</class>

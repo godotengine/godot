@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 4: "@onready" can only be used in classes that inherit "Node".

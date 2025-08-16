@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EngineDebugger" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Exposes the internal debugger.
+	</brief_description>
+	<description>
+		[EngineDebugger] handles the communication between the editor and the running game. It is active in the running game. Messages can be sent/received through it. It also manages the profilers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="clear_breakpoints">
+			<return type="void" />
+			<description>
+				Clears all breakpoints.
+			</description>
+		</method>
+		<method name="debug">
+			<return type="void" />
+			<param index="0" name="can_continue" type="bool" default="true" />
+			<param index="1" name="is_error_breakpoint" type="bool" default="false" />
+			<description>
+				Starts a debug break in script execution, optionally specifying whether the program can continue based on [param can_continue] and whether the break was due to a breakpoint.
+			</description>
+		</method>
+		<method name="get_depth" qualifiers="const" experimental="">
+			<return type="int" />
+			<description>
+				Returns the current debug depth.
+			</description>
+		</method>
+		<method name="get_lines_left" qualifiers="const" experimental="">
+			<return type="int" />
+			<description>
+				Returns the number of lines that remain.
+			</description>
+		</method>
+		<method name="has_capture">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a capture with the given name is present otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="has_profiler">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a profiler with the given name is present otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="insert_breakpoint">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Inserts a new breakpoint with the given [param source] and [param line].
+			</description>
+		</method>
+		<method name="is_active">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the debugger is active otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="is_breakpoint" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Returns [code]true[/code] if the given [param source] and [param line] represent an existing breakpoint.
+			</description>
+		</method>
+		<method name="is_profiling">
+			<return type="bool" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns [code]true[/code] if a profiler with the given name is present and active otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="is_skipping_breakpoints" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the debugger is skipping breakpoints otherwise [code]false[/code].
+			</description>
+		</method>
+		<method name="line_poll">
+			<return type="void" />
+			<description>
+				Forces a processing loop of debugger events. The purpose of this method is just processing events every now and then when the script might get too busy, so that bugs like infinite loops can be caught.
+			</description>
+		</method>
+		<method name="profiler_add_frame_data">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="data" type="Array" />
+			<description>
+				Calls the [code]add[/code] callable of the profiler with given [param name] and [param data].
+			</description>
+		</method>
+		<method name="profiler_enable">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="enable" type="bool" />
+			<param index="2" name="arguments" type="Array" default="[]" />
+			<description>
+				Calls the [code]toggle[/code] callable of the profiler with given [param name] and [param arguments]. Enables/Disables the same profiler depending on [param enable] argument.
+			</description>
+		</method>
+		<method name="register_message_capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="callable" type="Callable" />
+			<description>
+				Registers a message capture with given [param name]. If [param name] is "my_message" then messages starting with "my_message:" will be called with the given callable.
+				The callable must accept a message string and a data array as argument. The callable should return [code]true[/code] if the message is recognized.
+				[b]Note:[/b] The callable will receive the message with the prefix stripped, unlike [method EditorDebuggerPlugin._capture]. See the [EditorDebuggerPlugin] description for an example.
+			</description>
+		</method>
+		<method name="register_profiler">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="profiler" type="EngineProfiler" />
+			<description>
+				Registers a profiler with the given [param name]. See [EngineProfiler] for more information.
+			</description>
+		</method>
+		<method name="remove_breakpoint">
+			<return type="void" />
+			<param index="0" name="line" type="int" />
+			<param index="1" name="source" type="StringName" />
+			<description>
+				Removes a breakpoint with the given [param source] and [param line].
+			</description>
+		</method>
+		<method name="script_debug">
+			<return type="void" />
+			<param index="0" name="language" type="ScriptLanguage" />
+			<param index="1" name="can_continue" type="bool" default="true" />
+			<param index="2" name="is_error_breakpoint" type="bool" default="false" />
+			<description>
+				Starts a debug break in script execution, optionally specifying whether the program can continue based on [param can_continue] and whether the break was due to a breakpoint.
+			</description>
+		</method>
+		<method name="send_message">
+			<return type="void" />
+			<param index="0" name="message" type="String" />
+			<param index="1" name="data" type="Array" />
+			<description>
+				Sends a message with given [param message] and [param data] array.
+			</description>
+		</method>
+		<method name="set_depth" experimental="">
+			<return type="void" />
+			<param index="0" name="depth" type="int" />
+			<description>
+				Sets the current debugging depth.
+			</description>
+		</method>
+		<method name="set_lines_left" experimental="">
+			<return type="void" />
+			<param index="0" name="lines" type="int" />
+			<description>
+				Sets the current debugging lines that remain.
+			</description>
+		</method>
+		<method name="unregister_message_capture">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Unregisters the message capture with given [param name].
+			</description>
+		</method>
+		<method name="unregister_profiler">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Unregisters a profiler with given [param name].
+			</description>
+		</method>
+	</methods>
+</class>

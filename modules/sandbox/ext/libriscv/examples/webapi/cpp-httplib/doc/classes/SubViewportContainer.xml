@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SubViewportContainer" inherits="Container" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A container used for displaying the contents of a [SubViewport].
+	</brief_description>
+	<description>
+		A container that displays the contents of underlying [SubViewport] child nodes. It uses the combined size of the [SubViewport]s as minimum size, unless [member stretch] is enabled.
+		[b]Note:[/b] Changing a [SubViewportContainer]'s [member Control.scale] will cause its contents to appear distorted. To change its visual size without causing distortion, adjust the node's margins instead (if it's not already in a container).
+		[b]Note:[/b] The [SubViewportContainer] forwards mouse-enter and mouse-exit notifications to its sub-viewports.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_propagate_input_event" qualifiers="virtual const" experimental="">
+			<return type="bool" />
+			<param index="0" name="event" type="InputEvent" />
+			<description>
+				Virtual method to be implemented by the user. If it returns [code]true[/code], the [param event] is propagated to [SubViewport] children. Propagation doesn't happen if it returns [code]false[/code]. If the function is not implemented, all events are propagated to SubViewports.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="1" />
+		<member name="mouse_target" type="bool" setter="set_mouse_target" getter="is_mouse_target_enabled" default="false">
+			Configure, if either the [SubViewportContainer] or alternatively the [Control] nodes of its [SubViewport] children should be available as targets of mouse-related functionalities, like identifying the drop target in drag-and-drop operations or cursor shape of hovered [Control] node.
+			If [code]false[/code], the [Control] nodes inside its [SubViewport] children are considered as targets.
+			If [code]true[/code], the [SubViewportContainer] itself will be considered as a target.
+		</member>
+		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
+			If [code]true[/code], the sub-viewport will be automatically resized to the control's size.
+			[b]Note:[/b] If [code]true[/code], this will prohibit changing [member SubViewport.size] of its children manually.
+		</member>
+		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
+			Divides the sub-viewport's effective resolution by this value while preserving its scale. This can be used to speed up rendering.
+			For example, a 1280×720 sub-viewport with [member stretch_shrink] set to [code]2[/code] will be rendered at 640×360 while occupying the same size in the container.
+			[b]Note:[/b] [member stretch] must be [code]true[/code] for this property to work.
+		</member>
+	</members>
+</class>

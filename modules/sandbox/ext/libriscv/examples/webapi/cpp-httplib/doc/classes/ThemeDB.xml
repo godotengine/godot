@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ThemeDB" inherits="Object" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A singleton that provides access to static information about [Theme] resources used by the engine and by your project.
+	</brief_description>
+	<description>
+		This singleton provides access to static information about [Theme] resources used by the engine and by your projects. You can fetch the default engine theme, as well as your project configured theme.
+		[ThemeDB] also contains fallback values for theme properties.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_default_theme">
+			<return type="Theme" />
+			<description>
+				Returns a reference to the default engine [Theme]. This theme resource is responsible for the out-of-the-box look of [Control] nodes and cannot be overridden.
+			</description>
+		</method>
+		<method name="get_project_theme">
+			<return type="Theme" />
+			<description>
+				Returns a reference to the custom project [Theme]. This theme resources allows to override the default engine theme for every control node in the project.
+				To set the project theme, see [member ProjectSettings.gui/theme/custom].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="fallback_base_scale" type="float" setter="set_fallback_base_scale" getter="get_fallback_base_scale" default="1.0">
+			The fallback base scale factor of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+			See also [member Theme.default_base_scale].
+		</member>
+		<member name="fallback_font" type="Font" setter="set_fallback_font" getter="get_fallback_font">
+			The fallback font of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+			See also [member Theme.default_font].
+		</member>
+		<member name="fallback_font_size" type="int" setter="set_fallback_font_size" getter="get_fallback_font_size" default="16">
+			The fallback font size of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+			See also [member Theme.default_font_size].
+		</member>
+		<member name="fallback_icon" type="Texture2D" setter="set_fallback_icon" getter="get_fallback_icon">
+			The fallback icon of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+		</member>
+		<member name="fallback_stylebox" type="StyleBox" setter="set_fallback_stylebox" getter="get_fallback_stylebox">
+			The fallback stylebox of every [Control] node and [Theme] resource. Used when no other value is available to the control.
+		</member>
+	</members>
+	<signals>
+		<signal name="fallback_changed">
+			<description>
+				Emitted when one of the fallback values had been changed. Use it to refresh the look of controls that may rely on the fallback theme items.
+			</description>
+		</signal>
+	</signals>
+</class>

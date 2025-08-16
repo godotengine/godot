@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://bqy3ikt6vu4b5"]
+
+[ext_resource type="Script" uid="uid://eg8k46gd42a4" path="res://addons/gut/gui/GutRunner.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://m28heqtswbuq" path="res://addons/gut/GutScene.tscn" id="2_6ruxb"]
+
+[node name="GutRunner" type="Node2D"]
+script = ExtResource("1")
+
+[node name="GutLayer" type="CanvasLayer" parent="."]
+layer = 128
+
+[node name="GutScene" parent="GutLayer" instance=ExtResource("2_6ruxb")]

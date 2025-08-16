@@ -1,0 +1,21 @@
+--
+--  Example API for the Nelua Language
+--
+require 'string'
+
+global api = @record{}
+global api.print: function(stuff: string)
+global api.exit: function(status: integer)
+
+local function my_write(fd: cint, ptr: cstring, len: cint): void <cimport>
+end
+local function my_exit(status: cint): void <cimport>
+end
+
+api.exit = function(status: integer)
+	my_exit(status);
+end
+
+api.print = function(stuff: string)
+	my_write(1, stuff, #stuff)
+end

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="WebSocketMultiplayerPeer" inherits="MultiplayerPeer" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Base class for WebSocket server and client.
+	</brief_description>
+	<description>
+		Base class for WebSocket server and client, allowing them to be used as multiplayer peer for the [MultiplayerAPI].
+		[b]Note:[/b] When exporting to Android, make sure to enable the [code]INTERNET[/code] permission in the Android export preset before exporting the project or using one-click deploy. Otherwise, network communication of any kind will be blocked by Android.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_client">
+			<return type="int" enum="Error" />
+			<param index="0" name="url" type="String" />
+			<param index="1" name="tls_client_options" type="TLSOptions" default="null" />
+			<description>
+				Starts a new multiplayer client connecting to the given [param url]. TLS certificates will be verified against the hostname when connecting using the [code]wss://[/code] protocol. You can pass the optional [param tls_client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+				[b]Note:[/b] It is recommended to specify the scheme part of the URL, i.e. the [param url] should start with either [code]ws://[/code] or [code]wss://[/code].
+			</description>
+		</method>
+		<method name="create_server">
+			<return type="int" enum="Error" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="bind_address" type="String" default="&quot;*&quot;" />
+			<param index="2" name="tls_server_options" type="TLSOptions" default="null" />
+			<description>
+				Starts a new multiplayer server listening on the given [param port]. You can optionally specify a [param bind_address], and provide valid [param tls_server_options] to use TLS. See [method TLSOptions.server].
+			</description>
+		</method>
+		<method name="get_peer" qualifiers="const">
+			<return type="WebSocketPeer" />
+			<param index="0" name="peer_id" type="int" />
+			<description>
+				Returns the [WebSocketPeer] associated to the given [param peer_id].
+			</description>
+		</method>
+		<method name="get_peer_address" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the IP address of the given peer.
+			</description>
+		</method>
+		<method name="get_peer_port" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the remote port of the given peer.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="handshake_headers" type="PackedStringArray" setter="set_handshake_headers" getter="get_handshake_headers" default="PackedStringArray()">
+			The extra headers to use during handshake. See [member WebSocketPeer.handshake_headers] for more details.
+		</member>
+		<member name="handshake_timeout" type="float" setter="set_handshake_timeout" getter="get_handshake_timeout" default="3.0">
+			The maximum time each peer can stay in a connecting state before being dropped.
+		</member>
+		<member name="inbound_buffer_size" type="int" setter="set_inbound_buffer_size" getter="get_inbound_buffer_size" default="65535">
+			The inbound buffer size for connected peers. See [member WebSocketPeer.inbound_buffer_size] for more details.
+		</member>
+		<member name="max_queued_packets" type="int" setter="set_max_queued_packets" getter="get_max_queued_packets" default="4096">
+			The maximum number of queued packets for connected peers. See [member WebSocketPeer.max_queued_packets] for more details.
+		</member>
+		<member name="outbound_buffer_size" type="int" setter="set_outbound_buffer_size" getter="get_outbound_buffer_size" default="65535">
+			The outbound buffer size for connected peers. See [member WebSocketPeer.outbound_buffer_size] for more details.
+		</member>
+		<member name="supported_protocols" type="PackedStringArray" setter="set_supported_protocols" getter="get_supported_protocols" default="PackedStringArray()">
+			The supported WebSocket sub-protocols. See [member WebSocketPeer.supported_protocols] for more details.
+		</member>
+	</members>
+</class>

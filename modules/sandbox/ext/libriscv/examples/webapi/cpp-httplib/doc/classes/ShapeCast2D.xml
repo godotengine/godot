@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ShapeCast2D" inherits="Node2D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A 2D shape that sweeps a region of space to detect [CollisionObject2D]s.
+	</brief_description>
+	<description>
+		Shape casting allows to detect collision objects by sweeping its [member shape] along the cast direction determined by [member target_position]. This is similar to [RayCast2D], but it allows for sweeping a region of space, rather than just a straight line. [ShapeCast2D] can detect multiple collision objects. It is useful for things like wide laser beams or snapping a simple shape to a floor.
+		Immediate collision overlaps can be done with the [member target_position] set to [code]Vector2(0, 0)[/code] and by calling [method force_shapecast_update] within the same physics frame. This helps to overcome some limitations of [Area2D] when used as an instantaneous detection area, as collision information isn't immediately available to it.
+		[b]Note:[/b] Shape casting is more computationally expensive than ray casting.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_exception">
+			<return type="void" />
+			<param index="0" name="node" type="CollisionObject2D" />
+			<description>
+				Adds a collision exception so the shape does not report collisions with the specified node.
+			</description>
+		</method>
+		<method name="add_exception_rid">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Adds a collision exception so the shape does not report collisions with the specified [RID].
+			</description>
+		</method>
+		<method name="clear_exceptions">
+			<return type="void" />
+			<description>
+				Removes all collision exceptions for this shape.
+			</description>
+		</method>
+		<method name="force_shapecast_update">
+			<return type="void" />
+			<description>
+				Updates the collision information for the shape immediately, without waiting for the next [code]_physics_process[/code] call. Use this method, for example, when the shape or its parent has changed state.
+				[b]Note:[/b] Setting [member enabled] to [code]true[/code] is not required for this to work.
+			</description>
+		</method>
+		<method name="get_closest_collision_safe_fraction" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the fraction from this cast's origin to its [member target_position] of how far the shape can move without triggering a collision, as a value between [code]0.0[/code] and [code]1.0[/code].
+			</description>
+		</method>
+		<method name="get_closest_collision_unsafe_fraction" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the fraction from this cast's origin to its [member target_position] of how far the shape must move to trigger a collision, as a value between [code]0.0[/code] and [code]1.0[/code].
+				In ideal conditions this would be the same as [method get_closest_collision_safe_fraction], however shape casting is calculated in discrete steps, so the precise point of collision can occur between two calculated positions.
+			</description>
+		</method>
+		<method name="get_collider" qualifiers="const">
+			<return type="Object" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the collided [Object] of one of the multiple collisions at [param index], or [code]null[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
+			</description>
+		</method>
+		<method name="get_collider_rid" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the [RID] of the collided object of one of the multiple collisions at [param index].
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the shape ID of the colliding shape of one of the multiple collisions at [param index], or [code]0[/code] if no object is intersecting the shape (i.e. [method is_colliding] returns [code]false[/code]).
+			</description>
+		</method>
+		<method name="get_collision_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				The number of collisions detected at the point of impact. Use this to iterate over multiple collisions as provided by [method get_collider], [method get_collider_shape], [method get_collision_point], and [method get_collision_normal] methods.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the normal of one of the multiple collisions at [param index] of the intersecting object.
+			</description>
+		</method>
+		<method name="get_collision_point" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the collision point of one of the multiple collisions at [param index] where the shape intersects the colliding object.
+				[b]Note:[/b] This point is in the [b]global[/b] coordinate system.
+			</description>
+		</method>
+		<method name="is_colliding" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether any object is intersecting with the shape's vector (considering the vector length).
+			</description>
+		</method>
+		<method name="remove_exception">
+			<return type="void" />
+			<param index="0" name="node" type="CollisionObject2D" />
+			<description>
+				Removes a collision exception so the shape does report collisions with the specified node.
+			</description>
+		</method>
+		<method name="remove_exception_rid">
+			<return type="void" />
+			<param index="0" name="rid" type="RID" />
+			<description>
+				Removes a collision exception so the shape does report collisions with the specified [RID].
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member collision_mask], given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
+			If [code]true[/code], collisions with [Area2D]s will be reported.
+		</member>
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
+			If [code]true[/code], collisions with [PhysicsBody2D]s will be reported.
+		</member>
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
+			The shape's collision mask. Only objects in at least one collision layer enabled in the mask will be detected. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
+		</member>
+		<member name="collision_result" type="Array" setter="" getter="get_collision_result" default="[]">
+			Returns the complete collision information from the collision sweep. The data returned is the same as in the [method PhysicsDirectSpaceState2D.get_rest_info] method.
+		</member>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
+			If [code]true[/code], collisions will be reported.
+		</member>
+		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
+			If [code]true[/code], the parent node will be excluded from collision detection.
+		</member>
+		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.0">
+			The collision margin for the shape. A larger margin helps detecting collisions more consistently, at the cost of precision.
+		</member>
+		<member name="max_results" type="int" setter="set_max_results" getter="get_max_results" default="32">
+			The number of intersections can be limited with this parameter, to reduce the processing time.
+		</member>
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
+			The shape to be used for collision queries.
+		</member>
+		<member name="target_position" type="Vector2" setter="set_target_position" getter="get_target_position" default="Vector2(0, 50)">
+			The shape's destination point, relative to this node's [member Node2D.position].
+		</member>
+	</members>
+</class>

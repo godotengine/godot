@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNode" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for [VisualShader] nodes. Not related to scene nodes.
+	</brief_description>
+	<description>
+		Visual shader graphs consist of various nodes. Each node in the graph is a separate object and they are represented as a rectangular boxes with title and a set of properties. Each node also has connection ports that allow to connect it to another nodes and control the flow of the shader.
+	</description>
+	<tutorials>
+		<link title="Using VisualShaders">$DOCS_URL/tutorials/shaders/visual_shaders.html</link>
+	</tutorials>
+	<methods>
+		<method name="clear_default_input_values">
+			<return type="void" />
+			<description>
+				Clears the default input ports value.
+			</description>
+		</method>
+		<method name="get_default_input_port" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="type" type="int" enum="VisualShaderNode.PortType" />
+			<description>
+				Returns the input port which should be connected by default when this node is created as a result of dragging a connection from an existing node to the empty space on the graph.
+			</description>
+		</method>
+		<method name="get_default_input_values" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns an [Array] containing default values for all of the input ports of the node in the form [code][index0, value0, index1, value1, ...][/code].
+			</description>
+		</method>
+		<method name="get_input_port_default_value" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="port" type="int" />
+			<description>
+				Returns the default value of the input [param port].
+			</description>
+		</method>
+		<method name="remove_input_port_default_value">
+			<return type="void" />
+			<param index="0" name="port" type="int" />
+			<description>
+				Removes the default value of the input [param port].
+			</description>
+		</method>
+		<method name="set_default_input_values">
+			<return type="void" />
+			<param index="0" name="values" type="Array" />
+			<description>
+				Sets the default input ports values using an [Array] of the form [code][index0, value0, index1, value1, ...][/code]. For example: [code][0, Vector3(0, 0, 0), 1, Vector3(0, 0, 0)][/code].
+			</description>
+		</method>
+		<method name="set_input_port_default_value">
+			<return type="void" />
+			<param index="0" name="port" type="int" />
+			<param index="1" name="value" type="Variant" />
+			<param index="2" name="prev_value" type="Variant" default="null" />
+			<description>
+				Sets the default [param value] for the selected input [param port].
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="linked_parent_graph_frame" type="int" setter="set_frame" getter="get_frame" default="-1">
+			Represents the index of the frame this node is linked to. If set to [code]-1[/code] the node is not linked to any frame.
+		</member>
+		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
+			Sets the output port index which will be showed for preview. If set to [code]-1[/code] no port will be open for preview.
+		</member>
+	</members>
+	<constants>
+		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
+			Floating-point scalar. Translated to [code skip-lint]float[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_SCALAR_INT" value="1" enum="PortType">
+			Integer scalar. Translated to [code skip-lint]int[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_SCALAR_UINT" value="2" enum="PortType">
+			Unsigned integer scalar. Translated to [code skip-lint]uint[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR_2D" value="3" enum="PortType">
+			2D vector of floating-point values. Translated to [code skip-lint]vec2[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR_3D" value="4" enum="PortType">
+			3D vector of floating-point values. Translated to [code skip-lint]vec3[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR_4D" value="5" enum="PortType">
+			4D vector of floating-point values. Translated to [code skip-lint]vec4[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_BOOLEAN" value="6" enum="PortType">
+			Boolean type. Translated to [code skip-lint]bool[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_TRANSFORM" value="7" enum="PortType">
+			Transform type. Translated to [code skip-lint]mat4[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_SAMPLER" value="8" enum="PortType">
+			Sampler type. Translated to reference of sampler uniform in shader code. Can only be used for input ports in non-uniform nodes.
+		</constant>
+		<constant name="PORT_TYPE_MAX" value="9" enum="PortType">
+			Represents the size of the [enum PortType] enum.
+		</constant>
+	</constants>
+</class>

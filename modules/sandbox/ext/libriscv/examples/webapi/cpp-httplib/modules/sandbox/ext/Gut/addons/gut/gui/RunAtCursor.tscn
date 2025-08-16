@@ -1,0 +1,65 @@
+[gd_scene load_steps=4 format=3 uid="uid://0yunjxtaa8iw"]
+
+[ext_resource type="Script" uid="uid://c4gmgdl1xwflw" path="res://addons/gut/gui/RunAtCursor.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cr6tvdv0ve6cv" path="res://addons/gut/gui/play.png" id="2"]
+[ext_resource type="Texture2D" uid="uid://6wra5rxmfsrl" path="res://addons/gut/gui/arrow.png" id="3"]
+
+[node name="RunAtCursor" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 1.0
+offset_bottom = -527.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1")
+
+[node name="HBox" type="HBoxContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="LblNoneSelected" type="Label" parent="HBox"]
+layout_mode = 2
+text = "<None>"
+
+[node name="BtnRunScript" type="Button" parent="HBox"]
+visible = false
+layout_mode = 2
+text = "<script>"
+icon = ExtResource("2")
+
+[node name="Arrow1" type="TextureButton" parent="HBox"]
+visible = false
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+texture_normal = ExtResource("3")
+stretch_mode = 3
+
+[node name="BtnRunInnerClass" type="Button" parent="HBox"]
+visible = false
+layout_mode = 2
+text = "<inner class>"
+icon = ExtResource("2")
+
+[node name="Arrow2" type="TextureButton" parent="HBox"]
+visible = false
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+texture_normal = ExtResource("3")
+stretch_mode = 3
+
+[node name="BtnRunMethod" type="Button" parent="HBox"]
+visible = false
+layout_mode = 2
+text = "<method>"
+icon = ExtResource("2")
+
+[connection signal="pressed" from="HBox/BtnRunScript" to="." method="_on_BtnRunScript_pressed"]
+[connection signal="pressed" from="HBox/BtnRunInnerClass" to="." method="_on_BtnRunInnerClass_pressed"]
+[connection signal="pressed" from="HBox/BtnRunMethod" to="." method="_on_BtnRunMethod_pressed"]

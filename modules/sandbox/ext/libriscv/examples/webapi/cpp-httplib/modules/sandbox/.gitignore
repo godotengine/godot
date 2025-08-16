@@ -1,0 +1,39 @@
+build/
+.build/
+.build_android/
+.build_mingw/
+.zig/
+.godot/
+.mingw/
+.vscode/
+program/test
+.sconsign.dblite
+.DS_Store
+*.o
+*.os
+
+# ELF files - but allow example ELF files to be tracked
+*.elf
+!ext/libriscv/examples/**/*.elf
+
+# Bin directory - be more specific about what to ignore
+bin/addons/godot_sandbox/bin/*.so
+bin/addons/godot_sandbox/bin/*.dll
+bin/addons/godot_sandbox/bin/*.dylib
+bin/cmake/toolchain.cmake
+
+# Ignore all CPP files in the bintr directory
+src/bintr/*.cpp
+src/gen/
+
+# UID files - but allow test UID files to be tracked
+*.uid
+!ext/Gut/test/**/*.uid
+
+# Build files
+*.pyc
+
+# Override main gitignore for files that should be tracked
+!bin/
+!bin/**
+!godot-sandbox.code-workspace

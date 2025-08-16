@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TextureButton" inherits="BaseButton" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Texture-based button. Supports Pressed, Hover, Disabled and Focused states.
+	</brief_description>
+	<description>
+		[TextureButton] has the same functionality as [Button], except it uses sprites instead of Godot's [Theme] resource. It is faster to create, but it doesn't support localization like more complex [Control]s.
+		See also [BaseButton] which contains common properties and methods associated with this node.
+		[b]Note:[/b] Setting a texture for the "normal" state ([member texture_normal]) is recommended. If [member texture_normal] is not set, the [TextureButton] will still receive input events and be clickable, but the user will not be able to see it unless they activate another one of its states with a texture assigned (e.g., hover over it to show [member texture_hover]).
+	</description>
+	<tutorials>
+		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/2755</link>
+	</tutorials>
+	<members>
+		<member name="flip_h" type="bool" setter="set_flip_h" getter="is_flipped_h" default="false">
+			If [code]true[/code], texture is flipped horizontally.
+		</member>
+		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
+			If [code]true[/code], texture is flipped vertically.
+		</member>
+		<member name="ignore_texture_size" type="bool" setter="set_ignore_texture_size" getter="get_ignore_texture_size" default="false">
+			If [code]true[/code], the size of the texture won't be considered for minimum size calculation, so the [TextureButton] can be shrunk down past the texture size.
+		</member>
+		<member name="stretch_mode" type="int" setter="set_stretch_mode" getter="get_stretch_mode" enum="TextureButton.StretchMode" default="2">
+			Controls the texture's behavior when you resize the node's bounding rectangle. See the [enum StretchMode] constants for available options.
+		</member>
+		<member name="texture_click_mask" type="BitMap" setter="set_click_mask" getter="get_click_mask">
+			Pure black and white [BitMap] image to use for click detection. On the mask, white pixels represent the button's clickable area. Use it to create buttons with curved shapes.
+		</member>
+		<member name="texture_disabled" type="Texture2D" setter="set_texture_disabled" getter="get_texture_disabled">
+			Texture to display when the node is disabled. See [member BaseButton.disabled]. If not assigned, the [TextureButton] displays [member texture_normal] instead.
+		</member>
+		<member name="texture_focused" type="Texture2D" setter="set_texture_focused" getter="get_texture_focused">
+			Texture to [i]overlay on the base texture[/i] when the node has mouse or keyboard focus. Because [member texture_focused] is displayed on top of the base texture, a partially transparent texture should be used to ensure the base texture remains visible. A texture that represents an outline or an underline works well for this purpose. To disable the focus visual effect, assign a fully transparent texture of any size. Note that disabling the focus visual effect will harm keyboard/controller navigation usability, so this is not recommended for accessibility reasons.
+		</member>
+		<member name="texture_hover" type="Texture2D" setter="set_texture_hover" getter="get_texture_hover">
+			Texture to display when the mouse hovers over the node. If not assigned, the [TextureButton] displays [member texture_normal] instead when hovered over.
+		</member>
+		<member name="texture_normal" type="Texture2D" setter="set_texture_normal" getter="get_texture_normal">
+			Texture to display by default, when the node is [b]not[/b] in the disabled, hover or pressed state. This texture is still displayed in the focused state, with [member texture_focused] drawn on top.
+		</member>
+		<member name="texture_pressed" type="Texture2D" setter="set_texture_pressed" getter="get_texture_pressed">
+			Texture to display on mouse down over the node, if the node has keyboard focus and the player presses the Enter key or if the player presses the [member BaseButton.shortcut] key. If not assigned, the [TextureButton] displays [member texture_hover] instead when pressed.
+		</member>
+	</members>
+	<constants>
+		<constant name="STRETCH_SCALE" value="0" enum="StretchMode">
+			Scale to fit the node's bounding rectangle.
+		</constant>
+		<constant name="STRETCH_TILE" value="1" enum="StretchMode">
+			Tile inside the node's bounding rectangle.
+		</constant>
+		<constant name="STRETCH_KEEP" value="2" enum="StretchMode">
+			The texture keeps its original size and stays in the bounding rectangle's top-left corner.
+		</constant>
+		<constant name="STRETCH_KEEP_CENTERED" value="3" enum="StretchMode">
+			The texture keeps its original size and stays centered in the node's bounding rectangle.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT" value="4" enum="StretchMode">
+			Scale the texture to fit the node's bounding rectangle, but maintain the texture's aspect ratio.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_CENTERED" value="5" enum="StretchMode">
+			Scale the texture to fit the node's bounding rectangle, center it, and maintain its aspect ratio.
+		</constant>
+		<constant name="STRETCH_KEEP_ASPECT_COVERED" value="6" enum="StretchMode">
+			Scale the texture so that the shorter side fits the bounding rectangle. The other side clips to the node's limits.
+		</constant>
+	</constants>
+</class>

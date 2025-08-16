@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="PlaceholderCubemap" inherits="PlaceholderTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A [Cubemap] without image data.
+	</brief_description>
+	<description>
+		This class replaces a [Cubemap] or a [Cubemap]-derived class in 2 conditions:
+		- In dedicated server mode, where the image data shouldn't affect game logic. This allows reducing the exported PCK's size significantly.
+		- When the [Cubemap]-derived class is missing, for example when using a different engine version.
+		[b]Note:[/b] This class is not intended for rendering or for use in shaders. Operations like calculating UV are not guaranteed to work.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

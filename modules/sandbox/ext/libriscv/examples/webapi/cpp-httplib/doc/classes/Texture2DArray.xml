@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Texture2DArray" inherits="ImageTextureLayered" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A single texture resource which consists of multiple, separate images. Each image has the same dimensions and number of mipmap levels.
+	</brief_description>
+	<description>
+		A Texture2DArray is different from a Texture3D: The Texture2DArray does not support trilinear interpolation between the [Image]s, i.e. no blending. See also [Cubemap] and [CubemapArray], which are texture arrays with specialized cubemap functions.
+		A Texture2DArray is also different from an [AtlasTexture]: In a Texture2DArray, all images are treated separately. In an atlas, the regions (i.e. the single images) can be of different sizes. Furthermore, you usually need to add a padding around the regions, to prevent accidental UV mapping to more than one region. The same goes for mipmapping: Mipmap chains are handled separately for each layer. In an atlas, the slicing has to be done manually in the fragment shader.
+		To create such a texture file yourself, reimport your image files using the Godot Editor import presets. To create a Texture2DArray from code, use [method ImageTextureLayered.create_from_images] on an instance of the Texture2DArray class.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderTexture2DArray]).
+			</description>
+		</method>
+	</methods>
+</class>

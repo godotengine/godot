@@ -1,0 +1,12 @@
+; DO NOT EDIT (unless you know what you are doing)
+;
+; This subdirectory is a git "subrepo", and this file is maintained by the
+; git-subrepo command. See https://github.com/ingydotnet/git-subrepo#readme
+;
+[subrepo]
+	remote = https://github.com/yhirose/cpp-httplib.git
+	branch = master
+	commit = aa5f9d11f61c3f5bbe8606f45f43e67bf461dcc9
+	parent = 90a0fc8e6f12dc37b31e52b828672837e0071429
+	method = merge
+	cmdver = 0.4.9

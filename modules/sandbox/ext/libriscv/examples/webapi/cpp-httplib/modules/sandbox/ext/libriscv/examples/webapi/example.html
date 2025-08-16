@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+	<meta charset="utf-8">
+	<title>Compile C++ code</title>
+	<style type="text/css" media="screen">
+		body {
+			background: black;
+		}
+	    #editor {
+			height: 400px;
+	    }
+		#content {
+			color: white;
+			background-color: black;
+			height: 50%;
+		}
+		#resultbox {
+			display: block;
+			color: white;
+			background-color: black;
+		}
+	</style>
+</head>
+<body>
+	<div id="editor">
+	</div>
+	<div id="content">
+		<button type="button" id="compile_button">Compile & Run</button>
+		<hr/>
+		<label for="resultbox">Output:</label>
+		<textarea id="resultbox" rows="8" cols="80">
+		</textarea>
+		<label for="exit_status">Exit status:</label> <label id="exit_status">n/a</label> <br>
+		<label for="compile_time">Compile time:</label> <label id="compile_time"></label> <br>
+		<label for="execute_time">Execution time:</label> <label id="execute_time"></label> <br>
+		<label for="instr_count">Instruction count:</label> <label id="instr_count"></label> <br>
+		<label for="binary_size">Binary size:</label> <label id="binary_size"></label> <br>
+		<label for="req_exception">Exception:</label> <label id="req_exception">None</label> <br>
+		<label for="req_error">Error:</label> <label id="req_error">None</label> <br>
+	</div>
+</body>
+
+	<script src="https://pagecdn.io/lib/ace/1.4.6/ace.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js">
+	</script>
+	<script type="text/javascript">
+		var editor = ace.edit("editor");
+	    editor.setTheme("ace/theme/monokai");
+	    editor.session.setMode("ace/mode/c_cpp");
+		// default hello world code:
+		editor.setValue(`#include <cstdio>
+
+int main()
+{
+	printf("Hello world! %d\\n", 123);
+	return 666;
+}
+`);
+
+		jQuery(document).ready(function()
+		{
+            // Get button by id
+            var button = jQuery('#compile_button');
+			//var codebox = jQuery('#editor');
+			var resultbox = jQuery('#resultbox');
+            button.bind('click', function () {
+				$.ajax({
+					url: `${location.protocol}//${location.host}/exec`,
+					type: "POST",
+					crossDomain: true,
+					data: editor.getValue(),
+					dataType: 'text',
+					success: function (response, status, xhdr) {
+						resultbox.val(response);
+						$('#exit_status').text(xhdr.getResponseHeader('X-Exit-Code'));
+						$('#compile_time').text(xhdr.getResponseHeader('X-Compile-Time'));
+						$('#execute_time').text(xhdr.getResponseHeader('X-Execution-Time'));
+						$('#instr_count').text(xhdr.getResponseHeader('X-Instruction-Count'));
+						$('#binary_size').text(xhdr.getResponseHeader('X-Binary-Size'));
+						$('#req_exception').text(xhdr.getResponseHeader('X-Exception'));
+						$('#req_error').text(xhdr.getResponseHeader('X-Error'));
+					},
+					error: function (xhdr, status) {
+						$('#exit_status').text("-1");
+						$('#req_error').text("An error occurred");
+						resultbox.val("Could not complete the request");
+					}
+				})
+			}); // button click
+		}); // ready
+	</script>
+</html>

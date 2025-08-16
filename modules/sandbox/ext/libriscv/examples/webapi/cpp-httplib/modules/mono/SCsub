@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import build_scripts.mono_configure as mono_configure
+
+Import("env")
+Import("env_modules")
+
+env_mono = env_modules.Clone()
+
+# Configure Mono
+
+mono_configure.configure(env, env_mono)
+
+# Add sources
+
+env_mono.add_source_files(env.modules_sources, "*.cpp")
+env_mono.add_source_files(env.modules_sources, "glue/*.cpp")
+env_mono.add_source_files(env.modules_sources, "mono_gd/*.cpp")
+env_mono.add_source_files(env.modules_sources, "utils/*.cpp")
+
+if env.editor_build:
+    env_mono.add_source_files(env.modules_sources, "editor/*.cpp")
+    SConscript("editor/script_templates/SCsub")

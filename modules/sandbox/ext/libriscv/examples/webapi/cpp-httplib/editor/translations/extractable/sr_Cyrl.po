@@ -1,0 +1,90 @@
+# Serbian (cyrillic) translation of the Godot Engine extractable strings.
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
+# This file is distributed under the same license as the Godot source code.
+msgid ""
+msgstr ""
+"Project-Id-Version: Godot Engine extractable strings\n"
+"Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
+"PO-Revision-Date: 2023-09-18 19:17+0000\n"
+"Last-Translator: Mihajlo Radojković <kulmika4@gmail.com>\n"
+"Language-Team: Serbian (cyrillic) <https://hosted.weblate.org/projects/godot-"
+"engine/godot/sr_Cyrl/>\n"
+"Language: sr_Cyrl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8-bit\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"X-Generator: Weblate 5.0.2\n"
+
+msgid "All Recognized"
+msgstr "Сви препознати"
+
+msgid "Open"
+msgstr "Отвори"
+
+msgid "Select Current Folder"
+msgstr "Одабери тренутни директоријум"
+
+msgid "Save"
+msgstr "Сачувај"
+
+msgid "Open a File"
+msgstr "Отвори датотеку"
+
+msgid "Open File(s)"
+msgstr "Отвори датотеку/е"
+
+msgid "Open a Directory"
+msgstr "Отвори директоријум"
+
+msgid "Open a File or Directory"
+msgstr "Отвори датотеку или директоријум"
+
+msgid "Save a File"
+msgstr "Сачувај датотеку"
+
+msgid "Path:"
+msgstr "Пут:"
+
+msgid "Directories & Files:"
+msgstr "Директоријуми и датотеке:"
+
+msgid "File:"
+msgstr "Датотека:"
+
+msgid "Create Folder"
+msgstr "Направи директоријум"
+
+msgid "Name:"
+msgstr "Име:"
+
+msgid "Could not create folder."
+msgstr "Неуспех при прављењу директоријума."
+
+msgid "Zoom Out"
+msgstr "Умањи"
+
+msgid "Zoom In"
+msgstr "Увеличај"
+
+msgid "Cut"
+msgstr "Исеци"
+
+msgid "Copy"
+msgstr "Копирај"
+
+msgid "Paste"
+msgstr "Налепи"
+
+msgid "Select All"
+msgstr "Одабери све"
+
+msgid "Clear"
+msgstr "Обриши"
+
+msgid "Undo"
+msgstr "Опозови"
+
+msgid "Redo"
+msgstr "Поново уради"

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RibbonTrailMesh" inherits="PrimitiveMesh" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Represents a straight ribbon-shaped [PrimitiveMesh] with variable width.
+	</brief_description>
+	<description>
+		[RibbonTrailMesh] represents a straight ribbon-shaped mesh with variable width. The ribbon is composed of a number of flat or cross-shaped sections, each with the same [member section_length] and number of [member section_segments]. A [member curve] is sampled along the total length of the ribbon, meaning that the curve determines the size of the ribbon along its length.
+		This primitive mesh is usually used for particle trails.
+	</description>
+	<tutorials>
+		<link title="3D Particle trails">$DOCS_URL/tutorials/3d/particles/trails.html</link>
+		<link title="Particle systems (3D)">$DOCS_URL/tutorials/3d/particles/index.html</link>
+	</tutorials>
+	<members>
+		<member name="curve" type="Curve" setter="set_curve" getter="get_curve">
+			Determines the size of the ribbon along its length. The size of a particular section segment is obtained by multiplying the baseline [member size] by the value of this curve at the given distance. For values smaller than [code]0[/code], the faces will be inverted. Should be a unit [Curve].
+		</member>
+		<member name="section_length" type="float" setter="set_section_length" getter="get_section_length" default="0.2">
+			The length of a section of the ribbon.
+		</member>
+		<member name="section_segments" type="int" setter="set_section_segments" getter="get_section_segments" default="3">
+			The number of segments in a section. The [member curve] is sampled on each segment to determine its size. Higher values result in a more detailed ribbon at the cost of performance.
+		</member>
+		<member name="sections" type="int" setter="set_sections" getter="get_sections" default="5">
+			The total number of sections on the ribbon.
+		</member>
+		<member name="shape" type="int" setter="set_shape" getter="get_shape" enum="RibbonTrailMesh.Shape" default="1">
+			Determines the shape of the ribbon.
+		</member>
+		<member name="size" type="float" setter="set_size" getter="get_size" default="1.0">
+			The baseline size of the ribbon. The size of a particular section segment is obtained by multiplying this size by the value of the [member curve] at the given distance.
+		</member>
+	</members>
+	<constants>
+		<constant name="SHAPE_FLAT" value="0" enum="Shape">
+			Gives the mesh a single flat face.
+		</constant>
+		<constant name="SHAPE_CROSS" value="1" enum="Shape">
+			Gives the mesh two perpendicular flat faces, making a cross shape.
+		</constant>
+	</constants>
+</class>

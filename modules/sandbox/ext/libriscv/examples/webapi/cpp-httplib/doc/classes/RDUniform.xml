@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="RDUniform" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Shader uniform (used by [RenderingDevice]).
+	</brief_description>
+	<description>
+		This object is used by [RenderingDevice].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_id">
+			<return type="void" />
+			<param index="0" name="id" type="RID" />
+			<description>
+				Binds the given id to the uniform. The data associated with the id is then used when the uniform is passed to a shader.
+			</description>
+		</method>
+		<method name="clear_ids">
+			<return type="void" />
+			<description>
+				Unbinds all ids currently bound to the uniform.
+			</description>
+		</method>
+		<method name="get_ids" qualifiers="const">
+			<return type="RID[]" />
+			<description>
+				Returns an array of all ids currently bound to the uniform.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="binding" type="int" setter="set_binding" getter="get_binding" default="0">
+			The uniform's binding.
+		</member>
+		<member name="uniform_type" type="int" setter="set_uniform_type" getter="get_uniform_type" enum="RenderingDevice.UniformType" default="3">
+			The uniform's data type.
+		</member>
+	</members>
+</class>

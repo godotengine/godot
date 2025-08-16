@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorScriptPicker" inherits="EditorResourcePicker" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Godot editor's control for selecting the [code]script[/code] property of a [Node].
+	</brief_description>
+	<description>
+		Similar to [EditorResourcePicker] this [Control] node is used in the editor's Inspector dock, but only to edit the [code]script[/code] property of a [Node]. Default options for creating new resources of all possible subtypes are replaced with dedicated buttons that open the "Attach Node Script" dialog. Can be used with [EditorInspectorPlugin] to recreate the same behavior.
+		[b]Note:[/b] You must set the [member script_owner] for the custom context menu items to work.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="script_owner" type="Node" setter="set_script_owner" getter="get_script_owner">
+			The owner [Node] of the script property that holds the edited resource.
+		</member>
+	</members>
+</class>
