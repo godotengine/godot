@@ -1479,8 +1479,16 @@ void ConnectionsDock::_bind_methods() {
 	ClassDB::bind_method("update_tree", &ConnectionsDock::update_tree);
 }
 
-void ConnectionsDock::set_node(Node *p_node) {
-	selected_node = p_node;
+void ConnectionsDock::set_selection(const Vector<Node *> &p_nodes) {
+	if (p_nodes.size() != 1) {
+		select_a_node->show();
+		holder->hide();
+		selected_node = nullptr;
+	} else {
+		select_a_node->hide();
+		holder->show();
+		selected_node = p_nodes[0];
+	}
 	update_tree();
 }
 
@@ -1672,7 +1680,10 @@ void ConnectionsDock::update_tree() {
 ConnectionsDock::ConnectionsDock() {
 	set_name(TTR("Signals"));
 
-	VBoxContainer *vbc = this;
+	holder = memnew(VBoxContainer);
+	holder->set_v_size_flags(SIZE_EXPAND_FILL);
+	holder->hide();
+	add_child(holder);
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1680,7 +1691,7 @@ ConnectionsDock::ConnectionsDock() {
 	search_box->set_accessibility_name(TTRC("Filter Signals"));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ConnectionsDock::_filter_changed));
-	vbc->add_child(search_box);
+	holder->add_child(search_box);
 
 	tree = memnew(ConnectionsDockTree);
 	tree->set_accessibility_name(TTRC("Connections"));
@@ -1689,24 +1700,24 @@ ConnectionsDock::ConnectionsDock() {
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
 	tree->set_column_clip_content(0, true);
-	vbc->add_child(tree);
+	holder->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);
 
 	connect_button = memnew(Button);
 	connect_button->set_accessibility_name(TTRC("Connect"));
 	HBoxContainer *hb = memnew(HBoxContainer);
-	vbc->add_child(hb);
+	holder->add_child(hb);
 	hb->add_spacer();
 	hb->add_child(connect_button);
 	connect_button->connect(SceneStringName(pressed), callable_mp(this, &ConnectionsDock::_connect_pressed));
 
 	connect_dialog = memnew(ConnectDialog);
 	connect_dialog->set_process_shortcut_input(true);
-	add_child(connect_dialog);
+	holder->add_child(connect_dialog);
 
 	disconnect_all_dialog = memnew(ConfirmationDialog);
-	add_child(disconnect_all_dialog);
+	holder->add_child(disconnect_all_dialog);
 	disconnect_all_dialog->connect(SceneStringName(confirmed), callable_mp(this, &ConnectionsDock::_disconnect_all));
 	disconnect_all_dialog->set_text(TTR("Are you sure you want to remove all connections from this signal?"));
 
@@ -1714,7 +1725,7 @@ ConnectionsDock::ConnectionsDock() {
 	class_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionsDock::_handle_class_menu_option));
 	class_menu->connect("about_to_popup", callable_mp(this, &ConnectionsDock::_class_menu_about_to_popup));
 	class_menu->add_item(TTR("Open Documentation"), CLASS_MENU_OPEN_DOCS);
-	add_child(class_menu);
+	holder->add_child(class_menu);
 
 	signal_menu = memnew(PopupMenu);
 	signal_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionsDock::_handle_signal_menu_option));
@@ -1724,7 +1735,7 @@ ConnectionsDock::ConnectionsDock() {
 	signal_menu->add_item(TTR("Copy Name"), SIGNAL_MENU_COPY_NAME);
 	signal_menu->add_separator();
 	signal_menu->add_item(TTR("Open Documentation"), SIGNAL_MENU_OPEN_DOCS);
-	add_child(signal_menu);
+	holder->add_child(signal_menu);
 
 	slot_menu = memnew(PopupMenu);
 	slot_menu->connect(SceneStringName(id_pressed), callable_mp(this, &ConnectionsDock::_handle_slot_menu_option));
@@ -1732,7 +1743,7 @@ ConnectionsDock::ConnectionsDock() {
 	slot_menu->add_item(TTR("Edit..."), SLOT_MENU_EDIT);
 	slot_menu->add_item(TTR("Go to Method"), SLOT_MENU_GO_TO_METHOD);
 	slot_menu->add_shortcut(ED_SHORTCUT("connections_editor/disconnect", TTRC("Disconnect"), Key::KEY_DELETE), SLOT_MENU_DISCONNECT);
-	add_child(slot_menu);
+	holder->add_child(slot_menu);
 
 	connect_dialog->connect("connected", callable_mp(this, &ConnectionsDock::_make_or_edit_connection));
 	tree->connect(SceneStringName(item_selected), callable_mp(this, &ConnectionsDock::_tree_item_selected));
@@ -1740,4 +1751,14 @@ ConnectionsDock::ConnectionsDock() {
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &ConnectionsDock::_tree_gui_input));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
+
+	select_a_node = memnew(Label);
+	select_a_node->set_focus_mode(FOCUS_ACCESSIBILITY);
+	select_a_node->set_text(TTRC("Select a single node to edit its signals."));
+	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
+	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	select_a_node->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	select_a_node->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	add_child(select_a_node);
 }
