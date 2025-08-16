@@ -340,6 +340,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 		return;
 	}
 
+	EditorNode::get_singleton()->update_resource_count(p_node);
 	_update_node(p_node, item, part_of_subscene);
 	I->value.dirty = false;
 	I->value.can_process = p_node->can_process();
@@ -879,7 +880,6 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	if (p_node != get_scene_node() && !get_scene_node()->is_ancestor_of(p_node)) {
 		return;
 	}
-
 	node_cache.remove(p_node);
 	_update_if_clean();
 }
@@ -912,6 +912,9 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 
 	if (node_cache.current_scene_node != scene_node) {
 		_reset();
+		if (node_cache.current_scene_node != nullptr) {
+			EditorNode::get_singleton()->clear_resource_count();
+		}
 		marked.clear();
 		node_cache.current_scene_node = scene_node;
 		node_cache.force_update = true;
@@ -950,7 +953,6 @@ void SceneTreeEditor::_update_tree(bool p_scroll_to_selected) {
 			}
 			node_cache.current_pinned_node = pinned_node;
 		}
-
 		_update_node_subtree(get_scene_node(), nullptr, node_cache.force_update);
 		_compute_hash(get_scene_node(), last_hash);
 
@@ -2456,6 +2458,7 @@ void SceneTreeEditor::NodeCache::remove(Node *p_node, bool p_recursive) {
 			// If it is the root node, we leave the TreeItem and reuse it later.
 			cache.remove(I);
 		}
+		EditorNode::get_singleton()->update_resource_count(I->key, true);
 	}
 }
 
