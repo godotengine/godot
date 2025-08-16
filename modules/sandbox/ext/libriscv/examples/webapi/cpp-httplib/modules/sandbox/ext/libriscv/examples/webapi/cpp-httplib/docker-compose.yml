@@ -1,0 +1,7 @@
+services:
+  http:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/html:/html

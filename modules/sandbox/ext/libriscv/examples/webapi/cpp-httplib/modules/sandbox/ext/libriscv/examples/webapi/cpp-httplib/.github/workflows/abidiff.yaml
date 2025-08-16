@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: 2025 Andrea Pappacoda <andrea@pappacoda.it>
+# SPDX-License-Identifier: MIT
+
+name: abidiff
+
+on: [push, pull_request]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: sh
+
+jobs:
+  abi:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    container:
+      image: debian:testing
+
+    steps:
+    - name: Install dependencies
+      run: apt -y --update install --no-install-recommends
+        abigail-tools
+        ca-certificates
+        g++
+        git
+        libbrotli-dev
+        libssl-dev
+        meson
+        pkg-config
+        python3
+        zlib1g-dev
+
+    - uses: actions/checkout@v4
+      with:
+        path: current
+
+    - uses: actions/checkout@v4
+      with:
+        path: previous
+        fetch-depth: 0
+
+    - name: Checkout previous
+      working-directory: previous
+      run: |
+        git switch master
+        git describe --tags --abbrev=0 master | xargs git checkout
+
+    - name: Build current
+      working-directory: current
+      run: |
+        meson setup --buildtype=debug -Dcpp-httplib_compile=true build
+        ninja -C build
+
+    - name: Build previous
+      working-directory: previous
+      run: |
+        meson setup --buildtype=debug -Dcpp-httplib_compile=true build
+        ninja -C build
+
+    - name: Run abidiff
+      run: abidiff
+        --headers-dir1 previous/build
+        --headers-dir2 current/build
+        previous/build/libcpp-httplib.so
+        current/build/libcpp-httplib.so

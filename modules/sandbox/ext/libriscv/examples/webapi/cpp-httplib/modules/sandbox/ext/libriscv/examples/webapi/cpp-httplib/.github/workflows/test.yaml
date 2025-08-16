@@ -1,0 +1,171 @@
+name: test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      gtest_filter:
+        description: 'Google Test filter'
+      test_linux:
+        description: 'Test on Linux'
+        type: boolean
+        default: true
+      test_macos:
+        description: 'Test on MacOS'
+        type: boolean
+        default: true
+      test_windows:
+        description: 'Test on Windows'
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  GTEST_FILTER: ${{ github.event.inputs.gtest_filter || '*' }}
+
+jobs:
+  style-check:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    continue-on-error: true
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: run style check
+        run: |
+          clang-format --version
+          cd test && make style_check
+
+  build-error-check-on-32bit:
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request'  &&
+       github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_linux == 'true')
+    strategy:
+      matrix:
+        config:
+        - arch_flags: -m32
+          arch_suffix: :i386
+          name: (32-bit)
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: install libraries
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y libc6-dev${{ matrix.config.arch_suffix }} libstdc++-13-dev${{ matrix.config.arch_suffix }} \
+            libssl-dev${{ matrix.config.arch_suffix }} libcurl4-openssl-dev${{ matrix.config.arch_suffix }} \
+            zlib1g-dev${{ matrix.config.arch_suffix }} libbrotli-dev${{ matrix.config.arch_suffix }} \
+            libzstd-dev${{ matrix.config.arch_suffix }}
+      - name: build and run tests (expect failure)
+        run: cd test && make test EXTRA_CXXFLAGS="${{ matrix.config.arch_flags }}"
+        continue-on-error: true
+
+  ubuntu:
+    runs-on: ubuntu-latest
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request'  &&
+       github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_linux == 'true')
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: install libraries
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y libc6-dev${{ matrix.config.arch_suffix }} libstdc++-13-dev${{ matrix.config.arch_suffix }} \
+            libssl-dev${{ matrix.config.arch_suffix }} libcurl4-openssl-dev${{ matrix.config.arch_suffix }} \
+            zlib1g-dev${{ matrix.config.arch_suffix }} libbrotli-dev${{ matrix.config.arch_suffix }} \
+            libzstd-dev${{ matrix.config.arch_suffix }}
+      - name: build and run tests
+        run: cd test && make EXTRA_CXXFLAGS="${{ matrix.config.arch_flags }}"
+      - name: run fuzz test target
+        run: cd test && make EXTRA_CXXFLAGS="${{ matrix.config.arch_flags }}" fuzz_test
+
+  macos:
+    runs-on: macos-latest
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request'  &&
+       github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_macos == 'true')
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: build and run tests
+        run: cd test && make
+      - name: run fuzz test target
+        run: cd test && make fuzz_test
+
+  windows:
+    runs-on: windows-latest
+    if: >
+      (github.event_name == 'push') ||
+      (github.event_name == 'pull_request'  &&
+       github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_windows == 'true')
+    strategy:
+      matrix:
+        config:
+        - with_ssl: false
+          compiled: false
+          run_tests: true
+          name: without SSL
+        - with_ssl: true
+          compiled: false
+          run_tests: true
+          name: with SSL
+        - with_ssl: false
+          compiled: true
+          run_tests: false
+          name: compiled
+    name: windows ${{ matrix.config.name }}
+    steps:
+    - name: Prepare Git for Checkout on Windows
+      run: |
+        git config --global core.autocrlf false
+        git config --global core.eol lf
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+    - name: Setup msbuild on windows
+      uses: microsoft/setup-msbuild@v2
+    - name: Install vcpkg dependencies
+      run: vcpkg install gtest curl zlib brotli zstd
+    - name: Install OpenSSL
+      if: ${{ matrix.config.with_ssl }}
+      run: choco install openssl --version 3.5.2 # workaround for chocolatey issue with the latest OpenSSL
+    - name: Configure CMake ${{ matrix.config.name }}
+      run: >
+        cmake -B build -S .
+        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake
+        -DHTTPLIB_TEST=ON
+        -DHTTPLIB_COMPILE=${{ matrix.config.compiled && 'ON' || 'OFF' }}
+        -DHTTPLIB_REQUIRE_ZLIB=ON
+        -DHTTPLIB_REQUIRE_BROTLI=ON
+        -DHTTPLIB_REQUIRE_ZSTD=ON
+        -DHTTPLIB_REQUIRE_OPENSSL=${{ matrix.config.with_ssl && 'ON' || 'OFF' }}
+    - name: Build ${{ matrix.config.name }}
+      run: cmake --build build --config Release -- /v:m /clp:ShowCommandLine
+    - name: Run tests ${{ matrix.config.name }}
+      if: ${{ matrix.config.run_tests }}
+      run: ctest --output-on-failure --test-dir build -C Release
+
+    env:
+      VCPKG_ROOT: "C:/vcpkg"
+      VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"

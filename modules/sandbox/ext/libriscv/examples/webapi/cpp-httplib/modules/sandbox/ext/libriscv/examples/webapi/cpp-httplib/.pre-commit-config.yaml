@@ -1,0 +1,7 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.8  # 最新バージョンを使用
+    hooks:
+      - id: clang-format
+        files: \.(cpp|cc|h)$
+        args: [-i]  # インプレースで修正

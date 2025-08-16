@@ -1,0 +1,20 @@
+# SPDX-FileCopyrightText: 2021 Andrea Pappacoda
+#
+# SPDX-License-Identifier: MIT
+
+option('openssl', type: 'feature', value: 'auto', description: 'Enable OpenSSL support')
+option('zlib',    type: 'feature', value: 'auto', description: 'Enable zlib support')
+option('brotli',  type: 'feature', value: 'auto', description: 'Enable Brotli support')
+option('macosx_keychain', type: 'feature', value: 'auto', description: 'Enable loading certs from the Keychain on Apple devices')
+option('non_blocking_getaddrinfo', type: 'feature', value: 'auto', description: 'Enable asynchronous name lookup')
+option('compile', type: 'boolean', value: false,  description: 'Split the header into a compilable header & source file (requires python3)')
+option('test',    type: 'boolean', value: false,  description: 'Build tests')
+
+# Old option names
+option('cpp-httplib_openssl', type: 'feature', deprecated: 'openssl')
+option('cpp-httplib_zlib',    type: 'feature', deprecated: 'zlib')
+option('cpp-httplib_brotli',  type: 'feature', deprecated: 'brotli')
+option('cpp-httplib_macosx_keychain', type: 'feature', deprecated: 'macosx_keychain')
+option('cpp-httplib_non_blocking_getaddrinfo', type: 'feature', deprecated: 'non_blocking_getaddrinfo')
+option('cpp-httplib_compile', type: 'boolean', value: false, deprecated: 'compile')
+option('cpp-httplib_test',    type: 'boolean', value: false, deprecated: 'test')

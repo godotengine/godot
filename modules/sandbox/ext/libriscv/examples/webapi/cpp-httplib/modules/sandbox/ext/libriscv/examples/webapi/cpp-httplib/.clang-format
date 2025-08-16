@@ -1,0 +1,5 @@
+BasedOnStyle: LLVM
+AllowShortBlocksOnASingleLine: true
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: true
+Cpp11BracedListStyle: true

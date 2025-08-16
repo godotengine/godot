@@ -1,0 +1,20 @@
+services:
+  squid_basic:
+    image: squid_basic
+    restart: always
+    ports:
+      - "3128:3128"
+    build:
+      context: ./
+      args:
+        auth: basic
+
+  squid_digest:
+    image: squid_digest
+    restart: always
+    ports:
+      - "3129:3129"
+    build:
+      context: ./
+      args:
+        auth: digest

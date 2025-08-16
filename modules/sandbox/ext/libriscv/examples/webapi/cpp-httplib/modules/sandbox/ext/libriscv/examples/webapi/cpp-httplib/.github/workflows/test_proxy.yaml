@@ -1,0 +1,20 @@
+name: Proxy Test
+
+on: [push, pull_request]
+
+jobs:
+  test-proxy:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential libssl-dev zlib1g-dev libcurl4-openssl-dev libbrotli-dev libzstd-dev netcat-openbsd
+        
+    - name: Run proxy tests
+      run: |
+        cd test && make proxy
