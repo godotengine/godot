@@ -121,7 +121,7 @@
 		</method>
 		<method name="get_forced_export_files" qualifiers="static">
 			<return type="PackedStringArray" />
-			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="0" name="preset" type="EditorExportPreset" default="null" />
 			<description>
 				Returns array of core file names that always should be exported regardless of preset config.
 			</description>
