@@ -390,6 +390,8 @@ private:
 		double numeric_input = 0.0;
 		bool numeric_negate = false;
 		int numeric_next_decimal = 0;
+
+		HashMap<Node3D *, Transform3D> children_original_globals;
 	} _edit;
 
 	struct Cursor {
@@ -655,6 +657,7 @@ public:
 		TOOL_OPT_LOCAL_COORDS,
 		TOOL_OPT_RELATIVE_TRANSFORM,
 		TOOL_OPT_USE_SNAP,
+		TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM,
 		TOOL_OPT_MAX
 
 	};
@@ -747,6 +750,7 @@ private:
 		MENU_TOOL_LOCAL_COORDS,
 		MENU_TOOL_RELATIVE_TRANSFORM,
 		MENU_TOOL_USE_SNAP,
+		MENU_TOOL_PRESERVE_CHILDREN_TRANSFORM,
 		MENU_TRANSFORM_CONFIGURE_SNAP,
 		MENU_TRANSFORM_DIALOG,
 		MENU_VIEW_USE_1_VIEWPORT,
@@ -962,6 +966,7 @@ public:
 	bool are_local_coords_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->is_pressed(); }
 	void set_local_coords_enabled(bool p_on);
 	bool is_relative_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_RELATIVE_TRANSFORM]->is_pressed(); }
+	bool is_preserve_children_transform_enabled() const { return tool_option_button[Node3DEditor::TOOL_OPT_PRESERVE_CHILDREN_TRANSFORM]->is_pressed(); }
 	bool is_snap_enabled() const { return snap_enabled ^ snap_key_enabled; }
 	real_t get_translate_snap() const;
 	real_t get_rotate_snap() const;
