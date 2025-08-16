@@ -1,0 +1,204 @@
+# Godot auto generated files
+*.gen.*
+.import/
+.godot/
+/gen/
+
+# Godot 3.x ignores
+include/gen
+src/gen
+
+# Build configuration.
+/custom.py
+
+# Misc
+logs/*
+*.log
+
+# The default cache directory
+cache/
+
+# Binaries
+*.o
+*.os
+*.so
+*.obj
+*.bc
+*.pyc
+*.dblite
+*.pdb
+*.lib
+bin
+*.config
+*.creator
+*.creator.user
+*.files
+*.includes
+*.idb
+
+# Gprof output
+gmon.out
+
+# Vim temp files
+*.swo
+*.swp
+
+# Qt project files
+*.config
+*.creator
+*.creator.*
+*.files
+*.includes
+*.cflags
+*.cxxflags
+
+# Eclipse CDT files
+.cproject
+.settings/
+
+# Geany/geany-plugins files
+*.geany
+.geanyprj
+
+# Misc
+.DS_Store
+logs/
+
+# for projects that use SCons for building: http://http://www.scons.org/
+.sconf_temp
+.sconsign.dblite
+*.pyc
+
+# Visual C++ cache files
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+*.VC.VC.opendb
+enc_temp_folder/
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+
+# CodeLite project files
+*.project
+*.workspace
+.codelite/
+
+# Windows Azure Build Output
+csx/
+*.build.csdef
+
+# Windows Store app package directory
+AppPackages/
+
+# Others
+sql/
+*.[Cc]ache
+ClientBin/
+[Ss]tyle[Cc]op.*
+~$*
+*~
+*.dbmdl
+*.dbproj.schemaview
+*.pfx
+*.publishsettings
+node_modules/
+__pycache__/
+
+# KDE
+.directory
+
+#Kdevelop project files
+*.kdev4
+
+# xCode
+xcuserdata
+
+# RIA/Silverlight projects
+Generated_Code/
+
+# Backup & report files from converting an old project file to a newer
+# Visual Studio version. Backup files are not needed, because we have git ;-)
+_UpgradeReport_Files/
+Backup*/
+UpgradeLog*.XML
+UpgradeLog*.htm
+
+# SQL Server files
+App_Data/*.mdf
+App_Data/*.ldf
+
+# Business Intelligence projects
+*.rdl.data
+*.bim.layout
+*.bim_*.settings
+
+# Microsoft Fakes
+FakesAssemblies/
+
+# =========================
+# Windows detritus
+# =========================
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+logo.h
+*.autosave
+
+# https://github.com/github/gitignore/blob/master/Global/Tags.gitignore
+# Ignore tags created by etags, ctags, gtags (GNU global) and cscope
+TAGS
+!TAGS/
+tags
+*.tags
+!tags/
+gtags.files
+GTAGS
+GRTAGS
+GPATH
+cscope.files
+cscope.out
+cscope.in.out
+cscope.po.out
+godot.creator.*
+
+# Visual Studio 2017 and Visual Studio Code workspace folder
+/.vs
+/.vscode
+
+# Visual Studio Code workspace file
+*.code-workspace
+
+# Scons progress indicator
+.scons_node_count
+
+# ccls cache (https://github.com/MaskRay/ccls)
+.ccls-cache/
+
+# compile commands (https://clang.llvm.org/docs/JSONCompilationDatabase.html)
+compile_commands.json
+
+# Python development
+.venv
+venv
+
+# Clion Configuration
+.idea/
+cmake-build*/
+
+# CMake related
+CMakeUserPresets.json

@@ -1,0 +1,24 @@
+name: Restore Godot build cache
+description: Restore Godot build cache.
+inputs:
+  cache-name:
+    description: The cache base name (job name by default).
+    default: ${{ github.job }}
+  scons-cache:
+    description: The SCons cache path.
+    default: ${{ github.workspace }}/.scons-cache/
+
+runs:
+  using: composite
+  steps:
+    - name: Restore SCons cache directory
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ inputs.scons-cache }}
+        key: ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
+
+        restore-keys: |
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-refs/heads/${{ env.GODOT_BASE_BRANCH }}
+          ${{ inputs.cache-name }}-${{ env.GODOT_BASE_BRANCH }}
