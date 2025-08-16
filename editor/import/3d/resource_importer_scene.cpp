@@ -2608,9 +2608,10 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
 		mesh_node->merge_meta_from(src_mesh_node);
 
-		if (src_mesh_node->get_mesh().is_valid()) {
+		Ref<ImporterMesh> importer_mesh = src_mesh_node->get_mesh();
+		if (importer_mesh.is_valid()) {
 			Ref<ArrayMesh> mesh;
-			if (!src_mesh_node->get_mesh()->has_mesh()) {
+			if (!importer_mesh->has_mesh()) {
 				//do mesh processing
 
 				bool generate_lods = p_generate_lods;
@@ -2619,7 +2620,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				bool bake_lightmaps = p_light_bake_mode == LIGHT_BAKE_STATIC_LIGHTMAPS;
 				String save_to_file;
 
-				String mesh_id = src_mesh_node->get_mesh()->get_meta("import_id", src_mesh_node->get_mesh()->get_name());
+				String mesh_id = importer_mesh->get_meta("import_id", importer_mesh->get_name());
 
 				if (!mesh_id.is_empty() && p_mesh_data.has(mesh_id)) {
 					Dictionary mesh_settings = p_mesh_data[mesh_id];
@@ -2673,7 +2674,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 
 					for (int i = 0; i < post_importer_plugins.size(); i++) {
-						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH, nullptr, src_mesh_node, src_mesh_node->get_mesh(), mesh_settings);
+						post_importer_plugins.write[i]->internal_process(EditorScenePostImportPlugin::INTERNAL_IMPORT_CATEGORY_MESH, nullptr, src_mesh_node, importer_mesh, mesh_settings);
 					}
 				}
 
@@ -2686,7 +2687,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 
 					Vector<uint8_t> lightmap_cache;
-					src_mesh_node->get_mesh()->lightmap_unwrap_cached(xf, p_lightmap_texel_size, p_src_lightmap_cache, lightmap_cache);
+					importer_mesh->lightmap_unwrap_cached(xf, p_lightmap_texel_size, p_src_lightmap_cache, lightmap_cache);
 
 					if (!lightmap_cache.is_empty()) {
 						if (r_lightmap_caches.is_empty()) {
@@ -2711,14 +2712,14 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 
 				if (generate_lods) {
 					Array skin_pose_transform_array = _get_skinned_pose_transforms(src_mesh_node);
-					src_mesh_node->get_mesh()->generate_lods(merge_angle, skin_pose_transform_array);
+					importer_mesh->generate_lods(merge_angle, skin_pose_transform_array);
 				}
 
 				if (create_shadow_meshes) {
-					src_mesh_node->get_mesh()->create_shadow_mesh();
+					importer_mesh->create_shadow_mesh();
 				}
 
-				src_mesh_node->get_mesh()->optimize_indices();
+				importer_mesh->optimize_indices();
 
 				if (!save_to_file.is_empty()) {
 					String save_res_path = ResourceUID::ensure_path(save_to_file);
@@ -2727,7 +2728,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 						//if somehow an existing one is useful, create
 						existing->reset_state();
 					}
-					mesh = src_mesh_node->get_mesh()->get_mesh(existing);
+					mesh = importer_mesh->get_mesh(existing);
 
 					Error err = ResourceSaver::save(mesh, save_res_path); //override
 					if (err != OK) {
@@ -2741,19 +2742,19 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					mesh->set_path(save_res_path, true); //takeover existing, if needed
 
 				} else {
-					mesh = src_mesh_node->get_mesh()->get_mesh();
+					mesh = importer_mesh->get_mesh();
 				}
 			} else {
-				mesh = src_mesh_node->get_mesh()->get_mesh();
+				mesh = importer_mesh->get_mesh();
 			}
 
 			if (mesh.is_valid()) {
-				_copy_meta(src_mesh_node->get_mesh().ptr(), mesh.ptr());
+				_copy_meta(importer_mesh.ptr(), mesh.ptr());
 				mesh_node->set_mesh(mesh);
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
 					mesh_node->set_surface_override_material(i, src_mesh_node->get_surface_material(i));
 				}
-				mesh->merge_meta_from(*src_mesh_node->get_mesh());
+				mesh->merge_meta_from(*importer_mesh);
 			}
 		}
 
