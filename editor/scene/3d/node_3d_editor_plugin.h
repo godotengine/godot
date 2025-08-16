@@ -871,6 +871,7 @@ private:
 	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
 	bool gizmos_dirty = false;
+	HashSet<Node3D *> previous_selection;
 
 	static Node3DEditor *singleton;
 
