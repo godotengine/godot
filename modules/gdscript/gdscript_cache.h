@@ -78,6 +78,10 @@ public:
 	~GDScriptParserRef();
 };
 
+namespace GDScriptTests {
+class TestGDScriptCacheAccessor;
+}
+
 class GDScriptCache {
 	// String key is full path.
 	HashMap<String, GDScriptParserRef *> parser_map;
@@ -91,6 +95,7 @@ class GDScriptCache {
 	friend class GDScript;
 	friend class GDScriptParserRef;
 	friend class GDScriptInstance;
+	friend class GDScriptTests::TestGDScriptCacheAccessor;
 
 	static GDScriptCache *singleton;
 
