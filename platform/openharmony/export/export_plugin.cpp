@@ -300,29 +300,33 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 	String project_name = p_path.get_file().get_basename();
 	String project_dir = base_dir.path_join(project_name);
 	String file_ext = p_path.get_extension();
-	bool is_windows = OS::get_singleton()->get_name() == "Windows";
+	String path_to_validate = project_dir;
 	bool is_project_dir_valid = true;
 
-	if (project_dir.is_empty() || project_dir.ends_with(".")) {
+#ifdef WINDOWS_ENABLED
+	int first_at = path_to_validate.find_char('\\');
+	if (first_at < 0) {
+		first_at = path_to_validate.find_char('/');
+	}
+	if (path_to_validate.find_char(':') + 1 != first_at) {
 		is_project_dir_valid = false;
 	} else {
-		Vector<String> parts = project_dir.replace("\\", "/").split("/");
-		if (is_windows) {
-			parts.remove_at(0);
-		}
-		for (const String &part : parts) {
-			for (int i = 0; i < part.length(); i++) {
-				char32_t ch = part[i];
-				if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '-')) {
-					is_project_dir_valid = false;
-					break;
-				}
+		path_to_validate = path_to_validate.replace("\\", "/");
+		path_to_validate = path_to_validate.substr(first_at);
+	}
+#endif
+	if (is_project_dir_valid) {
+		for (int i = 0; i < path_to_validate.length(); i++) {
+			char32_t ch = path_to_validate[i];
+			if (!((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '.' || ch == '_' || ch == '-' || ch == '/')) {
+				is_project_dir_valid = false;
+				break;
 			}
 		}
 	}
 
 	if (!is_project_dir_valid) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Path"), TTR("Invalid path. Select a path that contains only letters, digits, periods (.), underscores (_), and hyphens (-), and does not end with a period."));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Path"), vformat(TTR("Invalid path \"%s\". Select a path that contains only letters, digits, periods (.), underscores (_), and hyphens (-), and does not end with a period."), project_dir));
 		return ERR_FILE_BAD_PATH;
 	}
 
@@ -741,12 +745,24 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 			return ERR_FILE_NOT_FOUND;
 		}
 		hvigor_cmd = hvigor_cmd_ide;
-		node_bin_path = tool_path.path_join(is_windows ? "/tools/node" : "/tools/node/bin");
+#ifdef WINDOWS_ENABLED
+		node_bin_path = tool_path.path_join("/tools/node");
+#else
+		node_bin_path = tool_path.path_join("/tools/node/bin");
+#endif
 		if (java_home.is_empty()) {
-			java_home = tool_path.path_join(OS::get_singleton()->get_name() == "macOS" ? "/jbr/Contents/Home" : "/jbr");
+#ifdef MACOS_ENABLED
+			java_home = tool_path.path_join("/jbr/Contents/Home");
+#else
+			java_home = tool_path.path_join("/jbr");
+#endif
 		}
 	} else {
-		node_bin_path = tool_path.path_join(is_windows ? "/tool/node" : "/tool/node/bin");
+#ifdef WINDOWS_ENABLED
+		node_bin_path = tool_path.path_join("/tool/node");
+#else
+		node_bin_path = tool_path.path_join("/tool/node/bin");
+#endif
 		if (java_home.is_empty()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Build"), TTR("Java SDK path is required when using command line tools. Please set it in the Editor Settings (Export > OpenHarmony > Java SDK Path)."));
 			return ERR_FILE_NOT_FOUND;
@@ -780,7 +796,11 @@ Error EditorExportPlatformOpenHarmony::export_project_helper(const Ref<EditorExp
 		return err;
 	}
 	String system_path = OS::get_singleton()->get_environment("PATH");
-	String system_path_sep = is_windows ? ";" : ":";
+#ifdef WINDOWS_ENABLED
+	String system_path_sep = ";";
+#else
+	String system_path_sep = ":";
+#endif
 	system_path = node_bin_path + system_path_sep + java_bin_path + system_path_sep + system_path;
 	OS::get_singleton()->set_environment("PATH", system_path);
 	OS::get_singleton()->set_environment("DEVECO_SDK_HOME", get_sdk_path());
@@ -1225,10 +1245,11 @@ String EditorExportPlatformOpenHarmony::get_hvigor_path() const {
 	if (tool_path.is_empty()) {
 		return "";
 	}
+#ifdef WINDOWS_ENABLED
+	String exe_ext = ".bat";
+#else
 	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".bat";
-	}
+#endif
 	return tool_path.path_join("/hvigor/bin/hvigorw" + exe_ext);
 }
 
@@ -1237,10 +1258,11 @@ String EditorExportPlatformOpenHarmony::get_hvigor_path_ide() const {
 	if (tool_path.is_empty()) {
 		return "";
 	}
+#ifdef WINDOWS_ENABLED
+	String exe_ext = ".bat";
+#else
 	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".bat";
-	}
+#endif
 	return tool_path.path_join("/tools/hvigor/bin/hvigorw" + exe_ext);
 }
 
@@ -1249,10 +1271,11 @@ String EditorExportPlatformOpenHarmony::get_hdc_path() const {
 	if (sdk_path.is_empty()) {
 		return "";
 	}
+#ifdef WINDOWS_ENABLED
+	String exe_ext = ".exe";
+#else
 	String exe_ext;
-	if (OS::get_singleton()->get_name() == "Windows") {
-		exe_ext = ".exe";
-	}
+#endif
 	return sdk_path.path_join("/default/openharmony/toolchains/hdc" + exe_ext);
 }
 
