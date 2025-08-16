@@ -693,7 +693,10 @@ public:
 
 	FUNCRIDSPLIT(viewport)
 
+#ifndef XR_DISABLED
 	FUNC2(viewport_set_use_xr, RID, bool)
+#endif // XR_DISABLED
+
 	FUNC3(viewport_set_size, RID, int, int)
 
 	FUNC2(viewport_set_active, RID, bool)
