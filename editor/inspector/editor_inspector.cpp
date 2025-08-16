@@ -4977,11 +4977,24 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
+		Node *node = Object::cast_to<Node>(object);
 		if (valid) {
+			// TODO Check if it's a resource/subresource. It will check Resources only for now.
+			Ref<Resource> res = Object::cast_to<Resource>(value);
+			Ref<Resource> resprev = Object::cast_to<Resource>(p_value);
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
+			}
+			if (node) {
+				if (res.is_valid()) {
+					undo_redo->add_do_method(EditorNode::get_singleton(), "remove_node_reference", res, node);
+				}
+				if (resprev.is_valid()) {
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "remove_node_reference", resprev, node);
+				}
+				undo_redo->add_undo_method(EditorNode::get_singleton(), "update_resource_count", node, false);
 			}
 		}
 
@@ -5046,6 +5059,10 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->add_undo_method(this, "emit_signal", _prop_edited, p_name);
 		undo_redo->commit_action();
+
+		if (node) {
+			EditorNode::get_singleton()->update_resource_count(node);
+		}
 	}
 
 	if (editor_property_map.has(p_name)) {

@@ -1707,6 +1707,99 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	file->popup_file_dialog();
 }
 
+void EditorNode::_update_subresouces_count(Node *p_node, Resource *p_res, bool remove) {
+	List<PropertyInfo> pinfo;
+	p_res->get_property_list(&pinfo);
+
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script") {
+			continue;
+		}
+		Variant value = p_res->get(E.name);
+		HashSet<Ref<Resource>> resources;
+		Resource::find_sub_resources(value, resources);
+		for (Ref<Resource> R : resources) {
+			if (R.is_null()) {
+				continue;
+			}
+			if (!R->is_built_in() || R->get_path().get_slice("::", 0) != get_edited_scene()->get_scene_file_path()) {
+				if (!R->get_path().is_empty()) {
+					continue;
+				}
+			}
+			Resource *res = R.ptr();
+			if (res->is_local_to_scene()) {
+				continue;
+			}
+			if (resource_count[res].find(p_node)) {
+				if (remove) {
+					resource_count[res].erase(p_node);
+					_update_subresouces_count(p_node, res, remove);
+				}
+			} else {
+				resource_count[res].push_back(p_node);
+				_update_subresouces_count(p_node, res, remove);
+			}
+		}
+	}
+}
+
+void EditorNode::update_resource_count(Node *p_node, bool remove) {
+	if (!get_edited_scene()) { // TODO Nodes pasted to an empty scene should still have their resources updated.
+		return;
+	}
+
+	List<PropertyInfo> pinfo;
+	p_node->get_property_list(&pinfo);
+
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script") {
+			continue;
+		}
+
+		Variant value = p_node->get(E.name);
+
+		if (value.get_type() != Variant::OBJECT) {
+			continue;
+		}
+		Ref<Resource> res_ref = value;
+		if (res_ref.is_null() || E.name == "script") {
+			continue;
+		}
+
+		if (!res_ref->is_built_in() || res_ref->get_path().get_slice("::", 0) != get_edited_scene()->get_scene_file_path()) {
+			if (!res_ref->get_path().is_empty()) {
+				continue;
+			}
+		}
+
+		Resource *res = res_ref.ptr();
+		if (res->is_local_to_scene()) {
+			continue;
+		}
+		if (resource_count[res].find(p_node)) {
+			if (remove) {
+				resource_count[res].erase(p_node);
+				_update_subresouces_count(p_node, res, remove);
+			}
+		} else {
+			resource_count[res].push_back(p_node);
+			_update_subresouces_count(p_node, res, remove);
+		}
+	}
+	emit_signal(SNAME("resource_counter_changed"));
+}
+
+int EditorNode::get_resouce_count(Ref<Resource> p_res) const {
+	return (resource_count.has(p_res.ptr())) ? resource_count[p_res.ptr()].size() : 1;
+}
+
+void EditorNode::remove_node_reference(Ref<Resource> p_res, Node *p_node) {
+	if (resource_count.has(p_res.ptr())) {
+		resource_count[p_res.ptr()].erase(p_node);
+	}
+}
+
 void EditorNode::_menu_option(int p_option) {
 	_menu_option_confirm(p_option, false);
 }
@@ -7260,6 +7353,9 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
+	ClassDB::bind_method("remove_node_reference", &EditorNode::remove_node_reference);
+	ClassDB::bind_method("update_resource_count", &EditorNode::update_resource_count);
+
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
@@ -7267,6 +7363,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
+	ADD_SIGNAL(MethodInfo("resource_counter_changed"));
 }
 
 static Node *_resource_get_edited_scene() {
