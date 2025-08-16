@@ -33,6 +33,7 @@
 #include "editor/debugger/debug_adapter/debug_adapter_types.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/editor_node.h"
 #include "editor/export/editor_export_platform.h"
 #include "editor/run/editor_run_bar.h"
 #include "editor/script/script_editor_plugin.h"
@@ -159,7 +160,13 @@ Dictionary DebugAdapterParser::req_initialize(const Dictionary &p_params) const 
 }
 
 Dictionary DebugAdapterParser::req_disconnect(const Dictionary &p_params) const {
-	if (!DebugAdapterProtocol::get_singleton()->get_current_peer()->attached) {
+	const Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer();
+	if (peer->secondary_editor_pid != 0) {
+		OS::get_singleton()->kill(peer->secondary_editor_pid);
+		peer->secondary_editor_pid = 0;
+	}
+	// call for both game and secondary editor
+	if (!peer->attached) {
 		EditorRunBar::get_singleton()->stop_playing();
 	}
 
@@ -198,6 +205,60 @@ Vector<String> DebugAdapterParser::_extract_play_arguments(const Dictionary &arg
 	return play_args;
 }
 
+Dictionary DebugAdapterParser::_launch_secondary_editor(const Dictionary &p_params, const Dictionary &args) const {
+	// Launch another Godot editor instance for this project and point it to our debugger via --remote-debug
+	const int port = args.get("remoteDebugPort", -1);
+	if (port <= 0) {
+		return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
+	}
+
+	List<String> editor_args;
+	editor_args.push_back("--editor");
+	if (const String resource_path = ProjectSettings::get_singleton()->get_resource_path(); !resource_path.is_empty()) {
+		editor_args.push_back("--path");
+		editor_args.push_back(resource_path.replace(" ", "%20"));
+	}
+
+	editor_args.push_back("--remote-debug");
+
+	// Ensure the current editor debugger server is started on the requested port so the new editor can connect back
+	const String uri = vformat("tcp://127.0.0.1:%d", port);
+	EditorDebuggerNode::get_singleton()->start(uri);
+	editor_args.push_back(uri);
+
+	// Pass current breakpoints
+	{
+		List<String> breakpoints;
+		EditorNode::get_editor_data().get_editor_breakpoints(&breakpoints);
+		if (!breakpoints.is_empty()) {
+			editor_args.push_back("--breakpoints");
+			String bpoints;
+			for (const List<String>::Element *E = breakpoints.front(); E; E = E->next()) {
+				bpoints += E->get().replace(" ", "%20");
+				if (E->next()) {
+					bpoints += ",";
+				}
+			}
+			editor_args.push_back(bpoints);
+		}
+	}
+
+	OS::ProcessID pid = 0;
+	Error err = OS::get_singleton()->create_instance(editor_args, &pid);
+	if (err != OK) {
+		return prepare_error_response(p_params, DAP::ErrorType::UNKNOWN);
+	}
+
+	// Track the spawned editor process so we can kill it when the DAP session stops.
+	if (Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer(); peer.is_valid()) {
+		peer->secondary_editor_pid = pid;
+	}
+
+	DebugAdapterProtocol::get_singleton()->get_current_peer()->attached = false;
+	DebugAdapterProtocol::get_singleton()->notify_process();
+	return prepare_success_response(p_params);
+}
+
 Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const {
 	Dictionary args = p_params["arguments"];
 	ScriptEditorDebugger *dbg = EditorDebuggerNode::get_singleton()->get_default_debugger();
@@ -206,6 +267,9 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 	}
 
 	String platform_string = args.get("platform", "host");
+	if (platform_string == "editor") {
+		return _launch_secondary_editor(p_params, args);
+	}
 	if (platform_string == "host") {
 		Vector<String> play_args = _extract_play_arguments(args);
 		const String scene = args.get("scene", "main");
@@ -284,6 +348,12 @@ Dictionary DebugAdapterParser::req_restart(const Dictionary &p_params) const {
 }
 
 Dictionary DebugAdapterParser::req_terminate(const Dictionary &p_params) const {
+	Ref<DAPeer> peer = DebugAdapterProtocol::get_singleton()->get_current_peer();
+	// Kill spawned secondary editor if present.
+	if (peer.is_valid() && peer->secondary_editor_pid != 0) {
+		OS::get_singleton()->kill(peer->secondary_editor_pid);
+		peer->secondary_editor_pid = 0;
+	}
 	EditorRunBar::get_singleton()->stop_playing();
 
 	return prepare_success_response(p_params);

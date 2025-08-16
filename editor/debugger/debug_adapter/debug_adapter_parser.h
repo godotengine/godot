@@ -88,6 +88,7 @@ public:
 	// Internal requests
 	Vector<String> _extract_play_arguments(const Dictionary &args) const;
 	Dictionary _launch_process(const Dictionary &p_params) const;
+	Dictionary _launch_secondary_editor(const Dictionary &p_params, const Dictionary &args) const;
 
 	// Events
 	Dictionary ev_initialized() const;
