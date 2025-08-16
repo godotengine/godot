@@ -416,6 +416,9 @@
 		<member name="scroll_offset" type="Vector2" setter="set_scroll_offset" getter="get_scroll_offset" default="Vector2(0, 0)">
 			The scroll offset.
 		</member>
+		<member name="scrollbar_hidden" type="bool" setter="set_scrollbar_hidden" getter="is_scrollbar_hidden" default="false">
+			If [code]true[/code], the horizontal and vertical scrollbars will not be shown.
+		</member>
 		<member name="separate_snapping_distances" type="bool" setter="set_separate_snapping_distances" getter="is_separate_snapping_distances" default="false">
 			If [code]true[/code], splits [member snapping_distance] into separate values for the x and y axes, exposed as [member snapping_distances].
 		</member>
