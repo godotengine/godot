@@ -209,7 +209,9 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 	if (platform_string == "host") {
 		Vector<String> play_args = _extract_play_arguments(args);
 
-		if (args.has("scene")) {
+		if (!args.has("scene")) {
+			EditorRunBar::get_singleton()->play_main_scene(false, play_args);
+		} else {
 			const String scene = args["scene"];
 			if (scene == "main") {
 				EditorRunBar::get_singleton()->play_main_scene(false, play_args);
@@ -218,8 +220,6 @@ Dictionary DebugAdapterParser::_launch_process(const Dictionary &p_params) const
 			} else {
 				EditorRunBar::get_singleton()->play_custom_scene(scene, play_args);
 			}
-		} else {
-			EditorRunBar::get_singleton()->play_main_scene(false, play_args);
 		}
 	} else {
 		int device = args.get("device", -1);
