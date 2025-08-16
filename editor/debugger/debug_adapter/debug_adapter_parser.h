@@ -86,7 +86,9 @@ public:
 	Dictionary req_godot_put_msg(const Dictionary &p_params) const;
 
 	// Internal requests
+	Vector<String> _extract_play_arguments(const Dictionary &args) const;
 	Dictionary _launch_process(const Dictionary &p_params) const;
+	Dictionary _launch_editor_instance(const Dictionary &p_params, const Dictionary &args) const;
 
 	// Events
 	Dictionary ev_initialized() const;

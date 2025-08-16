@@ -33,6 +33,7 @@
 #include "core/debugger/debugger_marshalls.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
+#include "core/os/os.h"
 
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
@@ -64,6 +65,7 @@ struct DAPeer : RefCounted {
 	// Internal client info
 	bool attached = false;
 	Dictionary pending_launch;
+	OS::ProcessID secondary_editor_pid = 0;
 
 	Error handle_data();
 	Error send_data();
