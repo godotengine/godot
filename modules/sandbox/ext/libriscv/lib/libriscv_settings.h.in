@@ -1,0 +1,31 @@
+#ifndef LIBRISCV_SETTINGS_H
+#define LIBRISCV_SETTINGS_H
+
+/*
+ * These values are automatically set according to their cmake variables.
+ */
+#cmakedefine RISCV_DEBUG
+#cmakedefine RISCV_EXT_A
+#cmakedefine RISCV_EXT_C
+#cmakedefine RISCV_EXT_V
+#cmakedefine RISCV_32I
+#cmakedefine RISCV_64I
+#cmakedefine RISCV_128I
+#cmakedefine RISCV_FCSR
+#cmakedefine RISCV_EXPERIMENTAL
+#cmakedefine RISCV_MEMORY_TRAPS
+#cmakedefine RISCV_MULTIPROCESS
+#cmakedefine RISCV_BINARY_TRANSLATION
+#cmakedefine RISCV_FLAT_RW_ARENA
+#cmakedefine RISCV_ENCOMPASSING_ARENA
+#cmakedefine RISCV_THREADED
+#cmakedefine RISCV_TAILCALL_DISPATCH
+#cmakedefine RISCV_LIBTCC
+
+/*
+ * Version information.
+ */
+#define RISCV_VERSION_MAJOR @RISCV_VERSION_MAJOR@
+#define RISCV_VERSION_MINOR @RISCV_VERSION_MINOR@
+
+#endif /* LIBRISCV_SETTINGS_H */

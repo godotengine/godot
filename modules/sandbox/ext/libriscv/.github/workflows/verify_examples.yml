@@ -1,0 +1,59 @@
+name: Verify example programs
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y gcc-12-riscv64-linux-gnu g++-12-riscv64-linux-gnu gcc g++
+
+    - name: Configure emulator
+      env:
+        CC: gcc
+        CXX: g++
+        BUILD_TYPE: Release
+      run: cmake emulator -B ${{github.workspace}}/build_emu -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Configure linux64
+      env:
+        CC: riscv64-linux-gnu-gcc-12
+        CXX: riscv64-linux-gnu-g++-12
+        BUILD_TYPE: Release
+      run: cmake binaries/linux64 -B ${{github.workspace}}/build_linux64 -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build the emulator
+      run: cmake --build ${{github.workspace}}/build_emu
+
+    - name: Build the linux64 example program
+      run: cmake --build ${{github.workspace}}/build_linux64
+
+    - name: Run linux64 example program
+      working-directory: ${{github.workspace}}/build_emu
+      run: |
+        ./rvlinux ${{github.workspace}}/build_linux64/hello_world > output.log
+        if ! grep -q "SUCCESS" "output.log"; then cat "output.log"; exit 1; fi
+
+    - name: Configure STREAM
+      env:
+        CC: riscv64-linux-gnu-gcc-12
+        BUILD_TYPE: Release
+      run: cmake binaries/STREAM -B ${{github.workspace}}/build_STREAM -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build the STREAM benchmark
+      run: cmake --build ${{github.workspace}}/build_STREAM
+
+    - name: Run STREAM benchmark in emulator
+      working-directory: ${{github.workspace}}/build_emu
+      run: |
+        ./rvlinux ${{github.workspace}}/build_STREAM/stream > output.log
+        if ! grep -q "Solution Validates" "output.log"; then cat "output.log"; exit 1; fi

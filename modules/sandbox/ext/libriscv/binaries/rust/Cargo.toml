@@ -1,0 +1,13 @@
+[package]
+name = "rusty"
+version = "0.1.0"
+authors = ["Alf-André Walla <fwsgonzo@hotmail.com>"]
+edition = "2018"
+autobins = false
+
+[[bin]]
+name = "rusty"
+path = "src/main.rs"
+
+[dependencies]
+reqwest = { version = "0.11", default_features = false, features = [ "blocking", "rustls-tls" ] }

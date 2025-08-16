@@ -1,0 +1,63 @@
+require("api")
+require 'allocators.general'
+
+print("Hello from Nelua!")
+
+local n = api.dyncall1(0x12345678)
+api.dyncall2("Hello, Vieworld!", "A zero-terminated string!");
+
+print("dyncall1 returned: ", n)
+api.exit(0) -- prevent global destructors from running
+
+local function test1(a: cint, b: cint, c: cint, d: cint) <cexport, codename 'test1'>
+  print("test1 called with: ", a, b, c, d)
+  return a + b + c + d
+end
+
+local function test2() <cexport, codename 'test2'>
+  local Buffer = @record{buf: [128]integer}
+  local b: *Buffer = general_allocator:new(@Buffer)
+  general_allocator:delete(b) -- free the Buffer allocation
+  b = nilptr
+end
+
+local function test3(str: cstring) <cexport, codename 'test3'>
+  print("test3 called with: ", str)
+end
+
+local Data = @record{
+  a: int32,
+  b: int32,
+  c: int32,
+  d: int32,
+  e: float32,
+  f: float32,
+  g: float32,
+  h: float32,
+  i: float64,
+  j: float64,
+  k: float64,
+  l: float64,
+  buffer: [32]cchar
+}
+local function test4(d: Data) <cexport, codename 'test4'>
+  local str: cstring = tostring(&d.buffer[0])
+  print("test4 called with: ", d.a, d.b, d.c, d.d, d.e, d.f, d.g, d.h, d.i, d.j, d.k, d.l, str)
+end
+
+local function test5() <cexport, codename 'test5'>
+  local d : MyData = "Hello, World!"
+  api.dyncall_data(d)
+end
+
+local function bench_dyncall_overhead() <cexport, codename 'bench_dyncall_overhead'>
+  api.dyncall_empty()
+end
+
+local function remote_debug_test() <cexport, codename 'remote_debug_test'>
+  print("remote_debug_test called")
+  print("remote_debug_test 1")
+  print("remote_debug_test 2")
+  print("remote_debug_test 3")
+  print("remote_debug_test 4")
+end

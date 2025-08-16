@@ -1,0 +1,44 @@
+name: Unit Tests w/Zig toolchain
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{github.workspace}}/tests/unit
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y cmake wget xz-utils ninja-build
+        git submodule update --init ${{github.workspace}}/tests/Catch2
+        git submodule update --init ${{github.workspace}}/tests/unit/ext/lodepng
+
+    - name: Configure
+      run: cmake -B ${{github.workspace}}/build -G Ninja -DRISCV_THREADED=OFF -DRISCV_FLAT_RW_ARENA=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+    - name: Build the unittests
+      run: cmake --build ${{github.workspace}}/build --parallel 6
+
+    - name: Get Zig
+      run: |
+        wget https://ziglang.org/download/0.14.1/zig-x86_64-linux-0.14.1.tar.xz
+        tar -xf zig-x86_64-linux-0.14.1.tar.xz
+        mv zig-x86_64-linux-0.14.1 ${{github.workspace}}/zig
+
+    - name: Run tests
+      working-directory: ${{github.workspace}}/build
+      env:
+        RCC: "${{github.workspace}}/zig/zig cc -target riscv64-linux-musl"
+        RCXX: "${{github.workspace}}/zig/zig c++ -target riscv64-linux-musl"
+      run: |
+        ctest --verbose . -j2

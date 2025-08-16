@@ -1,0 +1,6 @@
+Name: @CMAKE_PROJECT_NAME@
+Description: @CMAKE_PROJECT_DESCRIPTION@
+URL: https://github.com/fwsGonzo/libriscv
+Version: @PROJECT_VERSION@
+Cflags: -I/usr/include
+Libs: -L/usr/lib -lriscv
