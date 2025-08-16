@@ -8908,21 +8908,11 @@ void Node3DEditor::_selection_changed() {
 	}
 
 	if (selected && editor_selection->get_top_selected_node_list().size() != 1) {
-		Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
-		for (int i = 0; i < gizmos.size(); i++) {
-			Ref<EditorNode3DGizmo> seg = gizmos[i];
-			if (seg.is_null()) {
-				continue;
-			}
-			seg->set_selected(false);
-		}
-
 		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(selected);
 		if (se) {
 			se->gizmo.unref();
 			se->subgizmos.clear();
 		}
-		selected->update_gizmos();
 		selected = nullptr;
 	}
 
@@ -8939,6 +8929,27 @@ void Node3DEditor::_selection_changed() {
 	}
 
 	update_transform_gizmo();
+
+	HashSet<Node3D *> all_nodes_to_update = previous_selection;
+
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
+		if (sp) {
+			all_nodes_to_update.insert(sp);
+		}
+	}
+
+	for (Node3D *node : all_nodes_to_update) {
+		_request_gizmo(node);
+	}
+
+	previous_selection.clear();
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
+		if (sp) {
+			previous_selection.insert(sp);
+		}
+	}
 }
 
 void Node3DEditor::refresh_dirty_gizmos() {
@@ -9534,7 +9545,10 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 		return;
 	}
 
-	bool is_selected = (sp == selected);
+	bool is_selected = editor_selection->is_selected(sp);
+	bool is_single_selection = editor_selection->get_top_selected_node_list().size() == 1;
+
+	sp->clear_gizmos();
 
 	Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
 	if (edited_scene && (sp == edited_scene || (sp->get_owner() && edited_scene->is_ancestor_of(sp)))) {
@@ -9544,9 +9558,11 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 			if (seg.is_valid()) {
 				sp->add_gizmo(seg);
 
-				if (is_selected != seg->is_selected()) {
-					seg->set_selected(is_selected);
-				}
+				bool should_be_selected = is_selected && is_single_selection;
+				bool should_be_highlighted = is_selected && !is_single_selection;
+
+				seg->set_selected(should_be_selected);
+				seg->set_highlighted(should_be_highlighted);
 			}
 		}
 		if (!sp->get_gizmos().is_empty()) {
