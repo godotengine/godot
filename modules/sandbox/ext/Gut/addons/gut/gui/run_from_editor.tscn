@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bgj3fm5d8yvjw"]
+
+[ext_resource type="Script" uid="uid://bwf2iuidqfkpl" path="res://addons/gut/gui/run_from_editor.gd" id="1_53pap"]
+
+[node name="RunFromEditor" type="Node2D"]
+script = ExtResource("1_53pap")

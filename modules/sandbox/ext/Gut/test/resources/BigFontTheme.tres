@@ -1,0 +1,6 @@
+[gd_resource type="Theme" load_steps=2 format=2]
+
+[ext_resource path="res://BigFont.tres" type="FontFile" id=1]
+
+[resource]
+default_font = ExtResource( 1 )

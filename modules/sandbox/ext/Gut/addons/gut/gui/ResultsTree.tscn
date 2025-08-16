@@ -1,0 +1,32 @@
+[gd_scene load_steps=2 format=3 uid="uid://dls5r5f6157nq"]
+
+[ext_resource type="Script" uid="uid://dehdhn78qv5tr" path="res://addons/gut/gui/ResultsTree.gd" id="1_b4uub"]
+
+[node name="ResultsTree" type="VBoxContainer"]
+custom_minimum_size = Vector2(10, 10)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -70.0
+offset_bottom = -104.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_b4uub")
+
+[node name="Tree" type="Tree" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+columns = 2
+hide_root = true
+
+[node name="TextOverlay" type="Label" parent="Tree"]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

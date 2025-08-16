@@ -1,0 +1,8 @@
+[gd_resource type="FontFile" load_steps=2 format=2]
+
+[sub_resource type="FontFile" id=9]
+font_path = "res://addons/gut/fonts/LobsterTwo-BoldItalic.ttf"
+
+[resource]
+size = 40
+font_data = SubResource( 9 )

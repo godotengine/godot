@@ -1,0 +1,7 @@
+[gd_resource type="Theme" load_steps=2 format=3 uid="uid://cstkhwkpajvqu"]
+
+[ext_resource type="FontFile" uid="uid://c6c7gnx36opr0" path="res://addons/gut/fonts/AnonymousPro-Regular.ttf" id="1_df57p"]
+
+[resource]
+default_font = ExtResource("1_df57p")
+Label/fonts/font = ExtResource("1_df57p")

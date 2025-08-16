@@ -1,0 +1,61 @@
+[gd_scene load_steps=2 format=3 uid="uid://cgndmr3wi311q"]
+
+[ext_resource type="Script" uid="uid://nuh4mbmnf3p3" path="res://scenes/TestGutGuiSettings.gd" id="1_5452u"]
+
+[node name="TestGutGuiSettings" type="Node2D"]
+script = ExtResource("1_5452u")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = 71.0
+offset_top = 22.0
+offset_right = 585.0
+offset_bottom = 523.0
+color = Color(0.137255, 0.164706, 0.270588, 1)
+
+[node name="ScrollContainer" type="ScrollContainer" parent="ColorRect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Settings" type="VBoxContainer" parent="ColorRect/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Controls" type="ColorRect" parent="."]
+offset_left = 634.0
+offset_top = 4.0
+offset_right = 1001.0
+offset_bottom = 405.0
+color = Color(0.176471, 0.176471, 0.176471, 1)
+
+[node name="VBox" type="VBoxContainer" parent="Controls"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Save" type="Button" parent="Controls/VBox"]
+layout_mode = 2
+text = "Save"
+
+[node name="Load" type="Button" parent="Controls/VBox"]
+layout_mode = 2
+text = "Load"
+
+[node name="GetIssues" type="Button" parent="Controls/VBox"]
+layout_mode = 2
+text = "Get Issues"
+
+[node name="Issues" type="TextEdit" parent="Controls/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[connection signal="pressed" from="Controls/VBox/Save" to="." method="_on_save_pressed"]
+[connection signal="pressed" from="Controls/VBox/Load" to="." method="_on_load_pressed"]
+[connection signal="pressed" from="Controls/VBox/GetIssues" to="." method="_on_get_issues_pressed"]

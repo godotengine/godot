@@ -1,0 +1,250 @@
+[gd_scene load_steps=10 format=3 uid="uid://b3bostcslstem"]
+
+[ext_resource type="Script" uid="uid://dtvnb0xatk0my" path="res://addons/gut/gui/GutBottomPanel.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bsk32dh41b4gs" path="res://addons/gut/gui/BottomPanelShortcuts.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://0yunjxtaa8iw" path="res://addons/gut/gui/RunAtCursor.tscn" id="3"]
+[ext_resource type="Texture2D" uid="uid://cr6tvdv0ve6cv" path="res://addons/gut/gui/play.png" id="4"]
+[ext_resource type="PackedScene" uid="uid://4gyyn12um08h" path="res://addons/gut/gui/RunResults.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://bqmo4dj64c7yl" path="res://addons/gut/gui/OutputText.tscn" id="6"]
+
+[sub_resource type="Shortcut" id="9"]
+
+[sub_resource type="Image" id="Image_p7oqn"]
+data = {
+"data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 93, 93, 41, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 44, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 44, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 94, 94, 234, 255, 95, 95, 43, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 94, 94, 234, 255, 95, 95, 43, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_umaha"]
+image = SubResource("Image_p7oqn")
+
+[node name="GutBottomPanel" type="Control"]
+custom_minimum_size = Vector2(250, 250)
+layout_mode = 3
+anchor_left = -0.0025866
+anchor_top = -0.00176575
+anchor_right = 0.997413
+anchor_bottom = 0.998234
+offset_left = 2.64868
+offset_top = 1.05945
+offset_right = 2.64862
+offset_bottom = 1.05945
+script = ExtResource("1")
+
+[node name="layout" type="VBoxContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ControlBar" type="HBoxContainer" parent="layout"]
+layout_mode = 2
+
+[node name="RunAll" type="Button" parent="layout/ControlBar"]
+layout_mode = 2
+size_flags_vertical = 11
+shortcut = SubResource("9")
+text = "Run All"
+icon = ExtResource("4")
+
+[node name="Label" type="Label" parent="layout/ControlBar"]
+layout_mode = 2
+mouse_filter = 1
+text = "Current:  "
+
+[node name="RunAtCursor" parent="layout/ControlBar" instance=ExtResource("3")]
+layout_mode = 2
+
+[node name="CenterContainer2" type="CenterContainer" parent="layout/ControlBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Sep1" type="ColorRect" parent="layout/ControlBar"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="RunResultsBtn" type="Button" parent="layout/ControlBar"]
+layout_mode = 2
+toggle_mode = true
+icon = SubResource("ImageTexture_umaha")
+
+[node name="OutputBtn" type="Button" parent="layout/ControlBar"]
+layout_mode = 2
+toggle_mode = true
+icon = SubResource("ImageTexture_umaha")
+
+[node name="Settings" type="Button" parent="layout/ControlBar"]
+layout_mode = 2
+toggle_mode = true
+icon = SubResource("ImageTexture_umaha")
+
+[node name="Sep2" type="ColorRect" parent="layout/ControlBar"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="Shortcuts" type="Button" parent="layout/ControlBar"]
+layout_mode = 2
+size_flags_vertical = 11
+icon = SubResource("ImageTexture_umaha")
+
+[node name="RSplit" type="HSplitContainer" parent="layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+collapsed = true
+
+[node name="sc" type="ScrollContainer" parent="layout/RSplit"]
+visible = false
+custom_minimum_size = Vector2(500, 2.08165e-12)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Settings" type="VBoxContainer" parent="layout/RSplit/sc"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CResults" type="VBoxContainer" parent="layout/RSplit"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ControlBar" type="HBoxContainer" parent="layout/RSplit/CResults"]
+layout_mode = 2
+
+[node name="Sep2" type="ColorRect" parent="layout/RSplit/CResults/ControlBar"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="Light3D" type="Control" parent="layout/RSplit/CResults/ControlBar"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+
+[node name="Passing" type="HBoxContainer" parent="layout/RSplit/CResults/ControlBar"]
+visible = false
+layout_mode = 2
+
+[node name="Sep" type="ColorRect" parent="layout/RSplit/CResults/ControlBar/Passing"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="label" type="Label" parent="layout/RSplit/CResults/ControlBar/Passing"]
+layout_mode = 2
+text = "Passing"
+
+[node name="value" type="Label" parent="layout/RSplit/CResults/ControlBar/Passing"]
+layout_mode = 2
+text = "---"
+
+[node name="Failing" type="HBoxContainer" parent="layout/RSplit/CResults/ControlBar"]
+visible = false
+layout_mode = 2
+
+[node name="Sep" type="ColorRect" parent="layout/RSplit/CResults/ControlBar/Failing"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="label" type="Label" parent="layout/RSplit/CResults/ControlBar/Failing"]
+layout_mode = 2
+text = "Failing"
+
+[node name="value" type="Label" parent="layout/RSplit/CResults/ControlBar/Failing"]
+layout_mode = 2
+text = "---"
+
+[node name="Pending" type="HBoxContainer" parent="layout/RSplit/CResults/ControlBar"]
+visible = false
+layout_mode = 2
+
+[node name="Sep" type="ColorRect" parent="layout/RSplit/CResults/ControlBar/Pending"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="label" type="Label" parent="layout/RSplit/CResults/ControlBar/Pending"]
+layout_mode = 2
+text = "Pending"
+
+[node name="value" type="Label" parent="layout/RSplit/CResults/ControlBar/Pending"]
+layout_mode = 2
+text = "---"
+
+[node name="Orphans" type="HBoxContainer" parent="layout/RSplit/CResults/ControlBar"]
+visible = false
+layout_mode = 2
+
+[node name="Sep" type="ColorRect" parent="layout/RSplit/CResults/ControlBar/Orphans"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="label" type="Label" parent="layout/RSplit/CResults/ControlBar/Orphans"]
+layout_mode = 2
+text = "Orphans"
+
+[node name="value" type="Label" parent="layout/RSplit/CResults/ControlBar/Orphans"]
+layout_mode = 2
+text = "---"
+
+[node name="Errors" type="HBoxContainer" parent="layout/RSplit/CResults/ControlBar"]
+visible = false
+layout_mode = 2
+
+[node name="Sep" type="ColorRect" parent="layout/RSplit/CResults/ControlBar/Errors"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="label" type="Label" parent="layout/RSplit/CResults/ControlBar/Errors"]
+layout_mode = 2
+text = "Errors"
+
+[node name="value" type="Label" parent="layout/RSplit/CResults/ControlBar/Errors"]
+layout_mode = 2
+text = "---"
+
+[node name="Warnings" type="HBoxContainer" parent="layout/RSplit/CResults/ControlBar"]
+visible = false
+layout_mode = 2
+
+[node name="Sep" type="ColorRect" parent="layout/RSplit/CResults/ControlBar/Warnings"]
+custom_minimum_size = Vector2(1, 2.08165e-12)
+layout_mode = 2
+
+[node name="label" type="Label" parent="layout/RSplit/CResults/ControlBar/Warnings"]
+layout_mode = 2
+text = "Warnings"
+
+[node name="value" type="Label" parent="layout/RSplit/CResults/ControlBar/Warnings"]
+layout_mode = 2
+text = "---"
+
+[node name="CenterContainer" type="CenterContainer" parent="layout/RSplit/CResults/ControlBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TabBar" type="HSplitContainer" parent="layout/RSplit/CResults"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RunResults" parent="layout/RSplit/CResults/TabBar" instance=ExtResource("5")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="OutputText" parent="layout/RSplit/CResults/TabBar" instance=ExtResource("6")]
+visible = false
+layout_mode = 2
+
+[node name="BottomPanelShortcuts" parent="." instance=ExtResource("2")]
+visible = false
+
+[connection signal="pressed" from="layout/ControlBar/RunAll" to="." method="_on_RunAll_pressed"]
+[connection signal="run_tests" from="layout/ControlBar/RunAtCursor" to="." method="_on_RunAtCursor_run_tests"]
+[connection signal="pressed" from="layout/ControlBar/RunResultsBtn" to="." method="_on_RunResultsBtn_pressed"]
+[connection signal="pressed" from="layout/ControlBar/OutputBtn" to="." method="_on_OutputBtn_pressed"]
+[connection signal="pressed" from="layout/ControlBar/Settings" to="." method="_on_Settings_pressed"]
+[connection signal="pressed" from="layout/ControlBar/Shortcuts" to="." method="_on_Shortcuts_pressed"]
+[connection signal="draw" from="layout/RSplit/CResults/ControlBar/Light3D" to="." method="_on_Light_draw"]
+[connection signal="visibility_changed" from="BottomPanelShortcuts" to="." method="_on_bottom_panel_shortcuts_visibility_changed"]
