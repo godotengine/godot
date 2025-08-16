@@ -1,0 +1,435 @@
+:test-result: PASS # A test name that starts with a #
+:test-result: PASS #1027: Bitfields can be captured
+:test-result: PASS #1147
+:test-result: PASS #1175 - Hidden Test
+:test-result: PASS #1238
+:test-result: PASS #1245
+:test-result: PASS #1319: Sections can have description (even if it is not saved
+:test-result: PASS #1403
+:test-result: FAIL #1455 - INFO and WARN can start with a linebreak
+:test-result: FAIL #1514: stderr/stdout is not captured in tests aborted by an exception
+:test-result: PASS #1548
+:test-result: PASS #1905 -- test spec parser properly clears internal state between compound tests
+:test-result: PASS #1912 -- test spec parser handles escaping
+:test-result: PASS #1913 - GENERATE inside a for loop should not keep recreating the generator
+:test-result: PASS #1913 - GENERATEs can share a line
+:test-result: PASS #1938 - GENERATE after a section
+:test-result: PASS #1938 - Section followed by flat generate
+:test-result: PASS #1938 - flat generate
+:test-result: PASS #1938 - mixed sections and generates
+:test-result: PASS #1938 - nested generate
+:test-result: PASS #1954 - 7 arg template test case sig compiles - 1, 1, 1, 1, 1, 0, 0
+:test-result: PASS #1954 - 7 arg template test case sig compiles - 5, 1, 1, 1, 1, 0, 0
+:test-result: PASS #1954 - 7 arg template test case sig compiles - 5, 3, 1, 1, 1, 0, 0
+:test-result: PASS #2152 - ULP checks between differently signed values were wrong - double
+:test-result: PASS #2152 - ULP checks between differently signed values were wrong - float
+:test-result: XFAIL #2615 - Throwing in constructor generator fails test case but does not abort
+:test-result: PASS #3001: Enum-based bitfields can be captured
+:test-result: XFAIL #748 - captures with unexpected exceptions
+:test-result: PASS #809
+:test-result: PASS #833
+:test-result: XFAIL #835 -- errno should not be touched by Catch2
+:test-result: PASS #872
+:test-result: PASS #961 -- Dynamically created sections should all be reported
+:test-result: FAIL 'Not' checks that should fail
+:test-result: PASS 'Not' checks that should succeed
+:test-result: PASS (unimplemented) static bools can be evaluated
+:test-result: PASS 3x3x3 ints
+:test-result: FAIL A METHOD_AS_TEST_CASE based test run that fails
+:test-result: PASS A METHOD_AS_TEST_CASE based test run that succeeds
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that fails - Template_Foo<float>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that fails - Template_Foo<int>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that fails - std::vector<float>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that fails - std::vector<int>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that succeeds - Template_Foo<float>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that succeeds - Template_Foo<int>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that succeeds - std::vector<float>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD based test run that succeeds - std::vector<int>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that fails - Template_Foo_2<float, 6>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that fails - Template_Foo_2<int, 2>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that fails - std::array<float, 6>
+:test-result: FAIL A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that fails - std::array<int, 2>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that succeeds - Template_Foo_2<float,6>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that succeeds - Template_Foo_2<int,2>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that succeeds - std::array<float,6>
+:test-result: PASS A TEMPLATE_PRODUCT_TEST_CASE_METHOD_SIG based test run that succeeds - std::array<int,2>
+:test-result: FAIL A TEMPLATE_TEST_CASE_METHOD based test run that fails - double
+:test-result: FAIL A TEMPLATE_TEST_CASE_METHOD based test run that fails - float
+:test-result: FAIL A TEMPLATE_TEST_CASE_METHOD based test run that fails - int
+:test-result: PASS A TEMPLATE_TEST_CASE_METHOD based test run that succeeds - double
+:test-result: PASS A TEMPLATE_TEST_CASE_METHOD based test run that succeeds - float
+:test-result: PASS A TEMPLATE_TEST_CASE_METHOD based test run that succeeds - int
+:test-result: FAIL A TEMPLATE_TEST_CASE_METHOD_SIG based test run that fails - 1
+:test-result: FAIL A TEMPLATE_TEST_CASE_METHOD_SIG based test run that fails - 3
+:test-result: FAIL A TEMPLATE_TEST_CASE_METHOD_SIG based test run that fails - 6
+:test-result: PASS A TEMPLATE_TEST_CASE_METHOD_SIG based test run that succeeds - 1
+:test-result: PASS A TEMPLATE_TEST_CASE_METHOD_SIG based test run that succeeds - 3
+:test-result: PASS A TEMPLATE_TEST_CASE_METHOD_SIG based test run that succeeds - 6
+:test-result: FAIL A TEST_CASE_METHOD based test run that fails
+:test-result: PASS A TEST_CASE_METHOD based test run that succeeds
+:test-result: FAIL A TEST_CASE_PERSISTENT_FIXTURE based test run that fails
+:test-result: PASS A TEST_CASE_PERSISTENT_FIXTURE based test run that succeeds
+:test-result: PASS A Template product test case - Foo<float>
+:test-result: PASS A Template product test case - Foo<int>
+:test-result: PASS A Template product test case - std::vector<float>
+:test-result: PASS A Template product test case - std::vector<int>
+:test-result: PASS A Template product test case with array signature - Bar<float, 42>
+:test-result: PASS A Template product test case with array signature - Bar<int, 9>
+:test-result: PASS A Template product test case with array signature - std::array<float, 42>
+:test-result: PASS A Template product test case with array signature - std::array<int, 9>
+:test-result: PASS A comparison that uses literals instead of the normal constructor
+:test-result: FAIL A couple of nested sections followed by a failure
+:test-result: FAIL A failing expression with a non streamable type is still captured
+:test-result: PASS Absolute margin
+:test-result: FAIL An empty test with no assertions
+:test-result: PASS An expression with side-effects should only be evaluated once
+:test-result: FAIL An unchecked exception reports the line of the last assertion
+:test-result: PASS Anonymous test case 1
+:test-result: PASS Approx setters validate their arguments
+:test-result: PASS Approx with exactly-representable margin
+:test-result: PASS Approximate PI
+:test-result: PASS Approximate comparisons with different epsilons
+:test-result: PASS Approximate comparisons with floats
+:test-result: PASS Approximate comparisons with ints
+:test-result: PASS Approximate comparisons with mixed numeric types
+:test-result: PASS Arbitrary predicate matcher
+:test-result: PASS Assertion macros support bit operators and bool conversions
+:test-result: XFAIL Assertions can be nested - CHECK
+:test-result: XFAIL Assertions can be nested - REQUIRE
+:test-result: PASS Assertions then sections
+:test-result: PASS Basic use of the Contains range matcher
+:test-result: PASS Basic use of the Empty range matcher
+:test-result: PASS CAPTURE can deal with complex expressions
+:test-result: PASS CAPTURE can deal with complex expressions involving commas
+:test-result: PASS CAPTURE parses string and character constants
+:test-result: PASS Capture and info messages
+:test-result: FAIL Captures do not leave block with an exception
+:test-result: FAIL Captures outlive section end
+:test-result: PASS CaseInsensitiveEqualsTo is case insensitive
+:test-result: PASS CaseInsensitiveLess is case insensitive
+:test-result: PASS Character pretty printing
+:test-result: PASS Clara::Arg does not crash on incomplete input
+:test-result: PASS Clara::Arg supports single-arg parse the way Opt does
+:test-result: PASS Clara::Opt supports accept-many lambdas
+:test-result: PASS ColourGuard behaviour
+:test-result: PASS Combining MatchAllOfGeneric does not nest
+:test-result: PASS Combining MatchAnyOfGeneric does not nest
+:test-result: PASS Combining MatchNotOfGeneric does not nest
+:test-result: PASS Combining concrete matchers does not use templated matchers
+:test-result: PASS Combining only templated matchers
+:test-result: PASS Combining templated and concrete matchers
+:test-result: PASS Combining templated matchers
+:test-result: PASS Commas in various macros are allowed
+:test-result: PASS Comparing (and stringifying) volatile pointers works
+:test-result: PASS Comparing function pointers
+:test-result: PASS Comparison ops
+:test-result: PASS Comparison with explicitly convertible types
+:test-result: PASS Comparisons between ints where one side is computed
+:test-result: PASS Comparisons between unsigned ints and negative signed ints match c++ standard behaviour
+:test-result: PASS Comparisons with int literals don't warn when mixing signed/ unsigned
+:test-result: PASS Composed generic matchers shortcircuit
+:test-result: PASS Composed matchers shortcircuit
+:test-result: FAIL Contains string matcher
+:test-result: PASS Copy and then generate a range
+:test-result: PASS Cout stream properly declares it writes to stdout
+:test-result: FAIL Custom exceptions can be translated when testing for nothrow
+:test-result: FAIL Custom exceptions can be translated when testing for throwing as something else
+:test-result: FAIL Custom std-exceptions can be custom translated
+:test-result: PASS Default scale is invisible to comparison
+:test-result: PASS Directly creating an EnumInfo
+:test-result: SKIP Empty generators can SKIP in constructor
+:test-result: PASS Empty stream name opens cout stream
+:test-result: FAIL EndsWith string matcher
+:test-result: PASS Enums can quickly have stringification enabled using CATCH_REGISTER_ENUM
+:test-result: PASS Enums in namespaces can quickly have stringification enabled using CATCH_REGISTER_ENUM
+:test-result: PASS Epsilon only applies to Approx's value
+:test-result: XFAIL Equality checks that should fail
+:test-result: PASS Equality checks that should succeed
+:test-result: PASS Equals
+:test-result: FAIL Equals string matcher
+:test-result: PASS Exception as a value (e.g. in REQUIRE_THROWS_MATCHES) can be stringified
+:test-result: FAIL Exception matchers that fail
+:test-result: PASS Exception matchers that succeed
+:test-result: PASS Exception message can be matched
+:test-result: PASS Exception messages can be tested for
+:test-result: PASS Exception thrown inside stringify does not fail the test
+:test-result: PASS Exceptions matchers
+:test-result: FAIL Expected exceptions that don't throw or unexpected exceptions fail the test
+:test-result: FAIL FAIL aborts the test
+:test-result: XFAIL FAIL can be nested in assertion
+:test-result: FAIL FAIL does not require an argument
+:test-result: FAIL FAIL_CHECK does not abort the test
+:test-result: PASS Factorials are computed
+:test-result: PASS Filter generator throws exception for empty generator
+:test-result: PASS Floating point matchers: double
+:test-result: PASS Floating point matchers: float
+:test-result: PASS GENERATE can combine literals and generators
+:test-result: PASS Generators -- adapters
+:test-result: PASS Generators -- simple
+:test-result: PASS Generators internals
+:test-result: PASS Greater-than inequalities with different epsilons
+:test-result: PASS Hashers with different seed produce different hash with same test case
+:test-result: PASS Hashers with same seed produce same hash
+:test-result: PASS Hashing different test cases produces different result
+:test-result: PASS Hashing test case produces same hash across multiple calls
+:test-result: FAIL INFO and UNSCOPED_INFO can stream multiple arguments
+:test-result: FAIL INFO and WARN do not abort tests
+:test-result: FAIL INFO gets logged on failure
+:test-result: FAIL INFO gets logged on failure, even if captured before successful assertions
+:test-result: FAIL INFO is reset for each loop
+:test-result: XFAIL Incomplete AssertionHandler
+:test-result: XFAIL Inequality checks that should fail
+:test-result: PASS Inequality checks that should succeed
+:test-result: PASS JsonWriter
+:test-result: PASS JsonWriter escapes characters in strings properly
+:test-result: PASS Lambdas in assertions
+:test-result: PASS Less-than inequalities with different epsilons
+:test-result: PASS ManuallyRegistered
+:test-result: PASS Matchers can be (AllOf) composed with the && operator
+:test-result: PASS Matchers can be (AnyOf) composed with the || operator
+:test-result: PASS Matchers can be composed with both && and ||
+:test-result: FAIL Matchers can be composed with both && and || - failing
+:test-result: PASS Matchers can be negated (Not) with the ! operator
+:test-result: FAIL Matchers can be negated (Not) with the ! operator - failing
+:test-result: XFAIL Mayfail test case with nested sections
+:test-result: FAIL Mismatching exception messages failing the test
+:test-result: PASS Multireporter calls reporters and listeners in correct order
+:test-result: PASS Multireporter updates ReporterPreferences properly
+:test-result: PASS Nested generators and captured variables
+:test-result: FAIL Nice descriptive name
+:test-result: FAIL Non-std exceptions can be translated
+:test-result: PASS Objects that evaluated in boolean contexts can be checked
+:test-result: PASS Optionally static assertions
+:test-result: FAIL Ordering comparison checks that should fail
+:test-result: PASS Ordering comparison checks that should succeed
+:test-result: PASS Our PCG implementation provides expected results for known seeds
+:test-result: FAIL Output from all sections is reported
+:test-result: PASS Overloaded comma or address-of operators are not used
+:test-result: PASS Parse uints
+:test-result: PASS Parsed tags are matched case insensitive
+:test-result: PASS Parsing sharding-related cli flags
+:test-result: PASS Parsing tags with non-alphabetical characters is pass-through
+:test-result: PASS Parsing warnings
+:test-result: PASS Pointers can be compared to null
+:test-result: PASS Precision of floating point stringification can be set
+:test-result: PASS Predicate matcher can accept const char*
+:test-result: PASS Process can be configured on command line
+:test-result: PASS Product with differing arities - std::tuple<int, double, float>
+:test-result: PASS Product with differing arities - std::tuple<int, double>
+:test-result: PASS Product with differing arities - std::tuple<int>
+:test-result: PASS Random seed generation accepts known methods
+:test-result: PASS Random seed generation reports unknown methods
+:test-result: PASS Range type with sentinel
+:test-result: FAIL Reconstruction should be based on stringification: #914
+:test-result: FAIL Regex string matcher
+:test-result: PASS Registering reporter with '::' in name fails
+:test-result: PASS Regression test #1
+:test-result: PASS Reporter's write listings to provided stream
+:test-result: PASS Reproducer for #2309 - a very long description past 80 chars (default console width) with a late colon : blablabla
+:test-result: PASS SUCCEED counts as a test pass
+:test-result: PASS SUCCEED does not require an argument
+:test-result: PASS Scenario: BDD tests requiring Fixtures to provide commonly-accessed data or methods
+:test-result: PASS Scenario: Do that thing with the thing
+:test-result: PASS Scenario: This is a really long scenario name to see how the list command deals with wrapping
+:test-result: PASS Scenario: Vector resizing affects size and capacity
+:test-result: FAIL Scoped message applies to all assertions in scope
+:test-result: FAIL Scoped messages do not leave block with an exception
+:test-result: FAIL Scoped messages outlive section end
+:test-result: FAIL Sends stuff to stdout and stderr
+:test-result: PASS Some simple comparisons between doubles
+:test-result: FAIL Standard output from all sections is reported
+:test-result: FAIL StartsWith string matcher
+:test-result: PASS Static arrays are convertible to string
+:test-result: PASS String matchers
+:test-result: PASS StringRef
+:test-result: PASS StringRef at compilation time
+:test-result: PASS Stringifying char arrays with statically known sizes - char
+:test-result: PASS Stringifying char arrays with statically known sizes - signed char
+:test-result: PASS Stringifying char arrays with statically known sizes - unsigned char
+:test-result: PASS Stringifying std::chrono::duration helpers
+:test-result: PASS Stringifying std::chrono::duration with weird ratios
+:test-result: PASS Stringifying std::chrono::time_point<system_clock>
+:test-result: FAIL Tabs and newlines show in output
+:test-result: PASS Tag alias can be registered against tag patterns
+:test-result: PASS Tags with spaces and non-alphanumerical characters are accepted
+:test-result: PASS Template test case method with test types specified inside std::tuple - MyTypes - 0
+:test-result: PASS Template test case method with test types specified inside std::tuple - MyTypes - 1
+:test-result: PASS Template test case method with test types specified inside std::tuple - MyTypes - 2
+:test-result: PASS Template test case with test types specified inside non-copyable and non-movable std::tuple - NonCopyableAndNonMovableTypes - 0
+:test-result: PASS Template test case with test types specified inside non-copyable and non-movable std::tuple - NonCopyableAndNonMovableTypes - 1
+:test-result: PASS Template test case with test types specified inside non-default-constructible std::tuple - MyNonDefaultConstructibleTypes - 0
+:test-result: PASS Template test case with test types specified inside non-default-constructible std::tuple - MyNonDefaultConstructibleTypes - 1
+:test-result: PASS Template test case with test types specified inside std::tuple - MyTypes - 0
+:test-result: PASS Template test case with test types specified inside std::tuple - MyTypes - 1
+:test-result: PASS Template test case with test types specified inside std::tuple - MyTypes - 2
+:test-result: PASS TemplateTest: vectors can be sized and resized - float
+:test-result: PASS TemplateTest: vectors can be sized and resized - int
+:test-result: PASS TemplateTest: vectors can be sized and resized - std::string
+:test-result: PASS TemplateTest: vectors can be sized and resized - std::tuple<int,float>
+:test-result: FAIL TemplateTestSig: compiles with a single int parameter - 1
+:test-result: FAIL TemplateTestSig: compiles with a single int parameter - 3
+:test-result: FAIL TemplateTestSig: compiles with a single int parameter - 6
+:test-result: FAIL TemplateTestSig: compiles with two type parameters - int,int
+:test-result: PASS TemplateTestSig: vectors can be sized and resized - (std::tuple<int, float>), 6
+:test-result: PASS TemplateTestSig: vectors can be sized and resized - float,4
+:test-result: PASS TemplateTestSig: vectors can be sized and resized - int,5
+:test-result: PASS TemplateTestSig: vectors can be sized and resized - std::string,15
+:test-result: PASS Test case with identical tags keeps just one
+:test-result: PASS Test case with one argument
+:test-result: PASS Test enum bit values
+:test-result: PASS Test with special, characters "in name
+:test-result: PASS Testing checked-if
+:test-result: XFAIL Testing checked-if 2
+:test-result: XFAIL Testing checked-if 3
+:test-result: XFAIL Testing checked-if 4
+:test-result: XFAIL Testing checked-if 5
+:test-result: FAIL The NO_FAIL macro reports a failure but does not fail the test
+:test-result: PASS The default listing implementation write to provided stream
+:test-result: FAIL This test 'should' fail but doesn't
+:test-result: FAIL Thrown string literals are translated
+:test-result: PASS Tracker
+:test-result: PASS Trim strings
+:test-result: PASS Type conversions of RangeEquals and similar
+:test-result: FAIL Unexpected exceptions can be translated
+:test-result: PASS Upcasting special member functions
+:test-result: PASS Usage of AllMatch range matcher
+:test-result: PASS Usage of AllTrue range matcher
+:test-result: PASS Usage of AnyMatch range matcher
+:test-result: PASS Usage of AnyTrue range matcher
+:test-result: PASS Usage of NoneMatch range matcher
+:test-result: PASS Usage of NoneTrue range matcher
+:test-result: PASS Usage of RangeEquals range matcher
+:test-result: PASS Usage of UnorderedRangeEquals range matcher
+:test-result: PASS Usage of the SizeIs range matcher
+:test-result: PASS Use a custom approx
+:test-result: PASS Variadic macros
+:test-result: PASS Vector Approx matcher
+:test-result: FAIL Vector Approx matcher -- failing
+:test-result: PASS Vector matchers
+:test-result: FAIL Vector matchers that fail
+:test-result: PASS When checked exceptions are thrown they can be expected or unexpected
+:test-result: FAIL When unchecked exceptions are thrown directly they are always failures
+:test-result: FAIL When unchecked exceptions are thrown during a CHECK the test should continue
+:test-result: FAIL When unchecked exceptions are thrown during a REQUIRE the test should abort fail
+:test-result: FAIL When unchecked exceptions are thrown from functions they are always failures
+:test-result: FAIL When unchecked exceptions are thrown from sections they are always failures
+:test-result: FAIL When unchecked exceptions are thrown, but caught, they do not affect the test
+:test-result: PASS X/level/0/a
+:test-result: PASS X/level/0/b
+:test-result: PASS X/level/1/a
+:test-result: PASS X/level/1/b
+:test-result: PASS XmlEncode
+:test-result: PASS XmlWriter writes boolean attributes as true/false
+:test-result: SKIP a succeeding test can still be skipped
+:test-result: PASS analyse no analysis
+:test-result: PASS array<int, N> -> toString
+:test-result: PASS benchmark function call
+:test-result: PASS boolean member
+:test-result: PASS checkedElse
+:test-result: FAIL checkedElse, failing
+:test-result: PASS checkedIf
+:test-result: FAIL checkedIf, failing
+:test-result: PASS classify_outliers
+:test-result: PASS comparisons between const int variables
+:test-result: PASS comparisons between int variables
+:test-result: PASS convertToBits
+:test-result: SKIP dynamic skipping works with generators
+:test-result: PASS empty tags are not allowed
+:test-result: PASS erfc_inv
+:test-result: PASS estimate_clock_resolution
+:test-result: PASS even more nested SECTION tests
+:test-result: XFAIL failed assertions before SKIP cause test case to fail
+:test-result: XFAIL failing for some generator values causes entire test case to fail
+:test-result: XFAIL failing in some unskipped sections causes entire test case to fail
+:test-result: FAIL first tag
+:test-result: FAIL has printf
+:test-result: PASS is_unary_function
+:test-result: FAIL just failure
+:test-result: FAIL just failure after unscoped info
+:test-result: FAIL just info
+:test-result: FAIL just unscoped info
+:test-result: PASS long long
+:test-result: FAIL looped SECTION tests
+:test-result: FAIL looped tests
+:test-result: PASS makeStream recognizes %debug stream name
+:test-result: PASS make_unique reimplementation
+:test-result: PASS mean
+:test-result: PASS measure
+:test-result: FAIL mix info, unscoped info and warning
+:test-result: FAIL more nested SECTION tests
+:test-result: PASS nested SECTION tests
+:test-result: FAIL nested sections can be skipped dynamically at runtime
+:test-result: PASS non streamable - with conv. op
+:test-result: PASS non-copyable objects
+:test-result: PASS normal_quantile
+:test-result: PASS not allowed
+:test-result: FAIL not prints unscoped info from previous failures
+:test-result: PASS null strings
+:test-result: PASS null_ptr
+:test-result: PASS pair<pair<int,const char *,pair<std::string,int> > -> toString
+:test-result: PASS parseEnums
+:test-result: PASS pointer to class
+:test-result: PASS print unscoped info if passing unscoped info is printed
+:test-result: FAIL prints unscoped info on failure
+:test-result: FAIL prints unscoped info only for the first assertion
+:test-result: PASS random SECTION tests
+:test-result: PASS replaceInPlace
+:test-result: PASS request an unknown %-starting stream fails
+:test-result: PASS resolution
+:test-result: PASS run_for_at_least, chronometer
+:test-result: PASS run_for_at_least, int
+:test-result: FAIL second tag
+:test-result: SKIP sections can be skipped dynamically at runtime
+:test-result: FAIL send a single char to INFO
+:test-result: FAIL sends information to INFO
+:test-result: PASS shortened hide tags are split apart
+:test-result: SKIP skipped tests can optionally provide a reason
+:test-result: PASS splitString
+:test-result: FAIL stacks unscoped info in loops
+:test-result: PASS startsWith
+:test-result: PASS std::map is convertible string
+:test-result: PASS std::pair<int,const std::string> -> toString
+:test-result: PASS std::pair<int,std::string> -> toString
+:test-result: PASS std::set is convertible string
+:test-result: PASS std::vector<std::pair<std::string,int> > -> toString
+:test-result: PASS stdout and stderr streams have %-starting name
+:test-result: PASS stringify ranges
+:test-result: PASS stringify( has_maker )
+:test-result: PASS stringify( has_maker_and_operator )
+:test-result: PASS stringify( has_neither )
+:test-result: PASS stringify( has_operator )
+:test-result: PASS stringify( has_template_operator )
+:test-result: PASS stringify( vectors<has_maker> )
+:test-result: PASS stringify( vectors<has_maker_and_operator> )
+:test-result: PASS stringify( vectors<has_operator> )
+:test-result: PASS strlen3
+:test-result: PASS system_clock timepoint with non-default duration
+:test-result: PASS tables
+:test-result: PASS tags with dots in later positions are not parsed as hidden
+:test-result: SKIP tests can be skipped dynamically at runtime
+:test-result: FAIL thrown std::strings are translated
+:test-result: PASS toString on const wchar_t const pointer returns the string contents
+:test-result: PASS toString on const wchar_t pointer returns the string contents
+:test-result: PASS toString on wchar_t const pointer returns the string contents
+:test-result: PASS toString on wchar_t returns the string contents
+:test-result: PASS toString(enum class w/operator<<)
+:test-result: PASS toString(enum class)
+:test-result: PASS toString(enum w/operator<<)
+:test-result: PASS toString(enum)
+:test-result: PASS tuple<>
+:test-result: PASS tuple<float,int>
+:test-result: PASS tuple<int>
+:test-result: PASS tuple<string,string>
+:test-result: PASS tuple<tuple<int>,tuple<>,float>
+:test-result: PASS uniform samples
+:test-result: PASS uniform_integer_distribution can return the bounds
+:test-result: PASS unique_ptr reimplementation: basic functionality
+:test-result: PASS vec<vec<string,alloc>> -> toString
+:test-result: PASS vector<bool> -> toString
+:test-result: PASS vector<int,allocator> -> toString
+:test-result: PASS vector<int> -> toString
+:test-result: PASS vector<string> -> toString
+:test-result: PASS vectors can be sized and resized
+:test-result: PASS warmup
+:test-result: PASS weighted_average_quantile
+:test-result: PASS xmlentitycheck

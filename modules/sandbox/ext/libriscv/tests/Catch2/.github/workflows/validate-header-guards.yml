@@ -1,0 +1,36 @@
+name: Check header guards
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    # Set the type of machine to run on
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Setup Dependencies
+        uses: actions/setup-python@v2
+        with:
+            python-version: '3.7'
+      - name: Install checkguard
+        run: pip install guardonce
+
+      - name: Check that include guards are properly named
+        run: |
+          wrong_files=$(checkguard -r src/catch2/ -p "name | append _INCLUDED | upper")
+          if [[ $wrong_files ]]; then
+            echo "Files with wrong header guard:"
+            echo $wrong_files
+            exit 1
+          fi
+
+      - name: Check that there are no duplicated filenames
+        run: |
+          ./tools/scripts/checkDuplicateFilenames.py
+
+      - name: Check that all source files have the correct license header
+        run: |
+          ./tools/scripts/checkLicense.py

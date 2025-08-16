@@ -1,0 +1,31 @@
+name: Package Manager Builds
+
+on: [push, pull_request]
+
+jobs:
+  conan_builds:
+    name: Conan ${{matrix.conan_version}}
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        conan_version:
+          - '1.63'
+          - '2.1'
+
+        include:
+          # Conan 1 has default profiles installed
+          - conan_version: '1.63'
+            profile_generate: 'false'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install conan
+      run: pip install conan==${{matrix.conan_version}}
+
+    - name: Setup conan profiles
+      if: matrix.profile_generate != 'false'
+      run: conan profile detect
+
+    - name: Run conan package create
+      run: conan create . -tf .conan/test_package
