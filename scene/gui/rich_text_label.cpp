@@ -1676,7 +1676,7 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 									if (rtl) {
 										coff.x = rect.size.width - table->columns[col].width - coff.x;
 									}
-									Rect2 crect = Rect2(rect.position + coff - frame->padding.position - Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_h_separation * 0.5).floor(), Size2(table->columns[col].width + theme_cache.table_h_separation, table->rows[row] + theme_cache.table_v_separation) + frame->padding.position + frame->padding.size);
+									Rect2 crect = Rect2(rect.position + coff - frame->padding.position - Vector2::from_scalar(theme_cache.table_h_separation * 0.5).floor(), Size2(table->columns[col].width + theme_cache.table_h_separation, table->rows[row] + theme_cache.table_v_separation) + frame->padding.position + frame->padding.size);
 									if (col == col_count - 1) {
 										if (rtl) {
 											crect.size.x = crect.position.x + crect.size.x;
@@ -6516,7 +6516,7 @@ Vector2i RichTextLabel::get_line_range(int p_line) {
 		int lc = main->lines[i].text_buf->get_line_count();
 
 		if (p_line < line_count + lc) {
-			Vector2i char_offset = Vector2i(main->lines[i].char_offset, main->lines[i].char_offset);
+			Vector2i char_offset = Vector2i::from_scalar(main->lines[i].char_offset);
 			Vector2i line_range = main->lines[i].text_buf->get_line_range(p_line - line_count);
 			return char_offset + line_range;
 		}

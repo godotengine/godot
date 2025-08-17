@@ -3401,7 +3401,7 @@ void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation)
 		rgb *= p_brightness;
 		rgb = Vector3(0.5, 0.5, 0.5).lerp(rgb, p_contrast);
 		float center = (rgb.x + rgb.y + rgb.z) / 3.0;
-		rgb = Vector3(center, center, center).lerp(rgb, p_saturation);
+		rgb = Vector3::from_scalar(center).lerp(rgb, p_saturation);
 		c.r = rgb.x;
 		c.g = rgb.y;
 		c.b = rgb.z;

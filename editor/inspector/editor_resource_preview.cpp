@@ -216,7 +216,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 
 		if (r_small_texture.is_null() && r_texture.is_valid() && preview_generators[i]->generate_small_preview_automatically()) {
 			Ref<Image> small_image = r_texture->get_image()->duplicate();
-			Vector2i new_size = Vector2i(1, 1) * small_thumbnail_size;
+			Vector2i new_size = Vector2i::from_scalar(small_thumbnail_size);
 			const real_t aspect = small_image->get_size().aspect();
 			if (aspect > 1.0) {
 				new_size.y = MAX(1, new_size.y / aspect);
@@ -231,7 +231,7 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 				const Vector2i rect_size = rect->get_size();
 				small_image = Image::create_empty(small_thumbnail_size, small_thumbnail_size, false, rect->get_format());
 				// Blit the rectangle in the center of the square.
-				small_image->blit_rect(rect, Rect2i(Vector2i(), rect_size), (Vector2i(1, 1) * small_thumbnail_size - rect_size) / 2);
+				small_image->blit_rect(rect, Rect2i(Vector2i(), rect_size), (Vector2i::from_scalar(small_thumbnail_size) - rect_size) / 2);
 			}
 
 			r_small_texture.instantiate();

@@ -1439,7 +1439,7 @@ void SpriteFramesEditor::_zoom_out() {
 void SpriteFramesEditor::_zoom_reset() {
 	thumbnail_zoom = MAX(1.0f, EDSCALE);
 	frame_list->set_fixed_column_width(thumbnail_default_size * 3 / 2);
-	frame_list->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
+	frame_list->set_fixed_icon_size(Size2::from_scalar(thumbnail_default_size));
 }
 
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {

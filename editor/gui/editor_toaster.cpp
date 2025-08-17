@@ -279,7 +279,7 @@ void EditorToaster::_draw_button() {
 		default:
 			break;
 	}
-	main_button->draw_circle(Vector2(button_radius * 2, button_radius * 2), button_radius, color);
+	main_button->draw_circle(Vector2::from_scalar(button_radius * 2), button_radius, color);
 }
 
 void EditorToaster::_draw_progress(Control *panel) {

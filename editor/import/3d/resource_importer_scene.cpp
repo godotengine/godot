@@ -3159,7 +3159,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	}
 	if (Object::cast_to<Node3D>(scene)) {
 		Node3D *scene_3d = Object::cast_to<Node3D>(scene);
-		Vector3 scale = Vector3(root_scale, root_scale, root_scale);
+		Vector3 scale = Vector3::from_scalar(root_scale);
 		if (apply_root) {
 			_apply_permanent_scale_to_descendants(scene, scale);
 		} else {

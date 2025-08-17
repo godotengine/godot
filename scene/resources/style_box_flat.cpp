@@ -277,10 +277,10 @@ inline void set_corner_scale(const Rect2 &style_rect, const Rect2 &inner_rect, c
 
 	// Corner Radii as Point2s.
 	Point2 pcr[4] = {
-		Point2(corner_radius[0], corner_radius[0]),
-		Point2(corner_radius[1], corner_radius[1]),
-		Point2(corner_radius[2], corner_radius[2]),
-		Point2(corner_radius[3], corner_radius[3]),
+		Point2::from_scalar(corner_radius[0]),
+		Point2::from_scalar(corner_radius[1]),
+		Point2::from_scalar(corner_radius[2]),
+		Point2::from_scalar(corner_radius[3]),
 	};
 
 	// If corner radii are too small, they won't shrink the full amount.
@@ -325,9 +325,9 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 	// Corner radius center points.
 	Vector<Point2> outer_points = {
-		ring_rect.position + Vector2(ring_corner_radius[0], ring_corner_radius[0]) * ring_scale[0], //tl
+		ring_rect.position + Vector2::from_scalar(ring_corner_radius[0]) * ring_scale[0], //tl
 		Point2(ring_rect.position.x + ring_rect.size.x - ring_corner_radius[1] * ring_scale[1].x, ring_rect.position.y + ring_corner_radius[1] * ring_scale[1].y), //tr
-		ring_rect.position + ring_rect.size - Vector2(ring_corner_radius[2], ring_corner_radius[2]) * ring_scale[2], //br
+		ring_rect.position + ring_rect.size - Vector2::from_scalar(ring_corner_radius[2]) * ring_scale[2], //br
 		Point2(ring_rect.position.x + ring_corner_radius[3] * ring_scale[3].x, ring_rect.position.y + ring_rect.size.y - ring_corner_radius[3] * ring_scale[3].y) //bl
 	};
 
@@ -338,9 +338,9 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 	set_corner_scale(style_rect, inner_rect, inner_corner_radius, inner_scale);
 
 	Vector<Point2> inner_points = {
-		inner_rect.position + Vector2(inner_corner_radius[0], inner_corner_radius[0]) * inner_scale[0], //tl
+		inner_rect.position + Vector2::from_scalar(inner_corner_radius[0]) * inner_scale[0], //tl
 		Point2(inner_rect.position.x + inner_rect.size.x - inner_corner_radius[1] * inner_scale[1].x, inner_rect.position.y + inner_corner_radius[1] * inner_scale[1].y), //tr
-		inner_rect.position + inner_rect.size - Vector2(inner_corner_radius[2], inner_corner_radius[2]) * inner_scale[2], //br
+		inner_rect.position + inner_rect.size - Vector2::from_scalar(inner_corner_radius[2]) * inner_scale[2], //br
 		Point2(inner_rect.position.x + inner_corner_radius[3] * inner_scale[3].x, inner_rect.position.y + inner_rect.size.y - inner_corner_radius[3] * inner_scale[3].y) //bl
 	};
 

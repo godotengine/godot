@@ -568,7 +568,7 @@ Transform3D OpenXRRenderModelExtension::render_model_get_root_transform(RID p_re
 
 	// Scale our root transform
 	real_t world_scale = xr_server->get_world_scale();
-	Transform3D root_transform = render_model->root_transform.scaled(Vector3(world_scale, world_scale, world_scale));
+	Transform3D root_transform = render_model->root_transform.scaled(Vector3::from_scalar(world_scale));
 
 	return xr_server->get_reference_frame() * root_transform;
 }

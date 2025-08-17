@@ -676,7 +676,7 @@ float LookAtModifier3D::remap_damped(float p_from, float p_to, float p_damp_thre
 	double inv_to = 1.0 / p_to;
 	double end_x = limit * inv_to;
 	double position = abs_value * inv_to;
-	Vector2 start = Vector2(p_damp_threshold, p_damp_threshold);
+	Vector2 start = Vector2::from_scalar(p_damp_threshold);
 	Vector2 mid = Vector2(1.0, 1.0);
 	Vector2 end = Vector2(end_x, 1.0);
 	value = get_bspline_y(start, mid, end, position);

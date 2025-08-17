@@ -252,7 +252,7 @@ void EditorNode3DGizmo::_update_bvh() {
 	Transform3D transform = spatial_node->get_global_transform();
 
 	float effective_icon_size = selectable_icon_size > 0.0f ? selectable_icon_size : 0.0f;
-	Vector3 icon_size_vector3 = Vector3(effective_icon_size, effective_icon_size, effective_icon_size);
+	Vector3 icon_size_vector3 = Vector3::from_scalar(effective_icon_size);
 	AABB aabb(spatial_node->get_position() - icon_size_vector3 * 100.0f, icon_size_vector3 * 200.0f);
 
 	for (const Vector3 &segment_end : collision_segments) {
@@ -315,7 +315,7 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 			md = MAX(0, p_vertices[i].length());
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
+			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3::from_scalar(md * 2.0)));
 		}
 	}
 
@@ -370,11 +370,11 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 		md = MAX(0, vs[i].length());
 	}
 	if (md) {
-		mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
+		mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3::from_scalar(md * 2.0)));
 	}
 
 	selectable_icon_size = p_scale;
-	mesh->set_custom_aabb(AABB(Vector3(-selectable_icon_size, -selectable_icon_size, -selectable_icon_size) * 100.0f, Vector3(selectable_icon_size, selectable_icon_size, selectable_icon_size) * 200.0f));
+	mesh->set_custom_aabb(AABB(Vector3::from_scalar(-selectable_icon_size * 100.0f), Vector3::from_scalar(selectable_icon_size * 200.0f)));
 
 	ins.mesh = mesh;
 	if (valid) {
@@ -456,7 +456,7 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 			md = MAX(0, p_handles[i].length());
 		}
 		if (md) {
-			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3(md, md, md) * 2.0));
+			mesh->set_custom_aabb(AABB(Vector3(-md, -md, -md), Vector3::from_scalar(md * 2.0)));
 		}
 	}
 

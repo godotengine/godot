@@ -138,12 +138,10 @@ void VisualShaderNode::set_input_port_default_value(int p_port, const Variant &p
 			case Variant::VECTOR3: {
 				switch (p_prev_value.get_type()) {
 					case Variant::INT: {
-						float pv = (float)(int)p_prev_value;
-						value = Vector3(pv, pv, pv);
+						value = Vector3::from_scalar((float)(int)p_prev_value);
 					} break;
 					case Variant::FLOAT: {
-						float pv = p_prev_value;
-						value = Vector3(pv, pv, pv);
+						value = Vector3::from_scalar(p_prev_value);
 					} break;
 					case Variant::VECTOR2: {
 						Vector2 pv = p_prev_value;

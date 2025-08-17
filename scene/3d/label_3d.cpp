@@ -627,8 +627,8 @@ void Label3D::_shape() {
 		case StandardMaterial3D::BILLBOARD_ENABLED: {
 			real_t size_new = MAX(Math::abs(aabb.position.x), (aabb.position.x + aabb.size.x));
 			size_new = MAX(size_new, MAX(Math::abs(aabb.position.y), (aabb.position.y + aabb.size.y)));
-			aabb.position = Vector3(-size_new, -size_new, -size_new);
-			aabb.size = Vector3(size_new * 2.0, size_new * 2.0, size_new * 2.0);
+			aabb.position = Vector3::from_scalar(-size_new);
+			aabb.size = Vector3::from_scalar(size_new * 2.0);
 		} break;
 		case StandardMaterial3D::BILLBOARD_FIXED_Y: {
 			real_t size_new = MAX(Math::abs(aabb.position.x), (aabb.position.x + aabb.size.x));

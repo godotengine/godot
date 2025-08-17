@@ -279,10 +279,10 @@ TEST_CASE("[SceneTree][PathFollow3D] Calculate forward vector") {
 	CHECK(is_equal_approx(Vector3(0, 0, -1), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(400 + 1.5 * dist_cube_100);
-	CHECK(is_equal_approx(Vector3(0.577348, 0.577348, 0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
+	CHECK(is_equal_approx(Vector3::from_scalar(0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(400 + 2 * dist_cube_100 - 0.01);
-	CHECK(is_equal_approx(Vector3(0.577348, 0.577348, 0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
+	CHECK(is_equal_approx(Vector3::from_scalar(0.577348), path_follow_3d->get_transform().get_basis().get_column(2)));
 
 	path_follow_3d->set_progress(500 + 2 * dist_cube_100);
 	CHECK(is_equal_approx(Vector3(1, 0, 0), path_follow_3d->get_transform().get_basis().get_column(2)));

@@ -123,7 +123,7 @@ private:
 	String displayed_title;
 	mutable int current_screen = 0;
 	mutable Point2i position;
-	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
+	mutable Size2i size = Size2i::from_scalar(DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
 	mutable Vector<Vector2> mpath;

@@ -459,8 +459,7 @@ void TileMapLayerEditorTilesPlugin::_update_scenes_collection_view() {
 	}
 
 	// Icon size update.
-	int int_size = int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
-	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
+	scene_tiles_list->set_fixed_icon_size(Vector2::from_scalar(int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE));
 }
 
 void TileMapLayerEditorTilesPlugin::_scene_thumbnail_done(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_ud) {
@@ -2382,7 +2381,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	sources_list = memnew(ItemList);
 	sources_list->set_auto_translate_mode(Node::AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
+	sources_list->set_fixed_icon_size(Size2::from_scalar(60 * EDSCALE));
 	sources_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	sources_list->set_stretch_ratio(0.25);
@@ -3324,7 +3323,7 @@ void TileMapLayerEditorTerrainsPlugin::_update_terrains_tree() {
 	}
 
 	// Fill in the terrain list.
-	Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(Size2(16, 16) * EDSCALE);
+	Vector<Vector<Ref<Texture2D>>> icons = tile_set->generate_terrains_icons(Size2::from_scalar(16 * EDSCALE));
 	for (int terrain_set_index = 0; terrain_set_index < tile_set->get_terrain_sets_count(); terrain_set_index++) {
 		// Add an item for the terrain set.
 		TreeItem *terrain_set_tree_item = terrains_tree->create_item();
@@ -3508,7 +3507,7 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	terrains_tile_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	terrains_tile_list->set_max_columns(0);
 	terrains_tile_list->set_same_column_width(true);
-	terrains_tile_list->set_fixed_icon_size(Size2(32, 32) * EDSCALE);
+	terrains_tile_list->set_fixed_icon_size(Size2::from_scalar(32 * EDSCALE));
 	terrains_tile_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	tilemap_tab_terrains->add_child(terrains_tile_list);
 

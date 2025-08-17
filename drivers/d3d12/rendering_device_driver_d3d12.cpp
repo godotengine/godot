@@ -5897,7 +5897,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 			if (options6.VariableShadingRateTier >= D3D12_VARIABLE_SHADING_RATE_TIER_2) {
 				fsr_capabilities.primitive_supported = true;
 				fsr_capabilities.attachment_supported = true;
-				fsr_capabilities.min_texel_size = Size2i(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize);
+				fsr_capabilities.min_texel_size = Size2i::from_scalar(options6.ShadingRateImageTileSize);
 				fsr_capabilities.max_texel_size = Size2i(8, 8);
 			}
 		}

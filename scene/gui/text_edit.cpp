@@ -7828,7 +7828,7 @@ void TextEdit::_cut_internal(int p_caret) {
 	if (p_caret == -1) {
 		line_ranges = get_line_ranges_from_carets();
 	} else {
-		line_ranges.push_back(Point2i(get_caret_line(p_caret), get_caret_line(p_caret)));
+		line_ranges.push_back(Point2i::from_scalar(get_caret_line(p_caret)));
 	}
 	int line_offset = 0;
 	for (Point2i line_range : line_ranges) {
@@ -7862,7 +7862,7 @@ void TextEdit::_copy_internal(int p_caret) {
 		// When there are multiple carets on a line, only copy it once.
 		line_ranges = get_line_ranges_from_carets(false, true);
 	} else {
-		line_ranges.push_back(Point2i(get_caret_line(p_caret), get_caret_line(p_caret)));
+		line_ranges.push_back(Point2i::from_scalar(get_caret_line(p_caret)));
 	}
 	for (Point2i line_range : line_ranges) {
 		for (int i = line_range.x; i <= line_range.y; i++) {

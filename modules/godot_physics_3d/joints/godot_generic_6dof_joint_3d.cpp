@@ -322,7 +322,7 @@ bool GodotGeneric6DOFJoint3D::setup(real_t p_timestep) {
 	}
 
 	// Clear accumulated impulses for the next simulation step
-	m_linearLimits.m_accumulatedImpulse = Vector3(real_t(0.), real_t(0.), real_t(0.));
+	m_linearLimits.m_accumulatedImpulse = Vector3::from_scalar(real_t(0.));
 	int i;
 	for (i = 0; i < 3; i++) {
 		m_angularLimits[i].m_accumulatedImpulse = real_t(0.);

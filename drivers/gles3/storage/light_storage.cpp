@@ -812,7 +812,7 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	if (atlas->render_buffers.is_null()) {
 		atlas->render_buffers.instantiate();
-		atlas->render_buffers->configure_for_probe(Size2i(atlas->size, atlas->size));
+		atlas->render_buffers->configure_for_probe(Size2i::from_scalar(atlas->size));
 	}
 
 	// First we check if our atlas is initialized.

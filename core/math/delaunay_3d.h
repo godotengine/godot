@@ -216,7 +216,7 @@ public:
 			}
 
 			real_t longest_axis = rect.size[rect.get_longest_axis_index()];
-			proportions = Vector3(longest_axis, longest_axis, longest_axis) / rect.size;
+			proportions = Vector3::from_scalar(longest_axis) / rect.size;
 
 			for (uint32_t i = 0; i < point_count; i++) {
 				// Scale points to the unit cube to better utilize R128 precision
@@ -329,8 +329,7 @@ public:
 					center.y = double(new_simplex->circum_center_y);
 					center.z = double(new_simplex->circum_center_z);
 
-					const real_t radius2 = Math::sqrt(double(new_simplex->circum_r2)) + 0.0001;
-					Vector3 extents = Vector3(radius2, radius2, radius2);
+					Vector3 extents = Vector3::from_scalar(Math::sqrt(double(new_simplex->circum_r2)) + 0.0001);
 					Vector3i from = Vector3i((center - extents) * proportions * ACCEL_GRID_SIZE);
 					Vector3i to = Vector3i((center + extents) * proportions * ACCEL_GRID_SIZE);
 					from = from.clampi(0, ACCEL_GRID_SIZE - 1);

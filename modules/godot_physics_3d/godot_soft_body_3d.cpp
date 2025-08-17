@@ -297,7 +297,7 @@ void GodotSoftBody3D::apply_nodes_transform(const Transform3D &p_transform) {
 	}
 
 	uint32_t node_count = nodes.size();
-	Vector3 leaf_size = Vector3(collision_margin, collision_margin, collision_margin) * 2.0;
+	Vector3 leaf_size = Vector3::from_scalar(collision_margin * 2.0);
 	for (uint32_t node_index = 0; node_index < node_count; ++node_index) {
 		Node &node = nodes[node_index];
 
@@ -560,7 +560,7 @@ bool GodotSoftBody3D::create_from_trimesh(const Vector<int> &p_indices, const Ve
 	// Create nodes from vertices.
 	nodes.resize(node_count);
 	real_t inv_node_mass = node_count * inv_total_mass;
-	Vector3 leaf_size = Vector3(collision_margin, collision_margin, collision_margin) * 2.0;
+	Vector3 leaf_size = Vector3::from_scalar(collision_margin * 2.0);
 	for (uint32_t i = 0; i < node_count; ++i) {
 		Node &node = nodes[i];
 		node.s = vertices[i];

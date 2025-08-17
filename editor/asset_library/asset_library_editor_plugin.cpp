@@ -137,7 +137,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	icon = memnew(TextureButton);
 	icon->set_accessibility_name(TTRC("Open asset details"));
-	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
+	icon->set_custom_minimum_size(Size2::from_scalar(64 * EDSCALE));
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -330,7 +330,7 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	item = memnew(EditorAssetLibraryItem);
 
 	desc_vbox->add_child(item);
-	desc_vbox->set_custom_minimum_size(Size2(440 * EDSCALE, 440 * EDSCALE));
+	desc_vbox->set_custom_minimum_size(Size2::from_scalar(440 * EDSCALE));
 
 	description = memnew(RichTextLabel);
 	desc_vbox->add_child(description);

@@ -1950,8 +1950,8 @@ AABB ParticlesStorage::particles_collision_get_aabb(RID p_particles_collision) c
 		case RS::PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT:
 		case RS::PARTICLES_COLLISION_TYPE_SPHERE_COLLIDE: {
 			AABB aabb;
-			aabb.position = -Vector3(1, 1, 1) * particles_collision->radius;
-			aabb.size = Vector3(2, 2, 2) * particles_collision->radius;
+			aabb.position = -Vector3::from_scalar(particles_collision->radius);
+			aabb.size = Vector3::from_scalar(particles_collision->radius * 2);
 			return aabb;
 		}
 		default: {

@@ -53,7 +53,7 @@ String Collada::Effect::get_texture_path(const String &p_source, Collada &p_stat
 Transform3D Collada::get_root_transform() const {
 	Transform3D unit_scale_transform;
 #ifndef COLLADA_IMPORT_SCALE_SCENE
-	unit_scale_transform.scale(Vector3(state.unit_scale, state.unit_scale, state.unit_scale));
+	unit_scale_transform.scale(Vector3::from_scalar(state.unit_scale));
 #endif
 	return unit_scale_transform;
 }

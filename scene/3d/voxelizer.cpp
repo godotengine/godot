@@ -692,11 +692,11 @@ void Voxelizer::begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_
 	}
 
 	Transform3D to_bounds;
-	to_bounds.basis.scale(Vector3(po2_bounds.size[longest_axis], po2_bounds.size[longest_axis], po2_bounds.size[longest_axis]));
+	to_bounds.basis.scale(Vector3::from_scalar(po2_bounds.size[longest_axis]));
 	to_bounds.origin = po2_bounds.position;
 
 	Transform3D to_grid;
-	to_grid.basis.scale(Vector3(axis_cell_size[longest_axis], axis_cell_size[longest_axis], axis_cell_size[longest_axis]));
+	to_grid.basis.scale(Vector3::from_scalar(axis_cell_size[longest_axis]));
 
 	to_cell_space = to_grid * to_bounds.affine_inverse();
 

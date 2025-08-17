@@ -1990,7 +1990,7 @@ void TextureStorage::update_texture_atlas() {
 
 		for (int i = 0; i < item_count; i++) {
 			TextureAtlas::Texture *t = texture_atlas.textures.getptr(items[i].texture);
-			t->uv_rect.position = items[i].pos * border + Vector2i(border / 2, border / 2);
+			t->uv_rect.position = items[i].pos * border + Vector2i::from_scalar(border / 2);
 			t->uv_rect.size = items[i].pixel_size;
 
 			t->uv_rect.position /= Size2(texture_atlas.size);

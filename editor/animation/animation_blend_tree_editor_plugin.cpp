@@ -933,7 +933,7 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 		return;
 	}
 
-	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
+	filter_dialog->popup_centered(Size2::from_scalar(500 * EDSCALE));
 }
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {

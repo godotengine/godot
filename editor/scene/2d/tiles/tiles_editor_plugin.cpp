@@ -81,9 +81,7 @@ void TilesEditorUtils::_thread() {
 			pattern_preview_queue.pop_front();
 			pattern_preview_mutex.unlock();
 
-			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
-			thumbnail_size *= EDSCALE;
-			Vector2 thumbnail_size2 = Vector2(thumbnail_size, thumbnail_size);
+			Vector2 thumbnail_size2 = Vector2::from_scalar(int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE);
 
 			if (item.pattern.is_valid() && !item.pattern->is_empty()) {
 				// Generate the pattern preview

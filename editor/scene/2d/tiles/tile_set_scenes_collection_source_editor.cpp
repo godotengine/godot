@@ -349,8 +349,7 @@ void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
 	}
 
 	// Icon size update.
-	int int_size = int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE;
-	scene_tiles_list->set_fixed_icon_size(Vector2(int_size, int_size));
+	scene_tiles_list->set_fixed_icon_size(Vector2::from_scalar(int(EDITOR_GET("filesystem/file_dialog/thumbnail_size")) * EDSCALE));
 }
 
 void TileSetScenesCollectionSourceEditor::_notification(int p_what) {

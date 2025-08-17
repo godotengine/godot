@@ -110,7 +110,7 @@ int Marker3DGizmoPlugin::get_priority() const {
 void Marker3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	const Marker3D *marker = Object::cast_to<Marker3D>(p_gizmo->get_node_3d());
 	const real_t extents = marker->get_gizmo_extents();
-	const Transform3D xform(Basis::from_scale(Vector3(extents, extents, extents)));
+	const Transform3D xform(Basis::from_scale(Vector3::from_scalar(extents)));
 
 	p_gizmo->clear();
 	p_gizmo->add_mesh(pos3d_mesh, Ref<Material>(), xform);

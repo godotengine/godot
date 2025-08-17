@@ -247,8 +247,8 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 		case StandardMaterial3D::BILLBOARD_ENABLED: {
 			real_t size_new = MAX(Math::abs(final_rect.position.x) * px_size, (final_rect.position.x + final_rect.size.x) * px_size);
 			size_new = MAX(size_new, MAX(Math::abs(final_rect.position.y) * px_size, (final_rect.position.y + final_rect.size.y) * px_size));
-			aabb_new.position = Vector3(-size_new, -size_new, -size_new);
-			aabb_new.size = Vector3(size_new * 2.0, size_new * 2.0, size_new * 2.0);
+			aabb_new.position = Vector3::from_scalar(-size_new);
+			aabb_new.size = Vector3::from_scalar(size_new * 2.0);
 		} break;
 		case StandardMaterial3D::BILLBOARD_FIXED_Y: {
 			real_t size_new = MAX(Math::abs(final_rect.position.x) * px_size, (final_rect.position.x + final_rect.size.x) * px_size);

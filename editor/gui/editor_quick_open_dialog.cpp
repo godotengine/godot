@@ -1013,14 +1013,12 @@ QuickOpenResultListItem::QuickOpenResultListItem() {
 	hbc->add_theme_constant_override(SNAME("separation"), 4 * EDSCALE);
 	add_child(hbc);
 
-	const int max_size = 36 * EDSCALE;
-
 	thumbnail = memnew(TextureRect);
 	thumbnail->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	thumbnail->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	thumbnail->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	thumbnail->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	thumbnail->set_custom_minimum_size(Size2i(max_size, max_size));
+	thumbnail->set_custom_minimum_size(Size2i::from_scalar(36 * EDSCALE));
 	hbc->add_child(thumbnail);
 
 	text_container = memnew(VBoxContainer);
@@ -1097,12 +1095,10 @@ QuickOpenResultGridItem::QuickOpenResultGridItem() {
 	vbc->add_theme_constant_override(SNAME("separation"), 0);
 	add_child(vbc);
 
-	const int max_size = 64 * EDSCALE;
-
 	thumbnail = memnew(TextureRect);
 	thumbnail->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	thumbnail->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	thumbnail->set_custom_minimum_size(Size2i(max_size, max_size));
+	thumbnail->set_custom_minimum_size(Size2i::from_scalar(64 * EDSCALE));
 	vbc->add_child(thumbnail);
 
 	name = memnew(HighlightedLabel);

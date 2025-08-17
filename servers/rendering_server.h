@@ -65,8 +65,8 @@ class RenderingServer : public Object {
 
 	Array _get_array_from_surface(uint64_t p_format, Vector<uint8_t> p_vertex_data, Vector<uint8_t> p_attrib_data, Vector<uint8_t> p_skin_data, int p_vertex_len, Vector<uint8_t> p_index_data, int p_index_len, const AABB &p_aabb, const Vector4 &p_uv_scale) const;
 
-	const Vector2 SMALL_VEC2 = Vector2(CMP_EPSILON, CMP_EPSILON);
-	const Vector3 SMALL_VEC3 = Vector3(CMP_EPSILON, CMP_EPSILON, CMP_EPSILON);
+	const Vector2 SMALL_VEC2 = Vector2::from_scalar(CMP_EPSILON);
+	const Vector3 SMALL_VEC3 = Vector3::from_scalar(CMP_EPSILON);
 
 	virtual TypedArray<StringName> _global_shader_parameter_get_list() const;
 

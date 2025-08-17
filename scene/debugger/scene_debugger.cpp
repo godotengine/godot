@@ -2483,7 +2483,7 @@ void RuntimeNodeSelect::_reset_camera_2d() {
 
 void RuntimeNodeSelect::_update_view_2d() {
 	Transform2D transform = Transform2D();
-	transform.scale_basis(Size2(view_2d_zoom, view_2d_zoom));
+	transform.scale_basis(Size2::from_scalar(view_2d_zoom));
 	transform.columns[2] = -view_2d_offset * view_2d_zoom;
 
 	SceneTree::get_singleton()->get_root()->set_canvas_transform_override(transform);

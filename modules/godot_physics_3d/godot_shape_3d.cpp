@@ -152,7 +152,7 @@ Vector3 GodotWorldBoundaryShape3D::get_moment_of_inertia(real_t p_mass) const {
 
 void GodotWorldBoundaryShape3D::_setup(const Plane &p_plane) {
 	plane = p_plane;
-	configure(AABB(Vector3(-1e15, -1e15, -1e15), Vector3(1e15 * 2, 1e15 * 2, 1e15 * 2)));
+	configure(AABB(Vector3::from_scalar(-1e15), Vector3::from_scalar(1e15 * 2)));
 }
 
 void GodotWorldBoundaryShape3D::set_data(const Variant &p_data) {
@@ -294,7 +294,7 @@ Vector3 GodotSphereShape3D::get_moment_of_inertia(real_t p_mass) const {
 
 void GodotSphereShape3D::_setup(real_t p_radius) {
 	radius = p_radius;
-	configure(AABB(Vector3(-radius, -radius, -radius), Vector3(radius * 2.0, radius * 2.0, radius * 2.0)));
+	configure(AABB(Vector3::from_scalar(-radius), Vector3::from_scalar(radius * 2.0)));
 }
 
 void GodotSphereShape3D::set_data(const Variant &p_data) {

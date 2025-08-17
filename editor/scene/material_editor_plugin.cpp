@@ -221,7 +221,7 @@ MaterialEditor::MaterialEditor() {
 
 	rect_instance = memnew(ColorRect);
 	layout_2d->add_child(rect_instance);
-	rect_instance->set_custom_minimum_size(Size2(150, 150) * EDSCALE);
+	rect_instance->set_custom_minimum_size(Size2::from_scalar(150 * EDSCALE));
 
 	layout_2d->set_visible(false);
 

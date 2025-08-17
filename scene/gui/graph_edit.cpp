@@ -209,7 +209,7 @@ void GraphEditMinimap::_bind_methods() {
 GraphEditMinimap::GraphEditMinimap(GraphEdit *p_edit) {
 	ge = p_edit;
 
-	minimap_padding = Vector2(MINIMAP_PADDING, MINIMAP_PADDING);
+	minimap_padding = Vector2::from_scalar(MINIMAP_PADDING);
 	minimap_offset = minimap_padding + _convert_from_graph_position(graph_padding);
 }
 
@@ -917,7 +917,7 @@ Rect2 GraphEdit::_compute_shrinked_frame_rect(const GraphFrame *p_frame) {
 	const Size2 titlebar_size = p_frame->get_titlebar_size();
 
 	min_point -= Size2(autoshrink_margin, MAX(autoshrink_margin, titlebar_size.y));
-	max_point += Size2(autoshrink_margin, autoshrink_margin);
+	max_point += Size2::from_scalar(autoshrink_margin);
 
 	return Rect2(min_point, max_point - min_point);
 }

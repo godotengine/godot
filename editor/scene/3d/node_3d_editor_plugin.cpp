@@ -4281,7 +4281,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 			(gizmo_size / Math::abs(dd)) * MAX(1, EDSCALE) *
 			MIN(viewport_base_height, subviewport_container->get_size().height) / viewport_base_height /
 			subviewport_container->get_stretch_shrink();
-	Vector3 scale = Vector3(1, 1, 1) * gizmo_scale;
+	Vector3 scale = Vector3::from_scalar(gizmo_scale);
 
 	// if the determinant is zero, we should disable the gizmo from being rendered
 	// this prevents supplying bad values to the renderer and then having to filter it out again
@@ -6000,7 +6000,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	position_control = memnew(ViewportNavigationControl);
 	position_control->set_navigation_mode(Node3DEditorViewport::NAVIGATION_MOVE);
-	position_control->set_custom_minimum_size(Size2(navigation_control_size, navigation_control_size) * EDSCALE);
+	position_control->set_custom_minimum_size(Size2::from_scalar(navigation_control_size * EDSCALE));
 	position_control->set_h_size_flags(SIZE_SHRINK_END);
 	position_control->set_anchor_and_offset(SIDE_LEFT, ANCHOR_BEGIN, 0);
 	position_control->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -navigation_control_size * EDSCALE);
@@ -6011,7 +6011,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	look_control = memnew(ViewportNavigationControl);
 	look_control->set_navigation_mode(Node3DEditorViewport::NAVIGATION_LOOK);
-	look_control->set_custom_minimum_size(Size2(navigation_control_size, navigation_control_size) * EDSCALE);
+	look_control->set_custom_minimum_size(Size2::from_scalar(navigation_control_size * EDSCALE));
 	look_control->set_h_size_flags(SIZE_SHRINK_END);
 	look_control->set_anchor_and_offset(SIDE_LEFT, ANCHOR_END, -navigation_control_size * EDSCALE);
 	look_control->set_anchor_and_offset(SIDE_TOP, ANCHOR_END, -navigation_control_size * EDSCALE);
@@ -6021,7 +6021,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	surface->add_child(look_control);
 
 	rotation_control = memnew(ViewportRotationControl);
-	rotation_control->set_custom_minimum_size(Size2(80, 80) * EDSCALE);
+	rotation_control->set_custom_minimum_size(Size2::from_scalar(80 * EDSCALE));
 	rotation_control->set_h_size_flags(SIZE_SHRINK_END);
 	rotation_control->set_viewport(this);
 	rotation_control->set_focus_mode(FOCUS_CLICK);
@@ -9752,7 +9752,7 @@ Node3DEditor::Node3DEditor() {
 
 		CenterContainer *sun_direction_center = memnew(CenterContainer);
 		sun_direction = memnew(Control);
-		sun_direction->set_custom_minimum_size(Size2(128, 128) * EDSCALE);
+		sun_direction->set_custom_minimum_size(Size2::from_scalar(128 * EDSCALE));
 		sun_direction_center->add_child(sun_direction);
 		sun_vb->add_margin_child(TTRC("Sun Direction"), sun_direction_center);
 		sun_direction->connect(SceneStringName(gui_input), callable_mp(this, &Node3DEditor::_sun_direction_input));

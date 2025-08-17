@@ -1078,7 +1078,7 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 	rs->mesh_clear(r_debug_quadrant.physics_mesh);
 
 	// Redraw all shapes from the physics quadrants
-	Rect2i covered_cell_area = Rect2i(r_debug_quadrant.quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE, Vector2i(TILE_MAP_DEBUG_QUADRANT_SIZE, TILE_MAP_DEBUG_QUADRANT_SIZE));
+	Rect2i covered_cell_area = Rect2i(r_debug_quadrant.quadrant_coords * TILE_MAP_DEBUG_QUADRANT_SIZE, Vector2i::from_scalar(TILE_MAP_DEBUG_QUADRANT_SIZE));
 	Vector2i first_physics_quadrant_coords = _coords_to_quadrant_coords(covered_cell_area.get_position() - Vector2i(1, 1), physics_quadrant_size) + Vector2i(1, 1);
 	Vector2i last_physics_quadrant_coords = _coords_to_quadrant_coords(covered_cell_area.get_end() - Vector2i(1, 1), physics_quadrant_size) + Vector2i(1, 1);
 

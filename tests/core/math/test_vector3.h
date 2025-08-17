@@ -168,10 +168,10 @@ TEST_CASE("[Vector3] Length methods") {
 TEST_CASE("[Vector3] Limiting methods") {
 	constexpr Vector3 vector = Vector3(10, 10, 10);
 	CHECK_MESSAGE(
-			vector.limit_length().is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
+			vector.limit_length().is_equal_approx(Vector3::from_scalar(Math::SQRT13)),
 			"Vector3 limit_length should work as expected.");
 	CHECK_MESSAGE(
-			vector.limit_length(5).is_equal_approx(5 * Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
+			vector.limit_length(5).is_equal_approx(Vector3::from_scalar(Math::SQRT13 * 5)),
 			"Vector3 limit_length should work as expected.");
 
 	CHECK_MESSAGE(
@@ -196,7 +196,7 @@ TEST_CASE("[Vector3] Normalization methods") {
 			Vector3(1, 1, 0).normalized().is_equal_approx(Vector3(Math::SQRT12, Math::SQRT12, 0)),
 			"Vector3 normalized should work as expected.");
 	CHECK_MESSAGE(
-			Vector3(1, 1, 1).normalized().is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
+			Vector3(1, 1, 1).normalized().is_equal_approx(Vector3::from_scalar(Math::SQRT13)),
 			"Vector3 normalized should work as expected.");
 
 	Vector3 vector = Vector3(3.2, -5.4, 6);
@@ -313,7 +313,7 @@ TEST_CASE("[Vector3] Other methods") {
 			vector.direction_to(Vector3()).is_equal_approx(-vector.normalized()),
 			"Vector3 direction_to should work as expected.");
 	CHECK_MESSAGE(
-			Vector3(1, 1, 1).direction_to(Vector3(2, 2, 2)).is_equal_approx(Vector3(Math::SQRT13, Math::SQRT13, Math::SQRT13)),
+			Vector3(1, 1, 1).direction_to(Vector3(2, 2, 2)).is_equal_approx(Vector3::from_scalar(Math::SQRT13)),
 			"Vector3 direction_to should work as expected.");
 	CHECK_MESSAGE(
 			vector.inverse().is_equal_approx(Vector3(1 / 1.2, 1 / 3.4, 1 / 5.6)),

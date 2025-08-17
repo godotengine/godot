@@ -3473,7 +3473,7 @@ void TileSet::_compatibility_conversion() {
 			} break;
 			case COMPATIBILITY_TILE_MODE_ATLAS_TILE: {
 				atlas_source->set_margins(ctd->region.get_position());
-				atlas_source->set_separation(Vector2i(ctd->autotile_spacing, ctd->autotile_spacing));
+				atlas_source->set_separation(Vector2i::from_scalar(ctd->autotile_spacing));
 				atlas_source->set_texture_region_size(ctd->autotile_tile_size);
 
 				Size2i atlas_size = ctd->region.get_size() / (ctd->autotile_tile_size + atlas_source->get_separation());

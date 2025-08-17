@@ -905,7 +905,7 @@ void DisplayServerWeb::_ime_callback(int p_type, const String &p_text) {
 			// IME update.
 			if (ds->ime_active && ds->ime_started) {
 				ds->ime_text = p_text;
-				ds->ime_selection = Vector2i(ds->ime_text.length(), ds->ime_text.length());
+				ds->ime_selection = Vector2i::from_scalar(ds->ime_text.length());
 				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 			}
 		} break;

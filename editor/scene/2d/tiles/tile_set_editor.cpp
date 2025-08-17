@@ -857,7 +857,7 @@ TileSetEditor::TileSetEditor() {
 
 	sources_list = memnew(ItemList);
 	sources_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
+	sources_list->set_fixed_icon_size(Size2::from_scalar(60 * EDSCALE));
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_theme_type_variation("ItemListSecondary");

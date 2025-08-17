@@ -54,7 +54,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 			if (polygon.is_empty()) {
 				item_rect = Rect2();
 			} else {
-				Vector2 d = Vector2(LINE_GRAB_WIDTH, LINE_GRAB_WIDTH);
+				Vector2 d = Vector2::from_scalar(LINE_GRAB_WIDTH);
 				item_rect = Rect2(polygon[0] - d, 2 * d);
 				for (int i = 1; i < polygon.size(); i++) {
 					item_rect.expand_to(polygon[i] - d);
