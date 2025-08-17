@@ -443,6 +443,8 @@ private:
 	int proxy_socket = -1;
 	int compositor_socket = -1;
 
+	// NOTE: First element must be the listening socket! This allows us to process
+	// it last, cleaning up closed sockets before it reuses their handles.
 	LocalVector<struct pollfd> pollfds;
 
 	// Key is socket.

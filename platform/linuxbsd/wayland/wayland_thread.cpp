@@ -4418,6 +4418,11 @@ Error WaylandThread::init() {
 		ERR_FAIL_COND_V_MSG(embedder_socket_path.is_empty(), ERR_CANT_CREATE, "Wayland embedder returned invalid path.");
 
 		OS::get_singleton()->set_environment("GODOT_WAYLAND_DISPLAY", embedder_socket_path);
+
+		// Debug
+		if (OS::get_singleton()->get_environment("GODOT_DEBUG_EMBEDDER_SINGLE_INSTANCE") == "1") {
+			pause();
+		}
 	} else if (Engine::get_singleton()->is_embedded_in_editor()) {
 		embedder_socket_path = OS::get_singleton()->get_environment("GODOT_WAYLAND_DISPLAY");
 

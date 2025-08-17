@@ -545,6 +545,27 @@ void WaylandEmbedder::socket_error(int p_socket, uint32_t p_object_id, uint32_t 
 
 	send_wayland_event(p_socket, DISPLAY_ID, wl_display_interface, WL_DISPLAY_ERROR, args);
 
+	// So, here's the deal: from some extensive research I did, there are
+	// absolutely zero safeguards for ensuring that the error message ends to the
+	// client. It's absolutely tiny and takes _nothing_ to get there (less than
+	// 4µs with a debug build on my machine), but still enough to get truncated in
+	// the distance between `send_wayland_event` and `close`.
+	//
+	// Because of this we're going to give the client some slack: we're going to
+	// wait for its socket to close (or whatever) or 1s, whichever happens first.
+	//
+	// Hopefully it's good enough for <1000 bytes :P
+	struct pollfd pollfd = {};
+	pollfd.fd = p_socket;
+
+	int ret = poll(&pollfd, 1, 1'000);
+	if (ret == 0) {
+		ERR_PRINT("Client timeout while disconnecting.");
+	}
+	if (ret < 0) {
+		ERR_PRINT(vformat("Client error while disconnecting: %s", strerror(errno)));
+	}
+
 	close(p_socket);
 }
 
@@ -553,9 +574,14 @@ void WaylandEmbedder::poll_sockets() {
 		CRASH_NOW_MSG(vformat("poll() failed, errno %d.", errno));
 	}
 
-	for (struct pollfd &pollfd : pollfds) {
-		handle_fd(pollfd.fd, pollfd.revents);
+	// First handle everything but the listening socket (which is always the first
+	// element), so that we can cleanup closed sockets before accidentally reusing
+	// them (and breaking everything).
+	for (size_t i = 1; i < pollfds.size(); ++i) {
+		handle_fd(pollfds[i].fd, pollfds[i].revents);
 	}
+
+	handle_fd(pollfds[0].fd, pollfds[0].revents);
 }
 
 void WaylandEmbedder::send_raw_message(int p_socket, std::initializer_list<struct iovec> p_vecs, const LocalVector<int> &p_fds) {
@@ -940,6 +966,7 @@ bool WaylandEmbedder::handle_generic_msg(Client *client, const WaylandObject *p_
 				}
 
 				if (info->direction == ProxyDirection::COMPOSITOR) {
+					// FIXME: Create objects only if the packet is valid.
 					uint32_t new_local_id = arg;
 					body[buf_idx] = client->new_object(new_local_id, new_interface, new_version);
 
@@ -2104,7 +2131,7 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 			uint32_t local_id = info->raw_id;
 			ERR_PRINT(vformat("Couldn't find requested object l0x%x for client %d, disconnecting.", local_id, client->socket));
 
-			socket_error(client->socket, local_id, WL_DISPLAY_ERROR_INVALID_OBJECT, vformat("[Godot Embedder] Object l0x%x not found.", local_id));
+			socket_error(client->socket, local_id, WL_DISPLAY_ERROR_INVALID_OBJECT, vformat("Object l0x%x not found.", local_id));
 			return;
 		} else {
 			CRASH_NOW_MSG(vformat("No object found for r0x%x", info->raw_id));
@@ -2637,13 +2664,13 @@ void WaylandEmbedder::handle_fd(int p_fd, int p_revents) {
 			return;
 		} else if (p_revents & (POLLHUP | POLLERR | POLLNVAL)) {
 			if (p_revents & POLLHUP) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d hangup.", p_fd));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("Socket %d hangup.", p_fd));
 			}
 			if (p_revents & POLLERR) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d error.", p_fd));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("Socket %d error.", p_fd));
 			}
 			if (p_revents & POLLNVAL) {
-				DEBUG_LOG_WAYLAND_EMBED(vformat("embedded client %d invalid fd.", p_fd));
+				DEBUG_LOG_WAYLAND_EMBED(vformat("Socket %d invalid FD.", p_fd));
 			}
 
 			cleanup_socket(client.socket);
