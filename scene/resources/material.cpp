@@ -1312,9 +1312,9 @@ void vertex() {)";
 			code += R"(
 	// Billboard Mode: Particles
 	mat4 mat_world = mat4(
-			normalize(MAIN_CAM_INV_VIEW_MATRIX[0]),
-			normalize(MAIN_CAM_INV_VIEW_MATRIX[1]),
-			normalize(MAIN_CAM_INV_VIEW_MATRIX[2]),
+			MAIN_CAM_INV_VIEW_MATRIX[0],
+			MAIN_CAM_INV_VIEW_MATRIX[1],
+			MAIN_CAM_INV_VIEW_MATRIX[2],
 			MODEL_MATRIX[3]);
 	mat_world = mat_world * mat4(
 			vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0),
