@@ -361,12 +361,6 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				int ascent = font->get_ascent();
 				int descent = font->get_descent();
 
-				// Each BBCode tag is drawn individually, so we have to add the character spacing manually.
-				int spacing_char = 0;
-				if (visible_characters != 0) {
-					spacing_char = font->get_spacing_char();
-				}
-
 				Color color;
 				Color font_color_shadow;
 				bool underline = false;
@@ -453,6 +447,12 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 
 						end++;
 					}
+					// Each BBCode tag is drawn individually, so we have to add the character spacing manually.
+					int spacing_char = 0;
+					if (visible_characters != 0) {
+						spacing_char = font->get_spacing_char();
+					}
+
 					CHECK_HEIGHT(fh);
 					ENSURE_WIDTH(w + spacing_char);
 
