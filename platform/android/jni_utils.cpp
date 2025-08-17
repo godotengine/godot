@@ -88,6 +88,7 @@ String charsequence_to_string(JNIEnv *p_env, jobject p_charsequence) {
 
 jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_arg, bool force_jobject) {
 	jvalret v;
+	env->PushLocalFrame(2);
 
 	switch (p_type) {
 		case Variant::BOOL: {
@@ -278,6 +279,7 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant *p_a
 			v.val.i = 0;
 		} break;
 	}
+	env->PopLocalFrame(v.obj);
 	return v;
 }
 
@@ -293,6 +295,7 @@ String _get_class_name(JNIEnv *env, jclass cls, bool *array) {
 	}
 	String name = jstring_to_string(clsName, env);
 	env->DeleteLocalRef(clsName);
+	env->DeleteLocalRef(cclass);
 
 	return name;
 }
@@ -352,6 +355,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		jclass nclass = jni_find_class(env, "java/lang/Number");
 		jmethodID longValue = env->GetMethodID(nclass, "longValue", "()J");
 		jlong ret = env->CallLongMethod(obj, longValue);
+		env->DeleteLocalRef(nclass);
 		return ret;
 	}
 
@@ -392,6 +396,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 		jclass nclass = jni_find_class(env, "java/lang/Number");
 		jmethodID doubleValue = env->GetMethodID(nclass, "doubleValue", "()D");
 		double ret = env->CallDoubleMethod(obj, doubleValue);
+		env->DeleteLocalRef(nclass);
 		return ret;
 	}
 
@@ -550,6 +555,11 @@ void setup_android_class_loader() {
 		android_class_loader = nullptr;
 		ERR_FAIL_MSG("Failed to find method ID for ClassLoader::loadClass.");
 	}
+
+	env->DeleteLocalRef(class_loader_class);
+	env->DeleteLocalRef(class_loader);
+	env->DeleteLocalRef(class_class);
+	env->DeleteLocalRef(known_class);
 }
 
 void cleanup_android_class_loader() {
