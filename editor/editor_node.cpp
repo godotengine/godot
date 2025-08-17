@@ -1696,7 +1696,7 @@ Error EditorNode::load_resource(const String &p_resource, bool p_ignore_broken_d
 		OS::get_singleton()->shell_open(ProjectSettings::get_singleton()->globalize_path(p_resource));
 		return OK;
 	}
-	ERR_FAIL_COND_V(res.is_null(), ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(res.is_null(), ERR_CANT_OPEN, vformat("Can't load resource at \"%s\".", p_resource));
 
 	if (!p_ignore_broken_deps && !dependency_errors.is_empty()) {
 		dependency_error->show(p_resource, dependency_errors);

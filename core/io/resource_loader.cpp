@@ -1217,6 +1217,16 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ResourceUID::INVALID_ID;
 }
 
+bool ResourceLoader::has_sub_resources(const String &p_path) {
+	const String local_path = _validate_local_path(p_path);
+	for (int i = 0; i < loader_count; i++) {
+		if (loader[i]->recognize_path(local_path)) {
+			return loader[i]->has_sub_resources(local_path);
+		}
+	}
+	return false;
+}
+
 bool ResourceLoader::should_create_uid_file(const String &p_path) {
 	const String local_path = _validate_local_path(p_path);
 	if (FileAccess::exists(local_path + ".uid")) {

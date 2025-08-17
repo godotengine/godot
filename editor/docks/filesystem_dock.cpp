@@ -80,15 +80,21 @@ Control *FileSystemTree::make_custom_tooltip(const String &p_text) const {
 	if (!item) {
 		return nullptr;
 	}
-	return FileSystemDock::get_singleton()->create_tooltip_for_path(item->get_metadata(0));
+	if (get_button_id_at_position(get_local_mouse_position()) > -1) {
+		return nullptr;
+	}
+	return FileSystemDock::get_singleton()->create_tooltip_for_path(item->get_metadata(0), item->get_meta(FileSystemDock::get_singleton()->TYPE_META, String()));
 }
 
 Control *FileSystemList::make_custom_tooltip(const String &p_text) const {
+	if (hovered_button > -1) {
+		return nullptr;
+	}
 	int idx = get_item_at_position(get_local_mouse_position(), true);
 	if (idx == -1) {
 		return nullptr;
 	}
-	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx));
+	return FileSystemDock::get_singleton()->create_tooltip_for_path(get_item_metadata(idx), FileSystemDock::get_singleton()->list_types[idx]);
 }
 
 void FileSystemList::_line_editor_submit(const String &p_text) {
@@ -105,6 +111,38 @@ void FileSystemList::_line_editor_submit(const String &p_text) {
 
 	emit_signal(SNAME("item_edited"));
 	queue_redraw();
+}
+
+void FileSystemList::gui_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (hovered_button > -1 && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
+			emit_signal("button_clicked", hovered_button);
+			accept_event();
+			return;
+		}
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		hovered_button = -1;
+
+		for (int i = 0; i < get_item_count(); i++) {
+			if (button_items.has(i) && _get_button_rect(i).has_point(mm->get_position())) {
+				hovered_button = i;
+				accept_event();
+				return;
+			}
+		}
+	}
+	ItemList::gui_input(p_event);
+}
+
+String FileSystemList::get_tooltip(const Point2 &p_pos) const {
+	if (hovered_button > -1) {
+		return TTR("This file has sub-resources.\nClick to inspect.");
+	}
+	return String();
 }
 
 bool FileSystemList::edit_selected() {
@@ -176,6 +214,16 @@ String FileSystemList::get_edit_text() {
 	return line_editor->get_text();
 }
 
+void FileSystemList::add_button(int p_idx) {
+	button_items.insert(p_idx);
+	queue_redraw();
+}
+
+void FileSystemList::clear_buttons() {
+	button_items.clear();
+	queue_redraw();
+}
+
 void FileSystemList::_text_editor_popup_modal_close() {
 	if (popup_edit_committed) {
 		return; // Already processed by _text_editor_popup_modal_close
@@ -188,8 +236,42 @@ void FileSystemList::_text_editor_popup_modal_close() {
 	_line_editor_submit(line_editor->get_text());
 }
 
+Rect2 FileSystemList::_get_button_rect(int p_idx) const {
+	const Rect2 item_rect = get_item_rect(p_idx);
+	Rect2 button_rect;
+	if (get_icon_mode() == ItemList::ICON_MODE_TOP) {
+		button_rect = Rect2(item_rect.position + Vector2(item_rect.size.x, 0), button_icon->get_size());
+	} else {
+		button_rect = Rect2(item_rect.position + Vector2(item_rect.size.x, item_rect.size.y * 0.5 - button_icon->get_height() * 0.5), button_icon->get_size());
+	}
+	button_rect.position.x -= button_icon->get_width();
+	button_rect.position.y -= const_cast<FileSystemList *>(this)->get_v_scroll_bar()->get_value();
+	return button_rect;
+}
+
+void FileSystemList::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			button_icon = get_editor_theme_icon("InspectSubResources");
+		} break;
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			hovered_button = -1;
+		} break;
+
+		case NOTIFICATION_DRAW: {
+			for (int i = 0; i < get_item_count(); i++) {
+				if (button_items.has(i)) {
+					draw_texture_rect(button_icon, _get_button_rect(i));
+				}
+			}
+		} break;
+	}
+}
+
 void FileSystemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("item_edited"));
+	ADD_SIGNAL(MethodInfo("button_clicked"));
 }
 
 FileSystemList::FileSystemList() {
@@ -308,6 +390,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_info.type = p_dir->get_file_type(i);
 			file_info.icon_path = p_dir->get_file_icon_path(i);
 			file_info.import_broken = !p_dir->get_file_import_is_valid(i);
+			file_info.has_sub_resources = p_dir->get_file_has_sub_resources(i);
 			file_info.modified_time = p_dir->get_file_modified_time(i);
 
 			file_list.push_back(file_info);
@@ -323,6 +406,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			TreeItem *file_item = tree->create_item(subdirectory_item);
 			const String file_metadata = lpath.path_join(file_info.name);
 			file_item->set_text(0, file_info.name);
+			file_item->set_tooltip_text(0, "/f"); // Will be replaced by custom tooltip.
 			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!file_info.import_broken, file_info.type, file_info.icon_path));
 			if (da->is_link(file_metadata)) {
@@ -338,6 +422,7 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_custom_bg_color(0, parent_bg_color);
 			}
 			file_item->set_metadata(0, file_metadata);
+			file_item->set_meta(TYPE_META, file_info.type);
 			file_item->set_accept_children(false);
 			if (!p_select_in_favorites && current_path == file_metadata) {
 				file_item->select(0);
@@ -347,6 +432,10 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 				file_item->set_custom_color(0, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 			}
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, callable_mp(this, &FileSystemDock::_tree_thumbnail_done).bind(tree_update_id, file_item->get_instance_id()));
+
+			if (file_info.has_sub_resources && file_info.type == SNAME("PackedScene")) { // TODO: Sub-resource inspecting shouldn't be limited to scenes.
+				file_item->add_button(0, get_editor_theme_icon(SNAME("InspectSubResources")), -1, false, TTR("This file has sub-resources.\nClick to expand."));
+			}
 		}
 	} else {
 		if (lpath.get_base_dir() == current_path.get_base_dir()) {
@@ -724,6 +813,7 @@ void FileSystemDock::_tree_multi_selected(Object *p_item, int p_column, bool p_s
 		current_path = selected->get_metadata(0);
 		// Note: the "Favorites" item also leads to this path.
 	}
+	sub_resource_inspect_path = String();
 
 	// Display the current path.
 	_set_current_path_line_edit_text(current_path);
@@ -781,12 +871,14 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			if (!p_path.ends_with("/")) {
 				target_path += "/";
 			}
-		} else if (!da->file_exists(p_path)) {
-			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
+		} else {
+			target_path = p_path.is_resource_file() ? p_path : p_path.get_slice("::", 0);
+			ERR_FAIL_COND_MSG(!da->file_exists(target_path), vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
 		}
 	}
 
 	current_path = target_path;
+	sub_resource_inspect_path = String();
 	_set_current_path_line_edit_text(current_path);
 	_push_to_history();
 
@@ -1008,6 +1100,8 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	files->clear();
+	files->clear_buttons();
+	list_types.clear();
 
 	_set_current_path_line_edit_text(current_path);
 
@@ -1049,6 +1143,39 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 		files->set_fixed_column_width(0);
 		const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 		files->set_fixed_icon_size(Size2(icon_size, icon_size));
+	}
+
+	if (!sub_resource_inspect_path.is_empty()) {
+		// Go back.
+		files->add_item(TTR("Go Back"), get_editor_theme_icon("UndoRedo"));
+		const String base_dir = sub_resource_inspect_path.get_base_dir();
+		files->set_item_metadata(-1, base_dir + (base_dir.ends_with("/") ? "" : "/"));
+		list_types.resize_initialized(1);
+
+		Ref<PackedScene> scene = ResourceLoader::load(sub_resource_inspect_path);
+		ERR_FAIL_COND(scene.is_null());
+
+		const Color sub_resource_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+		Vector<Ref<Resource>> subs = scene->get_state()->get_sub_resources();
+		for (const Ref<Resource> &res : subs) {
+			const Ref<Texture2D> type_icon = _get_tree_item_icon(true, res->get_class(), String());
+
+			String res_name = res->get_name();
+			if (res_name.is_empty()) {
+				res_name = res->get_class();
+			}
+
+			if (use_thumbnails) {
+				files->add_item(res_name, file_thumbnail, true);
+				files->set_item_tag_icon(-1, type_icon);
+			} else {
+				files->add_item(res_name, type_icon, true);
+			}
+			files->set_item_metadata(-1, res->get_path());
+			files->set_item_custom_fg_color(-1, sub_resource_color);
+			list_types.push_back(res->get_class());
+		}
+		return;
 	}
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
@@ -1097,6 +1224,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 					file_info.type = efd->get_file_type(index);
 					file_info.icon_path = efd->get_file_icon_path(index);
 					file_info.import_broken = !efd->get_file_import_is_valid(index);
+					file_info.has_sub_resources = efd->get_file_has_sub_resources(index);
 					file_info.modified_time = efd->get_file_modified_time(index);
 				} else {
 					file_info.type = "";
@@ -1185,12 +1313,15 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 				file_info.type = efd->get_file_type(i);
 				file_info.icon_path = efd->get_file_icon_path(i);
 				file_info.import_broken = !efd->get_file_import_is_valid(i);
+				file_info.has_sub_resources = efd->get_file_has_sub_resources(i);
 				file_info.modified_time = efd->get_file_modified_time(i);
 
 				file_list.push_back(file_info);
 			}
 		}
 	}
+	// Ensures that array indices match the file items added below.
+	list_types.resize(files->get_item_count());
 
 	// Sort the file list if needed.
 	sort_file_info_list(file_list, file_sort);
@@ -1227,6 +1358,10 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			files->add_item(fname, type_icon, true);
 			item_index = files->get_item_count() - 1;
 			files->set_item_metadata(item_index, fpath);
+		}
+		list_types.push_back(finfo->type);
+		if (finfo->has_sub_resources && finfo->type == SNAME("PackedScene")) { // TODO: Sub-resource inspecting shouldn't be limited to scenes.
+			files->add_button(item_index);
 		}
 
 		if (fpath == main_scene_path) {
@@ -1364,6 +1499,12 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 				EditorNode::get_singleton()->load_resource(fpath);
 			}
 		} else {
+			if (!fpath.is_resource_file()) {
+				const String scene_path = fpath.get_slice("::", 0);
+				if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
+					EditorNode::get_singleton()->load_scene(scene_path);
+				}
+			}
 			EditorNode::get_singleton()->load_resource(fpath);
 		}
 	}
@@ -1390,7 +1531,8 @@ void FileSystemDock::_tree_activate_file() {
 }
 
 void FileSystemDock::_file_list_activate_file(int p_idx) {
-	_select_file(files->get_item_metadata(p_idx));
+	const String path = files->get_item_metadata(p_idx);
+	_select_file(path, false, path.ends_with("/"));
 }
 
 void FileSystemDock::_preview_invalidated(const String &p_path) {
@@ -1458,6 +1600,7 @@ void FileSystemDock::_bw_history() {
 
 void FileSystemDock::_update_history() {
 	current_path = history[history_pos];
+	sub_resource_inspect_path = String();
 	_set_current_path_line_edit_text(current_path);
 
 	if (tree->is_visible()) {
@@ -2984,7 +3127,7 @@ String FileSystemDock::get_folder_path_at_mouse_position() const {
 	return fpath.get_base_dir();
 }
 
-Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
+Control *FileSystemDock::create_tooltip_for_path(const String &p_path, const String &p_type) const {
 	if (p_path == "Favorites") {
 		// No tooltip for the "Favorites" group.
 		return nullptr;
@@ -2993,13 +3136,16 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 		// No tooltip for directory.
 		return nullptr;
 	}
-	ERR_FAIL_COND_V(!FileAccess::exists(p_path), nullptr);
+	ERR_FAIL_COND_V(p_path.is_resource_file() && !FileAccess::exists(p_path), nullptr);
 
-	const String type = ResourceLoader::get_resource_type(p_path);
-	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
+	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path, p_type);
+	if (!p_path.is_resource_file()) {
+		// Tooltip plugins don't work with built-in Resources.
+		return tooltip;
+	}
 
 	for (const Ref<EditorResourceTooltipPlugin> &plugin : tooltip_plugins) {
-		if (plugin->handles(type)) {
+		if (plugin->handles(p_type)) {
 			tooltip = plugin->make_tooltip_for_path(p_path, EditorResourcePreview::get_singleton()->get_preview_metadata(p_path), tooltip);
 		}
 	}
@@ -3716,10 +3862,37 @@ void FileSystemDock::_tree_empty_selected() {
 	tree->deselect_all();
 	current_path = "";
 	current_path_line_edit->set_text(current_path);
+	sub_resource_inspect_path = String();
 	if (file_list_vb->is_visible()) {
 		_update_file_list(false);
 	}
 	_update_selection_changed();
+}
+
+void FileSystemDock::_tree_button_clicked(TreeItem *p_item, int p_column, int p_id, MouseButton p_button) {
+	if (p_item->get_first_child()) {
+		p_item->set_collapsed(false);
+		return;
+	}
+
+	Ref<PackedScene> scene = ResourceLoader::load(p_item->get_metadata(0));
+	ERR_FAIL_COND(scene.is_null());
+
+	const Color sub_resource_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+	Vector<Ref<Resource>> subs = scene->get_state()->get_sub_resources();
+	for (const Ref<Resource> &res : subs) {
+		TreeItem *res_item = p_item->create_child();
+		const String &res_name = res->get_name();
+		if (res_name.is_empty()) {
+			res_item->set_text(0, res->get_class());
+		} else {
+			res_item->set_text(0, res_name);
+		}
+		res_item->set_custom_color(0, sub_resource_color);
+		res_item->set_icon(0, _get_tree_item_icon(true, res->get_class(), ""));
+		res_item->set_metadata(0, res->get_path());
+		res_item->set_meta(TYPE_META, res->get_class());
+	}
 }
 
 void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, MouseButton p_mouse_button_index) {
@@ -3791,6 +3964,13 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
 	file_list_popup->popup();
+}
+
+void FileSystemDock::_file_list_button_clicked(int p_idx) {
+	tree->deselect_all();
+	current_path = files->get_item_metadata(p_idx);
+	sub_resource_inspect_path = current_path;
+	_update_file_list(false);
 }
 
 void FileSystemDock::select_file(const String &p_file) {
@@ -4450,6 +4630,7 @@ FileSystemDock::FileSystemDock() {
 	tree->connect("item_mouse_selected", callable_mp(this, &FileSystemDock::_tree_rmb_select));
 	tree->connect("empty_clicked", callable_mp(this, &FileSystemDock::_tree_empty_click));
 	tree->connect("nothing_selected", callable_mp(this, &FileSystemDock::_tree_empty_selected));
+	tree->connect("button_clicked", callable_mp(this, &FileSystemDock::_tree_button_clicked));
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_tree_gui_input));
 	tree->connect(SceneStringName(mouse_exited), callable_mp(this, &FileSystemDock::_tree_mouse_exited));
 	tree->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
@@ -4492,6 +4673,7 @@ FileSystemDock::FileSystemDock() {
 	files->connect(SceneStringName(gui_input), callable_mp(this, &FileSystemDock::_file_list_gui_input));
 	files->connect("multi_selected", callable_mp(this, &FileSystemDock::_file_multi_selected));
 	files->connect("empty_clicked", callable_mp(this, &FileSystemDock::_file_list_empty_clicked));
+	files->connect("button_clicked", callable_mp(this, &FileSystemDock::_file_list_button_clicked));
 	files->connect("item_edited", callable_mp(this, &FileSystemDock::_rename_operation_confirm));
 	files->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
 	files->set_allow_rmb_select(true);

@@ -30,7 +30,6 @@
 
 #include "editor_resource_tooltip_plugins.h"
 
-#include "core/io/resource_loader.h"
 #include "core/object/callable_mp.h"
 #include "core/object/class_db.h"
 #include "editor/editor_node.h"
@@ -56,7 +55,7 @@ void EditorResourceTooltipPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_make_tooltip_for_path, "path", "metadata", "base");
 }
 
-VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p_resource_path) {
+VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p_resource_path, const String &p_resource_type) {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	vb->add_theme_constant_override("separation", -4 * EDSCALE);
 	{
@@ -64,13 +63,13 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		vb->add_child(label);
 	}
 
-	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
-	if (id != ResourceUID::INVALID_ID) {
-		Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
-		vb->add_child(label);
-	}
+	if (p_resource_path.is_resource_file()) {
+		ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
+		if (id != ResourceUID::INVALID_ID) {
+			Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
+			vb->add_child(label);
+		}
 
-	{
 		Ref<FileAccess> f = FileAccess::open(p_resource_path, FileAccess::READ);
 		if (f.is_valid()) {
 			Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
@@ -81,13 +80,14 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 			vb->add_child(label);
 			return vb;
 		}
-	}
 
-	if (ResourceLoader::exists(p_resource_path)) {
-		String type = ResourceLoader::get_resource_type(p_resource_path);
-		Label *label = memnew(Label(vformat(TTR("Type: %s"), type)));
+	} else {
+		Label *label = memnew(Label(TTRC("Built-in resource.")));
 		vb->add_child(label);
 	}
+
+	Label *type = memnew(Label(vformat(TTR("Type: %s"), p_resource_type)));
+	vb->add_child(type);
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
 	if (da->is_link(p_resource_path)) {
