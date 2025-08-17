@@ -66,29 +66,39 @@ VBoxContainer *EditorResourceTooltipPlugin::make_default_tooltip(const String &p
 		vb->add_child(label);
 	}
 
-	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
-	if (id != ResourceUID::INVALID_ID) {
-		Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
-		vb->add_child(label);
-	}
+	if (p_resource_path.is_resource_file()) {
+		ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_resource_path);
+		if (id != ResourceUID::INVALID_ID) {
+			Label *label = memnew(Label(ResourceUID::get_singleton()->id_to_text(id)));
+			vb->add_child(label);
+		}
 
-	{
 		Ref<FileAccess> f = FileAccess::open(p_resource_path, FileAccess::READ);
 		if (f.is_valid()) {
 			Label *label = memnew(Label(vformat(TTR("Size: %s"), String::humanize_size(f->get_length()))));
 			vb->add_child(label);
+
+			if (ResourceLoader::exists(p_resource_path)) {
+				String type = ResourceLoader::get_resource_type(p_resource_path);
+				label = memnew(Label(vformat(TTR("Type: %s"), type)));
+				vb->add_child(label);
+			}
 		} else {
 			Label *label = memnew(Label(TTR("Invalid file or broken link.")));
 			label->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_gui_base()->get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			vb->add_child(label);
 			return vb;
 		}
-	}
 
-	if (ResourceLoader::exists(p_resource_path)) {
-		String type = ResourceLoader::get_resource_type(p_resource_path);
-		Label *label = memnew(Label(vformat(TTR("Type: %s"), type)));
+	} else {
+		Label *label = memnew(Label(TTRC("Built-in resource.")));
 		vb->add_child(label);
+
+		Ref<Resource> res = ResourceCache::get_ref(p_resource_path);
+		if (res.is_valid()) {
+			Label *label = memnew(Label(vformat(TTR("Type: %s"), res->get_class())));
+			vb->add_child(label);
+		}
 	}
 	return vb;
 }

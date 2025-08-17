@@ -90,6 +90,7 @@ public:
 	virtual bool is_imported(const String &p_path) const { return false; }
 	virtual int get_import_order(const String &p_path) const { return 0; }
 	virtual String get_import_group_file(const String &p_path) const { return ""; } //no group
+	virtual bool has_sub_resources(const String &p_path) const { return false; }
 
 	virtual ~ResourceFormatLoader() {}
 };
@@ -245,6 +246,7 @@ public:
 	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
 	static bool has_custom_uid_support(const String &p_path);
+	static bool has_sub_resources(const String &p_path);
 	static bool should_create_uid_file(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
