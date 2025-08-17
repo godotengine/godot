@@ -2012,6 +2012,7 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2, maxf, sarray("with"), varray());
 
 	bind_static_method(Vector2, from_angle, sarray("angle"), varray());
+	bind_static_method(Vector2, from_scalar, sarray("scalar"), varray());
 
 	/* Vector2i */
 
@@ -2032,6 +2033,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector2i, mini, sarray("with"), varray());
 	bind_method(Vector2i, max, sarray("with"), varray());
 	bind_method(Vector2i, maxi, sarray("with"), varray());
+
+	bind_static_method(Vector2i, from_scalar, sarray("scalar"), varray());
 
 	/* Rect2 */
 
@@ -2117,7 +2120,9 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3, minf, sarray("with"), varray());
 	bind_method(Vector3, max, sarray("with"), varray());
 	bind_method(Vector3, maxf, sarray("with"), varray());
+
 	bind_static_method(Vector3, octahedron_decode, sarray("uv"), varray());
+	bind_static_method(Vector3, from_scalar, sarray("scalar"), varray());
 
 	/* Vector3i */
 
@@ -2137,6 +2142,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_method(Vector3i, mini, sarray("with"), varray());
 	bind_method(Vector3i, max, sarray("with"), varray());
 	bind_method(Vector3i, maxi, sarray("with"), varray());
+
+	bind_static_method(Vector3i, from_scalar, sarray("scalar"), varray());
 
 	/* Vector4 */
 

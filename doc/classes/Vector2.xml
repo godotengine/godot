@@ -220,6 +220,13 @@
 				[b]Note:[/b] The length of the returned [Vector2] is [i]approximately[/i] [code]1.0[/code], but is is not guaranteed to be exactly [code]1.0[/code] due to floating-point precision issues. Call [method normalized] on the returned [Vector2] if you require a unit vector.
 			</description>
 		</method>
+		<method name="from_scalar" qualifiers="static">
+			<return type="Vector2" />
+			<param index="0" name="scalar" type="float" />
+			<description>
+				Returns a [Vector2] with all components set to the given scalar value. This is a convenient shorthand for writing Vector2(scalar, scalar).
+			</description>
+		</method>
 		<method name="is_equal_approx" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="to" type="Vector2" />

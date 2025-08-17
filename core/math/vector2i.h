@@ -128,6 +128,8 @@ struct [[nodiscard]] Vector2i {
 	constexpr bool operator==(const Vector2i &p_vec2) const;
 	constexpr bool operator!=(const Vector2i &p_vec2) const;
 
+	_FORCE_INLINE_ constexpr static Vector2i from_scalar(int32_t p_scalar) noexcept { return Vector2i(p_scalar, p_scalar); }
+
 	int64_t length_squared() const;
 	double length() const;
 

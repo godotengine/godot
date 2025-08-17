@@ -355,7 +355,7 @@ AABB LightStorage::light_get_aabb(RID p_light) const {
 		};
 		case RS::LIGHT_OMNI: {
 			float r = light->param[RS::LIGHT_PARAM_RANGE];
-			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
+			return AABB(Vector3::from_scalar(-r), Vector3::from_scalar(r * 2));
 		};
 		case RS::LIGHT_DIRECTIONAL: {
 			return AABB();

@@ -162,6 +162,7 @@ struct [[nodiscard]] Vector2 {
 
 	real_t angle() const;
 	static Vector2 from_angle(real_t p_angle);
+	_FORCE_INLINE_ constexpr static Vector2 from_scalar(real_t p_scalar) noexcept { return Vector2(p_scalar, p_scalar); }
 
 	_FORCE_INLINE_ Vector2 abs() const {
 		return Vector2(Math::abs(x), Math::abs(y));

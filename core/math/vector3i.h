@@ -133,6 +133,8 @@ struct [[nodiscard]] Vector3i {
 	explicit operator String() const;
 	operator Vector3() const;
 
+	_FORCE_INLINE_ constexpr static Vector3i from_scalar(int32_t p_scalar) noexcept { return Vector3i(p_scalar, p_scalar, p_scalar); }
+
 	constexpr Vector3i() :
 			x(0), y(0), z(0) {}
 	constexpr Vector3i(int32_t p_x, int32_t p_y, int32_t p_z) :

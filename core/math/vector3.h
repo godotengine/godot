@@ -189,6 +189,8 @@ struct [[nodiscard]] Vector3 {
 	explicit operator String() const;
 	operator Vector3i() const;
 
+	_FORCE_INLINE_ constexpr static Vector3 from_scalar(real_t p_scalar) noexcept { return Vector3(p_scalar, p_scalar, p_scalar); }
+
 	constexpr Vector3() :
 			x(0), y(0), z(0) {}
 	constexpr Vector3(real_t p_x, real_t p_y, real_t p_z) :

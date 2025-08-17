@@ -182,6 +182,13 @@
 				Returns a new vector with all components rounded down (towards negative infinity).
 			</description>
 		</method>
+		<method name="from_scalar" qualifiers="static">
+			<return type="Vector3" />
+			<param index="0" name="scalar" type="float" />
+			<description>
+				Returns a [Vector3] with all components set to the given scalar value. This is a convenient shorthand for writing Vector3(scalar, scalar, scalar).
+			</description>
+		</method>
 		<method name="inverse" qualifiers="const">
 			<return type="Vector3" />
 			<description>

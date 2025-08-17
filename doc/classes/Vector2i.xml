@@ -87,6 +87,13 @@
 				Returns the distance between this vector and [param to].
 			</description>
 		</method>
+		<method name="from_scalar" qualifiers="static">
+			<return type="Vector2i" />
+			<param index="0" name="scalar" type="int" />
+			<description>
+				Returns a [Vector2i] with all components set to the given scalar value. This is a convenient shorthand for writing Vector2i(scalar, scalar).
+			</description>
+		</method>
 		<method name="length" qualifiers="const" keywords="size">
 			<return type="float" />
 			<description>
