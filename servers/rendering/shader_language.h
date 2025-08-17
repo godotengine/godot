@@ -164,6 +164,10 @@ public:
 		TK_ARG_IN,
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
+		TK_BUFFER_RESTRICT,
+		TK_BUFFER_SET,
+		TK_BUFFER_BIND,
+		TK_BUFFER_FORMAT,
 		TK_RENDER_MODE,
 		TK_STENCIL_MODE,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
@@ -383,6 +387,7 @@ public:
 			NODE_TYPE_ARRAY,
 			NODE_TYPE_ARRAY_CONSTRUCT,
 			NODE_TYPE_STRUCT,
+			NODE_TYPE_BUFFER,
 		};
 
 		Type type;
@@ -596,6 +601,30 @@ public:
 				Node(NODE_TYPE_STRUCT) {}
 	};
 
+	struct BufferNode : public Node {
+		enum BufferQualifiers {
+			BUFFER_IN,
+			BUFFER_OUT,
+			BUFFER_UNIFORM,
+		};
+
+		enum BufferFormat {
+			BUFFORMAT_PACKED,
+			BUFFORMAT_SHARED,
+			BUFFORMAT_STD140,
+			BUFFORMAT_STD430,
+		};		
+		List<VariableDeclarationNode *> members;
+		StringName name;
+		Vector<BufferQualifiers> qualifiers;
+		BufferFormat format = BUFFORMAT_STD140;
+		bool restrict = false;
+		int binding;
+		int set;
+		BufferNode() :
+				Node(NODE_TYPE_BUFFER) {}
+	};
+
 	struct ShaderNode : public Node {
 		struct Constant {
 			StringName name;
@@ -720,35 +749,8 @@ public:
 		};
 
 		struct Buffer {
-
-			enum Scope {
-				SCOPE_LOCAL,
-				SCOPE_INSTANCE,
-				SCOPE_GLOBAL,
-			};
-
-			enum BufferType {
-				BUFFERTYPE_UNIFORM,
-				BUFFERTYPE_STORAGE,
-			};
-
-			int order = 0;
-			int prop_order = 0;
-			int texture_order = 0;
-			int texture_binding = 0;
-			Vector<DataType> component_types;
-			Vector<StringName> component_names;
-			Vector<Scalar> default_value;
-			BufferType type;
-			Scope scope = SCOPE_LOCAL;
-			bool use_color = false;
-			int instance_index = 0;
 			StringName name;
-			String group;
-			String subgroup;
-
-			Buffer() {
-			}
+			BufferNode *shader_buffer = nullptr;
 		};
 
 		HashMap<StringName, Constant> constants;
@@ -866,6 +868,8 @@ public:
 	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
 	static bool is_token_arg_qual(TokenType p_type);
+	static bool is_token_buffer_qual(TokenType p_type);
+	static bool is_token_buffer_layout(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_interpolation_name(DataInterpolation p_interpolation);
@@ -1156,6 +1160,7 @@ private:
 		IDENTIFIER_LOCAL_VAR,
 		IDENTIFIER_BUILTIN_VAR,
 		IDENTIFIER_CONSTANT,
+		IDENTIFIER_BUFFER,
 		IDENTIFIER_MAX,
 	};
 

@@ -114,7 +114,7 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 		case SL::TYPE_SAMPLEREXT:
 			return 16;
 		case SL::TYPE_STRUCT:
-			return 0;
+			return 0;  
 		case SL::TYPE_MAX: {
 			ERR_FAIL_V(0);
 		}
@@ -1465,6 +1465,72 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				code += ".";
 				code += _dump_node_code(mnode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning, false);
 			}
+		} break;
+		case SL::Node::NODE_TYPE_BUFFER: {
+			SL::BufferNode *bufnode = (SL::BufferNode*) p_node;
+
+			// emit layout code
+			code += "layout (binding = ";
+			code += itos(bufnode->binding);
+			code += ", set = ";
+			code += itos(bufnode->set);
+			code += ", ";
+			switch (bufnode->format) {
+				case SL::BufferNode::BUFFORMAT_PACKED:{
+					code += "packed) ";
+				} break;
+				case SL::BufferNode::BUFFORMAT_SHARED:{
+					code += "shared) ";
+				} break;
+				case SL::BufferNode::BUFFORMAT_STD140:{
+					code += "std140) ";
+				} break;
+				case SL::BufferNode::BUFFORMAT_STD430:{
+					code += "std430) ";
+				} break;
+			}
+
+			// emit qualifiers
+			for (SL::BufferNode::BufferQualifiers qual : bufnode->qualifiers) {
+				switch (qual) {
+					case SL::BufferNode::BUFFER_IN: {
+						code += "readonly ";
+					} break;
+					case SL::BufferNode::BUFFER_OUT: {
+						code += "writeonly ";
+					} break;
+					case SL::BufferNode::BUFFER_UNIFORM: {
+						code += "uniform ";
+					} break;
+				}
+			}
+			if (bufnode->restrict) {
+				code += "restrict ";
+			}
+
+			// emit structure
+			code += "{\n";
+			for (SL::VariableDeclarationNode *vnode : bufnode->members) {
+
+			}
+			code += "\n} ";
+			code += bufnode->name;
+			code += ";";
+
+			/*
+			buffer uniform restrict my_buf {
+				int my_int;
+				float floats[32];
+			}(set = 0, binding = 0);
+
+			->
+
+			layout (set = 0, binding = 0, shared) uniform restrict user_buffer1 {
+				int my_int;
+				float floats[32];
+			} my_buf;
+
+			*/
 		} break;
 	}
 

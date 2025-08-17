@@ -194,12 +194,17 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"PERIOD",
 	"UNIFORM",
 	"UNIFORM_GROUP",
+	"BUFFER",
 	"INSTANCE",
 	"GLOBAL",
 	"VARYING",
 	"ARG_IN",
 	"ARG_OUT",
 	"ARG_INOUT",
+	"BUFFER_RESTRICT",
+	"BUFFER_SET",
+	"BUFFER_BIND",
+	"BUFFER_FORMAT",
 	"RENDER_MODE",
 	"HINT_DEFAULT_WHITE_TEXTURE",
 	"HINT_DEFAULT_BLACK_TEXTURE",
@@ -275,6 +280,8 @@ enum ContextFlag : uint32_t {
 	CF_CONST_KEYWORD = 4096U, // "const"
 	CF_UNIFORM_QUALIFIER = 8192U, // "<x> uniform float t;"
 	CF_SHADER_TYPE = 16384U, // "shader_type"
+	CF_BUFFER_QUALIFIER = 32768U, // buffer <x> myBuffer { ... };
+	CF_BUFFER_LAYOUT = 65536U, // buffer myBuffer { ... }(<x>);
 };
 
 const uint32_t KCF_DATATYPE = CF_BLOCK | CF_GLOBAL_SPACE | CF_DATATYPE | CF_FUNC_DECL_PARAM_TYPE | CF_UNIFORM_TYPE;
@@ -332,11 +339,12 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 
 	// global space keywords
 
-	{ TK_UNIFORM, "uniform", CF_GLOBAL_SPACE | CF_UNIFORM_KEYWORD, {}, {} },
+	{ TK_UNIFORM, "uniform", CF_GLOBAL_SPACE | CF_UNIFORM_KEYWORD | CF_BUFFER_QUALIFIER, {}, {} },
 	{ TK_UNIFORM_GROUP, "group_uniforms", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_VARYING, "varying", CF_GLOBAL_SPACE, { "particles", "sky", "fog" }, {} },
 	{ TK_CONST, "const", CF_BLOCK | CF_GLOBAL_SPACE | CF_CONST_KEYWORD, {}, {} },
 	{ TK_STRUCT, "struct", CF_GLOBAL_SPACE, {}, {} },
+	{ TK_BUFFER, "buffer", CF_GLOBAL_SPACE, {}, {}},
 	{ TK_SHADER_TYPE, "shader_type", CF_SHADER_TYPE, {}, {} },
 	{ TK_RENDER_MODE, "render_mode", CF_GLOBAL_SPACE, {}, {} },
 	{ TK_STENCIL_MODE, "stencil_mode", CF_GLOBAL_SPACE, {}, {} },
@@ -361,11 +369,15 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_CF_RETURN, "return", CF_BLOCK, {}, {} },
 	{ TK_CF_DISCARD, "discard", CF_BLOCK, { "particles", "sky", "fog" }, { "vertex" } },
 
-	// function specifier keywords
+	// function / buffer specifier keywords
 
-	{ TK_ARG_IN, "in", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
-	{ TK_ARG_OUT, "out", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+	{ TK_ARG_IN, "in", CF_FUNC_DECL_PARAM_SPEC | CF_BUFFER_QUALIFIER, {}, {} },
+	{ TK_ARG_OUT, "out", CF_FUNC_DECL_PARAM_SPEC | CF_BUFFER_QUALIFIER, {}, {} },
 	{ TK_ARG_INOUT, "inout", CF_FUNC_DECL_PARAM_SPEC, {}, {} },
+	{ TK_BUFFER_RESTRICT, "restrict", CF_BUFFER_QUALIFIER, {}, {}},
+	{ TK_BUFFER_SET, "set", CF_BUFFER_LAYOUT, {}, {}},
+	{ TK_BUFFER_BIND, "binding", CF_BUFFER_LAYOUT, {}, {}},
+	{ TK_BUFFER_FORMAT, "format", CF_BUFFER_LAYOUT, {}, {}},
 
 	// hints
 
@@ -1068,6 +1080,21 @@ bool ShaderLanguage::is_token_arg_qual(TokenType p_type) {
 			p_type == TK_ARG_INOUT);
 }
 
+bool ShaderLanguage::is_token_buffer_qual(TokenType p_type) {
+	return (
+			p_type == TK_ARG_IN ||
+			p_type == TK_ARG_OUT ||
+			p_type == TK_UNIFORM || 
+			p_type == TK_BUFFER_RESTRICT);
+}
+
+bool ShaderLanguage::is_token_buffer_layout(TokenType p_type) {
+	return (
+			p_type == TK_BUFFER_BIND ||
+			p_type == TK_BUFFER_SET ||
+			p_type == TK_BUFFER_FORMAT);
+}
+
 ShaderLanguage::DataPrecision ShaderLanguage::get_token_precision(TokenType p_type) {
 	if (p_type == TK_PRECISION_LOW) {
 		return PRECISION_LOWP;
@@ -1368,6 +1395,11 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 				used_local_vars[p_function][p_identifier].used = true;
 			}
 			break;
+		case IdentifierType::IDENTIFIER_BUFFER:
+			if (HAS_WARNING(ShaderWarning::UNUSED_BUFFER_FLAG) && used_buffers.has(p_identifier)) {
+				used_buffers[p_identifier].used = true;
+			}
+			break;
 		default:
 			break;
 	}
@@ -1529,6 +1561,13 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 		}
 		if (r_type) {
 			*r_type = IDENTIFIER_CONSTANT;
+		}
+		return true;
+	}
+
+	if (shader->buffers.has(p_identifier)) {
+		if (r_type) {
+			*r_type = IDENTIFIER_BUFFER;
 		}
 		return true;
 	}
@@ -10223,6 +10262,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 			case TK_SHADER_TYPE: {
 				_set_error(RTR("Shader type is already defined."));
 				return ERR_PARSE_ERROR;
+			} break;
+			case TK_BUFFER: {
+				ShaderNode::Buffer buf;
+				StringName buffer_name;
 			} break;
 			default: {
 				//function or constant variable
