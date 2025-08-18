@@ -54,6 +54,10 @@ class Resource : public RefCounted {
 	GDCLASS(Resource, RefCounted);
 
 public:
+	enum {
+		NOTIFICATION_RESOURCE_DESERIALIZED = 3200,
+	};
+
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension("res", get_class_static()); }
 	virtual String get_base_extension() const { return "res"; }
 
