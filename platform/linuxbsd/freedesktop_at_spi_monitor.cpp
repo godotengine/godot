@@ -61,7 +61,8 @@ void FreeDesktopAtSPIMonitor::monitor_thread_func(void *p_userdata) {
 	}
 
 	static const char *iface = "org.a11y.Status";
-	static const char *member = "IsEnabled";
+	static const char *member_ac = "IsEnabled";
+	static const char *member_sr = "ScreenReaderEnabled";
 
 	while (!mon->exit_thread.is_set()) {
 		DBusMessage *message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_PROPERTIES, "Get");
@@ -69,10 +70,54 @@ void FreeDesktopAtSPIMonitor::monitor_thread_func(void *p_userdata) {
 		dbus_message_append_args(
 				message,
 				DBUS_TYPE_STRING, &iface,
-				DBUS_TYPE_STRING, &member,
+				DBUS_TYPE_STRING, &member_ac,
 				DBUS_TYPE_INVALID);
 
 		DBusMessage *reply = dbus_connection_send_with_reply_and_block(bus, message, 50, &error);
+		dbus_message_unref(message);
+
+		if (!dbus_error_is_set(&error)) {
+			DBusMessageIter iter, iter_variant, iter_struct;
+			dbus_bool_t result;
+			dbus_message_iter_init(reply, &iter);
+			dbus_message_iter_recurse(&iter, &iter_variant);
+			switch (dbus_message_iter_get_arg_type(&iter_variant)) {
+				case DBUS_TYPE_STRUCT: {
+					dbus_message_iter_recurse(&iter_variant, &iter_struct);
+					if (dbus_message_iter_get_arg_type(&iter_struct) == DBUS_TYPE_BOOLEAN) {
+						dbus_message_iter_get_basic(&iter_struct, &result);
+						if (result) {
+							mon->ac_enabled.set();
+						} else {
+							mon->ac_enabled.clear();
+						}
+					}
+				} break;
+				case DBUS_TYPE_BOOLEAN: {
+					dbus_message_iter_get_basic(&iter_variant, &result);
+					if (result) {
+						mon->ac_enabled.set();
+					} else {
+						mon->ac_enabled.clear();
+					}
+				} break;
+				default:
+					break;
+			}
+			dbus_message_unref(reply);
+		} else {
+			dbus_error_free(&error);
+		}
+
+		message = dbus_message_new_method_call(BUS_OBJECT_NAME, BUS_OBJECT_PATH, BUS_INTERFACE_PROPERTIES, "Get");
+
+		dbus_message_append_args(
+				message,
+				DBUS_TYPE_STRING, &iface,
+				DBUS_TYPE_STRING, &member_sr,
+				DBUS_TYPE_INVALID);
+
+		reply = dbus_connection_send_with_reply_and_block(bus, message, 50, &error);
 		dbus_message_unref(message);
 
 		if (!dbus_error_is_set(&error)) {
