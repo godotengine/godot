@@ -64,7 +64,7 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		return false;
 	}
 
-	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+	const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
 
 	Ref<InputEventMouseButton> mb = p_event;
