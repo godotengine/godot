@@ -81,7 +81,7 @@ layout(push_constant, std430) uniform Params {
 params;
 
 const float PI = 3.14159265f;
-const float GOLDEN_ANGLE = PI * (3.0 - sqrt(5.0));
+const float GOLDEN_ANGLE = 2.39996323f; // PI * (3.0 - sqrt(5.0))
 
 vec3 vogel_hemisphere(uint p_index, uint p_count, float p_offset) {
 	float r = sqrt(float(p_index) + 0.5f) / sqrt(float(p_count));

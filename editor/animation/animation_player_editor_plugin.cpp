@@ -2253,7 +2253,7 @@ uniform bool differences_only;
 uniform sampler2D present;
 
 float zero_if_equal(vec4 a, vec4 b) {
-	return smoothstep(0.0, 0.005, length(a.rgb - b.rgb) / sqrt(3.0));
+	return smoothstep(0.0, 0.005, length(a.rgb - b.rgb) / 1.73205081f);
 }
 
 void fragment() {

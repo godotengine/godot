@@ -154,7 +154,7 @@ void main() {
 		/* compute texel size */
 		vec3 delta_uv = max(abs(dFdx(vertex_interp)), abs(dFdy(vertex_interp)));
 		float texel_size = max(delta_uv.x, max(delta_uv.y, delta_uv.z));
-		texel_size *= sqrt(2.0); //expand to unit box edge length (again, worst case)
+		texel_size *= 1.41421356f; //expand to unit box edge length (again, worst case)
 
 		unocclude.xyz = face_normal;
 		unocclude.w = texel_size;
