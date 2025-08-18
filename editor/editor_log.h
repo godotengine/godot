@@ -43,6 +43,8 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
 
+class RegEx;
+
 class EditorLog : public VBoxContainer {
 	GDCLASS(EditorLog, VBoxContainer);
 
@@ -69,6 +71,8 @@ class EditorLog : public VBoxContainer {
 	ErrorHandlerList eh;
 
 	Thread::ID current;
+
+	RegEx *strip_ansi_regex = nullptr;
 
 	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
