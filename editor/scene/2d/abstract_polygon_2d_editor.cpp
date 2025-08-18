@@ -496,7 +496,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 		// Center drag.
 		if (edit_origin_and_center) {
-			real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			const real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
 			if (mb->get_button_index() == MouseButton::LEFT) {
 				if (mb->is_meta_pressed() || mb->is_ctrl_pressed() || mb->is_shift_pressed() || mb->is_alt_pressed()) {
@@ -836,9 +836,9 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_point(const 
 		for (int i = 0; i < n_points; i++) {
 			Vector2 cp = xform.xform(points[i] + offset);
 
-			real_t d = cp.distance_to(p_pos);
-			if (d < closest_dist && d < grab_threshold) {
-				closest_dist = d;
+			const real_t dist = cp.distance_to(p_pos);
+			if (dist < closest_dist && dist < grab_threshold) {
+				closest_dist = dist;
 				closest = PosVertex(j, i, cp);
 			}
 		}
@@ -874,9 +874,9 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 				continue; //not valid to reuse point
 			}
 
-			real_t d = cp.distance_to(p_pos);
-			if (d < closest_dist && d < grab_threshold) {
-				closest_dist = d;
+			const real_t dist = cp.distance_to(p_pos);
+			if (dist < closest_dist && dist < grab_threshold) {
+				closest_dist = dist;
 				closest = PosVertex(j, i, cp);
 			}
 		}
