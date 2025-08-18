@@ -462,7 +462,7 @@ void ViewportRotationControl::_process_click(int p_index, Vector2 p_position, bo
 
 void ViewportRotationControl::_process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position) {
 	Point2 mouse_pos = get_local_mouse_position();
-	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4 * EDSCALE;
+	const bool movement_threshold_passed = original_mouse_pos.distance_to(mouse_pos) > 4.0f * EDSCALE;
 	if (orbiting_index == p_index && gizmo_activated && movement_threshold_passed) {
 		if (Input::get_singleton()->get_mouse_mode() == Input::MouseMode::MOUSE_MODE_VISIBLE) {
 			Input::get_singleton()->set_mouse_mode(Input::MouseMode::MOUSE_MODE_CAPTURED);
