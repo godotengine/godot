@@ -465,7 +465,7 @@ void EditorFileSystem::_scan_filesystem() {
 						fc.import_md5 = slices[5];
 						fc.import_dest_paths = slices[6].split("<*>");
 					}
-					fc.deps = split[8].strip_edges().split("<>");
+					fc.deps = split[8].strip_edges().split("<>", false);
 
 					file_cache[name] = fc;
 				}
