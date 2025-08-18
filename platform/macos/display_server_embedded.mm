@@ -322,6 +322,7 @@ bool DisplayServerEmbedded::mouse_is_mode_override_enabled() const {
 
 void DisplayServerEmbedded::warp_mouse(const Point2i &p_position) {
 	_THREAD_SAFE_METHOD_
+	Input::get_singleton()->set_mouse_position(p_position);
 	EngineDebugger::get_singleton()->send_message("game_view:warp_mouse", { p_position });
 }
 
@@ -478,7 +479,7 @@ bool DisplayServerEmbedded::has_feature(Feature p_feature) const {
 		case FEATURE_CUSTOM_CURSOR_SHAPE:
 			// case FEATURE_HIDPI:
 			// case FEATURE_ICON:
-		case FEATURE_MOUSE:
+			// case FEATURE_MOUSE:
 		case FEATURE_MOUSE_WARP:
 			// case FEATURE_NATIVE_DIALOG:
 			// case FEATURE_NATIVE_ICON:
