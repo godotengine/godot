@@ -1410,10 +1410,6 @@ StringName Node::get_name() const {
 	return data.name;
 }
 
-void Node::_set_name_nocheck(const StringName &p_name) {
-	data.name = p_name;
-}
-
 void Node::set_name(const StringName &p_name) {
 	ERR_FAIL_COND_MSG(data.tree && !Thread::is_main_thread(), "Changing the name to nodes inside the SceneTree is only allowed from the main thread. Use `set_name.call_deferred(new_name)`.");
 	ERR_FAIL_COND(p_name.is_empty());

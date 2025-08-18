@@ -480,12 +480,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 						stray_instances.push_back(node); //can't be added, go to stray list
 					}
 				} else {
-					if (Engine::get_singleton()->is_editor_hint()) {
-						//validate name if using editor, to avoid broken
-						node->set_name(snames[n.name]);
-					} else {
-						node->_set_name_nocheck(snames[n.name]);
-					}
+					node->set_name(snames[n.name]);
 				}
 			}
 

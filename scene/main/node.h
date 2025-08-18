@@ -360,7 +360,6 @@ protected:
 
 	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
-	void _set_name_nocheck(const StringName &p_name);
 
 	void _set_physics_interpolated_client_side(bool p_enable) { data.physics_interpolated_client_side = p_enable; }
 	bool _is_physics_interpolated_client_side() const { return data.physics_interpolated_client_side; }
