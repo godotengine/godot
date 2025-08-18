@@ -389,7 +389,7 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 			const Vector2 segment_a = points[j];
 			const Vector2 segment_b = points[(j + 1) % 3];
 			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
-			if (first || closest_point.distance_to(p_point) < best_point.distance_to(p_point)) {
+			if (first || closest_point.distance_squared_to(p_point) < best_point.distance_squared_to(p_point)) {
 				best_point = closest_point;
 				first = false;
 			}
@@ -483,7 +483,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 				const Vector2 segment_a = points[j];
 				const Vector2 segment_b = points[(j + 1) % 3];
 				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, segment_a, segment_b);
-				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
+				if (first || closest2.distance_squared_to(blend_pos) < best_point.distance_squared_to(blend_pos)) {
 					best_point = closest2;
 					blend_triangle = i;
 					first = false;
