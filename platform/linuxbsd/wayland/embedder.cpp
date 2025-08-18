@@ -332,8 +332,15 @@ uint32_t WaylandEmbedder::Client::new_object(uint32_t p_local_id, const struct w
 }
 
 uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
-	CRASH_COND(embedder == nullptr);
-	CRASH_COND_MSG(get_object(get_local_id(p_global_id)) != nullptr, vformat("Tried to create %s g0x%x but it already exists as %s", p_interface->name, p_global_id, get_object(get_local_id(p_global_id))->interface->name));
+	if (embedder == nullptr) {
+		socket_error(socket, get_local_id(p_global_id), WL_DISPLAY_ERROR_IMPLEMENTATION, "No embedder set.");
+		ERR_FAIL_V(INVALID_ID);
+	}
+
+	if (get_object(get_local_id(p_global_id)) != nullptr) {
+		socket_error(socket, get_local_id(p_global_id), WL_DISPLAY_ERROR_IMPLEMENTATION, vformat("Tried to create %s g0x%x but it already exists as %s", p_interface->name, p_global_id, get_object(get_local_id(p_global_id))->interface->name));
+		ERR_FAIL_V(INVALID_ID);
+	}
 
 	uint32_t new_local_id = allocate_server_id();
 
@@ -367,8 +374,15 @@ uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const 
 }
 
 WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_fake_object(uint32_t p_local_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
-	CRASH_COND(embedder == nullptr);
-	CRASH_COND_MSG(get_object(p_local_id) != nullptr, vformat("Object l0x%x already exists", p_local_id));
+	if (embedder == nullptr) {
+		socket_error(socket, p_local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, "No embedder set.");
+		ERR_FAIL_V(nullptr);
+	}
+
+	if (get_object(p_local_id) != nullptr) {
+		socket_error(socket, p_local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, vformat("Object l0x%x already exists", p_local_id));
+		ERR_FAIL_V(nullptr);
+	}
 
 	WaylandObject &new_object = fake_objects[p_local_id];
 	new_object.interface = p_interface;
@@ -379,8 +393,15 @@ WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_fake_object(uint32_
 }
 
 WaylandEmbedder::WaylandObject *WaylandEmbedder::Client::new_global_instance(uint32_t p_local_id, uint32_t p_global_id, const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
-	CRASH_COND(embedder == nullptr);
-	CRASH_COND_MSG(get_object(p_local_id) != nullptr, vformat("Object l0x%x already exists", p_local_id));
+	if (embedder == nullptr) {
+		socket_error(socket, p_local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, "No embedder set.");
+		ERR_FAIL_V(nullptr);
+	}
+
+	if (get_object(p_local_id) != nullptr) {
+		socket_error(socket, p_local_id, WL_DISPLAY_ERROR_IMPLEMENTATION, vformat("Object l0x%x already exists", p_local_id));
+		ERR_FAIL_V(nullptr);
+	}
 
 	WaylandObject &new_object = global_instances[p_local_id];
 	new_object.interface = p_interface;
@@ -538,6 +559,27 @@ void WaylandEmbedder::cleanup_socket(int p_socket) {
 }
 
 void WaylandEmbedder::socket_error(int p_socket, uint32_t p_object_id, uint32_t p_code, String p_message) {
+	const char *err_name = "unknown";
+	switch (p_code) {
+		case WL_DISPLAY_ERROR_INVALID_OBJECT: {
+			err_name = "invalid_object";
+		} break;
+
+		case WL_DISPLAY_ERROR_INVALID_METHOD: {
+			err_name = "invalid_method";
+		} break;
+
+		case WL_DISPLAY_ERROR_NO_MEMORY: {
+			err_name = "no_memory";
+		} break;
+
+		case WL_DISPLAY_ERROR_IMPLEMENTATION: {
+			err_name = "implementation";
+		} break;
+	}
+
+	ERR_PRINT(vformat("Socket %d %s error: %s", p_socket, err_name, p_message));
+
 	LocalVector<union wl_argument> args;
 	args.push_back(wl_arg_object(p_object_id));
 	args.push_back(wl_arg_uint(p_code));
