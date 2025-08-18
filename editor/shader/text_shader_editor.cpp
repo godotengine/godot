@@ -1207,6 +1207,8 @@ TextShaderEditor::TextShaderEditor() {
 	hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
+	edit_menu->set_flat(false);
+	edit_menu->set_theme_type_variation("FlatMenuButton");
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
@@ -1235,6 +1237,8 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	search_menu = memnew(MenuButton);
+	search_menu->set_flat(false);
+	search_menu->set_theme_type_variation("FlatMenuButton");
 	search_menu->set_shortcut_context(this);
 	search_menu->set_text(TTR("Search"));
 	search_menu->set_switch_on_hover(true);
@@ -1246,6 +1250,8 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_flat(false);
+	goto_menu->set_theme_type_variation("FlatMenuButton");
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
 	goto_menu->set_switch_on_hover(true);
@@ -1267,7 +1273,7 @@ TextShaderEditor::TextShaderEditor() {
 	hbc->add_spacer();
 
 	site_search = memnew(Button);
-	site_search->set_flat(true);
+	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &TextShaderEditor::_menu_option).bind(HELP_DOCS));
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
