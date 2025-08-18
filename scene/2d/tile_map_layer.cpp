@@ -72,6 +72,9 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 			if (debug_quadrant->canvas_item.is_valid()) {
 				rs->free(debug_quadrant->canvas_item);
 			}
+			if (debug_quadrant->physics_mesh.is_valid()) {
+				rs->free(debug_quadrant->physics_mesh);
+			}
 		}
 		debug_quadrant_map.clear();
 		_debug_was_cleaned_up = true;
