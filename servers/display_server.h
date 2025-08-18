@@ -169,6 +169,7 @@ public:
 		FEATURE_NATIVE_COLOR_PICKER,
 		FEATURE_SELF_FITTING_WINDOWS,
 		FEATURE_ACCESSIBILITY_SCREEN_READER,
+		FEATURE_WAYLAND_LAYER_SHELL,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -503,6 +504,9 @@ public:
 
 	virtual void window_set_flag(WindowFlags p_flag, bool p_enabled, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual bool window_get_flag(WindowFlags p_flag, WindowID p_window = MAIN_WINDOW_ID) const = 0;
+
+	virtual void window_set_wayland_layer(int p_layer, WindowID p_window = MAIN_WINDOW_ID) {}
+	virtual int window_get_wayland_layer(WindowID p_window = MAIN_WINDOW_ID) const { return 0; }
 
 	virtual void window_request_attention(WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_move_to_foreground(WindowID p_window = MAIN_WINDOW_ID) = 0;

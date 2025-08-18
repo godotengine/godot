@@ -4136,6 +4136,30 @@ bool WaylandThread::window_get_idle_inhibition(DisplayServer::WindowID p_window_
 	return ws.wp_idle_inhibitor != nullptr;
 }
 
+void WaylandThread::window_set_wayland_layer(DisplayServer::WindowID p_window_id, int p_layer) {
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowState &ws = windows[p_window_id];
+
+	// For now, we only store the layer. Layer shell protocol implementation 
+	// would require creating a different type of surface that's incompatible
+	// with regular XDG surfaces. This is a placeholder for future implementation.
+	ws.wayland_layer = p_layer;
+	
+	// TODO: Implement actual layer shell surface creation
+	// This would require:
+	// 1. Creating a zwlr_layer_surface_v1 instead of xdg_surface
+	// 2. Configuring the layer, anchor, size, etc.
+	// 3. Handling layer shell events
+	
+	print_line(vformat("WAYLAND LAYER: Set window %d layer to %d (placeholder implementation)", p_window_id, p_layer));
+}
+
+int WaylandThread::window_get_wayland_layer(DisplayServer::WindowID p_window_id) const {
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0);
+	const WindowState &ws = windows[p_window_id];
+	return ws.wayland_layer;
+}
+
 WaylandThread::ScreenData WaylandThread::screen_get_data(int p_screen) const {
 	ERR_FAIL_INDEX_V(p_screen, registry.wl_outputs.size(), ScreenData());
 

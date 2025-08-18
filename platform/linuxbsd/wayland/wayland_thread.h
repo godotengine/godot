@@ -70,6 +70,7 @@
 #include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
 #include "wayland/protocol/xdg_system_bell.gen.h"
+#include "wayland/protocol/wlr_layer_shell.gen.h"
 
 // NOTE: Deprecated.
 #include "wayland/protocol/xdg_foreign_v1.gen.h"
@@ -221,6 +222,9 @@ public:
 		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
 		uint32_t wp_text_input_manager_name = 0;
 
+		struct zwlr_layer_shell_v1 *wlr_layer_shell = nullptr;
+		uint32_t wlr_layer_shell_name = 0;
+
 		// We're really not meant to use this one directly but we still need to know
 		// whether it's available.
 		uint32_t wp_fifo_manager_name = 0;
@@ -236,6 +240,7 @@ public:
 		Rect2i rect;
 		DisplayServer::WindowMode mode = DisplayServer::WINDOW_MODE_WINDOWED;
 		bool suspended = false;
+		int wayland_layer = 0; // 0 = normal, 1 = background, 2 = bottom, 3 = top, 4 = overlay
 
 		// These are true by default as it isn't guaranteed that we'll find an
 		// xdg-shell implementation with wm_capabilities available. If and once we
@@ -258,6 +263,7 @@ public:
 		struct wl_surface *wl_surface = nullptr;
 		struct xdg_surface *xdg_surface = nullptr;
 		struct xdg_toplevel *xdg_toplevel = nullptr;
+		struct zwlr_layer_surface_v1 *wlr_layer_surface = nullptr;
 
 		struct wp_viewport *wp_viewport = nullptr;
 		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
@@ -592,8 +598,6 @@ private:
 	struct wl_seat *wl_seat_current = nullptr;
 
 	bool frame = true;
-
-	RegistryState registry;
 
 	bool initialized = false;
 
@@ -987,6 +991,7 @@ private:
 
 public:
 	Mutex &mutex = thread_data.mutex;
+	RegistryState registry;
 
 	struct wl_display *get_wl_display() const;
 
@@ -1044,6 +1049,8 @@ public:
 	void window_set_borderless(DisplayServer::WindowID p_window_id, bool p_borderless);
 	void window_set_title(DisplayServer::WindowID p_window_id, const String &p_title);
 	void window_set_app_id(DisplayServer::WindowID p_window_id, const String &p_app_id);
+	void window_set_wayland_layer(DisplayServer::WindowID p_window_id, int p_layer);
+	int window_get_wayland_layer(DisplayServer::WindowID p_window_id) const;
 
 	bool window_is_focused(DisplayServer::WindowID p_window_id);
 

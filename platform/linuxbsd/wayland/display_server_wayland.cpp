@@ -213,6 +213,10 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		} break;
 #endif
 
+		case FEATURE_WAYLAND_LAYER_SHELL: {
+			return wayland_thread.registry.wlr_layer_shell != nullptr;
+		} break;
+
 		default: {
 			return false;
 		}
@@ -1268,6 +1272,30 @@ bool DisplayServerWayland::window_get_flag(WindowFlags p_flag, DisplayServer::Wi
 
 	ERR_FAIL_COND_V(!windows.has(p_window_id), false);
 	return windows[p_window_id].flags & (1 << p_flag);
+}
+
+void DisplayServerWayland::window_set_wayland_layer(int p_layer, DisplayServer::WindowID p_window_id) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+
+	// Only allow setting layer on visible windows that support layer shell
+	if (wd.visible && wayland_thread.registry.wlr_layer_shell) {
+		wayland_thread.window_set_wayland_layer(p_window_id, p_layer);
+	}
+	
+	// Store the layer for when the window becomes visible
+	wd.wayland_layer = p_layer;
+}
+
+int DisplayServerWayland::window_get_wayland_layer(DisplayServer::WindowID p_window_id) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	ERR_FAIL_COND_V(!windows.has(p_window_id), 0);
+	const WindowData &wd = windows[p_window_id];
+
+	return wd.wayland_layer;
 }
 
 void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window_id) {

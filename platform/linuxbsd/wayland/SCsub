@@ -64,6 +64,9 @@ objects = [
     generate_from_xml(
         "xdg_system_bell", "#thirdparty/wayland-protocols/staging/xdg-system-bell/xdg-system-bell-v1.xml"
     ),
+    generate_from_xml(
+        "wlr_layer_shell", "#thirdparty/wayland-protocols/staging/wlr-layer-shell/wlr-layer-shell-unstable-v1.xml"
+    ),
     # Unstable protocols
     generate_from_xml(
         "idle_inhibit", "#thirdparty/wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml"

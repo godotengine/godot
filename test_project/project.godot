@@ -1,0 +1,13 @@
+[application]
+
+config/name="Wayland Layer Test"
+run/main_scene="res://main.tscn"
+
+[display]
+
+window/size/viewport_width=800
+window/size/viewport_height=600
+
+[rendering]
+
+driver/driver_name="vulkan"
