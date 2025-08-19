@@ -47,6 +47,7 @@ class CreateDialog : public ConfirmationDialog {
 	};
 
 	struct TypeInfo {
+		StringName script_type_path;
 		StringName type_name;
 		PackedStringArray search_keywords;
 	};
@@ -78,6 +79,7 @@ class CreateDialog : public ConfirmationDialog {
 	void _add_type(const StringName &p_type, TypeCategory p_type_category, const String &p_match_keyword);
 	void _configure_search_option_item(TreeItem *r_item, const StringName &p_type, TypeCategory p_type_category, const String &p_match_keyword);
 	float _score_type(const String &p_type, const String &p_search) const;
+	void _add_unnamed_scripts(EditorFileSystemDirectory *fsd);
 	bool _is_type_preferred(const String &p_type) const;
 	void _script_button_clicked(TreeItem *p_item, int p_column, int p_button_id, MouseButton p_mouse_button_index);
 
