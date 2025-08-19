@@ -2270,6 +2270,15 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 
 			for (KeyValue<int, Client> &pair : clients) {
 				Client &c = pair.value;
+				if (c.socket < 0) {
+					continue;
+				}
+
+				if (!c.local_ids.has(global_id)) {
+					DEBUG_LOG_WAYLAND_EMBED("!!!!!!!!!!! Instance missing?");
+					continue;
+				}
+
 				if (is_global) {
 					if (!c.registry_globals_instances.has(global_name)) {
 						continue;
@@ -2278,14 +2287,6 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 					DEBUG_LOG_WAYLAND_EMBED(vformat("Broadcasting to all global instances for client %d (socket %d)", c.pid, c.socket));
 					for (uint32_t instance_id : c.registry_globals_instances[global_name]) {
 						DEBUG_LOG_WAYLAND_EMBED(vformat("Global instance l0x%x", instance_id));
-						if (c.socket < 0) {
-							continue;
-						}
-
-						if (!c.local_ids.has(global_id)) {
-							DEBUG_LOG_WAYLAND_EMBED("!!!!!!!!!!! Instance missing?");
-							continue;
-						}
 
 						LocalObjectHandle local_obj = LocalObjectHandle(&c, instance_id);
 						if (!local_obj.is_valid()) {
@@ -2320,15 +2321,6 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 						handled = true;
 					}
 				} else {
-					if (c.socket < 0) {
-						continue;
-					}
-
-					if (!c.local_ids.has(global_id)) {
-						DEBUG_LOG_WAYLAND_EMBED("!!!!!!!!!!! Instance missing?");
-						continue;
-					}
-
 					LocalObjectHandle local_obj = LocalObjectHandle(&c, c.get_local_id(global_id));
 					if (!local_obj.is_valid()) {
 						continue;
