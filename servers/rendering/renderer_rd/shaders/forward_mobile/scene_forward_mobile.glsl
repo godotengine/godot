@@ -1740,10 +1740,48 @@ void main() {
 			hvec3 n = hvec3(normalize(lightmaps.data[ofs].normal_xform * indirect_normal));
 			half exposure_normalization = half(lightmaps.data[ofs].exposure_normalization);
 
-			ambient_light += lm_light_l0 * exposure_normalization;
-			ambient_light += lm_light_l1n1 * n.y * lm_light_l0 * exposure_normalization * half(4.0);
-			ambient_light += lm_light_l1_0 * n.z * lm_light_l0 * exposure_normalization * half(4.0);
-			ambient_light += lm_light_l1p1 * n.x * lm_light_l0 * exposure_normalization * half(4.0);
+			hvec3 sh_light = hvec3(0.0);
+			sh_light += lm_light_l0 * exposure_normalization;
+			sh_light += lm_light_l1n1 * n.y * lm_light_l0 * exposure_normalization * half(4.0);
+			sh_light += lm_light_l1_0 * n.z * lm_light_l0 * exposure_normalization * half(4.0);
+			sh_light += lm_light_l1p1 * n.x * lm_light_l0 * exposure_normalization * half(4.0);
+			ambient_light += sh_light;
+
+			hvec3 l1 = hvec3(
+					dot(lm_light_l1p1, hvec3(0.2126, 0.7152, 0.0722)),
+					dot(lm_light_l1n1, hvec3(0.2126, 0.7152, 0.0722)),
+					dot(lm_light_l1_0, hvec3(0.2126, 0.7152, 0.0722)));
+
+			float lightmap_direction_length = length(l1);
+			vec3 lightmap_direction = normalize(l1) / lightmap_direction_length;
+			hvec3 L_view = hvec3(mat3(scene_data.view_matrix) * lightmap_direction);
+
+			half adjusted_roughness = half(clamp(1.0 - ((1.0 - roughness) * sqrt(lightmap_direction_length)), 0.05, 1.0));
+
+			hvec3 f0 = F0(metallic, specular, albedo);
+
+			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
+			hvec3 diffuse_light_discarded = diffuse_light;
+
+			float specular_strength = length(sh_light) * lightmap_direction_length * 40;
+
+			light_compute(normal, L_view, view, saturateHalf(0.0), hvec3(sh_light), true, half(1.0), f0, adjusted_roughness, metallic, half(specular_strength), albedo, alpha,
+					screen_uv, hvec3(1.0),
+#ifdef LIGHT_BACKLIGHT_USED
+					backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+					rim, rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+					clearcoat, clearcoat_roughness, geo_normal,
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+					binormal, tangent, anisotropy,
+#endif
+					diffuse_light_discarded,
+					direct_specular_light);
+
 		} else {
 			if (sc_use_lightmap_bicubic_filter()) {
 				ambient_light += hvec3(textureArray_bicubic(lightmap_textures[ofs], uvw, lightmaps.data[ofs].light_texture_size).rgb * lightmaps.data[ofs].exposure_normalization);
