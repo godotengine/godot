@@ -1049,7 +1049,7 @@ static GDExtensionInt gdextension_string_resize(GDExtensionStringPtr p_self, GDE
 }
 
 static void gdextension_string_name_new_with_latin1_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents, GDExtensionBool p_is_static) {
-	memnew_placement(r_dest, StringName(p_contents, static_cast<bool>(p_is_static)));
+	memnew_placement(r_dest, StringName(p_contents));
 }
 
 static void gdextension_string_name_new_with_utf8_chars(GDExtensionUninitializedStringNamePtr r_dest, const char *p_contents) {

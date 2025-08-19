@@ -243,10 +243,6 @@ public:
 				container_element_types == p_other.container_element_types;
 	}
 
-	bool operator!=(const GDScriptDataType &p_other) const {
-		return !(*this == p_other);
-	}
-
 	void operator=(const GDScriptDataType &p_other) {
 		kind = p_other.kind;
 		has_type = p_other.has_type;

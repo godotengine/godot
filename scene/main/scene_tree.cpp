@@ -1977,21 +1977,21 @@ void SceneTree::get_argument_options(const StringName &p_function, int p_idx, Li
 	bool add_options = false;
 	if (p_idx == 0) {
 		static const Vector<StringName> names = {
-			StringName("add_to_group", true),
-			StringName("call_group", true),
-			StringName("get_first_node_in_group", true),
-			StringName("get_node_count_in_group", true),
-			StringName("get_nodes_in_group", true),
-			StringName("has_group", true),
-			StringName("notify_group", true),
-			StringName("set_group", true),
+			ComptimeStringName<"add_to_group">().value,
+			ComptimeStringName<"call_group">().value,
+			ComptimeStringName<"get_first_node_in_group">().value,
+			ComptimeStringName<"get_node_count_in_group">().value,
+			ComptimeStringName<"get_nodes_in_group">().value,
+			ComptimeStringName<"has_group">().value,
+			ComptimeStringName<"notify_group">().value,
+			ComptimeStringName<"set_group">().value,
 		};
 		add_options = names.has(p_function);
 	} else if (p_idx == 1) {
 		static const Vector<StringName> names = {
-			StringName("call_group_flags", true),
-			StringName("notify_group_flags", true),
-			StringName("set_group_flags", true),
+			ComptimeStringName<"call_group_flags">().value,
+			ComptimeStringName<"notify_group_flags">().value,
+			ComptimeStringName<"set_group_flags">().value,
 		};
 		add_options = names.has(p_function);
 	}

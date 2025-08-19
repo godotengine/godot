@@ -214,7 +214,6 @@ public:
 		}
 		return memcmp(ptr(), p_other.ptr(), length() * sizeof(T)) == 0;
 	}
-	_FORCE_INLINE_ bool operator!=(const CharStringT<T> &p_other) const { return !(*this == p_other); }
 	_FORCE_INLINE_ bool operator<(const CharStringT<T> &p_other) const {
 		if (length() == 0) {
 			return p_other.length() != 0;
@@ -343,7 +342,6 @@ public:
 	/* Compatibility Operators */
 
 	bool operator==(const String &p_str) const;
-	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
 	String operator+(const char *p_char) const;
 	String operator+(const wchar_t *p_char) const;
@@ -360,10 +358,6 @@ public:
 	bool operator==(const wchar_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
 	bool operator==(const Span<char32_t> &p_str_range) const;
-
-	bool operator!=(const char *p_str) const;
-	bool operator!=(const wchar_t *p_str) const;
-	bool operator!=(const char32_t *p_str) const;
 
 	bool operator<(const char32_t *p_str) const;
 	bool operator<(const char *p_str) const;
@@ -638,14 +632,15 @@ public:
 	 * The constructors must not depend on other overloads
 	 */
 
-	_FORCE_INLINE_ String() {}
-	_FORCE_INLINE_ String(const String &p_str) = default;
-	_FORCE_INLINE_ String(String &&p_str) = default;
+	_FORCE_INLINE_ constexpr String() = default;
+	_FORCE_INLINE_ constexpr String(const String &p_str) { _cowdata = p_str._cowdata; }
+	_FORCE_INLINE_ constexpr String(String &&p_str) = default;
+	consteval String(const CowData<char32_t> &cowdata) { _cowdata = cowdata; }
 #ifdef SIZE_EXTRA
 	_NO_INLINE_ ~String() {}
 #endif
 	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata = p_str._cowdata; }
-	_FORCE_INLINE_ void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
+	_FORCE_INLINE_ constexpr void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 
 	Vector<uint8_t> to_ascii_buffer() const;
 	Vector<uint8_t> to_utf8_buffer() const;
@@ -683,11 +678,6 @@ public:
 // Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
 template <>
 struct is_zero_constructible<String> : std::true_type {};
-
-bool operator==(const char *p_chr, const String &p_str);
-bool operator==(const wchar_t *p_chr, const String &p_str);
-bool operator!=(const char *p_chr, const String &p_str);
-bool operator!=(const wchar_t *p_chr, const String &p_str);
 
 String operator+(const char *p_chr, const String &p_str);
 String operator+(const wchar_t *p_chr, const String &p_str);
@@ -791,3 +781,12 @@ template <typename... P>
 _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 	return Vector<String>({ String(p_args)... });
 }
+
+template <CowBuffer buf>
+struct ComptimeString {
+private:
+	inline static constinit CowBuffer storage = buf;
+
+public:
+	inline static constexpr String value{ storage };
+};
