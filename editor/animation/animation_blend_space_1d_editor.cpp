@@ -167,7 +167,6 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				undo_redo->add_undo_method(this, "_update_edited_point_pos");
 				undo_redo->commit_action();
 				updating = false;
-				_update_edited_point_pos();
 			}
 
 			dragging_selected_attempt = false;
