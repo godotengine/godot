@@ -337,6 +337,16 @@ uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const 
 		ERR_FAIL_V(INVALID_ID);
 	}
 
+	// The max ID will never increment more than one at a time, due to the
+	// packed nature of IDs. libwayland already does similar assertions so it
+	// just makes sense to double-check to avoid messing memory up or
+	// allocating a huge buffer for nothing.
+	uint32_t stripped_id = p_global_id & ~(0xff000000);
+	if (stripped_id > embedder->server_objects.size()) {
+		socket_error(socket, get_local_id(p_global_id), WL_DISPLAY_ERROR_IMPLEMENTATION, "Invalid new server id requested.");
+		ERR_FAIL_V(INVALID_ID);
+	}
+
 	if (get_object(get_local_id(p_global_id)) != nullptr) {
 		socket_error(socket, get_local_id(p_global_id), WL_DISPLAY_ERROR_IMPLEMENTATION, vformat("Tried to create %s g0x%x but it already exists as %s", p_interface->name, p_global_id, get_object(get_local_id(p_global_id))->interface->name));
 		ERR_FAIL_V(INVALID_ID);
@@ -345,14 +355,6 @@ uint32_t WaylandEmbedder::Client::new_server_object(uint32_t p_global_id, const 
 	uint32_t new_local_id = allocate_server_id();
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("New server object %s g0x%x l0x%x", p_interface->name, p_global_id, new_local_id));
-
-	uint32_t stripped_id = p_global_id & ~(0xff000000);
-
-	// The max ID will never increment more than one at a time, due to the
-	// packed nature of IDs. libwayland already does similar assertions so it
-	// just makes sense to double-check to avoid messing memory up or
-	// allocating a huge buffer for nothing.
-	CRASH_COND_MSG(stripped_id > embedder->server_objects.size(), "Invalid new server id received.");
 
 	if (stripped_id == embedder->server_objects.size()) {
 		embedder->server_objects.resize(embedder->server_objects.size() + 1);
