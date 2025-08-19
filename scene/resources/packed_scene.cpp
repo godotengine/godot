@@ -1974,11 +1974,10 @@ Ref<Resource> SceneState::get_sub_resource(const String &p_path) {
 }
 
 Vector<Ref<Resource>> SceneState::get_sub_resources() {
-	const String path_prefix = get_path() + "::";
 	Vector<Ref<Resource>> sub_resources;
 	for (const Variant &v : variants) {
 		const Ref<Resource> &res = v;
-		if (res.is_valid() && res->get_path().begins_with(path_prefix)) {
+		if (res.is_valid() && res->is_built_in()) {
 			sub_resources.push_back(res);
 		}
 	}

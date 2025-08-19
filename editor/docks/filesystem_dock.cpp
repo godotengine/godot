@@ -228,6 +228,8 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 		resources_item = subdirectory_item;
 	}
 
+	const Color sub_resource_color = get_theme_color(SNAME("warning_color"), EditorStringName(Editor));
+
 	// Set custom folder color (if applicable).
 	bool has_custom_color = assigned_folder_colors.has(lpath);
 	Color custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
@@ -339,6 +341,23 @@ void FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			}
 			Array udata = { tree_update_id, file_item };
 			EditorResourcePreview::get_singleton()->queue_resource_preview(file_metadata, this, "_tree_thumbnail_done", udata);
+
+			if (EditorFileSystem::get_singleton()->get_file_type(file_metadata) == "PackedScene") {
+				Ref<PackedScene> scene = ResourceLoader::load(file_metadata);
+				if (scene.is_null()) {
+					continue;
+				}
+
+				Vector<Ref<Resource>> subs = scene->get_state()->get_sub_resources();
+				for (const Ref<Resource> &res : subs) {
+					TreeItem *res_item = file_item->create_child();
+					res_item->set_text(0, res->get_class());
+					res_item->set_custom_color(0, sub_resource_color);
+					res_item->set_icon(0, _get_tree_item_icon(true, res->get_class(), ""));
+					res_item->set_metadata(0, res->get_path());
+				}
+				file_item->set_collapsed(true);
+			}
 		}
 	} else {
 		if (lpath.get_base_dir() == current_path.get_base_dir()) {
@@ -735,8 +754,9 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			if (!p_path.ends_with("/")) {
 				target_path += "/";
 			}
-		} else if (!da->file_exists(p_path)) {
-			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
+		} else {
+			target_path = p_path.is_resource_file() ? p_path : p_path.get_slice("::", 0);
+			ERR_FAIL_COND_MSG(!da->file_exists(target_path), vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
 		}
 	}
 
@@ -2884,7 +2904,7 @@ Control *FileSystemDock::create_tooltip_for_path(const String &p_path) const {
 		// No tooltip for directory.
 		return nullptr;
 	}
-	ERR_FAIL_COND_V(!FileAccess::exists(p_path), nullptr);
+	ERR_FAIL_COND_V(p_path.is_resource_file() && !FileAccess::exists(p_path), nullptr);
 
 	const String type = ResourceLoader::get_resource_type(p_path);
 	Control *tooltip = EditorResourceTooltipPlugin::make_default_tooltip(p_path);
