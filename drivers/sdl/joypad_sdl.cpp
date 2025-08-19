@@ -88,6 +88,9 @@ Error JoypadSDL::initialize() {
 		SDL_AddGamepadMappingsFromIO(rw, 1);
 	}
 
+	// Make sure that we handle already connected joypads when the driver is initialized.
+	process_events();
+
 	print_verbose("SDL: Init OK!");
 	return OK;
 }
