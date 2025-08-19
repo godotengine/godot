@@ -39,11 +39,10 @@ public:
 		COMPRESS_ZSTD,
 	};
 
-	enum {
-		TOKEN_BYTE_MASK = 0x80,
-		TOKEN_BITS = 8,
-		TOKEN_MASK = (1 << (TOKEN_BITS - 1)) - 1,
-	};
+	static constexpr uint32_t TOKENIZER_VERSION = 101;
+	static constexpr uint32_t TOKEN_BYTE_MASK = 0x80;
+	static constexpr uint32_t TOKEN_BITS = 8;
+	static constexpr uint32_t TOKEN_MASK = (1 << (TOKEN_BITS - 1)) - 1;
 
 	Vector<StringName> identifiers;
 	Vector<Variant> constants;

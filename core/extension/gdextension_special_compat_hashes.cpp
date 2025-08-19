@@ -35,8 +35,6 @@
 #include "core/object/class_db.h"
 #include "core/variant/variant.h"
 
-HashMap<StringName, LocalVector<GDExtensionSpecialCompatHashes::Mapping>> GDExtensionSpecialCompatHashes::mappings;
-
 bool GDExtensionSpecialCompatHashes::lookup_current_hash(const StringName &p_class, const StringName &p_method, uint32_t p_legacy_hash, uint32_t *r_current_hash) {
 	LocalVector<Mapping> *methods = mappings.getptr(p_class);
 	if (!methods) {

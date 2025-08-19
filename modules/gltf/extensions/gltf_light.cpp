@@ -182,6 +182,7 @@ Light3D *GLTFLight::to_node() const {
 		return nullptr;
 	}
 	light->set_color(color.linear_to_srgb());
+	light->set_param(Light3D::PARAM_ATTENUATION, 2.0);
 	return light;
 }
 
@@ -232,7 +233,7 @@ Dictionary GLTFLight::to_dictionary() const {
 	if (intensity != 1.0f) {
 		d["intensity"] = intensity;
 	}
-	if (light_type != "directional" && range != INFINITY) {
+	if (light_type != "directional" && range != Math::INF) {
 		d["range"] = range;
 	}
 	if (light_type == "spot") {

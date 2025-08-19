@@ -223,7 +223,7 @@ def process_folder(folders, sought_exceptions=[], includes_per_scu=0, extension=
     start_line = 0
 
     # These do not vary throughout the loop
-    output_folder = abs_main_folder + "/scu/"
+    output_folder = abs_main_folder + "/.scu/"
     output_filename_prefix = "scu_" + out_filename
 
     fresh_files = set()
@@ -289,18 +289,38 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["drivers/gles3/effects"])
     process_folder(["drivers/gles3/storage"])
 
-    process_folder(["editor"], ["file_system_dock", "editor_resource_preview"], 32)
+    process_folder(["editor"], [], 32)
+    process_folder(["editor/animation"])
+    process_folder(["editor/asset_library"])
+    process_folder(["editor/audio"])
     process_folder(["editor/debugger"])
     process_folder(["editor/debugger/debug_adapter"])
+    process_folder(["editor/doc"])
+    process_folder(["editor/docks"], ["file_system_dock"])
     process_folder(["editor/export"])
+    process_folder(["editor/file_system"])
     process_folder(["editor/gui"])
+    process_folder(["editor/inspector"], ["editor_resource_preview"])
     process_folder(["editor/themes"])
     process_folder(["editor/project_manager"])
+    process_folder(["editor/project_upgrade"])
     process_folder(["editor/import"])
     process_folder(["editor/import/3d"])
     process_folder(["editor/plugins"])
-    process_folder(["editor/plugins/gizmos"])
-    process_folder(["editor/plugins/tiles"])
+    process_folder(["editor/run"])
+    process_folder(["editor/scene"])
+    process_folder(["editor/scene/2d"])
+    process_folder(["editor/scene/2d/physics"])
+    process_folder(["editor/scene/2d/tiles"])
+    process_folder(["editor/scene/3d"])
+    process_folder(["editor/scene/3d/gizmos"])
+    process_folder(["editor/scene/gui"])
+    process_folder(["editor/scene/texture"])
+    process_folder(["editor/script"])
+    process_folder(["editor/settings"])
+    process_folder(["editor/shader"])
+    process_folder(["editor/translations"])
+    process_folder(["editor/version_control"])
 
     process_folder(["platform/android/export"])
     process_folder(["platform/ios/export"])

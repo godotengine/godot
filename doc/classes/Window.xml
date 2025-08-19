@@ -108,6 +108,12 @@
 				Returns [code]true[/code] if the [param flag] is set.
 			</description>
 		</method>
+		<method name="get_focused_window" qualifiers="static">
+			<return type="Window" />
+			<description>
+				Returns the focused window.
+			</description>
+		</method>
 		<method name="get_layout_direction" qualifiers="const">
 			<return type="int" enum="Window.LayoutDirection" />
 			<description>
@@ -338,7 +344,7 @@
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if layout is right-to-left.
+				Returns [code]true[/code] if the layout is right-to-left.
 			</description>
 		</method>
 		<method name="is_maximize_allowed" qualifiers="const">
@@ -572,10 +578,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
+			The human-readable node description that is reported to assistive apps.
+		</member>
+		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
+			The human-readable node name that is reported to assistive apps.
+		</member>
 		<member name="always_on_top" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the window will be on top of all other windows. Does not work if [member transient] is enabled.
 		</member>
-		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" default="true" deprecated="Use [member Node.auto_translate_mode] instead.">
+		<member name="auto_translate" type="bool" setter="set_auto_translate" getter="is_auto_translating" deprecated="Use [member Node.auto_translate_mode] and [method Node.can_auto_translate] instead.">
 			Toggles if any text should automatically change to its translated version depending on the current locale.
 		</member>
 		<member name="borderless" type="bool" setter="set_flag" getter="get_flag" default="false">
@@ -600,7 +612,9 @@
 			The screen the window is currently on.
 		</member>
 		<member name="exclude_from_capture" type="bool" setter="set_flag" getter="get_flag" default="false">
-			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+			If [code]true[/code], the [Window] is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
+			[b]Note:[/b] This property is implemented on macOS and Windows.
+			[b]Note:[/b] Enabling this setting will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</member>
 		<member name="exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">
 			If [code]true[/code], the [Window] will be in exclusive mode. Exclusive windows are always on top of their parent and will block all input going to the parent [Window].
@@ -615,7 +629,7 @@
 			If [code]true[/code], native window will be used regardless of parent viewport and project settings.
 		</member>
 		<member name="initial_position" type="int" setter="set_initial_position" getter="get_initial_position" enum="Window.WindowInitialPosition" default="0">
-			Specifies the initial type of position for the [Window]. See [enum WindowInitialPosition] constants.
+			Specifies the initial type of position for the [Window].
 		</member>
 		<member name="keep_title_visible" type="bool" setter="set_keep_title_visible" getter="get_keep_title_visible" default="false">
 			If [code]true[/code], the [Window] width is expanded to keep the title bar text fully visible.
@@ -624,9 +638,19 @@
 			If non-zero, the [Window] can't be resized to be bigger than this size.
 			[b]Note:[/b] This property will be ignored if the value is lower than [member min_size].
 		</member>
+		<member name="maximize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s maximize button is disabled.
+			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
+		</member>
 		<member name="min_size" type="Vector2i" setter="set_min_size" getter="get_min_size" default="Vector2i(0, 0)">
 			If non-zero, the [Window] can't be resized to be smaller than this size.
 			[b]Note:[/b] This property will be ignored in favor of [method get_contents_minimum_size] if [member wrap_controls] is enabled and if its size is bigger.
+		</member>
+		<member name="minimize_disabled" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window]'s minimize button is disabled.
+			[b]Note:[/b] If both minimize and maximize buttons are disabled, buttons are fully hidden, and only close button is visible.
+			[b]Note:[/b] This property is implemented only on macOS and Windows.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="Window.Mode" default="0">
 			Set's the window's current mode.
@@ -670,6 +694,9 @@
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
+		<member name="popup_wm_hint" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], the [Window] will signal to the window manager that it is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+		</member>
 		<member name="position" type="Vector2i" setter="set_position" getter="get_position" default="Vector2i(0, 0)">
 			The window's position in pixels.
 			If [member ProjectSettings.display/window/subwindows/embed_subwindows] is [code]false[/code], the position is in absolute screen coordinates. This typically applies to editor plugins. If the setting is [code]true[/code], the window's position is in the coordinates of its parent [Viewport].
@@ -709,7 +736,7 @@
 			If [code]true[/code], the [Window] can't be focused nor interacted with. It can still be visible.
 		</member>
 		<member name="unresizable" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the window can't be resized. Minimize and maximize buttons are disabled.
+			If [code]true[/code], the window can't be resized.
 		</member>
 		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
 			If [code]true[/code], the window is visible.
@@ -734,7 +761,7 @@
 		<signal name="dpi_changed">
 			<description>
 				Emitted when the [Window]'s DPI changes as a result of OS-level changes (e.g. moving the window from a Retina display to a lower resolution one).
-				[b]Note:[/b] Only implemented on macOS.
+				[b]Note:[/b] Only implemented on macOS and Linux (Wayland).
 			</description>
 		</signal>
 		<signal name="files_dropped">
@@ -743,10 +770,10 @@
 				Emitted when files are dragged from the OS file manager and dropped in the game window. The argument is a list of file paths.
 				[codeblock]
 				func _ready():
-				    get_window().files_dropped.connect(on_files_dropped)
+					get_window().files_dropped.connect(on_files_dropped)
 
 				func on_files_dropped(files):
-				    print(files)
+					print(files)
 				[/codeblock]
 				[b]Note:[/b] This signal only works with native windows, i.e. the main window and [Window]-derived nodes when [member Viewport.gui_embed_subwindows] is disabled in the main viewport.
 			</description>
@@ -827,17 +854,18 @@
 			Full screen mode with full multi-window support.
 			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
 			[b]On Android:[/b] This enables immersive mode.
-			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
 			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="Mode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
 			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]Note:[/b] This mode might not work with screen recording software.
 			[b]On Android:[/b] This enables immersive mode.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]On Linux (Wayland):[/b] Equivalent to [constant MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="FLAG_RESIZE_DISABLED" value="0" enum="Flags">
@@ -876,10 +904,21 @@
 		</constant>
 		<constant name="FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="Flags">
 			Windows is excluded from screenshots taken by [method DisplayServer.screen_get_image], [method DisplayServer.screen_get_image_rect], and [method DisplayServer.screen_get_pixel].
-			[b]Note:[/b] This flag is implemented on macOS and Windows.
-			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
+			[b]Note:[/b] This flag is implemented on macOS and Windows (10, 20H1).
+			[b]Note:[/b] Setting this flag will prevent standard screenshot methods from capturing a window image, but does [b]NOT[/b] guarantee that other apps won't be able to capture an image. It should not be used as a DRM or security measure.
 		</constant>
-		<constant name="FLAG_MAX" value="10" enum="Flags">
+		<constant name="FLAG_POPUP_WM_HINT" value="10" enum="Flags">
+			Signals the window manager that this window is supposed to be an implementation-defined "popup" (usually a floating, borderless, untileable and immovable child window).
+		</constant>
+		<constant name="FLAG_MINIMIZE_DISABLED" value="11" enum="Flags">
+			Window minimize button is disabled.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAXIMIZE_DISABLED" value="12" enum="Flags">
+			Window maximize button is disabled.
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+		</constant>
+		<constant name="FLAG_MAX" value="13" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
@@ -959,10 +998,10 @@
 			The color of the title's text outline.
 		</theme_item>
 		<theme_item name="close_h_offset" data_type="constant" type="int" default="18">
-			Horizontal position offset of the close button.
+			Horizontal position offset of the close button, relative to the end of the title bar, towards the beginning of the title bar.
 		</theme_item>
 		<theme_item name="close_v_offset" data_type="constant" type="int" default="24">
-			Vertical position offset of the close button.
+			Vertical position offset of the close button, relative to the bottom of the title bar, towards the top of the title bar.
 		</theme_item>
 		<theme_item name="resize_margin" data_type="constant" type="int" default="4">
 			Defines the outside margin at which the window border can be grabbed with mouse and resized.

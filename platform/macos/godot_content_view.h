@@ -54,8 +54,7 @@
 
 @end
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
 
 @interface GodotContentView : RootView <NSTextInputClient> {
 	DisplayServer::WindowID window_id;
@@ -67,6 +66,7 @@
 	bool last_pen_inverted;
 	bool ime_suppress_next_keyup;
 	id layer_delegate;
+	NSMutableSet<NSString *> *registered_observers;
 }
 
 - (void)processScrollEvent:(NSEvent *)event button:(MouseButton)button factor:(double)factor;
@@ -78,4 +78,4 @@
 
 @end
 
-#pragma clang diagnostic pop
+GODOT_CLANG_WARNING_POP

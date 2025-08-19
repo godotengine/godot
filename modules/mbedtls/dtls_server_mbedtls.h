@@ -44,10 +44,10 @@ public:
 	static void initialize();
 	static void finalize();
 
-	virtual Error setup(Ref<TLSOptions> p_options);
-	virtual void stop();
-	virtual Ref<PacketPeerDTLS> take_connection(Ref<PacketPeerUDP> p_peer);
+	Error setup(Ref<TLSOptions> p_options) override;
+	void stop() override;
+	Ref<PacketPeerDTLS> take_connection(Ref<PacketPeerUDP> p_peer) override;
 
 	DTLSServerMbedTLS();
-	~DTLSServerMbedTLS();
+	~DTLSServerMbedTLS() override;
 };

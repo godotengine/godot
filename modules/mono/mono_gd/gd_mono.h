@@ -76,9 +76,9 @@ class GDMono {
 	void _try_load_project_assembly();
 #endif
 
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	uint64_t api_core_hash = 0;
-#endif
+#endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
 	uint64_t api_editor_hash = 0;
 #endif
@@ -92,7 +92,7 @@ protected:
 	static GDMono *singleton;
 
 public:
-#ifdef DEBUG_METHODS_ENABLED
+#ifdef DEBUG_ENABLED
 	uint64_t get_api_core_hash() {
 		if (api_core_hash == 0) {
 			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
@@ -107,7 +107,7 @@ public:
 		return api_editor_hash;
 	}
 #endif // TOOLS_ENABLED
-#endif // DEBUG_METHODS_ENABLED
+#endif // DEBUG_ENABLED
 
 	_FORCE_INLINE_ static String get_expected_api_build_config() {
 #ifdef TOOLS_ENABLED
@@ -117,7 +117,7 @@ public:
 		return "Debug";
 #else
 		return "Release";
-#endif
+#endif // DEBUG_ENABLED
 #endif
 	}
 

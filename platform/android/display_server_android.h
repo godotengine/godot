@@ -38,7 +38,7 @@ class RenderingDevice;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerAndroid, DisplayServer);
 
 	String rendering_driver;
 
@@ -89,6 +89,7 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable rect_changed_callback;
 
 	Callable system_theme_changed;
+	Callable hardware_keyboard_connection_changed;
 
 	Callable dialog_callback;
 	Callable input_dialog_callback;
@@ -114,11 +115,10 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
-	void emit_system_theme_changed();
-
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+	void emit_system_theme_changed();
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
@@ -144,6 +144,7 @@ public:
 
 	virtual void screen_set_orientation(ScreenOrientation p_orientation, int p_screen = SCREEN_OF_MAIN_WINDOW) override;
 	virtual ScreenOrientation screen_get_orientation(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	int get_display_rotation() const;
 
 	virtual int get_screen_count() const override;
 	virtual int get_primary_screen() const override;
@@ -159,6 +160,8 @@ public:
 	virtual void virtual_keyboard_hide() override;
 	virtual int virtual_keyboard_get_height() const override;
 	virtual bool has_hardware_keyboard() const override;
+	virtual void set_hardware_keyboard_connection_change_callback(const Callable &p_callable) override;
+	void emit_hardware_keyboard_connection_changed(bool p_connected);
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
@@ -252,6 +255,8 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	virtual bool is_window_transparency_available() const override;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();

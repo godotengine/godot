@@ -34,9 +34,10 @@
 #include "core/io/config_file.h"
 #include "core/io/image_loader.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/resources/compressed_texture.h"
@@ -207,6 +208,9 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_path, const 
 
 	} else if (p_option == "mipmaps/limit") {
 		return p_options["mipmaps/generate"];
+
+	} else if (p_option == "compress/uastc_level" || p_option == "compress/rdo_quality_loss") {
+		return int(p_options["compress/mode"]) == COMPRESS_BASIS_UNIVERSAL;
 	}
 
 	return true;
@@ -230,6 +234,11 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Lossy,VRAM Compressed,VRAM Uncompressed,Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 2 : 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/high_quality"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.7));
+
+	Image::BasisUniversalPackerParams basisu_params;
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/uastc_level", PROPERTY_HINT_ENUM, "Fastest,Faster,Medium,Slower,Slowest"), basisu_params.uastc_level));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "compress/rdo_quality_loss", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), basisu_params.rdo_quality_loss));
+
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/hdr_compression", PROPERTY_HINT_ENUM, "Disabled,Opaque Only,Always"), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/normal_map", PROPERTY_HINT_ENUM, "Detect,Enable,Disabled"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
@@ -237,6 +246,10 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/red", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/green", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/blue", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 2));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/channel_remap/alpha", PROPERTY_HINT_ENUM, "Red,Green,Blue,Alpha,Inverted Red,Inverted Green,Inverted Blue,Inverted Alpha,Unused,Zero,One"), 3));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/normal_map_invert_y"), false));
@@ -258,7 +271,7 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	}
 }
 
-void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality) {
+void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params) {
 	switch (p_compress_mode) {
 		case COMPRESS_LOSSLESS: {
 			bool lossless_force_png = GLOBAL_GET("rendering/textures/lossless_compression/force_png") || !Image::_webp_mem_loader_func; // WebP module disabled or png is forced.
@@ -329,7 +342,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 			f->store_32(p_image->get_mipmap_count());
 			f->store_32(p_image->get_format());
 
-			Vector<uint8_t> data = Image::basis_universal_packer(p_image, p_channels);
+			Vector<uint8_t> data = Image::basis_universal_packer(p_image, p_channels, p_basisu_params);
 			const uint64_t data_size = data.size();
 
 			f->store_32(data_size);
@@ -338,7 +351,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, const Image::BasisUniversalPackerParams &p_basisu_params, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -418,7 +431,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		used_channels = image->detect_used_channels(comp_source);
 	}
 
-	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality);
+	save_to_ctex_format(f, image, p_compress_mode, used_channels, p_vram_compression, p_lossy_quality, p_basisu_params);
 }
 
 void ResourceImporterTexture::_save_editor_meta(const Dictionary &p_metadata, const String &p_to_path) {
@@ -433,6 +446,212 @@ Dictionary ResourceImporterTexture::_load_editor_meta(const String &p_path) cons
 	ERR_FAIL_COND_V_MSG(f.is_null(), Dictionary(), vformat("Missing required editor-specific import metadata for a texture (please reimport it using the 'Import' tab): '%s'", p_path));
 
 	return f->get_var();
+}
+
+void ResourceImporterTexture::_remap_channels(Ref<Image> &r_image, ChannelRemap p_options[4]) {
+	ERR_FAIL_COND(r_image->is_compressed());
+
+	// Currently HDR inverted remapping is not allowed.
+	bool attempted_hdr_inverted = false;
+	if (r_image->get_format() >= Image::FORMAT_RF && r_image->get_format() <= Image::FORMAT_RGBE9995) {
+		// Formats which can hold HDR data cannot be inverted the same way as unsigned normalized ones (1.0 - channel).
+		for (int i = 0; i < 4; i++) {
+			switch (p_options[i]) {
+				case REMAP_INV_R:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_R;
+					break;
+				case REMAP_INV_G:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_G;
+					break;
+				case REMAP_INV_B:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_B;
+					break;
+				case REMAP_INV_A:
+					attempted_hdr_inverted = true;
+					p_options[i] = REMAP_A;
+					break;
+				default:
+					break;
+			}
+		}
+	}
+
+	if (attempted_hdr_inverted) {
+		WARN_PRINT("Attempted to use an inverted channel remap on an HDR image. The remap has been changed to its uninverted equivalent.");
+	}
+
+	// Optimization: Set the remap from 'unused' to either 0 or 1 to avoid repeated checks in the conversion loop.
+	for (int i = 0; i < 4; i++) {
+		if (p_options[i] == REMAP_UNUSED) {
+			p_options[i] = i == 3 ? REMAP_1 : REMAP_0;
+		}
+	}
+
+	// Expand the image's channel count in the event that the current set of channels doesn't allow for the desired remap.
+	const Image::Format original_format = r_image->get_format();
+	const uint32_t channel_mask = Image::get_format_component_mask(original_format);
+
+	// Whether a channel is supported by the format itself.
+	const bool has_channel_r = channel_mask & 0x1;
+	const bool has_channel_g = channel_mask & 0x2;
+	const bool has_channel_b = channel_mask & 0x4;
+	const bool has_channel_a = channel_mask & 0x8;
+
+	// Whether a certain channel needs to be remapped.
+	const bool remap_r = p_options[0] != REMAP_R ? !(!has_channel_r && p_options[0] == REMAP_0) : false;
+	const bool remap_g = p_options[1] != REMAP_G ? !(!has_channel_g && p_options[1] == REMAP_0) : false;
+	const bool remap_b = p_options[2] != REMAP_B ? !(!has_channel_b && p_options[2] == REMAP_0) : false;
+	const bool remap_a = p_options[3] != REMAP_A ? !(!has_channel_a && p_options[3] == REMAP_1) : false;
+
+	if (!(remap_r || remap_g || remap_b || remap_a)) {
+		// Default color map, do nothing.
+		return;
+	}
+
+	// Whether a certain channel set is needed, either from the source or the remap.
+	const bool needs_rg = remap_g || has_channel_g;
+	const bool needs_rgb = remap_b || has_channel_b;
+	const bool needs_rgba = remap_a || has_channel_a;
+
+	bool could_not_expand = false;
+	switch (original_format) {
+		case Image::FORMAT_R8:
+		case Image::FORMAT_RG8:
+		case Image::FORMAT_RGB8: {
+			// Convert to either RGBA8, RGB8 or RG8.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBA8);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGB8);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RG8);
+			}
+		} break;
+		case Image::FORMAT_RH:
+		case Image::FORMAT_RGH:
+		case Image::FORMAT_RGBH: {
+			// Convert to either RGBAH, RGBH or RGH.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBAH);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGBH);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RGH);
+			}
+		} break;
+		case Image::FORMAT_RF:
+		case Image::FORMAT_RGF:
+		case Image::FORMAT_RGBF: {
+			// Convert to either RGBAF, RGBF or RGF.
+			if (needs_rgba) {
+				r_image->convert(Image::FORMAT_RGBAF);
+			} else if (needs_rgb) {
+				r_image->convert(Image::FORMAT_RGBF);
+			} else if (needs_rg) {
+				r_image->convert(Image::FORMAT_RGF);
+			}
+		} break;
+		case Image::FORMAT_L8: {
+			const bool uniform_rgb = (p_options[0] == p_options[1] && p_options[1] == p_options[2]) || !(remap_r || remap_g || remap_b);
+			if (uniform_rgb) {
+				// Uniform RGB.
+				if (needs_rgba) {
+					r_image->convert(Image::FORMAT_LA8);
+				}
+			} else {
+				// Non-uniform RGB.
+				if (needs_rgba) {
+					r_image->convert(Image::FORMAT_RGBA8);
+				} else {
+					r_image->convert(Image::FORMAT_RGB8);
+				}
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_LA8: {
+			const bool uniform_rgb = (p_options[0] == p_options[1] && p_options[1] == p_options[2]) || !(remap_r || remap_g || remap_b);
+			if (!uniform_rgb) {
+				// Non-uniform RGB.
+				r_image->convert(Image::FORMAT_RGBA8);
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_RGB565: {
+			if (needs_rgba) {
+				// RGB565 doesn't have an alpha expansion, convert to RGBA8.
+				r_image->convert(Image::FORMAT_RGBA8);
+				could_not_expand = true;
+			}
+		} break;
+		case Image::FORMAT_RGBE9995: {
+			if (needs_rgba) {
+				// RGB9995 doesn't have an alpha expansion, convert to RGBAH.
+				r_image->convert(Image::FORMAT_RGBAH);
+				could_not_expand = true;
+			}
+		} break;
+
+		default: {
+		} break;
+	}
+
+	if (could_not_expand) {
+		WARN_PRINT(vformat("Unable to expand image format %s's channels (the target format does not exist), converting to %s as a fallback.",
+				Image::get_format_name(original_format), Image::get_format_name(r_image->get_format())));
+	}
+
+	// Remap the channels.
+	for (int x = 0; x < r_image->get_width(); x++) {
+		for (int y = 0; y < r_image->get_height(); y++) {
+			Color src = r_image->get_pixel(x, y);
+			Color dst;
+
+			for (int i = 0; i < 4; i++) {
+				switch (p_options[i]) {
+					case REMAP_R:
+						dst[i] = src.r;
+						break;
+					case REMAP_G:
+						dst[i] = src.g;
+						break;
+					case REMAP_B:
+						dst[i] = src.b;
+						break;
+					case REMAP_A:
+						dst[i] = src.a;
+						break;
+
+					case REMAP_INV_R:
+						dst[i] = 1.0f - src.r;
+						break;
+					case REMAP_INV_G:
+						dst[i] = 1.0f - src.g;
+						break;
+					case REMAP_INV_B:
+						dst[i] = 1.0f - src.b;
+						break;
+					case REMAP_INV_A:
+						dst[i] = 1.0f - src.a;
+						break;
+
+					case REMAP_0:
+						dst[i] = 0.0f;
+						break;
+					case REMAP_1:
+						dst[i] = 1.0f;
+						break;
+
+					default:
+						break;
+				}
+			}
+
+			r_image->set_pixel(x, y, dst);
+		}
+	}
 }
 
 void ResourceImporterTexture::_invert_y_channel(Ref<Image> &r_image) {
@@ -500,6 +719,10 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	const String normal_map = p_options["roughness/src_normal"];
 
 	// Processing.
+	const int remap_r = p_options["process/channel_remap/red"];
+	const int remap_g = p_options["process/channel_remap/green"];
+	const int remap_b = p_options["process/channel_remap/blue"];
+	const int remap_a = p_options["process/channel_remap/alpha"];
 	const bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	const bool premult_alpha = p_options["process/premult_alpha"];
 	const bool normal_map_invert_y = p_options["process/normal_map_invert_y"];
@@ -507,6 +730,11 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	const bool hdr_as_srgb = p_options["process/hdr_as_srgb"];
 	const bool hdr_clamp_exposure = p_options["process/hdr_clamp_exposure"];
 	int size_limit = p_options["process/size_limit"];
+
+	const Image::BasisUniversalPackerParams basisu_params = {
+		p_options["compress/uastc_level"],
+		p_options["compress/rdo_quality_loss"],
+	};
 
 	bool using_fallback_size_limit = false;
 	if (size_limit == 0) {
@@ -567,9 +795,8 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 	// Load the editor-only image.
 	Ref<Image> editor_image;
-	bool import_editor_image = use_editor_scale || convert_editor_colors;
 
-	if (import_editor_image) {
+	if (use_editor_scale || convert_editor_colors) {
 		float editor_scale = use_editor_scale ? scale * EDSCALE : scale;
 
 		int32_t editor_loader_flags = loader_flags;
@@ -583,6 +810,11 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		if (err != OK) {
 			WARN_PRINT(vformat("Failed to import an image resource for editor use from '%s'.", p_source_file));
 		} else {
+			if (convert_editor_colors) {
+				float image_saturation = EDITOR_GET("interface/theme/icon_saturation");
+				editor_image->adjust_bcs(1.0, 1.0, image_saturation);
+			}
+
 			images_imported.push_back(editor_image);
 		}
 	}
@@ -613,6 +845,17 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 			if (normal == 1) {
 				target_image->normalize();
 			}
+		}
+
+		{
+			ChannelRemap remaps[4] = {
+				(ChannelRemap)remap_r,
+				(ChannelRemap)remap_g,
+				(ChannelRemap)remap_b,
+				(ChannelRemap)remap_a,
+			};
+
+			_remap_channels(target_image, remaps);
 		}
 
 		// Fix alpha border.
@@ -685,7 +928,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 		}
 
 		if (force_uncompressed) {
-			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
+			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */,
 					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 		} else {
 			if (can_s3tc_bptc) {
@@ -699,8 +942,8 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 					image_compress_format = "s3tc";
 				}
 
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, mipmaps,
+						stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 				r_platform_variants->push_back(image_compress_format);
 			}
 
@@ -715,19 +958,19 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 					image_compress_format = "etc2";
 				}
 
-				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
+				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, basisu_params, image_compress_mode, mipmaps, stream, detect_3d,
 						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
 	} else {
 		// Import normally.
-		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
+		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */,
 				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 	}
 
 	if (editor_image.is_valid()) {
-		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
+		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, basisu_params, Image::COMPRESS_S3TC /* This is ignored. */,
 				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.

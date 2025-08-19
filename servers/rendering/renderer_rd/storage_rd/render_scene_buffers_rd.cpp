@@ -168,6 +168,8 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	ERR_FAIL_COND_MSG(view_count == 0, "Must have at least 1 view");
 
+	vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
+
 	update_samplers();
 
 	// cleanout any old buffers we had.
@@ -194,7 +196,6 @@ void RenderSceneBuffersRD::configure(const RenderSceneBuffersConfiguration *p_co
 
 	// VRS (note, our vrs object will only be set if VRS is supported)
 	RID vrs_texture;
-	RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 	if (vrs && vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
 		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, get_vrs_format(), get_vrs_usage_bits(), RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
 	}
@@ -254,11 +255,20 @@ void RenderSceneBuffersRD::ensure_mfx(RendererRD::MFXSpatialEffect *p_effect) {
 	if (mfx_spatial_context) {
 		return;
 	}
+
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RenderingDevice *rd = RD::get_singleton();
+
+	// Determine the output format of the render target.
+	RID dest = texture_storage->render_target_get_rd_texture(render_target);
+	RD::TextureFormat tf = rd->texture_get_format(dest);
+	RD::DataFormat output_format = tf.format;
+
 	RendererRD::MFXSpatialEffect::CreateParams params = {
 		.input_size = internal_size,
 		.output_size = target_size,
 		.input_format = base_data_format,
-		.output_format = RD::DATA_FORMAT_R8G8B8A8_UNORM,
+		.output_format = output_format,
 	};
 
 	mfx_spatial_context = p_effect->create_context(params);
@@ -699,6 +709,12 @@ RID RenderSceneBuffersRD::get_velocity_buffer(bool p_get_msaa, uint32_t p_layer)
 			return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_VELOCITY, p_layer, 0);
 		}
 	}
+}
+
+RID RenderSceneBuffersRD::get_velocity_depth_buffer() {
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	RID velocity_depth = texture_storage->render_target_get_override_velocity_depth(render_target);
+	return velocity_depth;
 }
 
 uint32_t RenderSceneBuffersRD::get_color_usage_bits(bool p_resolve, bool p_msaa, bool p_storage) {

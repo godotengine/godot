@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation/navigation_agent_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/main/window.h"
 #include "scene/resources/world_2d.h"

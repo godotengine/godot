@@ -37,14 +37,6 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
-	enum LabelDrawStep {
-		DRAW_STEP_SHADOW_OUTLINE,
-		DRAW_STEP_SHADOW,
-		DRAW_STEP_OUTLINE,
-		DRAW_STEP_TEXT,
-		DRAW_STEP_MAX,
-	};
-
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
@@ -90,6 +82,7 @@ private:
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
+		Ref<StyleBox> focus_style;
 		Ref<Font> font;
 
 		int font_size = 0;
@@ -199,4 +192,55 @@ public:
 
 	Label(const String &p_text = String());
 	~Label();
+
+	template <typename... VarArgsFunc, typename... VarArgs>
+	void draw_text(bool p_rtl, int p_ellipsis_pos, int p_ellipsis_gl_size, const Glyph *p_ellipsis_glyphs, bool p_trim_chars, int p_para_start, int p_visible_chars, bool p_trim_glyphs_ltr, int &p_processed_glyphs_step, int p_processed_glyphs, int p_visible_glyphs, bool p_trim_glyphs_rtl, int p_total_glyphs, const RID &p_ci, const Vector2 &p_ofs, int p_gl_size, int p_trim_pos, const Glyph *p_glyphs, const Color &p_color, void (*p_draw_func)(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_outline_color, const Vector2 &p_ofs, VarArgsFunc... p_args), VarArgs &&...p_args) {
+		p_processed_glyphs_step = p_processed_glyphs;
+		Vector2 offset_step = p_ofs; /* Draw RTL ellipsis string when necessary. */
+		if (p_rtl && p_ellipsis_pos >= 0) {
+			for (int gl_idx = p_ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+				for (int j = 0; j < p_ellipsis_glyphs[gl_idx].repeat; j++) {
+					bool skip = (p_trim_chars && p_ellipsis_glyphs[gl_idx].end + p_para_start > p_visible_chars) || (p_trim_glyphs_ltr && (p_processed_glyphs_step >= p_visible_glyphs)) || (p_trim_glyphs_rtl && (p_processed_glyphs_step < p_total_glyphs - p_visible_glyphs));
+					if (!skip) {
+						p_draw_func(p_ellipsis_glyphs[gl_idx], p_ci, p_color, offset_step, std::forward<VarArgs>(p_args)...);
+					}
+					p_processed_glyphs_step++;
+					offset_step.x += p_ellipsis_glyphs[gl_idx].advance;
+				}
+			}
+		} /* Draw main text. */
+		for (int j = 0; j < p_gl_size; j++) { /* Trim when necessary. */
+			if (p_trim_pos >= 0) {
+				if (p_rtl) {
+					if (j < p_trim_pos) {
+						continue;
+					}
+				} else {
+					if (j >= p_trim_pos) {
+						break;
+					}
+				}
+			}
+			for (int k = 0; k < p_glyphs[j].repeat; k++) {
+				bool skip = (p_trim_chars && p_glyphs[j].end + p_para_start > p_visible_chars) || (p_trim_glyphs_ltr && (p_processed_glyphs_step >= p_visible_glyphs)) || (p_trim_glyphs_rtl && (p_processed_glyphs_step < p_total_glyphs - p_visible_glyphs));
+				if (!skip) {
+					p_draw_func(p_glyphs[j], p_ci, p_color, offset_step, std::forward<VarArgs>(p_args)...);
+				}
+				p_processed_glyphs_step++;
+				offset_step.x += p_glyphs[j].advance;
+			}
+		} /* Draw LTR ellipsis string when necessary. */
+		if (!p_rtl && p_ellipsis_pos >= 0) {
+			for (int gl_idx = 0; gl_idx < p_ellipsis_gl_size; gl_idx++) {
+				for (int j = 0; j < p_ellipsis_glyphs[gl_idx].repeat; j++) {
+					bool skip = (p_trim_chars && p_ellipsis_glyphs[gl_idx].end + p_para_start > p_visible_chars) || (p_trim_glyphs_ltr && (p_processed_glyphs_step >= p_visible_glyphs)) || (p_trim_glyphs_rtl && (p_processed_glyphs_step < p_total_glyphs - p_visible_glyphs));
+					if (!skip) {
+						p_draw_func(p_ellipsis_glyphs[gl_idx], p_ci, p_color, offset_step, std::forward<VarArgs>(p_args)...);
+					}
+					p_processed_glyphs_step++;
+					offset_step.x += p_ellipsis_glyphs[gl_idx].advance;
+				}
+			}
+		}
+	}
 };

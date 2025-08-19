@@ -63,9 +63,11 @@ private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
 
+#ifndef NAVIGATION_2D_DISABLED
 public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 private:
 	void _reload_physics_characteristics();

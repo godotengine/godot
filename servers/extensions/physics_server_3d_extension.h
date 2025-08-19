@@ -88,6 +88,12 @@ public:
 	EXBIND1(set_sleep_state, bool)
 	EXBIND0RC(bool, is_sleeping)
 
+	EXBIND1(set_collision_layer, uint32_t);
+	EXBIND0RC(uint32_t, get_collision_layer);
+
+	EXBIND1(set_collision_mask, uint32_t);
+	EXBIND0RC(uint32_t, get_collision_mask);
+
 	EXBIND0RC(int, get_contact_count)
 
 	EXBIND1RC(Vector3, get_contact_local_position, int)
@@ -445,6 +451,9 @@ public:
 	EXBIND2(soft_body_set_linear_stiffness, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_linear_stiffness, RID)
 
+	EXBIND2(soft_body_set_shrinking_factor, RID, real_t)
+	EXBIND1RC(real_t, soft_body_get_shrinking_factor, RID)
+
 	EXBIND2(soft_body_set_pressure_coefficient, RID, real_t)
 	EXBIND1RC(real_t, soft_body_get_pressure_coefficient, RID)
 
@@ -464,6 +473,11 @@ public:
 	EXBIND1(soft_body_remove_all_pinned_points, RID)
 	EXBIND3(soft_body_pin_point, RID, int, bool)
 	EXBIND2RC(bool, soft_body_is_point_pinned, RID, int)
+
+	EXBIND3(soft_body_apply_point_impulse, RID, int, const Vector3 &)
+	EXBIND3(soft_body_apply_point_force, RID, int, const Vector3 &)
+	EXBIND2(soft_body_apply_central_impulse, RID, const Vector3 &)
+	EXBIND2(soft_body_apply_central_force, RID, const Vector3 &)
 
 	/* JOINT API */
 

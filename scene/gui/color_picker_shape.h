@@ -52,7 +52,7 @@ protected:
 	void draw_focus_circle(Control *p_control);
 	void draw_sv_square(Control *p_control, const Rect2 &p_square, bool p_draw_focus = true);
 	void draw_cursor(Control *p_control, const Vector2 &p_center, bool p_draw_bg = true);
-	void draw_circle_cursor(Control *p_control, float p_hue);
+	void draw_circle_cursor(Control *p_control, float p_hue, float p_saturation);
 
 	void connect_shape_focus(Control *p_shape);
 	void shape_focus_entered();
@@ -104,10 +104,64 @@ public:
 			ColorPickerShape(p_color_picker) {}
 };
 
+class ColorPickerShapeOKHSRectangle : public ColorPickerShape {
+	GDCLASS(ColorPickerShapeOKHSRectangle, ColorPickerShape);
+
+	MarginContainer *rectangle_margin = nullptr;
+
+protected:
+	Control *square = nullptr;
+	Control *square_overlay = nullptr;
+	Control *value_slider = nullptr;
+	virtual Ref<Shader> _get_shader() const { return ColorPicker::rectangle_ok_color_hs_shader; }
+	virtual void _initialize_controls() override;
+	virtual void _update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) override;
+
+	virtual void _square_draw();
+	virtual void _square_overlay_input(const Ref<InputEvent> &p_event);
+	virtual void _square_overlay_draw();
+
+	virtual void _value_slider_input(const Ref<InputEvent> &p_event);
+	virtual void _value_slider_draw();
+
+public:
+	virtual String get_name() const override { return ETR("OK HS Rectangle"); }
+	virtual bool is_ok_hsl() const override { return true; }
+	virtual Ref<Texture2D> get_icon() const override { return color_picker->theme_cache.shape_rect; }
+	virtual void update_theme() override;
+	virtual void grab_focus() override;
+
+	ColorPickerShapeOKHSRectangle(ColorPicker *p_color_picker) :
+			ColorPickerShape(p_color_picker) {}
+};
+
+class ColorPickerShapeOKHLRectangle : public ColorPickerShapeOKHSRectangle {
+	GDCLASS(ColorPickerShapeOKHLRectangle, ColorPickerShapeOKHSRectangle);
+
+protected:
+	virtual Ref<Shader> _get_shader() const override { return ColorPicker::rectangle_ok_color_hl_shader; }
+	virtual void _update_cursor(const Vector2 &p_color_change_vector, bool p_is_echo) override;
+
+	virtual void _square_draw() override;
+	virtual void _square_overlay_input(const Ref<InputEvent> &p_event) override;
+	virtual void _square_overlay_draw() override;
+
+	virtual void _value_slider_input(const Ref<InputEvent> &p_event) override;
+	virtual void _value_slider_draw() override;
+
+public:
+	virtual String get_name() const override { return ETR("OK HL Rectangle"); }
+	virtual bool is_ok_hsl() const override { return true; }
+	virtual Ref<Texture2D> get_icon() const override { return color_picker->theme_cache.shape_rect; }
+
+	ColorPickerShapeOKHLRectangle(ColorPicker *p_color_picker) :
+			ColorPickerShapeOKHSRectangle(p_color_picker) {}
+};
+
 class ColorPickerShapeWheel : public ColorPickerShape {
 	GDCLASS(ColorPickerShapeWheel, ColorPickerShape);
 
-	inline static constexpr float WHEEL_RADIUS = 0.42;
+	static constexpr float WHEEL_RADIUS = 0.42;
 
 	MarginContainer *wheel_margin = nullptr;
 	Control *wheel = nullptr;

@@ -52,6 +52,10 @@
 #include "extensions/platform/openxr_opengl_extension.h"
 #endif
 
+#ifdef D3D12_ENABLED
+#include "extensions/platform/openxr_d3d12_extension.h"
+#endif
+
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_debug_utils_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
@@ -262,6 +266,16 @@ RID OpenXRAPI::OpenXRSwapChainInfo::get_image() {
 
 	if (image_acquired && openxr_api && openxr_api->get_graphics_extension()) {
 		return OpenXRAPI::get_singleton()->get_graphics_extension()->get_texture(swapchain_graphics_data, image_index);
+	} else {
+		return RID();
+	}
+}
+
+RID OpenXRAPI::OpenXRSwapChainInfo::get_density_map() {
+	OpenXRAPI *openxr_api = OpenXRAPI::get_singleton();
+
+	if (image_acquired && openxr_api && openxr_api->get_graphics_extension()) {
+		return openxr_api->get_graphics_extension()->get_density_map(swapchain_graphics_data, image_index);
 	} else {
 		return RID();
 	}
@@ -584,13 +598,18 @@ bool OpenXRAPI::create_instance() {
 		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
+	// We explicitly set the version to 1.0.48 in order to workaround a bug (see #108850) in Meta's runtime.
+	// Once that is fixed, restore this to using XR_API_VERSION_1_0, which is the version associated with the
+	// OpenXR headers that we're using.
+	XrVersion openxr_version = XR_MAKE_VERSION(1, 0, 48);
+
 	// Create our OpenXR instance
 	XrApplicationInfo application_info{
 		"Godot Engine", // applicationName, if we're running a game we'll update this down below.
 		1, // applicationVersion, we don't currently have this
 		"Godot Engine", // engineName
 		GODOT_VERSION_MAJOR * 10000 + GODOT_VERSION_MINOR * 100 + GODOT_VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
-		XR_API_VERSION_1_0 // apiVersion
+		openxr_version, // apiVersion
 	};
 
 	void *next_pointer = nullptr;
@@ -619,7 +638,7 @@ bool OpenXRAPI::create_instance() {
 	}
 
 	XrResult result = xrCreateInstance(&instance_create_info, &instance);
-	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance.");
+	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "Failed to create XR instance [" + get_error_string(result) + "].");
 
 	// from this point on we can use get_error_string to get more info about our errors...
 
@@ -1404,15 +1423,12 @@ bool OpenXRAPI::on_state_ready() {
 bool OpenXRAPI::on_state_synchronized() {
 	print_verbose("On state synchronized");
 
-	// Just in case, see if we already have active trackers...
-	List<RID> trackers;
-	tracker_owner.get_owned_list(&trackers);
-	for (const RID &tracker : trackers) {
-		tracker_check_profile(tracker);
-	}
-
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
 		wrapper->on_state_synchronized();
+	}
+
+	if (xr_interface) {
+		xr_interface->on_state_synchronized();
 	}
 
 	return true;
@@ -1665,6 +1681,14 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	} else if (p_rendering_driver == "opengl3") {
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 		graphics_extension = memnew(OpenXROpenGLExtension);
+		register_extension_wrapper(graphics_extension);
+#else
+		// shouldn't be possible...
+		ERR_FAIL_V(false);
+#endif
+	} else if (p_rendering_driver == "d3d12") {
+#ifdef D3D12_ENABLED
+		graphics_extension = memnew(OpenXRD3D12Extension);
 		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
@@ -2055,13 +2079,10 @@ bool OpenXRAPI::poll_events() {
 				print_verbose("OpenXR EVENT: interaction profile changed!");
 
 				XrEventDataInteractionProfileChanged *event = (XrEventDataInteractionProfileChanged *)&runtimeEvent;
-
-				List<RID> trackers;
-				tracker_owner.get_owned_list(&trackers);
-				for (const RID &tracker : trackers) {
-					tracker_check_profile(tracker, event->session);
+				if (event->session == session) {
+					// Make sure we get our interaction profile change
+					interaction_profile_changed = true;
 				}
-
 			} break;
 			default:
 				if (!handled) {
@@ -2243,10 +2264,6 @@ void OpenXRAPI::pre_render() {
 		create_main_swapchains(swapchain_size);
 	}
 
-	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		wrapper->on_pre_render();
-	}
-
 	void *view_locate_info_next_pointer = nullptr;
 	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
 		void *np = extension->set_view_locate_info_and_get_next_pointer(view_locate_info_next_pointer);
@@ -2317,6 +2334,10 @@ void OpenXRAPI::pre_render() {
 
 	// Reset this, we haven't found a viewport for output yet
 	render_state.has_xr_viewport = false;
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_pre_render();
+	}
 }
 
 bool OpenXRAPI::pre_draw_viewport(RID p_render_target) {
@@ -2367,6 +2388,17 @@ RID OpenXRAPI::get_depth_texture() {
 	} else {
 		return RID();
 	}
+}
+
+RID OpenXRAPI::get_density_map_texture() {
+	ERR_NOT_ON_RENDER_THREAD_V(RID());
+
+	OpenXRFBFoveationExtension *fov_ext = OpenXRFBFoveationExtension::get_singleton();
+	if (fov_ext && fov_ext->is_enabled()) {
+		return render_state.main_swapchains[OPENXR_SWAPCHAIN_COLOR].get_density_map();
+	}
+
+	return RID();
 }
 
 void OpenXRAPI::set_velocity_texture(RID p_render_target) {
@@ -2875,13 +2907,25 @@ XrPath OpenXRAPI::get_xr_path(const String &p_path) {
 	return path;
 }
 
+String OpenXRAPI::get_xr_path_name(const XrPath &p_path) {
+	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, String());
+
+	uint32_t size = 0;
+	char path_name[XR_MAX_PATH_LENGTH];
+
+	XrResult result = xrPathToString(instance, p_path, XR_MAX_PATH_LENGTH, &size, path_name);
+	if (XR_FAILED(result)) {
+		ERR_FAIL_V_MSG(String(), "OpenXR: failed to get name for a path! [" + get_error_string(result) + "]");
+	}
+
+	return String(path_name);
+}
+
 RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
-	List<RID> current;
-	tracker_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Tracker *tracker = tracker_owner.get_or_null(E);
+	for (const RID &tracker_rid : tracker_owner.get_owned_list()) {
+		Tracker *tracker = tracker_owner.get_or_null(tracker_rid);
 		if (tracker && tracker->toplevel_path == p_path) {
-			return E;
+			return tracker_rid;
 		}
 	}
 
@@ -2889,12 +2933,10 @@ RID OpenXRAPI::get_tracker_rid(XrPath p_path) {
 }
 
 RID OpenXRAPI::find_tracker(const String &p_name) {
-	List<RID> current;
-	tracker_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Tracker *tracker = tracker_owner.get_or_null(E);
+	for (const RID &tracker_rid : tracker_owner.get_owned_list()) {
+		Tracker *tracker = tracker_owner.get_or_null(tracker_rid);
 		if (tracker && tracker->name == p_name) {
-			return E;
+			return tracker_rid;
 		}
 	}
 
@@ -3002,12 +3044,10 @@ RID OpenXRAPI::action_set_create(const String p_name, const String p_localized_n
 }
 
 RID OpenXRAPI::find_action_set(const String p_name) {
-	List<RID> current;
-	action_set_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		ActionSet *action_set = action_set_owner.get_or_null(E);
+	for (const RID &action_set_rid : action_set_owner.get_owned_list()) {
+		ActionSet *action_set = action_set_owner.get_or_null(action_set_rid);
 		if (action_set && action_set->name == p_name) {
-			return E;
+			return action_set_rid;
 		}
 	}
 
@@ -3106,12 +3146,10 @@ void OpenXRAPI::action_set_free(RID p_action_set) {
 }
 
 RID OpenXRAPI::get_action_rid(XrAction p_action) {
-	List<RID> current;
-	action_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Action *action = action_owner.get_or_null(E);
+	for (const RID &action_rid : action_owner.get_owned_list()) {
+		Action *action = action_owner.get_or_null(action_rid);
 		if (action && action->handle == p_action) {
-			return E;
+			return action_rid;
 		}
 	}
 
@@ -3119,12 +3157,10 @@ RID OpenXRAPI::get_action_rid(XrAction p_action) {
 }
 
 RID OpenXRAPI::find_action(const String &p_name, const RID &p_action_set) {
-	List<RID> current;
-	action_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		Action *action = action_owner.get_or_null(E);
+	for (const RID &action_rid : action_owner.get_owned_list()) {
+		Action *action = action_owner.get_or_null(action_rid);
 		if (action && action->name == p_name && (p_action_set.is_null() || action->action_set_rid == p_action_set)) {
-			return E;
+			return action_rid;
 		}
 	}
 
@@ -3236,12 +3272,10 @@ void OpenXRAPI::action_free(RID p_action) {
 }
 
 RID OpenXRAPI::get_interaction_profile_rid(XrPath p_path) {
-	List<RID> current;
-	interaction_profile_owner.get_owned_list(&current);
-	for (const RID &E : current) {
-		InteractionProfile *ip = interaction_profile_owner.get_or_null(E);
+	for (const RID &ip_rid : interaction_profile_owner.get_owned_list()) {
+		InteractionProfile *ip = interaction_profile_owner.get_or_null(ip_rid);
 		if (ip && ip->path == p_path) {
-			return E;
+			return ip_rid;
 		}
 	}
 
@@ -3437,8 +3471,20 @@ bool OpenXRAPI::sync_action_sets(const Vector<RID> p_active_sets) {
 
 	XrResult result = xrSyncActions(session, &sync_info);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to sync active action sets! [", get_error_string(result), "]");
-		return false;
+		ERR_FAIL_V_MSG(false, "OpenXR: failed to sync active action sets! [" + get_error_string(result) + "]");
+	}
+
+	if (interaction_profile_changed) {
+		// Just in case, see if we already have active trackers...
+		for (const RID &tracker : tracker_owner.get_owned_list()) {
+			tracker_check_profile(tracker);
+		}
+
+		interaction_profile_changed = false;
+	}
+
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		wrapper->on_sync_actions();
 	}
 
 	return true;

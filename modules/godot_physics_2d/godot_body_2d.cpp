@@ -563,7 +563,7 @@ void GodotBody2D::integrate_forces(real_t p_step) {
 		linear_velocity = constant_linear_velocity + motion / p_step;
 
 		real_t rot = new_transform.get_rotation() - get_transform().get_rotation();
-		angular_velocity = constant_angular_velocity + remainder(rot, 2.0 * Math_PI) / p_step;
+		angular_velocity = constant_angular_velocity + std::remainder(rot, 2.0 * Math::PI) / p_step;
 
 		do_motion = true;
 
@@ -626,7 +626,7 @@ void GodotBody2D::integrate_velocities(real_t p_step) {
 	if (mode == PhysicsServer2D::BODY_MODE_KINEMATIC) {
 		_set_transform(new_transform, false);
 		_set_inv_transform(new_transform.affine_inverse());
-		if (contacts.size() == 0 && linear_velocity == Vector2() && angular_velocity == 0) {
+		if (contacts.is_empty() && linear_velocity == Vector2() && angular_velocity == 0) {
 			set_active(false); //stopped moving, deactivate
 		}
 		return;

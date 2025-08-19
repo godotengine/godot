@@ -39,7 +39,7 @@ void Body::SetMotionType(EMotionType inMotionType)
 	if (mMotionType == inMotionType)
 		return;
 
-	JPH_ASSERT(inMotionType == EMotionType::Static || mMotionProperties != nullptr, "Body needs to be created with mAllowDynamicOrKinematic set tot true");
+	JPH_ASSERT(inMotionType == EMotionType::Static || mMotionProperties != nullptr, "Body needs to be created with mAllowDynamicOrKinematic set to true");
 	JPH_ASSERT(inMotionType != EMotionType::Static || !IsActive(), "Deactivate body first");
 	JPH_ASSERT(inMotionType == EMotionType::Dynamic || !IsSoftBody(), "Soft bodies can only be dynamic, you can make individual vertices kinematic by setting their inverse mass to 0");
 
@@ -96,7 +96,7 @@ void Body::MoveKinematic(RVec3Arg inTargetPosition, QuatArg inTargetRotation, fl
 
 void Body::CalculateWorldSpaceBoundsInternal()
 {
-	mBounds = mShape->GetWorldSpaceBounds(GetCenterOfMassTransform(), Vec3::sReplicate(1.0f));
+	mBounds = mShape->GetWorldSpaceBounds(GetCenterOfMassTransform(), Vec3::sOne());
 }
 
 void Body::SetPositionAndRotationInternal(RVec3Arg inPosition, QuatArg inRotation, bool inResetSleepTimer)
@@ -190,7 +190,7 @@ void Body::GetSubmergedVolume(RVec3Arg inSurfacePosition, Vec3Arg inSurfaceNorma
 	Plane surface_relative_to_body = Plane::sFromPointAndNormal(inSurfacePosition - mPosition, inSurfaceNormal);
 
 	// Calculate amount of volume that is submerged and what the center of buoyancy is
-	mShape->GetSubmergedVolume(rotation, Vec3::sReplicate(1.0f), surface_relative_to_body, outTotalVolume, outSubmergedVolume, outRelativeCenterOfBuoyancy JPH_IF_DEBUG_RENDERER(, mPosition));
+	mShape->GetSubmergedVolume(rotation, Vec3::sOne(), surface_relative_to_body, outTotalVolume, outSubmergedVolume, outRelativeCenterOfBuoyancy JPH_IF_DEBUG_RENDERER(, mPosition));
 }
 
 bool Body::ApplyBuoyancyImpulse(float inTotalVolume, float inSubmergedVolume, Vec3Arg inRelativeCenterOfBuoyancy, float inBuoyancy, float inLinearDrag, float inAngularDrag, Vec3Arg inFluidVelocity, Vec3Arg inGravity, float inDeltaTime)

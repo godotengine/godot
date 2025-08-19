@@ -41,6 +41,7 @@
 #include "hb-ot-maxp-table.hh"
 
 #ifndef HB_NO_VISIBILITY
+
 #include "hb-ot-name-language-static.hh"
 
 uint64_t const _hb_NullPool[(HB_NULL_POOL_SIZE + sizeof (uint64_t) - 1) / sizeof (uint64_t)] = {};
@@ -111,28 +112,5 @@ hb_face_t::load_upem () const
   upem = ret;
   return ret;
 }
-
-
-#ifndef HB_NO_VAR
-bool
-_glyf_get_leading_bearing_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical,
-					     int *lsb)
-{
-  return font->face->table.glyf->get_leading_bearing_with_var_unscaled (font, glyph, is_vertical, lsb);
-}
-
-unsigned
-_glyf_get_advance_with_var_unscaled (hb_font_t *font, hb_codepoint_t glyph, bool is_vertical)
-{
-  return font->face->table.glyf->get_advance_with_var_unscaled (font, glyph, is_vertical);
-}
-#endif
-
-bool
-_glyf_get_leading_bearing_without_var_unscaled (hb_face_t *face, hb_codepoint_t gid, bool is_vertical, int *lsb)
-{
-  return face->table.glyf->get_leading_bearing_without_var_unscaled (gid, is_vertical, lsb);
-}
-
 
 #endif

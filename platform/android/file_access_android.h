@@ -35,9 +35,10 @@
 #include <android/asset_manager.h>
 #include <android/log.h>
 #include <jni.h>
-#include <stdio.h>
+#include <cstdio>
 
 class FileAccessAndroid : public FileAccess {
+	GDSOFTCLASS(FileAccessAndroid, FileAccess);
 	static AAssetManager *asset_manager;
 	static jobject j_asset_manager;
 

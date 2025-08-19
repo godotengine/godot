@@ -40,6 +40,9 @@ float StyleBoxFlat::get_style_margin(Side p_side) const {
 }
 
 void StyleBoxFlat::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (!anti_aliased && p_property.name == "anti_aliasing_size") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
@@ -345,7 +348,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 
 	// If the center is filled, we do not draw the border and directly use the inner ring as reference. Because all calls to this
 	// method either draw a ring or a filled rounded rectangle, but not both.
-	const real_t quarter_arc_rad = Math_PI / 2.0;
+	const real_t quarter_arc_rad = Math::PI / 2.0;
 	const Point2 style_rect_center = style_rect.get_center();
 
 	const int colors_size = colors.size();
@@ -364,7 +367,7 @@ inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices,
 				idx_ofs *= 2;
 			}
 
-			const real_t pt_angle = (corner_idx + detail / (double)adapted_corner_detail) * quarter_arc_rad + Math_PI;
+			const real_t pt_angle = (corner_idx + detail / (double)adapted_corner_detail) * quarter_arc_rad + Math::PI;
 			const real_t angle_cosine = Math::cos(pt_angle);
 			const real_t angle_sine = Math::sin(pt_angle);
 
@@ -731,7 +734,3 @@ void StyleBoxFlat::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "anti_aliasing"), "set_anti_aliased", "is_anti_aliased");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "anti_aliasing_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,suffix:px"), "set_aa_size", "get_aa_size");
 }
-
-StyleBoxFlat::StyleBoxFlat() {}
-
-StyleBoxFlat::~StyleBoxFlat() {}

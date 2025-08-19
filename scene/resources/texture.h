@@ -39,9 +39,6 @@
 
 class Texture : public Resource {
 	GDCLASS(Texture, Resource);
-
-public:
-	Texture() {}
 };
 
 class Texture2D : public Texture {
@@ -69,6 +66,7 @@ public:
 
 	virtual bool has_alpha() const;
 
+	virtual RID get_scaled_rid() const { return get_rid(); }
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, bool p_clip_uv = true) const;
@@ -108,8 +106,6 @@ public:
 	virtual int get_layers() const;
 	virtual bool has_mipmaps() const;
 	virtual Ref<Image> get_layer_data(int p_layer) const;
-
-	TextureLayered() {}
 };
 
 VARIANT_ENUM_CAST(TextureLayered::LayeredType)

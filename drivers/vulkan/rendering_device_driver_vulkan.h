@@ -33,6 +33,7 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#include "drivers/vulkan/rendering_shader_container_vulkan.h"
 #include "servers/rendering/rendering_device_driver.h"
 
 #ifdef DEBUG_ENABLED
@@ -130,7 +131,10 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 	FragmentDensityMapCapabilities fdm_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
+	RenderingShaderContainerFormatVulkan shader_container_format;
 	bool buffer_device_address_support = false;
+	bool vulkan_memory_model_support = false;
+	bool vulkan_memory_model_device_scope_support = false;
 	bool pipeline_cache_control_support = false;
 	bool device_fault_support = false;
 #if defined(VK_TRACK_DEVICE_MEMORY)
@@ -224,7 +228,7 @@ public:
 
 public:
 	virtual TextureID texture_create(const TextureFormat &p_format, const TextureView &p_view) override final;
-	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) override final;
+	virtual TextureID texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil, uint32_t p_mipmaps) override final;
 	virtual TextureID texture_create_shared(TextureID p_original_texture, const TextureView &p_view) override final;
 	virtual TextureID texture_create_shared_from_slice(TextureID p_original_texture, const TextureView &p_view, TextureSliceType p_slice_type, uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) override final;
 	virtual void texture_free(TextureID p_texture) override final;
@@ -302,7 +306,6 @@ public:
 	// ----- QUEUE -----
 private:
 	struct CommandQueue {
-		LocalVector<VkSemaphore> present_semaphores;
 		LocalVector<VkSemaphore> image_semaphores;
 		LocalVector<SwapChain *> image_semaphores_swap_chains;
 		LocalVector<uint32_t> pending_semaphores_for_execute;
@@ -311,7 +314,6 @@ private:
 		LocalVector<Pair<Fence *, uint32_t>> image_semaphores_for_fences;
 		uint32_t queue_family = 0;
 		uint32_t queue_index = 0;
-		uint32_t present_semaphore_index = 0;
 	};
 
 public:
@@ -361,6 +363,7 @@ private:
 		VkColorSpaceKHR color_space = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 		TightLocalVector<VkImage> images;
 		TightLocalVector<VkImageView> image_views;
+		TightLocalVector<VkSemaphore> present_semaphores;
 		TightLocalVector<FramebufferID> framebuffers;
 		LocalVector<CommandQueue *> command_queues_acquired;
 		LocalVector<uint32_t> command_queues_acquired_semaphores;
@@ -409,43 +412,6 @@ public:
 	/**** SHADER ****/
 	/****************/
 private:
-	struct ShaderBinary {
-		// Version 1: initial.
-		// Version 2: Added shader name.
-		// Version 3: Added writable.
-		// Version 4: 64-bit vertex input mask.
-		// Version 5: Add 4 bytes padding to align the Data struct after the change in version 4.
-		static const uint32_t VERSION = 5;
-
-		struct DataBinding {
-			uint32_t type = 0;
-			uint32_t binding = 0;
-			uint32_t stages = 0;
-			uint32_t length = 0; // Size of arrays (in total elements), or UBOs (in bytes * total elements).
-			uint32_t writable = 0;
-		};
-
-		struct SpecializationConstant {
-			uint32_t type = 0;
-			uint32_t constant_id = 0;
-			uint32_t int_value = 0;
-			uint32_t stage_flags = 0;
-		};
-
-		struct Data {
-			uint64_t vertex_input_mask = 0;
-			uint32_t fragment_output_mask = 0;
-			uint32_t specialization_constants_count = 0;
-			uint32_t is_compute = 0;
-			uint32_t compute_local_size[3] = {};
-			uint32_t set_count = 0;
-			uint32_t push_constant_size = 0;
-			uint32_t vk_push_constant_stages_mask = 0;
-			uint32_t stage_count = 0;
-			uint32_t shader_name_len = 0;
-		};
-	};
-
 	struct ShaderInfo {
 		VkShaderStageFlags vk_push_constant_stages = 0;
 		TightLocalVector<VkPipelineShaderStageCreateInfo> vk_stages_create_info;
@@ -454,9 +420,7 @@ private:
 	};
 
 public:
-	virtual String shader_get_binary_cache_key() override final;
-	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
+	virtual ShaderID shader_create_from_container(const Ref<RenderingShaderContainer> &p_shader_container, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
@@ -712,6 +676,7 @@ public:
 	virtual String get_api_version() const override final;
 	virtual String get_pipeline_cache_uuid() const override final;
 	virtual const Capabilities &get_capabilities() const override final;
+	virtual const RenderingShaderContainerFormat &get_shader_container_format() const override final;
 
 	virtual bool is_composite_alpha_supported(CommandQueueID p_queue) const override final;
 

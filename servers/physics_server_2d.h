@@ -34,6 +34,8 @@
 #include "core/object/class_db.h"
 #include "core/object/ref_counted.h"
 
+constexpr int MAX_CONTACTS_REPORTED_2D_MAX = 4096;
+
 class PhysicsDirectSpaceState2D;
 template <typename T>
 class TypedArray;
@@ -85,6 +87,12 @@ public:
 
 	virtual void set_sleep_state(bool p_enable) = 0;
 	virtual bool is_sleeping() const = 0;
+
+	virtual void set_collision_layer(uint32_t p_layer) = 0;
+	virtual uint32_t get_collision_layer() const = 0;
+
+	virtual void set_collision_mask(uint32_t p_mask) = 0;
+	virtual uint32_t get_collision_mask() const = 0;
 
 	virtual int get_contact_count() const = 0;
 

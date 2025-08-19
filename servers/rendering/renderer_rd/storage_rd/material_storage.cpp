@@ -795,7 +795,11 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 
 		if (V) {
 			//user provided
-			_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, p_use_linear_color);
+			if (E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, false);
+			} else {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, V->value, data, p_use_linear_color);
+			}
 
 		} else if (E.value.default_value.size()) {
 			//default value
@@ -806,6 +810,15 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 			if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
 				//colors must be set as black, with alpha as 1.0
 				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, p_use_linear_color);
+			} else if ((E.value.type == ShaderLanguage::TYPE_VEC3 || E.value.type == ShaderLanguage::TYPE_VEC4) && E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR_CONVERSION_DISABLED) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Color(0, 0, 0, 1), data, false);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT2) {
+				// mat uniforms are identity matrix by default.
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Transform2D(), data, false);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT3) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Basis(), data, false);
+			} else if (E.value.type == ShaderLanguage::TYPE_MAT4) {
+				_fill_std140_variant_ubo_value(E.value.type, E.value.array_size, Projection(), data, false);
 			} else {
 				//else just zero it out
 				_fill_std140_ubo_empty(E.value.type, E.value.array_size, data);
@@ -893,7 +906,15 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						E->value = global_textures_pass;
 					}
 
-					textures.push_back(v->override.get_type() != Variant::NIL ? v->override : v->value);
+					RID override_rid = v->override;
+					if (override_rid.is_valid()) {
+						textures.push_back(override_rid);
+					} else {
+						RID value_rid = v->value;
+						if (value_rid.is_valid()) {
+							textures.push_back(value_rid);
+						}
+					}
 				}
 
 			} else {
@@ -1137,7 +1158,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 		update_textures(p_parameters, p_default_texture_params, p_texture_uniforms, texture_cache.ptrw(), p_use_linear_color, p_3d_material);
 	}
 
-	if (p_ubo_size == 0 && (p_texture_uniforms.size() == 0)) {
+	if (p_ubo_size == 0 && (p_texture_uniforms.is_empty())) {
 		// This material does not require an uniform set, so don't create it.
 		return false;
 	}
@@ -1923,12 +1944,19 @@ RID MaterialStorage::shader_allocate() {
 	return shader_owner.allocate_rid();
 }
 
-void MaterialStorage::shader_initialize(RID p_rid) {
+void MaterialStorage::shader_initialize(RID p_rid, bool p_embedded) {
 	Shader shader;
 	shader.data = nullptr;
 	shader.type = SHADER_TYPE_MAX;
+	shader.embedded = p_embedded;
 
 	shader_owner.initialize_rid(p_rid, shader);
+
+	if (p_embedded) {
+		// Add to the global embedded set.
+		MutexLock lock(embedded_set_mutex);
+		embedded_set.insert(p_rid);
+	}
 }
 
 void MaterialStorage::shader_free(RID p_rid) {
@@ -1944,6 +1972,13 @@ void MaterialStorage::shader_free(RID p_rid) {
 	if (shader->data) {
 		memdelete(shader->data);
 	}
+
+	if (shader->embedded) {
+		// Remove from the global embedded set.
+		MutexLock lock(embedded_set_mutex);
+		embedded_set.erase(p_rid);
+	}
+
 	shader_owner.free(p_rid);
 }
 
@@ -2099,6 +2134,12 @@ void MaterialStorage::shader_set_data_request_function(ShaderType p_shader_type,
 	shader_data_request_func[p_shader_type] = p_function;
 }
 
+MaterialStorage::ShaderData *MaterialStorage::shader_get_data(RID p_shader) const {
+	Shader *shader = shader_owner.get_or_null(p_shader);
+	ERR_FAIL_NULL_V(shader, nullptr);
+	return shader->data;
+}
+
 RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_shader) const {
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, RS::ShaderNativeSourceCode());
@@ -2106,6 +2147,18 @@ RS::ShaderNativeSourceCode MaterialStorage::shader_get_native_source_code(RID p_
 		return shader->data->get_native_source_code();
 	}
 	return RS::ShaderNativeSourceCode();
+}
+
+void MaterialStorage::shader_embedded_set_lock() {
+	embedded_set_mutex.lock();
+}
+
+const HashSet<RID> &MaterialStorage::shader_embedded_set_get() const {
+	return embedded_set;
+}
+
+void MaterialStorage::shader_embedded_set_unlock() {
+	embedded_set_mutex.unlock();
 }
 
 /* MATERIAL API */
@@ -2136,9 +2189,19 @@ void MaterialStorage::_material_queue_update(Material *material, bool p_uniform,
 }
 
 void MaterialStorage::_update_queued_materials() {
-	MutexLock lock(material_update_list_mutex);
-	while (material_update_list.first()) {
-		Material *material = material_update_list.first()->self();
+	SelfList<Material>::List copy;
+	{
+		MutexLock lock(material_update_list_mutex);
+		while (SelfList<Material> *E = material_update_list.first()) {
+			DEV_ASSERT(E == &E->self()->update_element);
+			material_update_list.remove(E);
+			copy.add(E);
+		}
+	}
+
+	while (SelfList<Material> *E = copy.first()) {
+		Material *material = E->self();
+		copy.remove(E);
 		bool uniforms_changed = false;
 
 		if (material->data) {
@@ -2146,8 +2209,6 @@ void MaterialStorage::_update_queued_materials() {
 		}
 		material->texture_dirty = false;
 		material->uniform_dirty = false;
-
-		material_update_list.remove(&material->update_element);
 
 		if (uniforms_changed) {
 			//some implementations such as 3D renderer cache the material uniform set, so update is required
@@ -2360,7 +2421,7 @@ MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_b
 	Samplers samplers;
 	samplers.mipmap_bias = p_mipmap_bias;
 	samplers.anisotropic_filtering_level = (int)anisotropic_filtering_level;
-	samplers.use_nearest_mipmap_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
+	samplers.use_nearest_mipmap_filter = GLOBAL_GET_CACHED(bool, "rendering/textures/default_filters/use_nearest_mipmap_filter");
 
 	RD::SamplerFilter mip_filter = samplers.use_nearest_mipmap_filter ? RD::SAMPLER_FILTER_NEAREST : RD::SAMPLER_FILTER_LINEAR;
 	float anisotropy_max = float(1 << samplers.anisotropic_filtering_level);

@@ -31,13 +31,13 @@
 #include "scene_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_file_system.h"
-#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/plugins/skeleton_3d_editor_plugin.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/scene/3d/skeleton_3d_editor_plugin.h"
+#include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
@@ -201,6 +201,23 @@ class SceneImportSettingsData : public Object {
 	}
 };
 
+bool SceneImportSettingsDialog::_get_current(const StringName &p_name, Variant &r_ret) const {
+	if (scene_import_settings_data->_get(p_name, r_ret)) {
+		return true;
+	}
+	if (defaults.has(p_name)) {
+		r_ret = defaults[p_name];
+		return true;
+	}
+	return false;
+}
+
+void SceneImportSettingsDialog::_set_default(const StringName &p_name, const Variant &p_value) {
+	defaults[p_name] = p_value;
+	scene_import_settings_data->defaults[p_name] = p_value;
+	scene_import_settings_data->_set(p_name, p_value);
+}
+
 void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material> &p_material, TreeItem *p_parent) {
 	String import_id;
 	bool has_import_id = false;
@@ -232,6 +249,24 @@ void SceneImportSettingsDialog::_fill_material(Tree *p_tree, const Ref<Material>
 
 	MaterialData &material_data = material_map[import_id];
 	ERR_FAIL_COND(p_material != material_data.material);
+
+	Variant value;
+	if (_get_current("materials/extract", value) && (int)value != 0) {
+		String spath = base_path.get_base_dir();
+		if (_get_current("materials/extract_path", value)) {
+			String extpath = value;
+			if (!extpath.is_empty()) {
+				spath = extpath;
+			}
+		}
+
+		String ext = ResourceImporterScene::material_extension[_get_current("materials/extract_format", value) ? (int)value : 0];
+		String path = spath.path_join(import_id.validate_filename() + ext);
+		String uid_path = ResourceUID::path_to_uid(path);
+		material_data.settings["use_external/enabled"] = true;
+		material_data.settings["use_external/path"] = uid_path;
+		material_data.settings["use_external/fallback_path"] = path;
+	}
 
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("StandardMaterial3D"));
 
@@ -744,8 +779,8 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 	selected_id = "";
 	selected_type = "";
 
-	cam_rot_x = -Math_PI / 4;
-	cam_rot_y = -Math_PI / 4;
+	cam_rot_x = -Math::PI / 4;
+	cam_rot_y = -Math::PI / 4;
 	cam_zoom = 1;
 
 	{
@@ -755,8 +790,7 @@ void SceneImportSettingsDialog::open_settings(const String &p_path, const String
 		config.instantiate();
 		Error err = config->load(p_path + ".import");
 		if (err == OK) {
-			List<String> keys;
-			config->get_section_keys("params", &keys);
+			Vector<String> keys = config->get_section_keys("params");
 			for (const String &E : keys) {
 				Variant value = config->get_value("params", E);
 				if (E == "_subresources") {
@@ -1005,6 +1039,30 @@ void SceneImportSettingsDialog::_inspector_property_edited(const String &p_name)
 			animation_loop_mode = Animation::LoopMode::LOOP_NONE;
 		}
 	}
+	if ((p_name == "use_external/enabled") || (p_name == "use_external/path") || (p_name == "use_external/fallback_path")) {
+		MaterialData &material_data = material_map[selected_id];
+		String spath = base_path.get_base_dir();
+		Variant value;
+		if (_get_current("materials/extract_path", value)) {
+			String extpath = value;
+			if (!extpath.is_empty()) {
+				spath = extpath;
+			}
+		}
+		String opath = material_data.settings.has("use_external/path") ? (String)material_data.settings["use_external/path"] : String();
+		if (opath.begins_with("uid://")) {
+			opath = ResourceUID::uid_to_path(opath);
+		}
+		String ext = ResourceImporterScene::material_extension[_get_current("materials/extract_format", value) ? (int)value : 0];
+		String npath = spath.path_join(selected_id.validate_filename() + ext);
+
+		if (!material_data.settings.has("use_external/enabled") || (bool)material_data.settings["use_external/enabled"] == false || opath != npath) {
+			if (_get_current("materials/extract", value) && (int)value != 0) {
+				print_line("Material settings changed, automatic material extraction disabled.");
+			}
+			_set_default("materials/extract", 0);
+		}
+	}
 }
 
 void SceneImportSettingsDialog::_reset_bone_transforms() {
@@ -1204,7 +1262,7 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		(*rot_x) -= mm->get_relative().y * 0.01 * EDSCALE;
 		(*rot_y) -= mm->get_relative().x * 0.01 * EDSCALE;
-		(*rot_x) = CLAMP((*rot_x), -Math_PI / 2, Math_PI / 2);
+		(*rot_x) = CLAMP((*rot_x), -Math::PI / 2, Math::PI / 2);
 		_update_camera();
 	}
 	if (mm.is_valid() && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE)) {
@@ -1305,9 +1363,7 @@ void SceneImportSettingsDialog::_re_import() {
 		subresources["animations"] = animations;
 	}
 
-	if (subresources.size()) {
-		main_settings["_subresources"] = subresources;
-	}
+	main_settings["_subresources"] = subresources;
 
 	_cleanup(); // Prevent skeletons and other pointers from pointing to dangling references.
 	EditorFileSystem::get_singleton()->reimport_file_with_custom_parameters(base_path, editing_animation ? "animation_library" : "scene", main_settings);
@@ -1724,14 +1780,15 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_play_button = memnew(Button);
 	animation_hbox->add_child(animation_play_button);
 	animation_play_button->set_flat(true);
-	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
+	animation_play_button->set_accessibility_name(TTRC("Selected Animation Play/Pause"));
+	animation_play_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTRC("Selected Animation Play/Pause"), Key::SPACE));
 	animation_play_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
 
 	animation_stop_button = memnew(Button);
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
-	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
+	animation_stop_button->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
 
@@ -1742,14 +1799,15 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_max(1.0);
 	animation_slider->set_step(1.0 / 100.0);
 	animation_slider->set_value_no_signal(0.0);
-	animation_slider->set_focus_mode(Control::FOCUS_NONE);
+	animation_slider->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
+	animation_slider->set_accessibility_name(TTRC("Animation"));
 	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
 
 	animation_toggle_skeleton_visibility = memnew(Button);
 	animation_hbox->add_child(animation_toggle_skeleton_visibility);
 	animation_toggle_skeleton_visibility->set_toggle_mode(true);
 	animation_toggle_skeleton_visibility->set_theme_type_variation("FlatButton");
-	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_NONE);
+	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
 	animation_toggle_skeleton_visibility->set_tooltip_text(TTR("Toggle Animation Skeleton Visibility"));
 
 	animation_toggle_skeleton_visibility->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_animation_update_skeleton_visibility));
@@ -1891,6 +1949,9 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	inspector = memnew(EditorInspector);
 	inspector->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
 	inspector->connect(SNAME("property_edited"), callable_mp(this, &SceneImportSettingsDialog::_inspector_property_edited));
+	// Display the same tooltips as in the Import dock.
+	inspector->set_object_class(ResourceImporterScene::get_class_static());
+	inspector->set_use_doc_hints(true);
 
 	property_split->add_child(inspector);
 
@@ -1941,6 +2002,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 
 	update_view_timer = memnew(Timer);
 	update_view_timer->set_wait_time(0.2);
+	update_view_timer->set_one_shot(true);
 	update_view_timer->connect("timeout", callable_mp(this, &SceneImportSettingsDialog::_update_view_gizmos));
 	add_child(update_view_timer);
 }

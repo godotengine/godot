@@ -31,9 +31,6 @@
 #include "mesh_instance_3d.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -42,8 +39,14 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_server_3d.h"
+
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -173,7 +176,7 @@ void MeshInstance3D::_resolve_skeleton_path() {
 	Ref<SkinReference> new_skin_reference;
 
 	if (!skeleton_path.is_empty()) {
-		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node(skeleton_path));
+		Skeleton3D *skeleton = Object::cast_to<Skeleton3D>(get_node_or_null(skeleton_path)); // skeleton_path may be outdated when reparenting.
 		if (skeleton) {
 			if (skin_internal.is_null()) {
 				new_skin_reference = skeleton->register_skin(skeleton->create_skin_from_rest_transforms());
@@ -377,17 +380,17 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return mat_override;
 	}
 
+	Ref<Mesh> m = get_mesh();
+	if (m.is_null() || m->get_surface_count() == 0) {
+		return Ref<Material>();
+	}
+
 	Ref<Material> surface_material = get_surface_override_material(p_surface);
 	if (surface_material.is_valid()) {
 		return surface_material;
 	}
 
-	Ref<Mesh> m = get_mesh();
-	if (m.is_valid()) {
-		return m->surface_get_material(p_surface);
-	}
-
-	return Ref<Material>();
+	return m->surface_get_material(p_surface);
 }
 
 void MeshInstance3D::_mesh_changed() {
@@ -434,11 +437,11 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
-		if (norms.size() == 0) {
+		if (norms.is_empty()) {
 			continue;
 		}
 		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
-		if (tangents.size() == 0) {
+		if (tangents.is_empty()) {
 			continue;
 		}
 
@@ -588,7 +591,7 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_blend_shape_mix(Ref<ArrayM
 
 		for (int blendshape_index = 0; blendshape_index < blend_shape_count; blendshape_index++) {
 			float blend_weight = get_blend_shape_value(blendshape_index);
-			if (abs(blend_weight) <= 0.0001) {
+			if (std::abs(blend_weight) <= 0.0001) {
 				continue;
 			}
 
@@ -853,6 +856,7 @@ Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
 }
 
+#ifndef NAVIGATION_3D_DISABLED
 void MeshInstance3D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -878,6 +882,7 @@ void MeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_
 		}
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);

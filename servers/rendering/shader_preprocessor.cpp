@@ -133,7 +133,7 @@ void ShaderPreprocessor::Tokenizer::skip_whitespace() {
 
 bool ShaderPreprocessor::Tokenizer::consume_empty_line() {
 	// Read until newline and return true if the content was all whitespace/empty.
-	return tokens_to_string(advance('\n')).strip_edges().size() == 0;
+	return tokens_to_string(advance('\n')).strip_edges().is_empty();
 }
 
 String ShaderPreprocessor::Tokenizer::get_identifier(bool *r_is_cursor, bool p_started) {
@@ -358,7 +358,7 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 	const int count = stop - p_start;
 
 	String result;
-	result.resize(count + 1);
+	result.resize_uninitialized(count + 1);
 	for (int i = 0; i < count; i++) {
 		result[i] = p_v[p_start + i];
 	}
@@ -552,7 +552,8 @@ void ShaderPreprocessor::process_else(Tokenizer *p_tokenizer) {
 	if (skip) {
 		Vector<String> ends;
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 
@@ -847,7 +848,8 @@ void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_s
 		ends.push_back("elif");
 		ends.push_back("else");
 		ends.push_back("endif");
-		next_directive(p_tokenizer, ends);
+		// Legacy return value.
+		_ALLOW_DISCARD_ next_directive(p_tokenizer, ends);
 	}
 }
 

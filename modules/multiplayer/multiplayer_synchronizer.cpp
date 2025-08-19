@@ -376,7 +376,7 @@ Error MultiplayerSynchronizer::_watch_changes(uint64_t p_usec) {
 	if (props.size() != watchers.size()) {
 		watchers.resize(props.size());
 	}
-	if (props.size() == 0) {
+	if (props.is_empty()) {
 		return OK;
 	}
 	Node *node = get_root_node();

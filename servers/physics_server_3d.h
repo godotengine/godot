@@ -35,6 +35,8 @@
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 
+constexpr int MAX_CONTACTS_REPORTED_3D_MAX = 4096;
+
 class PhysicsDirectSpaceState3D;
 template <typename T>
 class TypedArray;
@@ -88,6 +90,12 @@ public:
 
 	virtual void set_sleep_state(bool p_sleep) = 0;
 	virtual bool is_sleeping() const = 0;
+
+	virtual void set_collision_layer(uint32_t p_layer) = 0;
+	virtual uint32_t get_collision_layer() const = 0;
+
+	virtual void set_collision_mask(uint32_t p_mask) = 0;
+	virtual uint32_t get_collision_mask() const = 0;
 
 	virtual int get_contact_count() const = 0;
 
@@ -605,6 +613,9 @@ public:
 	virtual void soft_body_set_linear_stiffness(RID p_body, real_t p_stiffness) = 0;
 	virtual real_t soft_body_get_linear_stiffness(RID p_body) const = 0;
 
+	virtual void soft_body_set_shrinking_factor(RID p_body, real_t p_shrinking_factor) = 0;
+	virtual real_t soft_body_get_shrinking_factor(RID p_body) const = 0;
+
 	virtual void soft_body_set_pressure_coefficient(RID p_body, real_t p_pressure_coefficient) = 0;
 	virtual real_t soft_body_get_pressure_coefficient(RID p_body) const = 0;
 
@@ -616,6 +627,11 @@ public:
 
 	virtual void soft_body_move_point(RID p_body, int p_point_index, const Vector3 &p_global_position) = 0;
 	virtual Vector3 soft_body_get_point_global_position(RID p_body, int p_point_index) const = 0;
+
+	virtual void soft_body_apply_point_impulse(RID p_body, int p_point_index, const Vector3 &p_impulse) = 0;
+	virtual void soft_body_apply_point_force(RID p_body, int p_point_index, const Vector3 &p_force) = 0;
+	virtual void soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) = 0;
+	virtual void soft_body_apply_central_force(RID p_body, const Vector3 &p_force) = 0;
 
 	virtual void soft_body_remove_all_pinned_points(RID p_body) = 0;
 	virtual void soft_body_pin_point(RID p_body, int p_point_index, bool p_pin) = 0;

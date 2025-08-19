@@ -25,10 +25,10 @@ layout(location = 11) in vec4 weight_attrib;
 #include "canvas_uniforms_inc.glsl"
 
 #ifndef USE_ATTRIBUTES
-
-layout(location = 4) out flat uint instance_index_interp;
-
-#endif // !USE_ATTRIBUTES
+layout(location = 4) out flat uint instance_index;
+#else
+#define instance_index params.base_instance_index
+#endif // USE_ATTRIBUTES
 
 layout(location = 0) out vec2 uv_interp;
 layout(location = 1) out vec4 color_interp;
@@ -48,8 +48,6 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 /* clang-format on */
 #endif
 
-uint instance_index;
-
 #GLOBALS
 
 #ifdef USE_ATTRIBUTES
@@ -67,11 +65,8 @@ void main() {
 	vec4 custom1 = vec4(0.0);
 #endif
 
-#ifdef USE_ATTRIBUTES
-	instance_index = params.base_instance_index;
-#else
+#ifndef USE_ATTRIBUTES
 	instance_index = gl_InstanceIndex + params.base_instance_index;
-	instance_index_interp = instance_index;
 #endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
 
@@ -242,7 +237,9 @@ void main() {
 #include "canvas_uniforms_inc.glsl"
 
 #ifndef USE_ATTRIBUTES
-layout(location = 4) in flat uint instance_index_interp;
+layout(location = 4) in flat uint instance_index;
+#else
+#define instance_index params.base_instance_index
 #endif // USE_ATTRIBUTES
 
 layout(location = 0) in vec2 uv_interp;
@@ -289,7 +286,16 @@ vec2 sdf_to_screen_uv(vec2 p_sdf) {
 	return p_sdf * canvas_data.sdf_to_screen;
 }
 
-uint instance_index;
+// Emulate textureProjLod by doing it manually because the source texture is not an actual depth texture that can be used for this operation.
+// Since the sampler is configured to nearest use one textureGather tap to emulate bilinear.
+float texture_shadow(vec4 p) {
+	// Manually round p to the nearest texel because textureGather uses strange rounding rules.
+	vec2 unit_p = floor(p.xy / canvas_data.shadow_pixel_size) * canvas_data.shadow_pixel_size;
+	float depth = p.z;
+	float fx = fract(p.x / canvas_data.shadow_pixel_size);
+	vec2 tap = textureGather(sampler2D(shadow_atlas_texture, shadow_sampler), unit_p.xy).zw;
+	return mix(step(tap.y, depth), step(tap.x, depth), fx);
+}
 
 #GLOBALS
 
@@ -401,32 +407,32 @@ vec4 light_shadow_compute(uint light_base, vec4 light_color, vec4 shadow_uv
 	uint shadow_mode = light_array.data[light_base].flags & LIGHT_FLAGS_FILTER_MASK;
 
 	if (shadow_mode == LIGHT_FLAGS_SHADOW_NEAREST) {
-		shadow = textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
+		shadow = texture_shadow(shadow_uv);
 	} else if (shadow_mode == LIGHT_FLAGS_SHADOW_PCF5) {
 		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
 		shadow = 0.0;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size * 2.0);
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size);
+		shadow += texture_shadow(shadow_uv);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size * 2.0);
 		shadow /= 5.0;
 	} else { //PCF13
 		vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size, 0.0, 0.0, 0.0);
 		shadow = 0.0;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 6.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 5.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 4.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 3.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size * 2.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv - shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 2.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 3.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 4.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 5.0, 0.0).x;
-		shadow += textureProjLod(sampler2DShadow(shadow_atlas_texture, shadow_sampler), shadow_uv + shadow_pixel_size * 6.0, 0.0).x;
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size * 6.0);
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size * 5.0);
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size * 4.0);
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size * 3.0);
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size * 2.0);
+		shadow += texture_shadow(shadow_uv - shadow_pixel_size);
+		shadow += texture_shadow(shadow_uv);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size * 2.0);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size * 3.0);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size * 4.0);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size * 5.0);
+		shadow += texture_shadow(shadow_uv + shadow_pixel_size * 6.0);
 		shadow /= 13.0;
 	}
 
@@ -456,8 +462,8 @@ void light_blend_compute(uint light_base, vec4 light_color, inout vec3 color) {
 	}
 }
 
-float msdf_median(float r, float g, float b, float a) {
-	return min(max(min(r, g), min(max(r, g), b)), a);
+float msdf_median(float r, float g, float b) {
+	return max(min(r, g), min(max(r, g), b));
 }
 
 void main() {
@@ -465,12 +471,13 @@ void main() {
 	vec2 uv = uv_interp;
 	vec2 vertex = vertex_interp;
 
-#ifdef USE_ATTRIBUTES
-	instance_index = params.base_instance_index;
-#else
-	instance_index = instance_index_interp;
-#endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
+
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+	vec4 region_rect = draw_data.src_rect;
+#else
+	vec4 region_rect = vec4(0.0, 0.0, 1.0 / draw_data.color_texture_pixel_size);
+#endif
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
@@ -506,14 +513,15 @@ void main() {
 		vec2 msdf_size = vec2(textureSize(sampler2D(color_texture, texture_sampler), 0));
 		vec2 dest_size = vec2(1.0) / fwidth(uv);
 		float px_size = max(0.5 * dot((vec2(px_range) / msdf_size), dest_size), 1.0);
-		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b, msdf_sample.a) - 0.5;
+		float d = msdf_median(msdf_sample.r, msdf_sample.g, msdf_sample.b);
 
 		if (outline_thickness > 0) {
 			float cr = clamp(outline_thickness, 0.0, px_range / 2) / px_range;
-			float a = clamp((d + cr) * px_size, 0.0, 1.0);
+			d = min(d, msdf_sample.a);
+			float a = clamp((d - 0.5 + cr) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		} else {
-			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
+			float a = clamp((d - 0.5) * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
 	} else if (bool(draw_data.flags & INSTANCE_FLAGS_USE_LCD)) {

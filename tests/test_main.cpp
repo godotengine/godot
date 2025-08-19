@@ -30,11 +30,13 @@
 
 #include "test_main.h"
 
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "modules/modules_enabled.gen.h"
 
 #ifdef TOOLS_ENABLED
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
+#include "editor/file_system/editor_paths.h"
+#include "editor/settings/editor_settings.h"
 #endif // TOOLS_ENABLED
 
 #include "tests/core/config/test_project_settings.h"
@@ -95,16 +97,18 @@
 #include "tests/core/string/test_translation_server.h"
 #include "tests/core/templates/test_a_hash_map.h"
 #include "tests/core/templates/test_command_queue.h"
+#include "tests/core/templates/test_fixed_vector.h"
 #include "tests/core/templates/test_hash_map.h"
 #include "tests/core/templates/test_hash_set.h"
 #include "tests/core/templates/test_list.h"
 #include "tests/core/templates/test_local_vector.h"
 #include "tests/core/templates/test_lru.h"
-#include "tests/core/templates/test_oa_hash_map.h"
 #include "tests/core/templates/test_paged_array.h"
 #include "tests/core/templates/test_rid.h"
+#include "tests/core/templates/test_self_list.h"
 #include "tests/core/templates/test_span.h"
 #include "tests/core/templates/test_vector.h"
+#include "tests/core/templates/test_vset.h"
 #include "tests/core/test_crypto.h"
 #include "tests/core/test_hashing_context.h"
 #include "tests/core/test_time.h"
@@ -115,6 +119,7 @@
 #include "tests/core/variant/test_variant.h"
 #include "tests/core/variant/test_variant_utility.h"
 #include "tests/scene/test_animation.h"
+#include "tests/scene/test_animation_blend_tree.h"
 #include "tests/scene/test_audio_stream_wav.h"
 #include "tests/scene/test_bit_map.h"
 #include "tests/scene/test_button.h"
@@ -135,9 +140,7 @@
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
-#ifndef PHYSICS_3D_DISABLED
-#include "tests/scene/test_physics_material.h"
-#endif // PHYSICS_3D_DISABLED
+#include "tests/scene/test_sprite_2d.h"
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
@@ -163,27 +166,13 @@
 #include "tests/scene/test_tree.h"
 #endif // ADVANCED_GUI_DISABLED
 
-#ifdef MODULE_NAVIGATION_2D_ENABLED
-#include "tests/scene/test_navigation_agent_2d.h"
-#include "tests/scene/test_navigation_obstacle_2d.h"
-#include "tests/scene/test_navigation_region_2d.h"
-#include "tests/servers/test_navigation_server_2d.h"
-#endif // MODULE_NAVIGATION_2D_ENABLED
-
 #ifndef _3D_DISABLED
-#ifdef MODULE_NAVIGATION_3D_ENABLED
-#include "tests/scene/test_navigation_agent_3d.h"
-#include "tests/scene/test_navigation_obstacle_3d.h"
-#include "tests/scene/test_navigation_region_3d.h"
-#include "tests/servers/test_navigation_server_3d.h"
-#endif // MODULE_NAVIGATION_3D_ENABLED
-
+#include "tests/core/math/test_triangle_mesh.h"
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
+#include "tests/scene/test_convert_transform_modifier_3d.h"
+#include "tests/scene/test_copy_transform_modifier_3d.h"
 #include "tests/scene/test_gltf_document.h"
-#ifndef PHYSICS_3D_DISABLED
-#include "tests/scene/test_height_map_shape_3d.h"
-#endif // PHYSICS_3D_DISABLED
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
@@ -191,16 +180,39 @@
 #include "tests/scene/test_sky.h"
 #endif // _3D_DISABLED
 
+#ifndef PHYSICS_3D_DISABLED
+#include "tests/scene/test_height_map_shape_3d.h"
+#include "tests/scene/test_physics_material.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifdef MODULE_NAVIGATION_2D_ENABLED
+#include "tests/scene/test_navigation_agent_2d.h"
+#include "tests/scene/test_navigation_obstacle_2d.h"
+#include "tests/scene/test_navigation_region_2d.h"
+#include "tests/servers/test_navigation_server_2d.h"
+#endif // MODULE_NAVIGATION_2D_ENABLED
+
+#ifdef MODULE_NAVIGATION_3D_ENABLED
+#include "tests/scene/test_navigation_agent_3d.h"
+#include "tests/scene/test_navigation_obstacle_3d.h"
+#include "tests/scene/test_navigation_region_3d.h"
+#include "tests/servers/test_navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_3D_ENABLED
+
 #include "modules/modules_tests.gen.h"
 
 #include "tests/display_server_mock.h"
 #include "tests/test_macros.h"
 
 #include "scene/theme/theme_db.h"
+
+#ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_server_2d.h"
-#ifndef _3D_DISABLED
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
+
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_2d_dummy.h"
@@ -209,6 +221,7 @@
 #include "servers/physics_server_3d.h"
 #include "servers/physics_server_3d_dummy.h"
 #endif // PHYSICS_3D_DISABLED
+
 #include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
@@ -224,6 +237,13 @@ int test_main(int argc, char *argv[]) {
 	DisplayServerMock::register_mock_driver();
 
 	WorkerThreadPool::get_singleton()->init();
+
+	{
+		const String test_path = TestUtils::get_temp_path("");
+		Ref<DirAccess> da = DirAccess::open(test_path); // get_temp_path() automatically creates the folder.
+		ERR_FAIL_COND_V(da.is_null(), 0);
+		ERR_FAIL_COND_V_MSG(da->erase_contents_recursive() != OK, 0, "Failed to delete files");
+	}
 
 	// Run custom test tools.
 	if (test_commands) {
@@ -289,10 +309,13 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D *physics_server_3d = nullptr;
 #endif // PHYSICS_3D_DISABLED
-#ifndef _3D_DISABLED
-	NavigationServer3D *navigation_server_3d = nullptr;
-#endif // _3D_DISABLED
+
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2D *navigation_server_2d = nullptr;
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3D *navigation_server_3d = nullptr;
+#endif // NAVIGATION_3D_DISABLED
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		reinitialize();
@@ -341,10 +364,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #endif // PHYSICS_2D_DISABLED
 
 			ERR_PRINT_OFF;
-#ifndef _3D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
+#ifndef NAVIGATION_2D_DISABLED
 			navigation_server_2d = NavigationServer2DManager::new_default_server();
+#endif // NAVIGATION_2D_DISABLED
 			ERR_PRINT_ON;
 
 			memnew(InputMap);
@@ -376,21 +401,23 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
-#ifndef _3D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 		if (suite_name.contains("[Navigation3D]") && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 		if (suite_name.contains("[Navigation2D]") && navigation_server_2d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_2d = NavigationServer2DManager::new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
+#endif // NAVIGATION_2D_DISABLED
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
@@ -420,17 +447,19 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memdelete(SceneTree::get_singleton());
 		}
 
-#ifndef _3D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 		if (navigation_server_3d) {
 			memdelete(navigation_server_3d);
 			navigation_server_3d = nullptr;
 		}
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 		if (navigation_server_2d) {
 			memdelete(navigation_server_2d);
 			navigation_server_2d = nullptr;
 		}
+#endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 		if (physics_server_3d) {

@@ -90,7 +90,7 @@
 		<method name="get_current_cursor_shape" qualifiers="const">
 			<return type="int" enum="Input.CursorShape" />
 			<description>
-				Returns the currently assigned cursor shape (see [enum CursorShape]).
+				Returns the currently assigned cursor shape.
 			</description>
 		</method>
 		<method name="get_gravity" qualifiers="const">
@@ -114,7 +114,7 @@
 			<param index="0" name="device" type="int" />
 			<param index="1" name="axis" type="int" enum="JoyAxis" />
 			<description>
-				Returns the current value of the joypad axis at given index (see [enum JoyAxis]).
+				Returns the current value of the joypad axis at index [param axis].
 			</description>
 		</method>
 		<method name="get_joy_guid" qualifiers="const">
@@ -212,7 +212,20 @@
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] pressed. An action can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
 				[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
-				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_pressed] instead to query the action state of the current event.
+				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_pressed] instead to query the action state of the current event. See also [method is_action_just_pressed_by_event].
+			</description>
+		</method>
+		<method name="is_action_just_pressed_by_event" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="exact_match" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] when the user has [i]started[/i] pressing the action event in the current frame or physics tick, and the first event that triggered action press in the current frame/physics tick was [param event]. It will only return [code]true[/code] on the frame or tick that the user pressed down the button.
+				This is useful for code that needs to run only once when an action is pressed, and the action is processed during input handling (e.g. [method Node._input]).
+				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] pressed. An action can be pressed and released again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+				[b]Note:[/b] Due to keyboard ghosting, [method is_action_just_pressed] may return [code]false[/code] even if one of the action's keys is pressed. See [url=$DOCS_URL/tutorials/inputs/input_examples.html#keyboard-events]Input examples[/url] in the documentation for more information.
 			</description>
 		</method>
 		<method name="is_action_just_released" qualifiers="const">
@@ -223,7 +236,19 @@
 				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick. It will only return [code]true[/code] on the frame or tick that the user releases the button.
 				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
 				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
-				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_released] instead to query the action state of the current event.
+				[b]Note:[/b] During input handling (e.g. [method Node._input]), use [method InputEvent.is_action_released] instead to query the action state of the current event. See also [method is_action_just_released_by_event].
+			</description>
+		</method>
+		<method name="is_action_just_released_by_event" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="action" type="StringName" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="exact_match" type="bool" default="false" />
+			<description>
+				Returns [code]true[/code] when the user [i]stops[/i] pressing the action event in the current frame or physics tick, and the first event that triggered action release in the current frame/physics tick was [param event]. It will only return [code]true[/code] on the frame or tick that the user releases the button.
+				This is useful when an action is processed during input handling (e.g. [method Node._input]).
+				[b]Note:[/b] Returning [code]true[/code] does not imply that the action is [i]still[/i] not pressed. An action can be released and pressed again rapidly, and [code]true[/code] will still be returned so as not to miss input.
+				If [param exact_match] is [code]false[/code], it ignores additional input modifiers for [InputEventKey] and [InputEventMouseButton] events, and the direction for [InputEventJoypadMotion] events.
 			</description>
 		</method>
 		<method name="is_action_pressed" qualifiers="const">
@@ -247,7 +272,7 @@
 			<param index="0" name="device" type="int" />
 			<param index="1" name="button" type="int" enum="JoyButton" />
 			<description>
-				Returns [code]true[/code] if you are pressing the joypad button (see [enum JoyButton]).
+				Returns [code]true[/code] if you are pressing the joypad button at index [param button].
 			</description>
 		</method>
 		<method name="is_joy_known" keywords="is_gamepad_known, is_controller_known">
@@ -333,7 +358,7 @@
 			<param index="1" name="shape" type="int" enum="Input.CursorShape" default="0" />
 			<param index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)" />
 			<description>
-				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See [enum CursorShape] for the list of shapes.
+				Sets a custom mouse cursor image, which is only visible inside the game window, for the given mouse [param shape]. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor.
 				[param image] can be either [Texture2D] or [Image] and its size must be lower than or equal to 256×256. To avoid rendering issues, sizes lower than or equal to 128×128 are recommended.
 				[param hotspot] must be within [param image]'s size.
 				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
@@ -434,7 +459,7 @@
 			If [code]true[/code], sends touch input events when clicking or dragging the mouse. See also [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse].
 		</member>
 		<member name="mouse_mode" type="int" setter="set_mouse_mode" getter="get_mouse_mode" enum="Input.MouseMode">
-			Controls the mouse mode. See [enum MouseMode] for more information.
+			Controls the mouse mode.
 		</member>
 		<member name="use_accumulated_input" type="bool" setter="set_use_accumulated_input" getter="is_using_accumulated_input">
 			If [code]true[/code], similar input events sent by the operating system are accumulated. When input accumulation is enabled, all input events generated during a frame will be merged and emitted when the frame is done rendering. Therefore, this limits the number of input method calls per second to the rendering FPS.

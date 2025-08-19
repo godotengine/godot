@@ -38,7 +38,7 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
-#include <stdlib.h>
+#include <cstdlib>
 
 class OS {
 	static OS *singleton;
@@ -77,8 +77,8 @@ class OS {
 	// For tracking benchmark data
 	bool use_benchmark = false;
 	String benchmark_file;
-	HashMap<Pair<String, String>, uint64_t, PairHash<String, String>> benchmark_marks_from;
-	HashMap<Pair<String, String>, double, PairHash<String, String>> benchmark_marks_final;
+	HashMap<Pair<String, String>, uint64_t> benchmark_marks_from;
+	HashMap<Pair<String, String>, double> benchmark_marks_final;
 
 protected:
 	void _set_logger(CompositeLogger *p_logger);
@@ -111,7 +111,6 @@ protected:
 	bool _silent_crash_handler = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
-	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
@@ -142,7 +141,7 @@ public:
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
 	virtual bool get_user_prefers_integrated_gpu() const { return false; }
 
-	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR);
+	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, Logger::ErrorType p_type = Logger::ERR_ERROR, const Vector<Ref<ScriptBacktrace>> &p_script_backtraces = {});
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -192,6 +191,7 @@ public:
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) { return Dictionary(); }
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) = 0;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) { return create_process(get_executable_path(), p_arguments, r_child_id); }
+	virtual Error open_with_program(const String &p_program_path, const List<String> &p_paths) { return create_process(p_program_path, p_paths); }
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual bool is_process_running(const ProcessID &p_pid) const = 0;
@@ -206,6 +206,7 @@ public:
 	virtual String get_environment(const String &p_var) const = 0;
 	virtual void set_environment(const String &p_var, const String &p_value) const = 0;
 	virtual void unset_environment(const String &p_var) const = 0;
+	virtual void load_shell_environment() const {}
 
 	virtual String get_name() const = 0;
 	virtual String get_identifier() const;
@@ -247,7 +248,8 @@ public:
 	virtual double get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
-	virtual void add_frame_delay(bool p_can_draw);
+	virtual void add_frame_delay(bool p_can_draw, bool p_wake_for_events);
+	virtual uint64_t get_frame_delay(bool p_can_draw) const;
 
 	virtual uint64_t get_ticks_usec() const = 0;
 	uint64_t get_ticks_msec() const;
@@ -353,6 +355,8 @@ public:
 
 	virtual Error setup_remote_filesystem(const String &p_server_host, int p_port, const String &p_password, String &r_project_path);
 
+	void add_logger(Logger *p_logger);
+
 	enum PreferredTextureFormat {
 		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,
 		PREFERRED_TEXTURE_FORMAT_ETC2_ASTC
@@ -364,9 +368,11 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+#ifdef TOOLS_ENABLED
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
 	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+#endif
 
 	OS();
 	virtual ~OS();

@@ -34,9 +34,6 @@
 #include "scene/resources/3d/mesh_library.h"
 #include "scene/resources/multimesh.h"
 
-//heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
-//should scale better with hardware that supports instancing
-
 class NavigationMesh;
 class NavigationMeshSourceGeometryData3D;
 #ifndef PHYSICS_3D_DISABLED
@@ -152,6 +149,9 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+	OctantKey get_octant_key_from_index_key(const IndexKey &p_index_key) const;
+	OctantKey get_octant_key_from_cell_coords(const Vector3i &p_cell_coords) const;
+
 #ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
@@ -200,11 +200,11 @@ class GridMap : public Node3D {
 	bool _octant_update(const OctantKey &p_key);
 	void _octant_clean_up(const OctantKey &p_key);
 	void _octant_transform(const OctantKey &p_key);
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	void _update_octant_navigation_debug_edge_connections_mesh(const OctantKey &p_key);
 	void _navigation_map_changed(RID p_map);
 	void _update_navigation_debug_edge_connections();
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) && !defined(NAVIGATION_3D_DISABLED)
 	bool awaiting_update = false;
 
 	void _queue_octants_dirty();
@@ -264,8 +264,10 @@ public:
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
 
+#ifndef NAVIGATION_3D_DISABLED
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
+#endif // NAVIGATION_3D_DISABLED
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;
@@ -309,13 +311,17 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+#ifndef NAVIGATION_3D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 public:
+#ifndef NAVIGATION_3D_DISABLED
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_3D_DISABLED
 
 	GridMap();
 	~GridMap();

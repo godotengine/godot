@@ -30,6 +30,7 @@
 
 #include "split_container.h"
 
+#include "scene/gui/texture_rect.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
@@ -91,8 +92,59 @@ Control::CursorShape SplitContainerDragger::get_cursor_shape(const Point2 &p_pos
 	return Control::get_cursor_shape(p_pos);
 }
 
+void SplitContainerDragger::_accessibility_action_inc(const Variant &p_data) {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+
+	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+		return;
+	}
+	sc->split_offset -= 10;
+	sc->_compute_split_offset(true);
+	sc->queue_sort();
+}
+
+void SplitContainerDragger::_accessibility_action_dec(const Variant &p_data) {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+
+	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+		return;
+	}
+	sc->split_offset += 10;
+	sc->_compute_split_offset(true);
+	sc->queue_sort();
+}
+
+void SplitContainerDragger::_accessibility_action_set_value(const Variant &p_data) {
+	SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+
+	if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+		return;
+	}
+	sc->split_offset = p_data;
+	sc->_compute_split_offset(true);
+	sc->queue_sort();
+}
+
 void SplitContainerDragger::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_SPLITTER);
+
+			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
+			if (sc->collapsed || !sc->_get_sortable_child(0) || !sc->_get_sortable_child(1) || !sc->dragging_enabled) {
+				return;
+			}
+			sc->_compute_split_offset(true);
+			DisplayServer::get_singleton()->accessibility_update_set_num_value(ae, sc->split_offset);
+
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_DECREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_dec));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_INCREMENT, callable_mp(this, &SplitContainerDragger::_accessibility_action_inc));
+			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_SET_VALUE, callable_mp(this, &SplitContainerDragger::_accessibility_action_set_value));
+		} break;
+
 		case NOTIFICATION_MOUSE_ENTER: {
 			mouse_inside = true;
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
@@ -110,7 +162,7 @@ void SplitContainerDragger::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			SplitContainer *sc = Object::cast_to<SplitContainer>(get_parent());
 			draw_style_box(sc->theme_cache.split_bar_background, split_bar_rect);
-			if (sc->dragger_visibility == sc->DRAGGER_VISIBLE && (dragging || mouse_inside || !sc->theme_cache.autohide)) {
+			if (sc->dragger_visibility == sc->DRAGGER_VISIBLE && (dragging || mouse_inside || !sc->theme_cache.autohide) && !sc->touch_dragger_enabled) {
 				Ref<Texture2D> tex = sc->_get_grabber_icon();
 				float available_size = sc->vertical ? (sc->get_size().x - tex->get_size().x) : (sc->get_size().y - tex->get_size().y);
 				if (available_size - sc->drag_area_margin_begin - sc->drag_area_margin_end > 0) { // Draw the grabber only if it fits.
@@ -122,6 +174,10 @@ void SplitContainerDragger::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+SplitContainerDragger::SplitContainerDragger() {
+	set_focus_mode(FOCUS_ACCESSIBILITY);
 }
 
 Control *SplitContainer::_get_sortable_child(int p_idx, SortableVisibilityMode p_visibility_mode) const {
@@ -153,9 +209,25 @@ Ref<Texture2D> SplitContainer::_get_grabber_icon() const {
 	}
 }
 
+Ref<Texture2D> SplitContainer::_get_touch_dragger_icon() const {
+	if (is_fixed) {
+		return theme_cache.touch_dragger_icon;
+	} else {
+		if (vertical) {
+			return theme_cache.touch_dragger_icon_v;
+		} else {
+			return theme_cache.touch_dragger_icon_h;
+		}
+	}
+}
+
 int SplitContainer::_get_separation() const {
 	if (dragger_visibility == DRAGGER_HIDDEN_COLLAPSED) {
 		return 0;
+	}
+
+	if (touch_dragger_enabled) {
+		return theme_cache.separation;
 	}
 	// DRAGGER_VISIBLE or DRAGGER_HIDDEN.
 	Ref<Texture2D> g = _get_grabber_icon();
@@ -212,6 +284,9 @@ void SplitContainer::_resort() {
 		return;
 	}
 	dragging_area_control->set_visible(!collapsed);
+	if (touch_dragger_enabled) {
+		touch_dragger->set_visible(dragging_enabled);
+	}
 
 	_compute_split_offset(false); // This recalculates and sets computed_split_offset.
 
@@ -301,6 +376,10 @@ void SplitContainer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			update_minimum_size();
+			if (touch_dragger) {
+				touch_dragger->set_modulate(theme_cache.touch_dragger_color);
+				touch_dragger->set_texture(_get_touch_dragger_icon());
+			}
 		} break;
 	}
 }
@@ -351,7 +430,15 @@ bool SplitContainer::is_collapsed() const {
 
 void SplitContainer::set_vertical(bool p_vertical) {
 	ERR_FAIL_COND_MSG(is_fixed, "Can't change orientation of " + get_class() + ".");
+	if (vertical == p_vertical) {
+		return;
+	}
 	vertical = p_vertical;
+	if (touch_dragger) {
+		touch_dragger->set_texture(_get_touch_dragger_icon());
+		touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+		touch_dragger->set_default_cursor_shape(vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
+	}
 	update_minimum_size();
 	_resort();
 }
@@ -449,6 +536,58 @@ bool SplitContainer::is_show_drag_area_enabled() const {
 	return show_drag_area;
 }
 
+void SplitContainer::set_touch_dragger_enabled(bool p_enabled) {
+	if (touch_dragger_enabled == p_enabled) {
+		return;
+	}
+	touch_dragger_enabled = p_enabled;
+	if (p_enabled) {
+		touch_dragger = memnew(TextureRect);
+		touch_dragger->set_texture(_get_touch_dragger_icon());
+		touch_dragger->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+		touch_dragger->set_default_cursor_shape(vertical ? CURSOR_VSPLIT : CURSOR_HSPLIT);
+		touch_dragger->set_modulate(theme_cache.touch_dragger_color);
+		touch_dragger->connect(SceneStringName(gui_input), callable_mp(this, &SplitContainer::_touch_dragger_gui_input));
+		touch_dragger->connect(SceneStringName(mouse_exited), callable_mp(this, &SplitContainer::_touch_dragger_mouse_exited));
+		dragging_area_control->add_child(touch_dragger, false, Node::INTERNAL_MODE_FRONT);
+	} else {
+		if (touch_dragger) {
+			touch_dragger->queue_free();
+			touch_dragger = nullptr;
+		}
+	}
+	dragging_area_control->queue_redraw();
+}
+
+bool SplitContainer::is_touch_dragger_enabled() const {
+	return touch_dragger_enabled;
+}
+
+void SplitContainer::_touch_dragger_mouse_exited() {
+	if (!dragging_area_control->dragging) {
+		touch_dragger->set_modulate(theme_cache.touch_dragger_color);
+	}
+}
+
+void SplitContainer::_touch_dragger_gui_input(const Ref<InputEvent> &p_event) {
+	if (!touch_dragger_enabled) {
+		return;
+	}
+	Ref<InputEventMouseMotion> mm = p_event;
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
+		if (mb->is_pressed()) {
+			touch_dragger->set_modulate(theme_cache.touch_dragger_pressed_color);
+		} else {
+			touch_dragger->set_modulate(theme_cache.touch_dragger_color);
+		}
+	}
+
+	if (mm.is_valid() && !dragging_area_control->dragging) {
+		touch_dragger->set_modulate(theme_cache.touch_dragger_hover_color);
+	}
+}
+
 void SplitContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_split_offset", "offset"), &SplitContainer::set_split_offset);
 	ClassDB::bind_method(D_METHOD("get_split_offset"), &SplitContainer::get_split_offset);
@@ -480,6 +619,9 @@ void SplitContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_drag_area_control"), &SplitContainer::get_drag_area_control);
 
+	ClassDB::bind_method(D_METHOD("set_touch_dragger_enabled", "enabled"), &SplitContainer::set_touch_dragger_enabled);
+	ClassDB::bind_method(D_METHOD("is_touch_dragger_enabled"), &SplitContainer::is_touch_dragger_enabled);
+
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::INT, "offset")));
 	ADD_SIGNAL(MethodInfo("drag_started"));
 	ADD_SIGNAL(MethodInfo("drag_ended"));
@@ -489,6 +631,7 @@ void SplitContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dragging_enabled"), "set_dragging_enabled", "is_dragging_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "dragger_visibility", PROPERTY_HINT_ENUM, "Visible,Hidden,Hidden and Collapsed"), "set_dragger_visibility", "get_dragger_visibility");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vertical"), "set_vertical", "is_vertical");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "touch_dragger_enabled"), "set_touch_dragger_enabled", "is_touch_dragger_enabled");
 
 	ADD_GROUP("Drag Area", "drag_area_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "drag_area_margin_begin", PROPERTY_HINT_NONE, "suffix:px"), "set_drag_area_margin_begin", "get_drag_area_margin_begin");
@@ -500,9 +643,15 @@ void SplitContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN);
 	BIND_ENUM_CONSTANT(DRAGGER_HIDDEN_COLLAPSED);
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_pressed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, SplitContainer, touch_dragger_hover_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, minimum_grab_thickness);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, SplitContainer, autohide);
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, touch_dragger_icon, "touch_dragger");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, touch_dragger_icon_h, "h_touch_dragger");
+	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, touch_dragger_icon_v, "v_touch_dragger");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon, "grabber");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon_h, "h_grabber");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_ICON, SplitContainer, grabber_icon_v, "v_grabber");

@@ -83,6 +83,12 @@
 				Returns the mouse's position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
+		<method name="get_oversampling" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns viewport oversampling factor.
+			</description>
+		</method>
 		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<param index="0" name="quadrant" type="int" />
@@ -95,7 +101,7 @@
 			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
-				Returns rendering statistics of the given type. See [enum RenderInfoType] and [enum RenderInfo] for options.
+				Returns rendering statistics of the given type.
 			</description>
 		</method>
 		<method name="get_screen_transform" qualifiers="const">
@@ -116,11 +122,21 @@
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
 				    await RenderingServer.frame_post_draw
 				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public async override void _Ready()
+				{
+				    await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+				    var viewport = GetNode&lt;Viewport&gt;("Viewport");
+				    viewport.GetTexture().GetImage().SavePng("user://Screenshot.png");
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
 			</description>
 		</method>
@@ -146,6 +162,12 @@
 			<return type="Variant" />
 			<description>
 				Returns the drag data from the GUI, that was previously returned by [method Control._get_drag_data].
+			</description>
+		</method>
+		<method name="gui_get_drag_description" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the drag data human-readable description.
 			</description>
 		</method>
 		<method name="gui_get_focus_owner" qualifiers="const">
@@ -178,6 +200,13 @@
 			<return type="void" />
 			<description>
 				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
+			</description>
+		</method>
+		<method name="gui_set_drag_description">
+			<return type="void" />
+			<param index="0" name="description" type="String" />
+			<description>
+				Sets the drag data human-readable description.
 			</description>
 		</method>
 		<method name="is_input_handled" qualifiers="const">
@@ -298,10 +327,10 @@
 			The rendering layers in which this [Viewport] renders [CanvasItem] nodes.
 		</member>
 		<member name="canvas_item_default_texture_filter" type="int" setter="set_default_canvas_item_texture_filter" getter="get_default_canvas_item_texture_filter" enum="Viewport.DefaultCanvasItemTextureFilter" default="1">
-			Sets the default filter mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureFilter] for options.
+			Sets the default filter mode used by [CanvasItem]s in this Viewport.
 		</member>
 		<member name="canvas_item_default_texture_repeat" type="int" setter="set_default_canvas_item_texture_repeat" getter="get_default_canvas_item_texture_repeat" enum="Viewport.DefaultCanvasItemTextureRepeat" default="0">
-			Sets the default repeat mode used by [CanvasItem]s in this Viewport. See [enum DefaultCanvasItemTextureRepeat] for options.
+			Sets the default repeat mode used by [CanvasItem]s in this Viewport.
 		</member>
 		<member name="canvas_transform" type="Transform2D" setter="set_canvas_transform" getter="get_canvas_transform">
 			The canvas transform of the viewport, useful for changing the on-screen positions of all child [CanvasItem]s. This is relative to the global canvas transform of the viewport.
@@ -345,6 +374,12 @@
 		<member name="msaa_3d" type="int" setter="set_msaa_3d" getter="get_msaa_3d" enum="Viewport.MSAA" default="0">
 			The multisample antialiasing mode for 3D rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of [constant Viewport.MSAA_2X] or [constant Viewport.MSAA_4X] is best unless targeting very high-end systems. See also bilinear scaling 3D [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
+		</member>
+		<member name="oversampling" type="bool" setter="set_use_oversampling" getter="is_using_oversampling" default="true">
+			If [code]true[/code] and one of the following conditions is true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [SVGTexture] oversampling is enabled.
+		</member>
+		<member name="oversampling_override" type="float" setter="set_oversampling_override" getter="get_oversampling_override" default="0.0">
+			If greater than zero, this value is used as the font oversampling factor, otherwise oversampling is equal to viewport scale.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
 			If [code]true[/code], the viewport will use a unique copy of the [World3D] defined in [member world_3d].
@@ -419,13 +454,12 @@
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
 		<member name="use_debanding" type="bool" setter="set_use_debanding" getter="is_using_debanding" default="false">
-			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible in 3D. 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS].
+			If [code]true[/code], uses a fast post-processing filter to make banding significantly less visible. If [member use_hdr_2d] is [code]false[/code], 2D rendering is [i]not[/i] affected by debanding unless the [member Environment.background_mode] is [constant Environment.BG_CANVAS]. If [member use_hdr_2d] is [code]true[/code], debanding will only be applied if this is the root [Viewport] and will affect all 2D and 3D rendering, including canvas items.
 			In some cases, debanding may introduce a slightly noticeable dithering pattern. It's recommended to enable debanding only when actually needed since the dithering pattern will make lossless-compressed screenshots larger.
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] and [method RenderingServer.viewport_set_use_debanding].
 		</member>
 		<member name="use_hdr_2d" type="bool" setter="set_use_hdr_2d" getter="is_using_hdr_2d" default="false">
-			If [code]true[/code], 2D rendering will use an high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
-			[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
+			If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility rendering method this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile rendering method it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.
@@ -512,22 +546,22 @@
 			Use bilinear scaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in undersampling while values greater than [code]1.0[/code] will result in supersampling. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="SCALING_3D_MODE_FSR" value="1" enum="Scaling3DMode">
-			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Use AMD FidelityFX Super Resolution 1.0 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 		</constant>
 		<constant name="SCALING_3D_MODE_FSR2" value="2" enum="Scaling3DMode">
-			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
+			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
 		</constant>
 		<constant name="SCALING_3D_MODE_METALFX_SPATIAL" value="3" enum="Scaling3DMode">
 			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxspatialscaler#overview]MetalFX spatial upscaler[/url] for the viewport's 3D buffer.
 			The amount of scaling can be set using [member scaling_3d_scale].
-			Values less than [code]1.0[/code] will be result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
 			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
 			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
 		</constant>
 		<constant name="SCALING_3D_MODE_METALFX_TEMPORAL" value="4" enum="Scaling3DMode">
 			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxtemporalscaler#overview]MetalFX temporal upscaler[/url] for the viewport's 3D buffer.
 			The amount of scaling can be set using [member scaling_3d_scale]. To determine the minimum input scale, use the [method RenderingDevice.limit_get] method with [constant RenderingDevice.LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE].
-			Values less than [code]1.0[/code] will be result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
+			Values less than [code]1.0[/code] will result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
 			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
 			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
 		</constant>
@@ -573,7 +607,10 @@
 		<constant name="SCREEN_SPACE_AA_FXAA" value="1" enum="ScreenSpaceAA">
 			Use fast approximate antialiasing. FXAA is a popular screen-space antialiasing method, which is fast but will make the image look blurry, especially at lower resolutions. It can still work relatively well at large resolutions such as 1440p and 4K.
 		</constant>
-		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
+		<constant name="SCREEN_SPACE_AA_SMAA" value="2" enum="ScreenSpaceAA">
+			Use subpixel morphological antialiasing. SMAA may produce clearer results than FXAA, but at a slightly higher performance cost.
+		</constant>
+		<constant name="SCREEN_SPACE_AA_MAX" value="3" enum="ScreenSpaceAA">
 			Represents the size of the [enum ScreenSpaceAA] enum.
 		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
@@ -691,7 +728,7 @@
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_CLUSTER_REFLECTION_PROBES" value="23" enum="DebugDraw">
-			Draws the cluster used by [ReflectionProbe] nodes to optimize decal rendering.
+			Draws the cluster used by [ReflectionProbe] nodes to optimize reflection probes.
 			[b]Note:[/b] Only supported when using the Forward+ rendering method.
 		</constant>
 		<constant name="DEBUG_DRAW_OCCLUDERS" value="24" enum="DebugDraw">

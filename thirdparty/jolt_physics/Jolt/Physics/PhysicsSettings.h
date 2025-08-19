@@ -55,8 +55,8 @@ struct PhysicsSettings
 	/// Fraction of its inner radius a body may penetrate another body for the LinearCast motion quality
 	float		mLinearCastMaxPenetration = 0.25f;
 
-	/// Max squared distance to use to determine if two points are on the same plane for determining the contact manifold between two shape faces (unit: meter^2)
-	float		mManifoldToleranceSq = 1.0e-6f;
+	/// Max distance to use to determine if two points are on the same plane for determining the contact manifold between two shape faces (unit: meter)
+	float		mManifoldTolerance = 1.0e-3f;
 
 	/// Maximum distance to correct in a single iteration when solving position constraints (unit: meters)
 	float		mMaxPenetrationDistance = 0.2f;

@@ -55,7 +55,7 @@ public class GodotLib {
 	/**
 	 * Invoked on the main thread to initialize Godot native layer.
 	 */
-	public static native boolean initialize(Activity activity,
+	public static native boolean initialize(
 			Godot p_instance,
 			AssetManager p_asset_manager,
 			GodotIO godotIO,
@@ -267,6 +267,11 @@ public class GodotLib {
 	 * Invoked on the theme light/dark mode change.
 	 */
 	public static native void onNightModeChanged();
+
+	/**
+	 * Invoked on the hardware keyboard connected/disconnected.
+	 */
+	public static native void hardwareKeyboardConnected(boolean connected);
 
 	/**
 	 * Invoked on the file picker closed.

@@ -31,6 +31,7 @@
 #include "script_language.h"
 
 #include "core/config/project_settings.h"
+#include "core/core_bind.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/resource_loader.h"
@@ -44,6 +45,15 @@ thread_local bool ScriptServer::thread_entered = false;
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = nullptr;
+
+// These need to be the last static variables in this file, since we're exploiting the reverse-order destruction of static variables.
+static bool is_program_exiting = false;
+struct ProgramExitGuard {
+	~ProgramExitGuard() {
+		is_program_exiting = true;
+	}
+};
+static ProgramExitGuard program_exit_guard;
 
 void Script::_notification(int p_what) {
 	switch (p_what) {
@@ -172,7 +182,7 @@ void Script::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_tool"), &Script::is_tool);
 	ClassDB::bind_method(D_METHOD("is_abstract"), &Script::is_abstract);
 
-	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::get_rpc_config);
+	ClassDB::bind_method(D_METHOD("get_rpc_config"), &Script::_get_rpc_config_bind);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "source_code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_source_code", "get_source_code");
 }
@@ -321,6 +331,9 @@ void ScriptServer::finish_languages() {
 	}
 
 	for (ScriptLanguage *E : langs_to_finish) {
+		if (CoreBind::OS::get_singleton()) {
+			CoreBind::OS::get_singleton()->remove_script_loggers(E); // Unregister loggers using this script language.
+		}
 		E->finish();
 	}
 
@@ -535,12 +548,26 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
-////////////////////
+Vector<Ref<ScriptBacktrace>> ScriptServer::capture_script_backtraces(bool p_include_variables) {
+	if (is_program_exiting) {
+		return Vector<Ref<ScriptBacktrace>>();
+	}
 
-ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
-ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
-	singleton = this;
+	MutexLock lock(languages_mutex);
+	if (!languages_ready) {
+		return Vector<Ref<ScriptBacktrace>>();
+	}
+
+	Vector<Ref<ScriptBacktrace>> result;
+	result.resize(_language_count);
+	for (int i = 0; i < _language_count; i++) {
+		result.write[i].instantiate(_languages[i], p_include_variables);
+	}
+
+	return result;
 }
+
+////////////////////
 
 void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const {
 	p_core_type_words->push_back("String");
@@ -633,6 +660,7 @@ void ScriptLanguage::_bind_methods() {
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_PASCAL_CASE);
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_SNAKE_CASE);
 	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_KEBAB_CASE);
+	BIND_ENUM_CONSTANT(SCRIPT_NAME_CASING_CAMEL_CASE);
 }
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
@@ -771,7 +799,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		StringName n = E.name;
 		new_values.insert(n);
 
-		if (!values.has(n) || values[n].get_type() != E.type) {
+		if (!values.has(n) || (E.type != Variant::NIL && values[n].get_type() != E.type)) {
 			if (p_values.has(n)) {
 				values[n] = p_values[n];
 			}

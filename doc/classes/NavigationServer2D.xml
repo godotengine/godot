@@ -215,7 +215,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is [code]true[/code] the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+				If [param paused] is [code]true[/code] the specified [param agent] will not be processed. For example, it will not calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -307,7 +307,7 @@
 			<return type="int" />
 			<param index="0" name="process_info" type="int" enum="NavigationServer2D.ProcessInfo" />
 			<description>
-				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
+				Returns information about the current state of the NavigationServer.
 			</description>
 		</method>
 		<method name="is_baking_navigation_polygon" qualifiers="const">
@@ -342,6 +342,14 @@
 			<param index="0" name="link" type="RID" />
 			<description>
 				Returns the enter cost of this [param link].
+			</description>
+		</method>
+		<method name="link_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="link" type="RID" />
+			<description>
+				Returns the current iteration ID of the navigation link. Every time the navigation link changes and synchronizes, the iteration ID increases. An iteration ID of [code]0[/code] means the navigation link has never synchronized.
+				[b]Note:[/b] The iteration ID will wrap around to [code]1[/code] after reaching its range limit.
 			</description>
 		</method>
 		<method name="link_get_map" qualifiers="const">
@@ -464,7 +472,7 @@
 				Create a new map.
 			</description>
 		</method>
-		<method name="map_force_update">
+		<method name="map_force_update" deprecated="This method is no longer supported, as it is incompatible with asynchronous updates. It can only be used in a single-threaded context, at your own risk.">
 			<return type="void" />
 			<param index="0" name="map" type="RID" />
 			<description>
@@ -531,6 +539,13 @@
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation link [RID]s that are currently assigned to the requested navigation [param map].
+			</description>
+		</method>
+		<method name="map_get_merge_rasterizer_cell_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns map's internal merge rasterizer cell scale.
 			</description>
 		</method>
 		<method name="map_get_obstacles" qualifiers="const">
@@ -620,6 +635,14 @@
 			<param index="1" name="radius" type="float" />
 			<description>
 				Set the map's link connection radius used to connect links to navigation polygons.
+			</description>
+		</method>
+		<method name="map_set_merge_rasterizer_cell_scale">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="scale" type="float" />
+			<description>
+				Set the map's internal merge rasterizer cell scale used to control merging sensitivity.
 			</description>
 		</method>
 		<method name="map_set_use_async_iterations">
@@ -729,7 +752,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed. For example, it will no longer affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">
@@ -843,6 +866,14 @@
 				Returns the enter cost of this [param region].
 			</description>
 		</method>
+		<method name="region_get_iteration_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the current iteration ID of the navigation region. Every time the navigation region changes and synchronizes, the iteration ID increases. An iteration ID of [code]0[/code] means the navigation region has never synchronized.
+				[b]Note:[/b] The iteration ID will wrap around to [code]1[/code] after reaching its range limit.
+			</description>
+		</method>
 		<method name="region_get_map" qualifiers="const">
 			<return type="RID" />
 			<param index="0" name="region" type="RID" />
@@ -887,6 +918,13 @@
 			<param index="0" name="region" type="RID" />
 			<description>
 				Returns the travel cost of this [param region].
+			</description>
+		</method>
+		<method name="region_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param region] uses an async synchronization process that runs on a background thread.
 			</description>
 		</method>
 		<method name="region_get_use_edge_connections" qualifiers="const">
@@ -968,6 +1006,14 @@
 			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [param travel_cost] for this [param region].
+			</description>
+		</method>
+		<method name="region_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="region" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param region] uses an async synchronization process that runs on a background thread.
 			</description>
 		</method>
 		<method name="region_set_use_edge_connections">

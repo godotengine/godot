@@ -30,6 +30,8 @@
 
 #include "rendering_context_driver_d3d12.h"
 
+#include "d3d12_hooks.h"
+
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
@@ -37,27 +39,7 @@
 #include "core/version.h"
 #include "servers/rendering/rendering_device.h"
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wswitch"
-#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
-#elif defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnon-virtual-dtor"
-#pragma clang diagnostic ignored "-Wstring-plus-int"
-#pragma clang diagnostic ignored "-Wswitch"
-#pragma clang diagnostic ignored "-Wmissing-field-initializers"
-#endif
-
-#include "dxcapi.h"
-
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#elif defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+#include <dxcapi.h>
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
@@ -96,9 +78,11 @@ RenderingContextDriverD3D12::~RenderingContextDriverD3D12() {
 	if (lib_dxgi) {
 		FreeLibrary(lib_dxgi);
 	}
+#ifdef DCOMP_ENABLED
 	if (lib_dcomp) {
 		FreeLibrary(lib_dcomp);
 	}
+#endif
 }
 
 Error RenderingContextDriverD3D12::_init_device_factory() {
@@ -111,8 +95,10 @@ Error RenderingContextDriverD3D12::_init_device_factory() {
 	lib_dxgi = LoadLibraryW(L"DXGI.dll");
 	ERR_FAIL_NULL_V(lib_dxgi, ERR_CANT_CREATE);
 
+#ifdef DCOMP_ENABLED
 	lib_dcomp = LoadLibraryW(L"Dcomp.dll");
 	ERR_FAIL_NULL_V(lib_dcomp, ERR_CANT_CREATE);
+#endif
 
 	// Note: symbol is not available in MinGW import library.
 	PFN_D3D12_GET_INTERFACE d3d_D3D12GetInterface = (PFN_D3D12_GET_INTERFACE)(void *)GetProcAddress(lib_d3d12, "D3D12GetInterface");

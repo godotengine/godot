@@ -30,10 +30,6 @@
 
 #include "skeleton_modifier_3d.h"
 
-void SkeletonModifier3D::_validate_property(PropertyInfo &p_property) const {
-	//
-}
-
 PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 	if (skeleton_id.is_null()) {
@@ -68,11 +64,18 @@ void SkeletonModifier3D::_update_skeleton() {
 	if (old_sk != new_sk) {
 		_skeleton_changed(old_sk, new_sk);
 	}
+	if (new_sk) {
+		_validate_bone_names();
+	}
 	update_configuration_warnings();
 }
 
 void SkeletonModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
-	//
+	GDVIRTUAL_CALL(_skeleton_changed, p_old, p_new);
+}
+
+void SkeletonModifier3D::_validate_bone_names() {
+	GDVIRTUAL_CALL(_validate_bone_names);
 }
 
 void SkeletonModifier3D::_force_update_skeleton_skin() {
@@ -113,16 +116,23 @@ real_t SkeletonModifier3D::get_influence() const {
 	return influence;
 }
 
-void SkeletonModifier3D::process_modification() {
+void SkeletonModifier3D::process_modification(double p_delta) {
 	if (!active) {
 		return;
 	}
-	_process_modification();
+	_process_modification(p_delta);
 	emit_signal(SNAME("modification_processed"));
 }
 
-void SkeletonModifier3D::_process_modification() {
-	GDVIRTUAL_CALL(_process_modification);
+void SkeletonModifier3D::_process_modification(double p_delta) {
+	if (GDVIRTUAL_CALL(_process_modification_with_delta, p_delta)) {
+		return;
+	}
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_process_modification)) {
+		return;
+	}
+#endif // DISABLE_DEPRECATED
 }
 
 void SkeletonModifier3D::_notification(int p_what) {
@@ -151,7 +161,13 @@ void SkeletonModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
+	GDVIRTUAL_BIND(_process_modification_with_delta, "delta");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_process_modification);
+#endif
+
+	GDVIRTUAL_BIND(_skeleton_changed, "old_skeleton", "new_skeleton");
+	GDVIRTUAL_BIND(_validate_bone_names);
 
 	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
 	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);
@@ -219,6 +235,43 @@ Vector3::Axis SkeletonModifier3D::get_axis_from_bone_axis(BoneAxis p_axis) {
 		} break;
 	}
 	return ret;
+}
+
+Vector3 SkeletonModifier3D::limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length) {
+	return p_origin + (p_destination - p_origin).normalized() * p_length;
+}
+
+Quaternion SkeletonModifier3D::get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation) {
+	int parent = p_skeleton->get_bone_parent(p_bone);
+	if (parent < 0) {
+		return p_global_pose_rotation;
+	}
+	return p_skeleton->get_bone_global_pose(parent).basis.orthonormalized().inverse() * p_global_pose_rotation;
+}
+
+Quaternion SkeletonModifier3D::get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot) {
+	if (Math::is_equal_approx((float)p_from.dot(p_to), -1.0f)) {
+		return p_prev_rot; // For preventing to glitch, checking dot for detecting flip is more accurate than checking cross.
+	}
+	Vector3 axis = p_from.cross(p_to);
+	if (axis.is_zero_approx()) {
+		return p_prev_rot;
+	}
+	float angle = p_from.angle_to(p_to);
+	if (Math::is_zero_approx(angle)) {
+		angle = 0.0;
+	}
+	return Quaternion(axis.normalized(), angle);
+}
+
+Vector3 SkeletonModifier3D::snap_vector_to_plane(const Vector3 &p_plane_normal, const Vector3 &p_vector) {
+	if (Math::is_zero_approx(p_plane_normal.length_squared())) {
+		return p_vector;
+	}
+	double length = p_vector.length();
+	Vector3 normalized_vec = p_vector.normalized();
+	Vector3 normal = p_plane_normal.normalized();
+	return normalized_vec.slide(normal) * length;
 }
 
 SkeletonModifier3D::SkeletonModifier3D() {

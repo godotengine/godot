@@ -61,8 +61,6 @@ public:
 	void set_margin(real_t p_margin);
 	real_t get_margin();
 
-	SpringArm3D() {}
-
 private:
 	void process_spring();
 };

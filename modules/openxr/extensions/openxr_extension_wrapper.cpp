@@ -55,6 +55,7 @@ void OpenXRExtensionWrapper::_bind_methods() {
 	GDVIRTUAL_BIND(_on_instance_destroyed);
 	GDVIRTUAL_BIND(_on_session_created, "session");
 	GDVIRTUAL_BIND(_on_process);
+	GDVIRTUAL_BIND(_on_sync_actions);
 	GDVIRTUAL_BIND(_on_pre_render);
 	GDVIRTUAL_BIND(_on_main_swapchains_created);
 	GDVIRTUAL_BIND(_on_pre_draw_viewport, "viewport");
@@ -84,11 +85,9 @@ HashMap<String, bool *> OpenXRExtensionWrapper::get_requested_extensions() {
 
 	if (GDVIRTUAL_CALL(_get_requested_extensions, request_extension)) {
 		HashMap<String, bool *> result;
-		Array keys = request_extension.keys();
-		for (int i = 0; i < keys.size(); i++) {
-			String key = keys.get(i);
-			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(request_extension.get(key, GDExtensionPtr<bool>(nullptr)));
-			result.insert(key, value);
+		for (const KeyValue<Variant, Variant> &kv : request_extension) {
+			GDExtensionPtr<bool> value = VariantCaster<GDExtensionPtr<bool>>::cast(kv.value);
+			result.insert(kv.key, value);
 		}
 		return result;
 	}
@@ -252,6 +251,10 @@ void OpenXRExtensionWrapper::on_session_created(const XrSession p_session) {
 
 void OpenXRExtensionWrapper::on_process() {
 	GDVIRTUAL_CALL(_on_process);
+}
+
+void OpenXRExtensionWrapper::on_sync_actions() {
+	GDVIRTUAL_CALL(_on_sync_actions);
 }
 
 void OpenXRExtensionWrapper::on_pre_render() {

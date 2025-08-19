@@ -77,7 +77,7 @@ struct hb_bit_set_t
 
   bool successful = true; /* Allocations successful */
   mutable unsigned int population = 0;
-  mutable hb_atomic_int_t last_page_lookup = 0;
+  mutable hb_atomic_t<unsigned> last_page_lookup = 0;
   hb_sorted_vector_t<page_map_t> page_map;
   hb_vector_t<page_t> pages;
 
@@ -88,7 +88,7 @@ struct hb_bit_set_t
   {
     if (unlikely (!successful)) return false;
 
-    if (pages.length < count && count <= 2)
+    if (pages.length < count && (unsigned) pages.allocated < count && count <= 2)
       exact_size = true; // Most sets are small and local
 
     if (unlikely (!pages.resize (count, clear, exact_size) ||

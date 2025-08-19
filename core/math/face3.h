@@ -76,7 +76,7 @@ struct [[nodiscard]] Face3 {
 
 	bool intersects_aabb(const AABB &p_aabb) const;
 	_FORCE_INLINE_ bool intersects_aabb2(const AABB &p_aabb) const;
-	operator String() const;
+	explicit operator String() const;
 
 	Face3() = default;
 	constexpr Face3(const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) :

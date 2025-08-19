@@ -119,7 +119,7 @@ void _append_hex(float p_val, char32_t *string) {
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt.resize(p_alpha ? 9 : 7);
+	txt.resize_uninitialized(p_alpha ? 9 : 7);
 	char32_t *ptr = txt.ptrw();
 
 	_append_hex(r, ptr + 0);
@@ -246,6 +246,19 @@ void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	a = c.a;
 }
 
+void Color::set_ok_hsv(float p_h, float p_s, float p_v, float p_alpha) {
+	ok_color::HSV hsv;
+	hsv.h = p_h;
+	hsv.s = p_s;
+	hsv.v = p_v;
+	ok_color::RGB rgb = ok_color::okhsv_to_srgb(hsv);
+	Color c = Color(rgb.r, rgb.g, rgb.b, p_alpha).clamp();
+	r = c.r;
+	g = c.g;
+	b = c.b;
+	a = c.a;
+}
+
 bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
@@ -316,47 +329,38 @@ Color Color::inverted() const {
 }
 
 Color Color::html(const String &p_rgba) {
-	String color = p_rgba;
-	if (color.length() == 0) {
+	if (p_rgba.is_empty()) {
 		return Color();
 	}
-	if (color[0] == '#') {
-		color = color.substr(1);
-	}
 
-	// If enabled, use 1 hex digit per channel instead of 2.
-	// Other sizes aren't in the HTML/CSS spec but we could add them if desired.
-	bool is_shorthand = color.length() < 5;
-	bool alpha = false;
+	const int current_pos = (p_rgba[0] == '#') ? 1 : 0;
+	const int num_of_digits = p_rgba.length() - current_pos;
 
-	if (color.length() == 8) {
-		alpha = true;
-	} else if (color.length() == 6) {
-		alpha = false;
-	} else if (color.length() == 4) {
-		alpha = true;
-	} else if (color.length() == 3) {
-		alpha = false;
+	float r, g, b, a = 1.0f;
+
+	if (num_of_digits == 3) {
+		// #rgb
+		r = _parse_col4(p_rgba, current_pos) / 15.0f;
+		g = _parse_col4(p_rgba, current_pos + 1) / 15.0f;
+		b = _parse_col4(p_rgba, current_pos + 2) / 15.0f;
+	} else if (num_of_digits == 4) {
+		r = _parse_col4(p_rgba, current_pos) / 15.0f;
+		g = _parse_col4(p_rgba, current_pos + 1) / 15.0f;
+		b = _parse_col4(p_rgba, current_pos + 2) / 15.0f;
+		a = _parse_col4(p_rgba, current_pos + 3) / 15.0f;
+	} else if (num_of_digits == 6) {
+		r = _parse_col8(p_rgba, current_pos) / 255.0f;
+		g = _parse_col8(p_rgba, current_pos + 2) / 255.0f;
+		b = _parse_col8(p_rgba, current_pos + 4) / 255.0f;
+	} else if (num_of_digits == 8) {
+		r = _parse_col8(p_rgba, current_pos) / 255.0f;
+		g = _parse_col8(p_rgba, current_pos + 2) / 255.0f;
+		b = _parse_col8(p_rgba, current_pos + 4) / 255.0f;
+		a = _parse_col8(p_rgba, current_pos + 6) / 255.0f;
 	} else {
 		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_rgba + ".");
 	}
 
-	float r, g, b, a = 1.0f;
-	if (is_shorthand) {
-		r = _parse_col4(color, 0) / 15.0f;
-		g = _parse_col4(color, 1) / 15.0f;
-		b = _parse_col4(color, 2) / 15.0f;
-		if (alpha) {
-			a = _parse_col4(color, 3) / 15.0f;
-		}
-	} else {
-		r = _parse_col8(color, 0) / 255.0f;
-		g = _parse_col8(color, 2) / 255.0f;
-		b = _parse_col8(color, 4) / 255.0f;
-		if (alpha) {
-			a = _parse_col8(color, 6) / 255.0f;
-		}
-	}
 	ERR_FAIL_COND_V_MSG(r < 0.0f, Color(), "Invalid color code: " + p_rgba + ".");
 	ERR_FAIL_COND_V_MSG(g < 0.0f, Color(), "Invalid color code: " + p_rgba + ".");
 	ERR_FAIL_COND_V_MSG(b < 0.0f, Color(), "Invalid color code: " + p_rgba + ".");
@@ -368,22 +372,20 @@ Color Color::html(const String &p_rgba) {
 bool Color::html_is_valid(const String &p_color) {
 	String color = p_color;
 
-	if (color.length() == 0) {
+	if (color.is_empty()) {
 		return false;
 	}
-	if (color[0] == '#') {
-		color = color.substr(1);
-	}
 
-	// Check if the amount of hex digits is valid.
-	int len = color.length();
-	if (!(len == 3 || len == 4 || len == 6 || len == 8)) {
+	const int current_pos = (color[0] == '#') ? 1 : 0;
+	const int len = color.length();
+	const int num_of_digits = len - current_pos;
+	if (!(num_of_digits == 3 || num_of_digits == 4 || num_of_digits == 6 || num_of_digits == 8)) {
 		return false;
 	}
 
 	// Check if each hex digit is valid.
-	for (int i = 0; i < len; i++) {
-		if (_parse_col4(color, i) == -1) {
+	for (int i = current_pos; i < len; i++) {
+		if (!is_hex_digit(p_color[i])) {
 			return false;
 		}
 	}
@@ -484,6 +486,12 @@ Color::operator String() const {
 Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 	Color c;
 	c.set_ok_hsl(p_h, p_s, p_l, p_alpha);
+	return c;
+}
+
+Color Color::from_ok_hsv(float p_h, float p_s, float p_l, float p_alpha) {
+	Color c;
+	c.set_ok_hsv(p_h, p_s, p_l, p_alpha);
 	return c;
 }
 

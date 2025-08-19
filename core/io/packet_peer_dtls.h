@@ -37,10 +37,10 @@ class PacketPeerDTLS : public PacketPeer {
 	GDCLASS(PacketPeerDTLS, PacketPeer);
 
 protected:
-	static PacketPeerDTLS *(*_create)(bool p_notify_postinitialize);
+	static inline PacketPeerDTLS *(*_create)(bool p_notify_postinitialize) = nullptr;
 	static void _bind_methods();
 
-	static bool available;
+	static inline bool available = false;
 
 public:
 	enum Status {

@@ -13,44 +13,44 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="_get_format" qualifiers="virtual const">
+		<method name="_get_format" qualifiers="virtual required const">
 			<return type="int" enum="Image.Format" />
 			<description>
 				Called when the [TextureLayered]'s format is queried.
 			</description>
 		</method>
-		<method name="_get_height" qualifiers="virtual const">
+		<method name="_get_height" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [TextureLayered]'s height is queried.
 			</description>
 		</method>
-		<method name="_get_layer_data" qualifiers="virtual const">
+		<method name="_get_layer_data" qualifiers="virtual required const">
 			<return type="Image" />
 			<param index="0" name="layer_index" type="int" />
 			<description>
 				Called when the data for a layer in the [TextureLayered] is queried.
 			</description>
 		</method>
-		<method name="_get_layered_type" qualifiers="virtual const">
+		<method name="_get_layered_type" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the layers' type in the [TextureLayered] is queried.
 			</description>
 		</method>
-		<method name="_get_layers" qualifiers="virtual const">
+		<method name="_get_layers" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the number of layers in the [TextureLayered] is queried.
 			</description>
 		</method>
-		<method name="_get_width" qualifiers="virtual const">
+		<method name="_get_width" qualifiers="virtual required const">
 			<return type="int" />
 			<description>
 				Called when the [TextureLayered]'s width queried.
 			</description>
 		</method>
-		<method name="_has_mipmaps" qualifiers="virtual const">
+		<method name="_has_mipmaps" qualifiers="virtual required const">
 			<return type="bool" />
 			<description>
 				Called when the presence of mipmaps in the [TextureLayered] is queried.
@@ -59,7 +59,7 @@
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
-				Returns the current format being used by this texture. See [enum Image.Format] for details.
+				Returns the current format being used by this texture.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">

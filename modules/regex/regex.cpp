@@ -69,7 +69,7 @@ String RegExMatch::get_subject() const {
 }
 
 int RegExMatch::get_group_count() const {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return 0;
 	}
 	return data.size() - 1;

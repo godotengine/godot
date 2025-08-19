@@ -44,6 +44,7 @@ void OpenXRInterface::_bind_methods() {
 	// lifecycle signals
 	ADD_SIGNAL(MethodInfo("session_begun"));
 	ADD_SIGNAL(MethodInfo("session_stopping"));
+	ADD_SIGNAL(MethodInfo("session_synchronized"));
 	ADD_SIGNAL(MethodInfo("session_focussed"));
 	ADD_SIGNAL(MethodInfo("session_visible"));
 	ADD_SIGNAL(MethodInfo("session_loss_pending"));
@@ -53,6 +54,9 @@ void OpenXRInterface::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("cpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
 	ADD_SIGNAL(MethodInfo("gpu_level_changed", PropertyInfo(Variant::INT, "sub_domain"), PropertyInfo(Variant::INT, "from_level"), PropertyInfo(Variant::INT, "to_level")));
+
+	// State
+	ClassDB::bind_method(D_METHOD("get_session_state"), &OpenXRInterface::get_session_state);
 
 	// Display refresh rate
 	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &OpenXRInterface::get_display_refresh_rate);
@@ -115,6 +119,16 @@ void OpenXRInterface::_bind_methods() {
 	ADD_GROUP("Vulkan VRS", "vrs_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_min_radius", PROPERTY_HINT_RANGE, "1.0,100.0,1.0"), "set_vrs_min_radius", "get_vrs_min_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vrs_strength", PROPERTY_HINT_RANGE, "0.1,10.0,0.1"), "set_vrs_strength", "get_vrs_strength");
+
+	BIND_ENUM_CONSTANT(SESSION_STATE_UNKNOWN);
+	BIND_ENUM_CONSTANT(SESSION_STATE_IDLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_READY);
+	BIND_ENUM_CONSTANT(SESSION_STATE_SYNCHRONIZED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_VISIBLE);
+	BIND_ENUM_CONSTANT(SESSION_STATE_FOCUSED);
+	BIND_ENUM_CONSTANT(SESSION_STATE_STOPPING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_LOSS_PENDING);
+	BIND_ENUM_CONSTANT(SESSION_STATE_EXITING);
 
 	BIND_ENUM_CONSTANT(HAND_LEFT);
 	BIND_ENUM_CONSTANT(HAND_RIGHT);
@@ -1375,6 +1389,10 @@ void OpenXRInterface::on_state_visible() {
 	emit_signal(SNAME("session_visible"));
 }
 
+void OpenXRInterface::on_state_synchronized() {
+	emit_signal(SNAME("session_synchronized"));
+}
+
 void OpenXRInterface::on_state_focused() {
 	emit_signal(SNAME("session_focussed"));
 }
@@ -1397,6 +1415,14 @@ void OpenXRInterface::on_reference_space_change_pending() {
 
 void OpenXRInterface::on_refresh_rate_changes(float p_new_rate) {
 	emit_signal(SNAME("refresh_rate_changed"), p_new_rate);
+}
+
+OpenXRInterface::SessionState OpenXRInterface::get_session_state() {
+	if (openxr_api) {
+		return (SessionState)openxr_api->get_session_state();
+	}
+
+	return SESSION_STATE_UNKNOWN;
 }
 
 /** Hand tracking. */
@@ -1456,9 +1482,10 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_CONTROLLER:
 				return HAND_TRACKED_SOURCE_CONTROLLER;
 			case OpenXRHandTrackingExtension::OPENXR_SOURCE_UNKNOWN:
+			case OpenXRHandTrackingExtension::OPENXR_SOURCE_NOT_TRACKED:
 				return HAND_TRACKED_SOURCE_UNKNOWN;
 			default:
-				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source returned by OpenXR");
+				ERR_FAIL_V_MSG(HAND_TRACKED_SOURCE_UNKNOWN, "Unknown hand tracking source (" + String::num_int64(source) + ") returned by OpenXR");
 		}
 	}
 
@@ -1466,7 +1493,7 @@ OpenXRInterface::HandTrackedSource OpenXRInterface::get_hand_tracking_source(con
 }
 
 BitField<OpenXRInterface::HandJointFlags> OpenXRInterface::get_hand_joint_flags(Hand p_hand, HandJoints p_joint) const {
-	BitField<OpenXRInterface::HandJointFlags> bits;
+	BitField<OpenXRInterface::HandJointFlags> bits = HAND_JOINT_NONE;
 
 	OpenXRHandTrackingExtension *hand_tracking_ext = OpenXRHandTrackingExtension::get_singleton();
 	if (hand_tracking_ext && hand_tracking_ext->get_active()) {
@@ -1546,6 +1573,11 @@ RID OpenXRInterface::get_vrs_texture() {
 		return RID();
 	}
 
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return density_map;
+	}
+
 	PackedVector2Array eye_foci;
 
 	Size2 target_size = get_render_target_size();
@@ -1559,6 +1591,19 @@ RID OpenXRInterface::get_vrs_texture() {
 	xr_vrs.set_vrs_render_region(get_render_region());
 
 	return xr_vrs.make_vrs_texture(target_size, eye_foci);
+}
+
+XRInterface::VRSTextureFormat OpenXRInterface::get_vrs_texture_format() {
+	if (!openxr_api) {
+		return XR_VRS_TEXTURE_FORMAT_UNIFIED;
+	}
+
+	RID density_map = openxr_api->get_density_map_texture();
+	if (density_map.is_valid()) {
+		return XR_VRS_TEXTURE_FORMAT_FRAGMENT_DENSITY_MAP;
+	}
+
+	return XR_VRS_TEXTURE_FORMAT_UNIFIED;
 }
 
 void OpenXRInterface::set_cpu_level(PerfSettingsLevel p_level) {

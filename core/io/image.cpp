@@ -38,8 +38,6 @@
 #include "core/templates/hash_map.h"
 #include "core/variant/dictionary.h"
 
-#include <cmath>
-
 const char *Image::format_names[Image::FORMAT_MAX] = {
 	"Lum8",
 	"LumAlpha8",
@@ -82,32 +80,6 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ASTC_8x8_HDR",
 };
 
-// External saver function pointers.
-
-SavePNGFunc Image::save_png_func = nullptr;
-SaveJPGFunc Image::save_jpg_func = nullptr;
-SaveEXRFunc Image::save_exr_func = nullptr;
-SaveWebPFunc Image::save_webp_func = nullptr;
-SaveDDSFunc Image::save_dds_func = nullptr;
-
-SavePNGBufferFunc Image::save_png_buffer_func = nullptr;
-SaveJPGBufferFunc Image::save_jpg_buffer_func = nullptr;
-SaveEXRBufferFunc Image::save_exr_buffer_func = nullptr;
-SaveWebPBufferFunc Image::save_webp_buffer_func = nullptr;
-SaveDDSBufferFunc Image::save_dds_buffer_func = nullptr;
-
-// External loader function pointers.
-
-ImageMemLoadFunc Image::_png_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_png_mem_unpacker_func = nullptr;
-ImageMemLoadFunc Image::_jpg_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
-ScalableImageMemLoadFunc Image::_svg_scalable_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_ktx_mem_loader_func = nullptr;
-ImageMemLoadFunc Image::_dds_mem_loader_func = nullptr;
-
 // External VRAM compression function pointers.
 
 void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
@@ -132,7 +104,7 @@ void (*Image::_image_decompress_astc)(Image *) = nullptr;
 Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
 Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
 Vector<uint8_t> (*Image::png_packer)(const Ref<Image> &) = nullptr;
-Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels) = nullptr;
+Vector<uint8_t> (*Image::basis_universal_packer)(const Ref<Image> &, Image::UsedChannels, const BasisUniversalPackerParams &) = nullptr;
 
 Ref<Image> (*Image::webp_unpacker)(const Vector<uint8_t> &) = nullptr;
 Ref<Image> (*Image::png_unpacker)(const Vector<uint8_t> &) = nullptr;
@@ -573,7 +545,7 @@ static bool _are_formats_compatible(Image::Format p_format0, Image::Format p_for
 void Image::convert(Format p_new_format) {
 	ERR_FAIL_INDEX_MSG(p_new_format, FORMAT_MAX, vformat("The Image format specified (%d) is out of range. See Image's Format enum.", p_new_format));
 
-	if (data.size() == 0 || p_new_format == format) {
+	if (data.is_empty() || p_new_format == format) {
 		return;
 	}
 
@@ -829,13 +801,13 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 	for (uint32_t y = 0; y < p_dst_height; y++) {
 		// Y coordinates
-		oy = (double)y * yfac - 0.5f;
+		oy = (double)(y + 0.5) * yfac - 0.5;
 		oy1 = (int)oy;
 		dy = oy - (double)oy1;
 
 		for (uint32_t x = 0; x < p_dst_width; x++) {
 			// X coordinates
-			ox = (double)x * xfac - 0.5f;
+			ox = (double)(x + 0.5) * xfac - 0.5;
 			ox1 = (int)ox;
 			dx = ox - (double)ox1;
 
@@ -843,10 +815,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 			T *__restrict dst = ((T *)p_dst) + (y * p_dst_width + x) * CC;
 
-			double color[CC];
-			for (int i = 0; i < CC; i++) {
-				color[i] = 0;
-			}
+			double color[CC] = {};
 
 			for (int n = -1; n < 3; n++) {
 				// get Y coefficient
@@ -989,11 +958,11 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 template <int CC, typename T>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	for (uint32_t i = 0; i < p_dst_height; i++) {
-		uint32_t src_yofs = i * p_src_height / p_dst_height;
+		uint32_t src_yofs = (i + 0.5) * p_src_height / p_dst_height;
 		uint32_t y_ofs = src_yofs * p_src_width * CC;
 
 		for (uint32_t j = 0; j < p_dst_width; j++) {
-			uint32_t src_xofs = j * p_src_width / p_dst_width;
+			uint32_t src_xofs = (j + 0.5) * p_src_width / p_dst_width;
 			src_xofs *= CC;
 
 			for (uint32_t l = 0; l < CC; l++) {
@@ -1143,8 +1112,8 @@ bool Image::is_size_po2() const {
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
-	int w = next_power_of_2(width);
-	int h = next_power_of_2(height);
+	int w = next_power_of_2((uint32_t)width);
+	int h = next_power_of_2((uint32_t)height);
 	if (p_square) {
 		w = h = MAX(w, h);
 	}
@@ -2177,7 +2146,7 @@ void Image::clear_mipmaps() {
 }
 
 bool Image::is_empty() const {
-	return (data.size() == 0);
+	return (data.is_empty());
 }
 
 Vector<uint8_t> Image::get_data() const {
@@ -2294,7 +2263,7 @@ void Image::initialize_data(const char **p_xpm) {
 		switch (status) {
 			case READING_HEADER: {
 				String line_str = line_ptr;
-				line_str.replace("\t", " ");
+				line_str = line_str.replace_char('\t', ' ');
 
 				size_width = line_str.get_slicec(' ', 0).to_int();
 				size_height = line_str.get_slicec(' ', 1).to_int();
@@ -2479,22 +2448,22 @@ bool Image::is_invisible() const {
 		} break;
 		case FORMAT_RGBAH: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 8;
 			const uint16_t *pixeldata = reinterpret_cast<const uint16_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFF) != 0) {
 					return false;
 				}
 			}
 		} break;
 		case FORMAT_RGBAF: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 16;
 			const uint32_t *pixeldata = reinterpret_cast<const uint32_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFFFFFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFFFFFF) != 0) {
 					return false;
 				}
 			}
@@ -3096,7 +3065,7 @@ void Image::_repeat_pixel_over_subsequent_memory(uint8_t *p_pixel, int p_pixel_s
 }
 
 void Image::fill(const Color &p_color) {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill in compressed image formats.");
@@ -3112,7 +3081,7 @@ void Image::fill(const Color &p_color) {
 }
 
 void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill rect in compressed image formats.");
@@ -3231,9 +3200,9 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 		}
 		case FORMAT_RGB565: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0x1F) / 31.0;
+			float r = ((u >> 11) & 0x1F) / 31.0;
 			float g = ((u >> 5) & 0x3F) / 63.0;
-			float b = ((u >> 11) & 0x1F) / 31.0;
+			float b = (u & 0x1F) / 31.0;
 			return Color(r, g, b, 1.0);
 		}
 		case FORMAT_RF: {
@@ -3330,9 +3299,9 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 		case FORMAT_RGB565: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
+			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31)) << 11;
 			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 63)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 11;
+			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31));
 
 			((uint16_t *)ptr)[ofs] = rgba;
 		} break;
@@ -3492,18 +3461,24 @@ Image::UsedChannels Image::detect_used_channels(CompressSource p_source) const {
 
 	UsedChannels used_channels;
 
-	if (!c && !a) {
-		used_channels = USED_CHANNELS_L;
-	} else if (!c && a) {
-		used_channels = USED_CHANNELS_LA;
-	} else if (r && !g && !b && !a) {
-		used_channels = USED_CHANNELS_R;
-	} else if (r && g && !b && !a) {
-		used_channels = USED_CHANNELS_RG;
-	} else if (r && g && b && !a) {
-		used_channels = USED_CHANNELS_RGB;
+	if (!c) {
+		// Uniform RGB (grayscale).
+		if (a) {
+			used_channels = USED_CHANNELS_LA;
+		} else {
+			used_channels = USED_CHANNELS_L;
+		}
 	} else {
-		used_channels = USED_CHANNELS_RGBA;
+		// Colored image.
+		if (a) {
+			used_channels = USED_CHANNELS_RGBA;
+		} else if (b) {
+			used_channels = USED_CHANNELS_RGB;
+		} else if (g) {
+			used_channels = USED_CHANNELS_RG;
+		} else {
+			used_channels = USED_CHANNELS_R;
+		}
 	}
 
 	if (p_source == COMPRESS_SOURCE_SRGB && (used_channels == USED_CHANNELS_R || used_channels == USED_CHANNELS_RG)) {
@@ -3734,7 +3709,7 @@ void Image::normal_map_to_xy() {
 }
 
 Ref<Image> Image::rgbe_to_srgb() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return Ref<Image>();
 	}
 
@@ -3856,7 +3831,7 @@ bool Image::detect_signed(bool p_include_mips) const {
 }
 
 void Image::srgb_to_linear() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -3887,7 +3862,7 @@ void Image::srgb_to_linear() {
 }
 
 void Image::linear_to_srgb() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -3918,7 +3893,7 @@ void Image::linear_to_srgb() {
 }
 
 void Image::premultiply_alpha() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -3940,7 +3915,7 @@ void Image::premultiply_alpha() {
 }
 
 void Image::fix_alpha_edges() {
-	if (data.size() == 0) {
+	if (data.is_empty()) {
 		return;
 	}
 
@@ -4290,7 +4265,7 @@ Image::Image(const uint8_t *p_mem_png_jpg, int p_len) {
 	}
 }
 
-Ref<Resource> Image::duplicate(bool p_subresources) const {
+Ref<Resource> Image::_duplicate(const DuplicateParams &p_params) const {
 	Ref<Image> copy;
 	copy.instantiate();
 	copy->_copy_internals_from(*this);
@@ -4331,10 +4306,10 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 	Dictionary result;
-	result["max"] = INFINITY;
-	result["mean"] = INFINITY;
-	result["mean_squared"] = INFINITY;
-	result["root_mean_squared"] = INFINITY;
+	result["max"] = Math::INF;
+	result["mean"] = Math::INF;
+	result["mean_squared"] = Math::INF;
+	result["root_mean_squared"] = Math::INF;
 	result["peak_snr"] = 0.0f;
 
 	ERR_FAIL_COND_V(p_compared_image.is_null(), result);
@@ -4418,12 +4393,12 @@ Dictionary Image::compute_image_metrics(const Ref<Image> p_compared_image, bool 
 	image_metric_mean = CLAMP(sum / total_values, 0.0f, 255.0f);
 	image_metric_mean_squared = CLAMP(sum2 / total_values, 0.0f, 255.0f * 255.0f);
 
-	image_metric_root_mean_squared = sqrt(image_metric_mean_squared);
+	image_metric_root_mean_squared = std::sqrt(image_metric_mean_squared);
 
 	if (!image_metric_root_mean_squared) {
 		image_metric_peak_snr = 1e+10f;
 	} else {
-		image_metric_peak_snr = CLAMP(log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
+		image_metric_peak_snr = CLAMP(std::log10(255.0f / image_metric_root_mean_squared) * 20.0f, 0.0f, 500.0f);
 	}
 	result["max"] = image_metric_max;
 	result["mean"] = image_metric_mean;

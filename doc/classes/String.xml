@@ -118,13 +118,14 @@
 		</method>
 		<method name="chr" qualifiers="static">
 			<return type="String" />
-			<param index="0" name="char" type="int" />
+			<param index="0" name="code" type="int" />
 			<description>
-				Returns a single Unicode character from the decimal [param char]. You may use [url=https://unicodelookup.com/]unicodelookup.com[/url] or [url=https://www.unicode.org/charts/]unicode.org[/url] as points of reference.
+				Returns a single Unicode character from the integer [param code]. You may use [url=https://unicodelookup.com/]unicodelookup.com[/url] or [url=https://www.unicode.org/charts/]unicode.org[/url] as points of reference.
 				[codeblock]
 				print(String.chr(65))     # Prints "A"
 				print(String.chr(129302)) # Prints "🤖" (robot face emoji)
 				[/codeblock]
+				See also [method unicode_at], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
 		<method name="contains" qualifiers="const">
@@ -367,12 +368,12 @@
 				[gdscript]
 				var text = "hello world"
 				var encoded = text.to_utf8_buffer().hex_encode() # outputs "68656c6c6f20776f726c64"
-				print(buf.hex_decode().get_string_from_utf8())
+				print(encoded.hex_decode().get_string_from_utf8())
 				[/gdscript]
 				[csharp]
 				var text = "hello world";
 				var encoded = text.ToUtf8Buffer().HexEncode(); // outputs "68656c6c6f20776f726c64"
-				GD.Print(buf.HexDecode().GetStringFromUtf8());
+				GD.Print(encoded.HexDecode().GetStringFromUtf8());
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -440,7 +441,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order.
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order. This is not the same as [method contains].
 				[codeblock]
 				var text = "Wow, incredible!"
 
@@ -455,7 +456,7 @@
 			<return type="bool" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b].
+				Returns [code]true[/code] if all characters of this string can be found in [param text] in their original order, [b]ignoring case[/b]. This is not the same as [method containsn].
 			</description>
 		</method>
 		<method name="is_valid_ascii_identifier" qualifiers="const">
@@ -474,7 +475,7 @@
 		<method name="is_valid_filename" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this string does not contain characters that are not allowed in file names ([code]:[/code] [code]/[/code] [code]\[/code] [code]?[/code] [code]*[/code] [code]"[/code] [code]|[/code] [code]%[/code] [code]&lt;[/code] [code]&gt;[/code]).
+				Returns [code]true[/code] if this string is a valid file name. A valid file name cannot be empty, begin or end with space characters, or contain characters that are not allowed ([code]:[/code] [code]/[/code] [code]\[/code] [code]?[/code] [code]*[/code] [code]"[/code] [code]|[/code] [code]%[/code] [code]&lt;[/code] [code]&gt;[/code]).
 			</description>
 		</method>
 		<method name="is_valid_float" qualifiers="const">
@@ -727,7 +728,7 @@
 				GD.Print(n.ToString("e1")); // Prints -5.2e+008
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, this method is not implemented. To achieve similar results, see C#'s [url=https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings]Standard numeric format strings[/url]
+				[b]Note:[/b] In C#, this method is not implemented. To achieve similar results, see C#'s [url=https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings]Standard numeric format strings[/url].
 			</description>
 		</method>
 		<method name="num_uint64" qualifiers="static">
@@ -757,9 +758,9 @@
 		</method>
 		<method name="path_join" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Concatenates [param file] at the end of the string as a subpath, adding [code]/[/code] if necessary.
+				Concatenates [param path] at the end of the string as a subpath, adding [code]/[/code] if necessary.
 				[b]Example:[/b] [code]"this/is".path_join("path") == "this/is/path"[/code].
 			</description>
 		</method>
@@ -790,6 +791,22 @@
 			<param index="1" name="forwhat" type="String" />
 			<description>
 				Replaces all occurrences of [param what] inside the string with the given [param forwhat].
+			</description>
+		</method>
+		<method name="replace_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="key" type="int" />
+			<param index="1" name="with" type="int" />
+			<description>
+				Replaces all occurrences of the Unicode character with code [param key] with the Unicode character with code [param with]. Faster version of [method replace] when the key is only one character long. To get a single character use [code]"X".unicode_at(0)[/code] (note that some strings, like compound letters and emoji, can be composed of multiple unicode codepoints, and will not work with this method, use [method length] to make sure).
+			</description>
+		</method>
+		<method name="replace_chars" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="keys" type="String" />
+			<param index="1" name="with" type="int" />
+			<description>
+				Replaces any occurrence of the characters in [param keys] with the Unicode character with code [param with]. See also [method replace_char].
 			</description>
 		</method>
 		<method name="replacen" qualifiers="const">
@@ -1024,6 +1041,25 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="to_kebab_case" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the string converted to [code]kebab-case[/code].
+				[b]Note:[/b] Numbers followed by a [i]single[/i] letter are not separated in the conversion to keep some words (such as "2D") together.
+				[codeblocks]
+				[gdscript]
+				"Node2D".to_kebab_case()               # Returns "node-2d"
+				"2nd place".to_kebab_case()            # Returns "2-nd-place"
+				"Texture3DAssetFolder".to_kebab_case() # Returns "texture-3d-asset-folder"
+				[/gdscript]
+				[csharp]
+				"Node2D".ToKebabCase();               // Returns "node-2d"
+				"2nd place".ToKebabCase();            // Returns "2-nd-place"
+				"Texture3DAssetFolder".ToKebabCase(); // Returns "texture-3d-asset-folder"
+				[/csharp]
+				[/codeblocks]
+			</description>
+		</method>
 		<method name="to_lower" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -1114,6 +1150,7 @@
 			<param index="0" name="at" type="int" />
 			<description>
 				Returns the character code at position [param at].
+				See also [method chr], [method @GDScript.char], and [method @GDScript.ord].
 			</description>
 		</method>
 		<method name="uri_decode" qualifiers="const">
@@ -1130,6 +1167,7 @@
 				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method decodes [code]+[/code] as space.
 			</description>
 		</method>
 		<method name="uri_encode" qualifiers="const">
@@ -1150,6 +1188,12 @@
 				GD.Print(url); // Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="uri_file_decode" qualifiers="const">
+			<return type="String" />
+			<description>
+				Decodes the file path from its URL-encoded format. Unlike [method uri_decode] this method leaves [code]+[/code] as is.
 			</description>
 		</method>
 		<method name="validate_filename" qualifiers="const">
