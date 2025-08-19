@@ -33,9 +33,9 @@
 #include "core/config/project_settings.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/run/editor_run_native.h"
@@ -347,7 +347,7 @@ void EditorRunBar::_run_native(const Ref<EditorExportPreset> &p_preset) {
 
 void EditorRunBar::_profiler_autostart_indicator_pressed() {
 	// Switch to the first profiler tab in the bottom panel.
-	EditorNode::get_singleton()->get_bottom_panel()->make_item_visible(EditorDebuggerNode::get_singleton(), true);
+	EditorDockManager::get_singleton()->focus_dock(EditorDebuggerNode::get_singleton());
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		EditorDebuggerNode::get_singleton()->get_current_debugger()->switch_to_debugger(3);

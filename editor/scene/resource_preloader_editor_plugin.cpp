@@ -31,10 +31,10 @@
 #include "resource_preloader_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -405,16 +405,10 @@ bool ResourcePreloaderEditorPlugin::handles(Object *p_object) const {
 
 void ResourcePreloaderEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
-		//preloader_editor->show();
-		button->show();
-		EditorNode::get_bottom_panel()->make_item_visible(preloader_editor);
+		EditorDockManager::get_singleton()->open_dock(preloader_editor);
 		//preloader_editor->set_process(true);
 	} else {
-		if (preloader_editor->is_visible_in_tree()) {
-			EditorNode::get_bottom_panel()->hide_bottom_panel();
-		}
-		button->hide();
-		//preloader_editor->hide();
+		// EditorDockManager::get_singleton()->close_dock(preloader_editor);
 		//preloader_editor->set_process(false);
 	}
 }
@@ -423,6 +417,7 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	preloader_editor = memnew(ResourcePreloaderEditor);
 	preloader_editor->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTRC("ResourcePreloader"), preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Bottom Panel")));
-	button->hide();
+	EditorDockManager::get_singleton()->add_dock(preloader_editor, TTRC("ResourcePreloader"), EditorDockManager::DOCK_SLOT_BOTTOM, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Bottom Panel")), "ResourcePreloader");
+	EditorDockManager::get_singleton()->set_dock_contextual(preloader_editor, true);
+	EditorDockManager::get_singleton()->close_dock(preloader_editor);
 }
