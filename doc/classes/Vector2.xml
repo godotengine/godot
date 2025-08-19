@@ -40,6 +40,13 @@
 		</constructor>
 		<constructor name="Vector2">
 			<return type="Vector2" />
+			<param index="0" name="from" type="float" />
+			<description>
+				Constructs a new [Vector2] from [float].
+			</description>
+		</constructor>
+		<constructor name="Vector2">
+			<return type="Vector2" />
 			<param index="0" name="x" type="float" />
 			<param index="1" name="y" type="float" />
 			<description>
