@@ -690,18 +690,18 @@ Variant CreateDialog::instantiate_selected() {
 			obj = EditorNode::get_editor_data().instantiate_custom_type(selected->get_text(0), type_name);
 		}
 	} else if (is_unnamed_script) {
-		Ref<Script> script = ResourceLoader::load(type_name, "Script");
-		if (script.is_valid()) {
-			const StringName &base_instance_name = script->get_instance_base_type();
+		Ref<Script> scr_ref = ResourceLoader::load(type_name, "Script");
+		if (scr_ref.is_valid()) {
+			const StringName &base_instance_name = scr_ref->get_instance_base_type();
 			obj = ClassDB::instantiate(base_instance_name);
 			Object *op = Object::cast_to<Object>(obj);
 			if (op) {
-				PropertyUtils::assign_custom_type_script(op, script);
-				op->set_script(script);
+				PropertyUtils::assign_custom_type_script(op, scr_ref);
+				op->set_script(scr_ref);
 
 				Node *n = Object::cast_to<Node>(obj);
 				if (n) {
-					n->set_name(script->get_instance_base_type());
+					n->set_name(scr_ref->get_instance_base_type());
 				}
 			}
 		}
