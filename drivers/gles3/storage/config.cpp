@@ -78,9 +78,10 @@ Config::Config() {
 #endif
 
 	bptc_supported = extensions.has("GL_ARB_texture_compression_bptc") || extensions.has("GL_EXT_texture_compression_bptc");
-	astc_hdr_supported = extensions.has("GL_KHR_texture_compression_astc_hdr");
-	astc_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc") || extensions.has("GL_OES_texture_compression_astc") || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
-	astc_layered_supported = extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
+	astc_3d_supported = extensions.has("GL_OES_texture_compression_astc");
+	astc_hdr_supported = astc_3d_supported || extensions.has("GL_KHR_texture_compression_astc_hdr");
+	astc_layered_supported = astc_hdr_supported || extensions.has("GL_KHR_texture_compression_astc_sliced_3d");
+	astc_supported = astc_layered_supported || extensions.has("GL_KHR_texture_compression_astc_ldr") || extensions.has("WEBGL_compressed_texture_astc");
 
 	if (RasterizerGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
