@@ -160,7 +160,7 @@ void OS_OpenHarmony::_load_system_font_config() const {
 	ERR_FAIL_COND_MSG(error_code != SUCCESS_FONT_CONFIG_INFO, vformat("Failed to load system font config: %d.", error_code));
 
 	HashSet<String> generic_font_names;
-	for (int i = 0; i < font_config_info->fontGenericInfoSize; i++) {
+	for (size_t i = 0; i < font_config_info->fontGenericInfoSize; i++) {
 		OH_Drawing_FontGenericInfo &info = font_config_info->fontGenericInfoSet[i];
 		String font_name = String(info.familyName).to_lower();
 		for (size_t j = 0; j < info.aliasInfoSize; j++) {
@@ -172,7 +172,7 @@ void OS_OpenHarmony::_load_system_font_config() const {
 	}
 
 	HashMap<String, Vector<String>> font_languages;
-	for (int i = 0; i < font_config_info->fallbackGroupSize; i++) {
+	for (size_t i = 0; i < font_config_info->fallbackGroupSize; i++) {
 		OH_Drawing_FontFallbackGroup &group = font_config_info->fallbackGroupSet[i];
 		for (size_t j = 0; j < group.fallbackInfoSize; j++) {
 			OH_Drawing_FontFallbackInfo &info = group.fallbackInfoSet[j];
