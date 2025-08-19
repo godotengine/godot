@@ -98,7 +98,16 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		} else {
 			Log.v(TAG, "Creating new Godot fragment instance.")
 			godotFragment = initGodotInstance()
-			supportFragmentManager.beginTransaction().replace(R.id.godot_fragment_container, godotFragment!!).setPrimaryNavigationFragment(godotFragment).commitNowAllowingStateLoss()
+
+			val transaction = supportFragmentManager.beginTransaction()
+			if (currentFragment != null) {
+				Log.v(TAG, "Removing existing fragment before replacement.")
+				transaction.remove(currentFragment)
+			}
+
+			transaction.replace(R.id.godot_fragment_container, godotFragment!!)
+				.setPrimaryNavigationFragment(godotFragment)
+				.commitNowAllowingStateLoss()
 		}
 	}
 
