@@ -52,7 +52,7 @@ class AudioStreamPlaybackWAV : public AudioStreamPlaybackResampled {
 
 	struct QOA_State {
 		qoa_desc desc = {};
-		uint32_t data_ofs = 0;
+		int64_t data_ofs = 0;
 		uint32_t frame_len = 0;
 		TightLocalVector<int16_t> dec;
 		uint32_t dec_len = 0;
@@ -118,11 +118,11 @@ private:
 	Format format = FORMAT_8_BITS;
 	LoopMode loop_mode = LOOP_DISABLED;
 	bool stereo = false;
-	int loop_begin = 0;
-	int loop_end = 0;
-	int mix_rate = 44100;
-	TightLocalVector<uint8_t> data;
-	uint32_t data_bytes = 0;
+	int64_t loop_begin = 0;
+	int64_t loop_end = 0;
+	uint32_t mix_rate = 44100;
+	TightLocalVector<uint8_t, int64_t> data;
+	int64_t data_bytes = 0;
 
 	Dictionary tags;
 
@@ -289,6 +289,12 @@ public:
 			dst_ptr += qoa_encode_frame(data16.ptr(), p_desc, frame_len, dst_ptr);
 		}
 	}
+
+	typedef Ref<AudioStreamWAV> (*LoadFromBufferFunc)(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
+	typedef Ref<AudioStreamWAV> (*LoadFromFileFunc)(const String &p_path, const Dictionary &p_options);
+
+	static LoadFromBufferFunc load_from_buffer_func;
+	static LoadFromFileFunc load_from_file_func;
 };
 
 VARIANT_ENUM_CAST(AudioStreamWAV::Format)
