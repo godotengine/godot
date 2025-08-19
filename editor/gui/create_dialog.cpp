@@ -149,7 +149,7 @@ void CreateDialog::_add_unnamed_scripts(EditorFileSystemDirectory *fsd) {
 		print_line(file_type);
 		if (fsd->get_file_script_class_extends(i) == base_type) {
 			TypeInfo info;
-			const String& path = fsd->get_file_path(i);
+			const String &path = fsd->get_file_path(i);
 			info.type_name = path;
 			info.script_type_path = path;
 			type_info_list.push_back(info);
@@ -302,7 +302,7 @@ void CreateDialog::_update_search() {
 		} else if (!candidate.script_type_path.is_empty()) {
 			type_category = TypeCategory::PATH_TYPE;
 		}
-		const StringName& type = type_category == TypeCategory::PATH_TYPE ? candidate.script_type_path : candidate.type_name;
+		const StringName &type = type_category == TypeCategory::PATH_TYPE ? candidate.script_type_path : candidate.type_name;
 		_add_type(type, type_category, match_keyword);
 
 		if (score > highest_score) {
