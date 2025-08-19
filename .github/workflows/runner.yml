@@ -41,6 +41,11 @@ jobs:
     if: needs.static-checks.outputs.sources-changed == 'true' || github.event_name != 'pull_request'
     uses: ./.github/workflows/macos_builds.yml
 
+  openharmony-build:
+    name: 🫟️ OpenHarmony
+    needs: static-checks
+    uses: ./.github/workflows/openharmony_builds.yml
+
   windows-build:
     name: 🏁 Windows
     needs: static-checks
