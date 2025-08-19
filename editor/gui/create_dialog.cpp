@@ -145,7 +145,6 @@ void CreateDialog::_add_unnamed_scripts(EditorFileSystemDirectory *fsd) {
 	}
 
 	for (int i = 0; i < fsd->get_file_count(); i++) {
-		const StringName file_type = fsd->get_file_type(i);
 		if (fsd->get_file_script_class_extends(i) == base_type && fsd->get_file_script_class_name(i).is_empty()) {
 			TypeInfo info;
 			const String &path = fsd->get_file_path(i);
