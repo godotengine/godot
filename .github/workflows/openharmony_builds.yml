@@ -1,0 +1,84 @@
+name: 🫟️ OpenHarmony Builds
+on:
+  workflow_call:
+
+# Global Settings
+env:
+  SCONS_FLAGS: >-
+    dev_mode=yes
+    module_text_server_fb_enabled=yes
+    tests=no
+    generate_bundle=yes
+    OPENHARMONY_SDK_PATH="$HOME/OpenHarmony/"
+
+
+jobs:
+  build-openharmony:
+    runs-on: ubuntu-24.04
+    name: ${{ matrix.name }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Template arm64, release (target=template_release, arch=arm64)
+            cache-name: openharmony-template-release-arm64
+            target: template_release
+            scons-flags: arch=arm64
+
+          - name: Template arm64, debug (target=template_debug, arch=arm64)
+            cache-name: openharmony-template-debug-arm64
+            target: template_debug
+            scons-flags: arch=arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
+      - name: Download OpenHarmony-NDK-public
+        uses: dsaltares/fetch-gh-release-asset@1.1.2
+        with:
+          repo: Rindbee/OpenHarmony-NDK-public
+          version: tags/5.1.0.107
+          file:  native-linux-x64-5.1.0.107-Release.zip
+          target: /tmp/native-linux-x64-5.1.0.107-Release.zip
+
+      - name: Extract OpenHarmony-NDK-public
+        run: |
+          echo "::group::Extract..."
+          unzip /tmp/native-linux-x64-5.1.0.107-Release.zip "native/*" -d $HOME/OpenHarmony/
+          echo "::endgroup::"
+
+          rm /tmp/native-linux-x64-5.1.0.107-Release.zip
+
+      - name: Compilation
+        uses: ./.github/actions/godot-build
+        with:
+          scons-flags: ${{ env.SCONS_FLAGS }} ${{ matrix.scons-flags }}
+          platform: openharmony
+          target: ${{ matrix.target }}
+
+      - name: Save Godot build cache
+        uses: ./.github/actions/godot-cache-save
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
+      - name: Remove redundant so files
+        run: rm ${{ github.workspace }}/bin/*.so
+
+      - name: Upload artifact
+        uses: ./.github/actions/upload-artifact
+        with:
+          name: ${{ matrix.cache-name }}
