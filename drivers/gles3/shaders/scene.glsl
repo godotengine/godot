@@ -1459,7 +1459,8 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 #ifndef MODE_RENDER_DEPTH
 
 #ifndef USE_VERTEX_LIGHTING
-#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(USE_ADDITIVE_LIGHTING)
+// `light_compute()` is needed for `USE_SH_LIGHTMAP` (fake specular lobes with spherical harmonics lightmaps).
+#if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT) || defined(USE_ADDITIVE_LIGHTING) || defined(USE_SH_LIGHTMAP)
 
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
@@ -2317,10 +2318,47 @@ void main() {
 
 		vec3 n = normalize(lightmap_normal_xform * normal);
 
-		ambient_light += lm_light_l0 * lightmap_exposure_normalization;
-		ambient_light += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
-		ambient_light += lm_light_l1_0 * n.z * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
-		ambient_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		vec3 sh_light = vec3(0.0);
+		sh_light += lm_light_l0 * lightmap_exposure_normalization;
+		sh_light += lm_light_l1n1 * n.y * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		sh_light += lm_light_l1_0 * n.z * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		sh_light += lm_light_l1p1 * n.x * (lm_light_l0 * lightmap_exposure_normalization * 4.0);
+		ambient_light += sh_light;
+
+		vec3 l1 = vec3(
+				dot(lm_light_l1p1, vec3(0.2126, 0.7152, 0.0722)),
+				dot(lm_light_l1n1, vec3(0.2126, 0.7152, 0.0722)),
+				dot(lm_light_l1_0, vec3(0.2126, 0.7152, 0.0722)));
+
+		float lightmap_direction_length = length(l1);
+		vec3 lightmap_direction = normalize(l1) / lightmap_direction_length;
+		vec3 L_view = mat3(scene_data.view_matrix) * lightmap_direction;
+
+		float adjusted_roughness = clamp(1.0 - ((1.0 - roughness) * sqrt(lightmap_direction_length)), 0.05, 1.0);
+
+		vec3 f0 = F0(metallic, specular, albedo);
+
+		// Discard diffuse light from this fake light, as we're only interested in its specular light output.
+		vec3 diffuse_light_discarded = diffuse_light;
+
+		float specular_strength = length(sh_light) * lightmap_direction_length * 40;
+
+		light_compute(normal, L_view, view, 0.0, sh_light, false, 1.0, f0, adjusted_roughness, metallic, specular_strength, albedo, alpha, screen_uv,
+#ifdef LIGHT_BACKLIGHT_USED
+				backlight,
+#endif
+#ifdef LIGHT_RIM_USED
+				rim, rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+				clearcoat, clearcoat_roughness, normalize(normal_interp),
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+				binormal, tangent, anisotropy,
+#endif
+				diffuse_light_discarded,
+				specular_light);
+
 #else
 #ifdef LIGHTMAP_BICUBIC_FILTER
 		ambient_light += textureArray_bicubic(lightmap_textures, uvw, lightmap_texture_size).rgb * lightmap_exposure_normalization;
