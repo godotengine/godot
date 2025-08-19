@@ -74,6 +74,10 @@ void CanvasItem::_draw_multiline_colors_bind_compat_84523(const Vector<Point2> &
 	draw_multiline_colors(p_points, p_colors, p_width, false);
 }
 
+void CanvasItem::_draw_msdf_texture_rect_region_bind_compat_109629(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, double p_outline, double p_pixel_range, double p_scale) {
+	draw_msdf_texture_rect_region(p_texture, p_rect, p_src_rect, p_modulate, p_outline, p_pixel_range, p_scale, 1.0);
+}
+
 void CanvasItem::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("draw_string", "font", "pos", "text", "alignment", "width", "font_size", "modulate", "justification_flags", "direction", "orientation"), &CanvasItem::_draw_string_bind_compat_104872, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
 	ClassDB::bind_compatibility_method(D_METHOD("draw_multiline_string", "font", "pos", "text", "alignment", "width", "font_size", "max_lines", "modulate", "brk_flags", "justification_flags", "direction", "orientation"), &CanvasItem::_draw_multiline_string_bind_compat_104872, DEFVAL(HORIZONTAL_ALIGNMENT_LEFT), DEFVAL(-1), DEFVAL(Font::DEFAULT_FONT_SIZE), DEFVAL(-1), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND), DEFVAL(TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_WORD_BOUND), DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(TextServer::ORIENTATION_HORIZONTAL));
@@ -86,6 +90,7 @@ void CanvasItem::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("draw_dashed_line", "from", "to", "color", "width", "dash", "aligned"), &CanvasItem::_draw_dashed_line_bind_compat_84523, DEFVAL(-1.0), DEFVAL(2.0), DEFVAL(true));
 	ClassDB::bind_compatibility_method(D_METHOD("draw_multiline", "points", "color", "width"), &CanvasItem::_draw_multiline_bind_compat_84523, DEFVAL(-1.0));
 	ClassDB::bind_compatibility_method(D_METHOD("draw_multiline_colors", "points", "colors", "width"), &CanvasItem::_draw_multiline_colors_bind_compat_84523, DEFVAL(-1.0));
+	ClassDB::bind_compatibility_method(D_METHOD("draw_msdf_texture_rect_region", "texture", "rect", "src_rect", "modulate", "outline", "pixel_range", "scale"), &CanvasItem::_draw_msdf_texture_rect_region_bind_compat_109629, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(0.0), DEFVAL(4.0), DEFVAL(1.0));
 }
 
 #endif
