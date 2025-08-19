@@ -503,7 +503,7 @@ void AccessibilityDriverAccessKit::accessibility_free_element(const RID &p_id) {
 }
 
 void AccessibilityDriverAccessKit::accessibility_element_set_meta(const RID &p_id, const Variant &p_meta) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -517,7 +517,7 @@ Variant AccessibilityDriverAccessKit::accessibility_element_get_meta(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_focus(const RID &p_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	if (p_id.is_valid() && rid_owner.owns(p_id)) {
 		focus = p_id;
@@ -630,7 +630,7 @@ void AccessibilityDriverAccessKit::accessibility_set_window_focused(DisplayServe
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_role(const RID &p_id, DisplayServer::AccessibilityRole p_role) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -644,7 +644,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_role(const RID &p_id
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_name(const RID &p_id, const String &p_name) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -660,7 +660,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_name(const RID &p_id
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_extra_info(const RID &p_id, const String &p_name_extra_info) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -676,7 +676,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_extra_info(const RID
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_description(const RID &p_id, const String &p_description) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -690,7 +690,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_description(const RI
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_value(const RID &p_id, const String &p_value) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -707,7 +707,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_value(const RID &p_i
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_tooltip(const RID &p_id, const String &p_tooltip) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -721,7 +721,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_tooltip(const RID &p
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_bounds(const RID &p_id, const Rect2 &p_rect) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -736,7 +736,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_bounds(const RID &p_
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_transform(const RID &p_id, const Transform2D &p_transform) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -747,7 +747,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_transform(const RID 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_child(const RID &p_id, const RID &p_child_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -760,7 +760,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_child(const RID &p_i
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_related_controls(const RID &p_id, const RID &p_related_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -773,7 +773,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_related_controls(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_related_details(const RID &p_id, const RID &p_related_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -786,7 +786,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_related_details(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_related_described_by(const RID &p_id, const RID &p_related_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -799,7 +799,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_related_described_by
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_related_flow_to(const RID &p_id, const RID &p_related_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -812,7 +812,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_related_flow_to(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_related_labeled_by(const RID &p_id, const RID &p_related_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -825,7 +825,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_related_labeled_by(c
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_related_radio_group(const RID &p_id, const RID &p_related_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -838,7 +838,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_related_radio_group(
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_active_descendant(const RID &p_id, const RID &p_other_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -851,7 +851,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_active_descendant(co
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_next_on_line(const RID &p_id, const RID &p_other_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -864,7 +864,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_next_on_line(const R
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_previous_on_line(const RID &p_id, const RID &p_other_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -877,7 +877,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_previous_on_line(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_member_of(const RID &p_id, const RID &p_group_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -890,7 +890,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_member_of(const RID 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_in_page_link_target(const RID &p_id, const RID &p_other_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -903,7 +903,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_in_page_link_target(
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_error_message(const RID &p_id, const RID &p_other_id) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -916,7 +916,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_error_message(const 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_live(const RID &p_id, DisplayServer::AccessibilityLiveMode p_live) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -936,7 +936,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_live(const RID &p_id
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_action(const RID &p_id, DisplayServer::AccessibilityAction p_action, const Callable &p_callable) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -948,7 +948,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_action(const RID &p_
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_add_custom_action(const RID &p_id, int p_action_id, const String &p_action_description) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -965,7 +965,7 @@ void AccessibilityDriverAccessKit::accessibility_update_add_custom_action(const 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_table_row_count(const RID &p_id, int p_count) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -975,7 +975,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_table_row_count(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_table_column_count(const RID &p_id, int p_count) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -985,7 +985,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_table_column_count(c
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_table_row_index(const RID &p_id, int p_index) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -995,7 +995,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_table_row_index(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_table_column_index(const RID &p_id, int p_index) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1005,7 +1005,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_table_column_index(c
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_table_cell_position(const RID &p_id, int p_row_index, int p_column_index) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1016,7 +1016,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_table_cell_position(
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_table_cell_span(const RID &p_id, int p_row_span, int p_column_span) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1027,7 +1027,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_table_cell_span(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_list_item_count(const RID &p_id, int p_size) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1037,7 +1037,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_list_item_count(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_list_item_index(const RID &p_id, int p_index) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1047,7 +1047,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_list_item_index(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_list_item_level(const RID &p_id, int p_level) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1057,7 +1057,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_list_item_level(cons
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_list_item_selected(const RID &p_id, bool p_selected) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1067,7 +1067,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_list_item_selected(c
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_list_item_expanded(const RID &p_id, bool p_expanded) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1077,7 +1077,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_list_item_expanded(c
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_popup_type(const RID &p_id, DisplayServer::AccessibilityPopupType p_popup) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1100,7 +1100,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_popup_type(const RID
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_checked(const RID &p_id, bool p_checekd) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1114,7 +1114,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_checked(const RID &p
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_num_value(const RID &p_id, double p_position) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1124,7 +1124,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_num_value(const RID 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_num_range(const RID &p_id, double p_min, double p_max) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1135,7 +1135,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_num_range(const RID 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_num_step(const RID &p_id, double p_step) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1145,7 +1145,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_num_step(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_num_jump(const RID &p_id, double p_jump) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1155,7 +1155,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_num_jump(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_scroll_x(const RID &p_id, double p_position) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1165,7 +1165,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_scroll_x(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_scroll_x_range(const RID &p_id, double p_min, double p_max) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1176,7 +1176,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_scroll_x_range(const
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_scroll_y(const RID &p_id, double p_position) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1186,7 +1186,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_scroll_y(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_scroll_y_range(const RID &p_id, double p_min, double p_max) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1197,7 +1197,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_scroll_y_range(const
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_text_decorations(const RID &p_id, bool p_underline, bool p_strikethrough, bool p_overline) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1221,7 +1221,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_text_decorations(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_text_align(const RID &p_id, HorizontalAlignment p_align) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1244,7 +1244,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_text_align(const RID
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_text_selection(const RID &p_id, const RID &p_text_start_id, int p_start_char, const RID &p_text_end_id, int p_end_char) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1291,7 +1291,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_text_selection(const
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_flag(const RID &p_id, DisplayServer::AccessibilityFlags p_flag, bool p_value) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1372,7 +1372,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_flag(const RID &p_id
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_classname(const RID &p_id, const String &p_classname) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1386,7 +1386,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_classname(const RID 
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_placeholder(const RID &p_id, const String &p_placeholder) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1400,7 +1400,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_placeholder(const RI
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_language(const RID &p_id, const String &p_language) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1410,7 +1410,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_language(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_text_orientation(const RID &p_id, bool p_vertical) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1424,7 +1424,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_text_orientation(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_list_orientation(const RID &p_id, bool p_vertical) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1438,7 +1438,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_list_orientation(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_shortcut(const RID &p_id, const String &p_shortcut) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1452,7 +1452,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_shortcut(const RID &
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_url(const RID &p_id, const String &p_url) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1466,7 +1466,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_url(const RID &p_id,
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_role_description(const RID &p_id, const String &p_description) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1480,7 +1480,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_role_description(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_state_description(const RID &p_id, const String &p_description) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1494,7 +1494,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_state_description(co
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_color_value(const RID &p_id, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1504,7 +1504,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_color_value(const RI
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_background_color(const RID &p_id, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
@@ -1514,7 +1514,7 @@ void AccessibilityDriverAccessKit::accessibility_update_set_background_color(con
 }
 
 void AccessibilityDriverAccessKit::accessibility_update_set_foreground_color(const RID &p_id, const Color &p_color) {
-	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessiblinity update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
+	ERR_FAIL_COND_MSG(!in_accessibility_update, "Accessibility update is only allowed inside NOTIFICATION_ACCESSIBILITY_UPDATE notification.");
 
 	AccessibilityElement *ae = rid_owner.get_or_null(p_id);
 	ERR_FAIL_NULL(ae);
