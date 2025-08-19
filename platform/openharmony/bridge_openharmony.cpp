@@ -40,21 +40,22 @@
 
 #include <native_vsync/native_vsync.h>
 
-OS_OpenHarmony *os_openharmony = nullptr;
-OH_NativeVSync *native_vsync = nullptr;
-uint32_t step = 0;
-
-Mutex godot_step_mutex;
-uint32_t latest_window_width = 0;
-uint32_t latest_window_height = 0;
-int32_t latest_window_event = 0;
-
 enum GodotStartupStep {
 	STEP_TERMINATED = -1,
 	STEP_SETUP,
 	STEP_SHOW_LOGO,
 	STEP_STARTED,
+	STEP_RUNNING,
 };
+
+OS_OpenHarmony *os_openharmony = nullptr;
+OH_NativeVSync *native_vsync = nullptr;
+GodotStartupStep step = STEP_SETUP;
+
+Mutex godot_step_mutex;
+uint32_t latest_window_width = 0;
+uint32_t latest_window_height = 0;
+int32_t latest_window_event = 0;
 
 void godot_finalize() {
 	if (step == STEP_TERMINATED) {
@@ -83,19 +84,18 @@ void godot_step(long long timestamp, void *data) {
 			// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
 			// but for Godot purposes, the main thread is the one running the game loop
 			Main::setup2(false); // The logo is shown in the next frame otherwise we run into rendering issues
-			step++;
+			step = STEP_SHOW_LOGO;
 			break;
 		case STEP_SHOW_LOGO:
 			Main::setup_boot_logo();
-			step++;
-
+			step = STEP_STARTED;
 			break;
 		case STEP_STARTED:
 			if (Main::start() != EXIT_SUCCESS) {
 				return; // should exit instead and print the error
 			}
 			os_openharmony->main_loop_begin();
-			step++;
+			step = STEP_RUNNING;
 			break;
 		default:
 
