@@ -1781,7 +1781,7 @@ bool WaylandEmbedder::handle_request(LocalObjectHandle p_object, uint32_t p_opco
 
 WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_id, LocalObjectHandle p_local_handle, uint32_t p_opcode, uint32_t *msg_data, size_t msg_len) {
 	WaylandObject *global_object = get_object(p_global_id);
-	CRASH_COND_MSG(global_object == nullptr, "Compositor messages must always have a global object.");
+	ERR_FAIL_NULL_V_MSG(global_object, MessageStatus::ERROR, "Compositor messages must always have a global object.");
 
 	uint32_t *body = msg_data + 2;
 	size_t body_len = msg_len - (WL_WORD_SIZE * 2);
@@ -1795,7 +1795,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 		// to be instanced at least few times.
 		uint32_t global_name = registry_globals_names[p_global_id];
 		WaylandDrmGlobalData *global_data = (WaylandDrmGlobalData *)registry_globals[global_name].data;
-		CRASH_COND(global_data == nullptr);
+		ERR_FAIL_NULL_V(global_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_DRM_DEVICE) {
 			// signature: s
@@ -1833,7 +1833,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 	if (global_object->interface == &wl_shm_interface) {
 		uint32_t global_name = registry_globals_names[p_global_id];
 		WaylandShmGlobalData *global_data = (WaylandShmGlobalData *)registry_globals[global_name].data;
-		CRASH_COND(global_data == nullptr);
+		ERR_FAIL_NULL_V(global_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_SHM_FORMAT) {
 			// Signature: u
@@ -1975,7 +1975,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 
 	Client *client = p_local_handle.get_client();
 
-	CRASH_COND(client == nullptr);
+	ERR_FAIL_NULL_V(client, MessageStatus::ERROR);
 
 	WaylandObject *object = p_local_handle.get();
 	uint32_t local_id = p_local_handle.get_local_id();
@@ -2004,12 +2004,12 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 
 	if (object->interface == &wl_keyboard_interface) {
 		WaylandKeyboardData *data = (WaylandKeyboardData *)object->data;
-		CRASH_COND(data == nullptr);
+		ERR_FAIL_NULL_V(data, MessageStatus::ERROR);
 
 		uint32_t global_seat_name = registry_globals_names[data->wl_seat_id];
 		RegistryGlobalInfo &global_seat_info = registry_globals[global_seat_name];
 		WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
-		CRASH_COND(global_seat_data == nullptr);
+		ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_KEYBOARD_ENTER) {
 			// [Event] wl_keyboard::enter(uoa)
@@ -2040,15 +2040,15 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 
 	if (object->interface == &wl_pointer_interface) {
 		WaylandPointerData *data = (WaylandPointerData *)object->data;
-		CRASH_COND(data == nullptr);
+		ERR_FAIL_NULL_V(data, MessageStatus::ERROR);
 
 		uint32_t global_seat_name = registry_globals_names[data->wl_seat_id];
 		RegistryGlobalInfo &global_seat_info = registry_globals[global_seat_name];
 		WaylandSeatGlobalData *global_seat_data = (WaylandSeatGlobalData *)global_seat_info.data;
-		CRASH_COND(global_seat_data == nullptr);
+		ERR_FAIL_NULL_V(global_seat_data, MessageStatus::ERROR);
 
 		WaylandSeatInstanceData *seat_data = (WaylandSeatInstanceData *)object->data;
-		CRASH_COND(seat_data == nullptr);
+		ERR_FAIL_NULL_V(seat_data, MessageStatus::ERROR);
 
 		if (p_opcode == WL_POINTER_BUTTON && global_seat_data->pointed_surface_id != INVALID_ID) {
 			// [Event] wl_pointer::button(uuuu);
@@ -2081,7 +2081,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 			// [Event] wl_pointer::enter(uoff).
 			uint32_t surface = body[1];
 			WaylandSurfaceData *surface_data = (WaylandSurfaceData *)get_object(surface)->data;
-			CRASH_COND(surface_data == nullptr);
+			ERR_FAIL_NULL_V(surface_data, MessageStatus::ERROR);
 
 			if (global_seat_data->pointed_surface_id != surface) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Pointer (g0x%x seat g0x%x): pointed surface old g0x%x new g0x%x", p_global_id, data->wl_seat_id, global_seat_data->pointed_surface_id, surface));
@@ -2092,7 +2092,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 			// [Event] wl_pointer::leave(uo).
 			uint32_t surface = body[1];
 			WaylandSurfaceData *surface_data = (WaylandSurfaceData *)get_object(surface)->data;
-			CRASH_COND(surface_data == nullptr);
+			ERR_FAIL_NULL_V(surface_data, MessageStatus::ERROR);
 
 			if (global_seat_data->pointed_surface_id == surface) {
 				DEBUG_LOG_WAYLAND_EMBED(vformat("Pointer (g0x%x seat g0x%x): g0x%x -> g0x%x", p_global_id, data->wl_seat_id, global_seat_data->pointed_surface_id, INVALID_ID));
@@ -2112,24 +2112,24 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 			int32_t height = body[3];
 
 			XdgPopupData *data = (XdgPopupData *)object->data;
-			CRASH_COND(data == nullptr);
+			ERR_FAIL_NULL_V(data, MessageStatus::ERROR);
 
 			XdgSurfaceData *parent_xdg_surf_data = (XdgSurfaceData *)data->parent_handle.get()->data;
-			CRASH_COND(parent_xdg_surf_data == nullptr);
+			ERR_FAIL_NULL_V(parent_xdg_surf_data, MessageStatus::ERROR);
 
 			WaylandSurfaceData *parent_surface_data = (WaylandSurfaceData *)get_object(parent_xdg_surf_data->wl_surface_id)->data;
-			CRASH_COND(parent_surface_data == nullptr);
+			ERR_FAIL_NULL_V(parent_surface_data, MessageStatus::ERROR);
 
 			WaylandObject *parent_role_obj = parent_surface_data->role_object_handle.get();
-			CRASH_COND(parent_role_obj == nullptr);
+			ERR_FAIL_NULL_V(parent_role_obj, MessageStatus::ERROR);
 
 			if (parent_role_obj->interface == &xdg_toplevel_interface) {
 				XdgToplevelData *parent_toplevel_data = (XdgToplevelData *)parent_role_obj->data;
-				CRASH_COND(parent_toplevel_data == nullptr);
+				ERR_FAIL_NULL_V(parent_toplevel_data, MessageStatus::ERROR);
 
 				if (parent_toplevel_data->is_embedded()) {
 					WaylandSubsurfaceData *subsurf_data = (WaylandSubsurfaceData *)get_object(parent_toplevel_data->wl_subsurface_id)->data;
-					CRASH_COND(subsurf_data == nullptr);
+					ERR_FAIL_NULL_V(subsurf_data, MessageStatus::ERROR);
 
 					// The coordinates passed will be shifted by the embedded window position,
 					// so we need to fix them back.
@@ -2148,10 +2148,10 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_event(uint32_t p_global_i
 	return MessageStatus::UNHANDLED;
 }
 
-void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
-	CRASH_COND(info == nullptr);
-	CRASH_COND(fds_requested == nullptr);
-	CRASH_COND_MSG(info->direction == ProxyDirection::COMPOSITOR && client == nullptr, "Wait, where did this message come from?");
+Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *info, uint32_t *buf, int *fds_requested) {
+	ERR_FAIL_COND_V(info == nullptr, ERR_BUG);
+	ERR_FAIL_COND_V(fds_requested == nullptr, ERR_BUG);
+	ERR_FAIL_COND_V_MSG(info->direction == ProxyDirection::COMPOSITOR && client == nullptr, ERR_BUG, "Wait, where did this message come from?");
 
 	*fds_requested = 0;
 
@@ -2176,7 +2176,7 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 			ERR_PRINT(vformat("Couldn't find requested object l0x%x for client %d, disconnecting.", local_id, client->socket));
 
 			socket_error(client->socket, local_id, WL_DISPLAY_ERROR_INVALID_OBJECT, vformat("Object l0x%x not found.", local_id));
-			return;
+			return OK;
 		} else {
 			CRASH_NOW_MSG(vformat("No object found for r0x%x", info->raw_id));
 		}
@@ -2192,20 +2192,20 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		// unknown server-side objects. Not the safest thing, I know, but it should do
 		// the job.
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Ignoring unknown server-side object r0x%x", info->raw_id));
-		return;
+		return OK;
 	}
 
-	CRASH_COND_MSG(interface == nullptr, vformat("Object r0x%x has no interface", info->raw_id));
+	ERR_FAIL_COND_V_MSG(interface == nullptr, ERR_BUG, vformat("Object r0x%x has no interface", info->raw_id));
 
 	const struct wl_message *message = nullptr;
 	if (info->direction == ProxyDirection::CLIENT) {
-		CRASH_COND(info->opcode >= interface->event_count);
+		ERR_FAIL_COND_V(info->opcode >= interface->event_count, ERR_BUG);
 		message = &interface->events[info->opcode];
 	} else {
-		CRASH_COND(info->opcode >= interface->method_count);
+		ERR_FAIL_COND_V(info->opcode >= interface->method_count, ERR_BUG);
 		message = &interface->methods[info->opcode];
 	}
-	CRASH_COND(message == nullptr);
+	ERR_FAIL_COND_V(message == nullptr, ERR_BUG);
 
 	*fds_requested = String(message->signature).count("h");
 	LocalVector<int> sent_fds;
@@ -2215,7 +2215,7 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 
 		List<int> &fd_queue = info->direction == ProxyDirection::COMPOSITOR ? client->fds : compositor_fds;
 		for (int i = 0; i < *fds_requested; ++i) {
-			CRASH_COND_MSG(fd_queue.is_empty(), "Out of FDs.");
+			ERR_FAIL_COND_V_MSG(fd_queue.is_empty(), ERR_BUG, "Out of FDs.");
 			DEBUG_LOG_WAYLAND_EMBED(vformat("Fetching FD %d.", fd_queue.front()->get()));
 			sent_fds.push_back(fd_queue.front()->get());
 			fd_queue.pop_front();
@@ -2227,13 +2227,13 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 	if (object->destroyed) {
 		DEBUG_LOG_WAYLAND_EMBED("Ignoring message for inert object.");
 		// Inert object.
-		return;
+		return OK;
 	}
 
 	if (info->direction == ProxyDirection::COMPOSITOR) {
 		if (handle_request(LocalObjectHandle(client, info->raw_id), info->opcode, buf, info->size)) {
 			DEBUG_LOG_WAYLAND_EMBED("Custom handler success.");
-			return;
+			return OK;
 		}
 
 		if (global_id != INVALID_ID) {
@@ -2294,6 +2294,11 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 						}
 
 						MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
+
+						if (event_status == MessageStatus::ERROR) {
+							return ERR_BUG;
+						}
+
 						if (event_status == MessageStatus::HANDLED) {
 							DEBUG_LOG_WAYLAND_EMBED("Custom handler success.");
 							handled = true;
@@ -2329,6 +2334,10 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 					DEBUG_LOG_WAYLAND_EMBED(vformat("Shared non-global l0x%x g0x%x", c.get_local_id(global_id), global_id));
 
 					MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
+					if (event_status == MessageStatus::ERROR) {
+						return ERR_BUG;
+					}
+
 					if (event_status == MessageStatus::HANDLED) {
 						DEBUG_LOG_WAYLAND_EMBED("Custom handler success.");
 						handled = true;
@@ -2365,16 +2374,20 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 			LocalObjectHandle local_obj = LocalObjectHandle(client, client ? client->get_local_id(global_id) : INVALID_ID);
 
 			MessageStatus event_status = handle_event(global_id, local_obj, info->opcode, buf, info->size);
+			if (event_status == MessageStatus::ERROR) {
+				return ERR_BUG;
+			}
+
 			if (event_status == MessageStatus::HANDLED || event_status == MessageStatus::INVALID) {
 				// We're done.
-				return;
+				return OK;
 			}
 
 			// Generic passthrough.
 
 			if (client) {
 				uint32_t local_id = client->get_local_id(global_id);
-				ERR_FAIL_COND(local_id == INVALID_ID);
+				ERR_FAIL_COND_V(local_id == INVALID_ID, OK);
 
 				DEBUG_LOG_WAYLAND_EMBED(vformat("%s::%s(%s) g0x%x -> l0x%x", interface->name, message->name, message->signature, global_id, local_id));
 				buf[0] = local_id;
@@ -2390,6 +2403,8 @@ void WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *inf
 		DEBUG_LOG_WAYLAND_EMBED(vformat("Closing fd %d.", fd));
 		close(fd);
 	}
+
+	return OK;
 }
 
 bool WaylandEmbedder::handle_sock(int p_fd) {
@@ -2519,7 +2534,11 @@ bool WaylandEmbedder::handle_sock(int p_fd) {
 		DEBUG_LOG_WAYLAND_EMBED("No client found to forward to.");
 	}
 
-	handle_msg_info(client, &info, msg_buf.ptr(), &fds_requested);
+	if (handle_msg_info(client, &info, msg_buf.ptr(), &fds_requested) != OK) {
+		// TODO: Propagate this error further up, disconnect everything and shutdown
+		// the thread cleanly.
+		CRASH_NOW_MSG("Error while handling message info.");
+	}
 
 	DEBUG_LOG_WAYLAND_EMBED(" === END PACKET === ");
 
