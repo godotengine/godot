@@ -1331,6 +1331,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		p_theme->set_constant("outline_size", "FoldableContainer", 0);
 		p_theme->set_constant("h_separation", "FoldableContainer", p_config.separation_margin);
+
+		// EditorScrollBox
+		p_theme->set_icon("arrow_left", "EditorScrollBox", p_theme->get_icon(SNAME("GuiTreeArrowLeft"), EditorStringName(EditorIcons)));
+		p_theme->set_icon("arrow_right", "EditorScrollBox", p_theme->get_icon(SNAME("GuiTreeArrowRight"), EditorStringName(EditorIcons)));
 	}
 
 	// Window and dialogs.
