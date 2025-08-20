@@ -217,12 +217,26 @@
 				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
 			</description>
 		</method>
+		<method name="_prepare_view_configuration" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="view_count" type="int" />
+			<description>
+				Called before [method _set_view_configuration_and_get_next_pointer] to allow the extension to reserve data for the given number of views.
+			</description>
+		</method>
+		<method name="_print_view_configuration_info" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="view" type="int" />
+			<description>
+				Called to allow an extension to print additional information about its view configuration, if applicable. This will only be called if verbose output is enabled.
+			</description>
+		</method>
 		<method name="_set_android_surface_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="property_values" type="Dictionary" />
 			<param index="1" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to Android surface swapchains created by [OpenXRCompositionLayer].
+				Add additional data structures to Android surface swapchains created by [OpenXRCompositionLayer].
 				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
 				[b]Note:[/b] This virtual method will be called on the render thread.
 			</description>
@@ -231,7 +245,7 @@
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to [code]XrFrameEndInfo[/code].
+				Add additional data structures to [code]XrFrameEndInfo[/code].
 				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
 				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
 			</description>
@@ -240,7 +254,7 @@
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to [code]XrFrameWaitInfo[/code].
+				Add additional data structures to [code]XrFrameWaitInfo[/code].
 				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
 				[b]Note:[/b] This virtual method will be called on the render thread.
 			</description>
@@ -250,14 +264,14 @@
 			<param index="0" name="hand_index" type="int" />
 			<param index="1" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when each hand tracker is created.
+				Add additional data structures when each hand tracker is created.
 			</description>
 		</method>
 		<method name="_set_instance_create_info_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when the OpenXR instance is created.
+				Add additional data structures when the OpenXR instance is created.
 			</description>
 		</method>
 		<method name="_set_projection_views_and_get_next_pointer" qualifiers="virtual">
@@ -265,7 +279,7 @@
 			<param index="0" name="view_index" type="int" />
 			<param index="1" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to the projection view of the given [param view_index].
+				Add additional data structures to the projection view of the given [param view_index].
 				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
 			</description>
 		</method>
@@ -274,35 +288,43 @@
 			<param index="0" name="reference_space_type" type="int" />
 			<param index="1" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to [code]XrReferenceSpaceCreateInfo[/code].
+				Add additional data structures to [code]XrReferenceSpaceCreateInfo[/code].
 			</description>
 		</method>
 		<method name="_set_session_create_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when the OpenXR session is created.
+				Add additional data structures when the OpenXR session is created.
 			</description>
 		</method>
 		<method name="_set_swapchain_create_info_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when creating OpenXR swapchains.
+				Add additional data structures when creating OpenXR swapchains.
 			</description>
 		</method>
 		<method name="_set_system_properties_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures when querying OpenXR system abilities.
+				Add additional data structures when querying OpenXR system abilities.
+			</description>
+		</method>
+		<method name="_set_view_configuration_and_get_next_pointer" qualifiers="virtual">
+			<return type="int" />
+			<param index="0" name="view" type="int" />
+			<param index="1" name="next_pointer" type="void*" />
+			<description>
+				Add additional data structures when querying OpenXR view configuration.
 			</description>
 		</method>
 		<method name="_set_view_locate_info_and_get_next_pointer" qualifiers="virtual">
 			<return type="int" />
 			<param index="0" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to [code]XrViewLocateInfo[/code].
+				Add additional data structures to [code]XrViewLocateInfo[/code].
 				This will only be called if the extension previously registered itself with [method OpenXRAPIExtension.register_frame_info_extension].
 				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
 			</description>
@@ -313,7 +335,7 @@
 			<param index="1" name="property_values" type="Dictionary" />
 			<param index="2" name="next_pointer" type="void*" />
 			<description>
-				Adds additional data structures to composition layers created by [OpenXRCompositionLayer].
+				Add additional data structures to composition layers created by [OpenXRCompositionLayer].
 				[param property_values] contains the values of the properties returned by [method _get_viewport_composition_layer_extension_properties].
 				[param layer] is a pointer to an [code]XrCompositionLayerBaseHeader[/code] struct.
 				[b]Note:[/b] This virtual method will be called on the render thread. Additionally, the data it returns will be used shortly after this method is called, so it needs to remain valid until the next time [method _on_pre_render] runs.
