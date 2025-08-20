@@ -89,6 +89,7 @@ public:
 	int get_height() const override;
 
 	virtual RID get_rid() const override;
+	virtual RID get_rid_for_scale(double p_scale) const;
 
 	bool has_alpha() const override;
 	virtual RID get_scaled_rid() const override;
