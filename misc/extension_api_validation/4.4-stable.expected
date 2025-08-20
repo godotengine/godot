@@ -328,3 +328,15 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and SVGTexture. Compatibility method registered.
+
+
+GH-107954
+---------
+Validate extension JSON: API was removed: classes/TCPServer/methods/is_connection_available
+Validate extension JSON: API was removed: classes/TCPServer/methods/is_listening
+Validate extension JSON: API was removed: classes/TCPServer/methods/stop
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/disconnect_from_host
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/get_status
+Validate extension JSON: API was removed: classes/StreamPeerTCP/methods/poll
+
+These were moved to the parent classes, and are still available.
