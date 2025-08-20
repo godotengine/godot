@@ -86,6 +86,7 @@ typedef void (*GDExtensionSpxCallbackOnEngineStart)();
 typedef void (*GDExtensionSpxCallbackOnEngineUpdate)(GdFloat delta);
 typedef void (*GDExtensionSpxCallbackOnEngineFixedUpdate)(GdFloat delta);
 typedef void (*GDExtensionSpxCallbackOnEngineDestroy)();
+typedef void (*GDExtensionSpxCallbackOnEnginePause)(GdBool is_paused);
 
 typedef void (*GDExtensionSpxCallbackOnSceneSpriteInstantiated)(GdObj obj,GdString type_name);
 
@@ -139,6 +140,7 @@ typedef struct {
 	GDExtensionSpxCallbackOnEngineUpdate func_on_engine_update;
 	GDExtensionSpxCallbackOnEngineFixedUpdate func_on_engine_fixed_update;
 	GDExtensionSpxCallbackOnEngineDestroy func_on_engine_destroy;
+	GDExtensionSpxCallbackOnEnginePause func_on_engine_pause;
 
 	// scene
 	GDExtensionSpxCallbackOnSceneSpriteInstantiated func_on_scene_sprite_instantiated;
@@ -223,6 +225,9 @@ typedef void (*GDExtensionSpxCameraGetViewportRect)(GdRect2* ret_value);
 // SpxExt
 typedef void (*GDExtensionSpxExtRequestExit)(GdInt exit_code);
 typedef void (*GDExtensionSpxExtOnRuntimePanic)(GdString msg);
+typedef void (*GDExtensionSpxExtPause)();
+typedef void (*GDExtensionSpxExtResume)();
+typedef void (*GDExtensionSpxExtIsPaused)(GdBool* ret_value);
 typedef void (*GDExtensionSpxExtDestroyAllPens)();
 typedef void (*GDExtensionSpxExtCreatePen)(GdObj* ret_value);
 typedef void (*GDExtensionSpxExtDestroyPen)(GdObj obj);

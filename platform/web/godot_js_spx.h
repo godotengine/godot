@@ -18,6 +18,7 @@ extern void godot_js_spx_on_engine_start();
 extern void godot_js_spx_on_engine_update(GdFloat delta);
 extern void godot_js_spx_on_engine_fixed_update(GdFloat delta);
 extern void godot_js_spx_on_engine_destroy();
+extern void godot_js_spx_on_engine_pause(GdBool is_paused);
 
 extern void godot_js_spx_on_scene_sprite_instantiated(GdObj* obj,GdString type_name);
 

@@ -46,6 +46,11 @@ public:
 	static void on_fixed_update(double delta);
 	static void on_update(double delta);
 	static void on_destroy();
+	
+	// Pause functionality - public interface
+	static void pause();
+	static void resume();
+	static bool is_paused();
 };
 
 #endif // SPX_H

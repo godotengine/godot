@@ -33,6 +33,8 @@
 #include "gdextension_spx_ext.h"
 #include "scene/main/node.h"
 #include "scene/main/window.h"
+#include "scene/main/scene_tree.h"
+#include "core/object/class_db.h"
 #include "spx_engine.h"
 #include "spx_input_proxy.h"
 #include "spx_sprite.h"
@@ -42,11 +44,20 @@
 #ifdef MINIZIP_ENABLED
 #include "modules/zip/zip_reader.h"
 #endif
+#include "core/os/thread.h"
+
+// Simple node class for initialization
+class SpxEngineNode : public Node {
+	GDCLASS(SpxEngineNode, Node);
+};
+
    
 #define SPX_ENGINE SpxEngine::get_singleton()
 bool Spx::initialed = false;
 bool Spx::debug_mode = false;
 String Spx::project_data_path;
+
+
 
 void Spx::register_extension_functions() {
 	SpxUtil::register_func = &gdextension_spx_setup_interface;
@@ -100,7 +111,7 @@ void Spx::on_start(void *p_tree) {
 		return;
 	}
 
-	Node *new_node = memnew(Node);
+	SpxEngineNode *new_node = memnew(SpxEngineNode);
 	new_node->set_name("SpxEngineNode");
 	root->add_child(new_node);
 	SPX_ENGINE->set_root_node(tree, new_node);
@@ -137,4 +148,26 @@ void Spx::on_destroy() {
 	print_verbose("Spx::on_destroy");
 	SPX_ENGINE->on_destroy();
 	initialed = false;
+}
+
+void Spx::pause() {
+	if (!initialed || !SpxEngine::has_initialed()) {
+		return;
+	}
+	SPX_ENGINE->pause();
+}
+
+void Spx::resume() {
+	if (!initialed || !SpxEngine::has_initialed()) {
+		return;
+	}
+	SPX_ENGINE->resume();
+}
+
+bool Spx::is_paused() {
+	if (!initialed || !SpxEngine::has_initialed()) {
+		return false;
+	}
+	// Query operations are generally safe from any thread
+	return SPX_ENGINE->is_paused();
 }

@@ -59,6 +59,11 @@ public:
 	// engine API
 	void request_exit(GdInt exit_code);
 	void on_runtime_panic(GdString msg);
+	
+	// pause API
+	void pause();
+	void resume();
+	GdBool is_paused();
 
 	// obj APIs
 	void destroy_all_pens();

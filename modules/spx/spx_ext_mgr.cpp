@@ -33,6 +33,7 @@
 #include "core/math/color.h"
 #include "scene/2d/line_2d.h"
 #include "scene/2d/sprite_2d.h"
+#include "spx.h"
 #include "spx_engine.h"
 #include "spx_pen.h"
 #include "spx_res_mgr.h"
@@ -177,4 +178,17 @@ void SpxExtMgr::set_pen_size_to(GdObj obj, GdFloat size) {
 void SpxExtMgr::set_pen_stamp_texture(GdObj obj, GdString texture_path) {
 	check_and_get_pen_v()
 	pen->set_stamp_texture(texture_path);
+}
+
+// Pause API implementations - delegate to Spx layer
+void SpxExtMgr::pause() {
+	Spx::pause();
+}
+
+void SpxExtMgr::resume() {
+	Spx::resume();
+}
+
+GdBool SpxExtMgr::is_paused() {
+	return Spx::is_paused();
 }

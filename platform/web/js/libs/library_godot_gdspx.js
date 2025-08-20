@@ -29,6 +29,12 @@ const GodotGdspx = {
 		FFI.gdspx_on_engine_destroy();
 	},
 
+	godot_js_spx_on_engine_pause__proxy: 'sync',
+	godot_js_spx_on_engine_pause__sig: 'vi',
+	godot_js_spx_on_engine_pause : function (is_on) {
+		FFI.gdspx_on_engine_pause(is_on);
+	},
+
 	godot_js_spx_on_scene_sprite_instantiated__sig: 'vii',
 	godot_js_spx_on_scene_sprite_instantiated: function (obj, type_name) {
 		FFI.gdspx_on_scene_sprite_instantiated(GodotRuntime.ToJsObj(obj), GodotRuntime.parseString(type_name));
