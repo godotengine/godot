@@ -863,7 +863,7 @@ void EditorAssetLibrary::_image_update(bool p_use_cache, bool p_final, const Pac
 		} else if ((memcmp(&r[0], &bmp_signature[0], 2) == 0) && Image::_bmp_mem_loader_func) {
 			parsed_image = Image::_bmp_mem_loader_func(r, len);
 		} else if (Image::_svg_scalable_mem_loader_func) {
-			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0);
+			parsed_image = Image::_svg_scalable_mem_loader_func(r, len, 1.0, Size2(), nullptr);
 		}
 
 		if (parsed_image.is_null()) {

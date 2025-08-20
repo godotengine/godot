@@ -186,18 +186,22 @@ RID SVGTexture::_ensure_scale(double p_scale) const {
 	return new_rid;
 }
 
-RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
+RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size, const Size2i &p_custom_dimensions) const {
 	Ref<Image> img;
 	img.instantiate();
 #ifdef MODULE_SVG_ENABLED
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale * base_scale), p_scale * base_scale);
 
-	Error err = ImageLoaderSVG::create_image_from_string(img, source, p_scale * base_scale, upsample, cmap);
+	Size2 image_base_size;
+	Error err = ImageLoaderSVG::create_image_from_string(img, source, p_scale * base_scale, upsample, cmap, p_custom_dimensions, &image_base_size);
 	if (err != OK) {
 		return RID();
 	}
+	base_size = image_base_size;
 #else
-	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
+
+	base_size = Size2(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale));
+	img = Image::create_empty(base_size.x, base_size.y, false, Image::FORMAT_RGBA8);
 #endif
 	if (saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, saturation);
@@ -206,12 +210,10 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	Size2 current_size = size;
 	if (p_set_size) {
 		size.x = img->get_width();
-		base_size.x = img->get_width();
 		if (size_override.x != 0) {
 			size.x = size_override.x;
 		}
 		size.y = img->get_height();
-		base_size.y = img->get_height();
 		if (size_override.y != 0) {
 			size.y = size_override.y;
 		}
@@ -340,14 +342,9 @@ void SVGTexture::set_size_override(const Size2i &p_size) {
 	if (size_override.y != 0) {
 		size.y = size_override.y;
 	}
-	for (KeyValue<double, RID> &tx : texture_cache) {
-		if (tx.value.is_valid()) {
-			RenderingServer::get_singleton()->texture_set_size_override(tx.value, size.x, size.y);
-		}
-	}
-	if (base_texture.is_valid()) {
-		RenderingServer::get_singleton()->texture_set_size_override(base_texture, size.x, size.y);
-	}
+
+	_clear();
+	base_texture = _load_at_scale(1.0, true, size);
 
 	emit_changed();
 }
@@ -364,6 +361,7 @@ void SVGTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_color_map", "color_map"), &SVGTexture::set_color_map);
 	ClassDB::bind_method(D_METHOD("get_color_map"), &SVGTexture::get_color_map);
 	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &SVGTexture::set_size_override);
+	ClassDB::bind_method(D_METHOD("get_size_override"), &SVGTexture::get_size_override);
 	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &SVGTexture::get_scaled_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");

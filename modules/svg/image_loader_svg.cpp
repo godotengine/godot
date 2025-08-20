@@ -67,17 +67,17 @@ void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_colo
 	}
 }
 
-Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale) {
+Ref<Image> ImageLoaderSVG::load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale, const Size2 &p_custom_dimensions, Size2 *r_base_size) {
 	Ref<Image> img;
 	img.instantiate();
 
-	Error err = create_image_from_utf8_buffer(img, p_svg, p_size, p_scale, false);
+	Error err = create_image_from_utf8_buffer(img, p_svg, p_size, p_scale, false, p_custom_dimensions, r_base_size);
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<Image>(), vformat("ImageLoaderSVG: Failed to create SVG from buffer, error code %d.", err));
 
 	return img;
 }
 
-Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample) {
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample, const Size2 &p_custom_dimensions, Size2 *r_base_size) {
 	ERR_FAIL_COND_V_MSG(Math::is_zero_approx(p_scale), ERR_INVALID_PARAMETER, "ImageLoaderSVG: Can't load SVG with a scale of 0.");
 
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
@@ -86,11 +86,21 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 	if (result != tvg::Result::Success) {
 		return ERR_INVALID_DATA;
 	}
-	float fw, fh;
-	picture->size(&fw, &fh);
+	Size2 picture_size;
+	picture->size(&picture_size.x, &picture_size.y);
+	if (r_base_size) {
+		r_base_size->x = picture_size.x;
+		r_base_size->y = picture_size.y;
+	}
+	if (p_custom_dimensions.x > 0) {
+		picture_size.x = p_custom_dimensions.x;
+	}
+	if (p_custom_dimensions.y > 0) {
+		picture_size.y = p_custom_dimensions.y;
+	}
 
-	uint32_t width = MAX(1, std::round(fw * p_scale));
-	uint32_t height = MAX(1, std::round(fh * p_scale));
+	uint32_t width = MAX(1, std::round(picture_size.x * p_scale));
+	uint32_t height = MAX(1, std::round(picture_size.x * p_scale));
 
 	const uint32_t max_dimension = 16384;
 	if (width > max_dimension || height > max_dimension) {
@@ -134,11 +144,11 @@ Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const ui
 	return OK;
 }
 
-Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample) {
-	return create_image_from_utf8_buffer(p_image, p_buffer.ptr(), p_buffer.size(), p_scale, p_upsample);
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample, const Size2 &p_custom_dimensions, Size2 *r_base_size) {
+	return create_image_from_utf8_buffer(p_image, p_buffer.ptr(), p_buffer.size(), p_scale, p_upsample, p_custom_dimensions, r_base_size);
 }
 
-Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {
+Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map, const Size2 &p_custom_dimensions, Size2 *r_base_size) {
 	if (p_color_map.size()) {
 		_replace_color_property(p_color_map, "stop-color=\"", p_string);
 		_replace_color_property(p_color_map, "fill=\"", p_string);
@@ -147,7 +157,7 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_stri
 
 	PackedByteArray bytes = p_string.to_utf8_buffer();
 
-	return create_image_from_utf8_buffer(p_image, bytes, p_scale, p_upsample);
+	return create_image_from_utf8_buffer(p_image, bytes, p_scale, p_upsample, p_custom_dimensions, r_base_size);
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {
