@@ -2513,7 +2513,7 @@ void CSharpScript::set_source_code(const String &p_code) {
 #endif
 }
 
-void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
+void CSharpScript::get_script_method_list(List<MethodInfo> *p_list, bool include_base) const {
 	if (!valid) {
 		return;
 	}
@@ -2523,7 +2523,9 @@ void CSharpScript::get_script_method_list(List<MethodInfo> *p_list) const {
 		for (const CSharpMethodInfo &E : top->methods) {
 			p_list->push_back(E.method_info);
 		}
-
+		if (!include_base) {
+			break;
+		}
 		top = top->base_script.ptr();
 	}
 }
@@ -2700,8 +2702,8 @@ void CSharpScript::_get_script_signal_list(List<MethodInfo> *r_signals, bool p_i
 	}
 }
 
-void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	_get_script_signal_list(r_signals, true);
+void CSharpScript::get_script_signal_list(List<MethodInfo> *r_signals, bool include_base) const {
+	_get_script_signal_list(r_signals, include_base);
 }
 
 bool CSharpScript::inherits_script(const Ref<Script> &p_script) const {
@@ -2729,14 +2731,16 @@ StringName CSharpScript::get_global_name() const {
 	return type_info.is_global_class ? StringName(type_info.class_name) : StringName();
 }
 
-void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
+void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list, bool include_base) const {
 #ifdef TOOLS_ENABLED
 	const CSharpScript *top = this;
 	while (top != nullptr) {
 		for (const PropertyInfo &E : top->exported_members_cache) {
 			r_list->push_back(E);
 		}
-
+		if (!include_base) {
+			break;
+		}
 		top = top->base_script.ptr();
 	}
 #else
@@ -2751,7 +2755,9 @@ void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 		for (const PropertyInfo &prop : props) {
 			r_list->push_back(prop);
 		}
-
+		if (!include_base) {
+			break;
+		}
 		top = top->base_script.ptr();
 	}
 #endif

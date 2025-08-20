@@ -213,9 +213,9 @@ private:
 
 	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
 
-	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
-	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base) const;
-	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const;
+	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base = true) const;
+	void _get_script_method_list(List<MethodInfo> *r_list, bool p_include_base = true) const;
+	void _get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base = true) const;
 
 	GDScript *_get_gdscript_from_variant(const Variant &p_variant);
 	void _collect_function_dependencies(GDScriptFunction *p_func, RBSet<GDScript *> &p_dependencies, const GDScript *p_except);
@@ -277,7 +277,7 @@ public:
 	RBSet<GDScript *> get_must_clear_dependencies();
 
 	virtual bool has_script_signal(const StringName &p_signal) const override;
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals, bool include_base = true) const override;
 
 	bool is_tool() const override { return tool; }
 	bool is_abstract() const override { return _is_abstract; }
@@ -322,7 +322,7 @@ public:
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
 
-	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_script_method_list(List<MethodInfo> *p_list, bool include_base = true) const override;
 	virtual bool has_method(const StringName &p_method) const override;
 	virtual bool has_static_method(const StringName &p_method) const override;
 
@@ -330,7 +330,7 @@ public:
 
 	virtual MethodInfo get_method_info(const StringName &p_method) const override;
 
-	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list, bool include_base = true) const override;
 
 	virtual ScriptLanguage *get_language() const override;
 

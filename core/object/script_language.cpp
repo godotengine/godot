@@ -71,30 +71,30 @@ Variant Script::_get_property_default_value(const StringName &p_property) {
 	return ret;
 }
 
-TypedArray<Dictionary> Script::_get_script_property_list() {
+TypedArray<Dictionary> Script::_get_script_property_list(bool include_base) {
 	TypedArray<Dictionary> ret;
 	List<PropertyInfo> list;
-	get_script_property_list(&list);
+	get_script_property_list(&list, include_base);
 	for (const PropertyInfo &E : list) {
 		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
 
-TypedArray<Dictionary> Script::_get_script_method_list() {
+TypedArray<Dictionary> Script::_get_script_method_list(bool include_base) {
 	TypedArray<Dictionary> ret;
 	List<MethodInfo> list;
-	get_script_method_list(&list);
+	get_script_method_list(&list, include_base);
 	for (const MethodInfo &E : list) {
 		ret.append(E.operator Dictionary());
 	}
 	return ret;
 }
 
-TypedArray<Dictionary> Script::_get_script_signal_list() {
+TypedArray<Dictionary> Script::_get_script_signal_list(bool include_base) {
 	TypedArray<Dictionary> ret;
 	List<MethodInfo> list;
-	get_script_signal_list(&list);
+	get_script_signal_list(&list, include_base);
 	for (const MethodInfo &E : list) {
 		ret.append(E.operator Dictionary());
 	}
@@ -173,9 +173,9 @@ void Script::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("has_script_signal", "signal_name"), &Script::has_script_signal);
 
-	ClassDB::bind_method(D_METHOD("get_script_property_list"), &Script::_get_script_property_list);
-	ClassDB::bind_method(D_METHOD("get_script_method_list"), &Script::_get_script_method_list);
-	ClassDB::bind_method(D_METHOD("get_script_signal_list"), &Script::_get_script_signal_list);
+	ClassDB::bind_method(D_METHOD("get_script_property_list", "include_base"), &Script::_get_script_property_list, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_script_method_list", "include_base"), &Script::_get_script_method_list, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_script_signal_list", "include_base"), &Script::_get_script_signal_list, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_script_constant_map"), &Script::_get_script_constant_map);
 	ClassDB::bind_method(D_METHOD("get_property_default_value", "property"), &Script::_get_property_default_value);
 

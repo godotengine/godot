@@ -72,22 +72,28 @@
 		</method>
 		<method name="get_script_method_list">
 			<return type="Dictionary[]" />
+			<param index="0" name="include_base" type="bool" default="true" />
 			<description>
 				Returns the list of methods in this [Script].
+				[param include_base] defines whether the parent's methods are included or not. This value is propagated.
 				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_method_list].
 			</description>
 		</method>
 		<method name="get_script_property_list">
 			<return type="Dictionary[]" />
+			<param index="0" name="include_base" type="bool" default="true" />
 			<description>
 				Returns the list of properties in this [Script].
+				[param include_base] defines whether the parent's properties are included or not. This value is propagated.
 				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="get_script_signal_list">
 			<return type="Dictionary[]" />
+			<param index="0" name="include_base" type="bool" default="true" />
 			<description>
 				Returns the list of user signals defined in this [Script].
+				[param include_base] defines whether the parent's signals are included or not. This value is propagated.
 				[b]Note:[/b] The dictionaries returned by this method are formatted identically to those returned by [method Object.get_signal_list].
 			</description>
 		</method>

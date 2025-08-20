@@ -139,11 +139,11 @@ public:
 	EXBIND0RC(ScriptLanguage *, get_language)
 	EXBIND1RC(bool, has_script_signal, const StringName &)
 
-	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_script_signal_list)
+	GDVIRTUAL1RC_REQUIRED(TypedArray<Dictionary>, _get_script_signal_list, bool)
 
-	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override {
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals, bool include_base = true) const override {
 		TypedArray<Dictionary> sl;
-		GDVIRTUAL_CALL(_get_script_signal_list, sl);
+		GDVIRTUAL_CALL(_get_script_signal_list, include_base, sl);
 		for (int i = 0; i < sl.size(); i++) {
 			r_signals->push_back(MethodInfo::from_dict(sl[i]));
 		}
@@ -165,21 +165,21 @@ public:
 
 	EXBIND0(update_exports)
 
-	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_script_method_list)
+	GDVIRTUAL1RC_REQUIRED(TypedArray<Dictionary>, _get_script_method_list, bool)
 
-	virtual void get_script_method_list(List<MethodInfo> *r_methods) const override {
+	virtual void get_script_method_list(List<MethodInfo> *r_methods, bool include_base = true) const override {
 		TypedArray<Dictionary> sl;
-		GDVIRTUAL_CALL(_get_script_method_list, sl);
+		GDVIRTUAL_CALL(_get_script_method_list, include_base, sl);
 		for (int i = 0; i < sl.size(); i++) {
 			r_methods->push_back(MethodInfo::from_dict(sl[i]));
 		}
 	}
 
-	GDVIRTUAL0RC_REQUIRED(TypedArray<Dictionary>, _get_script_property_list)
+	GDVIRTUAL1RC_REQUIRED(TypedArray<Dictionary>, _get_script_property_list, bool)
 
-	virtual void get_script_property_list(List<PropertyInfo> *r_propertys) const override {
+	virtual void get_script_property_list(List<PropertyInfo> *r_propertys, bool include_base = true) const override {
 		TypedArray<Dictionary> sl;
-		GDVIRTUAL_CALL(_get_script_property_list, sl);
+		GDVIRTUAL_CALL(_get_script_property_list, include_base, sl);
 		for (int i = 0; i < sl.size(); i++) {
 			r_propertys->push_back(PropertyInfo::from_dict(sl[i]));
 		}

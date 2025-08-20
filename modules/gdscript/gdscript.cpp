@@ -309,8 +309,8 @@ void GDScript::_get_script_method_list(List<MethodInfo> *r_list, bool p_include_
 	}
 }
 
-void GDScript::get_script_method_list(List<MethodInfo> *r_list) const {
-	_get_script_method_list(r_list, true);
+void GDScript::get_script_method_list(List<MethodInfo> *r_list, bool include_base) const {
+	_get_script_method_list(r_list, include_base);
 }
 
 void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const {
@@ -352,8 +352,8 @@ void GDScript::_get_script_property_list(List<PropertyInfo> *r_list, bool p_incl
 	}
 }
 
-void GDScript::get_script_property_list(List<PropertyInfo> *r_list) const {
-	_get_script_property_list(r_list, true);
+void GDScript::get_script_property_list(List<PropertyInfo> *r_list, bool include_base) const {
+	_get_script_property_list(r_list, include_base);
 }
 
 bool GDScript::has_method(const StringName &p_method) const {
@@ -1346,8 +1346,8 @@ void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_
 #endif
 }
 
-void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
-	_get_script_signal_list(r_signals, true);
+void GDScript::get_script_signal_list(List<MethodInfo> *r_signals, bool include_base) const {
+	_get_script_signal_list(r_signals, include_base);
 }
 
 GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {

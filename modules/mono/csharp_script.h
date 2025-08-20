@@ -219,7 +219,7 @@ private:
 	// Do not use unless you know what you are doing
 	static void update_script_class_info(Ref<CSharpScript> p_script);
 
-	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base) const;
+	void _get_script_signal_list(List<MethodInfo> *r_signals, bool p_include_base = true) const;
 
 protected:
 	static void _bind_methods();
@@ -256,10 +256,10 @@ public:
 	Error reload(bool p_keep_state = false) override;
 
 	bool has_script_signal(const StringName &p_signal) const override;
-	void get_script_signal_list(List<MethodInfo> *r_signals) const override;
+	void get_script_signal_list(List<MethodInfo> *r_signals, bool include_base = true) const override;
 
 	bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
-	void get_script_property_list(List<PropertyInfo> *r_list) const override;
+	void get_script_property_list(List<PropertyInfo> *r_list, bool include_base = true) const override;
 	void update_exports() override;
 
 	void get_members(HashSet<StringName> *p_members) override;
@@ -281,7 +281,7 @@ public:
 
 	ScriptLanguage *get_language() const override;
 
-	void get_script_method_list(List<MethodInfo> *p_list) const override;
+	void get_script_method_list(List<MethodInfo> *p_list, bool include_base = true) const override;
 	bool has_method(const StringName &p_method) const override;
 	virtual int get_script_method_argument_count(const StringName &p_method, bool *r_is_valid = nullptr) const override;
 	MethodInfo get_method_info(const StringName &p_method) const override;
