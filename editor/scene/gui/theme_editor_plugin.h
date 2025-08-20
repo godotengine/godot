@@ -454,6 +454,9 @@ class ThemeEditor : public VBoxContainer {
 	void _theme_edit_button_cbk();
 	void _theme_close_button_cbk();
 	void _scene_closed(const String &p_path);
+	void _resource_saved(const Ref<Resource> &p_resource);
+	void _files_moved(const String &p_old_path, const String &p_new_path);
+	void _update_theme_name(const String &p_name);
 
 	void _add_preview_button_cbk();
 	void _preview_scene_dialog_cbk(const String &p_path);
