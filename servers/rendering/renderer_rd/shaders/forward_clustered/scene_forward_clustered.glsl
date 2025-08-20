@@ -1854,25 +1854,23 @@ void fragment_shader(in SceneData scene_data) {
 			// Fake specular light to create some direct light specular lobes for directional lightmaps.
 			// https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/gdc2018-precomputedgiobalilluminationinfrostbite.pdf (slides 66-71)
 
-			vec3 l1 = vec3(
-					dot(lm_light_l1p1, vec3(0.2126, 0.7152, 0.0722)),
-					dot(lm_light_l1n1, vec3(0.2126, 0.7152, 0.0722)),
-					dot(lm_light_l1_0, vec3(0.2126, 0.7152, 0.0722)));
+			vec3 l1_r = vec3(lm_light_l1p1.r, lm_light_l1n1.r, lm_light_l1_0.r);
+      vec3 l1_g = vec3(lm_light_l1p1.g, lm_light_l1n1.g, lm_light_l1_0.g);
+      vec3 l1_b = vec3(lm_light_l1p1.b, lm_light_l1n1.b, lm_light_l1_0.b);
 
-			float lightmap_direction_length = length(l1);
-			vec3 lightmap_direction = normalize(l1) / lightmap_direction_length;
-			vec3 L_view = mat3(scene_data.view_matrix) * lightmap_direction;
+			vec3 l1 = (l1_r + l1_g + l1_b) / 3.0;
+      vec3 lightmap_direction = normalize(l1);
 
-			float adjusted_roughness = clamp(1.0 - ((1.0 - roughness) * sqrt(lightmap_direction_length)), 0.05, 1.0);
+			vec3 L_view = normalize((scene_data.view_matrix * vec4(lightmap_direction, 0.0)).xyz);
 
 			vec3 f0 = F0(metallic, specular, albedo);
 
 			// Discard diffuse light from this fake light, as we're only interested in its specular light output.
 			vec3 diffuse_light_discarded = diffuse_light;
 
-			float specular_strength = length(sh_light) * lightmap_direction_length * 20;
+			float specular_strength = max(length(l1_r), max(length(l1_g), length(l1_b)));
 
-			light_compute(indirect_normal, L_view, normalize(view), 0.0, sh_light, false, 1.0, f0, adjusted_roughness, metallic, specular_strength, albedo, alpha, screen_uv, energy_compensation,
+			light_compute(indirect_normal, L_view, normalize(view), 0.0, sh_light, false, 1.5, f0, roughness, metallic, specular_strength * 5, albedo, alpha, screen_uv, energy_compensation,
 #ifdef LIGHT_BACKLIGHT_USED
 					backlight,
 #endif
