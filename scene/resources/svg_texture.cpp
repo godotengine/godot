@@ -196,6 +196,7 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	if (err != OK) {
 		return RID();
 	}
+	img->fix_alpha_edges();
 #else
 	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
 #endif
