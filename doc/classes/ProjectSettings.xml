@@ -3518,6 +3518,10 @@
 		<member name="xr/openxr/extensions/eye_gaze_interaction" type="bool" setter="" getter="" default="false">
 			Specify whether to enable eye tracking for this project. Depending on the platform, additional export configuration may be needed.
 		</member>
+		<member name="xr/openxr/extensions/frame_synthesis" type="bool" setter="" getter="" default="false">
+			If [code]true[/code] the frame synthesis extension will be activated if supported by the platform.
+			[b]Note:[/b] This feature should not be enabled in conjunction with Application Space Warp, if supported this replaces ASW.
+		</member>
 		<member name="xr/openxr/extensions/hand_interaction_profile" type="bool" setter="" getter="" default="false">
 			If [code]true[/code] the hand interaction profile extension will be activated if supported by the platform.
 		</member>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRFrameSynthesisExtension" inherits="OpenXRExtensionWrapper" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		The OpenXR Frame synthesis extension allows for advanced reprojection at low(er) framerates.
+	</brief_description>
+	<description>
+		This class implements the [url=https://registry.khronos.org/OpenXR/specs/1.1/html/xrspec.html#XR_EXT_frame_synthesis]OpenXR Frame synthesis extension[/url]. When enabled in the project settings and supported by the XR runtime in use, frame synthesis uses advanced reprojection techniques to inject additional frames so that your XR experience hits the full frame rate of the device.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="is_available" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if frame synthesis is enabled in the project settings and the current XR runtime supports frame synthesis. The value returned will only be valid once OpenXR has been initialized.
+			</description>
+		</method>
+		<method name="skip_next_frame">
+			<return type="void" />
+			<description>
+				Queues the next frame to be skipped when supplying motion vector and depth data. Call this after teleporting your player or a similar action has moved the player to prevent incorrect reprojection results due to this movement.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="false">
+			Enable frame synthesis. When [code]true[/code] motion vector and depth data is provided to the XR runtime.
+		</member>
+		<member name="relax_frame_interval" type="bool" setter="set_relax_frame_interval" getter="get_relax_frame_interval" default="false">
+			If [code]true[/code] this informs the XR runtime we will be providing frames at a greatly reduced rate. Enable this when you expect your application to run at low framerates and wish to inject multiple reprojected frames.
+		</member>
+	</members>
+</class>

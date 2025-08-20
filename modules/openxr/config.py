@@ -19,6 +19,7 @@ def get_doc_classes():
         "OpenXRAPIExtension",
         "OpenXRExtensionWrapper",
         "OpenXRExtensionWrapperExtension",
+        "OpenXRFrameSynthesisExtension",
         "OpenXRFutureResult",
         "OpenXRFutureExtension",
         "OpenXRInteractionProfile",
