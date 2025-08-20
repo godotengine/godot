@@ -115,6 +115,8 @@ static int _get_datatype_alignment(SL::DataType p_type) {
 			return 16;
 		case SL::TYPE_STRUCT:
 			return 0;  
+		case SL::TYPE_BUFFER:
+			return 0;  
 		case SL::TYPE_MAX: {
 			ERR_FAIL_V(0);
 		}
@@ -520,6 +522,100 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 			}
 
+			// buffers
+
+
+			// first, handle named buffers
+			Vector<StringName> buffer_names;
+
+			for (const KeyValue<StringName, SL::ShaderNode::Buffer> &E : pnode->buffers) {
+				buffer_names.push_back(E.key);
+			}
+
+			buffer_names.sort_custom<StringName::AlphCompare>();
+
+			for (int i = 0; i < buffer_names.size(); i++) {
+				SL::ShaderNode::Buffer buf = pnode->buffers[buffer_names[i]];
+				String buffer_code;
+
+				//specify layout
+				buffer_code += "layout(";
+				if (buf.set > -1) {
+					buffer_code += "set = " + itos(buf.set) + ",";
+				}
+				if (buf.binding > -1) {
+					buffer_code += "binding = " + itos(buf.binding) + ",";
+				}
+
+				switch (buf.format) {
+					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
+						buffer_code += "packed) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
+						buffer_code += "shared) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
+						buffer_code += "std140) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
+						buffer_code += "std430) ";
+					} break;
+				}
+
+				if (buf.restrict) {
+					buffer_code += "restrict ";
+				}
+
+				switch(buf.io_qual) {
+					case SL::ShaderNode::Buffer::BUFFER_NONE: {
+						buffer_code += "buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_IN: {
+						buffer_code += "readonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_OUT: {
+						buffer_code += "writeonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
+						buffer_code += "uniform ";
+					} break;
+				}
+
+				if (buf.name_bind.is_empty()) {
+					buffer_code += "userBuffer_" + buf.name;
+				} else {
+					buffer_code += buf.name_bind;
+				}
+				
+				buffer_code += " {\n";
+
+				for (SL::MemberNode *m : buf.shader_buffer->members) {
+					if (m->datatype == SL::TYPE_STRUCT) {
+						buffer_code += _mkid(m->struct_name);
+					} else {
+						buffer_code += _prestr(m->precision);
+						buffer_code += _typestr(m->datatype);
+					}
+					buffer_code += " ";
+					buffer_code += _mkid(m->name);
+					if (m->array_size != 0) {
+						buffer_code += "[";
+						if (m->array_size > 0) {
+							buffer_code += itos(m->array_size);
+						}
+						buffer_code += "]";
+					} 
+					
+					buffer_code += ";\n";
+				}
+				buffer_code += "} " + buf.name;
+				buffer_code += ";\n";
+
+				for (int j = 0; j < STAGE_MAX; j++) {
+					r_gen_code.stage_globals[j] += buffer_code;
+				}
+			}
+
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
@@ -537,6 +633,91 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 
 					max_uniforms++;
+				}
+			}
+
+			// next, unnamed buffers are handled
+
+			int64_t ubuf_count = 0;
+			for (int i = 0; i < pnode->unnamed_buffers.size(); i++) {
+				SL::ShaderNode::Buffer buf = pnode->unnamed_buffers[i];
+				String buffer_code;
+
+				//specify layout
+				buffer_code += "layout(";
+				if (buf.set > -1) {
+					buffer_code += "set = " + itos(buf.set) + ",";
+				}
+				if (buf.binding > -1) {
+					buffer_code += "binding = " + itos(buf.binding) + ",";
+				}
+
+				switch (buf.format) {
+					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
+						buffer_code += "packed) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
+						buffer_code += "shared) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
+						buffer_code += "std140) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
+						buffer_code += "std430) ";
+					} break;
+				}
+
+				if (buf.restrict) {
+					buffer_code += "restrict ";
+				}
+
+				switch(buf.io_qual) {
+					case SL::ShaderNode::Buffer::BUFFER_NONE: {
+						buffer_code += "buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_IN: {
+						buffer_code += "readonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_OUT: {
+						buffer_code += "writeonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
+						buffer_code += "uniform ";
+					} break;
+				}
+
+				if (buf.name_bind.is_empty()) {
+					buffer_code += "userBuffer_unnamed" + itos(ubuf_count++);
+				} else {
+					buffer_code += buf.name_bind;
+				}
+				
+				buffer_code += " {\n";
+
+				for (SL::MemberNode *m : buf.shader_buffer->members) {
+					if (m->datatype == SL::TYPE_STRUCT) {
+						buffer_code += _mkid(m->struct_name);
+					} else {
+						buffer_code += _prestr(m->precision);
+						buffer_code += _typestr(m->datatype);
+					}
+					buffer_code += " ";
+					buffer_code += _mkid(m->name);
+					if (m->array_size != 0) {
+						buffer_code += "[";
+						if (m->array_size > 0) {
+							buffer_code += itos(m->array_size);
+						}
+						buffer_code += "]";
+					} 
+					
+					buffer_code += ";\n";
+				}
+				buffer_code += "} " + buf.name;
+				buffer_code += ";\n";
+
+				for (int j = 0; j < STAGE_MAX; j++) {
+					r_gen_code.stage_globals[j] += buffer_code;
 				}
 			}
 
@@ -1467,55 +1648,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 		} break;
 		case SL::Node::NODE_TYPE_BUFFER: {
-			SL::BufferNode *bufnode = (SL::BufferNode*) p_node;
-
-			// emit layout code
-			code += "layout (binding = ";
-			code += itos(bufnode->binding);
-			code += ", set = ";
-			code += itos(bufnode->set);
-			code += ", ";
-			switch (bufnode->format) {
-				case SL::BufferNode::BUFFORMAT_PACKED:{
-					code += "packed) ";
-				} break;
-				case SL::BufferNode::BUFFORMAT_SHARED:{
-					code += "shared) ";
-				} break;
-				case SL::BufferNode::BUFFORMAT_STD140:{
-					code += "std140) ";
-				} break;
-				case SL::BufferNode::BUFFORMAT_STD430:{
-					code += "std430) ";
-				} break;
-			}
-
-			// emit qualifiers
-			for (SL::BufferNode::BufferQualifiers qual : bufnode->qualifiers) {
-				switch (qual) {
-					case SL::BufferNode::BUFFER_IN: {
-						code += "readonly ";
-					} break;
-					case SL::BufferNode::BUFFER_OUT: {
-						code += "writeonly ";
-					} break;
-					case SL::BufferNode::BUFFER_UNIFORM: {
-						code += "uniform ";
-					} break;
-				}
-			}
-			if (bufnode->restrict) {
-				code += "restrict ";
-			}
-
-			// emit structure
-			code += "{\n";
-			for (SL::VariableDeclarationNode *vnode : bufnode->members) {
-
-			}
-			code += "\n} ";
-			code += bufnode->name;
-			code += ";";
+			break;
 
 			/*
 			buffer uniform restrict my_buf {

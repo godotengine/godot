@@ -167,6 +167,7 @@ public:
 		TK_BUFFER_RESTRICT,
 		TK_BUFFER_SET,
 		TK_BUFFER_BIND,
+		TK_BUFFER_BIND_NAME,
 		TK_BUFFER_FORMAT,
 		TK_RENDER_MODE,
 		TK_STENCIL_MODE,
@@ -245,6 +246,7 @@ public:
 		TYPE_SAMPLERCUBEARRAY,
 		TYPE_SAMPLEREXT,
 		TYPE_STRUCT,
+		TYPE_BUFFER,
 		TYPE_MAX
 	};
 
@@ -602,25 +604,7 @@ public:
 	};
 
 	struct BufferNode : public Node {
-		enum BufferQualifiers {
-			BUFFER_IN,
-			BUFFER_OUT,
-			BUFFER_UNIFORM,
-		};
-
-		enum BufferFormat {
-			BUFFORMAT_PACKED,
-			BUFFORMAT_SHARED,
-			BUFFORMAT_STD140,
-			BUFFORMAT_STD430,
-		};		
-		List<VariableDeclarationNode *> members;
-		StringName name;
-		Vector<BufferQualifiers> qualifiers;
-		BufferFormat format = BUFFORMAT_STD140;
-		bool restrict = false;
-		int binding;
-		int set;
+		List<MemberNode *> members;
 		BufferNode() :
 				Node(NODE_TYPE_BUFFER) {}
 	};
@@ -749,7 +733,26 @@ public:
 		};
 
 		struct Buffer {
-			StringName name;
+			StringName name; // variable name
+			enum BufferIOQualifier {
+				BUFFER_NONE,
+				BUFFER_IN,
+				BUFFER_OUT,
+				BUFFER_UNIFORM,
+			};
+
+			enum BufferFormat {
+				BUFFORMAT_PACKED,
+				BUFFORMAT_SHARED,
+				BUFFORMAT_STD140,
+				BUFFORMAT_STD430,
+			};
+			BufferIOQualifier io_qual = BUFFER_NONE;
+			BufferFormat format = BUFFORMAT_STD140;
+			StringName name_bind; // name of the actual buffer
+			bool restrict = false;
+			int binding = -1;
+			int set = -1;
 			BufferNode *shader_buffer = nullptr;
 		};
 
@@ -758,6 +761,7 @@ public:
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Buffer> buffers;
+		HashMap<StringName, int> unnamed_buffer_members;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 		Vector<StringName> stencil_modes;
@@ -766,6 +770,7 @@ public:
 		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
 		Vector<Struct> vstructs;
+		Vector<Buffer> unnamed_buffers;
 
 		ShaderNode() :
 				Node(NODE_TYPE_SHADER) {}
@@ -870,6 +875,7 @@ public:
 	static bool is_token_arg_qual(TokenType p_type);
 	static bool is_token_buffer_qual(TokenType p_type);
 	static bool is_token_buffer_layout(TokenType p_type);
+	static bool is_name_used(ShaderNode* shader, StringName name);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_interpolation_name(DataInterpolation p_interpolation);
@@ -1161,6 +1167,7 @@ private:
 		IDENTIFIER_BUILTIN_VAR,
 		IDENTIFIER_CONSTANT,
 		IDENTIFIER_BUFFER,
+		IDENTIFIER_BUFFER_FIELD,
 		IDENTIFIER_MAX,
 	};
 
