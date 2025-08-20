@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		A scalable [Texture2D] based on an SVG image. [SVGTexture]s are automatically re-rasterized to match font oversampling.
+		[b]Note:[/b] This class is only available in engine builds with the SVG module enabled. By default, the SVG module is enabled, but it can be disabled at build-time using the [code]module_svg_enabled=no[/code] SCons option.
+		[b]Note:[/b] SVGs are rasterized using [url=https://www.thorvg.org/]ThorVG[/url] when importing them. [url=https://www.thorvg.org/about#:~:text=certain%20features%20remain%20unsupported%20within%20the%20current%20framework]Support is limited[/url]; complex vectors may not render correctly. [url=$DOCS_URL/tutorials/assets_pipeline/importing_images.html#doc-importing-images-svg-text]Text must be converted to paths[/url]; otherwise, it won't appear in the rasterized image. You can check whether ThorVG can render a certain vector correctly using its [url=https://www.thorvg.org/viewer]web-based viewer[/url]. For complex vectors, rendering them to PNGs using [url=https://inkscape.org/]Inkscape[/url] is often a better solution. This can be automated thanks to its [url=https://wiki.inkscape.org/wiki/index.php/Using_the_Command_Line#Export_files]command-line interface[/url].
 	</description>
 	<tutorials>
 	</tutorials>
