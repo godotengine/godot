@@ -28,6 +28,9 @@ static void _godot_js_spx_on_engine_fixed_update(GdFloat delta){
 static void _godot_js_spx_on_engine_destroy(){
 	godot_js_spx_on_engine_destroy();
 }
+static void _godot_js_spx_on_engine_pause(GdBool is_paused){
+	godot_js_spx_on_engine_pause(is_paused);
+}
 
 static void _godot_js_spx_on_scene_sprite_instantiated(GdObj obj,GdString type_name){
 	godot_js_spx_on_scene_sprite_instantiated(&obj, type_name);
@@ -154,6 +157,7 @@ void OS_Web::register_spx_callbacks() {
 	callback_infos->func_on_engine_update = &_godot_js_spx_on_engine_update;
 	callback_infos->func_on_engine_fixed_update = &_godot_js_spx_on_engine_fixed_update;
 	callback_infos->func_on_engine_destroy = &_godot_js_spx_on_engine_destroy;
+	callback_infos->func_on_engine_pause = &_godot_js_spx_on_engine_pause;
 	callback_infos->func_on_scene_sprite_instantiated = &_godot_js_spx_on_scene_sprite_instantiated;
 	callback_infos->func_on_sprite_ready = &_godot_js_spx_on_sprite_ready;
 	callback_infos->func_on_sprite_updated = &_godot_js_spx_on_sprite_updated;

@@ -31,8 +31,10 @@
 #include "spx_engine.h"
 #include "core/extension/gdextension.h"
 #include "core/os/memory.h"
+#include "core/os/thread.h"
 #include "gdextension_spx_ext.h"
 #include "scene/main/window.h"
+#include "scene/main/scene_tree.h"
 #include "spx_input_mgr.h"
 #include "spx_audio_mgr.h"
 #include "spx_physic_mgr.h"
@@ -59,6 +61,7 @@ static SpxCallbackInfo get_default_spx_callbacks() {
 	callbacks.func_on_engine_fixed_update = [](GdFloat delta){};
 	callbacks.func_on_engine_update = [](GdFloat delta){};
 	callbacks.func_on_engine_destroy = [](){};
+	callbacks.func_on_engine_pause = [](GdBool is_paused){};
 	callbacks.func_on_scene_sprite_instantiated = [](GdObj obj,GdString type_name){};
 	callbacks.func_on_sprite_ready = [](GdObj obj){};
 	callbacks.func_on_sprite_updated = [](GdFloat delta){};
@@ -129,6 +132,7 @@ void SpxEngine::register_callbacks(GDExtensionSpxCallbackInfoPtr callback_ptr) {
 	
 	singleton->callbacks = *(SpxCallbackInfo *)callback_ptr;
 	singleton->global_id = 1;
+	singleton->is_spx_paused = false;
 }
 
 SpxCallbackInfo *SpxEngine::get_callbacks() {
@@ -172,7 +176,7 @@ void SpxEngine::on_awake() {
 }
 
 void SpxEngine::on_fixed_update(float delta) {
-	if (has_exit) {
+	if (has_exit || is_spx_paused) {
 		return;
 	}
 	for (auto mgr : mgrs) {
@@ -184,9 +188,14 @@ void SpxEngine::on_fixed_update(float delta) {
 }
 
 void SpxEngine::on_update(float delta) {
-	if (has_exit) {
+	if (has_exit || is_spx_paused) {
 		return;
 	}
+	if(is_defer_call_pause){
+		_on_godot_pause_changed(defer_pause_value);
+		is_defer_call_pause = false;
+	}
+
 	for (auto mgr : mgrs) {
 		mgr->on_update(delta);
 	}
@@ -233,4 +242,64 @@ void SpxEngine::on_destroy() {
 	memdelete(ext);
 	mgrs.clear();
 	singleton = nullptr;
+}
+
+// SPX Pause functionality implementation with thread safety
+void SpxEngine::pause() {
+	if (tree != nullptr) {
+		if (Thread::is_main_thread()) {
+			// Direct call on main thread
+			tree->set_pause(true);
+			// Directly notify about pause state change
+			_on_godot_pause_changed(true);
+		} else {
+			// Use SceneTree to defer call to main thread
+			tree->call_deferred("set_pause", true);
+			is_defer_call_pause = true;
+			defer_pause_value = true;
+			// Defer the pause notification as well
+			//callable_mp(this, &SpxEngine::_on_godot_pause_changed).call_deferred(true);
+		}
+	}
+}
+
+void SpxEngine::resume() {
+	if (tree != nullptr) {
+		if (Thread::is_main_thread()) {
+			// Direct call on main thread
+			tree->set_pause(false);
+			// Directly notify about pause state change
+			_on_godot_pause_changed(false);
+		} else {
+			// Use SceneTree to defer call to main thread
+			tree->call_deferred("set_pause", false);
+			is_defer_call_pause = true;
+			defer_pause_value = false;
+		}
+	}
+}
+
+bool SpxEngine::is_paused() const {
+	return is_spx_paused;
+}
+
+// Internal method for Godot pause synchronization
+void SpxEngine::_on_godot_pause_changed(bool is_godot_paused) {
+	if (is_godot_paused != is_spx_paused) {
+		is_spx_paused = is_godot_paused;
+		
+		// Notify all managers about pause/resume
+		for (auto mgr : mgrs) {
+			if (is_spx_paused) {
+				mgr->on_pause();
+			} else {
+				mgr->on_resume();
+			}
+		}
+		
+		// Call the pause callback to notify SPX users
+		if (callbacks.func_on_engine_pause != nullptr) {
+			callbacks.func_on_engine_pause(is_spx_paused);
+		}
+	}
 }

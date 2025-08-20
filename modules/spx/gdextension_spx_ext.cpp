@@ -136,6 +136,15 @@ static void gdextension_spx_ext_request_exit(GdInt exit_code) {
 static void gdextension_spx_ext_on_runtime_panic(GdString msg) {
 	 extMgr->on_runtime_panic(msg);
 }
+static void gdextension_spx_ext_pause() {
+	 extMgr->pause();
+}
+static void gdextension_spx_ext_resume() {
+	 extMgr->resume();
+}
+static void gdextension_spx_ext_is_paused(GdBool* ret_val) {
+	*ret_val = extMgr->is_paused();
+}
 static void gdextension_spx_ext_destroy_all_pens() {
 	 extMgr->destroy_all_pens();
 }
@@ -776,6 +785,9 @@ void gdextension_spx_setup_interface() {
 	REGISTER_SPX_INTERFACE_FUNC(spx_camera_get_viewport_rect);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_request_exit);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_on_runtime_panic);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_pause);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_resume);
+	REGISTER_SPX_INTERFACE_FUNC(spx_ext_is_paused);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_destroy_all_pens);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_create_pen);
 	REGISTER_SPX_INTERFACE_FUNC(spx_ext_destroy_pen);

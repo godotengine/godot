@@ -171,6 +171,18 @@ void gdspx_ext_on_runtime_panic(GdString* msg) {
 	 extMgr->on_runtime_panic(*msg);
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_pause() {
+	 extMgr->pause();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_resume() {
+	 extMgr->resume();
+}
+EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_is_paused(GdBool* ret_val) {
+	*ret_val = extMgr->is_paused();
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_destroy_all_pens() {
 	 extMgr->destroy_all_pens();
 }

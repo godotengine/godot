@@ -96,6 +96,9 @@ private:
 	GDExtensionSpxGlobalRuntimePanicCallback on_runtime_panic;
 	GDExtensionSpxGlobalRuntimeExitCallback on_runtime_exit;
 	bool has_exit;
+	bool is_spx_paused;
+	bool is_defer_call_pause;
+	bool defer_pause_value;
 public:
 	SpxCallbackInfo *get_callbacks() ;
 	GDExtensionSpxGlobalRuntimePanicCallback get_on_runtime_panic() { return on_runtime_panic; }
@@ -113,6 +116,14 @@ public:
 	void on_update(float delta) override;
 	void on_destroy() override;
 	void on_exit(int exit_code) override;
+
+	// SPX Pause functionality - simplified interface
+	void pause();
+	void resume();
+	bool is_paused() const;
+	
+	// Internal methods for Godot pause synchronization
+	void _on_godot_pause_changed(bool is_godot_paused);
 };
 
 #endif // SPX_ENGINE_H

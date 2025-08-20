@@ -85,3 +85,11 @@ void SpxBaseMgr::on_destroy() {
 		owner = nullptr;
 	}
 }
+
+void SpxBaseMgr::on_pause() {
+	// Default implementation - override in derived classes if needed
+}
+
+void SpxBaseMgr::on_resume() {
+	// Default implementation - override in derived classes if needed
+}
