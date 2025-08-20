@@ -1860,7 +1860,6 @@ void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
 	if (p_id == MAIN_WINDOW_ID) {
-		[GodotApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 		[GodotApp activateApplication];
 	}
 
