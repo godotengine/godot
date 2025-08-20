@@ -4,7 +4,7 @@
 		A scalable [Texture2D] based on an SVG image.
 	</brief_description>
 	<description>
-		A scalable [Texture2D] based on an SVG image. [SVGTexture]s are automatically re-rasterized to match font oversampling.
+		A scalable [Texture2D] based on an SVG image. [SVGTexture]s are used to automatically re-rasterize icons and other texture based UI theme elements to match viewport scale and font oversampling. See also [member ProjectSettings.display/window/stretch/mode] ("canvas_items" mode), and [member Viewport.oversampling_override].
 	</description>
 	<tutorials>
 	</tutorials>
