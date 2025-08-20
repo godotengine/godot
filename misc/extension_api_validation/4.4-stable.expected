@@ -328,3 +328,10 @@ GH-108825
 Validate extension JSON: Error: Field 'classes/EditorExportPlatformExtension/methods/_get_option_icon/return_value': type changed value in new API, from "ImageTexture" to "Texture2D".
 
 Return type changed to allow returning both ImageTexture and SVGTexture. Compatibility method registered.
+
+
+GH-107920
+---------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/Timer/properties/time_left': setter
+
+Setter function added.
