@@ -91,7 +91,7 @@ Error JoypadSDL::initialize() {
 	// Make sure that we handle already connected joypads when the driver is initialized.
 	process_events();
 
-	print_verbose("SDL: Init OK!");
+	PRINT_VERBOSE("SDL: Init OK!");
 	return OK;
 }
 
@@ -143,7 +143,7 @@ void JoypadSDL::process_events() {
 					device_name = SDL_GetGamepadName(gamepad);
 					joy = SDL_GetGamepadJoystick(gamepad);
 
-					print_verbose(vformat("SDL: Gamepad %s connected", SDL_GetGamepadName(gamepad)));
+					PRINT_VERBOSE(vformat("SDL: Gamepad %s connected", SDL_GetGamepadName(gamepad)));
 				} else {
 					joy = SDL_OpenJoystick(sdl_event.jdevice.which);
 					ERR_CONTINUE_MSG(!joy,
@@ -151,7 +151,7 @@ void JoypadSDL::process_events() {
 
 					device_name = SDL_GetJoystickName(joy);
 
-					print_verbose(vformat("SDL: Joystick %s connected", SDL_GetJoystickName(joy)));
+					PRINT_VERBOSE(vformat("SDL: Joystick %s connected", SDL_GetJoystickName(joy)));
 				}
 
 				const int MAX_GUID_SIZE = 64;

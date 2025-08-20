@@ -76,7 +76,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, nullptr, true);
 		if (err == ERR_FILE_EOF) {
 			if (p_load && !path_found && decomp_path_found) {
-				print_verbose(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
+				PRINT_VERBOSE(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
 				r_path_and_type.path = decomp_path;
 			}
 
@@ -122,7 +122,7 @@ Error ResourceFormatImporter::_get_path_and_type(const String &p_path, PathAndTy
 	}
 
 	if (p_load && !path_found && decomp_path_found) {
-		print_verbose(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
+		PRINT_VERBOSE(vformat("No natively supported texture format found for %s, using decompressable format %s.", p_path, decomp_path));
 		r_path_and_type.path = decomp_path;
 		return OK;
 	}

@@ -95,10 +95,10 @@ Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_s
 		flg |= ResourceSaver::SaverFlags::FLAG_COMPRESS;
 	}
 
-	print_verbose("Saving to: " + p_save_path + ".svgtex");
+	PRINT_VERBOSE("Saving to: " + p_save_path + ".svgtex");
 	Error err = ResourceSaver::save(svg_tex, p_save_path + ".svgtex", flg);
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot save SVG texture to file \"%s.svgtex\".", p_save_path));
-	print_verbose("Done saving to: " + p_save_path + ".svgtex");
+	PRINT_VERBOSE("Done saving to: " + p_save_path + ".svgtex");
 
 	return OK;
 }

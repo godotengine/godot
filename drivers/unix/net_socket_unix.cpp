@@ -155,7 +155,7 @@ NetSocketUnix::NetError NetSocketUnix::_get_socket_error() const {
 	if (errno == ENOBUFS) {
 		return ERR_NET_BUFFER_TOO_SMALL;
 	}
-	print_verbose("Socket error: " + itos(errno) + ".");
+	PRINT_VERBOSE("Socket error: " + itos(errno) + ".");
 	return ERR_NET_OTHER;
 }
 
@@ -287,7 +287,7 @@ Error NetSocketUnix::open(Type p_sock_type, IP::Type &ip_type) {
 	// Disable SIGPIPE (should only be relevant to stream sockets, but seems to affect UDP too on iOS).
 	int par = 1;
 	if (setsockopt(_sock, SOL_SOCKET, SO_NOSIGPIPE, &par, sizeof(int)) != 0) {
-		print_verbose("Unable to turn off SIGPIPE on socket.");
+		PRINT_VERBOSE("Unable to turn off SIGPIPE on socket.");
 	}
 #endif
 	return OK;
@@ -312,7 +312,7 @@ Error NetSocketUnix::bind(IPAddress p_addr, uint16_t p_port) {
 
 	if (::bind(_sock, (struct sockaddr *)&addr, addr_size) != 0) {
 		NetError err = _get_socket_error();
-		print_verbose("Failed to bind socket. Error: " + itos(err) + ".");
+		PRINT_VERBOSE("Failed to bind socket. Error: " + itos(err) + ".");
 		close();
 		return ERR_UNAVAILABLE;
 	}
@@ -325,7 +325,7 @@ Error NetSocketUnix::listen(int p_max_pending) {
 
 	if (::listen(_sock, p_max_pending) != 0) {
 		_get_socket_error();
-		print_verbose("Failed to listen from socket.");
+		PRINT_VERBOSE("Failed to listen from socket.");
 		close();
 		return FAILED;
 	}
@@ -352,7 +352,7 @@ Error NetSocketUnix::connect_to_host(IPAddress p_host, uint16_t p_port) {
 			case ERR_NET_IN_PROGRESS:
 				return ERR_BUSY;
 			default:
-				print_verbose("Connection to remote host failed.");
+				PRINT_VERBOSE("Connection to remote host failed.");
 				close();
 				return FAILED;
 		}
@@ -384,7 +384,7 @@ Error NetSocketUnix::poll(PollType p_type, int p_timeout) const {
 
 	if (ret < 0 || pfd.revents & POLLERR) {
 		_get_socket_error();
-		print_verbose("Error when polling socket.");
+		PRINT_VERBOSE("Error when polling socket.");
 		return FAILED;
 	}
 
@@ -574,7 +574,7 @@ int NetSocketUnix::get_available_bytes() const {
 	int ret = ioctl(_sock, FIONREAD, &len);
 	if (ret == -1) {
 		_get_socket_error();
-		print_verbose("Error when checking available bytes on socket.");
+		PRINT_VERBOSE("Error when checking available bytes on socket.");
 		return -1;
 	}
 	return len;
@@ -587,7 +587,7 @@ Error NetSocketUnix::get_socket_address(IPAddress *r_ip, uint16_t *r_port) const
 	socklen_t len = sizeof(saddr);
 	if (getsockname(_sock, (struct sockaddr *)&saddr, &len) != 0) {
 		_get_socket_error();
-		print_verbose("Error when reading local socket address.");
+		PRINT_VERBOSE("Error when reading local socket address.");
 		return FAILED;
 	}
 	_set_ip_port(&saddr, r_ip, r_port);
@@ -603,7 +603,7 @@ Ref<NetSocket> NetSocketUnix::accept(IPAddress &r_ip, uint16_t &r_port) {
 	int fd = ::accept(_sock, (struct sockaddr *)&their_addr, &size);
 	if (fd == -1) {
 		_get_socket_error();
-		print_verbose("Error when accepting socket connection.");
+		PRINT_VERBOSE("Error when accepting socket connection.");
 		return out;
 	}
 
