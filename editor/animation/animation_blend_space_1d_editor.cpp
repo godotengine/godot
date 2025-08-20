@@ -801,6 +801,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_panel->add_child(error_label);
+	error_panel->hide();
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

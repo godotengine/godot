@@ -1082,6 +1082,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	error_label = memnew(Label);
 	error_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 	error_panel->add_child(error_label);
+	error_panel->hide();
 
 	set_custom_minimum_size(Size2(0, 300 * EDSCALE));
 
