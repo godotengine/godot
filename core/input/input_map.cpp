@@ -896,7 +896,7 @@ void InputMap::load_default() {
 }
 
 InputMap::InputMap() {
-	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exist.");
+	ERR_FAIL_COND_MSG(singleton, "Singleton in InputMap already exists.");
 	singleton = this;
 }
 

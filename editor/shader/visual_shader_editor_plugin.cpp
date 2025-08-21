@@ -5999,7 +5999,7 @@ void VisualShaderEditor::_varying_validate() {
 		error += TTR("Invalid name for varying.");
 		has_error = true;
 	} else if (visual_shader->has_varying(varname)) {
-		error += TTR("Varying with that name is already exist.");
+		error += TTR("Varying with that name already exists.");
 		has_error = true;
 	}
 
