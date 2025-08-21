@@ -177,6 +177,12 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 				selected_point = i;
 				Ref<AnimationNode> node = blend_space->get_blend_point_node(i);
 				EditorNode::get_singleton()->push_item(node.ptr(), "", true);
+
+				if (mb->is_double_click() && AnimationTreeEditor::get_singleton()->can_edit(node)) {
+					_open_editor();
+					return;
+				}
+
 				dragging_selected_attempt = true;
 				drag_from = mb->get_position();
 				_update_tool_erase();
