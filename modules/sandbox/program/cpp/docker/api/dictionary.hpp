@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  dictionary.hpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 
 #include "variant.hpp"
@@ -7,7 +37,7 @@ struct Dictionary {
 	constexpr Dictionary() {} // DON'T TOUCH
 	static Dictionary Create();
 
-	Dictionary &operator =(const Dictionary &other);
+	Dictionary &operator=(const Dictionary &other);
 
 	DictAccessor operator[](const Variant &key);
 	Variant get(const Variant &key) const;
@@ -35,11 +65,15 @@ struct Dictionary {
 
 	// Call methods on the Dictionary
 	template <typename... Args>
-	Variant operator () (std::string_view method, Args&&... args);
+	Variant operator()(std::string_view method, Args &&...args);
 	template <typename... Args>
-	Variant operator () (std::string_view method, Args&&... args) const;
+	Variant operator()(std::string_view method, Args &&...args) const;
 
-	static Dictionary from_variant_index(unsigned idx) { Dictionary d; d.m_idx = idx; return d; }
+	static Dictionary from_variant_index(unsigned idx) {
+		Dictionary d;
+		d.m_idx = idx;
+		return d;
+	}
 	unsigned get_variant_index() const noexcept { return m_idx; }
 	bool is_permanent() const { return Variant::is_permanent_index(m_idx); }
 
@@ -64,17 +98,18 @@ inline Variant::operator Dictionary() const {
 }
 
 struct DictAccessor {
-	DictAccessor(const Dictionary &dict, const Variant &key) : m_dict_idx(dict.get_variant_index()), m_key(key) {}
+	DictAccessor(const Dictionary &dict, const Variant &key) :
+			m_dict_idx(dict.get_variant_index()), m_key(key) {}
 
 	operator Variant() const { return dict().get(m_key); }
-	Variant operator *() const { return dict().get(m_key); }
+	Variant operator*() const { return dict().get(m_key); }
 	Variant value() const { return dict().get(m_key); }
 	Variant value_or(const Variant &def) const { return dict().get_or_add(m_key, def); }
 
 	void operator=(const Variant &value) { dict().set(m_key, value); }
 
 	template <typename... Args>
-	Variant operator ()(Args &&...args) {
+	Variant operator()(Args &&...args) {
 		return value()(std::forward<Args>(args)...);
 	}
 
@@ -90,12 +125,12 @@ inline DictAccessor Dictionary::operator[](const Variant &key) {
 }
 
 template <typename... Args>
-inline Variant Dictionary::operator () (std::string_view method, Args&&... args) {
+inline Variant Dictionary::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Dictionary::operator () (std::string_view method, Args&&... args) const {
+inline Variant Dictionary::operator()(std::string_view method, Args &&...args) const {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 

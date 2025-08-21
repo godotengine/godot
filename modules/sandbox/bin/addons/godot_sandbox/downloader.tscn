@@ -41,7 +41,7 @@ focus_mode = 2
 bbcode_enabled = true
 text = "You need to install the following dependencies: [url=https://cmake.org/download/]CMake[/url], [url=https://ziglang.org/download/]Zig[/url], [url=https://git-scm.com/downloads]Git[/url]. On windows need additionally [url=https://ninja-build.org]Ninja[/url].
 Either install with the following [b]commands[/b], or download manually to user://godot-sandbox using the below [b]buttons[/b].
-Aslo make sure the paths are set correctly in the [b]PATH[/b] or in the following Project Settings:
+Also make sure the paths are set correctly in the [b]PATH[/b] or in the following Project Settings:
 [color=gray]\"editor/script/cmake\", \"editor/script/zig\", \"editor/script/git\", \"editor/script/make\"[/color]"
 fit_content = true
 selection_enabled = true

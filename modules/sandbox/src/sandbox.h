@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  sandbox.h                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 #include <algorithm>
 #include <godot_cpp/classes/node.hpp>
@@ -67,8 +97,8 @@ public:
 		gaddr_t size;
 		void *base_ptr;
 
-		SharedMemoryRange(gaddr_t p_start, gaddr_t p_size, void *p_base_ptr)
-			: start(p_start), size(p_size), base_ptr(p_base_ptr) {}
+		SharedMemoryRange(gaddr_t p_start, gaddr_t p_size, void *p_base_ptr) :
+				start(p_start), size(p_size), base_ptr(p_base_ptr) {}
 		bool contains(gaddr_t address) const {
 			return address >= start && address < start + size;
 		}
@@ -676,10 +706,10 @@ private:
 	// it will be called to check if access to a resource is allowed.
 	Callable m_just_in_time_allowed_resources;
 	// If a callable is set for allowed methods, it will be called when an object method
-	// call is attemped, to check if the method is allowed.
+	// call is attempted, to check if the method is allowed.
 	Callable m_just_in_time_allowed_methods;
 	// If a callable is set for allowed properties, it will be called when an object property
-	// access is attemped, to check if the property is allowed.
+	// access is attempted, to check if the property is allowed.
 	Callable m_just_in_time_allowed_properties;
 
 	// Redirections

@@ -1,7 +1,37 @@
+/**************************************************************************/
+/*  transform3d.hpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 
-#include "variant.hpp"
 #include "basis.hpp"
+#include "variant.hpp"
 
 struct Transform3D {
 	constexpr Transform3D() {}
@@ -15,7 +45,7 @@ struct Transform3D {
 	/// @param basis The basis of the transform.
 	Transform3D(const Vector3 &origin, const Basis &basis);
 
-	Transform3D &operator =(const Transform3D &transform);
+	Transform3D &operator=(const Transform3D &transform);
 	void assign(const Transform3D &transform);
 
 	// Transform3D operations
@@ -43,14 +73,19 @@ struct Transform3D {
 	void set_basis(const Basis &basis);
 
 	template <typename... Args>
-	Variant operator () (std::string_view method, Args&&... args);
+	Variant operator()(std::string_view method, Args &&...args);
 
 	METHOD(Transform3D, affine_inverse);
 	METHOD(bool, is_equal_approx);
 	METHOD(bool, is_finite);
 
-	static Transform3D from_variant_index(unsigned idx) { Transform3D a {}; a.m_idx = idx; return a; }
+	static Transform3D from_variant_index(unsigned idx) {
+		Transform3D a{};
+		a.m_idx = idx;
+		return a;
+	}
 	unsigned get_variant_index() const noexcept { return m_idx; }
+
 private:
 	unsigned m_idx = INT32_MIN;
 };
@@ -71,7 +106,7 @@ inline Transform3D Variant::as_transform3d() const {
 	return static_cast<Transform3D>(*this);
 }
 
-inline Transform3D &Transform3D::operator =(const Transform3D &transform) {
+inline Transform3D &Transform3D::operator=(const Transform3D &transform) {
 	if (this->m_idx != INT32_MIN) {
 		this->assign(transform);
 	} else {
@@ -81,6 +116,6 @@ inline Transform3D &Transform3D::operator =(const Transform3D &transform) {
 }
 
 template <typename... Args>
-Variant Transform3D::operator () (std::string_view method, Args&&... args) {
+Variant Transform3D::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }

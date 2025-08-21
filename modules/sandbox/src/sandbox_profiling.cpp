@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  sandbox_profiling.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "sandbox.h"
 
 #include <algorithm>
@@ -10,7 +40,6 @@ struct ProfilingMachine {
 	std::vector<uint8_t> binary;
 };
 static std::unordered_map<std::string, ProfilingMachine> lookup_machines;
-
 
 void Sandbox::set_profiling(bool enable) {
 	enable_profiling(enable);
@@ -57,9 +86,9 @@ static ProfilingMachine *requisition(const std::string &elf) {
 			return nullptr;
 		}
 		pm.machine = std::make_unique<riscv::Machine<RISCV_ARCH>>(pm.binary, riscv::MachineOptions<RISCV_ARCH>{
-			.load_program = false,
-			.use_memory_arena = false,
-		});
+																					 .load_program = false,
+																					 .use_memory_arena = false,
+																			 });
 		lookup_machines[elf] = std::move(pm);
 		return &lookup_machines[elf];
 	}
@@ -67,7 +96,7 @@ static ProfilingMachine *requisition(const std::string &elf) {
 }
 
 static void resolve(Result &res, const Callable &callback,
-	const Sandbox::ProfilingState &gprofstate) {
+		const Sandbox::ProfilingState &gprofstate) {
 	// Try to resolve the address using addr2line
 #ifdef __linux__
 	if (USE_ADDR2LINE && !res.elf.empty()) {
@@ -75,9 +104,9 @@ static void resolve(Result &res, const Callable &callback,
 		// using popen() and fgets() to read the output
 		char buffer[4096];
 		snprintf(buffer, sizeof(buffer),
-			"riscv64-linux-gnu-addr2line -e %s -f -C 0x%lX", res.elf.c_str(), long(res.pc));
+				"riscv64-linux-gnu-addr2line -e %s -f -C 0x%lX", res.elf.c_str(), long(res.pc));
 
-		FILE * f = popen(buffer, "r");
+		FILE *f = popen(buffer, "r");
 		if (f) {
 			String output;
 			while (fgets(buffer, sizeof(buffer), f) != nullptr) {

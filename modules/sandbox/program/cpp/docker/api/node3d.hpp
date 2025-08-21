@@ -1,20 +1,54 @@
+/**************************************************************************/
+/*  node3d.hpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 #include "node.hpp"
 struct Transform3D;
 struct Quaternion;
 
-// Node3D: Contains 3D tranformations.
+// Node3D: Contains 3D transformations.
 // Such as: position, rotation, scale, and skew.
 struct Node3D : public Node {
 	/// @brief Construct a Node3D object from an existing in-scope Node object.
 	/// @param addr The address of the Node3D object.
-	constexpr Node3D(uint64_t addr) : Node(addr) {}
-	Node3D(Object obj) : Node(obj) {}
-	Node3D(Node node) : Node(node) {}
+	constexpr Node3D(uint64_t addr) :
+			Node(addr) {}
+	Node3D(Object obj) :
+			Node(obj) {}
+	Node3D(Node node) :
+			Node(node) {}
 
 	/// @brief Construct a Node3D object from a path.
 	/// @param path The path to the Node3D object.
-	Node3D(std::string_view path) : Node(path) {}
+	Node3D(std::string_view path) :
+			Node(path) {}
 
 	/// @brief Get the position of the node.
 	/// @return The position of the node.
@@ -65,15 +99,15 @@ struct Node3D : public Node {
 
 inline Node3D Variant::as_node3d() const {
 	if (get_type() == Variant::OBJECT)
-		return Node3D{uintptr_t(v.i)};
+		return Node3D{ uintptr_t(v.i) };
 	else if (get_type() == Variant::NODE_PATH)
-		return Node3D{this->internal_fetch_string()};
+		return Node3D{ this->internal_fetch_string() };
 
 	api_throw("std::bad_cast", "Variant is not a Node3D or NodePath", this);
 }
 
 inline Node3D Object::as_node3d() const {
-	return Node3D{address()};
+	return Node3D{ address() };
 }
 
 inline Variant::Variant(const Node3D &node) {

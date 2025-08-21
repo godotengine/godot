@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  sandbox_bintr.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "sandbox.h"
 
 #include <godot_cpp/classes/dir_access.hpp>
@@ -7,25 +37,25 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 
 #if defined(__linux__)
-# include <dlfcn.h>
+#include <dlfcn.h>
 #elif defined(__MINGW32__) || defined(__MINGW64__) || defined(_MSC_VER)
-# define YEP_IS_WINDOWS 1
-# include <libriscv/win32/dlfcn.h>
-# ifdef _MSC_VER
-#  define access _access
-#  define unlink _unlink
-extern "C" int access(const char* path, int mode);
-extern "C" int unlink(const char* path);
-#  define R_OK   4       /* Test for read permission.  */
-# else // _MSC_VER
-#  include <unistd.h>
-# endif
+#define YEP_IS_WINDOWS 1
+#include <libriscv/win32/dlfcn.h>
+#ifdef _MSC_VER
+#define access _access
+#define unlink _unlink
+extern "C" int access(const char *path, int mode);
+extern "C" int unlink(const char *path);
+#define R_OK 4 /* Test for read permission.  */
+#else // _MSC_VER
+#include <unistd.h>
+#endif
 #elif defined(__APPLE__) && defined(__MACH__) // macOS OSX
-# include <TargetConditionals.h>
-# if TARGET_OS_MAC
-#  include <dlfcn.h>
-#  define YEP_IS_OSX 1
-# endif
+#include <TargetConditionals.h>
+#if TARGET_OS_MAC
+#include <dlfcn.h>
+#define YEP_IS_OSX 1
+#endif
 #endif
 extern "C" void libriscv_register_translation8(...);
 
@@ -86,12 +116,12 @@ String Sandbox::emit_binary_translation(bool ignore_instruction_limit, bool auto
 bool Sandbox::load_binary_translation(const String &shared_library_path, bool allow_insecure) {
 	if (m_global_instances_seen > 0 && !allow_insecure) {
 		ERR_PRINT("Sandbox: Loading shared libraries after Sandbox instances have been created is a security risk."
-			"Please load shared libraries before creating any Sandbox instances.");
+				  "Please load shared libraries before creating any Sandbox instances.");
 		return false;
 	}
 #ifdef RISCV_BINARY_TRANSLATION
 	// Load the shared library on platforms that support it
-#  if defined(__linux__) || defined(YEP_IS_WINDOWS) || defined(YEP_IS_OSX)
+#if defined(__linux__) || defined(YEP_IS_WINDOWS) || defined(YEP_IS_OSX)
 	Ref<FileAccess> fa = FileAccess::open(shared_library_path, FileAccess::ModeFlags::READ);
 	if (fa == nullptr || !fa->is_open()) {
 		//ERR_PRINT("Sandbox: Failed to open shared library: " + shared_library_path);
@@ -107,12 +137,12 @@ bool Sandbox::load_binary_translation(const String &shared_library_path, bool al
 	// If the shared library has a callback-based registration function, call it
 	void *register_translation = dlsym(handle, "libriscv_init_with_callback8");
 	if (register_translation != nullptr) {
-		using CallbackFunction = void (*)(void(*)(...));
+		using CallbackFunction = void (*)(void (*)(...));
 		((CallbackFunction)register_translation)(libriscv_register_translation8);
 	}
-#  else
+#else
 	WARN_PRINT_ONCE("Sandbox: Loading shared libraries has not been implemented on this platform.");
-#  endif
+#endif
 	// We don't need to do anything with the handle, as the shared library should self-register its functions
 	return true;
 #else

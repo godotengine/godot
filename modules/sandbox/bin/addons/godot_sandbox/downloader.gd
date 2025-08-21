@@ -25,7 +25,7 @@ func _ready():
 			os_tab_container.current_tab = 2
 		"macOS":
 			os_tab_container.current_tab = 1
-			
+
 	title = "Godot Sandbox Dependencies" + " ( " + OS.get_name() + " " + Engine.get_architecture_name() + " )"
 	http_cmake = HTTPRequest.new()
 	http_zig = HTTPRequest.new()
@@ -44,14 +44,14 @@ func _update_status():
 	# CMake
 	var output := []
 	var exit_code := OS.execute(ProjectSettings.get_setting("editor/script/cmake", "cmake"), ["--version"], output, true)
-	
+
 	if exit_code == 0:
 		cmake_status.text = "CMake: " + status["installed"]
 	else:
 		print("CMake not installed: ", output)
 		cmake_status.text = "CMake: " + status["not_installed"]
 		show()
-	
+
 	# Make (Linux/macOS) or Ninja (Windows)
 	if OS.get_name() == "Windows":
 		exit_code = OS.execute(ProjectSettings.get_setting("editor/script/make", "ninja"), ["--version"], output, true)
@@ -70,20 +70,20 @@ func _update_status():
 			make_status.text = "Make: " + status["not_installed"]
 			show()
 
-	
+
 	# Git
 	exit_code = OS.execute(ProjectSettings.get_setting("editor/script/git", "git"), ["--version"], output, true)
-	
+
 	if exit_code == 0:
 		git_status.text = "Git: " + status["installed"]
 	else:
 		print("Git not installed: ", output)
 		git_status.text = "Git: " + status["not_installed"]
 		show()
-	
+
 	# Zig
 	exit_code = OS.execute(ProjectSettings.get_setting("editor/script/zig", "zig"), ["--help"], output, true)
-	
+
 	if exit_code == 0:
 		zig_status.text = "Zig: " + status["installed"]
 	else:
@@ -128,7 +128,7 @@ func extract_all_from_zip(path: String, dest: String):
 		var args = ["-xzf", ProjectSettings.globalize_path(path), "-C", ProjectSettings.globalize_path(dest)]
 		var output := []
 		var exit_code := OS.execute("tar", args, output)
-		
+
 		if exit_code == 0:
 			print("✅ Extraction succeeded:\n", output)
 		else:

@@ -1,38 +1,77 @@
+/**************************************************************************/
+/*  variant.hpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
+#include "syscalls_fwd.hpp"
 #include <array>
 #include <cstdint>
-#include <type_traits>
-#include <string_view>
 #include <span>
 #include <string>
+#include <string_view>
+#include <type_traits>
 #include <vector>
-#include "syscalls_fwd.hpp"
 
-template<typename T>
+template <typename T>
 struct is_string
-	: public std::disjunction<
-		std::is_same<char *, typename std::decay<T>::type>,
-		std::is_same<const char *, typename std::decay<T>::type>
-> {};
+		: public std::disjunction<
+				  std::is_same<char *, typename std::decay<T>::type>,
+				  std::is_same<const char *, typename std::decay<T>::type>> {};
 
-template<typename T>
+template <typename T>
 struct is_u32string
-	: public std::disjunction<
-		std::is_same<char32_t *, typename std::decay<T>::type>,
-		std::is_same<const char32_t *, typename std::decay<T>::type>
-> {};
+		: public std::disjunction<
+				  std::is_same<char32_t *, typename std::decay<T>::type>,
+				  std::is_same<const char32_t *, typename std::decay<T>::type>> {};
 
-template<class T>
+template <class T>
 struct is_stdstring : public std::is_same<T, std::basic_string<char>> {};
 
-struct Object; struct Node; struct Node2D; struct Node3D; struct Array; struct Dictionary; union String; struct Callable; struct Basis; struct Transform2D; struct Transform3D; struct Quaternion; struct RID;
+struct Object;
+struct Node;
+struct Node2D;
+struct Node3D;
+struct Array;
+struct Dictionary;
+union String;
+struct Callable;
+struct Basis;
+struct Transform2D;
+struct Transform3D;
+struct Quaternion;
+struct RID;
 #include "color.hpp"
-#include "plane.hpp"
 #include "packed_array.hpp"
+#include "plane.hpp"
 #include "vector.hpp"
 
-struct Variant
-{
+struct Variant {
 	enum Type : uint32_t {
 		NIL,
 
@@ -128,29 +167,29 @@ struct Variant
 	template <typename T>
 	constexpr Variant(T value);
 
-	Variant(const Array&);
-	Variant(const Dictionary&);
-	Variant(const String&);
-	Variant(const Callable&);
-	Variant(const ::RID&);
-	Variant(const Object&);
-	Variant(const Node&);
-	Variant(const Node2D&);
-	Variant(const Node3D&);
-	Variant(const Basis&);
-	Variant(const Transform2D&);
-	Variant(const Transform3D&);
-	Variant(const Quaternion&);
-	Variant(const PackedArray<uint8_t>&);
-	Variant(const PackedArray<float>&);
-	Variant(const PackedArray<double>&);
-	Variant(const PackedArray<int32_t>&);
-	Variant(const PackedArray<int64_t>&);
-	Variant(const PackedArray<Vector2>&);
-	Variant(const PackedArray<Vector3>&);
-	Variant(const PackedArray<Vector4>&);
-	Variant(const PackedArray<Color>&);
-	Variant(const PackedArray<std::string>&);
+	Variant(const Array &);
+	Variant(const Dictionary &);
+	Variant(const String &);
+	Variant(const Callable &);
+	Variant(const ::RID &);
+	Variant(const Object &);
+	Variant(const Node &);
+	Variant(const Node2D &);
+	Variant(const Node3D &);
+	Variant(const Basis &);
+	Variant(const Transform2D &);
+	Variant(const Transform3D &);
+	Variant(const Quaternion &);
+	Variant(const PackedArray<uint8_t> &);
+	Variant(const PackedArray<float> &);
+	Variant(const PackedArray<double> &);
+	Variant(const PackedArray<int32_t> &);
+	Variant(const PackedArray<int64_t> &);
+	Variant(const PackedArray<Vector2> &);
+	Variant(const PackedArray<Vector3> &);
+	Variant(const PackedArray<Vector4> &);
+	Variant(const PackedArray<Color> &);
+	Variant(const PackedArray<std::string> &);
 
 	// Constructor specifically the STRING_NAME type
 	static Variant string_name(const std::string &name);
@@ -264,16 +303,16 @@ struct Variant
 	void voidcallp(std::string_view method, const Variant *args, int argcount);
 
 	template <typename... Args>
-	Variant method_call(std::string_view method, Args&&... args);
+	Variant method_call(std::string_view method, Args &&...args);
 
 	template <typename... Args>
-	void voidcall(std::string_view method, Args&&... args);
+	void voidcall(std::string_view method, Args &&...args);
 
 	template <typename... Args>
 	Variant call(Args... args);
 
 	template <typename... Args>
-	Variant operator ()(std::string_view method, Args... args);
+	Variant operator()(std::string_view method, Args... args);
 
 	/// @brief Check if the Variant is nil.
 	/// @return true if the Variant is nil, false otherwise.
@@ -302,11 +341,11 @@ struct Variant
 private:
 	Type m_type = NIL;
 	union {
-		int64_t  i;
-		bool     b;
-		double   f;
-		real_t   v4[4];
-		int32_t  v4i[4];
+		int64_t i;
+		bool b;
+		double f;
+		real_t v4[4];
+		int32_t v4i[4];
 	} v;
 
 	void internal_create_string(Type type, const std::string &value);
@@ -322,156 +361,129 @@ static_assert(sizeof(Variant) == 24, "Variant size mismatch");
 #endif
 
 template <typename T>
-inline constexpr Variant::Variant(T value)
-{
+inline constexpr Variant::Variant(T value) {
 	if constexpr (std::is_same_v<T, bool>) {
 		m_type = BOOL;
 		v.b = value;
-	}
-	else if constexpr (std::is_integral_v<T>) {
+	} else if constexpr (std::is_integral_v<T>) {
 		m_type = INT;
 		v.i = value;
-	}
-	else if constexpr (std::is_floating_point_v<T>) {
+	} else if constexpr (std::is_floating_point_v<T>) {
 		m_type = FLOAT;
 		v.f = value;
-	}
-	else if constexpr (std::is_same_v<T, Vector2>) {
+	} else if constexpr (std::is_same_v<T, Vector2>) {
 		m_type = VECTOR2;
 		v.v4[0] = value.x;
 		v.v4[1] = value.y;
-	}
-	else if constexpr (std::is_same_v<T, Vector2i>) {
+	} else if constexpr (std::is_same_v<T, Vector2i>) {
 		m_type = VECTOR2I;
 		v.v4i[0] = value.x;
 		v.v4i[1] = value.y;
-	}
-	else if constexpr (std::is_same_v<T, Vector3>) {
+	} else if constexpr (std::is_same_v<T, Vector3>) {
 		m_type = VECTOR3;
 		v.v4[0] = value.x;
 		v.v4[1] = value.y;
 		v.v4[2] = value.z;
-	}
-	else if constexpr (std::is_same_v<T, Vector3i>) {
+	} else if constexpr (std::is_same_v<T, Vector3i>) {
 		m_type = VECTOR3I;
 		v.v4i[0] = value.x;
 		v.v4i[1] = value.y;
 		v.v4i[2] = value.z;
-	}
-	else if constexpr (std::is_same_v<T, Vector4>) {
+	} else if constexpr (std::is_same_v<T, Vector4>) {
 		m_type = VECTOR4;
 		v.v4[0] = value.x;
 		v.v4[1] = value.y;
 		v.v4[2] = value.z;
 		v.v4[3] = value.w;
-	}
-	else if constexpr (std::is_same_v<T, Vector4i>) {
+	} else if constexpr (std::is_same_v<T, Vector4i>) {
 		m_type = VECTOR4I;
 		v.v4i[0] = value.x;
 		v.v4i[1] = value.y;
 		v.v4i[2] = value.z;
 		v.v4i[3] = value.w;
-	}
-	else if constexpr (std::is_same_v<T, Rect2>) {
+	} else if constexpr (std::is_same_v<T, Rect2>) {
 		m_type = RECT2;
 		v.v4[0] = value.position.x;
 		v.v4[1] = value.position.y;
 		v.v4[2] = value.size.x;
 		v.v4[3] = value.size.y;
-	}
-	else if constexpr (std::is_same_v<T, Rect2i>) {
+	} else if constexpr (std::is_same_v<T, Rect2i>) {
 		m_type = RECT2I;
 		v.v4i[0] = value.position.x;
 		v.v4i[1] = value.position.y;
 		v.v4i[2] = value.size.x;
 		v.v4i[3] = value.size.y;
-	}
-	else if constexpr (std::is_same_v<T, Color>) {
+	} else if constexpr (std::is_same_v<T, Color>) {
 		m_type = COLOR;
 		v.v4[0] = value.r;
 		v.v4[1] = value.g;
 		v.v4[2] = value.b;
 		v.v4[3] = value.a;
-	}
-	else if constexpr (std::is_same_v<T, Plane>) {
+	} else if constexpr (std::is_same_v<T, Plane>) {
 		m_type = PLANE;
 		v.v4[0] = value.normal.x;
 		v.v4[1] = value.normal.y;
 		v.v4[2] = value.normal.z;
 		v.v4[3] = value.d;
-	}
-	else if constexpr (is_u32string<T>::value || std::is_same_v<T, std::u32string>) {
+	} else if constexpr (is_u32string<T>::value || std::is_same_v<T, std::u32string>) {
 		internal_create_u32string(STRING, value);
-	}
-	else if constexpr (is_string<T>::value || is_stdstring<T>::value || std::is_same_v<T, std::string>) {
+	} else if constexpr (is_string<T>::value || is_stdstring<T>::value || std::is_same_v<T, std::string>) {
 		internal_create_string(STRING, value);
-	}
-	else if constexpr (std::is_same_v<T, std::string_view>) {
+	} else if constexpr (std::is_same_v<T, std::string_view>) {
 		internal_create_string(STRING, std::string(value));
 	}
 	// Derives from Object
 	else if constexpr (std::is_base_of_v<Object, T>) {
 		m_type = OBJECT;
 		v.i = value.address();
-	}
-	else
+	} else
 		static_assert(!std::is_same_v<T, T>, "Unsupported type");
 }
 
 #define Nil Variant()
 
-inline Variant::Variant(const PackedArray<uint8_t> &array)
-{
+inline Variant::Variant(const PackedArray<uint8_t> &array) {
 	m_type = PACKED_BYTE_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<float> &array)
-{
+inline Variant::Variant(const PackedArray<float> &array) {
 	m_type = PACKED_FLOAT32_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<double> &array)
-{
+inline Variant::Variant(const PackedArray<double> &array) {
 	m_type = PACKED_FLOAT64_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<int32_t> &array)
-{
+inline Variant::Variant(const PackedArray<int32_t> &array) {
 	m_type = PACKED_INT32_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<int64_t> &array)
-{
+inline Variant::Variant(const PackedArray<int64_t> &array) {
 	m_type = PACKED_INT64_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<Vector2> &array)
-{
+inline Variant::Variant(const PackedArray<Vector2> &array) {
 	m_type = PACKED_VECTOR2_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<Vector3> &array)
-{
+inline Variant::Variant(const PackedArray<Vector3> &array) {
 	m_type = PACKED_VECTOR3_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<Vector4> &array)
-{
+inline Variant::Variant(const PackedArray<Vector4> &array) {
 	m_type = PACKED_VECTOR4_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<Color> &array)
-{
+inline Variant::Variant(const PackedArray<Color> &array) {
 	m_type = PACKED_COLOR_ARRAY;
 	v.i = array.get_variant_index();
 }
-inline Variant::Variant(const PackedArray<std::string> &array)
-{
+inline Variant::Variant(const PackedArray<std::string> &array) {
 	m_type = PACKED_STRING_ARRAY;
 	v.i = array.get_variant_index();
 }
 template <typename T>
-inline PackedArray<T>::PackedArray(const Variant& v) {
+inline PackedArray<T>::PackedArray(const Variant &v) {
 	if (v.get_type() < Variant::PACKED_BYTE_ARRAY || v.get_type() > Variant::PACKED_VECTOR4_ARRAY) {
 		API_THROW("std::bad_cast", "Failed to cast Variant to PackedArray", &v);
 	}
@@ -484,71 +496,61 @@ inline Variant Variant::string_name(const std::string &name) {
 	return v;
 }
 
-inline Variant::operator bool() const
-{
+inline Variant::operator bool() const {
 	if (m_type == BOOL || m_type == INT)
 		return v.b;
 	API_THROW("std::bad_cast", "Failed to cast Variant to bool", this);
 }
 
-inline Variant::operator int64_t() const
-{
+inline Variant::operator int64_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return v.i;
 	API_THROW("std::bad_cast", "Failed to cast Variant to int64", this);
 }
 
-inline Variant::operator int32_t() const
-{
+inline Variant::operator int32_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return static_cast<int32_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to int32", this);
 }
 
-inline Variant::operator int16_t() const
-{
+inline Variant::operator int16_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return static_cast<int16_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to int16", this);
 }
 
-inline Variant::operator int8_t() const
-{
+inline Variant::operator int8_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return static_cast<int8_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to int8", this);
 }
 
-inline Variant::operator uint64_t() const
-{
+inline Variant::operator uint64_t() const {
 	if (m_type == INT || m_type == FLOAT || m_type == OBJECT)
 		return static_cast<uint64_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to uint64", this);
 }
 
-inline Variant::operator uint32_t() const
-{
+inline Variant::operator uint32_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return static_cast<uint32_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to uint32", this);
 }
 
-inline Variant::operator uint16_t() const
-{
+inline Variant::operator uint16_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return static_cast<uint16_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to uint16", this);
 }
 
-inline Variant::operator uint8_t() const
-{
+inline Variant::operator uint8_t() const {
 	if (m_type == INT || m_type == FLOAT)
 		return static_cast<uint8_t>(v.i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to uint8", this);
 }
 
-inline Variant::operator double() const
-{
+inline Variant::operator double() const {
 	if (m_type == FLOAT)
 		return v.f;
 	if (m_type == INT)
@@ -556,8 +558,7 @@ inline Variant::operator double() const
 	API_THROW("std::bad_cast", "Failed to cast Variant to double", this);
 }
 
-inline Variant::operator float() const
-{
+inline Variant::operator float() const {
 	if (m_type == FLOAT)
 		return static_cast<float>(v.f);
 	if (m_type == INT)
@@ -565,15 +566,13 @@ inline Variant::operator float() const
 	API_THROW("std::bad_cast", "Failed to cast Variant to float", this);
 }
 
-inline Variant::operator std::string() const
-{
+inline Variant::operator std::string() const {
 	if (m_type == STRING || m_type == STRING_NAME || m_type == NODE_PATH || m_type == PACKED_BYTE_ARRAY)
 		return internal_fetch_string();
 	API_THROW("std::bad_cast", "Failed to cast Variant to const std::string&", this);
 }
 
-inline Variant::operator std::u32string() const
-{
+inline Variant::operator std::u32string() const {
 	if (m_type == STRING || m_type == STRING_NAME)
 		return internal_fetch_u32string();
 	API_THROW("std::bad_cast", "Failed to cast Variant to const std::u32string&", this);
@@ -587,141 +586,121 @@ inline std::u32string Variant::as_std_u32string() const {
 	return static_cast<std::u32string>(*this);
 }
 
-inline const Vector2 &Variant::v2() const
-{
+inline const Vector2 &Variant::v2() const {
 	if (m_type == VECTOR2)
 		return *reinterpret_cast<const Vector2 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector2", this);
 }
 
-inline Vector2 &Variant::v2()
-{
+inline Vector2 &Variant::v2() {
 	if (m_type == VECTOR2)
 		return *reinterpret_cast<Vector2 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector2", this);
 }
 
-inline const Vector2i &Variant::v2i() const
-{
+inline const Vector2i &Variant::v2i() const {
 	if (m_type == VECTOR2I)
 		return *reinterpret_cast<const Vector2i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector2i", this);
 }
 
-inline Vector2i &Variant::v2i()
-{
+inline Vector2i &Variant::v2i() {
 	if (m_type == VECTOR2I)
 		return *reinterpret_cast<Vector2i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector2o", this);
 }
 
-inline const Vector3 &Variant::v3() const
-{
+inline const Vector3 &Variant::v3() const {
 	if (m_type == VECTOR3)
 		return *reinterpret_cast<const Vector3 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector3", this);
 }
 
-inline Vector3 &Variant::v3()
-{
+inline Vector3 &Variant::v3() {
 	if (m_type == VECTOR3)
 		return *reinterpret_cast<Vector3 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector3", this);
 }
 
-inline const Vector3i &Variant::v3i() const
-{
+inline const Vector3i &Variant::v3i() const {
 	if (m_type == VECTOR3I)
 		return *reinterpret_cast<const Vector3i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector3i", this);
 }
 
-inline Vector3i &Variant::v3i()
-{
+inline Vector3i &Variant::v3i() {
 	if (m_type == VECTOR3I)
 		return *reinterpret_cast<Vector3i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector3i", this);
 }
 
-inline const Vector4 &Variant::v4() const
-{
+inline const Vector4 &Variant::v4() const {
 	if (m_type == VECTOR4)
 		return *reinterpret_cast<const Vector4 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector4", this);
 }
 
-inline Vector4 &Variant::v4()
-{
+inline Vector4 &Variant::v4() {
 	if (m_type == VECTOR4)
 		return *reinterpret_cast<Vector4 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector4", this);
 }
 
-inline const Vector4i &Variant::v4i() const
-{
+inline const Vector4i &Variant::v4i() const {
 	if (m_type == VECTOR4I)
 		return *reinterpret_cast<const Vector4i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector4i", this);
 }
 
-inline Vector4i &Variant::v4i()
-{
+inline Vector4i &Variant::v4i() {
 	if (m_type == VECTOR4I)
 		return *reinterpret_cast<Vector4i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Vector4i", this);
 }
 
-inline const Rect2& Variant::r2() const
-{
+inline const Rect2 &Variant::r2() const {
 	if (m_type == RECT2)
 		return *reinterpret_cast<const Rect2 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Rect2", this);
 }
 
-inline Rect2 &Variant::r2()
-{
+inline Rect2 &Variant::r2() {
 	if (m_type == RECT2)
 		return *reinterpret_cast<Rect2 *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Rect2", this);
 }
 
-inline const Rect2i &Variant::r2i() const
-{
+inline const Rect2i &Variant::r2i() const {
 	if (m_type == RECT2I)
 		return *reinterpret_cast<const Rect2i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Rect2i", this);
 }
 
-inline Rect2i &Variant::r2i()
-{
+inline Rect2i &Variant::r2i() {
 	if (m_type == RECT2I)
 		return *reinterpret_cast<Rect2i *>(v.v4i);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Rect2i", this);
 }
 
-inline const Color &Variant::color() const
-{
+inline const Color &Variant::color() const {
 	if (m_type == COLOR)
 		return *reinterpret_cast<const Color *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Color", this);
 }
 
-inline Color &Variant::color()
-{
+inline Color &Variant::color() {
 	if (m_type == COLOR)
 		return *reinterpret_cast<Color *>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Color", this);
 }
 
-inline const Plane &Variant::plane() const
-{
+inline const Plane &Variant::plane() const {
 	if (m_type == PLANE)
 		return reinterpret_cast<const Plane &>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Plane", this);
 }
 
-inline Plane &Variant::plane()
-{
+inline Plane &Variant::plane() {
 	if (m_type == PLANE)
 		return reinterpret_cast<Plane &>(v.v4);
 	API_THROW("std::bad_cast", "Failed to cast Variant to Plane", this);
@@ -797,16 +776,14 @@ inline PackedArray<std::string> Variant::as_string_array() const {
 	API_THROW("std::bad_cast", "Failed to cast Variant to PackedStringArray", this);
 }
 
-inline Variant::Variant(const Variant &other)
-{
+inline Variant::Variant(const Variant &other) {
 	m_type = other.m_type;
 	if (m_type == STRING || m_type == NODE_PATH || m_type == STRING_NAME)
 		this->internal_clone(other);
 	else
 		v = other.v;
 }
-inline Variant::Variant(Variant &&other)
-{
+inline Variant::Variant(Variant &&other) {
 	m_type = other.m_type;
 	v = other.v;
 
@@ -850,7 +827,7 @@ inline bool Variant::operator<(const Variant &other) const {
 }
 
 template <typename... Args>
-inline Variant Variant::method_call(std::string_view method, Args&&... args) {
+inline Variant Variant::method_call(std::string_view method, Args &&...args) {
 	if constexpr (sizeof...(args) == 0) {
 		Variant result;
 		callp(method, nullptr, 0, result);
@@ -863,7 +840,7 @@ inline Variant Variant::method_call(std::string_view method, Args&&... args) {
 }
 
 template <typename... Args>
-inline void Variant::voidcall(std::string_view method, Args&&... args) {
+inline void Variant::voidcall(std::string_view method, Args &&...args) {
 	if constexpr (sizeof...(args) == 0) {
 		voidcallp(method, nullptr, 0);
 		return;
@@ -881,7 +858,7 @@ inline Variant Variant::call(Args... args) {
 }
 
 template <typename... Args>
-inline Variant Variant::operator ()(std::string_view method, Args... args) {
+inline Variant Variant::operator()(std::string_view method, Args... args) {
 	return method_call(method, args...);
 }
 
@@ -898,10 +875,9 @@ inline void Variant::callp(std::string_view method, const Variant *args, int arg
 	register int syscall_number asm("a7") = ECALL_VCALL;
 
 	asm volatile(
-		"ecall"
-		: "=m"(*ret_ptr)
-		: "r"(object), "m"(*object), "r"(method_ptr), "r"(method_size), "m"(*method_ptr), "r"(args_ptr), "r"(argcount_reg), "r"(ret_ptr), "m"(*args_ptr), "r"(syscall_number)
-	);
+			"ecall"
+			: "=m"(*ret_ptr)
+			: "r"(object), "m"(*object), "r"(method_ptr), "r"(method_size), "m"(*method_ptr), "r"(args_ptr), "r"(argcount_reg), "r"(ret_ptr), "m"(*args_ptr), "r"(syscall_number));
 }
 
 inline void Variant::voidcallp(std::string_view method, const Variant *args, int argcount) {
@@ -915,61 +891,60 @@ inline void Variant::voidcallp(std::string_view method, const Variant *args, int
 	register int syscall_number asm("a7") = ECALL_VCALL;
 
 	asm volatile(
-		"ecall"
-		: /* no outputs */
-		: "r"(object), "m"(*object), "r"(method_ptr), "r"(method_size), "m"(*method_ptr), "r"(args_ptr), "r"(argcount_reg), "r"(ret_ptr), "m"(*args_ptr), "r"(syscall_number)
-	);
+			"ecall"
+			: /* no outputs */
+			: "r"(object), "m"(*object), "r"(method_ptr), "r"(method_size), "m"(*method_ptr), "r"(args_ptr), "r"(argcount_reg), "r"(ret_ptr), "m"(*args_ptr), "r"(syscall_number));
 }
 
 /* Call operators on simple wrapper objects */
 
 template <typename... Args>
-inline Variant Vector2::operator () (std::string_view method, Args&&... args) {
+inline Variant Vector2::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Vector2i::operator () (std::string_view method, Args&&... args) {
+inline Variant Vector2i::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Vector3::operator () (std::string_view method, Args&&... args) {
+inline Variant Vector3::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Vector3i::operator () (std::string_view method, Args&&... args) {
+inline Variant Vector3i::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Vector4::operator () (std::string_view method, Args&&... args) {
+inline Variant Vector4::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Vector4i::operator () (std::string_view method, Args&&... args) {
+inline Variant Vector4i::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Rect2::operator () (std::string_view method, Args&&... args) {
+inline Variant Rect2::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Rect2i::operator () (std::string_view method, Args&&... args) {
+inline Variant Rect2i::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Color::operator () (std::string_view method, Args&&... args) {
+inline Variant Color::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
 template <typename... Args>
-inline Variant Plane::operator () (std::string_view method, Args&&... args) {
+inline Variant Plane::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 
@@ -977,7 +952,7 @@ inline Variant Plane::operator () (std::string_view method, Args&&... args) {
 
 template <typename T>
 template <typename... Args>
-inline Variant PackedArray<T>::operator () (std::string_view method, Args&&... args) {
+inline Variant PackedArray<T>::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }
 

@@ -1,11 +1,43 @@
+/**************************************************************************/
+/*  node.hpp                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 #include "object.hpp"
 
 struct Node : public Object {
 	/// @brief Construct a Node object from an existing in-scope Node object.
 	/// @param addr The address of the Node object.
-	constexpr Node(uint64_t addr) : Object{addr} {}
-	constexpr Node(Object obj) : Object{obj.address()} {}
+	constexpr Node(uint64_t addr) :
+			Object{ addr } {}
+	constexpr Node(Object obj) :
+			Object{ obj.address() } {}
 
 	/// @brief Construct a Node object from a path.
 	/// @param path The path to the Node object.
@@ -160,7 +192,6 @@ struct Node : public Object {
 	METHOD(void, print_orphan_nodes);
 	METHOD(void, propagate_call);
 
-
 	//- Signals -//
 
 	//- Constants -//
@@ -182,21 +213,21 @@ struct Node : public Object {
 
 inline Node Variant::as_node() const {
 	if (get_type() == Variant::OBJECT)
-		return Node{uintptr_t(v.i)};
+		return Node{ uintptr_t(v.i) };
 	else if (get_type() == Variant::NODE_PATH)
-		return Node{this->internal_fetch_string()};
+		return Node{ this->internal_fetch_string() };
 
 	api_throw("std::bad_cast", "Variant is not a Node or NodePath", this);
 }
 
 inline Node Object::as_node() const {
-	return Node{address()};
+	return Node{ address() };
 }
 
 template <typename T>
 static inline T cast_to(const Variant &var) {
 	if (var.get_type() == Variant::OBJECT)
-		return T{uintptr_t(var)};
+		return T{ uintptr_t(var) };
 	api_throw("std::bad_cast", "Variant is not an Object", &var);
 }
 

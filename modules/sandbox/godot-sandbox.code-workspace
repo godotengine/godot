@@ -87,7 +87,7 @@
 					"isDefault": true
 				},
 				"detail": "godot build dev"
-			}, 
+			},
 			{
 				"type": "shell",
 				"label": "godot build",

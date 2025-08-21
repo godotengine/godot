@@ -16,6 +16,7 @@ def can_build(env, platform):
 def configure(env):
     True
 
+
 def get_doc_classes():
     return [
         "Sandbox",
@@ -36,6 +37,7 @@ def get_doc_classes():
         "ResourceFormatSaverELF",
         "ResourceFormatSaverRust",
     ]
+
 
 def get_doc_path():
     return "doc_classes"

@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  array.hpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 
 #include "variant.hpp"
@@ -11,8 +41,8 @@ struct Array {
 	Array(const std::vector<Variant> &values);
 	static Array Create(unsigned size = 0) { return Array(size); }
 
-	Array &operator =(const std::vector<Variant> &values);
-	Array &operator =(const Array &other);
+	Array &operator=(const std::vector<Variant> &values);
+	Array &operator=(const Array &other);
 
 	// Array operations
 	void append(const Variant &value) { push_back(value); }
@@ -71,7 +101,7 @@ struct Array {
 
 	// Call methods on the Array
 	template <typename... Args>
-	Variant operator () (std::string_view method, Args&&... args);
+	Variant operator()(std::string_view method, Args &&...args);
 
 	inline auto begin();
 	inline auto end();
@@ -80,10 +110,14 @@ struct Array {
 
 	template <typename... Args>
 	static Array make(Args... p_args) {
-		return Array(std::vector<Variant>{Variant(p_args)...});
+		return Array(std::vector<Variant>{ Variant(p_args)... });
 	}
 
-	static Array from_variant_index(unsigned idx) { Array a; a.m_idx = idx; return a; }
+	static Array from_variant_index(unsigned idx) {
+		Array a;
+		a.m_idx = idx;
+		return a;
+	}
 	unsigned get_variant_index() const noexcept { return m_idx; }
 	bool is_permanent() const { return Variant::is_permanent_index(m_idx); }
 
@@ -98,7 +132,7 @@ inline Array Variant::as_array() const {
 	return Array::from_variant_index(v.i);
 }
 
-inline Variant::Variant(const Array& a) {
+inline Variant::Variant(const Array &a) {
 	m_type = ARRAY;
 	v.i = a.get_variant_index();
 }
@@ -111,16 +145,15 @@ inline Variant Array::at_or(int idx, const Variant &default_value) const {
 	return (idx >= 0 && idx < size()) ? at(idx) : default_value;
 }
 
-
 struct ArrayProxy {
-	ArrayProxy(const Array &array, int idx)
-		: m_array(Array::from_variant_index(array.get_variant_index())), m_idx(idx) {}
+	ArrayProxy(const Array &array, int idx) :
+			m_array(Array::from_variant_index(array.get_variant_index())), m_idx(idx) {}
 
-	ArrayProxy &operator =(const Variant &value);
+	ArrayProxy &operator=(const Variant &value);
 
 	template <typename T>
-	ArrayProxy &operator =(const T &value) {
-		return operator =(Variant(value));
+	ArrayProxy &operator=(const T &value) {
+		return operator=(Variant(value));
 	}
 
 	template <typename T>
@@ -129,11 +162,11 @@ struct ArrayProxy {
 	operator Variant() const { return get(); }
 
 	template <typename T>
-	bool operator ==(const T &value) const { return get() == Variant(value); }
+	bool operator==(const T &value) const { return get() == Variant(value); }
 	template <typename T>
-	bool operator !=(const T &value) const { return get() != Variant(value); }
+	bool operator!=(const T &value) const { return get() != Variant(value); }
 	template <typename T>
-	bool operator <(const T &value) const { return get() < Variant(value); }
+	bool operator<(const T &value) const { return get() < Variant(value); }
 
 	/// @brief Get the value at the given index in the array.
 	/// @return The value at the given index.
@@ -178,13 +211,16 @@ inline Variant Array::back() const {
 	return ArrayProxy(*this, size() - 1).get();
 }
 
-
 class ArrayIterator {
 public:
-	ArrayIterator(const Array &array, unsigned idx) : m_array(array), m_idx(idx) {}
+	ArrayIterator(const Array &array, unsigned idx) :
+			m_array(array), m_idx(idx) {}
 
 	bool operator!=(const ArrayIterator &other) const { return m_idx != other.m_idx; }
-	ArrayIterator &operator++() { m_idx++; return *this; }
+	ArrayIterator &operator++() {
+		m_idx++;
+		return *this;
+	}
 	Variant operator*() const { return m_array[m_idx]; }
 
 private:
@@ -206,6 +242,6 @@ inline auto Array::rend() {
 }
 
 template <typename... Args>
-inline Variant Array::operator () (std::string_view method, Args&&... args) {
+inline Variant Array::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }

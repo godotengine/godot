@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  sandbox_functions.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "sandbox.h"
 
 #include <unordered_set>
@@ -215,17 +245,17 @@ static const std::unordered_set<std::string_view> exclude_functions{
 	"clone3",
 	"close",
 	"closedir",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).alignToByte",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8245",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8255",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8257",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8273",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8285",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).readF__anon_8289",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).readN__anon_8326",
-	"compress.flate.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).shift",
-	"compress.flate.CircularBuffer.writeMatch",
-	"compress.flate.inflate.Inflate(.zlib,u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).decodeDistance",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).alignToByte",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8245",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8255",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8257",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8273",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).read__anon_8285",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).readF__anon_8289",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).readN__anon_8326",
+	"compress.flat.bit_reader.BitReader(u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).shift",
+	"compress.flat.CircularBuffer.writeMatch",
+	"compress.flat.inflate.Inflate(.zlib,u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))).decodeDistance",
 	"compress.zlib.decompressor__anon_5691",
 	"conf_decrement.part.0",
 	"connect",
@@ -647,7 +677,7 @@ static const std::unordered_set<std::string_view> exclude_functions{
 	"int_mallinfo",
 	"internal_getent",
 	"io.buffered_writer.BufferedWriter(4096,io.GenericWriter(fs.File,error{DiskQuota,FileTooBig,InputOutput,NoSpaceLeft,DeviceBusy,InvalidArgument,AccessDenied,BrokenPipe,SystemResources,OperationAborted,NotOpenForWriting,LockViolation,WouldBlock,ConnectionResetByPeer,Unexpected},(function 'write'))).flush",
-	"io.GenericReader(*compress.flate.inflate.Inflate(.zlib,u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))),error{EndOfStream,BadGzipHeader,BadZlibHeader,WrongGzipChecksum,WrongGzipSize,WrongZlibChecksum,InvalidCode,OversubscribedHuffmanTree,IncompleteHuffmanTree,MissingEndOfBlockCode,InvalidMatch,InvalidBlockType,WrongStoredBlockNlen,InvalidDynamicBlockHeader},(function 'read')).typeErasedReadFn",
+	"io.GenericReader(*compress.flat.inflate.Inflate(.zlib,u32,io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read'))),error{EndOfStream,BadGzipHeader,BadZlibHeader,WrongGzipChecksum,WrongGzipSize,WrongZlibChecksum,InvalidCode,OversubscribedHuffmanTree,IncompleteHuffmanTree,MissingEndOfBlockCode,InvalidMatch,InvalidBlockType,WrongStoredBlockNlen,InvalidDynamicBlockHeader},(function 'read')).typeErasedReadFn",
 	"io.GenericReader(*io.fixed_buffer_stream.FixedBufferStream([]const u8),error{},(function 'read')).typeErasedReadFn",
 	"io.GenericWriter(*io.buffered_writer.BufferedWriter(4096,io.GenericWriter(fs.File,error{DiskQuota,FileTooBig,InputOutput,NoSpaceLeft,DeviceBusy,InvalidArgument,AccessDenied,BrokenPipe,SystemResources,OperationAborted,NotOpenForWriting,LockViolation,WouldBlock,ConnectionResetByPeer,Unexpected},(function 'write'))),error{DiskQuota,FileTooBig,InputOutput,NoSpaceLeft,DeviceBusy,InvalidArgument,AccessDenied,BrokenPipe,SystemResources,OperationAborted,NotOpenForWriting,LockViolation,WouldBlock,ConnectionResetByPeer,Unexpected},(function 'write')).typeErasedWriteFn",
 	"io.GenericWriter(*io.fixed_buffer_stream.FixedBufferStream([]u8),error{NoSpaceLeft},(function 'write')).typeErasedWriteFn",
@@ -1315,8 +1345,7 @@ static Variant::Type convert_guest_type_to_variant(const String &type) {
 }
 
 Dictionary Sandbox::create_public_api_function(std::string_view name, gaddr_t address,
-	std::string_view description, std::string_view return_type, std::string_view args)
-{
+		std::string_view description, std::string_view return_type, std::string_view args) {
 	Dictionary func;
 	if (name.empty() || name.size() > 64 || address == 0x0) {
 		ERR_PRINT("Sandbox: Invalid public API function.");

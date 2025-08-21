@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  object.hpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 #include "callable.hpp"
 #include "string.hpp"
@@ -9,7 +39,8 @@ struct Object {
 
 	/// @brief Construct an Object object from an existing in-scope Object object.
 	/// @param addr The address of the Object object.
-	constexpr Object(uint64_t addr) : m_address{addr} {}
+	constexpr Object(uint64_t addr) :
+			m_address{ addr } {}
 
 	/// Call a method on the node.
 	/// @param method The method to call.
@@ -34,7 +65,7 @@ struct Object {
 	void voidcall(std::string_view method, Args... args);
 
 	template <typename... Args>
-	Variant operator () (std::string_view method, Args... args);
+	Variant operator()(std::string_view method, Args... args);
 
 	template <typename... Args>
 	void call_deferred(std::string_view method, Args... args);
@@ -88,13 +119,13 @@ struct Object {
 	Node2D as_node2d() const;
 	Node3D as_node3d() const;
 
-	bool operator== (const Object &other) const {
+	bool operator==(const Object &other) const {
 		return address() == other.address();
 	}
-	bool operator!= (const Object &other) const {
+	bool operator!=(const Object &other) const {
 		return address() != other.address();
 	}
-	bool operator< (const Object &other) const {
+	bool operator<(const Object &other) const {
 		return address() < other.address();
 	}
 
@@ -164,7 +195,7 @@ protected:
 
 inline Object Variant::as_object() const {
 	if (get_type() == Variant::OBJECT)
-		return Object{uintptr_t(v.i)};
+		return Object{ uintptr_t(v.i) };
 	api_throw("std::bad_cast", "Variant is not an Object", this);
 }
 
@@ -174,7 +205,7 @@ inline Variant::operator Object() const {
 
 template <typename T>
 static inline T cast_to(const Object &obj) {
-	return T{obj.address()};
+	return T{ obj.address() };
 }
 
 inline Variant::Variant(const Object &obj) {
@@ -184,30 +215,30 @@ inline Variant::Variant(const Object &obj) {
 
 template <typename... Args>
 inline Variant Object::call(std::string_view method, Args... args) {
-	Variant argv[] = {args...};
+	Variant argv[] = { args... };
 	return callv(method, false, argv, sizeof...(Args));
 }
 
 template <typename... Args>
 inline Variant Object::call(std::string_view method, Args... args) const {
-	Variant argv[] = {args...};
+	Variant argv[] = { args... };
 	return const_cast<Object *>(this)->callv(method, false, argv, sizeof...(Args));
 }
 
 template <typename... Args>
 inline void Object::voidcall(std::string_view method, Args... args) {
-	Variant argv[] = {args...};
+	Variant argv[] = { args... };
 	this->voidcallv(method, false, argv, sizeof...(Args));
 }
 
 template <typename... Args>
-inline Variant Object::operator () (std::string_view method, Args... args) {
+inline Variant Object::operator()(std::string_view method, Args... args) {
 	return call(method, args...);
 }
 
 template <typename... Args>
 inline void Object::call_deferred(std::string_view method, Args... args) {
-	Variant argv[] = {args...};
+	Variant argv[] = { args... };
 	this->voidcallv(method, true, argv, sizeof...(Args));
 }
 
@@ -233,10 +264,9 @@ inline Variant Object::callv(std::string_view method, bool deferred, const Varia
 	register int syscall_number asm("a7") = ECALL_OBJ_CALLP;
 
 	asm volatile(
-		"ecall"
-		: "=m"(*var_ptr)
-		: "r"(object), "r"(method_ptr), "r"(method_size), "r"(deferred_flag), "r"(var_ptr), "r"(argv_ptr), "m"(*argv_ptr), "r"(argc_reg), "r"(syscall_number)
-	);
+			"ecall"
+			: "=m"(*var_ptr)
+			: "r"(object), "r"(method_ptr), "r"(method_size), "r"(deferred_flag), "r"(var_ptr), "r"(argv_ptr), "m"(*argv_ptr), "r"(argc_reg), "r"(syscall_number));
 	return var;
 }
 
@@ -254,10 +284,9 @@ inline void Object::voidcallv(std::string_view method, bool deferred, const Vari
 	register int syscall_number asm("a7") = ECALL_OBJ_CALLP;
 
 	asm volatile(
-		"ecall"
-		: /* no outputs */
-		: "r"(object), "r"(method_ptr), "r"(method_size), "r"(deferred_flag), "r"(var_ptr), "r"(argv_ptr), "m"(*argv_ptr), "r"(argc_reg), "r"(syscall_number)
-	);
+			"ecall"
+			: /* no outputs */
+			: "r"(object), "r"(method_ptr), "r"(method_size), "r"(deferred_flag), "r"(var_ptr), "r"(argv_ptr), "m"(*argv_ptr), "r"(argc_reg), "r"(syscall_number));
 }
 
 inline void Object::connect(const std::string &signal, Callable method) {
@@ -269,15 +298,15 @@ struct PropertyProxy {
 	const T &obj;
 	const std::string_view property;
 
-	constexpr PropertyProxy(const T &obj, std::string_view property)
-			: obj(obj), property(property) {}
+	constexpr PropertyProxy(const T &obj, std::string_view property) :
+			obj(obj), property(property) {}
 
 	PropertyProxy &operator=(const P &v) {
-		const_cast<T&>(obj).set(property, v);
+		const_cast<T &>(obj).set(property, v);
 		return *this;
 	}
 
-	bool operator== (const P &v) const { return P(obj.get(property)) == v; }
+	bool operator==(const P &v) const { return P(obj.get(property)) == v; }
 	bool operator!=(const P &v) const { return P(obj.get(property)) != v; }
 
 	operator P() {
@@ -285,12 +314,12 @@ struct PropertyProxy {
 	}
 };
 
-#define PROPERTY(name, Type)      \
+#define PROPERTY(name, Type)                                                   \
 	auto name() { return PropertyProxy<decltype(*this), Type>(*this, #name); } \
 	auto name() const { return PropertyProxy<decltype(*this), Type>(*this, #name); }
 
-#define CUSTOM_PROPERTY(name, Type, getter, setter)      \
-	auto name() { return PropertyProxy(*this, #name); } \
+#define CUSTOM_PROPERTY(name, Type, getter, setter)           \
+	auto name() { return PropertyProxy(*this, #name); }       \
 	auto name() const { return PropertyProxy(*this, #name); } \
-	void setter(const Type &v) { Object::set(#name, v); } \
+	void setter(const Type &v) { Object::set(#name, v); }     \
 	Type getter() const { return Object::get(#name); }

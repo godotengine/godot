@@ -460,7 +460,7 @@
 			<description>
 				Calls a function in the sandboxed program with the provided arguments. This is used to make function calls defined in the ELF program from the Godot engine. Functions in the Sandbox always return a Variant.
 				The first argument is the string name of the function to call, and subsequent arguments are passed as parameters to that function. If the function does not exist, an error will be thrown.
-				Calling a function with the wrong arguments can lead to undefined behavior, so it is important to ensure that the function signature matches the arguments being passed. If this is undesirable please have a look at [code]vmcallv()[/code] which uses Variant for all arguments and is more resistant to mistakes, but also less performant.
+				Calling a function with the wrong arguments can lead to undefined behavior, so it is important to ensure that the function signature matches the arguments being passed. If this is undesirable please have a look at [code skip-lint]vmcallv()[/code] which uses Variant for all arguments and is more resistant to mistakes, but also less performant.
 				[codeblocks]
 				[gdscript]
 				var sandbox = Sandbox.new()
@@ -484,7 +484,7 @@
 			<param index="0" name="function" type="String" />
 			<param index="1" name="args" type="Array" default="[]" />
 			<description>
-				Creates a Callable that can be used to later make a function call into the sandbox. The args parameter allows you to specify the pre-defined arguments that will be passed to the function when it is called. Regular callable arguments will then be appended when the callable is invoked. Eg. [1, 2, 3] will call the function with the arguments 1, 2, 3, and after that any arguments passed to the callable will be appended to the end of the argument list.
+				Creates a Callable that can be used to later make a function call into the sandbox. The args parameter allows you to specify the pre-defined arguments that will be passed to the function when it is called. Regular callable arguments will then be appended when the callable is invoked. Eg. [code][1, 2, 3][/code] will call the function with the arguments 1, 2, 3, and after that any arguments passed to the callable will be appended to the end of the argument list.
 			</description>
 		</method>
 		<method name="vmcallable_address">
@@ -492,7 +492,7 @@
 			<param index="0" name="address" type="int" />
 			<param index="1" name="args" type="Array" default="[]" />
 			<description>
-				Creates a callable object that can be used to later call a function at a specific memory address in the sandboxed program. Works the same way as [code]vmcallable()[/code], but instead of a function name, it takes any executable address.
+				Creates a callable object that can be used to later call a function at a specific memory address in the sandboxed program. Works the same way as [code skip-lint]vmcallable()[/code], but instead of a function name, it takes any executable address.
 			</description>
 		</method>
 		<method name="vmcallv" qualifiers="const vararg">

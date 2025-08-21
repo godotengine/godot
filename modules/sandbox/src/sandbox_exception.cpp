@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  sandbox_exception.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "sandbox.h"
 
 #include "cpp/script_cpp.h"
@@ -118,49 +148,45 @@ void Sandbox::handle_exception(gaddr_t address) {
 			}
 
 			const std::string debugscript =
-				// Delete the script file (after GDB closes it)
-				"shell unlink " + std::string(scrname)
-				+ "\n"
-				// Load the original file used by the script
-				"file "
-				+ std::string(getenv("GDB"))
-				+ "\n"
-				// Connect remotely to the given port @port
-				"target remote localhost:"
-				+ std::to_string(port)
-				+ "\n"
-				// Enable the fancy TUI
-				"layout next\nlayout next\n"
-				// Disable pagination for the message
-				"set pagination off\n"
-				// Print the message given by the caller
-				"echo Remote debugging session started\n"
-				+ "\n"
-				// Go up one step from the syscall wrapper (which can fail)
-				+ std::string(oneFrameUp ? "up\n" : "");
+					// Delete the script file (after GDB closes it)
+					"shell unlink " + std::string(scrname) + "\n"
+															 // Load the original file used by the script
+															 "file " +
+					std::string(getenv("GDB")) + "\n"
+												 // Connect remotely to the given port @port
+												 "target remote localhost:" +
+					std::to_string(port) + "\n"
+										   // Enable the fancy TUI
+										   "layout next\nlayout next\n"
+										   // Disable pagination for the message
+										   "set pagination off\n"
+										   // Print the message given by the caller
+										   "echo Remote debugging session started\n" +
+					"\n"
+					// Go up one step from the syscall wrapper (which can fail)
+					+ std::string(oneFrameUp ? "up\n" : "");
 
 			ssize_t len = write(fd, debugscript.c_str(), debugscript.size());
 			if (len < (ssize_t)debugscript.size()) {
 				throw std::runtime_error(
-					"Unable to write script file for debugging");
+						"Unable to write script file for debugging");
 			}
 			close(fd);
 
-			const char* argv[]
-				= {getenv_with_default("GDBPATH", "/usr/bin/gdb-multiarch"), "-x",
-				scrname, nullptr};
+			const char *argv[] = { getenv_with_default("GDBPATH", "/usr/bin/gdb-multiarch"), "-x",
+				scrname, nullptr };
 			// XXX: This is not kosher, but GDB is open-source, safe and let's not
 			// pretend that anyone downloads gdb-multiarch from a website anyway.
 			// There is a finite list of things we should pass to GDB to make it
 			// behave well, but I haven't been able to find the right combination.
-			extern char** environ;
-			if (-1 == execve(argv[0], (char* const*)argv, environ)) {
+			extern char **environ;
+			if (-1 == execve(argv[0], (char *const *)argv, environ)) {
 				throw std::runtime_error(
-					"Unable to start gdb-multiarch for debugging");
+						"Unable to start gdb-multiarch for debugging");
 			}
 		} // child
 
-		riscv::RSP<RISCV_ARCH> server { this->machine(), port };
+		riscv::RSP<RISCV_ARCH> server{ this->machine(), port };
 		auto client = server.accept();
 		if (client != nullptr) {
 			printf("GDB connected\n");

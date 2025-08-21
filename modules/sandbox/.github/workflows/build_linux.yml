@@ -41,5 +41,5 @@ jobs:
           name: godot-sandbox-linux-${{ matrix.arch }}-${{ matrix.precision }}
           path: |
             ${{ github.workspace }}/bin/**/*.so
-          if-no-files-found: error  
+          if-no-files-found: error
           retention-days: 10 # 90 days by default

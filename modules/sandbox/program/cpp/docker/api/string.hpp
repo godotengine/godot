@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  string.hpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #pragma once
 
 #include "variant.hpp"
@@ -14,8 +44,8 @@ union String {
 	String(const char (&value)[N]);
 	String(const std::string &value);
 
-	String &operator =(std::string_view value);
-	String &operator =(const String &value);
+	String &operator=(std::string_view value);
+	String &operator=(const String &value);
 
 	// String operations
 	void append(const String &value);
@@ -28,10 +58,16 @@ union String {
 
 	// Call methods on the String
 	template <typename... Args>
-	Variant operator () (std::string_view method, Args&&... args);
+	Variant operator()(std::string_view method, Args &&...args);
 
-	String &operator +=(const String &value) { append(value); return *this; }
-	String &operator +=(std::string_view value) { append(value); return *this; }
+	String &operator+=(const String &value) {
+		append(value);
+		return *this;
+	}
+	String &operator+=(std::string_view value) {
+		append(value);
+		return *this;
+	}
 
 	// String access
 	String operator[](int idx) const;
@@ -42,8 +78,8 @@ union String {
 	std::string utf8() const;
 	std::u32string utf32() const;
 
-	bool operator ==(const String &other) const;
-	bool operator ==(const char *other) const;
+	bool operator==(const String &other) const;
+	bool operator==(const char *other) const;
 
 	// String size
 	int size() const;
@@ -152,7 +188,11 @@ union String {
 	METHOD(String, xml_escape);
 	METHOD(String, xml_unescape);
 
-	static String from_variant_index(unsigned idx) { String a {}; a.m_idx = idx; return a; }
+	static String from_variant_index(unsigned idx) {
+		String a{};
+		a.m_idx = idx;
+		return a;
+	}
 	unsigned get_variant_index() const noexcept { return m_idx; }
 	bool is_permanent() const { return Variant::is_permanent_index(m_idx); }
 	static unsigned Create(const char *data, size_t size);
@@ -178,20 +218,20 @@ inline String Variant::as_string() const {
 	return String::from_variant_index(v.i);
 }
 
-inline String::String(std::string_view value)
-	: m_idx(Create(value.data(), value.size())) {}
-inline String &String::operator =(std::string_view value) {
+inline String::String(std::string_view value) :
+		m_idx(Create(value.data(), value.size())) {}
+inline String &String::operator=(std::string_view value) {
 	m_idx = Create(value.data(), value.size());
 	return *this;
 }
 template <size_t N>
-inline String::String(const char (&value)[N])
-	: m_idx(Create(value, N - 1)) {}
+inline String::String(const char (&value)[N]) :
+		m_idx(Create(value, N - 1)) {}
 
-inline String::String(const std::string &value)
-	: m_idx(Create(value.data(), value.size())) {}
+inline String::String(const std::string &value) :
+		m_idx(Create(value.data(), value.size())) {}
 
 template <typename... Args>
-inline Variant String::operator () (std::string_view method, Args&&... args) {
+inline Variant String::operator()(std::string_view method, Args &&...args) {
 	return Variant(*this).method_call(method, std::forward<Args>(args)...);
 }

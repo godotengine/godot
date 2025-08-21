@@ -1,7 +1,39 @@
+/**************************************************************************/
+/*  function.hpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+#pragma once
+
 /*
  * Copyright (c) 2017 Ambroz Bizjak
  * All rights reserved.
- * 
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
  * 1. Redistributions of source code must retain the above copyright
@@ -9,7 +41,7 @@
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -22,31 +54,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#pragma once
 #include <cstddef>
 
-#include <type_traits>
 #include <functional>
+#include <type_traits>
 #include <utility>
-#include <new>
 
 /**
  * @ingroup misc
  * @defgroup function Function Wrapper
  * @brief Lightweight polymorphic function wrapper and related utilities
- * 
+ *
  * The @ref Function<Ret(Args...)> "Function" class is a general-purpose lightweight
  * polymorphic function wrapper. It has intentionally very limited storage capabilities
  * in order to ensure minimal overhead and no possibility of exceptions when copying.
  * In this documentation, "function object" refers to an instance of @ref
  * Function<Ret(Args...)> "Function".
- * 
+ *
  * Function objects are most often used for asynchronous callbacks. However this is not
  * the only possible mechanism for that purpose, virtual functions being the other major
  * one as used in the stack. The choice of which to use is often not simple, but a
  * general rule is that if more than one callback function is needed then virtual
  * functions in the same class should be considered.
- * 
+ *
  * In practical use, valid function objects are created in the following ways:
  * - From a combination of non-static member function and pointer to object, using the
  *   macros @ref AIPSTACK_BIND_MEMBER and @ref AIPSTACK_BIND_MEMBER_TN (which one depends
@@ -56,7 +86,7 @@
  *   must meet the requirements specified for this constructor which means that one
  *   is very limited in what the lambda can capture, though capturing a single pointer
  *   or reference specifically should work.
- * 
+ *
  * @{
  */
 
@@ -66,194 +96,180 @@
  */
 inline constexpr std::size_t FunctionStorageSize = sizeof(void *) * 3;
 
-template<typename>
+template <typename>
 class Function;
 
 /**
  * A general-purpose lightweight polymorphic function wrapper.
- * 
+ *
  * Consult the @ref function module description for an introduction.
- * 
+ *
  * A function object is always either empty or stores a callable object. The @ref
  * operator bool() "bool operator" can be used to determine which is the case.
- * 
+ *
  * @tparam Ret Return type (may be void).
  * @tparam Args Argument types.
  */
-template<typename Ret, typename ...Args>
-class Function<Ret(Args...)>
-{
-    struct Storage {
-        alignas(alignof(void*)) char data[FunctionStorageSize];
-    };
+template <typename Ret, typename... Args>
+class Function<Ret(Args...)> {
+	struct Storage {
+		alignas(alignof(void *)) char data[FunctionStorageSize];
+	};
 
-    using FunctionPointerType = Ret (*) (Storage, Args...);
+	using FunctionPointerType = Ret (*)(Storage, Args...);
 
 public:
-    /**
-     * Default constructor, constructs an empty function object.
-     */
-    inline Function () noexcept :
-        m_func_ptr(nullptr)
-    {}
+	/**
+	 * Default constructor, constructs an empty function object.
+	 */
+	inline Function() noexcept :
+			m_func_ptr(nullptr) {}
 
-    /**
-     * Constructor from nullptr, constructs an empty function object.
-     */
-    inline Function (std::nullptr_t) noexcept :
-        Function()
-    {}
+	/**
+	 * Constructor from nullptr, constructs an empty function object.
+	 */
+	inline Function(std::nullptr_t) noexcept :
+			Function() {}
 
-    /**
-     * Constructor from a callable, constructs a function object storing the
-     * callable.
-     * 
-     * The `Callable` type must satisfy the following requirements:
-     * - Its size must be less than or equal to @ref FunctionStorageSize.
-     * - It must be trivially copy-constructible.
-     * - It must be trivially destructible.
-     * - It must be possible to "call" a const object of that type with arguments
-     *   of types `Args` and convert the return value to type `Ret` (see below for
-     *   details).
-     * 
-     * When the function object storing this callable is invoked using @ref
-     * operator()() "operator()", the callable is invoked using an expression like
-     * `callable(std::forward<Args>(args)...)`, where `callable` is a const
-     * reference to a copy of the `Callable` object and `args` are the arguments
-     * declared as `Args ...args`. The result of this expression is returned in
-     * the context of a function returning type `Ret`, so it must be implicitly
-     * convertible to `Ret`.
-     * 
-     * @tparam Callable Type of callable object to be stored (see description for
-     *         requirements).
-     * @param callable Callable object to be stored in the function object.
-     */
-    template<typename Callable>
-    Function (Callable callable) noexcept
-    {
-        static_assert(sizeof(Callable) <= FunctionStorageSize,
-                      "Callable too large (greater than FunctionStorageSize)");
-        static_assert(std::is_trivially_copy_constructible_v<Callable>,
-                      "Callable not trivially copy constructible");
-        static_assert(std::is_trivially_destructible_v<Callable>,
-                      "Callable not trivially destructible");
+	/**
+	 * Constructor from a callable, constructs a function object storing the
+	 * callable.
+	 *
+	 * The `Callable` type must satisfy the following requirements:
+	 * - Its size must be less than or equal to @ref FunctionStorageSize.
+	 * - It must be trivially copy-constructible.
+	 * - It must be trivially destructible.
+	 * - It must be possible to "call" a const object of that type with arguments
+	 *   of types `Args` and convert the return value to type `Ret` (see below for
+	 *   details).
+	 *
+	 * When the function object storing this callable is invoked using @ref
+	 * operator()() "operator()", the callable is invoked using an expression like
+	 * `callable(std::forward<Args>(args)...)`, where `callable` is a const
+	 * reference to a copy of the `Callable` object and `args` are the arguments
+	 * declared as `Args ...args`. The result of this expression is returned in
+	 * the context of a function returning type `Ret`, so it must be implicitly
+	 * convertible to `Ret`.
+	 *
+	 * @tparam Callable Type of callable object to be stored (see description for
+	 *         requirements).
+	 * @param callable Callable object to be stored in the function object.
+	 */
+	template <typename Callable>
+	Function(Callable callable) noexcept {
+		static_assert(sizeof(Callable) <= FunctionStorageSize,
+				"Callable too large (greater than FunctionStorageSize)");
+		static_assert(std::is_trivially_copy_constructible_v<Callable>,
+				"Callable not trivially copy constructible");
+		static_assert(std::is_trivially_destructible_v<Callable>,
+				"Callable not trivially destructible");
 
-        m_func_ptr = &trampoline<Callable>;
+		m_func_ptr = &trampoline<Callable>;
 
-        new(reinterpret_cast<Callable *>(m_storage.data)) Callable(callable);
-    }
+		new (reinterpret_cast<Callable *>(m_storage.data)) Callable(callable);
+	}
 
-    /**
-     * Determine whether the function object stores a callable.
-     * 
-     */
+	/**
+	 * Determine whether the function object stores a callable.
+	 *
+	 */
 	bool operator==(std::nullptr_t) const noexcept { return m_func_ptr == nullptr; }
 	bool operator!=(std::nullptr_t) const noexcept { return m_func_ptr != nullptr; }
 
-    /**
-     * Invoke the stored callable object.
-     * 
-     * @note The behavior is undefined if the function object is empty.
-     * 
-     * @param args Arguments forwarded to the stored callable object.
-     * @return Value returned by the invocation of the callable object.
-     */
-    inline Ret operator() (Args ...args) const
-    {
-        return (*m_func_ptr)(m_storage, std::forward<Args>(args)...);
-    }
+	/**
+	 * Invoke the stored callable object.
+	 *
+	 * @note The behavior is undefined if the function object is empty.
+	 *
+	 * @param args Arguments forwarded to the stored callable object.
+	 * @return Value returned by the invocation of the callable object.
+	 */
+	inline Ret operator()(Args... args) const {
+		return (*m_func_ptr)(m_storage, std::forward<Args>(args)...);
+	}
 
-    inline FunctionPointerType get() const noexcept
-    {
-        return m_func_ptr;
-    }
+	inline FunctionPointerType get() const noexcept {
+		return m_func_ptr;
+	}
 
 private:
-    template<typename Callable>
-    static Ret trampoline (Storage storage, Args ...args)
-    {
-        Callable const *c = reinterpret_cast<Callable const *>(storage.data);
-        return (*c)(std::forward<Args>(args)...);
-    }
+	template <typename Callable>
+	static Ret trampoline(Storage storage, Args... args) {
+		Callable const *c = reinterpret_cast<Callable const *>(storage.data);
+		return (*c)(std::forward<Args>(args)...);
+	}
 
 private:
-    FunctionPointerType m_func_ptr;
-    Storage m_storage;
+	FunctionPointerType m_func_ptr;
+	Storage m_storage;
 };
 
 /**
  * Wrap a const reference using `std::reference_wrapper`.
- * 
+ *
  * This is intended to be used together with the Function(Callable) constructor to
  * bypass the restrictions regarding object size and trivial
  * copy-construction/destruction.
- * 
+ *
  * @warning When this is used to construct a function object, the resulting function
  * object references the original callable as passed to this function and must not
  * be invoked after the callable has been destructed.
- * 
+ *
  * @tparam Callable Type of object to which a reference is to be wrapped.
  * @param callable Reference to object to be wrapped.
  * @return Wrapped reference: `std::reference_wrapper<Callable const>(callable)`.
  */
-template<typename Callable>
-inline std::reference_wrapper<Callable const> RefFunc (Callable const &callable) noexcept
-{
-    return std::reference_wrapper<Callable const>(callable);
+template <typename Callable>
+inline std::reference_wrapper<Callable const> RefFunc(Callable const &callable) noexcept {
+	return std::reference_wrapper<Callable const>(callable);
 }
 
 namespace BindPrivate {
-    template<typename Container, typename Ret, typename ...Args>
-    struct BindImpl {
-        template<Ret (Container::*MemberFunc)(Args...)>
-        class Callable {
-        public:
-            inline constexpr Callable (Container *container) :
-                m_container(container)
-            {}
+template <typename Container, typename Ret, typename... Args>
+struct BindImpl {
+	template <Ret (Container::*MemberFunc)(Args...)>
+	class Callable {
+	public:
+		inline constexpr Callable(Container *container) :
+				m_container(container) {}
 
-            inline Ret operator() (Args ...args) const
-            {
-                return (m_container->*MemberFunc)(std::forward<Args>(args)...);
-            }
+		inline Ret operator()(Args... args) const {
+			return (m_container->*MemberFunc)(std::forward<Args>(args)...);
+		}
 
-            inline Function<Ret(Args...)> toFunction() const
-            {
-                return Function<Ret(Args...)>(*this);
-            }
+		inline Function<Ret(Args...)> toFunction() const {
+			return Function<Ret(Args...)>(*this);
+		}
 
-        private:
-            Container *m_container;
-        };
-    };
+	private:
+		Container *m_container;
+	};
+};
 
-    template<typename Container, typename Ret, typename ...Args>
-    struct BindImplConst {
-        template<Ret (Container::*MemberFunc)(Args...) const>
-        class Callable {
-        public:
-            inline constexpr Callable (Container const *container) :
-                m_container(container)
-            {}
+template <typename Container, typename Ret, typename... Args>
+struct BindImplConst {
+	template <Ret (Container::*MemberFunc)(Args...) const>
+	class Callable {
+	public:
+		inline constexpr Callable(Container const *container) :
+				m_container(container) {}
 
-            inline Ret operator() (Args ...args) const
-            {
-                return (m_container->*MemberFunc)(std::forward<Args>(args)...);
-            }
+		inline Ret operator()(Args... args) const {
+			return (m_container->*MemberFunc)(std::forward<Args>(args)...);
+		}
 
-            inline Function<Ret(Args...)> toFunction() const
-            {
-                return Function<Ret(Args...)>(*this);
-            }
+		inline Function<Ret(Args...)> toFunction() const {
+			return Function<Ret(Args...)>(*this);
+		}
 
-        private:
-            Container const *m_container;
-        };
-    };
+	private:
+		Container const *m_container;
+	};
+};
 
-    template<typename Container, typename Ret, typename ...Args>
-    BindImpl<Container, Ret, Args...> DeduceImpl (Ret (Container::*)(Args...));
+template <typename Container, typename Ret, typename... Args>
+BindImpl<Container, Ret, Args...> DeduceImpl(Ret (Container::*)(Args...));
 
-    template<typename Container, typename Ret, typename ...Args>
-    BindImplConst<Container, Ret, Args...> DeduceImpl (Ret (Container::*)(Args...) const);
-}
+template <typename Container, typename Ret, typename... Args>
+BindImplConst<Container, Ret, Args...> DeduceImpl(Ret (Container::*)(Args...) const);
+} //namespace BindPrivate

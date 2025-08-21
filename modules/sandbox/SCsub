@@ -1,29 +1,36 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
+
 import os
 
 Import("env")
 Import("env_modules")
 
 
-#region Helpers
+# region Helpers
 def get_addon_platform():
     return env["platform"].replace("linuxbsd", "linux")
+
 
 def get_addon_threads():
     return "yes" if env["threads"] else "no"
 
+
 def get_addon_llvm():
     return "yes" if env.get("use_llvm", False) else "no"
+
 
 def get_addon_devbuild():
     return "yes" if env.get("dev_build", False) else "no"
 
+
 def get_addon_target():
     return "template_release" if env["target"] == "editor" else env["target"]
 
+
 def get_addon_mingw():
     return "yes" if env.get("use_mingw", False) else "no"
+
 
 if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platform"] != "windows":
     # TODO remove when godot-cpp 4.5 is released
@@ -32,7 +39,9 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
         os.system("sed -i 's/23.2.8568313/28.1.13356709/g' thirdparty/godot-cpp/tools/android.py")
 
     # Only build if we are not using MSVC
-    os.system(f"scons static_build=yes platform={get_addon_platform()} target={get_addon_target()} arch={env['arch']} precision={env['precision']} threads={get_addon_threads()} dev_build={get_addon_devbuild()} use_llvm={get_addon_llvm()} lto={env['lto']} use_mingw={get_addon_mingw()}")
+    os.system(
+        f"scons static_build=yes platform={get_addon_platform()} target={get_addon_target()} arch={env['arch']} precision={env['precision']} threads={get_addon_threads()} dev_build={get_addon_devbuild()} use_llvm={get_addon_llvm()} lto={env['lto']} use_mingw={get_addon_mingw()}"
+    )
 
     def get_sufix_before():
         suffix = f".{get_addon_platform()}.{env['target']}"
@@ -47,7 +56,6 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
             suffix += ".llvm"
         return suffix
 
-
     def get_sufix_after():
         suffix = f".{get_addon_platform()}.{get_addon_target()}"
         if env["dev_build"]:
@@ -58,6 +66,7 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
         if not env["threads"]:
             suffix += ".nothreads"
         return suffix
+
     os.system("ls -l bin/")
     # Rename if target is editor
     if env["target"] == "editor" or env["platform"] == "windows":
@@ -69,19 +78,19 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
         # Rename our lib
         os.rename(
             f"bin/libsandbox{get_sufix_after()}{lib_extension}",
-            f"bin/{lib_prefix}sandbox{get_sufix_before()}{lib_extension}"
+            f"bin/{lib_prefix}sandbox{get_sufix_before()}{lib_extension}",
         )
         # Rename godot-cpp lib
         os.rename(
             f"thirdparty/godot-cpp/bin/libgodot-cpp{get_sufix_after()}{lib_extension}",
-            f"thirdparty/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}"
+            f"thirdparty/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}",
         )
-            
+
     # Do an ls on bin folder
     os.system("ls -l bin/")
 else:
     print("Skipping sandbox build. All platforms minus windows without mingw are supported.")
-#endregion
+# endregion
 
 
 env_sandbox = env_modules.Clone()

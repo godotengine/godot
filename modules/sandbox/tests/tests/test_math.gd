@@ -26,4 +26,3 @@ func test_math():
 	assert_eq(s.vmcall("test_math_lerp",       0.0, 1.0, 0.5), 0.5)
 	assert_eq(s.vmcall("test_math_smoothstep", 0.0, 1.0, 0.5), 0.5)
 	s.queue_free()
-

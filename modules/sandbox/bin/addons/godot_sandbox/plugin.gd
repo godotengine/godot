@@ -8,10 +8,10 @@ func _enter_tree():
 	var popup_scene = preload("res://addons/godot_sandbox/downloader.tscn")
 	popup_window = popup_scene.instantiate()
 	popup_window.close_requested.connect(popup_window.hide)
-	
+
 	# Add it to the editor's main screen
 	get_editor_interface().get_base_control().add_child(popup_window)
-	
+
 	# Optional: Add a menu item to trigger it
 	add_tool_menu_item("Godot Sandbox Dependencies...", show_popup)
 

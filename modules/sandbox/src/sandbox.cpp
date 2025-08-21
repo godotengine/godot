@@ -1,3 +1,33 @@
+/**************************************************************************/
+/*  sandbox.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
 #include "sandbox.h"
 
 #include "guest_datatypes.h"
@@ -143,7 +173,7 @@ void Sandbox::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_instructions_max", "max"), &Sandbox::set_instructions_max, DEFVAL(MAX_INSTRUCTIONS));
 	ClassDB::bind_method(D_METHOD("get_instructions_max"), &Sandbox::get_instructions_max);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_timeout", PROPERTY_HINT_NONE, "Maximum millions of instructions executed before cancelling execution"), "set_instructions_max", "get_instructions_max");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_timeout", PROPERTY_HINT_NONE, "Maximum millions of instructions executed before canceling execution"), "set_instructions_max", "get_instructions_max");
 
 	ClassDB::bind_method(D_METHOD("set_allocations_max", "max"), &Sandbox::set_allocations_max, DEFVAL(MAX_HEAP_ALLOCS));
 	ClassDB::bind_method(D_METHOD("get_allocations_max"), &Sandbox::get_allocations_max);
@@ -330,10 +360,12 @@ Sandbox::Sandbox() {
 	// class is well-formed at all times.
 	this->reset_machine();
 }
-Sandbox::Sandbox(const PackedByteArray &buffer) : Sandbox() {
+Sandbox::Sandbox(const PackedByteArray &buffer) :
+		Sandbox() {
 	this->load_buffer(buffer);
 }
-Sandbox::Sandbox(Ref<ELFScript> program) : Sandbox() {
+Sandbox::Sandbox(Ref<ELFScript> program) :
+		Sandbox() {
 	this->set_program(program);
 }
 
@@ -498,28 +530,28 @@ bool Sandbox::load(const PackedByteArray *buffer, const std::vector<std::string>
 
 		auto options = std::make_shared<riscv::MachineOptions<RISCV_ARCH>>(riscv::MachineOptions<RISCV_ARCH>{
 				.memory_max = uint64_t(get_memory_max()) << 20, // in MiB
-				//.verbose_loader = true,
+		//.verbose_loader = true,
 #ifdef RISCV_BINARY_TRANSLATION
 				.translate_enabled = riscv::libtcc_enabled && m_bintr_jit,
 				.translate_enable_embedded = true,
 				.translate_future_segments = false,
 				.translate_invoke_compiler = riscv::libtcc_enabled && m_bintr_jit,
-				//.translate_trace = true,
-				//.translate_timing = true,
-#  ifdef RISCV_LIBTCC
+		//.translate_trace = true,
+		//.translate_timing = true,
+#ifdef RISCV_LIBTCC
 				.translate_ignore_instruction_limit = get_instructions_max() <= 0,
 				.translate_use_register_caching = this->m_bintr_register_caching,
 				.translate_use_syscall_clobbering_optimization = true,
 				.translate_automatic_nbit_address_space = this->m_bintr_automatic_nbit_as,
 				.translate_live_patching = false, // Don't meddle with instruction stream
-#  endif // RISCV_LIBTCC
+#endif // RISCV_LIBTCC
 #endif
 		});
 #if defined(RISCV_BINARY_TRANSLATION) && defined(RISCV_LIBTCC)
 		// Background compilation, if enabled, will run the compilation in a separate thread
 		// and live-patch the results into the decoder cache after the compilation is done.
 		if (this->m_bintr_bg_compilation) {
-			options->translate_background_callback = [](std::function<void()>& callback) {
+			options->translate_background_callback = [](std::function<void()> &callback) {
 				// This is called from inside the binary translator in the main thread,
 				// and the goal is to run the callback in a separate thread, to avoid
 				// blocking the main thread while the compilation step is running.
@@ -590,7 +622,7 @@ bool Sandbox::load(const PackedByteArray *buffer, const std::vector<std::string>
 				m.cpu.simulate_precise();
 				if (m.instruction_limit_reached()) {
 					throw riscv::MachineTimeoutException(riscv::MAX_INSTRUCTIONS_REACHED,
-						"Instruction count limit reached", max_instr);
+							"Instruction count limit reached", max_instr);
 				}
 			}
 		}
@@ -935,7 +967,7 @@ Variant Sandbox::vmcall_internal(gaddr_t address, const Variant **args, int argc
 				m_machine->cpu.simulate_precise();
 				if (m_machine->instruction_limit_reached()) {
 					throw riscv::MachineTimeoutException(riscv::MAX_INSTRUCTIONS_REACHED,
-						"Instruction count limit reached", max_instr);
+							"Instruction count limit reached", max_instr);
 				}
 			} else if (UNLIKELY(this->get_profiling())) {
 				LocalProfilingData &profdata = *this->m_local_profiling_data;
