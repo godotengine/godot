@@ -7404,13 +7404,13 @@ void EditorNode::_update_main_menu_type() {
 		menu_btn_spacer = memnew(Control);
 		menu_btn_spacer->set_custom_minimum_size(Vector2(8, 0) * EDSCALE);
 		title_bar->add_child(menu_btn_spacer);
-		title_bar->move_child(menu_btn_spacer, 0);
+		title_bar->move_child(menu_btn_spacer, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
 #endif
 		title_bar->add_child(main_menu_button);
 		if (menu_btn_spacer == nullptr) {
-			title_bar->move_child(main_menu_button, 0);
+			title_bar->move_child(main_menu_button, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
 		} else {
-			title_bar->move_child(main_menu_button, 1);
+			title_bar->move_child(main_menu_button, menu_btn_spacer->get_index() + 1);
 		}
 		memdelete_notnull(main_menu_bar);
 		main_menu_bar = nullptr;
@@ -7445,7 +7445,7 @@ void EditorNode::_update_main_menu_type() {
 		}
 
 		title_bar->add_child(main_menu_bar);
-		title_bar->move_child(main_menu_bar, 0);
+		title_bar->move_child(main_menu_bar, left_menu_spacer ? left_menu_spacer->get_index() + 1 : 0);
 
 		memdelete_notnull(menu_btn_spacer);
 		memdelete_notnull(main_menu_button);
