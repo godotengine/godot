@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Sandbox" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+<class name="Sandbox" inherits="Node" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
 		Sandbox is designed to run programs in a controlled environment, providing a safe way to execute code with restricted access to the Godot engine's API and resources.
 	</brief_description>
@@ -103,6 +103,21 @@
 				Retrieves the value of a property by its name from the Sandbox.
 			</description>
 		</method>
+		<method name="get_binary_translation_bg_compilation" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_binary_translation_nbit_as" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="get_binary_translation_register_caching" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="get_current_instruction" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -138,6 +153,11 @@
 			<description>
 				Returns a list of all properties available in the Sandbox, including properties that are
 				defined in the sandboxed program (by the program).
+			</description>
+		</method>
+		<method name="has_feature_jit" qualifiers="static">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="has_function" qualifiers="const">
@@ -198,16 +218,20 @@
 				This is used to restrict access to certain resources for security or performance reasons.
 			</description>
 		</method>
-		<method name="is_binary_translated" qualifiers="const">
+		<method name="is_jit" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Checks if the sandboxed program has been binary translated.
-				This means that the program has been compiled into a shared library for execution, allowing it to run closer to native performance.
+			</description>
+		</method>
+		<method name="is_jit_enabled" qualifiers="static">
+			<return type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="load_binary_translation" qualifiers="static">
 			<return type="bool" />
-			<param index="0" name="shared_library_path" type="String" />
+			<param index="0" name="shared_library_path" type="String" default="&quot;res://bintr.so&quot;" />
+			<param index="1" name="allow_insecure" type="bool" default="false" />
 			<description>
 				Loads a binary translation of the sandboxed program from a shared library.
 				This allows the sandboxed program to run closer to native performance by executing pre-compiled code.
@@ -284,6 +308,24 @@
 				This allows you to specify the initial values of registers that will be used when the program starts executing.
 			</description>
 		</method>
+		<method name="set_binary_translation_bg_compilation">
+			<return type="void" />
+			<param index="0" name="bg_compilation" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_binary_translation_nbit_as">
+			<return type="void" />
+			<param index="0" name="use_nbit_as" type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_binary_translation_register_caching">
+			<return type="void" />
+			<param index="0" name="register_caching" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="set_class_allowed_callback">
 			<return type="void" />
 			<param index="0" name="instance" type="Callable" />
@@ -292,6 +334,12 @@
 				This can be used to restrict access to certain classes for security reasons.
 
 				Please note that the sandboxed program is always allowed to instantiate Variant types.
+			</description>
+		</method>
+		<method name="set_jit_enabled" qualifiers="static">
+			<return type="void" />
+			<param index="0" name="enable" type="bool" />
+			<description>
 			</description>
 		</method>
 		<method name="set_method_allowed_callback">
@@ -334,6 +382,62 @@
 				This can be used to restrict access to certain resources for security reasons.
 			</description>
 		</method>
+		<method name="share_byte_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedByteArray" />
+			<description>
+			</description>
+		</method>
+		<method name="share_float32_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedFloat32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="share_float64_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedFloat64Array" />
+			<description>
+			</description>
+		</method>
+		<method name="share_int32_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedInt32Array" />
+			<description>
+			</description>
+		</method>
+		<method name="share_int64_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedInt64Array" />
+			<description>
+			</description>
+		</method>
+		<method name="share_vec2_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedVector2Array" />
+			<description>
+			</description>
+		</method>
+		<method name="share_vec3_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedVector3Array" />
+			<description>
+			</description>
+		</method>
+		<method name="share_vec4_array">
+			<return type="int" />
+			<param index="0" name="allow_write" type="bool" />
+			<param index="1" name="array" type="PackedVector4Array" />
+			<description>
+			</description>
+		</method>
 		<method name="try_compile_binary_translation">
 			<return type="bool" />
 			<param index="0" name="shared_library_path" type="String" default="&quot;res://bintr&quot;" />
@@ -343,6 +447,12 @@
 			<param index="4" name="automatic_nbit_as" type="bool" default="false" />
 			<description>
 				Attempts to generate and then compile a binary translation of the sandboxed program into a shared library. This allows the sandboxed program to run closer to native performance by executing pre-compiled code. If the compilation is successful, the shared library will be loaded automatically on platforms that support loading shared libraries.
+			</description>
+		</method>
+		<method name="unshare_array">
+			<return type="bool" />
+			<param index="0" name="address" type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="vmcall" qualifiers="const vararg">
@@ -407,6 +517,8 @@
 		<member name="monitor_accumulated_startup_time" type="float" setter="" getter="get_accumulated_startup_time" default="0.0">
 			The total accumulated time spent on initializing all sandboxes.
 		</member>
+		<member name="monitor_binary_translated" type="bool" setter="" getter="is_binary_translated" default="false">
+		</member>
 		<member name="monitor_calls_made" type="int" setter="" getter="get_calls_made" default="0">
 			The total number of function calls made to this sandbox.
 		</member>
@@ -440,6 +552,9 @@
 		<member name="monitor_heap_usage" type="int" setter="" getter="get_heap_usage" default="0">
 			The current amount of memory (in bytes) used by the heap in the sandbox.
 		</member>
+		<member name="precise_simulation" type="bool" setter="set_precise_simulation" getter="get_precise_simulation" default="false">
+			Enables or disables precise simulation mode for the sandboxed program. When enabled, the program will use a more accurate simulation, producing better backtraces and profiling data, but at the cost of performance.
+		</member>
 		<member name="profiling" type="bool" setter="set_profiling" getter="get_profiling" default="false">
 			Enables or disables profiling for the sandboxed program. When enabled, the sandbox will collect profiling data about function calls and execution times.
 		</member>
@@ -458,9 +573,6 @@
 		</member>
 		<member name="restrictions" type="bool" setter="set_restrictions" getter="get_restrictions" default="false">
 			Enables or disables restrictions on the sandboxed program. When enabled, the program will have limited access to the Godot engine's API and resources.
-		</member>
-		<member name="precise_simulation" type="bool" setter="set_precise_simulation" getter="get_precise_simulation" default="false">
-			Enables or disables precise simulation mode for the sandboxed program. When enabled, the program will use a more accurate simulation, producing better backtraces and profiling data, but at the cost of performance.
 		</member>
 		<member name="unboxed_arguments" type="bool" setter="set_unboxed_arguments" getter="get_unboxed_arguments" default="true">
 			Enables or disables the use of unboxed arguments for function calls. When enabled, function arguments will be passed as their real types instead of Variants, which improves performance.

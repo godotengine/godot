@@ -27,6 +27,14 @@ def get_doc_classes():
         "RustScriptLanguage",
         "ZigScript",
         "ZigScriptLanguage",
+        "ResourceFormatLoaderCPP",
+        "ResourceFormatLoaderZig",
+        "ResourceFormatLoaderELF",
+        "ResourceFormatLoaderRust",
+        "ResourceFormatSaverCPP",
+        "ResourceFormatSaverZig",
+        "ResourceFormatSaverELF",
+        "ResourceFormatSaverRust",
     ]
 
 def get_doc_path():
