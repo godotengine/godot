@@ -773,6 +773,16 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("item_end_padding", "PopupMenu", Math::round(2 * scale));
 	theme->set_constant("icon_max_width", "PopupMenu", 0);
 
+	// GraphElement
+
+	Ref<StyleBoxFlat> graphelement_normal = make_flat_stylebox(style_normal_color, 18, 12, 18, 12);
+	graphelement_normal->set_border_color(Color(0.325, 0.325, 0.325, 0.6));
+	Ref<StyleBoxFlat> graphelement_selected = graphelement_normal->duplicate();
+	graphelement_selected->set_border_color(Color(0.625, 0.625, 0.625, 0.6));
+
+	theme->set_stylebox("minimap_panel", "GraphElement", graphelement_normal);
+	theme->set_stylebox("minimap_panel_selected", "GraphElement", graphelement_selected);
+
 	// GraphPort
 
 	theme->set_stylebox("panel_focus", "GraphPort", focus);
@@ -796,17 +806,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// GraphNode
 
-	Ref<StyleBoxFlat> graphnode_normal = make_flat_stylebox(style_normal_color, 18, 12, 18, 12);
-	graphnode_normal->set_border_color(Color(0.325, 0.325, 0.325, 0.6));
-	Ref<StyleBoxFlat> graphnode_selected = graphnode_normal->duplicate();
-	graphnode_selected->set_border_color(Color(0.625, 0.625, 0.625, 0.6));
-
 	Ref<StyleBoxFlat> graphn_sb_titlebar = make_flat_stylebox(style_normal_color.lightened(0.3), 4, 4, 4, 4);
-	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = graphnode_normal->duplicate();
+	Ref<StyleBoxFlat> graphn_sb_titlebar_selected = graphelement_normal->duplicate();
 	graphn_sb_titlebar_selected->set_bg_color(Color(1.0, 0.625, 0.625, 0.6));
 
-	theme->set_stylebox(SceneStringName(panel), "GraphNode", graphnode_normal);
-	theme->set_stylebox("panel_selected", "GraphNode", graphnode_selected);
+	theme->set_stylebox(SceneStringName(panel), "GraphNode", graphelement_normal);
+	theme->set_stylebox("panel_selected", "GraphNode", graphelement_selected);
 	theme->set_stylebox("panel_focus", "GraphNode", focus);
 	theme->set_stylebox("titlebar", "GraphNode", graphn_sb_titlebar);
 	theme->set_stylebox("titlebar_selected", "GraphNode", graphn_sb_titlebar_selected);
@@ -833,7 +838,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// GraphNodeIndexed
 
-	Ref<StyleBoxFlat> graphnodeindexed_normal = graphnode_normal->duplicate();
+	Ref<StyleBoxFlat> graphnodeindexed_normal = graphelement_normal->duplicate();
 	graphnodeindexed_normal->set_content_margin(SIDE_LEFT, 12 * scale);
 	graphnodeindexed_normal->set_content_margin(SIDE_RIGHT, 12 * scale);
 	Ref<StyleBoxFlat> graphnodeindexed_selected = graphnodeindexed_normal->duplicate();

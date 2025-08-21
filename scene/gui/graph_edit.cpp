@@ -1795,50 +1795,33 @@ void GraphEdit::_minimap_draw() {
 	Vector2 graph_offset = minimap->_get_graph_offset();
 	Vector2 minimap_offset = minimap->minimap_offset;
 
-	// Draw frame nodes.
+	Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+	const Color sb_minimap_def_color = sb_minimap->get_bg_color();
+
+	// Draw graph elements.
 	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphFrame *graph_frame = Object::cast_to<GraphFrame>(get_child(i));
-		if (!graph_frame || !graph_frame->is_visible()) {
+		GraphElement *graph_element = Object::cast_to<GraphElement>(get_child(i));
+		if (!graph_element || !graph_element->is_visible()) {
 			continue;
 		}
 
-		Vector2 node_position = minimap->_convert_from_graph_position(graph_frame->get_position_offset() * zoom - graph_offset) + minimap_offset;
-		Vector2 node_size = minimap->_convert_from_graph_position(graph_frame->get_size() * zoom);
+		Vector2 node_position = minimap->_convert_from_graph_position(graph_element->get_position_offset() * zoom - graph_offset) + minimap_offset;
+		Vector2 node_size = minimap->_convert_from_graph_position(graph_element->get_size() * zoom);
 		Rect2 node_rect = Rect2(node_position, node_size);
 
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
+		Ref<StyleBoxFlat> sb_element = graph_element->is_selected() ? graph_element->theme_cache.minimap_panel_selected : graph_element->theme_cache.minimap_panel;
 
-		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sb_frame = graph_frame->get_theme_stylebox(graph_frame->is_selected() ? SNAME("panel_selected") : SceneStringName(panel));
-		if (sb_frame.is_valid()) {
-			Color node_color = sb_frame->get_bg_color();
-			if (graph_frame->is_tint_color_enabled()) {
+		// Override default values with colors provided by the GraphElement's stylebox, if possible.
+		if (sb_element.is_valid()) {
+			Color node_color = sb_element->get_bg_color();
+			// Special GraphFrame color tint
+			GraphFrame *graph_frame = Object::cast_to<GraphFrame>(get_child(i));
+			if (graph_frame && graph_frame->is_tint_color_enabled()) {
 				node_color = graph_frame->get_tint_color();
 			}
 			sb_minimap->set_bg_color(node_color);
-		}
-
-		minimap->draw_style_box(sb_minimap, node_rect);
-	}
-
-	// Draw regular graph nodes.
-	for (int i = get_child_count() - 1; i >= 0; i--) {
-		GraphNode *graph_node = Object::cast_to<GraphNode>(get_child(i));
-		if (!graph_node || !graph_node->is_visible()) {
-			continue;
-		}
-
-		Vector2 node_position = minimap->_convert_from_graph_position(graph_node->get_position_offset() * zoom - graph_offset) + minimap_offset;
-		Vector2 node_size = minimap->_convert_from_graph_position(graph_node->get_size() * zoom);
-		Rect2 node_rect = Rect2(node_position, node_size);
-
-		Ref<StyleBoxFlat> sb_minimap = minimap->theme_cache.node_style->duplicate();
-
-		// Override default values with colors provided by the GraphNode's stylebox, if possible.
-		Ref<StyleBoxFlat> sb_frame = graph_node->is_selected() ? graph_node->theme_cache.panel_selected : graph_node->theme_cache.panel;
-		if (sb_frame.is_valid()) {
-			Color node_color = sb_frame->get_bg_color();
-			sb_minimap->set_bg_color(node_color);
+		} else {
+			sb_minimap->set_bg_color(sb_minimap_def_color);
 		}
 
 		minimap->draw_style_box(sb_minimap, node_rect);

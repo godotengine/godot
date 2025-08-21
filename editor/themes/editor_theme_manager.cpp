@@ -1700,8 +1700,8 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			// GraphElement.
 
-			p_theme->set_stylebox(SceneStringName(panel), "GraphElement", gn_panel_style);
-			p_theme->set_stylebox("panel_selected", "GraphElement", gn_panel_selected_style);
+			p_theme->set_stylebox("minimap_panel", "GraphElement", gn_panel_style);
+			p_theme->set_stylebox("minimap_panel_selected", "GraphElement", gn_panel_selected_style);
 			p_theme->set_stylebox("titlebar", "GraphElement", gn_titlebar_style);
 			p_theme->set_stylebox("titlebar_selected", "GraphElement", gn_titlebar_selected_style);
 
