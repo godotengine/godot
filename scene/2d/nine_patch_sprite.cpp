@@ -1,4 +1,3 @@
-
 /**************************************************************************/
 /*  nine_patch_sprite.cpp                                                 */
 /**************************************************************************/
@@ -34,17 +33,6 @@
 #include "scene/main/viewport.h"
 
 #include "servers/rendering_server.h"
-using RS = RenderingServer;
-
-#define BIND_PROPERTY(property_name, class, variantType)                                                 \
-	ClassDB::bind_method(D_METHOD("get_" #property_name), &class ::get_##property_name);                 \
-	ClassDB::bind_method(D_METHOD("set_" #property_name, #property_name), &class ::set_##property_name); \
-	ClassDB::add_property(#class, PropertyInfo(variantType, #property_name, PROPERTY_HINT_NONE), "set_" #property_name, "get_" #property_name);
-
-#define BIND_PROPERTY_WITH_HINT(property_name, class, variantType, property_hint, hint_string)           \
-	ClassDB::bind_method(D_METHOD("get_" #property_name), &class ::get_##property_name);                 \
-	ClassDB::bind_method(D_METHOD("set_" #property_name, #property_name), &class ::set_##property_name); \
-	ClassDB::add_property(#class, PropertyInfo(variantType, #property_name, property_hint, hint_string), "set_" #property_name, "get_" #property_name);
 
 // #include
 #ifdef TOOLS_ENABLED
@@ -120,9 +108,12 @@ void NinePatchSprite::_notification(int p_what) {
 }
 
 void NinePatchSprite::_bind_methods() {
-	BIND_PROPERTY(size, NinePatchSprite, Variant::Type::VECTOR2)
-	BIND_PROPERTY(offset, NinePatchSprite, Variant::VECTOR2);
-	BIND_PROPERTY(centered, NinePatchSprite, Variant::BOOL);
+	ClassDB ::bind_method(D_METHOD("get_size"), &NinePatchSprite ::get_size);
+	ClassDB ::bind_method(D_METHOD("set_size", "size"), &NinePatchSprite ::set_size);
+	ClassDB ::bind_method(D_METHOD("get_offset"), &NinePatchSprite ::get_offset);
+	ClassDB ::bind_method(D_METHOD("set_offset", "offset"), &NinePatchSprite ::set_offset);
+	ClassDB ::bind_method(D_METHOD("get_centered"), &NinePatchSprite ::get_centered);
+	ClassDB ::bind_method(D_METHOD("set_centered", "centered"), &NinePatchSprite ::set_centered);
 	ClassDB::bind_method(D_METHOD("set_texture", "texture"), &NinePatchSprite::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture"), &NinePatchSprite::get_texture);
 	ClassDB::bind_method(D_METHOD("set_patch_margin", "margin", "value"), &NinePatchSprite::set_patch_margin);
@@ -140,6 +131,9 @@ void NinePatchSprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("texture_changed"));
 	ADD_SIGNAL(MethodInfo("resized", PropertyInfo(Variant::VECTOR2, "new_size")));
 
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered", PROPERTY_HINT_NONE), "set_centered", "get_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "draw_center"), "set_draw_center", "is_draw_center_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
