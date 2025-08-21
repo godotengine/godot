@@ -420,6 +420,17 @@ void LocalizationEditor::connect_filesystem_dock_signals(FileSystemDock *p_fs_do
 }
 
 void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const String &p_new_file) {
+	// Update POT files if the moved file is a part of them.
+	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	if (pot_translations.has(p_old_file)) {
+		pot_translations.erase(p_old_file);
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translations_pot_files", pot_translations);
+
+		PackedStringArray new_file;
+		new_file.push_back(p_new_file);
+		_pot_add(new_file);
+	}
+
 	// Update remaps if the moved file is a part of them.
 	Dictionary remaps;
 	bool remaps_changed = false;
@@ -471,6 +482,13 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 }
 
 void LocalizationEditor::_filesystem_file_removed(const String &p_file) {
+	// Check if the POT files are affected.
+	PackedStringArray pot_translations = GLOBAL_GET("internationalization/locale/translations_pot_files");
+	if (pot_translations.has(p_file)) {
+		pot_translations.erase(p_file);
+		ProjectSettings::get_singleton()->set_setting("internationalization/locale/translations_pot_files", pot_translations);
+	}
+
 	// Check if the remaps are affected.
 	Dictionary remaps;
 
