@@ -312,7 +312,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 					float width_ratio = info["width_ratio"];
 					String left_string = text_with_ime.substr(from, start - from);
 					text_line.data_buf->add_string(left_string, font, font_size, language);
-					text_line.data_buf->add_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_TOP, 0);
+					text_line.data_buf->add_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_CENTER, 0);
 					from = start;
 				}
 			}
@@ -329,7 +329,7 @@ void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 				}
 				Dictionary info = key;
 				float width_ratio = info["width_ratio"];
-				text_line.data_buf->resize_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_TOP, 0);
+				text_line.data_buf->resize_object(info, Vector2(font_height * width_ratio, font_height), INLINE_ALIGNMENT_CENTER, 0);
 			}
 		}
 	}
