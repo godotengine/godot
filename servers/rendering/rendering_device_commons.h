@@ -421,7 +421,8 @@ public:
 		// Try to set this bit as much as possible. If you set it, validation doesn't complain
 		// and it works fine on mobile, then go ahead.
 		TEXTURE_USAGE_TRANSIENT_BIT = (1 << 11),
-		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_TRANSIENT_BIT,
+		TEXTURE_USAGE_VIDEO_DECODE_DST_BIT = (1 << 12),
+		TEXTURE_USAGE_MAX_BIT = TEXTURE_USAGE_VIDEO_DECODE_DST_BIT,
 	};
 
 	struct TextureFormat {
@@ -954,6 +955,7 @@ public:
 		SUPPORTS_BUFFER_DEVICE_ADDRESS,
 		SUPPORTS_IMAGE_ATOMIC_32_BIT,
 		SUPPORTS_VULKAN_MEMORY_MODEL,
+		SUPPORTS_VIDEO_ENCODE_DECODE,
 	};
 
 	enum SubgroupOperations {
