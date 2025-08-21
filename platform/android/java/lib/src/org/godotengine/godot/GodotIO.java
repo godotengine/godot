@@ -225,7 +225,12 @@ public class GodotIO {
 		}
 
 		if (topView != null) {
-			int insetTypes = WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
+			int insetTypes;
+			if (godot.isInImmersiveMode() && Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+				insetTypes = WindowInsetsCompat.Type.displayCutout();
+			} else {
+				insetTypes = WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout();
+			}
 
 			if (topView.getRootWindowInsets() != null) {
 				WindowInsetsCompat insetsCompat = WindowInsetsCompat.toWindowInsetsCompat(topView.getRootWindowInsets(), topView);
