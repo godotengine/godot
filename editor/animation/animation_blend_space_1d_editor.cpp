@@ -246,7 +246,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 
 	blend_space_draw->draw_line(Point2(1, s.height - 1), Point2(s.width - 1, s.height - 1), linecolor, Math::round(EDSCALE));
 
-	if (blend_space->get_min_space() < 0) {
+	if (blend_space->get_min_space() <= 0 && blend_space->get_max_space() >= 0) {
 		float point = 0.0;
 		point = (point - blend_space->get_min_space()) / (blend_space->get_max_space() - blend_space->get_min_space());
 		point *= s.width;
@@ -264,7 +264,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		if (blend_space->get_snap() > 0) {
 			int prev_idx = -1;
 
-			for (int i = 0; i < s.x; i++) {
+			for (int i = 0; i <= s.x; i++) {
 				float v = blend_space->get_min_space() + i * (blend_space->get_max_space() - blend_space->get_min_space()) / s.x;
 				int idx = int(v / blend_space->get_snap());
 
@@ -363,6 +363,10 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	}
 
 	updating = true;
+
+	min_value->set_max(max_value->get_value() - 0.01);
+	max_value->set_min(min_value->get_value() + 0.01);
+
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change BlendSpace1D Config"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", max_value->get_value());
@@ -778,12 +782,12 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 		min_value = memnew(SpinBox);
 		min_value->set_min(-10000);
-		min_value->set_max(0);
+		min_value->set_max(10000);
 		min_value->set_step(0.01);
 		min_value->set_accessibility_name(TTRC("Min"));
 
 		max_value = memnew(SpinBox);
-		max_value->set_min(0.01);
+		max_value->set_min(-10000);
 		max_value->set_max(10000);
 		max_value->set_step(0.01);
 		max_value->set_accessibility_name(TTRC("Max"));
