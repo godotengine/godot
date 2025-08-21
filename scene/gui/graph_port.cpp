@@ -287,6 +287,15 @@ void GraphPort::set_imply_direction(bool p_imply_direction) {
 
 	imply_direction = p_imply_direction;
 
+	direction = UNDIRECTED;
+	if (graph_edit && has_connection()) {
+		for (const Ref<GraphConnection> conn : get_connections()) {
+			if (_try_imply_direction(conn)) {
+				break;
+			}
+		}
+	}
+
 	notify_property_list_changed();
 	_on_modified();
 }
@@ -500,16 +509,11 @@ void GraphPort::_on_modified() {
 	emit_signal(SNAME("modified"));
 }
 void GraphPort::_on_connected(const Ref<GraphConnection> p_conn) {
-	if (p_conn.is_valid() && imply_direction && direction == GraphPort::PortDirection::UNDIRECTED) {
-		GraphPort *other_port = p_conn->get_other_port(this);
-		if (other_port && other_port->direction != GraphPort::PortDirection::UNDIRECTED) {
-			direction = other_port->direction == GraphPort::PortDirection::INPUT ? GraphPort::PortDirection::OUTPUT : GraphPort::PortDirection::INPUT;
-		}
-	}
+	_try_imply_direction(p_conn);
 	emit_signal(SNAME("connected"), p_conn);
 }
 void GraphPort::_on_disconnected(const Ref<GraphConnection> p_conn) {
-	if (imply_direction && !has_connection()) {
+	if (imply_direction && graph_edit && !has_connection()) {
 		direction = GraphPort::PortDirection::UNDIRECTED;
 	}
 	emit_signal(SNAME("disconnected"), p_conn);
@@ -607,6 +611,23 @@ void GraphPort::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, connection_angle_input);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, connection_angle_output);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, GraphPort, connection_angle_undirected);
+}
+
+bool GraphPort::_try_imply_direction(const Ref<GraphConnection> p_conn) {
+	if (p_conn.is_null() || !imply_direction || direction != GraphPort::PortDirection::UNDIRECTED) {
+		return false;
+	}
+	GraphPort *other_port = p_conn->get_other_port(this);
+	if (!other_port) {
+		return false;
+	}
+	if (other_port->direction != GraphPort::PortDirection::UNDIRECTED) {
+		set_direction(other_port->direction == GraphPort::PortDirection::INPUT ? GraphPort::PortDirection::OUTPUT : GraphPort::PortDirection::INPUT);
+	} else {
+		set_direction(this == p_conn->first_port ? GraphPort::PortDirection::OUTPUT : GraphPort::PortDirection::INPUT);
+	}
+	other_port->_try_imply_direction(p_conn);
+	return true;
 }
 
 GraphPort::GraphPort() {

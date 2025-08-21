@@ -1326,16 +1326,24 @@ void GraphEdit::start_connecting(const GraphPort *p_port, bool is_keyboard) {
 bool GraphEdit::_is_connection_valid(const GraphPort *p_port) const {
 	ERR_FAIL_NULL_V(p_port, false);
 	ERR_FAIL_NULL_V(connecting_from_port, false);
+	// Ignore disabled ports (this shouldn't be called with non-enabled ports, but just in case)
 	if (!p_port->enabled || !connecting_from_port->enabled) {
 		return false;
 	}
+	// Disallow connections between ports on the same graph node (unless allow_self_connection is checked)
 	if (!allow_self_connection && p_port->graph_node == connecting_from_port->graph_node) {
 		return false;
 	}
+	// Disallow connections between ports with matching directions (unless they're undirected)
+	if (p_port->direction == connecting_from_port->direction && p_port->direction != GraphPort::PortDirection::UNDIRECTED) {
+		return false;
+	}
+	// If either port is attached to a graph node that ignores connection types, accept!
 	if ((p_port->graph_node && p_port->graph_node->is_ignoring_valid_connection_type()) ||
 			(connecting_from_port->graph_node && connecting_from_port->graph_node->is_ignoring_valid_connection_type())) {
 		return true;
 	}
+	// Enforce connection type validity
 	int from_type = connecting_from_port->get_port_type();
 	int to_type = p_port->get_port_type();
 	if (p_port->direction == GraphPort::PortDirection::OUTPUT || connecting_from_port->direction == GraphPort::PortDirection::INPUT) {

@@ -585,10 +585,10 @@ TypedArray<Ref<GraphConnection>> GraphNodeIndexed::get_slot_connections(int p_sl
 	ERR_FAIL_INDEX_V(p_slot_index, slots.size(), ret);
 	GraphPort *input_port = get_input_port_by_slot(p_slot_index);
 	GraphPort *output_port = get_output_port_by_slot(p_slot_index);
-	if (input_port && input_port->has_connection()) {
+	if (input_port && graph_edit && input_port->has_connection()) {
 		ret.append_array(input_port->get_connections());
 	}
-	if (output_port && output_port->has_connection()) {
+	if (output_port && graph_edit && output_port->has_connection()) {
 		ret.append_array(output_port->get_connections());
 	}
 	return ret;

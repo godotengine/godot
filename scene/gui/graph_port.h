@@ -108,6 +108,8 @@ protected:
 
 	static void _bind_methods();
 
+	bool _try_imply_direction(const Ref<GraphConnection> p_conn);
+
 	void _on_enabled();
 	void _on_disabled();
 	void _on_changed_direction(const PortDirection p_direction);
