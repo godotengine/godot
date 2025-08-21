@@ -75,7 +75,7 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
         if env.get("use_mingw", False):
             lib_extension = ".a"
             lib_prefix = "lib"
-            project_root = env.Dir('#').abspath
+            project_root = env.Dir("#").abspath
             os.rename(
                 os.path.join(project_root, f"modules/sandbox/bin/libsandbox{get_sufix_after()}{lib_extension}"),
                 os.path.join(
