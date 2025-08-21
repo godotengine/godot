@@ -75,16 +75,23 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
         if env.get("use_mingw", False):
             lib_extension = ".a"
             lib_prefix = "lib"
-        # Rename our lib
-        os.rename(
-            f"bin/libsandbox{get_sufix_after()}{lib_extension}",
-            f"bin/{lib_prefix}sandbox{get_sufix_before()}{lib_extension}",
-        )
-        # Rename godot-cpp lib
-        os.rename(
-            f"thirdparty/godot-cpp/bin/libgodot-cpp{get_sufix_after()}{lib_extension}",
-            f"thirdparty/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}",
-        )
+            project_root = env.Dir('#').abspath
+            os.rename(
+                os.path.join(project_root, f"modules/sandbox/bin/libsandbox{get_sufix_after()}{lib_extension}"),
+                os.path.join(
+                    project_root, f"modules/sandbox/bin/{lib_prefix}sandbox{get_sufix_before()}{lib_extension}"
+                ),
+            )
+            os.rename(
+                os.path.join(
+                    project_root,
+                    f"modules/sandbox/thirdparty/godot-cpp/bin/libgodot-cpp{get_sufix_after()}{lib_extension}",
+                ),
+                os.path.join(
+                    project_root,
+                    f"modules/sandbox/thirdparty/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}",
+                ),
+            )
 
     # Do an ls on bin folder
     os.system("ls -l bin/")
