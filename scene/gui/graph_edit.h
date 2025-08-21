@@ -286,6 +286,7 @@ private:
 	void _graph_element_moved(Node *p_node);
 	void _graph_node_ports_updated(GraphNode *p_node);
 	void _graph_node_rect_changed(GraphNode *p_node);
+	void _graph_port_rect_changed(GraphPort *p_port);
 
 	void _ensure_node_order_from_root(const StringName &p_node);
 	void _ensure_node_order_from(Node *p_node);
@@ -300,6 +301,7 @@ private:
 	void _draw_minimap_connection_line(const Vector2 &p_from_graph_position, const Vector2 &p_to_graph_position, const Color &p_from_color, const Color &p_to_color, const int p_from_angle, const int p_to_angle);
 	void _invalidate_connection_line_cache();
 	void _invalidate_graph_node_connections(GraphNode *p_node);
+	void _invalidate_port_connections(GraphPort *p_port);
 	void _update_top_connection_layer();
 	void _update_connections();
 

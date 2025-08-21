@@ -955,6 +955,19 @@ void GraphEdit::_graph_node_rect_changed(GraphNode *p_node) {
 	}
 }
 
+void GraphEdit::_graph_port_rect_changed(GraphPort *p_port) {
+	ERR_FAIL_NULL_MSG(connections_layer, "connections_layer is missing.");
+	ERR_FAIL_NULL(p_port);
+
+	_invalidate_port_connections(p_port);
+	minimap->queue_redraw();
+	queue_redraw();
+	connections_layer->queue_redraw();
+	callable_mp(this, &GraphEdit::_invalidate_port_connections).bind(p_port).call_deferred();
+	callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw).call_deferred();
+	callable_mp(this, &GraphEdit::_update_top_connection_layer).call_deferred();
+}
+
 void GraphEdit::_ensure_node_order_from_root(const StringName &p_node) {
 	// Find the root frame node of the frame tree starting from p_node.
 	GraphElement *root_frame = Object::cast_to<GraphElement>(get_node(NodePath(p_node)));
@@ -990,6 +1003,11 @@ void GraphEdit::add_child_notify(Node *p_child) {
 			if (graph_node_indexed) {
 				graph_node_indexed->connect("slot_sizes_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed));
 			}
+		}
+
+		GraphPort *graph_port = Object::cast_to<GraphPort>(graph_element);
+		if (graph_port) {
+			graph_port->connect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_port_rect_changed).bind(graph_port));
 		}
 
 		GraphFrame *graph_frame = Object::cast_to<GraphFrame>(graph_element);
@@ -1055,6 +1073,11 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 			if (graph_node_indexed) {
 				graph_node_indexed->disconnect("slot_sizes_changed", callable_mp(this, &GraphEdit::_graph_node_rect_changed));
 			}
+		}
+
+		GraphPort *graph_port = Object::cast_to<GraphPort>(graph_element);
+		if (graph_port) {
+			graph_port->disconnect(SceneStringName(item_rect_changed), callable_mp(this, &GraphEdit::_graph_port_rect_changed));
 		}
 
 		GraphFrame *frame = Object::cast_to<GraphFrame>(graph_element);
@@ -2667,10 +2690,18 @@ void GraphEdit::_invalidate_graph_node_connections(GraphNode *p_node) {
 		if (!is_port_connected(port) || !port->enabled) {
 			continue;
 		}
-		for (const Ref<GraphConnection> conn : connection_map[port]) {
-			if (conn.is_valid()) {
-				conn->_cache.dirty = true;
-			}
+		_invalidate_port_connections(port);
+	}
+}
+
+void GraphEdit::_invalidate_port_connections(GraphPort *p_port) {
+	ERR_FAIL_NULL(p_port);
+	if (!is_port_connected(p_port) || !p_port->enabled) {
+		return;
+	}
+	for (const Ref<GraphConnection> conn : connection_map[p_port]) {
+		if (conn.is_valid()) {
+			conn->_cache.dirty = true;
 		}
 	}
 }

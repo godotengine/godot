@@ -166,13 +166,17 @@ void GraphConnection::update_cache() {
 		return;
 	}
 
-	Vector2 from_pos = first_port->get_position() + first_port->get_connection_point();
+	Vector2 from_pos = first_port->get_connection_point();
 	if (first_port->graph_node) {
-		from_pos += first_port->graph_node->get_position_offset();
+		from_pos += first_port->get_position() + first_port->graph_node->get_position_offset();
+	} else {
+		from_pos += first_port->get_position_offset();
 	}
-	Vector2 to_pos = second_port->get_position() + second_port->get_connection_point();
+	Vector2 to_pos = second_port->get_connection_point();
 	if (second_port->graph_node) {
-		to_pos += second_port->graph_node->get_position_offset();
+		to_pos += second_port->get_position() + second_port->graph_node->get_position_offset();
+	} else {
+		to_pos += second_port->get_position_offset();
 	}
 
 	_cache.from_pos = from_pos;

@@ -464,13 +464,15 @@ void GraphPort::_draw() {
 		return;
 	}
 
+	Vector2 pos = graph_node ? get_position_offset() : Vector2(0, 0);
+
 	Size2 port_icon_size = port_icon->get_size();
 
 	// Draw "shadow"/outline in the connection rim color.
 	Color rim_color = get_rim_color();
 	int s = theme_cache.rim_size;
 	if (rim_color.a > 0 && s > 0) {
-		draw_texture_rect(port_icon, Rect2(get_position_offset() - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
+		draw_texture_rect(port_icon, Rect2(pos - Size2(s, s), port_icon_size + Size2(s * 2, s * 2)), false, rim_color);
 	}
 
 	// Focus box
@@ -480,11 +482,11 @@ void GraphPort::_draw() {
 
 		Ref<StyleBox> panel_focus = theme_cache.panel_focus;
 		if (panel_focus.is_valid()) {
-			panel_focus->draw(ci, Rect2i(get_position_offset(), size));
+			panel_focus->draw(ci, Rect2i(pos, size));
 		}
 	}
 
-	port_icon->draw(get_canvas_item(), get_position_offset(), get_color());
+	port_icon->draw(get_canvas_item(), pos, get_color());
 }
 
 void GraphPort::_validate_property(PropertyInfo &p_property) const {
