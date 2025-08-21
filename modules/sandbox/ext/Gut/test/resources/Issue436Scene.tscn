@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://b52ifmw525t3e"]
-
-[ext_resource type="Script" uid="uid://cs7ybvtjq62ug" path="res://test/resources/Issue436Scene.gd" id="1_agu0v"]
-
-[node name="Issue436Scene" type="Node2D"]
-position = Vector2(10, 10)
-script = ExtResource("1_agu0v")
-test_export_value = 2

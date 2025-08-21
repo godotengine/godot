@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://jt6wsefn0x54"]
+
+[sub_resource type="Resource" id="Resource_cayac"]
+metadata/__load_path__ = "res://addons/gut/gut_loader_the_scene.gd"
+
+[node name="Node" type="Node2D"]
+script = SubResource("Resource_cayac")

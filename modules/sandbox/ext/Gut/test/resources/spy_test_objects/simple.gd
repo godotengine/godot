@@ -1,1 +1,0 @@
-var variable = 1

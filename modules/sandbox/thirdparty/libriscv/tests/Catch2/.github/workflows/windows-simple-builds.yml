@@ -1,0 +1,31 @@
+name: Windows Builds (Basic)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{matrix.os}}, ${{matrix.std}}, ${{matrix.build_type}}, ${{matrix.platform}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-2022, windows-2025]
+        platform: [Win32, x64]
+        build_type: [Debug, Release]
+        std: [14, 17]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure build
+        run: |
+          cmake --preset all-tests `
+                -A ${{matrix.platform}} `
+                -DCMAKE_CXX_STANDARD=${{matrix.std}} `
+
+      - name: Build tests
+        run: cmake --build build --config ${{matrix.build_type}} --parallel %NUMBER_OF_PROCESSORS%
+        shell: cmd
+
+      - name: Run tests
+        run: ctest --test-dir build -C ${{matrix.build_type}} -j %NUMBER_OF_PROCESSORS% --output-on-failure
+        shell: cmd

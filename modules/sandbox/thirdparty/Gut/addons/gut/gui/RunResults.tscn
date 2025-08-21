@@ -1,0 +1,116 @@
+[gd_scene load_steps=5 format=3 uid="uid://4gyyn12um08h"]
+
+[ext_resource type="Script" uid="uid://chnko3073tkcv" path="res://addons/gut/gui/RunResults.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://dls5r5f6157nq" path="res://addons/gut/gui/ResultsTree.tscn" id="2_o808v"]
+
+[sub_resource type="Image" id="Image_47dks"]
+data = {
+"data": PackedByteArray(255, 255, 255, 0, 255, 255, 255, 0, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 131, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 94, 94, 127, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 128, 128, 4, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 231, 255, 93, 93, 55, 255, 97, 97, 58, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 231, 255, 94, 94, 54, 255, 94, 94, 57, 255, 93, 93, 233, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 93, 93, 41, 255, 255, 255, 0, 255, 255, 255, 0, 255, 97, 97, 42, 255, 93, 93, 233, 255, 93, 93, 232, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 98, 98, 47, 255, 97, 97, 42, 255, 255, 255, 0, 255, 97, 97, 42, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 96, 96, 45, 255, 93, 93, 235, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 94, 94, 46, 255, 93, 93, 236, 255, 93, 93, 233, 255, 97, 97, 42, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 93, 93, 235, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 233, 255, 95, 95, 59, 255, 96, 96, 61, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 93, 93, 255, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 93, 93, 252, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0, 255, 255, 255, 0),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_x655i"]
+image = SubResource("Image_47dks")
+
+[node name="RunResults" type="Control"]
+custom_minimum_size = Vector2(345, 0)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 709.0
+offset_bottom = 321.0
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="Toolbar" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="Expand" type="Button" parent="VBox/Toolbar"]
+layout_mode = 2
+icon = SubResource("ImageTexture_x655i")
+
+[node name="Collapse" type="Button" parent="VBox/Toolbar"]
+layout_mode = 2
+icon = SubResource("ImageTexture_x655i")
+
+[node name="Sep" type="ColorRect" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+
+[node name="LblAll" type="Label" parent="VBox/Toolbar"]
+layout_mode = 2
+text = "All:"
+
+[node name="ExpandAll" type="Button" parent="VBox/Toolbar"]
+layout_mode = 2
+icon = SubResource("ImageTexture_x655i")
+
+[node name="CollapseAll" type="Button" parent="VBox/Toolbar"]
+layout_mode = 2
+icon = SubResource("ImageTexture_x655i")
+
+[node name="Sep2" type="ColorRect" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+
+[node name="HidePassing" type="CheckBox" parent="VBox/Toolbar"]
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Passing"
+
+[node name="Sep3" type="ColorRect" parent="VBox/Toolbar"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+
+[node name="LblSync" type="Label" parent="VBox/Toolbar"]
+layout_mode = 2
+text = "Sync:"
+
+[node name="ShowScript" type="Button" parent="VBox/Toolbar"]
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+icon = SubResource("ImageTexture_x655i")
+
+[node name="ScrollOutput" type="Button" parent="VBox/Toolbar"]
+layout_mode = 2
+toggle_mode = true
+button_pressed = true
+icon = SubResource("ImageTexture_x655i")
+
+[node name="Output" type="Panel" parent="VBox"]
+self_modulate = Color(1, 1, 1, 0.541176)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Scroll" type="ScrollContainer" parent="VBox/Output"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Tree" parent="VBox/Output/Scroll" instance=ExtResource("2_o808v")]
+layout_mode = 2
+
+[node name="FontSampler" type="Label" parent="."]
+visible = false
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 14.0
+text = "000 of 000 passed"
+
+[connection signal="pressed" from="VBox/Toolbar/Expand" to="." method="_on_Expand_pressed"]
+[connection signal="pressed" from="VBox/Toolbar/Collapse" to="." method="_on_Collapse_pressed"]
+[connection signal="pressed" from="VBox/Toolbar/ExpandAll" to="." method="_on_ExpandAll_pressed"]
+[connection signal="pressed" from="VBox/Toolbar/CollapseAll" to="." method="_on_CollapseAll_pressed"]
+[connection signal="pressed" from="VBox/Toolbar/HidePassing" to="." method="_on_Hide_Passing_pressed"]

@@ -1,0 +1,105 @@
+name: Linux Builds (Basic)
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx:
+          - g++-9
+          - g++-10
+          - g++-11
+          - g++-12
+          - clang++-6.0
+          - clang++-7
+          - clang++-8
+          - clang++-9
+          - clang++-10
+          - clang++-11
+          - clang++-12
+          - clang++-13
+          - clang++-14
+        build_type: [Debug, Release]
+        std: [14]
+        include:
+          - cxx: g++-9
+            other_pkgs: g++-9
+          - cxx: g++-10
+            other_pkgs: g++-10
+          - cxx: g++-11
+            other_pkgs: g++-11
+          - cxx: g++-12
+            other_pkgs: g++-12
+          - cxx: clang++-6.0
+            other_pkgs: clang-6.0
+          - cxx: clang++-7
+            other_pkgs: clang-7
+          - cxx: clang++-8
+            other_pkgs: clang-8
+          - cxx: clang++-9
+            other_pkgs: clang-9
+          - cxx: clang++-10
+            other_pkgs: clang-10
+          - cxx: clang++-11
+            other_pkgs: clang-11
+          - cxx: clang++-12
+            other_pkgs: clang-12
+          - cxx: clang++-13
+            other_pkgs: clang-13
+          - cxx: clang++-14
+            other_pkgs: clang-14
+          # Clang 14 + C++17
+          - cxx: clang++-14
+            build_type: Debug
+            std: 17
+            other_pkgs: clang-14
+          - cxx: clang++-14
+            build_type: Release
+            std: 17
+            other_pkgs: clang-14
+          - cxx: clang++-14
+            build_type: Debug
+            std: 20
+            other_pkgs: clang-14
+          - cxx: clang++-14
+            build_type: Release
+            std: 20
+            other_pkgs: clang-14
+          - cxx: g++-11
+            build_type: Debug
+            std: 20
+            other_pkgs: g++-11
+          - cxx: g++-11
+            build_type: Release
+            std: 20
+            other_pkgs: g++-11
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Add repositories for older compilers
+      run: |
+        sudo apt-add-repository 'deb http://azure.archive.ubuntu.com/ubuntu/ focal main'
+        sudo apt-add-repository 'deb http://azure.archive.ubuntu.com/ubuntu/ focal universe'
+
+    - name: Prepare environment
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build ${{matrix.other_pkgs}}
+
+    - name: Configure
+      run: |
+        cmake --preset basic-tests -GNinja \
+              -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
+              -DCMAKE_CXX_COMPILER=${{matrix.cxx}} \
+              -DCMAKE_CXX_STANDARD=${{matrix.std}}
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Test
+      run: ctest --test-dir build -j --output-on-failure

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://8e34x872j78"]
+
+[ext_resource type="Script" uid="uid://dfxcsg5tsg5ex" path="res://test/resources/replace_node_scenes/arena.gd" id="1"]
+
+[node name="Arena" type="Node2D" index="0"]
+script = ExtResource("1")
+
+[node name="Player1" type="Node2D" parent="." index="0"]
+
+[node name="Sword" type="Node2D" parent="Player1" index="0"]

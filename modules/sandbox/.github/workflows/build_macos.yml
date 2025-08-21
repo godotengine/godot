@@ -26,7 +26,7 @@ jobs:
           arch: ${{ matrix.arch }}
           build-target-type: template_release
           float-precision: ${{ matrix.precision }}
-          godot-cpp-directory: ext/godot-cpp
+          godot-cpp-directory: thirdparty/godot-cpp
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4

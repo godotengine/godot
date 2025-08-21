@@ -1,0 +1,2 @@
+#define TCC_VERSION "0.9.27"
+#define CONFIG_TCC_PREDEFS 1

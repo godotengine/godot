@@ -1,0 +1,4 @@
+require 'api'
+
+api.print("Hello World!\n")
+api.exit(1234)

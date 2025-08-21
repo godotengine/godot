@@ -1,0 +1,4 @@
+sphinx==7.1.2
+sphinx-rtd-theme==1.3.0rc1
+myst_parser==2.0.0
+sphinx-rtd-dark-mode

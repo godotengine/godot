@@ -1,0 +1,58 @@
+[tool.mypy]
+disallow_any_generics = true
+explicit_package_bases = true
+ignore_missing_imports = true
+namespace_packages = true
+no_implicit_optional = true
+pretty = true
+show_column_numbers = true
+warn_redundant_casts = true
+warn_return_any = true
+warn_unreachable = true
+python_version = "3.8"
+
+[tool.ruff]
+extend-include = ["*SConstruct"]
+line-length = 120
+target-version = "py38"
+
+[tool.ruff.lint]
+extend-select = [
+	"I", # isort
+]
+
+[tool.ruff.lint.per-file-ignores]
+"SConstruct" = [
+	"F821", # Undefined name
+]
+
+[tool.codespell]
+enable-colors = true
+write-changes = true
+check-hidden = true
+quiet-level = 3
+builtin = ["clear", "rare", "en-GB_to_en-US"]
+ignore-words-list = [
+	"breaked",
+	"cancelled",
+	"checkin",
+	"curvelinear",
+	"doubleclick",
+	"expct",
+	"findn",
+	"gird",
+	"hel",
+	"inout",
+	"labelin",
+	"lod",
+	"mis",
+	"nd",
+	"numer",
+	"ot",
+	"outin",
+	"requestor",
+	"te",
+	"textin",
+	"thirdparty",
+	"vai",
+]

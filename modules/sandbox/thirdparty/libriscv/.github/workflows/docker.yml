@@ -1,0 +1,27 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y g++ clang
+
+    - name: Build docker image
+      run: docker build . -t libriscv
+
+    - name: Test docker built CLI with TCC
+      run: docker run --rm libriscv fib
+
+    - name: Test docker built CLI with full Binary Translation
+      run: docker run --entrypoint ./rvlinux-fast --rm libriscv fib

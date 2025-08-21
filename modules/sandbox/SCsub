@@ -29,7 +29,7 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
     # TODO remove when godot-cpp 4.5 is released
     # Replace in godot-cpp android ndk from "23.2.8568313" to "28.1.13356709"
     if env["platform"] == "android":
-        os.system("sed -i 's/23.2.8568313/28.1.13356709/g' ext/godot-cpp/tools/android.py")
+        os.system("sed -i 's/23.2.8568313/28.1.13356709/g' thirdparty/godot-cpp/tools/android.py")
 
     # Only build if we are not using MSVC
     os.system(f"scons static_build=yes platform={get_addon_platform()} target={get_addon_target()} arch={env['arch']} precision={env['precision']} threads={get_addon_threads()} dev_build={get_addon_devbuild()} use_llvm={get_addon_llvm()} lto={env['lto']} use_mingw={get_addon_mingw()}")
@@ -73,8 +73,8 @@ if (env.get("use_mingw", False) and env["platform"] == "windows") or env["platfo
         )
         # Rename godot-cpp lib
         os.rename(
-            f"ext/godot-cpp/bin/libgodot-cpp{get_sufix_after()}{lib_extension}",
-            f"ext/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}"
+            f"thirdparty/godot-cpp/bin/libgodot-cpp{get_sufix_after()}{lib_extension}",
+            f"thirdparty/godot-cpp/bin/{lib_prefix}godot-cpp{get_sufix_before()}{lib_extension}"
         )
             
     # Do an ls on bin folder
@@ -86,7 +86,7 @@ else:
 
 env_sandbox = env_modules.Clone()
 suffix = get_sufix_before()
-godot_cpp_path = "#modules/sandbox/ext/godot-cpp/bin"
+godot_cpp_path = "#modules/sandbox/thirdparty/godot-cpp/bin"
 if env["platform"] == "ios":
     env_sandbox.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
     env_sandbox.Append(LIBS=[f"libsandbox{suffix}", f"libgodot-cpp{suffix}"])

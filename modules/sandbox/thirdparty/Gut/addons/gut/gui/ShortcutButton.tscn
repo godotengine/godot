@@ -1,0 +1,55 @@
+[gd_scene load_steps=2 format=3 uid="uid://sfb1fw8j6ufu"]
+
+[ext_resource type="Script" uid="uid://k6hvvpekp0xw" path="res://addons/gut/gui/ShortcutButton.gd" id="1"]
+
+[node name="ShortcutButton" type="Control"]
+custom_minimum_size = Vector2(210, 30)
+layout_mode = 3
+anchor_right = 0.123
+anchor_bottom = 0.04
+offset_right = 68.304
+offset_bottom = 6.08
+script = ExtResource("1")
+
+[node name="Layout" type="HBoxContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="lblShortcut" type="Label" parent="Layout"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 7
+text = "<None>"
+horizontal_alignment = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="Layout"]
+custom_minimum_size = Vector2(10, 0)
+layout_mode = 2
+
+[node name="SetButton" type="Button" parent="Layout"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Set"
+
+[node name="SaveButton" type="Button" parent="Layout"]
+visible = false
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Save"
+
+[node name="CancelButton" type="Button" parent="Layout"]
+visible = false
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Cancel"
+
+[node name="ClearButton" type="Button" parent="Layout"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Clear"
+
+[connection signal="pressed" from="Layout/SetButton" to="." method="_on_SetButton_pressed"]
+[connection signal="pressed" from="Layout/SaveButton" to="." method="_on_SaveButton_pressed"]
+[connection signal="pressed" from="Layout/CancelButton" to="." method="_on_CancelButton_pressed"]
+[connection signal="pressed" from="Layout/ClearButton" to="." method="_on_ClearButton_pressed"]

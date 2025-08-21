@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Example" inherits="Control" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/godotengine/godot/master/doc/class.xsd">
+	<brief_description>
+		A test control defined in GDExtension.
+	</brief_description>
+	<description>
+		A control used for the automated GDExtension tests.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="simple_func">
+			<return type="void" />
+			<description>
+				Tests a simple function call.
+			</description>
+		</method>
+	</methods>
+	<members>
+	</members>
+	<signals>
+	</signals>
+	<constants>
+	</constants>
+</class>

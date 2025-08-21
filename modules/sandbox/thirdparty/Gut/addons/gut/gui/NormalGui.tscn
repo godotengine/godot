@@ -1,0 +1,213 @@
+[gd_scene load_steps=5 format=3 uid="uid://duxblir3vu8x7"]
+
+[ext_resource type="Theme" uid="uid://cstkhwkpajvqu" path="res://addons/gut/gui/GutSceneTheme.tres" id="1_5hlsm"]
+[ext_resource type="Script" uid="uid://blvhsbnsvfyow" path="res://addons/gut/gui/gut_gui.gd" id="2_fue6q"]
+[ext_resource type="FontFile" uid="uid://bnh0lslf4yh87" path="res://addons/gut/fonts/CourierPrime-Regular.ttf" id="2_u5uc1"]
+[ext_resource type="PackedScene" uid="uid://bvrqqgjpyouse" path="res://addons/gut/gui/ResizeHandle.tscn" id="4_2r8a8"]
+
+[node name="Large" type="Panel"]
+custom_minimum_size = Vector2(500, 150)
+offset_right = 632.0
+offset_bottom = 260.0
+theme = ExtResource("1_5hlsm")
+script = ExtResource("2_fue6q")
+
+[node name="MainBox" type="VBoxContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_layout_mode = 1
+
+[node name="TitleBar" type="Panel" parent="MainBox"]
+custom_minimum_size = Vector2(0, 25)
+layout_mode = 2
+
+[node name="TitleBox" type="HBoxContainer" parent="MainBox/TitleBar"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 2.0
+offset_bottom = 3.0
+grow_horizontal = 2
+grow_vertical = 2
+metadata/_edit_layout_mode = 1
+
+[node name="Spacer1" type="CenterContainer" parent="MainBox/TitleBar/TitleBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Title" type="Label" parent="MainBox/TitleBar/TitleBox"]
+layout_mode = 2
+text = "Title"
+
+[node name="Spacer2" type="CenterContainer" parent="MainBox/TitleBar/TitleBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TimeLabel" type="Label" parent="MainBox/TitleBar/TitleBox"]
+custom_minimum_size = Vector2(90, 0)
+layout_mode = 2
+text = "999.999s"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainBox/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OutputBG" type="ColorRect" parent="MainBox/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+color = Color(0.0745098, 0.0705882, 0.0784314, 1)
+metadata/_edit_layout_mode = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer/OutputBG"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="S2" type="CenterContainer" parent="MainBox/HBoxContainer/VBoxContainer/OutputBG/HBoxContainer"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="TestOutput" type="RichTextLabel" parent="MainBox/HBoxContainer/VBoxContainer/OutputBG/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+bbcode_enabled = true
+scroll_following = true
+autowrap_mode = 0
+selection_enabled = true
+
+[node name="S1" type="CenterContainer" parent="MainBox/HBoxContainer/VBoxContainer/OutputBG/HBoxContainer"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="ControlBox" type="HBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="S1" type="CenterContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="ProgressBars" type="VBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox"]
+custom_minimum_size = Vector2(2.08165e-12, 2.08165e-12)
+layout_mode = 2
+
+[node name="TestBox" type="HBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/ProgressBars"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/ProgressBars/TestBox"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Tests"
+
+[node name="ProgressTest" type="ProgressBar" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/ProgressBars/TestBox"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+value = 25.0
+
+[node name="ScriptBox" type="HBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/ProgressBars"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/ProgressBars/ScriptBox"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Scripts"
+
+[node name="ProgressScript" type="ProgressBar" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/ProgressBars/ScriptBox"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+value = 75.0
+
+[node name="PathDisplay" type="VBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Path" type="Label" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/PathDisplay"]
+layout_mode = 2
+size_flags_vertical = 6
+theme_override_fonts/font = ExtResource("2_u5uc1")
+theme_override_font_sizes/font_size = 14
+text = "res://test/integration/whatever"
+text_overrun_behavior = 3
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/PathDisplay"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="S3" type="CenterContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/PathDisplay/HBoxContainer"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="File" type="Label" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox/PathDisplay/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_u5uc1")
+theme_override_font_sizes/font_size = 14
+text = "test_this_thing.gd"
+text_overrun_behavior = 3
+
+[node name="Spacer1" type="CenterContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox"]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 10
+
+[node name="Continue" type="Button" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "Continue
+"
+
+[node name="S3" type="CenterContainer" parent="MainBox/HBoxContainer/VBoxContainer/ControlBox"]
+custom_minimum_size = Vector2(5, 0)
+layout_mode = 2
+
+[node name="BottomPad" type="CenterContainer" parent="MainBox"]
+custom_minimum_size = Vector2(0, 5)
+layout_mode = 2
+
+[node name="Footer" type="HBoxContainer" parent="MainBox"]
+layout_mode = 2
+
+[node name="SidePad1" type="CenterContainer" parent="MainBox/Footer"]
+custom_minimum_size = Vector2(2, 2.08165e-12)
+layout_mode = 2
+
+[node name="ResizeHandle3" parent="MainBox/Footer" node_paths=PackedStringArray("resize_control") instance=ExtResource("4_2r8a8")]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+orientation = 0
+resize_control = NodePath("../../..")
+
+[node name="SwitchModes" type="Button" parent="MainBox/Footer"]
+layout_mode = 2
+text = "Compact
+"
+
+[node name="CenterContainer" type="CenterContainer" parent="MainBox/Footer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ResizeHandle2" parent="MainBox/Footer" node_paths=PackedStringArray("resize_control") instance=ExtResource("4_2r8a8")]
+custom_minimum_size = Vector2(25, 25)
+layout_mode = 2
+resize_control = NodePath("../../..")
+
+[node name="SidePad2" type="CenterContainer" parent="MainBox/Footer"]
+custom_minimum_size = Vector2(2, 2.08165e-12)
+layout_mode = 2
+
+[node name="BottomPad2" type="CenterContainer" parent="MainBox"]
+custom_minimum_size = Vector2(2.08165e-12, 2)
+layout_mode = 2

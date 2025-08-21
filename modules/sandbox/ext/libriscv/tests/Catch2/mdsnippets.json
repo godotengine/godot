@@ -1,9 +1,0 @@
-{
-  "ReadOnly": false,
-  "TocLevel": 5,
-  "Exclude": [
-    "cmake-build"
-  ],
-  "WriteHeader": false,
-  "Convention": "InPlaceOverwrite"
-}

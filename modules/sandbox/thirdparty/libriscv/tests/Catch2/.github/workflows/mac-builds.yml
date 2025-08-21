@@ -1,0 +1,32 @@
+name: Mac Builds
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    # From macos-14 forward, the baseline "macos-X" image is Arm based,
+    # and not Intel based.
+    runs-on: ${{matrix.image}}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: [macos-13, macos-14, macos-15]
+        build_type: [Debug, Release]
+        std: [14, 17]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Configure
+      run: |
+        cmake --preset basic-tests -GNinja \
+              -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
+              -DCMAKE_CXX_STANDARD=${{matrix.std}} \
+              -DCATCH_BUILD_EXAMPLES=ON \
+              -DCATCH_BUILD_EXTRA_TESTS=ON
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Test
+      run: ctest --test-dir build -j --output-on-failure

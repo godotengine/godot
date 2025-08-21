@@ -1,0 +1,71 @@
+name: Setup godot-cpp
+description: Setup build dependencies for godot-cpp.
+
+inputs:
+  platform:
+    required: true
+    description: Target platform.
+  em-version:
+    default: 3.1.62
+    description: Emscripten version.
+  windows-compiler:
+    required: true
+    description: The compiler toolchain to use on Windows ('mingw' or 'msvc').
+    type: choice
+    options:
+      - mingw
+      - msvc
+    default: mingw
+  mingw-version:
+    default: 12.2.0
+    description: MinGW version.
+  ndk-version:
+    default: r28b
+    description: Android NDK version.
+  buildtool:
+    default: scons
+    description: scons or cmake
+  scons-version:
+    default: 4.4.0
+    description: SCons version.
+
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Python (for SCons)
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.x
+
+    - name: Setup Android dependencies
+      if: inputs.platform == 'android'
+      uses: nttld/setup-ndk@v1
+      with:
+        ndk-version: ${{ inputs.ndk-version }}
+        link-to-sdk: true
+
+    - name: Setup Web dependencies
+      if: inputs.platform == 'web'
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: ${{ inputs.em-version }}
+        no-cache: true
+
+    - name: Setup MinGW for Windows/MinGW build
+      if: inputs.platform == 'windows' && inputs.windows-compiler == 'mingw'
+      uses: egor-tensin/setup-mingw@v2
+      with:
+        version: ${{ inputs.mingw-version }}
+
+    - name: Setup SCons
+      if: ${{ inputs.buildtool == 'scons' }}
+      shell: bash
+      run: |
+        python -c "import sys; print(sys.version)"
+        python -m pip install scons==${{ inputs.scons-version }}
+        scons --version
+
+    - name: Install Ninja
+      if: ${{ inputs.buildtool == 'cmake' }}
+      uses: ashutoshvarma/setup-ninja@master

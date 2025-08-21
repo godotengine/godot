@@ -1,2 +1,0 @@
-option('tests', type: 'boolean', value: true, description: 'Build the unit tests')
-option('install', type: 'boolean', value: true, description: 'Install the library')

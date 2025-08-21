@@ -1,0 +1,14 @@
+# Normalize EOL for all files that Git considers text files.
+* text=auto eol=lf
+
+
+# ------------------------------------------------------------------------------
+# Exclude everything except addons from zip downloads.
+# This makes installing Gut through the AssetLib easier, because no files and
+# folders need to be unchecked.
+# ------------------------------------------------------------------------------
+# Exclude everything
+*                       export-ignore
+# Un-exclude addons
+/addons                -export-ignore
+/addons/**             -export-ignore
