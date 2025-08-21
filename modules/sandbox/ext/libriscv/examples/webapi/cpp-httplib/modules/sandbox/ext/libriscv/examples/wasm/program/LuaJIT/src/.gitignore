@@ -1,9 +1,0 @@
-luajit
-luajit.h
-luajit_relver.txt
-lj_bcdef.h
-lj_ffdef.h
-lj_libdef.h
-lj_recdef.h
-lj_folddef.h
-lj_vm.[sS]

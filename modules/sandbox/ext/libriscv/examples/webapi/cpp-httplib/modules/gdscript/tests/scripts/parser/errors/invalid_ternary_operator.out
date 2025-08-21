@@ -1,2 +1,0 @@
-GDTEST_PARSER_ERROR
-Unexpected "?" in source. If you want a ternary operator, use "truthy_value if true_condition else falsy_value".

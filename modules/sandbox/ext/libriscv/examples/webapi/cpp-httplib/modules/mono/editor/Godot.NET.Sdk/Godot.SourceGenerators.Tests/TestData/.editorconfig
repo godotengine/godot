@@ -1,5 +1,0 @@
-root = true
-
-[*.cs]
-exclude = true
-generated_code = true

@@ -1,9 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://dbn4dla781ktv"]
-
-[ext_resource type="Texture2D" uid="uid://co56ddpq6e4by" path="res://icon.png" id="1"]
-
-[node name="SceneNoScript" type="Node2D"]
-
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(40, 41)
-texture = ExtResource("1")

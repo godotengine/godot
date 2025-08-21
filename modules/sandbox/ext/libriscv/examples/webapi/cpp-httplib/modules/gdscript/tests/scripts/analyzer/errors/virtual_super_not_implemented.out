@@ -1,2 +1,0 @@
-GDTEST_ANALYZER_ERROR
->> ERROR at line 2: Cannot call the parent class' virtual function "_init()" because it hasn't been defined.

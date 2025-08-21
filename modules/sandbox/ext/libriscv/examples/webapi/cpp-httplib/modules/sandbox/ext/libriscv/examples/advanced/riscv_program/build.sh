@@ -1,1 +1,0 @@
-riscv64-linux-gnu-gcc-12 -static -O2 micro.c -o micro

@@ -1,7 +1,0 @@
-#include <cstdio>
-
-int main()
-{
-	printf("Hello world! %d\n", 123);
-	return 666;
-}

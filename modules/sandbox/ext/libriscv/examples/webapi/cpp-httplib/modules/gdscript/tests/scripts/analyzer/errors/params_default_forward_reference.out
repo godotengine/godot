@@ -1,3 +1,0 @@
-GDTEST_ANALYZER_ERROR
->> ERROR at line 8: Identifier "defc" not declared in the current scope.
->> ERROR at line 9: Identifier "nondefault2" not declared in the current scope.

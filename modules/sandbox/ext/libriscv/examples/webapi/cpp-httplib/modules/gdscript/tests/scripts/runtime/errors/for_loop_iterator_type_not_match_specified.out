@@ -1,2 +1,0 @@
-GDTEST_RUNTIME_ERROR
->> SCRIPT ERROR at runtime/errors/for_loop_iterator_type_not_match_specified.gd:3 on test(): Trying to assign value of type 'Resource' to a variable of type 'Node'.

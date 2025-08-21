@@ -1,2 +1,0 @@
-GDTEST_PARSER_ERROR
-Annotation "@icon" must be at the top of the script, before "extends" and "class_name".

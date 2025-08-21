@@ -1,2 +1,0 @@
-GDTEST_OK
-~~ WARNING at line 7: (UNREACHABLE_CODE) Unreachable code (statement after return) in function "test()".
