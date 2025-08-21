@@ -40,8 +40,8 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/property_utils.h"
 
-void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, const String &p_current_type, const String &p_current_name) {
-	_fill_type_list();
+void CreateDialog::popup_create(bool p_dont_clear, bool p_replace_mode, bool p_consider_unnamed_scripts, const String &p_current_type, const String &p_current_name) {
+	_fill_type_list(p_consider_unnamed_scripts);
 
 	icon_fallback = search_options->has_theme_icon(base_type, EditorStringName(EditorIcons)) ? base_type : "Object";
 
@@ -82,7 +82,7 @@ void CreateDialog::for_inherit() {
 	allow_abstract_scripts = true;
 }
 
-void CreateDialog::_fill_type_list() {
+void CreateDialog::_fill_type_list(bool p_consider_unnamed_scripts) {
 	List<StringName> complete_type_list;
 	ClassDB::get_class_list(&complete_type_list);
 	ScriptServer::get_global_class_list(&complete_type_list);
@@ -121,13 +121,24 @@ void CreateDialog::_fill_type_list() {
 		}
 	}
 
-	EditorFileSystemDirectory *fsd = EditorFileSystem::get_singleton()->get_filesystem();
-	_add_unnamed_scripts(fsd);
+	if (p_consider_unnamed_scripts) {
+		for (const KeyValue<String, DocData::ClassDoc> &it : class_docs_list) {
+			if (it.value.is_script_doc && it.value.name.contains_char('/')) {
+				_add_unnamed_scripts(class_docs_list, it.key);
+			}
+		}
+	}
 
 	struct TypeInfoCompare {
 		StringName::AlphCompare compare;
 
 		_FORCE_INLINE_ bool operator()(const TypeInfo &l, const TypeInfo &r) const {
+			if (!l.script_type_path.is_empty() && r.script_type_path.is_empty()) {
+				return false;
+			} else if (l.script_type_path.is_empty() && !r.script_type_path.is_empty()) {
+				return true;
+			}
+
 			return compare(l.type_name, r.type_name);
 		}
 	};
@@ -135,23 +146,32 @@ void CreateDialog::_fill_type_list() {
 	type_info_list.sort_custom<TypeInfoCompare>();
 }
 
-void CreateDialog::_add_unnamed_scripts(EditorFileSystemDirectory *fsd) {
-	if (!fsd) {
+void CreateDialog::_add_unnamed_scripts(const HashMap<String, DocData::ClassDoc> &p_class_docs_list, const String &p_name) {
+	if (p_name.is_empty()) {
 		return;
 	}
 
-	for (int i = 0; i < fsd->get_subdir_count(); i++) {
-		_add_unnamed_scripts(fsd->get_subdir(i));
+	HashMap<String, DocData::ClassDoc>::ConstIterator base_script_it = p_class_docs_list.find(p_name);
+	HashMap<String, DocData::ClassDoc>::ConstIterator inherit_it = base_script_it;
+	bool should_add_script = false;
+	while (inherit_it != p_class_docs_list.end()) {
+		if (inherit_it->value.inherits.is_empty()) {
+			break;
+		}
+
+		if (inherit_it->value.inherits == base_type) {
+			should_add_script = true;
+			break;
+		}
+
+		inherit_it = p_class_docs_list.find(inherit_it->value.inherits);
 	}
 
-	for (int i = 0; i < fsd->get_file_count(); i++) {
-		if (fsd->get_file_script_class_extends(i) == base_type && fsd->get_file_script_class_name(i).is_empty()) {
-			TypeInfo info;
-			const String &path = fsd->get_file_path(i);
-			info.type_name = path;
-			info.script_type_path = path;
-			type_info_list.push_back(info);
-		}
+	if (should_add_script) {
+		TypeInfo info;
+		info.type_name = base_script_it->key;
+		info.script_type_path = base_script_it->value.script_path;
+		type_info_list.push_back(info);
 	}
 }
 
@@ -423,10 +443,6 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	}
 	r_item->set_text(0, text);
 
-	Array meta;
-	meta.append(is_custom_type);
-	meta.append(type_name);
-
 	bool can_instantiate = (p_type_category == TypeCategory::CPP_TYPE && ClassDB::can_instantiate(p_type)) ||
 			(p_type_category == TypeCategory::OTHER_TYPE && !(!allow_abstract_scripts && is_abstract));
 	bool instantiable = can_instantiate && !(ClassDB::class_exists(p_type) && ClassDB::is_virtual(p_type));
@@ -435,13 +451,17 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 		Ref<Script> scr = ResourceLoader::load(p_type, "Script");
 		instantiable = scr.is_valid();
 		is_unnamed_script = true;
-		meta.append(is_unnamed_script);
 	}
+
+	Array meta;
+	meta.append(is_custom_type);
+	meta.append(type_name);
+	meta.append(is_unnamed_script);
 
 	r_item->set_metadata(0, meta);
 	r_item->set_meta(SNAME("__instantiable"), instantiable);
-
 	r_item->set_icon(0, EditorNode::get_singleton()->get_class_icon(p_type));
+
 	if (!instantiable) {
 		r_item->set_custom_color(0, search_options->get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 	}
