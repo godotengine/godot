@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  svg_texture.cpp                                                       */
+/*  dpi_texture.cpp                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "svg_texture.h"
+#include "dpi_texture.h"
 
 #include "core/io/image_loader.h"
 #include "scene/main/canvas_item.h"
@@ -41,10 +41,10 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-Mutex SVGTexture::mutex;
-HashMap<double, SVGTexture::ScalingLevel> SVGTexture::scaling_levels;
+Mutex DPITexture::mutex;
+HashMap<double, DPITexture::ScalingLevel> DPITexture::scaling_levels;
 
-void SVGTexture::reference_scaling_level(double p_scale) {
+void DPITexture::reference_scaling_level(double p_scale) {
 	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
 	if (oversampling == 64) {
 		return;
@@ -61,7 +61,7 @@ void SVGTexture::reference_scaling_level(double p_scale) {
 	}
 }
 
-void SVGTexture::unreference_scaling_level(double p_scale) {
+void DPITexture::unreference_scaling_level(double p_scale) {
 	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
 	if (oversampling == 64) {
 		return;
@@ -73,7 +73,7 @@ void SVGTexture::unreference_scaling_level(double p_scale) {
 	if (sl) {
 		sl->refcount--;
 		if (sl->refcount == 0) {
-			for (SVGTexture *tx : sl->textures) {
+			for (DPITexture *tx : sl->textures) {
 				tx->_remove_scale(scale);
 			}
 			sl->textures.clear();
@@ -82,17 +82,17 @@ void SVGTexture::unreference_scaling_level(double p_scale) {
 	}
 }
 
-Ref<SVGTexture> SVGTexture::create_from_string(const String &p_source, float p_scale, float p_saturation, const Dictionary &p_color_map) {
-	Ref<SVGTexture> svg_texture;
-	svg_texture.instantiate();
-	svg_texture->set_source(p_source);
-	svg_texture->set_base_scale(p_scale);
-	svg_texture->set_saturation(p_saturation);
-	svg_texture->set_color_map(p_color_map);
-	return svg_texture;
+Ref<DPITexture> DPITexture::create_from_string(const String &p_source, float p_scale, float p_saturation, const Dictionary &p_color_map) {
+	Ref<DPITexture> dpi_texture;
+	dpi_texture.instantiate();
+	dpi_texture->set_source(p_source);
+	dpi_texture->set_base_scale(p_scale);
+	dpi_texture->set_saturation(p_saturation);
+	dpi_texture->set_color_map(p_color_map);
+	return dpi_texture;
 }
 
-void SVGTexture::set_source(const String &p_source) {
+void DPITexture::set_source(const String &p_source) {
 	if (source == p_source) {
 		return;
 	}
@@ -100,11 +100,11 @@ void SVGTexture::set_source(const String &p_source) {
 	_update_texture();
 }
 
-String SVGTexture::get_source() const {
+String DPITexture::get_source() const {
 	return source;
 }
 
-void SVGTexture::set_base_scale(float p_scale) {
+void DPITexture::set_base_scale(float p_scale) {
 	if (base_scale == p_scale) {
 		return;
 	}
@@ -114,11 +114,11 @@ void SVGTexture::set_base_scale(float p_scale) {
 	_update_texture();
 }
 
-float SVGTexture::get_base_scale() const {
+float DPITexture::get_base_scale() const {
 	return base_scale;
 }
 
-void SVGTexture::set_saturation(float p_saturation) {
+void DPITexture::set_saturation(float p_saturation) {
 	if (saturation == p_saturation) {
 		return;
 	}
@@ -127,11 +127,11 @@ void SVGTexture::set_saturation(float p_saturation) {
 	_update_texture();
 }
 
-float SVGTexture::get_saturation() const {
+float DPITexture::get_saturation() const {
 	return saturation;
 }
 
-void SVGTexture::set_color_map(const Dictionary &p_color_map) {
+void DPITexture::set_color_map(const Dictionary &p_color_map) {
 	if (color_map == p_color_map) {
 		return;
 	}
@@ -143,11 +143,11 @@ void SVGTexture::set_color_map(const Dictionary &p_color_map) {
 	_update_texture();
 }
 
-Dictionary SVGTexture::get_color_map() const {
+Dictionary DPITexture::get_color_map() const {
 	return color_map;
 }
 
-void SVGTexture::_remove_scale(double p_scale) {
+void DPITexture::_remove_scale(double p_scale) {
 	if (Math::is_equal_approx(p_scale, 1.0)) {
 		return;
 	}
@@ -161,7 +161,7 @@ void SVGTexture::_remove_scale(double p_scale) {
 	}
 }
 
-RID SVGTexture::_ensure_scale(double p_scale) const {
+RID DPITexture::_ensure_scale(double p_scale) const {
 	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
 	if (oversampling == 64) {
 		if (base_texture.is_null()) {
@@ -179,14 +179,14 @@ RID SVGTexture::_ensure_scale(double p_scale) const {
 	MutexLock lock(mutex);
 	ScalingLevel *sl = scaling_levels.getptr(scale);
 	ERR_FAIL_NULL_V_MSG(sl, RID(), "Invalid scaling level");
-	sl->textures.insert(const_cast<SVGTexture *>(this));
+	sl->textures.insert(const_cast<DPITexture *>(this));
 
 	RID new_rid = _load_at_scale(scale, false);
 	texture_cache[scale] = new_rid;
 	return new_rid;
 }
 
-RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
+RID DPITexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	Ref<Image> img;
 	img.instantiate();
 #ifdef MODULE_SVG_ENABLED
@@ -227,7 +227,7 @@ RID SVGTexture::_load_at_scale(double p_scale, bool p_set_size) const {
 	return rid;
 }
 
-void SVGTexture::_clear() {
+void DPITexture::_clear() {
 	for (KeyValue<double, RID> &tx : texture_cache) {
 		if (tx.value.is_valid()) {
 			RenderingServer::get_singleton()->free(tx.value);
@@ -241,12 +241,12 @@ void SVGTexture::_clear() {
 	alpha_cache.unref();
 }
 
-void SVGTexture::_update_texture() {
+void DPITexture::_update_texture() {
 	_clear();
 	emit_changed();
 }
 
-Ref<Image> SVGTexture::get_image() const {
+Ref<Image> DPITexture::get_image() const {
 	RID rid = _ensure_scale(1.0);
 	if (rid.is_valid()) {
 		return RenderingServer::get_singleton()->texture_2d_get(rid);
@@ -255,25 +255,25 @@ Ref<Image> SVGTexture::get_image() const {
 	}
 }
 
-int SVGTexture::get_width() const {
+int DPITexture::get_width() const {
 	_ensure_scale(1.0);
 	return size.x;
 }
 
-int SVGTexture::get_height() const {
+int DPITexture::get_height() const {
 	_ensure_scale(1.0);
 	return size.y;
 }
 
-RID SVGTexture::get_rid() const {
+RID DPITexture::get_rid() const {
 	return _ensure_scale(1.0);
 }
 
-bool SVGTexture::has_alpha() const {
+bool DPITexture::has_alpha() const {
 	return true;
 }
 
-RID SVGTexture::get_scaled_rid() const {
+RID DPITexture::get_scaled_rid() const {
 	double scale = 1.0;
 	CanvasItem *ci = CanvasItem::get_current_item_drawn();
 	if (ci) {
@@ -285,19 +285,19 @@ RID SVGTexture::get_scaled_rid() const {
 	return _ensure_scale(scale);
 }
 
-void SVGTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
+void DPITexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), get_scaled_rid(), false, p_modulate, p_transpose);
 }
 
-void SVGTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
+void DPITexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_scaled_rid(), p_tile, p_modulate, p_transpose);
 }
 
-void SVGTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
+void DPITexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_scaled_rid(), p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
-bool SVGTexture::is_pixel_opaque(int p_x, int p_y) const {
+bool DPITexture::is_pixel_opaque(int p_x, int p_y) const {
 	if (alpha_cache.is_null()) {
 		Ref<Image> img = get_image();
 		if (img.is_valid()) {
@@ -325,7 +325,7 @@ bool SVGTexture::is_pixel_opaque(int p_x, int p_y) const {
 	return true;
 }
 
-void SVGTexture::set_size_override(const Size2i &p_size) {
+void DPITexture::set_size_override(const Size2i &p_size) {
 	if (size_override == p_size) {
 		return;
 	}
@@ -352,19 +352,19 @@ void SVGTexture::set_size_override(const Size2i &p_size) {
 	emit_changed();
 }
 
-void SVGTexture::_bind_methods() {
-	ClassDB::bind_static_method("SVGTexture", D_METHOD("create_from_string", "source", "scale", "saturation", "color_map"), &SVGTexture::create_from_string, DEFVAL(1.0), DEFVAL(1.0), DEFVAL(Dictionary()));
+void DPITexture::_bind_methods() {
+	ClassDB::bind_static_method("DPITexture", D_METHOD("create_from_string", "source", "scale", "saturation", "color_map"), &DPITexture::create_from_string, DEFVAL(1.0), DEFVAL(1.0), DEFVAL(Dictionary()));
 
-	ClassDB::bind_method(D_METHOD("set_source", "source"), &SVGTexture::set_source);
-	ClassDB::bind_method(D_METHOD("get_source"), &SVGTexture::get_source);
-	ClassDB::bind_method(D_METHOD("set_base_scale", "base_scale"), &SVGTexture::set_base_scale);
-	ClassDB::bind_method(D_METHOD("get_base_scale"), &SVGTexture::get_base_scale);
-	ClassDB::bind_method(D_METHOD("set_saturation", "saturation"), &SVGTexture::set_saturation);
-	ClassDB::bind_method(D_METHOD("get_saturation"), &SVGTexture::get_saturation);
-	ClassDB::bind_method(D_METHOD("set_color_map", "color_map"), &SVGTexture::set_color_map);
-	ClassDB::bind_method(D_METHOD("get_color_map"), &SVGTexture::get_color_map);
-	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &SVGTexture::set_size_override);
-	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &SVGTexture::get_scaled_rid);
+	ClassDB::bind_method(D_METHOD("set_source", "source"), &DPITexture::set_source);
+	ClassDB::bind_method(D_METHOD("get_source"), &DPITexture::get_source);
+	ClassDB::bind_method(D_METHOD("set_base_scale", "base_scale"), &DPITexture::set_base_scale);
+	ClassDB::bind_method(D_METHOD("get_base_scale"), &DPITexture::get_base_scale);
+	ClassDB::bind_method(D_METHOD("set_saturation", "saturation"), &DPITexture::set_saturation);
+	ClassDB::bind_method(D_METHOD("get_saturation"), &DPITexture::get_saturation);
+	ClassDB::bind_method(D_METHOD("set_color_map", "color_map"), &DPITexture::set_color_map);
+	ClassDB::bind_method(D_METHOD("get_color_map"), &DPITexture::get_color_map);
+	ClassDB::bind_method(D_METHOD("set_size_override", "size"), &DPITexture::set_size_override);
+	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &DPITexture::get_scaled_rid);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE), "set_source", "get_source");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"), "set_base_scale", "get_base_scale");
@@ -372,7 +372,7 @@ void SVGTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "color_map", PROPERTY_HINT_DICTIONARY_TYPE, "Color;Color"), "set_color_map", "get_color_map");
 }
 
-SVGTexture::~SVGTexture() {
+DPITexture::~DPITexture() {
 	_clear();
 
 	MutexLock lock(mutex);
