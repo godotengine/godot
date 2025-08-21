@@ -31,8 +31,17 @@
 #include "rendering_device_driver_vulkan.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
+#include "core/string/print_string.h"
+#include "core/templates/local_vector.h"
+#include "servers/rendering/rendering_device_commons.h"
+#include "servers/rendering/rendering_device_driver.h"
 #include "vulkan_hooks.h"
+#include <vk_enum_string_helper.h>
+#include <vk_video/vulkan_video_codec_h264std.h>
+#include <vk_video/vulkan_video_codec_h264std_decode.h>
+#include <vulkan/vulkan_core.h>
+#include <cstddef>
+#include <cstdint>
 
 #if RENDERING_SHADER_CONTAINER_VULKAN_SMOLV
 #include "thirdparty/misc/smolv.h"
@@ -535,6 +544,18 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_VULKAN_MEMORY_MODEL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
+
+	// Required for video coding
+	_register_requested_device_extension(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME, false);
+	// Vulkan video extensions for hardware video processing
+	_register_requested_device_extension(VK_KHR_VIDEO_QUEUE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_QUEUE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_ENCODE_QUEUE_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_H264_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_ENCODE_H264_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_H265_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_ENCODE_H265_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_KHR_VIDEO_DECODE_AV1_EXTENSION_NAME, false);
 
 	// We don't actually use this extension, but some runtime components on some platforms
 	// can and will fill the validation layers with useless info otherwise if not enabled.
@@ -1047,7 +1068,7 @@ Error RenderingDeviceDriverVulkan::_add_queue_create_info(LocalVector<VkDeviceQu
 	uint32_t queue_family_count = queue_family_properties.size();
 	queue_families.resize(queue_family_count);
 
-	VkQueueFlags queue_flags_mask = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+	VkQueueFlags queue_flags_mask = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT | VK_QUEUE_VIDEO_DECODE_BIT_KHR | VK_QUEUE_VIDEO_ENCODE_BIT_KHR;
 	const uint32_t max_queue_count_per_family = 1;
 	static const float queue_priorities[max_queue_count_per_family] = {};
 	for (uint32_t i = 0; i < queue_family_count; i++) {
@@ -1632,6 +1653,7 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_STORAGE_BIT, VK_BUFFER_USAGE_
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDEX_BIT, VK_BUFFER_USAGE_INDEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VERTEX_BIT, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_INDIRECT_BIT, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_VIDEO_DECODE_SRC_BIT, VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BUFFER_USAGE_DEVICE_ADDRESS_BIT, VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT));
 
 RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
@@ -1677,6 +1699,33 @@ RDD::BufferID RenderingDeviceDriverVulkan::buffer_create(uint64_t p_size, BitFie
 				alloc_create_info.pool = _find_or_create_small_allocs_pool(mem_type_index);
 			}
 		} break;
+	}
+
+	if (p_usage.has_flag(BUFFER_USAGE_VIDEO_DECODE_SRC_BIT)) {
+		VkVideoDecodeH264ProfileInfoKHR h264_profile = {
+			.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+			.pNext = nullptr,
+			.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH,
+			.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR,
+		};
+
+		// TODO chroma subsampling, luma bit depth, chroma bit depth
+		VkVideoProfileInfoKHR video_profile = {
+			.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+			.pNext = &h264_profile,
+			.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR,
+			.chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+			.lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+			.chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+		};
+
+		VkVideoProfileListInfoKHR video_profile_list;
+		video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+		video_profile_list.pNext = nullptr;
+		video_profile_list.profileCount = 1;
+		video_profile_list.pProfiles = &video_profile;
+
+		create_info.pNext = &video_profile_list;
 	}
 
 	VkBuffer vk_buffer = VK_NULL_HANDLE;
@@ -1907,6 +1956,34 @@ RDD::TextureID RenderingDeviceDriverVulkan::texture_create(const TextureFormat &
 	}
 	if ((p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
 		create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	}
+	if ((p_format.usage_bits & TEXTURE_USAGE_VIDEO_DECODE_DST_BIT)) {
+		create_info.usage |= VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+
+		VkVideoDecodeH264ProfileInfoKHR h264_profile = {
+			.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+			.pNext = nullptr,
+			.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH,
+			.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR,
+		};
+
+		// TODO chroma subsampling, luma bit depth, chroma bit depth
+		VkVideoProfileInfoKHR video_profile = {
+			.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+			.pNext = &h264_profile,
+			.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR,
+			.chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+			.lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+			.chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+		};
+
+		VkVideoProfileListInfoKHR video_profile_list;
+		video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+		video_profile_list.pNext = nullptr;
+		video_profile_list.profileCount = 1;
+		video_profile_list.pProfiles = &video_profile;
+
+		create_info.pNext = &video_profile_list;
 	}
 
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -2430,6 +2507,8 @@ static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_GRAPHICS_BIT, VK_PIPELI
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR));
 static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT, VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_2_VIDEO_DECODE_BIT, VK_PIPELINE_STAGE_2_VIDEO_DECODE_BIT_KHR));
+static_assert(ENUM_MEMBERS_EQUAL(RDD::PIPELINE_STAGE_2_VIDEO_ENCODE_BIT, VK_PIPELINE_STAGE_2_VIDEO_ENCODE_BIT_KHR));
 
 // RDD::BarrierAccessBits == VkAccessFlagBits.
 static_assert(ENUM_MEMBERS_EQUAL(RDD::BARRIER_ACCESS_INDIRECT_COMMAND_READ_BIT, VK_ACCESS_INDIRECT_COMMAND_READ_BIT));
@@ -5702,6 +5781,298 @@ void RenderingDeviceDriverVulkan::end_segment() {
 	// Per-frame segments are not required in Vulkan.
 }
 
+//TODO use p_direction
+//TODO use p_chroma_subsampling
+//TODO use p_profile
+//TODO parametrise bit depth?
+RDD::VideoSessionID RenderingDeviceDriverVulkan::create_h264_session(CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) {
+	// TODO: profile (profile_idc), layout (progressive/interlaced)
+	VkVideoDecodeH264ProfileInfoKHR h264_profile = {
+		.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PROFILE_INFO_KHR,
+		.pNext = nullptr,
+		.stdProfileIdc = STD_VIDEO_H264_PROFILE_IDC_HIGH,
+		.pictureLayout = VK_VIDEO_DECODE_H264_PICTURE_LAYOUT_PROGRESSIVE_KHR,
+	};
+
+	// TODO chroma subsampling, luma bit depth, chroma bit depth
+	VkVideoProfileInfoKHR video_profile = {
+		.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_INFO_KHR,
+		.pNext = &h264_profile,
+		.videoCodecOperation = VK_VIDEO_CODEC_OPERATION_DECODE_H264_BIT_KHR,
+		.chromaSubsampling = VK_VIDEO_CHROMA_SUBSAMPLING_420_BIT_KHR,
+		.lumaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+		.chromaBitDepth = VK_VIDEO_COMPONENT_BIT_DEPTH_8_BIT_KHR,
+	};
+
+	//TODO expose capabilities
+	VkVideoDecodeH264CapabilitiesKHR h264_decode_capabilities;
+	h264_decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_CAPABILITIES_KHR;
+	h264_decode_capabilities.pNext = nullptr;
+
+	VkVideoDecodeCapabilitiesKHR decode_capabilities;
+	decode_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_CAPABILITIES_KHR;
+	decode_capabilities.pNext = &h264_decode_capabilities;
+
+	VkVideoCapabilitiesKHR video_capabilities;
+	video_capabilities.sType = VK_STRUCTURE_TYPE_VIDEO_CAPABILITIES_KHR;
+	video_capabilities.pNext = &decode_capabilities;
+
+	VkResult result = vkGetPhysicalDeviceVideoCapabilitiesKHR(physical_device, &video_profile, &video_capabilities);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	VkVideoProfileListInfoKHR video_profile_list;
+	video_profile_list.sType = VK_STRUCTURE_TYPE_VIDEO_PROFILE_LIST_INFO_KHR;
+	video_profile_list.pNext = nullptr;
+	video_profile_list.profileCount = 1;
+	video_profile_list.pProfiles = &video_profile;
+
+	//TODO: expose src format capabilities
+	VkPhysicalDeviceVideoFormatInfoKHR video_src_format_info;
+	video_src_format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
+	video_src_format_info.pNext = &video_profile_list;
+	video_src_format_info.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_SRC_BIT_KHR;
+
+	uint32_t video_src_formats_count = 0;
+	vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_src_format_info, &video_src_formats_count, nullptr);
+
+	TightLocalVector<VkVideoFormatPropertiesKHR> video_src_formats;
+	video_src_formats.resize(video_src_formats_count);
+	for (uint8_t i = 0; i < video_src_formats_count; i++) {
+		video_src_formats[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+		video_src_formats[i].pNext = nullptr;
+	}
+
+	vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_src_format_info, &video_src_formats_count, video_src_formats.ptr());
+
+	//TODO: expose dst format capabilities
+	VkPhysicalDeviceVideoFormatInfoKHR video_dst_format_info;
+	video_dst_format_info.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VIDEO_FORMAT_INFO_KHR;
+	video_dst_format_info.pNext = &video_profile_list;
+	video_dst_format_info.imageUsage = VK_IMAGE_USAGE_VIDEO_DECODE_DST_BIT_KHR;
+
+	uint32_t video_dst_formats_count = 0;
+	vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, nullptr);
+
+	TightLocalVector<VkVideoFormatPropertiesKHR> video_dst_formats;
+	video_dst_formats.resize(video_dst_formats_count);
+	for (uint8_t i = 0; i < video_dst_formats_count; i++) {
+		video_dst_formats[i].sType = VK_STRUCTURE_TYPE_VIDEO_FORMAT_PROPERTIES_KHR;
+		video_dst_formats[i].pNext = nullptr;
+	}
+
+	vkGetPhysicalDeviceVideoFormatPropertiesKHR(physical_device, &video_dst_format_info, &video_dst_formats_count, video_dst_formats.ptr());
+
+	CommandQueueFamilyID command_family = command_queue_family_get(COMMAND_QUEUE_FAMILY_DECODE_BIT);
+	uint32_t family_index = command_family.id - 1;
+
+	// TODO Use MIN(capability, video resolution)
+	VkExtent2D extent;
+	extent.width = 1980;
+	extent.height = 1080;
+
+	// TODO picture formats
+	// TODO DPB slots, active reference pictures, pStdHeaderVersion
+	VkVideoSessionCreateInfoKHR session_info = {
+		.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_CREATE_INFO_KHR,
+		.pNext = nullptr,
+		.queueFamilyIndex = family_index,
+		.flags = 0,
+		.pVideoProfile = &video_profile,
+		.pictureFormat = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM,
+		.maxCodedExtent = extent,
+		.referencePictureFormat = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM,
+		.maxDpbSlots = 0,
+		.maxActiveReferencePictures = 0,
+		.pStdHeaderVersion = &video_capabilities.stdHeaderVersion,
+	};
+
+	VkVideoSessionKHR video_session;
+	result = vkCreateVideoSessionKHR(vk_device, &session_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_KHR), &video_session);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	uint32_t memory_requirements_count;
+	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, nullptr);
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	TightLocalVector<VkVideoSessionMemoryRequirementsKHR> memory_requirements;
+	memory_requirements.resize(memory_requirements_count);
+	memory_requirements[0].sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR;
+	memory_requirements[1].sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_MEMORY_REQUIREMENTS_KHR;
+	memory_requirements[0].pNext = nullptr;
+	memory_requirements[1].pNext = nullptr;
+	result = vkGetVideoSessionMemoryRequirementsKHR(vk_device, video_session, &memory_requirements_count, memory_requirements.ptr());
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	LocalVector<VkBindVideoSessionMemoryInfoKHR> memory_infos;
+	for (VkVideoSessionMemoryRequirementsKHR memory_requirement : memory_requirements) {
+		VmaAllocationCreateInfo allocation_create_info;
+		allocation_create_info.flags = 0;
+		allocation_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+		allocation_create_info.requiredFlags = 0;
+		allocation_create_info.preferredFlags = 0;
+		allocation_create_info.memoryTypeBits = 0;
+		allocation_create_info.pool = nullptr;
+		allocation_create_info.pUserData = nullptr;
+		allocation_create_info.priority = 1.0;
+
+		VmaAllocation allocation = nullptr;
+		VmaAllocationInfo allocation_info;
+
+		result = vmaAllocateMemory(allocator, &memory_requirement.memoryRequirements, &allocation_create_info, &allocation, &allocation_info);
+		if (result != VK_SUCCESS) {
+			ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+		}
+
+		VkBindVideoSessionMemoryInfoKHR memory;
+		memory.sType = VK_STRUCTURE_TYPE_BIND_VIDEO_SESSION_MEMORY_INFO_KHR;
+		memory.pNext = nullptr;
+		memory.memoryBindIndex = memory_requirement.memoryBindIndex;
+		memory.memory = allocation_info.deviceMemory;
+		memory.memoryOffset = allocation_info.offset;
+		memory.memorySize = allocation_info.size;
+
+		memory_infos.push_back(memory);
+	}
+
+	result = vkBindVideoSessionMemoryKHR(vk_device, video_session, memory_infos.size(), memory_infos.ptr());
+	if (result != VK_SUCCESS) {
+		ERR_FAIL_V_MSG(RDD::VideoSessionID(nullptr), "dang it");
+	}
+
+	return RDD::VideoSessionID(video_session);
+}
+
+RDD::VideoSessionID RenderingDeviceDriverVulkan::create_h265_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) {
+	return RDD::VideoSessionID(nullptr);
+}
+
+RDD::VideoSessionID RenderingDeviceDriverVulkan::create_av1_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) {
+	return RDD::VideoSessionID(nullptr);
+}
+
+RDD::VideoSessionID RenderingDeviceDriverVulkan::create_vp9_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) {
+	return RDD::VideoSessionID(nullptr);
+}
+
+void RenderingDeviceDriverVulkan::command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) {
+	CommandBufferInfo *buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	VkVideoSessionKHR video_session = (VkVideoSessionKHR)p_video_session.id;
+
+	VkVideoDecodeH264SessionParametersAddInfoKHR h264_add_info;
+	h264_add_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_ADD_INFO_KHR;
+	h264_add_info.pNext = nullptr;
+	h264_add_info.stdSPSCount = 1;
+	h264_add_info.pStdSPSs = &p_sps;
+	h264_add_info.stdPPSCount = 1;
+	h264_add_info.pStdPPSs = &p_pps;
+
+	VkVideoDecodeH264SessionParametersCreateInfoKHR h264_parameter_info;
+	h264_parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_SESSION_PARAMETERS_CREATE_INFO_KHR;
+	h264_parameter_info.pNext = nullptr;
+	h264_parameter_info.maxStdSPSCount = 1;
+	h264_parameter_info.maxStdPPSCount = 1;
+	h264_parameter_info.pParametersAddInfo = &h264_add_info;
+
+	VkVideoSessionParametersCreateInfoKHR parameter_info;
+	parameter_info.sType = VK_STRUCTURE_TYPE_VIDEO_SESSION_PARAMETERS_CREATE_INFO_KHR;
+	parameter_info.pNext = &h264_parameter_info;
+	parameter_info.flags = 0;
+	parameter_info.videoSessionParametersTemplate = nullptr;
+	parameter_info.videoSession = video_session;
+
+	VkVideoSessionParametersKHR session_parameters;
+	vkCreateVideoSessionParametersKHR(vk_device, &parameter_info, VKC::get_allocation_callbacks(VK_OBJECT_TYPE_VIDEO_SESSION_PARAMETERS_KHR), &session_parameters);
+
+	// TODO need some reference slots
+	VkVideoBeginCodingInfoKHR begin_cmd;
+	begin_cmd.sType = VK_STRUCTURE_TYPE_VIDEO_BEGIN_CODING_INFO_KHR;
+	begin_cmd.pNext = nullptr;
+	begin_cmd.flags = 0;
+	begin_cmd.videoSession = video_session;
+	begin_cmd.videoSessionParameters = session_parameters;
+	begin_cmd.referenceSlotCount = 0;
+	begin_cmd.pReferenceSlots = nullptr;
+
+	vkCmdBeginVideoCodingKHR(buffer_info->vk_command_buffer, &begin_cmd);
+}
+
+void RenderingDeviceDriverVulkan::command_video_control(CommandBufferID p_cmd_buffer) {
+	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+
+	VkVideoCodingControlInfoKHR cmd_control;
+	cmd_control.sType = VK_STRUCTURE_TYPE_VIDEO_CODING_CONTROL_INFO_KHR;
+	cmd_control.pNext = nullptr;
+	cmd_control.flags = VK_VIDEO_CODING_CONTROL_RESET_BIT_KHR;
+
+	vkCmdControlVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &cmd_control);
+}
+
+void RenderingDeviceDriverVulkan::command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) {
+	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+	BufferInfo *buffer_info = (BufferInfo *)p_buffer.id;
+	TextureInfo *texture_info = (TextureInfo *)p_texture.id;
+
+	uint32_t slice_offset = p_buffer_offset;
+	VkVideoDecodeH264PictureInfoKHR h264_picture_info;
+	h264_picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_H264_PICTURE_INFO_KHR;
+	h264_picture_info.pNext = nullptr;
+	h264_picture_info.pStdPictureInfo = &p_std_h264_info;
+	h264_picture_info.sliceCount = 1;
+	h264_picture_info.pSliceOffsets = &slice_offset;
+
+	// TODO what's this for?
+	VkOffset2D offset;
+	offset.x = 0;
+	offset.y = 0;
+
+	// TODO is this the right way to make an extent?
+	VkExtent2D extent;
+	extent.width = texture_info->vk_create_info.extent.width;
+	extent.height = texture_info->vk_create_info.extent.height;
+
+	VkVideoPictureResourceInfoKHR picture_info;
+	picture_info.sType = VK_STRUCTURE_TYPE_VIDEO_PICTURE_RESOURCE_INFO_KHR;
+	picture_info.pNext = nullptr;
+	picture_info.codedOffset = offset;
+	picture_info.codedExtent = extent;
+	picture_info.baseArrayLayer = p_array_layer;
+	picture_info.imageViewBinding = texture_info->vk_view;
+
+	// TODO setup reference slots
+	VkVideoDecodeInfoKHR decode_info;
+	decode_info.sType = VK_STRUCTURE_TYPE_VIDEO_DECODE_INFO_KHR;
+	decode_info.pNext = &h264_picture_info;
+	decode_info.flags = 0;
+	decode_info.srcBuffer = buffer_info->vk_buffer;
+	decode_info.srcBufferOffset = p_buffer_offset;
+	decode_info.srcBufferRange = buffer_info->size;
+	decode_info.dstPictureResource = picture_info;
+	decode_info.pSetupReferenceSlot = nullptr;
+	decode_info.referenceSlotCount = 0;
+	decode_info.pReferenceSlots = nullptr;
+
+	vkCmdDecodeVideoKHR(cmd_buffer_info->vk_command_buffer, &decode_info);
+}
+
+void RenderingDeviceDriverVulkan::command_video_coding_end(CommandBufferID p_cmd_buffer) {
+	CommandBufferInfo *cmd_buffer_info = (CommandBufferInfo *)p_cmd_buffer.id;
+
+	VkVideoEndCodingInfoKHR end_coding;
+	end_coding.sType = VK_STRUCTURE_TYPE_VIDEO_END_CODING_INFO_KHR;
+	end_coding.pNext = nullptr;
+	end_coding.flags = 0;
+
+	vkCmdEndVideoCodingKHR(cmd_buffer_info->vk_command_buffer, &end_coding);
+}
+
 /**************/
 /**** MISC ****/
 /**************/
@@ -5927,6 +6298,8 @@ bool RenderingDeviceDriverVulkan::has_feature(Features p_feature) {
 #endif
 		case SUPPORTS_VULKAN_MEMORY_MODEL:
 			return vulkan_memory_model_support && vulkan_memory_model_device_scope_support;
+		case SUPPORTS_VIDEO_ENCODE_DECODE:
+			return true; //TODO add real condition
 		default:
 			return false;
 	}

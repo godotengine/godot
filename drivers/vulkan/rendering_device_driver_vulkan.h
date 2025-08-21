@@ -658,6 +658,16 @@ public:
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) override final;
 	virtual void end_segment() override final;
 
+	virtual VideoSessionID create_h264_session(CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) override final;
+	virtual VideoSessionID create_h265_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) override final;
+	virtual VideoSessionID create_av1_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) override final;
+	virtual VideoSessionID create_vp9_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) override final;
+
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) override final;
+	virtual void command_video_control(CommandBufferID p_cmd_buffer) override final;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) override final;
+	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) override final;
+
 	/**************/
 	/**** MISC ****/
 	/**************/

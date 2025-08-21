@@ -51,6 +51,8 @@
 #include "servers/rendering/rendering_device_commons.h"
 #include "servers/rendering/rendering_shader_container.h"
 
+#include "thirdparty/vulkan/include/vk_video/vulkan_video_codec_h264std_decode.h"
+
 // These utilities help drivers avoid allocations.
 #define ALLOCA(m_size) ((m_size != 0) ? alloca(m_size) : nullptr)
 #define ALLOCA_ARRAY(m_type, m_count) ((m_type *)ALLOCA(sizeof(m_type) * (m_count)))
@@ -166,6 +168,10 @@ public:
 		BUFFER_USAGE_INDEX_BIT = (1 << 6),
 		BUFFER_USAGE_VERTEX_BIT = (1 << 7),
 		BUFFER_USAGE_INDIRECT_BIT = (1 << 8),
+		BUFFER_USAGE_VIDEO_DECODE_SRC_BIT = (1 << 13),
+		BUFFER_USAGE_VIDEO_DECODE_DST_BIT = (1 << 14),
+		BUFFER_USAGE_VIDEO_ENCODE_SRC_BIT = (1 << 15),
+		BUFFER_USAGE_VIDEO_ENCODE_DST_BIT = (1 << 16),
 		BUFFER_USAGE_DEVICE_ADDRESS_BIT = (1 << 17),
 	};
 
@@ -312,6 +318,8 @@ public:
 		PIPELINE_STAGE_CLEAR_STORAGE_BIT = (1 << 17),
 		PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT = (1 << 22),
 		PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT = (1 << 23),
+		PIPELINE_STAGE_2_VIDEO_DECODE_BIT = (1 << 26),
+		PIPELINE_STAGE_2_VIDEO_ENCODE_BIT = (1 << 27),
 	};
 
 	enum BarrierAccessBits {
@@ -393,7 +401,9 @@ public:
 	enum CommandQueueFamilyBits {
 		COMMAND_QUEUE_FAMILY_GRAPHICS_BIT = 0x1,
 		COMMAND_QUEUE_FAMILY_COMPUTE_BIT = 0x2,
-		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4
+		COMMAND_QUEUE_FAMILY_TRANSFER_BIT = 0x4,
+		COMMAND_QUEUE_FAMILY_DECODE_BIT = 0x20,
+		COMMAND_QUEUE_FAMILY_ENCODE_BIT = 0x40,
 	};
 
 	// The requested command queue family must support all specified bits or it'll fail to return a valid family otherwise. If a valid surface is specified, the queue must support presenting to it.
@@ -733,6 +743,46 @@ public:
 
 	virtual void begin_segment(uint32_t p_frame_index, uint32_t p_frames_drawn) = 0;
 	virtual void end_segment() = 0;
+
+	/***************/
+	/**** VIDEO ****/
+	/***************/
+
+	enum CodingDirection {
+		CODING_DECODING,
+		CODING_ENCODING,
+	};
+
+	enum VideoCodec {
+		VIDEO_CODEC_H264,
+		VIDEO_CODEC_H265,
+		VIDEO_CODEC_AV1,
+		VIDEO_CODEC_VP9,
+	};
+
+	enum ChromaSubsampling {
+		CHROMA_SUBSAMPLING_420,
+		CHROMA_SUBSAMPLING_422,
+		CHROMA_SUBSAMPLING_444,
+	};
+
+	enum BitDepth {
+		BIT_DEPTH_8,
+		BIT_DEPTH_10,
+		BIT_DEPTH_12,
+	};
+
+	DEFINE_ID(VideoSession);
+
+	virtual VideoSessionID create_h264_session(CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
+	virtual VideoSessionID create_h265_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
+	virtual VideoSessionID create_av1_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
+	virtual VideoSessionID create_vp9_session(CommandBufferID p_cmd_buffer, CodingDirection p_direction, ChromaSubsampling p_chroma_subsampling, uint8_t p_profile) = 0;
+
+	virtual void command_video_coding_begin(CommandBufferID p_cmd_buffer, VideoSessionID p_video_session, StdVideoH264SequenceParameterSet p_sps, StdVideoH264PictureParameterSet p_pps) = 0;
+	virtual void command_video_control(CommandBufferID p_cmd_buffer) = 0;
+	virtual void command_video_decode(CommandBufferID p_cmd_buffer, BufferID p_buffer, StdVideoDecodeH264PictureInfo p_std_h264_info, uint64_t p_buffer_offset, TextureID p_texture, uint32_t p_array_layer) = 0;
+	virtual void command_video_coding_end(CommandBufferID p_cmd_buffer) = 0;
 
 	/**************/
 	/**** MISC ****/

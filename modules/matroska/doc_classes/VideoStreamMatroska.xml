@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VideoStreamMatroska" inherits="VideoStream" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		[VideoStream] resource for Matroska videos.
+	</brief_description>
+	<description>
+		TODO
+	</description>
+	<tutorials>
+	</tutorials>
+</class>
