@@ -83,6 +83,7 @@ public:
 
 	typedef T ValueType;
 
+	struct ConstIterator;
 	struct Iterator {
 		_FORCE_INLINE_ T &operator*() const {
 			return E->get();
@@ -104,6 +105,10 @@ public:
 		Iterator(Element *p_E) { E = p_E; }
 		Iterator() {}
 		Iterator(const Iterator &p_it) { E = p_it.E; }
+
+		operator ConstIterator() const {
+			return ConstIterator(E);
+		}
 
 	private:
 		Element *E = nullptr;
