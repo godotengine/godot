@@ -31,7 +31,7 @@
 #pragma once
 
 #include "servers/rendering/rendering_device.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #define PRINT_PIPELINE_COMPILATION_KEYS 0
 
