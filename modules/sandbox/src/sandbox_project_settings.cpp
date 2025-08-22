@@ -139,11 +139,18 @@ void SandboxProjectSettings::register_settings() {
 template <typename TType>
 static TType get_setting(const char *p_setting) {
 	const ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	
+	// Check if the setting exists first
+	if (!project_settings->has_setting(p_setting)) {
+		// Return default value if setting doesn't exist
+		return TType();
+	}
+	
 	const Variant setting_value = project_settings->get_setting_with_override(p_setting);
 	const Variant::Type setting_type = setting_value.get_type();
 	const Variant::Type expected_type = Variant(TType()).get_type();
 
-	ERR_FAIL_COND_V(setting_type != expected_type, Variant());
+	ERR_FAIL_COND_V(setting_type != expected_type, TType());
 
 	return setting_value;
 }
