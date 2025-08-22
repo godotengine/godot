@@ -228,6 +228,7 @@ typedef void (*GDExtensionSpxExtOnRuntimePanic)(GdString msg);
 typedef void (*GDExtensionSpxExtPause)();
 typedef void (*GDExtensionSpxExtResume)();
 typedef void (*GDExtensionSpxExtIsPaused)(GdBool* ret_value);
+typedef void (*GDExtensionSpxExtNextFrame)();
 typedef void (*GDExtensionSpxExtDestroyAllPens)();
 typedef void (*GDExtensionSpxExtCreatePen)(GdObj* ret_value);
 typedef void (*GDExtensionSpxExtDestroyPen)(GdObj obj);

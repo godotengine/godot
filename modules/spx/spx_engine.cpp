@@ -133,6 +133,7 @@ void SpxEngine::register_callbacks(GDExtensionSpxCallbackInfoPtr callback_ptr) {
 	singleton->callbacks = *(SpxCallbackInfo *)callback_ptr;
 	singleton->global_id = 1;
 	singleton->is_spx_paused = false;
+	singleton->should_execute_single_frame = false;
 }
 
 SpxCallbackInfo *SpxEngine::get_callbacks() {
@@ -176,9 +177,15 @@ void SpxEngine::on_awake() {
 }
 
 void SpxEngine::on_fixed_update(float delta) {
-	if (has_exit || is_spx_paused) {
+	if (has_exit) {
 		return;
 	}
+	
+	// Single frame debugging mode: execute one frame even when paused
+	if (is_spx_paused && !should_execute_single_frame) {
+		return; // Normal pause, don't execute
+	}
+	
 	for (auto mgr : mgrs) {
 		mgr->on_fixed_update(delta);
 	}
@@ -188,9 +195,21 @@ void SpxEngine::on_fixed_update(float delta) {
 }
 
 void SpxEngine::on_update(float delta) {
-	if (has_exit || is_spx_paused) {
+	if (has_exit) {
 		return;
 	}
+	
+	// Single frame debugging mode: execute one frame even when paused
+	if (is_spx_paused && !should_execute_single_frame) {
+		return; // Normal pause, don't execute
+	}
+	
+	if (should_execute_single_frame) {
+		should_execute_single_frame = false;
+		// Execute single frame logic, then re-pause
+		// We'll re-pause at the end of this method
+	}
+	
 	if(is_defer_call_pause){
 		_on_godot_pause_changed(defer_pause_value);
 		is_defer_call_pause = false;
@@ -201,6 +220,15 @@ void SpxEngine::on_update(float delta) {
 	}
 	if (callbacks.func_on_engine_update != nullptr) {
 		callbacks.func_on_engine_update(delta);
+	}
+	
+	// Re-pause after single frame execution
+	if (is_spx_paused && !tree->is_paused()) {
+		if (Thread::is_main_thread()) {
+			tree->set_pause(true);
+		} else {
+			tree->call_deferred("set_pause", true);
+		}
 	}
 }
 
@@ -281,6 +309,26 @@ void SpxEngine::resume() {
 
 bool SpxEngine::is_paused() const {
 	return is_spx_paused;
+}
+
+void SpxEngine::next_frame() {
+	if (!is_spx_paused) {
+		return; // Only effective when paused
+	}
+	
+	// Temporarily unpause Godot engine to allow physics and signals
+	if (tree != nullptr) {
+		if (Thread::is_main_thread()) {
+			// Unpause to allow one frame of physics processing
+			tree->set_pause(false);
+			should_execute_single_frame = true;
+			// Note: We'll re-pause after processing in on_update()
+		} else {
+			// Defer unpause to main thread
+			tree->call_deferred("set_pause", false);
+			should_execute_single_frame = true;
+		}
+	}
 }
 
 // Internal method for Godot pause synchronization

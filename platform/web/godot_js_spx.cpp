@@ -183,6 +183,10 @@ void gdspx_ext_is_paused(GdBool* ret_val) {
 	*ret_val = extMgr->is_paused();
 }
 EMSCRIPTEN_KEEPALIVE
+void gdspx_ext_next_frame() {
+	 extMgr->next_frame();
+}
+EMSCRIPTEN_KEEPALIVE
 void gdspx_ext_destroy_all_pens() {
 	 extMgr->destroy_all_pens();
 }

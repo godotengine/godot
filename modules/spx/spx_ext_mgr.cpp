@@ -192,3 +192,7 @@ void SpxExtMgr::resume() {
 GdBool SpxExtMgr::is_paused() {
 	return Spx::is_paused();
 }
+
+void SpxExtMgr::next_frame() {
+	Spx::next_frame();
+}

@@ -171,3 +171,10 @@ bool Spx::is_paused() {
 	// Query operations are generally safe from any thread
 	return SPX_ENGINE->is_paused();
 }
+
+void Spx::next_frame() {
+	if (!initialed || !SpxEngine::has_initialed()) {
+		return;
+	}
+	SPX_ENGINE->next_frame();
+}
