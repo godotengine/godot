@@ -30,7 +30,13 @@
 
 #pragma once
 
+#include "core/error/error_list.h"
 #include "core/object/script_language.h"
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant.h"
 
 class ELFScriptLanguage : public ScriptLanguage {
 	GDCLASS(ELFScriptLanguage, ScriptLanguage);
@@ -70,8 +76,13 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const override;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const override;
 	virtual void get_public_constants(List<Pair<String, Variant>> *p_constants) const override;
+	virtual void get_public_annotations(List<MethodInfo> *p_annotations) const override;
 	virtual bool handles_global_class_type(const String &p_type) const override;
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
+
+	// Required abstract methods
+	virtual bool has_named_classes() const override;
+	virtual void profiling_set_save_native_calls(bool p_enable) override;
 
 	// Debug functions
 	virtual String debug_get_error() const override;

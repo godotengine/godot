@@ -36,10 +36,18 @@
 #include "../sandbox.h"
 #include "../sandbox_project_settings.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/variant/variant.h"
 #include "script_instance.h"
-#include <godot_cpp/classes/json.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
+#include "script_language_elf.h"
+
 static constexpr bool VERBOSE_ELFSCRIPT = false;
+
+// Provide access to ELF language singleton
+ScriptLanguage *get_elf_language_singleton() {
+	static ELFScriptLanguage elf_language;
+	return &elf_language;
+}
 
 void ELFScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sandbox_for", "for_object"), &ELFScript::get_sandbox_for);
@@ -114,66 +122,57 @@ static Dictionary method_to_dict(const MethodInfo &p_method) {
 	return d;
 }
 
-bool ELFScript::_editor_can_reload_from_file() {
+// Internal Script API methods (no underscore prefix)
+bool ELFScript::can_instantiate() const {
 	return true;
 }
-void ELFScript::_placeholder_erased(void *p_placeholder) {}
-bool ELFScript::_can_instantiate() const {
-	return true;
-}
-Ref<Script> ELFScript::_get_base_script() const {
+Ref<Script> ELFScript::get_base_script() const {
 	return Ref<Script>();
 }
-StringName ELFScript::_get_global_name() const {
+StringName ELFScript::get_global_name() const {
 	if (SandboxProjectSettings::use_global_sandbox_names()) {
 		return global_name;
 	}
 	return "ELFScript";
 }
-bool ELFScript::_inherits_script(const Ref<Script> &p_script) const {
+bool ELFScript::inherits_script(const Ref<Script> &p_script) const {
 	return false;
 }
-StringName ELFScript::_get_instance_base_type() const {
+StringName ELFScript::get_instance_base_type() const {
 	return StringName("Sandbox");
 }
-void *ELFScript::_instance_create(Object *p_for_object) const {
+ScriptInstance *ELFScript::instance_create(Object *p_for_object) {
 	ELFScriptInstance *instance = memnew(ELFScriptInstance(p_for_object, Ref<ELFScript>(this)));
 	instances.insert(instance);
-	return ScriptInstanceExtension::create_native_instance(instance);
+	return instance;
 }
-void *ELFScript::_placeholder_instance_create(Object *p_for_object) const {
-	return _instance_create(p_for_object);
+PlaceHolderScriptInstance *ELFScript::placeholder_instance_create(Object *p_for_object) {
+	return nullptr; // TODO: implement if needed
 }
-bool ELFScript::_instance_has(Object *p_object) const {
+bool ELFScript::instance_has(const Object *p_object) const {
 	return false;
 }
-bool ELFScript::_has_source_code() const {
+bool ELFScript::has_source_code() const {
 	return true;
 }
-String ELFScript::_get_source_code() const {
+String ELFScript::get_source_code() const {
 	if (source_code.is_empty()) {
 		return String();
 	}
 	if (functions.is_empty()) {
-		return JSON::stringify(function_names, "  ");
+		return Variant(function_names).stringify();
 	} else {
-		return JSON::stringify(functions, "  ");
+		return Variant(functions).stringify();
 	}
 }
-void ELFScript::_set_source_code(const String &p_code) {
+void ELFScript::set_source_code(const String &p_code) {
 }
-Error ELFScript::_reload(bool p_keep_state) {
+Error ELFScript::reload(bool p_keep_state) {
 	this->source_version++;
 	this->set_file(this->path);
 	return Error::OK;
 }
-TypedArray<Dictionary> ELFScript::_get_documentation() const {
-	return TypedArray<Dictionary>();
-}
-String ELFScript::_get_class_icon_path() const {
-	return String("res://addons/godot_sandbox/Sandbox.svg");
-}
-bool ELFScript::_has_method(const StringName &p_method) const {
+bool ELFScript::has_method(const StringName &p_method) const {
 	bool result = function_names.find(p_method) != -1;
 	if (!result) {
 		if (p_method == StringName("_init"))
@@ -186,98 +185,64 @@ bool ELFScript::_has_method(const StringName &p_method) const {
 
 	return result;
 }
-bool ELFScript::_has_static_method(const StringName &p_method) const {
+bool ELFScript::has_static_method(const StringName &p_method) const {
 	return false;
 }
-Dictionary ELFScript::_get_method_info(const StringName &p_method) const {
-	for (int i = 0; i < functions.size(); i++) {
-		Dictionary function = functions[i];
-		if (StringName(function.get("name", "")) == p_method) {
-			return function;
-		}
-	}
+MethodInfo ELFScript::get_method_info(const StringName &p_method) const {
 	for (const String &function : function_names) {
 		if (function == p_method) {
 			if constexpr (VERBOSE_ELFSCRIPT) {
-				printf("ELFScript::_get_method_info: method %s\n", p_method.to_ascii_buffer().ptr());
+				printf("ELFScript::get_method_info: method %s\n", String(p_method).utf8().ptr());
 			}
-			Dictionary method;
-			method["name"] = function;
-			method["args"] = Array();
-			method["default_args"] = Array();
-			Dictionary type;
-			type["name"] = "type";
-			type["type"] = Variant::Type::OBJECT;
-			type["class_name"] = "Object";
-			type["hint"] = PropertyHint::PROPERTY_HINT_NONE;
-			type["hint_string"] = String("Return value");
-			type["usage"] = PROPERTY_USAGE_DEFAULT;
-			method["return"] = type;
-			method["flags"] = METHOD_FLAG_VARARG;
-			return method;
+			MethodInfo mi;
+			mi.name = function;
+			mi.flags = METHOD_FLAG_VARARG;
+			return mi;
 		}
 	}
-	return Dictionary();
+	return MethodInfo();
 }
-bool ELFScript::_is_tool() const {
+bool ELFScript::is_tool() const {
 	return true;
 }
-bool ELFScript::_is_valid() const {
+bool ELFScript::is_valid() const {
 	return true;
 }
-bool ELFScript::_is_abstract() const {
+bool ELFScript::is_abstract() const {
 	return false;
 }
-ScriptLanguage *ELFScript::_get_language() const {
-	return get_elf_language();
+ScriptLanguage *ELFScript::get_language() const {
+	return get_elf_language_singleton();
 }
-bool ELFScript::_has_script_signal(const StringName &p_signal) const {
+bool ELFScript::has_script_signal(const StringName &p_signal) const {
 	return false;
 }
-TypedArray<Dictionary> ELFScript::_get_script_signal_list() const {
-	return TypedArray<Dictionary>();
+void ELFScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+	// No signals to add
 }
 
-bool ELFScript::_has_property_default_value(const StringName &p_property) const {
+bool ELFScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
 	return false;
 }
-Variant ELFScript::_get_property_default_value(const StringName &p_property) const {
-	return Variant();
+void ELFScript::update_exports() {
 }
-TypedArray<Dictionary> ELFScript::_get_script_property_list() const {
-	TypedArray<Dictionary> properties;
-	for (const PropertyInfo &prop : Sandbox::create_sandbox_property_list()) {
-		properties.push_back(prop_to_dict(prop));
+void ELFScript::get_script_method_list(List<MethodInfo> *p_list) const {
+	// Convert our functions to MethodInfo format
+	for (const String &function : function_names) {
+		MethodInfo mi;
+		mi.name = function;
+		mi.flags = METHOD_FLAG_VARARG;
+		p_list->push_back(mi);
 	}
-	return properties;
 }
-
-void ELFScript::_update_exports() {}
-TypedArray<Dictionary> ELFScript::_get_script_method_list() const {
-	if (!this->functions.is_empty()) {
-		return functions;
+void ELFScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+	std::vector<PropertyInfo> props = Sandbox::create_sandbox_property_list();
+	for (const PropertyInfo &prop : props) {
+		p_list->push_back(prop);
 	}
-	TypedArray<Dictionary> functions_array;
-	for (String function : function_names) {
-		Dictionary method;
-		method["name"] = function;
-		method["args"] = Array();
-		method["default_args"] = Array();
-		Dictionary type;
-		type["name"] = "type";
-		type["type"] = Variant::Type::NIL;
-		//type["class_name"] = "class";
-		type["hint"] = PropertyHint::PROPERTY_HINT_NONE;
-		type["hint_string"] = String();
-		type["usage"] = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NIL_IS_VARIANT;
-		method["return"] = type;
-		method["flags"] = METHOD_FLAG_VARARG;
-		functions_array.push_back(method);
-	}
-	return functions_array;
 }
-int32_t ELFScript::_get_member_line(const StringName &p_member) const {
-	PackedStringArray formatted_functions = _get_source_code().split("\n");
+int ELFScript::get_member_line(const StringName &p_member) const {
+	PackedStringArray formatted_functions = get_source_code().split("\n");
 	for (int i = 0; i < formatted_functions.size(); i++) {
 		if (formatted_functions[i].find(p_member) != -1) {
 			return i + 1;
@@ -285,18 +250,37 @@ int32_t ELFScript::_get_member_line(const StringName &p_member) const {
 	}
 	return 0;
 }
-Dictionary ELFScript::_get_constants() const {
-	return Dictionary();
+void ELFScript::get_constants(HashMap<StringName, Variant> *p_constants) {
+	// No constants to add
 }
-TypedArray<StringName> ELFScript::_get_members() const {
-	return TypedArray<StringName>();
+void ELFScript::get_members(HashSet<StringName> *p_members) {
+	// Add function names as members
+	for (const String &function : function_names) {
+		p_members->insert(StringName(function));
+	}
 }
-bool ELFScript::_is_placeholder_fallback_enabled() const {
-	return false;
-}
-Variant ELFScript::_get_rpc_config() const {
+const Variant ELFScript::get_rpc_config() const {
 	return Variant();
 }
+
+StringName ELFScript::get_doc_class_name() const {
+	return get_global_name();
+}
+
+#ifdef TOOLS_ENABLED
+void ELFScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
+	// Handle placeholder cleanup if needed
+}
+String ELFScript::get_class_icon_path() const {
+	return String("res://addons/godot_sandbox/Sandbox.svg");
+}
+Vector<DocData::ClassDoc> ELFScript::get_documentation() const {
+	return Vector<DocData::ClassDoc>();
+}
+bool ELFScript::is_placeholder_fallback_enabled() const {
+	return false;
+}
+#endif
 
 const PackedByteArray &ELFScript::get_content() {
 	return source_code;
@@ -378,10 +362,6 @@ void ELFScript::update_public_api_functions() {
 }
 
 String ELFScript::get_dockerized_program_path() const {
-	// Get the absolute path without the file name
-	String path = get_path().get_base_dir().replace("res://", "") + "/";
-	String foldername = Docker::GetFolderName(get_path().get_base_dir());
-	// Return the path to the folder with the name of the folder + .elf
-	// Eg. res://foldername becomes foldername/foldername.elf
-	return path + foldername + String(".elf");
+	// Docker support removed - return empty string
+	return String();
 }

@@ -31,14 +31,15 @@
 #include "script_instance.h"
 
 #include "../cpp/script_cpp.h"
-#include "../rust/script_rust.h"
+// #include "../rust/script_rust.h" // Rust support removed
 #include "../sandbox_project_settings.h"
 #include "../scoped_tree_base.h"
-#include "../zig/script_zig.h"
+// #include "../zig/script_zig.h" // Zig support not available
+#include "core/object/callable_method_pointer.h"
+#include "core/object/object.h"
+#include "core/templates/local_vector.h"
 #include "script_elf.h"
 #include "script_instance_helper.h" // register_types.h
-#include <godot_cpp/core/object.hpp>
-#include <godot_cpp/templates/local_vector.hpp>
 static constexpr bool VERBOSE_LOGGING = false;
 
 #ifdef PLATFORM_HAS_EDITOR
@@ -65,31 +66,8 @@ static void handle_language_warnings(Array &warnings, const Ref<ELFScript> &scri
 				warnings.push_back(std::move(w));
 			}
 		}
-	} else if (language == "Rust") {
-		// Compare Rust version against Docker version
-		const int docker_version = RustScript::DockerContainerVersion();
-		if (docker_version < 0) {
-			warnings.push_back("Rust Docker container not found");
-		} else {
-			const int script_version = script->get_elf_api_version();
-			if (script_version < docker_version) {
-				String w = "Rust API version is newer (" + String::num_int64(script_version) + " vs " + String::num_int64(docker_version) + "), please rebuild the program";
-				warnings.push_back(std::move(w));
-			}
-		}
-	} else if (language == "Zig") {
-		// Compare Zig version against Docker version
-		const int docker_version = ZigScript::DockerContainerVersion();
-		if (docker_version < 0) {
-			warnings.push_back("Zig Docker container not found");
-		} else {
-			const int script_version = script->get_elf_api_version();
-			if (script_version < docker_version) {
-				String w = "Zig API version is newer (" + String::num_int64(script_version) + " vs " + String::num_int64(docker_version) + "), please rebuild the program";
-				warnings.push_back(std::move(w));
-			}
-		}
 	}
+	// Rust and Zig support commented out - not available in this build
 }
 #endif
 
@@ -136,12 +114,12 @@ void ELFScriptInstance::notification(int32_t p_what, bool p_reversed) {
 Variant ELFScriptInstance::callp(
 		const StringName &p_method,
 		const Variant **p_args, const int p_argument_count,
-		GDExtensionCallError &r_error) {
+		Callable::CallError &r_error) {
 	if (script.is_null()) {
 		if constexpr (VERBOSE_LOGGING) {
 			ERR_PRINT("callp: script is null");
 		}
-		r_error.error = GDEXTENSION_CALL_ERROR_INSTANCE_IS_NULL;
+		r_error.error = Callable::CallError::CALL_ERROR_INSTANCE_IS_NULL;
 		return Variant();
 	}
 
@@ -158,13 +136,13 @@ retry_callp:
 #ifdef PLATFORM_HAS_EDITOR
 	// Handle internal methods
 	if (p_method == StringName("_get_editor_name")) {
-		r_error.error = GDEXTENSION_CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 		return Variant("ELFScriptInstance");
 	} else if (p_method == StringName("_hide_script_from_inspector")) {
-		r_error.error = GDEXTENSION_CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 		return false;
 	} else if (p_method == StringName("_is_read_only")) {
-		r_error.error = GDEXTENSION_CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 		return false;
 	} else if (p_method == StringName("_get_configuration_warnings")) {
 		// Returns an array of strings with warnings about the script configuration
@@ -176,7 +154,7 @@ retry_callp:
 			warnings.push_back("Unknown programming language");
 		}
 		handle_language_warnings(warnings, script);
-		r_error.error = GDEXTENSION_CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 		return warnings;
 	}
 #endif
@@ -225,10 +203,10 @@ retry_callp:
 		for (int i = 0; i < p_argument_count; i++) {
 			args.push_back(*p_args[i]);
 		}
-		r_error.error = GDEXTENSION_CALL_OK;
+		r_error.error = Callable::CallError::CALL_OK;
 		return current_sandbox->callv(p_method, args);
 	}
-	r_error.error = GDEXTENSION_CALL_ERROR_INVALID_METHOD;
+	r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
 	return Variant();
 }
 
@@ -256,39 +234,30 @@ void ELFScriptInstance::update_methods() const {
 	}
 }
 
-const GDExtensionMethodInfo *ELFScriptInstance::get_method_list(uint32_t *r_count) const {
+void ELFScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 	if (script.is_null()) {
-		*r_count = 0;
-		return nullptr;
+		return;
 	}
 
 	if (!this->has_updated_methods) {
 		this->update_methods();
 	}
 
-	const int size = methods_info.size();
-	GDExtensionMethodInfo *list = memnew_arr(GDExtensionMethodInfo, size);
-	int i = 0;
 	for (const ::MethodInfo &method_info : methods_info) {
 		if constexpr (VERBOSE_LOGGING) {
 			ERR_PRINT("ELFScriptInstance::get_method_list: method " + String(method_info.name));
 		}
-		list[i] = create_method_info(method_info);
-		i++;
+		p_list->push_back(method_info);
 	}
-
-	*r_count = size;
-	return list;
 }
 
-const GDExtensionPropertyInfo *ELFScriptInstance::get_property_list(uint32_t *r_count) const {
+void ELFScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 	auto [sandbox, auto_created] = get_sandbox();
 	if (!sandbox) {
 		if constexpr (VERBOSE_LOGGING) {
 			printf("ELFScriptInstance::get_property_list: no sandbox\n");
 		}
-		*r_count = 0;
-		return nullptr;
+		return;
 	}
 
 	std::vector<PropertyInfo> prop_list;
@@ -301,43 +270,21 @@ const GDExtensionPropertyInfo *ELFScriptInstance::get_property_list(uint32_t *r_
 	// Sandboxed properties
 	const std::vector<SandboxProperty> &properties = sandbox->get_properties();
 
-	*r_count = properties.size() + prop_list.size();
-	GDExtensionPropertyInfo *list = memnew_arr(GDExtensionPropertyInfo, *r_count + 2);
-	const GDExtensionPropertyInfo *list_ptr = list;
-
 	for (const SandboxProperty &property : properties) {
 		if constexpr (VERBOSE_LOGGING) {
 			printf("ELFScriptInstance::get_property_list %s\n", String(property.name()).utf8().ptr());
 			fflush(stdout);
 		}
-		list->name = stringname_alloc(property.name());
-		list->class_name = stringname_alloc("Variant");
-		list->type = (GDExtensionVariantType)property.type();
-		list->hint = 0;
-		list->hint_string = string_alloc("");
-		list->usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_SCRIPT_VARIABLE | PROPERTY_USAGE_NIL_IS_VARIANT;
-		list++;
+		PropertyInfo prop_info(property.type(), property.name(), PROPERTY_HINT_NONE, "",
+				PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_SCRIPT_VARIABLE | PROPERTY_USAGE_NIL_IS_VARIANT);
+		p_properties->push_back(prop_info);
 	}
-	for (int i = 0; i < prop_list.size(); i++) {
-		const PropertyInfo &prop = prop_list[i];
+	for (const PropertyInfo &prop : prop_list) {
 		if constexpr (VERBOSE_LOGGING) {
 			printf("ELFScriptInstance::get_property_list %s\n", String(prop.name).utf8().ptr());
 			fflush(stdout);
 		}
-		list->name = stringname_alloc(prop.name);
-		list->class_name = stringname_alloc(prop.class_name);
-		list->type = (GDExtensionVariantType) int(prop.type);
-		list->hint = prop.hint;
-		list->hint_string = string_alloc(prop.hint_string);
-		list->usage = prop.usage;
-		list++;
-	}
-
-	return list_ptr;
-}
-void ELFScriptInstance::free_property_list(const GDExtensionPropertyInfo *p_list, uint32_t p_count) const {
-	if (p_list) {
-		memdelete_arr(p_list);
+		p_properties->push_back(prop);
 	}
 }
 
@@ -345,41 +292,43 @@ Variant::Type ELFScriptInstance::get_property_type(const StringName &p_name, boo
 	auto [sandbox, created] = get_sandbox();
 	if (sandbox) {
 		if (const SandboxProperty *prop = sandbox->find_property_or_null(p_name)) {
-			*r_is_valid = true;
+			if (r_is_valid) {
+				*r_is_valid = true;
+			}
 			return prop->type();
 		}
 	}
-	*r_is_valid = false;
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
 	return Variant::NIL;
 }
 
-void ELFScriptInstance::get_property_state(GDExtensionScriptInstancePropertyStateAdd p_add_func, void *p_userdata) {
-}
-
-bool ELFScriptInstance::validate_property(GDExtensionPropertyInfo &p_property) const {
+void ELFScriptInstance::validate_property(PropertyInfo &p_property) const {
 	auto [sandbox, created] = get_sandbox();
 	if (!sandbox) {
 		if constexpr (VERBOSE_LOGGING) {
 			printf("ELFScriptInstance::validate_property: no sandbox\n");
 		}
-		return false;
+		return;
 	}
 	for (const SandboxProperty &property : sandbox->get_properties()) {
-		if (*(StringName *)p_property.name == property.name()) {
+		if (p_property.name == property.name()) {
 			if constexpr (VERBOSE_LOGGING) {
 				printf("ELFScriptInstance::validate_property %s => true\n", String(property.name()).utf8().ptr());
 			}
-			return true;
+			return;
 		}
 	}
 	if constexpr (VERBOSE_LOGGING) {
-		printf("ELFScriptInstance::validate_property %s => false\n", String(*(StringName *)p_property.name).utf8().ptr());
+		printf("ELFScriptInstance::validate_property %s => false\n", String(p_property.name).utf8().ptr());
 	}
-	return false;
 }
 
-GDExtensionInt ELFScriptInstance::get_method_argument_count(const StringName &p_method, bool &r_valid) const {
-	r_valid = false;
+int ELFScriptInstance::get_method_argument_count(const StringName &p_method, bool *r_is_valid) const {
+	if (r_is_valid) {
+		*r_is_valid = false;
+	}
 	return 0;
 }
 
@@ -401,18 +350,6 @@ bool ELFScriptInstance::has_method(const StringName &p_name) const {
 		fprintf(stderr, "ELFScriptInstance::has_method %s => %d\n", String(p_name).utf8().ptr(), result);
 	}
 	return result;
-}
-
-void ELFScriptInstance::free_method_list(const GDExtensionMethodInfo *p_list, uint32_t p_count) const {
-	if (p_list) {
-		for (uint32_t i = 0; i < p_count; i++) {
-			const GDExtensionMethodInfo &method_info = p_list[i];
-			if (method_info.arguments) {
-				memdelete_arr(method_info.arguments);
-			}
-		}
-		memdelete_arr(p_list);
-	}
 }
 
 bool ELFScriptInstance::property_can_revert(const StringName &p_name) const {
@@ -509,8 +446,8 @@ Variant ELFScriptInstance::property_get_fallback(const StringName &p_name, bool 
 	return Variant::NIL;
 }
 
-ScriptLanguage *ELFScriptInstance::_get_language() {
-	return get_elf_language();
+ScriptLanguage *ELFScriptInstance::get_language() {
+	return get_elf_language_singleton();
 }
 
 ELFScriptInstance::ELFScriptInstance(Object *p_owner, const Ref<ELFScript> p_script) :

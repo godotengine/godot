@@ -31,8 +31,8 @@
 #pragma once
 
 #include "../register_types.h"
-#include <godot_cpp/templates/local_vector.hpp>
-#include <godot_cpp/templates/pair.hpp>
+#include "core/templates/local_vector.h"
+#include "core/templates/pair.h"
 
 static int get_len_from_ptr(const void *p_ptr) {
 	return *((int *)p_ptr - 1);
@@ -91,7 +91,7 @@ static GDExtensionMethodInfo create_method_info(const MethodInfo &method_info) {
 		.default_argument_count = 0,
 		.default_arguments = nullptr,
 	};
-	if (!method_info.arguments.empty()) {
+	if (method_info.arguments.size() > 0) {
 		result.arguments = memnew_arr(GDExtensionPropertyInfo, method_info.arguments.size());
 		for (int i = 0; i < method_info.arguments.size(); i++) {
 			const PropertyInfo &arg = method_info.arguments[i];

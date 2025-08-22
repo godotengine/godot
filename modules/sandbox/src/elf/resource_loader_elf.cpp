@@ -30,11 +30,18 @@
 
 #include "resource_loader_elf.h"
 #include "../sandbox.h"
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
+#include "core/io/resource.h"
+#include "core/io/resource_loader.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
 #include "script_elf.h"
 static constexpr bool VERBOSE_LOADER = false;
 
-Variant ResourceFormatLoaderELF::_load(const String &p_path, const String &original_path, bool use_sub_threads, int32_t cache_mode) const {
+Ref<Resource> ResourceFormatLoaderELF::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, ResourceFormatLoader::CacheMode p_cache_mode) {
 #ifdef RISCV_BINARY_TRANSLATION
 	// We will automatically load .dll's or .so's with the same basename and path as the ELF file.
 	String dllpath = p_path.get_basename();
@@ -45,7 +52,8 @@ Variant ResourceFormatLoaderELF::_load(const String &p_path, const String &origi
 #else
 	dllpath += ".so";
 #endif
-	if (FileAccess::file_exists(dllpath)) {
+	Ref<FileAccess> fa = FileAccess::open(dllpath, FileAccess::READ);
+	if (fa.is_valid()) {
 		// Load the binary translation library.
 		if (!Sandbox::load_binary_translation(dllpath, true)) {
 			WARN_PRINT("Failed to auto-load binary translation library: " + dllpath);
@@ -61,23 +69,16 @@ Variant ResourceFormatLoaderELF::_load(const String &p_path, const String &origi
 	elf_model->reload(false);
 	return elf_model;
 }
-PackedStringArray ResourceFormatLoaderELF::_get_recognized_extensions() const {
-	PackedStringArray array;
-	array.push_back("elf");
-	return array;
+
+void ResourceFormatLoaderELF::get_recognized_extensions(List<String> *p_extensions) const {
+	p_extensions->push_back("elf");
 }
-bool ResourceFormatLoaderELF::_recognize_path(const ::String &path, const ::StringName &type) const {
-	String el = path.get_extension().to_lower();
-	if (el == "elf") {
-		return true;
-	}
-	return false;
+
+bool ResourceFormatLoaderELF::handles_type(const String &p_type) const {
+	return p_type == "ELFScript" || p_type == "Script";
 }
-bool ResourceFormatLoaderELF::_handles_type(const StringName &type) const {
-	String type_str = type;
-	return type_str == "ELFScript" || type_str == "Script";
-}
-String ResourceFormatLoaderELF::_get_resource_type(const String &p_path) const {
+
+String ResourceFormatLoaderELF::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
 	if (el == "elf") {
 		return "ELFScript";

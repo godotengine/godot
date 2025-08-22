@@ -30,7 +30,15 @@
 
 #include "resource_saver_elf.h"
 #include "../register_types.h"
+#include "core/error/error_list.h"
 #include "core/io/file_access.h"
+#include "core/io/resource.h"
+#include "core/io/resource_uid.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/string/ustring.h"
+#include "core/templates/list.h"
+#include "core/typedefs.h"
 #include "script_elf.h"
 #include "script_language_elf.h"
 
@@ -44,19 +52,21 @@ Error ResourceFormatSaverELF::save(const Ref<Resource> &p_resource, const String
 	elf_model->reload(true);
 	return Error::OK;
 }
-Error ResourceFormatSaverELF::set_uid(const String &p_path, int64_t p_uid) {
+
+Error ResourceFormatSaverELF::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	return Error::OK;
 }
+
 bool ResourceFormatSaverELF::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<ELFScript>(p_resource.ptr()) != nullptr;
 }
-PackedStringArray ResourceFormatSaverELF::get_recognized_extensions(const Ref<Resource> &p_resource) const {
-	PackedStringArray array;
-	if (Object::cast_to<ELFScript>(p_resource.ptr()) == nullptr)
-		return array;
-	array.push_back("elf");
-	return array;
+
+void ResourceFormatSaverELF::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
+	if (Object::cast_to<ELFScript>(p_resource.ptr()) != nullptr) {
+		p_extensions->push_back("elf");
+	}
 }
+
 bool ResourceFormatSaverELF::recognize_path(const Ref<Resource> &p_resource, const String &p_path) const {
 	return Object::cast_to<ELFScript>(p_resource.ptr()) != nullptr;
 }

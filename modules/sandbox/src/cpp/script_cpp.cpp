@@ -30,13 +30,14 @@
 
 #include "script_cpp.h"
 
+#include "../elf/script_elf.h"
 #include "../elf/script_instance.h"
 #include "../sandbox_project_settings.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
 #include "script_cpp_instance.h"
 #include "script_language_cpp.h"
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/core/class_db.hpp>
 static constexpr bool VERBOSE_LOGGING = false;
 
 bool CPPScript::DetectCMakeOrSConsProject() {
@@ -53,18 +54,18 @@ bool CPPScript::DetectCMakeOrSConsProject() {
 	detected = true;
 
 	// Check for CMakeLists.txt in the project root
-	const bool cmake_root = FileAccess::file_exists(project_root + "CMakeLists.txt");
-	if (cmake_root) {
+	Ref<FileAccess> fa_cmake = FileAccess::open(project_root + "CMakeLists.txt", FileAccess::READ);
+	if (fa_cmake.is_valid()) {
 		detected_value = true;
 		return true;
 	}
-	const bool cmake_dir = FileAccess::file_exists(project_root + "cmake/CMakeLists.txt");
-	if (cmake_dir) {
+	Ref<FileAccess> fa_cmake_dir = FileAccess::open(project_root + "cmake/CMakeLists.txt", FileAccess::READ);
+	if (fa_cmake_dir.is_valid()) {
 		detected_value = true;
 		return true;
 	}
-	const bool scons_root = FileAccess::file_exists(project_root + "SConstruct");
-	if (scons_root) {
+	Ref<FileAccess> fa_scons = FileAccess::open(project_root + "SConstruct", FileAccess::READ);
+	if (fa_scons.is_valid()) {
 		detected_value = true;
 		return true;
 	}
@@ -72,56 +73,54 @@ bool CPPScript::DetectCMakeOrSConsProject() {
 	return false;
 }
 
-bool CPPScript::_editor_can_reload_from_file() {
+bool CPPScript::can_instantiate() const {
 	return true;
 }
-void CPPScript::_placeholder_erased(void *p_placeholder) {}
-bool CPPScript::_can_instantiate() const {
-	return true;
-}
-Ref<Script> CPPScript::_get_base_script() const {
+Ref<Script> CPPScript::get_base_script() const {
 	return Ref<Script>();
 }
-StringName CPPScript::_get_global_name() const {
+StringName CPPScript::get_global_name() const {
 	return PathToGlobalName(this->path);
 }
-bool CPPScript::_inherits_script(const Ref<Script> &p_script) const {
+bool CPPScript::inherits_script(const Ref<Script> &p_script) const {
 	return false;
 }
-StringName CPPScript::_get_instance_base_type() const {
+StringName CPPScript::get_instance_base_type() const {
 	return StringName("Sandbox");
 }
-void *CPPScript::_instance_create(Object *p_for_object) const {
+ScriptInstance *CPPScript::instance_create(Object *p_for_object) {
 	CPPScriptInstance *instance = memnew(CPPScriptInstance(p_for_object, Ref<CPPScript>(this)));
 	instances.insert(instance);
-	return ScriptInstanceExtension::create_native_instance(instance);
+	return instance;
 }
-void *CPPScript::_placeholder_instance_create(Object *p_for_object) const {
-	return _instance_create(p_for_object);
+PlaceHolderScriptInstance *CPPScript::placeholder_instance_create(Object *p_for_object) {
+	return nullptr; // TODO: implement if needed
 }
-bool CPPScript::_instance_has(Object *p_object) const {
+bool CPPScript::instance_has(const Object *p_object) const {
 	return false;
 }
-bool CPPScript::_has_source_code() const {
+bool CPPScript::has_source_code() const {
 	return true;
 }
-String CPPScript::_get_source_code() const {
+String CPPScript::get_source_code() const {
 	return source_code;
 }
-void CPPScript::_set_source_code(const String &p_code) {
+void CPPScript::set_source_code(const String &p_code) {
 	source_code = p_code;
 }
-Error CPPScript::_reload(bool p_keep_state) {
+Error CPPScript::reload(bool p_keep_state) {
 	this->set_file(this->path);
 	return Error::OK;
 }
-TypedArray<Dictionary> CPPScript::_get_documentation() const {
-	return TypedArray<Dictionary>();
+#ifdef TOOLS_ENABLED
+Vector<DocData::ClassDoc> CPPScript::get_documentation() const {
+	return Vector<DocData::ClassDoc>();
 }
-String CPPScript::_get_class_icon_path() const {
+#endif
+String CPPScript::get_class_icon_path() const {
 	return String("res://addons/godot_sandbox/CPPScript.svg");
 }
-bool CPPScript::_has_method(const StringName &p_method) const {
+bool CPPScript::has_method(const StringName &p_method) const {
 	if (p_method == StringName("_init"))
 		return true;
 	if (instances.is_empty()) {
@@ -150,122 +149,90 @@ bool CPPScript::_has_method(const StringName &p_method) const {
 	}
 	return false;
 }
-bool CPPScript::_has_static_method(const StringName &p_method) const {
+bool CPPScript::has_static_method(const StringName &p_method) const {
 	return false;
 }
-Dictionary CPPScript::_get_method_info(const StringName &p_method) const {
+MethodInfo CPPScript::get_method_info(const StringName &p_method) const {
 	if (instances.is_empty()) {
 		if constexpr (VERBOSE_LOGGING) {
 			ERR_PRINT("CPPScript::_get_method_info: No instances available.");
 		}
-		return Dictionary();
+		return MethodInfo();
 	}
 	CPPScriptInstance *instance = *instances.begin();
 	if (instance == nullptr) {
 		if constexpr (VERBOSE_LOGGING) {
-			ERR_PRINT("CPPScript::_get_method_info: Instance is null.");
+			ERR_PRINT("CPPScript::get_method_info: Instance is null.");
 		}
-		return Dictionary();
+		return MethodInfo();
 	}
 	ELFScriptInstance *elf = instance->get_script_instance();
 	if (elf == nullptr) {
-		return Dictionary();
+		return MethodInfo();
 	}
 	// Get the method information from the ELFScriptInstance
-	return elf->get_elf_script()->_get_method_info(p_method);
+	MethodInfo mi;
+	mi.name = p_method;
+	mi.flags = METHOD_FLAG_VARARG;
+	return mi;
 }
-bool CPPScript::_is_tool() const {
+bool CPPScript::is_tool() const {
 	return true;
 }
-bool CPPScript::_is_valid() const {
+bool CPPScript::is_valid() const {
 	return true;
 }
-bool CPPScript::_is_abstract() const {
+bool CPPScript::is_abstract() const {
 	return false;
 }
-ScriptLanguage *CPPScript::_get_language() const {
-	return CPPScriptLanguage::get_singleton();
+ScriptLanguage *CPPScript::get_language() const {
+	return nullptr; // TODO: implement CPPScriptLanguage singleton
 }
-bool CPPScript::_has_script_signal(const StringName &p_signal) const {
+bool CPPScript::has_script_signal(const StringName &p_signal) const {
 	return false;
 }
-TypedArray<Dictionary> CPPScript::_get_script_signal_list() const {
-	return TypedArray<Dictionary>();
-}
-bool CPPScript::_has_property_default_value(const StringName &p_property) const {
-	return false;
-}
-Variant CPPScript::_get_property_default_value(const StringName &p_property) const {
-	return Variant();
-}
-void CPPScript::_update_exports() {}
-TypedArray<Dictionary> CPPScript::_get_script_method_list() const {
-	if (instances.is_empty()) {
-		if constexpr (VERBOSE_LOGGING) {
-			ERR_PRINT("CPPScript::_get_script_method_list: No instances available.");
-		}
-		return {};
-	}
-	CPPScriptInstance *instance = *instances.begin();
-	if (instance == nullptr) {
-		if constexpr (VERBOSE_LOGGING) {
-			ERR_PRINT("CPPScript::_get_script_method_list: Instance is null.");
-		}
-		return {};
-	}
-	ELFScriptInstance *elf = instance->get_script_instance();
-	if (elf == nullptr) {
-		return {};
-	}
-	// Get the method information from the ELFScriptInstance
-	return elf->get_elf_script()->_get_script_method_list();
-}
-TypedArray<Dictionary> CPPScript::_get_script_property_list() const {
-	TypedArray<Dictionary> properties;
-	Dictionary property;
-	property["name"] = "associated_script";
-	property["type"] = Variant::OBJECT;
-	property["hint"] = PROPERTY_HINT_NODE_TYPE;
-	property["hint_string"] = "Node";
-	property["usage"] = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE;
-	//property["default_value"] = source_code;
-	properties.push_back(property);
-	if (instances.is_empty()) {
-		if constexpr (VERBOSE_LOGGING) {
-			ERR_PRINT("CPPScript::_get_script_property_list: No instances available.");
-		}
-		return properties;
-	}
-	CPPScriptInstance *instance = *instances.begin();
-	if (instance == nullptr) {
-		if constexpr (VERBOSE_LOGGING) {
-			ERR_PRINT("CPPScript::_get_script_property_list: Instance is null.");
-		}
-		return properties;
-	}
-	ELFScriptInstance *elf = instance->get_script_instance();
-	if (elf == nullptr) {
-		return properties;
-	}
-	// Get the method information from the ELFScriptInstance
-	properties.append_array(elf->get_elf_script()->_get_script_property_list());
-	return properties;
-}
-int32_t CPPScript::_get_member_line(const StringName &p_member) const {
+void CPPScript::update_exports() {}
+int CPPScript::get_member_line(const StringName &p_member) const {
 	return 0;
 }
-Dictionary CPPScript::_get_constants() const {
-	return Dictionary();
+void CPPScript::get_constants(HashMap<StringName, Variant> *p_constants) {
+	// No constants to add
 }
-TypedArray<StringName> CPPScript::_get_members() const {
-	return TypedArray<StringName>();
+void CPPScript::get_members(HashSet<StringName> *p_members) {
+	// No members to add
 }
-bool CPPScript::_is_placeholder_fallback_enabled() const {
+bool CPPScript::is_placeholder_fallback_enabled() const {
 	return false;
 }
-Variant CPPScript::_get_rpc_config() const {
+const Variant CPPScript::get_rpc_config() const {
 	return Variant();
 }
+
+StringName CPPScript::get_doc_class_name() const {
+	return get_global_name();
+}
+
+void CPPScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+	// No signals to add
+}
+
+bool CPPScript::get_property_default_value(const StringName &p_property, Variant &r_value) const {
+	return false;
+}
+
+void CPPScript::get_script_method_list(List<MethodInfo> *p_list) const {
+	// Add basic method info for available functions
+}
+
+void CPPScript::get_script_property_list(List<PropertyInfo> *p_list) const {
+	// Add script properties if needed
+}
+
+#ifdef TOOLS_ENABLED
+void CPPScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
+	// Handle placeholder cleanup if needed
+}
+#endif
 
 CPPScript::CPPScript() {
 	source_code = R"C0D3(#include "api.hpp"
@@ -313,12 +280,13 @@ bool CPPScript::detect_script_instance() {
 		return false;
 	}
 	const String elf_path = this->path.get_basename() + ".elf";
-	if (FileAccess::file_exists(elf_path)) {
+	Ref<FileAccess> fa_elf = FileAccess::open(elf_path, FileAccess::READ);
+	if (fa_elf.is_valid()) {
 		if constexpr (VERBOSE_LOGGING) {
 			ERR_PRINT("CPPScript::detect_script_instance: Found ELF script at " + elf_path);
 		}
 		// Try to get the resource from the path
-		Ref<ELFScript> res = ResourceLoader::get_singleton()->load(elf_path, "ELFScript");
+		Ref<ELFScript> res = ResourceLoader::load(elf_path, "ELFScript");
 		if (res.is_valid()) {
 			if constexpr (VERBOSE_LOGGING) {
 				ERR_PRINT("CPPScript::detect_script_instance: ELF script loaded successfully.");
