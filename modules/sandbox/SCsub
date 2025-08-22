@@ -20,9 +20,9 @@ env_sandbox.Append(CPPDEFINES=["RISCV_SYSCALLS_MAX=600", "RISCV_BRK_MEMORY_SIZE=
 env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib"])
 env_sandbox.Append(CPPPATH=["#modules/sandbox/src/", "#modules/sandbox/."])
 
-# Set C++20 standard
+# Set C++20 standard and allow C99 designated initializers for libriscv
 if env["platform"] != "windows" or env.get("use_mingw", False):
-    env_sandbox.Append(CXXFLAGS=["-std=c++20"])
+    env_sandbox.Append(CXXFLAGS=["-std=c++20", "-Wno-c99-designator"])
 else:
     env_sandbox.Append(CXXFLAGS=["/std:c++20"])
 
