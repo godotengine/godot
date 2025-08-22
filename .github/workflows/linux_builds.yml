@@ -111,16 +111,13 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Linux dependencies for tests
-        if: matrix.proj-test
+      - name: Setup dependencies
         run: |
-          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
-          sudo apt-get install mesa-vulkan-drivers
-
-      # TODO: Figure out somehow how to embed this one.
-      - name: wayland-scanner dependency
-        run: |
-          sudo apt-get install libwayland-bin
+          sudo apt-get update
+          sudo apt-get install libwayland-bin  # TODO: Figure out somehow how to embed this one.
+          if [ "${{ matrix.proj-test }}" == "true" ]; then
+            sudo apt-get install mesa-vulkan-drivers
+          fi
 
       - name: Free disk space on runner
         run: |
