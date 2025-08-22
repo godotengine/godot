@@ -487,6 +487,9 @@ Variant ShaderMaterial::get_shader_parameter(const StringName &p_param) const {
 	}
 }
 
+void ShaderMaterial::set_shader_buffer(const StringName &buf_name, PackedByteArray &buf) {
+}
+
 void ShaderMaterial::_shader_changed() {
 	notify_property_list_changed(); //update all properties
 }
@@ -522,6 +525,10 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_parameter", "param", "value"), &ShaderMaterial::set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
+	ClassDB::bind_method(D_METHOD("set_shader_buffer", "buffer", "values"), &ShaderMaterial::set_shader_buffer);
+	// ClassDB::bind_method(D_METHOD("get_shader_buffer", "buffer"), &ShaderMaterial::get_shader_buffer);
+	// ClassDB::bind_method(D_METHOD("set_shader_buffer_parameter", "buffer", "param", "value"), &ShaderMaterial::set_shader_buffer_parameter);
+	// ClassDB::bind_method(D_METHOD("get_shader_buffer_parameter", "buffer", "param"), &ShaderMaterial::get_shader_buffer_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }

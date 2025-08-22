@@ -67,6 +67,7 @@ public:
 
 		String path;
 		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Buffer> buffers;
 		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		virtual void set_path_hint(const String &p_hint);

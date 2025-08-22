@@ -522,100 +522,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 			}
 
-			// buffers
-
-
-			// first, handle named buffers
-			Vector<StringName> buffer_names;
-
-			for (const KeyValue<StringName, SL::ShaderNode::Buffer> &E : pnode->buffers) {
-				buffer_names.push_back(E.key);
-			}
-
-			buffer_names.sort_custom<StringName::AlphCompare>();
-
-			for (int i = 0; i < buffer_names.size(); i++) {
-				SL::ShaderNode::Buffer buf = pnode->buffers[buffer_names[i]];
-				String buffer_code;
-
-				//specify layout
-				buffer_code += "layout(";
-				if (buf.set > -1) {
-					buffer_code += "set = " + itos(buf.set) + ",";
-				}
-				if (buf.binding > -1) {
-					buffer_code += "binding = " + itos(buf.binding) + ",";
-				}
-
-				switch (buf.format) {
-					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
-						buffer_code += "packed) ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
-						buffer_code += "shared) ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
-						buffer_code += "std140) ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
-						buffer_code += "std430) ";
-					} break;
-				}
-
-				if (buf.restrict) {
-					buffer_code += "restrict ";
-				}
-
-				switch(buf.io_qual) {
-					case SL::ShaderNode::Buffer::BUFFER_NONE: {
-						buffer_code += "buffer ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFER_IN: {
-						buffer_code += "readonly buffer ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFER_OUT: {
-						buffer_code += "writeonly buffer ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
-						buffer_code += "uniform ";
-					} break;
-				}
-
-				if (buf.name_bind.is_empty()) {
-					buffer_code += "userBuffer_" + buf.name;
-				} else {
-					buffer_code += buf.name_bind;
-				}
-				
-				buffer_code += " {\n";
-
-				for (SL::MemberNode *m : buf.shader_buffer->members) {
-					if (m->datatype == SL::TYPE_STRUCT) {
-						buffer_code += _mkid(m->struct_name);
-					} else {
-						buffer_code += _prestr(m->precision);
-						buffer_code += _typestr(m->datatype);
-					}
-					buffer_code += " ";
-					buffer_code += _mkid(m->name);
-					if (m->array_size != 0) {
-						buffer_code += "[";
-						if (m->array_size > 0) {
-							buffer_code += itos(m->array_size);
-						}
-						buffer_code += "]";
-					} 
-					
-					buffer_code += ";\n";
-				}
-				buffer_code += "} " + buf.name;
-				buffer_code += ";\n";
-
-				for (int j = 0; j < STAGE_MAX; j++) {
-					r_gen_code.stage_globals[j] += buffer_code;
-				}
-			}
-
 			int max_texture_uniforms = 0;
 			int max_uniforms = 0;
 
@@ -636,91 +542,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 			}
 
-			// next, unnamed buffers are handled
-
-			int64_t ubuf_count = 0;
-			for (int i = 0; i < pnode->unnamed_buffers.size(); i++) {
-				SL::ShaderNode::Buffer buf = pnode->unnamed_buffers[i];
-				String buffer_code;
-
-				//specify layout
-				buffer_code += "layout(";
-				if (buf.set > -1) {
-					buffer_code += "set = " + itos(buf.set) + ",";
-				}
-				if (buf.binding > -1) {
-					buffer_code += "binding = " + itos(buf.binding) + ",";
-				}
-
-				switch (buf.format) {
-					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
-						buffer_code += "packed) ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
-						buffer_code += "shared) ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
-						buffer_code += "std140) ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
-						buffer_code += "std430) ";
-					} break;
-				}
-
-				if (buf.restrict) {
-					buffer_code += "restrict ";
-				}
-
-				switch(buf.io_qual) {
-					case SL::ShaderNode::Buffer::BUFFER_NONE: {
-						buffer_code += "buffer ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFER_IN: {
-						buffer_code += "readonly buffer ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFER_OUT: {
-						buffer_code += "writeonly buffer ";
-					} break;
-					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
-						buffer_code += "uniform ";
-					} break;
-				}
-
-				if (buf.name_bind.is_empty()) {
-					buffer_code += "userBuffer_unnamed" + itos(ubuf_count++);
-				} else {
-					buffer_code += buf.name_bind;
-				}
-				
-				buffer_code += " {\n";
-
-				for (SL::MemberNode *m : buf.shader_buffer->members) {
-					if (m->datatype == SL::TYPE_STRUCT) {
-						buffer_code += _mkid(m->struct_name);
-					} else {
-						buffer_code += _prestr(m->precision);
-						buffer_code += _typestr(m->datatype);
-					}
-					buffer_code += " ";
-					buffer_code += _mkid(m->name);
-					if (m->array_size != 0) {
-						buffer_code += "[";
-						if (m->array_size > 0) {
-							buffer_code += itos(m->array_size);
-						}
-						buffer_code += "]";
-					} 
-					
-					buffer_code += ";\n";
-				}
-				buffer_code += "} " + buf.name;
-				buffer_code += ";\n";
-
-				for (int j = 0; j < STAGE_MAX; j++) {
-					r_gen_code.stage_globals[j] += buffer_code;
-				}
-			}
-
 			r_gen_code.texture_uniforms.resize(max_texture_uniforms);
 
 			Vector<int> uniform_sizes;
@@ -730,7 +551,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			uniform_alignments.resize(max_uniforms);
 			uniform_defines.resize(max_uniforms);
 			bool uses_uniforms = false;
-
+			int last_texture_binding = actions.base_texture_binding_index;
 			Vector<StringName> uniform_names;
 
 			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
@@ -760,7 +581,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				if (SL::is_sampler_type(uniform.type)) {
 					// Texture layouts are different for OpenGL GLSL and Vulkan GLSL
 					if (!RS::get_singleton()->is_low_end()) {
-						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + uniform.texture_binding) + ") ";
+						last_texture_binding = actions.base_texture_binding_index + uniform.texture_binding;
+						ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(last_texture_binding) + ") ";
 					}
 					ucode += "uniform ";
 				}
@@ -832,6 +654,181 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			for (int i = 0; i < max_uniforms; i++) {
 				r_gen_code.uniforms += uniform_defines[i];
+			}
+
+			// buffers
+
+			int buffer_count = last_texture_binding;
+			// first, handle named buffers
+			Vector<StringName> buffer_names;
+
+			for (const KeyValue<StringName, SL::ShaderNode::Buffer> &E : pnode->buffers) {
+				buffer_names.push_back(E.key);
+			}
+
+			buffer_names.sort_custom<StringName::AlphCompare>();
+
+			for (int i = 0; i < buffer_names.size(); i++) {
+				SL::ShaderNode::Buffer buf = pnode->buffers[buffer_names[i]];
+				String buffer_code;
+
+				//specify layout
+				buffer_code += "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(buffer_count) + ",";
+				buffer_count++;
+
+				switch (buf.format) {
+					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
+						buffer_code += "packed) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
+						buffer_code += "shared) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
+						buffer_code += "std140) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
+						buffer_code += "std430) ";
+					} break;
+				}
+
+				if (buf.restrict) {
+					buffer_code += "restrict ";
+				}
+
+				switch(buf.io_qual) {
+					case SL::ShaderNode::Buffer::BUFFER_NONE: {
+						buffer_code += "buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_IN: {
+						buffer_code += "readonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_OUT: {
+						buffer_code += "writeonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
+						buffer_code += "uniform ";
+					} break;
+				}
+
+				if (buf.name_bind.is_empty()) {
+					buffer_code += "userBuffer_" + buf.name;
+				} else {
+					buffer_code += buf.name_bind;
+				}
+				
+				buffer_code += " {\n";
+
+				for (SL::MemberNode *m : buf.shader_buffer->members) {
+					if (m->datatype == SL::TYPE_STRUCT) {
+						buffer_code += _mkid(m->struct_name);
+					} else {
+						buffer_code += _prestr(m->precision);
+						buffer_code += _typestr(m->datatype);
+					}
+					buffer_code += " ";
+					buffer_code += _mkid(m->name);
+					if (m->array_size != 0) {
+						buffer_code += "[";
+						if (m->array_size > 0) {
+							buffer_code += itos(m->array_size);
+						}
+						buffer_code += "]";
+					} 
+					
+					buffer_code += ";\n";
+				}
+				buffer_code += "} " + buf.name;
+				buffer_code += ";\n";
+
+				for (int j = 0; j < STAGE_MAX; j++) {
+					r_gen_code.stage_globals[j] += buffer_code;
+				}
+			}
+
+			// next, unnamed buffers are handled
+
+			int64_t ubuf_count = 0;
+			for (int i = 0; i < pnode->unnamed_buffers.size(); i++) {
+				SL::ShaderNode::Buffer buf = pnode->unnamed_buffers[i];
+				String buffer_code;
+
+				//specify layout
+				buffer_code += "layout(set = " + itos(4) + ", binding = " + itos(buffer_count) + ",";
+				buffer_count++;
+				// if (buf.set > -1) {
+				// 	buffer_code += "set = " + itos(4) + ",";
+				// }
+				// if (buf.binding > -1) {
+				// 	buffer_code += "binding = " + itos(1 + buffer_count) + ",";
+				// }
+
+				switch (buf.format) {
+					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
+						buffer_code += "packed) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
+						buffer_code += "shared) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
+						buffer_code += "std140) ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
+						buffer_code += "std430) ";
+					} break;
+				}
+
+				if (buf.restrict) {
+					buffer_code += "restrict ";
+				}
+
+				switch(buf.io_qual) {
+					case SL::ShaderNode::Buffer::BUFFER_NONE: {
+						buffer_code += "buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_IN: {
+						buffer_code += "readonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_OUT: {
+						buffer_code += "writeonly buffer ";
+					} break;
+					case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
+						buffer_code += "uniform ";
+					} break;
+				}
+
+				if (buf.name_bind.is_empty()) {
+					buffer_code += "userBuffer_unnamed" + itos(ubuf_count++);
+				} else {
+					buffer_code += buf.name_bind;
+				}
+				
+				buffer_code += " {\n";
+
+				for (SL::MemberNode *m : buf.shader_buffer->members) {
+					if (m->datatype == SL::TYPE_STRUCT) {
+						buffer_code += _mkid(m->struct_name);
+					} else {
+						buffer_code += _prestr(m->precision);
+						buffer_code += _typestr(m->datatype);
+					}
+					buffer_code += " ";
+					buffer_code += _mkid(m->name);
+					if (m->array_size != 0) {
+						buffer_code += "[";
+						if (m->array_size > 0) {
+							buffer_code += itos(m->array_size);
+						}
+						buffer_code += "]";
+					} 
+					
+					buffer_code += ";\n";
+				}
+				buffer_code += "} " + buf.name;
+				buffer_code += ";\n";
+
+				for (int j = 0; j < STAGE_MAX; j++) {
+					r_gen_code.stage_globals[j] += buffer_code;
+				}
 			}
 
 			// add up

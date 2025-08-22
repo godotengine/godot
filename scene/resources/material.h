@@ -121,11 +121,14 @@ protected:
 	void _check_material_rid() const;
 
 public:
+
 	void set_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader() const;
 
 	void set_shader_parameter(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_parameter(const StringName &p_param) const;
+
+	void set_shader_buffer(const StringName &buf_name, PackedByteArray &buf);
 
 	virtual Shader::Mode get_shader_mode() const override;
 

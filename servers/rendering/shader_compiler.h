@@ -68,8 +68,15 @@ public:
 			bool global = false;
 			int array_size = 0;
 		};
+		struct Buffer {
+			StringName name;
+			StringName bufName;
+			Vector<ShaderLanguage::MemberNode> members;
+		};
 
 		Vector<Texture> texture_uniforms;
+		Vector<Buffer> uniform_buffers;
+		Vector<Buffer> storage_buffers;
 
 		Vector<uint32_t> uniform_offsets;
 		uint32_t uniform_total_size = 0;
