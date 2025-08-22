@@ -45,6 +45,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
 #include "scene/resources/packed_scene.h"
+#include <mutex>
 #include <string>
 #include <unordered_map>
 //#define ENABLE_SYSCALL_TRACE 1
@@ -2002,86 +2003,85 @@ void Sandbox::initialize_syscalls() {
 		machine.set_result(-ENOSYS);
 	};
 
-	static bool initialized_before = false;
-	if (initialized_before) {
-		return;
-	}
-	initialized_before = true;
+	// Thread-safe global syscall handler installation (one-time only)
+	static std::once_flag global_syscalls_initialized;
+	std::call_once(global_syscalls_initialized, []() {
+		// Add the Godot system calls (global registration).
+		machine_t::install_syscall_handlers({
+				{ ECALL_PRINT, api_print },
+				{ ECALL_VCALL, api_vcall },
+				{ ECALL_VEVAL, api_veval },
+				{ ECALL_VASSIGN, api_vassign },
+				{ ECALL_GET_OBJ, api_get_obj },
+				{ ECALL_OBJ, api_obj },
+				{ ECALL_OBJ_CALLP, api_obj_callp },
+				{ ECALL_GET_NODE, api_get_node },
+				{ ECALL_NODE, api_node },
+				{ ECALL_NODE2D, api_node2d },
+				{ ECALL_NODE3D, api_node3d },
+				{ ECALL_THROW, api_throw },
+				{ ECALL_IS_EDITOR, [](machine_t &machine) {
+					 machine.set_result(::Engine::get_singleton()->is_editor_hint());
+				 } },
 
-	// Add the Godot system calls.
-	machine_t::install_syscall_handlers({
-			{ ECALL_PRINT, api_print },
-			{ ECALL_VCALL, api_vcall },
-			{ ECALL_VEVAL, api_veval },
-			{ ECALL_VASSIGN, api_vassign },
-			{ ECALL_GET_OBJ, api_get_obj },
-			{ ECALL_OBJ, api_obj },
-			{ ECALL_OBJ_CALLP, api_obj_callp },
-			{ ECALL_GET_NODE, api_get_node },
-			{ ECALL_NODE, api_node },
-			{ ECALL_NODE2D, api_node2d },
-			{ ECALL_NODE3D, api_node3d },
-			{ ECALL_THROW, api_throw },
-			{ ECALL_IS_EDITOR, [](machine_t &machine) {
-				 machine.set_result(::Engine::get_singleton()->is_editor_hint());
-			 } },
+				{ ECALL_VCREATE, api_vcreate },
+				{ ECALL_VFETCH, api_vfetch },
+				{ ECALL_VCLONE, api_vclone },
+				{ ECALL_VSTORE, api_vstore },
 
-			{ ECALL_VCREATE, api_vcreate },
-			{ ECALL_VFETCH, api_vfetch },
-			{ ECALL_VCLONE, api_vclone },
-			{ ECALL_VSTORE, api_vstore },
+				{ ECALL_ARRAY_OPS, api_array_ops },
+				{ ECALL_ARRAY_AT, api_array_at },
+				{ ECALL_ARRAY_SIZE, api_array_size },
 
-			{ ECALL_ARRAY_OPS, api_array_ops },
-			{ ECALL_ARRAY_AT, api_array_at },
-			{ ECALL_ARRAY_SIZE, api_array_size },
+				{ ECALL_DICTIONARY_OPS, api_dict_ops },
 
-			{ ECALL_DICTIONARY_OPS, api_dict_ops },
+				{ ECALL_STRING_CREATE, api_string_create },
+				{ ECALL_STRING_OPS, api_string_ops },
+				{ ECALL_STRING_AT, api_string_at },
+				{ ECALL_STRING_SIZE, api_string_size },
+				{ ECALL_STRING_APPEND, api_string_append },
 
-			{ ECALL_STRING_CREATE, api_string_create },
-			{ ECALL_STRING_OPS, api_string_ops },
-			{ ECALL_STRING_AT, api_string_at },
-			{ ECALL_STRING_SIZE, api_string_size },
-			{ ECALL_STRING_APPEND, api_string_append },
+				{ ECALL_TIMER_PERIODIC, api_timer_periodic },
+				{ ECALL_TIMER_STOP, api_timer_stop },
 
-			{ ECALL_TIMER_PERIODIC, api_timer_periodic },
-			{ ECALL_TIMER_STOP, api_timer_stop },
+				{ ECALL_NODE_CREATE, api_node_create },
 
-			{ ECALL_NODE_CREATE, api_node_create },
+				{ ECALL_CALLABLE_CREATE, api_callable_create },
 
-			{ ECALL_CALLABLE_CREATE, api_callable_create },
+				{ ECALL_LOAD, api_load },
 
-			{ ECALL_LOAD, api_load },
+				{ ECALL_OBJ_PROP_GET, api_obj_property_get },
+				{ ECALL_OBJ_PROP_SET, api_obj_property_set },
 
-			{ ECALL_OBJ_PROP_GET, api_obj_property_get },
-			{ ECALL_OBJ_PROP_SET, api_obj_property_set },
+				{ ECALL_SANDBOX_ADD, api_sandbox_add },
+		});
 
-			{ ECALL_SANDBOX_ADD, api_sandbox_add },
-	});
+		// Add system calls from other modules.
+		Sandbox::initialize_syscalls_2d();
+		Sandbox::initialize_syscalls_3d();
 
-	// Add system calls from other modules.
-	Sandbox::initialize_syscalls_2d();
-	Sandbox::initialize_syscalls_3d();
-
-	using namespace riscv;
-	static const Instruction<RISCV_ARCH> validated_syscall_instruction{
-		[](CPU<RISCV_ARCH> &cpu, rv32i_instruction instr) {
-			Machine<RISCV_ARCH>::syscall_handlers[instr.Itype.imm](cpu.machine());
-		},
-		[](char *buffer, size_t len, const CPU<RISCV_ARCH> &, rv32i_instruction instr) -> int {
-			return snprintf(buffer, len,
-					"DYNCALL: 4-byte idx=0x%X (inline, 0x%X)",
-					uint32_t(instr.Itype.imm),
-					instr.whole);
-		}
-	};
-	// Override the machines unimplemented instruction handling,
-	// in order to use the custom instruction instead.
-	CPU<RISCV_ARCH>::on_unimplemented_instruction = [](rv32i_instruction instr) -> const Instruction<RISCV_ARCH> & {
-		if (instr.opcode() == 0b1011011 && instr.Itype.rs1 == 0 && instr.Itype.rd == 0) {
-			if (instr.Itype.imm < Machine<RISCV_ARCH>::syscall_handlers.size()) {
-				return validated_syscall_instruction;
+		// Set up custom instruction handling (global, one-time setup)
+		using namespace riscv;
+		static const Instruction<RISCV_ARCH> validated_syscall_instruction{
+			[](CPU<RISCV_ARCH> &cpu, rv32i_instruction instr) {
+				Machine<RISCV_ARCH>::syscall_handlers[instr.Itype.imm](cpu.machine());
+			},
+			[](char *buffer, size_t len, const CPU<RISCV_ARCH> &, rv32i_instruction instr) -> int {
+				return snprintf(buffer, len,
+						"DYNCALL: 4-byte idx=0x%X (inline, 0x%X)",
+						uint32_t(instr.Itype.imm),
+						instr.whole);
 			}
-		}
-		return CPU<RISCV_ARCH>::get_unimplemented_instruction();
-	};
+		};
+		// Override the machines unimplemented instruction handling,
+		// in order to use the custom instruction instead.
+		CPU<RISCV_ARCH>::on_unimplemented_instruction = [](rv32i_instruction instr) -> const Instruction<RISCV_ARCH> & {
+			if (instr.opcode() == 0b1011011 && instr.Itype.rs1 == 0 && instr.Itype.rd == 0) {
+				if (instr.Itype.imm < Machine<RISCV_ARCH>::syscall_handlers.size()) {
+					return validated_syscall_instruction;
+				}
+			}
+			return CPU<RISCV_ARCH>::get_unimplemented_instruction();
+		};
+	});
 }

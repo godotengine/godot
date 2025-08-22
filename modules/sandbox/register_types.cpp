@@ -30,18 +30,18 @@
 
 #include "register_types.h"
 
-#include "core/object/class_db.h"
-#include "core/string/print_string.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/object/class_db.h"
 #include "core/object/script_language.h"
-#include "src/sandbox.h"
-#include "src/elf/script_elf.h"
-#include "src/elf/script_language_elf.h"
-#include "src/elf/resource_loader_elf.h"
+#include "core/string/print_string.h"
+#include "src/cpp/resource_saver_cpp.h"
 #include "src/cpp/script_cpp.h"
 #include "src/cpp/script_language_cpp.h"
-#include "src/cpp/resource_saver_cpp.h"
+#include "src/elf/resource_loader_elf.h"
+#include "src/elf/script_elf.h"
+#include "src/elf/script_language_elf.h"
+#include "src/sandbox.h"
 
 static Ref<ResourceFormatLoaderELF> resource_loader_elf;
 static Ref<ResourceFormatSaverCPP> resource_saver_cpp;
@@ -50,24 +50,24 @@ void initialize_sandbox_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		// Register the Sandbox class
 		GDREGISTER_CLASS(Sandbox);
-		
+
 		// Register ELF script classes
 		GDREGISTER_CLASS(ELFScript);
 		GDREGISTER_CLASS(ELFScriptLanguage);
-		
+
 		// Register CPP script classes
 		GDREGISTER_CLASS(CPPScript);
 		GDREGISTER_CLASS(CPPScriptLanguage);
-		
+
 		// Register script languages
 		ScriptServer::register_language(memnew(ELFScriptLanguage));
 		CPPScriptLanguage::init_language();
 		ScriptServer::register_language(CPPScriptLanguage::get_singleton());
-		
+
 		// Register resource loaders/savers
 		resource_loader_elf.instantiate();
 		ResourceLoader::add_resource_format_loader(resource_loader_elf);
-		
+
 		resource_saver_cpp.instantiate();
 		ResourceSaver::add_resource_format_saver(resource_saver_cpp);
 	}

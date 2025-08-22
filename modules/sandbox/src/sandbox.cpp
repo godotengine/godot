@@ -39,6 +39,7 @@
 #include "guest_datatypes.h"
 #include "sandbox_project_settings.h"
 #include "vmcallable.h"
+#include <mutex>
 #include <vector>
 #if defined(RISCV_BINARY_TRANSLATION) && defined(RISCV_LIBTCC)
 #include <future>
@@ -58,7 +59,15 @@ static constexpr bool VERBOSE_PROPERTIES = false;
 static const int HEAP_SYSCALLS_BASE = 480;
 static const int MEMORY_SYSCALLS_BASE = 485;
 static const std::vector<std::string> program_arguments = { "program" };
-static riscv::Machine<RISCV_ARCH> *dummy_machine;
+// Thread-safe dummy machine singleton
+static machine_t *get_dummy_machine() {
+	static std::once_flag dummy_initialized;
+	static machine_t *dummy = nullptr;
+	std::call_once(dummy_initialized, []() {
+		dummy = new machine_t{};
+	});
+	return dummy;
+}
 enum SandboxPropertyNameIndex : int {
 	PROP_REFERENCES_MAX,
 	PROP_MEMORY_MAX,
@@ -170,9 +179,7 @@ void Sandbox::_bind_methods() {
 	ClassDB::bind_static_method("Sandbox", D_METHOD("has_feature_jit"), &Sandbox::has_feature_jit);
 
 	// Properties.
-	ClassDB::bind_method(D_METHOD("set", "name", "value"), &Sandbox::set);
-	ClassDB::bind_method(D_METHOD("get", "name"), &Sandbox::get);
-	ClassDB::bind_method(D_METHOD("get_property_list"), &Sandbox::get_property_list);
+	// Note: set, get, and get_property_list are inherited from Node and don't need explicit binding
 
 	ClassDB::bind_method(D_METHOD("set_max_refs", "max"), &Sandbox::set_max_refs, DEFVAL(MAX_REFS));
 	ClassDB::bind_method(D_METHOD("get_max_refs"), &Sandbox::get_max_refs);
@@ -313,9 +320,10 @@ void Sandbox::constructor_initialize() {
 }
 void Sandbox::reset_machine() {
 	try {
-		if (this->m_machine != dummy_machine) {
+		machine_t *dummy = get_dummy_machine();
+		if (this->m_machine != dummy) {
 			delete this->m_machine;
-			this->m_machine = dummy_machine;
+			this->m_machine = dummy;
 		}
 	} catch (const std::exception &e) {
 		ERR_PRINT(("Sandbox exception: " + std::string(e.what())).c_str());
@@ -332,8 +340,9 @@ void Sandbox::full_reset() {
 	this->m_allowed_objects.clear();
 }
 Sandbox::Sandbox() {
-	if (dummy_machine == nullptr) {
-		dummy_machine = new machine_t{};
+	// Thread-safe initialization of static property names
+	static std::once_flag property_names_initialized;
+	std::call_once(property_names_initialized, []() {
 		property_names = {
 			"references_max",
 			"memory_max",
@@ -362,7 +371,8 @@ Sandbox::Sandbox() {
 			"monitor_accumulated_startup_time",
 			"monitor_global_instance_count",
 		};
-	}
+	});
+
 	this->constructor_initialize();
 	this->m_tree_base = this;
 	this->m_global_instances_current += 1;
@@ -387,7 +397,8 @@ Sandbox::~Sandbox() {
 	this->m_global_instances_current -= 1;
 	this->set_program_data_internal(nullptr);
 	try {
-		if (this->m_machine != dummy_machine)
+		machine_t *dummy = get_dummy_machine();
+		if (this->m_machine != dummy)
 			delete this->m_machine;
 	} catch (const std::exception &e) {
 		ERR_PRINT(("Sandbox exception: " + std::string(e.what())).c_str());
@@ -536,7 +547,8 @@ bool Sandbox::load(const PackedByteArray *buffer, const std::vector<std::string>
 	/** We can't handle exceptions until the Machine is fully constructed. Two steps.  */
 	try {
 		// Reset the machine
-		if (this->m_machine != dummy_machine)
+		machine_t *dummy = get_dummy_machine();
+		if (this->m_machine != dummy)
 			delete this->m_machine;
 
 		auto options = std::make_shared<riscv::MachineOptions<RISCV_ARCH>>(riscv::MachineOptions<RISCV_ARCH>{
@@ -588,7 +600,7 @@ bool Sandbox::load(const PackedByteArray *buffer, const std::vector<std::string>
 		this->m_machine->set_options(std::move(options));
 	} catch (const std::exception &e) {
 		ERR_PRINT(("Sandbox construction exception: " + std::string(e.what())).c_str());
-		this->m_machine = dummy_machine;
+		this->m_machine = get_dummy_machine();
 		return false;
 	}
 
@@ -1199,7 +1211,7 @@ gaddr_t Sandbox::cached_address_of(int64_t hash, const String &function) const {
 	auto it = m_lookup.find(hash);
 	if (it != m_lookup.end()) {
 		return it->second.address;
-	} else if (m_machine != dummy_machine) {
+	} else if (m_machine != get_dummy_machine()) {
 		const CharString ascii = function.ascii();
 		const std::string_view str{ ascii.get_data(), (size_t)ascii.length() };
 		address = machine().address_of(str);
@@ -1778,7 +1790,7 @@ Variant GuestVariant::toVariant(const Sandbox &emu) const {
 			return Variant(Vector4i(this->v.v4i[0], this->v.v4i[1], this->v.v4i[2], this->v.v4i[3]));
 		case Variant::OBJECT: {
 			// Objects are stored as raw pointers
-			return Variant(reinterpret_cast<Object*>(this->v.i));
+			return Variant(reinterpret_cast<Object *>(this->v.i));
 		}
 		default:
 			// For scoped variants, return the variant from the sandbox state
@@ -1804,7 +1816,7 @@ const Variant *GuestVariant::toVariantPtr(const Sandbox &emu) const {
 
 void GuestVariant::set(Sandbox &emu, const Variant &value, bool implicit_trust) {
 	this->type = value.get_type();
-	
+
 	switch (value.get_type()) {
 		case Variant::NIL:
 			break;
@@ -1888,7 +1900,7 @@ void GuestVariant::set_object(Sandbox &emu, Object *obj) {
 
 void GuestVariant::create(Sandbox &emu, Variant &&value) {
 	this->type = value.get_type();
-	
+
 	switch (value.get_type()) {
 		case Variant::NIL:
 			break;
