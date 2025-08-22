@@ -440,19 +440,19 @@ Ref<Resource> Resource::duplicate_for_local_scene(Node *p_for_scene, DuplicateRe
 	return dupe;
 }
 
-void Resource::_find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found) {
+void Resource::find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found) {
 	switch (p_variant.get_type()) {
 		case Variant::ARRAY: {
 			Array a = p_variant;
 			for (int i = 0; i < a.size(); i++) {
-				_find_sub_resources(a[i], p_resources_found);
+				find_sub_resources(a[i], p_resources_found);
 			}
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
 			for (const KeyValue<Variant, Variant> &kv : d) {
-				_find_sub_resources(kv.key, p_resources_found);
-				_find_sub_resources(kv.value, p_resources_found);
+				find_sub_resources(kv.key, p_resources_found);
+				find_sub_resources(kv.value, p_resources_found);
 			}
 		} break;
 		case Variant::OBJECT: {
@@ -480,7 +480,7 @@ void Resource::configure_for_local_scene(Node *p_for_scene, DuplicateRemapCacheT
 		Variant p = get(E.name);
 
 		HashSet<Ref<Resource>> sub_resources;
-		_find_sub_resources(p, sub_resources);
+		find_sub_resources(p, sub_resources);
 
 		for (Ref<Resource> sr : sub_resources) {
 			if (sr->is_local_to_scene()) {
