@@ -100,6 +100,10 @@ bool ELFScriptLanguage::is_using_templates() {
 	return false;
 }
 
+bool ELFScriptLanguage::validate(const String &p_script, const String &p_path, List<String> *r_functions, List<ScriptLanguage::ScriptError> *r_errors, List<ScriptLanguage::Warning> *r_warnings, HashSet<int> *r_safe_lines) const {
+	return true; // For now, assume all ELF scripts are valid
+}
+
 Script *ELFScriptLanguage::create_script() const {
 	ELFScript *script = memnew(ELFScript);
 	return script;

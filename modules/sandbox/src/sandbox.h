@@ -627,7 +627,6 @@ public:
 		return riscv::libtcc_enabled;
 	}
 
-	void assault(const String &test, int64_t iterations);
 	Variant vmcall_internal(gaddr_t address, const Variant **args, int argc);
 	machine_t &machine() { return *m_machine; }
 	const machine_t &machine() const { return *m_machine; }
