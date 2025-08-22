@@ -834,6 +834,11 @@ vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
 void main() {
 #ifdef SUBPASS
 	// SUBPASS and USE_MULTIVIEW can be combined but in that case we're already reading from the correct layer
+#ifdef USE_MULTIVIEW
+	// In order to ensure the `SpvCapabilityMultiView` is included in the SPIR-V capabilities, gl_ViewIndex must
+	// be read in the shader. Without this, transpilation to Metal fails to include the multi-view variant.
+	uint vi = ViewIndex;
+#endif
 	vec4 color = subpassLoad(input_color);
 #elif defined(USE_MULTIVIEW)
 	vec4 color = textureLod(source_color, vec3(uv_interp, ViewIndex), 0.0f);
