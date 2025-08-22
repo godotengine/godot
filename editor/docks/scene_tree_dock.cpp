@@ -706,7 +706,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 					d->set_owner(nullptr);
 					node_clipboard_edited_scene_owned.insert(d);
 				}
-
 				node_clipboard.push_back(dup);
 			}
 
@@ -2836,7 +2835,6 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 			for (Node *F : owned) {
 				owners.push_back(F);
 			}
-
 			undo_redo->add_do_method(n->get_parent(), "remove_child", n);
 			undo_redo->add_undo_method(n->get_parent(), "add_child", n, true);
 			undo_redo->add_undo_method(n->get_parent(), "move_child", n, n->get_index(false));
@@ -4334,7 +4332,6 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 
 		Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
 		ERR_CONTINUE(!dup);
-
 		pasted_nodes.push_back(dup);
 
 		if (!paste_parent) {
