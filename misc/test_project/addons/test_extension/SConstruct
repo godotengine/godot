@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+# ruff: noqa: F821
+
+# This file is for building as a Godot GDExtension.
+
+env = SConscript("src/godot-cpp/SConstruct")
+
+# Add source files.
+env.Append(CPPPATH=["src/"])
+sources = Glob("src/*.cpp")
+
+env.Append(CPPDEFINES=["GDEXTENSION"])
+
+bin_path = "bin/"
+extension_name = "test_extension"
+debug_or_release = "release" if env["target"] == "template_release" else "debug"
+
+if "arch_suffix" not in env:
+    env["arch_suffix"] = env["arch"]
+
+if env["target"] in ["editor", "template_debug"]:
+    # GDExtension has editor classes available in debug templates, which allows editor code to compile.
+    # If you don't want to compile editor stuff in templates, move these 2 lines to a separate "if" block.
+    env.Append(CPPPATH=["src/editor/"])
+    sources += Glob("src/editor/*.cpp")
+    # Add documentation XML files as a generated cpp file. Only works in Godot 4.3+.
+    doc_data = env.GodotCPPDocData("src/gen/doc_data.gen.cpp", source=Glob("doc_classes/*.xml"))
+    sources.append(doc_data)
+
+# Create the library target (e.g. libtest_extension.linux.debug.x86_64.so).
+if env["platform"] == "macos":
+    library = env.SharedLibrary(
+        "{0}/lib{1}.{2}.{3}.framework/{1}.{2}.{3}".format(
+            bin_path,
+            extension_name,
+            env["platform"],
+            debug_or_release,
+        ),
+        source=sources,
+    )
+else:
+    library = env.SharedLibrary(
+        "{}/{}{}.{}.{}.{}{}".format(
+            bin_path,
+            env.subst("$SHLIBPREFIX"),
+            extension_name,
+            env["platform"],
+            debug_or_release,
+            env["arch_suffix"],
+            env["SHLIBSUFFIX"],
+        ),
+        source=sources,
+    )
+
+Default(library)
