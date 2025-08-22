@@ -4,116 +4,86 @@ from misc.utility.scons_hints import *
 Import("env")
 Import("env_modules")
 
-def get_suffix():
-    suffix = f".{env['platform']}.{env['target']}.{env['arch']}"
-    if env.get("dev_build", False):
-        suffix += ".dev"
-    if env["precision"] == "double":
-        suffix += ".double"
-    if not env["threads"]:
-        suffix += ".nothreads"
-    if env.get("use_llvm", False):
-        suffix += ".llvm"
-    return suffix
+env_sandbox = env_modules.Clone()
 
-def build_sandbox_libraries(target, source, env):
-    import subprocess
-    import os
-    
-    print("Building sandbox static libraries...")
-    sandbox_dir = env.Dir("#modules/sandbox").abspath
-    original_dir = os.getcwd()
-    
-    try:
-        os.chdir(sandbox_dir)
-        
-        # Build godot-cpp first
-        print("Building godot-cpp...")
-        godot_cpp_cmd = [
-            "scons", "-C", "thirdparty/godot-cpp",
-            f"platform={env['platform']}", 
-            f"target={env['target']}", 
-            f"arch={env['arch']}"
-        ]
-        if env.get("use_mingw", False):
-            godot_cpp_cmd.append("use_mingw=yes")
-        if env.get("use_llvm", False):
-            godot_cpp_cmd.append("use_llvm=yes")
-        if env.get("dev_build", False):
-            godot_cpp_cmd.append("dev_build=yes")
-        if env["precision"] == "double":
-            godot_cpp_cmd.append("precision=double")
-        if not env["threads"]:
-            godot_cpp_cmd.append("threads=no")
-            
-        subprocess.run(godot_cpp_cmd, check=True)
-        
-        # Build sandbox library
-        print("Building sandbox library...")
-        sandbox_cmd = [
-            "scons", "-f", "SConstruct", "static_build=yes",
-            f"platform={env['platform']}", 
-            f"target={env['target']}", 
-            f"arch={env['arch']}"
-        ]
-        if env.get("use_mingw", False):
-            sandbox_cmd.append("use_mingw=yes")
-        if env.get("use_llvm", False):
-            sandbox_cmd.append("use_llvm=yes")
-        if env.get("dev_build", False):
-            sandbox_cmd.append("dev_build=yes")
-        if env["precision"] == "double":
-            sandbox_cmd.append("precision=double")
-        if not env["threads"]:
-            sandbox_cmd.append("threads=no")
-            
-        subprocess.run(sandbox_cmd, check=True)
-        print("Sandbox libraries built successfully")
-        
-    except subprocess.CalledProcessError as e:
-        print(f"Error building sandbox libraries: {e}")
-        raise
-    finally:
-        os.chdir(original_dir)
+# Enable exceptions for libriscv (required)
+env_sandbox.Append(CPPDEFINES=["RISCV_EXCEPTIONS_ENABLED"])
+if env["platform"] != "windows":
+    env_sandbox.Append(CXXFLAGS=["-fexceptions"])
+else:
+    env_sandbox.Append(CXXFLAGS=["/EHsc"])
 
-# Get platform suffix
-suffix = get_suffix()
+# Add compiler definitions for libriscv
+env_sandbox.Append(CPPDEFINES=["RISCV_SYSCALLS_MAX=600", "RISCV_BRK_MEMORY_SIZE=0x100000"])
 
-# Define library target paths
-sandbox_lib_target = f"#modules/sandbox/bin/libsandbox{suffix}.a"
-godot_cpp_lib_target = f"#modules/sandbox/thirdparty/godot-cpp/bin/libgodot-cpp{suffix}.a"
+# Add include paths
+env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib"])
+env_sandbox.Append(CPPPATH=["#modules/sandbox/src/", "#modules/sandbox/."])
 
-# Create SCons Command to build both libraries
-# Use source files as dependencies to trigger rebuilds when needed
-source_deps = [
-    Glob("#modules/sandbox/src/*.cpp"),
-    Glob("#modules/sandbox/src/*/*.cpp"),
-    Glob("#modules/sandbox/thirdparty/libriscv/lib/libriscv/*.cpp"),
-    "#modules/sandbox/SConstruct",
-    "#modules/sandbox/thirdparty/godot-cpp/SConstruct"
+# Set C++20 standard
+if env["platform"] != "windows" or env.get("use_mingw", False):
+    env_sandbox.Append(CXXFLAGS=["-std=c++20"])
+else:
+    env_sandbox.Append(CXXFLAGS=["/std:c++20"])
+
+# Platform-specific configurations
+if env["platform"] == "windows":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/win32"])
+    env_sandbox.Prepend(LIBS=["ws2_32"])  # for socket calls
+elif env["platform"] == "macos":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/macos"])
+    env_sandbox.Append(LINKFLAGS=["-framework", "Security"])
+elif env["platform"] == "linux" or env["platform"] == "android":
+    env_sandbox.Prepend(CPPPATH=["#modules/sandbox/thirdparty/libriscv/lib/libriscv/lib/linux"])
+
+# Add libriscv source files
+librisc_sources = [
+    # threaded fast-path:
+    "thirdparty/libriscv/lib/libriscv/threaded_dispatch.cpp",
+    "thirdparty/libriscv/lib/libriscv/threaded_inaccurate_dispatch.cpp",
+    "thirdparty/libriscv/lib/libriscv/cpu.cpp",
+    "thirdparty/libriscv/lib/libriscv/debug.cpp",
+    "thirdparty/libriscv/lib/libriscv/decode_bytecodes.cpp",
+    "thirdparty/libriscv/lib/libriscv/decoder_cache.cpp",
+    "thirdparty/libriscv/lib/libriscv/machine.cpp",
+    "thirdparty/libriscv/lib/libriscv/machine_defaults.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory_elf.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory_mmap.cpp",
+    "thirdparty/libriscv/lib/libriscv/memory_rw.cpp",
+    "thirdparty/libriscv/lib/libriscv/native_libc.cpp",
+    "thirdparty/libriscv/lib/libriscv/native_threads.cpp",
+    "thirdparty/libriscv/lib/libriscv/rv64i.cpp",
+    "thirdparty/libriscv/lib/libriscv/serialize.cpp",
+    # POSIX
+    "thirdparty/libriscv/lib/libriscv/posix/minimal.cpp",
+    "thirdparty/libriscv/lib/libriscv/posix/signals.cpp",
+    "thirdparty/libriscv/lib/libriscv/posix/threads.cpp",
+    "thirdparty/libriscv/lib/libriscv/util/crc32c.cpp",
+    # Binary translator
+    "thirdparty/libriscv/lib/libriscv/tr_api.cpp",
+    "thirdparty/libriscv/lib/libriscv/tr_emit.cpp",
+    "thirdparty/libriscv/lib/libriscv/tr_translate.cpp",
 ]
 
-library_build_cmd = env.Command(
-    [sandbox_lib_target, godot_cpp_lib_target],
-    source_deps,
-    build_sandbox_libraries
-)
-
-# Ensure libraries are built before any module compilation
-env.Depends(env.modules_sources, library_build_cmd)
-
-# Configure library linking
-env.Append(LIBPATH=["#modules/sandbox/bin", "#modules/sandbox/thirdparty/godot-cpp/bin"])
-
-# Platform-specific library naming
-if env["platform"] == "ios":
-    env.Append(LIBS=[f"libsandbox{suffix}", f"libgodot-cpp{suffix}"])
-elif env["platform"] != "windows" or env.get("use_mingw", False):
-    env.Append(LIBS=[f"sandbox{suffix}", f"godot-cpp{suffix}"])
+# Platform-specific libriscv sources
+if env["platform"] == "windows":
+    librisc_sources += [
+        "thirdparty/libriscv/lib/libriscv/win32/dlfcn.cpp",
+        "thirdparty/libriscv/lib/libriscv/win32/system_calls.cpp",
+        "thirdparty/libriscv/lib/libriscv/win32/tr_msvc.cpp",
+    ]
 else:
-    env.Append(LIBS=["sandbox", "godot-cpp"])
+    librisc_sources += [
+        "thirdparty/libriscv/lib/libriscv/linux/system_calls.cpp",
+        "thirdparty/libriscv/lib/libriscv/tr_compiler.cpp",
+    ]
 
-# Add the module registration source (the only source file for this hybrid module)
-env.add_source_files(env.modules_sources, "register_types.cpp")
+# Add libriscv sources to the build
+env_sandbox.add_source_files(env.modules_sources, librisc_sources)
 
-print(f"Sandbox hybrid module configured with suffix: {suffix}")
+# Add only the module registration source for now
+# We'll add other sources once we convert them from godot-cpp to Godot internal APIs
+env_sandbox.add_source_files(env.modules_sources, "register_types.cpp")
+
+print("Sandbox module configured as pure Godot module (minimal)")
