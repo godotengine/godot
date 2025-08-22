@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_sandbox_string_params.h                                         */
+/*  test_sandbox_string_params.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -84,15 +84,15 @@ TEST_CASE("[SceneTree][Node] Sandbox scoped variant creation and retrieval") {
 	// Test string variant creation
 	String test_string = "Hello, Sandbox!";
 	Variant string_variant(test_string);
-	
+
 	// Should not crash when creating scoped variants
 	try {
 		unsigned string_idx = sandbox->create_scoped_variant(Variant(string_variant));
-		
+
 		// Test retrieval of the string variant
 		auto retrieved_opt = sandbox->get_scoped_variant(string_idx);
 		CHECK(retrieved_opt.has_value());
-		
+
 		if (retrieved_opt.has_value()) {
 			const Variant *retrieved_var = retrieved_opt.value();
 			CHECK(retrieved_var->get_type() == Variant::STRING);
@@ -116,27 +116,27 @@ TEST_CASE("[SceneTree][Node] Sandbox string parameter marshaling") {
 	// Test string parameter handling without actually calling VM functions
 	String test_string1 = "Parameter One";
 	String test_string2 = "Parameter Two";
-	
+
 	// Test adding string parameters as scoped variants
 	const Variant *args[2] = { &Variant(test_string1), &Variant(test_string2) };
-	
+
 	try {
 		// Test that we can add string parameters without crashing
 		unsigned idx1 = sandbox->add_scoped_variant(args[0]);
 		unsigned idx2 = sandbox->add_scoped_variant(args[1]);
-		
+
 		// Verify the indices are reasonable
 		CHECK(idx1 < 1000); // Should be small for empty sandbox
 		CHECK(idx2 < 1000); // Should be small for empty sandbox
 		CHECK(idx1 != idx2); // Should be different indices
-		
+
 		// Test retrieval
 		auto opt1 = sandbox->get_scoped_variant(idx1);
 		auto opt2 = sandbox->get_scoped_variant(idx2);
-		
+
 		CHECK(opt1.has_value());
 		CHECK(opt2.has_value());
-		
+
 		if (opt1.has_value() && opt2.has_value()) {
 			CHECK(opt1.value()->operator String() == test_string1);
 			CHECK(opt2.value()->operator String() == test_string2);
@@ -164,26 +164,26 @@ TEST_CASE("[SceneTree][Node] Sandbox variant state management") {
 
 	try {
 		std::vector<unsigned> indices;
-		
+
 		// Create scoped variants for each type
 		for (int i = 0; i < test_variants.size(); i++) {
 			Variant variant = test_variants[i];
 			unsigned idx = sandbox->create_scoped_variant(Variant(variant));
 			indices.push_back(idx);
 		}
-		
+
 		// Verify all variants can be retrieved correctly
 		for (int i = 0; i < test_variants.size(); i++) {
 			auto opt = sandbox->get_scoped_variant(indices[i]);
 			CHECK(opt.has_value());
-			
+
 			if (opt.has_value()) {
 				const Variant *retrieved = opt.value();
 				Variant original = test_variants[i];
 				CHECK(retrieved->get_type() == original.get_type());
 			}
 		}
-		
+
 	} catch (const std::exception &e) {
 		FAIL("Exception during variant state management: " + std::string(e.what()));
 	}
@@ -203,7 +203,7 @@ TEST_CASE("[SceneTree][Node] Sandbox memory corruption detection") {
 		int32_t index;
 		const char *description;
 	};
-	
+
 	CorruptedIndex corrupted_indices[] = {
 		{ 2420680, "Large positive corrupted index" },
 		{ -2420680, "Large negative corrupted index" },
@@ -212,12 +212,12 @@ TEST_CASE("[SceneTree][Node] Sandbox memory corruption detection") {
 		{ INT32_MAX, "Maximum integer value" },
 		{ INT32_MIN, "Minimum integer value" },
 	};
-	
+
 	for (const auto &test_case : corrupted_indices) {
 		// These should all return nullopt and log appropriate error messages
 		auto opt = sandbox->get_scoped_variant(test_case.index);
 		CHECK_FALSE(opt.has_value());
-		
+
 		// The function should not crash or throw exceptions for corrupted indices
 		// The error handling should be graceful
 	}
@@ -244,13 +244,13 @@ TEST_CASE("[SceneTree][Node] Sandbox variant capacity management") {
 			unsigned idx = sandbox->create_scoped_variant(Variant(test_string));
 			indices.push_back(idx);
 		}
-		
+
 		// Verify all variants are accessible
 		for (unsigned idx : indices) {
 			auto opt = sandbox->get_scoped_variant(idx);
 			CHECK(opt.has_value());
 		}
-		
+
 		// Attempting to create more should either succeed with proper capacity management
 		// or throw a controlled exception - it should not crash
 		bool capacity_exception_thrown = false;
@@ -261,16 +261,16 @@ TEST_CASE("[SceneTree][Node] Sandbox variant capacity management") {
 			capacity_exception_thrown = true;
 			// This is expected behavior when hitting capacity limits
 		}
-		
+
 		// Either the capacity was managed properly, or a controlled exception was thrown
 		// Both are acceptable behaviors - the key is no crash
 		CHECK(true); // Test passed if we reach here without crashing
-		
+
 	} catch (const std::exception &e) {
 		// Only capacity-related exceptions should be thrown
 		String error_msg = e.what();
-		bool is_capacity_error = error_msg.contains("scoped variants reached") || 
-								error_msg.contains("capacity");
+		bool is_capacity_error = error_msg.contains("scoped variants reached") ||
+				error_msg.contains("capacity");
 		CHECK(is_capacity_error);
 	}
 

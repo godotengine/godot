@@ -197,12 +197,14 @@ void GuestVariant::set(Sandbox &emu, const Variant &value, bool implicit_trust) 
 		}
 
 		case Variant::OBJECT: { // Objects are represented as uintptr_t
-			if (!implicit_trust)
+			if (!implicit_trust) {
 				throw std::runtime_error("GuestVariant::set(): Cannot set OBJECT type without implicit trust");
+			}
 			// TODO: Check if the object is already scoped?
 			Object *obj = value.operator Object *();
-			if (!emu.is_allowed_object(obj))
+			if (!emu.is_allowed_object(obj)) {
 				throw std::runtime_error("GuestVariant::set(): Object is not allowed");
+			}
 			emu.add_scoped_object(obj);
 			this->v.i = (uintptr_t)obj;
 			break;
