@@ -85,6 +85,7 @@ env_sandbox.add_source_files(env.modules_sources, librisc_sources)
 # Add sandbox source files (now converted to Godot internal APIs)
 sandbox_sources = [
     "register_types.cpp",
+    "src/sandbox_base.cpp",
     "src/sandbox.cpp",
     "src/guest_variant.cpp",
     "src/sandbox_project_settings.cpp",

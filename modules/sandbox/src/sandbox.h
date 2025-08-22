@@ -30,7 +30,13 @@
 
 #pragma once
 #include <algorithm>
+#include <array>
+#include <memory>
+#include <mutex>
 #include <optional>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "core/object/class_db.h"
 #include "core/string/string_name.h"
@@ -40,12 +46,11 @@
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/variant.h"
+#include "sandbox_base.h"
 #include "scene/main/node.h"
-#include <libriscv/machine.hpp>
 
-#define RISCV_ARCH riscv::RISCV64
-using gaddr_t = riscv::address_type<RISCV_ARCH>;
-using machine_t = riscv::Machine<RISCV_ARCH>;
+// Include guest data types which handles conditional compilation for us
+#include "guest_datatypes.h"
 
 // Forward declarations
 class ELFScript;
@@ -69,8 +74,8 @@ class SandboxProperty;
  * 6. Read the program's properties. These will be visible to the Godot editor.
  * 7. Pre-cache some public functions. These will be available to call from GDScript.
  **/
-class Sandbox : public Node {
-	GDCLASS(Sandbox, Node);
+class Sandbox : public SandboxBase {
+	GDCLASS(Sandbox, SandboxBase);
 
 protected:
 	static void _bind_methods();

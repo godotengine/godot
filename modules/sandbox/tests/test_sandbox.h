@@ -32,20 +32,18 @@
 
 #include "tests/test_macros.h"
 
-#ifdef TESTS_ENABLED
-
 #include "core/os/os.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
 
-#include "../sandbox.h"
+#include "sandbox_dummy.h"
 
 namespace TestSandbox {
 
-TEST_CASE("[SceneTree][Node] Sandbox basic instantiation and scene attachment") {
-	// Create a Sandbox node
-	Sandbox *sandbox = memnew(Sandbox);
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy basic instantiation and scene attachment") {
+	// Create a SandboxDummy node
+	SandboxDummy *sandbox = memnew(SandboxDummy);
 	sandbox->set_name("test_sandbox");
 
 	// Add to scene tree
@@ -58,10 +56,10 @@ TEST_CASE("[SceneTree][Node] Sandbox basic instantiation and scene attachment") 
 	CHECK(sandbox->get_parent() == SceneTree::get_singleton()->get_root());
 
 	// Test initial state
-	CHECK(sandbox->get_max_refs() == Sandbox::MAX_REFS);
-	CHECK(sandbox->get_memory_max() == Sandbox::MAX_VMEM);
-	CHECK(sandbox->get_instructions_max() == Sandbox::MAX_INSTRUCTIONS);
-	CHECK(sandbox->get_allocations_max() == 4000);
+	CHECK(sandbox->get_max_refs() == SandboxDummy::MAX_REFS);
+	CHECK(sandbox->get_memory_max() == SandboxDummy::MAX_VMEM);
+	CHECK(sandbox->get_instructions_max() == SandboxDummy::MAX_INSTRUCTIONS);
+	CHECK(sandbox->get_allocations_max() == SandboxDummy::MAX_HEAP_ALLOCS);
 
 	// Test that no program is loaded initially
 	CHECK_FALSE(sandbox->has_program_loaded());
@@ -71,8 +69,8 @@ TEST_CASE("[SceneTree][Node] Sandbox basic instantiation and scene attachment") 
 	memdelete(sandbox);
 }
 
-TEST_CASE("[SceneTree][Node] Sandbox memory and instruction limits") {
-	Sandbox *sandbox = memnew(Sandbox);
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy memory and instruction limits") {
+	SandboxDummy *sandbox = memnew(SandboxDummy);
 	SceneTree::get_singleton()->get_root()->add_child(sandbox);
 	sandbox->set_owner(SceneTree::get_singleton()->get_root());
 
@@ -97,8 +95,8 @@ TEST_CASE("[SceneTree][Node] Sandbox memory and instruction limits") {
 	memdelete(sandbox);
 }
 
-TEST_CASE("[SceneTree][Node] Sandbox restrictions and security") {
-	Sandbox *sandbox = memnew(Sandbox);
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy restrictions and security") {
+	SandboxDummy *sandbox = memnew(SandboxDummy);
 	SceneTree::get_singleton()->get_root()->add_child(sandbox);
 	sandbox->set_owner(SceneTree::get_singleton()->get_root());
 
@@ -116,7 +114,7 @@ TEST_CASE("[SceneTree][Node] Sandbox restrictions and security") {
 	// Test allowed objects management
 	Node *test_node = memnew(Node);
 
-	// Initially all objects should be allowed
+	// Initially all objects should be allowed (when restrictions are off)
 	CHECK(sandbox->is_allowed_object(test_node));
 
 	// Add to allowed list
@@ -135,8 +133,8 @@ TEST_CASE("[SceneTree][Node] Sandbox restrictions and security") {
 	memdelete(sandbox);
 }
 
-TEST_CASE("[SceneTree][Node] Sandbox tree base functionality") {
-	Sandbox *sandbox = memnew(Sandbox);
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy tree base functionality") {
+	SandboxDummy *sandbox = memnew(SandboxDummy);
 	SceneTree::get_singleton()->get_root()->add_child(sandbox);
 	sandbox->set_owner(SceneTree::get_singleton()->get_root());
 
@@ -156,8 +154,8 @@ TEST_CASE("[SceneTree][Node] Sandbox tree base functionality") {
 	memdelete(sandbox);
 }
 
-TEST_CASE("[SceneTree][Node] Sandbox profiling functionality") {
-	Sandbox *sandbox = memnew(Sandbox);
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy profiling functionality") {
+	SandboxDummy *sandbox = memnew(SandboxDummy);
 	SceneTree::get_singleton()->get_root()->add_child(sandbox);
 	sandbox->set_owner(SceneTree::get_singleton()->get_root());
 
@@ -184,12 +182,12 @@ TEST_CASE("[SceneTree][Node] Sandbox profiling functionality") {
 	memdelete(sandbox);
 }
 
-TEST_CASE("[SceneTree][Node] Sandbox global statistics") {
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy global statistics") {
 	// Test global statistics access
-	uint64_t initial_timeouts = Sandbox::get_global_timeouts();
-	uint64_t initial_exceptions = Sandbox::get_global_exceptions();
-	uint64_t initial_calls = Sandbox::get_global_calls_made();
-	uint64_t initial_instances = Sandbox::get_global_instance_count();
+	uint64_t initial_timeouts = SandboxDummy::get_global_timeouts();
+	uint64_t initial_exceptions = SandboxDummy::get_global_exceptions();
+	uint64_t initial_calls = SandboxDummy::get_global_calls_made();
+	uint64_t initial_instances = SandboxDummy::get_global_instance_count();
 
 	// These should be accessible without errors
 	CHECK(initial_timeouts >= 0);
@@ -198,22 +196,22 @@ TEST_CASE("[SceneTree][Node] Sandbox global statistics") {
 	CHECK(initial_instances >= 0);
 
 	// Test accumulated startup time
-	double startup_time = Sandbox::get_accumulated_startup_time();
+	double startup_time = SandboxDummy::get_accumulated_startup_time();
 	CHECK(startup_time >= 0.0);
 }
 
-TEST_CASE("[SceneTree][Node] Sandbox binary translation features") {
-	Sandbox *sandbox = memnew(Sandbox);
+TEST_CASE("[SceneTree][Sandbox] SandboxDummy binary translation features") {
+	SandboxDummy *sandbox = memnew(SandboxDummy);
 	SceneTree::get_singleton()->get_root()->add_child(sandbox);
 	sandbox->set_owner(SceneTree::get_singleton()->get_root());
 
 	// Test JIT feature detection
-	bool has_jit = Sandbox::has_feature_jit();
+	bool has_jit = SandboxDummy::has_feature_jit();
 	// This should not crash regardless of JIT availability
 	CHECK((has_jit == true || has_jit == false));
 
 	// Test JIT enabled state
-	bool jit_enabled = Sandbox::is_jit_enabled();
+	bool jit_enabled = SandboxDummy::is_jit_enabled();
 	CHECK((jit_enabled == true || jit_enabled == false));
 
 	// Test binary translation state
@@ -226,5 +224,3 @@ TEST_CASE("[SceneTree][Node] Sandbox binary translation features") {
 }
 
 } //namespace TestSandbox
-
-#endif // TESTS_ENABLED
