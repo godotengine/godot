@@ -31,8 +31,8 @@
 #include "sandbox.h"
 
 #include <algorithm>
-#include <godot_cpp/classes/file_access.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
+#include "core/io/file_access.h"
+#include "core/variant/variant_utility.h"
 static constexpr bool USE_ADDR2LINE = false;
 
 struct ProfilingMachine {

@@ -171,7 +171,7 @@ bool CPPScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	return false;
 }
 
-godot::String CPPScriptInstance::to_string(bool *r_is_valid) {
+::String CPPScriptInstance::to_string(bool *r_is_valid) {
 	return "<CPPScript>";
 }
 
@@ -263,7 +263,7 @@ Variant CPPScriptInstance::callp(
 			auto [sandbox, auto_created] = elf_script_instance->get_sandbox();
 			if (sandbox && sandbox->has_program_loaded()) {
 				// Set the Sandbox instance tree base to the owner node
-				ScopedTreeBase stb(sandbox, godot::Object::cast_to<Node>(this->owner));
+				ScopedTreeBase stb(sandbox, ::Object::cast_to<Node>(this->owner));
 				// Perform the vmcall
 				return sandbox->vmcall_fn(p_method, p_args, p_argument_count, r_error);
 			}

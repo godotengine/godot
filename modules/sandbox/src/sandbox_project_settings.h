@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include <godot_cpp/variant/string.hpp>
-
-using namespace godot;
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
 
 class SandboxProjectSettings {
 public:

@@ -30,9 +30,22 @@
 
 #pragma once
 
-#include "sandbox.h"
+#include "core/object/object.h"
+#include "core/variant/variant.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/math/math_defs.h"
+#include "core/typedefs.h"
+#include <libriscv/machine.hpp>
+#include <cstdint>
+#include <string>
 
-#include <libriscv/native_heap.hpp>
+// Forward declarations
+class Sandbox;
+
+#define RISCV_ARCH riscv::RISCV64
+using gaddr_t = riscv::address_type<RISCV_ARCH>;
+using machine_t = riscv::Machine<RISCV_ARCH>;
 
 // -= Fast-path Variant Arguments =-
 
@@ -71,14 +84,14 @@ struct GDNativeVariant {
 		};
 		struct {
 			uint64_t object_id;
-			GodotObject *object_ptr;
+			Object *object_ptr;
 		};
 	};
 
-	godot::Object *to_object() const {
+	Object *to_object() const {
 		if (object_ptr == nullptr)
 			return nullptr;
-		return internal::get_object_instance_binding(object_ptr);
+		return object_ptr;
 	}
 
 } __attribute__((packed));
@@ -170,7 +183,7 @@ struct GuestVariant {
 	 * @param emu The sandbox that the GuestVariant comes from.
 	 * @param obj The godot Object.
 	 **/
-	void set_object(Sandbox &emu, godot::Object *obj);
+	void set_object(Sandbox &emu, Object *obj);
 
 	/**
 	 * @brief Creates a new GuestVariant from a godot Variant. Trust is implicit for complex types.

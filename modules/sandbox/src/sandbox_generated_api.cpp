@@ -33,9 +33,9 @@
 #include "guest_datatypes.h"
 #include "sandbox_project_settings.h"
 #include <godot_cpp/classes/class_db_singleton.hpp>
-#include <godot_cpp/classes/engine.hpp>
+#include "core/config/engine.h"
 #include <godot_cpp/core/class_db.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
+#include "core/variant/variant_utility.h"
 namespace riscv {
 extern std::unordered_map<std::string, std::function<uint64_t()>> allowed_globals;
 }

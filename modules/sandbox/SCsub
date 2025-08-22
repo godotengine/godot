@@ -82,8 +82,43 @@ else:
 # Add libriscv sources to the build
 env_sandbox.add_source_files(env.modules_sources, librisc_sources)
 
-# Add only the module registration source for now
-# We'll add other sources once we convert them from godot-cpp to Godot internal APIs
-env_sandbox.add_source_files(env.modules_sources, "register_types.cpp")
+# Add sandbox source files (now converted to Godot internal APIs)
+sandbox_sources = [
+    "register_types.cpp",
+    "src/sandbox.cpp",
+    "src/guest_variant.cpp",
+    "src/sandbox_project_settings.cpp",
+    "src/sandbox_syscalls.cpp",
+    "src/sandbox_syscalls_2d.cpp", 
+    "src/sandbox_syscalls_3d.cpp",
+    "src/sandbox_functions.cpp",
+    "src/sandbox_programs.cpp",
+    "src/sandbox_restrictions.cpp",
+    "src/sandbox_profiling.cpp",
+    "src/sandbox_debug.cpp",
+    "src/sandbox_exception.cpp",
+    "src/sandbox_globals.cpp",
+    "src/sandbox_generated_api.cpp",
+    "src/sandbox_shm.cpp",
+    "src/sandbox_bintr.cpp",
+    "src/override_libriscv.cpp",
+    "src/docker.cpp",
+]
 
-print("Sandbox module configured as pure Godot module (minimal)")
+# Add subdirectory sources using Glob
+import glob
+import os
+
+# Add sources from subdirectories
+for subdir in ["bintr", "cpp", "elf", "godot", "rust", "zig"]:
+    subdir_path = f"src/{subdir}"
+    if os.path.exists(subdir_path):
+        cpp_files = glob.glob(f"{subdir_path}/*.cpp")
+        for cpp_file in cpp_files:
+            # Convert to relative path from module root
+            rel_path = cpp_file.replace("\\", "/")
+            sandbox_sources.append(rel_path)
+
+env_sandbox.add_source_files(env.modules_sources, sandbox_sources)
+
+print("Sandbox module configured as pure Godot module (complete)")

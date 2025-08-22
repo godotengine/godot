@@ -29,43 +29,50 @@
 /**************************************************************************/
 
 #pragma once
-#include <godot_cpp/variant/variant.hpp>
-using namespace godot;
+#include "core/variant/variant.h"
+#include "core/variant/callable.h"
+#include "core/variant/array.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/object/object_id.h"
+#include "core/typedefs.h"
+#include "guest_datatypes.h"
+#include <array>
 
 class Sandbox;
 struct GuestVariant;
 
 class RiscvCallable : public CallableCustom {
 public:
-	uint32_t hash() const override {
+	virtual uint32_t hash() const override {
 		return address;
 	}
 
-	String get_as_text() const override {
+	virtual String get_as_text() const override {
 		return "<RiscvCallable>";
 	}
 
-	CompareEqualFunc get_compare_equal_func() const override {
+	virtual CompareEqualFunc get_compare_equal_func() const override {
 		return [](const CallableCustom *p_a, const CallableCustom *p_b) {
 			return p_a == p_b;
 		};
 	}
 
-	CompareLessFunc get_compare_less_func() const override {
+	virtual CompareLessFunc get_compare_less_func() const override {
 		return [](const CallableCustom *p_a, const CallableCustom *p_b) {
 			return p_a < p_b;
 		};
 	}
 
-	bool is_valid() const override {
+	virtual bool is_valid() const override {
 		return self != nullptr;
 	}
 
-	ObjectID get_object() const override {
+	virtual ObjectID get_object() const override {
 		return ObjectID();
 	}
 
-	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, GDExtensionCallError &r_call_error) const override;
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
 	void init(Sandbox *self, gaddr_t address, Array args) {
 		this->self = self;

@@ -73,7 +73,7 @@ bool Sandbox::get_restrictions() const {
 }
 // clang-format on
 
-void Sandbox::add_allowed_object(godot::Object *obj) {
+void Sandbox::add_allowed_object(::Object *obj) {
 	if (is_in_vmcall()) {
 		ERR_PRINT("Cannot add allowed objects during a VM call.");
 		return;
@@ -81,7 +81,7 @@ void Sandbox::add_allowed_object(godot::Object *obj) {
 	m_allowed_objects.insert(obj);
 }
 
-void Sandbox::remove_allowed_object(godot::Object *obj) {
+void Sandbox::remove_allowed_object(::Object *obj) {
 	m_allowed_objects.erase(obj);
 }
 
@@ -137,7 +137,7 @@ bool Sandbox::is_allowed_resource(const String &path) const {
 	return true;
 }
 
-bool Sandbox::is_allowed_method(godot::Object *obj, const Variant &method) const {
+bool Sandbox::is_allowed_method(::Object *obj, const Variant &method) const {
 	// If the callable is valid, call it to allow the user to decide
 	if (m_just_in_time_allowed_methods.is_valid()) {
 		return m_just_in_time_allowed_methods.call(this, obj, method);
@@ -154,7 +154,7 @@ void Sandbox::set_method_allowed_callback(const Callable &callback) {
 	m_just_in_time_allowed_methods = callback;
 }
 
-bool Sandbox::is_allowed_property(godot::Object *obj, const Variant &property, bool is_set) const {
+bool Sandbox::is_allowed_property(::Object *obj, const Variant &property, bool is_set) const {
 	// If the callable is valid, call it to allow the user to decide
 	if (m_just_in_time_allowed_properties.is_valid()) {
 		return m_just_in_time_allowed_properties.call(this, obj, property, is_set);

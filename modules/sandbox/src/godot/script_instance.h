@@ -35,9 +35,8 @@
 #include <godot_cpp/templates/list.hpp>
 #include <godot_cpp/templates/pair.hpp>
 #include <godot_cpp/variant/string_name.hpp>
-#include <godot_cpp/variant/variant.hpp>
+#include "core/variant/variant.h"
 
-using namespace godot;
 
 namespace godot {
 

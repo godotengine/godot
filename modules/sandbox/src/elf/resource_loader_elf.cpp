@@ -31,7 +31,7 @@
 #include "resource_loader_elf.h"
 #include "../sandbox.h"
 #include "script_elf.h"
-#include <godot_cpp/classes/file_access.hpp>
+#include "core/io/file_access.h"
 static constexpr bool VERBOSE_LOADER = false;
 
 Variant ResourceFormatLoaderELF::_load(const String &p_path, const String &original_path, bool use_sub_threads, int32_t cache_mode) const {
@@ -66,7 +66,7 @@ PackedStringArray ResourceFormatLoaderELF::_get_recognized_extensions() const {
 	array.push_back("elf");
 	return array;
 }
-bool ResourceFormatLoaderELF::_recognize_path(const godot::String &path, const godot::StringName &type) const {
+bool ResourceFormatLoaderELF::_recognize_path(const ::String &path, const ::StringName &type) const {
 	String el = path.get_extension().to_lower();
 	if (el == "elf") {
 		return true;

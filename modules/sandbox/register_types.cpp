@@ -30,15 +30,16 @@
 
 #include "register_types.h"
 
+#include "src/sandbox.h"
 #include "core/object/class_db.h"
 #include "core/string/print_string.h"
 
 void initialize_sandbox_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		// TODO completed: Register sandbox classes here once they are converted to Godot internal APIs
-		// Currently registering core Sandbox class as internal C++ module
-		// Other classes (ELF, CPP, Rust, Zig scripts) are temporarily moved out during conversion
-		print_line("Sandbox module initialized - Converting to internal C++ module");
+		// Register the Sandbox class
+		GDREGISTER_CLASS(Sandbox);
+		
+		print_line("Sandbox module initialized - Sandbox class registered successfully");
 	}
 }
 

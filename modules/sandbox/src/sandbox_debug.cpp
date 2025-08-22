@@ -30,7 +30,7 @@
 
 #include "sandbox.h"
 
-#include <godot_cpp/variant/utility_functions.hpp>
+#include "core/variant/variant_utility.h"
 
 Array Sandbox::get_general_registers() const {
 	Array ret;

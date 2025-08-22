@@ -30,11 +30,11 @@
 
 #include "sandbox.h"
 
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/file_access.hpp>
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
 #include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
+#include "core/config/project_settings.h"
+#include "core/variant/variant_utility.h"
 
 #if defined(__linux__)
 #include <dlfcn.h>

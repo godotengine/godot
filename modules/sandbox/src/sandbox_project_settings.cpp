@@ -30,9 +30,8 @@
 
 #include "sandbox_project_settings.h"
 
-#include <godot_cpp/classes/project_settings.hpp>
+#include "core/config/project_settings.h"
 
-using namespace godot;
 
 static constexpr char USE_GLOBAL_NAMES[] = "editor/script/use_global_sandbox_names";
 static constexpr char USE_GLOBAL_NAMES_HINT[] = "Use customized global names for Sandbox programs";
@@ -85,7 +84,7 @@ static void register_setting(
 	property_info["hint"] = p_hint;
 	property_info["hint_string"] = p_hint_string;
 
-	project_settings->add_property_info(property_info);
+	project_settings->call("add_property_info", property_info);
 	project_settings->set_initial_value(p_name, p_value);
 	project_settings->set_restart_if_changed(p_name, p_needs_restart);
 

@@ -32,7 +32,7 @@
 #include "../register_types.h"
 #include "script_elf.h"
 #include "script_language_elf.h"
-#include <godot_cpp/classes/file_access.hpp>
+#include "core/io/file_access.h"
 
 Error ResourceFormatSaverELF::_save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	// Do not save, revert instead

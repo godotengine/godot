@@ -39,12 +39,11 @@
 #include <godot_cpp/core/type_info.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
-#include <godot_cpp/variant/string.hpp>
+#include "core/string/ustring.h"
 #include <godot_cpp/variant/typed_array.hpp>
-#include <godot_cpp/variant/variant.hpp>
+#include "core/variant/variant.h"
 
 #include "../godot/script_instance.h"
-using namespace godot;
 
 class CPPScript;
 class ELFScript;

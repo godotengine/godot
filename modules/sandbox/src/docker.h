@@ -31,7 +31,7 @@
 #pragma once
 
 #include <godot_cpp/variant/utility_functions.hpp>
-#include <godot_cpp/variant/variant.hpp>
+#include "core/variant/variant.h"
 
 struct Docker {
 	using Array = godot::Array;

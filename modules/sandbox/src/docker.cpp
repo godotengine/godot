@@ -32,17 +32,16 @@
 
 #include "sandbox_project_settings.h"
 #include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
+#include "core/config/project_settings.h"
 //#define ENABLE_TIMINGS 1
 #ifdef ENABLE_TIMINGS
 #include <time.h>
 #endif
 
 static constexpr bool VERBOSE_CMD = true;
-using namespace godot;
 
 static bool ContainerIsAlreadyRunning(String container_name) {
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "container", "inspect", "-f", "{{.State.Running}}", container_name };
 	Array output;
 	if constexpr (VERBOSE_CMD) {
@@ -57,7 +56,7 @@ static bool ContainerIsAlreadyRunning(String container_name) {
 }
 
 bool Docker::ContainerPullLatest(String image_name, Array &output) {
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "pull", image_name };
 	if constexpr (VERBOSE_CMD) {
 		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
@@ -67,7 +66,7 @@ bool Docker::ContainerPullLatest(String image_name, Array &output) {
 }
 
 String Docker::ContainerGetMountPath(String container_name) {
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "inspect", "-f", "{{ (index .Mounts 0).Source }}", container_name };
 	Array output;
 	if constexpr (VERBOSE_CMD) {
@@ -109,7 +108,7 @@ bool Docker::ContainerStart(String container_name, String image_name, Array &out
 		WARN_PRINT("Sandbox: Failed to pull the latest container image: " + image_name);
 	}
 	// Start the container, even if the image pull failed. It might be locally available.
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "run", "--name", container_name, "-dv", ".:/usr/src", image_name };
 	if constexpr (VERBOSE_CMD) {
 		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
@@ -122,7 +121,7 @@ Array Docker::ContainerStop(String container_name) {
 	if (!SandboxProjectSettings::get_docker_enabled()) {
 		return Array();
 	}
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "stop", container_name, "--time", "0" };
 	if constexpr (VERBOSE_CMD) {
 		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
@@ -141,7 +140,7 @@ bool Docker::ContainerExecute(String container_name, const PackedStringArray &p_
 	clock_gettime(CLOCK_MONOTONIC, &start);
 #endif
 
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "exec", "-t", container_name, "bash" };
 	for (int i = 0; i < p_arguments.size(); i++) {
 		arguments.push_back(p_arguments[i]);
@@ -172,7 +171,7 @@ int Docker::ContainerVersion(String container_name, const PackedStringArray &p_a
 }
 
 bool Docker::ContainerDelete(String container_name, Array &output) {
-	godot::OS *OS = godot::OS::get_singleton();
+	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "rm", container_name };
 	if constexpr (VERBOSE_CMD) {
 		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);

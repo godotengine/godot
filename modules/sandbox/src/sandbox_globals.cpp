@@ -33,7 +33,7 @@
 #include <godot_cpp/classes/audio_server.hpp>
 #include <godot_cpp/classes/display_server.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
-#include <godot_cpp/classes/engine.hpp>
+#include "core/config/engine.h"
 #include <godot_cpp/classes/engine_debugger.hpp>
 #include <godot_cpp/classes/gd_extension_manager.hpp>
 #include <godot_cpp/classes/geometry2d.hpp>
@@ -50,7 +50,7 @@
 #include <godot_cpp/classes/physics_server2d_manager.hpp>
 #include <godot_cpp/classes/physics_server3d.hpp>
 #include <godot_cpp/classes/physics_server3d_manager.hpp>
-#include <godot_cpp/classes/project_settings.hpp>
+#include "core/config/project_settings.h"
 #include <godot_cpp/classes/rendering_server.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/resource_saver.hpp>

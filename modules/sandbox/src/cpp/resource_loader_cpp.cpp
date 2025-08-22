@@ -30,7 +30,7 @@
 
 #include "resource_loader_cpp.h"
 #include "script_cpp.h"
-#include <godot_cpp/classes/file_access.hpp>
+#include "core/io/file_access.h"
 
 static Ref<ResourceFormatLoaderCPP> cpp_loader;
 

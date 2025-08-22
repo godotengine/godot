@@ -36,7 +36,7 @@
 #include "../sandbox.h"
 #include "../sandbox_project_settings.h"
 #include "script_instance.h"
-#include <godot_cpp/classes/file_access.hpp>
+#include "core/io/file_access.h"
 #include <godot_cpp/classes/json.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 static constexpr bool VERBOSE_ELFSCRIPT = false;

@@ -49,9 +49,11 @@ using machine_t = riscv::Machine<RISCV_ARCH>;
 
 // Forward declarations
 class ELFScript;
-class SandboxProperty;
 struct GuestVariant;
 class RiscvCallable;
+
+// Forward declaration for SandboxProperty (defined after Sandbox class)
+class SandboxProperty;
 
 /**
  * @brief The Sandbox class is a Godot node that provides a safe environment for running untrusted code.
@@ -783,3 +785,35 @@ inline bool Sandbox::is_allowed_object(Object *obj) const {
 		return m_just_in_time_allowed_objects.call(this, obj);
 	return false;
 }
+
+// SandboxProperty class definition (defined after Sandbox class to avoid circular dependencies)
+class SandboxProperty {
+	StringName m_name;
+	Variant::Type m_type = Variant::Type::NIL;
+	uint64_t m_setter_address = 0;
+	uint64_t m_getter_address = 0;
+	Variant m_def_val;
+
+public:
+	SandboxProperty(const StringName &name, Variant::Type type, uint64_t setter, uint64_t getter, const Variant &def = "") :
+			m_name(name), m_type(type), m_setter_address(setter), m_getter_address(getter), m_def_val(def) {}
+
+	// Get the name of the property.
+	const StringName &name() const { return m_name; }
+
+	// Get the type of the property.
+	Variant::Type type() const { return m_type; }
+
+	// Get the address of the setter function.
+	uint64_t setter_address() const { return m_setter_address; }
+	// Get the address of the getter function.
+	uint64_t getter_address() const { return m_getter_address; }
+
+	// Get the default value of the property.
+	const Variant &default_value() const { return m_def_val; }
+
+	// Call the setter function.
+	void set(Sandbox &sandbox, const Variant &value);
+	// Call the getter function.
+	Variant get(const Sandbox &sandbox) const;
+};

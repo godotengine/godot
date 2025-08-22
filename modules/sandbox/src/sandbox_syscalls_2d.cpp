@@ -29,11 +29,14 @@
 /**************************************************************************/
 
 #include "guest_datatypes.h"
+#include "sandbox.h"
 #include "syscalls.h"
 
-#include <godot_cpp/core/math.hpp>
-#include <godot_cpp/variant/transform2d.hpp>
-#include <godot_cpp/variant/variant.hpp>
+#include "core/math/math_funcs.h"
+#include "core/math/transform_2d.h"
+#include "core/math/vector2.h"
+#include "core/variant/variant.h"
+#include "core/string/print_string.h"
 //#define ENABLE_SYSCALL_TRACE 1
 #include "syscalls_helpers.hpp"
 
@@ -178,7 +181,7 @@ APICALL(api_transform2d_ops) {
 		throw std::runtime_error("Invalid Transform2D object");
 	}
 	const Variant *t_variant = *opt_t;
-	godot::Transform2D t = t_variant->operator Transform2D();
+	::Transform2D t = t_variant->operator Transform2D();
 
 	// Additional integers start at A2 (12), and floats start at FA0 (10).
 	switch (op) {

@@ -34,7 +34,7 @@
 #include "core/templates/hash_set.h"
 #include "core/templates/hash_map.h"
 #include "core/variant/array.h"
-#include "core/variant/packed_array.h"
+#include "core/variant/variant.h"
 #include "core/variant/dictionary.h"
 #include "core/variant/typed_array.h"
 #include "core/string/string_name.h"

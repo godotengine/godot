@@ -31,13 +31,12 @@
 #include "sandbox.h"
 
 #include "sandbox_project_settings.h"
-#include <godot_cpp/classes/dir_access.hpp>
-#include <godot_cpp/classes/engine.hpp>
-#include <godot_cpp/classes/file_access.hpp>
+#include "core/io/dir_access.h"
+#include "core/config/engine.h"
+#include "core/io/file_access.h"
 #include <godot_cpp/classes/http_client.hpp>
 #include <godot_cpp/classes/zip_reader.hpp>
-#include <godot_cpp/variant/utility_functions.hpp>
-using namespace godot;
+#include "core/variant/variant_utility.h"
 static constexpr bool VERBOSE = false;
 
 static PackedByteArray handle_request(HTTPClient *client, String url) {

@@ -31,9 +31,9 @@
 #include "guest_datatypes.h"
 #include "syscalls.h"
 
-#include <godot_cpp/variant/basis.hpp>
-#include <godot_cpp/variant/transform3d.hpp>
-#include <godot_cpp/variant/variant.hpp>
+#include "core/math/basis.h"
+#include "core/math/transform_3d.h"
+#include "core/variant/variant.h"
 //#define ENABLE_SYSCALL_TRACE 1
 #include "syscalls_helpers.hpp"
 
@@ -143,7 +143,7 @@ APICALL(api_transform3d_ops) {
 		throw std::runtime_error("Invalid Transform3D object: " + std::to_string(int32_t(idx)));
 	}
 	const Variant *t_variant = *opt_t;
-	godot::Transform3D t = t_variant->operator Transform3D();
+	::Transform3D t = t_variant->operator Transform3D();
 
 	// Additional integers start at A2 (12), and floats start at FA0 (10).
 	switch (op) {
@@ -334,7 +334,7 @@ APICALL(api_basis_ops) {
 		throw std::runtime_error("Invalid Basis object");
 	}
 	const Variant *b_variant = *opt_b;
-	godot::Basis b = b_variant->operator Basis();
+	::Basis b = b_variant->operator Basis();
 
 	// Additional integers start at A2 (12), and floats start at FA0 (10).
 	switch (op) {
@@ -507,7 +507,7 @@ APICALL(api_quat_ops) {
 		throw std::runtime_error("Invalid Quaternion object");
 	}
 	const Variant *q_variant = *opt_q;
-	godot::Quaternion q = q_variant->operator Quaternion();
+	::Quaternion q = q_variant->operator Quaternion();
 
 	// Additional integers start at A2 (12), and floats start at FA0 (10).
 	switch (op) {
