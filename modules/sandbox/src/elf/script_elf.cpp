@@ -31,7 +31,7 @@
 #include "script_elf.h"
 
 #include "../cpp/script_cpp.h"
-#include "../docker.h"
+// Docker support removed
 #include "../register_types.h"
 #include "../sandbox.h"
 #include "../sandbox_project_settings.h"

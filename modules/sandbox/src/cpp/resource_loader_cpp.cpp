@@ -45,7 +45,8 @@ void ResourceFormatLoaderCPP::deinit() {
 }
 
 Variant ResourceFormatLoaderCPP::_load(const String &p_path, const String &original_path, bool use_sub_threads, int32_t cache_mode) const {
-	Ref<CPPScript> cpp_model = memnew(CPPScript);
+	Ref<CPPScript> cpp_model;
+	cpp_model.instantiate();
 	cpp_model->set_file(p_path);
 	return cpp_model;
 }
