@@ -1,77 +1,119 @@
 #!/usr/bin/env python
 from misc.utility.scons_hints import *
 
-# Minimal SCsub for sandbox module: no renaming, just link to built libraries
 Import("env")
 Import("env_modules")
 
-
-def get_addon_platform():
-    return env["platform"].replace("linuxbsd", "linux")
-
-
-def get_addon_threads():
-    return "yes" if env["threads"] else "no"
-
-
-def get_addon_llvm():
-    return "yes" if env.get("use_llvm", False) else "no"
-
-
-def get_addon_devbuild():
-    return "yes" if env.get("dev_build", False) else "no"
-
-
-def get_addon_target():
-    return "template_release" if env["target"] == "editor" else env["target"]
-
-
-def get_addon_mingw():
-    return "yes" if env.get("use_mingw", False) else "no"
-
-
-def get_sufix():
-    suffix = f".{get_addon_platform()}.{get_addon_target()}"
+def get_suffix():
+    suffix = f".{env['platform']}.{env['target']}.{env['arch']}"
     if env.get("dev_build", False):
         suffix += ".dev"
     if env["precision"] == "double":
         suffix += ".double"
-    suffix += f".{env['arch']}"
     if not env["threads"]:
         suffix += ".nothreads"
     if env.get("use_llvm", False):
         suffix += ".llvm"
     return suffix
 
+def build_sandbox_libraries(target, source, env):
+    import subprocess
+    import os
+    
+    print("Building sandbox static libraries...")
+    sandbox_dir = env.Dir("#modules/sandbox").abspath
+    original_dir = os.getcwd()
+    
+    try:
+        os.chdir(sandbox_dir)
+        
+        # Build godot-cpp first
+        print("Building godot-cpp...")
+        godot_cpp_cmd = [
+            "scons", "-C", "thirdparty/godot-cpp",
+            f"platform={env['platform']}", 
+            f"target={env['target']}", 
+            f"arch={env['arch']}"
+        ]
+        if env.get("use_mingw", False):
+            godot_cpp_cmd.append("use_mingw=yes")
+        if env.get("use_llvm", False):
+            godot_cpp_cmd.append("use_llvm=yes")
+        if env.get("dev_build", False):
+            godot_cpp_cmd.append("dev_build=yes")
+        if env["precision"] == "double":
+            godot_cpp_cmd.append("precision=double")
+        if not env["threads"]:
+            godot_cpp_cmd.append("threads=no")
+            
+        subprocess.run(godot_cpp_cmd, check=True)
+        
+        # Build sandbox library
+        print("Building sandbox library...")
+        sandbox_cmd = [
+            "scons", "-f", "SConstruct", "static_build=yes",
+            f"platform={env['platform']}", 
+            f"target={env['target']}", 
+            f"arch={env['arch']}"
+        ]
+        if env.get("use_mingw", False):
+            sandbox_cmd.append("use_mingw=yes")
+        if env.get("use_llvm", False):
+            sandbox_cmd.append("use_llvm=yes")
+        if env.get("dev_build", False):
+            sandbox_cmd.append("dev_build=yes")
+        if env["precision"] == "double":
+            sandbox_cmd.append("precision=double")
+        if not env["threads"]:
+            sandbox_cmd.append("threads=no")
+            
+        subprocess.run(sandbox_cmd, check=True)
+        print("Sandbox libraries built successfully")
+        
+    except subprocess.CalledProcessError as e:
+        print(f"Error building sandbox libraries: {e}")
+        raise
+    finally:
+        os.chdir(original_dir)
 
-suffix = get_sufix()
-godot_cpp_path = "#modules/sandbox/thirdparty/godot-cpp/bin"
+# Get platform suffix
+suffix = get_suffix()
 
+# Define library target paths
+sandbox_lib_target = f"#modules/sandbox/bin/libsandbox{suffix}.a"
+godot_cpp_lib_target = f"#modules/sandbox/thirdparty/godot-cpp/bin/libgodot-cpp{suffix}.a"
+
+# Create SCons Command to build both libraries
+# Use source files as dependencies to trigger rebuilds when needed
+source_deps = [
+    Glob("#modules/sandbox/src/*.cpp"),
+    Glob("#modules/sandbox/src/*/*.cpp"),
+    Glob("#modules/sandbox/thirdparty/libriscv/lib/libriscv/*.cpp"),
+    "#modules/sandbox/SConstruct",
+    "#modules/sandbox/thirdparty/godot-cpp/SConstruct"
+]
+
+library_build_cmd = env.Command(
+    [sandbox_lib_target, godot_cpp_lib_target],
+    source_deps,
+    build_sandbox_libraries
+)
+
+# Ensure libraries are built before any module compilation
+env.Depends(env.modules_sources, library_build_cmd)
+
+# Configure library linking
+env.Append(LIBPATH=["#modules/sandbox/bin", "#modules/sandbox/thirdparty/godot-cpp/bin"])
+
+# Platform-specific library naming
 if env["platform"] == "ios":
-    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
     env.Append(LIBS=[f"libsandbox{suffix}", f"libgodot-cpp{suffix}"])
 elif env["platform"] != "windows" or env.get("use_mingw", False):
-    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
     env.Append(LIBS=[f"sandbox{suffix}", f"godot-cpp{suffix}"])
 else:
-    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
     env.Append(LIBS=["sandbox", "godot-cpp"])
 
+# Add the module registration source (the only source file for this hybrid module)
 env.add_source_files(env.modules_sources, "register_types.cpp")
 
-
-env_sandbox = env_modules.Clone()
-suffix = get_sufix()
-godot_cpp_path = "#modules/sandbox/thirdparty/godot-cpp/bin"
-if env["platform"] == "ios":
-    env_sandbox.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
-    env_sandbox.Append(LIBS=[f"libsandbox{suffix}", f"libgodot-cpp{suffix}"])
-elif env["platform"] != "windows" or env.get("use_mingw", False):
-    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
-    env.Append(LIBS=[f"sandbox{suffix}", f"godot-cpp{suffix}"])
-else:
-    env.Append(LIBPATH=["#modules/sandbox/bin", godot_cpp_path])
-    env.Append(LIBS=["sandbox", "godot-cpp"])
-
-
-env.add_source_files(env.modules_sources, "register_types.cpp")
+print(f"Sandbox hybrid module configured with suffix: {suffix}")
