@@ -30,6 +30,13 @@
 
 #include "sandbox_base.h"
 
+// Static member definitions
+uint64_t SandboxBase::global_calls_made = 0;
+uint64_t SandboxBase::global_exceptions = 0;
+uint64_t SandboxBase::global_timeouts = 0;
+uint64_t SandboxBase::global_instance_count = 0;
+double SandboxBase::accumulated_startup_time = 0.0;
+
 SandboxBase::SandboxBase() {
 	tree_base = this;
 	global_instance_count++;

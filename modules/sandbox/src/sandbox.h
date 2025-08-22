@@ -152,7 +152,7 @@ public:
 	/// @param args The arguments to pass to the function.
 	/// @param arg_count The number of arguments.
 	/// @return The return value of the function call.
-	Variant vmcall_fn(const StringName &function, const Variant **args, int arg_count, Callable::CallError &error);
+	Variant vmcall_fn(const StringName &function, const Variant **args, int arg_count, Callable::CallError &error) override;
 	/// @brief Make a function call to a function in the guest by its guest address.
 	/// @param address The address of the function to call.
 	/// @param args The arguments to pass to the function.
@@ -173,26 +173,26 @@ public:
 
 	/// @brief Set whether to prefer register values for VM function calls.
 	/// @param use_unboxed_arguments True to prefer register values, false to prefer Variant values.
-	void set_unboxed_arguments(bool use_unboxed_arguments) { m_use_unboxed_arguments = use_unboxed_arguments; }
+	void set_unboxed_arguments(bool use_unboxed_arguments) override { m_use_unboxed_arguments = use_unboxed_arguments; }
 	/// @brief Get whether to prefer register values for VM function calls.
 	/// @return True if register values are preferred, false if Variant values are preferred.
-	bool get_unboxed_arguments() const { return m_use_unboxed_arguments; }
+	bool get_unboxed_arguments() const override { return m_use_unboxed_arguments; }
 
 	/// @brief Set whether to use precise simulation for VM execution.
 	/// @param use_precise_simulation True to use precise simulation, false to use fast simulation.
-	void set_precise_simulation(bool use_precise_simulation) { m_precise_simulation = use_precise_simulation; }
+	void set_precise_simulation(bool use_precise_simulation) override { m_precise_simulation = use_precise_simulation; }
 
 	/// @brief Get whether to use precise simulation for VM execution.
 	/// @return True if precise simulation is used, false otherwise.
-	bool get_precise_simulation() const { return m_precise_simulation; }
+	bool get_precise_simulation() const override { return m_precise_simulation; }
 
 	/// @brief Set whether or not to enable profiling of the guest program.
 	/// @param enable True to enable profiling, false to disable it.
-	void set_profiling(bool enable);
+	void set_profiling(bool enable) override;
 
 	/// @brief Get whether profiling of the guest program is enabled.
 	/// @return True if profiling is enabled, false otherwise.
-	bool get_profiling() const { return m_local_profiling_data != nullptr; }
+	bool get_profiling() const override { return m_local_profiling_data != nullptr; }
 
 	/// @brief  Check if the sandbox is currently initializing (running through main()).
 	/// @return True if the sandbox is initializing, false otherwise.
@@ -202,24 +202,24 @@ public:
 
 	// -= Sandbox Properties =-
 
-	uint32_t get_max_refs() const { return m_max_refs; }
-	void set_max_refs(uint32_t max);
-	void set_memory_max(uint32_t max);
-	uint32_t get_memory_max() const { return m_memory_max; }
-	void set_instructions_max(int64_t max) { m_insn_max = max; }
-	int64_t get_instructions_max() const { return m_insn_max; }
-	void set_allocations_max(int64_t max);
-	int64_t get_allocations_max() const { return m_allocations_max; }
-	int64_t get_heap_usage() const;
-	int64_t get_heap_chunk_count() const;
-	int64_t get_heap_allocation_counter() const;
-	int64_t get_heap_deallocation_counter() const;
+	uint32_t get_max_refs() const override { return m_max_refs; }
+	void set_max_refs(uint32_t max) override;
+	void set_memory_max(uint32_t max) override;
+	uint32_t get_memory_max() const override { return m_memory_max; }
+	void set_instructions_max(int64_t max) override { m_insn_max = max; }
+	int64_t get_instructions_max() const override { return m_insn_max; }
+	void set_allocations_max(int64_t max) override;
+	int64_t get_allocations_max() const override { return m_allocations_max; }
+	int64_t get_heap_usage() const override;
+	int64_t get_heap_chunk_count() const override;
+	int64_t get_heap_allocation_counter() const override;
+	int64_t get_heap_deallocation_counter() const override;
 	void set_exceptions(unsigned exceptions) {} // Do nothing (it's a read-only property)
-	unsigned get_exceptions() const { return m_exceptions; }
+	unsigned get_exceptions() const override { return m_exceptions; }
 	void set_timeouts(unsigned budget) {} // Do nothing (it's a read-only property)
-	unsigned get_timeouts() const { return m_timeouts; }
+	unsigned get_timeouts() const override { return m_timeouts; }
 	void set_calls_made(unsigned calls) {} // Do nothing (it's a read-only property)
-	unsigned get_calls_made() const { return m_calls_made; }
+	unsigned get_calls_made() const override { return m_calls_made; }
 
 	static uint64_t get_global_timeouts() { return m_global_timeouts; }
 	static uint64_t get_global_exceptions() { return m_global_exceptions; }
@@ -235,16 +235,16 @@ public:
 
 	// -= Address Lookup =-
 
-	gaddr_t address_of(const String &symbol) const;
+	gaddr_t address_of(const String &symbol) const override;
 
 	gaddr_t cached_address_of(int64_t hash, const String &name) const;
 
-	String lookup_address(gaddr_t address) const;
+	String lookup_address(gaddr_t address) const override;
 
 	/// @brief Check if a function exists in the guest program.
 	/// @param p_function The name of the function to check.
 	/// @return True if the function exists, false otherwise.
-	bool has_function(const StringName &p_function) const;
+	bool has_function(const StringName &p_function) const override;
 
 	/// @brief Add a hash to address mapping to the cache.
 	/// @param name The name of the function or symbol.
@@ -263,8 +263,8 @@ public:
 	/// @param tree_base The tree base node.
 	/// @note The tree base is the owner node that the sandbox will use to access the node tree. When scripts
 	/// try to access the node path ".", they will be accessing this node, and navigating relative to it.
-	void set_tree_base(Node *tree_base) { this->m_tree_base = tree_base; }
-	Node *get_tree_base() const { return this->m_tree_base; }
+	void set_tree_base(Node *tree_base) override { this->m_tree_base = tree_base; }
+	Node *get_tree_base() const override { return this->m_tree_base; }
 
 	// -= Scoped objects and variants =-
 
@@ -330,26 +330,26 @@ public:
 	/// @brief Enable *all* restrictions on the sandbox, restricting access to
 	/// external classes, objects, object methods, object properties, and resources.
 	/// In effect, all external access is disabled.
-	void set_restrictions(bool enabled);
+	void set_restrictions(bool enabled) override;
 
 	/// @brief Check if restrictions are enabled on the sandbox.
 	/// @return True if *all* restrictions are enabled, false otherwise.
-	bool get_restrictions() const;
+	bool get_restrictions() const override;
 
 	/// @brief Add an object to the list of allowed objects.
 	/// @param obj The object to add.
-	void add_allowed_object(Object *obj);
+	void add_allowed_object(Object *obj) override;
 
 	/// @brief Remove an object from the list of allowed objects.
 	/// @param obj The object to remove.
 	/// @note If the list becomes empty, all objects are allowed.
-	void remove_allowed_object(Object *obj);
+	void remove_allowed_object(Object *obj) override;
 
 	/// @brief Clear the list of allowed objects.
-	void clear_allowed_objects();
+	void clear_allowed_objects() override;
 
 	/// @brief Check if an object is allowed in the sandbox.
-	bool is_allowed_object(Object *obj) const;
+	bool is_allowed_object(Object *obj) const override;
 
 	/// @brief Set a callback to check if an object is allowed in the sandbox.
 	/// @param callback The callable to check if an object is allowed.
@@ -445,20 +445,20 @@ public:
 
 	/// @brief Check if a program has been loaded into the sandbox.
 	/// @return True if a program has been loaded, false otherwise.
-	bool has_program_loaded() const;
+	bool has_program_loaded() const override;
 	/// @brief Set the program to run in the sandbox.
 	/// @param program The program to load and run.
-	void set_program(Ref<ELFScript> program);
+	void set_program(Ref<ELFScript> program) override;
 	/// @brief Get the program loaded into the sandbox.
 	/// @return The program loaded into the sandbox.
-	Ref<ELFScript> get_program();
+	Ref<ELFScript> get_program() override;
 
 	/// @brief Load a program from a buffer into the sandbox.
 	/// @param buffer The buffer containing the program.
-	void load_buffer(const PackedByteArray &buffer);
+	void load_buffer(const PackedByteArray &buffer) override;
 
 	/// @brief Reset the sandbox, clearing all state and reloads the program.
-	void reset(bool unload = false);
+	void reset(bool unload = false) override;
 
 	struct BinaryInfo {
 		String language;
@@ -515,7 +515,7 @@ public:
 	/// @param enable True to enable profiling, false to disable it.
 	/// @param interval The interval in instructions between each profiling update. This interval
 	/// is accumulated so that even if a function returns early, the interval is still counted.
-	void enable_profiling(bool enable, uint32_t interval = 500);
+	void enable_profiling(bool enable, int interval = 500) override;
 
 	// -= Self-testing, inspection and internal functions =-
 
@@ -573,13 +573,13 @@ public:
 
 	/// @brief  Check if the program has found and loaded binary translation.
 	/// @return True if binary translation is loaded, false otherwise.
-	bool is_binary_translated() const;
+	bool is_binary_translated() const override;
 
 	/// @brief Check if the program has a binary translation produced by a JIT compiler.
 	/// @note is_binary_translated() will return true if the program has a binary translation,
 	/// regardless of whether it was produced by a JIT- or a system-compiler.
 	/// @return True if the program has a JIT-compiled binary translation, false otherwise.
-	bool is_jit() const;
+	bool is_jit() const override;
 
 #ifdef RISCV_LIBTCC
 	/// @brief Set whether to automatically use nbit-as for binary translation.

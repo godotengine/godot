@@ -42,10 +42,10 @@ struct ProfilingMachine {
 static std::unordered_map<std::string, ProfilingMachine> lookup_machines;
 
 void Sandbox::set_profiling(bool enable) {
-	enable_profiling(enable);
+	enable_profiling(enable, 500);
 }
 
-void Sandbox::enable_profiling(bool enable, uint32_t interval) {
+void Sandbox::enable_profiling(bool enable, int interval) {
 	if (enable) {
 		if (!m_local_profiling_data) {
 			m_local_profiling_data = std::make_unique<LocalProfilingData>();

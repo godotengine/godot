@@ -357,7 +357,7 @@ bool ELFScriptInstance::property_can_revert(const StringName &p_name) const {
 	if (!sandbox) {
 		return false;
 	}
-	if (const SandboxProperty *prop = sandbox->find_property_or_null(p_name)) {
+	if (sandbox->find_property_or_null(p_name)) {
 		return true;
 	}
 	const String name = p_name;

@@ -171,16 +171,3 @@ protected:
 	static void _bind_methods();
 	void setup_base_functions();
 };
-
-// Static member definitions
-uint64_t SandboxBase::global_calls_made = 0;
-uint64_t SandboxBase::global_exceptions = 0;
-uint64_t SandboxBase::global_timeouts = 0;
-uint64_t SandboxBase::global_instance_count = 0;
-double SandboxBase::accumulated_startup_time = 0.0;
-
-// Static constant definitions
-const uint32_t SandboxBase::MAX_REFS;
-const uint32_t SandboxBase::MAX_VMEM;
-const uint32_t SandboxBase::MAX_INSTRUCTIONS;
-const int64_t SandboxBase::MAX_HEAP_ALLOCS;

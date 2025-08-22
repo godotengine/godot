@@ -68,7 +68,6 @@ APICALL(api_vector2_rotated) {
 
 APICALL(api_vec2_ops) {
 	auto [op, vec2] = machine.sysargs<Vec2_Op, Vector2 *>();
-	Sandbox &emu = riscv::emu(machine);
 
 	// Integer arguments start from A2, and float arguments start from FA0.
 	switch (op) {
