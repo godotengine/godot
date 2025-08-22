@@ -3340,13 +3340,14 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 			Vector<int> indices_vec4_mapping;
 			if (mesh_prim.has("indices")) {
 				indices = _decode_accessor_as_ints(p_state, mesh_prim["indices"], false);
-				const int is = indices.size();
+				const int index_count = indices.size();
 
 				if (primitive == Mesh::PRIMITIVE_TRIANGLES) {
+					ERR_FAIL_COND_V_MSG(index_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Indexed triangle meshes MUST have an index array with a size that is a multiple of 3, but got " + itos(index_count) + " indices.");
 					// Swap around indices, convert ccw to cw for front face.
 
 					int *w = indices.ptrw();
-					for (int k = 0; k < is; k += 3) {
+					for (int k = 0; k < index_count; k += 3) {
 						SWAP(w[k + 1], w[k + 2]);
 					}
 				}
@@ -3355,7 +3356,7 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				Vector<bool> used_indices;
 				used_indices.resize_initialized(orig_vertex_num);
 				bool *used_w = used_indices.ptrw();
-				for (int idx_i = 0; idx_i < is; idx_i++) {
+				for (int idx_i = 0; idx_i < index_count; idx_i++) {
 					ERR_FAIL_INDEX_V(indices_w[idx_i], orig_vertex_num, ERR_INVALID_DATA);
 					used_w[indices_w[idx_i]] = true;
 				}
@@ -3556,11 +3557,12 @@ Error GLTFDocument::_parse_meshes(Ref<GLTFState> p_state) {
 				// Generate indices because they need to be swapped for CW/CCW.
 				const Vector<Vector3> &vertices = array[Mesh::ARRAY_VERTEX];
 				ERR_FAIL_COND_V(vertices.is_empty(), ERR_PARSE_ERROR);
-				const int vs = vertices.size();
-				indices.resize(vs);
+				const int vertex_count = vertices.size();
+				ERR_FAIL_COND_V_MSG(vertex_count % 3 != 0, ERR_PARSE_ERROR, "glTF import: Mesh " + itos(i) + " surface " + itos(j) + " in file " + p_state->filename + " is invalid. Non-indexed triangle meshes MUST have a vertex array with a size that is a multiple of 3, but got " + itos(vertex_count) + " vertices.");
+				indices.resize(vertex_count);
 				{
 					int *w = indices.ptrw();
-					for (int k = 0; k < vs; k += 3) {
+					for (int k = 0; k < vertex_count; k += 3) {
 						w[k] = k;
 						w[k + 1] = k + 2;
 						w[k + 2] = k + 1;
@@ -4353,6 +4355,7 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 }
 
 Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<Texture2D>(), "glTF import: Tried to read texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
 	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
@@ -4392,7 +4395,8 @@ GLTFTextureSamplerIndex GLTFDocument::_set_sampler_for_mode(Ref<GLTFState> p_sta
 }
 
 Ref<GLTFTextureSampler> GLTFDocument::_get_sampler_for_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
-	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
+	ERR_FAIL_COND_V_MSG(p_state->textures.is_empty(), Ref<GLTFTextureSampler>(), "glTF import: Tried to read sampler for texture at index " + itos(p_texture) + ", but this glTF file does not contain any textures.");
+	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<GLTFTextureSampler>());
 	const GLTFTextureSamplerIndex sampler = p_state->textures[p_texture]->get_sampler();
 
 	if (sampler == -1) {
@@ -4850,10 +4854,13 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("baseColorTexture")) {
 				const Dictionary &bct = mr["baseColorTexture"];
 				if (bct.has("index")) {
-					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, bct["index"]);
-					material->set_texture_filter(bct_sampler->get_filter_mode());
-					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
+					const GLTFTextureIndex base_color_texture_index = bct["index"];
+					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, base_color_texture_index, TEXTURE_TYPE_GENERIC));
+					const Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, base_color_texture_index);
+					if (bct_sampler.is_valid()) {
+						material->set_texture_filter(bct_sampler->get_filter_mode());
+						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
+					}
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));

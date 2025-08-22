@@ -2235,7 +2235,8 @@ void MaterialStorage::material_free(RID p_rid) {
 	// This happens when the app is being closed.
 	for (KeyValue<StringName, Variant> &E : material->params) {
 		if (E.value.get_type() == Variant::ARRAY) {
-			Array(E.value).clear();
+			// Clear the array for this material only (the array may be shared).
+			E.value = Variant();
 		}
 	}
 

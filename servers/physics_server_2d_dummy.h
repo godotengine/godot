@@ -79,6 +79,12 @@ public:
 	virtual void set_sleep_state(bool p_enable) override {}
 	virtual bool is_sleeping() const override { return false; }
 
+	virtual void set_collision_layer(uint32_t p_layer) override {}
+	virtual uint32_t get_collision_layer() const override { return 0; }
+
+	virtual void set_collision_mask(uint32_t p_mask) override {}
+	virtual uint32_t get_collision_mask() const override { return 0; }
+
 	virtual int get_contact_count() const override { return 0; }
 
 	virtual Vector2 get_contact_local_position(int p_contact_idx) const override { return Vector2(); }

@@ -32,6 +32,7 @@
 
 #include "core/templates/hash_map.h"
 #include "scene/gui/dialogs.h"
+#include "scene/gui/margin_container.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
@@ -165,8 +166,8 @@ class TreeItem;
 class ProgressBar;
 
 // Display search results
-class FindInFilesPanel : public Control {
-	GDCLASS(FindInFilesPanel, Control);
+class FindInFilesPanel : public MarginContainer {
+	GDCLASS(FindInFilesPanel, MarginContainer);
 
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
@@ -214,7 +215,6 @@ private:
 
 	void draw_result_text(Object *item_obj, Rect2 rect);
 
-	void set_progress_visible(bool p_visible);
 	void clear();
 
 	FindInFiles *_finder = nullptr;

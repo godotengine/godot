@@ -237,46 +237,6 @@ def get_flags():
     }
 
 
-def build_def_file(target, source, env: "SConsEnvironment"):
-    arch_aliases = {
-        "x86_32": "i386",
-        "x86_64": "i386:x86-64",
-        "arm32": "arm",
-        "arm64": "arm64",
-    }
-
-    cmdbase = "dlltool -m " + arch_aliases[env["arch"]]
-    if env["arch"] == "x86_32":
-        cmdbase += " -k"
-    else:
-        cmdbase += " --no-leading-underscore"
-
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
-
-    for x in range(len(source)):
-        ok = True
-        # Try prefixed executable (MinGW on Linux).
-        cmd = mingw_bin_prefix + cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
-        try:
-            out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-            if len(out[1]):
-                ok = False
-        except Exception:
-            ok = False
-
-        # Try generic executable (MSYS2).
-        if not ok:
-            cmd = cmdbase + " -d " + str(source[x]) + " -l " + str(target[x])
-            try:
-                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-                if len(out[1]):
-                    return -1
-            except Exception:
-                return -1
-
-    return 0
-
-
 def configure_msvc(env: "SConsEnvironment"):
     """Configure env to work with MSVC"""
 
@@ -919,7 +879,35 @@ def configure_mingw(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
     # dlltool
-    env.Append(BUILDERS={"DEF": env.Builder(action=build_def_file, suffix=".a", src_suffix=".def")})
+    env["DEF"] = get_detected(env, "dlltool")
+    env["DEFCOM"] = "$DEF $DEFFLAGS -d $SOURCE -l $TARGET"
+    env["DEFCOMSTR"] = "$CXXCOMSTR"
+    env["DEFPREFIX"] = "$LIBPREFIX"
+    env["DEFSUFFIX"] = ".${__env__['arch']}$LIBSUFFIX"
+    env["DEFSRCSUFFIX"] = ".${__env__['arch']}.def"
+    DEF_ALIASES = {
+        "x86_32": "i386",
+        "x86_64": "i386:x86-64",
+        "arm32": "arm",
+        "arm64": "arm64",
+    }
+    env.Append(DEFFLAGS=["-m", DEF_ALIASES[env["arch"]]])
+    if env["arch"] == "x86_32":
+        env.Append(DEFFLAGS=["-k"])
+    else:
+        env.Append(DEFFLAGS=["--no-leading-underscore"])
+
+    env.Append(
+        BUILDERS={
+            "DEFLIB": env.Builder(
+                action=env.Run("$DEFCOM", "$DEFCOMSTR"),
+                prefix="$DEFPREFIX",
+                suffix="$DEFSUFFIX",
+                src_suffix="$DEFSRCSUFFIX",
+                emitter=methods.redirect_emitter,
+            )
+        }
+    )
 
 
 def configure(env: "SConsEnvironment"):

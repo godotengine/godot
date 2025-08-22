@@ -2031,6 +2031,11 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 			}
+		} else if (p_name == "gradle_build/compress_native_libraries") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("gradle_build/compress_native_libraries")) && !gradle_build_enabled) {
+				return TTR("\"Compress Native Libraries\" is only valid when \"Use Gradle Build\" is enabled.");
+			}
 		} else if (p_name == "gradle_build/export_format") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 			if (int(p_preset->get("gradle_build/export_format")) == EXPORT_FORMAT_AAB && !gradle_build_enabled) {
@@ -2114,6 +2119,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/use_gradle_build"), false, true, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/gradle_build_directory", PROPERTY_HINT_PLACEHOLDER_TEXT, "res://android"), "", false, false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/android_source_template", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/compress_native_libraries"), false, false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK, false, true));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
@@ -3691,8 +3697,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
 		String enabled_abi_string = join_abis(enabled_abis, "|", false);
-		String sign_flag = should_sign ? "true" : "false";
+		String sign_flag = bool_to_string(should_sign);
 		String zipalign_flag = "true";
+		String compress_native_libraries_flag = bool_to_string(p_preset->get("gradle_build/compress_native_libraries"));
 
 		Vector<String> android_libraries;
 		Vector<String> android_dependencies;
@@ -3744,7 +3751,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String edition = has_dotnet_project ? "Mono" : "Standard";
 		String build_type = p_debug ? "Debug" : "Release";
 		if (export_format == EXPORT_FORMAT_AAB) {
-			String bundle_build_command = vformat("bundle%s", build_type);
+			String bundle_build_command = vformat("bundle%s%s", edition, build_type);
 			cmdline.push_back(bundle_build_command);
 		} else if (export_format == EXPORT_FORMAT_APK) {
 			String apk_build_command = vformat("assemble%s%s", edition, build_type);
@@ -3767,6 +3774,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pplugins_maven_repos=" + combined_android_dependencies_maven_repos); // argument to specify the list of maven repos for android dependencies provided by plugins.
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
+		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
 
 		// NOTE: The release keystore is not included in the verbose logging
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.

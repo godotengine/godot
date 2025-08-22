@@ -706,15 +706,19 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(find_label);
 
 		_search_text_label = memnew(Label);
+		_search_text_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		_search_text_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		_search_text_label->set_focus_mode(FOCUS_ACCESSIBILITY);
+		_search_text_label->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 		_search_text_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		hbc->add_child(_search_text_label);
 
 		_progress_bar = memnew(ProgressBar);
 		_progress_bar->set_h_size_flags(SIZE_EXPAND_FILL);
 		_progress_bar->set_v_size_flags(SIZE_SHRINK_CENTER);
+		_progress_bar->set_stretch_ratio(2.0);
+		_progress_bar->set_visible(false);
 		hbc->add_child(_progress_bar);
-		set_progress_visible(false);
 
 		_status_label = memnew(Label);
 		_status_label->set_focus_mode(FOCUS_ACCESSIBILITY);
@@ -812,9 +816,13 @@ void FindInFilesPanel::start_search() {
 
 	_status_label->set_text(TTRC("Searching..."));
 	_search_text_label->set_text(_finder->get_search_text());
+	_search_text_label->set_tooltip_text(_finder->get_search_text());
+
+	int label_min_width = _search_text_label->get_minimum_size().x + _search_text_label->get_character_bounds(0).size.x;
+	_search_text_label->set_custom_minimum_size(Size2(label_min_width, 0));
 
 	set_process(true);
-	set_progress_visible(true);
+	_progress_bar->set_visible(true);
 
 	_finder->start();
 
@@ -828,7 +836,7 @@ void FindInFilesPanel::stop_search() {
 
 	_status_label->set_text("");
 	update_replace_buttons();
-	set_progress_visible(false);
+	_progress_bar->set_visible(false);
 	_refresh_button->show();
 	_cancel_button->hide();
 }
@@ -967,7 +975,7 @@ void FindInFilesPanel::_on_item_edited() {
 void FindInFilesPanel::_on_finished() {
 	update_matches_text();
 	update_replace_buttons();
-	set_progress_visible(false);
+	_progress_bar->set_visible(false);
 	_refresh_button->show();
 	_cancel_button->hide();
 }
@@ -1176,10 +1184,6 @@ void FindInFilesPanel::update_matches_text() {
 	}
 
 	_status_label->set_text(results_text);
-}
-
-void FindInFilesPanel::set_progress_visible(bool p_visible) {
-	_progress_bar->set_self_modulate(Color(1, 1, 1, p_visible ? 1 : 0));
 }
 
 void FindInFilesPanel::_bind_methods() {

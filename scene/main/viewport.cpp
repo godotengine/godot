@@ -43,8 +43,8 @@
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/svg_texture.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/world_2d.h"
 #include "servers/audio_server.h"
@@ -1090,8 +1090,8 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, 
 		TS->reference_oversampling_level(new_font_oversampling);
 		TS->unreference_oversampling_level(font_oversampling);
 
-		SVGTexture::reference_scaling_level(new_font_oversampling);
-		SVGTexture::unreference_scaling_level(font_oversampling);
+		DPITexture::reference_scaling_level(new_font_oversampling);
+		DPITexture::unreference_scaling_level(font_oversampling);
 	}
 
 	size = new_size;
@@ -2301,15 +2301,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			if (joypadmotion_event.is_valid()) {
 				Input *input = Input::get_singleton();
 
-				if (p_event->is_action_pressed(SNAME("ui_focus_next")) && input->is_action_just_pressed(SNAME("ui_focus_next"))) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_next")) && input->is_action_just_pressed_by_event(SNAME("ui_focus_next"), p_event)) {
 					next = from->find_next_valid_focus();
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed(SNAME("ui_focus_prev"))) {
+				if (p_event->is_action_pressed(SNAME("ui_focus_prev")) && input->is_action_just_pressed_by_event(SNAME("ui_focus_prev"), p_event)) {
 					next = from->find_prev_valid_focus();
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop")) && input->is_action_just_pressed(SNAME("ui_accessibility_drag_and_drop"))) {
+				if (p_event->is_action_pressed(SNAME("ui_accessibility_drag_and_drop")) && input->is_action_just_pressed_by_event(SNAME("ui_accessibility_drag_and_drop"), p_event)) {
 					if (gui_is_dragging()) {
 						from->accessibility_drop();
 					} else {
@@ -2317,19 +2317,19 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed(SNAME("ui_up"))) {
+				if (p_event->is_action_pressed(SNAME("ui_up")) && input->is_action_just_pressed_by_event(SNAME("ui_up"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_TOP);
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_left")) && input->is_action_just_pressed(SNAME("ui_left"))) {
+				if (p_event->is_action_pressed(SNAME("ui_left")) && input->is_action_just_pressed_by_event(SNAME("ui_left"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_LEFT);
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_right")) && input->is_action_just_pressed(SNAME("ui_right"))) {
+				if (p_event->is_action_pressed(SNAME("ui_right")) && input->is_action_just_pressed_by_event(SNAME("ui_right"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_RIGHT);
 				}
 
-				if (p_event->is_action_pressed(SNAME("ui_down")) && input->is_action_just_pressed(SNAME("ui_down"))) {
+				if (p_event->is_action_pressed(SNAME("ui_down")) && input->is_action_just_pressed_by_event(SNAME("ui_down"), p_event)) {
 					next = from->_get_focus_neighbor(SIDE_BOTTOM);
 				}
 			} else {

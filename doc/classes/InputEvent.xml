@@ -68,7 +68,7 @@
 		<method name="is_action_type" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this input event's type is one that can be assigned to an input action.
+				Returns [code]true[/code] if this input event's type is one that can be assigned to an input action: [InputEventKey], [InputEventMouseButton], [InputEventJoypadButton], [InputEventJoypadMotion], [InputEventAction]. Returns [code]false[/code] for all other input event types.
 			</description>
 		</method>
 		<method name="is_canceled" qualifiers="const">

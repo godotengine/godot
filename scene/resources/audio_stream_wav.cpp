@@ -1153,22 +1153,35 @@ Ref<AudioStreamWAV> AudioStreamWAV::load_from_buffer(const Vector<uint8_t> &p_st
 	if (!tag_map.is_empty()) {
 		// Used to make the metadata tags more unified across different AudioStreams.
 		// See https://www.recordingblogs.com/wiki/list-chunk-of-a-wave-file
+		// https://wiki.hydrogenaudio.org/index.php?title=Tag_Mapping#Mapping_Tables
 		HashMap<String, String> tag_id_remaps;
 		tag_id_remaps.reserve(15);
 		tag_id_remaps["IARL"] = "location";
 		tag_id_remaps["IART"] = "artist";
 		tag_id_remaps["ICMS"] = "organization";
-		tag_id_remaps["ICMT"] = "comments";
+		tag_id_remaps["ICMT"] = "comment";
+		tag_id_remaps["ICNT"] = "releasecountry";
 		tag_id_remaps["ICOP"] = "copyright";
 		tag_id_remaps["ICRD"] = "date";
+		tag_id_remaps["IENC"] = "encodedby";
+		tag_id_remaps["IENG"] = "engineer";
+		tag_id_remaps["IFRM"] = "tracktotal";
 		tag_id_remaps["IGNR"] = "genre";
 		tag_id_remaps["IKEY"] = "keywords";
-		tag_id_remaps["IMED"] = "medium";
+		tag_id_remaps["ILNG"] = "language";
+		tag_id_remaps["IMED"] = "media";
+		tag_id_remaps["IMUS"] = "composer";
 		tag_id_remaps["INAM"] = "title";
 		tag_id_remaps["IPRD"] = "album";
+		tag_id_remaps["IPRO"] = "producer";
+		tag_id_remaps["IPRT"] = "tracknumber";
 		tag_id_remaps["ISBJ"] = "description";
-		tag_id_remaps["ISFT"] = "software";
+		tag_id_remaps["ISFT"] = "encoder";
+		tag_id_remaps["ISRF"] = "media";
+		tag_id_remaps["ITCH"] = "encodedby";
 		tag_id_remaps["ITRK"] = "tracknumber";
+		tag_id_remaps["IWRI"] = "author";
+		tag_id_remaps["TLEN"] = "length";
 		Dictionary tag_dictionary;
 		for (const KeyValue<String, String> &E : tag_map) {
 			HashMap<String, String>::ConstIterator remap = tag_id_remaps.find(E.key);

@@ -6002,7 +6002,7 @@ void VisualShaderEditor::_varying_validate() {
 		error += TTR("Invalid name for varying.");
 		has_error = true;
 	} else if (visual_shader->has_varying(varname)) {
-		error += TTR("Varying with that name is already exist.");
+		error += TTR("Varying with that name already exists.");
 		has_error = true;
 	}
 
@@ -6708,7 +6708,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar->move_child(edit_type_fog, 0);
 
 	add_node = memnew(Button);
-	add_node->set_flat(true);
+	add_node->set_theme_type_variation(SceneStringName(FlatButton));
 	add_node->set_text(TTR("Add Node..."));
 	toolbar->add_child(add_node);
 	toolbar->move_child(add_node, 0);
@@ -6718,6 +6718,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("frame_rect_changed", callable_mp(this, &VisualShaderEditor::_frame_rect_changed));
 
 	varying_button = memnew(MenuButton);
+	varying_button->set_flat(false);
+	varying_button->set_theme_type_variation("FlatMenuButton");
 	varying_button->set_text(TTR("Manage Varyings"));
 	varying_button->set_switch_on_hover(true);
 	toolbar->add_child(varying_button);
@@ -6747,7 +6749,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar->add_child(spacer);
 
 	site_search = memnew(Button);
-	site_search->set_flat(true);
+	site_search->set_theme_type_variation(SceneStringName(FlatButton));
 	site_search->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_help_open));
 	site_search->set_text(TTR("Online Docs"));
 	site_search->set_tooltip_text(TTR("Open Godot online documentation."));
@@ -6763,7 +6765,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	toolbar->move_child(separator, 0);
 
 	toggle_files_button = memnew(Button);
-	toggle_files_button->set_flat(true);
+	toggle_files_button->set_theme_type_variation(SceneStringName(FlatButton));
 	toggle_files_button->connect(SceneStringName(pressed), callable_mp(this, &VisualShaderEditor::_toggle_files_pressed));
 	toolbar->add_child(toggle_files_button);
 	toolbar->move_child(toggle_files_button, 0);

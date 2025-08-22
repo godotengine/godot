@@ -483,7 +483,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		}
 		if (p_event->is_action("ui_down", true) && p_event->is_pressed()) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_down", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_down", p_event, true)) {
 					return;
 				}
 				joypad_event_process = true;
@@ -526,7 +526,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_up", true) && p_event->is_pressed()) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_up", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_up", p_event, true)) {
 					return;
 				}
 				joypad_event_process = true;
@@ -965,7 +965,7 @@ void PopupMenu::_draw_items() {
 			} else {
 				item_ofs.x = display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
 			}
-			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].accel_text_buf->get_size().y) / 2.0));
 			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
@@ -3209,13 +3209,8 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		_native_popup(p_bounds != Rect2i() ? p_bounds : Rect2i(get_position(), Size2i()));
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		moved = Vector2();
@@ -3253,13 +3248,8 @@ void PopupMenu::set_visible(bool p_visible) {
 		}
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		Popup::set_visible(p_visible);

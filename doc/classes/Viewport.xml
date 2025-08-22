@@ -122,11 +122,21 @@
 			<description>
 				Returns the viewport's texture.
 				[b]Note:[/b] When trying to store the current texture (e.g. in a file), it might be completely black or outdated if used too early, especially when used in e.g. [method Node._ready]. To make sure the texture you get is correct, you can await [signal RenderingServer.frame_post_draw] signal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				func _ready():
-					await RenderingServer.frame_post_draw
-					$Viewport.get_texture().get_image().save_png("user://Screenshot.png")
-				[/codeblock]
+				    await RenderingServer.frame_post_draw
+				    $Viewport.get_texture().get_image().save_png("user://Screenshot.png")
+				[/gdscript]
+				[csharp]
+				public async override void _Ready()
+				{
+				    await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+				    var viewport = GetNode&lt;Viewport&gt;("Viewport");
+				    viewport.GetTexture().GetImage().SavePng("user://Screenshot.png");
+				}
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] When [member use_hdr_2d] is [code]true[/code] the returned texture will be an HDR image encoded in linear space.
 			</description>
 		</method>
@@ -366,7 +376,7 @@
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
 		</member>
 		<member name="oversampling" type="bool" setter="set_use_oversampling" getter="is_using_oversampling" default="true">
-			If [code]true[/code] and one of the following conditions is true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [SVGTexture] oversampling is enabled.
+			If [code]true[/code] and one of the following conditions are true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font and [DPITexture] oversampling are enabled.
 		</member>
 		<member name="oversampling_override" type="float" setter="set_oversampling_override" getter="get_oversampling_override" default="0.0">
 			If greater than zero, this value is used as the font oversampling factor, otherwise oversampling is equal to viewport scale.

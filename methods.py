@@ -603,10 +603,10 @@ def CommandNoCache(env, target, sources, command, **args):
     return result
 
 
-def Run(env, function):
+def Run(env, function, comstr="$GENCOMSTR"):
     from SCons.Script import Action
 
-    return Action(function, "$GENCOMSTR")
+    return Action(function, comstr)
 
 
 def detect_darwin_toolchain_path(env):

@@ -1578,7 +1578,7 @@
 			The GDScript syntax highlighter text color for node reference literals (e.g. [code]$"Sprite"[/code] and [code]%"Sprite"[/code]]).
 		</member>
 		<member name="text_editor/theme/highlighting/gdscript/string_name_color" type="Color" setter="" getter="">
-			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&gt;"example"[/code]).
+			The GDScript syntax highlighter text color for [StringName] literals (e.g. [code]&amp;"example"[/code]).
 		</member>
 		<member name="text_editor/theme/highlighting/keyword_color" type="Color" setter="" getter="">
 			The script editor's non-control flow keyword color (used for keywords like [code]var[/code], [code]func[/code], [code]extends[/code], ...).

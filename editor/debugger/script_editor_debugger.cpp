@@ -2011,10 +2011,10 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
 
 		ignore_error_breaks = memnew(Button);
-		ignore_error_breaks->set_flat(true);
+		ignore_error_breaks->set_theme_type_variation(SceneStringName(FlatButton));
 		ignore_error_breaks->set_tooltip_text(TTR("Ignore Error Breaks"));
 		hbc->add_child(ignore_error_breaks);
-		ignore_error_breaks->connect("pressed", callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
+		ignore_error_breaks->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_ignore_error_breaks));
 
 		hbc->add_child(memnew(VSeparator));
 

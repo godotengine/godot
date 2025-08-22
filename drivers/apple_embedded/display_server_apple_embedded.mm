@@ -112,7 +112,7 @@ DisplayServerAppleEmbedded::DisplayServerAppleEmbedded(const String &p_rendering
 #if defined(GLES3_ENABLED)
 			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
 			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				WARN_PRINT("Your device does not seem to support MoltenVK or Metal, switching to OpenGL 3.");
 				rendering_driver = "opengl3";
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
@@ -662,6 +662,7 @@ void DisplayServerAppleEmbedded::screen_set_orientation(DisplayServer::ScreenOri
 	int screen_count = get_screen_count();
 	ERR_FAIL_INDEX(p_screen, screen_count);
 
+	screen_orientation = p_orientation;
 	if (@available(iOS 16.0, *)) {
 		[GDTAppDelegateService.viewController setNeedsUpdateOfSupportedInterfaceOrientations];
 	}

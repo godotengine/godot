@@ -570,6 +570,10 @@ bool Window::get_flag(Flags p_flag) const {
 	return flags[p_flag];
 }
 
+bool Window::is_popup() const {
+	return get_flag(Window::FLAG_POPUP) || get_flag(Window::FLAG_NO_FOCUS);
+}
+
 bool Window::is_maximize_allowed() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -680,11 +684,6 @@ void Window::_make_window() {
 		}
 	}
 
-	if (get_tree() && get_tree()->is_accessibility_supported()) {
-		get_tree()->_accessibility_force_update();
-		_accessibility_notify_enter(this);
-	}
-
 	_update_window_callbacks();
 
 	RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
@@ -715,10 +714,6 @@ void Window::_clear_window() {
 	}
 
 	_update_from_window();
-
-	if (get_tree() && get_tree()->is_accessibility_supported()) {
-		_accessibility_notify_exit(this);
-	}
 
 	DisplayServer::get_singleton()->delete_sub_window(window_id);
 	window_id = DisplayServer::INVALID_WINDOW_ID;
@@ -886,7 +881,7 @@ void Window::_accessibility_notify_enter(Node *p_node) {
 
 	if (p_node != this) {
 		const Window *window = Object::cast_to<Window>(p_node);
-		if (window && !window->is_embedded()) {
+		if (window) {
 			return;
 		}
 	}
@@ -901,7 +896,7 @@ void Window::_accessibility_notify_exit(Node *p_node) {
 
 	if (p_node != this) {
 		const Window *window = Object::cast_to<Window>(p_node);
-		if (window && !window->is_embedded()) {
+		if (window) {
 			return;
 		}
 	}
@@ -950,22 +945,34 @@ void Window::set_visible(bool p_visible) {
 				}
 			}
 			embedder->_sub_window_register(this);
-			embedder->queue_accessibility_update();
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_PARENT_VISIBLE);
 		} else {
 			embedder->_sub_window_remove(this);
-			embedder->queue_accessibility_update();
 			embedder = nullptr;
 			RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_DISABLED);
 		}
 		_update_window_size();
 	}
 
-	if (!visible) {
+	if (visible) {
+		if (get_tree() && get_tree()->is_accessibility_supported()) {
+			get_tree()->_accessibility_force_update();
+			_accessibility_notify_enter(this);
+		}
+	} else {
+		if (get_tree() && get_tree()->is_accessibility_supported()) {
+			_accessibility_notify_exit(this);
+		}
 		focused = false;
 		if (focused_window == this) {
 			focused_window = nullptr;
 		}
+	}
+	if (get_parent()) {
+		get_parent()->queue_accessibility_update();
+	}
+	if (embedder) {
+		embedder->queue_accessibility_update();
 	}
 
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
@@ -1371,10 +1378,10 @@ Viewport *Window::get_embedder() const {
 }
 
 RID Window::get_accessibility_element() const {
-	if (is_part_of_edited_scene()) {
+	if (!visible || is_part_of_edited_scene()) {
 		return RID();
 	}
-	if (get_embedder()) {
+	if (get_embedder() || is_popup()) {
 		return Node::get_accessibility_element();
 	} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		return DisplayServer::get_singleton()->accessibility_get_window_root(window_id);
@@ -1415,11 +1422,18 @@ void Window::_notification(int p_what) {
 			DisplayServer::get_singleton()->accessibility_update_add_action(ae, DisplayServer::AccessibilityAction::ACTION_FOCUS, callable_mp(this, &Window::_accessibility_action_grab_focus));
 			DisplayServer::get_singleton()->accessibility_update_set_flag(ae, DisplayServer::AccessibilityFlags::FLAG_HIDDEN, !visible);
 
-			if (get_embedder()) {
+			if (get_embedder() || is_popup()) {
 				Control *parent_ctrl = Object::cast_to<Control>(get_parent());
 				Transform2D parent_tr = parent_ctrl ? parent_ctrl->get_global_transform() : Transform2D();
 				Transform2D tr;
-				tr.set_origin(position);
+				if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+					tr.set_origin(position);
+				} else {
+					Window *np = get_non_popup_window();
+					if (np) {
+						tr.set_origin(get_position() - np->get_position());
+					}
+				}
 				DisplayServer::get_singleton()->accessibility_update_set_transform(ae, parent_tr.affine_inverse() * tr);
 				DisplayServer::get_singleton()->accessibility_update_set_bounds(ae, Rect2(Point2(), size));
 
@@ -1540,9 +1554,19 @@ void Window::_notification(int p_what) {
 				_make_transient();
 			}
 			if (visible) {
+				if (window_id != DisplayServer::MAIN_WINDOW_ID && get_tree() && get_tree()->is_accessibility_supported()) {
+					get_tree()->_accessibility_force_update();
+					_accessibility_notify_enter(this);
+				}
 				notification(NOTIFICATION_VISIBILITY_CHANGED);
 				emit_signal(SceneStringName(visibility_changed));
 				RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+				if (get_parent()) {
+					get_parent()->queue_accessibility_update();
+				}
+				if (embedder) {
+					embedder->queue_accessibility_update();
+				}
 			}
 
 			// Emits NOTIFICATION_THEME_CHANGED internally.
@@ -1583,6 +1607,18 @@ void Window::_notification(int p_what) {
 			}
 
 			set_theme_context(nullptr, false);
+
+			if (visible && window_id != DisplayServer::MAIN_WINDOW_ID) {
+				if (get_tree() && get_tree()->is_accessibility_supported()) {
+					_accessibility_notify_exit(this);
+					if (get_parent()) {
+						get_parent()->queue_accessibility_update();
+					}
+					if (embedder) {
+						embedder->queue_accessibility_update();
+					}
+				}
+			}
 
 			accessibility_title_element = RID();
 			accessibility_announcement_element = RID();
@@ -1814,6 +1850,14 @@ Viewport *Window::get_parent_viewport() const {
 	} else {
 		return nullptr;
 	}
+}
+
+Window *Window::get_non_popup_window() const {
+	Window *w = const_cast<Window *>(this);
+	while (w && w->is_popup()) {
+		w = w->get_parent_visible_window();
+	}
+	return w;
 }
 
 Window *Window::get_parent_visible_window() const {
