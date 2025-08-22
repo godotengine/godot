@@ -39,3 +39,5 @@ src/gen/
 !godot-sandbox.code-workspace
 
 bin/libsandbox.*
+
+thirdparty/godot-sandbox-demo/
