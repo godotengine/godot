@@ -80,6 +80,11 @@ protected:
 	real_t params_z[PARAM_MAX];
 	bool flags_z[FLAG_MAX];
 
+	bool override_local_frame_a = false;
+	Transform3D local_frame_a_override;
+	bool override_local_frame_b = false;
+	Transform3D local_frame_override_b;
+
 	virtual void _configure_joint(RID p_joint, PhysicsBody3D *body_a, PhysicsBody3D *body_b) override;
 	static void _bind_methods();
 
@@ -101,6 +106,16 @@ public:
 
 	void set_flag_z(Flag p_flag, bool p_enabled);
 	bool get_flag_z(Flag p_flag) const;
+
+	void enable_local_frame_a_override(bool p_enable);
+	bool local_frame_a_override_enabled() const { return override_local_frame_a; }
+	void set_local_frame_a_override(const Transform3D &p_frame);
+	Transform3D get_local_frame_a_override() const { return local_frame_a_override; }
+
+	void enable_local_frame_b_override(bool p_enable);
+	bool local_frame_b_override_enabled() const { return override_local_frame_b; }
+	void set_local_frame_b_override(const Transform3D &p_frame);
+	Transform3D get_local_frame_b_override() const { return local_frame_override_b; }
 
 	Generic6DOFJoint3D();
 };

@@ -49,6 +49,16 @@ void Generic6DOFJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flag_z", "flag", "value"), &Generic6DOFJoint3D::set_flag_z);
 	ClassDB::bind_method(D_METHOD("get_flag_z", "flag"), &Generic6DOFJoint3D::get_flag_z);
 
+	ClassDB::bind_method(D_METHOD("enable_local_frame_a_override", "enabled"), &Generic6DOFJoint3D::enable_local_frame_a_override);
+	ClassDB::bind_method(D_METHOD("local_frame_a_override_enabled"), &Generic6DOFJoint3D::local_frame_a_override_enabled);
+	ClassDB::bind_method(D_METHOD("set_local_frame_a_override", "frame"), &Generic6DOFJoint3D::set_local_frame_a_override);
+	ClassDB::bind_method(D_METHOD("get_local_frame_a_override"), &Generic6DOFJoint3D::get_local_frame_a_override);
+
+	ClassDB::bind_method(D_METHOD("enable_local_frame_b_override", "enabled"), &Generic6DOFJoint3D::enable_local_frame_b_override);
+	ClassDB::bind_method(D_METHOD("local_frame_b_override_enabled"), &Generic6DOFJoint3D::local_frame_b_override_enabled);
+	ClassDB::bind_method(D_METHOD("set_local_frame_b_override", "frame"), &Generic6DOFJoint3D::set_local_frame_b_override);
+	ClassDB::bind_method(D_METHOD("get_local_frame_b_override"), &Generic6DOFJoint3D::get_local_frame_b_override);
+
 	ADD_GROUP("Linear Limit", "linear_limit_");
 
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "linear_limit_x/enabled"), "set_flag_x", "get_flag_x", FLAG_ENABLE_LINEAR_LIMIT);
@@ -194,6 +204,12 @@ void Generic6DOFJoint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_ENABLE_MOTOR);
 	BIND_ENUM_CONSTANT(FLAG_ENABLE_LINEAR_MOTOR);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
+
+	ADD_GROUP("Local Frame", "local_frame_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_frame_a_override/enabled"), "enable_local_frame_a_override", "local_frame_a_override_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "local_frame_a_override/frame"), "set_local_frame_a_override", "get_local_frame_a_override");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "local_frame_b_override/enabled"), "enable_local_frame_b_override", "local_frame_b_override_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM3D, "local_frame_b_override/frame"), "set_local_frame_b_override", "get_local_frame_b_override");
 }
 
 void Generic6DOFJoint3D::set_param_x(Param p_param, real_t p_value) {
@@ -286,18 +302,25 @@ void Generic6DOFJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *body_a, Ph
 	//Vector3 cone_twistpos = gt.origin;
 	//Vector3 cone_twistdir = gt.basis.get_axis(2);
 
-	Transform3D ainv = body_a->get_global_transform().affine_inverse();
-
-	Transform3D local_a = ainv * gt;
-	local_a.orthonormalize();
-	Transform3D local_b = gt;
-
-	if (body_b) {
-		Transform3D binv = body_b->get_global_transform().affine_inverse();
-		local_b = binv * gt;
+	Transform3D local_a;
+	if (override_local_frame_a) {
+		local_a = local_frame_a_override;
+	} else {
+		local_a = body_a->get_global_transform().affine_inverse() * gt;
+		local_a.orthonormalize();
 	}
 
-	local_b.orthonormalize();
+	Transform3D local_b;
+	if (override_local_frame_b) {
+		local_b = local_frame_override_b;
+	} else {
+		if (body_b) {
+			local_b = body_b->get_global_transform().affine_inverse() * gt;
+		} else {
+			local_b = gt;
+		}
+		local_b.orthonormalize();
+	}
 
 	PhysicsServer3D::get_singleton()->joint_make_generic_6dof(p_joint, body_a->get_rid(), local_a, body_b ? body_b->get_rid() : RID(), local_b);
 	for (int i = 0; i < PARAM_MAX; i++) {
@@ -402,4 +425,40 @@ Generic6DOFJoint3D::Generic6DOFJoint3D() {
 	set_flag_z(FLAG_ENABLE_LINEAR_SPRING, false);
 	set_flag_z(FLAG_ENABLE_MOTOR, false);
 	set_flag_z(FLAG_ENABLE_LINEAR_MOTOR, false);
+}
+
+void Generic6DOFJoint3D::enable_local_frame_a_override(bool p_enable) {
+	if (override_local_frame_a == p_enable) {
+		return;
+	}
+
+	override_local_frame_a = p_enable;
+	_update_joint();
+}
+
+void Generic6DOFJoint3D::set_local_frame_a_override(const Transform3D &p_frame) {
+	local_frame_a_override = p_frame;
+	local_frame_a_override.orthonormalize();
+
+	if (override_local_frame_a) {
+		_update_joint();
+	}
+}
+
+void Generic6DOFJoint3D::enable_local_frame_b_override(bool p_enable) {
+	if (override_local_frame_b == p_enable) {
+		return;
+	}
+
+	override_local_frame_b = p_enable;
+	_update_joint();
+}
+
+void Generic6DOFJoint3D::set_local_frame_b_override(const Transform3D &p_frame) {
+	local_frame_override_b = p_frame;
+	local_frame_override_b.orthonormalize();
+
+	if (override_local_frame_b) {
+		_update_joint();
+	}
 }
