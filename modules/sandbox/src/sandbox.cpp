@@ -751,7 +751,7 @@ Variant Sandbox::vmcall_fn(const StringName &function_name, const Variant **args
 	error.error = Callable::CallError::CALL_OK;
 	return result;
 }
-void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, const Variant **args, int argc) {
+void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, const Variant **args, int64_t argc) {
 	// In this mode we will try to use registers when possible
 	// The stack is already set up from setup_arguments(), so we just need to set up the registers
 	machine_t &machine = this->machine();
@@ -933,7 +933,7 @@ void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, cons
 		throw std::runtime_error("Sandbox: Too many arguments for VM function call (register overflow)");
 	}
 }
-GuestVariant *Sandbox::setup_arguments(gaddr_t &sp, const Variant **args, int argc) {
+GuestVariant *Sandbox::setup_arguments(gaddr_t &sp, const Variant **args, int64_t argc) {
 	if (this->get_unboxed_arguments()) {
 		sp -= sizeof(GuestVariant) * (argc + 1);
 		sp &= ~gaddr_t(0xF); // re-align stack pointer
