@@ -164,10 +164,10 @@ def get_opts():
 
     mingw = os.getenv("MINGW_PREFIX", "")
 
-    # Direct3D 12 SDK dependencies folder.
-    d3d12_deps_folder = os.getenv("LOCALAPPDATA")
-    if d3d12_deps_folder:
-        d3d12_deps_folder = os.path.join(d3d12_deps_folder, "Godot", "build_deps")
+    # Direct3D 12 SDK and ANGLE dependencies folders.
+    build_deps_folder = os.getenv("LOCALAPPDATA")
+    if build_deps_folder:
+        build_deps_folder = os.path.join(build_deps_folder, "Godot", "build_deps")
     else:
         # Cross-compiling, the deps install script puts things in `bin`.
         # Getting an absolute path to it is a bit hacky in Python.
@@ -176,9 +176,9 @@ def get_opts():
 
             caller_frame = inspect.stack()[1]
             caller_script_dir = os.path.dirname(os.path.abspath(caller_frame[1]))
-            d3d12_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
+            build_deps_folder = os.path.join(caller_script_dir, "bin", "build_deps")
         except Exception:  # Give up.
-            d3d12_deps_folder = ""
+            build_deps_folder = ""
 
     return [
         ("mingw_prefix", "MinGW prefix", mingw),
@@ -192,28 +192,37 @@ def get_opts():
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
-        ("angle_libs", "Path to the ANGLE static libraries", ""),
+        BoolVariable(
+            "angle",
+            "Path to the ANGLE static libraries (required for OpenGL to Direct3D 11 fallback on old GPUs)",
+            True,
+        ),
+        (
+            "angle_libs",
+            "Path to the ANGLE static libraries",
+            os.path.join(build_deps_folder, "angle"),
+        ),
         # Direct3D 12 support.
         (
             "mesa_libs",
             "Path to the MESA/NIR static libraries (required for D3D12)",
-            os.path.join(d3d12_deps_folder, "mesa"),
+            os.path.join(build_deps_folder, "mesa"),
         ),
         (
             "agility_sdk_path",
             "Path to the Agility SDK distribution (optional for D3D12)",
-            os.path.join(d3d12_deps_folder, "agility_sdk"),
+            os.path.join(build_deps_folder, "agility_sdk"),
         ),
         BoolVariable(
             "agility_sdk_multiarch",
-            "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories",
+            "Whether the Agility SDK DLLs will be stored in architecture-specific subdirectories",
             False,
         ),
         BoolVariable("use_pix", "Use PIX (Performance tuning and debugging for DirectX 12) runtime", False),
         (
             "pix_path",
             "Path to the PIX runtime distribution (optional for D3D12)",
-            os.path.join(d3d12_deps_folder, "pix"),
+            os.path.join(build_deps_folder, "pix"),
         ),
     ]
 
@@ -472,9 +481,12 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
-        if env["angle_libs"] != "":
+        if env["angle"] and env["angle_libs"] != "":
+            angle_libs = env["angle_libs"]
+            if os.path.exists(env["angle_libs"] + "-" + env["arch"] + "-msvc"):
+                angle_libs = env["angle_libs"] + "-" + env["arch"] + "-msvc"
             env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
-            env.Append(LIBPATH=[env["angle_libs"]])
+            env.Append(LIBPATH=[angle_libs])
             LIBS += [
                 "libANGLE.windows." + env["arch"] + prebuilt_lib_extra_suffix,
                 "libEGL.windows." + env["arch"] + prebuilt_lib_extra_suffix,
@@ -863,9 +875,14 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-        if env["angle_libs"] != "":
+        if env["angle"] and env["angle_libs"] != "":
+            angle_libs = env["angle_libs"]
+            if env["use_llvm"] and os.path.exists(env["angle_libs"] + "-" + env["arch"] + "-llvm"):
+                angle_libs = env["angle_libs"] + "-" + env["arch"] + "-llvm"
+            elif not env["use_llvm"] and os.path.exists(env["angle_libs"] + "-" + env["arch"] + "-gcc"):
+                angle_libs = env["angle_libs"] + "-" + env["arch"] + "-gcc"
             env.AppendUnique(CPPDEFINES=["EGL_STATIC"])
-            env.Append(LIBPATH=[env["angle_libs"]])
+            env.Append(LIBPATH=[angle_libs])
             env.Append(
                 LIBS=[
                     "EGL.windows." + env["arch"],

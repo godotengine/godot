@@ -50,9 +50,9 @@ for arch in [
     "x86_64-llvm",
     "x86_64-msvc",
 ]:
-    mesa_filename = "godot-nir-static-" + arch + "-release.zip"
+    mesa_filename = f"godot-nir-static-{arch}-release.zip"
     mesa_archive = os.path.join(deps_folder, mesa_filename)
-    mesa_folder = os.path.join(deps_folder, "mesa-" + arch)
+    mesa_folder = os.path.join(deps_folder, f"mesa-{arch}")
 
     if os.path.isfile(mesa_archive):
         os.remove(mesa_archive)
