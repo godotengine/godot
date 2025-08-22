@@ -31,7 +31,7 @@
 #pragma once
 
 #include "../docker.h"
-#include <godot_cpp/classes/script_extension.hpp>
+#include "core/object/script_language.h"
 #include <godot_cpp/classes/script_language.hpp>
 
 using namespace godot;

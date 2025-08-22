@@ -34,8 +34,8 @@
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/classes/script_extension.hpp>
-#include <godot_cpp/classes/script_language_extension.hpp>
+#include "core/object/script_language.h"
+#include "core/object/script_language.h"
 #include <godot_cpp/core/type_info.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>

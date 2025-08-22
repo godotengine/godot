@@ -30,18 +30,28 @@
 
 #pragma once
 #include <algorithm>
-#include <godot_cpp/classes/node.hpp>
-#include <godot_cpp/core/binder_common.hpp>
-#include <libriscv/machine.hpp>
 #include <optional>
 
-using namespace godot;
+#include "scene/main/node.h"
+#include "core/object/class_db.h"
+#include "core/variant/variant.h"
+#include "core/string/string_name.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/dictionary.h"
+#include "core/templates/vector.h"
+#include "core/templates/hash_set.h"
+#include <libriscv/machine.hpp>
+
 #define RISCV_ARCH riscv::RISCV64
 using gaddr_t = riscv::address_type<RISCV_ARCH>;
 using machine_t = riscv::Machine<RISCV_ARCH>;
-#include "elf/script_elf.h"
-#include "vmcallable.h"
-#include "vmproperty.h"
+
+// Forward declarations
+class ELFScript;
+class SandboxProperty;
+struct GuestVariant;
+class RiscvCallable;
 
 /**
  * @brief The Sandbox class is a Godot node that provides a safe environment for running untrusted code.
@@ -123,26 +133,26 @@ public:
 	/// @param arg_count The number of arguments.
 	/// @param error The error code, if any.
 	/// @return The return value of the function call.
-	Variant vmcall(const Variant **args, GDExtensionInt arg_count, GDExtensionCallError &error);
+	Variant vmcall(const Variant **args, int arg_count, Callable::CallError &error);
 	/// @brief Make a function call to a function in the guest by its name. Always use Variant values for arguments.
 	/// @param args The arguments to pass to the function, where the first argument is the name of the function.
 	/// @param arg_count The number of arguments.
 	/// @param error The error code, if any.
 	/// @return The return value of the function call.
-	Variant vmcallv(const Variant **args, GDExtensionInt arg_count, GDExtensionCallError &error);
+	Variant vmcallv(const Variant **args, int arg_count, Callable::CallError &error);
 	/// @brief Make a function call to a function in the guest by its name.
 	/// @param function The name of the function to call.
 	/// @param args The arguments to pass to the function.
 	/// @param arg_count The number of arguments.
 	/// @return The return value of the function call.
-	Variant vmcall_fn(const StringName &function, const Variant **args, GDExtensionInt arg_count, GDExtensionCallError &error);
+	Variant vmcall_fn(const StringName &function, const Variant **args, int arg_count, Callable::CallError &error);
 	/// @brief Make a function call to a function in the guest by its guest address.
 	/// @param address The address of the function to call.
 	/// @param args The arguments to pass to the function.
 	/// @param arg_count The number of arguments.
 	/// @param error The error code, if any.
 	/// @return The return value of the function call.
-	Variant vmcall_address(gaddr_t address, const Variant **args, GDExtensionInt arg_count, GDExtensionCallError &error);
+	Variant vmcall_address(gaddr_t address, const Variant **args, int arg_count, Callable::CallError &error);
 
 	/// @brief Make a function call to a function in the guest by its name.
 	/// @param function The name of the function to call.
@@ -246,8 +256,8 @@ public:
 	/// @param tree_base The tree base node.
 	/// @note The tree base is the owner node that the sandbox will use to access the node tree. When scripts
 	/// try to access the node path ".", they will be accessing this node, and navigating relative to it.
-	void set_tree_base(godot::Node *tree_base) { this->m_tree_base = tree_base; }
-	godot::Node *get_tree_base() const { return this->m_tree_base; }
+	void set_tree_base(Node *tree_base) { this->m_tree_base = tree_base; }
+	Node *get_tree_base() const { return this->m_tree_base; }
 
 	// -= Scoped objects and variants =-
 
@@ -321,18 +331,18 @@ public:
 
 	/// @brief Add an object to the list of allowed objects.
 	/// @param obj The object to add.
-	void add_allowed_object(godot::Object *obj);
+	void add_allowed_object(Object *obj);
 
 	/// @brief Remove an object from the list of allowed objects.
 	/// @param obj The object to remove.
 	/// @note If the list becomes empty, all objects are allowed.
-	void remove_allowed_object(godot::Object *obj);
+	void remove_allowed_object(Object *obj);
 
 	/// @brief Clear the list of allowed objects.
 	void clear_allowed_objects();
 
 	/// @brief Check if an object is allowed in the sandbox.
-	bool is_allowed_object(godot::Object *obj) const;
+	bool is_allowed_object(Object *obj) const;
 
 	/// @brief Set a callback to check if an object is allowed in the sandbox.
 	/// @param callback The callable to check if an object is allowed.
@@ -355,7 +365,7 @@ public:
 	/// @brief Check if accessing a method on an object is allowed in the sandbox.
 	/// @param method The name of the method to check.
 	/// @return True if the method is allowed, false otherwise.
-	bool is_allowed_method(godot::Object *obj, const Variant &method) const;
+	bool is_allowed_method(Object *obj, const Variant &method) const;
 
 	/// @brief Set a callback to check if a method is allowed in the sandbox.
 	/// @param callback The callable to check if a method is allowed.
@@ -365,7 +375,7 @@ public:
 	/// @param obj The object to check.
 	/// @param property The name of the property to check.
 	/// @return True if the property is allowed, false otherwise.
-	bool is_allowed_property(godot::Object *obj, const Variant &property, bool is_set) const;
+	bool is_allowed_property(Object *obj, const Variant &property, bool is_set) const;
 
 	/// @brief Set a callback to check if a property is allowed in the sandbox.
 	/// @param callback The callable to check if a property is allowed.
@@ -663,7 +673,7 @@ private:
 	void setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, const Variant **args, int argc);
 
 	machine_t *m_machine = nullptr;
-	godot::Node *m_tree_base = nullptr;
+	Node *m_tree_base = nullptr;
 	uint32_t m_max_refs = MAX_REFS;
 	uint32_t m_memory_max = MAX_VMEM;
 	int64_t m_insn_max = MAX_INSTRUCTIONS;
@@ -695,7 +705,7 @@ private:
 	gaddr_t m_shared_memory_base = SHM_BASE_ADDRESS;
 
 	// Restrictions
-	std::unordered_set<godot::Object *> m_allowed_objects;
+	std::unordered_set<Object *> m_allowed_objects;
 	// If an object is not in the allowed list, and a callable is set for the
 	// just-in-time allowed objects, it will be called to check if the object is allowed.
 	Callable m_just_in_time_allowed_objects;
@@ -760,7 +770,7 @@ inline void Sandbox::CurrentState::reset() {
 	scoped_objects.clear();
 }
 
-inline bool Sandbox::is_allowed_object(godot::Object *obj) const {
+inline bool Sandbox::is_allowed_object(Object *obj) const {
 	// If the allowed list is empty, and the allowed-object callback is not set, all objects are allowed
 	if (m_allowed_objects.empty() && !m_just_in_time_allowed_objects.is_valid())
 		return true;

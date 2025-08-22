@@ -30,19 +30,25 @@
 
 #pragma once
 
-#include <godot_cpp/classes/script_extension.hpp>
-#include <godot_cpp/classes/script_language.hpp>
-#include <godot_cpp/templates/hash_set.hpp>
+#include "core/object/script_language.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/hash_map.h"
+#include "core/variant/array.h"
+#include "core/variant/packed_array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/typed_array.h"
+#include "core/string/string_name.h"
+#include "core/string/ustring.h"
+#include "core/error/error_macros.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
 
-using namespace godot;
 class ELFScriptInstance;
 class Sandbox;
-namespace godot {
-class ScriptInstanceExtension;
-}
+class ScriptInstance;
 
-class ELFScript : public ScriptExtension {
-	GDCLASS(ELFScript, ScriptExtension);
+class ELFScript : public Script {
+	GDCLASS(ELFScript, Script);
 
 protected:
 	static void _bind_methods();
@@ -93,41 +99,43 @@ public:
 	void register_instance(Sandbox *p_sandbox) { sandbox_map[path].insert(p_sandbox); }
 	void unregister_instance(Sandbox *p_sandbox) { sandbox_map[path].erase(p_sandbox); }
 
-	virtual bool _editor_can_reload_from_file() override;
-	virtual void _placeholder_erased(void *p_placeholder) override;
-	virtual bool _can_instantiate() const override;
-	virtual Ref<Script> _get_base_script() const override;
-	virtual StringName _get_global_name() const override;
-	virtual bool _inherits_script(const Ref<Script> &p_script) const override;
-	virtual StringName _get_instance_base_type() const override;
-	virtual void *_instance_create(Object *p_for_object) const override;
-	virtual void *_placeholder_instance_create(Object *p_for_object) const override;
-	virtual bool _instance_has(Object *p_object) const override;
-	virtual bool _has_source_code() const override;
-	virtual String _get_source_code() const override;
-	virtual void _set_source_code(const String &p_code) override;
-	virtual Error _reload(bool p_keep_state) override;
-	virtual TypedArray<Dictionary> _get_documentation() const override;
-	virtual String _get_class_icon_path() const override;
-	virtual bool _has_method(const StringName &p_method) const override;
-	virtual bool _has_static_method(const StringName &p_method) const override;
-	virtual Dictionary _get_method_info(const StringName &p_method) const override;
-	virtual bool _is_tool() const override;
-	virtual bool _is_valid() const override;
-	virtual bool _is_abstract() const override;
-	virtual ScriptLanguage *_get_language() const override;
-	virtual bool _has_script_signal(const StringName &p_signal) const override;
-	virtual TypedArray<Dictionary> _get_script_signal_list() const override;
-	virtual bool _has_property_default_value(const StringName &p_property) const override;
-	virtual Variant _get_property_default_value(const StringName &p_property) const override;
-	virtual void _update_exports() override;
-	virtual TypedArray<Dictionary> _get_script_method_list() const override;
-	virtual TypedArray<Dictionary> _get_script_property_list() const override;
-	virtual int32_t _get_member_line(const StringName &p_member) const override;
-	virtual Dictionary _get_constants() const override;
-	virtual TypedArray<StringName> _get_members() const override;
-	virtual bool _is_placeholder_fallback_enabled() const override;
-	virtual Variant _get_rpc_config() const override;
+	// Internal Script API methods (no underscore prefix)
+	virtual bool can_instantiate() const override;
+	virtual Ref<Script> get_base_script() const override;
+	virtual StringName get_global_name() const override;
+	virtual bool inherits_script(const Ref<Script> &p_script) const override;
+	virtual StringName get_instance_base_type() const override;
+	virtual ScriptInstance *instance_create(Object *p_for_object) override;
+	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_for_object) override;
+	virtual bool instance_has(const Object *p_object) const override;
+	virtual bool has_source_code() const override;
+	virtual String get_source_code() const override;
+	virtual void set_source_code(const String &p_code) override;
+	virtual Error reload(bool p_keep_state = false) override;
+	virtual bool has_method(const StringName &p_method) const override;
+	virtual bool has_static_method(const StringName &p_method) const override;
+	virtual MethodInfo get_method_info(const StringName &p_method) const override;
+	virtual bool is_tool() const override;
+	virtual bool is_valid() const override;
+	virtual bool is_abstract() const override;
+	virtual ScriptLanguage *get_language() const override;
+	virtual bool has_script_signal(const StringName &p_signal) const override;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const override;
+	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const override;
+	virtual void update_exports() override;
+	virtual void get_script_method_list(List<MethodInfo> *p_list) const override;
+	virtual void get_script_property_list(List<PropertyInfo> *p_list) const override;
+	virtual int get_member_line(const StringName &p_member) const override;
+	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
+	virtual void get_members(HashSet<StringName> *p_members) override;
+	virtual const Variant get_rpc_config() const override;
+
+#ifdef TOOLS_ENABLED
+	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
+	virtual String get_class_icon_path() const override;
+	virtual Vector<DocData::ClassDoc> get_documentation() const override;
+	virtual bool is_placeholder_fallback_enabled() const override;
+#endif
 
 	void set_file(const String &path);
 

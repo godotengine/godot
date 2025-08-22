@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include <godot_cpp/classes/resource_format_saver.hpp>
+#include "core/io/resource_saver.h"
 #include <godot_cpp/classes/resource_saver.hpp>
 
 using namespace godot;
