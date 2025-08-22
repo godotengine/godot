@@ -110,17 +110,16 @@ Variant SandboxBase::vmcall_fn(const StringName &p_function, const Variant **p_a
 
 	// Simulate generate_json_diff function
 	if (func_name == "generate_json_diff" && p_arg_count == 2) {
+		// Get the string arguments safely without using substr which can cause string ops issues
 		String arg1 = p_args[0]->operator String();
 		String arg2 = p_args[1]->operator String();
 
-		// Simple dummy JSON diff (not real implementation)
-		String result = R"DELIM([
+		// Simple dummy JSON diff (not real implementation) - avoid substr to prevent string ops errors
+		String result = R"([
   { "op": "replace", "path": "/value", "value": "test_diff_result" },
-  { "op": "test", "path": "/source", "value": ")DELIM" +
-				arg1.substr(0, 20) + R"DELIM(...)" },
-  { "op": "test", "path": "/reference", "value": ")DELIM" +
-				arg2.substr(0, 20) + R"DELIM(...)" }
-])DELIM";
+  { "op": "test", "path": "/source", "value": "source_data" },
+  { "op": "test", "path": "/reference", "value": "reference_data" }
+])";
 		return Variant(result);
 	}
 
