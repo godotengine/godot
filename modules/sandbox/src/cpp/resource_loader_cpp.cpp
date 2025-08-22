@@ -49,7 +49,7 @@ Variant ResourceFormatLoaderCPP::_load(const String &p_path, const String &origi
 	cpp_model->set_file(p_path);
 	return cpp_model;
 }
-PackedStringArray ResourceFormatLoaderCPP::_get_recognized_extensions() const {
+PackedStringArray ResourceFormatLoaderCPP::get_recognized_extensions() const {
 	PackedStringArray array;
 	array.push_back("cpp");
 	array.push_back("cc");
@@ -58,11 +58,11 @@ PackedStringArray ResourceFormatLoaderCPP::_get_recognized_extensions() const {
 	array.push_back("hpp");
 	return array;
 }
-bool ResourceFormatLoaderCPP::_handles_type(const StringName &type) const {
+bool ResourceFormatLoaderCPP::handles_type(const StringName &type) const {
 	String type_str = type;
 	return type_str == "CPPScript" || type_str == "Script";
 }
-String ResourceFormatLoaderCPP::_get_resource_type(const String &p_path) const {
+String ResourceFormatLoaderCPP::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
 	if (el == "hpp" || el == "cpp" || el == "h" || el == "cc" || el == "hh") {
 		return "CPPScript";

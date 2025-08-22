@@ -31,24 +31,18 @@
 #pragma once
 
 #include "core/object/script_language.h"
+#include "core/object/object.h"
+#include "core/object/class_db.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
-#include <gdextension_interface.h>
-#include <godot_cpp/classes/global_constants.hpp>
-#include <godot_cpp/classes/mutex.hpp>
-#include <godot_cpp/classes/ref.hpp>
-#include <godot_cpp/core/type_info.hpp>
-#include <godot_cpp/variant/dictionary.hpp>
-#include <godot_cpp/variant/packed_string_array.hpp>
-#include <godot_cpp/variant/typed_array.hpp>
-
-#include "../godot/script_instance.h"
+#include "core/string/string_name.h"
+#include "core/error/error_list.h"
 
 class CPPScript;
 class ELFScript;
 class ELFScriptInstance;
 
-class CPPScriptInstance : public ScriptInstanceExtension {
+class CPPScriptInstance : public ScriptInstance {
 	Object *owner;
 	Ref<CPPScript> script;
 	ELFScriptInstance *managed_esi = nullptr;

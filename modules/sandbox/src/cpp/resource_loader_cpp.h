@@ -31,11 +31,11 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
-#include "core/object/object.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
-#include "core/string/string_name.h"
 
 class ResourceFormatLoaderCPP : public ResourceFormatLoader {
 	GDCLASS(ResourceFormatLoaderCPP, ResourceFormatLoader);

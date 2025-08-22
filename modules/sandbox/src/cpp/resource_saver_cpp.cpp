@@ -35,22 +35,21 @@
 #include "../sandbox.h"
 #include "../sandbox_project_settings.h"
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "core/variant/variant_utility.h"
+#include "core/object/script_language.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
-#include "core/error/error_macros.h"
+#include "core/variant/variant_utility.h"
 #include "script_cpp.h"
 #include <libriscv/util/threadpool.h>
-#include "core/os/os.h"
-#include "core/object/script_language.h"
-#include "core/string/print_string.h"
 
 static Ref<ResourceFormatSaverCPP> cpp_saver;
 static std::unique_ptr<riscv::ThreadPool> thread_pool;
-static constexpr bool VERBOSE_CMD = false;
 
 static const char cmake_toolchain_bytes[] = R"(
 if (NOT DEFINED ZIG_PATH)
@@ -247,17 +246,18 @@ static bool configure_cmake(const String &path) {
 		String args_str = "CMake arguments: ";
 		for (int i = 0; i < arguments.size(); i++) {
 			args_str += arguments[i];
-			if (i < arguments.size() - 1) args_str += " ";
+			if (i < arguments.size() - 1)
+				args_str += " ";
 		}
 		print_line(args_str);
 	}
-	
+
 	// Convert to List<String> for OS::execute
 	List<String> args_list;
 	for (int i = 0; i < arguments.size(); i++) {
 		args_list.push_back(arguments[i]);
 	}
-	
+
 	String output;
 	int exit_code;
 	Error error = os->execute(SandboxProjectSettings::get_cmake_path(), args_list, &output, &exit_code);
@@ -299,24 +299,25 @@ static Array invoke_cmake(const String &path) {
 	arguments.push_back(itos(OS::get_singleton()->get_processor_count()));
 
 	OS *os = OS::get_singleton();
-	
+
 	String args_str = "Invoking cmake: ";
 	for (int i = 0; i < arguments.size(); i++) {
 		args_str += arguments[i];
-		if (i < arguments.size() - 1) args_str += " ";
+		if (i < arguments.size() - 1)
+			args_str += " ";
 	}
 	print_line(args_str);
-	
+
 	// Convert to List<String> for OS::execute
 	List<String> args_list;
 	for (int i = 0; i < arguments.size(); i++) {
 		args_list.push_back(arguments[i]);
 	}
-	
+
 	String output_str;
 	int exit_code;
 	Error error = os->execute(SandboxProjectSettings::get_cmake_path(), args_list, &output_str, &exit_code);
-	
+
 	Array output;
 	if (!output_str.is_empty()) {
 		output.push_back(output_str);
@@ -362,24 +363,25 @@ static Array invoke_scons(const String &path) {
 	// TODO get arguments from project settings
 
 	OS *os = OS::get_singleton();
-	
+
 	String args_str = "Invoking scons: ";
 	for (int i = 0; i < arguments.size(); i++) {
 		args_str += arguments[i];
-		if (i < arguments.size() - 1) args_str += " ";
+		if (i < arguments.size() - 1)
+			args_str += " ";
 	}
 	print_line(args_str);
-	
-	// Convert to List<String> for OS::execute  
+
+	// Convert to List<String> for OS::execute
 	List<String> args_list;
 	for (int i = 0; i < arguments.size(); i++) {
 		args_list.push_back(arguments[i]);
 	}
-	
+
 	String output_str;
 	int exit_code;
 	Error error = os->execute(SandboxProjectSettings::get_scons_path(), args_list, &output_str, &exit_code);
-	
+
 	Array output;
 	if (!output_str.is_empty()) {
 		output.push_back(output_str);

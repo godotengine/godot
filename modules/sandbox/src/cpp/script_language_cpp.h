@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "core/object/object.h"
+#include "core/error/error_list.h"
 #include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/string/string_name.h"
 #include "core/string/ustring.h"
 #include "core/variant/variant.h"
-#include "core/error/error_list.h"
-#include "core/string/string_name.h"
 
 // Simplified class for now - just inherit from Object to get it compiling
 class CPPScriptLanguage : public Object {

@@ -31,7 +31,11 @@
 #pragma once
 
 #include "core/io/resource_saver.h"
-#include <godot_cpp/classes/resource_saver.hpp>
+#include "core/object/object.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "core/string/string_name.h"
 
 class ResourceFormatSaverELF : public ResourceFormatSaver {
 	GDCLASS(ResourceFormatSaverELF, ResourceFormatSaver);
@@ -40,9 +44,9 @@ protected:
 	static void _bind_methods() {}
 
 public:
-	virtual Error _save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) override;
-	virtual Error _set_uid(const String &p_path, int64_t p_uid) override;
-	virtual bool _recognize(const Ref<Resource> &p_resource) const override;
-	virtual PackedStringArray _get_recognized_extensions(const Ref<Resource> &p_resource) const override;
-	virtual bool _recognize_path(const Ref<Resource> &p_resource, const String &p_path) const override;
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) override;
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual bool recognize_path(const Ref<Resource> &p_resource, const String &p_path) const override;
 };
