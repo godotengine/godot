@@ -31,6 +31,7 @@
 #include "guest_datatypes.h"
 #include "syscalls.h"
 #include "sandbox.h"
+#include "elf/script_elf.h"
 
 #include "core/config/engine.h"
 #include "scene/2d/node_2d.h"
