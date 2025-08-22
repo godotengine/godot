@@ -30,37 +30,36 @@
 
 #include "sandbox.h"
 
-#include <godot_cpp/classes/audio_server.hpp>
-#include <godot_cpp/classes/display_server.hpp>
-#include <godot_cpp/classes/editor_interface.hpp>
+#include <unordered_map>
+#include <functional>
+#include "servers/audio_server.h"
+#include "servers/display_server.h"
+#include "editor/editor_interface.h"
 #include "core/config/engine.h"
-#include <godot_cpp/classes/engine_debugger.hpp>
-#include <godot_cpp/classes/gd_extension_manager.hpp>
-#include <godot_cpp/classes/geometry2d.hpp>
-#include <godot_cpp/classes/geometry3d.hpp>
-#include <godot_cpp/classes/input.hpp>
-#include <godot_cpp/classes/input_map.hpp>
-#include <godot_cpp/classes/marshalls.hpp>
-#include <godot_cpp/classes/native_menu.hpp>
-#include <godot_cpp/classes/navigation_mesh_generator.hpp>
-#include <godot_cpp/classes/navigation_server2d.hpp>
-#include <godot_cpp/classes/navigation_server3d.hpp>
-#include <godot_cpp/classes/performance.hpp>
-#include <godot_cpp/classes/physics_server2d.hpp>
-#include <godot_cpp/classes/physics_server2d_manager.hpp>
-#include <godot_cpp/classes/physics_server3d.hpp>
-#include <godot_cpp/classes/physics_server3d_manager.hpp>
+#include "core/debugger/engine_debugger.h"
+#include "core/extension/gdextension_manager.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
+#include "core/input/input.h"
+#include "core/input/input_map.h"
+#include "core/io/marshalls.h"
+#include "modules/navigation_3d/3d/navigation_mesh_generator.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "main/performance.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
 #include "core/config/project_settings.h"
-#include <godot_cpp/classes/rendering_server.hpp>
-#include <godot_cpp/classes/resource_loader.hpp>
-#include <godot_cpp/classes/resource_saver.hpp>
-#include <godot_cpp/classes/resource_uid.hpp>
-#include <godot_cpp/classes/text_server_manager.hpp>
-#include <godot_cpp/classes/theme_db.hpp>
-#include <godot_cpp/classes/time.hpp>
-#include <godot_cpp/classes/translation_server.hpp>
-#include <godot_cpp/classes/worker_thread_pool.hpp>
-#include <godot_cpp/classes/xr_server.hpp>
+#include "servers/rendering_server.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/io/resource_uid.h"
+#include "servers/text_server.h"
+#include "scene/theme/theme_db.h"
+#include "core/os/time.h"
+#include "core/string/translation.h"
+#include "core/object/worker_thread_pool.h"
+#include "servers/xr_server.h"
 
 namespace riscv {
 std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list = {
