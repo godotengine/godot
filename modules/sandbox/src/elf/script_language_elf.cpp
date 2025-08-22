@@ -33,7 +33,9 @@
 #include "core/config/engine.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
+#ifdef TOOLS_ENABLED
 #include "editor/editor_interface.h"
+#endif
 #include "scene/gui/control.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/theme.h"
@@ -232,6 +234,7 @@ String ELFScriptLanguage::debug_get_stack_level_source(int p_level) const {
 }
 
 void ELFScriptLanguage::frame() {
+#if TOOLS_ENABLED
 	static bool icon_registered = register_language_icons;
 	if (!icon_registered && Engine::get_singleton()->is_editor_hint()) {
 		icon_registered = true;
@@ -240,12 +243,15 @@ void ELFScriptLanguage::frame() {
 		// Register theme callback
 		EditorInterface::get_singleton()->get_base_control()->connect("theme_changed", callable_mp(this, &ELFScriptLanguage::load_icon));
 	}
+#endif
 }
 
 void ELFScriptLanguage::load_icon() {
+#if TOOLS_ENABLED
 	static bool reenter = false;
-	if (reenter)
+	if (reenter) {
 		return;
+	}
 	reenter = true;
 	Ref<FileAccess> fa = FileAccess::open(icon_path, FileAccess::READ);
 	if (Engine::get_singleton()->is_editor_hint() && fa.is_valid()) {
@@ -256,6 +262,7 @@ void ELFScriptLanguage::load_icon() {
 		}
 	}
 	reenter = false;
+#endif
 }
 
 bool ELFScriptLanguage::handles_global_class_type(const String &p_type) const {

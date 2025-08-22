@@ -1169,7 +1169,7 @@ static void syscall_statx(Machine<W>& machine)
 
 #include "syscalls_select.cpp"
 #include "syscalls_poll.cpp"
-#if defined(__linux__) || defined(__APPLE__)
+#ifdef __linux__
 #include "syscalls_epoll.cpp"
 #else
 #include "../win32/epoll.cpp"

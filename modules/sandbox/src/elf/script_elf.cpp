@@ -263,11 +263,10 @@ const Variant ELFScript::get_rpc_config() const {
 	return Variant();
 }
 
+#ifdef TOOLS_ENABLED
 StringName ELFScript::get_doc_class_name() const {
 	return get_global_name();
 }
-
-#ifdef TOOLS_ENABLED
 void ELFScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	// Handle placeholder cleanup if needed
 }

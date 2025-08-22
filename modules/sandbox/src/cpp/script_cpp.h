@@ -88,9 +88,9 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override;
 	virtual void get_members(HashSet<StringName> *p_members) override;
 	virtual const Variant get_rpc_config() const override;
-	virtual StringName get_doc_class_name() const override;
 
 #ifdef TOOLS_ENABLED
+	virtual StringName get_doc_class_name() const override;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) override;
 	virtual String get_class_icon_path() const override;
 	virtual Vector<DocData::ClassDoc> get_documentation() const override;

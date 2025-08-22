@@ -117,9 +117,11 @@ Vector<DocData::ClassDoc> CPPScript::get_documentation() const {
 	return Vector<DocData::ClassDoc>();
 }
 #endif
+#ifdef TOOLS_ENABLED
 String CPPScript::get_class_icon_path() const {
 	return String("res://addons/godot_sandbox/CPPScript.svg");
 }
+#endif
 bool CPPScript::has_method(const StringName &p_method) const {
 	if (p_method == StringName("_init"))
 		return true;
@@ -201,16 +203,19 @@ void CPPScript::get_constants(HashMap<StringName, Variant> *p_constants) {
 void CPPScript::get_members(HashSet<StringName> *p_members) {
 	// No members to add
 }
-bool CPPScript::is_placeholder_fallback_enabled() const {
-	return false;
-}
 const Variant CPPScript::get_rpc_config() const {
 	return Variant();
+}
+
+#ifdef TOOLS_ENABLED
+bool CPPScript::is_placeholder_fallback_enabled() const {
+	return false;
 }
 
 StringName CPPScript::get_doc_class_name() const {
 	return get_global_name();
 }
+#endif
 
 void CPPScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
 	// No signals to add
