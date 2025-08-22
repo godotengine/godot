@@ -1707,6 +1707,137 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	file->popup_file_dialog();
 }
 
+void EditorNode::gather_resources(Object *p_obj, List<Ref<Resource>> &p_l, bool subresources, bool external) {
+	List<PropertyInfo> pinfo;
+	p_obj->get_property_list(&pinfo);
+
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script") {
+			continue;
+		}
+
+		Variant value = p_obj->get(E.name);
+
+		if (value.get_type() != Variant::OBJECT && value.get_type() != Variant::ARRAY && value.get_type() != Variant::DICTIONARY) {
+			continue;
+		}
+
+		if (value.get_type() == Variant::ARRAY) {
+			Array arr = value;
+			for (int i = 0; i < arr.size(); i++) {
+				Ref<Resource> res = arr[i];
+				if (res.is_valid()) {
+					p_l.push_back(res);
+					if (subresources) {
+						gather_resources(res.ptr(), p_l, subresources, external);
+					}
+				}
+			}
+			continue;
+		}
+
+		else if (value.get_type() == Variant::DICTIONARY) {
+			Dictionary dict = value;
+			for (const KeyValue<Variant, Variant> &kv : dict) {
+				Ref<Resource> d_value = kv.key;
+				Ref<Resource> d_key = kv.value;
+				if (d_key.is_valid()) {
+					p_l.push_back(d_key);
+					if (subresources) {
+						gather_resources(d_key.ptr(), p_l, subresources, external);
+					}
+				}
+
+				if (d_value.is_valid()) {
+					p_l.push_back(d_value);
+					if (subresources) {
+						gather_resources(d_value.ptr(), p_l, subresources, external);
+					}
+				}
+			}
+			continue;
+		}
+
+		Ref<Resource> res = value;
+		if (res.is_null()) {
+			continue;
+		}
+		if (!res->is_built_in() && res->get_path().get_slice("::", 0) != get_edited_scene()->get_scene_file_path()) {
+			if (!res->get_path().is_empty()) {
+				continue;
+			}
+		}
+		p_l.push_back(res.ptr());
+		if (subresources) {
+			gather_resources(res.ptr(), p_l, subresources, external);
+		}
+	}
+}
+
+void EditorNode::gather_resources_by_variant(const Variant &p_variant, List<Ref<Resource>> &p_l) {
+	switch (p_variant.get_type()) {
+		case Variant::ARRAY: {
+			Array a = p_variant;
+			for (int i = 0; i < a.size(); i++) {
+				gather_resources_by_variant(a[i], p_l);
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = p_variant;
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				gather_resources_by_variant(kv.key, p_l);
+				gather_resources_by_variant(kv.value, p_l);
+			}
+		} break;
+		case Variant::OBJECT: {
+			Ref<Resource> r = p_variant;
+			if (r.is_valid()) {
+				p_l.push_back(r);
+				gather_resources(r.ptr(), p_l, true);
+			}
+		} break;
+		default: {
+		}
+	}
+}
+
+void EditorNode::update_resource_count(Node *p_node, bool remove) {
+	if (!get_edited_scene()) {
+		return;
+	}
+
+	List<Ref<Resource>> res_list;
+	gather_resources(p_node, res_list, true);
+
+	for (Ref<Resource> R : res_list) {
+		Resource *res = R.ptr();
+		if (resource_count[res].find(p_node)) {
+			if (remove) {
+				resource_count[res].erase(p_node);
+			}
+		} else {
+			resource_count[res].push_back(p_node);
+		}
+	}
+
+	emit_signal(SNAME("resource_counter_changed"));
+}
+
+int EditorNode::get_resource_count(Ref<Resource> p_res) const {
+	return (resource_count.has(p_res.ptr())) ? resource_count[p_res.ptr()].size() : 0;
+}
+
+void EditorNode::remove_node_reference(const Variant &p_variant, Node *p_node) {
+	List<Ref<Resource>> p_l;
+	gather_resources_by_variant(p_variant, p_l);
+
+	for (Ref<Resource> R : p_l) {
+		if (resource_count.has(R.ptr())) {
+			resource_count[R.ptr()].erase(p_node);
+		}
+	}
+}
+
 void EditorNode::_menu_option(int p_option) {
 	_menu_option_confirm(p_option, false);
 }
@@ -7260,6 +7391,9 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
+	ClassDB::bind_method("remove_node_reference", &EditorNode::remove_node_reference);
+	ClassDB::bind_method("update_resource_count", &EditorNode::update_resource_count);
+
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
@@ -7267,6 +7401,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
+	ADD_SIGNAL(MethodInfo("resource_counter_changed"));
 }
 
 static Node *_resource_get_edited_scene() {
