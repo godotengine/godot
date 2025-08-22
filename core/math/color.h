@@ -220,7 +220,7 @@ struct [[nodiscard]] Color {
 	static Color from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8 = 255);
 
 	constexpr bool operator<(const Color &p_color) const; // Used in set keys.
-	operator String() const;
+	explicit operator String() const;
 
 	// For the binder.
 	_FORCE_INLINE_ void set_r8(int32_t r8) { r = (CLAMP(r8, 0, 255) / 255.0f); }

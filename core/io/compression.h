@@ -52,8 +52,8 @@ public:
 		MODE_BROTLI
 	};
 
-	static int compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_ZSTD);
-	static int get_max_compressed_buffer_size(int p_src_size, Mode p_mode = MODE_ZSTD);
-	static int decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p_src, int p_src_size, Mode p_mode = MODE_ZSTD);
-	static int decompress_dynamic(Vector<uint8_t> *p_dst_vect, int p_max_dst_size, const uint8_t *p_src, int p_src_size, Mode p_mode);
+	static int64_t compress(uint8_t *p_dst, const uint8_t *p_src, int64_t p_src_size, Mode p_mode = MODE_ZSTD);
+	static int64_t get_max_compressed_buffer_size(int64_t p_src_size, Mode p_mode = MODE_ZSTD);
+	static int64_t decompress(uint8_t *p_dst, int64_t p_dst_max_size, const uint8_t *p_src, int64_t p_src_size, Mode p_mode = MODE_ZSTD);
+	static int decompress_dynamic(Vector<uint8_t> *p_dst_vect, int64_t p_max_dst_size, const uint8_t *p_src, int64_t p_src_size, Mode p_mode);
 };

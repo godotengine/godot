@@ -304,9 +304,15 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 				}
 			} else if (p_color_size == 4) {
 				for (int i = 0; i < texsize * texsize * p_color_size; i += 4) { // FORMAT_RGBA8, Color font, Multichannel(+True) SDF.
-					w[i + 0] = 255;
-					w[i + 1] = 255;
-					w[i + 2] = 255;
+					if (p_msdf) {
+						w[i + 0] = 0;
+						w[i + 1] = 0;
+						w[i + 2] = 0;
+					} else {
+						w[i + 0] = 255;
+						w[i + 1] = 255;
+						w[i + 2] = 255;
+					}
 					w[i + 3] = 0;
 				}
 			} else {
@@ -1693,6 +1699,25 @@ void TextServerFallback::_font_set_variation_coordinates(const RID &p_font_rid, 
 	}
 }
 
+double TextServerFallback::_font_get_oversampling(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, -1.0);
+
+	MutexLock lock(fd->mutex);
+	return fd->oversampling_override;
+}
+
+void TextServerFallback::_font_set_oversampling(const RID &p_font_rid, double p_oversampling) {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->oversampling_override != p_oversampling) {
+		_font_clear_cache(fd);
+		fd->oversampling_override = p_oversampling;
+	}
+}
+
 Dictionary TextServerFallback::_font_get_variation_coordinates(const RID &p_font_rid) const {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL_V(fd, Dictionary());
@@ -2815,7 +2840,9 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 	bool viewport_oversampling = false;
 	float oversampling_factor = p_oversampling;
 	if (p_oversampling <= 0.0) {
-		if (vp_oversampling > 0.0) {
+		if (fd->oversampling_override > 0.0) {
+			oversampling_factor = fd->oversampling_override;
+		} else if (vp_oversampling > 0.0) {
 			oversampling_factor = vp_oversampling;
 			viewport_oversampling = true;
 		} else {
@@ -2959,7 +2986,9 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 	bool viewport_oversampling = false;
 	float oversampling_factor = p_oversampling;
 	if (p_oversampling <= 0.0) {
-		if (vp_oversampling > 0.0) {
+		if (fd->oversampling_override > 0.0) {
+			oversampling_factor = fd->oversampling_override;
+		} else if (vp_oversampling > 0.0) {
 			oversampling_factor = vp_oversampling;
 			viewport_oversampling = true;
 		} else {
@@ -4438,10 +4467,25 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 					}
 				}
 
+				bool fb_use_msdf = key.msdf;
+				if (fb_use_msdf) {
+					FontFallback *fd = _get_font_data(sysf.rid);
+					if (fd) {
+						MutexLock lock(fd->mutex);
+						Vector2i size = _get_size(fd, 16);
+						FontForSizeFallback *ffsd = nullptr;
+						if (_ensure_cache_for_size(fd, size, ffsd)) {
+							if (ffsd && (FT_HAS_COLOR(ffsd->face) || !FT_IS_SCALABLE(ffsd->face))) {
+								fb_use_msdf = false;
+							}
+						}
+					}
+				}
+
 				_font_set_antialiasing(sysf.rid, key.antialiasing);
 				_font_set_disable_embedded_bitmaps(sysf.rid, key.disable_embedded_bitmaps);
 				_font_set_generate_mipmaps(sysf.rid, key.mipmaps);
-				_font_set_multichannel_signed_distance_field(sysf.rid, key.msdf);
+				_font_set_multichannel_signed_distance_field(sysf.rid, fb_use_msdf);
 				_font_set_msdf_pixel_range(sysf.rid, key.msdf_range);
 				_font_set_msdf_size(sysf.rid, key.msdf_source_size);
 				_font_set_fixed_size(sysf.rid, key.fixed_size);

@@ -70,7 +70,7 @@
 			In most cases [member node_paths] will only have one item, but in some cases a single glTF JSON pointer will map to multiple Godot properties. For example, a [GLTFCamera] or [GLTFLight] used on multiple glTF nodes will be represented by multiple Godot nodes.
 		</member>
 		<member name="object_model_type" type="int" setter="set_object_model_type" getter="get_object_model_type" enum="GLTFObjectModelProperty.GLTFObjectModelType" default="0">
-			The type of data stored in the glTF file as defined by the object model. This is a superset of the available accessor types, and determines the accessor type. See [enum GLTFObjectModelType] for possible values.
+			The type of data stored in the glTF file as defined by the object model. This is a superset of the available accessor types, and determines the accessor type.
 		</member>
 		<member name="variant_type" type="int" setter="set_variant_type" getter="get_variant_type" enum="Variant.Type" default="0">
 			The type of data stored in the Godot property. This is the type of the property that the [member node_paths] point to.

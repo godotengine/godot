@@ -356,49 +356,52 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					} else {
 						Variant value = props[nprops[j].value];
 
-						// Making sure that instances of inherited scenes don't share the same
-						// reference between them.
-						if (is_inherited_scene) {
-							value = value.duplicate(true);
-						}
-
 						if (value.get_type() == Variant::OBJECT) {
 							//handle resources that are local to scene by duplicating them if needed
 							Ref<Resource> res = value;
 							if (res.is_valid()) {
 								value = make_local_resource(value, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
 							}
+						} else {
+							// Making sure that instances of inherited scenes don't share the same
+							// reference between them.
+							if (is_inherited_scene) {
+								value = value.duplicate(true);
+							}
 						}
 
 						if (value.get_type() == Variant::ARRAY) {
 							Array set_array = value;
-							value = setup_resources_in_array(set_array, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
-
 							bool is_get_valid = false;
 							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
 
 							if (is_get_valid && get_value.get_type() == Variant::ARRAY) {
 								Array get_array = get_value;
-								if (!set_array.is_same_typed(get_array)) {
-									value = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
+								if (set_array.is_same_typed(get_array)) {
+									set_array = set_array.duplicate();
+								} else {
+									set_array = Array(set_array, get_array.get_typed_builtin(), get_array.get_typed_class_name(), get_array.get_typed_script());
 								}
 							}
+
+							value = setup_resources_in_array(set_array, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
 						}
 
 						if (value.get_type() == Variant::DICTIONARY) {
 							Dictionary set_dict = value;
-							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
-
 							bool is_get_valid = false;
 							Variant get_value = node->get(snames[nprops[j].name], &is_get_valid);
 
 							if (is_get_valid && get_value.get_type() == Variant::DICTIONARY) {
 								Dictionary get_dict = get_value;
-								if (!set_dict.is_same_typed(get_dict)) {
-									value = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(),
-											get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
+								if (set_dict.is_same_typed(get_dict)) {
+									set_dict = set_dict.duplicate();
+								} else {
+									set_dict = Dictionary(set_dict, get_dict.get_typed_key_builtin(), get_dict.get_typed_key_class_name(), get_dict.get_typed_key_script(), get_dict.get_typed_value_builtin(), get_dict.get_typed_value_class_name(), get_dict.get_typed_value_script());
 								}
 							}
+
+							value = setup_resources_in_dictionary(set_dict, n, resources_local_to_sub_scene, node, snames[nprops[j].name], resources_local_to_scene, i, ret_nodes, p_edit_state);
 						}
 
 						bool set_valid = true;
@@ -1968,6 +1971,18 @@ Ref<Resource> SceneState::get_sub_resource(const String &p_path) {
 		}
 	}
 	return Ref<Resource>();
+}
+
+Vector<Ref<Resource>> SceneState::get_sub_resources() {
+	const String path_prefix = get_path() + "::";
+	Vector<Ref<Resource>> sub_resources;
+	for (const Variant &v : variants) {
+		const Ref<Resource> &res = v;
+		if (res.is_valid() && res->get_path().begins_with(path_prefix)) {
+			sub_resources.push_back(res);
+		}
+	}
+	return sub_resources;
 }
 
 //add

@@ -35,7 +35,7 @@
 				Overridable method. Should return [code]true[/code] if this playback is active and playing its audio stream.
 			</description>
 		</method>
-		<method name="_mix" qualifiers="virtual">
+		<method name="_mix" qualifiers="virtual required">
 			<return type="int" />
 			<param index="0" name="buffer" type="AudioFrame*" />
 			<param index="1" name="rate_scale" type="float" />

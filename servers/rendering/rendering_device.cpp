@@ -233,9 +233,9 @@ RenderingDevice::Buffer *RenderingDevice::_get_buffer_from_owner(RID p_buffer) {
 	return buffer;
 }
 
-Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, const uint8_t *p_data, size_t p_data_size, uint32_t p_required_align) {
+Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, Span<uint8_t> p_data, uint32_t p_required_align) {
 	uint32_t transfer_worker_offset;
-	TransferWorker *transfer_worker = _acquire_transfer_worker(p_data_size, p_required_align, transfer_worker_offset);
+	TransferWorker *transfer_worker = _acquire_transfer_worker(p_data.size(), p_required_align, transfer_worker_offset);
 	p_buffer->transfer_worker_index = transfer_worker->index;
 
 	{
@@ -247,14 +247,14 @@ Error RenderingDevice::_buffer_initialize(Buffer *p_buffer, const uint8_t *p_dat
 	uint8_t *data_ptr = driver->buffer_map(transfer_worker->staging_buffer);
 	ERR_FAIL_NULL_V(data_ptr, ERR_CANT_CREATE);
 
-	memcpy(data_ptr + transfer_worker_offset, p_data, p_data_size);
+	memcpy(data_ptr + transfer_worker_offset, p_data.ptr(), p_data.size());
 	driver->buffer_unmap(transfer_worker->staging_buffer);
 
 	// Copy from the staging buffer to the real buffer.
 	RDD::BufferCopyRegion region;
 	region.src_offset = transfer_worker_offset;
 	region.dst_offset = 0;
-	region.size = p_data_size;
+	region.size = p_data.size();
 	driver->command_copy_buffer(transfer_worker->command_buffer, transfer_worker->staging_buffer, p_buffer->driver_id, region);
 
 	_release_transfer_worker(transfer_worker);
@@ -782,7 +782,7 @@ uint64_t RenderingDevice::buffer_get_device_address(RID p_buffer) {
 	return driver->buffer_get_device_address(buffer->driver_id);
 }
 
-RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
+RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data, BitField<StorageBufferUsage> p_usage, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
@@ -807,7 +807,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 	buffer.draw_tracker->buffer_driver_id = buffer.driver_id;
 
 	if (p_data.size()) {
-		_buffer_initialize(&buffer, p_data.ptr(), p_data.size());
+		_buffer_initialize(&buffer, p_data);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -821,7 +821,7 @@ RID RenderingDevice::storage_buffer_create(uint32_t p_size_bytes, const Vector<u
 	return id;
 }
 
-RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data) {
+RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, Span<uint8_t> p_data) {
 	uint32_t element_size = get_format_vertex_size(p_format);
 	ERR_FAIL_COND_V_MSG(element_size == 0, RID(), "Format requested is not supported for texture buffers");
 	uint64_t size_bytes = uint64_t(element_size) * p_size_elements;
@@ -847,7 +847,7 @@ RID RenderingDevice::texture_buffer_create(uint32_t p_size_elements, DataFormat 
 	}
 
 	if (p_data.size()) {
-		_buffer_initialize(&texture_buffer, p_data.ptr(), p_data.size());
+		_buffer_initialize(&texture_buffer, p_data);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -1065,7 +1065,7 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 #endif
 
 	if (data.size()) {
-		for (uint32_t i = 0; i < p_format.array_layers; i++) {
+		for (uint32_t i = 0; i < format.array_layers; i++) {
 			_texture_initialize(id, i, data[i], immediate_flush);
 		}
 
@@ -1391,13 +1391,33 @@ uint32_t RenderingDevice::_texture_layer_count(Texture *p_texture) const {
 	}
 }
 
+uint32_t greatest_common_denominator(uint32_t a, uint32_t b) {
+	// Euclidean algorithm.
+	uint32_t t;
+	while (b != 0) {
+		t = b;
+		b = a % b;
+		a = t;
+	}
+
+	return a;
+}
+
+uint32_t least_common_multiple(uint32_t a, uint32_t b) {
+	if (a == 0 || b == 0) {
+		return 0;
+	}
+
+	return (a / greatest_common_denominator(a, b)) * b;
+}
+
 uint32_t RenderingDevice::_texture_alignment(Texture *p_texture) const {
 	uint32_t alignment = get_compressed_image_format_block_byte_size(p_texture->format);
 	if (alignment == 1) {
 		alignment = get_image_format_pixel_size(p_texture->format);
 	}
 
-	return STEPIFY(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
+	return least_common_multiple(alignment, driver->api_trait_get(RDD::API_TRAIT_TEXTURE_TRANSFER_ALIGNMENT));
 }
 
 Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data, bool p_immediate_flush) {
@@ -2907,6 +2927,8 @@ RID RenderingDevice::framebuffer_create(const Vector<RID> &p_texture_attachments
 
 		if (texture && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 			pass.depth_attachment = i;
+		} else if (texture && texture->usage_flags & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
+			// Prevent the VRS attachment from being added to the color_attachments.
 		} else {
 			if (texture && texture->is_resolve_buffer) {
 				pass.resolve_attachments.push_back(i);
@@ -3082,7 +3104,7 @@ bool RenderingDevice::sampler_is_format_supported_for_filter(DataFormat p_format
 /**** VERTEX BUFFER ****/
 /***********************/
 
-RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
+RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
@@ -3104,7 +3126,7 @@ RID RenderingDevice::vertex_buffer_create(uint32_t p_size_bytes, const Vector<ui
 	}
 
 	if (p_data.size()) {
-		_buffer_initialize(&buffer, p_data.ptr(), p_data.size());
+		_buffer_initialize(&buffer, p_data);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -3224,7 +3246,7 @@ RID RenderingDevice::vertex_array_create(uint32_t p_vertex_count, VertexFormatID
 	return id;
 }
 
-RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices, BitField<BufferCreationBits> p_creation_bits) {
+RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferFormat p_format, Span<uint8_t> p_data, bool p_use_restart_indices, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_index_count == 0, RID());
 
 	IndexBuffer index_buffer;
@@ -3276,7 +3298,7 @@ RID RenderingDevice::index_buffer_create(uint32_t p_index_count, IndexBufferForm
 	}
 
 	if (p_data.size()) {
-		_buffer_initialize(&index_buffer, p_data.ptr(), p_data.size());
+		_buffer_initialize(&index_buffer, p_data);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -3490,7 +3512,7 @@ uint64_t RenderingDevice::shader_get_vertex_input_attribute_mask(RID p_shader) {
 /**** UNIFORMS ****/
 /******************/
 
-RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, BitField<BufferCreationBits> p_creation_bits) {
+RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, Span<uint8_t> p_data, BitField<BufferCreationBits> p_creation_bits) {
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
@@ -3509,7 +3531,7 @@ RID RenderingDevice::uniform_buffer_create(uint32_t p_size_bytes, const Vector<u
 	}
 
 	if (p_data.size()) {
-		_buffer_initialize(&buffer, p_data.ptr(), p_data.size());
+		_buffer_initialize(&buffer, p_data);
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -3575,6 +3597,7 @@ RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniform
 
 		const Uniform &uniform = uniforms[uniform_idx];
 
+		ERR_FAIL_INDEX_V(uniform.uniform_type, RD::UNIFORM_TYPE_MAX, RID());
 		ERR_FAIL_COND_V_MSG(uniform.uniform_type != set_uniform.type, RID(),
 				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "), set (" + itos(p_shader_set) + "). Expected '" + SHADER_UNIFORM_NAMES[set_uniform.type] + "', supplied: '" + SHADER_UNIFORM_NAMES[uniform.uniform_type] + "'.");
 
@@ -6685,7 +6708,6 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 	}
 
 	frame = 0;
-	frames.resize(frame_count);
 	max_timestamp_query_elements = GLOBAL_GET("debug/settings/profiler/max_timestamp_query_elements");
 
 	device = context->device_get(device_index);
@@ -6753,6 +6775,8 @@ Error RenderingDevice::initialize(RenderingContextDriver *p_context, DisplayServ
 
 	// Use the processor count as the max amount of transfer workers that can be created.
 	transfer_worker_pool_max_size = OS::get_singleton()->get_processor_count();
+
+	frames.resize(frame_count);
 
 	// Create data for all the frames.
 	for (uint32_t i = 0; i < frames.size(); i++) {
@@ -7354,11 +7378,11 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sampler_create", "state"), &RenderingDevice::_sampler_create);
 	ClassDB::bind_method(D_METHOD("sampler_is_format_supported_for_filter", "format", "sampler_filter"), &RenderingDevice::sampler_is_format_supported_for_filter);
 
-	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::_vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
 	ClassDB::bind_method(D_METHOD("vertex_array_create", "vertex_count", "vertex_format", "src_buffers", "offsets"), &RenderingDevice::_vertex_array_create, DEFVAL(Vector<int64_t>()));
 
-	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices", "creation_bits"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices", "creation_bits"), &RenderingDevice::_index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
 
 	ClassDB::bind_method(D_METHOD("shader_compile_spirv_from_source", "shader_source", "allow_cache"), &RenderingDevice::_shader_compile_spirv_from_source, DEFVAL(true));
@@ -7369,9 +7393,9 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("shader_get_vertex_input_attribute_mask", "shader"), &RenderingDevice::shader_get_vertex_input_attribute_mask);
 
-	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::uniform_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage", "creation_bits"), &RenderingDevice::storage_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("texture_buffer_create", "size_bytes", "format", "data"), &RenderingDevice::texture_buffer_create, DEFVAL(Vector<uint8_t>()));
+	ClassDB::bind_method(D_METHOD("uniform_buffer_create", "size_bytes", "data", "creation_bits"), &RenderingDevice::_uniform_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage", "creation_bits"), &RenderingDevice::_storage_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("texture_buffer_create", "size_bytes", "format", "data"), &RenderingDevice::_texture_buffer_create, DEFVAL(Vector<uint8_t>()));
 
 	ClassDB::bind_method(D_METHOD("uniform_set_create", "uniforms", "shader", "shader_set"), &RenderingDevice::_uniform_set_create);
 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);
@@ -7977,6 +8001,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_SPATIAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_METALFX_TEMPORAL);
 	BIND_ENUM_CONSTANT(SUPPORTS_BUFFER_DEVICE_ADDRESS);
+	BIND_ENUM_CONSTANT(SUPPORTS_IMAGE_ATOMIC_32_BIT);
 
 	BIND_ENUM_CONSTANT(LIMIT_MAX_BOUND_UNIFORM_SETS);
 	BIND_ENUM_CONSTANT(LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS);

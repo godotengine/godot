@@ -421,7 +421,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
-	HashMap<String, Vector<_VCSort>> setting_overrides;
+	HashMap<String, LocalVector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -464,10 +464,11 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		}
 
 		int dot = vc.name.rfind_char('.');
-		if (dot != -1 && !custom_prop_info.has(vc.name)) {
+		if (dot != -1) {
 			StringName n = vc.name.substr(0, dot);
-			if (props.has(n)) { // Property is an override.
-				setting_overrides[n].append(vc);
+			if (props.has(n)) {
+				// Property is an override.
+				setting_overrides[n].push_back(vc);
 			} else {
 				vclist.insert(vc);
 			}
@@ -502,6 +503,12 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			for (const _VCSort &over : setting_overrides.get(base.name)) {
 				if (custom_prop_info.has(over.name)) {
 					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else if (custom_prop_info.has(base.name)) {
+					// Fallback to base property info.
+					PropertyInfo pi = custom_prop_info[base.name];
 					pi.name = over.name;
 					pi.usage = over.flags;
 					p_list->push_back(pi);
@@ -607,6 +614,8 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
  *      appending '.pck' to the binary name (e.g. 'linux_game' -> 'linux_game.pck').
  *    o PCK with the same basename as the binary in the current working directory.
  *      Same as above for the two possible PCK file names.
+ *  - On Android, look for 'assets.sparsepck' and try loading it, if it doesn't work,
+ *    proceed to the next step.
  *  - On relevant platforms (Android/iOS), lookup project file in OS resource path.
  *    If found, load it or fail.
  *  - Lookup project file in passed `p_path` (--path passed by the user), i.e. we
@@ -693,6 +702,11 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			return err;
 		}
 	}
+
+#ifdef ANDROID_ENABLED
+	// Attempt to load sparse PCK assets.
+	_load_resource_pack("res://assets.sparsepck", false, 0, true);
+#endif
 
 	// Try to use the filesystem for files, according to OS.
 	// (Only Android -when reading from pck- and iOS use this.)
@@ -824,7 +838,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	for (uint32_t i = 0; i < count; i++) {
 		uint32_t slen = f->get_32();
 		CharString cs;
-		cs.resize(slen + 1);
+		cs.resize_uninitialized(slen + 1);
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
 		String key = String::utf8(cs.ptr(), slen);
@@ -1707,6 +1721,7 @@ ProjectSettings::ProjectSettings() {
 
 #if !defined(NAVIGATION_2D_DISABLED) || !defined(NAVIGATION_3D_DISABLED)
 	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
+	GLOBAL_DEF("navigation/world/region_use_async_iterations", true);
 
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
 	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);

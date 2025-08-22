@@ -1352,6 +1352,7 @@ void RendererViewport::viewport_set_use_hdr_2d(RID p_viewport, bool p_use_hdr_2d
 	}
 	viewport->use_hdr_2d = p_use_hdr_2d;
 	RSG::texture_storage->render_target_set_use_hdr(viewport->render_target, p_use_hdr_2d);
+	_configure_3d_render_buffers(viewport);
 }
 
 bool RendererViewport::viewport_is_using_hdr_2d(RID p_viewport) const {
@@ -1401,6 +1402,7 @@ void RendererViewport::viewport_set_use_debanding(RID p_viewport, bool p_use_deb
 		return;
 	}
 	viewport->use_debanding = p_use_debanding;
+	RSG::texture_storage->render_target_set_use_debanding(viewport->render_target, p_use_debanding);
 	_configure_3d_render_buffers(viewport);
 }
 

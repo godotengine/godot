@@ -57,6 +57,11 @@ JPH::BroadPhaseLayer JoltArea3D::_get_broad_phase_layer() const {
 JPH::ObjectLayer JoltArea3D::_get_object_layer() const {
 	ERR_FAIL_NULL_V(space, 0);
 
+	if (jolt_shape == nullptr || jolt_shape->GetType() == JPH::EShapeType::Empty) {
+		// No point doing collision checks against a shapeless object.
+		return space->map_to_object_layer(_get_broad_phase_layer(), 0, 0);
+	}
+
 	return space->map_to_object_layer(_get_broad_phase_layer(), collision_layer, collision_mask);
 }
 
@@ -72,18 +77,15 @@ void JoltArea3D::_add_to_space() {
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
 	jolt_settings->mMotionType = _get_motion_type();
 	jolt_settings->mIsSensor = true;
+	jolt_settings->mCollideKinematicVsNonDynamic = true;
 	jolt_settings->mUseManifoldReduction = false;
 	jolt_settings->mOverrideMassProperties = JPH::EOverrideMassProperties::MassAndInertiaProvided;
 	jolt_settings->mMassPropertiesOverride.mMass = 1.0f;
 	jolt_settings->mMassPropertiesOverride.mInertia = JPH::Mat44::sIdentity();
 
-	if (JoltProjectSettings::areas_detect_static_bodies) {
-		jolt_settings->mCollideKinematicVsNonDynamic = true;
-	}
-
 	jolt_settings->SetShape(jolt_shape);
 
-	JPH::Body *new_jolt_body = space->add_rigid_body(*this, *jolt_settings, _should_sleep());
+	JPH::Body *new_jolt_body = space->add_object(*this, *jolt_settings, _should_sleep());
 	if (new_jolt_body == nullptr) {
 		return;
 	}
@@ -217,15 +219,11 @@ void JoltArea3D::_remove_all_overlaps() {
 }
 
 void JoltArea3D::_update_sleeping() {
-	if (space == nullptr) {
+	if (!in_space()) {
 		return;
 	}
 
-	if (_should_sleep()) {
-		space->get_body_iface().DeactivateBody(jolt_body->GetID());
-	} else {
-		space->get_body_iface().ActivateBody(jolt_body->GetID());
-	}
+	space->set_is_object_sleeping(jolt_body->GetID(), _should_sleep());
 }
 
 void JoltArea3D::_update_group_filter() {

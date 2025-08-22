@@ -196,29 +196,29 @@
 				[gdscript]
 				var arguments = {}
 				for argument in OS.get_cmdline_args():
-				    if argument.contains("="):
-				        var key_value = argument.split("=")
-				        arguments[key_value[0].trim_prefix("--")] = key_value[1]
-				    else:
-				        # Options without an argument will be present in the dictionary,
-				        # with the value set to an empty string.
-				        arguments[argument.trim_prefix("--")] = ""
+					if argument.contains("="):
+						var key_value = argument.split("=")
+						arguments[key_value[0].trim_prefix("--")] = key_value[1]
+					else:
+						# Options without an argument will be present in the dictionary,
+						# with the value set to an empty string.
+						arguments[argument.trim_prefix("--")] = ""
 				[/gdscript]
 				[csharp]
 				var arguments = new Dictionary&lt;string, string&gt;();
 				foreach (var argument in OS.GetCmdlineArgs())
 				{
-				    if (argument.Contains('='))
-				    {
-				        string[] keyValue = argument.Split("=");
-				        arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
-				    }
-				    else
-				    {
-				        // Options without an argument will be present in the dictionary,
-				        // with the value set to an empty string.
-				        arguments[argument.TrimPrefix("--")] = "";
-				    }
+					if (argument.Contains('='))
+					{
+						string[] keyValue = argument.Split("=");
+						arguments[keyValue[0].TrimPrefix("--")] = keyValue[1];
+					}
+					else
+					{
+						// Options without an argument will be present in the dictionary,
+						// with the value set to an empty string.
+						arguments[argument.TrimPrefix("--")] = "";
+					}
 				}
 				[/csharp]
 				[/codeblocks]
@@ -302,6 +302,7 @@
 			<description>
 				On Android devices: Returns the list of dangerous permissions that have been granted.
 				On macOS: Returns the list of granted permissions and user selected folders accessible to the application (sandboxed applications only). Use the native file dialog to request folder access permission.
+				On iOS, visionOS: Returns the list of granted permissions.
 			</description>
 		</method>
 		<method name="get_keycode_string" qualifiers="const">
@@ -383,44 +384,44 @@
 				[codeblocks]
 				[gdscript]
 				match OS.get_name():
-				    "Windows":
-				        print("Welcome to Windows!")
-				    "macOS":
-				        print("Welcome to macOS!")
-				    "Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
-				        print("Welcome to Linux/BSD!")
-				    "Android":
-				        print("Welcome to Android!")
-				    "iOS":
-				        print("Welcome to iOS!")
-				    "Web":
-				        print("Welcome to the Web!")
+					"Windows":
+						print("Welcome to Windows!")
+					"macOS":
+						print("Welcome to macOS!")
+					"Linux", "FreeBSD", "NetBSD", "OpenBSD", "BSD":
+						print("Welcome to Linux/BSD!")
+					"Android":
+						print("Welcome to Android!")
+					"iOS":
+						print("Welcome to iOS!")
+					"Web":
+						print("Welcome to the Web!")
 				[/gdscript]
 				[csharp]
 				switch (OS.GetName())
 				{
-				    case "Windows":
-				        GD.Print("Welcome to Windows");
-				        break;
-				    case "macOS":
-				        GD.Print("Welcome to macOS!");
-				        break;
-				    case "Linux":
-				    case "FreeBSD":
-				    case "NetBSD":
-				    case "OpenBSD":
-				    case "BSD":
-				        GD.Print("Welcome to Linux/BSD!");
-				        break;
-				    case "Android":
-				        GD.Print("Welcome to Android!");
-				        break;
-				    case "iOS":
-				        GD.Print("Welcome to iOS!");
-				        break;
-				    case "Web":
-				        GD.Print("Welcome to the Web!");
-				        break;
+					case "Windows":
+						GD.Print("Welcome to Windows");
+						break;
+					case "macOS":
+						GD.Print("Welcome to macOS!");
+						break;
+					case "Linux":
+					case "FreeBSD":
+					case "NetBSD":
+					case "OpenBSD":
+					case "BSD":
+						GD.Print("Welcome to Linux/BSD!");
+						break;
+					case "Android":
+						GD.Print("Welcome to Android!");
+						break;
+					case "iOS":
+						GD.Print("Welcome to iOS!");
+						break;
+					case "Web":
+						GD.Print("Welcome to the Web!");
+						break;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -610,6 +611,25 @@
 				The first element holds the driver name, such as [code]nvidia[/code], [code]amdgpu[/code], etc.
 				The second element holds the driver version. For example, on the [code]nvidia[/code] driver on a Linux/BSD platform, the version is in the format [code]510.85.02[/code]. For Windows, the driver's format is [code]31.0.15.1659[/code].
 				[b]Note:[/b] This method is only supported on Linux/BSD and Windows when not running in headless mode. On other platforms, it returns an empty array.
+				[b]Note:[/b] This method will run slowly the first time it is called in a session; it can take several seconds depending on the operating system and hardware. It is blocking if called on the main thread, so it's recommended to call it on a separate thread using [Thread]. This allows the engine to keep running while the information is being retrieved. However, [method get_video_adapter_driver_info] is [i]not[/i] thread-safe, so it should not be called from multiple threads at the same time.
+				[codeblocks]
+				[gdscript]
+				var thread = Thread.new()
+
+				func _ready():
+					thread.start(
+						func():
+							var driver_info = OS.get_video_adapter_driver_info()
+							if not driver_info.is_empty():
+								print("Driver: %s %s" % [driver_info[0], driver_info[1]])
+							else:
+								print("Driver: (unknown)")
+					)
+
+				func _exit_tree():
+					thread.wait_to_finish()
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="has_environment" qualifiers="const">
@@ -730,6 +750,16 @@
 				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
 			</description>
 		</method>
+		<method name="open_with_program">
+			<return type="int" enum="Error" />
+			<param index="0" name="program_path" type="String" />
+			<param index="1" name="paths" type="PackedStringArray" />
+			<description>
+				Opens one or more files/directories with the specified application. The [param program_path] specifies the path to the application to use for opening the files, and [param paths] contains an array of file/directory paths to open.
+				[b]Note:[/b] This method is mostly only relevant for macOS, where opening files using [method create_process] might fail. On other platforms, this falls back to using [method create_process].
+				[b]Note:[/b] On macOS, [param program_path] should ideally be the path to a [code].app[/code] bundle.
+			</description>
+		</method>
 		<method name="read_buffer_from_stdin">
 			<return type="PackedByteArray" />
 			<param index="0" name="buffer_size" type="int" default="1024" />
@@ -771,8 +801,9 @@
 				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
 				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
 				- [code]OS.request_permission("macos.permission.RECORD_SCREEN")[/code]
+				- [code]OS.request_permission("appleembedded.permission.AUDIO_RECORD")[/code]
 				[b]Note:[/b] On Android, permission must be checked during export.
-				[b]Note:[/b] This method is implemented on Android and macOS.
+				[b]Note:[/b] This method is implemented on Android, macOS, and visionOS platforms.
 			</description>
 		</method>
 		<method name="request_permissions">

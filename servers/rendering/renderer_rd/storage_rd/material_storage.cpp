@@ -906,7 +906,15 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						E->value = global_textures_pass;
 					}
 
-					textures.push_back(v->override.get_type() != Variant::NIL ? v->override : v->value);
+					RID override_rid = v->override;
+					if (override_rid.is_valid()) {
+						textures.push_back(override_rid);
+					} else {
+						RID value_rid = v->value;
+						if (value_rid.is_valid()) {
+							textures.push_back(value_rid);
+						}
+					}
 				}
 
 			} else {
@@ -2227,7 +2235,8 @@ void MaterialStorage::material_free(RID p_rid) {
 	// This happens when the app is being closed.
 	for (KeyValue<StringName, Variant> &E : material->params) {
 		if (E.value.get_type() == Variant::ARRAY) {
-			Array(E.value).clear();
+			// Clear the array for this material only (the array may be shared).
+			E.value = Variant();
 		}
 	}
 

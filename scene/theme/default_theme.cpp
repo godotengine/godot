@@ -31,12 +31,12 @@
 #include "default_theme.h"
 
 #include "core/io/image.h"
+#include "scene/resources/dpi_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"
-#include "scene/resources/svg_texture.h"
 #include "scene/resources/theme.h"
 #include "scene/scene_string_names.h"
 #include "scene/theme/default_theme_icons.gen.h"
@@ -79,8 +79,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<SVGTexture> generate_icon(int p_index) {
-	return SVGTexture::create_from_string(default_theme_icons_sources[p_index], scale);
+static Ref<DPITexture> generate_icon(int p_index) {
+	return DPITexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
@@ -588,6 +588,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("center_grabber", "HSlider", 0);
 	theme->set_constant("grabber_offset", "HSlider", 0);
+	theme->set_constant("tick_offset", "HSlider", 0);
 
 	// VSlider
 
@@ -602,6 +603,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("center_grabber", "VSlider", 0);
 	theme->set_constant("grabber_offset", "VSlider", 0);
+	theme->set_constant("tick_offset", "VSlider", 0);
 
 	// SpinBox
 
@@ -683,6 +685,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
+	theme->set_constant("thumbnail_size", "FileDialog", 64);
 	theme->set_icon("load", "FileDialog", icons["load"]);
 	theme->set_icon("save", "FileDialog", icons["save"]);
 	theme->set_icon("clear", "FileDialog", icons["clear"]);
@@ -695,11 +698,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("toggle_filename_filter", "FileDialog", icons["toggle_filename_filter"]);
 	theme->set_icon("folder", "FileDialog", icons["folder"]);
 	theme->set_icon("file", "FileDialog", icons["file"]);
+	theme->set_icon("thumbnail_mode", "FileDialog", icons["file_mode_thumbnail"]);
+	theme->set_icon("list_mode", "FileDialog", icons["file_mode_list"]);
 	theme->set_icon("create_folder", "FileDialog", icons["folder_create"]);
 	theme->set_icon("sort", "FileDialog", icons["sort"]);
 	theme->set_icon("favorite_up", "FileDialog", icons["move_up"]);
 	theme->set_icon("favorite_down", "FileDialog", icons["move_down"]);
 
+	theme->set_icon("file_thumbnail", "FileDialog", icons["file_thumbnail"]);
+	theme->set_icon("folder_thumbnail", "FileDialog", icons["folder_thumbnail"]);
 	theme->set_color("folder_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_icon_color", "FileDialog", Color(1, 1, 1));
 	theme->set_color("file_disabled_color", "FileDialog", Color(1, 1, 1, 0.25));
@@ -1122,7 +1129,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	preset_sb->set_anti_aliased(false);
 
 	theme->set_stylebox("preset_fg", "ColorPresetButton", preset_sb);
-	theme->set_stylebox("preset_focus", "ColorPicker", focus);
+	theme->set_stylebox("preset_focus", "ColorPresetButton", focus);
 	theme->set_icon("preset_bg", "ColorPresetButton", icons["mini_checkerboard"]);
 	theme->set_icon("overbright_indicator", "ColorPresetButton", icons["color_picker_overbright"]);
 
@@ -1149,6 +1156,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "RichTextLabel", focus);
 	theme->set_stylebox(CoreStringName(normal), "RichTextLabel", make_empty_stylebox(0, 0, 0, 0));
 
+	Ref<Image> solid_img = Image::create_empty(2, 2, false, Image::FORMAT_RGBA8);
+	solid_img->fill(Color(1, 1, 1, 1));
+	Ref<Texture2D> solid_icon = ImageTexture::create_from_image(solid_img);
+
+	theme->set_icon("horizontal_rule", "RichTextLabel", solid_icon);
+
 	theme->set_font("normal_font", "RichTextLabel", Ref<Font>());
 	theme->set_font("bold_font", "RichTextLabel", bold_font);
 	theme->set_font("italics_font", "RichTextLabel", italics_font);
@@ -1173,6 +1186,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_outline_size", "RichTextLabel", Math::round(1 * scale));
 
 	theme->set_constant(SceneStringName(line_separation), "RichTextLabel", 0);
+	theme->set_constant(SceneStringName(paragraph_separation), "RichTextLabel", 0);
 	theme->set_constant("table_h_separation", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("table_v_separation", "RichTextLabel", Math::round(3 * scale));
 
@@ -1185,8 +1199,19 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("text_highlight_h_padding", "RichTextLabel", Math::round(3 * scale));
 	theme->set_constant("text_highlight_v_padding", "RichTextLabel", Math::round(3 * scale));
 
+	theme->set_constant("underline_alpha", "RichTextLabel", 50);
+	theme->set_constant("strikethrough_alpha", "RichTextLabel", 50);
+
 	// Containers
 
+	theme->set_color("touch_dragger_color", "SplitContainer", Color(1, 1, 1, 0.3));
+	theme->set_color("touch_dragger_pressed_color", "SplitContainer", Color(1, 1, 1, 1));
+	theme->set_color("touch_dragger_hover_color", "SplitContainer", Color(1, 1, 1, 0.6));
+
+	theme->set_icon("h_touch_dragger", "SplitContainer", icons["h_dragger"]);
+	theme->set_icon("v_touch_dragger", "SplitContainer", icons["v_dragger"]);
+	theme->set_icon("touch_dragger", "VSplitContainer", icons["v_dragger"]);
+	theme->set_icon("touch_dragger", "HSplitContainer", icons["h_dragger"]);
 	theme->set_icon("h_grabber", "SplitContainer", icons["hsplitter"]);
 	theme->set_icon("v_grabber", "SplitContainer", icons["vsplitter"]);
 	theme->set_icon("grabber", "VSplitContainer", icons["vsplitter"]);

@@ -46,7 +46,7 @@ layout(set = 1, binding = 2) uniform texture2D environment;
 #ifdef MODE_UNOCCLUDE
 
 layout(rgba32f, set = 1, binding = 0) uniform restrict image2DArray position;
-layout(rgba32f, set = 1, binding = 1) uniform restrict readonly image2DArray unocclude;
+layout(rgba32f, set = 1, binding = 1) uniform restrict image2DArray unocclude;
 
 #endif
 
@@ -73,7 +73,8 @@ layout(set = 1, binding = 1) uniform texture2DArray source_light;
 
 #ifdef MODE_DENOISE
 layout(set = 1, binding = 2) uniform texture2DArray source_normal;
-layout(set = 1, binding = 3) uniform DenoiseParams {
+layout(set = 1, binding = 3) uniform texture2DArray unocclude_mask;
+layout(set = 1, binding = 4) uniform DenoiseParams {
 	float spatial_bandwidth;
 	float light_bandwidth;
 	float albedo_bandwidth;
@@ -93,6 +94,7 @@ layout(push_constant, std430) uniform Params {
 
 	ivec2 region_ofs;
 	uint probe_count;
+	uint denoiser_range;
 }
 params;
 
@@ -861,16 +863,32 @@ void main() {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
-			// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
-			// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
-			// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
-			// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+			// For L0, light needs to be attenuated by dot(normal, light_dir) else it is oversaturated when sampled later.
+			// For L1, light can't be attenuated by dot(normal, light_dir) since when sampling later, the dot product is done.
+			// The output of trace_direct_light() is already attenuated by dot(normal, light_dir).
+			// So L0 and L1 has the following relationship: L1 = L0 / dot(normal, light_dir).
 
+			// For L1 packing to work, there needs to be a defined ratio (4) between L0 and L1 values.
+			// This ratio is achieved with two coefficients c_l0 and c_l1, and ensuring that
+			// 4 = (c_l0 * LO) / (c_l1 * L1)
+
+			// For direct lights to look right, its effective "energy" needs to be 1 since it is not being integrated
+			// unlike indirect lighting.
+			// This binds c_l0 and c_l1 to the following relationship: 1 = c_l0 + c_l1
+
+			float attenuation = dot(normal, light_dir);
+
+			if (attenuation <= 0.0001) {
+				continue;
+			}
+
+			float c_l0 = 1 / (1 + 4 * attenuation);
+			float c_l1 = 1 - c_l0;
 			float c[4] = float[](
-					0.25, //l0
-					light_dir.y, //l1n1
-					light_dir.z, //l1n0
-					light_dir.x //l1p1
+					c_l0, //l0
+					c_l1 / attenuation * light_dir.y, //l1n1
+					c_l1 / attenuation * light_dir.z, //l1n0
+					c_l1 / attenuation * light_dir.x //l1p1
 			);
 
 			for (uint j = 0; j < 4; j++) {
@@ -995,13 +1013,16 @@ void main() {
 
 	vec3 rays[4] = vec3[](tangent, bitangent, -tangent, -bitangent);
 	float min_d = 1e20;
+	float unocclude_mask = 0.0;
+
 	for (int i = 0; i < 4; i++) {
-		vec3 ray_to = base_pos + rays[i] * texel_size;
+		vec3 ray_to = base_pos + rays[i] * texel_size * params.denoiser_range;
 		float d;
 		vec3 norm;
 
 		if (trace_ray_closest_hit_distance(base_pos, ray_to, d, norm) == RAY_BACK) {
-			if (d < min_d) {
+			unocclude_mask = 1.0;
+			if (d <= texel_size && d < min_d) {
 				// This bias needs to be greater than the regular bias, because otherwise later, rays will go the other side when pointing back.
 				vertex_pos = base_pos + rays[i] * d + norm * bake_params.bias * 10.0;
 				min_d = d;
@@ -1012,6 +1033,7 @@ void main() {
 	position_alpha.xyz = vertex_pos;
 
 	imageStore(position, ivec3(atlas_pos, params.atlas_slice), position_alpha);
+	imageStore(unocclude, ivec3(atlas_pos, params.atlas_slice), vec4(unocclude_mask, 0, 0, 0));
 
 #endif
 
@@ -1195,6 +1217,7 @@ void main() {
 					vec3 search_rgb = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(search_pos, lightmap_slice), 0).rgb;
 					vec3 search_albedo = texelFetch(sampler2DArray(albedo_tex, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).rgb;
 					vec3 search_normal = texelFetch(sampler2DArray(source_normal, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).xyz;
+					float search_occlusion = texelFetch(sampler2DArray(unocclude_mask, linear_sampler), ivec3(search_pos, params.atlas_slice), 0).r;
 					float patch_square_dist = 0.0f;
 					for (int offset_y = -HALF_PATCH_WINDOW; offset_y <= HALF_PATCH_WINDOW; offset_y++) {
 						for (int offset_x = -HALF_PATCH_WINDOW; offset_x <= HALF_PATCH_WINDOW; offset_x++) {
@@ -1236,12 +1259,16 @@ void main() {
 					float normal_square_dist = dot(normal_delta, normal_delta);
 					weight *= exp(-normal_square_dist / TWO_SIGMA_NORMAL_SQUARE);
 
+					// Weight with occlusion.
+					weight *= 1.0 - search_occlusion;
+
 					denoised_rgb += weight * search_rgb;
 					sum_weights += weight;
 				}
 			}
 
-			denoised_rgb /= sum_weights;
+			// Avoid division by zero if no weights were accumulated.
+			denoised_rgb = sum_weights > EPSILON ? denoised_rgb / sum_weights : input_rgb;
 		} else {
 			// Ignore pixels where the normal is empty, just copy the light color.
 			denoised_rgb = input_light.rgb;

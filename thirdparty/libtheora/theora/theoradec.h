@@ -6,20 +6,19 @@
  * IN 'COPYING'. PLEASE READ THESE TERMS BEFORE DISTRIBUTING.       *
  *                                                                  *
  * THE Theora SOURCE CODE IS COPYRIGHT (C) 2002-2009                *
- * by the Xiph.Org Foundation http://www.xiph.org/                  *
+ * by the Xiph.Org Foundation https://www.xiph.org/                 *
  *                                                                  *
  ********************************************************************
 
   function:
-  last mod: $Id: theora.h,v 1.8 2004/03/15 22:17:32 derf Exp $
 
  ********************************************************************/
 
 /**\file
  * The <tt>libtheoradec</tt> C decoding API.*/
 
-#if !defined(_O_THEORA_THEORADEC_H_)
-# define _O_THEORA_THEORADEC_H_ (1)
+#if !defined(OGG_THEORA_THEORADEC_HEADER)
+# define OGG_THEORA_THEORADEC_HEADER (1)
 # include <stddef.h>
 # include <ogg/ogg.h>
 # include "codec.h"
@@ -330,4 +329,4 @@ extern void th_decode_free(th_dec_ctx *_dec);
 }
 #endif
 
-#endif
+#endif /* OGG_THEORA_THEORADEC_HEADER */

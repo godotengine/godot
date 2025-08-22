@@ -2950,6 +2950,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 			Vector3i probe_size = gi->voxel_gi_get_octree_size(probe);
 
+			Vector3 ps = probe_size / gi->voxel_gi_get_bounds(probe).size;
+			float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space
+
 			VoxelGIPushConstant push_constant;
 
 			push_constant.limits[0] = probe_size.x;
@@ -2961,6 +2964,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			push_constant.dynamic_range = gi->voxel_gi_get_dynamic_range(probe);
 			push_constant.light_count = light_count;
 			push_constant.aniso_strength = 0;
+			push_constant.cell_size = cell_size;
 
 			/*		print_line("probe update to version " + itos(last_probe_version));
 			print_line("propagation " + rtos(push_constant.propagation));
@@ -3130,6 +3134,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 				RendererSceneRenderRD::get_singleton()->_render_material(to_world_xform * xform, cm, true, RendererSceneRenderRD::get_singleton()->cull_argument, dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size), exposure_normalization);
 
+				Vector3 ps = octree_size / gi->voxel_gi_get_bounds(probe).size;
+				float cell_size = (1.0 / MAX(MAX(ps.x, ps.y), ps.z)); // probe size relative to 1 unit in world space
+
 				VoxelGIDynamicPushConstant push_constant;
 				memset(&push_constant, 0, sizeof(VoxelGIDynamicPushConstant));
 				push_constant.limits[0] = octree_size.x;
@@ -3161,9 +3168,9 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 				push_constant.prev_rect_size[1] = 0;
 				push_constant.on_mipmap = false;
 				push_constant.propagation = gi->voxel_gi_get_propagation(probe);
+				push_constant.cell_size = cell_size;
 				push_constant.pad[0] = 0;
 				push_constant.pad[1] = 0;
-				push_constant.pad[2] = 0;
 
 				//process lighting
 				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();

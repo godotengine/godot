@@ -130,7 +130,7 @@ struct CursivePosFormat1
 	unlikely (!this_record.entryAnchor.sanitize (&c->sanitizer, this))) return_trace (false);
     hb_barrier ();
 
-    hb_ot_apply_context_t::skipping_iterator_t &skippy_iter = c->iter_input;
+    auto &skippy_iter = c->iter_input;
     skippy_iter.reset_fast (buffer->idx);
     unsigned unsafe_from;
     if (unlikely (!skippy_iter.prev (&unsafe_from)))

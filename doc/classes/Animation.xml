@@ -674,7 +674,7 @@
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="mode" type="int" enum="Animation.UpdateMode" />
 			<description>
-				Sets the update mode (see [enum UpdateMode]) of a value track.
+				Sets the update mode of a value track.
 			</description>
 		</method>
 	</methods>
@@ -687,7 +687,7 @@
 			[b]Note:[/b] Length is not delimited by the last key, as this one may be before or after the end to ensure correct interpolation and looping.
 		</member>
 		<member name="loop_mode" type="int" setter="set_loop_mode" getter="get_loop_mode" enum="Animation.LoopMode" default="0">
-			Determines the behavior of both ends of the animation timeline during animation playback. This is used for correct interpolation of animation cycles, and for hinting the player that it must restart the animation.
+			Determines the behavior of both ends of the animation timeline during animation playback. This indicates whether and how the animation should be restarted, and is also used to correctly interpolate animation cycles.
 		</member>
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.033333335">
 			The animation step value.

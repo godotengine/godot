@@ -36,7 +36,7 @@
 	</methods>
 	<members>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamWAV.Format" default="1">
-			Specifies the format in which the sample will be recorded. See [enum AudioStreamWAV.Format] for available formats.
+			Specifies the format in which the sample will be recorded.
 		</member>
 	</members>
 </class>

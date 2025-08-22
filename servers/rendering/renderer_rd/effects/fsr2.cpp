@@ -518,7 +518,7 @@ FSR2Effect::FSR2Effect() {
 	capabilities.minimumSupportedShaderModel = FFX_SHADER_MODEL_5_1;
 	capabilities.waveLaneCountMin = 32;
 	capabilities.waveLaneCountMax = 32;
-	capabilities.fp16Supported = RD::get_singleton()->has_feature(RD::Features::SUPPORTS_FSR_HALF_FLOAT);
+	capabilities.fp16Supported = RD::get_singleton()->has_feature(RD::Features::SUPPORTS_HALF_FLOAT);
 	capabilities.raytracingSupported = false;
 
 	String general_defines =

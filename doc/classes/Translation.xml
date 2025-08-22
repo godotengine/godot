@@ -8,6 +8,7 @@
 	</description>
 	<tutorials>
 		<link title="Internationalizing games">$DOCS_URL/tutorials/i18n/internationalizing_games.html</link>
+		<link title="Localization using gettext">$DOCS_URL/tutorials/i18n/localization_using_gettext.html</link>
 		<link title="Locales">$DOCS_URL/tutorials/i18n/locales.html</link>
 	</tutorials>
 	<methods>
@@ -47,6 +48,7 @@
 			<description>
 				Adds a message involving plural translation if nonexistent, followed by its translation.
 				An additional context could be used to specify the translation context or differentiate polysemic words.
+				[b]Note:[/b] Plurals are only supported in [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]gettext-based translations (PO)[/url], not CSV.
 			</description>
 		</method>
 		<method name="erase_message">
@@ -86,6 +88,7 @@
 			<description>
 				Returns a message's translation involving plurals.
 				The number [param n] is the number or quantity of the plural object. It will be used to guide the translation system to fetch the correct plural form for the selected language.
+				[b]Note:[/b] Plurals are only supported in [url=$DOCS_URL/tutorials/i18n/localization_using_gettext.html]gettext-based translations (PO)[/url], not CSV.
 			</description>
 		</method>
 		<method name="get_translated_message_list" qualifiers="const">

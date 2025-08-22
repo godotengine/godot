@@ -109,9 +109,9 @@
 				[codeblocks]
 				[gdscript]
 				var my_transform = Transform2D(
-				    Vector2(2, 0),
-				    Vector2(0, 4),
-				    Vector2(0, 0)
+					Vector2(2, 0),
+					Vector2(0, 4),
+					Vector2(0, 0)
 				)
 				# Rotating the Transform2D in any way preserves its scale.
 				my_transform = my_transform.rotated(TAU / 2)
@@ -120,9 +120,9 @@
 				[/gdscript]
 				[csharp]
 				var myTransform = new Transform2D(
-				    Vector3(2.0f, 0.0f),
-				    Vector3(0.0f, 4.0f),
-				    Vector3(0.0f, 0.0f)
+					Vector3(2.0f, 0.0f),
+					Vector3(0.0f, 4.0f),
+					Vector3(0.0f, 0.0f)
 				);
 				// Rotating the Transform2D in any way preserves its scale.
 				myTransform = myTransform.Rotated(Mathf.Tau / 2.0f);

@@ -102,11 +102,30 @@ class NavMap2D : public NavRid2D {
 	Nav2D::PerformanceData performance_data;
 
 	struct {
-		SelfList<NavRegion2D>::List regions;
-		SelfList<NavLink2D>::List links;
-		SelfList<NavAgent2D>::List agents;
-		SelfList<NavObstacle2D>::List obstacles;
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion2D>::List list;
+		} regions;
+		struct {
+			RWLock rwlock;
+			SelfList<NavLink2D>::List list;
+		} links;
+		struct {
+			RWLock rwlock;
+			SelfList<NavAgent2D>::List list;
+		} agents;
+		struct {
+			RWLock rwlock;
+			SelfList<NavObstacle2D>::List list;
+		} obstacles;
 	} sync_dirty_requests;
+
+	struct {
+		struct {
+			RWLock rwlock;
+			SelfList<NavRegion2D>::List list;
+		} regions;
+	} async_dirty_requests;
 
 	int path_query_slots_max = 4;
 
@@ -117,7 +136,6 @@ class NavMap2D : public NavRid2D {
 	mutable RWLock iteration_slot_rwlock;
 
 	NavMapIterationBuild2D iteration_build;
-	bool iteration_build_use_threads = false;
 	WorkerThreadPool::TaskID iteration_build_thread_task_id = WorkerThreadPool::INVALID_TASK_ID;
 	static void _build_iteration_threaded(void *p_arg);
 
@@ -160,7 +178,7 @@ public:
 	}
 
 	Nav2D::PointKey get_point_key(const Vector2 &p_pos) const;
-	Vector2 get_merge_rasterizer_cell_size() const;
+	const Vector2 &get_merge_rasterizer_cell_size() const;
 
 	void query_path(NavMeshQueries2D::NavMeshPathQueryTask2D &p_query_task);
 
@@ -218,6 +236,9 @@ public:
 	Vector2 get_region_connection_pathway_start(NavRegion2D *p_region, int p_connection_id) const;
 	Vector2 get_region_connection_pathway_end(NavRegion2D *p_region, int p_connection_id) const;
 
+	void add_region_async_thread_join_request(SelfList<NavRegion2D> *p_async_request);
+	void remove_region_async_thread_join_request(SelfList<NavRegion2D> *p_async_request);
+
 	void add_region_sync_dirty_request(SelfList<NavRegion2D> *p_sync_request);
 	void add_link_sync_dirty_request(SelfList<NavLink2D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent2D> *p_sync_request);
@@ -234,6 +255,7 @@ public:
 private:
 	void _sync_dirty_map_update_requests();
 	void _sync_dirty_avoidance_update_requests();
+	void _sync_async_tasks();
 
 	void compute_single_step(uint32_t p_index, NavAgent2D **p_agent);
 

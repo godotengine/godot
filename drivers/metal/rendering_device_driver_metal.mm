@@ -58,6 +58,7 @@
 #include "core/io/marshalls.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
+#include "drivers/apple/foundation_helpers.h"
 
 #import <Metal/MTLTexture.h>
 #import <Metal/Metal.h>
@@ -317,12 +318,6 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		desc.usage |= MTLTextureUsageShaderWrite;
 	}
 
-	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
-		if (format_caps & kMTLFmtCapsAtomic) {
-			desc.usage |= MTLTextureUsageShaderAtomic;
-		}
-	}
-
 	bool can_be_attachment = flags::any(format_caps, (kMTLFmtCapsColorAtt | kMTLFmtCapsDSAtt));
 
 	if (flags::any(p_format.usage_bits, TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) &&
@@ -332,6 +327,15 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 
 	if (p_format.usage_bits & TEXTURE_USAGE_INPUT_ATTACHMENT_BIT) {
 		desc.usage |= MTLTextureUsageShaderRead;
+	}
+
+	if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT) {
+		ERR_FAIL_COND_V_MSG((format_caps & kMTLFmtCapsAtomic) == 0, RDD::TextureID(), "Atomic operations on this texture format are not supported.");
+		ERR_FAIL_COND_V_MSG(!device_properties->features.supports_native_image_atomics, RDD::TextureID(), "Atomic operations on textures are not supported on this OS version. Check SUPPORTS_IMAGE_ATOMIC_32_BIT.");
+		// If supports_native_image_atomics is true, this condition should always succeed, as it is set the same.
+		if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+			desc.usage |= MTLTextureUsageShaderAtomic;
+		}
 	}
 
 	if (p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) {
@@ -361,12 +365,8 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		is_linear = std::get<bool>(is_linear_or_err);
 	}
 
-	// Check if it is a linear format for atomic operations and therefore needs a buffer,
-	// as generally Metal does not support atomic operations on textures.
-	bool needs_buffer = is_linear || (p_format.array_layers == 1 && p_format.mipmaps == 1 && p_format.texture_type == TEXTURE_TYPE_2D && flags::any(p_format.usage_bits, TEXTURE_USAGE_STORAGE_BIT) && (p_format.format == DATA_FORMAT_R32_UINT || p_format.format == DATA_FORMAT_R32_SINT || p_format.format == DATA_FORMAT_R32G32_UINT || p_format.format == DATA_FORMAT_R32G32_SINT));
-
 	id<MTLTexture> obj = nil;
-	if (needs_buffer) {
+	if (is_linear) {
 		// Linear textures are restricted to 2D textures, a single mipmap level and a single array layer.
 		MTLPixelFormat pixel_format = desc.pixelFormat;
 		size_t row_alignment = get_texel_buffer_alignment_for_format(p_format.format);
@@ -900,9 +900,15 @@ Error RenderingDeviceDriverMetal::command_queue_execute_and_present(CommandQueue
 	MDCommandBuffer *cmd_buffer = (MDCommandBuffer *)(p_cmd_buffers[size - 1].id);
 	Fence *fence = (Fence *)(p_cmd_fence.id);
 	if (fence != nullptr) {
-		[cmd_buffer->get_command_buffer() addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+		id<MTLCommandBuffer> cb = cmd_buffer->get_command_buffer();
+		if (cb == nil) {
+			// If there is nothing to do, signal the fence immediately.
 			dispatch_semaphore_signal(fence->semaphore);
-		}];
+		} else {
+			[cb addCompletedHandler:^(id<MTLCommandBuffer> buffer) {
+				dispatch_semaphore_signal(fence->semaphore);
+			}];
+		}
 	}
 
 	for (uint32_t i = 0; i < p_swap_chains.size(); i++) {
@@ -1730,8 +1736,7 @@ void RenderingDeviceDriverMetal::pipeline_free(PipelineID p_pipeline_id) {
 
 void RenderingDeviceDriverMetal::command_bind_push_constants(CommandBufferID p_cmd_buffer, ShaderID p_shader, uint32_t p_dst_first_index, VectorView<uint32_t> p_data) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
-	MDShader *shader = (MDShader *)(p_shader.id);
-	shader->encode_push_constant_data(p_data, cb);
+	cb->encode_push_constant_data(p_shader, p_data);
 }
 
 // ----- CACHE -----
@@ -2417,6 +2422,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::compute_pipeline_create(ShaderID p_s
 
 	MTLComputePipelineDescriptor *desc = [MTLComputePipelineDescriptor new];
 	desc.computeFunction = function;
+	desc.label = conv::to_nsstring(shader->name);
 	if (archive) {
 		desc.binaryArchives = @[ archive ];
 	}
@@ -2725,7 +2731,7 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_FSR_HALF_FLOAT:
+		case SUPPORTS_HALF_FLOAT:
 			return true;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
@@ -2735,6 +2741,10 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return device_properties->features.metal_fx_spatial;
 		case SUPPORTS_METALFX_TEMPORAL:
 			return device_properties->features.metal_fx_temporal;
+		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
+			return device_properties->features.supports_native_image_atomics;
+		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return true;
 		default:
 			return false;
 	}

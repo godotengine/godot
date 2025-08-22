@@ -228,6 +228,10 @@ private:
 	float zoom_min = 0.0;
 	float zoom_max = 0.0;
 
+	Vector2 min_scroll_offset;
+	Vector2 max_scroll_offset;
+	Vector2 scroll_offset;
+
 	bool box_selecting = false;
 	bool box_selection_mode_additive = false;
 	Point2 box_selecting_from;
@@ -318,6 +322,7 @@ private:
 
 	void _graph_element_selected(Node *p_node);
 	void _graph_element_deselected(Node *p_node);
+	void _graph_element_visibility_changed(GraphElement *p_graph_element);
 	void _graph_element_resize_request(const Vector2 &p_new_minsize, Node *p_node);
 	void _graph_frame_autoshrink_changed(const Vector2 &p_new_minsize, GraphFrame *p_frame);
 	void _graph_element_moved(Node *p_node);
@@ -327,9 +332,9 @@ private:
 	void _ensure_node_order_from_root(const StringName &p_node);
 	void _ensure_node_order_from(Node *p_node);
 
-	void _update_scroll();
+	void _update_scrollbars();
 	void _update_scroll_offset();
-	void _scroll_moved(double);
+	void _scrollbar_moved(double);
 	virtual void gui_input(const Ref<InputEvent> &p_ev) override;
 	void _top_connection_layer_input(const Ref<InputEvent> &p_ev);
 

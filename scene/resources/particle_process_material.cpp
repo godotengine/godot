@@ -1924,15 +1924,18 @@ void ParticleProcessMaterial::_validate_property(PropertyInfo &p_property) const
 	if ((p_property.name == "directional_velocity_min" || p_property.name == "directional_velocity_max") && !tex_parameters[PARAM_DIRECTIONAL_VELOCITY].is_valid()) {
 		p_property.usage = PROPERTY_USAGE_NONE;
 	}
-	if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
-	if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
-	}
 
-	if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
-		p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if ((p_property.name == "scale_over_velocity_min" || p_property.name == "scale_over_velocity_max") && !tex_parameters[PARAM_SCALE_OVER_VELOCITY].is_valid()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+		if ((p_property.name == "orbit_velocity_min" || p_property.name == "orbit_velocity_max") && (!tex_parameters[PARAM_ORBIT_VELOCITY].is_valid() && !particle_flags[PARTICLE_FLAG_DISABLE_Z])) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+
+		if (p_property.usage & PROPERTY_USAGE_EDITOR && (p_property.name.ends_with("_min") || p_property.name.ends_with("_max"))) {
+			p_property.usage &= ~PROPERTY_USAGE_EDITOR;
+		}
 	}
 }
 
@@ -2283,7 +2286,7 @@ void ParticleProcessMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_ANIM_OFFSET);
 
 	ADD_GROUP("Turbulence", "turbulence_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_turbulence_enabled", "get_turbulence_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "turbulence_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_turbulence_enabled", "get_turbulence_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_strength", PROPERTY_HINT_RANGE, "0,20,0.01"), "set_turbulence_noise_strength", "get_turbulence_noise_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "turbulence_noise_scale", PROPERTY_HINT_RANGE, "0,10,0.001,or_greater"), "set_turbulence_noise_scale", "get_turbulence_noise_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "turbulence_noise_speed"), "set_turbulence_noise_speed", "get_turbulence_noise_speed");

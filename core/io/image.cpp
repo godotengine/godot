@@ -801,13 +801,13 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 	for (uint32_t y = 0; y < p_dst_height; y++) {
 		// Y coordinates
-		oy = (double)y * yfac - 0.5f;
+		oy = (double)(y + 0.5) * yfac - 0.5;
 		oy1 = (int)oy;
 		dy = oy - (double)oy1;
 
 		for (uint32_t x = 0; x < p_dst_width; x++) {
 			// X coordinates
-			ox = (double)x * xfac - 0.5f;
+			ox = (double)(x + 0.5) * xfac - 0.5;
 			ox1 = (int)ox;
 			dx = ox - (double)ox1;
 
@@ -815,10 +815,7 @@ static void _scale_cubic(const uint8_t *__restrict p_src, uint8_t *__restrict p_
 
 			T *__restrict dst = ((T *)p_dst) + (y * p_dst_width + x) * CC;
 
-			double color[CC];
-			for (int i = 0; i < CC; i++) {
-				color[i] = 0;
-			}
+			double color[CC] = {};
 
 			for (int n = -1; n < 3; n++) {
 				// get Y coefficient
@@ -961,11 +958,11 @@ static void _scale_bilinear(const uint8_t *__restrict p_src, uint8_t *__restrict
 template <int CC, typename T>
 static void _scale_nearest(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, uint32_t p_src_width, uint32_t p_src_height, uint32_t p_dst_width, uint32_t p_dst_height) {
 	for (uint32_t i = 0; i < p_dst_height; i++) {
-		uint32_t src_yofs = i * p_src_height / p_dst_height;
+		uint32_t src_yofs = (i + 0.5) * p_src_height / p_dst_height;
 		uint32_t y_ofs = src_yofs * p_src_width * CC;
 
 		for (uint32_t j = 0; j < p_dst_width; j++) {
-			uint32_t src_xofs = j * p_src_width / p_dst_width;
+			uint32_t src_xofs = (j + 0.5) * p_src_width / p_dst_width;
 			src_xofs *= CC;
 
 			for (uint32_t l = 0; l < CC; l++) {
@@ -2451,22 +2448,22 @@ bool Image::is_invisible() const {
 		} break;
 		case FORMAT_RGBAH: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 8;
 			const uint16_t *pixeldata = reinterpret_cast<const uint16_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFF) != 0) {
 					return false;
 				}
 			}
 		} break;
 		case FORMAT_RGBAF: {
 			// The alpha mask accounts for the sign bit.
-			const int pixel_count = len / 4;
+			const int pixel_count = len / 16;
 			const uint32_t *pixeldata = reinterpret_cast<const uint32_t *>(data.ptr());
 
-			for (int i = 0; i < pixel_count; i += 4) {
-				if ((pixeldata[i + 3] & 0x7FFFFFFF) != 0) {
+			for (int i = 0; i < pixel_count; i++) {
+				if ((pixeldata[i * 4 + 3] & 0x7FFFFFFF) != 0) {
 					return false;
 				}
 			}
@@ -3203,9 +3200,9 @@ Color Image::_get_color_at_ofs(const uint8_t *ptr, uint32_t ofs) const {
 		}
 		case FORMAT_RGB565: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
-			float r = (u & 0x1F) / 31.0;
+			float r = ((u >> 11) & 0x1F) / 31.0;
 			float g = ((u >> 5) & 0x3F) / 63.0;
-			float b = ((u >> 11) & 0x1F) / 31.0;
+			float b = (u & 0x1F) / 31.0;
 			return Color(r, g, b, 1.0);
 		}
 		case FORMAT_RF: {
@@ -3302,9 +3299,9 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 		case FORMAT_RGB565: {
 			uint16_t rgba = 0;
 
-			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
+			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31)) << 11;
 			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 63)) << 5;
-			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 11;
+			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31));
 
 			((uint16_t *)ptr)[ofs] = rgba;
 		} break;

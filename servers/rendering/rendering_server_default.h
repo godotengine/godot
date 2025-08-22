@@ -109,6 +109,9 @@ public:
 #endif
 
 #define WRITE_ACTION redraw_request();
+#define ASYNC_COND_PUSH (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_RET (Thread::get_caller_id() != server_thread)
+#define ASYNC_COND_PUSH_AND_SYNC (Thread::get_caller_id() != server_thread)
 
 #ifdef DEBUG_SYNC
 #define SYNC_DEBUG print_line("sync on: " + String(__FUNCTION__));
@@ -366,6 +369,7 @@ public:
 	FUNC4(mesh_surface_update_vertex_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_attribute_region, RID, int, int, const Vector<uint8_t> &)
 	FUNC4(mesh_surface_update_skin_region, RID, int, int, const Vector<uint8_t> &)
+	FUNC4(mesh_surface_update_index_region, RID, int, int, const Vector<uint8_t> &)
 
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)

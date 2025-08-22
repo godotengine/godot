@@ -33,8 +33,8 @@
 #include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
-#include "editor/editor_folding.h"
 #include "editor/plugins/editor_plugin.h"
+#include "editor/settings/editor_folding.h"
 
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
@@ -54,6 +54,7 @@ class PanelContainer;
 class RichTextLabel;
 class SubViewport;
 class TextureProgressBar;
+class Translation;
 class Tree;
 class VBoxContainer;
 class VSplitContainer;
@@ -375,6 +376,7 @@ private:
 	Node *_last_instantiated_scene = nullptr;
 
 	ConfirmationDialog *confirmation = nullptr;
+	bool stop_project_confirmation = false;
 	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
@@ -449,11 +451,14 @@ private:
 	bool immediate_dialog_confirmed = false;
 	bool restoring_scenes = false;
 	bool settings_overrides_changed = false;
-	bool unsaved_cache = true;
+	bool unsaved_cache = false;
 
 	bool requested_first_scan = false;
 	bool waiting_for_first_scan = true;
 	bool load_editor_layout_done = false;
+
+	HashSet<Ref<Translation>> tracked_translations;
+	bool pending_translation_notification = false;
 
 	int current_menu_option = 0;
 
@@ -548,7 +553,8 @@ private:
 
 	void _request_screenshot();
 	void _screenshot(bool p_use_utc = false);
-	void _save_screenshot(NodePath p_path);
+	void _save_screenshot(const String &p_path);
+	void _save_screenshot_with_embedded_process(int64_t p_w, int64_t p_h, const String &p_emb_path, const Rect2i &p_rect, const String &p_path);
 
 	void _check_system_theme_changed();
 
@@ -593,6 +599,7 @@ private:
 	void _discard_changes(const String &p_str = String());
 	void _scene_tab_closed(int p_tab);
 	void _cancel_close_scene_tab();
+	void _cancel_confirmation();
 
 	void _prepare_save_confirmation_popup();
 
@@ -618,6 +625,9 @@ private:
 	void _update_from_settings();
 	void _gdextensions_reloaded();
 	void _update_translations();
+	void _translation_resources_changed();
+	void _queue_translation_notification();
+	void _propagate_translation_notification();
 
 	void _renderer_selected(int);
 	void _update_renderer_color();
@@ -763,6 +773,7 @@ public:
 
 	static bool immediate_confirmation_dialog(const String &p_text, const String &p_ok_text = TTR("Ok"), const String &p_cancel_text = TTR("Cancel"), uint32_t p_wrap_width = 0);
 
+	static bool is_cmdline_mode();
 	static void cleanup();
 
 	EditorPluginList *get_editor_plugins_force_input_forwarding() { return editor_plugins_force_input_forwarding; }

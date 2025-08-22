@@ -68,7 +68,7 @@ Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, const Stri
 }
 
 String PacketPeerUDP::_get_packet_ip() const {
-	return get_packet_address();
+	return String(get_packet_address());
 }
 
 Error PacketPeerUDP::_set_dest_address(const String &p_address, int p_port) {

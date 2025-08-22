@@ -73,6 +73,7 @@ void EmbeddedDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["mouse_set_mode"] = &EmbeddedDebugger::_msg_mouse_set_mode;
 	parse_message_handlers["event"] = &EmbeddedDebugger::_msg_event;
 	parse_message_handlers["win_event"] = &EmbeddedDebugger::_msg_win_event;
+	parse_message_handlers["notification"] = &EmbeddedDebugger::_msg_notification;
 	parse_message_handlers["ime_update"] = &EmbeddedDebugger::_msg_ime_update;
 	parse_message_handlers["joy_add"] = &EmbeddedDebugger::_msg_joy_add;
 	parse_message_handlers["joy_del"] = &EmbeddedDebugger::_msg_joy_del;
@@ -148,6 +149,15 @@ Error EmbeddedDebugger::_msg_ime_update(const Array &p_args) {
 	String ime_text = p_args[0];
 	Vector2i ime_selection = p_args[1];
 	ds->update_im_text(ime_selection, ime_text);
+	return OK;
+}
+
+Error EmbeddedDebugger::_msg_notification(const Array &p_args) {
+	ERR_FAIL_COND_V_MSG(p_args.size() != 1, ERR_INVALID_PARAMETER, "Invalid number of arguments for 'notification' message.");
+	int notification = p_args[0];
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(notification);
+	}
 	return OK;
 }
 

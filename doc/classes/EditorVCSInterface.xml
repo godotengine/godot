@@ -10,28 +10,28 @@
 		<link title="Version control systems">$DOCS_URL/tutorials/best_practices/version_control_systems.html</link>
 	</tutorials>
 	<methods>
-		<method name="_checkout_branch" qualifiers="virtual">
+		<method name="_checkout_branch" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="branch_name" type="String" />
 			<description>
 				Checks out a [param branch_name] in the VCS.
 			</description>
 		</method>
-		<method name="_commit" qualifiers="virtual">
+		<method name="_commit" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="msg" type="String" />
 			<description>
 				Commits the currently staged changes and applies the commit [param msg] to the resulting commit.
 			</description>
 		</method>
-		<method name="_create_branch" qualifiers="virtual">
+		<method name="_create_branch" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="branch_name" type="String" />
 			<description>
 				Creates a new branch named [param branch_name] in the VCS.
 			</description>
 		</method>
-		<method name="_create_remote" qualifiers="virtual">
+		<method name="_create_remote" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="remote_name" type="String" />
 			<param index="1" name="remote_url" type="String" />
@@ -39,33 +39,33 @@
 				Creates a new remote destination with name [param remote_name] and points it to [param remote_url]. This can be an HTTPS remote or an SSH remote.
 			</description>
 		</method>
-		<method name="_discard_file" qualifiers="virtual">
+		<method name="_discard_file" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="file_path" type="String" />
 			<description>
 				Discards the changes made in a file present at [param file_path].
 			</description>
 		</method>
-		<method name="_fetch" qualifiers="virtual">
+		<method name="_fetch" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="remote" type="String" />
 			<description>
 				Fetches new changes from the [param remote], but doesn't write changes to the current working directory. Equivalent to [code]git fetch[/code].
 			</description>
 		</method>
-		<method name="_get_branch_list" qualifiers="virtual">
+		<method name="_get_branch_list" qualifiers="virtual required">
 			<return type="String[]" />
 			<description>
 				Gets an instance of an [Array] of [String]s containing available branch names in the VCS.
 			</description>
 		</method>
-		<method name="_get_current_branch_name" qualifiers="virtual">
+		<method name="_get_current_branch_name" qualifiers="virtual required">
 			<return type="String" />
 			<description>
 				Gets the current branch name defined in the VCS.
 			</description>
 		</method>
-		<method name="_get_diff" qualifiers="virtual">
+		<method name="_get_diff" qualifiers="virtual required">
 			<return type="Dictionary[]" />
 			<param index="0" name="identifier" type="String" />
 			<param index="1" name="area" type="int" />
@@ -73,7 +73,7 @@
 				Returns an array of [Dictionary] items (see [method create_diff_file], [method create_diff_hunk], [method create_diff_line], [method add_line_diffs_into_diff_hunk] and [method add_diff_hunks_into_diff_file]), each containing information about a diff. If [param identifier] is a file path, returns a file diff, and if it is a commit identifier, then returns a commit diff.
 			</description>
 		</method>
-		<method name="_get_line_diff" qualifiers="virtual">
+		<method name="_get_line_diff" qualifiers="virtual required">
 			<return type="Dictionary[]" />
 			<param index="0" name="file_path" type="String" />
 			<param index="1" name="text" type="String" />
@@ -81,46 +81,46 @@
 				Returns an [Array] of [Dictionary] items (see [method create_diff_hunk]), each containing a line diff between a file at [param file_path] and the [param text] which is passed in.
 			</description>
 		</method>
-		<method name="_get_modified_files_data" qualifiers="virtual">
+		<method name="_get_modified_files_data" qualifiers="virtual required">
 			<return type="Dictionary[]" />
 			<description>
 				Returns an [Array] of [Dictionary] items (see [method create_status_file]), each containing the status data of every modified file in the project folder.
 			</description>
 		</method>
-		<method name="_get_previous_commits" qualifiers="virtual">
+		<method name="_get_previous_commits" qualifiers="virtual required">
 			<return type="Dictionary[]" />
 			<param index="0" name="max_commits" type="int" />
 			<description>
 				Returns an [Array] of [Dictionary] items (see [method create_commit]), each containing the data for a past commit.
 			</description>
 		</method>
-		<method name="_get_remotes" qualifiers="virtual">
+		<method name="_get_remotes" qualifiers="virtual required">
 			<return type="String[]" />
 			<description>
 				Returns an [Array] of [String]s, each containing the name of a remote configured in the VCS.
 			</description>
 		</method>
-		<method name="_get_vcs_name" qualifiers="virtual">
+		<method name="_get_vcs_name" qualifiers="virtual required">
 			<return type="String" />
 			<description>
 				Returns the name of the underlying VCS provider.
 			</description>
 		</method>
-		<method name="_initialize" qualifiers="virtual">
+		<method name="_initialize" qualifiers="virtual required">
 			<return type="bool" />
 			<param index="0" name="project_path" type="String" />
 			<description>
 				Initializes the VCS plugin when called from the editor. Returns whether or not the plugin was successfully initialized. A VCS project is initialized at [param project_path].
 			</description>
 		</method>
-		<method name="_pull" qualifiers="virtual">
+		<method name="_pull" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="remote" type="String" />
 			<description>
 				Pulls changes from the remote. This can give rise to merge conflicts.
 			</description>
 		</method>
-		<method name="_push" qualifiers="virtual">
+		<method name="_push" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="remote" type="String" />
 			<param index="1" name="force" type="bool" />
@@ -128,21 +128,21 @@
 				Pushes changes to the [param remote]. If [param force] is [code]true[/code], a force push will override the change history already present on the remote.
 			</description>
 		</method>
-		<method name="_remove_branch" qualifiers="virtual">
+		<method name="_remove_branch" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="branch_name" type="String" />
 			<description>
 				Remove a branch from the local VCS.
 			</description>
 		</method>
-		<method name="_remove_remote" qualifiers="virtual">
+		<method name="_remove_remote" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="remote_name" type="String" />
 			<description>
 				Remove a remote from the local VCS.
 			</description>
 		</method>
-		<method name="_set_credentials" qualifiers="virtual">
+		<method name="_set_credentials" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="username" type="String" />
 			<param index="1" name="password" type="String" />
@@ -153,20 +153,20 @@
 				Set user credentials in the underlying VCS. [param username] and [param password] are used only during HTTPS authentication unless not already mentioned in the remote URL. [param ssh_public_key_path], [param ssh_private_key_path], and [param ssh_passphrase] are only used during SSH authentication.
 			</description>
 		</method>
-		<method name="_shut_down" qualifiers="virtual">
+		<method name="_shut_down" qualifiers="virtual required">
 			<return type="bool" />
 			<description>
 				Shuts down VCS plugin instance. Called when the user either closes the editor or shuts down the VCS plugin through the editor UI.
 			</description>
 		</method>
-		<method name="_stage_file" qualifiers="virtual">
+		<method name="_stage_file" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="file_path" type="String" />
 			<description>
 				Stages the file present at [param file_path] to the staged area.
 			</description>
 		</method>
-		<method name="_unstage_file" qualifiers="virtual">
+		<method name="_unstage_file" qualifiers="virtual required">
 			<return type="void" />
 			<param index="0" name="file_path" type="String" />
 			<description>

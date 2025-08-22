@@ -19,44 +19,44 @@
 		[codeblocks]
 		[gdscript]
 		func dir_contents(path):
-		    var dir = DirAccess.open(path)
-		    if dir:
-		        dir.list_dir_begin()
-		        var file_name = dir.get_next()
-		        while file_name != "":
-		            if dir.current_is_dir():
-		                print("Found directory: " + file_name)
-		            else:
-		                print("Found file: " + file_name)
-		            file_name = dir.get_next()
-		    else:
-		        print("An error occurred when trying to access the path.")
+			var dir = DirAccess.open(path)
+			if dir:
+				dir.list_dir_begin()
+				var file_name = dir.get_next()
+				while file_name != "":
+					if dir.current_is_dir():
+						print("Found directory: " + file_name)
+					else:
+						print("Found file: " + file_name)
+					file_name = dir.get_next()
+			else:
+				print("An error occurred when trying to access the path.")
 		[/gdscript]
 		[csharp]
 		public void DirContents(string path)
 		{
-		    using var dir = DirAccess.Open(path);
-		    if (dir != null)
-		    {
-		        dir.ListDirBegin();
-		        string fileName = dir.GetNext();
-		        while (fileName != "")
-		        {
-		            if (dir.CurrentIsDir())
-		            {
-		                GD.Print($"Found directory: {fileName}");
-		            }
-		            else
-		            {
-		                GD.Print($"Found file: {fileName}");
-		            }
-		            fileName = dir.GetNext();
-		        }
-		    }
-		    else
-		    {
-		        GD.Print("An error occurred when trying to access the path.");
-		    }
+			using var dir = DirAccess.Open(path);
+			if (dir != null)
+			{
+				dir.ListDirBegin();
+				string fileName = dir.GetNext();
+				while (fileName != "")
+				{
+					if (dir.CurrentIsDir())
+					{
+						GD.Print($"Found directory: {fileName}");
+					}
+					else
+					{
+						GD.Print($"Found file: {fileName}");
+					}
+					fileName = dir.GetNext();
+				}
+			}
+			else
+			{
+				GD.Print("An error occurred when trying to access the path.");
+			}
 		}
 		[/csharp]
 		[/codeblocks]
@@ -181,7 +181,7 @@
 			<return type="int" />
 			<description>
 				On Windows, returns the number of drives (partitions) mounted on the current filesystem.
-				On macOS, returns the number of mounted volumes.
+				On macOS and Android, returns the number of mounted volumes.
 				On Linux, returns the number of mounted volumes and GTK 3 bookmarks.
 				On other platforms, the method returns 0.
 			</description>
@@ -193,6 +193,7 @@
 				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]).
 				On macOS, returns the path to the mounted volume passed as an argument.
 				On Linux, returns the path to the mounted volume or GTK 3 bookmark passed as an argument.
+				On Android (API level 30+), returns the path to the mounted volume as an argument.
 				On other platforms, or if the requested drive does not exist, the method returns an empty String.
 			</description>
 		</method>

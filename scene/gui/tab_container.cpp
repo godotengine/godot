@@ -948,17 +948,17 @@ Size2 TabContainer::get_minimum_size() const {
 
 	if (tabs_visible) {
 		ms = tab_bar->get_minimum_size();
-		ms.x += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
-		ms.y += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
+		ms.width += theme_cache.tabbar_style->get_margin(SIDE_LEFT) + theme_cache.tabbar_style->get_margin(SIDE_RIGHT);
+		ms.height += theme_cache.tabbar_style->get_margin(SIDE_TOP) + theme_cache.tabbar_style->get_margin(SIDE_BOTTOM);
 
 		if (!get_clip_tabs()) {
 			if (get_popup()) {
-				ms.x += theme_cache.menu_icon->get_width();
+				ms.width += theme_cache.menu_icon->get_width();
 			}
 
 			if (theme_cache.side_margin > 0 && get_tab_alignment() != TabBar::ALIGNMENT_CENTER &&
 					(get_tab_alignment() != TabBar::ALIGNMENT_RIGHT || !get_popup())) {
-				ms.x += theme_cache.side_margin;
+				ms.width += theme_cache.side_margin;
 			}
 		}
 	}
@@ -975,12 +975,12 @@ Size2 TabContainer::get_minimum_size() const {
 		Size2 cms = c->get_combined_minimum_size();
 		largest_child_min_size = largest_child_min_size.max(cms);
 	}
-	ms.y += largest_child_min_size.y;
+	ms.height += largest_child_min_size.height;
 
 	Size2 panel_ms = theme_cache.panel_style->get_minimum_size();
 
-	ms.x = MAX(ms.x, largest_child_min_size.x + panel_ms.x);
-	ms.y += panel_ms.y;
+	ms.width = MAX(ms.width, largest_child_min_size.width + panel_ms.width);
+	ms.height += panel_ms.height;
 
 	return ms;
 }
@@ -1127,6 +1127,8 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_tab_focus_mode", "get_tab_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deselect_enabled"), "set_deselect_enabled", "get_deselect_enabled");
+
+	ADD_CLASS_DEPENDENCY("TabBar");
 
 	BIND_ENUM_CONSTANT(POSITION_TOP);
 	BIND_ENUM_CONSTANT(POSITION_BOTTOM);

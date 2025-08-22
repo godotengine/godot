@@ -36,8 +36,8 @@
 #include "core/io/marshalls.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
+#include "core/templates/a_hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
 
 typedef void (*VariantFunc)(Variant &r_ret, Variant &p_self, const Variant **p_args);
 typedef void (*VariantConstructFunc)(Variant &r_ret, const Variant **p_args);
@@ -685,7 +685,7 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
 			CharString cs;
-			cs.resize(p_instance->size() + 1);
+			cs.resize_uninitialized(p_instance->size() + 1);
 			memcpy(cs.ptrw(), r, p_instance->size());
 			cs[(int)p_instance->size()] = 0;
 
@@ -799,7 +799,7 @@ struct _VariantCall {
 		if (p_instance->size() > 0) {
 			Compression::Mode mode = (Compression::Mode)(p_mode);
 			compressed.resize(Compression::get_max_compressed_buffer_size(p_instance->size(), mode));
-			int result = Compression::compress(compressed.ptrw(), p_instance->ptr(), p_instance->size(), mode);
+			int64_t result = Compression::compress(compressed.ptrw(), p_instance->ptr(), p_instance->size(), mode);
 
 			result = result >= 0 ? result : 0;
 			compressed.resize(result);
@@ -822,7 +822,7 @@ struct _VariantCall {
 		}
 
 		decompressed.resize(buffer_size);
-		int result = Compression::decompress(decompressed.ptrw(), buffer_size, p_instance->ptr(), p_instance->size(), mode);
+		int64_t result = Compression::decompress(decompressed.ptrw(), buffer_size, p_instance->ptr(), p_instance->size(), mode);
 
 		result = result >= 0 ? result : 0;
 		decompressed.resize(result);
@@ -1009,6 +1009,62 @@ struct _VariantCall {
 		dest.resize(size / sizeof(double));
 		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
 		memcpy(dest.ptrw(), r, dest.size() * sizeof(double));
+		return dest;
+	}
+
+	static PackedVector2Array func_PackedByteArray_decode_vector2_array(PackedByteArray *p_instance) {
+		uint64_t size = p_instance->size();
+		PackedVector2Array dest;
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(Vector2), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Vector2)) + " (size of Vector2) to convert to PackedVector2Array.");
+		const uint8_t *r = p_instance->ptr();
+		dest.resize(size / sizeof(Vector2));
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector2));
+		return dest;
+	}
+
+	static PackedVector3Array func_PackedByteArray_decode_vector3_array(PackedByteArray *p_instance) {
+		uint64_t size = p_instance->size();
+		PackedVector3Array dest;
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(Vector3), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Vector3)) + " (size of Vector3) to convert to PackedVector3Array.");
+		const uint8_t *r = p_instance->ptr();
+		dest.resize(size / sizeof(Vector3));
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector3));
+		return dest;
+	}
+
+	static PackedVector4Array func_PackedByteArray_decode_vector4_array(PackedByteArray *p_instance) {
+		uint64_t size = p_instance->size();
+		PackedVector4Array dest;
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(Vector4), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Vector4)) + " (size of Vector4) to convert to PackedVector4Array.");
+		const uint8_t *r = p_instance->ptr();
+		dest.resize(size / sizeof(Vector4));
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(Vector4));
+		return dest;
+	}
+
+	static PackedColorArray func_PackedByteArray_decode_color_array(PackedByteArray *p_instance) {
+		uint64_t size = p_instance->size();
+		PackedColorArray dest;
+		if (size == 0) {
+			return dest;
+		}
+		ERR_FAIL_COND_V_MSG(size % sizeof(Color), dest, "PackedByteArray size must be a multiple of " + itos(sizeof(Color)) + " (size of Color variant) to convert to PackedColorArray.");
+		const uint8_t *r = p_instance->ptr();
+		dest.resize(size / sizeof(Color));
+		ERR_FAIL_COND_V(dest.is_empty(), dest); // Avoid UB in case resize failed.
+		memcpy(dest.ptrw(), r, dest.size() * sizeof(Color));
 		return dest;
 	}
 
@@ -1264,7 +1320,7 @@ struct VariantBuiltInMethodInfo {
 	}
 };
 
-typedef OAHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
+typedef AHashMap<StringName, VariantBuiltInMethodInfo> BuiltinMethodMap;
 static BuiltinMethodMap *builtin_method_info;
 static List<StringName> *builtin_method_names;
 
@@ -1318,7 +1374,7 @@ void Variant::callp(const StringName &p_method, const Variant **p_args, int p_ar
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method);
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1350,7 +1406,7 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 	} else {
 		r_error.error = Callable::CallError::CALL_OK;
 
-		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].lookup_ptr(p_method);
+		const VariantBuiltInMethodInfo *imf = builtin_method_info[type].getptr(p_method);
 
 		if (!imf) {
 			r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1369,7 +1425,7 @@ void Variant::call_const(const StringName &p_method, const Variant **p_args, int
 void Variant::call_static(Variant::Type p_type, const StringName &p_method, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_OK;
 
-	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *imf = builtin_method_info[p_type].getptr(p_method);
 
 	if (!imf) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -1404,35 +1460,35 @@ bool Variant::has_builtin_method(Variant::Type p_type, const StringName &p_metho
 
 Variant::ValidatedBuiltInMethod Variant::get_validated_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
 	return method->validated_call;
 }
 
 Variant::PTRBuiltInMethod Variant::get_ptr_builtin_method(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, nullptr);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, nullptr);
 	return method->ptrcall;
 }
 
 MethodInfo Variant::get_builtin_method_info(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, MethodInfo());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, MethodInfo());
 	return method->get_method_info(p_method);
 }
 
 int Variant::get_builtin_method_argument_count(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
 	return method->argument_count;
 }
 
 Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, Variant::NIL);
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, Variant::NIL);
 	return method->get_argument_type(p_argument);
@@ -1440,7 +1496,7 @@ Variant::Type Variant::get_builtin_method_argument_type(Variant::Type p_type, co
 
 String Variant::get_builtin_method_argument_name(Variant::Type p_type, const StringName &p_method, int p_argument) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, String());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, String());
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_INDEX_V(p_argument, method->argument_count, String());
@@ -1452,14 +1508,14 @@ String Variant::get_builtin_method_argument_name(Variant::Type p_type, const Str
 
 Vector<Variant> Variant::get_builtin_method_default_arguments(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Vector<Variant>());
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, Vector<Variant>());
 	return method->default_arguments;
 }
 
 bool Variant::has_builtin_method_return_value(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->has_return_type;
 }
@@ -1478,35 +1534,35 @@ int Variant::get_builtin_method_count(Variant::Type p_type) {
 
 Variant::Type Variant::get_builtin_method_return_type(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, Variant::NIL);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, Variant::NIL);
 	return method->return_type;
 }
 
 bool Variant::is_builtin_method_const(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_const;
 }
 
 bool Variant::is_builtin_method_static(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_static;
 }
 
 bool Variant::is_builtin_method_vararg(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, false);
 	return method->is_vararg;
 }
 
 uint32_t Variant::get_builtin_method_hash(Variant::Type p_type, const StringName &p_method) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, 0);
-	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].lookup_ptr(p_method);
+	const VariantBuiltInMethodInfo *method = builtin_method_info[p_type].getptr(p_method);
 	ERR_FAIL_NULL_V(method, 0);
 	uint32_t hash = hash_murmur3_one_32(method->is_const);
 	hash = hash_murmur3_one_32(method->is_static, hash);
@@ -1531,7 +1587,7 @@ void Variant::get_method_list(List<MethodInfo> *p_list) const {
 		}
 	} else {
 		for (const StringName &E : builtin_method_names[type]) {
-			const VariantBuiltInMethodInfo *method = builtin_method_info[type].lookup_ptr(E);
+			const VariantBuiltInMethodInfo *method = builtin_method_info[type].getptr(E);
 			ERR_CONTINUE(!method);
 			p_list->push_back(method->get_method_info(E));
 		}
@@ -1896,7 +1952,7 @@ static void _register_variant_builtin_methods_string() {
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));
 	bind_static_method(String, num_int64, sarray("number", "base", "capitalize_hex"), varray(10, false));
 	bind_static_method(String, num_uint64, sarray("number", "base", "capitalize_hex"), varray(10, false));
-	bind_static_method(String, chr, sarray("char"), varray());
+	bind_static_method(String, chr, sarray("code"), varray());
 	bind_static_method(String, humanize_size, sarray("size"), varray());
 
 	/* StringName */
@@ -2206,6 +2262,8 @@ static void _register_variant_builtin_methods_math() {
 	bind_static_method(Color, from_rgba8, sarray("r8", "g8", "b8", "a8"), varray(255));
 }
 
+VARIANT_ENUM_CAST(ResourceDeepDuplicateMode);
+
 static void _register_variant_builtin_methods_misc() {
 	/* RID */
 
@@ -2299,6 +2357,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Basis, determinant, sarray(), varray());
 	bind_methodv(Basis, rotated, static_cast<Basis (Basis::*)(const Vector3 &, real_t) const>(&Basis::rotated), sarray("axis", "angle"), varray());
 	bind_method(Basis, scaled, sarray("scale"), varray());
+	bind_method(Basis, scaled_local, sarray("scale"), varray());
 	bind_method(Basis, get_scale, sarray(), varray());
 	bind_method(Basis, get_euler, sarray("order"), varray((int64_t)EulerOrder::YXZ));
 	bind_method(Basis, tdotx, sarray("with"), varray());
@@ -2559,6 +2618,10 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedByteArray, to_int64_array, _VariantCall::func_PackedByteArray_decode_s64_array, sarray(), varray());
 	bind_function(PackedByteArray, to_float32_array, _VariantCall::func_PackedByteArray_decode_float_array, sarray(), varray());
 	bind_function(PackedByteArray, to_float64_array, _VariantCall::func_PackedByteArray_decode_double_array, sarray(), varray());
+	bind_function(PackedByteArray, to_vector2_array, _VariantCall::func_PackedByteArray_decode_vector2_array, sarray(), varray());
+	bind_function(PackedByteArray, to_vector3_array, _VariantCall::func_PackedByteArray_decode_vector3_array, sarray(), varray());
+	bind_function(PackedByteArray, to_vector4_array, _VariantCall::func_PackedByteArray_decode_vector4_array, sarray(), varray());
+	bind_function(PackedByteArray, to_color_array, _VariantCall::func_PackedByteArray_decode_color_array, sarray(), varray());
 
 	bind_functionnc(PackedByteArray, bswap16, _VariantCall::func_PackedByteArray_bswap16, sarray("offset", "count"), varray(0, -1));
 	bind_functionnc(PackedByteArray, bswap32, _VariantCall::func_PackedByteArray_bswap32, sarray("offset", "count"), varray(0, -1));

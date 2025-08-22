@@ -1448,7 +1448,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
 		float Dr = D_GGX(ccNdotH, mix(0.001, 0.1, clearcoat_roughness));
-		float Gr = 0.25 / (cLdotH * cLdotH);
+		float Gr = 0.25 / (cLdotH * cLdotH + 1e-4);
 		float Fr = mix(.04, 1.0, cLdotH5);
 		float clearcoat_specular_brdf_NL = clearcoat * Gr * Fr * Dr * cNdotL;
 
@@ -2104,7 +2104,7 @@ void main() {
 								 c3 * lightmap_captures[6].rgb * (3.0 * wnormal.z * wnormal.z - 1.0) +
 								 c2 * lightmap_captures[7].rgb * wnormal.x * wnormal.z +
 								 c4 * lightmap_captures[8].rgb * (wnormal.x * wnormal.x - wnormal.y * wnormal.y)) *
-				scene_data.emissive_exposure_normalization;
+				scene_data.IBL_exposure_normalization;
 	}
 #else
 #ifdef USE_LIGHTMAP
@@ -2273,7 +2273,11 @@ void main() {
 
 #if defined(USE_SHADOW_TO_OPACITY)
 #ifndef MODE_RENDER_DEPTH
+#ifndef MODE_UNSHADED
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
+#else
+	alpha = 0.0;
+#endif
 
 #if defined(ALPHA_SCISSOR_USED)
 #ifdef RENDER_MATERIAL

@@ -339,8 +339,6 @@ public:
 				Dictionary warn = warning;
 				ERR_CONTINUE(!warn.has("start_line"));
 				ERR_CONTINUE(!warn.has("end_line"));
-				ERR_CONTINUE(!warn.has("leftmost_column"));
-				ERR_CONTINUE(!warn.has("rightmost_column"));
 				ERR_CONTINUE(!warn.has("code"));
 				ERR_CONTINUE(!warn.has("string_code"));
 				ERR_CONTINUE(!warn.has("message"));
@@ -348,8 +346,6 @@ public:
 				Warning swarn;
 				swarn.start_line = warn["start_line"];
 				swarn.end_line = warn["end_line"];
-				swarn.leftmost_column = warn["leftmost_column"];
-				swarn.rightmost_column = warn["rightmost_column"];
 				swarn.code = warn["code"];
 				swarn.string_code = warn["string_code"];
 				swarn.message = warn["message"];
@@ -463,7 +459,7 @@ public:
 		r_result.description = ret.get("description", "");
 		r_result.is_deprecated = ret.get("is_deprecated", false);
 		r_result.deprecated_message = ret.get("deprecated_message", "");
-		r_result.is_deprecated = ret.get("is_deprecated", false);
+		r_result.is_experimental = ret.get("is_experimental", false);
 		r_result.experimental_message = ret.get("experimental_message", "");
 
 		r_result.doc_type = ret.get("doc_type", "");

@@ -62,7 +62,7 @@
 			The currently selected color.
 		</member>
 		<member name="color_mode" type="int" setter="set_color_mode" getter="get_color_mode" enum="ColorPicker.ColorModeType" default="0">
-			The currently selected color mode. See [enum ColorModeType].
+			The currently selected color mode.
 		</member>
 		<member name="color_modes_visible" type="bool" setter="set_modes_visible" getter="are_modes_visible" default="true">
 			If [code]true[/code], the color mode buttons are visible.
@@ -80,7 +80,7 @@
 			If [code]true[/code], the hex color code input field is visible.
 		</member>
 		<member name="picker_shape" type="int" setter="set_picker_shape" getter="get_picker_shape" enum="ColorPicker.PickerShapeType" default="0">
-			The shape of the color space view. See [enum PickerShapeType].
+			The shape of the color space view.
 		</member>
 		<member name="presets_visible" type="bool" setter="set_presets_visible" getter="are_presets_visible" default="true">
 			If [code]true[/code], the Swatches and Recent Colors presets are visible.
@@ -143,6 +143,12 @@
 		</constant>
 		<constant name="SHAPE_NONE" value="4" enum="PickerShapeType">
 			The color space shape and the shape select button are hidden. Can't be selected from the shapes popup.
+		</constant>
+		<constant name="SHAPE_OK_HS_RECTANGLE" value="5" enum="PickerShapeType">
+			OKHSL Color Model rectangle with constant lightness.
+		</constant>
+		<constant name="SHAPE_OK_HL_RECTANGLE" value="6" enum="PickerShapeType">
+			OKHSL Color Model rectangle with constant saturation.
 		</constant>
 	</constants>
 	<theme_items>

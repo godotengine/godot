@@ -111,9 +111,7 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
-# Zstd library, can be unbundled in theory
-# though we currently use some private symbols
-# https://github.com/godotengine/godot/issues/17374
+# Zstd library, can be unbundled
 if env["builtin_zstd"]:
     thirdparty_zstd_dir = "#thirdparty/zstd/"
     thirdparty_zstd_sources = [
@@ -134,6 +132,7 @@ if env["builtin_zstd"]:
         "compress/zstd_lazy.c",
         "compress/zstd_ldm.c",
         "compress/zstd_opt.c",
+        "compress/zstd_preSplit.c",
         "compress/zstdmt_compress.c",
         "compress/zstd_compress_literals.c",
         "compress/zstd_compress_sequences.c",
@@ -143,7 +142,11 @@ if env["builtin_zstd"]:
         "decompress/zstd_decompress_block.c",
         "decompress/zstd_decompress.c",
     ]
-    if env["platform"] in ["android", "ios", "linuxbsd", "macos"] and env["arch"] == "x86_64":
+    if (
+        env["platform"] in ["android", "ios", "linuxbsd", "macos", "windows"]
+        and env["arch"] == "x86_64"
+        and not env.msvc
+    ):
         # Match platforms with ZSTD_ASM_SUPPORTED in common/portability_macros.h
         thirdparty_zstd_sources.append("decompress/huf_decompress_amd64.S")
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
@@ -182,9 +185,15 @@ gen_hash = env.CommandNoCache(
 env.add_source_files(env.core_sources, gen_hash)
 
 # Generate AES256 script encryption key
+encryption_key = os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")
+if encryption_key:
+    print(
+        "\n*** IMPORTANT: Compiling Godot with custom `SCRIPT_AES256_ENCRYPTION_KEY` set as environment variable."
+        "\n*** Make sure to use templates compiled with this key when exporting a project with encryption.\n"
+    )
 gen_encrypt = env.CommandNoCache(
     "script_encryption_key.gen.cpp",
-    env.Value(os.environ.get("SCRIPT_AES256_ENCRYPTION_KEY")),
+    env.Value(encryption_key),
     env.Run(core_builders.encryption_key_builder),
 )
 env.add_source_files(env.core_sources, gen_encrypt)

@@ -320,11 +320,17 @@ void MenuBar::_notification(int p_what) {
 					}
 				}
 			}
+			if (!is_global) {
+				update_minimum_size();
+			}
 		} break;
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			for (int i = 0; i < menu_cache.size(); i++) {
 				shape(menu_cache.write[i]);
+			}
+			if (global_menu_tag.is_empty()) {
+				update_minimum_size();
 			}
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -763,6 +769,8 @@ void MenuBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, MenuBar, font_focus_color);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, MenuBar, h_separation);
+
+	ADD_CLASS_DEPENDENCY("PopupMenu");
 }
 
 void MenuBar::set_switch_on_hover(bool p_enabled) {

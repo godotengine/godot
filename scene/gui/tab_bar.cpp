@@ -44,6 +44,7 @@ Size2 TabBar::get_minimum_size() const {
 	}
 
 	int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
+	int max_tab_width = 0;
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {
@@ -102,10 +103,14 @@ Size2 TabBar::get_minimum_size() const {
 		if (i < tabs.size() - 1) {
 			ms.width += theme_cache.tab_separation;
 		}
+
+		if (ms.width - ofs > max_tab_width) {
+			max_tab_width = ms.width - ofs;
+		}
 	}
 
 	if (clip_tabs) {
-		ms.width = 0;
+		ms.width = max_tab_width + (get_tab_count() > 1 ? theme_cache.decrement_icon->get_width() + theme_cache.increment_icon->get_width() : 0);
 	}
 
 	return ms;
@@ -310,7 +315,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 		if (p_event->is_action("ui_right", true)) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_right", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_right", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
@@ -320,7 +325,7 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_left", true)) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_left", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_left", p_event, true)) {
 					return;
 				}
 				set_process_internal(true);
@@ -572,46 +577,52 @@ void TabBar::_notification(int p_what) {
 			}
 
 			if (dragging_valid_tab) {
-				int x;
-
-				int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
-				if (closest_tab != -1) {
-					Rect2 tab_rect = get_tab_rect(closest_tab);
-					x = tab_rect.position.x;
-
-					// Only add the tab_separation if closest tab is not on the edge.
-					bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
-					bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
-
-					// Calculate midpoint between tabs.
-					if (get_local_mouse_position().x > tab_rect.get_center().x) {
-						x += tab_rect.size.x;
-						if (not_rightmost_tab) {
-							x += Math::ceil(0.5f * theme_cache.tab_separation);
-						}
-					} else if (not_leftmost_tab) {
-						x -= Math::floor(0.5f * theme_cache.tab_separation);
-					}
-				} else {
-					if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
-						x = get_tab_rect(0).position.x;
-						if (rtl) {
-							x += get_tab_rect(0).size.width;
-						}
-					} else {
-						Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
-
-						x = tab_rect.position.x;
-						if (!rtl) {
-							x += tab_rect.size.width;
-						}
-					}
-				}
-
-				theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+				_draw_tab_drop(get_canvas_item());
 			}
 		} break;
 	}
+}
+
+void TabBar::_draw_tab_drop(RID p_canvas_item) {
+	Vector2 size = get_size();
+	int x;
+	bool rtl = is_layout_rtl();
+
+	int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
+	if (closest_tab != -1) {
+		Rect2 tab_rect = get_tab_rect(closest_tab);
+		x = tab_rect.position.x;
+
+		// Only add the tab_separation if closest tab is not on the edge.
+		bool not_leftmost_tab = -1 != (rtl ? get_next_available(closest_tab) : get_previous_available(closest_tab));
+		bool not_rightmost_tab = -1 != (rtl ? get_previous_available(closest_tab) : get_next_available(closest_tab));
+
+		// Calculate midpoint between tabs.
+		if (get_local_mouse_position().x > tab_rect.get_center().x) {
+			x += tab_rect.size.x;
+			if (not_rightmost_tab) {
+				x += Math::ceil(0.5f * theme_cache.tab_separation);
+			}
+		} else if (not_leftmost_tab) {
+			x -= Math::floor(0.5f * theme_cache.tab_separation);
+		}
+	} else {
+		if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
+			x = get_tab_rect(0).position.x;
+			if (rtl) {
+				x += get_tab_rect(0).size.width;
+			}
+		} else {
+			Rect2 tab_rect = get_tab_rect(get_tab_count() - 1);
+
+			x = tab_rect.position.x;
+			if (!rtl) {
+				x += tab_rect.size.width;
+			}
+		}
+	}
+
+	theme_cache.drop_mark_icon->draw(p_canvas_item, Point2(x - theme_cache.drop_mark_icon->get_width() / 2, (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
 }
 
 void TabBar::_draw_tab(Ref<StyleBox> &p_tab_style, Color &p_font_color, int p_index, float p_x, bool p_focus) {
@@ -1260,7 +1271,7 @@ void TabBar::add_tab(const String &p_str, const Ref<Texture2D> &p_icon) {
 	queue_redraw();
 	update_minimum_size();
 
-	if (tabs.size() == 1) {
+	if (!deselect_enabled && tabs.size() == 1) {
 		if (is_inside_tree()) {
 			set_current_tab(0);
 		} else {

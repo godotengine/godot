@@ -397,23 +397,21 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			continue;
 		}
 
-		bool listener_is_camera = true;
 		Node3D *listener_node = camera;
 
 		AudioListener3D *listener = vp->get_audio_listener_3d();
 		if (listener) {
 			listener_node = listener;
-			listener_is_camera = false;
 		}
 
 		Vector3 local_pos = listener_node->get_global_transform().orthonormalized().affine_inverse().xform(global_pos);
 
 		float dist = local_pos.length();
 
+#ifndef PHYSICS_3D_DISABLED
 		Vector3 area_sound_pos;
 		Vector3 listener_area_pos;
 
-#ifndef PHYSICS_3D_DISABLED
 		Area3D *area = _get_overriding_area();
 		if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 			area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
@@ -507,7 +505,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 			Vector3 listener_velocity;
 
-			if (listener_is_camera) {
+			if (listener) {
+				listener_velocity = listener->get_doppler_tracked_velocity();
+			} else {
 				listener_velocity = camera->get_doppler_tracked_velocity();
 			}
 

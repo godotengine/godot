@@ -43,6 +43,10 @@
 #include "main/main.h"
 #include "scene/resources/texture.h"
 
+#ifdef SDL_ENABLED
+#include "drivers/sdl/joypad_sdl.h"
+#endif
+
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #if defined(VULKAN_ENABLED)
@@ -145,8 +149,9 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_WINDOW_EMBEDDING:
 		case FEATURE_WINDOW_DRAG:
-		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+			return (os_ver.dwBuildNumber >= 19041); // Fully supported on Windows 10 Vibranium R1 (2004)+ only, captured as black rect on older versions.
 		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
 #ifdef ACCESSKIT_ENABLED
@@ -616,7 +621,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 		if (dir.is_relative_path() || dir == ".") {
 			Char16String current_dir_name;
 			size_t str_len = GetCurrentDirectoryW(0, nullptr);
-			current_dir_name.resize(str_len + 1);
+			current_dir_name.resize_uninitialized(str_len + 1);
 			GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
 			if (dir == ".") {
 				dir = String::utf16((const char16_t *)current_dir_name.get_data()).trim_prefix(R"(\\?\)").replace_char('\\', '/');
@@ -2426,7 +2431,12 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	wd.was_fullscreen_pre_min = false;
 
 	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
-		p_mode = WINDOW_MODE_FULLSCREEN;
+		int cs = window_get_current_screen(p_window);
+		Rect2i full = Rect2i(screen_get_position(cs), screen_get_size(cs));
+		Rect2i usable = screen_get_usable_rect(cs);
+		if (full == usable) {
+			p_mode = WINDOW_MODE_FULLSCREEN;
+		}
 	}
 
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
@@ -2465,10 +2475,22 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		wd.minimized = false;
 	}
 
-	if (p_mode == WINDOW_MODE_MAXIMIZED) {
+	if (p_mode == WINDOW_MODE_MAXIMIZED && !wd.borderless) {
 		ShowWindow(wd.hWnd, SW_MAXIMIZE);
 		wd.maximized = true;
 		wd.minimized = false;
+	}
+
+	if (p_mode == WINDOW_MODE_MAXIMIZED && wd.borderless) {
+		ShowWindow(wd.hWnd, SW_NORMAL);
+		wd.maximized = true;
+		wd.minimized = false;
+
+		int cs = window_get_current_screen(p_window);
+		Rect2i usable = screen_get_usable_rect(cs);
+		Point2 pos = usable.position + _get_screens_origin();
+		Size2 size = usable.size;
+		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 	}
 
 	if (p_mode == WINDOW_MODE_MINIMIZED) {
@@ -3373,7 +3395,7 @@ static INT_PTR input_text_dialog_cmd_proc(HWND hWnd, UINT code, WPARAM wParam, L
 		ERR_FAIL_NULL_V(text_edit, false);
 
 		Char16String text;
-		text.resize(GetWindowTextLengthW(text_edit) + 1);
+		text.resize_uninitialized(GetWindowTextLengthW(text_edit) + 1);
 		GetWindowTextW(text_edit, (LPWSTR)text.get_data(), text.size());
 
 		const Callable *callback = (const Callable *)GetWindowLongPtrW(hWnd, GWLP_USERDATA);
@@ -3754,7 +3776,11 @@ void DisplayServerWindows::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
 	if (!drop_events) {
-		joypad->process_joypads();
+#ifdef SDL_ENABLED
+		if (joypad_sdl) {
+			joypad_sdl->process_events();
+		}
+#endif
 	}
 
 	_THREAD_SAFE_LOCK_
@@ -4230,6 +4256,19 @@ void DisplayServerWindows::window_start_drag(WindowID p_window) {
 	ScreenToClient(wd.hWnd, &coords);
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
+
+	for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton(btn))) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(p_window);
+			mb->set_pressed(false);
+			mb->set_button_index(MouseButton::LEFT);
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(mb->get_position());
+			Input::get_singleton()->parse_input_event(mb);
+		}
+	}
 }
 
 void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
@@ -4280,6 +4319,19 @@ void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID
 	}
 
 	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_SIZE | op, MAKELPARAM(coords.x, coords.y));
+
+	for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+		if (Input::get_singleton()->is_mouse_button_pressed(MouseButton(btn))) {
+			Ref<InputEventMouseButton> mb;
+			mb.instantiate();
+			mb->set_window_id(p_window);
+			mb->set_pressed(false);
+			mb->set_button_index(MouseButton::LEFT);
+			mb->set_position(Vector2(coords.x, coords.y));
+			mb->set_global_position(mb->get_position());
+			Input::get_singleton()->parse_input_event(mb);
+		}
+	}
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
@@ -4641,7 +4693,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 	// Process window messages.
 	switch (uMsg) {
 		case WM_GETOBJECT: {
-			get_object_recieved = true;
+			get_object_received = true;
 		} break;
 		case WM_MENUCOMMAND: {
 			native_menu->_menu_activate(HMENU(lParam), (int)wParam);
@@ -5689,6 +5741,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				int screen_id = window_get_current_screen(window_id);
 				Size2i screen_size = screen_get_size(screen_id);
 				Point2i screen_position = screen_get_position(screen_id);
+				Rect2i usable = screen_get_usable_rect(screen_id);
 
 				window.maximized = false;
 				window.minimized = false;
@@ -5705,8 +5758,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 						window.maximized_fs = true;
 						_update_window_style(window_id, false);
 					}
+					if (window.borderless && (screen_size != usable.size || screen_position != usable.position)) {
+						Point2 pos = usable.position + _get_screens_origin();
+						Size2 size = usable.size;
+						MoveWindow(window.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+					}
 				} else if (window_rect.position == screen_position && window_rect.size == screen_size) {
 					window.fullscreen = true;
+				} else if (window.borderless && usable.position == window_rect.position && usable.size == window_rect.size) {
+					window.maximized = true;
 				}
 
 				if (window.maximized_fs && !window.maximized) {
@@ -5936,9 +5996,6 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 
-		} break;
-		case WM_DEVICECHANGE: {
-			joypad->probe_joypads();
 		} break;
 		case WM_DESTROY: {
 #ifdef ACCESSKIT_ENABLED
@@ -7130,7 +7187,16 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		ERR_FAIL_MSG("Failed to create main window.");
 	}
 
-	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
+#ifdef SDL_ENABLED
+	joypad_sdl = memnew(JoypadSDL());
+	if (joypad_sdl->initialize() == OK) {
+		joypad_sdl->setup_sdl_helper_window(windows[MAIN_WINDOW_ID].hWnd);
+	} else {
+		ERR_PRINT("Couldn't initialize SDL joypad input driver.");
+		memdelete(joypad_sdl);
+		joypad_sdl = nullptr;
+	}
+#endif
 
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
@@ -7152,7 +7218,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 			}
 
 			uint64_t delta = OS::get_singleton()->get_ticks_msec() - time_wait;
-			if (delta > 500 || get_object_recieved) {
+			if (delta > 500 || get_object_received) {
 				break;
 			}
 		}
@@ -7284,7 +7350,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 		E->erase();
 	}
 
-	delete joypad;
+#ifdef SDL_ENABLED
+	if (joypad_sdl) {
+		memdelete(joypad_sdl);
+	}
+#endif
 	touch_state.clear();
 
 	cursors_cache.clear();

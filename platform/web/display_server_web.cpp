@@ -305,18 +305,18 @@ int DisplayServerWeb::_mouse_button_callback(int p_pressed, int p_button, double
 	return true;
 }
 
-void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+		callable_mp_static(DisplayServerWeb::_mouse_move_callback).call_deferred(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 		return;
 	}
 #endif
 
-	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers);
+	_mouse_move_callback(p_x, p_y, p_rel_x, p_rel_y, p_modifiers, p_pressure);
 }
 
-void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
+void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers, double p_pressure) {
 	BitField<MouseButtonMask> input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behavior.
@@ -332,6 +332,7 @@ void DisplayServerWeb::_mouse_move_callback(double p_x, double p_y, double p_rel
 
 	ev->set_position(pos);
 	ev->set_global_position(pos);
+	ev->set_pressure((float)p_pressure);
 
 	ev->set_relative(Vector2(p_rel_x, p_rel_y));
 	ev->set_relative_screen_position(ev->get_relative());
@@ -633,18 +634,18 @@ Point2i DisplayServerWeb::mouse_get_position() const {
 }
 
 // Wheel
-int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 #ifdef PROXY_TO_PTHREAD_ENABLED
 	if (!Thread::is_main_thread()) {
-		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_x, p_delta_y);
+		callable_mp_static(DisplayServerWeb::_mouse_wheel_callback).call_deferred(p_delta_mode, p_delta_x, p_delta_y);
 		return true;
 	}
 #endif
 
-	return _mouse_wheel_callback(p_delta_x, p_delta_y);
+	return _mouse_wheel_callback(p_delta_mode, p_delta_x, p_delta_y);
 }
 
-int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) {
+int DisplayServerWeb::_mouse_wheel_callback(int p_delta_mode, double p_delta_x, double p_delta_y) {
 	if (!godot_js_display_canvas_is_focused() && !godot_js_is_ime_focused()) {
 		if (get_singleton()->cursor_inside_canvas) {
 			godot_js_display_canvas_focus();
@@ -664,20 +665,43 @@ int DisplayServerWeb::_mouse_wheel_callback(double p_delta_x, double p_delta_y) 
 	ev->set_ctrl_pressed(input->is_key_pressed(Key::CTRL));
 	ev->set_meta_pressed(input->is_key_pressed(Key::META));
 
+	enum DeltaMode {
+		DELTA_MODE_PIXEL = 0,
+		DELTA_MODE_LINE = 1,
+		DELTA_MODE_PAGE = 2,
+	};
+	const float MOUSE_WHEEL_PIXEL_FACTOR = 0.03f;
+	const float MOUSE_WHEEL_LINE_FACTOR = 0.3f;
+	const float MOUSE_WHEEL_PAGE_FACTOR = 1.0f;
+	float mouse_wheel_factor;
+
+	switch (p_delta_mode) {
+		case DELTA_MODE_PIXEL: {
+			mouse_wheel_factor = MOUSE_WHEEL_PIXEL_FACTOR;
+		} break;
+		case DELTA_MODE_LINE: {
+			mouse_wheel_factor = MOUSE_WHEEL_LINE_FACTOR;
+		} break;
+		case DELTA_MODE_PAGE: {
+			mouse_wheel_factor = MOUSE_WHEEL_PAGE_FACTOR;
+		} break;
+	}
+
 	if (p_delta_y < 0) {
 		ev->set_button_index(MouseButton::WHEEL_UP);
+		ev->set_factor(-p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_y > 0) {
 		ev->set_button_index(MouseButton::WHEEL_DOWN);
+		ev->set_factor(p_delta_y * mouse_wheel_factor);
 	} else if (p_delta_x > 0) {
 		ev->set_button_index(MouseButton::WHEEL_LEFT);
+		ev->set_factor(p_delta_x * mouse_wheel_factor);
 	} else if (p_delta_x < 0) {
 		ev->set_button_index(MouseButton::WHEEL_RIGHT);
+		ev->set_factor(-p_delta_x * mouse_wheel_factor);
 	} else {
 		return false;
 	}
-
-	// Different browsers give wildly different delta values, and we can't
-	// interpret deltaMode, so use default value for wheel events' factor.
 
 	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
 	BitField<MouseButtonMask> button_mask = input->get_mouse_button_mask();
@@ -828,10 +852,13 @@ void DisplayServerWeb::gamepad_callback(int p_index, int p_connected, const char
 }
 
 void DisplayServerWeb::_gamepad_callback(int p_index, int p_connected, const String &p_id, const String &p_guid) {
-	Input *input = Input::get_singleton();
-	DisplayServerWeb *ds = get_singleton();
-	ds->active_gamepad_sample_count = -1; // Invalidate cache
+	if (p_connected) {
+		DisplayServerWeb::get_singleton()->gamepad_count += 1;
+	} else {
+		DisplayServerWeb::get_singleton()->gamepad_count -= 1;
+	}
 
+	Input *input = Input::get_singleton();
 	if (p_connected) {
 		input->joy_connection_changed(p_index, true, p_id, p_guid);
 	} else {
@@ -1434,11 +1461,11 @@ DisplayServer::VSyncMode DisplayServerWeb::window_get_vsync_mode(WindowID p_vsyn
 void DisplayServerWeb::process_events() {
 	process_keys();
 	Input::get_singleton()->flush_buffered_events();
-	if (active_gamepad_sample_count == -1) {
-		active_gamepad_sample_count = godot_js_input_gamepad_sample();
-	}
-	if (active_gamepad_sample_count > 0) {
-		process_joypads();
+
+	if (gamepad_count > 0) {
+		if (godot_js_input_gamepad_sample() == OK) {
+			process_joypads();
+		}
 	}
 }
 

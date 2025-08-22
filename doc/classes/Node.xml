@@ -43,13 +43,6 @@
 				Returning an empty array produces no warnings.
 			</description>
 		</method>
-		<method name="_get_accessibility_container_name" qualifiers="virtual const">
-			<return type="String" />
-			<param index="0" name="node" type="Node" />
-			<description>
-				Return a human-readable description of the position of [param node] child in the custom container, added to the node name.
-			</description>
-		</method>
 		<method name="_get_configuration_warnings" qualifiers="virtual const">
 			<return type="PackedStringArray" />
 			<description>
@@ -58,15 +51,15 @@
 				Call [method update_configuration_warnings] when the warnings need to be updated for this node.
 				[codeblock]
 				@export var energy = 0:
-				    set(value):
-				        energy = value
-				        update_configuration_warnings()
+					set(value):
+						energy = value
+						update_configuration_warnings()
 
 				func _get_configuration_warnings():
-				    if energy &lt; 0:
-				        return ["Energy must be 0 or greater."]
-				    else:
-				        return []
+					if energy &lt; 0:
+						return ["Energy must be 0 or greater."]
+					else:
+						return []
 				[/codeblock]
 			</description>
 		</method>
@@ -91,24 +84,26 @@
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the physics processing step of the main loop. Physics processing means that the frame rate is synced to the physics, i.e. the [param delta] parameter will [i]generally[/i] be constant (see exceptions below). [param delta] is in seconds.
-				It is only called if physics processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
+				Called once on each physics tick, and allows Nodes to synchronize their logic with physics ticks. [param delta] is the logical time between physics ticks in seconds and is equal to [member Engine.time_scale] / [member Engine.physics_ticks_per_second].
+				It is only called if physics processing is enabled for this Node, which is done automatically if this method is overridden, and can be toggled with [method set_physics_process].
 				Processing happens in order of [member process_physics_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PHYSICS_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] Accumulated [param delta] may diverge from real world seconds.
 			</description>
 		</method>
 		<method name="_process" qualifiers="virtual">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
 			<description>
-				Called during the processing step of the main loop. Processing happens at every frame and as fast as possible, so the [param delta] time since the previous frame is not constant. [param delta] is in seconds.
-				It is only called if processing is enabled, which is done automatically if this method is overridden, and can be toggled with [method set_process].
+				Called on each idle frame, prior to rendering, and after physics ticks have been processed. [param delta] is the time between frames in seconds.
+				It is only called if processing is enabled for this Node, which is done automatically if this method is overridden, and can be toggled with [method set_process].
 				Processing happens in order of [member process_priority], lower priority values are called first. Nodes with the same priority are processed in tree order, or top to bottom as seen in the editor (also known as pre-order traversal).
 				Corresponds to the [constant NOTIFICATION_PROCESS] notification in [method Object._notification].
 				[b]Note:[/b] This method is only called if the node is present in the scene tree (i.e. if it's not an orphan).
-				[b]Note:[/b] [param delta] will be larger than expected if running at a framerate lower than [member Engine.physics_ticks_per_second] / [member Engine.max_physics_steps_per_frame] FPS. This is done to avoid "spiral of death" scenarios where performance would plummet due to an ever-increasing number of physics steps per frame. This behavior affects both [method _process] and [method _physics_process]. As a result, avoid using [param delta] for time measurements in real-world seconds. Use the [Time] singleton's methods for this purpose instead, such as [method Time.get_ticks_usec].
+				[b]Note:[/b] When the engine is struggling and the frame rate is lowered, [param delta] will increase. When [param delta] is increased, it's capped at a maximum of [member Engine.time_scale] * [member Engine.max_physics_steps_per_frame] / [member Engine.physics_ticks_per_second]. As a result, accumulated [param delta] may not represent real world time.
+				[b]Note:[/b] When [code]--fixed-fps[/code] is enabled or the engine is running in Movie Maker mode (see [MovieWriter]), process [param delta] will always be the same for every frame, regardless of how much time the frame took to render.
+				[b]Note:[/b] Frame delta may be post-processed by [member OS.delta_smoothing] if this is enabled for the project.
 			</description>
 		</method>
 		<method name="_ready" qualifiers="virtual">
@@ -162,20 +157,20 @@
 			<description>
 				Adds a child [param node]. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [param force_readable_name] is [code]true[/code], improves the readability of the added [param node]. If not named, the [param node] is renamed to its type, and if it shares [member name] with a sibling, a number is suffixed more appropriately. This operation is very slow. As such, it is recommended leaving this to [code]false[/code], which assigns a dummy name featuring [code]@[/code] in both situations.
-				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. These nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code]. It also prevents these nodes being duplicated with their parent. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker]. See [enum InternalMode] for available modes.
+				If [param internal] is different than [constant INTERNAL_MODE_DISABLED], the child will be added as internal node. These nodes are ignored by methods like [method get_children], unless their parameter [code]include_internal[/code] is [code]true[/code]. It also prevents these nodes being duplicated with their parent. The intended usage is to hide the internal nodes from the user, so the user won't accidentally delete or modify them. Used by some GUI nodes, e.g. [ColorPicker].
 				[b]Note:[/b] If [param node] already has a parent, this method will fail. Use [method remove_child] first to remove [param node] from its current parent. For example:
 				[codeblocks]
 				[gdscript]
 				var child_node = get_child(0)
 				if child_node.get_parent():
-				    child_node.get_parent().remove_child(child_node)
+					child_node.get_parent().remove_child(child_node)
 				add_child(child_node)
 				[/gdscript]
 				[csharp]
 				Node childNode = GetChild(0);
 				if (childNode.GetParent() != null)
 				{
-				    childNode.GetParent().RemoveChild(childNode);
+					childNode.GetParent().RemoveChild(childNode);
 				}
 				AddChild(childNode);
 				[/csharp]
@@ -244,6 +239,12 @@
 			<param index="0" name="method" type="StringName" />
 			<description>
 				This function ensures that the calling of this function will succeed, no matter whether it's being done from a thread or not. If called from a thread that is not allowed to call the function, the call will become deferred. Otherwise, the call will go through directly.
+			</description>
+		</method>
+		<method name="can_auto_translate" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if this node can automatically translate messages depending on the current locale. See [member auto_translate_mode], [method atr], and [method atr_n].
 			</description>
 		</method>
 		<method name="can_process" qualifiers="const">
@@ -372,16 +373,16 @@
 				# Stores the node's non-internal groups only (as an array of StringNames).
 				var non_internal_groups = []
 				for group in get_groups():
-				    if not str(group).begins_with("_"):
-				        non_internal_groups.push_back(group)
+					if not str(group).begins_with("_"):
+						non_internal_groups.push_back(group)
 				[/gdscript]
 				[csharp]
 				// Stores the node's non-internal groups only (as a List of StringNames).
 				List&lt;string&gt; nonInternalGroups = new List&lt;string&gt;();
 				foreach (string group in GetGroups())
 				{
-				    if (!group.BeginsWith("_"))
-				        nonInternalGroups.Add(group);
+					if (!group.BeginsWith("_"))
+						nonInternalGroups.Add(group);
 				}
 				[/csharp]
 				[/codeblocks]
@@ -451,7 +452,7 @@
 				- Element [code]0[/code] is the [Node], or [code]null[/code] if not found;
 				- Element [code]1[/code] is the subname's last nested [Resource], or [code]null[/code] if not found;
 				- Element [code]2[/code] is the remaining [NodePath], referring to an existing, non-[Resource] property (see [method Object.get_indexed]).
-				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned a [AtlasTexture]:
+				[b]Example:[/b] Assume that the child's [member Sprite2D.texture] has been assigned an [AtlasTexture]:
 				[codeblocks]
 				[gdscript]
 				var a = get_node_and_resource("Area2D/Sprite2D")
@@ -1009,7 +1010,7 @@
 			<return type="void" />
 			<param index="0" name="load_placeholder" type="bool" />
 			<description>
-				If set to [code]true[/code], the node becomes a [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
+				If set to [code]true[/code], the node becomes an [InstancePlaceholder] when packed and instantiated from a [PackedScene]. See also [method get_scene_instance_load_placeholder].
 			</description>
 		</method>
 		<method name="set_thread_safe">
@@ -1035,27 +1036,6 @@
 		</method>
 	</methods>
 	<members>
-		<member name="accessibility_controls_nodes" type="NodePath[]" setter="set_accessibility_controls_nodes" getter="get_accessibility_controls_nodes" default="[]">
-			The list of nodes which are controlled by this node.
-		</member>
-		<member name="accessibility_described_by_nodes" type="NodePath[]" setter="set_accessibility_described_by_nodes" getter="get_accessibility_described_by_nodes" default="[]">
-			The list of nodes which are describing this node.
-		</member>
-		<member name="accessibility_description" type="String" setter="set_accessibility_description" getter="get_accessibility_description" default="&quot;&quot;">
-			The human-readable node description that is reported to assistive apps.
-		</member>
-		<member name="accessibility_flow_to_nodes" type="NodePath[]" setter="set_accessibility_flow_to_nodes" getter="get_accessibility_flow_to_nodes" default="[]">
-			The list of nodes which this node flows into.
-		</member>
-		<member name="accessibility_labeled_by_nodes" type="NodePath[]" setter="set_accessibility_labeled_by_nodes" getter="get_accessibility_labeled_by_nodes" default="[]">
-			The list of nodes which label this node.
-		</member>
-		<member name="accessibility_live" type="int" setter="set_accessibility_live" getter="get_accessibility_live" enum="DisplayServer.AccessibilityLiveMode" default="0">
-			Live region update mode, a live region is [Node] that is updated as a result of an external event when user focus may be elsewhere.
-		</member>
-		<member name="accessibility_name" type="String" setter="set_accessibility_name" getter="get_accessibility_name" default="&quot;&quot;">
-			The human-readable node name that is reported to assistive apps.
-		</member>
 		<member name="auto_translate_mode" type="int" setter="set_auto_translate_mode" getter="get_auto_translate_mode" enum="Node.AutoTranslateMode" default="0">
 			Defines if any text should automatically change to its translated version depending on the current locale (for nodes such as [Label], [RichTextLabel], [Window], etc.). Also decides if the node's strings should be parsed for POT generation.
 			[b]Note:[/b] For the root node, auto translate mode can also be set via [member ProjectSettings.internationalization/rendering/root_node_auto_translate].
@@ -1076,11 +1056,13 @@
 			[b]Note:[/b] In the editor, nodes not owned by the scene root are usually not displayed in the Scene dock, and will [b]not[/b] be saved. To prevent this, remember to set the owner after calling [method add_child].
 		</member>
 		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" enum="Node.PhysicsInterpolationMode" default="0">
-			Allows enabling or disabling physics interpolation per node, offering a finer grain of control than turning physics interpolation on and off globally. See [member ProjectSettings.physics/common/physics_interpolation] and [member SceneTree.physics_interpolation] for the global setting.
-			[b]Note:[/b] When teleporting a node to a distant position you should temporarily disable interpolation with [method Node.reset_physics_interpolation].
+			The physics interpolation mode to use for this node. Only effective if [member ProjectSettings.physics/common/physics_interpolation] or [member SceneTree.physics_interpolation] is [code]true[/code].
+			By default, nodes inherit the physics interpolation mode from their parent. This property can enable or disable physics interpolation individually for each node, regardless of their parents' physics interpolation mode.
+			[b]Note:[/b] Some node types like [VehicleWheel3D] have physics interpolation disabled by default, as they rely on their own custom solution.
+			[b]Note:[/b] When teleporting a node to a distant position, it's recommended to temporarily disable interpolation with [method Node.reset_physics_interpolation] [i]after[/i] moving the node. This avoids creating a visual streak between the old and new positions.
 		</member>
 		<member name="process_mode" type="int" setter="set_process_mode" getter="get_process_mode" enum="Node.ProcessMode" default="0">
-			The node's processing behavior (see [enum ProcessMode]). To check if the node can process in its current mode, use [method can_process].
+			The node's processing behavior. To check if the node can process in its current mode, use [method can_process].
 		</member>
 		<member name="process_physics_priority" type="int" setter="set_physics_process_priority" getter="get_physics_process_priority" default="0">
 			Similar to [member process_priority] but for [constant NOTIFICATION_PHYSICS_PROCESS], [method _physics_process], or [constant NOTIFICATION_INTERNAL_PHYSICS_PROCESS].
@@ -1300,10 +1282,10 @@
 			[b]Note:[/b] This notification is received alongside [constant NOTIFICATION_ENTER_TREE], so if you are instantiating a scene, the child nodes will not be initialized yet. You can use it to setup translations for this node, child nodes created from script, or if you want to access child nodes added in the editor, make sure the node is ready using [method is_node_ready].
 			[codeblock]
 			func _notification(what):
-			    if what == NOTIFICATION_TRANSLATION_CHANGED:
-			        if not is_node_ready():
-			            await ready # Wait until ready signal.
-			        $Label.text = atr("%d Bananas") % banana_counter
+				if what == NOTIFICATION_TRANSLATION_CHANGED:
+					if not is_node_ready():
+						await ready # Wait until ready signal.
+					$Label.text = atr("%d Bananas") % banana_counter
 			[/codeblock]
 		</constant>
 		<constant name="NOTIFICATION_WM_ABOUT" value="2011">

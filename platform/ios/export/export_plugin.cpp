@@ -33,8 +33,13 @@
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
+Vector<String> EditorExportPlatformIOS::device_types({ "iPhone", "iPad" });
+
 EditorExportPlatformIOS::EditorExportPlatformIOS() :
 		EditorExportPlatformAppleEmbedded(_ios_logo_svg, _ios_run_icon_svg) {
+#ifdef MACOS_ENABLED
+	_start_remote_device_poller_thread();
+#endif
 }
 
 EditorExportPlatformIOS::~EditorExportPlatformIOS() {
@@ -47,8 +52,8 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_ios_version"), get_minimum_deployment_target()));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "storyboard/image_scale_mode", PROPERTY_HINT_ENUM, "Same as Logo,Center,Scale to Fit,Scale to Fill,Scale"), 0));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@2x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "storyboard/custom_image@3x", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "storyboard/use_custom_bg_color"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
 }

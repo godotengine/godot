@@ -32,14 +32,15 @@
 
 #include "core/config/project_settings.h"
 #include "core/version.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "editor/editor_properties.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
+#include "editor/file_system/editor_file_system.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
+#include "editor/inspector/editor_properties.h"
+#include "editor/settings/editor_settings.h"
+#include "editor/settings/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
@@ -55,14 +56,14 @@
 #include "scene/gui/tree.h"
 
 void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
-	ProjectSettings::get_singleton()->set_setting(setting_identifier, true);
-	ProjectSettings::get_singleton()->save();
-	EditorFileSystem::get_singleton()->scan_changes();
-	emit_signal("texture_format_enabled");
+	export_dialog->hide();
+	ProjectSettingsEditor *project_settings = EditorNode::get_singleton()->get_project_settings();
+	project_settings->set_general_page("rendering/textures");
+	project_settings->set_filter(setting_identifier);
+	project_settings->popup_project_settings(false);
 }
 
 void ProjectExportTextureFormatError::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("texture_format_enabled"));
 }
 
 void ProjectExportTextureFormatError::_notification(int p_what) {
@@ -79,7 +80,8 @@ void ProjectExportTextureFormatError::show_for_texture_format(const String &p_fr
 	show();
 }
 
-ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
+ProjectExportTextureFormatError::ProjectExportTextureFormatError(ProjectExportDialog *p_export_dialog) {
+	export_dialog = p_export_dialog;
 	// Set up the label.
 	texture_format_error_label = memnew(Label);
 	texture_format_error_label->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -87,7 +89,7 @@ ProjectExportTextureFormatError::ProjectExportTextureFormatError() {
 	// Set up the fix button.
 	fix_texture_format_button = memnew(LinkButton);
 	fix_texture_format_button->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
-	fix_texture_format_button->set_text(TTR("Fix Import"));
+	fix_texture_format_button->set_text(TTR("Show Project Setting"));
 	add_child(fix_texture_format_button);
 	fix_texture_format_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportTextureFormatError::_on_fix_texture_format_pressed));
 }
@@ -278,7 +280,8 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 		extension_vector.push_back("*." + extension);
 	}
 
-	export_path->setup(extension_vector, false, true);
+	export_path->get_path_edit()->clear();
+	export_path->setup(extension_vector, false, true, false);
 	export_path->update_property();
 	advanced_options->set_disabled(false);
 	advanced_options->set_pressed(current->are_advanced_options_enabled());
@@ -1437,6 +1440,9 @@ ProjectExportDialog::ProjectExportDialog() {
 	HSplitContainer *hbox = memnew(HSplitContainer);
 	main_vb->add_child(hbox);
 	hbox->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	if (EDITOR_GET("interface/touchscreen/enable_touch_optimizations")) {
+		hbox->set_touch_dragger_enabled(true);
+	}
 
 	// Presets list.
 
@@ -1467,13 +1473,11 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
-	duplicate_preset->set_accessibility_name(TTRC("Duplicate"));
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
 	duplicate_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
 	delete_preset->set_tooltip_text(TTR("Delete"));
-	delete_preset->set_accessibility_name(TTRC("Delete"));
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_delete_preset));
@@ -1695,7 +1699,7 @@ ProjectExportDialog::ProjectExportDialog() {
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
-	script_key->set_accessibility_name(TTRC("Encryption Key"));
+	script_key->set_accessibility_name(TTRC("Encryption Key (256-bits as hexadecimal):"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
@@ -1706,7 +1710,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(sec_scroll_container);
 
 	seed_input = memnew(LineEdit);
-	seed_input->set_accessibility_name(TTRC("Encryption Seed"));
+	seed_input->set_accessibility_name(TTRC("Initialization vector seed"));
 	seed_input->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_seed_input_changed));
 	sec_vb->add_margin_child(TTR("Initialization vector seed"), seed_input);
 
@@ -1726,7 +1730,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_vb->set_name(TTR("Scripts"));
 
 	script_mode = memnew(OptionButton);
-	script_mode->set_accessibility_name(TTRC("GDScript Export Mode"));
+	script_mode->set_accessibility_name(TTRC("GDScript Export Mode:"));
 	script_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);
@@ -1791,10 +1795,9 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	// Export warnings and errors bottom section.
 
-	export_texture_format_error = memnew(ProjectExportTextureFormatError);
+	export_texture_format_error = memnew(ProjectExportTextureFormatError(this));
 	main_vb->add_child(export_texture_format_error);
 	export_texture_format_error->hide();
-	export_texture_format_error->connect("texture_format_enabled", callable_mp(this, &ProjectExportDialog::_update_current_preset));
 
 	export_error = memnew(Label);
 	export_error->set_focus_mode(Control::FOCUS_ACCESSIBILITY);

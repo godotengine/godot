@@ -478,11 +478,15 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 		bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 
+		if (is_joypad_event && !has_focus_or_active_popup()) {
+			return;
+		}
 		if (p_event->is_action("ui_down", true) && p_event->is_pressed()) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_down", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_down", p_event, true)) {
 					return;
 				}
+				joypad_event_process = true;
 				set_process_internal(true);
 			}
 			int search_from = mouse_over + 1;
@@ -522,9 +526,10 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_up", true) && p_event->is_pressed()) {
 			if (is_joypad_event) {
-				if (!input->is_action_just_pressed("ui_up", true)) {
+				if (!input->is_action_just_pressed_by_event("ui_up", p_event, true)) {
 					return;
 				}
+				joypad_event_process = true;
 				set_process_internal(true);
 			}
 			int search_from = mouse_over - 1;
@@ -613,6 +618,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 	item_clickable_area.position.x += theme_cache.panel_style->get_margin(SIDE_LEFT);
 	item_clickable_area.position.y += theme_cache.panel_style->get_margin(SIDE_TOP);
 	item_clickable_area.position *= win_scale;
+	item_clickable_area.size.width -= theme_cache.panel_style->get_margin(SIDE_LEFT) + theme_cache.panel_style->get_margin(SIDE_RIGHT);
 	item_clickable_area.size.y -= theme_cache.panel_style->get_margin(SIDE_TOP) + theme_cache.panel_style->get_margin(SIDE_BOTTOM);
 	item_clickable_area.size *= win_scale;
 
@@ -626,7 +632,7 @@ void PopupMenu::_input_from_window_internal(const Ref<InputEvent> &p_event) {
 		if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
 			if (b->is_pressed()) {
 				during_grabbed_click = false;
-				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x : b->get_position().x > item_clickable_area.size.width;
+				is_scrolling = is_layout_rtl() ? b->get_position().x < item_clickable_area.position.x - item_clickable_area.size.width : b->get_position().x > item_clickable_area.size.width + item_clickable_area.position.x;
 
 				// Hide it if the shadows have been clicked.
 				if (get_flag(FLAG_POPUP)) {
@@ -959,7 +965,7 @@ void PopupMenu::_draw_items() {
 			} else {
 				item_ofs.x = display_width - theme_cache.panel_style->get_margin(SIDE_RIGHT) - items[i].accel_text_buf->get_size().x - theme_cache.item_end_padding;
 			}
-			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].text_buf->get_size().y) / 2.0));
+			Vector2 text_pos = item_ofs + Point2(0, Math::floor((h - items[i].accel_text_buf->get_size().y) / 2.0));
 			if (theme_cache.font_outline_size > 0 && theme_cache.font_outline_color.a > 0) {
 				items[i].accel_text_buf->draw_outline(ci, text_pos, theme_cache.font_outline_size, theme_cache.font_outline_color);
 			}
@@ -1290,74 +1296,77 @@ void PopupMenu::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			Input *input = Input::get_singleton();
 
-			if (input->is_action_just_released("ui_up") || input->is_action_just_released("ui_down")) {
-				gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
-				set_process_internal(false);
-				return;
-			}
-			gamepad_event_delay_ms -= get_process_delta_time();
-			if (gamepad_event_delay_ms <= 0) {
-				if (input->is_action_pressed("ui_down")) {
-					gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
-					int search_from = mouse_over + 1;
-					if (search_from >= items.size()) {
-						search_from = 0;
-					}
+			if (joypad_event_process && has_focus_or_active_popup()) {
+				if (input->is_action_just_released("ui_up") || input->is_action_just_released("ui_down")) {
+					gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
+					set_process_internal(false);
+					return;
+				}
 
-					bool match_found = false;
-					for (int i = search_from; i < items.size(); i++) {
-						if (!items[i].separator && !items[i].disabled) {
-							mouse_over = i;
-							emit_signal(SNAME("id_focused"), items[i].id);
-							scroll_to_item(i);
-							control->queue_redraw();
-							match_found = true;
-							break;
+				gamepad_event_delay_ms -= get_process_delta_time();
+				if (gamepad_event_delay_ms <= 0) {
+					if (input->is_action_pressed("ui_down")) {
+						gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
+						int search_from = mouse_over + 1;
+						if (search_from >= items.size()) {
+							search_from = 0;
 						}
-					}
 
-					if (!match_found) {
-						// If the last item is not selectable, try re-searching from the start.
-						for (int i = 0; i < search_from; i++) {
+						bool match_found = false;
+						for (int i = search_from; i < items.size(); i++) {
 							if (!items[i].separator && !items[i].disabled) {
 								mouse_over = i;
 								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
 								control->queue_redraw();
+								match_found = true;
 								break;
 							}
 						}
-					}
-				}
 
-				if (input->is_action_pressed("ui_up")) {
-					gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
-					int search_from = mouse_over - 1;
-					if (search_from < 0) {
-						search_from = items.size() - 1;
-					}
-
-					bool match_found = false;
-					for (int i = search_from; i >= 0; i--) {
-						if (!items[i].separator && !items[i].disabled) {
-							mouse_over = i;
-							emit_signal(SNAME("id_focused"), items[i].id);
-							scroll_to_item(i);
-							control->queue_redraw();
-							match_found = true;
-							break;
+						if (!match_found) {
+							// If the last item is not selectable, try re-searching from the start.
+							for (int i = 0; i < search_from; i++) {
+								if (!items[i].separator && !items[i].disabled) {
+									mouse_over = i;
+									emit_signal(SNAME("id_focused"), items[i].id);
+									scroll_to_item(i);
+									control->queue_redraw();
+									break;
+								}
+							}
 						}
 					}
 
-					if (!match_found) {
-						// If the first item is not selectable, try re-searching from the end.
-						for (int i = items.size() - 1; i >= search_from; i--) {
+					if (input->is_action_pressed("ui_up")) {
+						gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
+						int search_from = mouse_over - 1;
+						if (search_from < 0) {
+							search_from = items.size() - 1;
+						}
+
+						bool match_found = false;
+						for (int i = search_from; i >= 0; i--) {
 							if (!items[i].separator && !items[i].disabled) {
 								mouse_over = i;
 								emit_signal(SNAME("id_focused"), items[i].id);
 								scroll_to_item(i);
 								control->queue_redraw();
+								match_found = true;
 								break;
+							}
+						}
+
+						if (!match_found) {
+							// If the first item is not selectable, try re-searching from the end.
+							for (int i = items.size() - 1; i >= search_from; i--) {
+								if (!items[i].separator && !items[i].disabled) {
+									mouse_over = i;
+									emit_signal(SNAME("id_focused"), items[i].id);
+									scroll_to_item(i);
+									control->queue_redraw();
+									break;
+								}
 							}
 						}
 					}
@@ -1407,6 +1416,7 @@ void PopupMenu::_notification(int p_what) {
 				}
 			} else {
 				if (!is_embedded()) {
+					joypad_event_process = false;
 					set_process_internal(true);
 				}
 
@@ -3199,31 +3209,29 @@ void PopupMenu::popup(const Rect2i &p_bounds) {
 		_native_popup(p_bounds != Rect2i() ? p_bounds : Rect2i(get_position(), Size2i()));
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		moved = Vector2();
 		popup_time_msec = OS::get_singleton()->get_ticks_msec();
 
-		Size2 scale = get_parent_viewport()->get_popup_base_transform().get_scale();
-		CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
-		if (c) {
-			scale *= c->get_global_transform_with_canvas().get_scale();
-		}
-		real_t popup_scale = MIN(scale.x, scale.y);
-		set_content_scale_factor(popup_scale);
-		Size2 minsize = get_contents_minimum_size() * popup_scale;
-		minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
-		set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
-		set_size(Vector2(0, 0)); // Shrinkwraps to min size.
 		Popup::popup(p_bounds);
 	}
+}
+
+void PopupMenu::_pre_popup() {
+	Size2 scale = get_force_native() ? get_parent_viewport()->get_popup_base_transform_native().get_scale() : get_parent_viewport()->get_popup_base_transform().get_scale();
+	CanvasItem *c = Object::cast_to<CanvasItem>(get_parent());
+	if (c) {
+		scale *= c->get_global_transform_with_canvas().get_scale();
+	}
+	real_t popup_scale = MIN(scale.x, scale.y);
+	set_content_scale_factor(popup_scale);
+	Size2 minsize = get_contents_minimum_size() * popup_scale;
+	minsize.height = Math::ceil(minsize.height); // Ensures enough height at fractional content scales to prevent the v_scroll_bar from showing.
+	set_min_size(minsize); // `height` is truncated here by the cast to Size2i for Window.min_size.
+	reset_size(); // Shrinkwraps to min size.
 }
 
 void PopupMenu::set_visible(bool p_visible) {
@@ -3240,13 +3248,8 @@ void PopupMenu::set_visible(bool p_visible) {
 		}
 	} else {
 		if (is_inside_tree()) {
-			bool ac = get_tree()->is_accessibility_enabled();
-			// Note: Native popup menus need keyboard focus to work with screen reader.
-			set_flag(FLAG_POPUP, !ac);
-			set_flag(FLAG_NO_FOCUS, !is_embedded() && !ac);
-			if (ac) {
-				set_ac_popup();
-			}
+			set_flag(FLAG_POPUP, true);
+			set_flag(FLAG_NO_FOCUS, !is_embedded());
 		}
 
 		Popup::set_visible(p_visible);

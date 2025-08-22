@@ -304,9 +304,21 @@ void Dictionary::clear() {
 	_p->variant_map.clear();
 }
 
+struct _DictionaryVariantSort {
+	_FORCE_INLINE_ bool operator()(const KeyValue<Variant, Variant> &p_l, const KeyValue<Variant, Variant> &p_r) const {
+		bool valid = false;
+		Variant res;
+		Variant::evaluate(Variant::OP_LESS, p_l.key, p_r.key, res, valid);
+		if (!valid) {
+			res = false;
+		}
+		return res;
+	}
+};
+
 void Dictionary::sort() {
 	ERR_FAIL_COND_MSG(_p->read_only, "Dictionary is in read-only state.");
-	_p->variant_map.sort();
+	_p->variant_map.sort_custom<_DictionaryVariantSort>();
 }
 
 void Dictionary::merge(const Dictionary &p_dictionary, bool p_overwrite) {
@@ -708,6 +720,14 @@ Variant Dictionary::get_typed_key_script() const {
 
 Variant Dictionary::get_typed_value_script() const {
 	return _p->typed_value.script;
+}
+
+const ContainerTypeValidate &Dictionary::get_key_validator() const {
+	return _p->typed_key;
+}
+
+const ContainerTypeValidate &Dictionary::get_value_validator() const {
+	return _p->typed_value;
 }
 
 void Dictionary::operator=(const Dictionary &p_dictionary) {

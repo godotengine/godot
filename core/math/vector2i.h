@@ -139,7 +139,7 @@ struct [[nodiscard]] Vector2i {
 	Vector2i snapped(const Vector2i &p_step) const;
 	Vector2i snappedi(int32_t p_step) const;
 
-	operator String() const;
+	explicit operator String() const;
 	operator Vector2() const;
 
 	// NOLINTBEGIN(cppcoreguidelines-pro-type-member-init)

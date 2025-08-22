@@ -42,8 +42,15 @@ void PhysicsServer3DWrapMT::_thread_exit() {
 void PhysicsServer3DWrapMT::_thread_loop() {
 	while (!exit) {
 		WorkerThreadPool::get_singleton()->yield();
-		command_queue.flush_all();
+
+		if (!doing_sync.is_set()) {
+			command_queue.flush_all();
+		}
 	}
+}
+
+void PhysicsServer3DWrapMT::_thread_sync() {
+	doing_sync.set();
 }
 
 /* EVENT QUEUING */
@@ -58,7 +65,7 @@ void PhysicsServer3DWrapMT::step(real_t p_step) {
 
 void PhysicsServer3DWrapMT::sync() {
 	if (create_thread) {
-		command_queue.sync();
+		command_queue.push_and_sync(this, &PhysicsServer3DWrapMT::_thread_sync);
 	} else {
 		command_queue.flush_all(); // Flush all pending from other threads.
 	}
@@ -71,11 +78,15 @@ void PhysicsServer3DWrapMT::flush_queries() {
 
 void PhysicsServer3DWrapMT::end_sync() {
 	physics_server_3d->end_sync();
+
+	if (create_thread) {
+		doing_sync.clear();
+	}
 }
 
 void PhysicsServer3DWrapMT::init() {
 	if (create_thread) {
-		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &PhysicsServer3DWrapMT::_thread_loop), true);
+		WorkerThreadPool::TaskID tid = WorkerThreadPool::get_singleton()->add_task(callable_mp(this, &PhysicsServer3DWrapMT::_thread_loop), true, "Physics server 3D pump task", true);
 		command_queue.set_pump_task_id(tid);
 		command_queue.push(this, &PhysicsServer3DWrapMT::_assign_mt_ids, tid);
 		command_queue.push_and_sync(physics_server_3d, &PhysicsServer3D::init);

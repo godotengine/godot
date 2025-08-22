@@ -39,7 +39,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "core/version.h"
-#include "editor/editor_paths.h"
+#include "editor/file_system/editor_paths.h"
 #endif
 
 namespace GodotSharpDirs {

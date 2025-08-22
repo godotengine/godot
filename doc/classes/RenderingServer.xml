@@ -31,7 +31,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				As the RenderingServer actual logic may run on an separate thread, accessing its internals from the main (or any other) thread will result in errors. To make it easier to run code that can safely access the rendering internals (such as [RenderingDevice] and similar RD classes), push a callable via this function so it will be executed on the render thread.
+				As the RenderingServer actual logic may run on a separate thread, accessing its internals from the main (or any other) thread will result in errors. To make it easier to run code that can safely access the rendering internals (such as [RenderingDevice] and similar RD classes), push a callable via this function so it will be executed on the render thread.
 			</description>
 		</method>
 		<method name="camera_attributes_create">
@@ -72,7 +72,7 @@
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="RenderingServer.DOFBokehShape" />
 			<description>
-				Sets the shape of the DOF bokeh pattern. Different shapes may be used to achieve artistic effect, or to meet performance targets. For more detail on available options see [enum DOFBokehShape].
+				Sets the shape of the DOF bokeh pattern to [param shape]. Different shapes may be used to achieve artistic effect, or to meet performance targets.
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_quality">
@@ -80,7 +80,7 @@
 			<param index="0" name="quality" type="int" enum="RenderingServer.DOFBlurQuality" />
 			<param index="1" name="use_jitter" type="bool" />
 			<description>
-				Sets the quality level of the DOF blur effect to one of the options in [enum DOFBlurQuality]. [param use_jitter] can be used to jitter samples taken during the blur pass to hide artifacts at the cost of looking more fuzzy.
+				Sets the quality level of the DOF blur effect to [param quality]. [param use_jitter] can be used to jitter samples taken during the blur pass to hide artifacts at the cost of looking more fuzzy.
 			</description>
 		</method>
 		<method name="camera_attributes_set_exposure">
@@ -93,12 +93,12 @@
 				The normalization factor can be calculated from exposure value (EV100) as follows:
 				[codeblock]
 				func get_exposure_normalization(ev100: float):
-				    return 1.0 / (pow(2.0, ev100) * 1.2)
+					return 1.0 / (pow(2.0, ev100) * 1.2)
 				[/codeblock]
 				The exposure value can be calculated from aperture (in f-stops), shutter speed (in seconds), and sensitivity (in ISO) as follows:
 				[codeblock]
 				func get_exposure(aperture: float, shutter_speed: float, sensitivity: float):
-				    return log((aperture * aperture) / shutter_speed * (100.0 / sensitivity)) / log(2)
+					return log((aperture * aperture) / shutter_speed * (100.0 / sensitivity)) / log(2)
 				[/codeblock]
 			</description>
 		</method>
@@ -791,7 +791,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasLightBlendMode" />
 			<description>
-				Sets the blend mode for the given canvas light. See [enum CanvasLightBlendMode] for options. Equivalent to [member Light2D.blend_mode].
+				Sets the blend mode for the given canvas light to [param mode]. Equivalent to [member Light2D.blend_mode].
 			</description>
 		</method>
 		<method name="canvas_light_set_color">
@@ -864,7 +864,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasLightMode" />
 			<description>
-				The mode of the light, see [enum CanvasLightMode] constants.
+				Sets the mode of the canvas light.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_color">
@@ -888,7 +888,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasLightShadowFilter" />
 			<description>
-				Sets the canvas light's shadow's filter, see [enum CanvasLightShadowFilter] constants.
+				Sets the canvas light's shadow's filter.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_smooth">
@@ -962,7 +962,7 @@
 			<param index="0" name="occluder_polygon" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasOccluderPolygonCullMode" />
 			<description>
-				Sets an occluder polygons cull mode. See [enum CanvasOccluderPolygonCullMode] constants.
+				Sets an occluder polygon's cull mode.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_shape">
@@ -1596,7 +1596,9 @@
 			<return type="String" />
 			<description>
 				Returns the name of the current rendering driver. This can be [code]vulkan[/code], [code]d3d12[/code], [code]metal[/code], [code]opengl3[/code], [code]opengl3_es[/code], or [code]opengl3_angle[/code]. See also [method get_current_rendering_method].
-				The rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver], the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
+				When [member ProjectSettings.rendering/renderer/rendering_method] is [code]forward_plus[/code] or [code]mobile[/code], the rendering driver is determined by [member ProjectSettings.rendering/rendering_device/driver].
+				When [member ProjectSettings.rendering/renderer/rendering_method] is [code]gl_compatibility[/code], the rendering driver is determined by [member ProjectSettings.rendering/gl_compatibility/driver].
+				The rendering driver is also determined by the [code]--rendering-driver[/code] command line argument that overrides this project setting, or an automatic fallback that is applied depending on the hardware.
 			</description>
 		</method>
 		<method name="get_current_rendering_method" qualifiers="const">
@@ -1629,15 +1631,15 @@
 			<return type="int" />
 			<param index="0" name="info" type="int" enum="RenderingServer.RenderingInfo" />
 			<description>
-				Returns a statistic about the rendering engine which can be used for performance profiling. See [enum RenderingServer.RenderingInfo] for a list of values that can be queried. See also [method viewport_get_render_info], which returns information specific to a viewport.
+				Returns a statistic about the rendering engine which can be used for performance profiling. See also [method viewport_get_render_info], which returns information specific to a viewport.
 				[b]Note:[/b] Only 3D rendering is currently taken into account by some of these values, such as the number of draw calls.
 				[b]Note:[/b] Rendering information is not available until at least 2 frames have been rendered by the engine. If rendering information is not available, [method get_rendering_info] returns [code]0[/code]. To print rendering information in [code]_ready()[/code] successfully, use the following:
 				[codeblock]
 				func _ready():
-				    for _i in 2:
-				        await get_tree().process_frame
+					for _i in 2:
+						await get_tree().process_frame
 
-				    print(RenderingServer.get_rendering_info(RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
+					print(RenderingServer.get_rendering_info(RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME))
 				[/codeblock]
 			</description>
 		</method>
@@ -1853,7 +1855,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="shadow_casting_setting" type="int" enum="RenderingServer.ShadowCastingSetting" />
 			<description>
-				Sets the shadow casting setting to one of [enum ShadowCastingSetting]. Equivalent to [member GeometryInstance3D.cast_shadow].
+				Sets the shadow casting setting. Equivalent to [member GeometryInstance3D.cast_shadow].
 			</description>
 		</method>
 		<method name="instance_geometry_set_flag">
@@ -1862,7 +1864,7 @@
 			<param index="1" name="flag" type="int" enum="RenderingServer.InstanceFlags" />
 			<param index="2" name="enabled" type="bool" />
 			<description>
-				Sets the flag for a given [enum InstanceFlags]. See [enum InstanceFlags] for more details.
+				Sets the [param flag] for a given [param instance] to [param enabled].
 			</description>
 		</method>
 		<method name="instance_geometry_set_lightmap">
@@ -2084,7 +2086,7 @@
 			<param index="0" name="light" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.LightDirectionalShadowMode" />
 			<description>
-				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_mode]. See [enum LightDirectionalShadowMode] for options.
+				Sets the shadow mode for this directional light. Equivalent to [member DirectionalLight3D.directional_shadow_mode].
 			</description>
 		</method>
 		<method name="light_directional_set_sky_mode">
@@ -2167,7 +2169,7 @@
 			<param index="1" name="param" type="int" enum="RenderingServer.LightParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets the specified 3D light parameter. See [enum LightParam] for options. Equivalent to [method Light3D.set_param].
+				Sets the specified 3D light parameter. Equivalent to [method Light3D.set_param].
 			</description>
 		</method>
 		<method name="light_set_projector" keywords="light_set_cookie">
@@ -2469,6 +2471,14 @@
 				Returns the stride of the attribute buffer for a mesh with given [param format].
 			</description>
 		</method>
+		<method name="mesh_surface_get_format_index_stride" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
+			<param index="1" name="vertex_count" type="int" />
+			<description>
+				Returns the stride of the index buffer for a mesh with the given [param format].
+			</description>
+		</method>
 		<method name="mesh_surface_get_format_normal_tangent_stride" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" is_bitfield="true" />
@@ -2534,6 +2544,16 @@
 			<param index="2" name="offset" type="int" />
 			<param index="3" name="data" type="PackedByteArray" />
 			<description>
+			</description>
+		</method>
+		<method name="mesh_surface_update_index_region">
+			<return type="void" />
+			<param index="0" name="mesh" type="RID" />
+			<param index="1" name="surface" type="int" />
+			<param index="2" name="offset" type="int" />
+			<param index="3" name="data" type="PackedByteArray" />
+			<description>
+				Updates the index buffer of the mesh surface with the given [param data]. The expected data are 16 or 32-bit unsigned integers, which can be determined with [method mesh_surface_get_format_index_stride].
 			</description>
 		</method>
 		<method name="mesh_surface_update_skin_region">
@@ -3020,7 +3040,7 @@
 			<param index="0" name="particles" type="RID" />
 			<param index="1" name="order" type="int" enum="RenderingServer.ParticlesDrawOrder" />
 			<description>
-				Sets the draw order of the particles to one of the named enums from [enum ParticlesDrawOrder]. See [enum ParticlesDrawOrder] for options. Equivalent to [member GPUParticles3D.draw_order].
+				Sets the draw order of the particles. Equivalent to [member GPUParticles3D.draw_order].
 			</description>
 		</method>
 		<method name="particles_set_draw_pass_mesh">
@@ -3339,7 +3359,7 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="mode" type="int" enum="RenderingServer.ReflectionProbeUpdateMode" />
 			<description>
-				Sets how often the reflection probe updates. Can either be once or every frame. See [enum ReflectionProbeUpdateMode] for options.
+				Sets how often the reflection probe updates. Can either be once or every frame.
 			</description>
 		</method>
 		<method name="request_frame_drawn_callback">
@@ -3840,8 +3860,8 @@
 				[codeblocks]
 				[gdscript]
 				func _ready():
-				    RenderingServer.viewport_attach_to_screen(get_viewport().get_viewport_rid(), Rect2())
-				    RenderingServer.viewport_attach_to_screen($Viewport.get_viewport_rid(), Rect2(0, 0, 600, 600))
+					RenderingServer.viewport_attach_to_screen(get_viewport().get_viewport_rid(), Rect2())
+					RenderingServer.viewport_attach_to_screen($Viewport.get_viewport_rid(), Rect2(0, 0, 600, 600))
 				[/gdscript]
 				[/codeblocks]
 				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For further optimization, see [method viewport_set_render_direct_to_screen].
@@ -3878,19 +3898,19 @@
 			<param index="1" name="type" type="int" enum="RenderingServer.ViewportRenderInfoType" />
 			<param index="2" name="info" type="int" enum="RenderingServer.ViewportRenderInfo" />
 			<description>
-				Returns a statistic about the rendering engine which can be used for performance profiling. This is separated into render pass [param type]s, each of them having the same [param info]s you can query (different passes will return different values). See [enum RenderingServer.ViewportRenderInfoType] for a list of render pass types and [enum RenderingServer.ViewportRenderInfo] for a list of information that can be queried.
+				Returns a statistic about the rendering engine which can be used for performance profiling. This is separated into render pass [param type]s, each of them having the same [param info]s you can query (different passes will return different values).
 				See also [method get_rendering_info], which returns global information across all viewports.
 				[b]Note:[/b] Viewport rendering information is not available until at least 2 frames have been rendered by the engine. If rendering information is not available, [method viewport_get_render_info] returns [code]0[/code]. To print rendering information in [code]_ready()[/code] successfully, use the following:
 				[codeblock]
 				func _ready():
-				    for _i in 2:
-				        await get_tree().process_frame
+					for _i in 2:
+						await get_tree().process_frame
 
-				    print(
-				            RenderingServer.viewport_get_render_info(get_viewport().get_viewport_rid(),
-				            RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
-				            RenderingServer.VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME)
-				    )
+					print(
+							RenderingServer.viewport_get_render_info(get_viewport().get_viewport_rid(),
+							RenderingServer.VIEWPORT_RENDER_INFO_TYPE_VISIBLE,
+							RenderingServer.VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME)
+					)
 				[/codeblock]
 			</description>
 		</method>
@@ -3912,7 +3932,7 @@
 			<return type="int" enum="RenderingServer.ViewportUpdateMode" />
 			<param index="0" name="viewport" type="RID" />
 			<description>
-				Returns the viewport's update mode. See [enum ViewportUpdateMode] constants for options.
+				Returns the viewport's update mode.
 				[b]Warning:[/b] Calling this from any thread other than the rendering thread will be detrimental to performance.
 			</description>
 		</method>
@@ -3960,6 +3980,7 @@
 			<description>
 				Sets the stacking order for a viewport's canvas.
 				[param layer] is the actual canvas layer, while [param sublayer] specifies the stacking order of the canvas among those in the same layer.
+				[b]Note:[/b] [param layer] should be between [constant CANVAS_LAYER_MIN] and [constant CANVAS_LAYER_MAX] (inclusive). Any other value will wrap around.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_transform">
@@ -3976,7 +3997,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="clear_mode" type="int" enum="RenderingServer.ViewportClearMode" />
 			<description>
-				Sets the clear mode of a viewport. See [enum ViewportClearMode] for options.
+				Sets the clear mode of a viewport.
 			</description>
 		</method>
 		<method name="viewport_set_debug_draw">
@@ -3984,7 +4005,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="draw" type="int" enum="RenderingServer.ViewportDebugDraw" />
 			<description>
-				Sets the debug draw mode of a viewport. See [enum ViewportDebugDraw] for options.
+				Sets the debug draw mode of a viewport.
 			</description>
 		</method>
 		<method name="viewport_set_default_canvas_item_texture_filter">
@@ -3992,7 +4013,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
 			<description>
-				Sets the default texture filtering mode for the specified [param viewport] RID. See [enum CanvasItemTextureFilter] for options.
+				Sets the default texture filtering mode for the specified [param viewport] RID.
 			</description>
 		</method>
 		<method name="viewport_set_default_canvas_item_texture_repeat">
@@ -4000,7 +4021,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
 			<description>
-				Sets the default texture repeat mode for the specified [param viewport] RID. See [enum CanvasItemTextureRepeat] for options.
+				Sets the default texture repeat mode for the specified [param viewport] RID.
 			</description>
 		</method>
 		<method name="viewport_set_disable_2d">
@@ -4056,7 +4077,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the multisample antialiasing mode for 2D/Canvas on the specified [param viewport] RID. See [enum ViewportMSAA] for options. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/msaa_2d] or [member Viewport.msaa_2d].
+				Sets the multisample antialiasing mode for 2D/Canvas on the specified [param viewport] RID. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/msaa_2d] or [member Viewport.msaa_2d].
 			</description>
 		</method>
 		<method name="viewport_set_msaa_3d">
@@ -4064,7 +4085,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="msaa" type="int" enum="RenderingServer.ViewportMSAA" />
 			<description>
-				Sets the multisample antialiasing mode for 3D on the specified [param viewport] RID. See [enum ViewportMSAA] for options. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] or [member Viewport.msaa_3d].
+				Sets the multisample antialiasing mode for 3D on the specified [param viewport] RID. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] or [member Viewport.msaa_3d].
 			</description>
 		</method>
 		<method name="viewport_set_occlusion_culling_build_quality">
@@ -4205,7 +4226,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="update_mode" type="int" enum="RenderingServer.ViewportUpdateMode" />
 			<description>
-				Sets when the viewport should be updated. See [enum ViewportUpdateMode] constants for options.
+				Sets when the viewport should be updated.
 			</description>
 		</method>
 		<method name="viewport_set_use_debanding">
@@ -4213,7 +4234,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enable" type="bool" />
 			<description>
-				If [code]true[/code], enables debanding on the specified viewport. Equivalent to [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding] or [member Viewport.use_debanding].
+				Equivalent to [member Viewport.use_debanding]. See also [member ProjectSettings.rendering/anti_aliasing/quality/use_debanding].
 			</description>
 		</method>
 		<method name="viewport_set_use_hdr_2d">
@@ -4221,8 +4242,7 @@
 			<param index="0" name="viewport" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
-				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
-				[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
+				If [code]true[/code], 2D rendering will use a high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ or Compatibility rendering method this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile rendering method it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients. This setting has the same effect as [member Viewport.use_hdr_2d].
 			</description>
 		</method>
 		<method name="viewport_set_use_occlusion_culling">
@@ -4456,6 +4476,12 @@
 		</constant>
 		<constant name="CANVAS_ITEM_Z_MAX" value="4096">
 			The maximum Z-layer for canvas items.
+		</constant>
+		<constant name="CANVAS_LAYER_MIN" value="-2147483648">
+			The minimum canvas layer.
+		</constant>
+		<constant name="CANVAS_LAYER_MAX" value="2147483647">
+			The maximum canvas layer.
 		</constant>
 		<constant name="MAX_GLOW_LEVELS" value="7">
 			The maximum number of glow levels that can be used with the glow post-processing effect.
@@ -5868,7 +5894,7 @@
 			Cubemap sampler global shader parameter ([code]global uniform samplerCube ...[/code]). Exposed as a [Cubemap] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_SAMPLEREXT" value="28" enum="GlobalShaderParameterType">
-			External sampler global shader parameter ([code]global uniform samplerExternalOES ...[/code]). Exposed as a [ExternalTexture] in the editor UI.
+			External sampler global shader parameter ([code]global uniform samplerExternalOES ...[/code]). Exposed as an [ExternalTexture] in the editor UI.
 		</constant>
 		<constant name="GLOBAL_VAR_TYPE_MAX" value="29" enum="GlobalShaderParameterType">
 			Represents the size of the [enum GlobalShaderParameterType] enum.
@@ -5898,7 +5924,7 @@
 			Number of pipeline compilations that were triggered by loading meshes. These compilations will show up as longer loading times the first time a user runs the game and the pipeline is required.
 		</constant>
 		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE" value="8" enum="RenderingInfo">
-			Number of pipeline compilations that were triggered by building the surface cache before rendering the scene. These compilations will show up as a stutter when loading an scene the first time a user runs the game and the pipeline is required.
+			Number of pipeline compilations that were triggered by building the surface cache before rendering the scene. These compilations will show up as a stutter when loading a scene the first time a user runs the game and the pipeline is required.
 		</constant>
 		<constant name="RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW" value="9" enum="RenderingInfo">
 			Number of pipeline compilations that were triggered while drawing the scene. These compilations will show up as stutters during gameplay the first time a user runs the game and the pipeline is required.

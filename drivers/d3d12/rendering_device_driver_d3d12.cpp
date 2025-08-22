@@ -40,12 +40,34 @@
 #include "d3d12_godot_nir_bridge.h"
 #include "rendering_context_driver_d3d12.h"
 
+GODOT_GCC_WARNING_PUSH
+GODOT_GCC_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_GCC_WARNING_IGNORE("-Wlogical-not-parentheses")
+GODOT_GCC_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_GCC_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_GCC_WARNING_IGNORE("-Wshadow")
+GODOT_GCC_WARNING_IGNORE("-Wswitch")
+GODOT_CLANG_WARNING_PUSH
+GODOT_CLANG_WARNING_IGNORE("-Wimplicit-fallthrough")
+GODOT_CLANG_WARNING_IGNORE("-Wlogical-not-parentheses")
+GODOT_CLANG_WARNING_IGNORE("-Wmissing-field-initializers")
+GODOT_CLANG_WARNING_IGNORE("-Wnon-virtual-dtor")
+GODOT_CLANG_WARNING_IGNORE("-Wstring-plus-int")
+GODOT_CLANG_WARNING_IGNORE("-Wswitch")
+GODOT_MSVC_WARNING_PUSH
+GODOT_MSVC_WARNING_IGNORE(4200) // "nonstandard extension used: zero-sized array in struct/union".
+GODOT_MSVC_WARNING_IGNORE(4806) // "'&': unsafe operation: no value of type 'bool' promoted to type 'uint32_t' can equal the given constant".
+
 #include <nir_spirv.h>
 #include <nir_to_dxil.h>
 #include <spirv_to_dxil.h>
 extern "C" {
 #include <dxil_spirv_nir.h>
 }
+
+GODOT_GCC_WARNING_POP
+GODOT_CLANG_WARNING_POP
+GODOT_MSVC_WARNING_POP
 
 #if !defined(_MSC_VER)
 #include <guiddef.h>
@@ -3694,7 +3716,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 					if (unlikely(frame_heap_walkers.resources->get_free_handles() < num_resource_descs)) {
 						if (!frames[frame_idx].desc_heaps_exhausted_reported.resources) {
 							frames[frame_idx].desc_heaps_exhausted_reported.resources = true;
-							ERR_FAIL_MSG("Cannot bind uniform set because there's no enough room in current frame's RESOURCES descriptor heap.\n"
+							ERR_FAIL_MSG("Cannot bind uniform set because there's not enough room in the current frame's RESOURCES descriptor heap.\n"
 										 "Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors_per_frame project setting.");
 						} else {
 							return;
@@ -3749,7 +3771,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 					if (unlikely(frame_heap_walkers.samplers->get_free_handles() < num_sampler_descs)) {
 						if (!frames[frame_idx].desc_heaps_exhausted_reported.samplers) {
 							frames[frame_idx].desc_heaps_exhausted_reported.samplers = true;
-							ERR_FAIL_MSG("Cannot bind uniform set because there's no enough room in current frame's SAMPLERS descriptors heap.\n"
+							ERR_FAIL_MSG("Cannot bind uniform set because there's not enough room in the current frame's SAMPLERS descriptors heap.\n"
 										 "Please increase the value of the rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame project setting.");
 						} else {
 							return;
@@ -3824,7 +3846,7 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 		if (!frames[frame_idx].desc_heaps_exhausted_reported.resources) {
 			frames[frame_idx].desc_heaps_exhausted_reported.resources = true;
 			ERR_FAIL_MSG(
-					"Cannot clear buffer because there's no enough room in current frame's RESOURCE descriptors heap.\n"
+					"Cannot clear buffer because there's not enough room in the current frame's RESOURCE descriptors heap.\n"
 					"Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors_per_frame project setting.");
 		} else {
 			return;
@@ -3834,7 +3856,7 @@ void RenderingDeviceDriverD3D12::command_clear_buffer(CommandBufferID p_cmd_buff
 		if (!frames[frame_idx].desc_heaps_exhausted_reported.aux) {
 			frames[frame_idx].desc_heaps_exhausted_reported.aux = true;
 			ERR_FAIL_MSG(
-					"Cannot clear buffer because there's no enough room in current frame's AUX descriptors heap.\n"
+					"Cannot clear buffer because there's not enough room in the current frame's AUX descriptors heap.\n"
 					"Please increase the value of the rendering/rendering_device/d3d12/max_misc_descriptors_per_frame project setting.");
 		} else {
 			return;
@@ -3979,7 +4001,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.rtv) {
 				frames[frame_idx].desc_heaps_exhausted_reported.rtv = true;
 				ERR_FAIL_MSG(
-						"Cannot clear texture because there's no enough room in current frame's RENDER TARGET descriptors heap.\n"
+						"Cannot clear texture because there's not enough room in the current frame's RENDER TARGET descriptors heap.\n"
 						"Please increase the value of the rendering/rendering_device/d3d12/max_misc_descriptors_per_frame project setting.");
 			} else {
 				return;
@@ -4014,7 +4036,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.resources) {
 				frames[frame_idx].desc_heaps_exhausted_reported.resources = true;
 				ERR_FAIL_MSG(
-						"Cannot clear texture because there's no enough room in current frame's RESOURCE descriptors heap.\n"
+						"Cannot clear texture because there's not enough room in the current frame's RESOURCE descriptors heap.\n"
 						"Please increase the value of the rendering/rendering_device/d3d12/max_resource_descriptors_per_frame project setting.");
 			} else {
 				return;
@@ -4024,7 +4046,7 @@ void RenderingDeviceDriverD3D12::command_clear_color_texture(CommandBufferID p_c
 			if (!frames[frame_idx].desc_heaps_exhausted_reported.aux) {
 				frames[frame_idx].desc_heaps_exhausted_reported.aux = true;
 				ERR_FAIL_MSG(
-						"Cannot clear texture because there's no enough room in current frame's AUX descriptors heap.\n"
+						"Cannot clear texture because there's not enough room in the current frame's AUX descriptors heap.\n"
 						"Please increase the value of the rendering/rendering_device/d3d12/max_misc_descriptors_per_frame project setting.");
 			} else {
 				return;
@@ -4518,7 +4540,7 @@ void RenderingDeviceDriverD3D12::command_next_render_subpass(CommandBufferID p_c
 				if (frames[frame_idx].desc_heap_walkers.rtv.is_at_eof()) {
 					if (!frames[frame_idx].desc_heaps_exhausted_reported.rtv) {
 						frames[frame_idx].desc_heaps_exhausted_reported.rtv = true;
-						ERR_FAIL_MSG("Cannot begin subpass because there's no enough room in current frame's RENDER TARGET descriptors heap.\n"
+						ERR_FAIL_MSG("Cannot begin subpass because there's not enough room in the current frame's RENDER TARGET descriptors heap.\n"
 									 "Please increase the value of the rendering/rendering_device/d3d12/max_misc_descriptors_per_frame project setting.");
 					} else {
 						return;
@@ -5580,12 +5602,16 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_FSR_HALF_FLOAT:
+		case SUPPORTS_HALF_FLOAT:
 			return shader_capabilities.native_16bit_ops && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
 			return true;
+		case SUPPORTS_IMAGE_ATOMIC_32_BIT:
+			return true;
+		case SUPPORTS_VULKAN_MEMORY_MODEL:
+			return false;
 		default:
 			return false;
 	}
@@ -5837,7 +5863,7 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 
 #define D3D_SHADER_MODEL_TO_STRING(m_sm) vformat("%d.%d", (m_sm >> 4), (m_sm & 0xf))
 
-		ERR_FAIL_COND_V_MSG(!shader_capabilities.shader_model, ERR_UNAVAILABLE,
+		ERR_FAIL_COND_V_MSG(shader_capabilities.shader_model < SMS_TO_CHECK[ARRAY_SIZE(SMS_TO_CHECK) - 1], ERR_UNAVAILABLE,
 				vformat("No support for any of the suitable shader models (%s-%s) has been found.", D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[ARRAY_SIZE(SMS_TO_CHECK) - 1]), D3D_SHADER_MODEL_TO_STRING(SMS_TO_CHECK[0])));
 
 		print_verbose("- Shader:");
@@ -6056,6 +6082,8 @@ Error RenderingDeviceDriverD3D12::_initialize_command_signatures() {
 }
 
 Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p_frame_count) {
+	glsl_type_singleton_init_or_ref();
+
 	context_device = context_driver->device_get(p_device_index);
 	adapter = context_driver->create_adapter(p_device_index);
 	ERR_FAIL_NULL_V(adapter, ERR_CANT_CREATE);
@@ -6084,8 +6112,6 @@ Error RenderingDeviceDriverD3D12::initialize(uint32_t p_device_index, uint32_t p
 
 	err = _initialize_command_signatures();
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
-
-	glsl_type_singleton_init_or_ref();
 
 	return OK;
 }

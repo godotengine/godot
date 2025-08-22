@@ -34,14 +34,15 @@
 #include "core/io/plist.h"
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
-#include "editor/editor_paths.h"
 #include "editor/editor_string_names.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
+#include "editor/file_system/editor_paths.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "main/main.h"
 
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
@@ -190,7 +191,7 @@ String EditorExportPlatformAppleEmbedded::get_export_option_warning(const Editor
 			if (access == 0) {
 				return TTR("At least one system boot time access reason should be selected.");
 			}
-		} else if (p_name == "shader_baker/enabled") {
+		} else if (p_name == "shader_baker/enabled" && bool(p_preset->get("shader_baker/enabled"))) {
 			String export_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 			if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
 				return TTR("\"Shader Baker\" doesn't work with the Compatibility renderer.");
@@ -351,9 +352,9 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 		}
 	}
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_dark", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_tinted", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_dark", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_tinted", PROPERTY_HINT_FILE_PATH, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
 
 	HashSet<String> used_names;
 
@@ -361,9 +362,9 @@ void EditorExportPlatformAppleEmbedded::get_export_options(List<ExportOption> *r
 	for (int i = 0; i < icon_infos.size(); ++i) {
 		if (!used_names.has(icon_infos[i].preset_key)) {
 			used_names.insert(icon_infos[i].preset_key);
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key), PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_dark", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
-			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_tinted", PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key), PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_dark", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
+			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key) + "_tinted", PROPERTY_HINT_FILE_PATH, "*.png,*.jpg,*.jpeg"), ""));
 		}
 	}
 }
@@ -2161,15 +2162,21 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 	archive_args.push_back("-archivePath");
 	archive_args.push_back(archive_path);
 
-	String archive_str;
-	err = OS::get_singleton()->execute("xcodebuild", archive_args, &archive_str, nullptr, true);
-	if (err != OK) {
+	bool archive_succeeded = false;
+	int result = _execute("xcodebuild", archive_args, [&archive_succeeded](const String &p_data) {
+		print_line(p_data);
+		DisplayServer::get_singleton()->process_events();
+		Main::iteration();
+		if (!archive_succeeded && p_data.contains("** ARCHIVE SUCCEEDED **")) {
+			archive_succeeded = true;
+		}
+	});
+	if (result != 0) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), vformat(TTR("Failed to run xcodebuild with code %d"), err));
-		return err;
+		return ERR_CANT_CREATE;
 	}
 
-	print_line("xcodebuild (.xcarchive):\n" + archive_str);
-	if (!archive_str.contains("** ARCHIVE SUCCEEDED **")) {
+	if (!archive_succeeded) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR("Xcode project build failed, see editor log for details."));
 		return FAILED;
 	}
@@ -2189,15 +2196,21 @@ Error EditorExportPlatformAppleEmbedded::_export_project_helper(const Ref<Editor
 		export_args.push_back("-exportPath");
 		export_args.push_back(dest_dir);
 
-		String export_str;
-		err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
-		if (err != OK) {
+		bool export_succeeded = false;
+		result = _execute("xcodebuild", export_args, [&export_succeeded](const String &p_data) {
+			print_line(p_data);
+			DisplayServer::get_singleton()->process_events();
+			Main::iteration();
+			if (!export_succeeded && p_data.contains("** EXPORT SUCCEEDED **")) {
+				export_succeeded = true;
+			}
+		});
+		if (result != 0) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), vformat(TTR("Failed to run xcodebuild with code %d"), err));
 			return err;
 		}
 
-		print_line("xcodebuild (.ipa):\n" + export_str);
-		if (!export_str.contains("** EXPORT SUCCEEDED **")) {
+		if (!export_succeeded) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR(".ipa export failed, see editor log for details."));
 			return FAILED;
 		}
@@ -2312,10 +2325,10 @@ String EditorExportPlatformAppleEmbedded::get_options_tooltip() const {
 	return TTR("Select device from the list");
 }
 
-Ref<ImageTexture> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
+Ref<Texture2D> EditorExportPlatformAppleEmbedded::get_option_icon(int p_index) const {
 	MutexLock lock(device_lock);
 
-	Ref<ImageTexture> icon;
+	Ref<Texture2D> icon;
 	if (p_index >= 0 || p_index < devices.size()) {
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {
@@ -2390,6 +2403,17 @@ bool EditorExportPlatformAppleEmbedded::_check_xcode_install() {
 void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud) {
 	EditorExportPlatformAppleEmbedded *ea = static_cast<EditorExportPlatformAppleEmbedded *>(ud);
 
+	String device_types;
+	bool first = true;
+	for (const String &d : ea->get_device_types()) {
+		if (first) {
+			first = false;
+		} else {
+			device_types += "|";
+		}
+		device_types += d;
+	}
+
 	while (!ea->quit_request.is_set()) {
 		// Nothing to do if we already know the plugins have changed.
 		if (!ea->plugins_changed.is_set()) {
@@ -2414,10 +2438,10 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 
 		// Enum real devices (via ios_deploy, pre Xcode 15).
 		String ios_deploy_setting = "export/" + ea->get_platform_name() + "/ios_deploy";
-		if (EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
+		if (EditorSettings::get_singleton() && EditorSettings::get_singleton()->has_setting(ios_deploy_setting)) {
 			String idepl = EDITOR_GET(ios_deploy_setting);
 			if (ea->has_runnable_preset.is_set() && !idepl.is_empty()) {
-				String devices;
+				String devices_json;
 				List<String> args;
 				args.push_back("-c");
 				args.push_back("-timeout");
@@ -2427,12 +2451,12 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 				args.push_back("-I");
 
 				int ec = 0;
-				Error err = OS::get_singleton()->execute(idepl, args, &devices, &ec, true);
+				Error err = OS::get_singleton()->execute(idepl, args, &devices_json, &ec, true);
 				if (err == OK && ec == 0) {
 					Ref<JSON> json;
 					json.instantiate();
-					devices = "{ \"devices\":[" + devices.replace("}{", "},{") + "]}";
-					err = json->parse(devices);
+					devices_json = "{ \"devices\":[" + devices_json.replace("}{", "},{") + "]}";
+					err = json->parse(devices_json);
 					if (err == OK) {
 						Dictionary data = json->get_data();
 						Array devices = data["devices"];
@@ -2454,7 +2478,7 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 		}
 		// Enum devices (via Xcode).
 		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
-			String devices;
+			String devices_json;
 			List<String> args;
 			args.push_back("devicectl");
 			args.push_back("list");
@@ -2462,12 +2486,18 @@ void EditorExportPlatformAppleEmbedded::_check_for_changes_poll_thread(void *ud)
 			args.push_back("-j");
 			args.push_back("-");
 			args.push_back("-q");
+			// Add a timeout, so the process doesn't hang indefinitely, which can prevent Godot shutting down.
+			args.push_back("--timeout");
+			args.push_back("5");
+			args.push_back("--filter");
+			args.push_back(vformat("hardwareProperties.deviceType MATCHES '%s'", device_types));
+
 			int ec = 0;
-			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices_json, &ec, true);
 			if (err == OK && ec == 0) {
 				Ref<JSON> json;
 				json.instantiate();
-				err = json->parse(devices);
+				err = json->parse(devices_json);
 				if (err == OK) {
 					const Dictionary &data = json->get_data();
 					const Dictionary &result = data["result"];
@@ -2542,6 +2572,115 @@ void EditorExportPlatformAppleEmbedded::_update_preset_status() {
 	}
 	devices_changed.set();
 }
+
+class FileReader {
+	Ref<FileAccess> f;
+	LocalVector<char> buf;
+
+	void append_span(Span<char> p_span, String &p_data) {
+		uint32_t old_size = p_data.size();
+		if (p_data.append_utf8(p_span) != OK) {
+			p_data.resize_uninitialized(old_size); // Back up to original size.
+			if (old_size > 0) {
+				p_data[old_size - 1] = '\0';
+			}
+			p_data.append_latin1(p_span);
+		}
+	}
+
+public:
+	uint32_t get_lines(String &p_data) {
+		uint64_t available = f->get_length() - f->get_position();
+		if (available == 0) {
+			return 0;
+		}
+
+		uint32_t start = buf.size();
+		buf.resize_uninitialized(buf.size() + available);
+		f->get_buffer((uint8_t *)buf.ptr() + start, available);
+		const char *end = &buf[buf.size() - 1];
+		const char *p = end;
+		uint32_t n = available;
+		bool found = false;
+		// Scan for a newline starting from the end of the appended bytes.
+		while (n--) {
+			if (*p == '\n') {
+				found = true;
+				break;
+			}
+			p--;
+		}
+		if (found) {
+			size_t len = static_cast<size_t>(p - buf.ptr()) + 1;
+			Span<char> new_data(buf.ptr(), len);
+			append_span(new_data, p_data);
+			size_t remain = static_cast<size_t>(end - p);
+			// If there is unprocessed data in the buffer, move it to the front.
+			if (remain > 0) {
+				// Move to next char after '\n'.
+				p++;
+				memmove(buf.ptr(), p, remain);
+			}
+			buf.resize_uninitialized(remain);
+		}
+		return available;
+	}
+
+	// Flush any remaining data.
+	uint32_t flush(String &p_data) {
+		Span<char> new_data = buf.span();
+		if (new_data.size() > 0) {
+			append_span(new_data, p_data);
+		}
+		return new_data.size();
+	}
+
+	FileReader(Ref<FileAccess> p_f) :
+			f(p_f) {
+	}
+};
+
+int EditorExportPlatformAppleEmbedded::_execute(const String &p_path, const List<String> &p_arguments, std::function<void(const String &)> p_on_data) {
+	Dictionary pipe_info = OS::get_singleton()->execute_with_pipe(p_path, p_arguments, false);
+	ERR_FAIL_COND_V_MSG(pipe_info.is_empty(), 1, "execute_with_pipe failed");
+
+	Ref<FileAccess> fa_stdout = pipe_info["stdio"];
+	Ref<FileAccess> fa_stderr = pipe_info["stderr"];
+	OS::ProcessID pid = pipe_info["pid"];
+
+	FileReader stdout_r(fa_stdout);
+	FileReader stderr_r(fa_stderr);
+
+	while (true) {
+		String output;
+		stdout_r.get_lines(output);
+		stderr_r.get_lines(output);
+		if (!output.is_empty()) {
+			p_on_data(output);
+		}
+
+		// If the process is no longer running and no new data arrived, we're done.
+		if (output.is_empty() && !OS::get_singleton()->is_process_running(pid)) {
+			break;
+		}
+
+		OS::get_singleton()->delay_usec(1000);
+	}
+
+	// Flush any remaining content
+	String output;
+	stdout_r.flush(output);
+	stderr_r.flush(output);
+	if (!output.is_empty()) {
+		p_on_data(output);
+	}
+
+	fa_stdout->close();
+	fa_stderr->close();
+
+	return OS::get_singleton()->get_process_exit_code(pid);
+}
+
 #endif
 
 Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_preset, int p_device, BitField<EditorExportPlatform::DebugFlags> p_debug_flags) {
@@ -2689,12 +2828,9 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 			args.push_back(EditorPaths::get_singleton()->get_temp_dir().path_join(id).path_join("export.xcarchive/Products/Applications/export.app"));
 
 			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start device executable."));
-				CLEANUP_AND_RETURN(err);
-			}
+			int ec = _execute("xcrun", args, [&log](const String &p_data) {
+				log.append_utf32(p_data.span());
+			});
 			if (ec != 0) {
 				print_line("device install:\n" + log);
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Installation failed, see editor log for details."));
@@ -2719,12 +2855,9 @@ Error EditorExportPlatformAppleEmbedded::run(const Ref<EditorExportPreset> &p_pr
 			}
 
 			String log;
-			int ec;
-			err = OS::get_singleton()->execute("xcrun", args, &log, &ec, true);
-			if (err != OK) {
-				add_message(EXPORT_MESSAGE_WARNING, TTR("Run"), TTR("Could not start devicectl executable."));
-				CLEANUP_AND_RETURN(err);
-			}
+			int ec = _execute("xcrun", args, [&log](const String &p_data) {
+				log.append_utf32(p_data.span());
+			});
 			if (ec != 0) {
 				print_line("devicectl launch:\n" + log);
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Running failed, see editor log for details."));
@@ -2755,7 +2888,6 @@ EditorExportPlatformAppleEmbedded::EditorExportPlatformAppleEmbedded(const char 
 		devices_changed.set();
 #ifdef MACOS_ENABLED
 		_update_preset_status();
-		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
 #endif
 	}
 }

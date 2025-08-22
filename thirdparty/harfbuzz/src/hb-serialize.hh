@@ -794,7 +794,8 @@ struct hb_serialize_context_t
   template <typename T, unsigned Size = sizeof (T)>
   void assign_offset (const object_t* parent, const object_t::link_t &link, unsigned offset)
   {
-    auto &off = * ((BEInt<T, Size> *) (parent->head + link.position));
+    // XXX We should stop assuming big-endian!
+    auto &off = * ((HBInt<true, T, Size> *) (parent->head + link.position));
     assert (0 == off);
     check_assign (off, offset, HB_SERIALIZE_ERROR_OFFSET_OVERFLOW);
   }

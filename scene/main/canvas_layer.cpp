@@ -337,7 +337,7 @@ void CanvasLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_canvas"), &CanvasLayer::get_canvas);
 
 	ADD_GROUP("Layer", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, "-128,128,1"), "set_layer", "get_layer");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "layer", PROPERTY_HINT_RANGE, itos(RS::CANVAS_LAYER_MIN) + "," + itos(RS::CANVAS_LAYER_MAX) + ",1"), "set_layer", "get_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
@@ -347,7 +347,7 @@ void CanvasLayer::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "custom_viewport", PROPERTY_HINT_RESOURCE_TYPE, "Viewport", PROPERTY_USAGE_NONE), "set_custom_viewport", "get_custom_viewport");
 	ADD_GROUP("Follow Viewport", "follow_viewport");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled", PROPERTY_HINT_GROUP_ENABLE, "feature"), "set_follow_viewport", "is_following_viewport");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "follow_viewport_enabled", PROPERTY_HINT_GROUP_ENABLE), "set_follow_viewport", "is_following_viewport");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "follow_viewport_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001,or_greater,or_less"), "set_follow_viewport_scale", "get_follow_viewport_scale");
 
 	ADD_SIGNAL(MethodInfo("visibility_changed"));

@@ -181,7 +181,6 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase() {
 	binding_modifiers_btn = memnew(Button);
 	binding_modifiers_btn->set_tooltip_text(TTR("Edit binding modifiers"));
 	binding_modifiers_btn->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditorBase::_on_open_binding_modifiers));
-	binding_modifiers_btn->set_accessibility_name(TTRC("Edit"));
 	// TODO show visual difference if there are binding modifiers for this interaction profile
 	toolbar_vb->add_child(binding_modifiers_btn);
 }
@@ -247,7 +246,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 		path_label->set_text(p_io_path->display_name);
 	} else {
 		path_label->set_text(p_io_path->display_name + "*");
-		p_container->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
+		path_hb->set_tooltip_text(vformat(TTR("Note: This binding path requires extension %s support."), p_io_path->openxr_extension_name));
 	}
 	path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	path_hb->add_child(path_label);

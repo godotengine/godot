@@ -31,11 +31,11 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_input_hotzone(in_node, in_port, mouse_position):
-				    var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
-				    var rect = Rect2(port_pos, port_size)
+					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_pos = in_node.get_position() + in_node.get_input_port_position(in_port) - port_size / 2
+					var rect = Rect2(port_pos, port_size)
 
-				    return rect.has_point(mouse_position)
+					return rect.has_point(mouse_position)
 				[/codeblock]
 			</description>
 		</method>
@@ -49,11 +49,11 @@
 				Below is a sample code to help get started:
 				[codeblock]
 				func _is_in_output_hotzone(in_node, in_port, mouse_position):
-				    var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
-				    var port_pos = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
-				    var rect = Rect2(port_pos, port_size)
+					var port_size = Vector2(get_theme_constant("port_grab_distance_horizontal"), get_theme_constant("port_grab_distance_vertical"))
+					var port_pos = in_node.get_position() + in_node.get_output_port_position(in_port) - port_size / 2
+					var rect = Rect2(port_pos, port_size)
 
-				    return rect.has_point(mouse_position)
+					return rect.has_point(mouse_position)
 				[/codeblock]
 			</description>
 		</method>
@@ -70,12 +70,12 @@
 				[codeblocks]
 				[gdscript]
 				func _is_node_hover_valid(from, from_port, to, to_port):
-				    return from != to
+					return from != to
 				[/gdscript]
 				[csharp]
 				public override bool _IsNodeHoverValid(StringName fromNode, int fromPort, StringName toNode, int toPort)
 				{
-				    return fromNode != toNode;
+					return fromNode != toNode;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -177,11 +177,11 @@
 				A connection is represented as a [Dictionary] in the form of:
 				[codeblock]
 				{
-				    from_node: StringName,
-				    from_port: int,
-				    to_node: StringName,
-				    to_port: int,
-				    keep_alive: bool
+					from_node: StringName,
+					from_port: int,
+					to_node: StringName,
+					to_port: int,
+					keep_alive: bool
 				}
 				[/codeblock]
 				For example, getting a connection at a given mouse position can be achieved like this:
@@ -216,12 +216,31 @@
 				A connection is represented as a [Dictionary] in the form of:
 				[codeblock]
 				{
-				    from_node: StringName,
-				    from_port: int,
-				    to_node: StringName,
-				    to_port: int,
-				    keep_alive: bool
+					from_node: StringName,
+					from_port: int,
+					to_node: StringName,
+					to_port: int,
+					keep_alive: bool
 				}
+				[/codeblock]
+				[b]Example:[/b] Get all connections on a specific port:
+				[codeblock]
+				func get_connection_list_from_port(node, port):
+					var connections = get_connection_list_from_node(node)
+					var result = []
+					for connection in connections:
+						var dict = {}
+						if connection["from_node"] == node and connection["from_port"] == port:
+							dict["node"] = connection["to_node"]
+							dict["port"] = connection["to_port"]
+							dict["type"] = "left"
+							result.push_back(dict)
+						elif connection["to_node"] == node and connection["to_port"] == port:
+							dict["node"] = connection["from_node"]
+							dict["port"] = connection["from_port"]
+							dict["type"] = "right"
+							result.push_back(dict)
+					return result
 				[/codeblock]
 			</description>
 		</method>
@@ -233,11 +252,11 @@
 				A connection is represented as a [Dictionary] in the form of:
 				[codeblock]
 				{
-				    from_node: StringName,
-				    from_port: int,
-				    to_node: StringName,
-				    to_port: int,
-				    keep_alive: bool
+					from_node: StringName,
+					from_port: int,
+					to_node: StringName,
+					to_port: int,
+					keep_alive: bool
 				}
 				[/codeblock]
 			</description>
@@ -333,11 +352,11 @@
 			A connection is represented as a [Dictionary] in the form of:
 			[codeblock]
 			{
-			    from_node: StringName,
-			    from_port: int,
-			    to_node: StringName,
-			    to_port: int,
-			    keep_alive: bool
+				from_node: StringName,
+				from_port: int,
+				to_node: StringName,
+				to_port: int,
+				keep_alive: bool
 			}
 			[/codeblock]
 			Connections with [code]keep_alive[/code] set to [code]false[/code] may be deleted automatically if invalid during a redraw.

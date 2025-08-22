@@ -1575,7 +1575,9 @@ void RenderingDeviceGraph::initialize(RDD *p_driver, RenderingContextDriver::Dev
 }
 
 void RenderingDeviceGraph::finalize() {
-	_wait_for_secondary_command_buffer_tasks();
+	if (!frames.is_empty()) {
+		_wait_for_secondary_command_buffer_tasks();
+	}
 
 	for (Frame &f : frames) {
 		for (SecondaryCommandBuffer &secondary : f.secondary_command_buffers) {

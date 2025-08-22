@@ -245,7 +245,7 @@ void OpenXRCompositionLayer::_clear_composition_layer_provider() {
 
 void OpenXRCompositionLayer::_on_openxr_session_begun() {
 	openxr_session_running = true;
-	if (is_natively_supported() && is_visible() && is_inside_tree()) {
+	if (_should_register()) {
 		_setup_composition_layer_provider();
 	}
 	if (!fallback && _should_use_fallback_node()) {
@@ -263,6 +263,10 @@ void OpenXRCompositionLayer::_on_openxr_session_stopping() {
 
 void OpenXRCompositionLayer::update_fallback_mesh() {
 	should_update_fallback_mesh = true;
+}
+
+bool OpenXRCompositionLayer::_should_register() {
+	return !registered && openxr_session_running && is_inside_tree() && is_visible() && is_natively_supported();
 }
 
 XrPosef OpenXRCompositionLayer::get_openxr_pose() {
@@ -298,7 +302,7 @@ void OpenXRCompositionLayer::set_layer_viewport(SubViewport *p_viewport) {
 	}
 
 	layer_viewport = p_viewport;
-	if (!registered && is_natively_supported() && openxr_session_running && is_inside_tree() && is_visible()) {
+	if (_should_register()) {
 		_setup_composition_layer_provider();
 	}
 
@@ -328,8 +332,13 @@ void OpenXRCompositionLayer::set_use_android_surface(bool p_use_android_surface)
 
 	use_android_surface = p_use_android_surface;
 	if (use_android_surface) {
+		// It's possible that the layer provider is unregistered here (if previously invisible)
 		set_layer_viewport(nullptr);
 		openxr_layer_provider->set_use_android_surface(true, android_surface_size);
+		// ...and it may not be set up above because of viewport = null, android surface is false, so set it up again:
+		if (_should_register()) {
+			_setup_composition_layer_provider();
+		}
 	} else {
 		openxr_layer_provider->set_use_android_surface(false, Size2i());
 	}
@@ -677,6 +686,9 @@ bool OpenXRCompositionLayer::_set(const StringName &p_property, const Variant &p
 }
 
 void OpenXRCompositionLayer::_validate_property(PropertyInfo &p_property) const {
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (p_property.name == "layer_viewport") {
 		if (use_android_surface) {
 			p_property.usage &= ~PROPERTY_USAGE_EDITOR;

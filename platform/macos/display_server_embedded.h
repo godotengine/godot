@@ -30,8 +30,7 @@
 
 #pragma once
 
-#include "core/input/input.h"
-#include "servers/display_server.h"
+#include "display_server_macos_base.h"
 
 @class CAContext;
 @class CALayer;
@@ -40,10 +39,12 @@ class RenderingContextDriver;
 class RenderingDevice;
 
 struct DisplayServerEmbeddedState {
-	/// Default to a scale of 2.0, which is the most common.
+	/*! Default to a scale of 2.0, which is the most common. */
 	float screen_max_scale = 2.0f;
 	float screen_dpi = 96.0f;
-	/// The display ID of the window which is displaying the the embedded process content.
+	/*! Scale for window displaying embedded content */
+	float screen_window_scale = 2.0f;
+	/*! The display ID of the window which is displaying the embedded process content. */
 	uint32_t display_id = -1;
 
 	void serialize(PackedByteArray &r_data);
@@ -54,10 +55,8 @@ struct DisplayServerEmbeddedState {
 	}
 };
 
-class DisplayServerEmbedded : public DisplayServer {
-	GDCLASS(DisplayServerEmbedded, DisplayServer)
-
-	_THREAD_SAFE_CLASS_
+class DisplayServerEmbedded : public DisplayServerMacOSBase {
+	GDSOFTCLASS(DisplayServerEmbedded, DisplayServerMacOSBase)
 
 	DisplayServerEmbeddedState state;
 
@@ -141,6 +140,7 @@ public:
 	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
 	virtual bool mouse_is_mode_override_enabled() const override;
 
+	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
 	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
@@ -160,6 +160,7 @@ public:
 	virtual Size2i screen_get_size(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual Rect2i screen_get_usable_rect(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual int screen_get_dpi(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
+	virtual float screen_get_scale(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 	virtual float screen_get_refresh_rate(int p_screen = SCREEN_OF_MAIN_WINDOW) const override;
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
