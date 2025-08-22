@@ -1710,6 +1710,129 @@ void EditorNode::save_resource_as(const Ref<Resource> &p_resource, const String 
 	file->popup_file_dialog();
 }
 
+void EditorNode::gather_resources(const Variant &p_variant, List<Ref<Resource>> &p_l, bool subresources) {
+	Variant::Type type = p_variant.get_type();
+	if (p_variant.get_validated_object() == nullptr && type == Variant::OBJECT) {
+		return;
+	}
+
+	if (type != Variant::OBJECT && type != Variant::ARRAY && type != Variant::DICTIONARY) {
+		return;
+	}
+
+	if (type == Variant::ARRAY) {
+		Array arr = p_variant;
+		for (int i = 0; i < arr.size(); i++) {
+			Ref<Resource> res = arr[i];
+			if (res.is_valid()) {
+				p_l.push_back(res);
+			}
+			gather_resources(arr[i], p_l, subresources);
+		}
+		return;
+	}
+
+	if (type == Variant::DICTIONARY) {
+		Dictionary dict = p_variant;
+		for (const KeyValue<Variant, Variant> &kv : dict) {
+			Ref<Resource> res_key = kv.key;
+			Ref<Resource> res_value = kv.value;
+			if (res_key.is_valid()) {
+				p_l.push_back(res_key);
+			}
+			if (res_value.is_valid()) {
+				p_l.push_back(res_value);
+			}
+			gather_resources(kv.key, p_l, subresources);
+			gather_resources(kv.value, p_l, subresources);
+		}
+		return;
+	}
+
+	List<PropertyInfo> pinfo;
+	p_variant.get_property_list(&pinfo);
+
+	for (const PropertyInfo &E : pinfo) {
+		if (!(E.usage & PROPERTY_USAGE_EDITOR) || E.name == "script") {
+			continue;
+		}
+
+		Variant property_value = p_variant.get(E.name);
+		Variant::Type property_type = property_value.get_type();
+
+		if (property_type == Variant::ARRAY || property_type == Variant::DICTIONARY) {
+			gather_resources(property_value, p_l, subresources);
+		}
+
+		Ref<Resource> res = property_value;
+		if (res.is_null()) {
+			continue;
+		}
+		if (!res->is_built_in() && res->get_path().get_slice("::", 0) != get_edited_scene()->get_scene_file_path()) {
+			if (!res->get_path().is_empty()) {
+				continue;
+			}
+		}
+		p_l.push_back(res.ptr());
+		if (subresources) {
+			gather_resources(res.ptr(), p_l, subresources);
+		}
+	}
+}
+
+void EditorNode::update_resource_count(Node *p_node, bool remove) {
+	if (!get_edited_scene()) {
+		return;
+	}
+
+	List<Ref<Resource>> res_list;
+	gather_resources(p_node, res_list, true);
+
+	for (Ref<Resource> R : res_list) {
+		Resource *res = R.ptr();
+		if (resource_count[res].find(p_node)) {
+			if (remove) {
+				resource_count[res].erase(p_node);
+			}
+		} else {
+			resource_count[res].push_back(p_node);
+		}
+	}
+
+	emit_signal(SNAME("resource_counter_changed"));
+}
+
+int EditorNode::get_resource_count(Ref<Resource> p_res) const {
+	return (resource_count.has(p_res.ptr())) ? resource_count[p_res.ptr()].size() : 0;
+}
+
+List<Node *> EditorNode::get_resource_node_list(Ref<Resource> p_res) {
+	if (resource_count.has(p_res.ptr())) {
+		return resource_count[p_res.ptr()];
+	}
+	return List<Node *>();
+}
+
+void EditorNode::update_node_reference(const Variant &p_variant, Node *p_node, bool remove) {
+	List<Ref<Resource>> p_l;
+	Ref<Resource> res = p_variant;
+	if (res.is_valid()) {
+		p_l.push_back(res);
+	}
+	gather_resources(p_variant, p_l, true); //Gather all Resources and their SubResources to remove p_node from their lists.
+
+	for (Ref<Resource> R : p_l) {
+		if (!remove) {
+			resource_count[R.ptr()].push_back(p_node);
+		} else {
+			if (resource_count.has(R.ptr())) {
+				resource_count[R.ptr()].erase(p_node);
+			}
+		}
+	}
+	emit_signal(SNAME("resource_counter_changed"));
+}
+
 void EditorNode::_menu_option(int p_option) {
 	_menu_option_confirm(p_option, false);
 }
@@ -4263,6 +4386,7 @@ void EditorNode::_set_current_scene_nocheck(int p_idx) {
 
 	Node *old_scene = get_editor_data().get_edited_scene_root();
 
+	resource_count.clear();
 	editor_selection->clear();
 	SceneTreeDock::get_singleton()->clear_previous_node_selection();
 	editor_data.set_edited_scene(p_idx);
@@ -7279,6 +7403,8 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("stop_child_process", &EditorNode::stop_child_process);
 
+	ClassDB::bind_method("update_node_reference", &EditorNode::update_node_reference);
+
 	ADD_SIGNAL(MethodInfo("request_help_search"));
 	ADD_SIGNAL(MethodInfo("script_add_function_request", PropertyInfo(Variant::OBJECT, "obj"), PropertyInfo(Variant::STRING, "function"), PropertyInfo(Variant::PACKED_STRING_ARRAY, "args")));
 	ADD_SIGNAL(MethodInfo("resource_saved", PropertyInfo(Variant::OBJECT, "obj")));
@@ -7286,6 +7412,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("scene_closed", PropertyInfo(Variant::STRING, "path")));
 	ADD_SIGNAL(MethodInfo("preview_locale_changed"));
+	ADD_SIGNAL(MethodInfo("resource_counter_changed"));
 }
 
 static Node *_resource_get_edited_scene() {
