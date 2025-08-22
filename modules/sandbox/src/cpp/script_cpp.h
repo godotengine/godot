@@ -35,7 +35,6 @@
 #include "core/templates/hash_set.h"
 #include "core/variant/array.h"
 #include "core/string/ustring.h"
-#include "core/variant/packed_array.h"
 
 class CPPScriptInstance;
 class ELFScript;
@@ -98,7 +97,7 @@ public:
 			if (Docker::ContainerStart(docker_container_name, docker_image_name, output))
 				docker_container_started = true;
 			else {
-				UtilityFunctions::print(output);
+				print_line(output);
 				ERR_PRINT("Failed to start Docker container: " + String(docker_container_name));
 			}
 		}

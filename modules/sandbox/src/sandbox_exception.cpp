@@ -31,6 +31,9 @@
 #include "sandbox.h"
 
 #include "cpp/script_cpp.h"
+#include "elf/script_elf.h"
+#include "core/error/error_macros.h"
+#include "core/string/print_string.h"
 #include <charconv>
 #ifdef __linux__
 #include <libriscv/rsp_server.hpp>
@@ -70,9 +73,7 @@ void Sandbox::handle_exception(gaddr_t address) {
 			};
 		}
 	}
-	UtilityFunctions::print(
-			"[", get_name(), "] Exception when calling:\n  ", callsite.name.c_str(), " (0x",
-			to_hex(callsite.address), ")\n", "Backtrace:");
+	print_line(String("[") + get_name() + "] Exception when calling:\n  " + String(callsite.name.c_str()) + " (0x" + to_hex(callsite.address) + ")\nBacktrace:");
 
 	this->m_exceptions++;
 	Sandbox::m_global_exceptions++;
@@ -93,13 +94,9 @@ void Sandbox::handle_exception(gaddr_t address) {
 		const String instr(machine().cpu.current_instruction_to_string().c_str());
 		const String regs(machine().cpu.registers().to_string().c_str());
 
-		UtilityFunctions::print(
-				"\nException: ", e.what(), "  (data: ", to_hex(e.data()), ")\n",
-				">>> ", instr, "\n",
-				">>> Machine registers:\n[PC\t", to_hex(machine().cpu.pc()),
-				"] ", regs, "\n");
+		print_line(String("\nException: ") + e.what() + "  (data: " + to_hex(e.data()) + ")\n>>> " + instr + "\n>>> Machine registers:\n[PC\t" + to_hex(machine().cpu.pc()) + "] " + regs + "\n");
 	} catch (const std::exception &e) {
-		UtilityFunctions::print("\nMessage: ", e.what(), "\n\n");
+		print_line(String("\nMessage: ") + e.what() + "\n\n");
 		ERR_PRINT(("Exception: " + std::string(e.what())).c_str());
 	}
 
@@ -114,24 +111,22 @@ void Sandbox::handle_exception(gaddr_t address) {
 		CPPScript::DockerContainerExecute({ "/usr/api/build.sh", "--line", to_hex(address), elfpath }, line_out, false);
 		if (line_out.size() > 0) {
 			const String line = String(line_out[0]).replace("\n", "").replace("/usr/src/", "res://");
-			UtilityFunctions::print("Exception in Sandbox calling function: ", line);
+			print_line("Exception in Sandbox calling function: " + line);
 		}
 		// Additional line for the current PC, if it's not the same as the call address
 		if (machine().cpu.pc() != address) {
 			CPPScript::DockerContainerExecute({ "/usr/api/build.sh", "--line", to_hex(machine().cpu.pc()), elfpath }, line_out, false);
 			if (line_out.size() > 0) {
 				const String line = String(line_out[0]).replace("\n", "").replace("/usr/src/", "res://");
-				UtilityFunctions::print("Exception in Sandbox at PC: ", line);
+				print_line("Exception in Sandbox at PC: " + line);
 			}
 		}
 	}
 #endif
 
 	if constexpr (VERBOSE_EXCEPTIONS) {
-		UtilityFunctions::print(
-				"Program page: ", machine().memory.get_page_info(machine().cpu.pc()).c_str());
-		UtilityFunctions::print(
-				"Stack page: ", machine().memory.get_page_info(machine().cpu.reg(2)).c_str());
+		print_line(String("Program page: ") + machine().memory.get_page_info(machine().cpu.pc()).c_str());
+		print_line(String("Stack page: ") + machine().memory.get_page_info(machine().cpu.reg(2)).c_str());
 	}
 
 #ifdef __linux__
@@ -202,20 +197,16 @@ void Sandbox::handle_timeout(gaddr_t address) {
 	this->m_timeouts++;
 	Sandbox::m_global_timeouts++;
 	auto callsite = machine().memory.lookup(address);
-	UtilityFunctions::print(
-			"Sandbox: Timeout for '", callsite.name.c_str(),
-			"' (Timeouts: ", m_timeouts, ")\n");
+	print_line(String("Sandbox: Timeout for '") + callsite.name.c_str() + "' (Timeouts: " + itos(m_timeouts) + ")\n");
 }
 
 void Sandbox::print_backtrace(const gaddr_t addr) {
 	machine().memory.print_backtrace(
 			[](std::string_view line) {
 				String line_str(std::string(line).c_str());
-				UtilityFunctions::print("-> ", line_str);
+				print_line("-> " + line_str);
 			});
 	auto origin = machine().memory.lookup(addr);
 	String name(origin.name.c_str());
-	UtilityFunctions::print(
-			"-> [-] 0x", to_hex(origin.address), " + 0x", to_hex(origin.offset),
-			": ", name);
+	print_line("-> [-] 0x" + to_hex(origin.address) + " + 0x" + to_hex(origin.offset) + ": " + name);
 }
