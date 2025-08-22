@@ -31,7 +31,11 @@
 #pragma once
 
 #include "core/io/resource_loader.h"
-#include <godot_cpp/classes/resource_loader.hpp>
+#include "core/object/object.h"
+#include "core/object/class_db.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "core/string/string_name.h"
 
 class ResourceFormatLoaderCPP : public ResourceFormatLoader {
 	GDCLASS(ResourceFormatLoaderCPP, ResourceFormatLoader);
@@ -42,8 +46,8 @@ protected:
 public:
 	static void init();
 	static void deinit();
-	virtual Variant _load(const String &path, const String &original_path, bool use_sub_threads, int32_t cache_mode) const override;
-	virtual PackedStringArray _get_recognized_extensions() const override;
-	virtual bool _handles_type(const StringName &type) const override;
-	virtual String _get_resource_type(const String &p_path) const override;
+	virtual Variant load(const String &path, const String &original_path, bool use_sub_threads, int32_t cache_mode) const override;
+	virtual PackedStringArray get_recognized_extensions() const override;
+	virtual bool handles_type(const StringName &type) const override;
+	virtual String get_resource_type(const String &p_path) const override;
 };
