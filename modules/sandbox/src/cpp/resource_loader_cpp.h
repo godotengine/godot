@@ -33,7 +33,6 @@
 #include "core/io/resource_loader.h"
 #include <godot_cpp/classes/resource_loader.hpp>
 
-
 class ResourceFormatLoaderCPP : public ResourceFormatLoader {
 	GDCLASS(ResourceFormatLoaderCPP, ResourceFormatLoader);
 

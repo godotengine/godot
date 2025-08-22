@@ -30,15 +30,15 @@
 
 #include "register_types.h"
 
-#include "src/sandbox.h"
 #include "core/object/class_db.h"
 #include "core/string/print_string.h"
+#include "src/sandbox.h"
 
 void initialize_sandbox_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		// Register the Sandbox class
 		GDREGISTER_CLASS(Sandbox);
-		
+
 		print_line("Sandbox module initialized - Sandbox class registered successfully");
 	}
 }

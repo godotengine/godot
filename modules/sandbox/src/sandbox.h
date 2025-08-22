@@ -32,15 +32,15 @@
 #include <algorithm>
 #include <optional>
 
-#include "scene/main/node.h"
 #include "core/object/class_db.h"
-#include "core/variant/variant.h"
 #include "core/string/string_name.h"
+#include "core/templates/hash_set.h"
+#include "core/templates/vector.h"
 #include "core/variant/array.h"
 #include "core/variant/callable.h"
 #include "core/variant/dictionary.h"
-#include "core/templates/vector.h"
-#include "core/templates/hash_set.h"
+#include "core/variant/variant.h"
+#include "scene/main/node.h"
 #include <libriscv/machine.hpp>
 
 #define RISCV_ARCH riscv::RISCV64

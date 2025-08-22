@@ -30,9 +30,9 @@
 
 #pragma once
 
-#include "core/variant/variant.h"
-#include "core/variant/array.h"
 #include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 
 struct Docker {
 	using Array = Array;

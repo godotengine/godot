@@ -30,11 +30,11 @@
 
 #include "script_language_elf.h"
 #include "../script_language_common.h"
+#include "core/config/engine.h"
+#include "core/io/file_access.h"
 #include "script_elf.h"
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
-#include "core/config/engine.h"
-#include "core/io/file_access.h"
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/texture2d.hpp>
 #include <godot_cpp/classes/theme.hpp>

@@ -89,7 +89,7 @@ sandbox_sources = [
     "src/guest_variant.cpp",
     "src/sandbox_project_settings.cpp",
     "src/sandbox_syscalls.cpp",
-    "src/sandbox_syscalls_2d.cpp", 
+    "src/sandbox_syscalls_2d.cpp",
     "src/sandbox_syscalls_3d.cpp",
     "src/sandbox_functions.cpp",
     "src/sandbox_programs.cpp",

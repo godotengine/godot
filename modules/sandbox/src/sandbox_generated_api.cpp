@@ -30,12 +30,17 @@
 
 #include "sandbox.h"
 
+#include "core/config/engine.h"
+#include "core/core_bind.h"
+#include "core/object/class_db.h"
+#include "core/string/print_string.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_utility.h"
 #include "guest_datatypes.h"
 #include "sandbox_project_settings.h"
-#include <godot_cpp/classes/class_db_singleton.hpp>
-#include "core/config/engine.h"
-#include <godot_cpp/core/class_db.hpp>
-#include "core/variant/variant_utility.h"
+#include <functional>
+#include <unordered_map>
 namespace riscv {
 extern std::unordered_map<std::string, std::function<uint64_t()>> allowed_globals;
 }
@@ -139,10 +144,10 @@ String Sandbox::generate_api(String language, String header, bool use_argument_n
 	return header + *current_generated_api;
 }
 
-static String emit_class(ClassDBSingleton *class_db, const HashSet<String> &cpp_keywords, const HashSet<String> &singletons, const String &class_name, bool use_argument_names) {
+static String emit_class(CoreBind::Special::ClassDB *class_db, const HashSet<String> &cpp_keywords, const HashSet<String> &singletons, const String &class_name, bool use_argument_names) {
 	// Generate a simple API for each class using METHOD() and PROPERTY() macros to a string.
 	if constexpr (VERBOSE) {
-		UtilityFunctions::print("* Currently generating: " + class_name);
+		print_line("* Currently generating: " + class_name);
 	}
 	String parent_name = class_db->get_parent_class(class_name);
 
@@ -152,8 +157,9 @@ static String emit_class(ClassDBSingleton *class_db, const HashSet<String> &cpp_
 	// eg. if it's a Node, we need to inherit from Node.
 	// If it's a Node2D, we need to inherit from Node2D. etc.
 	api += "    using " + parent_name + "::" + parent_name + ";\n";
+
 	// We just need the names of the properties and methods.
-	TypedArray<Dictionary> properties = class_db->class_get_property_list(class_name, true);
+	Array properties = class_db->class_get_property_list(class_name, true);
 	for (int j = 0; j < properties.size(); j++) {
 		Dictionary property = properties[j];
 		String property_name = property["name"];
@@ -182,7 +188,8 @@ static String emit_class(ClassDBSingleton *class_db, const HashSet<String> &cpp_
 			api += String("    PROPERTY(") + property_name + ", " + property_type + ");\n";
 		}
 	}
-	TypedArray<Dictionary> methods = class_db->class_get_method_list(class_name, true);
+
+	Array methods = class_db->class_get_method_list(class_name, true);
 	for (int j = 0; j < methods.size(); j++) {
 		Dictionary method = methods[j];
 		String method_name = method["name"];
@@ -402,7 +409,7 @@ void Sandbox::generate_runtime_cpp_api(bool use_argument_names) {
 	// 3. Generate a simple API for each class using METHOD() and PROPERTY() macros to a string.
 	// 4. Print the generated API to the console.
 	if constexpr (VERBOSE) {
-		UtilityFunctions::print("* Generating C++ run-time API");
+		print_line("* Generating C++ run-time API");
 	}
 	if (current_generated_api != nullptr) {
 		delete current_generated_api;
@@ -474,8 +481,18 @@ void Sandbox::generate_runtime_cpp_api(bool use_argument_names) {
 	cpp_keywords.insert("double");
 
 	// 1. Get all classes currently registered with the engine.
-	ClassDBSingleton *class_db = ClassDBSingleton::get_singleton();
-	Array classes = class_db->get_class_list();
+	// ClassDB in CoreBind::Special namespace doesn't have a get_singleton, so we need to access it differently
+	// Let's try getting the global ClassDB instance through Engine
+	CoreBind::Special::ClassDB *class_db = Object::cast_to<CoreBind::Special::ClassDB>(Engine::get_singleton()->get_singleton_object("ClassDB"));
+	if (!class_db) {
+		ERR_PRINT("Failed to get ClassDB singleton");
+		return;
+	}
+	PackedStringArray class_list = class_db->get_class_list();
+	Array classes;
+	for (int i = 0; i < class_list.size(); i++) {
+		classes.push_back(class_list[i]);
+	}
 
 	HashSet<String> emitted_classes;
 	HashMap<String, TypedArray<String>> waiting_classes;
@@ -493,7 +510,7 @@ void Sandbox::generate_runtime_cpp_api(bool use_argument_names) {
 
 	// Finally, add singleton getters to certain classes.
 	HashSet<String> singletons;
-	PackedStringArray singleton_list = Engine::get_singleton()->get_singleton_list();
+	Vector<String> singleton_list = CoreBind::Engine::get_singleton()->get_singleton_list();
 	for (int i = 0; i < singleton_list.size(); i++) {
 		singletons.insert(singleton_list[i]);
 	}
@@ -512,7 +529,7 @@ void Sandbox::generate_runtime_cpp_api(bool use_argument_names) {
 		for (int j = 0; j < skipped_class_words.size(); j++) {
 			if (class_name.contains(skipped_class_words[j])) {
 				if constexpr (VERBOSE) {
-					UtilityFunctions::print("* Skipping class: " + class_name);
+					print_line("* Skipping class: " + class_name);
 				}
 				total_skipped_classes++;
 				is_skipped = true;
@@ -581,6 +598,6 @@ void Sandbox::generate_runtime_cpp_api(bool use_argument_names) {
 	}
 
 	if constexpr (VERBOSE) {
-		UtilityFunctions::print("* Finished generating " + itos(classes.size()) + " classes");
+		print_line("* Finished generating " + itos(classes.size()) + " classes");
 	}
 }

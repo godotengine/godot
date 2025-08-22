@@ -35,8 +35,8 @@
 #include "core/math/math_funcs.h"
 #include "core/math/transform_2d.h"
 #include "core/math/vector2.h"
-#include "core/variant/variant.h"
 #include "core/string/print_string.h"
+#include "core/variant/variant.h"
 //#define ENABLE_SYSCALL_TRACE 1
 #include "syscalls_helpers.hpp"
 

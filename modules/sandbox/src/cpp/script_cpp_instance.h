@@ -30,18 +30,17 @@
 
 #pragma once
 
+#include "core/object/script_language.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 #include <gdextension_interface.h>
 #include <godot_cpp/classes/global_constants.hpp>
 #include <godot_cpp/classes/mutex.hpp>
 #include <godot_cpp/classes/ref.hpp>
-#include "core/object/script_language.h"
-#include "core/object/script_language.h"
 #include <godot_cpp/core/type_info.hpp>
 #include <godot_cpp/variant/dictionary.hpp>
 #include <godot_cpp/variant/packed_string_array.hpp>
-#include "core/string/ustring.h"
 #include <godot_cpp/variant/typed_array.hpp>
-#include "core/variant/variant.h"
 
 #include "../godot/script_instance.h"
 

@@ -33,7 +33,6 @@
 #include "core/io/resource_saver.h"
 #include <godot_cpp/classes/resource_saver.hpp>
 
-
 class ResourceFormatSaverZig : public ResourceFormatSaver {
 	GDCLASS(ResourceFormatSaverZig, ResourceFormatSaver);
 

@@ -30,9 +30,8 @@
 
 #pragma once
 
-#include <godot_cpp/classes/script.hpp>
 #include "core/object/script_language.h"
-
+#include <godot_cpp/classes/script.hpp>
 
 class CPPScriptLanguage : public ScriptLanguageExtension {
 	GDCLASS(CPPScriptLanguage, ScriptLanguageExtension);

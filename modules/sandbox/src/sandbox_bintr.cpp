@@ -30,10 +30,11 @@
 
 #include "sandbox.h"
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
-#include <godot_cpp/classes/os.hpp>
-#include "core/config/project_settings.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
 #include "core/variant/variant_utility.h"
 
 #if defined(__linux__)
@@ -238,18 +239,45 @@ bool Sandbox::try_compile_binary_translation(String shared_library_path, const S
 	}
 #endif
 	args.push_back(shared_library_path.replace("res://", ""));
-	if (!extra_cflags.is_empty())
-		args.append_array(extra_cflags.split(" "));
+	if (!extra_cflags.is_empty()) {
+		Vector<String> extra_flags = extra_cflags.split(" ");
+		for (int i = 0; i < extra_flags.size(); i++) {
+			args.push_back(extra_flags[i]);
+		}
+	}
 	args.push_back(ProjectSettings::get_singleton()->globalize_path(c99_path));
-	UtilityFunctions::print(cc, args);
-	Array output;
-	int ret = OS::get_singleton()->execute(cc, args, output, true);
+
+	// Convert Array to Vector<String> for OS::execute
+	Vector<String> args_vector;
+	for (int i = 0; i < args.size(); i++) {
+		args_vector.push_back(args[i]);
+	}
+
+	String args_str = "";
+	for (int i = 0; i < args_vector.size(); i++) {
+		args_str += args_vector[i];
+		if (i < args_vector.size() - 1)
+			args_str += " ";
+	}
+	print_line("Compiling: " + cc + " with args: " + args_str);
+
+	List<String> args_list;
+	for (int i = 0; i < args_vector.size(); i++) {
+		args_list.push_back(args_vector[i]);
+	}
+
+	String output;
+	int exit_code;
+	Error error = OS::get_singleton()->execute(cc, args_list, &output, &exit_code, true);
+	int ret = (error == OK) ? exit_code : 1;
 	// Remove the generated C99 file
 	Ref<DirAccess> dir = DirAccess::open("user://");
 	dir->remove(c99_path);
 	if (ret != 0) {
 		ERR_PRINT("Sandbox: Failed to compile generated code: " + shared_library_path);
-		UtilityFunctions::print(output);
+		if (!output.is_empty()) {
+			print_line("Compilation output: " + output);
+		}
 		return false;
 	}
 	return true;

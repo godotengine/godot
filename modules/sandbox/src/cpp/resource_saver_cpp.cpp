@@ -34,19 +34,19 @@
 #include "../register_types.h"
 #include "../sandbox.h"
 #include "../sandbox_project_settings.h"
+#include "core/config/project_settings.h"
+#include "core/io/dir_access.h"
+#include "core/io/file_access.h"
+#include "core/variant/variant_utility.h"
 #include "script_cpp.h"
 #include <libriscv/util/threadpool.h>
-#include "core/io/dir_access.h"
 #include <godot_cpp/classes/editor_file_system.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
 #include <godot_cpp/classes/editor_settings.hpp>
-#include "core/io/file_access.h"
 #include <godot_cpp/classes/os.hpp>
-#include "core/config/project_settings.h"
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/classes/script_editor.hpp>
 #include <godot_cpp/classes/script_editor_base.hpp>
-#include "core/variant/variant_utility.h"
 
 static Ref<ResourceFormatSaverCPP> cpp_saver;
 static std::unique_ptr<riscv::ThreadPool> thread_pool;

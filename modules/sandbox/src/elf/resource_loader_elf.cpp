@@ -30,8 +30,8 @@
 
 #include "resource_loader_elf.h"
 #include "../sandbox.h"
-#include "script_elf.h"
 #include "core/io/file_access.h"
+#include "script_elf.h"
 static constexpr bool VERBOSE_LOADER = false;
 
 Variant ResourceFormatLoaderELF::_load(const String &p_path, const String &original_path, bool use_sub_threads, int32_t cache_mode) const {

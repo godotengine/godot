@@ -30,14 +30,14 @@
 
 #pragma once
 
-#include "core/object/object.h"
-#include "core/variant/variant.h"
-#include "core/string/ustring.h"
-#include "core/variant/array.h"
 #include "core/math/math_defs.h"
+#include "core/object/object.h"
+#include "core/string/ustring.h"
 #include "core/typedefs.h"
-#include <libriscv/machine.hpp>
+#include "core/variant/array.h"
+#include "core/variant/variant.h"
 #include <cstdint>
+#include <libriscv/machine.hpp>
 #include <string>
 
 // Forward declarations

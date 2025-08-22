@@ -32,9 +32,9 @@
 
 #include "../docker.h"
 #include "core/object/script_language.h"
+#include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
 #include "core/variant/array.h"
-#include "core/string/ustring.h"
 
 class CPPScriptInstance;
 class ELFScript;

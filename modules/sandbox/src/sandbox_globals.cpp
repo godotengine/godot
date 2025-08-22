@@ -30,36 +30,36 @@
 
 #include "sandbox.h"
 
-#include <unordered_map>
-#include <functional>
-#include "servers/audio_server.h"
-#include "servers/display_server.h"
-#include "editor/editor_interface.h"
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/extension/gdextension_manager.h"
-#include "core/math/geometry_2d.h"
-#include "core/math/geometry_3d.h"
 #include "core/input/input.h"
 #include "core/input/input_map.h"
-#include "core/io/marshalls.h"
-#include "modules/navigation_3d/3d/navigation_mesh_generator.h"
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
-#include "main/performance.h"
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_3d.h"
-#include "core/config/project_settings.h"
-#include "servers/rendering_server.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/resource_uid.h"
-#include "servers/text_server.h"
-#include "scene/theme/theme_db.h"
+#include "core/math/geometry_2d.h"
+#include "core/math/geometry_3d.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/time.h"
 #include "core/string/translation.h"
-#include "core/object/worker_thread_pool.h"
+#include "core/string/translation_server.h"
+#include "editor/editor_interface.h"
+#include "main/performance.h"
+#include "modules/navigation_3d/3d/navigation_mesh_generator.h"
+#include "scene/theme/theme_db.h"
+#include "servers/audio_server.h"
+#include "servers/display_server.h"
+#include "servers/navigation_server_2d.h"
+#include "servers/navigation_server_3d.h"
+#include "servers/physics_server_2d.h"
+#include "servers/physics_server_3d.h"
+#include "servers/rendering_server.h"
+#include "servers/text_server.h"
 #include "servers/xr_server.h"
+#include <functional>
+#include <unordered_map>
 
 namespace riscv {
 std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list = {
@@ -67,13 +67,10 @@ std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list
 	{ "EditorInterface", [] { return uint64_t(uintptr_t(EditorInterface::get_singleton())); } },
 	{ "DisplayServer", [] { return uint64_t(uintptr_t(DisplayServer::get_singleton())); } },
 	{ "GDExtensionManager", [] { return uint64_t(uintptr_t(GDExtensionManager::get_singleton())); } },
-	{ "Geometry2D", [] { return uint64_t(uintptr_t(Geometry2D::get_singleton())); } },
-	{ "Geometry3D", [] { return uint64_t(uintptr_t(Geometry3D::get_singleton())); } },
 	{ "EngineDebugger", [] { return uint64_t(uintptr_t(EngineDebugger::get_singleton())); } },
 	{ "Engine", [] { return uint64_t(uintptr_t(Engine::get_singleton())); } },
 	{ "Input", [] { return uint64_t(uintptr_t(Input::get_singleton())); } },
 	{ "InputMap", [] { return uint64_t(uintptr_t(InputMap::get_singleton())); } },
-	{ "Marshalls", [] { return uint64_t(uintptr_t(Marshalls::get_singleton())); } },
 	{ "NativeMenu", [] { return uint64_t(uintptr_t(NativeMenu::get_singleton())); } },
 	{ "NavigationMeshGenerator", [] { return uint64_t(uintptr_t(NavigationMeshGenerator::get_singleton())); } },
 	{ "NavigationServer2D", [] { return uint64_t(uintptr_t(NavigationServer2D::get_singleton())); } },
@@ -86,8 +83,6 @@ std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list
 	{ "PhysicsServer3DManager", [] { return uint64_t(uintptr_t(PhysicsServer3DManager::get_singleton())); } },
 	{ "ProjectSettings", [] { return uint64_t(uintptr_t(ProjectSettings::get_singleton())); } },
 	{ "RenderingServer", [] { return uint64_t(uintptr_t(RenderingServer::get_singleton())); } },
-	{ "ResourceLoader", [] { return uint64_t(uintptr_t(ResourceLoader::get_singleton())); } },
-	{ "ResourceSaver", [] { return uint64_t(uintptr_t(ResourceSaver::get_singleton())); } },
 	{ "ResourceUID", [] { return uint64_t(uintptr_t(ResourceUID::get_singleton())); } },
 	{ "TextServerManager", [] { return uint64_t(uintptr_t(TextServerManager::get_singleton())); } },
 	{ "ThemeDB", [] { return uint64_t(uintptr_t(ThemeDB::get_singleton())); } },

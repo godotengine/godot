@@ -34,7 +34,6 @@
 #include "core/object/script_language.h"
 #include <godot_cpp/classes/script_language.hpp>
 
-
 class ZigScript : public ScriptExtension {
 	GDCLASS(ZigScript, ScriptExtension);
 

@@ -30,20 +30,20 @@
 
 #include "sandbox.h"
 
-#include "sandbox_project_settings.h"
-#include "core/io/dir_access.h"
 #include "core/config/engine.h"
+#include "core/error/error_list.h"
+#include "core/error/error_macros.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/http_client_tcp.h"
-#include "modules/zip/zip_reader.h"
-#include "core/variant/variant_utility.h"
 #include "core/string/ustring.h"
-#include "core/variant/array.h"
-#include "core/error/error_macros.h"
-#include "core/error/error_list.h"
-#include "core/variant/dictionary.h"
-#include "core/templates/vector.h"
 #include "core/templates/list.h"
+#include "core/templates/vector.h"
+#include "core/variant/array.h"
+#include "core/variant/dictionary.h"
+#include "core/variant/variant_utility.h"
+#include "modules/zip/zip_reader.h"
+#include "sandbox_project_settings.h"
 static constexpr bool VERBOSE = false;
 
 static PackedByteArray handle_request(HTTPClient *client, String url) {
@@ -86,7 +86,7 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 			memdelete(client);
 			return PackedByteArray();
 		}
-		
+
 		if constexpr (VERBOSE) {
 			ERR_PRINT("Redirected to: " + location);
 		}

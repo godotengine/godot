@@ -32,9 +32,9 @@
 
 #include "../elf/script_instance.h"
 #include "../sandbox_project_settings.h"
+#include "core/io/file_access.h"
 #include "script_cpp_instance.h"
 #include "script_language_cpp.h"
-#include "core/io/file_access.h"
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/core/class_db.hpp>
 static constexpr bool VERBOSE_LOGGING = false;

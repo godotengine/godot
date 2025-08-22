@@ -28,25 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "guest_datatypes.h"
-#include "syscalls.h"
-#include "sandbox.h"
 #include "elf/script_elf.h"
+#include "guest_datatypes.h"
+#include "sandbox.h"
+#include "syscalls.h"
 
 #include "core/config/engine.h"
+#include "core/io/resource_loader.h"
+#include "core/object/class_db.h"
+#include "core/object/object.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
+#include "core/variant/variant_utility.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
-#include "scene/resources/packed_scene.h"
-#include "core/io/resource_loader.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/timer.h"
-#include "core/variant/variant_utility.h"
-#include "core/variant/variant.h"
-#include "core/variant/callable.h"
-#include "core/object/object.h"
-#include "core/object/class_db.h"
-#include <unordered_map>
+#include "scene/resources/packed_scene.h"
 #include <string>
+#include <unordered_map>
 //#define ENABLE_SYSCALL_TRACE 1
 #include "syscalls_helpers.hpp"
 #include <libriscv/rv32i_instr.hpp>
@@ -102,7 +102,7 @@ static inline Variant object_call(Sandbox &emu, ::Object *obj, const Variant &me
 			vargs[i] = &vstorage[i];
 		}
 	}
-	
+
 	Callable::CallError error;
 	Variant ret = obj->callp(method, vargs.data(), argc, error);
 	return ret;

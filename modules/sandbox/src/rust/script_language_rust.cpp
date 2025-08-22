@@ -30,10 +30,10 @@
 
 #include "script_language_rust.h"
 #include "../script_language_common.h"
+#include "core/config/engine.h"
 #include "script_rust.h"
 #include <godot_cpp/classes/control.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
-#include "core/config/engine.h"
 #include <godot_cpp/classes/file_access.hpp>
 #include <godot_cpp/classes/resource_loader.hpp>
 #include <godot_cpp/classes/texture2d.hpp>

@@ -29,13 +29,13 @@
 /**************************************************************************/
 
 #pragma once
-#include "core/variant/variant.h"
-#include "core/variant/callable.h"
-#include "core/variant/array.h"
+#include "core/object/object_id.h"
 #include "core/string/string_name.h"
 #include "core/string/ustring.h"
-#include "core/object/object_id.h"
 #include "core/typedefs.h"
+#include "core/variant/array.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 #include "guest_datatypes.h"
 #include <array>
 

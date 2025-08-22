@@ -30,9 +30,13 @@
 
 #include "docker.h"
 
-#include "sandbox_project_settings.h"
-#include <godot_cpp/classes/os.hpp>
 #include "core/config/project_settings.h"
+#include "core/error/error_macros.h"
+#include "core/os/os.h"
+#include "core/string/print_string.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "sandbox_project_settings.h"
 //#define ENABLE_TIMINGS 1
 #ifdef ENABLE_TIMINGS
 #include <time.h>
@@ -43,40 +47,92 @@ static constexpr bool VERBOSE_CMD = true;
 static bool ContainerIsAlreadyRunning(String container_name) {
 	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "container", "inspect", "-f", "{{.State.Running}}", container_name };
-	Array output;
-	if constexpr (VERBOSE_CMD) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
-	const int res = OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
-	if (res != 0) {
+
+	if constexpr (VERBOSE_CMD) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output;
+	int exit_code;
+	Error error = OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output, &exit_code);
+	if (error != OK || exit_code != 0) {
 		return false;
 	}
-	const String running = output[0];
-	return running.contains("true");
+	return output.contains("true");
 }
 
 bool Docker::ContainerPullLatest(String image_name, Array &output) {
 	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "pull", image_name };
-	if constexpr (VERBOSE_CMD) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
-	const int res = OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
-	return res == 0;
+
+	if constexpr (VERBOSE_CMD) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output_str;
+	int exit_code;
+	Error error = OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output_str, &exit_code);
+
+	// Convert string output back to Array for compatibility
+	output.clear();
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
+
+	return (error == OK && exit_code == 0);
 }
 
 String Docker::ContainerGetMountPath(String container_name) {
 	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "inspect", "-f", "{{ (index .Mounts 0).Source }}", container_name };
-	Array output;
-	if constexpr (VERBOSE_CMD) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
-	const int res = OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
-	if (res != 0) {
+
+	if constexpr (VERBOSE_CMD) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output;
+	int exit_code;
+	Error error = OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output, &exit_code);
+	if (error != OK || exit_code != 0) {
 		return "";
 	}
-	return String(output[0]).replace("\n", "");
+	return output.replace("\n", "");
 }
 
 bool Docker::ContainerStart(String container_name, String image_name, Array &output) {
@@ -91,11 +147,11 @@ bool Docker::ContainerStart(String container_name, String image_name, Array &out
 		//printf("Container mount path: %s\n", path.utf8().get_data());
 		//printf("Current project path: %s\n", project_path.utf8().get_data());
 		if (!path.is_empty() && !project_path.begins_with(path)) {
-			UtilityFunctions::print("Container mount path (", path, ") does not match the current project path (", project_path, "). Stopping the container.");
+			print_line("Container mount path (" + path + ") does not match the current project path (" + project_path + "). Stopping the container.");
 			Docker::ContainerStop(container_name);
 		} else {
 			// The container is already running and the mount path matches the current project path.
-			UtilityFunctions::print("Container ", container_name, " was already running.");
+			print_line("Container " + container_name + " was already running.");
 			return true;
 		}
 	}
@@ -110,11 +166,34 @@ bool Docker::ContainerStart(String container_name, String image_name, Array &out
 	// Start the container, even if the image pull failed. It might be locally available.
 	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "run", "--name", container_name, "-dv", ".:/usr/src", image_name };
-	if constexpr (VERBOSE_CMD) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
-	const int res = OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
-	return res == 0;
+
+	if constexpr (VERBOSE_CMD) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output_str;
+	int exit_code;
+	Error error = OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output_str, &exit_code);
+
+	// Convert string output back to Array for compatibility
+	output.clear();
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
+
+	return (error == OK && exit_code == 0);
 }
 
 Array Docker::ContainerStop(String container_name) {
@@ -123,11 +202,33 @@ Array Docker::ContainerStop(String container_name) {
 	}
 	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "stop", container_name, "--time", "0" };
-	if constexpr (VERBOSE_CMD) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
+
+	if constexpr (VERBOSE_CMD) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output_str;
+	int exit_code;
+	OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output_str, &exit_code);
+
+	// Convert string output back to Array for compatibility
 	Array output;
-	OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
+
 	return output;
 }
 
@@ -145,10 +246,32 @@ bool Docker::ContainerExecute(String container_name, const PackedStringArray &p_
 	for (int i = 0; i < p_arguments.size(); i++) {
 		arguments.push_back(p_arguments[i]);
 	}
-	if (VERBOSE_CMD && verbose) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
-	const int res = OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
+
+	if (VERBOSE_CMD && verbose) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output_str;
+	int exit_code;
+	Error error = OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output_str, &exit_code);
+
+	// Convert string output back to Array for compatibility
+	output.clear();
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
 
 #ifdef ENABLE_TIMINGS
 	timespec end;
@@ -157,7 +280,7 @@ bool Docker::ContainerExecute(String container_name, const PackedStringArray &p_
 	fprintf(stderr, "Docker::ContainerExecute: %f seconds\n", elapsed);
 #endif
 
-	return res == 0;
+	return (error == OK && exit_code == 0);
 }
 
 int Docker::ContainerVersion(String container_name, const PackedStringArray &p_arguments) {
@@ -173,9 +296,32 @@ int Docker::ContainerVersion(String container_name, const PackedStringArray &p_a
 bool Docker::ContainerDelete(String container_name, Array &output) {
 	::OS *OS = ::OS::get_singleton();
 	PackedStringArray arguments = { "rm", container_name };
-	if constexpr (VERBOSE_CMD) {
-		UtilityFunctions::print(SandboxProjectSettings::get_docker_path(), arguments);
+
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
 	}
-	const int res = OS->execute(SandboxProjectSettings::get_docker_path(), arguments, output);
-	return res == 0;
+
+	if constexpr (VERBOSE_CMD) {
+		String args_str = "";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1)
+				args_str += " ";
+		}
+		print_line("Docker: " + SandboxProjectSettings::get_docker_path() + " " + args_str);
+	}
+
+	String output_str;
+	int exit_code;
+	Error error = OS->execute(SandboxProjectSettings::get_docker_path(), args_list, &output_str, &exit_code);
+
+	// Convert string output back to Array for compatibility
+	output.clear();
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
+
+	return (error == OK && exit_code == 0);
 }

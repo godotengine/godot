@@ -30,9 +30,9 @@
 
 #include "sandbox.h"
 
-#include <algorithm>
 #include "core/io/file_access.h"
 #include "core/variant/variant_utility.h"
+#include <algorithm>
 static constexpr bool USE_ADDR2LINE = false;
 
 struct ProfilingMachine {

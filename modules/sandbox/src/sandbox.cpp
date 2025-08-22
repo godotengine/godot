@@ -30,15 +30,15 @@
 
 #include "sandbox.h"
 
-#include "guest_datatypes.h"
-#include "vmcallable.h"
-#include "sandbox_project_settings.h"
-#include "elf/script_elf.h"
 #include "core/config/engine.h"
-#include "core/os/time.h"
 #include "core/object/class_db.h"
-#include "core/variant/variant_utility.h"
+#include "core/os/time.h"
 #include "core/string/print_string.h"
+#include "core/variant/variant_utility.h"
+#include "elf/script_elf.h"
+#include "guest_datatypes.h"
+#include "sandbox_project_settings.h"
+#include "vmcallable.h"
 #include <vector>
 #if defined(RISCV_BINARY_TRANSLATION) && defined(RISCV_LIBTCC)
 #include <future>
@@ -49,7 +49,7 @@ Object *get_object_from_address(const Sandbox &emu, uint64_t addr) {
 	// Implementation here - for now return nullptr to allow compilation
 	return nullptr;
 }
-}
+} //namespace riscv
 
 // GuestVariant method implementations moved to a separate file to avoid circular includes
 // TODO: Implement these in a separate compilation unit
@@ -760,73 +760,73 @@ void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, cons
 		// Get variant data without using deprecated _native_ptr() method
 		const GDNativeVariant inner_data = {
 			.type = (uint8_t)arg.get_type(),
-			.padding = {0},
+			.padding = { 0 },
 			.value = 0
 		};
 		const GDNativeVariant *inner = &inner_data;
-		
+
 		// Extract the actual value based on type
 		switch (arg.get_type()) {
 			case Variant::BOOL:
-				const_cast<GDNativeVariant*>(inner)->value = arg.operator bool() ? 1 : 0;
+				const_cast<GDNativeVariant *>(inner)->value = arg.operator bool() ? 1 : 0;
 				break;
 			case Variant::INT:
-				const_cast<GDNativeVariant*>(inner)->value = arg.operator int64_t();
+				const_cast<GDNativeVariant *>(inner)->value = arg.operator int64_t();
 				break;
 			case Variant::FLOAT:
-				const_cast<GDNativeVariant*>(inner)->flt = arg.operator double();
+				const_cast<GDNativeVariant *>(inner)->flt = arg.operator double();
 				break;
 			case Variant::VECTOR2: {
 				Vector2 v2 = arg.operator Vector2();
-				const_cast<GDNativeVariant*>(inner)->vec2_flt[0] = v2.x;
-				const_cast<GDNativeVariant*>(inner)->vec2_flt[1] = v2.y;
+				const_cast<GDNativeVariant *>(inner)->vec2_flt[0] = v2.x;
+				const_cast<GDNativeVariant *>(inner)->vec2_flt[1] = v2.y;
 				break;
 			}
 			case Variant::VECTOR2I: {
 				Vector2i v2i = arg.operator Vector2i();
-				const_cast<GDNativeVariant*>(inner)->value = (uint64_t(v2i.y) << 32) | uint32_t(v2i.x);
+				const_cast<GDNativeVariant *>(inner)->value = (uint64_t(v2i.y) << 32) | uint32_t(v2i.x);
 				break;
 			}
 			case Variant::VECTOR3: {
 				Vector3 v3 = arg.operator Vector3();
-				const_cast<GDNativeVariant*>(inner)->vec3_flt[0] = v3.x;
-				const_cast<GDNativeVariant*>(inner)->vec3_flt[1] = v3.y;
-				const_cast<GDNativeVariant*>(inner)->vec3_flt[2] = v3.z;
+				const_cast<GDNativeVariant *>(inner)->vec3_flt[0] = v3.x;
+				const_cast<GDNativeVariant *>(inner)->vec3_flt[1] = v3.y;
+				const_cast<GDNativeVariant *>(inner)->vec3_flt[2] = v3.z;
 				break;
 			}
 			case Variant::VECTOR3I: {
 				Vector3i v3i = arg.operator Vector3i();
-				const_cast<GDNativeVariant*>(inner)->ivec3_int[0] = v3i.x;
-				const_cast<GDNativeVariant*>(inner)->ivec3_int[1] = v3i.y;
-				const_cast<GDNativeVariant*>(inner)->ivec3_int[2] = v3i.z;
+				const_cast<GDNativeVariant *>(inner)->ivec3_int[0] = v3i.x;
+				const_cast<GDNativeVariant *>(inner)->ivec3_int[1] = v3i.y;
+				const_cast<GDNativeVariant *>(inner)->ivec3_int[2] = v3i.z;
 				break;
 			}
 			case Variant::VECTOR4: {
 				Vector4 v4 = arg.operator Vector4();
-				const_cast<GDNativeVariant*>(inner)->vec4_flt[0] = v4.x;
-				const_cast<GDNativeVariant*>(inner)->vec4_flt[1] = v4.y;
-				const_cast<GDNativeVariant*>(inner)->vec4_flt[2] = v4.z;
-				const_cast<GDNativeVariant*>(inner)->vec4_flt[3] = v4.w;
+				const_cast<GDNativeVariant *>(inner)->vec4_flt[0] = v4.x;
+				const_cast<GDNativeVariant *>(inner)->vec4_flt[1] = v4.y;
+				const_cast<GDNativeVariant *>(inner)->vec4_flt[2] = v4.z;
+				const_cast<GDNativeVariant *>(inner)->vec4_flt[3] = v4.w;
 				break;
 			}
 			case Variant::VECTOR4I: {
 				Vector4i v4i = arg.operator Vector4i();
-				const_cast<GDNativeVariant*>(inner)->ivec4_int[0] = v4i.x;
-				const_cast<GDNativeVariant*>(inner)->ivec4_int[1] = v4i.y;
-				const_cast<GDNativeVariant*>(inner)->ivec4_int[2] = v4i.z;
-				const_cast<GDNativeVariant*>(inner)->ivec4_int[3] = v4i.w;
+				const_cast<GDNativeVariant *>(inner)->ivec4_int[0] = v4i.x;
+				const_cast<GDNativeVariant *>(inner)->ivec4_int[1] = v4i.y;
+				const_cast<GDNativeVariant *>(inner)->ivec4_int[2] = v4i.z;
+				const_cast<GDNativeVariant *>(inner)->ivec4_int[3] = v4i.w;
 				break;
 			}
 			case Variant::COLOR: {
 				Color color = arg.operator Color();
-				const_cast<GDNativeVariant*>(inner)->color_flt[0] = color.r;
-				const_cast<GDNativeVariant*>(inner)->color_flt[1] = color.g;
-				const_cast<GDNativeVariant*>(inner)->color_flt[2] = color.b;
-				const_cast<GDNativeVariant*>(inner)->color_flt[3] = color.a;
+				const_cast<GDNativeVariant *>(inner)->color_flt[0] = color.r;
+				const_cast<GDNativeVariant *>(inner)->color_flt[1] = color.g;
+				const_cast<GDNativeVariant *>(inner)->color_flt[2] = color.b;
+				const_cast<GDNativeVariant *>(inner)->color_flt[3] = color.a;
 				break;
 			}
 			case Variant::OBJECT:
-				const_cast<GDNativeVariant*>(inner)->object_ptr = arg.operator Object*();
+				const_cast<GDNativeVariant *>(inner)->object_ptr = arg.operator Object *();
 				break;
 			default:
 				break;
@@ -978,11 +978,11 @@ GuestVariant *Sandbox::setup_arguments(gaddr_t &sp, const Variant **args, int ar
 		// Extract variant data directly without using deprecated _native_ptr()
 		GDNativeVariant inner_data = {
 			.type = (uint8_t)arg.get_type(),
-			.padding = {0},
+			.padding = { 0 },
 			.value = 0
 		};
 		GDNativeVariant *inner = &inner_data;
-		
+
 		// Set the actual value based on type
 		switch (arg.get_type()) {
 			case Variant::BOOL:
@@ -995,7 +995,7 @@ GuestVariant *Sandbox::setup_arguments(gaddr_t &sp, const Variant **args, int ar
 				inner->flt = arg.operator double();
 				break;
 			case Variant::OBJECT:
-				inner->object_ptr = arg.operator Object*();
+				inner->object_ptr = arg.operator Object *();
 				break;
 			default:
 				break;

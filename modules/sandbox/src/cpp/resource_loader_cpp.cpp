@@ -29,8 +29,8 @@
 /**************************************************************************/
 
 #include "resource_loader_cpp.h"
-#include "script_cpp.h"
 #include "core/io/file_access.h"
+#include "script_cpp.h"
 
 static Ref<ResourceFormatLoaderCPP> cpp_loader;
 

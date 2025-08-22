@@ -32,7 +32,6 @@
 
 #include "core/config/project_settings.h"
 
-
 static constexpr char USE_GLOBAL_NAMES[] = "editor/script/use_global_sandbox_names";
 static constexpr char USE_GLOBAL_NAMES_HINT[] = "Use customized global names for Sandbox programs";
 

@@ -33,6 +33,7 @@
 #include "../elf/script_language_elf.h"
 #include "../register_types.h"
 #include "../sandbox_project_settings.h"
+#include "core/variant/variant_utility.h"
 #include "script_rust.h"
 #include <godot_cpp/classes/editor_file_system.hpp>
 #include <godot_cpp/classes/editor_interface.hpp>
@@ -42,7 +43,6 @@
 #include <godot_cpp/classes/script.hpp>
 #include <godot_cpp/classes/script_editor.hpp>
 #include <godot_cpp/classes/script_editor_base.hpp>
-#include "core/variant/variant_utility.h"
 
 static Ref<ResourceFormatSaverRust> rust_saver;
 static constexpr bool VERBOSE_CMD = false;
