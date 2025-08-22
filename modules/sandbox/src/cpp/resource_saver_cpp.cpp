@@ -37,16 +37,16 @@
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/resource_saver.h"
 #include "core/variant/variant_utility.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
+#include "core/error/error_macros.h"
 #include "script_cpp.h"
 #include <libriscv/util/threadpool.h>
-#include <godot_cpp/classes/editor_file_system.hpp>
-#include <godot_cpp/classes/editor_interface.hpp>
-#include <godot_cpp/classes/editor_settings.hpp>
-#include <godot_cpp/classes/os.hpp>
-#include <godot_cpp/classes/script.hpp>
-#include <godot_cpp/classes/script_editor.hpp>
-#include <godot_cpp/classes/script_editor_base.hpp>
+#include "core/os/os.h"
+#include "core/object/script_language.h"
+#include "core/string/print_string.h"
 
 static Ref<ResourceFormatSaverCPP> cpp_saver;
 static std::unique_ptr<riscv::ThreadPool> thread_pool;
@@ -112,14 +112,14 @@ void ResourceFormatSaverCPP::init() {
 	thread_pool = std::make_unique<riscv::ThreadPool>(1); // Maximum 1 compiler job at a time
 	cpp_saver.instantiate();
 	// Register the CPPScript resource saver
-	ResourceSaver::get_singleton()->add_resource_format_saver(cpp_saver);
+	ResourceSaver::add_resource_format_saver(cpp_saver);
 }
 
 void ResourceFormatSaverCPP::deinit() {
 	// Stop the thread pool
 	thread_pool.reset();
 	// Unregister the CPPScript resource saver
-	ResourceSaver::get_singleton()->remove_resource_format_saver(cpp_saver);
+	ResourceSaver::remove_resource_format_saver(cpp_saver);
 	cpp_saver.unref();
 }
 
@@ -161,7 +161,7 @@ static bool configure_cmake(const String &path) {
 	}
 
 	const String runtime_api_path = path + String("/.build/generated_api.hpp");
-	if (!FileAccess::file_exists(runtime_api_path)) {
+	if (!FileAccess::exists(runtime_api_path)) {
 		// Generate the C++ run-time API in the .build directory
 		// This will be used by C++ programs to access the wider Godot API
 		auto_generate_cpp_api(runtime_api_path);
@@ -169,7 +169,7 @@ static bool configure_cmake(const String &path) {
 
 	// Create the CMakeLists.txt file if it does not exist
 	const String cmakelists_path = path + String("/CMakeLists.txt");
-	if (!FileAccess::file_exists(cmakelists_path)) {
+	if (!FileAccess::exists(cmakelists_path)) {
 		Ref<FileAccess> cmakelists_file = FileAccess::open(cmakelists_path, FileAccess::ModeFlags::WRITE);
 		if (cmakelists_file.is_valid()) {
 			cmakelists_file->store_string(cmake_cmakelists_bytes);
@@ -184,7 +184,7 @@ static bool configure_cmake(const String &path) {
 	// We assume that zig, cmake and git are available in the PATH
 	// TODO: Verify that zig, cmake and git are available in the PATH?
 	const String toolchain_path = path + String("/toolchain.cmake");
-	if (!FileAccess::file_exists(toolchain_path)) {
+	if (!FileAccess::exists(toolchain_path)) {
 		// Create the toolchain file
 		Ref<FileAccess> toolchain_file = FileAccess::open(toolchain_path, FileAccess::ModeFlags::WRITE);
 		if (toolchain_file.is_valid()) {
@@ -198,7 +198,7 @@ static bool configure_cmake(const String &path) {
 #if defined(_WIN32) || defined(__APPLE__)
 	// Create the zig-ar.cmd file, if it does not exist
 	const String zig_ar_path = path + String("/zig-ar.cmd");
-	if (!FileAccess::file_exists(zig_ar_path)) {
+	if (!FileAccess::exists(zig_ar_path)) {
 		Ref<FileAccess> zig_ar_file = FileAccess::open(zig_ar_path, FileAccess::ModeFlags::WRITE);
 		if (zig_ar_file.is_valid()) {
 			zig_ar_file->store_string(cmake_zig_ar_bytes);
@@ -210,7 +210,7 @@ static bool configure_cmake(const String &path) {
 	}
 	// Create the zig-ranlib.cmd file, if it does not exist
 	const String zig_ranlib_path = path + String("/zig-ranlib.cmd");
-	if (!FileAccess::file_exists(zig_ranlib_path)) {
+	if (!FileAccess::exists(zig_ranlib_path)) {
 		Ref<FileAccess> zig_ranlib_file = FileAccess::open(zig_ranlib_path, FileAccess::ModeFlags::WRITE);
 		if (zig_ranlib_file.is_valid()) {
 			zig_ranlib_file->store_string(cmake_zig_ranlib_bytes);
@@ -244,22 +244,34 @@ static bool configure_cmake(const String &path) {
 	//arguments.push_back("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON");
 
 	if (true) {
-		UtilityFunctions::print("CMake arguments: ", arguments);
+		String args_str = "CMake arguments: ";
+		for (int i = 0; i < arguments.size(); i++) {
+			args_str += arguments[i];
+			if (i < arguments.size() - 1) args_str += " ";
+		}
+		print_line(args_str);
 	}
-	Array output;
-	int32_t result = os->execute(SandboxProjectSettings::get_cmake_path(), arguments, output, true);
-	if (result != 0) {
+	
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
+	}
+	
+	String output;
+	int exit_code;
+	Error error = os->execute(SandboxProjectSettings::get_cmake_path(), args_list, &output, &exit_code);
+	if (error != OK || exit_code != 0) {
 		if (!output.is_empty()) {
-			output = output[0].operator String().split("\n");
-			for (int i = 0; i < output.size(); i++) {
-				String line = output[i].operator String();
-				UtilityFunctions::printerr(line);
+			Vector<String> lines = output.split("\n");
+			for (int i = 0; i < lines.size(); i++) {
+				print_error(lines[i]);
 			}
 		}
-		ERR_PRINT("Failed to configure cmake: " + itos(result));
+		ERR_PRINT("Failed to configure cmake: " + itos(exit_code));
 		return false;
 	}
-	UtilityFunctions::print("CMake configured successfully in: ", path);
+	print_line("CMake configured successfully in: " + path);
 	return true;
 }
 
@@ -287,19 +299,37 @@ static Array invoke_cmake(const String &path) {
 	arguments.push_back(itos(OS::get_singleton()->get_processor_count()));
 
 	OS *os = OS::get_singleton();
-	UtilityFunctions::print("Invoking cmake: ", arguments);
+	
+	String args_str = "Invoking cmake: ";
+	for (int i = 0; i < arguments.size(); i++) {
+		args_str += arguments[i];
+		if (i < arguments.size() - 1) args_str += " ";
+	}
+	print_line(args_str);
+	
+	// Convert to List<String> for OS::execute
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
+	}
+	
+	String output_str;
+	int exit_code;
+	Error error = os->execute(SandboxProjectSettings::get_cmake_path(), args_list, &output_str, &exit_code);
+	
 	Array output;
-	int32_t result = os->execute(SandboxProjectSettings::get_cmake_path(), arguments, output, true);
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
 
-	if (result != 0) {
-		if (!output.is_empty()) {
-			output = output[0].operator String().split("\n");
-			for (int i = 0; i < output.size(); i++) {
-				String line = output[i].operator String();
-				UtilityFunctions::printerr(line);
+	if (error != OK || exit_code != 0) {
+		if (!output_str.is_empty()) {
+			Vector<String> lines = output_str.split("\n");
+			for (int i = 0; i < lines.size(); i++) {
+				print_error(lines[i]);
 			}
 		}
-		ERR_PRINT("Failed to invoke cmake: " + itos(result));
+		ERR_PRINT("Failed to invoke cmake: " + itos(exit_code));
 	}
 	return output;
 }
@@ -311,13 +341,13 @@ static bool detect_and_build_cmake_project_instead() {
 	String project_root = "res://";
 
 	// Check for CMakeLists.txt in the project root
-	const bool cmake_root = FileAccess::file_exists(project_root + "CMakeLists.txt");
+	const bool cmake_root = FileAccess::exists(project_root + "CMakeLists.txt");
 	if (cmake_root) {
 		(void)invoke_cmake(".");
 		// Always return true, as this indicates that the project is built using CMake
 		return true;
 	}
-	const bool cmake_dir = FileAccess::file_exists(project_root + "cmake/CMakeLists.txt");
+	const bool cmake_dir = FileAccess::exists(project_root + "cmake/CMakeLists.txt");
 	if (cmake_dir) {
 		(void)invoke_cmake("./cmake");
 		// Always return true, as this indicates that the project is built using CMake
@@ -332,19 +362,37 @@ static Array invoke_scons(const String &path) {
 	// TODO get arguments from project settings
 
 	OS *os = OS::get_singleton();
-	UtilityFunctions::print("Invoking scons: ", arguments);
+	
+	String args_str = "Invoking scons: ";
+	for (int i = 0; i < arguments.size(); i++) {
+		args_str += arguments[i];
+		if (i < arguments.size() - 1) args_str += " ";
+	}
+	print_line(args_str);
+	
+	// Convert to List<String> for OS::execute  
+	List<String> args_list;
+	for (int i = 0; i < arguments.size(); i++) {
+		args_list.push_back(arguments[i]);
+	}
+	
+	String output_str;
+	int exit_code;
+	Error error = os->execute(SandboxProjectSettings::get_scons_path(), args_list, &output_str, &exit_code);
+	
 	Array output;
-	int32_t result = os->execute(SandboxProjectSettings::get_scons_path(), arguments, output, true);
+	if (!output_str.is_empty()) {
+		output.push_back(output_str);
+	}
 
-	if (result != 0) {
-		if (!output.is_empty()) {
-			output = output[0].operator String().split("\n");
-			for (int i = 0; i < output.size(); i++) {
-				String line = output[i].operator String();
-				UtilityFunctions::printerr(line);
+	if (error != OK || exit_code != 0) {
+		if (!output_str.is_empty()) {
+			Vector<String> lines = output_str.split("\n");
+			for (int i = 0; i < lines.size(); i++) {
+				print_error(lines[i]);
 			}
 		}
-		ERR_PRINT("Failed to invoke scons: " + itos(result));
+		ERR_PRINT("Failed to invoke scons: " + itos(exit_code));
 	}
 	return output;
 }
@@ -356,7 +404,7 @@ static bool detect_and_build_scons_project_instead() {
 	String project_root = "res://";
 
 	// Check for SConstruct in the project root
-	const bool scons_root = FileAccess::file_exists(project_root + "SConstruct");
+	const bool scons_root = FileAccess::exists(project_root + "SConstruct");
 	if (scons_root) {
 		(void)invoke_scons(".");
 		// Always return true, as this indicates that the project is built using SConstruct
@@ -365,12 +413,12 @@ static bool detect_and_build_scons_project_instead() {
 	return false;
 }
 
-Error ResourceFormatSaverCPP::_save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+Error ResourceFormatSaverCPP::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	CPPScript *script = Object::cast_to<CPPScript>(p_resource.ptr());
 	if (script != nullptr) {
 		Ref<FileAccess> handle = FileAccess::open(p_path, FileAccess::ModeFlags::WRITE);
 		if (handle.is_valid()) {
-			handle->store_string(script->_get_source_code());
+			handle->store_string(script->get_source_code());
 			handle->close();
 
 			if (CPPScript::DetectCMakeOrSConsProject()) {
@@ -453,23 +501,21 @@ Error ResourceFormatSaverCPP::_save(const Ref<Resource> &p_resource, const Strin
 	}
 	return Error::ERR_SCRIPT_FAILED;
 }
-Error ResourceFormatSaverCPP::_set_uid(const String &p_path, int64_t p_uid) {
+Error ResourceFormatSaverCPP::set_uid(const String &p_path, ResourceUID::ID p_uid) {
 	return Error::OK;
 }
-bool ResourceFormatSaverCPP::_recognize(const Ref<Resource> &p_resource) const {
+bool ResourceFormatSaverCPP::recognize(const Ref<Resource> &p_resource) const {
 	return Object::cast_to<CPPScript>(p_resource.ptr()) != nullptr;
 }
-PackedStringArray ResourceFormatSaverCPP::_get_recognized_extensions(const Ref<Resource> &p_resource) const {
-	PackedStringArray array;
+void ResourceFormatSaverCPP::get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const {
 	if (Object::cast_to<CPPScript>(p_resource.ptr()) == nullptr)
-		return array;
-	array.push_back("cpp");
-	array.push_back("cc");
-	array.push_back("hh");
-	array.push_back("h");
-	array.push_back("hpp");
-	return array;
+		return;
+	p_extensions->push_back("cpp");
+	p_extensions->push_back("cc");
+	p_extensions->push_back("hh");
+	p_extensions->push_back("h");
+	p_extensions->push_back("hpp");
 }
-bool ResourceFormatSaverCPP::_recognize_path(const Ref<Resource> &p_resource, const String &p_path) const {
+bool ResourceFormatSaverCPP::recognize_path(const Ref<Resource> &p_resource, const String &p_path) const {
 	return Object::cast_to<CPPScript>(p_resource.ptr()) != nullptr;
 }

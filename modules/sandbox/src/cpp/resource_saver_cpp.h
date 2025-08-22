@@ -31,6 +31,9 @@
 #pragma once
 
 #include "core/io/resource_saver.h"
+#include "core/io/resource_uid.h"
+#include "core/string/ustring.h"
+#include "core/variant/variant.h"
 
 class ResourceFormatSaverCPP : public ResourceFormatSaver {
 	GDCLASS(ResourceFormatSaverCPP, ResourceFormatSaver);
@@ -41,9 +44,9 @@ protected:
 public:
 	static void init();
 	static void deinit();
-	virtual Error _save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) override;
-	virtual Error _set_uid(const String &p_path, int64_t p_uid) override;
-	virtual bool _recognize(const Ref<Resource> &p_resource) const override;
-	virtual PackedStringArray _get_recognized_extensions(const Ref<Resource> &p_resource) const override;
-	virtual bool _recognize_path(const Ref<Resource> &p_resource, const String &p_path) const override;
+	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0) override;
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
+	virtual bool recognize(const Ref<Resource> &p_resource) const override;
+	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const override;
+	virtual bool recognize_path(const Ref<Resource> &p_resource, const String &p_path) const override;
 };
