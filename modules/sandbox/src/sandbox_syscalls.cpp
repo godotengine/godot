@@ -104,8 +104,7 @@ static inline Variant object_call(Sandbox &emu, ::Object *obj, const Variant &me
 	}
 	
 	Callable::CallError error;
-	Variant ret;
-	obj->callp(method, vargs.data(), argc, ret, error);
+	Variant ret = obj->callp(method, vargs.data(), argc, error);
 	return ret;
 }
 
@@ -869,13 +868,15 @@ APICALL(api_obj) {
 		case Object_Op::GET_METHOD_LIST: {
 			CppVector<CppString> *vec = machine.memory.memarray<CppVector<CppString>>(gvar, 1);
 			// XXX: vec->free(machine);
-			auto methods = obj->get_method_list();
+			List<MethodInfo> methods;
+			obj->get_method_list(&methods);
 			vec->resize(machine, methods.size());
-			for (size_t i = 0; i < methods.size(); i++) {
-				Dictionary dict = methods[i].operator ::Dictionary();
-				auto name = String(dict["name"]).utf8();
+			int i = 0;
+			for (const MethodInfo &method : methods) {
+				auto name = String(method.name).utf8();
 				const gaddr_t self = vec->address_at(i);
 				vec->at(machine, i).set_string(machine, self, name.ptr(), name.length());
+				i++;
 			}
 		} break;
 		case Object_Op::GET: { // Get a property of the object.
@@ -899,13 +900,15 @@ APICALL(api_obj) {
 		case Object_Op::GET_PROPERTY_LIST: {
 			CppVector<CppString> *vec = machine.memory.memarray<CppVector<CppString>>(gvar, 1);
 			// XXX: vec->free(machine);
-			TypedArray<Dictionary> properties = obj->get_property_list();
+			List<PropertyInfo> properties;
+			obj->get_property_list(&properties);
 			vec->resize(machine, properties.size());
-			for (size_t i = 0; i < properties.size(); i++) {
-				Dictionary dict = properties[i].operator ::Dictionary();
-				auto name = String(dict["name"]).utf8();
+			int i = 0;
+			for (const PropertyInfo &property : properties) {
+				auto name = String(property.name).utf8();
 				const gaddr_t self = vec->address_at(i);
 				vec->at(machine, i).set_string(machine, self, name.ptr(), name.length());
+				i++;
 			}
 		} break;
 		case Object_Op::CONNECT: {
@@ -922,13 +925,15 @@ APICALL(api_obj) {
 		} break;
 		case Object_Op::GET_SIGNAL_LIST: {
 			CppVector<CppString> *vec = machine.memory.memarray<CppVector<CppString>>(gvar, 1);
-			TypedArray<Dictionary> signals = obj->get_signal_list();
+			List<MethodInfo> signals;
+			obj->get_signal_list(&signals);
 			vec->resize(machine, signals.size());
-			for (size_t i = 0; i < signals.size(); i++) {
-				Dictionary dict = signals[i].operator ::Dictionary();
-				auto name = String(dict["name"]).utf8();
+			int i = 0;
+			for (const MethodInfo &signal : signals) {
+				auto name = String(signal.name).utf8();
 				const gaddr_t self = vec->address_at(i);
 				vec->at(machine, i).set_string(machine, self, std::string_view(name.ptr(), name.length()));
+				i++;
 			}
 		} break;
 		default:
@@ -947,7 +952,7 @@ APICALL(api_obj_property_get) {
 
 	if (UNLIKELY(!emu.is_allowed_property(obj, prop_name, false))) {
 		ERR_PRINT("Banned property accessed: " + prop_name);
-		throw std::runtime_error("Banned property accessed: " + std::string(prop_name.utf8()));
+		throw std::runtime_error("Banned property accessed: " + std::string(prop_name.utf8().ptr()));
 	}
 
 	vret->create(emu, obj->get(prop_name));
@@ -964,7 +969,7 @@ APICALL(api_obj_property_set) {
 
 	if (UNLIKELY(!emu.is_allowed_property(obj, prop_name, true))) {
 		ERR_PRINT("Banned property set: " + prop_name);
-		throw std::runtime_error("Banned property set: " + std::string(prop_name.utf8()));
+		throw std::runtime_error("Banned property set: " + std::string(prop_name.utf8().ptr()));
 	}
 
 	obj->set(prop_name, g_value->toVariant(emu));
@@ -1046,10 +1051,10 @@ APICALL(api_get_node) {
 			machine.set_result(0);
 			return;
 		}
-		node = owner_node->get_node<Node>(NodePath(c_name.c_str()));
+		node = owner_node->get_node(NodePath(c_name.c_str()));
 	} else {
 		Node *base_node = get_node_from_address(emu, addr);
-		node = base_node->get_node<Node>(NodePath(c_name.c_str()));
+		node = base_node->get_node(NodePath(c_name.c_str()));
 	}
 	if (node == nullptr) {
 		ERR_PRINT(("Node not found: " + c_name).c_str());
@@ -1472,7 +1477,6 @@ APICALL(api_node3d) {
 
 APICALL(api_throw) {
 	auto [type, msg, vaddr, vfunc] = machine.sysargs<std::string_view, std::string_view, gaddr_t, gaddr_t>();
-	Sandbox &emu = riscv::emu(machine);
 	SYS_TRACE("throw", String::utf8(type.data(), type.size()), String::utf8(msg.data(), msg.size()), vaddr);
 
 	if (vaddr != 0) {
@@ -1674,7 +1678,7 @@ APICALL(api_dict_ops) {
 			if (v.get_type() == Variant::NIL) {
 				const gaddr_t vdefaddr = machine.cpu.reg(14); // A4
 				const GuestVariant *vdef = machine.memory.memarray<GuestVariant>(vdefaddr, 1);
-				v = std::move(vdef->toVariant(emu));
+				v = vdef->toVariant(emu);
 			}
 			vp->set(emu, v, true); // Implicit trust, as we are returning our own object.
 			break;
@@ -1885,8 +1889,7 @@ APICALL(api_load) {
 	}
 
 	// Preload the resource from the given path.
-	ResourceLoader *loader = ResourceLoader::get_singleton();
-	Ref<Resource> resource = loader->load(godot_path);
+	Ref<Resource> resource = ResourceLoader::load(godot_path);
 	if (resource.is_null()) {
 		ERR_PRINT("Failed to preload resource");
 		// TODO: Return a null object instead?

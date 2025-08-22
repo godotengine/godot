@@ -30,13 +30,14 @@
 
 #pragma once
 
-#include <godot_cpp/variant/utility_functions.hpp>
 #include "core/variant/variant.h"
+#include "core/variant/array.h"
+#include "core/string/ustring.h"
 
 struct Docker {
-	using Array = godot::Array;
-	using PackedStringArray = godot::PackedStringArray;
-	using String = godot::String;
+	using Array = Array;
+	using PackedStringArray = PackedStringArray;
+	using String = String;
 
 	static bool ContainerStart(String container_name, String image_name, Array &output);
 	static Array ContainerStop(String container_name);

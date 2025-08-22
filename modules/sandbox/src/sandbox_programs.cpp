@@ -34,9 +34,16 @@
 #include "core/io/dir_access.h"
 #include "core/config/engine.h"
 #include "core/io/file_access.h"
-#include <godot_cpp/classes/http_client.hpp>
-#include <godot_cpp/classes/zip_reader.hpp>
+#include "core/io/http_client_tcp.h"
+#include "modules/zip/zip_reader.h"
 #include "core/variant/variant_utility.h"
+#include "core/string/ustring.h"
+#include "core/variant/array.h"
+#include "core/error/error_macros.h"
+#include "core/error/error_list.h"
+#include "core/variant/dictionary.h"
+#include "core/templates/vector.h"
+#include "core/templates/list.h"
 static constexpr bool VERBOSE = false;
 
 static PackedByteArray handle_request(HTTPClient *client, String url) {
@@ -48,7 +55,8 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 		}
 		client->poll();
 	}
-	Error err = client->request(HTTPClient::Method::METHOD_GET, url, {});
+	Vector<String> headers;
+	Error err = client->request(HTTPClient::Method::METHOD_GET, url, headers, nullptr, 0);
 	if (err != OK) {
 		memdelete(client);
 		return PackedByteArray();
@@ -64,7 +72,21 @@ static PackedByteArray handle_request(HTTPClient *client, String url) {
 	}
 
 	if (client->get_response_code() >= 300 && client->get_response_code() < 400) {
-		String location = client->get_response_headers_as_dictionary()["Location"];
+		List<String> headers_list;
+		client->get_response_headers(&headers_list);
+		String location;
+		for (const String &header : headers_list) {
+			if (header.begins_with("Location: ")) {
+				location = header.substr(10);
+				break;
+			}
+		}
+		if (location.is_empty()) {
+			ERR_PRINT("No Location header found in redirect");
+			memdelete(client);
+			return PackedByteArray();
+		}
+		
 		if constexpr (VERBOSE) {
 			ERR_PRINT("Redirected to: " + location);
 		}
@@ -132,7 +154,7 @@ PackedByteArray Sandbox::download_program(String program_name) {
 	}
 
 	// Download the program from the URL
-	HTTPClient *client = memnew(HTTPClient);
+	HTTPClientTCP *client = memnew(HTTPClientTCP);
 	client->set_blocking_mode(true);
 	client->connect_to_host("https://github.com", 443);
 
@@ -163,7 +185,7 @@ PackedByteArray Sandbox::download_program(String program_name) {
 		return PackedByteArray();
 	}
 
-	PackedByteArray program_data = zip->read_file(program_name + String(".elf"));
+	PackedByteArray program_data = zip->read_file(program_name + String(".elf"), true);
 	memdelete(zip);
 
 	// Remove the temporary file
