@@ -45,15 +45,7 @@
 #include <future>
 #endif
 
-namespace riscv {
-Object *get_object_from_address(const Sandbox &emu, uint64_t addr) {
-	// Implementation here - for now return nullptr to allow compilation
-	return nullptr;
-}
-} //namespace riscv
-
-// GuestVariant method implementations moved to a separate file to avoid circular includes
-// TODO: Implement these in a separate compilation unit
+// GuestVariant method implementations are in guest_variant.cpp
 
 static constexpr bool VERBOSE_PROPERTIES = false;
 static const int HEAP_SYSCALLS_BASE = 480;
@@ -1290,20 +1282,35 @@ unsigned Sandbox::create_scoped_variant(Variant &&value) const {
 		return -int32_t(st.scoped_variants.size());
 }
 std::optional<const Variant *> Sandbox::get_scoped_variant(int32_t index) const noexcept {
-	if (index >= 0 && index < state().scoped_variants.size()) {
-		return state().scoped_variants[index];
-	} else if (index < 0) {
-		// Negative index is access into initialization state
-		index = -index - 1;
-		auto &init_state = this->m_states[0];
-		if (index < init_state.scoped_variants.size()) {
-			return init_state.scoped_variants[index];
+	// Add bounds checking to detect memory corruption
+	if (index >= 0) {
+		// Positive index is access into current state
+		const auto &current_state = state();
+		if (index < static_cast<int32_t>(current_state.scoped_variants.size())) {
+			return current_state.scoped_variants[index];
 		}
-		ERR_PRINT("Invalid permanent variant index: " + itos(index));
+		// Check for obviously corrupted indices
+		if (index > 100000) {
+			ERR_PRINT("Detected corrupted scoped variant index: " + itos(index) + " (possible memory corruption)");
+		} else {
+			ERR_PRINT("Invalid scoped variant index: " + itos(index) + " (max: " + itos(current_state.scoped_variants.size()) + ")");
+		}
+		return std::nullopt;
+	} else {
+		// Negative index is access into initialization state
+		int32_t perm_index = -index - 1;
+		const auto &init_state = this->m_states[0];
+		if (perm_index >= 0 && perm_index < static_cast<int32_t>(init_state.scoped_variants.size())) {
+			return init_state.scoped_variants[perm_index];
+		}
+		// Check for obviously corrupted indices
+		if (index < -100000) {
+			ERR_PRINT("Detected corrupted permanent variant index: " + itos(index) + " (possible memory corruption)");
+		} else {
+			ERR_PRINT("Invalid permanent variant index: " + itos(perm_index) + " (max: " + itos(init_state.scoped_variants.size()) + ")");
+		}
 		return std::nullopt;
 	}
-	ERR_PRINT("Invalid scoped variant index: " + itos(index));
-	return std::nullopt;
 }
 Variant &Sandbox::get_mutable_scoped_variant(int32_t index) {
 	std::optional<const Variant *> var_opt = get_scoped_variant(index);
@@ -1763,210 +1770,4 @@ void Sandbox::print(const Variant &v) {
 	}
 
 	already_been_here = false;
-}
-
-// GuestVariant method implementations
-Variant GuestVariant::toVariant(const Sandbox &emu) const {
-	switch (this->type) {
-		case Variant::NIL:
-			return Variant();
-		case Variant::BOOL:
-			return Variant(this->v.b);
-		case Variant::INT:
-			return Variant(this->v.i);
-		case Variant::FLOAT:
-			return Variant(this->v.f);
-		case Variant::VECTOR2:
-			return Variant(Vector2(this->v.v2f[0], this->v.v2f[1]));
-		case Variant::VECTOR2I:
-			return Variant(Vector2i(this->v.v2i[0], this->v.v2i[1]));
-		case Variant::VECTOR3:
-			return Variant(Vector3(this->v.v3f[0], this->v.v3f[1], this->v.v3f[2]));
-		case Variant::VECTOR3I:
-			return Variant(Vector3i(this->v.v3i[0], this->v.v3i[1], this->v.v3i[2]));
-		case Variant::VECTOR4:
-			return Variant(Vector4(this->v.v4f[0], this->v.v4f[1], this->v.v4f[2], this->v.v4f[3]));
-		case Variant::VECTOR4I:
-			return Variant(Vector4i(this->v.v4i[0], this->v.v4i[1], this->v.v4i[2], this->v.v4i[3]));
-		case Variant::OBJECT: {
-			// Objects are stored as raw pointers
-			return Variant(reinterpret_cast<Object *>(this->v.i));
-		}
-		default:
-			// For scoped variants, return the variant from the sandbox state
-			if (this->is_scoped_variant()) {
-				auto var_opt = emu.get_scoped_variant(this->v.i);
-				if (var_opt.has_value()) {
-					return *var_opt.value();
-				}
-			}
-			return Variant();
-	}
-}
-
-const Variant *GuestVariant::toVariantPtr(const Sandbox &emu) const {
-	if (this->is_scoped_variant()) {
-		auto var_opt = emu.get_scoped_variant(this->v.i);
-		if (var_opt.has_value()) {
-			return var_opt.value();
-		}
-	}
-	return nullptr;
-}
-
-void GuestVariant::set(Sandbox &emu, const Variant &value, bool implicit_trust) {
-	this->type = value.get_type();
-
-	switch (value.get_type()) {
-		case Variant::NIL:
-			break;
-		case Variant::BOOL:
-			this->v.b = value.operator bool();
-			break;
-		case Variant::INT:
-			this->v.i = value.operator int64_t();
-			break;
-		case Variant::FLOAT:
-			this->v.f = value.operator double();
-			break;
-		case Variant::VECTOR2: {
-			Vector2 v2 = value.operator Vector2();
-			this->v.v2f[0] = v2.x;
-			this->v.v2f[1] = v2.y;
-			break;
-		}
-		case Variant::VECTOR2I: {
-			Vector2i v2i = value.operator Vector2i();
-			this->v.v2i[0] = v2i.x;
-			this->v.v2i[1] = v2i.y;
-			break;
-		}
-		case Variant::VECTOR3: {
-			Vector3 v3 = value.operator Vector3();
-			this->v.v3f[0] = v3.x;
-			this->v.v3f[1] = v3.y;
-			this->v.v3f[2] = v3.z;
-			break;
-		}
-		case Variant::VECTOR3I: {
-			Vector3i v3i = value.operator Vector3i();
-			this->v.v3i[0] = v3i.x;
-			this->v.v3i[1] = v3i.y;
-			this->v.v3i[2] = v3i.z;
-			break;
-		}
-		case Variant::VECTOR4: {
-			Vector4 v4 = value.operator Vector4();
-			this->v.v4f[0] = v4.x;
-			this->v.v4f[1] = v4.y;
-			this->v.v4f[2] = v4.z;
-			this->v.v4f[3] = v4.w;
-			break;
-		}
-		case Variant::VECTOR4I: {
-			Vector4i v4i = value.operator Vector4i();
-			this->v.v4i[0] = v4i.x;
-			this->v.v4i[1] = v4i.y;
-			this->v.v4i[2] = v4i.z;
-			this->v.v4i[3] = v4i.w;
-			break;
-		}
-		case Variant::OBJECT: {
-			Object *obj = value.operator Object *();
-			this->set_object(emu, obj);
-			break;
-		}
-		default:
-			// For complex types, store as scoped variant
-			if (this->is_scoped_variant() || implicit_trust) {
-				this->v.i = emu.create_scoped_variant(Variant(value));
-			} else {
-				ERR_PRINT("Unsupported Variant type for GuestVariant::set");
-				throw std::runtime_error("Unsupported Variant type: " + std::string(GuestVariant::type_name(value.get_type())));
-			}
-			break;
-	}
-}
-
-void GuestVariant::set_object(Sandbox &emu, Object *obj) {
-	this->type = Variant::OBJECT;
-	if (obj) {
-		emu.add_scoped_object(obj);
-		this->v.i = reinterpret_cast<int64_t>(obj);
-	} else {
-		this->v.i = 0;
-	}
-}
-
-void GuestVariant::create(Sandbox &emu, Variant &&value) {
-	this->type = value.get_type();
-
-	switch (value.get_type()) {
-		case Variant::NIL:
-			break;
-		case Variant::BOOL:
-			this->v.b = value.operator bool();
-			break;
-		case Variant::INT:
-			this->v.i = value.operator int64_t();
-			break;
-		case Variant::FLOAT:
-			this->v.f = value.operator double();
-			break;
-		case Variant::VECTOR2: {
-			Vector2 v2 = value.operator Vector2();
-			this->v.v2f[0] = v2.x;
-			this->v.v2f[1] = v2.y;
-			break;
-		}
-		case Variant::VECTOR2I: {
-			Vector2i v2i = value.operator Vector2i();
-			this->v.v2i[0] = v2i.x;
-			this->v.v2i[1] = v2i.y;
-			break;
-		}
-		case Variant::VECTOR3: {
-			Vector3 v3 = value.operator Vector3();
-			this->v.v3f[0] = v3.x;
-			this->v.v3f[1] = v3.y;
-			this->v.v3f[2] = v3.z;
-			break;
-		}
-		case Variant::VECTOR3I: {
-			Vector3i v3i = value.operator Vector3i();
-			this->v.v3i[0] = v3i.x;
-			this->v.v3i[1] = v3i.y;
-			this->v.v3i[2] = v3i.z;
-			break;
-		}
-		case Variant::VECTOR4: {
-			Vector4 v4 = value.operator Vector4();
-			this->v.v4f[0] = v4.x;
-			this->v.v4f[1] = v4.y;
-			this->v.v4f[2] = v4.z;
-			this->v.v4f[3] = v4.w;
-			break;
-		}
-		case Variant::VECTOR4I: {
-			Vector4i v4i = value.operator Vector4i();
-			this->v.v4i[0] = v4i.x;
-			this->v.v4i[1] = v4i.y;
-			this->v.v4i[2] = v4i.z;
-			this->v.v4i[3] = v4i.w;
-			break;
-		}
-		case Variant::OBJECT: {
-			Object *obj = value.operator Object *();
-			this->set_object(emu, obj);
-			break;
-		}
-		default:
-			// For complex types, store as scoped variant
-			this->v.i = emu.create_scoped_variant(std::move(value));
-			break;
-	}
-}
-
-void GuestVariant::free(Sandbox &emu) {
-	// For now, do nothing - garbage collection is handled by the sandbox state
 }
