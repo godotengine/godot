@@ -686,6 +686,14 @@ void Window::_make_window() {
 	DisplayServer::get_singleton()->window_set_title(displayed_title, window_id);
 	DisplayServer::get_singleton()->window_attach_instance_id(get_instance_id(), window_id);
 
+	// Apply Wayland layer setting if set
+	if (wayland_layer != WAYLAND_LAYER_NORMAL && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_WAYLAND_LAYER_SHELL)) {
+		if (!is_in_edited_scene_root()) {
+			DisplayServer::get_singleton()->window_set_wayland_layer(wayland_layer, window_id);
+		} else {
+		}
+	}
+
 	_update_window_size();
 
 	if (transient_parent) {

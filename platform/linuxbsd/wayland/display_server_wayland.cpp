@@ -32,13 +32,6 @@
 
 #ifdef WAYLAND_ENABLED
 
-#define WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
-#ifdef WAYLAND_DISPLAY_SERVER_DEBUG_LOGS_ENABLED
-#define DEBUG_LOG_WAYLAND(...) print_verbose(__VA_ARGS__)
-#else
-#define DEBUG_LOG_WAYLAND(...)
-#endif
-
 #include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #ifdef VULKAN_ENABLED
@@ -737,7 +730,6 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 	WindowData &wd = windows[p_window_id];
 
 	if (!wd.visible) {
-		DEBUG_LOG_WAYLAND(vformat("Showing window %d", p_window_id));
 		// Showing this window will reset its mode with whatever the compositor
 		// reports. We'll save the mode beforehand so that we can reapply it later.
 		// TODO: Fix/Port/Move/Whatever to `WaylandThread` APIs.
@@ -758,12 +750,22 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 			// track them and we're gonna get our events transformed in unexpected ways.
 			wd.rect.position = Point2i();
 
-			DEBUG_LOG_WAYLAND(vformat("Creating regular window of size %s", wd.rect.size));
+			// Set Wayland layer for main window before creating it
+			if (p_window_id == MAIN_WINDOW_ID && main_window_wayland_layer != 0) {
+				wayland_thread.window_set_wayland_layer(p_window_id, main_window_wayland_layer);
+			}
+			
 			wayland_thread.window_create(p_window_id, wd.rect.size.width, wd.rect.size.height);
 			wayland_thread.window_set_min_size(p_window_id, wd.min_size);
 			wayland_thread.window_set_max_size(p_window_id, wd.max_size);
 			wayland_thread.window_set_app_id(p_window_id, _get_app_id_from_context(context));
 			wayland_thread.window_set_borderless(p_window_id, window_get_flag(WINDOW_FLAG_BORDERLESS, p_window_id));
+			
+			// Apply mouse passthrough flag if set
+			if (window_get_flag(WINDOW_FLAG_MOUSE_PASSTHROUGH, p_window_id)) {
+				Vector<Vector2> region; // Empty region for full passthrough
+				wayland_thread.window_set_mouse_passthrough(p_window_id, region);
+			}
 
 			if (wd.parent_id != INVALID_WINDOW_ID) {
 				wayland_thread.window_set_parent(wd.id, wd.parent_id);
@@ -775,8 +777,6 @@ void DisplayServerWayland::show_window(WindowID p_window_id) {
 				wd.rect_changed_callback.call(wd.rect);
 			}
 		} else {
-			DEBUG_LOG_WAYLAND("!!!!! Making popup !!!!!");
-
 			windows[root_id].popup_stack.push_back(p_window_id);
 
 			if (window_get_flag(WINDOW_FLAG_POPUP, p_window_id)) {
@@ -900,7 +900,6 @@ void DisplayServerWayland::delete_sub_window(WindowID p_window_id) {
 
 	windows.erase(p_window_id);
 
-	DEBUG_LOG_WAYLAND(vformat("Destroyed window %d", p_window_id));
 }
 
 DisplayServer::WindowID DisplayServerWayland::window_get_active_popup() const {
@@ -1008,8 +1007,7 @@ void DisplayServerWayland::window_set_title(const String &p_title, DisplayServer
 }
 
 void DisplayServerWayland::window_set_mouse_passthrough(const Vector<Vector2> &p_region, DisplayServer::WindowID p_window_id) {
-	// TODO
-	DEBUG_LOG_WAYLAND(vformat("wayland stub window_set_mouse_passthrough region %s", p_region));
+	wayland_thread.window_set_mouse_passthrough(p_window_id, p_region);
 }
 
 void DisplayServerWayland::window_set_rect_changed_callback(const Callable &p_callable, DisplayServer::WindowID p_window_id) {
@@ -1075,13 +1073,23 @@ Point2i DisplayServerWayland::window_get_position_with_decorations(DisplayServer
 }
 
 void DisplayServerWayland::window_set_position(const Point2i &p_position, DisplayServer::WindowID p_window_id) {
-	// Unsupported with toplevels.
+	MutexLock mutex_lock(wayland_thread.mutex);
+	
+	ERR_FAIL_COND(!windows.has(p_window_id));
+	WindowData &wd = windows[p_window_id];
+	
+	// For layer surfaces, we can change position by recalculating anchor/margins
+	if (wd.wayland_layer > 0 && wayland_thread.registry.wlr_layer_shell) {
+		Rect2i new_rect = Rect2i(p_position, wd.rect.size);
+		wd.rect.position = p_position;
+		wayland_thread.window_set_layer_surface_rect(p_window_id, new_rect);
+	}
+	// Regular toplevels don't support client-side positioning in Wayland
 }
 
 void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DEBUG_LOG_WAYLAND(vformat("window max size set to %s", p_size));
 
 	if (p_size.x < 0 || p_size.y < 0) {
 		ERR_FAIL_MSG("Maximum window size can't be negative!");
@@ -1142,7 +1150,6 @@ void DisplayServerWayland::window_set_transient(WindowID p_window_id, WindowID p
 void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DEBUG_LOG_WAYLAND(vformat("window minsize set to %s", p_size));
 
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
@@ -1177,8 +1184,27 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
-	// The XDG spec doesn't allow non-interactive resizes. Let's update the
-	// window's internal representation to account for that.
+	// For layer surfaces, we can change size by recalculating anchor/margins
+	if (wd.wayland_layer > 0 && wayland_thread.registry.wlr_layer_shell) {
+		// For layer surfaces, preserve the current position during resize
+		// Layer surfaces may have their position reset by the compositor, so we use our own tracking
+		Point2i current_position = wd.rect.position;
+		if (current_position == Point2i(0, 0)) {
+			// Position was reset, try to get it from the WaylandThread's window state
+			auto ws = wayland_thread.window_get_state(p_window_id);
+			if (ws) {
+				current_position = ws->rect.position;
+			}
+		}
+		
+		Rect2i new_rect = Rect2i(current_position, p_size);
+		wd.rect.size = p_size;
+		wd.rect.position = current_position; // Ensure we keep the position
+		wayland_thread.window_set_layer_surface_rect(p_window_id, new_rect);
+	}
+
+	// The XDG spec doesn't allow non-interactive resizes for regular toplevels. 
+	// Let's update the window's internal representation to account for that.
 	if (wd.rect_changed_callback.is_valid()) {
 		wd.rect_changed_callback.call(wd.rect);
 	}
@@ -1239,11 +1265,28 @@ void DisplayServerWayland::window_set_flag(WindowFlags p_flag, bool p_enabled, D
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
-	DEBUG_LOG_WAYLAND(vformat("Window set flag %d", p_flag));
 
 	switch (p_flag) {
 		case WINDOW_FLAG_BORDERLESS: {
 			wayland_thread.window_set_borderless(p_window_id, p_enabled);
+		} break;
+
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			// Convert boolean flag to empty vector for full passthrough or nullptr for normal handling
+			Vector<Vector2> region;
+			if (p_enabled) {
+				// Empty region means full passthrough
+				region.clear();
+			} else {
+				// We need to implement a way to disable passthrough
+				// For now, we'll call with a very large region that covers the whole window
+				// This effectively disables passthrough
+				region.push_back(Vector2(0, 0));
+				region.push_back(Vector2(wd.rect.size.x, 0));
+				region.push_back(Vector2(wd.rect.size.x, wd.rect.size.y));
+				region.push_back(Vector2(0, wd.rect.size.y));
+			}
+			wayland_thread.window_set_mouse_passthrough(p_window_id, region);
 		} break;
 
 		case WINDOW_FLAG_POPUP: {
@@ -1280,13 +1323,13 @@ void DisplayServerWayland::window_set_wayland_layer(int p_layer, DisplayServer::
 	ERR_FAIL_COND(!windows.has(p_window_id));
 	WindowData &wd = windows[p_window_id];
 
-	// Only allow setting layer on visible windows that support layer shell
-	if (wd.visible && wayland_thread.registry.wlr_layer_shell) {
+	// Store the layer for the window
+	wd.wayland_layer = p_layer;
+	
+	// Always pass to WaylandThread (it handles pending layers if window doesn't exist yet)
+	if (wayland_thread.registry.wlr_layer_shell) {
 		wayland_thread.window_set_wayland_layer(p_window_id, p_layer);
 	}
-	
-	// Store the layer for when the window becomes visible
-	wd.wayland_layer = p_layer;
 }
 
 int DisplayServerWayland::window_get_wayland_layer(DisplayServer::WindowID p_window_id) const {
@@ -1301,7 +1344,6 @@ int DisplayServerWayland::window_get_wayland_layer(DisplayServer::WindowID p_win
 void DisplayServerWayland::window_request_attention(DisplayServer::WindowID p_window_id) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DEBUG_LOG_WAYLAND("Requested attention.");
 
 	wayland_thread.window_request_attention(p_window_id);
 }
@@ -1781,9 +1823,7 @@ void DisplayServerWayland::process_events() {
 			}
 
 			if (suspend_state == SuspendState::TIMEOUT) {
-				DEBUG_LOG_WAYLAND("Suspending. Reason: timeout.");
 			} else if (suspend_state == SuspendState::CAPABILITY) {
-				DEBUG_LOG_WAYLAND("Suspending. Reason: capability.");
 			}
 		} break;
 
@@ -1793,7 +1833,6 @@ void DisplayServerWayland::process_events() {
 			// desire for the compositor to let us repaint.
 			if (wayland_thread.get_reset_frame()) {
 				suspend_state = SuspendState::NONE;
-				DEBUG_LOG_WAYLAND("Unsuspending from timeout.");
 			}
 
 			// Since we're not rendering, nothing is committing the windows'
@@ -1806,7 +1845,6 @@ void DisplayServerWayland::process_events() {
 			// the compositor wants us to repaint.
 			if (!wayland_thread.is_suspended()) {
 				suspend_state = SuspendState::NONE;
-				DEBUG_LOG_WAYLAND("Unsuspending from capability.");
 			}
 		} break;
 	}
@@ -1841,7 +1879,6 @@ void DisplayServerWayland::swap_buffers() {
 void DisplayServerWayland::set_context(Context p_context) {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
-	DEBUG_LOG_WAYLAND(vformat("Setting context %d.", p_context));
 
 	context = p_context;
 
@@ -2109,6 +2146,16 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	wd.vsync_mode = p_vsync_mode;
 	wd.rect.size = p_resolution;
 	wd.title = "Godot";
+
+	// Set Wayland layer from project settings before showing the window
+	// Only apply this when NOT running the editor (editor should always stay normal)
+	if (has_feature(FEATURE_WAYLAND_LAYER_SHELL) && !Engine::get_singleton()->is_editor_hint()) {
+		int wayland_layer = GLOBAL_GET("display/window/wayland/layer").operator int();
+		// We need to pass this to window_create, so we'll set it when the window is created
+		main_window_wayland_layer = wayland_layer;
+	} else {
+		main_window_wayland_layer = 0;
+	}
 
 #ifdef ACCESSKIT_ENABLED
 	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {

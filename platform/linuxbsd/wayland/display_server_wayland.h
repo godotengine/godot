@@ -136,6 +136,7 @@ class DisplayServerWayland : public DisplayServer {
 	WindowID window_id_counter = MAIN_WINDOW_ID;
 
 	WaylandThread wayland_thread;
+	int main_window_wayland_layer = 0;
 
 	Context context;
 	bool swap_cancel_ok = false;

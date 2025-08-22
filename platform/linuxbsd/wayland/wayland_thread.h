@@ -296,6 +296,17 @@ public:
 		// What the compositor is recommending us.
 		double preferred_fractional_scale = 0;
 
+		// Flag to prevent feedback loops during layer surface resizing
+		bool layer_surface_resizing = false;
+		
+		// Flag to defer layer surface commit until next frame (similar to buffer_scale_changed)
+		bool layer_surface_config_changed = false;
+		
+		// Rate limiting for configure events
+		uint64_t last_configure_time = 0;
+		uint32_t last_configure_width = 0;
+		uint32_t last_configure_height = 0;
+
 		struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration = nullptr;
 
 		struct zwp_idle_inhibitor_v1 *wp_idle_inhibitor = nullptr;
@@ -546,6 +557,7 @@ private:
 	ThreadData thread_data;
 
 	HashMap<DisplayServer::WindowID, WindowState> windows;
+	HashMap<DisplayServer::WindowID, int> pending_window_layers;
 
 	List<Ref<Message>> messages;
 
@@ -681,6 +693,10 @@ private:
 	static void _xdg_popup_on_configure(void *data, struct xdg_popup *xdg_popup, int32_t x, int32_t y, int32_t width, int32_t height);
 	static void _xdg_popup_on_popup_done(void *data, struct xdg_popup *xdg_popup);
 	static void _xdg_popup_on_repositioned(void *data, struct xdg_popup *xdg_popup, uint32_t token);
+
+	// wlr-layer-shell event handlers.
+	static void _wlr_layer_surface_on_configure(void *data, struct zwlr_layer_surface_v1 *wlr_layer_surface, uint32_t serial, uint32_t width, uint32_t height);
+	static void _wlr_layer_surface_on_closed(void *data, struct zwlr_layer_surface_v1 *wlr_layer_surface);
 
 	// wayland-protocols event handlers.
 	static void _wp_fractional_scale_on_preferred_scale(void *data, struct wp_fractional_scale_v1 *wp_fractional_scale_v1, uint32_t scale);
@@ -843,6 +859,11 @@ private:
 		.repositioned = _xdg_popup_on_repositioned,
 	};
 
+	static constexpr struct zwlr_layer_surface_v1_listener wlr_layer_surface_listener = {
+		.configure = _wlr_layer_surface_on_configure,
+		.closed = _wlr_layer_surface_on_closed,
+	};
+
 	// wayland-protocols event listeners.
 	static constexpr struct wp_fractional_scale_v1_listener wp_fractional_scale_listener = {
 		.preferred_scale = _wp_fractional_scale_on_preferred_scale,
@@ -977,6 +998,18 @@ private:
 	static Vector<uint8_t> _wl_data_offer_read(struct wl_display *wl_display, const char *p_mime, struct wl_data_offer *wl_data_offer);
 	static Vector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
+	// Helper function to calculate layer surface anchor and margins from position and size
+	struct LayerSurfaceConfig {
+		uint32_t anchor;
+		int32_t margin_top;
+		int32_t margin_right;
+		int32_t margin_bottom;
+		int32_t margin_left;
+		int32_t width;
+		int32_t height;
+	};
+	static LayerSurfaceConfig _calculate_layer_surface_config(const Rect2i &p_rect, const Size2i &p_output_size);
+
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
 	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
 	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
@@ -1050,6 +1083,9 @@ public:
 	void window_set_title(DisplayServer::WindowID p_window_id, const String &p_title);
 	void window_set_app_id(DisplayServer::WindowID p_window_id, const String &p_app_id);
 	void window_set_wayland_layer(DisplayServer::WindowID p_window_id, int p_layer);
+
+	// Layer surface specific positioning and sizing
+	void window_set_layer_surface_rect(DisplayServer::WindowID p_window_id, const Rect2i &p_rect);
 	int window_get_wayland_layer(DisplayServer::WindowID p_window_id) const;
 
 	bool window_is_focused(DisplayServer::WindowID p_window_id);
@@ -1062,6 +1098,9 @@ public:
 	// Optional - require idle_inhibit_unstable_v1
 	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
 	bool window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const;
+
+	// Mouse passthrough for transparent overlays
+	void window_set_mouse_passthrough(DisplayServer::WindowID p_window_id, const Vector<Vector2> &p_region);
 
 	ScreenData screen_get_data(int p_screen) const;
 	int get_screen_count() const;
