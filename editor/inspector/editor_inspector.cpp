@@ -4999,11 +4999,25 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		undo_redo->add_do_property(object, p_name, p_value);
 		bool valid = false;
 		Variant value = object->get(p_name, &valid);
+		Variant::Type type = p_value.get_type();
 		if (valid) {
 			if (Object::cast_to<Control>(object) && (p_name == "anchors_preset" || p_name == "layout_mode")) {
 				undo_redo->add_undo_method(object, "_edit_set_state", Object::cast_to<Control>(object)->_edit_get_state());
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
+			}
+			if (Object::cast_to<Node>(object)) {
+			}
+			// We'll use Editor Selection to get the currently edited Node.
+			Node *N = Object::cast_to<Node>(object);
+			if (N && (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY)) {
+				if (value != p_value) {
+					undo_redo->add_do_method(EditorNode::get_singleton(), "remove_node_reference", value, N);
+					//Perhaps an inefficient way of updating Resource_Count. Could go in depth and check which Resource values changed/got removed and which stayed the same, but this is more readable ATM.
+					undo_redo->add_do_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "remove_node_reference", p_value, N);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+				}
 			}
 		}
 
@@ -5053,7 +5067,20 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 
 		Resource *r = Object::cast_to<Resource>(object);
+
 		if (r) {
+			List<Node *> shared_nodes = EditorNode::get_singleton()->get_resource_node_list(r);
+			for (Node *N : shared_nodes) {
+				if (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) {
+					if (value != p_value) {
+						undo_redo->add_do_method(EditorNode::get_singleton(), "remove_node_reference", value, N);
+						//Perhaps an inefficient way of updating Resource_Count. Could go in depth and check which Resource values changed/got removed and which stayed the same, but this is more readable ATM.
+						undo_redo->add_do_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+						undo_redo->add_undo_method(EditorNode::get_singleton(), "remove_node_reference", p_value, N);
+						undo_redo->add_undo_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+					}
+				}
+			}
 			if (String(p_name) == "resource_local_to_scene") {
 				bool prev = object->get(p_name);
 				bool next = p_value;
