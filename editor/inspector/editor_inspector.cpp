@@ -5005,6 +5005,21 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			} else {
 				undo_redo->add_undo_property(object, p_name, value);
 			}
+			if (Object::cast_to<Node>(object)) {
+			}
+			Variant::Type type = value.get_type();
+			// We'll use Editor Selection to get the currently edited Node.
+			List<Node *> node_selection = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
+			Node *N = node_selection.get(0);
+			if (type == Variant::OBJECT || type == Variant::ARRAY || type == Variant::DICTIONARY) {
+				if (value != p_value) {
+					undo_redo->add_do_method(EditorNode::get_singleton(), "remove_node_reference", value, N);
+					//Perhaps an inefficient way of updating Resource_Count. Could go in depth and check which Resource values changed/got removed and which stayed the same, but this is more readable ATM.
+					undo_redo->add_do_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "remove_node_reference", p_value, N);
+					undo_redo->add_undo_method(EditorNode::get_singleton(), "update_resource_count", N, false);
+				}
+			}
 		}
 
 		List<StringName> linked_properties;
