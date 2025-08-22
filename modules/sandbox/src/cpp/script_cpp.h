@@ -30,11 +30,15 @@
 
 #pragma once
 
-#include "../docker.h"
 #include "core/object/script_language.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
 #include "core/variant/array.h"
+#include "core/variant/variant.h"
+#include "core/object/object.h"
+#include "core/error/error_list.h"
+#include "core/string/string_name.h"
+#include "core/object/class_db.h"
 
 class CPPScriptInstance;
 class ELFScript;
@@ -86,39 +90,9 @@ public:
 	virtual bool is_placeholder_fallback_enabled() const override;
 #endif
 
-	/// @brief Detects if the project is a CMake or SCons project,
-	/// in which case Docker usage is not necessary.
+	/// @brief Detects if the project is a CMake or SCons project.
 	/// @return true if the project is a CMake or SCons project.
 	static bool DetectCMakeOrSConsProject();
-
-	static void DockerContainerStart() {
-		if (!docker_container_started) {
-			Array output;
-			if (Docker::ContainerStart(docker_container_name, docker_image_name, output))
-				docker_container_started = true;
-			else {
-				print_line(output);
-				ERR_PRINT("Failed to start Docker container: " + String(docker_container_name));
-			}
-		}
-	}
-	static void DockerContainerStop() {
-		if (docker_container_started) {
-			Docker::ContainerStop(docker_container_name);
-			docker_container_started = false;
-		}
-	}
-	static int DockerContainerVersion() {
-		DockerContainerStart();
-		if (docker_container_version == 0)
-			docker_container_version =
-					Docker::ContainerVersion(docker_container_name, { "/usr/api/build.sh", "--version" });
-		return docker_container_version;
-	}
-	static bool DockerContainerExecute(const PackedStringArray &p_arguments, Array &output, bool verbose = true) {
-		DockerContainerStart();
-		return Docker::ContainerExecute(docker_container_name, p_arguments, output, verbose);
-	}
 
 	void set_file(const String &p_path);
 	CPPScriptInstance *get_cpp_script_instance() const;
@@ -134,11 +108,6 @@ public:
 	~CPPScript();
 
 private:
-	static inline bool docker_container_started = false;
-	static inline int docker_container_version = 0;
-	static inline const char *docker_container_name = "godot-cpp-compiler";
-	static inline const char *docker_image_name = "ghcr.io/libriscv/cpp_compiler";
-
 	String path;
 	mutable HashSet<CPPScriptInstance *> instances;
 	Ref<ELFScript> elf_script;

@@ -102,25 +102,12 @@ void Sandbox::handle_exception(gaddr_t address) {
 
 	String elfpath = "";
 #if defined(__linux__) || defined(__APPLE__)
-	// Attempt to print the source code line using addr2line from the C++ Docker container
-	// It's not unthinkable that this works for every ELF, regardless of the language
+	// Docker container debugging functionality has been removed
+	// Source line information is no longer available through Docker
 	Ref<ELFScript> script = this->get_program();
 	if (!script.is_null()) {
-		Array line_out;
-		elfpath = get_program()->get_dockerized_program_path();
-		CPPScript::DockerContainerExecute({ "/usr/api/build.sh", "--line", to_hex(address), elfpath }, line_out, false);
-		if (line_out.size() > 0) {
-			const String line = String(line_out[0]).replace("\n", "").replace("/usr/src/", "res://");
-			print_line("Exception in Sandbox calling function: " + line);
-		}
-		// Additional line for the current PC, if it's not the same as the call address
-		if (machine().cpu.pc() != address) {
-			CPPScript::DockerContainerExecute({ "/usr/api/build.sh", "--line", to_hex(machine().cpu.pc()), elfpath }, line_out, false);
-			if (line_out.size() > 0) {
-				const String line = String(line_out[0]).replace("\n", "").replace("/usr/src/", "res://");
-				print_line("Exception in Sandbox at PC: " + line);
-			}
-		}
+		elfpath = get_program()->get_path();
+		print_line("Exception in Sandbox - source line debugging unavailable (Docker support removed)");
 	}
 #endif
 

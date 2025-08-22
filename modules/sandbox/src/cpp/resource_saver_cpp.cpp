@@ -435,65 +435,9 @@ Error ResourceFormatSaverCPP::save(const Ref<Resource> &p_resource, const String
 			// Generate the C++ run-time API in the project root
 			auto_generate_cpp_api("res://generated_api.hpp");
 
-			// Get the absolute path without the file name
-			String path = handle->get_path().get_base_dir().replace("res://", "") + "/";
-			String inpname = path + "*.cpp";
-			String foldername = Docker::GetFolderName(handle->get_path().get_base_dir());
-			String outname = path + foldername + String(".elf");
-
-			auto builder = [inpname = std::move(inpname), outname = std::move(outname)] {
-				// Invoke docker to compile the file
-				Array output;
-				PackedStringArray arguments;
-				arguments.push_back("/usr/api/build.sh");
-				if (SandboxProjectSettings::debug_info())
-					arguments.push_back("--debug");
-				Array global_defines = SandboxProjectSettings::get_global_defines();
-				for (int i = 0; i < global_defines.size(); i++) {
-					arguments.push_back("-D");
-					arguments.push_back(global_defines[i]);
-				}
-				arguments.push_back("-o");
-				arguments.push_back(outname);
-				arguments.push_back(inpname);
-				// CPPScript::DockerContainerExecute({ "/usr/api/build.sh", "-o", outname, inpname }, output);
-				CPPScript::DockerContainerExecute(arguments, output);
-				if (!output.is_empty() && !output[0].operator String().is_empty()) {
-					for (int i = 0; i < output.size(); i++) {
-						String line = output[i].operator String();
-						if constexpr (VERBOSE_CMD)
-							ERR_PRINT(line);
-						// Remove (most) console color codes
-						line = line.replace("\033[0;31m", "");
-						line = line.replace("\033[0;32m", "");
-						line = line.replace("\033[0;33m", "");
-						line = line.replace("\033[0;34m", "");
-						line = line.replace("\033[0;35m", "");
-						line = line.replace("\033[0;36m", "");
-						line = line.replace("\033[0;37m", "");
-						line = line.replace("\033[01;31m", "");
-						line = line.replace("\033[01;32m", "");
-						line = line.replace("\033[01;33m", "");
-						line = line.replace("\033[01;34m", "");
-						line = line.replace("\033[01;35m", "");
-						line = line.replace("\033[01;36m", "");
-						line = line.replace("\033[01;37m", "");
-						line = line.replace("\033[m", "");
-						line = line.replace("\033[0m", "");
-						line = line.replace("\033[01m", "");
-						line = line.replace("\033[32m", "");
-						line = line.replace("[K", "");
-						WARN_PRINT(line);
-					}
-				}
-			};
-
-			// If async compilation is enabled, enqueue the builder to the thread pool
-			if (SandboxProjectSettings::async_compilation())
-				thread_pool->enqueue(builder);
-			else {
-				builder();
-			}
+			// Docker compilation support has been removed
+			// Compilation should now be handled by CMake or SCons projects
+			print_line("C++ script saved - compilation now handled by CMake/SCons projects only");
 			return Error::OK;
 		} else {
 			return Error::ERR_FILE_CANT_OPEN;
