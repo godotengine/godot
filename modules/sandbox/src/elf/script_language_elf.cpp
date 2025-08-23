@@ -40,7 +40,6 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/theme.h"
 #include "script_elf.h"
-static constexpr const char *icon_path = "res://addons/godot_sandbox/Sandbox.svg";
 
 String ELFScriptLanguage::get_name() const {
 	return "ELF";
