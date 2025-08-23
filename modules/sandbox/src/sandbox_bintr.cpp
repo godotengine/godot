@@ -124,7 +124,7 @@ bool Sandbox::load_binary_translation(const String &shared_library_path, bool al
 	// Load the shared library on platforms that support it
 #if defined(__linux__) || defined(YEP_IS_WINDOWS) || defined(YEP_IS_OSX)
 	Ref<FileAccess> fa = FileAccess::open(shared_library_path, FileAccess::ModeFlags::READ);
-	if (fa == nullptr || !fa->is_open()) {
+	if (!fa.is_valid() || !fa->is_open()) {
 		//ERR_PRINT("Sandbox: Failed to open shared library: " + shared_library_path);
 		return false;
 	}
