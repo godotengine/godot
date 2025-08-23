@@ -580,7 +580,7 @@ void GraphNode::_notification(int p_what) {
 						}
 					}
 				}
-				if (slot.enable_left) {
+				if (slot.enable_right) {
 					if (type_info.has(slot.type_right)) {
 						name += "," + vformat(ETR("output port, type: %s"), type_info[slot.type_right]);
 					} else {
