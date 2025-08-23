@@ -7,12 +7,15 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <catch2/catch_test_macros.hpp>
-#include <catch2/internal/catch_xmlwriter.hpp>
-
+#include <catch2/benchmark/catch_benchmark.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/internal/catch_reusable_string_stream.hpp>
+#include <catch2/internal/catch_xmlwriter.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 
 #include <sstream>
+
+namespace {
 
 static std::string encode( std::string const& str, Catch::XmlEncode::ForWhat forWhat = Catch::XmlEncode::ForTextNodes ) {
     Catch::ReusableStringStream oss;
@@ -181,3 +184,20 @@ TEST_CASE("XmlWriter escapes attributes properly", "[XML][XmlWriter][approvals]"
     REQUIRE_THAT(stream.str(),
                  ContainsSubstring(R"(some-attribute="Special chars need escaping: &lt; > ' &quot; &amp;")"));
 }
+
+TEST_CASE( "XmlWriter benchmarks", "[XML][XmlWriter][!benchmark]" ) {
+    const auto input_length = GENERATE( as<size_t>{}, 10, 100, 10'000 );
+    std::string test_input( input_length, 'a' );
+    BENCHMARK_ADVANCED( "write string, no-escaping, len=" +
+                        std::to_string( input_length ) ) {
+        return encode( test_input );
+    };
+
+    std::string escape_input( input_length, '\b' );
+    BENCHMARK_ADVANCED( "write string, all-escaped, len=" +
+                        std::to_string( input_length ) ) {
+        return encode( escape_input );
+    };
+}
+
+} // namespace

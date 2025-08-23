@@ -97,10 +97,12 @@ struct GuestStdString {
 		}
 		else
 		{
-			this->ptr = machine.arena().malloc(len);
+			this->ptr = machine.arena().malloc(len+1);
 			this->size = len;
 			this->capacity = len;
-			machine.copy_to_guest(this->ptr, str, len);
+			char *dst = machine.memory.template memarray<char>(this->ptr, len + 1);
+			std::memcpy(dst, str, len);
+			dst[len] = '\0';
 		}
 	}
 	void set_string(machine_t& machine, gaddr_t self, std::string_view str)

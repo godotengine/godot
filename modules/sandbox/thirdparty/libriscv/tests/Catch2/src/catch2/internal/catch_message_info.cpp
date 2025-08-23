@@ -10,16 +10,17 @@
 
 namespace Catch {
 
-    MessageInfo::MessageInfo(   StringRef _macroName,
-                                SourceLineInfo const& _lineInfo,
-                                ResultWas::OfType _type )
+    MessageInfo::MessageInfo( StringRef _macroName,
+                              SourceLineInfo const& _lineInfo,
+                              ResultWas::OfType _type )
     :   macroName( _macroName ),
         lineInfo( _lineInfo ),
         type( _type ),
         sequence( ++globalCount )
     {}
 
-    // This may need protecting if threading support is added
-    unsigned int MessageInfo::globalCount = 0;
+    // Messages are owned by their individual threads, so the counter should be thread-local as well.
+    // Alternative consideration: atomic, so threads don't share IDs and things are easier to debug.
+    thread_local unsigned int MessageInfo::globalCount = 0;
 
 } // end namespace Catch

@@ -151,17 +151,17 @@ riscv::Buffer Memory<W>::membuffer(address_t addr,
 
 	const size_t offset = addr & (Page::size()-1);
 	auto* start = (const char*) &page.data()[offset];
-	const size_t max_bytes = std::min(Page::size() - offset, datalen);
+	const size_t page_bytes = std::min(Page::size() - offset, datalen);
 
-	result.append_page(start, max_bytes);
+	result.append_page(start, page_bytes);
 	// slow-path: cross page-boundary
 	while (result.size() < datalen)
 	{
 		const size_t max_bytes = std::min(Page::size(), datalen - result.size());
 		pageno ++;
-		const Page& page = this->get_readable_pageno(pageno);
+		const Page& slow_page = this->get_readable_pageno(pageno);
 
-		result.append_page((const char*) page.data(), max_bytes);
+		result.append_page((const char*) slow_page.data(), max_bytes);
 	}
 	return result;
 }
@@ -355,10 +355,10 @@ int Memory<W>::memcmp(address_t p1, address_t p2, size_t len) const
 		uint8_t v1 = 0;
 		uint8_t v2 = 0;
 		while (len > 0) {
-			const auto pageno1 = this->page_number(p1);
-			const auto pageno2 = this->page_number(p2);
-			auto& page1 = this->get_readable_pageno(pageno1);
-			auto& page2 = this->get_readable_pageno(pageno2);
+			const auto slow_pageno1 = this->page_number(p1);
+			const auto slow_pageno2 = this->page_number(p2);
+			auto& page1 = this->get_readable_pageno(slow_pageno1);
+			auto& page2 = this->get_readable_pageno(slow_pageno2);
 
 			v1 = page1.data()[p1 % Page::SIZE];
 			v2 = page2.data()[p2 % Page::SIZE];
@@ -389,8 +389,8 @@ int Memory<W>::memcmp(const void* ptr1, address_t p2, size_t len) const
 	{
 		uint8_t v2 = 0;
 		while (len > 0) {
-			const auto pageno2 = this->page_number(p2);
-			auto& page2 = this->get_readable_pageno(pageno2);
+			const auto slow_pageno2 = this->page_number(p2);
+			auto& page2 = this->get_readable_pageno(slow_pageno2);
 
 			v2 = page2.data()[p2 % Page::SIZE];
 			if (*s1 != v2) break;

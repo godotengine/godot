@@ -208,17 +208,26 @@ template <int W>
 int CPU<W>::load_translation(const MachineOptions<W>& options,
 	std::string* filename, DecodedExecuteSegment<W>& exec) const
 {
+	bool has_cross_compile = false;
+	for (auto& cc : options.cross_compile) {
+		if (std::holds_alternative<MachineTranslationEmbeddableCodeOptions>(cc)) {
+			has_cross_compile = true;
+			break;
+		}
+	}
+
 	// Disable translator by setting options.translate_enabled to false
 	// or by setting max blocks to zero.
-	if (0 == options.translate_blocks_max || (!options.translate_enabled && !options.translate_enable_embedded)) {
+	if (0 == options.translate_blocks_max || (!options.translate_enabled && !options.translate_enable_embedded && !has_cross_compile)) {
 		if (options.verbose_loader) {
 			printf("libriscv: Binary translation disabled\n");
 		}
-		exec.set_binary_translated(nullptr, false);
 		return -1;
 	}
-	if (exec.is_binary_translated()) {
-		throw MachineException(ILLEGAL_OPERATION, "Execute segment already binary translated");
+
+	if (!has_cross_compile && exec.is_binary_translated() && !options.translate_enable_embedded) {
+		// It's already binary translated, and embedded translations aren't wanted
+		return 0;
 	}
 
 	// Checksum the execute segment, ...
@@ -233,13 +242,24 @@ int CPU<W>::load_translation(const MachineOptions<W>& options,
 	checksum = crc32c(checksum, cflags.c_str(), cflags.size());
 	exec.set_translation_hash(checksum);
 
+	char filebuffer[512];
+	int len = snprintf(filebuffer, sizeof(filebuffer),
+		"%s%08X%s", options.translation_prefix.c_str(), checksum, options.translation_suffix.c_str());
+	if (len <= 0)
+		return -1;
+
+	if (filename) {
+		*filename = filebuffer;
+	}
+
 	if (options.translate_timing) {
 		TIME_POINT(t6);
 		printf(">> Execute segment 0x%X hashing took %ld ns\n", checksum, nanodiff(t5, t6));
 	}
 
 	// Check if translation is registered
-	if (options.translate_enable_embedded)
+	// Conditions: Either it's JIT (embedded is better), or it's not binary translated (also better)
+	if (options.translate_enable_embedded && (!exec.is_binary_translated() || exec.is_libtcc()))
 	{
 		TIME_POINT(t6);
 
@@ -280,37 +300,26 @@ int CPU<W>::load_translation(const MachineOptions<W>& options,
 					entry.set_invalid_handler();
 					entry.instr = mapping.mapping_index;
 				}
+				// If it was registered as JIT before, it's no longer
+				// XXX: Free any resources associated with the JIT translation
+				exec.set_binary_translated(nullptr, false);
 				if (options.translate_timing) {
 					TIME_POINT(t7);
 					printf(">> Activating embedded code took %ld ns\n", nanodiff(t6, t7));
 				}
-				return 0;
+				if (!has_cross_compile)
+					return 0;
 			}
 		}
 		if (options.verbose_loader) {
 			printf("libriscv: No embedded translation found for hash %08X\n", checksum);
 		}
-
-		// If we are only looking for embedded translations,
-		// check if we should emit embeddable code and then return.
-		if (!options.translate_enabled) {
-			for (auto& cc : options.cross_compile) {
-				if (std::holds_alternative<MachineTranslationEmbeddableCodeOptions>(cc))
-					return 1; // We must compile embeddable source code
-			}
-			// No need to compile anything
-			return -1;
-		}
 	}
 
-	if (!options.translate_enabled)
-		return -1;
-
-	char filebuffer[512];
-	int len = snprintf(filebuffer, sizeof(filebuffer),
-		"%s%08X%s", options.translation_prefix.c_str(), checksum, options.translation_suffix.c_str());
-	if (len <= 0)
-		return -1;
+	// At this point we have already if checked for embedded translations,
+	// now exit if it's already been translated or if binary translation is disabled.
+	if (!options.translate_enabled || exec.is_binary_translated())
+		return (has_cross_compile) ? 1 : -1;
 
 	void* dylib = nullptr;
 	{

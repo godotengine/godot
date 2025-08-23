@@ -7,6 +7,6 @@
 	remote = https://github.com/fwsGonzo/tinyprintf.git
 	branch = master
 	commit = 6fdeec590af7b0d604dc44630ca85cb2be1f647f
-	parent = 325abdd42528d01c025656116fdb007d48ec308a
+	parent = 11350b787b3328c284239a1b2e06ccddc19de576
 	method = merge
 	cmdver = 0.4.9

@@ -255,7 +255,7 @@ struct Emitter
 
 	void emit_branch(const BranchInfo& binfo, const std::string& op);
 
-	void emit_system_call(const std::string& syscall_reg, bool clobber_all);
+	void emit_system_call(std::string syscall_reg, bool clobber_all);
 
 	// Returns true if the function call has exited/returned from the block
 	bool emit_function_call(address_t target, address_t dest_pc);
@@ -661,15 +661,19 @@ inline bool Emitter<W>::emit_function_call(address_t target_funcaddr, address_t 
 }
 
 template <int W>
-inline void Emitter<W>::emit_system_call(const std::string& syscall_reg, bool clobber_all)
+inline void Emitter<W>::emit_system_call(std::string syscall_reg, bool clobber_all)
 {
-	if (tinfo.use_syscall_clobbering_optimization && this->uses_register_caching() && !clobber_all)
-	{
-		clobber_all = true;
-		if (auto tracked_value = get_tracked_register(17); tracked_value) {
-			// Don't clobber when the value is known and it's not in the list
-			// of known system calls that clobber all registers
+	if (auto tracked_value = get_tracked_register(17); tracked_value) {
+		// Don't clobber when the value is known and it's not in the list
+		// of known system calls that clobber all registers
+		if (tinfo.use_syscall_clobbering_optimization && this->uses_register_caching() && !clobber_all) {
 			clobber_all = Machine<W>::is_clobbering_syscall(*tracked_value);
+		} else {
+			clobber_all = true;
+		}
+
+		if (syscall_reg != std::to_string(SYSCALL_EBREAK)) {
+			syscall_reg = std::to_string(*tracked_value);
 		}
 	} else {
 		clobber_all = true;
@@ -681,9 +685,11 @@ inline void Emitter<W>::emit_system_call(const std::string& syscall_reg, bool cl
 	}
 	if (tinfo.is_libtcc)
 	{
-		code += "max_ic = api.system_call(cpu, " + PCRELS(0) + ", ic, max_ic, " + syscall_reg + ");\n";
 		if (!tinfo.ignore_instruction_limit) {
+			code += "max_ic = api.system_call(cpu, " + PCRELS(0) + ", ic, max_ic, " + syscall_reg + ");\n";
 			code += "ic = INS_COUNTER(cpu);\n";
+		} else {
+			code += "max_ic = api.system_call(cpu, " + PCRELS(0) + ", 0, max_ic, " + syscall_reg + ");\n";
 		}
 		code += "if (!max_ic) {\n";
 		if (this->uses_register_caching() && !clobber_all)
@@ -707,7 +713,7 @@ inline void Emitter<W>::emit_system_call(const std::string& syscall_reg, bool cl
 			}
 		}
 		else if (!tinfo.ignore_instruction_limit) {
-			code += "  return (ReturnValues){INS_COUNTER(cpu), MAX_COUNTER(cpu)};\n"
+			code += "  return (ReturnValues){ic, MAX_COUNTER(cpu)};\n"
 					"}\n";
 		} else {
 			code += "  return (ReturnValues){0, MAX_COUNTER(cpu)};\n"

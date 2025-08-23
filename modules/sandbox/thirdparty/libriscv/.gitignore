@@ -1,24 +1,6 @@
-# Build directories (but not source directories like Build/, build_scripts/, etc.)
 **/.build*/
-**/build/CMakeCache.txt
-**/build/CMakeFiles/
-**/build/Makefile
-**/build/*.cmake
-**/build/*.a
-**/build/*.o
-**/build/*.so
-**/build/*.exe
-**/build/*.dll
-**/build/*.dylib
-**/build/bin/
-**/build/lib/
-**/build/Testing/
-**/build/_deps/
-
-# Exclude source directories that might match build patterns
-!**/Build/
-!**/build_scripts/
-!**/build_config/
+**/build/
+**/build_*/
 riscv64-unknown-elf/
 riscv32-unknown-elf/
 emulator/*rvmicro

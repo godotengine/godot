@@ -149,9 +149,6 @@ namespace Catch {
         Totals m_totals;
         Detail::AtomicCounts m_atomicAssertionCount;
         IEventListenerPtr m_reporter;
-        std::vector<MessageInfo> m_messages;
-        // Owners for the UNSCOPED_X information macro
-        std::vector<ScopedMessage> m_messageScopes;
         std::vector<SectionEndInfo> m_unfinishedSections;
         std::vector<ITracker*> m_activeSections;
         TrackerContext m_trackerContext;

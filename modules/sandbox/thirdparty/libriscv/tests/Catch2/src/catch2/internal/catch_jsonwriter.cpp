@@ -7,8 +7,36 @@
 // SPDX-License-Identifier: BSL-1.0
 #include <catch2/internal/catch_enforce.hpp>
 #include <catch2/internal/catch_jsonwriter.hpp>
+#include <catch2/internal/catch_unreachable.hpp>
 
 namespace Catch {
+
+    namespace {
+        static bool needsEscape( char c ) {
+            return c == '"' || c == '\\' || c == '\b' || c == '\f' ||
+                   c == '\n' || c == '\r' || c == '\t';
+        }
+
+        static Catch::StringRef makeEscapeStringRef( char c ) {
+            if ( c == '"' ) {
+                return "\\\""_sr;
+            } else if ( c == '\\' ) {
+                return "\\\\"_sr;
+            } else if ( c == '\b' ) {
+                return "\\b"_sr;
+            } else if ( c == '\f' ) {
+                return "\\f"_sr;
+            } else if ( c == '\n' ) {
+                return "\\n"_sr;
+            } else if ( c == '\r' ) {
+                return "\\r"_sr;
+            } else if ( c == '\t' ) {
+                return "\\t"_sr;
+            }
+            Catch::Detail::Unreachable();
+        }
+    } // namespace
+
     void JsonUtils::indent( std::ostream& os, std::uint64_t level ) {
         for ( std::uint64_t i = 0; i < level; ++i ) {
             os << "  ";
@@ -118,29 +146,18 @@ namespace Catch {
 
     void JsonValueWriter::writeImpl( Catch::StringRef value, bool quote ) {
         if ( quote ) { m_os << '"'; }
-        for (char c : value) {
-            // Escape list taken from https://www.json.org/json-en.html,
-            // string definition.
-            // Note that while forward slash _can_ be escaped, it does
-            // not have to be, if JSON is not further embedded somewhere
-            // where forward slash is meaningful.
-            if ( c == '"' ) {
-                m_os << "\\\"";
-            } else if ( c == '\\' ) {
-                m_os << "\\\\";
-            } else if ( c == '\b' ) {
-                m_os << "\\b";
-            } else if ( c == '\f' ) {
-                m_os << "\\f";
-            } else if ( c == '\n' ) {
-                m_os << "\\n";
-            } else if ( c == '\r' ) {
-                m_os << "\\r";
-            } else if ( c == '\t' ) {
-                m_os << "\\t";
-            } else {
-                m_os << c;
+        size_t current_start = 0;
+        for ( size_t i = 0; i < value.size(); ++i ) {
+            if ( needsEscape( value[i] ) ) {
+                if ( current_start < i ) {
+                    m_os << value.substr( current_start, i - current_start );
+                }
+                m_os << makeEscapeStringRef( value[i] );
+                current_start = i + 1;
             }
+        }
+        if ( current_start < value.size() ) {
+            m_os << value.substr( current_start, value.size() - current_start );
         }
         if ( quote ) { m_os << '"'; }
     }

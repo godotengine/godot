@@ -8224,7 +8224,7 @@ namespace {
     }
 
     void XmlWriter::writeStylesheetRef( StringRef url ) {
-        m_os << R"(<?xml-stylesheet type="tthirdparty/xsl" href=")" << url << R"("?>)" << '\n';
+        m_os << R"(<?xml-stylesheet type="text/xsl" href=")" << url << R"("?>)" << '\n';
     }
 
     void XmlWriter::ensureTagClosed() {

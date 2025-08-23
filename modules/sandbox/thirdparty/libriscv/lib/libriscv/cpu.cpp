@@ -224,8 +224,8 @@ restart_next_execute_segment:
 		// to get the next page, and then read the upper half
 		if (UNLIKELY(instruction.is_long()))
 		{
-			const auto& page = machine().memory.get_exec_pageno(pageno+1);
-			instruction.half[1] = *(uint16_t*) page.data();
+			const auto& slow_page = machine().memory.get_exec_pageno(pageno+1);
+			instruction.half[1] = *(uint16_t*) slow_page.data();
 		}
 
 		return instruction;

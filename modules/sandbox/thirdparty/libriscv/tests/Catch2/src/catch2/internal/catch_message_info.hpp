@@ -37,7 +37,7 @@ namespace Catch {
             return sequence < other.sequence;
         }
     private:
-        static unsigned int globalCount;
+        static thread_local unsigned int globalCount;
     };
 
 } // end namespace Catch

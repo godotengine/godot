@@ -7,6 +7,8 @@
 // SPDX-License-Identifier: BSL-1.0
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
+#include <catch2/generators/catch_generators.hpp>
 #include <catch2/internal/catch_jsonwriter.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
 
@@ -17,7 +19,6 @@ namespace {
     static std::ostream& operator<<( std::ostream& os, Custom const& ) {
         return os << "custom";
     }
-} // namespace
 
 TEST_CASE( "JsonWriter", "[JSON][JsonWriter]" ) {
 
@@ -150,3 +151,28 @@ TEST_CASE( "JsonWriter escapes characters in strings properly", "[JsonWriter]" )
         REQUIRE( sstream.str() == "\"\\\\/\\t\\r\\n\"" );
     }
 }
+
+TEST_CASE( "JsonWriter benchmarks", "[JsonWriter][!benchmark]" ) {
+    const auto input_length = GENERATE( as<size_t>{}, 10, 100, 10'000 );
+    std::string test_input( input_length, 'a' );
+    BENCHMARK_ADVANCED( "write string, no-escaping, len=" +
+                        std::to_string( input_length ) )(
+        Catch::Benchmark::Chronometer meter ) {
+        std::stringstream sstream;
+        meter.measure( [&]( int ) {
+            Catch::JsonValueWriter( sstream ).write( test_input );
+        } );
+    };
+
+    std::string escape_input( input_length, '\b' );
+    BENCHMARK_ADVANCED( "write string, all-escaped, len=" +
+                        std::to_string( input_length ) )(
+        Catch::Benchmark::Chronometer meter ) {
+        std::stringstream sstream;
+        meter.measure( [&]( int ) {
+            Catch::JsonValueWriter( sstream ).write( escape_input );
+        } );
+    };
+}
+
+} // namespace

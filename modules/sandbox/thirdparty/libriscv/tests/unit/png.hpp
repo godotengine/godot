@@ -1,5 +1,5 @@
-#include "lodepng/lodepng.h"
-#include "lodepng/lodepng.cpp"
+#include "ext/lodepng/lodepng.h"
+#include "ext/lodepng/lodepng.cpp"
 #include <array>
 #include <cstdint>
 #include <vector>

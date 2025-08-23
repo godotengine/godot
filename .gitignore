@@ -269,7 +269,7 @@ bld/
 !thirdparty/**/arm64/
 
 # Do not ignore libriscv win32 source code
-!modules/sandbox/ext/libriscv/lib/libriscv/win32/
+!modules/sandbox/thirdparty/libriscv/lib/libriscv/win32/
 
 thirdparty/swappy-frame-pacing/arm64-v8a/abi.json
 thirdparty/swappy-frame-pacing/armeabi-v7a/abi.json

@@ -27,7 +27,7 @@ add_subdirectory(libriscv/lib)
 target_compile_definitions(riscv PUBLIC RISCV_SYSCALLS_MAX=600)
 ```
 
-We can now use this CMakeLists.txt from our root CMakeLists.txt:
+We can now use this ext/CMakeLists.txt from our root CMakeLists.txt:
 
 ```cmake
 add_subdirectory(ext)
@@ -47,7 +47,7 @@ int main()
 }
 ```
 
-You can see how RVScript does the same thing [here](https://github.com/fwsGonzo/rvscript/blob/master/CMakeLists.txt).
+You can see how RVScript does the same thing [here](https://github.com/fwsGonzo/rvscript/blob/master/ext/CMakeLists.txt).
 
 The engine subfolder is adding libriscv [here](https://github.com/fwsGonzo/rvscript/blob/master/engine/CMakeLists.txt#L46).
 

@@ -47,7 +47,7 @@ namespace {
 
     void hexEscapeChar(std::ostream& os, unsigned char c) {
         std::ios_base::fmtflags f(os.flags());
-        os << "\\x"
+        os << "\\x"_sr
             << std::uppercase << std::hex << std::setfill('0') << std::setw(2)
             << static_cast<int>(c);
         os.flags(f);
@@ -66,95 +66,111 @@ namespace {
     void XmlEncode::encodeTo( std::ostream& os ) const {
         // Apostrophe escaping not necessary if we always use " to write attributes
         // (see: http://www.w3.org/TR/xml/#syntax)
+        size_t last_start = 0;
+        auto write_to = [&]( size_t idx ) {
+            if ( last_start < idx ) {
+                os << m_str.substr( last_start, idx - last_start );
+            }
+            last_start = idx + 1;
+        };
 
-        for( std::size_t idx = 0; idx < m_str.size(); ++ idx ) {
-            unsigned char c = static_cast<unsigned char>(m_str[idx]);
-            switch (c) {
-            case '<':   os << "&lt;"; break;
-            case '&':   os << "&amp;"; break;
+        for ( std::size_t idx = 0; idx < m_str.size(); ++idx ) {
+            unsigned char c = static_cast<unsigned char>( m_str[idx] );
+            switch ( c ) {
+            case '<':
+                write_to( idx );
+                os << "&lt;"_sr;
+                break;
+            case '&':
+                write_to( idx );
+                os << "&amp;"_sr;
+                break;
 
             case '>':
                 // See: http://www.w3.org/TR/xml/#syntax
-                if (idx > 2 && m_str[idx - 1] == ']' && m_str[idx - 2] == ']')
-                    os << "&gt;";
-                else
-                    os << c;
+                if ( idx > 2 && m_str[idx - 1] == ']' && m_str[idx - 2] == ']' ) {
+                    write_to( idx );
+                    os << "&gt;"_sr;
+                }
                 break;
 
             case '\"':
-                if (m_forWhat == ForAttributes)
-                    os << "&quot;";
-                else
-                    os << c;
+                if ( m_forWhat == ForAttributes ) {
+                    write_to( idx );
+                    os << "&quot;"_sr;
+                }
                 break;
 
             default:
                 // Check for control characters and invalid utf-8
 
                 // Escape control characters in standard ascii
-                // see http://stackoverflow.com/questions/404107/why-are-control-characters-illegal-in-xml-1-0
-                if (c < 0x09 || (c > 0x0D && c < 0x20) || c == 0x7F) {
-                    hexEscapeChar(os, c);
+                // see
+                // http://stackoverflow.com/questions/404107/why-are-control-characters-illegal-in-xml-1-0
+                if ( c < 0x09 || ( c > 0x0D && c < 0x20 ) || c == 0x7F ) {
+                    write_to( idx );
+                    hexEscapeChar( os, c );
                     break;
                 }
 
                 // Plain ASCII: Write it to stream
-                if (c < 0x7F) {
-                    os << c;
+                if ( c < 0x7F ) {
                     break;
                 }
 
                 // UTF-8 territory
-                // Check if the encoding is valid and if it is not, hex escape bytes.
-                // Important: We do not check the exact decoded values for validity, only the encoding format
-                // First check that this bytes is a valid lead byte:
-                // This means that it is not encoded as 1111 1XXX
+                // Check if the encoding is valid and if it is not, hex escape
+                // bytes. Important: We do not check the exact decoded values for
+                // validity, only the encoding format First check that this bytes is
+                // a valid lead byte: This means that it is not encoded as 1111 1XXX
                 // Or as 10XX XXXX
-                if (c <  0xC0 ||
-                    c >= 0xF8) {
-                    hexEscapeChar(os, c);
+                if ( c < 0xC0 || c >= 0xF8 ) {
+                    write_to( idx );
+                    hexEscapeChar( os, c );
                     break;
                 }
 
-                auto encBytes = trailingBytes(c);
-                // Are there enough bytes left to avoid accessing out-of-bounds memory?
-                if (idx + encBytes - 1 >= m_str.size()) {
-                    hexEscapeChar(os, c);
+                auto encBytes = trailingBytes( c );
+                // Are there enough bytes left to avoid accessing out-of-bounds
+                // memory?
+                if ( idx + encBytes - 1 >= m_str.size() ) {
+                    write_to( idx );
+                    hexEscapeChar( os, c );
                     break;
                 }
                 // The header is valid, check data
                 // The next encBytes bytes must together be a valid utf-8
-                // This means: bitpattern 10XX XXXX and the extracted value is sane (ish)
+                // This means: bitpattern 10XX XXXX and the extracted value is sane
+                // (ish)
                 bool valid = true;
-                uint32_t value = headerValue(c);
-                for (std::size_t n = 1; n < encBytes; ++n) {
-                    unsigned char nc = static_cast<unsigned char>(m_str[idx + n]);
-                    valid &= ((nc & 0xC0) == 0x80);
-                    value = (value << 6) | (nc & 0x3F);
+                uint32_t value = headerValue( c );
+                for ( std::size_t n = 1; n < encBytes; ++n ) {
+                    unsigned char nc = static_cast<unsigned char>( m_str[idx + n] );
+                    valid &= ( ( nc & 0xC0 ) == 0x80 );
+                    value = ( value << 6 ) | ( nc & 0x3F );
                 }
 
                 if (
                     // Wrong bit pattern of following bytes
-                    (!valid) ||
+                    ( !valid ) ||
                     // Overlong encodings
-                    (value < 0x80) ||
-                    (0x80 <= value && value < 0x800   && encBytes > 2) ||
-                    (0x800 < value && value < 0x10000 && encBytes > 3) ||
+                    ( value < 0x80 ) ||
+                    ( 0x80 <= value && value < 0x800 && encBytes > 2 ) ||
+                    ( 0x800 < value && value < 0x10000 && encBytes > 3 ) ||
                     // Encoded value out of range
-                    (value >= 0x110000)
-                    ) {
-                    hexEscapeChar(os, c);
+                    ( value >= 0x110000 ) ) {
+                    write_to( idx );
+                    hexEscapeChar( os, c );
                     break;
                 }
 
                 // If we got here, this is in fact a valid(ish) utf-8 sequence
-                for (std::size_t n = 0; n < encBytes; ++n) {
-                    os << m_str[idx + n];
-                }
                 idx += encBytes - 1;
                 break;
             }
         }
+
+        write_to( m_str.size() );
     }
 
     std::ostream& operator << ( std::ostream& os, XmlEncode const& xmlEncode ) {
@@ -300,7 +316,7 @@ namespace {
     }
 
     void XmlWriter::writeStylesheetRef( StringRef url ) {
-        m_os << R"(<?xml-stylesheet type="tthirdparty/xsl" href=")" << url << R"("?>)" << '\n';
+        m_os << R"(<?xml-stylesheet type="text/xsl" href=")" << url << R"("?>)" << '\n';
     }
 
     void XmlWriter::ensureTagClosed() {

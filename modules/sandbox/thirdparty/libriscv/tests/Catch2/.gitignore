@@ -7,7 +7,6 @@
 Debug
 Release
 *.user
-!tools/misc/SelfTest.vcxproj.user
 *.xcuserstate
 .DS_Store
 xcuserdata

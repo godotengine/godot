@@ -379,7 +379,7 @@ namespace riscv
 		// We do not support binary translation for RV128I
 		// Also, avoid binary translation for execute segments that are likely JIT-compiled
 		const bool allow_translation = is_initial || options.translate_future_segments;
-		if (!exec.is_binary_translated() && allow_translation && !exec.is_likely_jit()) {
+		if (allow_translation && !exec.is_likely_jit()) {
 			// Attempt to load binary translation
 			// Also, fill out the binary translation SO filename for later
 			std::string bintr_filename;

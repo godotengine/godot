@@ -2017,7 +2017,7 @@ https://github.com/lvandeve/lodepng
 *) 27 jun 2021: added warnings that file reading/writing functions don't support
    wide-character filenames (support for this is not planned, opening files is
    not the core part of PNG decoding/decoding and is platform dependent).
-*) 17 oct 2020: prevent decoding too large tthirdparty/icc chunks by default.
+*) 17 oct 2020: prevent decoding too large text/icc chunks by default.
 *) 06 mar 2020: simplified some of the dynamic memory allocations.
 *) 12 jan 2020: (!) added 'end' argument to lodepng_chunk_next to allow correct
    overflow checks.

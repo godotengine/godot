@@ -1,7 +1,7 @@
 #include "../machine.hpp"
+
 #include "../internal_common.hpp"
 #include "../threads.hpp"
-#include "../platform_compat.hpp"
 
 //#define SYSCALL_VERBOSE 1
 #ifdef SYSCALL_VERBOSE
@@ -27,19 +27,10 @@ extern "C" int dup3(int oldfd, int newfd, int flags);
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/uio.h>
-#include <time.h>
 #if __has_include(<termios.h>)
 #include <termios.h>
 #endif
 #include <sys/syscall.h>
-#ifdef LIBRISCV_PLATFORM_APPLE
-#include <sys/event.h>
-#include <unordered_map>
-#if defined(__APPLE__)
-#include <Security/Security.h>
-#include <mach/mach_time.h>
-#endif
-#endif
 #ifndef EBADFD
 #define EBADFD EBADF  // OpenBSD, FreeBSD
 #endif
@@ -55,37 +46,9 @@ struct guest_iovec {
 	address_type<W> iov_len;
 };
 
-#ifdef LIBRISCV_PLATFORM_APPLE
-// State management for epoll emulation
-struct EpollInstance {
-	int kqueue_fd;
-	std::unordered_map<int, uint64_t> monitored_fds; // real_fd -> user_data
-};
-
-static std::unordered_map<int, EpollInstance> g_epoll_instances;
-
-// Epoll constants for compatibility
-#define EPOLLIN     0x001
-#define EPOLLOUT    0x004
-#define EPOLLERR    0x008
-#define EPOLLHUP    0x010
-#define EPOLL_CTL_ADD 1
-#define EPOLL_CTL_DEL 2
-#define EPOLL_CTL_MOD 3
-
-struct epoll_event {
-	uint32_t events;
-	union {
-		void *ptr;
-		int fd;
-		uint32_t u32;
-		uint64_t u64;
-	} data;
-};
-#endif
-
 #if defined(__APPLE__)
-static int get_time(int clkid, ::timespec* ts) {
+#include <mach/mach_time.h>
+static int get_time(int clkid, struct timespec* ts) {
 	if (clkid == CLOCK_REALTIME) {
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
@@ -105,7 +68,7 @@ static int get_time(int clkid, ::timespec* ts) {
 	}
 }
 #else
-static int get_time(int clkid, ::timespec *ts)
+static int get_time(int clkid, struct timespec *ts)
 {
 	return clock_gettime(clkid, ts);
 }
@@ -516,15 +479,6 @@ static void syscall_close(riscv::Machine<W>& machine)
 		// TODO: Do we really want to close them?
 		machine.set_result(0);
 	} else if (machine.has_file_descriptors()) {
-#ifdef LIBRISCV_PLATFORM_APPLE
-		// Clean up epoll instance if this is an epoll fd
-		auto epoll_it = g_epoll_instances.find(vfd);
-		if (epoll_it != g_epoll_instances.end()) {
-			close(epoll_it->second.kqueue_fd);
-			g_epoll_instances.erase(epoll_it);
-		}
-#endif
-		
 		const int res = machine.fds().erase(vfd);
 		if (res > 0) {
 			::close(res);
@@ -948,7 +902,7 @@ static void syscall_clock_gettime(Machine<W>& machine)
 	SYSPRINT("SYSCALL clock_gettime, clkid: %x buffer: 0x%lX\n",
 		clkid, (long)buffer);
 
-	::timespec ts;
+	struct timespec ts;
 	const int res = get_time(clkid, &ts);
 	if (res >= 0) {
 		if (!(machine.has_file_descriptors() && machine.fds().proxy_mode))
@@ -970,7 +924,7 @@ static void syscall_clock_gettime64(Machine<W>& machine)
 	SYSPRINT("SYSCALL clock_gettime64, clkid: %x buffer: 0x%lX\n",
 		clkid, (long)buffer);
 
-	::timespec ts;
+	struct timespec ts;
 	int res = get_time(clkid, &ts);
 
 	if (res >= 0) {
@@ -994,12 +948,12 @@ static void syscall_nanosleep(Machine<W>& machine)
 	SYSPRINT("SYSCALL nanosleep, req: 0x%lX rem: 0x%lX\n",
 		(long)g_req, (long)g_rem);
 
-	::timespec ts_req;
+	struct timespec ts_req;
 	machine.copy_from_guest(&ts_req, g_req, sizeof(ts_req));
 	if (!(machine.has_file_descriptors() && machine.fds().proxy_mode))
 		ts_req.tv_nsec &= ANTI_FINGERPRINTING_MASK_NANOS();
 
-	::timespec ts_rem;
+	struct timespec ts_rem;
 	if (g_rem)
 		machine.copy_from_guest(&ts_rem, g_rem, sizeof(ts_rem));
 
@@ -1017,8 +971,8 @@ static void syscall_clock_nanosleep(Machine<W>& machine)
 	const auto g_request = machine.sysarg(2);
 	const auto g_remain = machine.sysarg(3);
 
-	::timespec ts_req;
-	::timespec ts_rem;
+	struct timespec ts_req;
+	struct timespec ts_rem;
 	machine.copy_from_guest(&ts_req, g_request, sizeof(ts_req));
 	if (!(machine.has_file_descriptors() && machine.fds().proxy_mode))
 		ts_req.tv_nsec &= ANTI_FINGERPRINTING_MASK_NANOS();
@@ -1215,242 +1169,10 @@ static void syscall_statx(Machine<W>& machine)
 
 #include "syscalls_select.cpp"
 #include "syscalls_poll.cpp"
-
-// Platform-compatible epoll implementation using compatibility layer
-#ifdef LIBRISCV_PLATFORM_LINUX_LIKE
+#ifdef __linux__
 #include "syscalls_epoll.cpp"
 #else
-// Real epoll emulation for macOS, iOS using kqueue - declarations moved to top of file
-#ifdef LIBRISCV_PLATFORM_APPLE
-// (Epoll emulation structs and globals already declared at top of file)
-#endif
-
-template <int W> 
-static void syscall_eventfd2(Machine<W>& machine) {
-	const auto initval = machine.template sysarg<int>(0);
-	const auto flags = machine.template sysarg<int>(1);
-	
-	if (!machine.has_file_descriptors()) {
-		machine.set_result(-EBADF);
-		return;
-	}
-
-#ifdef LIBRISCV_PLATFORM_APPLE
-	// Emulate eventfd using pipe pair on macOS/iOS
-	int pipes[2];
-	if (pipe(pipes) != 0) {
-		machine.set_result(-errno);
-		return;
-	}
-	
-	if (flags & O_CLOEXEC) {
-		fcntl(pipes[0], F_SETFD, FD_CLOEXEC);
-		fcntl(pipes[1], F_SETFD, FD_CLOEXEC);
-	}
-	if (flags & O_NONBLOCK) {
-		fcntl(pipes[0], F_SETFL, O_NONBLOCK);
-		fcntl(pipes[1], F_SETFL, O_NONBLOCK);
-	}
-	
-	if (initval > 0) {
-		uint64_t val = initval;
-		write(pipes[1], &val, sizeof(val));
-	}
-	
-	const int vfd = machine.fds().assign_file(pipes[0]);
-	machine.fds().assign_file(pipes[1]); // Store write end too
-	machine.set_result(vfd);
-#else
-	// Fallback for other platforms
-	machine.set_result(-ENOSYS);
-#endif
-	
-	SYSPRINT("SYSCALL eventfd2(initval: %X flags: %#x) = %d\n",
-		initval, flags, machine.template return_value<int>());
-}
-
-template <int W> 
-static void syscall_epoll_create(Machine<W>& machine) {
-	const auto flags = machine.template sysarg<int>(0);
-	
-	if (!machine.has_file_descriptors()) {
-		machine.set_result(-EBADF);
-		return;
-	}
-
-#ifdef LIBRISCV_PLATFORM_APPLE
-	// Create kqueue instance for epoll emulation
-	int kq = kqueue();
-	if (kq < 0) {
-		machine.set_result(-errno);
-		return;
-	}
-	
-	if (flags & O_CLOEXEC) {
-		fcntl(kq, F_SETFD, FD_CLOEXEC);
-	}
-	
-	const int vfd = machine.fds().assign_file(kq);
-	g_epoll_instances[vfd] = EpollInstance{kq, {}};
-	machine.set_result(vfd);
-#else
-	// Fallback for other platforms
-	machine.set_result(-ENOSYS);
-#endif
-	
-	SYSPRINT("SYSCALL epoll_create(flags: %#x) = %d\n",
-		flags, machine.template return_value<int>());
-}
-
-template <int W> 
-static void syscall_epoll_ctl(Machine<W>& machine) {
-	const auto vepoll_fd = machine.template sysarg<int>(0);
-	const auto op = machine.template sysarg<int>(1);
-	const auto vfd = machine.template sysarg<int>(2);
-	const auto g_event = machine.sysarg(3);
-	
-	if (!machine.has_file_descriptors()) {
-		machine.set_result(-EBADF);
-		return;
-	}
-
-#ifdef LIBRISCV_PLATFORM_APPLE
-	auto it = g_epoll_instances.find(vepoll_fd);
-	if (it == g_epoll_instances.end()) {
-		machine.set_result(-EBADF);
-		return;
-	}
-	
-	EpollInstance& epoll_inst = it->second;
-	const int real_fd = machine.fds().translate(vfd);
-	
-	struct epoll_event event;
-	machine.copy_from_guest(&event, g_event, sizeof(event));
-	
-	struct kevent kev[2];
-	int kev_count = 0;
-	
-	if (op == EPOLL_CTL_ADD || op == EPOLL_CTL_MOD) {
-		if (event.events & EPOLLIN) {
-			EV_SET(&kev[kev_count], real_fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, 
-				   (void*)(uintptr_t)event.data.u64);
-			kev_count++;
-		}
-		if (event.events & EPOLLOUT) {
-			EV_SET(&kev[kev_count], real_fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, 
-				   (void*)(uintptr_t)event.data.u64);
-			kev_count++;
-		}
-		epoll_inst.monitored_fds[real_fd] = event.data.u64;
-	} else if (op == EPOLL_CTL_DEL) {
-		EV_SET(&kev[0], real_fd, EVFILT_READ, EV_DELETE, 0, 0, NULL);
-		EV_SET(&kev[1], real_fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
-		kev_count = 2;
-		epoll_inst.monitored_fds.erase(real_fd);
-	}
-	
-	if (kev_count > 0) {
-		int res = kevent(epoll_inst.kqueue_fd, kev, kev_count, NULL, 0, NULL);
-		machine.set_result_or_error(res >= 0 ? 0 : res);
-	} else {
-		machine.set_result(0);
-	}
-#else
-	// Fallback for other platforms
-	(void)vepoll_fd; (void)op; (void)vfd; (void)g_event;
-	machine.set_result(-ENOSYS);
-#endif
-	
-	SYSPRINT("SYSCALL epoll_ctl, epoll_fd: %d op: %d vfd: %d => %d\n",
-		vepoll_fd, op, vfd, (int)machine.return_value());
-}
-
-template <int W> 
-static void syscall_epoll_pwait(Machine<W>& machine) {
-	const auto vepoll_fd = machine.template sysarg<int>(0);
-	const auto g_events = machine.sysarg(1);
-	auto maxevents = machine.template sysarg<int>(2);
-	auto timeout = machine.template sysarg<int>(3);
-	
-	if (!machine.has_file_descriptors()) {
-		machine.set_result(-EBADF);
-		return;
-	}
-
-#ifdef LIBRISCV_PLATFORM_APPLE
-	auto it = g_epoll_instances.find(vepoll_fd);
-	if (it == g_epoll_instances.end()) {
-		machine.set_result(-EBADF);
-		return;
-	}
-	
-	EpollInstance& epoll_inst = it->second;
-	
-	// Prepare kqueue event structures
-	std::array<struct kevent, 256> kevents;
-	if (maxevents > (int)kevents.size()) {
-		maxevents = kevents.size();
-	}
-	
-	::timespec ts;
-	const ::timespec* timeout_ptr = nullptr;
-	if (timeout >= 0) {
-		ts.tv_sec = timeout / 1000;
-		ts.tv_nsec = (timeout % 1000) * 1000000;
-		timeout_ptr = &ts;
-	}
-	
-	// Wait for events using kqueue
-	int num_events = kevent(epoll_inst.kqueue_fd, NULL, 0, kevents.data(), maxevents, timeout_ptr);
-	
-	if (num_events > 0) {
-		// Convert kqueue events to epoll events
-		std::array<struct epoll_event, 256> epoll_events;
-		
-		for (int i = 0; i < num_events; i++) {
-			struct kevent& kev = kevents[i];
-			struct epoll_event& eev = epoll_events[i];
-			
-			eev.events = 0;
-			eev.data.u64 = (uint64_t)(uintptr_t)kev.udata;
-			
-			if (kev.filter == EVFILT_READ) {
-				eev.events |= EPOLLIN;
-			}
-			if (kev.filter == EVFILT_WRITE) {
-				eev.events |= EPOLLOUT;
-			}
-			if (kev.flags & EV_EOF) {
-				eev.events |= EPOLLHUP;
-			}
-			if (kev.flags & EV_ERROR) {
-				eev.events |= EPOLLERR;
-			}
-		}
-		
-		// Copy events to guest
-		machine.copy_to_guest(g_events, epoll_events.data(), num_events * sizeof(struct epoll_event));
-		machine.set_result(num_events);
-	} else if (num_events == 0) {
-		// Timeout
-		machine.set_result(0);
-	} else {
-		// Error or interrupted
-		if (errno == EINTR && machine.threads().suspend_and_yield(-EINTR)) {
-			SYSPRINT("SYSCALL epoll_pwait yielded...\n");
-			return;
-		}
-		machine.set_result_or_error(num_events);
-	}
-#else
-	// Fallback for other platforms
-	(void)vepoll_fd; (void)g_events; (void)maxevents; (void)timeout;
-	machine.set_result(-ENOSYS);
-#endif
-	
-	SYSPRINT("SYSCALL epoll_pwait, epoll_fd: %d maxevents: %d timeout: %d = %ld\n",
-		vepoll_fd, maxevents, timeout, (long)machine.return_value());
-}
+#include "../win32/epoll.cpp"
 #endif
 
 template <int W>

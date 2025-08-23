@@ -101,8 +101,9 @@ namespace Catch {
     }
     Capturer::~Capturer() {
         assert( m_captured == m_messages.size() );
-        for ( size_t i = 0; i < m_captured; ++i )
+        for ( size_t i = 0; i < m_captured; ++i ) {
             m_resultCapture.popScopedMessage( m_messages[i] );
+        }
     }
 
     void Capturer::captureValue( size_t index, std::string const& value ) {

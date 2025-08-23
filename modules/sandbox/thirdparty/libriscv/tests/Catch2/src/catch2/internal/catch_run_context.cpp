@@ -172,9 +172,6 @@ namespace Catch {
         // This also implies that messages are owned by their respective
         // threads, and should not be shared across different threads.
         //
-        // For simplicity, we disallow messages in multi-threaded contexts,
-        // but in the future we can enable them under this logic.
-        //
         // This implies that various pieces of metadata referring to last
         // assertion result/source location/message handling, etc
         // should also be thread local. For now we just use naked globals
@@ -183,15 +180,27 @@ namespace Catch {
 
         // This is used for the "if" part of CHECKED_IF/CHECKED_ELSE
         static thread_local bool g_lastAssertionPassed = false;
-        // Should we clear message scopes before sending off the messages to
-        // reporter? Set in `assertionPassedFastPath` to avoid doing the full
-        // clear there for performance reasons.
-        static thread_local bool g_clearMessageScopes = false;
+
         // This is the source location for last encountered macro. It is
         // used to provide the users with more precise location of error
         // when an unexpected exception/fatal error happens.
         static thread_local SourceLineInfo g_lastKnownLineInfo("DummyLocation", static_cast<size_t>(-1));
-    }
+
+        // Should we clear message scopes before sending off the messages to
+        // reporter? Set in `assertionPassedFastPath` to avoid doing the full
+        // clear there for performance reasons.
+        static thread_local bool g_clearMessageScopes = false;
+
+        CATCH_INTERNAL_START_WARNINGS_SUPPRESSION
+        CATCH_INTERNAL_SUPPRESS_GLOBALS_WARNINGS
+        // Actual messages to be provided to the reporter
+        static thread_local std::vector<MessageInfo> g_messages;
+
+        // Owners for the UNSCOPED_X information macro
+        static thread_local std::vector<ScopedMessage> g_messageScopes;
+        CATCH_INTERNAL_STOP_WARNINGS_SUPPRESSION
+
+    } // namespace Detail
 
     RunContext::RunContext(IConfig const* _config, IEventListenerPtr&& reporter)
     :   m_runInfo(_config->name()),
@@ -327,20 +336,21 @@ namespace Catch {
             Detail::g_lastAssertionPassed = true;
         }
 
+        if ( Detail::g_clearMessageScopes ) {
+            Detail::g_messageScopes.clear();
+            Detail::g_clearMessageScopes = false;
+        }
+
         // From here, we are touching shared state and need mutex.
         Detail::LockGuard lock( m_assertionMutex );
         {
-            if ( Detail::g_clearMessageScopes ) {
-                m_messageScopes.clear();
-                Detail::g_clearMessageScopes = false;
-            }
             auto _ = scopedDeactivate( *m_outputRedirect );
             updateTotalsFromAtomics();
-            m_reporter->assertionEnded( AssertionStats( result, m_messages, m_totals ) );
+            m_reporter->assertionEnded( AssertionStats( result, Detail::g_messages, m_totals ) );
         }
 
         if ( result.getResultType() != ResultWas::Warning ) {
-            m_messageScopes.clear();
+            Detail::g_messageScopes.clear();
         }
 
         // Reset working state. assertion info will be reset after
@@ -473,8 +483,8 @@ namespace Catch {
         m_reporter->benchmarkFailed( error );
     }
 
-    void RunContext::pushScopedMessage(MessageInfo const & message) {
-        m_messages.push_back(message);
+    void RunContext::pushScopedMessage( MessageInfo const& message ) {
+        Detail::g_messages.push_back( message );
     }
 
     void RunContext::popScopedMessage( MessageInfo const& message ) {
@@ -483,16 +493,16 @@ namespace Catch {
         //       messages than low single digits, so the optimization is tiny,
         //       and we would have to hand-write the loop to avoid terrible
         //       codegen of reverse iterators in debug mode.
-        m_messages.erase(
-            std::find_if( m_messages.begin(),
-                          m_messages.end(),
+        Detail::g_messages.erase(
+            std::find_if( Detail::g_messages.begin(),
+                          Detail::g_messages.end(),
                           [id = message.sequence]( MessageInfo const& msg ) {
                               return msg.sequence == id;
                           } ) );
     }
 
     void RunContext::emplaceUnscopedMessage( MessageBuilder&& builder ) {
-        m_messageScopes.emplace_back( CATCH_MOVE(builder) );
+        Detail::g_messageScopes.emplace_back( CATCH_MOVE(builder) );
     }
 
     std::string RunContext::getCurrentTestName() const {
@@ -651,10 +661,10 @@ namespace Catch {
 
         m_testCaseTracker->close();
         handleUnfinishedSections();
-        m_messageScopes.clear();
+        Detail::g_messageScopes.clear();
         // TBD: At this point, m_messages should be empty. Do we want to
         //      assert that this is true, or keep the defensive clear call?
-        m_messages.clear();
+        Detail::g_messages.clear();
 
         SectionStats testCaseSectionStats(CATCH_MOVE(testCaseSection), assertions, duration, missingAssertions);
         m_reporter->sectionEnded(testCaseSectionStats);

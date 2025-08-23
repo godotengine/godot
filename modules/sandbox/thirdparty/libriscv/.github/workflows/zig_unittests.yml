@@ -21,7 +21,7 @@ jobs:
         sudo apt update
         sudo apt install -y cmake wget xz-utils ninja-build
         git submodule update --init ${{github.workspace}}/tests/Catch2
-        git submodule update --init ${{github.workspace}}/tests/unit/lodepng
+        git submodule update --init ${{github.workspace}}/tests/unit/ext/lodepng
 
     - name: Configure
       run: cmake -B ${{github.workspace}}/build -G Ninja -DRISCV_THREADED=OFF -DRISCV_FLAT_RW_ARENA=OFF -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
