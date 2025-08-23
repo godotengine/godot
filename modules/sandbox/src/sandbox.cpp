@@ -1112,7 +1112,7 @@ Variant Sandbox::vmcall_internal(gaddr_t address, const Variant **args, int argc
 						// to aid lookup in the profiler later on
 						if (gprofstate.lookup.size() < this->m_lookup.size()) {
 							gprofstate.lookup.clear();
-							for (const auto [hash, entry] : this->m_lookup) {
+							for (const auto &[hash, entry] : this->m_lookup) {
 								gprofstate.lookup.push_back(entry);
 							}
 						}
@@ -1372,7 +1372,7 @@ void Sandbox::assign_permanent_variant(int32_t idx, Variant &&val) {
 	if (idx < 0) {
 		// It's a permanent variant, verify the index
 		idx = -idx - 1;
-		if (idx < this->m_states[0].variants.size()) {
+		if (static_cast<size_t>(idx) < this->m_states[0].variants.size()) {
 			this->m_states[0].variants[idx] = std::move(val);
 			return;
 		}
@@ -1428,7 +1428,7 @@ void Sandbox::read_program_properties(bool editor) const {
 		};
 		auto *props = machine().memory.memarray<GuestProperty>(prop_addr, MAX_PROPERTIES);
 
-		for (int i = 0; i < MAX_PROPERTIES; i++) {
+		for (unsigned int i = 0; i < MAX_PROPERTIES; i++) {
 			const GuestProperty *prop = &props[i];
 			// Invalid property: stop reading
 			if (prop->g_name == 0)
