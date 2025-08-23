@@ -183,8 +183,10 @@ Error GDExtensionLibraryLoader::open_library(const String &p_path) {
 
 	Vector<String> abs_dependencies_paths;
 	if (!library_dependencies.is_empty()) {
+		abs_dependencies_paths.resize(library_dependencies.size());
+		int idx = 0;
 		for (const SharedObject &dependency : library_dependencies) {
-			abs_dependencies_paths.push_back(ProjectSettings::get_singleton()->globalize_path(dependency.path));
+			abs_dependencies_paths.set(idx++, ProjectSettings::get_singleton()->globalize_path(dependency.path));
 		}
 	}
 

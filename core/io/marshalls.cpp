@@ -644,8 +644,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			if (strlen & 0x80000000) {
 				// New format.
 				ERR_FAIL_COND_V(len < 12, ERR_INVALID_DATA);
-				Vector<StringName> names;
-				Vector<StringName> subnames;
 
 				uint32_t namecount = strlen &= 0x7FFFFFFF;
 				uint32_t subnamecount = decode_uint32(buf + 4);
@@ -658,24 +656,32 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					subnamecount++;
 				}
 
-				uint32_t total = namecount + subnamecount;
-
 				if (r_len) {
 					(*r_len) += 12;
 				}
 
-				for (uint32_t i = 0; i < total; i++) {
+				Vector<StringName> names;
+				names.resize(namecount);
+				for (uint32_t i = 0; i < namecount; i++) {
 					String str;
 					Error err = _decode_string(buf, len, r_len, str);
 					if (err) {
 						return err;
 					}
 
-					if (i < namecount) {
-						names.push_back(str);
-					} else {
-						subnames.push_back(str);
+					names.set(i, str);
+				}
+
+				Vector<StringName> subnames;
+				subnames.resize(subnamecount);
+				for (uint32_t i = 0; i < subnamecount; i++) {
+					String str;
+					Error err = _decode_string(buf, len, r_len, str);
+					if (err) {
+						return err;
 					}
+
+					subnames.set(i, str);
 				}
 
 				r_variant = NodePath(names, subnames, np_flags & 1);
@@ -899,6 +905,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				array.set_typed(type);
 			}
 
+			array.resize(count);
 			for (int i = 0; i < count; i++) {
 				int used = 0;
 				Variant elem;
@@ -906,7 +913,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				ERR_FAIL_COND_V_MSG(err != OK, err, "Error when trying to decode Variant.");
 				buf += used;
 				len -= used;
-				array.push_back(elem);
+				array.set(i, elem);
 				if (r_len) {
 					(*r_len) += used;
 				}
@@ -1045,7 +1052,6 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			ERR_FAIL_COND_V(len < 4, ERR_INVALID_DATA);
 			int32_t count = decode_uint32(buf);
 
-			Vector<String> strings;
 			buf += 4;
 			len -= 4;
 
@@ -1053,6 +1059,8 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				(*r_len) += 4; // Size of count number.
 			}
 
+			Vector<String> strings;
+			strings.resize(count);
 			for (int32_t i = 0; i < count; i++) {
 				String str;
 				Error err = _decode_string(buf, len, r_len, str);
@@ -1060,7 +1068,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 					return err;
 				}
 
-				strings.push_back(str);
+				strings.set(i, str);
 			}
 
 			r_variant = strings;

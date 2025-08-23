@@ -131,6 +131,7 @@ void FileAccessCompressed::_close() {
 		}
 
 		Vector<int> block_sizes;
+		block_sizes.resize(bc);
 		for (uint32_t i = 0; i < bc; i++) {
 			uint32_t bl = i == (bc - 1) ? write_max % block_size : block_size;
 			uint8_t *bp = &write_ptr[i * block_size];
@@ -141,7 +142,7 @@ void FileAccessCompressed::_close() {
 			ERR_FAIL_COND_MSG(compressed_size < 0, "FileAccessCompressed: Error compressing data.");
 
 			f->store_buffer(cblock.ptr(), (uint64_t)compressed_size);
-			block_sizes.push_back(compressed_size);
+			block_sizes.set(i, compressed_size);
 		}
 
 		f->seek(16); //ok write block sizes

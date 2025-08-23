@@ -224,8 +224,10 @@ bool GDExtensionManager::is_extension_loaded(const String &p_path) const {
 
 Vector<String> GDExtensionManager::get_loaded_extensions() const {
 	Vector<String> ret;
+	ret.resize(gdextension_map.size());
+	int idx = 0;
 	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
-		ret.push_back(E.key);
+		ret.set(idx++, E.key);
 	}
 	return ret;
 }

@@ -122,8 +122,10 @@ Vector<String> TranslationPO::_get_message_list() const {
 	get_message_list(&msgs);
 
 	Vector<String> v;
+	v.resize(msgs.size());
+	int idx = 0;
 	for (const StringName &E : msgs) {
-		v.push_back(E);
+		v.set(idx++, E);
 	}
 
 	return v;
@@ -255,11 +257,11 @@ void TranslationPO::add_plural_message(const StringName &p_src_text, const Vecto
 
 	if (map_id_str.has(p_src_text)) {
 		WARN_PRINT(vformat("Double translations for \"%s\" under the same context \"%s\" for locale %s.\nThere should only be one unique translation for a given string under the same context.", p_src_text, p_context, get_locale()));
-		map_id_str[p_src_text].clear();
 	}
 
+	map_id_str[p_src_text].resize(p_plural_xlated_texts.size());
 	for (int i = 0; i < p_plural_xlated_texts.size(); i++) {
-		map_id_str[p_src_text].push_back(p_plural_xlated_texts[i]);
+		map_id_str[p_src_text].set(i, p_plural_xlated_texts[i]);
 	}
 }
 

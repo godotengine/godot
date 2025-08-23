@@ -244,6 +244,7 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 	LocalVector<uint8_t> file_buffer;
 
 	Vector<FileCache> temp_file_cache;
+	temp_file_cache.resize(file_count);
 
 	HashSet<String> files_processed;
 	for (uint32_t i = 0; i < file_count; i++) {
@@ -255,17 +256,18 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		FileCache fc;
 		fc.path = file;
 		fc.server_modified_time = server_modified_time;
-		temp_file_cache.push_back(fc);
+		temp_file_cache.set(i, fc);
 
 		files_processed.insert(file);
 	}
-
-	Vector<FileCache> new_file_cache;
 
 	// Get the actual files. As a robustness measure, if the connection is interrupted here, any file not yet received will be considered removed.
 	// Since the file changed anyway, this makes it the easiest way to keep robustness.
 
 	bool server_disconnected = false;
+	Vector<FileCache> new_file_cache;
+	new_file_cache.resize(file_count);
+	int file_idx = 0;
 	for (uint32_t i = 0; i < file_count; i++) {
 		String file = temp_file_cache[i].path;
 
@@ -303,8 +305,9 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		}
 		FileCache fc = temp_file_cache[i];
 		fc.modified_time = modified_time;
-		new_file_cache.push_back(fc);
+		new_file_cache.set(file_idx++, fc);
 	}
+	new_file_cache.resize(file_idx + file_cache.size());
 
 	print_verbose("Remote Filesystem: Updating the cache file.");
 
@@ -316,8 +319,9 @@ Error RemoteFilesystemClient::_synchronize_with_server(const String &p_host, int
 		if (files_processed.has(file_cache[i].path)) {
 			continue; // This was either added or removed, so skip.
 		}
-		new_file_cache.push_back(file_cache[i]);
+		new_file_cache.set(file_idx++, file_cache[i]);
 	}
+	new_file_cache.resize(file_idx);
 
 	err = _store_cache_file(new_file_cache);
 	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_CANT_OPEN, "Error writing the remote filesystem file cache.");

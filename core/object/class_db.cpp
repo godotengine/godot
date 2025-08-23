@@ -867,8 +867,9 @@ static MethodInfo info_from_bind(MethodBind *p_method) {
 	minfo.name = p_method->get_name();
 	minfo.id = p_method->get_method_id();
 
+	minfo.arguments.resize(p_method->get_argument_count());
 	for (int i = 0; i < p_method->get_argument_count(); i++) {
-		minfo.arguments.push_back(p_method->get_argument_info(i));
+		minfo.arguments.set(i, p_method->get_argument_info(i));
 	}
 
 	minfo.return_val = p_method->get_return_info();
@@ -2096,11 +2097,16 @@ void ClassDB::add_extension_class_virtual_method(const StringName &p_class, cons
 	mi.return_val = PropertyInfo(p_method_info->return_value);
 	mi.return_val_metadata = p_method_info->return_value_metadata;
 	mi.flags = p_method_info->method_flags;
-	for (int i = 0; i < (int)p_method_info->argument_count; i++) {
+
+	const int size = p_method_info->argument_count;
+	arg_names.resize(size);
+	mi.arguments.resize(size);
+	mi.arguments_metadata.resize(size);
+	for (int i = 0; i < size; i++) {
 		PropertyInfo arg(p_method_info->arguments[i]);
-		mi.arguments.push_back(arg);
-		mi.arguments_metadata.push_back(p_method_info->arguments_metadata[i]);
-		arg_names.push_back(arg.name);
+		mi.arguments.set(i, arg);
+		mi.arguments_metadata.set(i, p_method_info->arguments_metadata[i]);
+		arg_names.set(i, arg.name);
 	}
 
 	add_virtual_method(p_class, mi, true, arg_names);

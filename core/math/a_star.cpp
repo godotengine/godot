@@ -207,9 +207,11 @@ bool AStar3D::has_point(int64_t p_id) const {
 
 PackedInt64Array AStar3D::get_point_ids() {
 	PackedInt64Array point_list;
+	point_list.resize(points.size());
+	int idx = 0;
 
 	for (KeyValue<int64_t, Point *> &kv : points) {
-		point_list.push_back(kv.key);
+		point_list.set(idx++, kv.key);
 	}
 
 	return point_list;
@@ -220,9 +222,11 @@ Vector<int64_t> AStar3D::get_point_connections(int64_t p_id) {
 	ERR_FAIL_COND_V_MSG(!p_entry, Vector<int64_t>(), vformat("Can't get point's connections. Point with id: %d doesn't exist.", p_id));
 
 	Vector<int64_t> point_list;
+	point_list.resize((*p_entry)->neighbors.size());
+	int idx = 0;
 
 	for (KeyValue<int64_t, Point *> &kv : (*p_entry)->neighbors) {
-		point_list.push_back(kv.key);
+		point_list.set(idx++, kv.key);
 	}
 
 	return point_list;
