@@ -686,7 +686,7 @@ private:
 	uint32_t m_allocations_max = 4000;
 
 	uint8_t m_throttled = 0;
-	bool m_use_unboxed_arguments = false;
+	bool m_use_unboxed_arguments = true;
 	bool m_resumable_mode = false; // If enabled, allow running startup in small increments
 	bool m_precise_simulation = false; // Run simulation in the slower, precise mode
 	bool m_is_initialization = false; // If true, the program is in the initialization phase
