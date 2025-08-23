@@ -169,7 +169,7 @@ PackedByteArray Sandbox::download_program(String program_name) {
 
 	// Save the downloaded program to a temporary file
 	Ref<FileAccess> file = FileAccess::open("user://temp.zip", FileAccess::ModeFlags::WRITE);
-	if (file == nullptr || !file->is_open()) {
+	if (!file.is_valid() || !file->is_open()) {
 		ERR_PRINT("Failed to open temporary file for writing");
 		return PackedByteArray();
 	}
