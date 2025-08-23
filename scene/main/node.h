@@ -130,7 +130,9 @@ public:
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->is_greater_than(p_a); }
 	};
 
-	static int orphan_node_count;
+#ifdef DEBUG_ENABLED
+	static SafeNumeric<uint64_t> total_node_count;
+#endif
 
 	void _update_process(bool p_enable, bool p_for_children);
 
