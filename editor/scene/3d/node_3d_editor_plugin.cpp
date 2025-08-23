@@ -541,6 +541,15 @@ void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	look_control->set_visible(show_viewport_navigation_gizmo);
 }
 
+void Node3DEditorViewport::_update_ui_interaction_state() {
+	Control::MouseFilter filter = _edit.instant ? MOUSE_FILTER_IGNORE : MOUSE_FILTER_PASS;
+
+	view_display_menu->set_mouse_filter(filter);
+	rotation_control->set_mouse_filter(filter);
+	position_control->set_mouse_filter(filter);
+	look_control->set_mouse_filter(filter);
+}
+
 void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
 	bool is_orthogonal = camera->get_projection() == Camera3D::PROJECTION_ORTHOGONAL;
 
@@ -5258,6 +5267,7 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 		_edit.instant = instant;
 		_edit.snap = spatial_editor->is_snap_enabled();
 		update_transform_gizmo_view();
+		_update_ui_interaction_state();
 		set_process_input(instant);
 	}
 }
@@ -5662,6 +5672,7 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.numeric_negate = false;
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
+	_update_ui_interaction_state();
 	surface->queue_redraw();
 	set_process_input(false);
 }
