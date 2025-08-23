@@ -787,7 +787,6 @@ template <int W>
 static void syscall_pipe2(Machine<W>& machine)
 {
 	const auto vfd_array = machine.sysarg(0);
-	const auto flags = machine.template sysarg<int>(1);
 
 	if (machine.has_file_descriptors()) {
 		int vpipes[2];

@@ -43,7 +43,9 @@ extern "C" {
  * is built with dlfcn-win32. Unfortunately, this doesn't work when
  * building with -fPIC, so we need to account for that too.
  */
-#if (defined(__MINGW32__) || defined(__MINGW64__)) && \
+#if (defined(MINGW_ENABLED) || defined(__MINGW32__) || defined(__MINGW64__) || \
+     defined(__MINGW__) || (defined(__clang__) && defined(_WIN32)) || \
+     (defined(__GNUC__) && defined(_WIN32))) && \
 	(defined(__GNUC__) || defined(__clang__)) && \
 	!defined(__PIC__) && !defined(__pic__)
 #define  DLFCN_WEAK __attribute__((weak))

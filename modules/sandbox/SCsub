@@ -8,7 +8,7 @@ env_sandbox = env_modules.Clone()
 
 # Enable exceptions for libriscv (required)
 env_sandbox.Append(CPPDEFINES=["RISCV_EXCEPTIONS_ENABLED"])
-if env["platform"] != "windows":
+if env["platform"] != "windows" or env.get("use_mingw", False):
     env_sandbox.Append(CXXFLAGS=["-fexceptions"])
 else:
     env_sandbox.Append(CXXFLAGS=["/EHsc"])

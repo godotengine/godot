@@ -640,7 +640,7 @@ static BOOL get_image_section( HMODULE module, int index, void **ptr, DWORD *siz
     if( optionalHeader->Magic != IMAGE_NT_OPTIONAL_HDR_MAGIC )
         return FALSE;
 
-    if( index < 0 || index >= IMAGE_NUMBEROF_DIRECTORY_ENTRIES || index >= optionalHeader->NumberOfRvaAndSizes )
+    if( index < 0 || index >= IMAGE_NUMBEROF_DIRECTORY_ENTRIES || (DWORD)index >= optionalHeader->NumberOfRvaAndSizes )
         return FALSE;
 
     if( optionalHeader->DataDirectory[index].Size == 0 || optionalHeader->DataDirectory[index].VirtualAddress == 0 )

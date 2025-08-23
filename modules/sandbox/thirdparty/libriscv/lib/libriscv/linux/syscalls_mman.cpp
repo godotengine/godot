@@ -75,7 +75,8 @@ static void add_mman_syscalls()
 				if (_lseek(real_fd, voff, SEEK_SET) == -1L)
 					MMAP_HAS_FAILED();
 				for (size_t i = 0; i < cnt; i++) {
-					if (_read(real_fd, buffers.at(i).ptr, buffers.at(i).len) != buffers.at(i).len)
+					auto bytes_read = _read(real_fd, buffers.at(i).ptr, buffers.at(i).len);
+					if (bytes_read < 0 || (size_t)bytes_read != buffers.at(i).len)
 						MMAP_HAS_FAILED();
 				}
 #elif defined(__wasm__)
