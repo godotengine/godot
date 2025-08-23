@@ -33,7 +33,6 @@
 #include "core/io/file_access.h"
 #include "core/variant/variant_utility.h"
 #include <algorithm>
-static constexpr bool USE_ADDR2LINE = false;
 
 struct ProfilingMachine {
 	std::unique_ptr<riscv::Machine<RISCV_ARCH>> machine = nullptr;

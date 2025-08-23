@@ -204,7 +204,6 @@ static String emit_class(CoreBind::Special::ClassDB *class_db, const HashSet<Str
 			method_name = method_name.capitalize();
 		}
 
-		const int flags = int(method["flags"]);
 		//if (flags & METHOD_FLAG_STATIC) ...
 		// Variant::NIL is a special case, as it's can be a void or Variant return type.
 		const int return_flags = int(return_value["usage"]);
