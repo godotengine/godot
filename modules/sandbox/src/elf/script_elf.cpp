@@ -84,17 +84,6 @@ ELFScriptInstance *ELFScript::get_script_instance(Object *p_for_object) const {
 	return nullptr;
 }
 
-static Dictionary prop_to_dict(const PropertyInfo &p_prop) {
-	Dictionary d;
-	d["name"] = p_prop.name;
-	d["type"] = p_prop.type;
-	d["class_name"] = p_prop.class_name;
-	d["hint"] = p_prop.hint;
-	d["hint_string"] = p_prop.hint_string;
-	d["usage"] = p_prop.usage;
-	return d;
-}
-
 // Internal Script API methods (no underscore prefix)
 bool ELFScript::can_instantiate() const {
 	return true;
