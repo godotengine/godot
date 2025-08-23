@@ -572,6 +572,15 @@ void Node3DEditorViewport::_update_navigation_controls_visibility() {
 	look_control->set_visible(show_viewport_navigation_gizmo);
 }
 
+void Node3DEditorViewport::_update_ui_interaction_state() {
+	Control::MouseFilter filter = _edit.instant ? MOUSE_FILTER_IGNORE : MOUSE_FILTER_PASS;
+
+	view_display_menu->set_mouse_filter(filter);
+	rotation_control->set_mouse_filter(filter);
+	position_control->set_mouse_filter(filter);
+	look_control->set_mouse_filter(filter);
+}
+
 bool Node3DEditorViewport::_is_rotation_arc_visible() const {
 	return _edit.mode == TRANSFORM_ROTATE && !Math::is_zero_approx(_edit.accumulated_rotation_angle) && _edit.gizmo_initiated;
 }
@@ -5663,6 +5672,7 @@ void Node3DEditorViewport::begin_transform(TransformMode p_mode, bool instant) {
 				break;
 		}
 		update_transform_gizmo_view();
+		_update_ui_interaction_state();
 		set_process_input(instant);
 		surface->queue_redraw();
 	}
@@ -6141,6 +6151,7 @@ void Node3DEditorViewport::finish_transform() {
 	_edit.children_original_globals.clear();
 	spatial_editor->set_local_coords_enabled(_edit.original_local);
 	spatial_editor->update_transform_gizmo();
+	_update_ui_interaction_state();
 	surface->queue_redraw();
 	set_process_input(false);
 	clicked = ObjectID();

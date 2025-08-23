@@ -404,6 +404,7 @@ private:
 
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_navigation_controls_visibility();
+	void _update_ui_interaction_state();
 	void _draw();
 
 	// These allow tool scripts to set the 3D cursor location by updating the camera transform.
