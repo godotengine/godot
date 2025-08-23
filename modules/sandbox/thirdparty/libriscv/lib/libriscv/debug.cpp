@@ -451,9 +451,9 @@ void DebugMachine<W>::simulate(std::function<void(DebugMachine<W>&)> callback, u
 		{
 			// This will produce a sequential execute segment for the unknown area
 			// If it is not executable, it will throw an execute space protection fault
-			auto new_values = cpu.next_execute_segment(pc);
-			exec = new_values.exec;
-			pc   = new_values.pc;
+			auto updated_values = cpu.next_execute_segment(pc);
+			exec = updated_values.exec;
+			pc   = updated_values.pc;
 			exec_seg_data = exec->exec_data();
 		}
 
