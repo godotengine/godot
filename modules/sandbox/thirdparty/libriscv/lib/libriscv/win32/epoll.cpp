@@ -14,6 +14,11 @@ static void syscall_eventfd2(Machine<W>& machine)
 	}
 	SYSPRINT("SYSCALL eventfd2(initval: %X flags: %#x real_fd: %d) = %d\n",
 		initval, flags, real_fd, machine.template return_value<int>());
+	
+	// Suppress unused variable warnings when SYSPRINT is disabled
+	(void)initval;
+	(void)flags;
+	(void)real_fd;
 }
 
 template <int W>
@@ -29,6 +34,10 @@ static void syscall_epoll_create(Machine<W>& machine)
 	}
 	SYSPRINT("SYSCALL epoll_create(real_fd: %d), flags: %#x = %d\n",
 		real_fd, flags, machine.template return_value<int>());
+	
+	// Suppress unused variable warnings when SYSPRINT is disabled
+	(void)flags;
+	(void)real_fd;
 }
 
 template <int W>
@@ -48,6 +57,13 @@ static void syscall_epoll_ctl(Machine<W>& machine)
 	}
 	SYSPRINT("SYSCALL epoll_ctl, epoll_fd: %d  op: %d vfd: %d (real_fd: %d)  event: 0x%lX => %d\n",
 		vepoll_fd, op, vfd, real_fd, (long)g_event, (int)machine.return_value());
+	
+	// Suppress unused variable warnings when SYSPRINT is disabled
+	(void)vepoll_fd;
+	(void)op;
+	(void)vfd;
+	(void)g_event;
+	(void)real_fd;
 }
 
 template <int W>
@@ -91,4 +107,9 @@ static void syscall_epoll_pwait(Machine<W>& machine)
 	}
 	SYSPRINT("SYSCALL epoll_pwait, epoll_fd: %d (real_fd: %d), maxevents: %d timeout: %d = %ld\n",
 		   vepoll_fd, real_fd, maxevents, timeout, (long)machine.return_value());
+	
+	// Suppress unused variable warnings when SYSPRINT is disabled
+	(void)vepoll_fd;
+	(void)g_events;
+	(void)real_fd;
 }
