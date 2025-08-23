@@ -579,22 +579,22 @@ namespace riscv
 		const char* strtab = elf_offset<char>(str_hdr->sh_offset);
 
 		const auto result =
-			[] (const char* strtab, address_t addr, const auto* sym)
+			[] (const char* str_table, address_t addr, const auto* sym)
 		{
-			const char* symname = &strtab[sym->st_name];
-			std::string result;
+			const char* symname = &str_table[sym->st_name];
+			std::string symbol_name;
 #ifdef DEMANGLE_ENABLED
 			if (char* dma = __cxa_demangle(symname, nullptr, nullptr, nullptr); dma != nullptr) {
-				result = dma;
+				symbol_name = dma;
 				free(dma);
 			} else {
-				result = symname;
+				symbol_name = symname;
 			}
 #else
-			result = symname;
+			symbol_name = symname;
 #endif
 			return Callsite {
-				.name = result,
+				.name = symbol_name,
 				.address = static_cast<address_t>(sym->st_value),
 				.offset = (uint32_t) (addr - sym->st_value),
 				.size   = size_t(sym->st_size)
