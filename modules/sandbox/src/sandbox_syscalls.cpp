@@ -1944,7 +1944,7 @@ APICALL(api_sandbox_add) {
 			if (Ref<ELFScript> program = emu.get_program(); program.is_valid()) {
 				Dictionary func = Sandbox::create_public_api_function(name, address, description, return_type, arguments);
 				if (func.size() > 0) {
-					if (program->functions.size() >= Sandbox::MAX_PUBLIC_FUNCTIONS) {
+					if (static_cast<unsigned>(program->functions.size()) >= Sandbox::MAX_PUBLIC_FUNCTIONS) {
 						ERR_PRINT("Too many public functions in the Sandbox program");
 						throw std::runtime_error("Too many public functions in the Sandbox program");
 					}

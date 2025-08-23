@@ -252,6 +252,7 @@ void ELFScriptLanguage::load_icon() {
 		return;
 	}
 	reenter = true;
+	static const String icon_path = "res://addons/godot_sandbox/Sandbox.svg";
 	Ref<FileAccess> fa = FileAccess::open(icon_path, FileAccess::READ);
 	if (Engine::get_singleton()->is_editor_hint() && fa.is_valid()) {
 		Ref<Theme> editor_theme = EditorInterface::get_singleton()->get_editor_theme();
