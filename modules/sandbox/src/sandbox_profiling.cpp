@@ -34,6 +34,10 @@
 #include "core/variant/variant_utility.h"
 #include <algorithm>
 
+#ifdef __linux__
+static constexpr bool USE_ADDR2LINE = false;
+#endif
+
 struct ProfilingMachine {
 	std::unique_ptr<riscv::Machine<RISCV_ARCH>> machine = nullptr;
 	std::vector<uint8_t> binary;
