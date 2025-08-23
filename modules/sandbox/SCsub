@@ -33,7 +33,7 @@ if env["platform"] != "windows" or env.get("use_mingw", False):
         )
         if result.returncode == 0:
             cxx_flags.append("-Wno-c99-designator")
-    except:
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
         # If test fails, continue without the flag
         pass
     env_sandbox.Append(CXXFLAGS=cxx_flags)
