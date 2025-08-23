@@ -22,7 +22,21 @@ env_sandbox.Append(CPPPATH=["#modules/sandbox/src/", "#modules/sandbox/."])
 
 # Set C++20 standard and allow C99 designated initializers for libriscv
 if env["platform"] != "windows" or env.get("use_mingw", False):
-    env_sandbox.Append(CXXFLAGS=["-std=c++20", "-Wno-c99-designator"])
+    cxx_flags = ["-std=c++20"]
+    # Only add -Wno-c99-designator if compiler supports it (newer GCC/Clang)
+    import subprocess
+
+    try:
+        # Test if the compiler supports -Wno-c99-designator
+        result = subprocess.run(
+            [env["CXX"], "-Wno-c99-designator", "-E", "-"], input="", text=True, capture_output=True, timeout=5
+        )
+        if result.returncode == 0:
+            cxx_flags.append("-Wno-c99-designator")
+    except:
+        # If test fails, continue without the flag
+        pass
+    env_sandbox.Append(CXXFLAGS=cxx_flags)
 else:
     env_sandbox.Append(CXXFLAGS=["/std:c++20"])
 

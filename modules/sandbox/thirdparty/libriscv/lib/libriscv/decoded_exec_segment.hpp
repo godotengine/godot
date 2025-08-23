@@ -159,7 +159,9 @@ namespace riscv
 	{
 		m_vaddr_begin = exaddr;
 		m_vaddr_end   = exaddr + exlen;
-		m_exec_pagedata.reset(new uint8_t[len]);
+		// Prevent zero-length allocation warning by ensuring minimum size
+		const size_t alloc_len = (len > 0) ? len : 1;
+		m_exec_pagedata.reset(new uint8_t[alloc_len]);
 		m_exec_pagedata_size = len;
 		m_exec_pagedata_base = pbase;
 	}

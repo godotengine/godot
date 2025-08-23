@@ -29,9 +29,9 @@ struct ArenaChunk
 	PointerType data = 0;
 
 	ArenaChunk* find_used(PointerType ptr);
-	ArenaChunk* find_free(size_t size);
+	ArenaChunk* find_free(size_t req_size);
 	void merge_next(Arena&);
-	void split_next(Arena&, size_t size);
+	void split_next(Arena&, size_t chunk_size);
 	void subsume_next(Arena&, size_t extra);
 };
 
@@ -169,11 +169,11 @@ inline ArenaChunk* ArenaChunk::find_used(PointerType ptr)
 	return nullptr;
 }
 // find free chunk that has at least given size
-inline ArenaChunk* ArenaChunk::find_free(size_t size)
+inline ArenaChunk* ArenaChunk::find_free(size_t req_size)
 {
     ArenaChunk* ch = this;
 	while (ch != nullptr) {
-		if (ch->free && ch->size >= size)
+		if (ch->free && ch->size >= req_size)
 			return ch;
 		ch = ch->next;
 	}
@@ -215,17 +215,17 @@ inline void ArenaChunk::subsume_next(Arena& arena, size_t newlen)
 	}
 }
 
-inline void ArenaChunk::split_next(Arena& arena, size_t size)
+inline void ArenaChunk::split_next(Arena& arena, size_t chunk_size)
 {
 	// Only split if the new chunk would not be empty
-	if (this->size > size)
+	if (this->size > chunk_size)
 	{
 		ArenaChunk* newch = arena.new_chunk(
 			this->next,
 			this,
-			this->size - size,
+			this->size - chunk_size,
 			true, // free
-			this->data + (PointerType) size
+			this->data + (PointerType) chunk_size
 		);
 		if (this->next) {
 			this->next->prev = newch;
@@ -242,7 +242,7 @@ inline void ArenaChunk::split_next(Arena& arena, size_t size)
 			this->next->prev = nullptr;
 		}
 	}
-	this->size = size;
+	this->size = chunk_size;
 }
 
 template <typename... Args>

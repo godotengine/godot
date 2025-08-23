@@ -40,14 +40,9 @@ extern "C" {
 
 /* Enable weak symbols to account for Godots own dlsym and dlerror
  * implementations. This is needed to avoid linking errors when Godot
- * is built with dlfcn-win32. Unfortunately, this doesn't work when
- * building with -fPIC, so we need to account for that too.
+ * is built with dlfcn-win32.
  */
-#if (defined(MINGW_ENABLED) || defined(__MINGW32__) || defined(__MINGW64__) || \
-     defined(__MINGW__) || (defined(__clang__) && defined(_WIN32)) || \
-     (defined(__GNUC__) && defined(_WIN32))) && \
-	(defined(__GNUC__) || defined(__clang__)) && \
-	!defined(__PIC__) && !defined(__pic__)
+#ifdef GODOT_MODULE
 #define  DLFCN_WEAK __attribute__((weak))
 #else
 #define  DLFCN_WEAK

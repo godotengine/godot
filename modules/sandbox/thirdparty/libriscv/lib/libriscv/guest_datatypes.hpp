@@ -13,7 +13,7 @@ struct GuestRef {
 	const gaddr_t ptr;
 
 	constexpr GuestRef() noexcept : ptr(0) {}
-	GuestRef(gaddr_t ptr) : ptr(ptr) {}
+	GuestRef(gaddr_t address) : ptr(address) {}
 
 	/// @brief Get the address of the reference.
 	/// @return The address of the reference.
@@ -384,9 +384,9 @@ struct GuestStdVector {
 		this->ptr_end = this->ptr_begin + old_vec.size() * sizeof(T);
 		// Adjust SSO if the vector contains std::string
 		if constexpr (std::is_same_v<T, GuestStdString<W>>) {
-			T* array = machine.memory.template memarray<T>(this->data(), size());
+			T* str_array = machine.memory.template memarray<T>(this->data(), size());
 			for (std::size_t i = 0; i < size(); i++)
-				array[i].move(this->ptr_begin + i * sizeof(T));
+				str_array[i].move(this->ptr_begin + i * sizeof(T));
 		}
 	}
 
