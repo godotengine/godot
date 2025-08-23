@@ -227,7 +227,7 @@ void ELFScriptInstance::update_methods() const {
 		}
 	} else {
 		// Create highly specific MethodInfo based on 'functions' Array
-		for (size_t i = 0; i < script->functions.size(); i++) {
+		for (int32_t i = 0; i < script->functions.size(); i++) {
 			const Dictionary func = script->functions[i].operator Dictionary();
 			this->methods_info.push_back(MethodInfo::from_dict(func));
 		}
