@@ -95,33 +95,6 @@ static Dictionary prop_to_dict(const PropertyInfo &p_prop) {
 	return d;
 }
 
-static Dictionary method_to_dict(const MethodInfo &p_method) {
-	Dictionary d;
-
-	d["name"] = p_method.name;
-	d["flags"] = p_method.flags;
-
-	if (p_method.arguments.size() > 0) {
-		Array args;
-		for (const PropertyInfo &arg : p_method.arguments) {
-			args.push_back(prop_to_dict(arg));
-		}
-		d["args"] = args;
-	}
-
-	if (p_method.default_arguments.size() > 0) {
-		Array defaults;
-		for (const Variant &value : p_method.default_arguments) {
-			defaults.push_back(value);
-		}
-		d["default_args"] = defaults;
-	}
-
-	d["return"] = prop_to_dict(p_method.return_val);
-
-	return d;
-}
-
 // Internal Script API methods (no underscore prefix)
 bool ELFScript::can_instantiate() const {
 	return true;
