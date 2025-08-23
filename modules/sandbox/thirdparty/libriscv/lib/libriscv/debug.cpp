@@ -6,6 +6,10 @@
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <functional>
+#include <string>
+#include <vector>
+#include <unordered_map>
 
 namespace riscv
 {
@@ -293,7 +297,7 @@ bool DebugMachine<W>::execute_commands()
 }
 
 template<int W>
-void DebugMachine<W>::print(const std::string& label, address_t override_pc)
+void DebugMachine<W>::print(const std::string& label, address_type<W> override_pc)
 {
 	auto& cpu = machine.cpu;
 	auto old_pc = cpu.pc();
@@ -372,7 +376,7 @@ void DebugMachine<W>::break_checks()
 	{
 		for (auto& wp : m_watchpoints) {
 			/* TODO: Only run watchpoint on LOAD STORE instructions */
-			address_t new_value = 0;
+			address_type<W> new_value = 0;
 			switch (wp.len) {
 			case 1:
 				new_value = machine.memory.template read<uint8_t> (wp.addr);
@@ -398,11 +402,14 @@ void DebugMachine<W>::break_checks()
 template<int W>
 void DebugMachine<W>::register_debug_logging() const
 {
-	auto regs = "\n" + machine.cpu.registers().to_string() + "\n\n";
+	std::string regs = "\n";
+	regs += machine.cpu.registers().to_string();
+	regs += "\n\n";
 	this->debug_print(regs.data(), regs.size());
 	if (UNLIKELY(this->verbose_fp_registers)) {
-		regs = machine.cpu.registers().flp_to_string() + "\n";
-		this->debug_print(regs.data(), regs.size());
+		std::string fp_regs = machine.cpu.registers().flp_to_string();
+		fp_regs += "\n";
+		this->debug_print(fp_regs.data(), fp_regs.size());
 	}
 }
 
@@ -421,13 +428,13 @@ template<int W>
 void DebugMachine<W>::simulate(std::function<void(DebugMachine<W>&)> callback, uint64_t imax)
 {
 	auto& cpu = machine.cpu;
-	address_t pc = cpu.pc();
+	address_type<W> pc = cpu.pc();
 	DecodedExecuteSegment<W>* exec;
 	auto new_values = cpu.next_execute_segment(pc);
 	exec = new_values.exec;
 	pc   = new_values.pc;
 	auto* exec_seg_data = exec->exec_data();
-	std::unordered_map<address_t, std::string> backtrace_lookup;
+	std::unordered_map<address_type<W>, std::string> backtrace_lookup;
 
 	// Calculate the instruction limit
 	if (imax != UINT64_MAX)

@@ -246,7 +246,7 @@ inline bool Thread<W>::exit()
 	const bool exiting_myself = (threading.get_thread() == this);
 	// Copy of reference to thread manager and thread ID
 	auto& thr = this->threading;
-	const int tid = this->tid;
+	const int thread_id = this->tid;
 	// CLONE_CHILD_CLEARTID: set userspace TID value to zero
 	if (this->clear_tid) {
 		THPRINT(threading.machine,
@@ -256,8 +256,8 @@ inline bool Thread<W>::exit()
 			template write<address_type<W>> (this->clear_tid, 0);
 	}
 	// Delete this thread (except main thread)
-	if (tid != 0) {
-		threading.erase_thread(tid);
+	if (thread_id != 0) {
+		threading.erase_thread(thread_id);
 
 		// Resume next thread in suspended list
 		// Exiting main thread is a "process exit", so we don't wakeup_next
@@ -266,8 +266,8 @@ inline bool Thread<W>::exit()
 		}
 	}
 
-	// tid == 0: Main thread exited
-	return (tid == 0);
+	// thread_id == 0: Main thread exited
+	return (thread_id == 0);
 }
 
 template <int W>

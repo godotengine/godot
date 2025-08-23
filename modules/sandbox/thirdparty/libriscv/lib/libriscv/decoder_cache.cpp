@@ -9,6 +9,7 @@
 #include "util/crc32.hpp"
 #include <inttypes.h>
 #include <mutex>
+#include <string>
 #include <unordered_set>
 //#define ENABLE_TIMINGS
 struct SegmentKey {
@@ -75,8 +76,8 @@ namespace riscv
 				return segment;
 			}
 
-			void unlocked_set(std::shared_ptr<DecodedExecuteSegment<W>> segment) {
-				this->segment = std::move(segment);
+			void unlocked_set(std::shared_ptr<DecodedExecuteSegment<W>> new_segment) {
+				this->segment = std::move(new_segment);
 			}
 		};
 
@@ -88,7 +89,7 @@ namespace riscv
 			// Segments mutex and set the segment to nullptr.
 			auto it = m_segments.find(key);
 			if (it != m_segments.end()) {
-				std::scoped_lock lock(it->second.mutex);
+				std::scoped_lock segment_lock(it->second.mutex);
 				if (it->second.segment.use_count() == 1)
 					it->second.segment = nullptr;
 			}
@@ -401,8 +402,8 @@ namespace riscv
 		   Cannot step outside of this area when pregen is enabled,
 		   so it's fine to leave the boundries alone. */
 		TIME_POINT(t2);
-		address_t dst = addr;
-		const address_t end_addr = addr + len;
+		address_type<W> dst = addr;
+		const address_type<W> end_addr = addr + len;
 		for (; dst < addr + len;)
 		{
 			auto& entry = exec_decoder[dst / DecoderCache<W>::DIVISOR];
@@ -482,16 +483,16 @@ namespace riscv
 
 		// Debugging: EBREAK locations
 		for (auto& loc : options.ebreak_locations) {
-			address_t addr = 0;
+			address_type<W> ebreak_addr = 0;
 			if (std::holds_alternative<address_type<W>>(loc))
-				addr = std::get<address_type<W>>(loc);
+				ebreak_addr = std::get<address_type<W>>(loc);
 			else
-				addr = machine().address_of(std::get<std::string>(loc));
+				ebreak_addr = machine().address_of(std::get<std::string>(loc));
 
-			if (addr != 0x0 && addr >= exec.exec_begin() && addr < exec.exec_end()) {
-				CPU<W>::install_ebreak_for(exec, addr);
+			if (ebreak_addr != 0x0 && ebreak_addr >= exec.exec_begin() && ebreak_addr < exec.exec_end()) {
+				CPU<W>::install_ebreak_for(exec, ebreak_addr);
 				if (options.verbose_loader) {
-					printf("libriscv: Added ebreak location at 0x%" PRIx64 "\n", uint64_t(addr));
+					printf("libriscv: Added ebreak location at 0x%" PRIx64 "\n", uint64_t(ebreak_addr));
 				}
 			}
 		}
@@ -539,13 +540,13 @@ namespace riscv
 	// no matter where you are in the segment, a whole instruction unchecked.
 	template <int W> RISCV_INTERNAL
 	DecodedExecuteSegment<W>& Memory<W>::create_execute_segment(
-		const MachineOptions<W>& options, const void *vdata, address_t vaddr, size_t exlen, bool is_initial, bool is_likely_jit)
+		const MachineOptions<W>& options, const void *vdata, address_type<W> vaddr, size_t exlen, bool is_initial, bool is_likely_jit)
 	{
 		if (UNLIKELY(exlen % (compressed_enabled ? 2 : 4)))
 			throw MachineException(INVALID_PROGRAM, "Misaligned execute segment length");
 
-		constexpr address_t PMASK = Page::size()-1;
-		const address_t pbase = vaddr & ~PMASK;
+		constexpr address_type<W> PMASK = Page::size()-1;
+		const address_type<W> pbase = vaddr & ~PMASK;
 		const size_t prelen  = vaddr - pbase;
 		// Make 4 bytes of extra room to avoid having to validate 4-byte reads
 		// when reading at 2 bytes before the end of the execute segment.
@@ -562,7 +563,7 @@ namespace riscv
 		if (UNLIKELY(pbase + plen < pbase))
 			throw MachineException(INVALID_PROGRAM, "Segment virtual base was bogus");
 #else
-		[[maybe_unused]] address_t pbase2;
+		[[maybe_unused]] address_type<W> pbase2;
 		if (UNLIKELY(__builtin_add_overflow(pbase, plen, &pbase2)))
 			throw MachineException(INVALID_PROGRAM, "Segment virtual base was bogus");
 #endif
@@ -641,7 +642,7 @@ namespace riscv
 	}
 
 	template <int W>
-	const std::shared_ptr<DecodedExecuteSegment<W>>& Memory<W>::exec_segment_for(address_t vaddr) const
+	const std::shared_ptr<DecodedExecuteSegment<W>>& Memory<W>::exec_segment_for(address_type<W> vaddr) const
 	{
 		return const_cast<Memory<W>*>(this)->exec_segment_for(vaddr);
 	}
@@ -686,7 +687,7 @@ namespace riscv
 	template <int W>
 	std::vector<address_type<W>> Memory<W>::gather_jump_hints() const
 	{
-		std::vector<address_t> result;
+		std::vector<address_type<W>> result;
 #  ifdef RISCV_DEBUG
 		std::unordered_set<address_type<W>> addresses;
 		for (auto addr : machine().options().translator_jump_hints)
