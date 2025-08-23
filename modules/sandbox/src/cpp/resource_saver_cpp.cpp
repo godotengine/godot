@@ -76,6 +76,8 @@ if (CMAKE_HOST_APPLE)
 	set(CMAKE_RANLIB "${CMAKE_CURRENT_LIST_DIR}/zig-ranlib.cmd")
 endif()
 )";
+
+#if defined(_WIN32) || defined(__APPLE__)
 static const char cmake_zig_ar_bytes[] = R"(
 @echo off
 zig ar %*
@@ -84,6 +86,8 @@ static const char cmake_zig_ranlib_bytes[] = R"(
 @echo off
 zig ranlib %*
 )";
+#endif
+
 static const char cmake_cmakelists_bytes[] = R"(
 cmake_minimum_required(VERSION 3.10)
 project(example LANGUAGES CXX)
