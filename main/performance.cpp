@@ -240,7 +240,7 @@ double Performance::get_monitor(Monitor p_monitor) const {
 		case OBJECT_NODE_COUNT:
 			return _get_node_count();
 		case OBJECT_ORPHAN_NODE_COUNT:
-			return Node::orphan_node_count;
+			return Node::orphan_node_count.load(std::memory_order_relaxed);
 		case RENDER_TOTAL_OBJECTS_IN_FRAME:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TOTAL_OBJECTS_IN_FRAME);
 		case RENDER_TOTAL_PRIMITIVES_IN_FRAME:
