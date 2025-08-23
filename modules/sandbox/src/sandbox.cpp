@@ -758,7 +758,7 @@ void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, cons
 	int index = 11;
 	int flindex = 10;
 
-	for (size_t i = 0; i < argc; i++) {
+	for (int64_t i = 0; i < argc; i++) {
 		const Variant &arg = *args[i];
 		// Get variant data without using deprecated _native_ptr() method
 		const GDNativeVariant inner_data = {
@@ -974,7 +974,7 @@ GuestVariant *Sandbox::setup_arguments(gaddr_t &sp, const Variant **args, int64_
 	// Set up first argument (return value, also a Variant)
 	m_machine->cpu.reg(10) = arrayDataPtr + overflow_args * sizeof(GuestVariant);
 
-	for (size_t i = 0; i < argc; i++) {
+	for (int64_t i = 0; i < argc; i++) {
 		const Variant &arg = *args[i];
 		GuestVariant &g_arg = v[1 + i];
 		// Fast-path for simple types
