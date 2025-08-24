@@ -51,12 +51,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_add(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_add(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value += cpu.reg(rs2);
+			value += proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -74,12 +74,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_xor(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_xor(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value ^= cpu.reg(rs2);
+			value ^= proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -89,12 +89,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_or(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_or(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value |= cpu.reg(rs2);
+			value |= proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -104,12 +104,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_and(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_and(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value &= cpu.reg(rs2);
+			value &= proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -119,9 +119,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::max(value, (int32_t)cpu.reg(rs2));
+			value = std::max(value, (int32_t)proc.reg(rs2));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -130,9 +130,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::min(value, (int32_t)cpu.reg(rs2));
+			value = std::min(value, (int32_t)proc.reg(rs2));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -141,9 +141,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<uint32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::max(value, (uint32_t)cpu.reg(rs2));
+			value = std::max(value, (uint32_t)proc.reg(rs2));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -152,9 +152,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<uint32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::min(value, (uint32_t)cpu.reg(rs2));
+			value = std::min(value, (uint32_t)proc.reg(rs2));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -163,12 +163,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_add(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_add(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value += cpu.reg(rs2);
+			value += proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -178,12 +178,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_xor(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_xor(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value ^= cpu.reg(rs2);
+			value ^= proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -193,12 +193,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_or(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_or(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value |= cpu.reg(rs2);
+			value |= proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -208,12 +208,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).fetch_and(cpu.reg(rs2));
+			return std::atomic_ref(value).fetch_and(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value &= cpu.reg(rs2);
+			value &= proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -223,9 +223,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::max(value, int64_t(cpu.reg(rs2)));
+			value = std::max(value, int64_t(proc.reg(rs2)));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -234,9 +234,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::min(value, int64_t(cpu.reg(rs2)));
+			value = std::min(value, int64_t(proc.reg(rs2)));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -245,9 +245,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<uint64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::max(value, (uint64_t)cpu.reg(rs2));
+			value = std::max(value, (uint64_t)proc.reg(rs2));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -256,9 +256,9 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<uint64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 			auto old_val = value;
-			value = std::min(value, (uint64_t)cpu.reg(rs2));
+			value = std::min(value, (uint64_t)proc.reg(rs2));
 			return old_val;
 		});
 	}, DECODED_ATOMIC(AMOADD_W).printer);
@@ -267,12 +267,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int32_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).exchange(cpu.reg(rs2));
+			return std::atomic_ref(value).exchange(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value = cpu.reg(rs2);
+			value = proc.reg(rs2);
 			return old_value;
 #endif
 		});
@@ -289,12 +289,12 @@ namespace riscv
 	[] (auto& cpu, rv32i_instruction instr) RVINSTR_COLDATTR
 	{
 		cpu.template amo<int64_t>(instr,
-		[] (auto& cpu, auto& value, auto rs2) {
+		[] (auto& proc, auto& value, auto rs2) {
 #if USE_ATOMIC_OPS
-			return std::atomic_ref(value).exchange(cpu.reg(rs2));
+			return std::atomic_ref(value).exchange(proc.reg(rs2));
 #else
 			auto old_value = value;
-			value = cpu.reg(rs2);
+			value = proc.reg(rs2);
 			return old_value;
 #endif
 		});
