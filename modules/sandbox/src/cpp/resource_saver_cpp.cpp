@@ -420,11 +420,11 @@ static bool detect_and_build_scons_project_instead() {
 }
 
 Error ResourceFormatSaverCPP::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
-	CPPScript *script = Object::cast_to<CPPScript>(p_resource.ptr());
-	if (script != nullptr) {
+	CPPScript *cpp_script = Object::cast_to<CPPScript>(p_resource.ptr());
+	if (cpp_script != nullptr) {
 		Ref<FileAccess> handle = FileAccess::open(p_path, FileAccess::ModeFlags::WRITE);
 		if (handle.is_valid()) {
-			handle->store_string(script->get_source_code());
+			handle->store_string(cpp_script->get_source_code());
 			handle->close();
 
 			if (CPPScript::DetectCMakeOrSConsProject()) {

@@ -37,10 +37,10 @@ struct ScopedTreeBase {
 	Sandbox *sandbox = nullptr;
 	Node *old_tree_base = nullptr;
 
-	ScopedTreeBase(Sandbox *sandbox, Node *old_tree_base) :
-			sandbox(sandbox),
-			old_tree_base(sandbox->get_tree_base()) {
-		sandbox->set_tree_base(old_tree_base);
+	ScopedTreeBase(Sandbox *p_sandbox, Node *p_old_tree_base) :
+			sandbox(p_sandbox),
+			old_tree_base(p_sandbox->get_tree_base()) {
+		p_sandbox->set_tree_base(p_old_tree_base);
 	}
 
 	~ScopedTreeBase() {

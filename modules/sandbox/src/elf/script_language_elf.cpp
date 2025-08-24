@@ -106,8 +106,8 @@ bool ELFScriptLanguage::validate(const String &p_script, const String &p_path, L
 }
 
 Script *ELFScriptLanguage::create_script() const {
-	ELFScript *script = memnew(ELFScript);
-	return script;
+	ELFScript *elf_script = memnew(ELFScript);
+	return elf_script;
 }
 
 bool ELFScriptLanguage::has_named_classes() const {

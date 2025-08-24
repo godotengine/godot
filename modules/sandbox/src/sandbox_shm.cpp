@@ -33,7 +33,7 @@
 
 static constexpr bool VERBOSE_SHM = false;
 
-gaddr_t Sandbox::share_array_internal(void *data, size_t bytes, bool allow_write) {
+gaddr_t Sandbox::share_array_internal(void *p_data, size_t p_bytes, bool p_allow_write) {
 	if (this->is_in_vmcall()) {
 		ERR_PRINT("Cannot share array while a VM call is in progress.");
 		return 0;
@@ -46,12 +46,12 @@ gaddr_t Sandbox::share_array_internal(void *data, size_t bytes, bool allow_write
 #endif
 
 	const gaddr_t vaddr = this->m_shared_memory_base;
-	const size_t vsize = (bytes + 0xFFFLL) & ~0xFFFLL; // Align to 4KB
+	const size_t vsize = (p_bytes + 0xFFFLL) & ~0xFFFLL; // Align to 4KB
 	// The address space is practically endless, so we can just keep allocating
 	this->m_shared_memory_base += vsize;
 
 	// Figure out the page-sized portion of the data
-	const size_t valignsize = bytes & ~0xFFFLL; // Align to 4KB
+	const size_t valignsize = p_bytes & ~0xFFFLL; // Align to 4KB
 
 	try {
 		// If the data is larger than a page, we can directly insert it as non-owned memory
@@ -60,31 +60,31 @@ gaddr_t Sandbox::share_array_internal(void *data, size_t bytes, bool allow_write
 				printf("Inserting %zu bytes of data into shared memory at address 0x%" PRIx64 "\n", valignsize, vaddr);
 			}
 			machine().memory.insert_non_owned_memory(
-					vaddr, data, valignsize, riscv::PageAttributes{
+					vaddr, p_data, valignsize, riscv::PageAttributes{
 													 .read = true,
-													 .write = allow_write,
+													 .write = p_allow_write,
 													 .exec = false,
 													 .is_cow = false,
 											 });
 		}
 		// The remaining bytes must be copied into the end of shared memory
-		const size_t remaining = bytes - valignsize;
+		const size_t remaining = p_bytes - valignsize;
 		if (remaining > 0) {
 			if constexpr (VERBOSE_SHM) {
 				printf("Copying remaining %zu bytes of data into shared memory at address 0x%" PRIx64 "\n", remaining, vaddr + valignsize);
 			}
-			machine().memory.memcpy(vaddr + valignsize, static_cast<const uint8_t *>(data) + valignsize, remaining);
+			machine().memory.memcpy(vaddr + valignsize, static_cast<const uint8_t *>(p_data) + valignsize, remaining);
 			machine().memory.set_page_attr(
 					vaddr + valignsize, riscv::Page::size(), riscv::PageAttributes{
 																	 .read = true,
-																	 .write = allow_write,
+																	 .write = p_allow_write,
 																	 .exec = false,
 															 }); // Set the attributes for the remaining bytes
 			// And the remaining bytes internal to the page are already zeroed (or guest-owned).
 		}
 
 		// Add the new range to the shared memory ranges (we need the real bytes)
-		this->m_shared_memory_ranges.emplace_back(vaddr, bytes, data);
+		this->m_shared_memory_ranges.emplace_back(vaddr, p_bytes, p_data);
 		return vaddr;
 
 	} catch (const std::exception &e) {

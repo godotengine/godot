@@ -141,8 +141,8 @@ bool CPPScriptLanguage::validate(const String &p_script, const String &p_path, L
 }
 
 Script *CPPScriptLanguage::create_script() const {
-	CPPScript *script = memnew(CPPScript);
-	return script;
+	CPPScript *cpp_script = memnew(CPPScript);
+	return cpp_script;
 }
 
 bool CPPScriptLanguage::has_named_classes() const {

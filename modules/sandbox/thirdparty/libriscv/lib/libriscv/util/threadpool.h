@@ -256,8 +256,8 @@ inline void ThreadPool::start_worker(
                 bool notify;
 
                 {
-                    std::unique_lock<std::mutex> lock(this->queue_mutex);
-                    this->condition_consumers.wait(lock,
+                    std::unique_lock<std::mutex> worker_func_lock(this->queue_mutex);
+                    this->condition_consumers.wait(worker_func_lock,
                         [this, worker_number]{
                             return this->stop || !this->tasks.empty()
                                 || pool_size < worker_number + 1; });
@@ -292,7 +292,7 @@ inline void ThreadPool::start_worker(
 
                 if (notify)
                 {
-                    std::unique_lock<std::mutex> lock(this->queue_mutex);
+                    std::unique_lock<std::mutex> notify_lock(this->queue_mutex);
                     condition_producers.notify_all();
                 }
 
