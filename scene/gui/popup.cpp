@@ -78,6 +78,8 @@ void Popup::_notification(int p_what) {
 			if (!is_in_edited_scene_root()) {
 				if (is_visible()) {
 					_initialize_visible_parents();
+					popped_up = true;
+					hide_reason = HIDE_REASON_NONE;
 				} else {
 					_deinitialize_visible_parents();
 					if (hide_reason == HIDE_REASON_NONE) {
@@ -85,15 +87,6 @@ void Popup::_notification(int p_what) {
 					}
 					emit_signal(SNAME("popup_hide"));
 					popped_up = false;
-				}
-			}
-		} break;
-
-		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
-			if (!is_in_edited_scene_root()) {
-				if (has_focus()) {
-					popped_up = true;
-					hide_reason = HIDE_REASON_NONE;
 				}
 			}
 		} break;
