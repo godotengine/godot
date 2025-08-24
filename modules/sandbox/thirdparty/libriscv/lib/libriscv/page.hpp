@@ -17,31 +17,28 @@ struct PageAttributes
 	bool dont_fork = false;
 	mutable bool cacheable = true;
 	uint8_t user_defined = 0; /* Use this for yourself */
+
+	int to_prot() const noexcept {
+		return this->read | (this->write << 1) | (this->exec << 2);
+	}
+
+	constexpr bool is_cacheable() const noexcept {
+		// Cacheable only makes sense when memory traps are enabled
+		if constexpr (memory_traps_enabled)
+			return cacheable;
+		else
+			return true;
+	}
+	bool is_default() const noexcept {
+		constexpr PageAttributes def {};
+		return this->read == def.read && this->write == def.write && this->exec == def.exec;
+	}
+	void apply_regular_attributes(PageAttributes other) {
+		const auto no = this->non_owning;
+		*this = other;
+		this->non_owning = no;
+	}
 };
-
-// Free functions for PageAttributes (moved out to make struct POD)
-inline int page_attr_to_prot(const PageAttributes& attr) noexcept {
-	return attr.read | (attr.write << 1) | (attr.exec << 2);
-}
-
-inline constexpr bool page_attr_is_cacheable(const PageAttributes& attr) noexcept {
-	// Cacheable only makes sense when memory traps are enabled
-	if constexpr (memory_traps_enabled)
-		return attr.cacheable;
-	else
-		return true;
-}
-
-inline bool page_attr_is_default(const PageAttributes& attr) noexcept {
-	constexpr PageAttributes def {};
-	return attr.read == def.read && attr.write == def.write && attr.exec == def.exec;
-}
-
-inline void page_attr_apply_regular(PageAttributes& attr, PageAttributes other) {
-	const auto no = attr.non_owning;
-	attr = other;
-	attr.non_owning = no;
-}
 
 struct PageData {
 	std::array<uint8_t, PageSize> buffer8;
