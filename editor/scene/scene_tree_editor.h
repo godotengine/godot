@@ -184,6 +184,7 @@ class SceneTreeEditor : public Control {
 	bool display_foreign = false;
 	bool tree_dirty = true;
 	bool pending_test_update = false;
+	bool suppress_filter_removal = false;
 	Timer *update_node_tooltip_delay = nullptr;
 
 	static void _bind_methods();
