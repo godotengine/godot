@@ -93,8 +93,12 @@ else:
         "thirdparty/libriscv/lib/libriscv/tr_compiler.cpp",
     ]
 
-# Add libriscv sources to the build
-env_sandbox.add_source_files(env.modules_sources, librisc_sources)
+# Create thirdparty environment with disabled warnings for libriscv
+env_thirdparty = env_sandbox.Clone()
+env_thirdparty.disable_warnings()
+
+# Add libriscv sources to the build using thirdparty environment
+env_thirdparty.add_source_files(env.modules_sources, librisc_sources)
 
 # Add sandbox source files (now converted to Godot internal APIs)
 sandbox_sources = [
