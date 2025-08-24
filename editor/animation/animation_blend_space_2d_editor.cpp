@@ -282,11 +282,6 @@ void AnimationNodeBlendSpace2DEditor::_blend_space_gui_input(const Ref<InputEven
 
 	Ref<InputEventMouseMotion> mm = p_event;
 
-	if (mm.is_valid() && !blend_space_draw->has_focus()) {
-		blend_space_draw->grab_focus();
-		blend_space_draw->queue_redraw();
-	}
-
 	if (mm.is_valid() && dragging_selected_attempt) {
 		dragging_selected = true;
 		if (!read_only) {
