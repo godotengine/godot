@@ -355,7 +355,7 @@ APICALL(api_basis_ops) {
 		}
 		case Basis_Op::GET_ROW: {
 			const unsigned row = machine.cpu.reg(12); // A2
-			if (row < 0 || row >= 3) {
+			if (row >= 3) {
 				ERR_PRINT("Invalid Basis row");
 				throw std::runtime_error("Invalid Basis row " + std::to_string(row));
 			}
@@ -367,7 +367,7 @@ APICALL(api_basis_ops) {
 		case Basis_Op::SET_ROW: {
 			unsigned *vidx = machine.memory.memarray<unsigned>(machine.cpu.reg(12), 1); // A2
 			const unsigned row = machine.cpu.reg(13); // A3
-			if (row < 0 || row >= 3) {
+			if (row >= 3) {
 				ERR_PRINT("Invalid Basis row");
 				throw std::runtime_error("Invalid Basis row " + std::to_string(row));
 			}
@@ -382,7 +382,7 @@ APICALL(api_basis_ops) {
 		}
 		case Basis_Op::GET_COLUMN: {
 			const unsigned column = machine.cpu.reg(12); // A2
-			if (column < 0 || column >= 3) {
+			if (column >= 3) {
 				ERR_PRINT("Invalid Basis column");
 				throw std::runtime_error("Invalid Basis column " + std::to_string(column));
 			}
@@ -394,7 +394,7 @@ APICALL(api_basis_ops) {
 		case Basis_Op::SET_COLUMN: {
 			unsigned *vidx = machine.memory.memarray<unsigned>(machine.cpu.reg(12), 1); // A2
 			const unsigned column = machine.cpu.reg(13); // A3
-			if (column < 0 || column >= 3) {
+			if (column >= 3) {
 				ERR_PRINT("Invalid Basis column");
 				throw std::runtime_error("Invalid Basis column " + std::to_string(column));
 			}
@@ -579,14 +579,14 @@ APICALL(api_quat_ops) {
 			return;
 		}
 		case Quaternion_Op::AT: {
-			const unsigned idx = machine.cpu.reg(12); // A2
-			if (idx < 0 || idx >= 4) {
+			const unsigned quat_idx = machine.cpu.reg(12); // A2
+			if (quat_idx >= 4) {
 				ERR_PRINT("Invalid Quaternion index");
-				throw std::runtime_error("Invalid Quaternion index: " + std::to_string(idx));
+				throw std::runtime_error("Invalid Quaternion index: " + std::to_string(quat_idx));
 			}
 			double *res = machine.memory.memarray<double>(machine.cpu.reg(13), 1); // A3
 
-			*res = q[idx];
+			*res = q[quat_idx];
 			return;
 		}
 		case Quaternion_Op::GET_AXIS: {
