@@ -157,6 +157,9 @@ bool JoltSoftBody3D::_ref_shared_data() {
 		const int mesh_index_count = mesh_indices.size();
 
 		mesh_to_physics.resize(mesh_vertex_count);
+		for (int &index : mesh_to_physics) {
+			index = -1;
+		}
 		physics_vertices.reserve(mesh_vertex_count);
 		vertex_to_physics.reserve(mesh_vertex_count);
 
@@ -409,7 +412,8 @@ void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse)
 
 	ERR_FAIL_NULL(shared);
 	ERR_FAIL_INDEX(p_index, (int)shared->mesh_to_physics.size());
-	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
+	const int physics_index = shared->mesh_to_physics[p_index];
+	ERR_FAIL_COND_MSG(physics_index < 0, vformat("Soft body vertex %d was not used by a face and has been omitted for '%s'. No impulse can be applied.", p_index, to_string()));
 	ERR_FAIL_COND_MSG(pinned_vertices.has(physics_index), vformat("Failed to apply impulse to point at index %d for '%s'. Point was found to be pinned.", static_cast<int>(physics_index), to_string()));
 
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
@@ -672,12 +676,13 @@ void JoltSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHandl
 
 	for (int i = 0; i < mesh_vertex_count; ++i) {
 		const int physics_index = shared->mesh_to_physics[i];
+		if (physics_index >= 0) {
+			const Vector3 vertex = to_godot(physics_vertices[(size_t)physics_index].mPosition);
+			const Vector3 normal = normals[(uint32_t)physics_index];
 
-		const Vector3 vertex = to_godot(physics_vertices[(size_t)physics_index].mPosition);
-		const Vector3 normal = normals[(uint32_t)physics_index];
-
-		p_rendering_server_handler->set_vertex(i, vertex);
-		p_rendering_server_handler->set_normal(i, normal);
+			p_rendering_server_handler->set_vertex(i, vertex);
+			p_rendering_server_handler->set_normal(i, normal);
+		}
 	}
 
 	p_rendering_server_handler->set_aabb(get_bounds());
@@ -688,7 +693,8 @@ Vector3 JoltSoftBody3D::get_vertex_position(int p_index) {
 
 	ERR_FAIL_NULL_V(shared, Vector3());
 	ERR_FAIL_INDEX_V(p_index, (int)shared->mesh_to_physics.size(), Vector3());
-	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
+	const int physics_index = shared->mesh_to_physics[p_index];
+	ERR_FAIL_COND_V_MSG(physics_index < 0, Vector3(), vformat("Soft body vertex %d was not used by a face and has been omitted for '%s'. Position cannot be returned.", p_index, to_string()));
 
 	const JPH::SoftBodyMotionProperties &motion_properties = static_cast<const JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	const JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
@@ -702,7 +708,8 @@ void JoltSoftBody3D::set_vertex_position(int p_index, const Vector3 &p_position)
 
 	ERR_FAIL_NULL(shared);
 	ERR_FAIL_INDEX(p_index, (int)shared->mesh_to_physics.size());
-	const size_t physics_index = (size_t)shared->mesh_to_physics[p_index];
+	const int physics_index = shared->mesh_to_physics[p_index];
+	ERR_FAIL_COND_MSG(physics_index < 0, vformat("Soft body vertex %d was not used by a face and has been omitted for '%s'. Position cannot be set.", p_index, to_string()));
 
 	JPH::SoftBodyMotionProperties &motion_properties = static_cast<JPH::SoftBodyMotionProperties &>(*jolt_body->GetMotionPropertiesUnchecked());
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
