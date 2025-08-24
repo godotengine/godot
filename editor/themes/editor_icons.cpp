@@ -34,7 +34,6 @@
 #include "editor/themes/editor_color_map.h"
 #include "editor/themes/editor_icons.gen.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/resources/dpi_texture.h"
 #include "scene/resources/image_texture.h"
 
 #include "modules/svg/image_loader_svg.h"
@@ -48,8 +47,8 @@ void editor_configure_icons(bool p_dark_theme) {
 }
 
 // See also `generate_icon()` in `scene/theme/default_theme.cpp`.
-Ref<DPITexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const Dictionary &p_convert_colors = Dictionary()) {
-	return DPITexture::create_from_string(editor_icons_sources[p_index], p_scale, p_saturation, p_convert_colors);
+Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float p_saturation, const Dictionary &p_convert_colors = Dictionary()) {
+	return ImageTexture::create_from_string(editor_icons_sources[p_index], p_scale, p_saturation, p_convert_colors);
 }
 
 float get_gizmo_handle_scale(const String &p_gizmo_handle_name, float p_gizmo_handle_scale) {
@@ -154,14 +153,14 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 					saturation = 1.0;
 				}
 
-				Ref<DPITexture> icon_dark = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_dark);
-				Ref<DPITexture> icon_light = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_light);
+				Ref<ImageTexture> icon_dark = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_dark);
+				Ref<ImageTexture> icon_light = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_light);
 
 				p_theme->set_icon(editor_icon_name + "Dark", EditorStringName(EditorIcons), icon_dark);
 				p_theme->set_icon(editor_icon_name + "Light", EditorStringName(EditorIcons), icon_light);
 				p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), p_dark_theme ? icon_dark : icon_light);
 			} else {
-				Ref<DPITexture> icon;
+				Ref<ImageTexture> icon;
 				if (accent_color_icons.has(editor_icon_name)) {
 					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), 1.0, accent_color_map);
 				} else {
@@ -188,7 +187,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		const float scale = (float)p_thumb_size / 64.0 * EDSCALE;
 		for (int i = 0; i < editor_bg_thumbs_count; i++) {
 			const int index = editor_bg_thumbs_indices[i];
-			Ref<DPITexture> icon;
+			Ref<ImageTexture> icon;
 
 			if (accent_color_icons.has(editor_icons_names[index])) {
 				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);
@@ -211,7 +210,7 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 		const float scale = (float)p_thumb_size / 32.0 * EDSCALE;
 		for (int i = 0; i < editor_md_thumbs_count; i++) {
 			const int index = editor_md_thumbs_indices[i];
-			Ref<DPITexture> icon;
+			Ref<ImageTexture> icon;
 
 			if (accent_color_icons.has(editor_icons_names[index])) {
 				icon = editor_generate_icon(index, scale, 1.0, accent_color_map);

@@ -38,14 +38,36 @@ class ImageTexture : public Texture2D {
 	GDCLASS(ImageTexture, Texture2D);
 	RES_BASE_EXTENSION("tex");
 
+	// SVG source only.
+	String source;
+	float base_scale = 1.0;
+	float saturation = 1.0;
+	Dictionary color_map;
+	mutable HashMap<double, RID> texture_cache;
+	mutable HashMap<Color, Color> cmap;
+
+	struct ScalingLevel {
+		HashSet<ImageTexture *> textures;
+		int32_t refcount = 1;
+	};
+	static Mutex mutex;
+	static HashMap<double, ScalingLevel> scaling_levels;
+
+	// Common.
 	mutable RID texture;
-	Image::Format format = Image::FORMAT_L8;
-	bool mipmaps = false;
-	int w = 0;
-	int h = 0;
+	mutable Image::Format format = Image::FORMAT_L8;
+	mutable bool mipmaps = false;
+
+	mutable Size2 size;
 	Size2 size_override;
 	mutable Ref<BitMap> alpha_cache;
-	bool image_stored = false;
+	mutable bool image_stored = false;
+
+	void _remove_scale(double p_scale);
+	RID _ensure_scale(double p_scale) const;
+	RID _load_at_scale(double p_scale, bool p_set_size) const;
+	void _update_texture();
+	void _clear();
 
 protected:
 	virtual void reload_from_file() override;
@@ -53,22 +75,37 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	void _validate_property(PropertyInfo &p_property) const;
 
 	static void _bind_methods();
 
 public:
-	void set_image(const Ref<Image> &p_image);
 	static Ref<ImageTexture> create_from_image(const Ref<Image> &p_image);
+	static Ref<ImageTexture> create_from_string(const String &p_source, float p_scale = 1.0, float p_saturation = 1.0, const Dictionary &p_color_map = Dictionary());
 
 	Image::Format get_format() const;
 
+	void set_source(const String &p_source);
+	String get_source() const;
+
+	void set_base_scale(float p_scale);
+	float get_base_scale() const;
+
+	void set_color_map(const Dictionary &p_color_map);
+	Dictionary get_color_map() const;
+
+	void set_saturation(float p_saturation);
+	float get_saturation() const;
+
 	void update(const Ref<Image> &p_image);
+	void set_image(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;
 
 	int get_width() const override;
 	int get_height() const override;
 
 	virtual RID get_rid() const override;
+	virtual RID get_scaled_rid() const override;
 
 	bool has_alpha() const override;
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
@@ -80,6 +117,9 @@ public:
 	void set_size_override(const Size2i &p_size);
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+
+	static void reference_scaling_level(double p_scale);
+	static void unreference_scaling_level(double p_scale);
 
 	~ImageTexture();
 };

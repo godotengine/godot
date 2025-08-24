@@ -36,10 +36,64 @@
 				Creates a new [ImageTexture] and initializes it by allocating and setting the data from an [Image].
 			</description>
 		</method>
+		<method name="create_from_string" qualifiers="static">
+			<return type="ImageTexture" />
+			<param index="0" name="source" type="String" />
+			<param index="1" name="scale" type="float" default="1.0" />
+			<param index="2" name="saturation" type="float" default="1.0" />
+			<param index="3" name="color_map" type="Dictionary" default="{}" />
+			<description>
+				Creates a new [ImageTexture] and initializes it by allocating and setting the SVG data from string. Texture can be used to automatically re-rasterize icons and other texture based UI theme elements to match viewport scale and font oversampling. See also [member ProjectSettings.display/window/stretch/mode] ("canvas_items" mode) and [member Viewport.oversampling_override].
+			</description>
+		</method>
+		<method name="get_base_scale" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns SVG scale.
+			</description>
+		</method>
+		<method name="get_color_map" qualifiers="const">
+			<return type="Dictionary" />
+			<description>
+				Returns texture colors [Color]-[Color] map.
+			</description>
+		</method>
 		<method name="get_format" qualifiers="const">
 			<return type="int" enum="Image.Format" />
 			<description>
 				Returns the format of the texture.
+			</description>
+		</method>
+		<method name="get_saturation" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns SVG texture saturation.
+			</description>
+		</method>
+		<method name="get_scaled_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of the texture rasterized to match the oversampling of the currently drawn canvas item.
+			</description>
+		</method>
+		<method name="get_source" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns SVG source code.
+			</description>
+		</method>
+		<method name="set_base_scale">
+			<return type="void" />
+			<param index="0" name="base_scale" type="float" />
+			<description>
+				Sets SVG scale. [code]1.0[/code] is the original SVG size. Higher values result in a larger image.
+			</description>
+		</method>
+		<method name="set_color_map">
+			<return type="void" />
+			<param index="0" name="color_map" type="Dictionary" />
+			<description>
+				Sets SVG [Color]-[Color] map.
 			</description>
 		</method>
 		<method name="set_image">
@@ -50,11 +104,25 @@
 				If you want to update the image, but don't need to change its parameters (format, size), use [method update] instead for better performance.
 			</description>
 		</method>
+		<method name="set_saturation">
+			<return type="void" />
+			<param index="0" name="saturation" type="float" />
+			<description>
+				Sets SVG texture saturation.
+			</description>
+		</method>
 		<method name="set_size_override">
 			<return type="void" />
 			<param index="0" name="size" type="Vector2i" />
 			<description>
 				Resizes the texture to the specified dimensions.
+			</description>
+		</method>
+		<method name="set_source">
+			<return type="void" />
+			<param index="0" name="source" type="String" />
+			<description>
+				Sets SVG source code.
 			</description>
 		</method>
 		<method name="update">
