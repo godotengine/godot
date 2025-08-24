@@ -77,7 +77,9 @@ std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list
 	// { "ResourceSaver", [] { return uint64_t(uintptr_t(ResourceSaver::get_singleton())); } },
 	// { "Marshalls", [] { return uint64_t(uintptr_t(Marshalls::get_singleton())); } },
 	{ "AudioServer", [] { return uint64_t(uintptr_t(AudioServer::get_singleton())); } },
+#ifdef TOOLS_ENABLED
 	{ "EditorInterface", [] { return uint64_t(uintptr_t(EditorInterface::get_singleton())); } },
+#endif
 	{ "DisplayServer", [] { return uint64_t(uintptr_t(DisplayServer::get_singleton())); } },
 	{ "GDExtensionManager", [] { return uint64_t(uintptr_t(GDExtensionManager::get_singleton())); } },
 	{ "EngineDebugger", [] { return uint64_t(uintptr_t(EngineDebugger::get_singleton())); } },
