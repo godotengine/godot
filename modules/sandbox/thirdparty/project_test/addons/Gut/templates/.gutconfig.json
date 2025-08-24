@@ -1,9 +1,0 @@
-{
-  "dirs":["res://test/unit/", "res://test/integration/"],
-  "should_maximize":false,
-  "should_exit":true,
-  "ignore_pause":true,
-  "log": 2,
-  "opacity":100,
-  "include_subdirs":false
-}
