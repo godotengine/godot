@@ -68,7 +68,38 @@
 #include <unordered_map>
 
 namespace riscv {
-// Empty singleton list - remove problematic entries for now
-std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list;
-
+std::unordered_map<std::string, std::function<uint64_t()>> global_singleton_list = {
+	// { "OS", [] { return uint64_t(uintptr_t(OS::get_singleton())); } },
+	// { "Geometry2D", [] { return uint64_t(uintptr_t(Geometry2D::get_singleton())); } },
+	// { "Geometry3D", [] { return uint64_t(uintptr_t(Geometry3D::get_singleton())); } },
+	// { "NavigationMeshGenerator", [] { return uint64_t(uintptr_t(NavigationMeshGenerator::get_singleton())); } },
+	// { "ResourceLoader", [] { return uint64_t(uintptr_t(ResourceLoader::get_singleton())); } },
+	// { "ResourceSaver", [] { return uint64_t(uintptr_t(ResourceSaver::get_singleton())); } },
+	// { "Marshalls", [] { return uint64_t(uintptr_t(Marshalls::get_singleton())); } },
+	{ "AudioServer", [] { return uint64_t(uintptr_t(AudioServer::get_singleton())); } },
+	{ "EditorInterface", [] { return uint64_t(uintptr_t(EditorInterface::get_singleton())); } },
+	{ "DisplayServer", [] { return uint64_t(uintptr_t(DisplayServer::get_singleton())); } },
+	{ "GDExtensionManager", [] { return uint64_t(uintptr_t(GDExtensionManager::get_singleton())); } },
+	{ "EngineDebugger", [] { return uint64_t(uintptr_t(EngineDebugger::get_singleton())); } },
+	{ "Engine", [] { return uint64_t(uintptr_t(Engine::get_singleton())); } },
+	{ "Input", [] { return uint64_t(uintptr_t(Input::get_singleton())); } },
+	{ "InputMap", [] { return uint64_t(uintptr_t(InputMap::get_singleton())); } },
+	{ "NativeMenu", [] { return uint64_t(uintptr_t(NativeMenu::get_singleton())); } },
+	{ "NavigationServer2D", [] { return uint64_t(uintptr_t(NavigationServer2D::get_singleton())); } },
+	{ "NavigationServer3D", [] { return uint64_t(uintptr_t(NavigationServer3D::get_singleton())); } },
+	{ "Performance", [] { return uint64_t(uintptr_t(Performance::get_singleton())); } },
+	{ "PhysicsServer2D", [] { return uint64_t(uintptr_t(PhysicsServer2D::get_singleton())); } },
+	{ "PhysicsServer3D", [] { return uint64_t(uintptr_t(PhysicsServer3D::get_singleton())); } },
+	{ "PhysicsServer2DManager", [] { return uint64_t(uintptr_t(PhysicsServer2DManager::get_singleton())); } },
+	{ "PhysicsServer3DManager", [] { return uint64_t(uintptr_t(PhysicsServer3DManager::get_singleton())); } },
+	{ "ProjectSettings", [] { return uint64_t(uintptr_t(ProjectSettings::get_singleton())); } },
+	{ "RenderingServer", [] { return uint64_t(uintptr_t(RenderingServer::get_singleton())); } },
+	{ "ResourceUID", [] { return uint64_t(uintptr_t(ResourceUID::get_singleton())); } },
+	{ "TextServerManager", [] { return uint64_t(uintptr_t(TextServerManager::get_singleton())); } },
+	{ "ThemeDB", [] { return uint64_t(uintptr_t(ThemeDB::get_singleton())); } },
+	{ "Time", [] { return uint64_t(uintptr_t(Time::get_singleton())); } },
+	{ "TranslationServer", [] { return uint64_t(uintptr_t(TranslationServer::get_singleton())); } },
+	{ "WorkerThreadPool", [] { return uint64_t(uintptr_t(WorkerThreadPool::get_singleton())); } },
+	{ "XRServer", [] { return uint64_t(uintptr_t(XRServer::get_singleton())); } },
+};
 } // namespace riscv

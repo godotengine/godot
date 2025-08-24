@@ -61,11 +61,11 @@ gaddr_t Sandbox::share_array_internal(void *p_data, size_t p_bytes, bool p_allow
 			}
 			machine().memory.insert_non_owned_memory(
 					vaddr, p_data, valignsize, riscv::PageAttributes{
-													 .read = true,
-													 .write = p_allow_write,
-													 .exec = false,
-													 .is_cow = false,
-											 });
+													   .read = true,
+													   .write = p_allow_write,
+													   .exec = false,
+													   .is_cow = false,
+											   });
 		}
 		// The remaining bytes must be copied into the end of shared memory
 		const size_t remaining = p_bytes - valignsize;
