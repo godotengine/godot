@@ -74,9 +74,9 @@ public:
 
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
-	void init(Sandbox *self, gaddr_t address, Array args) {
-		this->self = self;
-		this->address = address;
+	void init(Sandbox *p_self, gaddr_t p_address, Array args) {
+		this->self = p_self;
+		this->address = p_address;
 
 		for (int i = 0; i < args.size(); i++) {
 			m_varargs[i] = args[i];

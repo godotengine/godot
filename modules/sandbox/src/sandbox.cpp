@@ -323,9 +323,9 @@ void Sandbox::reset_machine() {
 }
 void Sandbox::full_reset() {
 	this->reset_machine();
-	const bool unboxed_arguments = this->get_unboxed_arguments();
+	const bool saved_unboxed_arguments = this->get_unboxed_arguments();
 	this->constructor_initialize();
-	this->set_unboxed_arguments(unboxed_arguments);
+	this->set_unboxed_arguments(saved_unboxed_arguments);
 
 	this->m_properties.clear();
 	this->m_lookup.clear();
@@ -602,8 +602,8 @@ bool Sandbox::load(const PackedByteArray *buffer, const std::vector<std::string>
 		machine_t &m = machine();
 
 		m.set_userdata(this);
-		m.set_printer([](const machine_t &m, const char *str, size_t len) {
-			Sandbox *sandbox = m.get_userdata<Sandbox>();
+		m.set_printer([](const machine_t &machine_ref, const char *str, size_t len) {
+			Sandbox *sandbox = machine_ref.get_userdata<Sandbox>();
 			sandbox->print(String::utf8(str, len));
 		});
 
@@ -764,7 +764,8 @@ void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, cons
 		const GDNativeVariant inner_data = {
 			.type = (uint8_t)arg.get_type(),
 			.padding = { 0 },
-			.value = 0
+			.value = 0,
+			.i64_padding = 0
 		};
 		const GDNativeVariant *inner = &inner_data;
 
@@ -859,35 +860,52 @@ void Sandbox::setup_arguments_native(gaddr_t arrayDataPtr, GuestVariant *v, cons
 				break;
 			}
 			case Variant::VECTOR3: {
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->vec3_flt[0];
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->vec3_flt[2];
+				gaddr_t reg_val1, reg_val2;
+				memcpy(&reg_val1, &inner->vec3_flt[0], sizeof(gaddr_t));
+				memcpy(&reg_val2, &inner->vec3_flt[2], sizeof(gaddr_t));
+				machine.cpu.reg(index++) = reg_val1;
+				machine.cpu.reg(index++) = reg_val2;
 				break;
 			}
 			case Variant::VECTOR3I: {
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->ivec3_int[0];
+				gaddr_t reg_val1;
+				memcpy(&reg_val1, &inner->ivec3_int[0], sizeof(gaddr_t));
+				machine.cpu.reg(index++) = reg_val1;
 				machine.cpu.reg(index++) = inner->ivec3_int[2];
 				break;
 			}
 			case Variant::VECTOR4: {
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->vec4_flt[0];
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->vec4_flt[2];
+				gaddr_t reg_val1, reg_val2;
+				memcpy(&reg_val1, &inner->vec4_flt[0], sizeof(gaddr_t));
+				memcpy(&reg_val2, &inner->vec4_flt[2], sizeof(gaddr_t));
+				machine.cpu.reg(index++) = reg_val1;
+				machine.cpu.reg(index++) = reg_val2;
 				break;
 			}
 			case Variant::VECTOR4I: {
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->ivec4_int[0];
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->ivec4_int[2];
+				gaddr_t reg_val1, reg_val2;
+				memcpy(&reg_val1, &inner->ivec4_int[0], sizeof(gaddr_t));
+				memcpy(&reg_val2, &inner->ivec4_int[2], sizeof(gaddr_t));
+				machine.cpu.reg(index++) = reg_val1;
+				machine.cpu.reg(index++) = reg_val2;
 				break;
 			}
 			case Variant::COLOR: { // 16-byte struct (must use integer registers)
 				// RVG calling convention:
 				// Unions and arrays containing floats are passed in integer registers
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->color_flt[0];
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->color_flt[2];
+				gaddr_t reg_val1, reg_val2;
+				memcpy(&reg_val1, &inner->color_flt[0], sizeof(gaddr_t));
+				memcpy(&reg_val2, &inner->color_flt[2], sizeof(gaddr_t));
+				machine.cpu.reg(index++) = reg_val1;
+				machine.cpu.reg(index++) = reg_val2;
 				break;
 			}
 			case Variant::PLANE: {
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->vec4_flt[0];
-				machine.cpu.reg(index++) = *(gaddr_t *)&inner->vec4_flt[2];
+				gaddr_t reg_val1, reg_val2;
+				memcpy(&reg_val1, &inner->vec4_flt[0], sizeof(gaddr_t));
+				memcpy(&reg_val2, &inner->vec4_flt[2], sizeof(gaddr_t));
+				machine.cpu.reg(index++) = reg_val1;
+				machine.cpu.reg(index++) = reg_val2;
 				break;
 			}
 			case Variant::OBJECT: { // Objects are represented as uintptr_t
@@ -982,7 +1000,8 @@ GuestVariant *Sandbox::setup_arguments(gaddr_t &sp, const Variant **args, int64_
 		GDNativeVariant inner_data = {
 			.type = (uint8_t)arg.get_type(),
 			.padding = { 0 },
-			.value = 0
+			.value = 0,
+			.i64_padding = 0
 		};
 		GDNativeVariant *inner = &inner_data;
 
@@ -1118,8 +1137,8 @@ Variant Sandbox::vmcall_internal(gaddr_t address, const Variant **args, int argc
 						}
 						// Update the global visited map
 						std::unordered_map<gaddr_t, int> &hotspots = gprofstate.hotspots;
-						for (const gaddr_t address : profdata.visited) {
-							hotspots[address]++;
+						for (const gaddr_t visited_address : profdata.visited) {
+							hotspots[visited_address]++;
 						}
 					}
 					profdata.visited.clear();

@@ -234,11 +234,11 @@ APICALL(api_vcreate) {
 			if (method == 0) {
 				const CppString *str = machine.memory.memarray<const CppString>(gdata, 1);
 				godot_str = to_godot_string(str, machine);
-			} else if (method == 1) { // const char*, size_t
-				const struct Buffer {
-					gaddr_t data;
-					gaddr_t size;
-				} *buffer = machine.memory.memarray<const Buffer>(gdata, 1);
+				} else if (method == 1) { // const char*, size_t
+					const struct LocalBuffer {
+						gaddr_t data;
+						gaddr_t size;
+					} *buffer = machine.memory.memarray<const LocalBuffer>(gdata, 1);
 				// View the string from guest memory.
 				std::string_view view = machine.memory.memview(buffer->data, buffer->size);
 				godot_str = String::utf8(view.data(), view.size());
@@ -250,9 +250,9 @@ APICALL(api_vcreate) {
 				throw std::runtime_error("vcreate: Unsupported method for Variant::STRING: " + std::to_string(method));
 			}
 			// Create a new Variant with the string, modify vp.
-			unsigned idx = emu.create_scoped_variant(Variant(std::move(godot_str)));
+			unsigned new_idx = emu.create_scoped_variant(Variant(std::move(godot_str)));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::ARRAY: {
 			// Create a new empty? array, assign to vp.
@@ -278,15 +278,15 @@ APICALL(api_vcreate) {
 					WARN_PRINT("vcreate: Unsupported method for Variant::ARRAY: " + itos(method));
 				}
 			}
-			unsigned idx = emu.create_scoped_variant(Variant(std::move(a)));
+			unsigned new_idx = emu.create_scoped_variant(Variant(std::move(a)));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::DICTIONARY: {
 			// Create a new empty? dictionary, assign to vp.
-			unsigned idx = emu.create_scoped_variant(Variant(Dictionary()));
+			unsigned new_idx = emu.create_scoped_variant(Variant(Dictionary()));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::PACKED_BYTE_ARRAY: {
 			PackedByteArray a;
@@ -304,9 +304,9 @@ APICALL(api_vcreate) {
 					std::memcpy(a.ptrw(), ptr, method);
 				}
 			}
-			unsigned idx = emu.create_scoped_variant(Variant(std::move(a)));
+			unsigned new_idx = emu.create_scoped_variant(Variant(std::move(a)));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::PACKED_FLOAT32_ARRAY: {
 			PackedFloat32Array a;
@@ -324,9 +324,9 @@ APICALL(api_vcreate) {
 					std::memcpy(a.ptrw(), ptr, method * sizeof(float));
 				}
 			}
-			unsigned idx = emu.create_scoped_variant(Variant(std::move(a)));
+			unsigned new_idx = emu.create_scoped_variant(Variant(std::move(a)));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::PACKED_FLOAT64_ARRAY: {
 			PackedFloat64Array a;
@@ -344,9 +344,9 @@ APICALL(api_vcreate) {
 					std::memcpy(a.ptrw(), ptr, method * sizeof(double));
 				}
 			}
-			unsigned idx = emu.create_scoped_variant(Variant(std::move(a)));
+			unsigned new_idx = emu.create_scoped_variant(Variant(std::move(a)));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::PACKED_INT32_ARRAY: {
 			PackedInt32Array a;
@@ -364,9 +364,9 @@ APICALL(api_vcreate) {
 					std::memcpy(a.ptrw(), ptr, method * sizeof(int32_t));
 				}
 			}
-			unsigned idx = emu.create_scoped_variant(Variant(std::move(a)));
+			unsigned new_idx = emu.create_scoped_variant(Variant(std::move(a)));
 			vp->type = type;
-			vp->v.i = idx;
+			vp->v.i = new_idx;
 		} break;
 		case Variant::PACKED_INT64_ARRAY: {
 			PackedInt64Array a;
@@ -472,14 +472,14 @@ APICALL(api_vcreate) {
 					}
 				} else if (method == -2) {
 					// libc++ std::string implementation.
-					struct Buffer {
+					struct StringBuffer {
 						gaddr_t ptr;
 						gaddr_t size;
 					};
-					const CppVector<Buffer> *gvec = machine.memory.memarray<const CppVector<Buffer>>(gdata, 1);
-					const Buffer *buffers = gvec->as_array(machine);
+					const CppVector<StringBuffer> *gvec = machine.memory.memarray<const CppVector<StringBuffer>>(gdata, 1);
+					const StringBuffer *buffers = gvec->as_array(machine);
 					for (size_t i = 0; i < gvec->size(); i++) {
-						const Buffer &buf = buffers[i];
+						const StringBuffer &buf = buffers[i];
 						std::string_view view = machine.memory.memview(buf.ptr, buf.size);
 						a.push_back(String::utf8(view.data(), view.size()));
 					}
@@ -518,10 +518,10 @@ APICALL(api_vfetch) {
 					gstr->set_string(machine, gdata, u8str.ptr(), u8str.length());
 				} else if (method == 1) { // const char*, size_t struct
 					auto u8str = var.operator String().utf8();
-					struct Buffer {
+					struct LocalBuffer {
 						gaddr_t ptr;
 						gaddr_t size;
-					} *gstr = machine.memory.memarray<Buffer>(gdata, 1);
+					} *gstr = machine.memory.memarray<LocalBuffer>(gdata, 1);
 					gstr->ptr = machine.arena().malloc(u8str.length());
 					gstr->size = u8str.length();
 					machine.memory.memcpy(gstr->ptr, u8str.ptr(), u8str.length());
@@ -756,12 +756,12 @@ APICALL(api_vstore) {
 			PackedStringArray arr;
 			if (gsize & 0x80000000) {
 				// Work-around for libc++ std::string implementation.
-				struct Buffer {
+				struct StringBuffer {
 					gaddr_t ptr;
 					gaddr_t size;
 				};
 				gsize &= 0x7FFFFFFF;
-				auto *buffers = machine.memory.memarray<Buffer>(gdata, gsize);
+				auto *buffers = machine.memory.memarray<StringBuffer>(gdata, gsize);
 				arr.resize(gsize);
 				for (unsigned i = 0; i < gsize; i++) {
 					std::string_view view = machine.memory.memview(buffers[i].ptr, buffers[i].size);
@@ -1513,10 +1513,10 @@ APICALL(api_array_ops) {
 		// There is no scoped array, so we need to create one.
 		Array a;
 		a.resize(arr_idx); // Resize the array to the given size.
-		const unsigned idx = emu.create_scoped_variant(Variant(std::move(a)));
+		const unsigned new_idx = emu.create_scoped_variant(Variant(std::move(a)));
 		GuestVariant *vp = machine.memory.memarray<GuestVariant>(vaddr, 1);
 		vp->type = Variant::ARRAY;
-		vp->v.i = idx;
+		vp->v.i = new_idx;
 		return;
 	}
 
@@ -1734,10 +1734,10 @@ APICALL(api_string_ops) {
 				CppString *gstr = machine.memory.memarray<CppString>(vaddr, 1);
 				gstr->set_string(machine, vaddr, utf8.ptr(), utf8.length());
 			} else if (index == 1) { // Get the string as a const char*, size_t struct.
-				struct Buffer {
+				struct LocalBuffer {
 					gaddr_t ptr;
 					gaddr_t size;
-				} *buffer = machine.memory.memarray<Buffer>(vaddr, 1);
+				} *buffer = machine.memory.memarray<LocalBuffer>(vaddr, 1);
 				CharString utf8 = str.utf8();
 				const size_t size = utf8.length();
 				// Allocate memory for the string in the guest memory.
@@ -1918,7 +1918,7 @@ APICALL(api_sandbox_add) {
 	switch (method) {
 		case 0: {
 			// Add a new sandboxed property.
-			auto [method, name, type, setter, getter, defval] = machine.sysargs<int, std::string_view, Variant::Type, gaddr_t, gaddr_t, GuestVariant *>();
+			auto [op_method, name, type, setter, getter, defval] = machine.sysargs<int, std::string_view, Variant::Type, gaddr_t, gaddr_t, GuestVariant *>();
 			String utf8_name = String::utf8(name.data(), name.size());
 			SYS_TRACE("sandbox_add", "property", utf8_name, int(type), setter, getter, defval->toVariant(emu));
 			emu.add_property(utf8_name, type, setter, getter, defval->toVariant(emu));
@@ -1933,7 +1933,7 @@ APICALL(api_sandbox_add) {
 				gaddr_t args;
 				gaddr_t args_len;
 			};
-			auto [method, name, address, g_extra] = machine.sysargs<int, std::string_view, gaddr_t, GuestFunctionExtra *>();
+			auto [op_method, name, address, g_extra] = machine.sysargs<int, std::string_view, gaddr_t, GuestFunctionExtra *>();
 			SYS_TRACE("sandbox_add", "method", String::utf8(name.data(), name.size()));
 			// Get the description, return type and arguments. We have a limited amount of registers,
 			// so we will use zero-terminated strings for the description and return type.
