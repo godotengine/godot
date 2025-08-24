@@ -183,7 +183,7 @@ std::string_view Memory<W>::memview(address_t addr, size_t len, size_t maxlen) c
 	}
 
 	// Fallback: Try gathering a single buffer, which throws OUT_OF_MEMORY if it fails
-	std::array<vBuffer, 1> buffers;
+	std::array<vBuffer, 1> buffers{};
 	gather_buffers_from_range(1, buffers.data(), addr, len);
 	return {(const char *)buffers[0].ptr, buffers[0].len};
 }
@@ -205,7 +205,7 @@ std::string_view Memory<W>::writable_memview(address_t addr, size_t len, size_t 
 	}
 
 	// Fallback: Try gathering a single buffer, which throws OUT_OF_MEMORY if it fails
-	std::array<vBuffer, 1> buffers;
+	std::array<vBuffer, 1> buffers{};
 	const_cast<Memory<W>*> (this)->gather_writable_buffers_from_range(1, buffers.data(), addr, len);
 	return {(char *)buffers[0].ptr, buffers[0].len};
 }

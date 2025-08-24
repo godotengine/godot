@@ -234,11 +234,11 @@ APICALL(api_vcreate) {
 			if (method == 0) {
 				const CppString *str = machine.memory.memarray<const CppString>(gdata, 1);
 				godot_str = to_godot_string(str, machine);
-				} else if (method == 1) { // const char*, size_t
-					const struct LocalBuffer {
-						gaddr_t data;
-						gaddr_t size;
-					} *buffer = machine.memory.memarray<const LocalBuffer>(gdata, 1);
+			} else if (method == 1) { // const char*, size_t
+				const struct LocalBuffer {
+					gaddr_t data;
+					gaddr_t size;
+				} *buffer = machine.memory.memarray<const LocalBuffer>(gdata, 1);
 				// View the string from guest memory.
 				std::string_view view = machine.memory.memview(buffer->data, buffer->size);
 				godot_str = String::utf8(view.data(), view.size());
@@ -601,15 +601,15 @@ APICALL(api_vfetch) {
 					}
 				} else if (method == 1) {
 					// libc++ std::string implementation.
-					struct Buffer {
+					struct StringBuffer {
 						gaddr_t ptr;
 						gaddr_t size;
 					};
-					CppVector<Buffer> *gvec = machine.memory.memarray<CppVector<Buffer>>(gdata, 1);
+					CppVector<StringBuffer> *gvec = machine.memory.memarray<CppVector<StringBuffer>>(gdata, 1);
 					gvec->reserve(machine, arr.size());
 					for (unsigned i = 0; i < arr.size(); i++) {
 						auto u8str = arr[i].utf8();
-						Buffer gb;
+						StringBuffer gb;
 						gb.ptr = machine.arena().malloc(u8str.length());
 						gb.size = u8str.length();
 						machine.memory.memcpy(gb.ptr, u8str.ptr(), u8str.length());
