@@ -586,7 +586,6 @@ private:
 template <int W>
 inline void Emitter<W>::emit_branch(const BranchInfo& binfo, const std::string& op)
 {
-	using address_t = address_type<W>;
 	if (binfo.sign == false)
 		code += "if (" + from_reg(instr.Btype.rs1) + op + from_reg(instr.Btype.rs2) + ")";
 	else
@@ -816,13 +815,13 @@ void Emitter<W>::emit()
 			this->reset_all_tracked_registers();
 		}
 
-		auto it = tinfo.single_return_locations.find(this->pc());
-		if (it != tinfo.single_return_locations.end()) {
+		auto ret_it = tinfo.single_return_locations.find(this->pc());
+		if (ret_it != tinfo.single_return_locations.end()) {
 			// We don't know what function we are in, but we do know what functions get called
 			// Track the current callable PC, so that we can use that for JALR return addresses
 			// If the address is zero, it means many places call this function, so we can't predict
 			// a single return address.
-			if (it->second != 0)
+			if (ret_it->second != 0)
 				current_callable_pc = this->pc();
 			else
 				current_callable_pc = 0;
@@ -2026,8 +2025,8 @@ void Emitter<W>::emit()
 			// Assumption: Dynamic calls are like regular function calls
 			// Note: This behavior can be turned off by disabling register_caching
 			// Load and realize registers A0-A7
-			for (unsigned i = 10; i < 18; i++) {
-				this->load_register(i);
+			for (unsigned j = 10; j < 18; j++) {
+				this->load_register(j);
 			}
 			store_syscall_registers();
 			WELL_KNOWN_INSTRUCTION();

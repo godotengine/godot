@@ -274,7 +274,7 @@ int CPU<W>::load_translation(const MachineOptions<W>& options,
 
 				const int32_t ins_counter_offset = uintptr_t(&counters.first) - uintptr_t(&m);
 				const int32_t max_counter_offset = uintptr_t(&counters.second) - uintptr_t(&m);
-				if (ins_counter_offset + sizeof(uint64_t) != max_counter_offset) {
+				if (static_cast<int32_t>(ins_counter_offset + sizeof(uint64_t)) != max_counter_offset) {
 					throw MachineException(INVALID_PROGRAM, "Invalid counter offsets in emulator");
 				}
 				const int32_t arena_offset = uintptr_t(&machine().memory.memory_arena_ptr_ref()) - uintptr_t(&m);
@@ -292,8 +292,8 @@ int CPU<W>::load_translation(const MachineOptions<W>& options,
 				std::copy(translation.handlers, translation.handlers + translation.nhandlers, mappings.begin());
 
 				const uint8_t bytecode = RV32I_BC_TRANSLATOR;
-				for (unsigned i = 0; i < translation.nmappings; i++) {
-					const auto& mapping = translation.mappings[i];
+				for (unsigned j = 0; j < translation.nmappings; j++) {
+					const auto& mapping = translation.mappings[j];
 
 					auto& entry = decoder_entry_at(exec.decoder_cache(), mapping.addr);
 					entry.set_bytecode(bytecode);
@@ -1495,7 +1495,7 @@ bool CPU<W>::initialize_translated_segment(DecodedExecuteSegment<W>& exec, void*
 
 	const int32_t ins_counter_offset = uintptr_t(&counters.first) - uintptr_t(&machine);
 	const int32_t max_counter_offset = uintptr_t(&counters.second) - uintptr_t(&machine);
-	if (ins_counter_offset + sizeof(uint64_t) != max_counter_offset) {
+	if (static_cast<int32_t>(ins_counter_offset + sizeof(uint64_t)) != max_counter_offset) {
 		throw MachineException(INVALID_PROGRAM, "Invalid counter offsets in emulator");
 	}
 	const int32_t arena_offset = uintptr_t(&machine.memory.memory_arena_ptr_ref()) - uintptr_t(&machine);

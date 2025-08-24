@@ -214,7 +214,7 @@ public:
 	int64_t get_heap_chunk_count() const override;
 	int64_t get_heap_allocation_counter() const override;
 	int64_t get_heap_deallocation_counter() const override;
-	void set_exceptions(unsigned exceptions) {} // Do nothing (it's a read-only property)
+	void set_exceptions(unsigned p_exceptions) {} // Do nothing (it's a read-only property)
 	unsigned get_exceptions() const override { return m_exceptions; }
 	void set_timeouts(unsigned budget) {} // Do nothing (it's a read-only property)
 	unsigned get_timeouts() const override { return m_timeouts; }
@@ -263,7 +263,7 @@ public:
 	/// @param tree_base The tree base node.
 	/// @note The tree base is the owner node that the sandbox will use to access the node tree. When scripts
 	/// try to access the node path ".", they will be accessing this node, and navigating relative to it.
-	void set_tree_base(Node *tree_base) override { this->m_tree_base = tree_base; }
+	void set_tree_base(Node *p_tree_base) override { this->m_tree_base = p_tree_base; }
 	Node *get_tree_base() const override { return this->m_tree_base; }
 
 	// -= Scoped objects and variants =-
