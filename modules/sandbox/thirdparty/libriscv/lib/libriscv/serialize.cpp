@@ -41,7 +41,7 @@ namespace riscv
 		PageAttributes attr;
 		bool is_cow_page = false;
 		uint8_t padding[3] {0};
-	} RISCV_PACKED;
+	};
 
 	template <int W>
 	size_t Machine<W>::serialize_to(std::vector<uint8_t>& vec) const
