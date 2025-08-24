@@ -67,7 +67,7 @@ public:
 
 		String path;
 		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
-		HashMap<StringName, ShaderLanguage::ShaderNode::Buffer> buffers;
+		Vector<ShaderCompiler::GeneratedCode::Buffer> uniform_buffers;
 		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		virtual void set_path_hint(const String &p_hint);
@@ -97,11 +97,11 @@ public:
 
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
-		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
+		virtual bool update_parameters(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, PackedByteArray> &p_buffer_params, bool p_uniform_dirty, bool p_textures_dirty, bool p_buffer_dirty) = 0;
 		virtual ~MaterialData();
 
 		//to be used internally by update_parameters, in the most common configuration of material parameters
-		bool update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, uint32_t p_ubo_size, RID &r_uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material);
+		bool update_parameters_uniform_set(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty, bool p_buffer_dirty, const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, const HashMap<StringName, HashMap<int, RID>> &p_default_texture_params, const HashMap<StringName, PackedByteArray> &p_buffer_params, const Vector<ShaderCompiler::GeneratedCode::Buffer> &p_uniform_buffers, uint32_t p_ubo_size, RID &r_uniform_set, RID p_shader, uint32_t p_shader_uniform_set, bool p_use_linear_color, bool p_3d_material);
 		void free_parameters_uniform_set(RID p_uniform_set);
 
 	private:
@@ -117,6 +117,8 @@ public:
 		Vector<uint8_t> ubo_data[2]; // 0: linear buffer; 1: sRGB buffer.
 		RID uniform_buffer[2]; // 0: linear buffer; 1: sRGB buffer.
 		Vector<RID> texture_cache;
+		Vector<PackedByteArray> uniform_buffers_size;
+		Vector<RID> uniform_buffer_ids; // TODO: fix this dogshit name
 	};
 
 	struct Samplers {
@@ -246,7 +248,9 @@ private:
 		uint32_t shader_id = 0;
 		bool uniform_dirty = false;
 		bool texture_dirty = false;
+		bool buffer_dirty = false;
 		HashMap<StringName, Variant> params;
+		HashMap<StringName, PackedByteArray> buffers;
 		int32_t priority = 0;
 		RID next_pass;
 		SelfList<Material> update_element;
@@ -434,6 +438,7 @@ public:
 
 	bool owns_material(RID p_rid) { return material_owner.owns(p_rid); }
 
+	void _material_queue_update(Material *material, bool p_uniform, bool p_texture, bool p_buffer);
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();
 
@@ -446,6 +451,8 @@ public:
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) override;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const override;
+
+	virtual void material_set_buffer(RID p_material, const StringName &p_buffer, const PackedByteArray &p_values) override;
 
 	virtual void material_set_next_pass(RID p_material, RID p_next_material) override;
 	virtual void material_set_render_priority(RID p_material, int priority) override;

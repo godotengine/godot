@@ -128,7 +128,7 @@ public:
 	void set_shader_parameter(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_parameter(const StringName &p_param) const;
 
-	void set_shader_buffer(const StringName &buf_name, PackedByteArray &buf);
+	void set_shader_buffer(const StringName &buf_name, const PackedByteArray &buf);
 
 	virtual Shader::Mode get_shader_mode() const override;
 

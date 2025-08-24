@@ -10522,6 +10522,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						tk = _get_token();
 						if (tk.type == TK_PARENTHESIS_CLOSE) {
 							if (!binded && buf.name_bind.is_empty()) {
+								if (shader_type_identifier != "compute") {
+									_set_error(RTR("Buffer name binding not provided."));
+									return ERR_PARSE_ERROR;
+								}
 								_set_error(RTR("Binding not specified."));
 								return ERR_PARSE_ERROR;
 							}
@@ -10530,6 +10534,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 						// unused for now
 						if (tk.type == TK_BUFFER_BIND) {
+							if (shader_type_identifier != "compute") {
+								_set_error(vformat(RTR("Custom bindings are not supported in %s shaders, use name bindings instead."), shader_type_identifier));
+								return ERR_PARSE_ERROR;
+							}
 							if (binded) {
 								_set_error(RTR("Binding already specified."));
 								return ERR_PARSE_ERROR;
@@ -10545,6 +10553,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 						// unused for now
 						if (tk.type == TK_BUFFER_SET) {
+							if (shader_type_identifier != "compute") {
+								_set_error(vformat(RTR("Custom sets are not supported in %s shaders."), shader_type_identifier));
+								return ERR_PARSE_ERROR;
+							}
 							if (set_assigned) {
 								_set_error(RTR("Set already specified."));
 								return ERR_PARSE_ERROR;

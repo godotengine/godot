@@ -2468,6 +2468,20 @@ void MaterialStorage::material_set_shader(RID p_material, RID p_shader) {
 	_material_queue_update(material, true, true);
 }
 
+void MaterialStorage::material_set_buffer(RID p_material, const StringName &p_buffer, const Vector<uint8_t> &p_values) {
+	GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL(material);
+
+	material->buffers[p_buffer] = p_values;
+
+
+	if (material->shader && material->shader->data) { //shader is valid
+		_material_queue_update(material, false, false);
+	} else {
+		_material_queue_update(material, true, true);
+	}
+}
+
 void MaterialStorage::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);

@@ -487,7 +487,9 @@ Variant ShaderMaterial::get_shader_parameter(const StringName &p_param) const {
 	}
 }
 
-void ShaderMaterial::set_shader_buffer(const StringName &buf_name, PackedByteArray &buf) {
+void ShaderMaterial::set_shader_buffer(const StringName &buf_name, const PackedByteArray &buf) {
+	RID material_rid = _get_material();
+	RS::get_singleton()->material_set_buffer(material_rid, buf_name, buf);
 }
 
 void ShaderMaterial::_shader_changed() {
@@ -525,7 +527,7 @@ void ShaderMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_parameter", "param", "value"), &ShaderMaterial::set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
-	ClassDB::bind_method(D_METHOD("set_shader_buffer", "buffer", "values"), &ShaderMaterial::set_shader_buffer);
+	ClassDB::bind_method(D_METHOD("set_shader_buffer", "buffer", "data"), &ShaderMaterial::set_shader_buffer);
 	// ClassDB::bind_method(D_METHOD("get_shader_buffer", "buffer"), &ShaderMaterial::get_shader_buffer);
 	// ClassDB::bind_method(D_METHOD("set_shader_buffer_parameter", "buffer", "param", "value"), &ShaderMaterial::set_shader_buffer_parameter);
 	// ClassDB::bind_method(D_METHOD("get_shader_buffer_parameter", "buffer", "param"), &ShaderMaterial::get_shader_buffer_parameter);
