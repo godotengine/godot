@@ -33,22 +33,6 @@
 #include "android_keys_utils.h"
 #include "display_server_android.h"
 
-void AndroidInputHandler::process_joy_event(AndroidInputHandler::JoypadEvent p_event) {
-	switch (p_event.type) {
-		case JOY_EVENT_BUTTON:
-			Input::get_singleton()->joy_button(p_event.device, (JoyButton)p_event.index, p_event.pressed);
-			break;
-		case JOY_EVENT_AXIS:
-			Input::get_singleton()->joy_axis(p_event.device, (JoyAxis)p_event.index, p_event.value);
-			break;
-		case JOY_EVENT_HAT:
-			Input::get_singleton()->joy_hat(p_event.device, p_event.hat);
-			break;
-		default:
-			return;
-	}
-}
-
 void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> ev, Key p_keycode) {
 	if (p_keycode != Key::SHIFT) {
 		ev->set_shift_pressed(shift_mem);

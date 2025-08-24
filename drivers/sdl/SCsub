@@ -191,6 +191,60 @@ if env["builtin_sdl"]:
             "timer/windows/SDL_systimer.c",
         ]
 
+    elif env["platform"] == "android":
+        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_ANDROID"])
+        thirdparty_sources += [
+            "core/android/SDL_android.c",
+            "core/unix/SDL_appid.c",
+            "core/unix/SDL_poll.c",
+            "haptic/android/SDL_syshaptic.c",
+            "hidapi/android/hid.cpp",
+            "joystick/android/SDL_sysjoystick.c",
+            "loadso/dlopen/SDL_sysloadso.c",
+            "thread/pthread/SDL_syscond.c",
+            "thread/pthread/SDL_sysmutex.c",
+            "thread/pthread/SDL_sysrwlock.c",
+            "thread/pthread/SDL_syssem.c",
+            "thread/pthread/SDL_systhread.c",
+            "thread/pthread/SDL_systls.c",
+            "timer/unix/SDL_systimer.c",
+        ]
+
+    elif env["platform"] in ["ios", "visionos"]:
+        # There's no "SDL_PLATFORM_VISIONOS" define in SDL, so no need for an if check here,
+        # let's make SDL think visionOS is iOS.
+        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_IOS"])
+        thirdparty_sources += [
+            "core/unix/SDL_appid.c",
+            "core/unix/SDL_poll.c",
+            "haptic/dummy/SDL_syshaptic.c",
+            "joystick/apple/SDL_mfijoystick.m",
+            "thread/pthread/SDL_syscond.c",
+            "thread/pthread/SDL_sysmutex.c",
+            "thread/pthread/SDL_sysrwlock.c",
+            "thread/pthread/SDL_syssem.c",
+            "thread/pthread/SDL_systhread.c",
+            "thread/pthread/SDL_systls.c",
+            "timer/unix/SDL_systimer.c",
+        ]
+
+    elif env["platform"] == "web":
+        env_sdl.Append(CPPDEFINES=["SDL_PLATFORM_EMSCRIPTEN"])
+        thirdparty_sources += [
+            "core/unix/SDL_appid.c",
+            "core/unix/SDL_poll.c",
+            "haptic/dummy/SDL_syshaptic.c",
+            "joystick/emscripten/SDL_sysjoystick.c",
+            "loadso/dummy/SDL_sysloadso.c",
+            "thread/generic/SDL_syscond.c",
+            "thread/generic/SDL_sysmutex.c",
+            "thread/generic/SDL_sysrwlock.c",
+            "thread/generic/SDL_syssem.c",
+            "thread/generic/SDL_systhread.c",
+            "thread/generic/SDL_systls.c",
+            "timer/unix/SDL_systimer.c",
+        ]
+
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
     env_thirdparty = env_sdl.Clone()

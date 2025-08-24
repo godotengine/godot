@@ -115,18 +115,64 @@
 #define SDL_INPUT_LINUXEV 1
 #define SDL_THREAD_PTHREAD 1
 
-// MacOS defines
+// macOS defines
 #elif defined(SDL_PLATFORM_MACOS)
 
 #define SDL_PLATFORM_PRIVATE_NAME "macOS"
+
 #define SDL_PLATFORM_UNIX 1
 #define HAVE_STDIO_H 1
 #define HAVE_LIBC 1
-#define SDL_HAPTIC_IOKIT 1
-#define SDL_JOYSTICK_IOKIT 1
 #define SDL_JOYSTICK_MFI 1
+#define SDL_JOYSTICK_IOKIT 1
+#define SDL_HAPTIC_IOKIT 1
 #define SDL_TIMER_UNIX 1
 #define SDL_THREAD_PTHREAD 1
+
+// Android defines
+#elif defined(SDL_PLATFORM_ANDROID)
+
+#define SDL_PLATFORM_PRIVATE_NAME "Android"
+#define SDL_PLATFORM_UNIX 1
+#define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
+
+#define SDL_HAPTIC_ANDROID 1
+//#define SDL_JOYSTICK_HIDAPI 1 // No HIDAPI for bluetooth controllers, so no HIDAPI at all :( (for now?)
+#define SDL_JOYSTICK_ANDROID 1
+
+#define SDL_LOADSO_DLOPEN 1
+#define SDL_TIMER_UNIX 1
+#define SDL_THREAD_PTHREAD 1
+#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1
+
+// iOS defines
+#elif defined(SDL_PLATFORM_IOS)
+
+#define SDL_PLATFORM_PRIVATE_NAME "iOS"
+
+#define SDL_PLATFORM_UNIX 1
+#define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
+#define SDL_JOYSTICK_MFI 1
+#define SDL_HAPTIC_DUMMY 1
+#define SDL_TIMER_UNIX 1
+#define SDL_THREAD_PTHREAD 1
+
+// Web (Emscripten) defines
+#elif defined(SDL_PLATFORM_EMSCRIPTEN)
+
+#define SDL_PLATFORM_PRIVATE_NAME "Android"
+#define SDL_PLATFORM_UNIX 1
+#define HAVE_STDIO_H 1
+#define HAVE_LIBC 1
+
+#define SDL_HAPTIC_DUMMY 1
+#define SDL_JOYSTICK_EMSCRIPTEN 1
+
+#define SDL_LOADSO_DUMMY 1
+#define SDL_THREADS_DISABLED 1
+#define SDL_TIMER_UNIX 1
 
 // Other platforms are not supported (for now)
 #else

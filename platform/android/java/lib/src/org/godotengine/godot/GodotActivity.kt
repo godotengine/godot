@@ -42,6 +42,8 @@ import androidx.fragment.app.FragmentActivity
 import org.godotengine.godot.utils.CommandLineFileParser
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
+import org.godotengine.godot.input.SDL
+import org.godotengine.godot.input.HIDDeviceManager
 
 /**
  * Base abstract activity for Android apps intending to use Godot as the primary screen.
@@ -63,6 +65,8 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		// This window must not match those in BaseGodotEditor.RUN_GAME_INFO etc
 		@JvmStatic
 		private final val DEFAULT_WINDOW_ID = 664;
+
+		private lateinit var mHIDDeviceManager: HIDDeviceManager
 	}
 
 	private val commandLineParams = ArrayList<String>()
@@ -84,6 +88,19 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
 		commandLineParams.addAll(params ?: emptyArray())
+
+		// TODO: Should this library be loaded here?
+		System.loadLibrary("godot_android")
+
+		Log.v(TAG, "onCreate(), setting up SDL");
+
+		// Set up JNI
+		SDL.setupJNI()
+
+		// Initialize state
+		SDL.initialize()
+
+		mHIDDeviceManager = HIDDeviceManager.acquire(this)
 
 		super.onCreate(savedInstanceState)
 

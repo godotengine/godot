@@ -50,21 +50,6 @@ public:
 		Point2 pos;
 	};
 
-	enum {
-		JOY_EVENT_BUTTON = 0,
-		JOY_EVENT_AXIS = 1,
-		JOY_EVENT_HAT = 2
-	};
-
-	struct JoypadEvent {
-		int device = 0;
-		int type = 0;
-		int index = 0; // Can be either JoyAxis or JoyButton.
-		bool pressed = false;
-		float value = 0;
-		BitField<HatMask> hat = HatMask::CENTER;
-	};
-
 private:
 	bool alt_mem = false;
 	bool shift_mem = false;
@@ -101,6 +86,5 @@ public:
 	void process_touch_event(int p_event, int p_pointer, const Vector<TouchPos> &p_points, bool p_double_tap);
 	void process_magnify(Point2 p_pos, float p_factor);
 	void process_pan(Point2 p_pos, Vector2 p_delta);
-	void process_joy_event(JoypadEvent p_event);
 	void process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed, bool p_echo);
 };
