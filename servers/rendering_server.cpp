@@ -1943,14 +1943,6 @@ Rect2 RenderingServer::get_splash_stretched_screen_rect(const Size2 &p_image_siz
 	return screenrect;
 }
 
-RenderingServer::SplashStretchMode RenderingServer::map_scaling_option_to_stretch_mode(bool p_scale) {
-	if (p_scale) {
-		return RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_KEEP;
-	} else {
-		return RenderingServer::SplashStretchMode::SPLASH_STRETCH_MODE_DISABLED;
-	}
-}
-
 RenderingDevice *RenderingServer::get_rendering_device() const {
 	// Return the rendering device we're using globally.
 	return RenderingDevice::get_singleton();

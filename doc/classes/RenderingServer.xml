@@ -3418,14 +3418,14 @@
 				Sets the screen-space roughness limiter parameters, such as whether it should be enabled and its thresholds. Equivalent to [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/enabled], [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/amount] and [member ProjectSettings.rendering/anti_aliasing/screen_space_roughness_limiter/limit].
 			</description>
 		</method>
-		<method name="set_boot_image">
+		<method name="set_boot_image" deprecated="This method is no longer in use since Godot 4.5.">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
 			<param index="1" name="color" type="Color" />
-			<param index="2" name="p_scale" type="bool" />
+			<param index="2" name="scale" type="bool" />
 			<param index="3" name="use_filter" type="bool" default="true" />
 			<description>
-				Superseded by [method set_boot_image_with_stretch]. Sets a boot image. The color defines the background color. The value of ([param p_scale]) indicates if the image will be scaled to fit the screen size. If ([param use_filter]) is [code]true[/code], the image will be scaled with linear interpolation. If ([param use_filter]) is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
+				Superseded by [method set_boot_image_with_stretch]. Sets a boot image. The color defines the background color. The value of ([param scale]) indicates if the image will be scaled to fit the screen size. If ([param use_filter]) is [code]true[/code], the image will be scaled with linear interpolation. If ([param use_filter]) is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_boot_image_with_stretch">
