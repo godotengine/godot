@@ -143,7 +143,7 @@ retry_callp:
 		return false;
 	} else if (p_method == StringName("_is_read_only")) {
 		r_error.error = Callable::CallError::CALL_OK;
-		return false;
+		return true;
 	} else if (p_method == StringName("_get_configuration_warnings")) {
 		// Returns an array of strings with warnings about the script configuration
 		Array warnings;
