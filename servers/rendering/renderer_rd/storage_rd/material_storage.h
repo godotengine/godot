@@ -119,8 +119,8 @@ public:
 		RID uniform_buffer[2]; // 0: linear buffer; 1: sRGB buffer.
 		Vector<RID> texture_cache;
 
-		Vector<RID> uniform_buffer_ids; 
-		Vector<RID> storage_buffer_ids; 
+		Vector<RID> uniform_buffer_ids;
+		Vector<RID> storage_buffer_ids;
 	};
 
 	struct Samplers {

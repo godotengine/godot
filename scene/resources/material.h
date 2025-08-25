@@ -121,7 +121,6 @@ protected:
 	void _check_material_rid() const;
 
 public:
-
 	void set_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_shader() const;
 

@@ -762,7 +762,7 @@ public:
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Buffer> buffers;
-		HashMap<StringName, MemberNode*> unnamed_buffer_members;
+		HashMap<StringName, MemberNode *> unnamed_buffer_members;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 		Vector<StringName> stencil_modes;
@@ -878,7 +878,7 @@ public:
 	static bool is_token_arg_qual(TokenType p_type);
 	static bool is_token_buffer_qual(TokenType p_type);
 	static bool is_token_buffer_layout(TokenType p_type);
-	static bool is_name_used(ShaderNode* shader, StringName name);
+	static bool is_name_used(ShaderNode *shader, StringName name);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
 	static String get_interpolation_name(DataInterpolation p_interpolation);
