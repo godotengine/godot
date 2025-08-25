@@ -179,3 +179,8 @@ def configure(env: "SConsEnvironment"):
                 "$IOS_SDK_PATH/System/Library/Frameworks/OpenGLES.framework/Headers",
             ]
         )
+
+    if env["sdl"]:
+        env.Prepend(CPPEXTPATH=["#thirdparty/sdl/include"])
+        env.Append(CPPDEFINES=["SDL_ENABLED"])
+        # env.Append(LINKFLAGS=["-framework", "ForceFeedback"])
