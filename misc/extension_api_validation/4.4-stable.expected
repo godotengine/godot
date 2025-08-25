@@ -8,6 +8,13 @@ Add new entries at the end of the file.
 
 ## Changes between 4.4-stable and 4.5-stable
 
+GH-109004
+--------
+Validate extension JSON: API was removed: classes/ImageTexture/methods/get_format
+Validate extension JSON: API was removed: classes/PortableCompressedTexture2D/methods/get_format
+
+The above are now members of the base class Texture2D.
+
 GH-98194
 --------
 Validate extension JSON: Error: Field 'classes/DisplayServer/methods/file_dialog_show/arguments': size changed value in new API, from 7 to 8.
