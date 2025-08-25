@@ -3603,7 +3603,6 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	remove_type_button = memnew(Button);
 	remove_type_button->set_disabled(true);
 	remove_type_button->set_tooltip_text(TTRC("Remove current type."));
-	remove_type_button->set_accessibility_name(TTRC("Remove current type."));
 	type_list_hb->add_child(remove_type_button);
 	remove_type_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeTypeEditor::_remove_type_button_cbk));
 
@@ -3613,6 +3612,7 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	show_default_items_button = memnew(CheckButton);
 	show_default_items_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	show_default_items_button->set_text(TTR("Show Default"));
+	show_default_items_button->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_CHAR);
 	show_default_items_button->set_tooltip_text(TTR("Show default type items alongside items that have been overridden."));
 	show_default_items_button->set_pressed(true);
 	type_controls->add_child(show_default_items_button);
@@ -3730,7 +3730,7 @@ void ThemeEditor::_theme_save_button_cbk(bool p_save_as) {
 }
 
 void ThemeEditor::_theme_edit_button_cbk() {
-	theme_edit_dialog->popup_centered(Size2(850, 700) * EDSCALE);
+	theme_edit_dialog->popup_centered_clamped(Size2(850, 700) * EDSCALE, 0.8);
 }
 
 void ThemeEditor::_theme_close_button_cbk() {
@@ -3764,7 +3764,11 @@ void ThemeEditor::_files_moved(const String &p_old_path, const String &p_new_pat
 }
 
 void ThemeEditor::_update_theme_name(const String &p_name) {
-	theme_name->set_text(TTR("Theme:") + " " + p_name);
+	theme_name->set_text(p_name);
+	theme_name->set_tooltip_text(p_name);
+
+	int label_min_width = theme_name->get_minimum_size().x + theme_name->get_character_bounds(0).size.x;
+	theme_name->set_custom_minimum_size(Size2(label_min_width, 0));
 }
 
 void ThemeEditor::_add_preview_button_cbk() {
@@ -3792,6 +3796,7 @@ void ThemeEditor::_add_preview_tab(ThemeEditorPreview *p_preview_tab, const Stri
 	p_preview_tab->connect("control_picked", callable_mp(this, &ThemeEditor::_preview_control_picked));
 
 	preview_tabs->set_current_tab(preview_tabs->get_tab_count() - 1);
+	_preview_tabs_resized();
 }
 
 void ThemeEditor::_change_preview_tab(int p_tab) {
@@ -3827,6 +3832,7 @@ void ThemeEditor::_remove_preview_tab(int p_tab) {
 
 		preview_tabs->remove_tab(p_tab);
 		_change_preview_tab(preview_tabs->get_current_tab());
+		_preview_tabs_resized();
 	}
 }
 
@@ -3843,6 +3849,8 @@ void ThemeEditor::_update_preview_tab(Node *p_tab_control) {
 	int tab_index = p_tab_control->get_index();
 	SceneThemeEditorPreview *scene_preview = Object::cast_to<SceneThemeEditorPreview>(p_tab_control);
 	preview_tabs->set_tab_title(tab_index, scene_preview->get_preview_scene_path().get_file());
+
+	_preview_tabs_resized();
 }
 
 void ThemeEditor::_preview_control_picked(String p_class_name) {
@@ -3893,6 +3901,30 @@ void ThemeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Con
 	preview_tab->connect("scene_reloaded", callable_mp(this, &ThemeEditor::_update_preview_tab).bind(preview_tab));
 }
 
+void ThemeEditor::_preview_tabs_resized() {
+	const Size2 add_button_size = Size2(add_preview_button->get_size().x, preview_tabs->get_size().y);
+	if (preview_tabs->get_offset_buttons_visible()) {
+		// Move the add button to a fixed position.
+		if (add_preview_button->get_parent() == preview_tabs) {
+			add_preview_button->reparent(add_preview_button_ph);
+			add_preview_button->set_rect(Rect2(Point2(), add_button_size));
+		}
+	} else {
+		// Move the add button to be after the last tab.
+		if (add_preview_button->get_parent() == add_preview_button_ph) {
+			add_preview_button->reparent(preview_tabs);
+		}
+
+		Rect2 last_tab = preview_tabs->get_tab_rect(preview_tabs->get_tab_count() - 1);
+		int hsep = preview_tabs->get_theme_constant(SNAME("h_separation"));
+		if (preview_tabs->is_layout_rtl()) {
+			add_preview_button->set_rect(Rect2(Point2(last_tab.position.x - add_button_size.x - hsep, last_tab.position.y), add_button_size));
+		} else {
+			add_preview_button->set_rect(Rect2(Point2(last_tab.position.x + last_tab.size.width + hsep, last_tab.position.y), add_button_size));
+		}
+	}
+}
+
 void ThemeEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
@@ -3902,11 +3934,23 @@ void ThemeEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
+			theme_edit_button->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
+			theme_close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
+
 			preview_tabs->add_theme_style_override("tab_selected", get_theme_stylebox(SNAME("ThemeEditorPreviewFG"), EditorStringName(EditorStyles)));
 			preview_tabs->add_theme_style_override("tab_unselected", get_theme_stylebox(SNAME("ThemeEditorPreviewBG"), EditorStringName(EditorStyles)));
 			preview_tabs_content->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("TabContainerOdd")));
 
 			add_preview_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			add_preview_button_ph->set_custom_minimum_size(add_preview_button->get_minimum_size());
+
+			int label_min_width = theme_name->get_minimum_size().x + theme_name->get_character_bounds(0).size.x;
+			theme_name->set_custom_minimum_size(Size2(label_min_width, 0));
+		} break;
+
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_preview_tabs_resized();
 		} break;
 	}
 }
@@ -3915,12 +3959,26 @@ ThemeEditor::ThemeEditor() {
 	HBoxContainer *top_menu = memnew(HBoxContainer);
 	add_child(top_menu);
 
+	Label *theme_label = memnew(Label);
+	theme_label->set_text(TTRC("Theme:"));
+	top_menu->add_child(theme_label);
+
 	theme_name = memnew(Label);
-	theme_name->set_text(TTR("Theme:"));
+	theme_name->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	theme_name->set_theme_type_variation("HeaderSmall");
+	theme_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	theme_name->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	theme_name->set_mouse_filter(Control::MOUSE_FILTER_PASS);
 	top_menu->add_child(theme_name);
 
-	top_menu->add_spacer(false);
+	theme_edit_button = memnew(Button);
+	theme_edit_button->set_text(TTRC("Manage Items..."));
+	theme_edit_button->set_tooltip_text(TTRC("Add, remove, organize, and import Theme items."));
+	theme_edit_button->set_flat(true);
+	theme_edit_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
+	top_menu->add_child(theme_edit_button);
+
+	top_menu->add_child(memnew(VSeparator));
 
 	Button *theme_save_button = memnew(Button);
 	theme_save_button->set_text(TTR("Save"));
@@ -3934,20 +3992,13 @@ ThemeEditor::ThemeEditor() {
 	theme_save_as_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_save_button_cbk).bind(true));
 	top_menu->add_child(theme_save_as_button);
 
-	Button *theme_close_button = memnew(Button);
-	theme_close_button->set_text(TTR("Close"));
+	top_menu->add_child(memnew(VSeparator));
+
+	theme_close_button = memnew(Button);
+	theme_close_button->set_tooltip_text(TTRC("Close"));
 	theme_close_button->set_flat(true);
 	theme_close_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_close_button_cbk));
 	top_menu->add_child(theme_close_button);
-
-	top_menu->add_child(memnew(VSeparator));
-
-	Button *theme_edit_button = memnew(Button);
-	theme_edit_button->set_text(TTR("Manage Items..."));
-	theme_edit_button->set_tooltip_text(TTR("Add, remove, organize and import Theme items."));
-	theme_edit_button->set_flat(true);
-	theme_edit_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_theme_edit_button_cbk));
-	top_menu->add_child(theme_edit_button);
 
 	theme_type_editor = memnew(ThemeTypeEditor);
 
@@ -3977,13 +4028,18 @@ ThemeEditor::ThemeEditor() {
 	preview_tabbar_hb->add_child(preview_tabs);
 	preview_tabs->connect("tab_changed", callable_mp(this, &ThemeEditor::_change_preview_tab));
 	preview_tabs->connect("tab_button_pressed", callable_mp(this, &ThemeEditor::_remove_preview_tab));
+	preview_tabs->connect(SceneStringName(resized), callable_mp(this, &ThemeEditor::_preview_tabs_resized), CONNECT_DEFERRED);
 
-	HBoxContainer *add_preview_button_hb = memnew(HBoxContainer);
-	preview_tabbar_hb->add_child(add_preview_button_hb);
 	add_preview_button = memnew(Button);
-	add_preview_button->set_text(TTR("Add Preview"));
-	add_preview_button_hb->add_child(add_preview_button);
+	add_preview_button->set_tooltip_text(TTRC("Add Preview"));
+	add_preview_button->set_flat(true);
+	preview_tabs->add_child(add_preview_button);
 	add_preview_button->connect(SceneStringName(pressed), callable_mp(this, &ThemeEditor::_add_preview_button_cbk));
+
+	add_preview_button_ph = memnew(Control);
+	add_preview_button_ph->set_mouse_filter(Control::MOUSE_FILTER_IGNORE);
+	add_preview_button_ph->set_custom_minimum_size(add_preview_button->get_minimum_size());
+	preview_tabbar_hb->add_child(add_preview_button_ph);
 
 	DefaultThemeEditorPreview *default_preview_tab = memnew(DefaultThemeEditorPreview);
 	preview_tabs_content->add_child(default_preview_tab);
