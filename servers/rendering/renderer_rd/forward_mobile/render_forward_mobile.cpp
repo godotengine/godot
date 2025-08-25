@@ -233,8 +233,6 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 	if (use_msaa) {
 		color_buffer_id = textures.size();
 		textures.push_back(render_buffers->get_internal_texture()); // color buffer for resolve
-
-		// TODO add support for resolving depth buffer!!!
 	}
 
 	// Now define our subpasses
@@ -1252,7 +1250,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::get_singleton()->draw_list_end();
 		} else {
 			// We're done with our subpasses so end our container pass
-			// note, if MSAA is used we should get an automatic resolve here
+			// note, if MSAA is used we should get an automatic resolve of the color buffer here.
 
 			RD::get_singleton()->draw_list_end();
 
@@ -1276,8 +1274,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 				_render_buffers_ensure_depth_texture(p_render_data);
 
 				if (scene_state.used_depth_texture) {
-					// Copy depth texture to backbuffer so we can read from it
-					_render_buffers_copy_depth_texture(p_render_data);
+					// Copy depth texture to backbuffer so we can read from it.
+					_render_buffers_copy_depth_texture(p_render_data, use_msaa);
 				}
 			}
 
