@@ -789,7 +789,7 @@ void WaylandEmbedder::send_wayland_message(ProxyDirection p_direction, int p_soc
 }
 
 uint32_t WaylandEmbedder::new_object(const struct wl_interface *p_interface, int p_version, WaylandObjectData *p_data) {
-	uint32_t new_global_id = next_global_id();
+	uint32_t new_global_id = allocate_global_id();
 
 	DEBUG_LOG_WAYLAND_EMBED(vformat("New object g0x%x %s", new_global_id, p_interface->name));
 
@@ -804,7 +804,7 @@ uint32_t WaylandEmbedder::new_object(const struct wl_interface *p_interface, int
 void WaylandEmbedder::sync() {
 	CRASH_COND_MSG(sync_callback_id, "sync already in progress");
 
-	sync_callback_id = next_global_id();
+	sync_callback_id = allocate_global_id();
 	get_object(sync_callback_id)->interface = &wl_callback_interface;
 	get_object(sync_callback_id)->version = 1;
 	send_wayland_message(compositor_socket, DISPLAY_ID, 0, { sync_callback_id });
@@ -892,7 +892,7 @@ void WaylandEmbedder::seat_name_leave_surface(uint32_t p_seat_name, uint32_t p_w
 	}
 }
 
-int WaylandEmbedder::next_global_id() {
+int WaylandEmbedder::allocate_global_id() {
 	uint32_t id = INVALID_ID;
 	objects.request(id);
 	objects[id] = WaylandObject();
@@ -1595,7 +1595,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				// working but the calls check out.
 				DEBUG_LOG_WAYLAND_EMBED(vformat("creating custom region x%d y%d width%d height%d", x, y, width, height));
 
-				uint32_t new_region_id = next_global_id();
+				uint32_t new_region_id = allocate_global_id();
 				get_object(new_region_id)->interface = &wl_region_interface;
 				get_object(new_region_id)->version = get_object(wl_compositor_id)->version;
 
@@ -1701,7 +1701,7 @@ WaylandEmbedder::MessageStatus WaylandEmbedder::handle_request(LocalObjectHandle
 				send_wayland_message(compositor_socket, toplevel_data->wl_subsurface_id, 0, {});
 			}
 
-			uint32_t new_sub_id = next_global_id();
+			uint32_t new_sub_id = allocate_global_id();
 			WaylandObject *new_sub_object = get_object(new_sub_id);
 			new_sub_object->interface = &wl_subsurface_interface;
 			new_sub_object->data = memnew(WaylandSubsurfaceData);

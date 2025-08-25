@@ -555,8 +555,7 @@ private:
 
 	void poll_sockets();
 
-	int next_global_id();
-	int next_global_server_id();
+	int allocate_global_id();
 
 	bool global_surface_is_window(uint32_t p_global_surface_id);
 
