@@ -316,6 +316,7 @@ public:
 
 	FUNC3(material_set_param, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
+	FUNC3(material_set_buffer, RID, const StringName &, const PackedByteArray &)
 
 	FUNC2(material_set_render_priority, RID, int)
 	FUNC2(material_set_next_pass, RID, RID)
