@@ -123,18 +123,25 @@ static Ref<ImporterMesh> _mesh_to_importer_mesh(Ref<Mesh> p_mesh) {
 	for (int32_t surface_i = 0; surface_i < p_mesh->get_surface_count(); surface_i++) {
 		Array array = p_mesh->surface_get_arrays(surface_i);
 		Ref<Material> mat = p_mesh->surface_get_material(surface_i);
+		String surface_name = array_mesh.is_valid() ? array_mesh->surface_get_name(surface_i) : String();
 		String mat_name;
 		if (mat.is_valid()) {
 			mat_name = mat->get_name();
+			if (mat_name.is_empty()) {
+				mat_name = surface_name;
+			}
 		} else {
+			mat_name = surface_name;
 			// Assign default material when no material is assigned.
 			mat.instantiate();
+			mat->set_name(mat_name);
 		}
 		importer_mesh->add_surface(p_mesh->surface_get_primitive_type(surface_i),
 				array, p_mesh->surface_get_blend_shape_arrays(surface_i), p_mesh->surface_get_lods(surface_i), mat,
 				mat_name, p_mesh->surface_get_format(surface_i));
 	}
 	importer_mesh->merge_meta_from(*p_mesh);
+	importer_mesh->set_name(p_mesh->get_name());
 	return importer_mesh;
 }
 
@@ -2840,13 +2847,14 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 	Array meshes;
 	for (GLTFMeshIndex gltf_mesh_i = 0; gltf_mesh_i < p_state->meshes.size(); gltf_mesh_i++) {
 		print_verbose("glTF: Serializing mesh: " + itos(gltf_mesh_i));
-		Ref<ImporterMesh> import_mesh = p_state->meshes.write[gltf_mesh_i]->get_mesh();
+		Ref<GLTFMesh> &gltf_mesh = p_state->meshes.write[gltf_mesh_i];
+		Ref<ImporterMesh> import_mesh = gltf_mesh->get_mesh();
 		if (import_mesh.is_null()) {
 			continue;
 		}
-		Array instance_materials = p_state->meshes.write[gltf_mesh_i]->get_instance_materials();
+		Array instance_materials = gltf_mesh->get_instance_materials();
 		Array primitives;
-		Dictionary gltf_mesh;
+		Dictionary mesh_dict;
 		Array target_names;
 		Array weights;
 		for (int morph_i = 0; morph_i < import_mesh->get_blend_shape_count(); morph_i++) {
@@ -3233,27 +3241,31 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 		if (!target_names.is_empty()) {
 			Dictionary e;
 			e["targetNames"] = target_names;
-			gltf_mesh["extras"] = e;
+			mesh_dict["extras"] = e;
 		}
-		_attach_meta_to_extras(import_mesh, gltf_mesh);
+		_attach_meta_to_extras(import_mesh, mesh_dict);
 
 		weights.resize(target_names.size());
 		for (int name_i = 0; name_i < target_names.size(); name_i++) {
 			real_t weight = 0.0;
-			if (name_i < p_state->meshes.write[gltf_mesh_i]->get_blend_weights().size()) {
-				weight = p_state->meshes.write[gltf_mesh_i]->get_blend_weights()[name_i];
+			if (name_i < gltf_mesh->get_blend_weights().size()) {
+				weight = gltf_mesh->get_blend_weights()[name_i];
 			}
 			weights[name_i] = weight;
 		}
 		if (weights.size()) {
-			gltf_mesh["weights"] = weights;
+			mesh_dict["weights"] = weights;
 		}
 
 		ERR_FAIL_COND_V(target_names.size() != weights.size(), FAILED);
 
-		gltf_mesh["primitives"] = primitives;
+		mesh_dict["primitives"] = primitives;
 
-		meshes.push_back(gltf_mesh);
+		if (!gltf_mesh->get_name().is_empty()) {
+			mesh_dict["name"] = gltf_mesh->get_name();
+		}
+
+		meshes.push_back(mesh_dict);
 	}
 
 	if (!meshes.size()) {
@@ -3920,6 +3932,10 @@ Dictionary GLTFDocument::_serialize_image(Ref<GLTFState> p_state, Ref<Image> p_i
 		ERR_FAIL_COND_V_MSG(p_image->is_compressed(), image_dict, "glTF: Image was compressed, but could not be decompressed.");
 	}
 
+	if (!p_image->get_name().is_empty()) {
+		image_dict["name"] = p_image->get_name();
+	}
+
 	if (p_state->filename.to_lower().ends_with("gltf")) {
 		String relative_texture_dir = "textures";
 		String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
@@ -4479,22 +4495,32 @@ Error GLTFDocument::_parse_texture_samplers(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+inline void _set_material_texture_name(const Ref<Texture2D> &p_texture, const Ref<Material> &p_material, const String &path, const String &p_suffix) {
+	if (p_texture->get_name().is_empty()) {
+		if (!path.is_empty()) {
+			p_texture->set_name(path.get_file().get_basename());
+		} else {
+			p_texture->set_name(p_material->get_name() + p_suffix);
+		}
+	}
+}
+
 Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 	Array materials;
 	for (int32_t i = 0; i < p_state->materials.size(); i++) {
-		Dictionary d;
+		Dictionary mat_dict;
 		Ref<Material> material = p_state->materials[i];
 		if (material.is_null()) {
-			materials.push_back(d);
+			materials.push_back(mat_dict);
 			continue;
 		}
 		if (!material->get_name().is_empty()) {
-			d["name"] = _gen_unique_name(p_state, material->get_name());
+			mat_dict["name"] = _gen_unique_name(p_state, material->get_name());
 		}
 
 		Ref<BaseMaterial3D> base_material = material;
 		if (base_material.is_null()) {
-			materials.push_back(d);
+			materials.push_back(mat_dict);
 			continue;
 		}
 
@@ -4510,7 +4536,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			GLTFTextureIndex gltf_texture_index = -1;
 
 			if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-				albedo_texture->set_name(material->get_name() + "_albedo");
+				_set_material_texture_name(albedo_texture, material, albedo_texture->get_path(), "_albedo");
 				gltf_texture_index = _set_texture(p_state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			if (gltf_texture_index != -1) {
@@ -4530,8 +4556,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
 			bool has_ao = base_material->get_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION) && base_material->get_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION).is_valid();
 			bool has_metalness = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC)->get_image().is_valid();
+			Ref<Texture2D> original_orm_tex = base_material->get_texture(BaseMaterial3D::TEXTURE_ORM);
+			GLTFTextureIndex orm_texture_index = -1;
 			if (has_ao || has_roughness || has_metalness) {
-				Dictionary mrt;
 				Ref<Texture2D> roughness_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS);
 				BaseMaterial3D::TextureChannel roughness_channel = base_material->get_roughness_texture_channel();
 				Ref<Texture2D> metallic_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_METALLIC);
@@ -4545,6 +4572,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				int32_t height = 0;
 				int32_t width = 0;
 				Ref<Image> ao_image;
+				HashSet<String> common_paths; // For setting name
 				if (has_ao) {
 					height = ao_texture->get_height();
 					width = ao_texture->get_width();
@@ -4555,6 +4583,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					}
 					if (ao_image->is_compressed()) {
 						ao_image->decompress();
+					}
+					if (!ao_texture->get_path().is_empty()) {
+						common_paths.insert(ao_texture->get_path());
 					}
 				}
 				Ref<Image> roughness_image;
@@ -4569,6 +4600,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					if (roughness_image->is_compressed()) {
 						roughness_image->decompress();
 					}
+					if (!roughness_texture->get_path().is_empty()) {
+						common_paths.insert(roughness_texture->get_path());
+					}
 				}
 				Ref<Image> metallness_image;
 				if (has_metalness) {
@@ -4581,6 +4615,9 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 					}
 					if (metallness_image->is_compressed()) {
 						metallness_image->decompress();
+					}
+					if (!metallic_texture->get_path().is_empty()) {
+						common_paths.insert(metallic_texture->get_path());
 					}
 				}
 				Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
@@ -4639,17 +4676,37 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				}
 				orm_image->generate_mipmaps();
 				orm_texture->set_image(orm_image);
-				GLTFTextureIndex orm_texture_index = -1;
 				if (has_ao || has_roughness || has_metalness) {
-					orm_texture->set_name(material->get_name() + "_orm");
+					// If they all share the same path, use it for the name
+					String path = common_paths.size() == 1 ? *common_paths.begin() : String();
+					_set_material_texture_name(orm_texture, material, path, "_orm");
 					orm_texture_index = _set_texture(p_state, orm_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 				}
+			} else if (original_orm_tex.is_valid() && original_orm_tex->get_image().is_valid()) {
+				has_ao = true;
+				has_roughness = true;
+				has_metalness = true;
+				Ref<Texture2D> orm_texture = original_orm_tex;
+				Ref<Image> orm_image = original_orm_tex->get_image();
+				Ref<ImageTexture> img_tex = orm_texture;
+				String path = orm_texture->get_path();
+				if (img_tex.is_valid()) {
+					orm_image = img_tex->get_image();
+				}
+				orm_image->decompress();
+				orm_image->convert(Image::FORMAT_RGBA8);
+
+				_set_material_texture_name(original_orm_tex, material, original_orm_tex->get_path(), "_orm");
+				orm_texture_index = _set_texture(p_state, original_orm_tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+			}
+			if (orm_texture_index != -1) {
 				if (has_ao) {
 					Dictionary occt;
 					occt["index"] = orm_texture_index;
-					d["occlusionTexture"] = occt;
+					mat_dict["occlusionTexture"] = occt;
 				}
 				if (has_roughness || has_metalness) {
+					Dictionary mrt;
 					mrt["index"] = orm_texture_index;
 					Dictionary extensions = _serialize_texture_transform_uv1(material);
 					if (!extensions.is_empty()) {
@@ -4661,18 +4718,20 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 		}
 
-		d["pbrMetallicRoughness"] = mr;
+		mat_dict["pbrMetallicRoughness"] = mr;
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING) && _image_format != "None") {
 			Dictionary nt;
 			Ref<ImageTexture> tex;
 			tex.instantiate();
+			String path;
 			{
 				Ref<Texture2D> normal_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_NORMAL);
 				if (normal_texture.is_valid()) {
+					path = normal_texture->get_path();
 					// Code for uncompressing RG normal maps
 					Ref<Image> img = normal_texture->get_image();
 					if (img.is_valid()) {
-						Ref<ImageTexture> img_tex = img;
+						Ref<ImageTexture> img_tex = normal_texture;
 						if (img_tex.is_valid()) {
 							img = img_tex->get_image();
 						}
@@ -4695,20 +4754,20 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			}
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (tex.is_valid() && tex->get_image().is_valid()) {
-				tex->set_name(material->get_name() + "_normal");
+				_set_material_texture_name(tex, material, path, "_normal");
 				gltf_texture_index = _set_texture(p_state, tex, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 			nt["scale"] = base_material->get_normal_scale();
 			if (gltf_texture_index != -1) {
 				nt["index"] = gltf_texture_index;
-				d["normalTexture"] = nt;
+				mat_dict["normalTexture"] = nt;
 			}
 		}
 
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			const Color c = base_material->get_emission().linear_to_srgb();
 			Array arr = { c.r, c.g, c.b };
-			d["emissiveFactor"] = arr;
+			mat_dict["emissiveFactor"] = arr;
 		}
 
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION) && _image_format != "None") {
@@ -4716,26 +4775,26 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			Ref<Texture2D> emission_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_EMISSION);
 			GLTFTextureIndex gltf_texture_index = -1;
 			if (emission_texture.is_valid() && emission_texture->get_image().is_valid()) {
-				emission_texture->set_name(material->get_name() + "_emission");
+				_set_material_texture_name(emission_texture, material, emission_texture->get_path(), "_emission");
 				gltf_texture_index = _set_texture(p_state, emission_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
 			}
 
 			if (gltf_texture_index != -1) {
 				et["index"] = gltf_texture_index;
-				d["emissiveTexture"] = et;
+				mat_dict["emissiveTexture"] = et;
 			}
 		}
 
 		const bool ds = base_material->get_cull_mode() == BaseMaterial3D::CULL_DISABLED;
 		if (ds) {
-			d["doubleSided"] = ds;
+			mat_dict["doubleSided"] = ds;
 		}
 
 		if (base_material->get_transparency() == BaseMaterial3D::TRANSPARENCY_ALPHA_SCISSOR) {
-			d["alphaMode"] = "MASK";
-			d["alphaCutoff"] = base_material->get_alpha_scissor_threshold();
+			mat_dict["alphaMode"] = "MASK";
+			mat_dict["alphaCutoff"] = base_material->get_alpha_scissor_threshold();
 		} else if (base_material->get_transparency() != BaseMaterial3D::TRANSPARENCY_DISABLED) {
-			d["alphaMode"] = "BLEND";
+			mat_dict["alphaMode"] = "BLEND";
 		}
 
 		Dictionary extensions;
@@ -4750,10 +4809,10 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 			extensions["KHR_materials_emissive_strength"] = mat_emissive_strength;
 			p_state->add_used_extension("KHR_materials_emissive_strength");
 		}
-		d["extensions"] = extensions;
+		mat_dict["extensions"] = extensions;
 
-		_attach_meta_to_extras(material, d);
-		materials.push_back(d);
+		_attach_meta_to_extras(material, mat_dict);
+		materials.push_back(mat_dict);
 	}
 	if (!materials.size()) {
 		return OK;
@@ -5858,6 +5917,10 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 
 	Ref<GLTFMesh> gltf_mesh;
 	gltf_mesh.instantiate();
+	if (!mesh_resource->get_name().is_empty()) {
+		gltf_mesh->set_original_name(mesh_resource->get_name());
+		gltf_mesh->set_name(_gen_unique_name(p_state, mesh_resource->get_name()));
+	}
 	gltf_mesh->set_instance_materials(instance_materials);
 	gltf_mesh->set_mesh(current_mesh);
 	gltf_mesh->set_blend_weights(blend_weights);
@@ -6074,12 +6137,14 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	gltf_mesh.instantiate();
 	gltf_mesh->set_mesh(mesh);
 	gltf_mesh->set_original_name(csg->get_name());
+	String unique_name = _gen_unique_name(p_state, csg->get_name());
+	gltf_mesh->set_name(unique_name);
 	GLTFMeshIndex mesh_i = p_state->meshes.size();
 	p_state->meshes.push_back(gltf_mesh);
 	p_gltf_node->mesh = mesh_i;
 	p_gltf_node->transform = csg->get_transform();
 	p_gltf_node->set_original_name(csg->get_name());
-	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
+	p_gltf_node->set_name(unique_name);
 #endif // MODULE_CSG_ENABLED
 }
 
@@ -6124,11 +6189,13 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		gltf_mesh.instantiate();
 		gltf_mesh->set_mesh(_mesh_to_importer_mesh(p_grid_map->get_mesh_library()->get_item_mesh(cell)));
 		gltf_mesh->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
+		String unique_name = _gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell));
+		gltf_mesh->set_name(unique_name);
 		new_gltf_node->mesh = p_state->meshes.size();
 		p_state->meshes.push_back(gltf_mesh);
 		new_gltf_node->transform = cell_xform * p_grid_map->get_transform();
 		new_gltf_node->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
-		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
+		new_gltf_node->set_name(unique_name);
 	}
 #endif // MODULE_GRIDMAP_ENABLED
 }
