@@ -31,7 +31,6 @@
 #include "default_theme.h"
 
 #include "core/io/image.h"
-#include "scene/resources/dpi_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
@@ -79,8 +78,8 @@ static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float
 }
 
 // See also `editor_generate_icon()` in `editor/themes/editor_icons.cpp`.
-static Ref<DPITexture> generate_icon(int p_index) {
-	return DPITexture::create_from_string(default_theme_icons_sources[p_index], scale);
+static Ref<ImageTexture> generate_icon(int p_index) {
+	return ImageTexture::create_from_string(default_theme_icons_sources[p_index], scale);
 }
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {

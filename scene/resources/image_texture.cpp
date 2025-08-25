@@ -31,8 +31,56 @@
 #include "image_texture.h"
 
 #include "core/io/image_loader.h"
+#include "scene/main/canvas_item.h"
+#include "scene/main/viewport.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/placeholder_textures.h"
+
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
+
+Mutex ImageTexture::mutex;
+HashMap<double, ImageTexture::ScalingLevel> ImageTexture::scaling_levels;
+
+void ImageTexture::reference_scaling_level(double p_scale) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
+		return;
+	}
+	double scale = double(oversampling) / 64.0;
+
+	MutexLock lock(mutex);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
+	if (sl) {
+		sl->refcount++;
+	} else {
+		ScalingLevel new_sl;
+		scaling_levels.insert(scale, new_sl);
+	}
+}
+
+void ImageTexture::unreference_scaling_level(double p_scale) {
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
+		return;
+	}
+	double scale = double(oversampling) / 64.0;
+
+	MutexLock lock(mutex);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
+	if (sl) {
+		sl->refcount--;
+		if (sl->refcount == 0) {
+			for (ImageTexture *tx : sl->textures) {
+				tx->_remove_scale(scale);
+			}
+			sl->textures.clear();
+			scaling_levels.erase(scale);
+		}
+	}
+}
 
 void ImageTexture::reload_from_file() {
 	String path = ResourceLoader::path_remap(get_path());
@@ -40,36 +88,28 @@ void ImageTexture::reload_from_file() {
 		return;
 	}
 
-	Ref<Image> img;
-	img.instantiate();
-
-	if (ImageLoader::load_image(path, img) == OK) {
-		set_image(img);
+	if (path.get_extension().to_lower() == "svg") {
+		Error err = OK;
+		String src = FileAccess::get_file_as_string(path, &err);
+		if (err == OK) {
+			set_source(src);
+		} else {
+			Resource::reload_from_file();
+			notify_property_list_changed();
+			emit_changed();
+		}
 	} else {
-		Resource::reload_from_file();
-		notify_property_list_changed();
-		emit_changed();
-	}
-}
+		Ref<Image> img;
+		img.instantiate();
 
-bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
-	if (p_name == "image") {
-		set_image(p_value);
-		return true;
+		if (ImageLoader::load_image(path, img) == OK) {
+			set_image(img);
+		} else {
+			Resource::reload_from_file();
+			notify_property_list_changed();
+			emit_changed();
+		}
 	}
-	return false;
-}
-
-bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
-	if (p_name == "image") {
-		r_ret = get_image();
-		return true;
-	}
-	return false;
-}
-
-void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
-	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("image"), PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
 }
 
 Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
@@ -82,12 +122,23 @@ Ref<ImageTexture> ImageTexture::create_from_image(const Ref<Image> &p_image) {
 	return image_texture;
 }
 
+Ref<ImageTexture> ImageTexture::create_from_string(const String &p_source, float p_scale, float p_saturation, const Dictionary &p_color_map) {
+	Ref<ImageTexture> image_texture;
+	image_texture.instantiate();
+	image_texture->set_source(p_source);
+	image_texture->set_base_scale(p_scale);
+	image_texture->set_saturation(p_saturation);
+	image_texture->set_color_map(p_color_map);
+	return image_texture;
+}
+
 void ImageTexture::set_image(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null() || p_image->is_empty(), "Invalid image");
-	w = p_image->get_width();
-	h = p_image->get_height();
+	size.x = p_image->get_width();
+	size.y = p_image->get_height();
 	format = p_image->get_format();
 	mipmaps = p_image->has_mipmaps();
+	source = String();
 
 	if (texture.is_null()) {
 		texture = RenderingServer::get_singleton()->texture_2d_create(p_image);
@@ -102,13 +153,119 @@ void ImageTexture::set_image(const Ref<Image> &p_image) {
 }
 
 Image::Format ImageTexture::get_format() const {
+	_ensure_scale(1.0);
 	return format;
+}
+
+void ImageTexture::_clear() {
+	for (KeyValue<double, RID> &tx : texture_cache) {
+		if (tx.value.is_valid()) {
+			RenderingServer::get_singleton()->free(tx.value);
+		}
+	}
+	texture_cache.clear();
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->free(texture);
+	}
+	texture = RID();
+	alpha_cache.unref();
+}
+
+void ImageTexture::_update_texture() {
+	_clear();
+	emit_changed();
+}
+
+void ImageTexture::_remove_scale(double p_scale) {
+	if (Math::is_equal_approx(p_scale, 1.0)) {
+		return;
+	}
+
+	RID *rid = texture_cache.getptr(p_scale);
+	if (rid) {
+		if (rid->is_valid()) {
+			RenderingServer::get_singleton()->free(*rid);
+		}
+		texture_cache.erase(p_scale);
+	}
+}
+
+RID ImageTexture::_ensure_scale(double p_scale) const {
+	if (source.is_empty()) {
+		return texture;
+	}
+	uint32_t oversampling = CLAMP(p_scale, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
+		if (texture.is_null()) {
+			texture = _load_at_scale(p_scale, true);
+		}
+		return texture;
+	}
+	double scale = double(oversampling) / 64.0;
+
+	RID *rid = texture_cache.getptr(scale);
+	if (rid) {
+		return *rid;
+	}
+
+	MutexLock lock(mutex);
+	ScalingLevel *sl = scaling_levels.getptr(scale);
+	ERR_FAIL_NULL_V_MSG(sl, RID(), "Invalid scaling level");
+	sl->textures.insert(const_cast<ImageTexture *>(this));
+
+	RID new_rid = _load_at_scale(scale, false);
+	texture_cache[scale] = new_rid;
+	return new_rid;
+}
+
+RID ImageTexture::_load_at_scale(double p_scale, bool p_set_size) const {
+	Ref<Image> img;
+	img.instantiate();
+#ifdef MODULE_SVG_ENABLED
+	const bool upsample = !Math::is_equal_approx(Math::round(p_scale * base_scale), p_scale * base_scale);
+
+	Error err = ImageLoaderSVG::create_image_from_string(img, source, p_scale * base_scale, upsample, cmap);
+	if (err != OK) {
+		return RID();
+	}
+#else
+	img = Image::create_empty(Math::round(16 * p_scale * base_scale), Math::round(16 * p_scale * base_scale), false, Image::FORMAT_RGBA8);
+#endif
+	if (saturation != 1.0) {
+		img->adjust_bcs(1.0, 1.0, saturation);
+	}
+
+	Size2 current_size = size;
+	if (p_set_size) {
+		size.x = img->get_width();
+		//base_size.x = img->get_width();
+		if (size_override.x != 0) {
+			size.x = size_override.x;
+		}
+		size.y = img->get_height();
+		//base_size.y = img->get_height();
+		if (size_override.y != 0) {
+			size.y = size_override.y;
+		}
+		format = img->get_format();
+		mipmaps = img->has_mipmaps();
+		current_size = size;
+	}
+	if (current_size.is_zero_approx()) {
+		current_size.x = img->get_width();
+		current_size.y = img->get_height();
+	}
+
+	RID rid = RenderingServer::get_singleton()->texture_2d_create(img);
+	RenderingServer::get_singleton()->texture_set_size_override(rid, current_size.x, current_size.y);
+	image_stored = true;
+	return rid;
 }
 
 void ImageTexture::update(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_MSG(p_image.is_null(), "Invalid image");
 	ERR_FAIL_COND_MSG(texture.is_null(), "Texture is not initialized.");
-	ERR_FAIL_COND_MSG(p_image->get_width() != w || p_image->get_height() != h,
+	ERR_FAIL_COND_MSG(p_image->get_width() != size.x || p_image->get_height() != size.y,
 			"The new image dimensions must match the texture size.");
 	ERR_FAIL_COND_MSG(p_image->get_format() != format,
 			"The new image format must match the texture's image format.");
@@ -120,11 +277,19 @@ void ImageTexture::update(const Ref<Image> &p_image) {
 	notify_property_list_changed();
 	emit_changed();
 
+	for (KeyValue<double, RID> &tx : texture_cache) {
+		if (tx.value.is_valid()) {
+			RenderingServer::get_singleton()->free(tx.value);
+		}
+	}
+	texture_cache.clear();
 	alpha_cache.unref();
+	source = String();
 	image_stored = true;
 }
 
 Ref<Image> ImageTexture::get_image() const {
+	_ensure_scale(1.0);
 	if (image_stored) {
 		return RenderingServer::get_singleton()->texture_2d_get(texture);
 	} else {
@@ -132,15 +297,73 @@ Ref<Image> ImageTexture::get_image() const {
 	}
 }
 
+void ImageTexture::set_source(const String &p_source) {
+	if (source == p_source) {
+		return;
+	}
+	source = p_source;
+	_update_texture();
+}
+
+String ImageTexture::get_source() const {
+	return source;
+}
+
+void ImageTexture::set_base_scale(float p_scale) {
+	if (base_scale == p_scale) {
+		return;
+	}
+	ERR_FAIL_COND(p_scale <= 0.0);
+
+	base_scale = p_scale;
+	_update_texture();
+}
+
+float ImageTexture::get_base_scale() const {
+	return base_scale;
+}
+
+void ImageTexture::set_saturation(float p_saturation) {
+	if (saturation == p_saturation) {
+		return;
+	}
+
+	saturation = p_saturation;
+	_update_texture();
+}
+
+float ImageTexture::get_saturation() const {
+	return saturation;
+}
+
+void ImageTexture::set_color_map(const Dictionary &p_color_map) {
+	if (color_map == p_color_map) {
+		return;
+	}
+	color_map = p_color_map;
+	cmap.clear();
+	for (const Variant *E = color_map.next(); E; E = color_map.next(E)) {
+		cmap[*E] = color_map[*E];
+	}
+	_update_texture();
+}
+
+Dictionary ImageTexture::get_color_map() const {
+	return color_map;
+}
+
 int ImageTexture::get_width() const {
-	return w;
+	_ensure_scale(1.0);
+	return size.x;
 }
 
 int ImageTexture::get_height() const {
-	return h;
+	_ensure_scale(1.0);
+	return size.y;
 }
 
 RID ImageTexture::get_rid() const {
+	_ensure_scale(1.0);
 	if (texture.is_null()) {
 		// We are in trouble, create something temporary.
 		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();
@@ -148,29 +371,45 @@ RID ImageTexture::get_rid() const {
 	return texture;
 }
 
+RID ImageTexture::get_scaled_rid() const {
+	if (source.is_empty()) {
+		return get_rid();
+	}
+
+	double scale = 1.0;
+	CanvasItem *ci = CanvasItem::get_current_item_drawn();
+	if (ci) {
+		Viewport *vp = ci->get_viewport();
+		if (vp) {
+			scale = vp->get_oversampling();
+		}
+	}
+	return _ensure_scale(scale);
+}
+
 bool ImageTexture::has_alpha() const {
 	return (format == Image::FORMAT_LA8 || format == Image::FORMAT_RGBA8);
 }
 
 void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
-	if ((w | h) == 0) {
+	if (size.x == 0 || size.y == 0) {
 		return;
 	}
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, Size2(w, h)), texture, false, p_modulate, p_transpose);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, Rect2(p_pos, size), get_scaled_rid(), false, p_modulate, p_transpose);
 }
 
 void ImageTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose) const {
-	if ((w | h) == 0) {
+	if (size.x == 0 || size.y == 0) {
 		return;
 	}
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, texture, p_tile, p_modulate, p_transpose);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item, p_rect, get_scaled_rid(), p_tile, p_modulate, p_transpose);
 }
 
 void ImageTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, bool p_clip_uv) const {
-	if ((w | h) == 0) {
+	if (size.x == 0 || size.y == 0) {
 		return;
 	}
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, texture, p_src_rect, p_modulate, p_transpose, p_clip_uv);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item, p_rect, get_scaled_rid(), p_src_rect, p_modulate, p_transpose, p_clip_uv);
 }
 
 bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
@@ -194,8 +433,8 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 			return true;
 		}
 
-		int x = p_x * aw / w;
-		int y = p_y * ah / h;
+		int x = p_x * aw / size.x;
+		int y = p_y * ah / size.y;
 
 		x = CLAMP(x, 0, aw - 1);
 		y = CLAMP(y, 0, ah - 1);
@@ -209,12 +448,19 @@ bool ImageTexture::is_pixel_opaque(int p_x, int p_y) const {
 void ImageTexture::set_size_override(const Size2i &p_size) {
 	Size2i s = p_size;
 	if (s.x != 0) {
-		w = s.x;
+		size.x = s.x;
 	}
 	if (s.y != 0) {
-		h = s.y;
+		size.y = s.y;
 	}
-	RenderingServer::get_singleton()->texture_set_size_override(texture, w, h);
+	if (texture.is_valid()) {
+		RenderingServer::get_singleton()->texture_set_size_override(texture, size.x, size.y);
+	}
+	for (KeyValue<double, RID> &tx : texture_cache) {
+		if (tx.value.is_valid()) {
+			RenderingServer::get_singleton()->texture_set_size_override(tx.value, size.x, size.y);
+		}
+	}
 }
 
 void ImageTexture::set_path(const String &p_path, bool p_take_over) {
@@ -225,8 +471,78 @@ void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 	Resource::set_path(p_path, p_take_over);
 }
 
+bool ImageTexture::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "image") {
+		set_image(p_value);
+		return true;
+	} else if (p_name == "_source") {
+		set_source(p_value);
+		return true;
+	} else if (p_name == "base_scale") {
+		set_base_scale(p_value);
+		return true;
+	} else if (p_name == "saturation") {
+		set_saturation(p_value);
+		return true;
+	} else if (p_name == "color_map") {
+		set_color_map(p_value);
+		return true;
+	}
+	return false;
+}
+
+bool ImageTexture::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "image") {
+		r_ret = get_image();
+		return true;
+	} else if (p_name == "_source") {
+		r_ret = get_source();
+		return true;
+	} else if (p_name == "base_scale") {
+		r_ret = get_base_scale();
+		return true;
+	} else if (p_name == "saturation") {
+		r_ret = get_saturation();
+		return true;
+	} else if (p_name == "color_map") {
+		r_ret = get_color_map();
+		return true;
+	}
+	return false;
+}
+
+void ImageTexture::_get_property_list(List<PropertyInfo> *p_list) const {
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("image"), PROPERTY_HINT_RESOURCE_TYPE, "Image", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT));
+	p_list->push_back(PropertyInfo(Variant::STRING, "_source", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_STORAGE));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "base_scale", PROPERTY_HINT_RANGE, "0.01,10.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::FLOAT, "saturation", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"));
+	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "color_map", PROPERTY_HINT_DICTIONARY_TYPE, "Color;Color"));
+}
+
+void ImageTexture::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "base_scale" || p_property.name == "saturation" || p_property.name == "color_map") {
+		if (source.is_empty()) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+			return;
+		}
+	}
+}
+
 void ImageTexture::_bind_methods() {
 	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
+	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_string", "source", "scale", "saturation", "color_map"), &ImageTexture::create_from_string, DEFVAL(1.0), DEFVAL(1.0), DEFVAL(Dictionary()));
+
+	ClassDB::bind_method(D_METHOD("set_source", "source"), &ImageTexture::set_source);
+	ClassDB::bind_method(D_METHOD("get_source"), &ImageTexture::get_source);
+	ClassDB::bind_method(D_METHOD("set_base_scale", "base_scale"), &ImageTexture::set_base_scale);
+	ClassDB::bind_method(D_METHOD("get_base_scale"), &ImageTexture::get_base_scale);
+	ClassDB::bind_method(D_METHOD("set_saturation", "saturation"), &ImageTexture::set_saturation);
+	ClassDB::bind_method(D_METHOD("get_saturation"), &ImageTexture::get_saturation);
+	ClassDB::bind_method(D_METHOD("set_color_map", "color_map"), &ImageTexture::set_color_map);
+	ClassDB::bind_method(D_METHOD("get_color_map"), &ImageTexture::get_color_map);
+
+	ClassDB::bind_method(D_METHOD("get_scaled_rid"), &ImageTexture::get_scaled_rid);
+
 	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
 	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
@@ -235,9 +551,11 @@ void ImageTexture::_bind_methods() {
 }
 
 ImageTexture::~ImageTexture() {
-	if (texture.is_valid()) {
-		ERR_FAIL_NULL(RenderingServer::get_singleton());
-		RenderingServer::get_singleton()->free(texture);
+	_clear();
+
+	MutexLock lock(mutex);
+	for (KeyValue<double, ScalingLevel> &sl : scaling_levels) {
+		sl.value.textures.erase(this);
 	}
 }
 

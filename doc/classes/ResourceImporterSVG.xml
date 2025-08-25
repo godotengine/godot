@@ -4,7 +4,7 @@
 		Imports an SVG file as an automatically scalable texture for use in UI elements and 2D rendering.
 	</brief_description>
 	<description>
-		This importer imports [DPITexture] resources. See also [ResourceImporterTexture] and [ResourceImporterImage].
+		This importer imports [ImageTexture] resources. See also [ResourceImporterTexture] and [ResourceImporterImage].
 	</description>
 	<tutorials>
 	</tutorials>

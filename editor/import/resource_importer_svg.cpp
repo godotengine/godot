@@ -31,14 +31,14 @@
 #include "resource_importer_svg.h"
 
 #include "core/io/file_access.h"
-#include "scene/resources/dpi_texture.h"
+#include "scene/resources/image_texture.h"
 
 String ResourceImporterSVG::get_importer_name() const {
 	return "svg";
 }
 
 String ResourceImporterSVG::get_visible_name() const {
-	return "DPITexture";
+	return "ImageTexture (with Oversampling)";
 }
 
 void ResourceImporterSVG::get_recognized_extensions(List<String> *p_extensions) const {
@@ -50,7 +50,7 @@ String ResourceImporterSVG::get_save_extension() const {
 }
 
 String ResourceImporterSVG::get_resource_type() const {
-	return "DPITexture";
+	return "ImageTexture";
 }
 
 bool ResourceImporterSVG::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -73,8 +73,8 @@ void ResourceImporterSVG::get_import_options(const String &p_path, List<ImportOp
 }
 
 Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	Ref<DPITexture> dpi_tex;
-	dpi_tex.instantiate();
+	Ref<ImageTexture> image_tex;
+	image_tex.instantiate();
 
 	String source = FileAccess::get_file_as_string(p_source_file);
 	ERR_FAIL_COND_V_MSG(source.is_empty(), ERR_CANT_OPEN, vformat("Cannot open file from path \"%s\".", p_source_file));
@@ -83,12 +83,12 @@ Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_s
 	double saturation = p_options["saturation"];
 	Dictionary color_map = p_options["color_map"];
 
-	dpi_tex->set_base_scale(base_scale);
-	dpi_tex->set_saturation(saturation);
-	dpi_tex->set_color_map(color_map);
-	dpi_tex->set_source(source);
+	image_tex->set_base_scale(base_scale);
+	image_tex->set_saturation(saturation);
+	image_tex->set_color_map(color_map);
+	image_tex->set_source(source);
 
-	ERR_FAIL_COND_V_MSG(dpi_tex->get_rid().is_null(), ERR_CANT_OPEN, vformat("Failed loading SVG, unsupported or invalid SVG data in \"%s\".", p_source_file));
+	ERR_FAIL_COND_V_MSG(image_tex->get_rid().is_null(), ERR_CANT_OPEN, vformat("Failed loading SVG, unsupported or invalid SVG data in \"%s\".", p_source_file));
 
 	int flg = 0;
 	if ((bool)p_options["compress"]) {
@@ -96,7 +96,7 @@ Error ResourceImporterSVG::import(ResourceUID::ID p_source_id, const String &p_s
 	}
 
 	print_verbose("Saving to: " + p_save_path + ".dpitex");
-	Error err = ResourceSaver::save(dpi_tex, p_save_path + ".dpitex", flg);
+	Error err = ResourceSaver::save(image_tex, p_save_path + ".dpitex", flg);
 	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot save DPI texture to file \"%s.dpitex\".", p_save_path));
 	print_verbose("Done saving to: " + p_save_path + ".dpitex");
 
