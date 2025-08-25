@@ -1104,6 +1104,7 @@ public:
 #define ServerName RendererCompositor
 #define server_name RSG::rasterizer
 
+	FUNC4S(set_boot_image_with_stretch, const Ref<Image> &, const Color &, RenderingServer::SplashStretchMode, bool)
 	FUNC4S(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 
 	/* STATUS INFORMATION */
