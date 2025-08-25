@@ -4,7 +4,7 @@
 		Base class for serializable objects.
 	</brief_description>
 	<description>
-		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from [RefCounted], resources are reference-counted and freed when no longer in use. They can also be nested within other resources, and saved on disk. [PackedScene], one of the most common [Object]s in a Godot project, is also a resource, uniquely capable of storing and instantiating the [Node]s it contains as many times as desired.
+		Resource is the base class for all Godot-specific resource types, serving primarily as data containers. Since they inherit from [RefCounted], resources are reference-counted and freed when no longer in use. Resources can be stored independently on disk or nested within other resources. Resources stored in a nested manner are referred to as subresources, also known as built-in resources. [PackedScene], one of the most common [Object]s in a Godot project, is also a resource, uniquely capable of storing and instantiating the [Node]s it contains as many times as desired.
 		In GDScript, resources can loaded from disk by their [member resource_path] using [method @GDScript.load] or [method @GDScript.preload].
 		The engine keeps a global cache of all loaded resources, referenced by paths (see [method ResourceLoader.has_cached]). A resource will be cached when loaded for the first time and removed from cache once all references are released. When a resource is cached, subsequent loads using its path will return the cached reference.
 		[b]Note:[/b] In C#, resources will not be freed instantly after they are no longer in use. Instead, garbage collection will run periodically and will free resources that are no longer in use. This means that unused resources will remain in memory for a while before being removed.
@@ -87,15 +87,20 @@
 		<method name="generate_scene_unique_id" qualifiers="static">
 			<return type="String" />
 			<description>
-				Generates a unique identifier for a resource to be contained inside a [PackedScene], based on the current date, time, and a random value. The returned string is only composed of letters ([code]a[/code] to [code]y[/code]) and numbers ([code]0[/code] to [code]8[/code]). See also [member resource_scene_unique_id].
+				Generates a random string that can be used to construct identifiers related to resources, such as external resource identifiers, subresource identifiers, or paths for subresources. See [method set_id_for_path] and [member resource_scene_unique_id].
+				[b]Note:[/b] The returned string is only composed of letters ([code]a[/code] to [code]y[/code]) and numbers ([code]0[/code] to [code]8[/code]).
+				[b]Note:[/b] Despite the name, uniqueness of the returned string is not guaranteed.
 			</description>
 		</method>
 		<method name="get_id_for_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />
 			<description>
-				From the internal cache for scene-unique IDs, returns the ID of this resource for the scene at [param path]. If there is no entry, an empty string is returned. Useful to keep scene-unique IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
+				Returns the unique external resource identifier, used when referencing this resource while saving the resource at [param path].
+				The ID is empty by default and a new ID will be generated and assigned when saving the resource at [param path]. See [method set_id_for_path].
 				[b]Note:[/b] This method is only implemented when running in an editor context. At runtime, it returns an empty string.
+				[b]Note:[/b] Not to be confused with resource UID. See [method ResourceLoader.get_resource_uid].
+				[b]Note:[/b] Useful to keep external resource IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 			</description>
 		</method>
 		<method name="get_local_scene" qualifiers="const">
@@ -127,8 +132,11 @@
 			<param index="0" name="path" type="String" />
 			<param index="1" name="id" type="String" />
 			<description>
-				In the internal cache for scene-unique IDs, sets the ID of this resource to [param id] for the scene at [param path]. If [param id] is empty, the cache entry for [param path] is cleared. Useful to keep scene-unique IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
+				Sets the unique external resource identifier, used when referencing this resource while saving the resource at [param path].
+				In general, there is no need to set it manually. If left empty, or if another external resource already exists using the ID, a new ID will be generated and assigned when saving.
 				[b]Note:[/b] This method is only implemented when running in an editor context.
+				[b]Note:[/b] Not to be confused with resource UID.
+				[b]Note:[/b] Useful to keep external resource IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 			</description>
 		</method>
 		<method name="set_path_cache">
@@ -166,9 +174,11 @@
 			[b]Note:[/b] Setting this property manually may fail if a resource with the same path has already been previously loaded. If necessary, use [method take_over_path].
 		</member>
 		<member name="resource_scene_unique_id" type="String" setter="set_scene_unique_id" getter="get_scene_unique_id">
-			A unique identifier relative to the this resource's scene. If left empty, the ID is automatically generated when this resource is saved inside a [PackedScene]. If the resource is not inside a scene, this property is empty by default.
-			[b]Note:[/b] When the [PackedScene] is saved, if multiple resources in the same scene use the same ID, only the earliest resource in the scene hierarchy keeps the original ID. The other resources are assigned new IDs from [method generate_scene_unique_id].
+			The unique subresource identifier, used when saving this resource nested inside another resource.
+			In general, there is no need to set it manually. If left empty, or if another subresource already exists using the ID, a new ID will be generated and assigned when saving.
 			[b]Note:[/b] Setting this property does not emit the [signal changed] signal.
+			[b]Note:[/b] Despite the name, this property is not related to scenes or resource UIDs.
+			[b]Note:[/b] Useful to keep subresource IDs the same when implementing a VCS-friendly custom resource format by extending [ResourceFormatLoader] and [ResourceFormatSaver].
 			[b]Warning:[/b] When setting, the ID must only consist of letters, numbers, and underscores. Otherwise, it will fail and default to a randomly generated ID.
 		</member>
 	</members>
