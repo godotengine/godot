@@ -34,7 +34,7 @@ layout(location = 1) out vec4 offset;
 
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
-	vec2 reserved;
+	vec2 pad;
 }
 params;
 
@@ -62,9 +62,13 @@ layout(set = 1, binding = 0) uniform sampler2D blend_tex;
 
 layout(location = 0) out vec4 out_color;
 
+#define FLAG_USE_8_BIT_DEBANDING (1 << 0)
+#define FLAG_USE_10_BIT_DEBANDING (1 << 1)
+
 layout(push_constant, std430) uniform Params {
 	vec2 inv_size;
-	vec2 reserved;
+	uint flags;
+	float pad;
 }
 params;
 
@@ -95,6 +99,22 @@ void SMAAMovc(bvec4 cond, inout vec4 variable, vec4 value) {
 	SMAAMovc(cond.zw, variable.zw, value.zw);
 }
 
+// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
+// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
+// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
+// This dithering must be applied after encoding changes (linear/nonlinear) have been applied
+// as the final step before quantization from floating point to integer values.
+vec3 screen_space_dither(vec2 frag_coord, float bit_alignment_diviser) {
+	// Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
+	// Removed the time component to avoid passing time into this shader.
+	vec3 dither = vec3(dot(vec2(171.0, 231.0), frag_coord));
+	dither.rgb = fract(dither.rgb / vec3(103.0, 71.0, 97.0));
+
+	// Subtract 0.5 to avoid slightly brightening the whole viewport.
+	// Use a dither strength of 100% rather than the 37.5% suggested by the original source.
+	return (dither.rgb - 0.5) / bit_alignment_diviser;
+}
+
 void main() {
 	vec4 a;
 	a.x = texture(blend_tex, offset.xy).a;
@@ -119,5 +139,12 @@ void main() {
 		out_color.rgb += blending_weight.y * textureLinear(color_tex, blending_coord.zw);
 		out_color.rgb = linear_to_srgb(out_color.rgb);
 		out_color.a = texture(color_tex, tex_coord).a;
+	}
+	if (bool(params.flags & FLAG_USE_8_BIT_DEBANDING)) {
+		// Divide by 255 to align to 8-bit quantization.
+		out_color.rgb += screen_space_dither(gl_FragCoord.xy, 255.0);
+	} else if (bool(params.flags & FLAG_USE_10_BIT_DEBANDING)) {
+		// Divide by 1023 to align to 10-bit quantization.
+		out_color.rgb += screen_space_dither(gl_FragCoord.xy, 1023.0);
 	}
 }
