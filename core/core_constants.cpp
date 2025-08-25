@@ -30,6 +30,8 @@
 
 #include "core_constants.h"
 
+#include "core/config/variant_struct_dev_settings.h" // (dev-note: should remove when squashed)
+
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
@@ -754,6 +756,9 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NODE_PATH", Variant::NODE_PATH);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_RID", Variant::RID);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_OBJECT", Variant::OBJECT);
+#ifndef ENUMS_SHOULD_NOT_BREAK_APIS
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_STRUCT", Variant::STRUCT);
+#endif
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_CALLABLE", Variant::CALLABLE);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_SIGNAL", Variant::SIGNAL);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_DICTIONARY", Variant::DICTIONARY);
@@ -768,6 +773,9 @@ void register_global_constants() {
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_VECTOR3_ARRAY", Variant::PACKED_VECTOR3_ARRAY);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_COLOR_ARRAY", Variant::PACKED_COLOR_ARRAY);
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_PACKED_VECTOR4_ARRAY", Variant::PACKED_VECTOR4_ARRAY);
+#ifdef ENUMS_SHOULD_NOT_BREAK_APIS
+	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_STRUCT", Variant::STRUCT);
+#endif
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_MAX", Variant::VARIANT_MAX);
 
 	//comparison
