@@ -32,12 +32,12 @@
 
 #import "app_delegate_service.h"
 #import "apple_embedded.h"
+#import "godot_keyboard_input_view.h"
 #import "godot_view_apple_embedded.h"
+#import "godot_view_controller.h"
 #import "key_mapping_apple_embedded.h"
-#import "keyboard_input_view.h"
 #import "os_apple_embedded.h"
 #import "tts_apple_embedded.h"
-#import "view_controller.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
@@ -612,9 +612,8 @@ void DisplayServerAppleEmbedded::window_set_size(const Size2i p_size, WindowID p
 }
 
 Size2i DisplayServerAppleEmbedded::window_get_size(WindowID p_window) const {
-	id<UIApplicationDelegate> appDelegate = [[UIApplication sharedApplication] delegate];
-	CGRect windowBounds = appDelegate.window.bounds;
-	return Size2i(windowBounds.size.width, windowBounds.size.height) * screen_get_max_scale();
+	CGRect viewBounds = GDTAppDelegateService.viewController.view.bounds;
+	return Size2i(viewBounds.size.width, viewBounds.size.height) * screen_get_max_scale();
 }
 
 Size2i DisplayServerAppleEmbedded::window_get_size_with_decorations(WindowID p_window) const {
