@@ -177,7 +177,7 @@ private:
 		String path;
 
 		RID proxy_to;
-		Vector<RID> proxies;
+		LocalVector<RID> proxies;
 
 		HashSet<RID> lightmap_users;
 
@@ -397,10 +397,13 @@ private:
 
 		// overridden textures
 		struct RTOverridden {
-			RID color;
-			RID depth;
-			RID velocity;
-			RID velocity_depth;
+			RID color_rd;
+			RID depth_rd;
+			RID velocity_rd;
+			RID velocity_depth_rd;
+
+			// texture_rd for our color texture
+			RID texture;
 
 			// In a multiview scenario, which is the most likely where we
 			// override our destination textures, we need to obtain slices
@@ -526,6 +529,7 @@ public:
 	virtual void texture_3d_update(RID p_texture, const Vector<Ref<Image>> &p_data) override;
 	virtual void texture_external_update(RID p_texture, int p_width, int p_height, uint64_t p_external_buffer) override;
 	virtual void texture_proxy_update(RID p_proxy, RID p_base) override;
+	void texture_remap_proxies(RID p_from_texture, RID p_to_texture);
 
 	Ref<Image> texture_2d_placeholder;
 	Vector<Ref<Image>> texture_2d_array_placeholder;

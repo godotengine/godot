@@ -71,7 +71,8 @@ private:
 
 	struct SwapchainGraphicsData {
 		bool is_multiview;
-		Vector<RID> texture_rids;
+		LocalVector<RID> texture_rd_rids;
+		LocalVector<RID> texture_rids;
 	};
 
 	EXT_PROTO_XRRESULT_FUNC3(xrGetD3D12GraphicsRequirementsKHR, (XrInstance), p_instance, (XrSystemId), p_system_id, (XrGraphicsRequirementsD3D12KHR *), p_graphics_requirements)

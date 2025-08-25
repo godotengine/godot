@@ -247,6 +247,8 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	ERR_FAIL_NULL_V(rendering_server, false);
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
 	ERR_FAIL_NULL_V(rendering_device, false);
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL_V(texture_storage, false);
 
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
@@ -370,14 +372,19 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 			break;
 	}
 
-	Vector<RID> texture_rids;
-	Vector<RID> density_map_rids;
+	thread_local LocalVector<RID> texture_rd_rids;
+	thread_local LocalVector<RID> texture_rids;
+	thread_local LocalVector<RID> density_map_rids;
+
+	texture_rd_rids.reserve(swapchain_length);
+	texture_rids.reserve(swapchain_length);
+	density_map_rids.reserve(swapchain_length);
 
 	// create Godot texture objects for each entry in our swapchain
 	for (uint32_t i = 0; i < swapchain_length; i++) {
 		const XrSwapchainImageVulkanKHR &swapchain_image = images[i];
 
-		RID image_rid = rendering_device->texture_create_from_extension(
+		RID texture_rd_rid = rendering_device->texture_create_from_extension(
 				p_array_size == 1 ? RenderingDevice::TEXTURE_TYPE_2D : RenderingDevice::TEXTURE_TYPE_2D_ARRAY,
 				format,
 				samples,
@@ -389,7 +396,12 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 				p_array_size,
 				1);
 
-		texture_rids.push_back(image_rid);
+		texture_rd_rids.push_back(texture_rd_rid);
+
+		RID texture_rid = texture_storage->texture_allocate();
+		texture_storage->texture_rd_initialize(texture_rid, texture_rd_rid);
+
+		texture_rids.push_back(texture_rid);
 
 		if (OpenXRFBFoveationExtension::get_singleton()->is_enabled() && density_images[i].image != VK_NULL_HANDLE) {
 			RID density_map_rid = rendering_device->texture_create_from_extension(
@@ -410,6 +422,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 		}
 	}
 
+	data->texture_rd_rids = texture_rd_rids;
 	data->texture_rids = texture_rids;
 	data->density_map_rids = density_map_rids;
 
@@ -434,7 +447,7 @@ RID OpenXRVulkanExtension::get_texture(void *p_swapchain_graphics_data, int p_im
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
 	ERR_FAIL_NULL_V(data, RID());
 
-	ERR_FAIL_INDEX_V(p_image_index, data->texture_rids.size(), RID());
+	ERR_FAIL_INDEX_V(p_image_index, (int)data->texture_rids.size(), RID());
 	return data->texture_rids[p_image_index];
 }
 
@@ -442,7 +455,7 @@ RID OpenXRVulkanExtension::get_density_map(void *p_swapchain_graphics_data, int 
 	SwapchainGraphicsData *data = (SwapchainGraphicsData *)p_swapchain_graphics_data;
 	ERR_FAIL_NULL_V(data, RID());
 
-	ERR_FAIL_INDEX_V(p_image_index, data->density_map_rids.size(), RID());
+	ERR_FAIL_INDEX_V(p_image_index, (int)data->density_map_rids.size(), RID());
 	return data->density_map_rids[p_image_index];
 }
 
@@ -457,14 +470,21 @@ void OpenXRVulkanExtension::cleanup_swapchain_graphics_data(void **p_swapchain_g
 	ERR_FAIL_NULL(rendering_server);
 	RenderingDevice *rendering_device = rendering_server->get_rendering_device();
 	ERR_FAIL_NULL(rendering_device);
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+	ERR_FAIL_NULL(texture_storage);
 
 	for (const RID &texture_rid : data->texture_rids) {
-		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
-		rendering_device->free(texture_rid);
+		texture_storage->texture_free(texture_rid);
 	}
 	data->texture_rids.clear();
 
-	for (int i = 0; i < data->density_map_rids.size(); i++) {
+	for (const RID &texture_rd_rid : data->texture_rd_rids) {
+		// This should clean up our RIDs and associated texture objects but shouldn't destroy the images, they are owned by our XrSwapchain.
+		rendering_device->free(texture_rd_rid);
+	}
+	data->texture_rd_rids.clear();
+
+	for (uint32_t i = 0; i < data->density_map_rids.size(); i++) {
 		if (data->density_map_rids[i].is_valid()) {
 			rendering_device->free(data->density_map_rids[i]);
 		}
