@@ -30,8 +30,9 @@
 
 #include "translation_po.h"
 
-#ifdef DEBUG_TRANSLATION_PO
 #include "core/io/file_access.h"
+
+#ifdef DEBUG_TRANSLATION_PO
 
 void TranslationPO::print_translation_map() {
 	Error err;
@@ -338,6 +339,103 @@ int TranslationPO::get_message_count() const {
 
 	return count;
 }
+
+#ifdef TOOLS_ENABLED
+
+Error TranslationPO::save_mo(const String &p_path) const {
+	Error err = OK;
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save MO at path: '%s'.", p_path));
+
+	struct Offset {
+		uint32_t offset = 0;
+		uint32_t size = 0;
+	};
+	LocalVector<Offset> id_offsets;
+	LocalVector<Offset> str_offsets;
+
+	// Header.
+	f->store_32(0x950412de);
+	f->store_16(0); // Version.
+	f->store_16(0);
+
+	int64_t header_ofs = f->get_position();
+	f->store_32(0);
+	f->store_32(0);
+	f->store_32(0);
+	f->store_32(0);
+	f->store_32(0);
+
+	// Config.
+	{
+		Offset id_ofs;
+		String config = vformat("Content-Type: text/plain; charset=UTF-8\nPlural-Forms: nplurals=%d; plural=%s;\nLanguage: %s\n", get_plural_forms(), get_plural_rule(), get_locale());
+		id_ofs.offset = f->get_position();
+		id_ofs.size = 0;
+		f->store_8(0x00);
+		id_offsets.push_back(id_ofs);
+
+		Offset str_ofs;
+		str_ofs.offset = f->get_position();
+		f->store_string(config);
+		f->store_8(0x00);
+		str_ofs.size = f->get_position() - str_ofs.offset - 1;
+		str_offsets.push_back(str_ofs);
+	}
+
+	// Messages.
+	for (const KeyValue<StringName, HashMap<StringName, Vector<StringName>>> &E : translation_map) {
+		for (const KeyValue<StringName, Vector<StringName>> &F : E.value) {
+			Offset id_ofs;
+			id_ofs.offset = f->get_position();
+			if (!E.key.is_empty()) {
+				f->store_string(E.key);
+				f->store_8(0x04);
+			}
+			f->store_string(F.key);
+			f->store_8(0x00);
+			if (F.value.size() > 1) {
+				f->store_string("?"); // Godot is not using "msgid_plural" and it is not saved.
+				f->store_8(0x00);
+			}
+			id_ofs.size = f->get_position() - id_ofs.offset - 1;
+			id_offsets.push_back(id_ofs);
+
+			Offset str_ofs;
+			str_ofs.offset = f->get_position();
+			for (int i = 0; i < F.value.size(); i++) {
+				f->store_string(F.value[i]);
+				f->store_8(0x00);
+			}
+			str_ofs.size = f->get_position() - str_ofs.offset - 1;
+			str_offsets.push_back(str_ofs);
+		}
+	}
+
+	// Offset tables.
+	int64_t id_table_ofs = f->get_position();
+	for (const Offset &E : id_offsets) {
+		f->store_32(E.size);
+		f->store_32(E.offset);
+	}
+	int64_t str_table_ofs = f->get_position();
+	for (const Offset &E : str_offsets) {
+		f->store_32(E.size);
+		f->store_32(E.offset);
+	}
+
+	// Update header.
+	f->seek(header_ofs);
+	f->store_32(id_offsets.size());
+	f->store_32(id_table_ofs);
+	f->store_32(str_table_ofs);
+
+	f->close();
+
+	return OK;
+}
+
+#endif
 
 void TranslationPO::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_plural_forms"), &TranslationPO::get_plural_forms);
