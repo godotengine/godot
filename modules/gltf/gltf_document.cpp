@@ -7788,9 +7788,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 			while (true) {
 				Vector3 scale;
 				Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-				ERR_CONTINUE(err != OK);
-				p_gltf_node_track.scale_track.values.push_back(scale);
-				p_gltf_node_track.scale_track.times.push_back(time);
+				if (err == OK) {
+					p_gltf_node_track.scale_track.values.push_back(scale);
+					p_gltf_node_track.scale_track.times.push_back(time);
+				} else {
+					ERR_PRINT(vformat("Error interpolating animation %s scale track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+				}
 				if (last) {
 					break;
 				}
@@ -7823,9 +7826,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 			while (true) {
 				Vector3 scale;
 				Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &scale);
-				ERR_CONTINUE(err != OK);
-				p_gltf_node_track.position_track.values.push_back(scale);
-				p_gltf_node_track.position_track.times.push_back(time);
+				if (err == OK) {
+					p_gltf_node_track.position_track.values.push_back(scale);
+					p_gltf_node_track.position_track.times.push_back(time);
+				} else {
+					ERR_PRINT(vformat("Error interpolating animation %s position track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+				}
 				if (last) {
 					break;
 				}
@@ -7858,9 +7864,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 			while (true) {
 				Quaternion rotation;
 				Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-				ERR_CONTINUE(err != OK);
-				p_gltf_node_track.rotation_track.values.push_back(rotation);
-				p_gltf_node_track.rotation_track.times.push_back(time);
+				if (err == OK) {
+					p_gltf_node_track.rotation_track.values.push_back(rotation);
+					p_gltf_node_track.rotation_track.times.push_back(time);
+				} else {
+					ERR_PRINT(vformat("Error interpolating animation %s value rotation track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+				}
 				if (last) {
 					break;
 				}
@@ -7900,9 +7909,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					while (true) {
 						Vector3 position;
 						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.position_track.values.push_back(position);
-						p_gltf_node_track.position_track.times.push_back(time);
+						if (err == OK) {
+							p_gltf_node_track.position_track.values.push_back(position);
+							p_gltf_node_track.position_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s value position track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
@@ -7933,9 +7945,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					while (true) {
 						Quaternion rotation;
 						Error err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.rotation_track.values.push_back(rotation);
-						p_gltf_node_track.rotation_track.times.push_back(time);
+						if (err == OK) {
+							p_gltf_node_track.rotation_track.values.push_back(rotation);
+							p_gltf_node_track.rotation_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s value rotation track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
@@ -7976,9 +7991,12 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 					while (true) {
 						Vector3 scale;
 						Error err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.scale_track.values.push_back(scale);
-						p_gltf_node_track.scale_track.times.push_back(time);
+						if (err == OK) {
+							p_gltf_node_track.scale_track.values.push_back(scale);
+							p_gltf_node_track.scale_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s scale track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
@@ -8021,17 +8039,22 @@ bool GLTFDocument::_convert_animation_node_track(Ref<GLTFState> p_state, GLTFAni
 						Quaternion rotation;
 						Vector3 scale;
 						Error err = p_godot_animation->try_position_track_interpolate(p_godot_anim_track_index, time, &position);
-						ERR_CONTINUE(err != OK);
-						err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
-						ERR_CONTINUE(err != OK);
-						err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
-						ERR_CONTINUE(err != OK);
-						p_gltf_node_track.position_track.values.push_back(position);
-						p_gltf_node_track.position_track.times.push_back(time);
-						p_gltf_node_track.rotation_track.values.push_back(rotation);
-						p_gltf_node_track.rotation_track.times.push_back(time);
-						p_gltf_node_track.scale_track.values.push_back(scale);
-						p_gltf_node_track.scale_track.times.push_back(time);
+						if (err == OK) {
+							err = p_godot_animation->try_rotation_track_interpolate(p_godot_anim_track_index, time, &rotation);
+							if (err == OK) {
+								err = p_godot_animation->try_scale_track_interpolate(p_godot_anim_track_index, time, &scale);
+							}
+						}
+						if (err == OK) {
+							p_gltf_node_track.position_track.values.push_back(position);
+							p_gltf_node_track.position_track.times.push_back(time);
+							p_gltf_node_track.rotation_track.values.push_back(rotation);
+							p_gltf_node_track.rotation_track.times.push_back(time);
+							p_gltf_node_track.scale_track.values.push_back(scale);
+							p_gltf_node_track.scale_track.times.push_back(time);
+						} else {
+							ERR_PRINT(vformat("Error interpolating animation %s transform track %d at time %f", p_godot_animation->get_name(), p_godot_anim_track_index, time));
+						}
 						if (last) {
 							break;
 						}
