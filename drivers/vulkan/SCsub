@@ -34,7 +34,7 @@ env_thirdparty_vma.disable_warnings()
 thirdparty_sources_vma = [thirdparty_dir + "/vk_mem_alloc.cpp"]
 
 if env["use_volk"]:
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_STATIC_VULKAN_FUNCTIONS=1"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_STATIC_VULKAN_FUNCTIONS", 1)])
     env_thirdparty_volk = env.Clone()
     env_thirdparty_volk.disable_warnings()
 
@@ -43,10 +43,10 @@ if env["use_volk"]:
 elif env["platform"] == "android":
     # Our current NDK version only provides old Vulkan headers,
     # so we have to limit VMA.
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1000000"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_VULKAN_VERSION", 1000000)])
 elif env["platform"] == "macos" or env["platform"] == "ios":
     # MoltenVK supports only Vulkan 1.1 API, limit VMA to the same version.
-    env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_VULKAN_VERSION=1001000"])
+    env_thirdparty_vma.AppendUnique(CPPDEFINES=[("VMA_VULKAN_VERSION", 1001000)])
 
 env_thirdparty_vma.add_source_files(thirdparty_obj, thirdparty_sources_vma)
 
