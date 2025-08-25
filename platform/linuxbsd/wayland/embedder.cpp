@@ -2268,7 +2268,7 @@ Error WaylandEmbedder::handle_msg_info(Client *client, const struct msg_info *in
 		// for old compositors which only implement undestroyable globals. We
 		// otherwise passthrough every bind request and then the compositor takes care
 		// of everything.
-		// See: https://lore.freedesktop.org/wayland-devel/7974118.ZATLvOeFn3@machina/
+		// See: https://lore.freedesktop.org/wayland-devel/20190326121421.06732fd2@eldfell.localdomain/
 		if (shared_objects.has(interface)) {
 			bool handled = false;
 
