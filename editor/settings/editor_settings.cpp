@@ -1965,17 +1965,17 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 }
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode, bool p_physical) {
-	PackedInt32Array arr;
-	arr.push_back((int32_t)p_keycode);
-	return ED_SHORTCUT_ARRAY(p_path, p_name, arr, p_physical);
+	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
+	if (sc.is_valid() && !sc->get_name().is_empty()) {
+		return sc;
+	}
+	return ED_SHORTCUT_ARRAY(p_path, p_name, { (int32_t)p_keycode }, p_physical);
 }
 
 Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, bool p_physical) {
 	Array events;
 
-	for (int i = 0; i < p_keycodes.size(); i++) {
-		Key keycode = (Key)p_keycodes[i];
-
+	for (Key keycode : p_keycodes) {
 		if (OS::get_singleton()->has_feature("macos") || OS::get_singleton()->has_feature("web_macos") || OS::get_singleton()->has_feature("web_ios")) {
 			// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 			if (keycode == Key::KEY_DELETE) {
@@ -2001,15 +2001,15 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
-		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", events.duplicate(true)); //to compare against changes
+		sc->set_name(p_name); // Keep name (the ones that come from disk have no name).
+		sc->set_meta("original", events.duplicate(true)); // To compare against changes.
 		return sc;
 	}
 
 	sc.instantiate();
 	sc->set_name(p_name);
 	sc->set_events(events);
-	sc->set_meta("original", events.duplicate(true)); //to compare against changes
+	sc->set_meta("original", events.duplicate(true)); // To compare against changes.
 	EditorSettings::get_singleton()->_add_shortcut_default(p_path, sc);
 
 	return sc;
