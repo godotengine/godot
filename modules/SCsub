@@ -27,6 +27,8 @@ register_module_types = env.CommandNoCache(
     env.Run(modules_builders.register_module_types_builder),
 )
 
+all_module_sources = []
+env_modules.add_source_files(all_module_sources, register_module_types)
 
 test_headers = []
 # libmodule_<name>.a for each active module.
@@ -37,9 +39,7 @@ for name, path in env.module_list.items():
     base_path = path if os.path.isabs(path) else name
     SConscript(base_path + "/SCsub")
 
-    if env.modules_sources:
-        lib = env_modules.add_library("module_%s" % name, env.modules_sources)
-        env.Prepend(LIBS=[lib])
+    all_module_sources.extend(env.modules_sources)
 
     if env["tests"]:
         # Lookup potential headers in `tests` subfolder.
@@ -54,10 +54,4 @@ for name, path in env.module_list.items():
 if env["tests"]:
     env.CommandNoCache("modules_tests.gen.h", test_headers, env.Run(modules_builders.modules_tests_builder))
 
-# libmodules.a with only register_module_types.
-# Must be last so that all libmodule_<name>.a libraries are on the right side
-# in the linker command.
-env.modules_sources = []
-env_modules.add_source_files(env.modules_sources, register_module_types)
-lib = env_modules.add_library("modules", env.modules_sources)
-env.Prepend(LIBS=[lib])
+env.modules_sources = all_module_sources
