@@ -1201,6 +1201,11 @@ struct _VariantCall {
 		r_ret = callable->bindp(p_args, p_argcount);
 	}
 
+	static void func_Callable_prebind(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
+		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
+		r_ret = callable->prebindp(p_args, p_argcount);
+	}
+
 	static int func_Callable_get_argument_count(Callable *p_callable) {
 		return p_callable->get_argument_count();
 	}
@@ -2308,6 +2313,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_custom(Callable, rpc, _VariantCall::func_Callable_rpc, false, Variant);
 	bind_custom1(Callable, rpc_id, _VariantCall::func_Callable_rpc_id, Variant::INT, "peer_id");
 	bind_custom(Callable, bind, _VariantCall::func_Callable_bind, true, Callable);
+	bind_custom(Callable, prebind, _VariantCall::func_Callable_prebind, true, Callable);
 
 	/* Signal */
 
