@@ -2368,7 +2368,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, is_finite, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
-	bind_static_method(Basis, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3(0, 1, 0), false));
+	bind_static_method(Basis, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3::UP, false));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
 	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray((int64_t)EulerOrder::YXZ));
 
@@ -2411,7 +2411,7 @@ static void _register_variant_builtin_methods_misc() {
 	bind_method(Transform3D, scaled_local, sarray("scale"), varray());
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, translated_local, sarray("offset"), varray());
-	bind_method(Transform3D, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3(0, 1, 0), false));
+	bind_method(Transform3D, looking_at, sarray("target", "up", "use_model_front"), varray(Vector3::UP, false));
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform3D, is_finite, sarray(), varray());
@@ -2872,19 +2872,19 @@ static void _register_variant_builtin_constants() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ZERO", Vector3(0, 0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "ONE", Vector3(1, 1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "INF", Vector3(Math::INF, Math::INF, Math::INF));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3(-1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3(1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3(0, 1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "DOWN", Vector3(0, -1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "LEFT", Vector3::LEFT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "RIGHT", Vector3::RIGHT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "UP", Vector3::UP);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "DOWN", Vector3::DOWN);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3::FORWARD);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3::BACK);
 
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_LEFT", Vector3(1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_RIGHT", Vector3(-1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_TOP", Vector3(0, 1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_BOTTOM", Vector3(0, -1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_FRONT", Vector3(0, 0, 1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_REAR", Vector3(0, 0, -1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_LEFT", Vector3::MODEL_LEFT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_RIGHT", Vector3::MODEL_RIGHT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_TOP", Vector3::MODEL_TOP);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_BOTTOM", Vector3::MODEL_BOTTOM);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_FRONT", Vector3::MODEL_FRONT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "MODEL_REAR", Vector3::MODEL_REAR);
 
 	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_X", Vector4::AXIS_X);
 	_VariantCall::add_enum_constant(Variant::VECTOR4, "Axis", "AXIS_Y", Vector4::AXIS_Y);
@@ -2913,12 +2913,12 @@ static void _register_variant_builtin_constants() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "ONE", Vector3i(1, 1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MIN", Vector3i(INT32_MIN, INT32_MIN, INT32_MIN));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "MAX", Vector3i(INT32_MAX, INT32_MAX, INT32_MAX));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i(-1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "RIGHT", Vector3i(1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "UP", Vector3i(0, 1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "DOWN", Vector3i(0, -1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "FORWARD", Vector3i(0, 0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR3I, "BACK", Vector3i(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "LEFT", Vector3i::LEFT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "RIGHT", Vector3i::RIGHT);
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "UP", Vector3i::UP);
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "DOWN", Vector3i::DOWN);
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "FORWARD", Vector3i::FORWARD);
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "BACK", Vector3i::BACK);
 
 	_VariantCall::add_enum_constant(Variant::VECTOR2, "Axis", "AXIS_X", Vector2::AXIS_X);
 	_VariantCall::add_enum_constant(Variant::VECTOR2, "Axis", "AXIS_Y", Vector2::AXIS_Y);
@@ -2929,47 +2929,39 @@ static void _register_variant_builtin_constants() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ZERO", Vector2(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "ONE", Vector2(1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "INF", Vector2(Math::INF, Math::INF));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2(-1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2(1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2(0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "LEFT", Vector2::LEFT);
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "RIGHT", Vector2::RIGHT);
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2::UP);
+	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2::DOWN);
 
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ZERO", Vector2i(0, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "ONE", Vector2i(1, 1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MIN", Vector2i(INT32_MIN, INT32_MIN));
 	_VariantCall::add_variant_constant(Variant::VECTOR2I, "MAX", Vector2i(INT32_MAX, INT32_MAX));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i(-1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i(1, 0));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i(0, -1));
-	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i(0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "LEFT", Vector2i::LEFT);
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "RIGHT", Vector2i::RIGHT);
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "UP", Vector2i::UP);
+	_VariantCall::add_variant_constant(Variant::VECTOR2I, "DOWN", Vector2i::DOWN);
 
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D());
-	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
-	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D::FLIP_X);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D::FLIP_Y);
 
-	Transform3D identity_transform;
-	Transform3D flip_x_transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
-	Transform3D flip_y_transform = Transform3D(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
-	Transform3D flip_z_transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "IDENTITY", identity_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_X", flip_x_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Y", flip_y_transform);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Z", flip_z_transform);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "IDENTITY", Transform3D());
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_X", Transform3D::FLIP_X);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Y", Transform3D::FLIP_Y);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM3D, "FLIP_Z", Transform3D::FLIP_Z);
 
-	Basis identity_basis;
-	Basis flip_x_basis = Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);
-	Basis flip_y_basis = Basis(1, 0, 0, 0, -1, 0, 0, 0, 1);
-	Basis flip_z_basis = Basis(1, 0, 0, 0, 1, 0, 0, 0, -1);
-	_VariantCall::add_variant_constant(Variant::BASIS, "IDENTITY", identity_basis);
-	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_X", flip_x_basis);
-	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Y", flip_y_basis);
-	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Z", flip_z_basis);
+	_VariantCall::add_variant_constant(Variant::BASIS, "IDENTITY", Basis());
+	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_X", Basis::FLIP_X);
+	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Y", Basis::FLIP_Y);
+	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Z", Basis::FLIP_Z);
 
-	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_YZ", Plane(Vector3(1, 0, 0), 0));
-	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XZ", Plane(Vector3(0, 1, 0), 0));
-	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane(Vector3(0, 0, 1), 0));
+	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_YZ", Plane::PLANE_YZ);
+	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XZ", Plane::PLANE_XZ);
+	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XY", Plane::PLANE_XY);
 
-	_VariantCall::add_variant_constant(Variant::QUATERNION, "IDENTITY", Quaternion(0, 0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::QUATERNION, "IDENTITY", Quaternion());
 
 	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_NEAR", Projection::PLANE_NEAR);
 	_VariantCall::add_enum_constant(Variant::PROJECTION, "Planes", "PLANE_FAR", Projection::PLANE_FAR);
