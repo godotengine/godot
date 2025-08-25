@@ -1221,6 +1221,13 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	uint32_t *slot_flags = slot_flags_stack;
 	uint32_t slot_count = 0;
 
+	// If this is a ref-counted object, prevent it from being destroyed during signal
+	// emission,which is needed in certain edge cases; e.g., GH-73889 and GH-109471.
+	// Moreover, since signals can be emitted from constructors (classic example being
+	// notify_property_list_changed), we must be careful not to do the ref init ourselves,
+	// which would lead to the object being destroyed at the end of this function.
+	bool pending_unref = Object::cast_to<RefCounted>(this) ? ((RefCounted *)this)->reference() : false;
+
 	{
 		OBJ_SIGNAL_LOCK
 
@@ -1234,10 +1241,6 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 			//not connected? just return
 			return ERR_UNAVAILABLE;
 		}
-
-		// If this is a ref-counted object, prevent it from being destroyed during signal emission,
-		// which is needed in certain edge cases; e.g., https://github.com/godotengine/godot/issues/73889.
-		Ref<RefCounted> rc = Ref<RefCounted>(Object::cast_to<RefCounted>(this));
 
 		if (s->slot_map.size() > MAX_SLOTS_ON_STACK) {
 			slot_callables = (Callable *)memalloc(sizeof(Callable) * s->slot_map.size());
@@ -1318,6 +1321,15 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 	if (slot_callables != (Callable *)slot_callable_stack) {
 		memfree(slot_callables);
 		memfree(slot_flags);
+	}
+
+	if (pending_unref) {
+		// We have to do the same RefCounted would do. We can't just use RefCounted
+		// because it would do the init ref logic, which is something this function
+		// shouldn't do, as explained above.
+		if (((RefCounted *)this)->unreference()) {
+			memdelete(this);
+		}
 	}
 
 	return err;
