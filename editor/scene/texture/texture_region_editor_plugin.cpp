@@ -38,7 +38,9 @@
 #include "editor/settings/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/sprite_2d.h"
+#ifndef _3D_DISABLED
 #include "scene/3d/sprite_3d.h"
+#endif // _3D_DISABLED
 #include "scene/gui/nine_patch_rect.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -399,8 +401,10 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 									Rect2 r;
 									if (node_sprite_2d) {
 										r = node_sprite_2d->get_region_rect();
+#ifndef _3D_DISABLED
 									} else if (node_sprite_3d) {
 										r = node_sprite_3d->get_region_rect();
+#endif // _3D_DISABLED
 									} else if (node_ninepatch) {
 										r = node_ninepatch->get_region_rect();
 									} else if (res_stylebox.is_valid()) {
@@ -416,9 +420,11 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 								if (node_sprite_2d) {
 									undo_redo->add_do_method(node_sprite_2d, "set_region_rect", rect);
 									undo_redo->add_undo_method(node_sprite_2d, "set_region_rect", node_sprite_2d->get_region_rect());
+#ifndef _3D_DISABLED
 								} else if (node_sprite_3d) {
 									undo_redo->add_do_method(node_sprite_3d, "set_region_rect", rect);
 									undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
+#endif // _3D_DISABLED
 								} else if (node_ninepatch) {
 									undo_redo->add_do_method(node_ninepatch, "set_region_rect", rect);
 									undo_redo->add_undo_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
@@ -466,9 +472,11 @@ void TextureRegionEditor::_texture_overlay_input(const Ref<InputEvent> &p_input)
 					if (node_sprite_2d) {
 						undo_redo->add_do_method(node_sprite_2d, "set_region_rect", node_sprite_2d->get_region_rect());
 						undo_redo->add_undo_method(node_sprite_2d, "set_region_rect", rect_prev);
+#ifndef _3D_DISABLED
 					} else if (node_sprite_3d) {
 						undo_redo->add_do_method(node_sprite_3d, "set_region_rect", node_sprite_3d->get_region_rect());
 						undo_redo->add_undo_method(node_sprite_3d, "set_region_rect", rect_prev);
+#endif // _3D_DISABLED
 					} else if (node_ninepatch) {
 						undo_redo->add_do_method(node_ninepatch, "set_region_rect", node_ninepatch->get_region_rect());
 						undo_redo->add_undo_method(node_ninepatch, "set_region_rect", rect_prev);
@@ -741,8 +749,10 @@ void TextureRegionEditor::_zoom_out() {
 void TextureRegionEditor::_apply_rect(const Rect2 &p_rect) {
 	if (node_sprite_2d) {
 		node_sprite_2d->set_region_rect(p_rect);
+#ifndef _3D_DISABLED
 	} else if (node_sprite_3d) {
 		node_sprite_3d->set_region_rect(p_rect);
+#endif // _3D_DISABLED
 	} else if (node_ninepatch) {
 		node_ninepatch->set_region_rect(p_rect);
 	} else if (res_stylebox.is_valid()) {
@@ -872,7 +882,11 @@ void TextureRegionEditor::_notification(int p_what) {
 }
 
 void TextureRegionEditor::_node_removed(Node *p_node) {
-	if (p_node == node_sprite_2d || p_node == node_sprite_3d || p_node == node_ninepatch) {
+	if (p_node == node_sprite_2d
+#ifndef _3D_DISABLED
+			|| p_node == node_sprite_3d
+#endif // _3D_DISABLED
+			|| p_node == node_ninepatch) {
 		_clear_edited_object();
 		hide();
 	}
@@ -882,9 +896,11 @@ void TextureRegionEditor::_clear_edited_object() {
 	if (node_sprite_2d) {
 		node_sprite_2d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
+#ifndef _3D_DISABLED
 	if (node_sprite_3d) {
 		node_sprite_3d->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
+#endif // _3D_DISABLED
 	if (node_ninepatch) {
 		node_ninepatch->disconnect(SceneStringName(texture_changed), callable_mp(this, &TextureRegionEditor::_texture_changed));
 	}
@@ -896,7 +912,9 @@ void TextureRegionEditor::_clear_edited_object() {
 	}
 
 	node_sprite_2d = nullptr;
+#ifndef _3D_DISABLED
 	node_sprite_3d = nullptr;
+#endif // _3D_DISABLED
 	node_ninepatch = nullptr;
 	res_stylebox = Ref<StyleBoxTexture>();
 	res_atlas_texture = Ref<AtlasTexture>();
@@ -907,7 +925,9 @@ void TextureRegionEditor::edit(Object *p_obj) {
 
 	if (p_obj) {
 		node_sprite_2d = Object::cast_to<Sprite2D>(p_obj);
+#ifndef _3D_DISABLED
 		node_sprite_3d = Object::cast_to<Sprite3D>(p_obj);
+#endif // _3D_DISABLED
 		node_ninepatch = Object::cast_to<NinePatchRect>(p_obj);
 
 		bool is_resource = false;
@@ -938,9 +958,11 @@ Ref<Texture2D> TextureRegionEditor::_get_edited_object_texture() const {
 	if (node_sprite_2d) {
 		return node_sprite_2d->get_texture();
 	}
+#ifndef _3D_DISABLED
 	if (node_sprite_3d) {
 		return node_sprite_3d->get_texture();
 	}
+#endif // _3D_DISABLED
 	if (node_ninepatch) {
 		return node_ninepatch->get_texture();
 	}
@@ -959,8 +981,10 @@ Rect2 TextureRegionEditor::_get_edited_object_region() const {
 
 	if (node_sprite_2d) {
 		region = node_sprite_2d->get_region_rect();
+#ifndef _3D_DISABLED
 	} else if (node_sprite_3d) {
 		region = node_sprite_3d->get_region_rect();
+#endif // _3D_DISABLED
 	} else if (node_ninepatch) {
 		region = node_ninepatch->get_region_rect();
 	} else if (res_stylebox.is_valid()) {
@@ -999,6 +1023,7 @@ void TextureRegionEditor::_edit_region() {
 	CanvasItem::TextureFilter filter = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
 	if (node_sprite_2d) {
 		filter = node_sprite_2d->get_texture_filter_in_tree();
+#ifndef _3D_DISABLED
 	} else if (node_sprite_3d) {
 		StandardMaterial3D::TextureFilter filter_3d = node_sprite_3d->get_texture_filter();
 
@@ -1026,6 +1051,7 @@ void TextureRegionEditor::_edit_region() {
 				filter = CanvasItem::TEXTURE_FILTER_PARENT_NODE;
 				break;
 		}
+#endif // _3D_DISABLED
 	} else if (node_ninepatch) {
 		filter = node_ninepatch->get_texture_filter_in_tree();
 	}
@@ -1287,7 +1313,11 @@ TextureRegionEditor::TextureRegionEditor() {
 ////////////////////////
 
 bool EditorInspectorPluginTextureRegion::can_handle(Object *p_object) {
-	return Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object) || Object::cast_to<AtlasTexture>(p_object);
+	return Object::cast_to<Sprite2D>(p_object)
+#ifndef _3D_DISABLED
+			|| Object::cast_to<Sprite3D>(p_object)
+#endif // _3D_DISABLED
+			|| Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object) || Object::cast_to<AtlasTexture>(p_object);
 }
 
 void EditorInspectorPluginTextureRegion::_region_edit(Object *p_object) {
@@ -1296,7 +1326,13 @@ void EditorInspectorPluginTextureRegion::_region_edit(Object *p_object) {
 
 bool EditorInspectorPluginTextureRegion::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	if ((p_type == Variant::RECT2 || p_type == Variant::RECT2I)) {
-		if (((Object::cast_to<Sprite2D>(p_object) || Object::cast_to<Sprite3D>(p_object) || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) && p_path == "region_rect") || (Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
+		if (((Object::cast_to<Sprite2D>(p_object)
+#ifndef _3D_DISABLED
+					 || Object::cast_to<Sprite3D>(p_object)
+#endif // _3D_DISABLED
+					 || Object::cast_to<NinePatchRect>(p_object) || Object::cast_to<StyleBoxTexture>(p_object)) &&
+					p_path == "region_rect") ||
+				(Object::cast_to<AtlasTexture>(p_object) && p_path == "region")) {
 			EditorInspectorActionButton *button = memnew(EditorInspectorActionButton(TTRC("Edit Region"), SNAME("RegionEdit")));
 			button->connect(SceneStringName(pressed), callable_mp(this, &EditorInspectorPluginTextureRegion::_region_edit).bind(p_object));
 			add_property_editor(p_path, button, true);
