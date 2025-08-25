@@ -90,7 +90,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
-    env.Append(CCFLAGS=["-fobjc-arc"])
+    env.Append(CCFLAGS=["-fobjc-arc", "-fvisibility=hidden"])
 
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
