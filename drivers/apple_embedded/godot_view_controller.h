@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  main.mm                                                               */
+/*  godot_view_controller.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,43 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "os_visionos.h"
-
-#import "drivers/apple_embedded/godot_app_delegate.h"
-#import "drivers/apple_embedded/main_utilities.h"
-#include "main/main.h"
+#pragma once
 
 #import <UIKit/UIKit.h>
-#include <cstdio>
 
-static OS_VisionOS *os = nullptr;
+@class GDTView;
+@class GDTKeyboardInputView;
 
-int apple_embedded_main(int argc, char **argv) {
-	change_to_launch_dir(argv);
+@interface GDTViewController : UIViewController
 
-	os = new OS_VisionOS();
+@property(nonatomic, readonly, strong) GDTView *godotView;
+@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
 
-	// We must override main when testing is enabled
-	TEST_MAIN_OVERRIDE
-
-	char *fargv[64];
-	argc = process_args(argc, argv, fargv);
-
-	Error err = Main::setup(fargv[0], argc - 1, &fargv[1], false);
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
-	}
-
-	os->initialize_modules();
-
-	return os->get_exit_code();
-}
-
-void apple_embedded_finish() {
-	Main::cleanup();
-	delete os;
-}
+@end

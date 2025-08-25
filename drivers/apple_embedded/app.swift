@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  view_controller.h                                                     */
+/*  app.swift                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,16 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+import SwiftUI
+import UIKit
 
-#import <UIKit/UIKit.h>
+struct GodotSwiftUIViewController: UIViewControllerRepresentable {
 
-@class GDTView;
-@class GDTKeyboardInputView;
+	func makeUIViewController(context: Context) -> GDTViewController {
+		let viewController = GDTViewController()
+		GDTAppDelegateService.viewController = viewController
+		return viewController
+	}
 
-@interface GDTViewController : UIViewController
+	func updateUIViewController(_ uiViewController: GDTViewController, context: Context) {
+		// NOOP
+	}
 
-@property(nonatomic, readonly, strong) GDTView *godotView;
-@property(nonatomic, readonly, strong) GDTKeyboardInputView *keyboardView;
+}
 
-@end
+@main
+struct SwiftUIApp: App {
+	@UIApplicationDelegateAdaptor(GDTApplicationDelegate.self) var appDelegate
+
+	var body: some Scene {
+		WindowGroup {
+			GodotSwiftUIViewController()
+				.ignoresSafeArea()
+		}
+	}
+}

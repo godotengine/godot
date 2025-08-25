@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  keyboard_input_view.h                                                 */
+/*  bridging_header_apple_embedded.h                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,10 +30,6 @@
 
 #pragma once
 
-#import <UIKit/UIKit.h>
-
-@interface GDTKeyboardInputView : UITextView
-
-- (BOOL)becomeFirstResponderWithString:(NSString *)existingString cursorStart:(NSInteger)start cursorEnd:(NSInteger)end;
-
-@end
+#import "app_delegate_service.h"
+#import "godot_app_delegate.h"
+#import "godot_view_controller.h"

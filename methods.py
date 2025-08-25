@@ -42,8 +42,8 @@ def add_source_files_orig(self, sources, files, allow_gen=False):
             files = [f for f in files if not str(f).endswith(".gen.cpp")]
 
     # Add each path as compiled Object following environment (self) configuration
-    for path in files:
-        obj = self.Object(path)
+    for file in files:
+        obj = self.Object(file)
         if obj in sources:
             print_warning('Object "{}" already included in environment sources.'.format(obj))
             continue
@@ -437,6 +437,7 @@ def no_verbose(env):
 
     env["CXXCOMSTR"] = compile_source_message
     env["CCCOMSTR"] = compile_source_message
+    env["SWIFTCOMSTR"] = compile_source_message
     env["SHCCCOMSTR"] = compile_shared_source_message
     env["SHCXXCOMSTR"] = compile_shared_source_message
     env["ARCOMSTR"] = link_library_message
@@ -630,19 +631,19 @@ def detect_darwin_sdk_path(platform, env):
 
     elif platform == "ios":
         sdk_name = "iphoneos"
-        var_name = "IOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     elif platform == "iossimulator":
         sdk_name = "iphonesimulator"
-        var_name = "IOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     elif platform == "visionos":
         sdk_name = "xros"
-        var_name = "VISIONOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     elif platform == "visionossimulator":
         sdk_name = "xrsimulator"
-        var_name = "VISIONOS_SDK_PATH"
+        var_name = "APPLE_SDK_PATH"
 
     else:
         raise Exception("Invalid platform argument passed to detect_darwin_sdk_path")

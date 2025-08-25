@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  keyboard_input_view.mm                                                */
+/*  godot_keyboard_input_view.mm                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "keyboard_input_view.h"
+#import "godot_keyboard_input_view.h"
 
 #import "display_server_apple_embedded.h"
 #import "os_apple_embedded.h"
