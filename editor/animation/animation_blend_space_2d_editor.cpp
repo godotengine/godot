@@ -980,7 +980,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	edit_y->set_min(-1000);
 	edit_y->set_step(0.01);
 	edit_y->set_max(1000);
-	edit_y->set_accessibility_name(TTRC("Blend X Value"));
+	edit_y->set_accessibility_name(TTRC("Blend Y Value"));
 	edit_y->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_edit_point_pos));
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
@@ -1045,12 +1045,12 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 		bottom_vbox->add_child(min_x_value);
 		bottom_vbox->add_spacer();
 		label_x = memnew(LineEdit);
-		label_y->set_accessibility_name(TTRC("X Value"));
+		label_x->set_accessibility_name(TTRC("X Value"));
 		bottom_vbox->add_child(label_x);
 		label_x->set_expand_to_text_length_enabled(true);
 		bottom_vbox->add_spacer();
 		max_x_value = memnew(SpinBox);
-		max_x_value->set_accessibility_name(TTRC("Max Y"));
+		max_x_value->set_accessibility_name(TTRC("Max X"));
 		bottom_vbox->add_child(max_x_value);
 
 		max_x_value->set_max(10000);
