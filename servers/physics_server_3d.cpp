@@ -878,6 +878,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("soft_body_set_simulation_precision", "body", "simulation_precision"), &PhysicsServer3D::soft_body_set_simulation_precision);
 	ClassDB::bind_method(D_METHOD("soft_body_get_simulation_precision", "body"), &PhysicsServer3D::soft_body_get_simulation_precision);
 
+	ClassDB::bind_method(D_METHOD("soft_body_set_point_radius", "body", "radius"), &PhysicsServer3D::soft_body_set_point_radius);
+	ClassDB::bind_method(D_METHOD("soft_body_get_point_radius", "body"), &PhysicsServer3D::soft_body_get_point_radius);
+
 	ClassDB::bind_method(D_METHOD("soft_body_set_total_mass", "body", "total_mass"), &PhysicsServer3D::soft_body_set_total_mass);
 	ClassDB::bind_method(D_METHOD("soft_body_get_total_mass", "body"), &PhysicsServer3D::soft_body_get_total_mass);
 

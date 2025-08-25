@@ -338,6 +338,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_soft_body_set_simulation_precision, "body", "simulation_precision");
 	GDVIRTUAL_BIND(_soft_body_get_simulation_precision, "body");
 
+	GDVIRTUAL_BIND(_soft_body_set_point_radius, "body", "radius");
+	GDVIRTUAL_BIND(_soft_body_get_point_radius, "body");
+
 	GDVIRTUAL_BIND(_soft_body_set_total_mass, "body", "total_mass");
 	GDVIRTUAL_BIND(_soft_body_get_total_mass, "body");
 
