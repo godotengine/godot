@@ -68,6 +68,7 @@ private:
 	RID lightmap;
 	AABB bounds;
 	float baked_exposure = 1.0;
+	bool preview_bake = false;
 
 	struct User {
 		NodePath path;
@@ -117,6 +118,9 @@ public:
 
 	bool is_interior() const;
 	float get_baked_exposure() const;
+
+	void set_preview_bake(bool p_preview_bake);
+	bool is_preview_bake() const;
 
 	void set_capture_data(const AABB &p_bounds, bool p_interior, const PackedVector3Array &p_points, const PackedColorArray &p_point_sh, const PackedInt32Array &p_tetrahedra, const PackedInt32Array &p_bsp_tree, float p_baked_exposure);
 	PackedVector3Array get_capture_points() const;
@@ -254,6 +258,8 @@ private:
 		float to_percent = 0.0;
 	};
 
+	String _get_bake_quality_string(BakeQuality p_quality) const;
+	String _get_gen_probes_string(GenerateProbes p_gen_probes) const;
 	static bool _lightmap_bake_step_function(float p_completion, const String &p_text, void *ud, bool p_refresh);
 
 	struct GenProbesOctree {
@@ -272,7 +278,7 @@ private:
 	void _plot_triangle_into_octree(GenProbesOctree *p_cell, float p_cell_size, const Vector3 *p_triangle);
 	void _gen_new_positions_from_octree(const GenProbesOctree *p_cell, float p_cell_size, const Vector<Vector3> &probe_positions, LocalVector<Vector3> &new_probe_positions, HashMap<Vector3i, bool> &positions_used, const AABB &p_bounds);
 
-	BakeError _save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask = false) const;
+	BakeError _save_and_reimport_atlas_textures(const Ref<Lightmapper> p_lightmapper, const String &p_base_name, TypedArray<TextureLayered> &r_textures, bool p_is_shadowmask = false, bool p_preview_bake = false) const;
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -348,7 +354,7 @@ public:
 
 	AABB get_aabb() const override;
 
-	BakeError bake(Node *p_from_node, String p_image_data_path = "", Lightmapper::BakeStepFunc p_bake_step = nullptr, void *p_bake_userdata = nullptr);
+	BakeError bake(Node *p_from_node, String p_image_data_path = "", Lightmapper::BakeStepFunc p_bake_step = nullptr, void *p_bake_userdata = nullptr, bool p_preview_bake = false);
 
 	virtual PackedStringArray get_configuration_warnings() const override;
 
