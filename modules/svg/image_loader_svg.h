@@ -37,13 +37,13 @@ class ImageLoaderSVG : public ImageFormatLoader {
 
 	static void _replace_color_property(const HashMap<Color, Color> &p_color_map, const String &p_prefix, String &r_string);
 
-	static Ref<Image> load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale);
+	static Ref<Image> load_mem_svg(const uint8_t *p_svg, int p_size, float p_scale, bool p_premult_alpha = false);
 
 public:
 	static void set_forced_color_map(const HashMap<Color, Color> &p_color_map);
 
-	static Error create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample);
-	static Error create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample);
+	static Error create_image_from_utf8_buffer(Ref<Image> p_image, const uint8_t *p_buffer, int p_buffer_size, float p_scale, bool p_upsample, bool p_output_premult_alpha = false);
+	static Error create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample, bool p_output_premult_alpha = false);
 
 	static Error create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map);
 
