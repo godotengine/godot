@@ -1692,7 +1692,7 @@ void SceneTreeEditor::set_marked(Node *p_marked, bool p_selectable, bool p_child
 
 void SceneTreeEditor::set_filter(const String &p_filter) {
 	if (filter != p_filter) {
-		suppress_filter_removal = false;
+		suppress_filter_removal = preserve_selection_when_filtering;
 	}
 	filter = p_filter;
 	_update_filter(nullptr, true);
@@ -2067,6 +2067,13 @@ void SceneTreeEditor::set_hide_filtered_out_parents(bool p_hide, bool p_update_s
 		node_cache.force_update = true;
 		_update_tree();
 	}
+}
+
+void SceneTreeEditor::set_preserve_selection_when_filtering(bool p_enable, bool p_update_settings) {
+	if (p_update_settings) {
+		EditorSettings::get_singleton()->set("docks/scene_tree/preserve_selection_when_filtering", p_enable);
+	}
+	preserve_selection_when_filtering = p_enable;
 }
 
 void SceneTreeEditor::set_accessibility_warnings(bool p_enable, bool p_update_settings) {

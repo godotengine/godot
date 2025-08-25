@@ -185,6 +185,7 @@ class SceneTreeEditor : public Control {
 	bool tree_dirty = true;
 	bool pending_test_update = false;
 	bool suppress_filter_removal = false;
+	bool preserve_selection_when_filtering = false;
 	Timer *update_node_tooltip_delay = nullptr;
 
 	static void _bind_methods();
@@ -252,6 +253,7 @@ public:
 
 	void set_auto_expand_selected(bool p_auto, bool p_update_settings);
 	void set_hide_filtered_out_parents(bool p_hide, bool p_update_settings);
+	void set_preserve_selection_when_filtering(bool p_enable, bool p_update_settings);
 	void set_accessibility_warnings(bool p_enable, bool p_update_settings);
 	void set_connect_to_script_mode(bool p_enable);
 	void set_connecting_signal(bool p_enable);

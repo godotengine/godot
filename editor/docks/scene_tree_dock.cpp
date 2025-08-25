@@ -1267,6 +1267,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_ACCESSIBILITY_WARNINGS: {
 			scene_tree->set_accessibility_warnings(!EDITOR_GET("docks/scene_tree/accessibility_warnings"), true);
 		} break;
+		case TOOL_PRESERVE_SELECTION: {
+			scene_tree->set_preserve_selection_when_filtering(!EDITOR_GET("docks/scene_tree/preserve_selection_when_filtering"), true);
+		} break;
 		case TOOL_SCENE_EDITABLE_CHILDREN: {
 			if (!profile_allow_editing) {
 				break;
@@ -1699,6 +1702,7 @@ void SceneTreeDock::_notification(int p_what) {
 			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 			scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
 			scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
+			scene_tree->set_preserve_selection_when_filtering(EDITOR_GET("docks/scene_tree/preserve_selection_when_filtering"), false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1710,6 +1714,7 @@ void SceneTreeDock::_notification(int p_what) {
 				scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 				scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
 				scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
+				scene_tree->set_preserve_selection_when_filtering(EDITOR_GET("docks/scene_tree/preserve_selection_when_filtering"), false);
 			}
 		} break;
 
@@ -4034,6 +4039,10 @@ void SceneTreeDock::_update_tree_menu() {
 
 	tree_menu->add_check_item(TTR("Hide Filtered Out Parents"), TOOL_HIDE_FILTERED_OUT_PARENTS);
 	tree_menu->set_item_checked(-1, EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"));
+
+	tree_menu->add_check_item(TTR("Preserve Selection"), TOOL_PRESERVE_SELECTION);
+	tree_menu->set_item_checked(-1, EDITOR_GET("docks/scene_tree/preserve_selection_when_filtering"));
+	tree_menu->set_item_tooltip(-1, TTR("Keep selected nodes when filtering.\nWhen disabled, nodes that don't match the filter will be deselected."));
 
 	tree_menu->add_separator();
 	tree_menu->add_check_item(TTR("Show Accessibility Warnings"), TOOL_ACCESSIBILITY_WARNINGS);
