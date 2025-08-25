@@ -98,7 +98,9 @@ protected:
 	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 
+#ifndef PHYSICS_2D_DISABLED
 	void _notification(int p_what);
+#endif
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED

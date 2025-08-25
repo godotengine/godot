@@ -505,7 +505,7 @@
 	</methods>
 	<members>
 		<member name="collision_animatable" type="bool" setter="set_collision_animatable" getter="is_collision_animatable" default="false">
-			If enabled, the TileMap will see its collisions synced to the physics tick and change its collision type from static to kinematic. This is required to create TileMap-based moving platform.
+			If enabled, the TileMap will see its movement synced to the physics tick and change its collision type from static to kinematic. This is required to create a TileMap-based moving platform.
 			[b]Note:[/b] Enabling [member collision_animatable] may have a small performance impact, only do it if the TileMap is moving and has colliding tiles.
 		</member>
 		<member name="collision_visibility_mode" type="int" setter="set_collision_visibility_mode" getter="get_collision_visibility_mode" enum="TileMap.VisibilityMode" default="0">
