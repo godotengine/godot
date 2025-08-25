@@ -46,6 +46,7 @@ void MainLoop::_bind_methods() {
 
 	GDVIRTUAL_BIND(_initialize);
 	GDVIRTUAL_BIND(_physics_process, "delta");
+	GDVIRTUAL_BIND(_late_physics_process, "delta");
 	GDVIRTUAL_BIND(_process, "delta");
 	GDVIRTUAL_BIND(_finalize);
 }
@@ -57,6 +58,12 @@ void MainLoop::initialize() {
 bool MainLoop::physics_process(double p_time) {
 	bool quit = false;
 	GDVIRTUAL_CALL(_physics_process, p_time, quit);
+	return quit;
+}
+
+bool MainLoop::late_physics_process(double p_time) {
+	bool quit = false;
+	GDVIRTUAL_CALL(_late_physics_process, p_time, quit);
 	return quit;
 }
 
