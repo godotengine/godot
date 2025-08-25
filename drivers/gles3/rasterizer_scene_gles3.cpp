@@ -198,7 +198,7 @@ void RasterizerSceneGLES3::_geometry_instance_dependency_deleted(const RID &p_de
 	static_cast<GeometryInstanceGLES3 *>(p_tracker->userdata)->data->dirty_dependencies = true;
 }
 
-void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint32_t p_shader_id, RID p_mesh) {
+void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(GeometryInstanceGLES3 *ginstance, uint32_t p_surface, GLES3::SceneMaterialData *p_material, uint32_t p_material_id, uint8_t p_material_depth, uint32_t p_shader_id, RID p_mesh) {
 	GLES3::MeshStorage *mesh_storage = GLES3::MeshStorage::get_singleton();
 
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
@@ -297,13 +297,17 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	sdcache->sort.sort_key1 = 0;
 	sdcache->sort.sort_key2 = 0;
+	sdcache->transparent_sort.sort_key = 0;
 
-	sdcache->sort.surface_index = p_surface;
+	sdcache->transparent_sort.surface_index = sdcache->sort.surface_index = p_surface;
+	sdcache->transparent_sort.material_id = p_material_id;
 	sdcache->sort.material_id_low = p_material_id & 0x0000FFFF;
 	sdcache->sort.material_id_hi = p_material_id >> 16;
-	sdcache->sort.shader_id = p_shader_id;
-	sdcache->sort.geometry_id = p_mesh.get_local_index();
+	sdcache->transparent_sort.shader_id = sdcache->sort.shader_id = p_shader_id;
+	sdcache->transparent_sort.geometry_id = sdcache->sort.geometry_id = p_mesh.get_local_index();
 	sdcache->sort.priority = p_material->priority;
+
+	sdcache->transparent_sort.material_depth = p_material_depth;
 
 	GLES3::Mesh::Surface *s = reinterpret_cast<GLES3::Mesh::Surface *>(sdcache->surface);
 	if (p_material->shader_data->uses_tangent && !(s->format & RS::ARRAY_FORMAT_TANGENT)) {
@@ -317,9 +321,11 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material_chain(Ge
 	GLES3::SceneMaterialData *material_data = p_material_data;
 	GLES3::MaterialStorage *material_storage = GLES3::MaterialStorage::get_singleton();
 
-	_geometry_instance_add_surface_with_material(ginstance, p_surface, material_data, p_mat_src.get_local_index(), material_storage->material_get_shader_id(p_mat_src), p_mesh);
+	uint8_t material_depth = 0;
+	_geometry_instance_add_surface_with_material(ginstance, p_surface, material_data, p_mat_src.get_local_index(), material_depth, material_storage->material_get_shader_id(p_mat_src), p_mesh);
 
 	while (material_data->next_pass.is_valid()) {
+		material_depth++;
 		RID next_pass = material_data->next_pass;
 		material_data = static_cast<GLES3::SceneMaterialData *>(material_storage->material_get_data(next_pass, RS::SHADER_SPATIAL));
 		if (!material_data || !material_data->shader_data->valid) {
@@ -328,7 +334,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material_chain(Ge
 		if (ginstance->data->dirty_dependencies) {
 			material_storage->material_update_dependency(next_pass, &ginstance->data->dependency_tracker);
 		}
-		_geometry_instance_add_surface_with_material(ginstance, p_surface, material_data, next_pass.get_local_index(), material_storage->material_get_shader_id(next_pass), p_mesh);
+		_geometry_instance_add_surface_with_material(ginstance, p_surface, material_data, next_pass.get_local_index(), material_depth, material_storage->material_get_shader_id(next_pass), p_mesh);
 	}
 }
 
@@ -2402,7 +2408,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	_fill_render_list(RENDER_LIST_OPAQUE, &render_data, PASS_MODE_COLOR);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
-	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
+
+	// sorts in the order of:
+	// 1. material priority
+	// 2. object depth
+	// 3. surface index
+	// 4. material depth used for next-pass sorting
+	// 5. object ids used for constant buffer sorting
+	render_list[RENDER_LIST_ALPHA].sort_by_standard_scene_sort();
 
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
