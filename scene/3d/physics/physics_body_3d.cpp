@@ -220,6 +220,10 @@ PackedStringArray PhysicsBody3D::get_configuration_warnings() const {
 	return warnings;
 }
 
+PhysicsBody3D::PhysicsBody3D() {
+	_define_ancestry(AncestralClass::PHYSICS_BODY_3D);
+}
+
 ///////////////////////////////////////
 
 //so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
