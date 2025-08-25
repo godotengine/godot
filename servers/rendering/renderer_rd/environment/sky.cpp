@@ -135,6 +135,8 @@ void SkyRD::SkyShaderData::set_code(const String &p_code) {
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
 	texture_uniforms = gen_code.texture_uniforms;
+	uniform_buffers = gen_code.uniform_buffers;
+	storage_buffers = gen_code.storage_buffers;
 
 	//update pipelines
 
@@ -190,7 +192,7 @@ bool SkyRD::SkyMaterialData::update_parameters(const HashMap<StringName, Variant
 
 	uniform_set_updated = true;
 
-	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, p_buffer_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, p_buffer_params, shader_data->uniform_buffers, shader_data->ubo_size, uniform_set, scene_singleton->sky.sky_shader.shader.version_get_shader(shader_data->version, 0), SKY_SET_MATERIAL, true, true);
+	return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, p_buffer_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, p_buffer_params, shader_data->uniform_buffers, shader_data->storage_buffers, shader_data->ubo_size, uniform_set, scene_singleton->sky.sky_shader.shader.version_get_shader(shader_data->version, 0), SKY_SET_MATERIAL, true, true);
 }
 
 SkyRD::SkyMaterialData::~SkyMaterialData() {

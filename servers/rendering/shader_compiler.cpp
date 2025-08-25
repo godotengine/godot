@@ -448,8 +448,8 @@ static String _get_global_shader_uniform_from_type_and_index(const String &p_buf
 	}
 }
 
-// helper function for calculating offsets for uniform buffers
-uint32_t get_offset(SL::MemberNode *m, uint32_t &offset, const SL::ShaderNode *shader) {
+// helper function for calculating offsets for buffers
+uint32_t get_offset(SL::MemberNode *m, uint32_t &offset, const SL::ShaderNode *shader, SL::ShaderNode::Buffer::BufferFormat format = SL::ShaderNode::Buffer::BUFFORMAT_STD140) {
 	int d_alignment;
 	int d_size;
 	uint32_t local_offset;
@@ -601,7 +601,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			uniform_alignments.resize(max_uniforms);
 			uniform_defines.resize(max_uniforms);
 			bool uses_uniforms = false;
-			int last_texture_binding = actions.base_texture_binding_index - 1; // minus one for reasons I don't fully understand but whatever
+			int last_texture_binding = -1; // negative 1 means no texture buffers
 			Vector<StringName> uniform_names;
 
 			for (const KeyValue<StringName, SL::ShaderNode::Uniform> &E : pnode->uniforms) {
@@ -706,26 +706,53 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				r_gen_code.uniforms += uniform_defines[i];
 			}
 
-			// buffers
+			
+			
+			// add up
+			int offset = 0;
+			for (int i = 0; i < uniform_sizes.size(); i++) {
+				int align = offset % uniform_alignments[i];
 
-			int buffer_count = last_texture_binding + 1;
-			// first, handle named buffers
-			Vector<StringName> buffer_names;
+				if (align != 0) {
+					offset += uniform_alignments[i] - align;
+				}
 
-			for (const KeyValue<StringName, SL::ShaderNode::Buffer> &E : pnode->buffers) {
-				buffer_names.push_back(E.key);
+				r_gen_code.uniform_offsets.push_back(offset);
+
+				offset += uniform_sizes[i];
 			}
 
-			buffer_names.sort_custom<StringName::AlphCompare>();
+			r_gen_code.uniform_total_size = offset;
 
-			for (int i = 0; i < buffer_names.size(); i++) {
-				SL::ShaderNode::Buffer buf = pnode->buffers[buffer_names[i]];
+			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
+				r_gen_code.uniform_total_size += 16 - (r_gen_code.uniform_total_size % 16);
+			}
+
+			// buffers
+
+			// use the base texture binding index if no textures were bound
+			int buffer_binding_index = last_texture_binding == -1 ? actions.base_texture_binding_index : last_texture_binding + 1;
+
+			Vector<SL::ShaderNode::Buffer> buffers;
+
+			// get all named buffers
+
+			for (const KeyValue<StringName, SL::ShaderNode::Buffer> &E : pnode->buffers) {
+				buffers.push_back(E.value);
+			}
+
+			// get all unnamed buffers
+			for (const SL::ShaderNode::Buffer &E : pnode->unnamed_buffers) {
+				buffers.push_back(E);
+			}
+			int ubuf_count = 0;
+			for (const SL::ShaderNode::Buffer &buf : buffers) {
 				String buffer_code;
 				bool is_uniform = false;
 
 				//specify layout
-				buffer_code += "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(buffer_count) + ",";
-				buffer_count++;
+				buffer_code += "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(buffer_binding_index) + ", ";
+				buffer_binding_index++;
 
 				switch (buf.format) {
 					case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
@@ -763,7 +790,11 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				}
 
 				if (buf.name_bind.is_empty()) {
-					buffer_code += "userBuffer_" + buf.name;
+					if (buf.name.is_empty()) {
+						buffer_code += "userBuffer_" + itos(ubuf_count++);
+					} else {
+						buffer_code += "userBuffer_" + buf.name;
+					}
 				} else {
 					buffer_code += buf.name_bind;
 				}
@@ -788,8 +819,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					offset = get_offset(m, total_offset, shader);
 
 					buffer_code += " ";
+
 					// double underscore is reserved by glsl
 					buffer_code += String(m->name).replace("__", "_dus_");
+
 					if (m->array_size != 0) {
 						buffer_code += "[";
 						if (m->array_size > 0) {
@@ -818,120 +851,14 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					buffer.total_size = total_offset;
 					r_gen_code.uniform_buffers.push_back(buffer);
-					print_line(vformat("Uniform buffer \"%s\" compiled with binding %s", buffer.bufName, itos(buffer_count - 1)));
+					print_line(vformat("Uniform buffer \"%s\" compiled with binding %s", buffer.bufName, itos(buffer_binding_index - 1)));
 				} else {
 					buffer.total_size = total_offset;
 					r_gen_code.storage_buffers.push_back(buffer);
-					print_line(vformat("Storage buffer \"%s\" compiled with binding %s", buffer.bufName, itos(buffer_count - 1)));
+					print_line(vformat("Storage buffer \"%s\" compiled with binding %s", buffer.bufName, itos(buffer_binding_index - 1)));
 				}
 
 				
-			}
-
-			// // next, unnamed buffers are handled
-		
-			// int64_t ubuf_count = 0;
-			// for (int i = 0; i < pnode->unnamed_buffers.size(); i++) {
-			// 	SL::ShaderNode::Buffer buf = pnode->unnamed_buffers[i];
-			// 	String buffer_code;
-
-			// 	//specify layout
-			// 	buffer_code += "layout(set = " + itos(4) + ", binding = " + itos(buffer_count) + ",";
-			// 	buffer_count++;
-			// 	// if (buf.set > -1) {
-			// 	// 	buffer_code += "set = " + itos(4) + ",";
-			// 	// }
-			// 	// if (buf.binding > -1) {
-			// 	// 	buffer_code += "binding = " + itos(1 + buffer_count) + ",";
-			// 	// }
-
-			// 	switch (buf.format) {
-			// 		case SL::ShaderNode::Buffer::BUFFORMAT_PACKED: {
-			// 			buffer_code += "packed) ";
-			// 		} break;
-			// 		case SL::ShaderNode::Buffer::BUFFORMAT_SHARED: {
-			// 			buffer_code += "shared) ";
-			// 		} break;
-			// 		case SL::ShaderNode::Buffer::BUFFORMAT_STD140: {
-			// 			buffer_code += "std140) ";
-			// 		} break;
-			// 		case SL::ShaderNode::Buffer::BUFFORMAT_STD430: {
-			// 			buffer_code += "std430) ";
-			// 		} break;
-			// 	}
-
-			// 	if (buf.restrict) {
-			// 		buffer_code += "restrict ";
-			// 	}
-
-			// 	switch(buf.io_qual) {
-			// 		case SL::ShaderNode::Buffer::BUFFER_NONE: {
-			// 			buffer_code += "buffer ";
-			// 		} break;
-			// 		case SL::ShaderNode::Buffer::BUFFER_IN: {
-			// 			buffer_code += "readonly buffer ";
-			// 		} break;
-			// 		case SL::ShaderNode::Buffer::BUFFER_OUT: {
-			// 			buffer_code += "writeonly buffer ";
-			// 		} break;
-			// 		case SL::ShaderNode::Buffer::BUFFER_UNIFORM: {
-			// 			buffer_code += "uniform ";
-			// 		} break;
-			// 	}
-
-			// 	if (buf.name_bind.is_empty()) {
-			// 		buffer_code += "userBuffer_unnamed" + itos(ubuf_count++);
-			// 	} else {
-			// 		buffer_code += buf.name_bind;
-			// 	}
-				
-			// 	buffer_code += " {\n";
-
-			// 	for (SL::MemberNode *m : buf.shader_buffer->members) {
-			// 		if (m->datatype == SL::TYPE_STRUCT) {
-			// 			buffer_code += _mkid(m->struct_name);
-			// 		} else {
-			// 			buffer_code += _prestr(m->precision);
-			// 			buffer_code += _typestr(m->datatype);
-			// 		}
-			// 		buffer_code += " ";
-			// 		buffer_code += _mkid(m->name);
-			// 		if (m->array_size != 0) {
-			// 			buffer_code += "[";
-			// 			if (m->array_size > 0) {
-			// 				buffer_code += itos(m->array_size);
-			// 			}
-			// 			buffer_code += "]";
-			// 		} 
-					
-			// 		buffer_code += ";\n";
-			// 	}
-			// 	buffer_code += "} " + buf.name;
-			// 	buffer_code += ";\n";
-
-			// 	for (int j = 0; j < STAGE_MAX; j++) {
-			// 		r_gen_code.stage_globals[j] += buffer_code;
-			// 	}
-			// }
-			
-			// add up
-			int offset = 0;
-			for (int i = 0; i < uniform_sizes.size(); i++) {
-				int align = offset % uniform_alignments[i];
-
-				if (align != 0) {
-					offset += uniform_alignments[i] - align;
-				}
-
-				r_gen_code.uniform_offsets.push_back(offset);
-
-				offset += uniform_sizes[i];
-			}
-
-			r_gen_code.uniform_total_size = offset;
-
-			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
-				r_gen_code.uniform_total_size += 16 - (r_gen_code.uniform_total_size % 16);
 			}
 
 			uint32_t index = p_default_actions.base_varying_index;
@@ -1220,7 +1147,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 
 				} else if (shader->buffers.has(vnode->name)) {
-					code += shader->buffers[vnode->name].name;
+					code += String(shader->buffers[vnode->name].name).replace("__", "_dus_");
+				} else if (shader->unnamed_buffer_members.has(vnode->name)) {
+					code += String(vnode->name).replace("__", "_dus_");
 				} else{
 					if (use_fragment_varying) {
 						code = "frag_to_light.";
@@ -1713,6 +1642,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			String name;
 			if (mnode->basetype == SL::TYPE_STRUCT) {
 				name = _mkid(mnode->name);
+			} else if (mnode->basetype == SL::TYPE_BUFFER) {
+				name = String(mnode->name).replace("__", "_dus_");
 			} else {
 				name = mnode->name;
 			}
@@ -1730,22 +1661,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 			}
 		} break;
 		case SL::Node::NODE_TYPE_BUFFER: {
-			break;
-
-			/*
-			buffer uniform restrict my_buf {
-				int my_int;
-				float floats[32];
-			}(set = 0, binding = 0);
-
-			->
-
-			layout (set = 0, binding = 0, shared) uniform restrict user_buffer1 {
-				int my_int;
-				float floats[32];
-			} my_buf;
-
-			*/
 		} break;
 	}
 

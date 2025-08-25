@@ -237,6 +237,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
 	texture_uniforms = gen_code.texture_uniforms;
+	uniform_buffers = gen_code.uniform_buffers;
+	storage_buffers = gen_code.storage_buffers;
 
 	pipeline_hash_map.clear_pipelines();
 
@@ -526,7 +528,7 @@ bool SceneShaderForwardMobile::MaterialData::update_parameters(const HashMap<Str
 	if (shader_data->version.is_valid()) {
 		MutexLock lock(SceneShaderForwardMobile::singleton_mutex);
 		RID base_shader = SceneShaderForwardMobile::singleton->shader.version_get_shader(shader_data->version, (SceneShaderForwardMobile::singleton->use_fp16 ? SHADER_VERSION_MAX * 2 : 0));
-		return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, p_buffer_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, p_buffer_params, shader_data->uniform_buffers, shader_data->ubo_size, uniform_set, base_shader, RenderForwardMobile::MATERIAL_UNIFORM_SET, true, true);
+		return update_parameters_uniform_set(p_parameters, p_uniform_dirty, p_textures_dirty, p_buffer_dirty, shader_data->uniforms, shader_data->ubo_offsets.ptr(), shader_data->texture_uniforms, shader_data->default_texture_params, p_buffer_params, shader_data->uniform_buffers, shader_data->storage_buffers, shader_data->ubo_size, uniform_set, base_shader, RenderForwardMobile::MATERIAL_UNIFORM_SET, true, true);
 	} else {
 		return false;
 	}

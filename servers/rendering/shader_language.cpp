@@ -1594,15 +1594,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, bool p_allow_rea
 			*r_type = IDENTIFIER_BUFFER_FIELD;
 		}
 		if (r_data_type || r_array_size) {
-			int64_t unnamed_buffer_index = shader->unnamed_buffer_members[p_identifier];
-			ShaderNode::Buffer unnamed_buffer = shader->unnamed_buffers[unnamed_buffer_index];
-			BufferNode unnamed_buf_node = *unnamed_buffer.shader_buffer;
-			MemberNode* member;
-			for (MemberNode *memnode : unnamed_buf_node.members) {
-				if (memnode->name == p_identifier) {
-					member = memnode;
-				}
-			}
+			MemberNode* member = shader->unnamed_buffer_members[p_identifier];
 			if (r_data_type) {
 				*r_data_type = member->datatype;
 			}
@@ -5640,6 +5632,12 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const FunctionInfo &p_functi
 			}
 			return false;
 		}
+		if (shader->buffers.has(var->name) && (shader->buffers[var->name].io_qual == ShaderNode::Buffer::BUFFER_UNIFORM || shader->buffers[var->name].io_qual == ShaderNode::Buffer::BUFFER_IN)) {
+			if (r_message) {
+				*r_message = RTR("Assignment to immutable buffer.");
+			}
+			return false;
+		}
 
 		if (shader->constants.has(var->name) || var->is_const) {
 			if (r_message) {
@@ -6896,7 +6894,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				StringName identifier;
-				if (_get_completable_identifier(p_block, dt == TYPE_STRUCT || dt == TYPE_BUFFER ? COMPLETION_STRUCT : COMPLETION_INDEX, identifier)) {
+				if (_get_completable_identifier(p_block, (dt == TYPE_STRUCT || dt == TYPE_BUFFER) ? COMPLETION_STRUCT : COMPLETION_INDEX, identifier)) {
 					if (dt == TYPE_STRUCT || dt == TYPE_BUFFER) {
 						completion_struct = st;
 					} else {
@@ -9556,7 +9554,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				}
 #ifdef DEBUG_ENABLED
 				keyword_completion_context = CF_GLOBAL_SPACE;
-#endif // DEBUG_ENABLED
+#endif // DEBUG_ENABLEDx
 
 				shader->structs[st.name] = st;
 				shader->vstructs.push_back(st); // struct's order is important!
@@ -10338,6 +10336,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 			case TK_BUFFER: {
 				ShaderNode::Buffer buf;
 				StringName buffer_name;
+				completion_type = COMPLETION_BUFFER_IO;
 
 				tk = _get_token();
 				for (int i = 0; i < 2 && is_token_buffer_qual(tk.type); i++) {
@@ -10369,6 +10368,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					}
 					tk = _get_token();
 				}
+				completion_type = COMPLETION_NONE;
 
 				if (tk.type == TK_IDENTIFIER) {
 					buf.name = tk.text;
@@ -10388,7 +10388,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				DataType type;
 				int member_count = 0;
 				HashSet<String> member_names;
-				Vector<StringName> vmember_names; 
+				bool unsized_array_init = false;
 
 				BufferNode *bufnode = alloc_node<BufferNode>();
 				buf.shader_buffer = bufnode;
@@ -10397,6 +10397,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
 						break;
 					}
+
+					if (unsized_array_init) {
+						_set_error(RTR("An unsized array must be the final declaration in the buffer."));
+						return ERR_PARSE_ERROR;
+					}
+
 					StringName struct_name = "";
 					bool struct_dt = false;
 					DataPrecision precision = PRECISION_DEFAULT;
@@ -10442,11 +10448,16 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 								}
 
 								if (tk.type == TK_BRACKET_OPEN) {
-									Error error = _parse_array_size(nullptr, constants, true, nullptr, &array_size, nullptr);
+									Error error = _parse_array_size(nullptr, constants, false, nullptr, &array_size, &unsized_array_init);
 									if (error != OK) {
 										return error;
 									}
-									fixed_array_size = true;
+									if (!unsized_array_init) {
+										fixed_array_size = true;
+									} else {
+										array_size = -1;
+									}
+									
 									tk = _get_token();
 								}
 							}
@@ -10461,36 +10472,42 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							MemberNode *member = alloc_node<MemberNode>();
 							member->precision = precision;
 							member->datatype = type;
+							member->basetype = TYPE_BUFFER;
 							member->struct_name = struct_name;
 							member->name = tk.text;
 							member->array_size = array_size;
+							member->owner = bufnode;
 							
-							if (!buf.name.is_empty()) {
-								if (member_names.has(member->name)) {
-									_set_redefinition_error(String(member->name));
-									return ERR_PARSE_ERROR;
-								}
-								member_names.insert(member->name);
-							} else {
+							if (member_names.has(member->name)) {
+								_set_redefinition_error(String(member->name));
+								return ERR_PARSE_ERROR;
+							}
+							if (buf.name.is_empty()) {
 								if (is_name_used(shader, member->name)) {
 									_set_redefinition_error(String(member->name));
 									return ERR_PARSE_ERROR;
-								}
-								vmember_names.push_back(member->name);
-							}
+								}							
+							} 
+							member_names.insert(member->name);
+							
 							
 							
 							tk = _get_token();
 
 							if (tk.type == TK_BRACKET_OPEN) {
-								Error error = _parse_array_size(nullptr, constants, true, nullptr, &member->array_size, nullptr);
+								Error error = _parse_array_size(nullptr, constants, false, nullptr, &member->array_size, &unsized_array_init);
 								if (error != OK) {
 									return error;
+								}
+								if (!unsized_array_init) {
+									fixed_array_size = true;
+								} else {
+									member->array_size = -1;
 								}
 								tk = _get_token();
 							}
 
-							if (!fixed_array_size) {
+							if (!fixed_array_size && !unsized_array_init) {
 								array_size = 0;
 							}
 
@@ -10511,100 +10528,126 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				}
 
 				tk = _get_token();
+
 				if (tk.type != TK_PARENTHESIS_OPEN) {
 					_set_error(RTR("Expected layout specifications."));
 					return ERR_PARSE_ERROR;
-				} else {
-					bool binded = false;
-					bool set_assigned = false;
-					bool format_assigned = false;
-					while(true) {
+				} 
+
+				bool binded = false;
+				//bool set_assigned = false;
+				bool format_assigned = false;
+				while(true) {
+					tk = _get_token();
+					if (tk.type == TK_PARENTHESIS_CLOSE) {
+						if (!binded && buf.name_bind.is_empty()) {
+							if (shader_type_identifier != "compute") {
+								_set_error(RTR("Buffer name binding not provided."));
+								return ERR_PARSE_ERROR;
+							}
+							_set_error(RTR("Binding not specified."));
+							return ERR_PARSE_ERROR;
+						}
+						break;
+					}
+
+					// unused for now
+					// if (tk.type == TK_BUFFER_BIND) {
+					// 	if (shader_type_identifier != "compute") {
+					// 		_set_error(vformat(RTR("Custom bindings are not supported in %s shaders, use name bindings instead."), shader_type_identifier));
+					// 		return ERR_PARSE_ERROR;
+					// 	}
+					// 	if (binded) {
+					// 		_set_error(RTR("Binding already specified."));
+					// 		return ERR_PARSE_ERROR;
+					// 	}
+					// 	tk = _get_token();
+					// 	if (tk.type != TK_OP_ASSIGN)  {
+					// 		_set_error(RTR("Expected binding value."));
+					// 		return ERR_PARSE_ERROR;
+					// 	}
+					// 	tk = _get_token();
+					// 	binded = true;
+					// }
+
+					// unused for now
+					// if (tk.type == TK_BUFFER_SET) {
+					// 	if (shader_type_identifier != "compute") {
+					// 		_set_error(vformat(RTR("Custom sets are not supported in %s shaders."), shader_type_identifier));
+					// 		return ERR_PARSE_ERROR;
+					// 	}
+					// 	if (set_assigned) {
+					// 		_set_error(RTR("Set already specified."));
+					// 		return ERR_PARSE_ERROR;
+					// 	}
+					// 	tk = _get_token();
+					// 	if (tk.type != TK_OP_ASSIGN)  {
+					// 		_set_error(RTR("Expected set value."));
+					// 		return ERR_PARSE_ERROR;
+					// 	}
+					// 	tk = _get_token();
+					// 	set_assigned = true;
+					// }
+
+					if (tk.type == TK_BUFFER_FORMAT) {
+						if (format_assigned) {
+							_set_error(RTR("Format already specified."));
+							return ERR_PARSE_ERROR;
+						}
 						tk = _get_token();
-						if (tk.type == TK_PARENTHESIS_CLOSE) {
-							if (!binded && buf.name_bind.is_empty()) {
-								if (shader_type_identifier != "compute") {
-									_set_error(RTR("Buffer name binding not provided."));
-									return ERR_PARSE_ERROR;
-								}
-								_set_error(RTR("Binding not specified."));
+						if (tk.type != TK_OP_ASSIGN)  {
+							_set_error(RTR("Expected format specifier."));
+							return ERR_PARSE_ERROR;
+						}
+						completion_type = COMPLETION_BUFFER_FORMAT;
+
+						tk = _get_token();
+
+						if (tk.text == "packed") {
+							_set_error(RTR("The packed format is not currently supported."));
+							return ERR_PARSE_ERROR;
+							// buf.format = ShaderNode::Buffer::BUFFORMAT_PACKED;
+						} else if (tk.text == "shared") {
+							_set_error(RTR("The shared format is not currently supported."));
+							return ERR_PARSE_ERROR;
+							// buf.format = ShaderNode::Buffer::BUFFORMAT_SHARED;
+						} else if (tk.text == "std140") {
+							buf.format = ShaderNode::Buffer::BUFFORMAT_STD140;
+						} else if (tk.text == "std430") {
+							if (buf.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM) {
+								_set_error(RTR("Uniform buffers cannot use the std430 format."));
 								return ERR_PARSE_ERROR;
 							}
-							break;
+							buf.format = ShaderNode::Buffer::BUFFORMAT_STD430;
+						} else {
+							_set_error(RTR("Expected format specifier."));
+							return ERR_PARSE_ERROR;
 						}
 
-						// unused for now
-						if (tk.type == TK_BUFFER_BIND) {
-							if (shader_type_identifier != "compute") {
-								_set_error(vformat(RTR("Custom bindings are not supported in %s shaders, use name bindings instead."), shader_type_identifier));
-								return ERR_PARSE_ERROR;
-							}
-							if (binded) {
-								_set_error(RTR("Binding already specified."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							if (tk.type != TK_OP_ASSIGN)  {
-								_set_error(RTR("Expected binding value."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							binded = true;
+						format_assigned = true;
+						completion_type = COMPLETION_NONE;
+					}
+					if (tk.type == TK_BUFFER_BIND_NAME) {
+						if (!buf.name_bind.is_empty()) {
+							_set_error(RTR("Name binding already specified."));
+							return ERR_PARSE_ERROR;
 						}
-
-						// unused for now
-						if (tk.type == TK_BUFFER_SET) {
-							if (shader_type_identifier != "compute") {
-								_set_error(vformat(RTR("Custom sets are not supported in %s shaders."), shader_type_identifier));
-								return ERR_PARSE_ERROR;
-							}
-							if (set_assigned) {
-								_set_error(RTR("Set already specified."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							if (tk.type != TK_OP_ASSIGN)  {
-								_set_error(RTR("Expected set value."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							set_assigned = true;
+						tk = _get_token();
+						if (tk.type != TK_OP_ASSIGN)  {
+							_set_error(RTR("Expected name binding."));
+							return ERR_PARSE_ERROR;
 						}
-
-						// unused for now
-						if (tk.type == TK_BUFFER_FORMAT) {
-							if (format_assigned) {
-								_set_error(RTR("Format already specified."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							if (tk.type != TK_OP_ASSIGN)  {
-								_set_error(RTR("Expected format specifier."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							format_assigned = true;
+						tk = _get_token();
+						if (tk.type == TK_IDENTIFIER) {
+							buf.name_bind = tk.text;
+						} else {
+							_set_error(RTR("Expected a valid name binding."));
+							return ERR_PARSE_ERROR;
 						}
-						if (tk.type == TK_BUFFER_BIND_NAME) {
-							if (!buf.name_bind.is_empty()) {
-								_set_error(RTR("Name binding already specified."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							if (tk.type != TK_OP_ASSIGN)  {
-								_set_error(RTR("Expected name binding."));
-								return ERR_PARSE_ERROR;
-							}
-							tk = _get_token();
-							if (tk.type == TK_IDENTIFIER) {
-								buf.name_bind = tk.text;
-							} else {
-								_set_error(RTR("Expected a valid name binding."));
-								return ERR_PARSE_ERROR;
-							}
-							
-						}
+						
 					}
 				}
+				
 
 				tk = _get_token();
 				if (tk.type != TK_SEMICOLON) {
@@ -10620,8 +10663,9 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 				} else {
 					shader->unnamed_buffers.push_back(buf);
 					int index = shader->unnamed_buffers.size();
-					for (StringName membername : vmember_names) {
-						shader->unnamed_buffer_members[membername] = index;
+					for (MemberNode* member : bufnode->members) {
+						member->owner_index = index;
+						shader->unnamed_buffer_members[member->name] = member;
 					}
 				}
 
@@ -11928,11 +11972,20 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 		case COMPLETION_STRUCT: {
 			if (shader->structs.has(completion_struct)) {
 				StructNode *node = shader->structs[completion_struct].shader_struct;
+				r_options->clear();
+				for (ShaderLanguage::MemberNode *member : node->members) {
+					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+					r_options->push_back(option);
+				}
+			} else if (shader->buffers.has(completion_struct)) {
+				BufferNode *node = shader->buffers[completion_struct].shader_buffer;
+				r_options->clear();
 				for (ShaderLanguage::MemberNode *member : node->members) {
 					ScriptLanguage::CodeCompletionOption option(member->name, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
 					r_options->push_back(option);
 				}
 			}
+			
 
 			return OK;
 		} break;
@@ -12060,6 +12113,21 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 					}
 					for (const KeyValue<StringName, ShaderNode::Uniform> &E : shader->uniforms) {
 						matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+					}
+					for (const KeyValue<StringName, ShaderNode::Buffer> &E : shader->buffers) {
+						if (E.value.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM || E.value.io_qual == ShaderNode::Buffer::BUFFER_IN) {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						} else {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+						}
+					}
+					for (const KeyValue<StringName, MemberNode*> &E : shader->unnamed_buffer_members) {
+						ShaderNode::Buffer owner = shader->unnamed_buffers[E.value->owner_index];
+						if (owner.io_qual == ShaderNode::Buffer::BUFFER_UNIFORM || owner.io_qual == ShaderNode::Buffer::BUFFER_IN) {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_MEMBER);
+						} else {
+							matches.insert(E.key, ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE);
+						}
 					}
 				}
 
@@ -12456,6 +12524,29 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 			if (!completion_base_array && !current_uniform_instance_index_defined) {
 				ScriptLanguage::CodeCompletionOption option("instance_index", ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				option.insert_text = "instance_index(0)";
+				r_options->push_back(option);
+			}
+		} break;
+		case COMPLETION_BUFFER_IO: {
+			Vector<String> options;
+			options.push_back("in");
+			options.push_back("out");
+			options.push_back("uniform");
+			options.push_back("restrict");
+			r_options->clear();
+			for (int i = 0; i < options.size(); i++) {
+				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				r_options->push_back(option);
+			}
+			return OK;
+		} break;
+		case COMPLETION_BUFFER_FORMAT: {
+			Vector<String> options;
+			options.push_back("std140");
+			options.push_back("std430");
+			r_options->clear();
+			for (int i = 0; i < options.size(); i++) {
+				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
 				r_options->push_back(option);
 			}
 		} break;

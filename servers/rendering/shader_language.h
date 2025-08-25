@@ -580,6 +580,7 @@ public:
 		DataPrecision precision = PRECISION_DEFAULT;
 		DataType datatype = TYPE_VOID;
 		int array_size = 0;
+		int owner_index = -1;
 		StringName struct_name;
 		StringName name;
 		Node *owner = nullptr;
@@ -761,7 +762,7 @@ public:
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Buffer> buffers;
-		HashMap<StringName, int> unnamed_buffer_members;
+		HashMap<StringName, MemberNode*> unnamed_buffer_members;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
 		Vector<StringName> stencil_modes;
@@ -851,6 +852,8 @@ public:
 		COMPLETION_INDEX,
 		COMPLETION_STRUCT,
 		COMPLETION_HINT,
+		COMPLETION_BUFFER_IO,
+		COMPLETION_BUFFER_FORMAT
 	};
 
 	struct Token {
