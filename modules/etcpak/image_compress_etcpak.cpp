@@ -162,7 +162,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 	}
 
 	// Compress image data and (if required) mipmaps.
-	const bool has_mipmaps = r_img->has_mipmaps();
+	const int mip_count = r_img->get_mipmap_count();
 	int width = r_img->get_width();
 	int height = r_img->get_height();
 
@@ -196,12 +196,11 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 
 	// Create the buffer for compressed image data.
 	Vector<uint8_t> dest_data;
-	dest_data.resize(Image::get_image_data_size(width, height, target_format, has_mipmaps));
+	dest_data.resize(Image::get_image_data_size(width, height, target_format, r_img->get_mipmap_count()));
 	uint8_t *dest_write = dest_data.ptrw();
 
 	const uint8_t *src_read = r_img->get_data().ptr();
 
-	const int mip_count = has_mipmaps ? Image::get_image_required_mipmaps(width, height, target_format) : 0;
 	Vector<uint32_t> padded_src;
 
 	for (int i = 0; i < mip_count + 1; i++) {
@@ -301,7 +300,7 @@ void _compress_etcpak(EtcpakType p_compress_type, Image *r_img) {
 	}
 
 	// Replace original image with compressed one.
-	r_img->set_data(width, height, has_mipmaps, target_format, dest_data);
+	r_img->set_data_partial_mipmaps(width, height, mip_count, target_format, dest_data);
 
 	print_verbose(vformat("etcpak: Encoding took %d ms.", OS::get_singleton()->get_ticks_msec() - start_time));
 }

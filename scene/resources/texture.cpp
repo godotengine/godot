@@ -161,6 +161,12 @@ bool Texture3D::has_mipmaps() const {
 	return ret;
 }
 
+int Texture3D::get_mipmap_count() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_mipmap_count, ret);
+	return ret;
+}
+
 Vector<Ref<Image>> Texture3D::get_data() const {
 	TypedArray<Image> ret;
 	GDVIRTUAL_CALL(_get_data, ret);
@@ -178,6 +184,7 @@ void Texture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture3D::get_height);
 	ClassDB::bind_method(D_METHOD("get_depth"), &Texture3D::get_depth);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture3D::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &Texture3D::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_data"), &Texture3D::_get_datai);
 	ClassDB::bind_method(D_METHOD("create_placeholder"), &Texture3D::create_placeholder);
 
@@ -186,6 +193,7 @@ void Texture3D::_bind_methods() {
 	GDVIRTUAL_BIND(_get_height);
 	GDVIRTUAL_BIND(_get_depth);
 	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_mipmap_count);
 	GDVIRTUAL_BIND(_get_data);
 }
 
@@ -232,6 +240,12 @@ bool TextureLayered::has_mipmaps() const {
 	return ret;
 }
 
+int TextureLayered::get_mipmap_count() const {
+	int ret = 0;
+	GDVIRTUAL_CALL(_get_mipmap_count, ret);
+	return ret;
+}
+
 Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
 	Ref<Image> ret;
 	GDVIRTUAL_CALL(_get_layer_data, p_layer, ret);
@@ -245,6 +259,7 @@ void TextureLayered::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &TextureLayered::get_height);
 	ClassDB::bind_method(D_METHOD("get_layers"), &TextureLayered::get_layers);
 	ClassDB::bind_method(D_METHOD("has_mipmaps"), &TextureLayered::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_mipmap_count"), &TextureLayered::get_mipmap_count);
 	ClassDB::bind_method(D_METHOD("get_layer_data", "layer"), &TextureLayered::get_layer_data);
 
 	BIND_ENUM_CONSTANT(LAYERED_TYPE_2D_ARRAY);
@@ -257,5 +272,6 @@ void TextureLayered::_bind_methods() {
 	GDVIRTUAL_BIND(_get_height);
 	GDVIRTUAL_BIND(_get_layers);
 	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_mipmap_count);
 	GDVIRTUAL_BIND(_get_layer_data, "layer_index");
 }
