@@ -2277,6 +2277,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break; //luminance
+		case RD::DATA_FORMAT_R8_UINT: {
+			r_format.image_format = Image::FORMAT_L8;
+			r_format.rd_format = RD::DATA_FORMAT_R8_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R8_SINT: {
+			r_format.image_format = Image::FORMAT_L8;
+			r_format.rd_format = RD::DATA_FORMAT_R8_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 		case RD::DATA_FORMAT_R8G8_UNORM: {
 			r_format.image_format = Image::FORMAT_LA8;
 			r_format.rd_format = RD::DATA_FORMAT_R8G8_UNORM;
@@ -2285,6 +2301,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_G;
 		} break; //luminance-alpha
+		case RD::DATA_FORMAT_R8G8_UINT: {
+			r_format.image_format = Image::FORMAT_LA8;
+			r_format.rd_format = RD::DATA_FORMAT_R8G8_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R8G8_SINT: {
+			r_format.image_format = Image::FORMAT_LA8;
+			r_format.rd_format = RD::DATA_FORMAT_R8G8_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 		/* already maps to L8/LA8
 		case RD::DATA_FORMAT_R8_UNORM: {
 			r_format.image_format = Image::FORMAT_R8;
@@ -2314,6 +2346,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 
 		} break;
+		case RD::DATA_FORMAT_R8G8B8_UINT: {
+			r_format.image_format = Image::FORMAT_RG8;
+			r_format.rd_format = RD::DATA_FORMAT_R8G8B8_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R8G8B8_SINT: {
+			r_format.image_format = Image::FORMAT_RG8;
+			r_format.rd_format = RD::DATA_FORMAT_R8G8B8_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 		case RD::DATA_FORMAT_R8G8B8A8_UNORM:
 		case RD::DATA_FORMAT_R8G8B8A8_SRGB: {
 			r_format.image_format = Image::FORMAT_RGBA8;
@@ -2329,6 +2377,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.image_format = Image::FORMAT_RGBA8;
 			r_format.rd_format = RD::DATA_FORMAT_B8G8R8A8_UNORM;
 			r_format.rd_format_srgb = RD::DATA_FORMAT_B8G8R8A8_SRGB;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+		case RD::DATA_FORMAT_R8G8B8A8_UINT: {
+			r_format.image_format = Image::FORMAT_RGBA8;
+			r_format.rd_format = RD::DATA_FORMAT_R8G8B8A8_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+		case RD::DATA_FORMAT_R8G8B8A8_SINT: {
+			r_format.image_format = Image::FORMAT_RGBA8;
+			r_format.rd_format = RD::DATA_FORMAT_R8G8B8A8_SINT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
@@ -2358,6 +2422,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break; //float
+		case RD::DATA_FORMAT_R32_SINT: {
+			r_format.image_format = Image::FORMAT_RF;
+			r_format.rd_format = RD::DATA_FORMAT_R32_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break; // 32 bit sint
+		case RD::DATA_FORMAT_R32_UINT: {
+			r_format.image_format = Image::FORMAT_RF;
+			r_format.rd_format = RD::DATA_FORMAT_R32_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break; // 32 bit usint
 		case RD::DATA_FORMAT_R32G32_SFLOAT: {
 			r_format.image_format = Image::FORMAT_RGF;
 			r_format.rd_format = RD::DATA_FORMAT_R32G32_SFLOAT;
@@ -2366,9 +2446,41 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
+		case RD::DATA_FORMAT_R32G32_UINT: {
+			r_format.image_format = Image::FORMAT_RGF;
+			r_format.rd_format = RD::DATA_FORMAT_R32G32_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R32G32_SINT: {
+			r_format.image_format = Image::FORMAT_RGF;
+			r_format.rd_format = RD::DATA_FORMAT_R32G32_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 		case RD::DATA_FORMAT_R32G32B32_SFLOAT: {
 			r_format.image_format = Image::FORMAT_RGBF;
 			r_format.rd_format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R32G32B32_UINT: {
+			r_format.image_format = Image::FORMAT_RGBF;
+			r_format.rd_format = RD::DATA_FORMAT_R32G32B32_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R32G32B32_SINT: {
+			r_format.image_format = Image::FORMAT_RGBF;
+			r_format.rd_format = RD::DATA_FORMAT_R32G32B32_SINT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
@@ -2383,6 +2495,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 
 		} break;
+		case RD::DATA_FORMAT_R32G32B32A32_UINT: {
+			r_format.image_format = Image::FORMAT_RGBAF;
+			r_format.rd_format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break; // RGBA 32-bit uint
+		case RD::DATA_FORMAT_R32G32B32A32_SINT: {
+			r_format.image_format = Image::FORMAT_RGBAF;
+			r_format.rd_format = RD::DATA_FORMAT_R32G32B32A32_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break; // RGBA 32-bit sint
 		case RD::DATA_FORMAT_R16_SFLOAT: {
 			r_format.image_format = Image::FORMAT_RH;
 			r_format.rd_format = RD::DATA_FORMAT_R16_SFLOAT;
@@ -2392,6 +2520,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 
 		} break; //half float
+		case RD::DATA_FORMAT_R16_UINT: {
+			r_format.image_format = Image::FORMAT_RH;
+			r_format.rd_format = RD::DATA_FORMAT_R16_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R16_SINT: {
+			r_format.image_format = Image::FORMAT_RH;
+			r_format.rd_format = RD::DATA_FORMAT_R16_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 		case RD::DATA_FORMAT_R16G16_SFLOAT: {
 			r_format.image_format = Image::FORMAT_RGH;
 			r_format.rd_format = RD::DATA_FORMAT_R16G16_SFLOAT;
@@ -2401,9 +2545,41 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 
 		} break;
+		case RD::DATA_FORMAT_R16G16_UINT: {
+			r_format.image_format = Image::FORMAT_RGH;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R16G16_SINT: {
+			r_format.image_format = Image::FORMAT_RGH;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
 		case RD::DATA_FORMAT_R16G16B16_SFLOAT: {
 			r_format.image_format = Image::FORMAT_RGBH;
 			r_format.rd_format = RD::DATA_FORMAT_R16G16B16_SFLOAT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R16G16B16_UINT: {
+			r_format.image_format = Image::FORMAT_RGBH;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16B16_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case RD::DATA_FORMAT_R16G16B16_SINT: {
+			r_format.image_format = Image::FORMAT_RGBH;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16B16_SINT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
@@ -2417,6 +2593,22 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 
+		} break;
+		case RD::DATA_FORMAT_R16G16B16A16_UINT: {
+			r_format.image_format = Image::FORMAT_RGBAH;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16B16A16_UINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+		} break;
+		case RD::DATA_FORMAT_R16G16B16A16_SINT: {
+			r_format.image_format = Image::FORMAT_RGBAH;
+			r_format.rd_format = RD::DATA_FORMAT_R16G16B16A16_SINT;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 		case RD::DATA_FORMAT_E5B9G9R9_UFLOAT_PACK32: {
 			r_format.image_format = Image::FORMAT_RGBE9995;
